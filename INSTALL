@@ -33,6 +33,8 @@ On *nix you need:
       --without/[with]-X11 - use libX11 to get terminal window title before
           changing it to restore it on exit.
 
+      --without/[with]-dyn-X11 - load libX11 dynamically
+
     You can install vifm in your ~/ directory if you prefer.  To do this
     manually copy the vifm, vifmrc-converter and vifm-pause executables
     from the src/ directory to where you want to run them.  Another

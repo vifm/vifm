@@ -18,9 +18,9 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* sprintf() */
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strlen() strdup() */
+#include <string.h> /* strdup() */
+
+#include "utils/str.h"
 
 /* This variable is automatically updated on building. */
 extern const char GIT_HASH[];
@@ -35,8 +35,7 @@ fill_version_info(char **list)
 		return LEN;
 
 	list[x++] = strdup("Version: " VERSION);
-	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
-	sprintf(list[x++], "Git commit hash: %s", GIT_HASH);
+	list[x++] = format_str("Git commit hash: %s", GIT_HASH);
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
 	list[x++] = strdup("");
 
@@ -68,6 +67,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("With X11 library");
 #else
 	list[x++] = strdup("Without X11 library");
+#endif
+
+#ifdef DYN_X11
+	list[x++] = strdup("With dynamic loading of X11 library");
+#else
+	list[x++] = strdup("Without dynamic loading of X11 library");
 #endif
 
 #ifdef HAVE_FILE_PROG

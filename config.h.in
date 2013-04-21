@@ -9,6 +9,9 @@
 #undef PACKAGE_DATA_DIR
 #undef PACKAGE_SOURCE_DIR
 
+/* load libX11 dynamically */
+#undef DYN_X11
+
 /* parsing of .desktop files */
 #undef ENABLE_DESKTOP_FILES
 
@@ -30,6 +33,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
 
 /* use gtk to determine mime type */
 #undef HAVE_LIBGTK

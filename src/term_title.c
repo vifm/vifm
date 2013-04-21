@@ -23,8 +23,12 @@
 #if !defined(_WIN32) && defined(HAVE_X11)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#ifdef DYN_X11
+#include <dlfcn.h> /* dlopen() dlsym() dlclose() */
+#endif
 #endif
 
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* atol() */
 
 #include "utils/env.h"
@@ -55,6 +59,40 @@ static void get_x11_window_title(Display *disp, Window win, char *buf,
 static int x_error_check(Display *dpy, XErrorEvent *error_event);
 #endif
 static void set_terminal_title(const char *path);
+
+#if !defined(_WIN32) && defined(HAVE_X11)
+#ifdef DYN_X11
+
+static void try_dynload_xlib(void);
+static int dynload_xlib(void);
+static void set_xlib_stubs(void);
+static void unload_xlib(void);
+
+static Display *XOpenDisplayStub(_Xconst char name[]);
+static Status XGetWMNameStub(Display *display, Window w,
+	XTextProperty* text_prop_return);
+static XErrorHandler XSetErrorHandlerStub(XErrorHandler handler);
+static int XFreeStub(void* data);
+
+/* Handle of dynamically loaded xlib. */
+static void *xlib_handle;
+
+/* Indirection level for functions of the xlib. */
+static typeof(XOpenDisplay) *XOpenDisplayWrapper;
+static typeof(XGetWMName) *XGetWMNameWrapper;
+static typeof(XSetErrorHandler) *XSetErrorHandlerWrapper;
+static typeof(XFree) *XFreeWrapper;
+
+#else
+
+/* Indirection level for functions of the xlib. */
+static typeof(XOpenDisplay) *XOpenDisplayWrapper = &XOpenDisplay;
+static typeof(XGetWMName) *XGetWMNameWrapper = &XGetWMName;
+static typeof(XSetErrorHandler) *XSetErrorHandlerWrapper = &XSetErrorHandler;
+static typeof(XFree) *XFreeWrapper = &XFree;
+
+#endif
+#endif
 
 void
 set_term_title(const char *title_part)
@@ -109,6 +147,10 @@ save_term_title()
 	Display *x11_display = 0;
 	Window x11_window = 0;
 
+#ifdef DYN_X11
+	try_dynload_xlib();
+#endif
+
 	/* use X to determine current window title */
 	if(get_x11_disp_and_win(&x11_display, &x11_window))
 		get_x11_window_title(x11_display, x11_window, title_state.title,
@@ -127,6 +169,10 @@ restore_term_title()
 #else
 	if(title_state.title[0] != '\0')
 		printf("\033]2;%s\007", title_state.title);
+
+#if defined(HAVE_X11) && defined(DYN_X11)
+	unload_xlib();
+#endif
 #endif
 }
 
@@ -141,7 +187,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 		*win = (Window)atol(winid);
 
 	if(*win != 0 && *disp == NULL)
-		*disp = XOpenDisplay(NULL);
+		*disp = XOpenDisplayWrapper(NULL);
 	if(*win == 0 || *disp == NULL)
 		return 0;
 
@@ -155,16 +201,16 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	int (*old_handler)();
 	XTextProperty text_prop;
 
-	old_handler = XSetErrorHandler(x_error_check);
-	if(!XGetWMName(disp, win, &text_prop))
+	old_handler = XSetErrorHandlerWrapper(x_error_check);
+	if(!XGetWMNameWrapper(disp, win, &text_prop))
 	{
-		(void)XSetErrorHandler(old_handler);
+		(void)XSetErrorHandlerWrapper(old_handler);
 		return;
 	}
 
-	(void)XSetErrorHandler(old_handler);
+	(void)XSetErrorHandlerWrapper(old_handler);
 	snprintf(buf, buf_len, "%s", text_prop.value);
-	XFree((void *)text_prop.value);
+	XFreeWrapper((void *)text_prop.value);
 }
 
 /* callback function for reporting X errors, should return 0 on success */
@@ -187,6 +233,86 @@ set_terminal_title(const char *path)
 	printf("\033]2;%s - VIFM\007", path);
 #endif
 }
+
+#if !defined(_WIN32) && defined(HAVE_X11) && defined(DYN_X11)
+
+/* Tries to load xlib dynamically, falls back to stubs that do nothing in case
+ * of failure. */
+static void
+try_dynload_xlib(void)
+{
+	const int xlib_dynloaded_successfully = dynload_xlib();
+	if(!xlib_dynloaded_successfully)
+	{
+		set_xlib_stubs();
+	}
+}
+
+/* Loads libX11 library.  Returns non-zero when library is loaded
+ * successfully. */
+static int
+dynload_xlib(void)
+{
+	xlib_handle = dlopen("libX11.so", RTLD_NOW);
+	if(xlib_handle == NULL)
+	{
+		return 0;
+	}
+	XOpenDisplayWrapper = dlsym(xlib_handle, "XOpenDisplay");
+	XGetWMNameWrapper = dlsym(xlib_handle, "XGetWMName");
+	XSetErrorHandlerWrapper = dlsym(xlib_handle, "XSetErrorHandler");
+	XFreeWrapper = dlsym(xlib_handle, "XFree");
+	return XOpenDisplayWrapper != NULL && XGetWMNameWrapper != NULL &&
+		XSetErrorHandlerWrapper != NULL && XFreeWrapper != NULL;
+}
+
+/* Sets xlib function pointers to stubs. */
+static void
+set_xlib_stubs(void)
+{
+	XOpenDisplayWrapper = &XOpenDisplayStub;
+	XGetWMNameWrapper = &XGetWMNameStub;
+	XSetErrorHandlerWrapper = &XSetErrorHandlerStub;
+	XFreeWrapper = &XFreeStub;
+}
+
+/* Unloads previously loaded libX11 library. */
+static void
+unload_xlib(void)
+{
+	(void)dlclose(xlib_handle);
+	xlib_handle = NULL;
+}
+
+/* XOpenDisplay() function stub, which does nothing. */
+static Display *
+XOpenDisplayStub(_Xconst char name[])
+{
+	return NULL;
+}
+
+/* XGetWMName() function stub, which does nothing. */
+static Status
+XGetWMNameStub(Display *display, Window w, XTextProperty* text_prop_return)
+{
+	return 0;
+}
+
+/* XSetErrorHandler() function stub, which does nothing. */
+static XErrorHandler
+XSetErrorHandlerStub(XErrorHandler handler)
+{
+	return NULL;
+}
+
+/* XFree() function stub, which does nothing. */
+static int
+XFreeStub(void* data)
+{
+	return 0;
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -722,6 +722,7 @@ with_curses
 with_gtk
 with_libmagic
 with_X11
+with_dyn_X11
 enable_extended_keys
 enable_desktop_files
 '
@@ -1370,6 +1371,7 @@ Optional Packages:
                           [default=yes]
   --with-X11              use libX11 to determine terminal emulator title
                           [default=yes]
+  --with-dyn-X11          load libX11 dynamically [default=yes]
 
 Some influential environment variables:
   CC          C compiler command
@@ -8221,6 +8223,15 @@ fi
 
 
 
+# Check whether --with-dyn-X11 was given.
+if test "${with_dyn_X11+set}" = set; then :
+  withval=$with_dyn_X11; use_dyn_libX11=$withval
+else
+  use_dyn_libX11=yes
+fi
+
+
+
 if test "$use_gtk" = "yes"; then
 	if test "x$(which pkg-config)" != "x"; then
 		if pkg-config --exists glib-2.0 gtk+-2.0; then
@@ -8418,6 +8429,78 @@ $as_echo "#define ENABLE_DESKTOP_FILES 1" >>confdefs.h
 
 fi
 
+if test "$use_dyn_libX11" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+$as_echo_n "checking for dlopen in -ldl... " >&6; }
+if ${ac_cv_lib_dl_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_dlopen=yes
+else
+  ac_cv_lib_dl_dlopen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
+$as_echo "$ac_cv_lib_dl_dlopen" >&6; }
+if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBDL 1
+_ACEOF
+
+  LIBS="-ldl $LIBS"
+
+else
+  use_dyn_libX11=no
+fi
+
+	ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
+if test "x$ac_cv_header_dlfcn_h" = xyes; then :
+
+else
+  use_dyn_libX11=no
+fi
+
+
+	ac_fn_c_check_func "$LINENO" "dlsym" "ac_cv_func_dlsym"
+if test "x$ac_cv_func_dlsym" = xyes; then :
+
+else
+  use_dyn_libX11=no
+fi
+
+	ac_fn_c_check_func "$LINENO" "dlclose" "ac_cv_func_dlclose"
+if test "x$ac_cv_func_dlclose" = xyes; then :
+
+else
+  use_dyn_libX11=no
+fi
+
+fi
+
 if test "$use_libX11" = "yes"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for XOpenDisplay in -lX11" >&5
 $as_echo_n "checking for XOpenDisplay in -lX11... " >&6; }
@@ -8456,7 +8539,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_X11_XOpenDisplay" >&5
 $as_echo "$ac_cv_lib_X11_XOpenDisplay" >&6; }
 if test "x$ac_cv_lib_X11_XOpenDisplay" = xyes; then :
-  LIBS="$LIBS -lX11"
+
 		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xlib_h" = xyes; then :
 
@@ -8475,6 +8558,15 @@ fi
 
 
 $as_echo "#define HAVE_X11 1" >>confdefs.h
+
+		if test "$use_dyn_libX11" = "yes"; then
+			LIBS="$LIBS -ldl"
+
+$as_echo "#define DYN_X11 1" >>confdefs.h
+
+		else
+			LIBS="$LIBS -lX11"
+		fi
 
 fi
 
