@@ -56,6 +56,14 @@ static int x_error_check(Display *dpy, XErrorEvent *error_event);
 #endif
 static void set_terminal_title(const char *path);
 
+/* Add indirections level to functions of the xlib. */
+#if !defined(_WIN32) && defined(HAVE_X11)
+static typeof(XOpenDisplay) *XOpenDisplayWrapper = &XOpenDisplay;
+static typeof(XGetWMName) *XGetWMNameWrapper = &XGetWMName;
+static typeof(XSetErrorHandler) *XSetErrorHandlerWrapper = &XSetErrorHandler;
+static typeof(XFree) *XFreeWrapper = &XFree;
+#endif
+
 void
 set_term_title(const char *title_part)
 {
@@ -141,7 +149,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 		*win = (Window)atol(winid);
 
 	if(*win != 0 && *disp == NULL)
-		*disp = XOpenDisplay(NULL);
+		*disp = XOpenDisplayWrapper(NULL);
 	if(*win == 0 || *disp == NULL)
 		return 0;
 
@@ -155,16 +163,16 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	int (*old_handler)();
 	XTextProperty text_prop;
 
-	old_handler = XSetErrorHandler(x_error_check);
-	if(!XGetWMName(disp, win, &text_prop))
+	old_handler = XSetErrorHandlerWrapper(x_error_check);
+	if(!XGetWMNameWrapper(disp, win, &text_prop))
 	{
-		(void)XSetErrorHandler(old_handler);
+		(void)XSetErrorHandlerWrapper(old_handler);
 		return;
 	}
 
-	(void)XSetErrorHandler(old_handler);
+	(void)XSetErrorHandlerWrapper(old_handler);
 	snprintf(buf, buf_len, "%s", text_prop.value);
-	XFree((void *)text_prop.value);
+	XFreeWrapper((void *)text_prop.value);
 }
 
 /* callback function for reporting X errors, should return 0 on success */
