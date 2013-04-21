@@ -70,6 +70,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("Without X11 library");
 #endif
 
+#ifdef DYN_X11
+	list[x++] = strdup("With dynamic loading of X11 library");
+#else
+	list[x++] = strdup("Without dynamic loading of X11 library");
+#endif
+
 #ifdef HAVE_FILE_PROG
 	list[x++] = strdup("With file program");
 #else
