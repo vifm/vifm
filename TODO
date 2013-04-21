@@ -12,7 +12,6 @@ Basic things that need to be done.
     Ctrl-R combinations in the command-line mode.
     Wrapping of lines in the menus.
     IPC among all running vifm instances (share settings among instances).
-    Write script to export aliases and function from sh to ~/.vifm/scripts/
     Make status bar able to display error and info messages at the same time.
     Command to create multiple copies of selected one with ability to rename
         it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
@@ -23,11 +22,9 @@ Basic things that need to be done.
         only, and maybe update size of all parent cached directories. And maybe
         show somehow in the TUI calculation process.
     Make ga and gA work in visual mode.
-    Better remove confirmetion messages (should contain list of files).
+    Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
-    Check for X11 libraries dynamically.
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
-    Parse escape codes in preview pane.
 
 Documentation.
     Better documentation.
@@ -67,14 +64,12 @@ Vi(m) specific features that need to be added.
     Completion of first argument for :map commands.
     Support hex and octal numbers in :set
     Add support for ^= in :set command.
-    Add support for character set options (like 'cpoptions').
-    Add support for directory completion in for some of :set options.
+    Add support for directory completion for some of :set options.
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
-    Add support of [count] for Ctrl-E/Ctrl-Y.
+    Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
     Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
-    Make d2d, y2y and D2D work as in Vim.
     Quickfix list support (to navigate through file list produced by :find or
         :locate with :cn, :cp and alike).
     Maybe add 'titleold' option.

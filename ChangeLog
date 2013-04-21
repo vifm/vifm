@@ -27,7 +27,7 @@
 	static/dynamic linking against libX11 library.  Thanks to Hendrik
 	Jaeger (a.k.a. henk) for the idea.
 
-	Don't use libtool in build process on *nix platforms.
+	Don't use libtool in build process on *nix platforms (thanks to Merovius).
 
 	Less-like mode now highlights multiple matches in a line.
 
