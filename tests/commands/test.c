@@ -29,6 +29,7 @@ void ids_tests(void);
 void builtin_tests(void);
 void one_number_range(void);
 void last_argument_tests(void);
+void unescape_tests(void);
 
 cmds_conf_t cmds_conf = {
 	.complete_args = complete_args,
@@ -52,6 +53,7 @@ all_tests(void)
 	builtin_tests();
 	one_number_range();
 	last_argument_tests();
+	unescape_tests();
 }
 
 static int
