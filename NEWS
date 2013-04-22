@@ -1,3 +1,97 @@
+April 22, 2013
+==============
+
+vifm v0.7.5 beta testing has started
+------------------------------------
+
+New version adds one major feature (parsing of escape codes), set of
+improvements for existing ones and fixes for bugs.  There are also some
+changes in build system and new extra files bundled with vifm.
+
+The beta stage will last about two weeks.  In case any bugs are found
+during this period, another beta version will be released.
+
+Main changes:
+ - removed using of libtool in build process on *nix-like systems;
+ - added parsing of escape codes for the preview pane and less-like view;
+ - added expand() builtin function;
+ - added Gentoo ebuild and sample color schemes;
+ - added macros that are expanded to register's content;
+ - added dynamic loading of xlib;
+ - added 'shortmess' option;
+ - fixed build issues on FreeBSD and OS X systems;
+ - fixes for redrawing and searching in less-like mode.
+
+More detailed list of changes.
+
+Configuration:
+ - added --without/[with]-dyn-X11 flag to the configure script to control
+   static/dynamic linking against libX11 library.  Thanks to Hendrik Jaeger
+   (a.k.a. henk) for the idea;
+ - don't use libtool in build process on *nix platforms (thanks to Merovius).
+
+Documentation:
+ - slightly updated plugin related documentation.
+
+Macros:
+ - added macros that are expanded to register's content (thanks to Florian
+   Baumann, a.k.a. derflob).
+
+:set command and options:
+ - added 'shortmess' option and its first flag: "T" to shorten long status-bar
+   messages (thanks to ranousse);
+ - added "perms" sorting key on *nix (proposed by Daniel Dettlaff, a.k.a.
+   dmilith);
+ - added new type of option (charset) and used it for 'cpoptions' and
+   'shortmess' options;
+ - made 'slowfs' option actually work on OS X (thanks to Daniel Dettlaff,
+   a.k.a. dmilith).
+
+Color scheme related changes:
+ - added sample color schemes (proposed by Daniel Dettlaff, a.k.a. dmilith);
+ - don't fallback to default colors on try to switch to a colorscheme, which
+   is not supported by terminal.
+
+TUI (Text User Interface):
+ - added parsing of escape codes in the preview pane;
+ - added parsing of escape codes in explore (less-like) mode;
+ - don't redraw file list for explore window on resize;
+ - less updates for window in explore mode on resize.
+
+Menus and dialogs:
+ - changed the way title of the permissions dialog is composed.
+
+Command-line mode related changes:
+ - allowed exclamation mark for the :sync command (to force synchronization
+   of cursor position when used without arguments);
+ - don't store last command-line command for the dot normal mode command
+   between sessions.  Also it doesn't depend on command-line history anymore
+   and can be used with completely disabled history;
+ - made :execute process its arguments just like :echo command (thanks to
+   Daniel Dettlaff, a.k.a. dmilith, which made me discover old behaviour).
+
+Other changes:
+ - added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio);
+ - added expand() builtin function to expand macros (thanks to Sebastian
+   Cyprych for the use case);
+ - less-like mode now highlights multiple matches in a line;
+ - less-like mode is now updated immediately when one changes 'wrap' option;
+ - save dot files filter state in vifminfo (thanks to Daniel Dettlaff, a.k.a.
+   dmilith).
+
+Major fixes:
+ - building on FreeBSD and OS X (thanks to Daniel R., a.k.a. r1chelt, and
+   Daniel Dettlaff, a.k.a. dmilith);
+ - various changes in configuration using autotools;
+ - removed using of libtool in build process on *nix-like systems;
+ - vifminfo file update on Windows (broken in 0.7.4b);
+ - various issues with displaying wide characters (e.g. Chinese);
+ - ctrl-W H/J/K/L shortcuts and less-like view.
+
+See change log for full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 January 21, 2013
 ================
 

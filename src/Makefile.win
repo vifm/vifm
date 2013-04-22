@@ -80,7 +80,7 @@ vifmres.o: vifm.res
 
 ../config.h:
 	@echo Creating sample ../config.h
-	echo '#define VERSION "0.7.4b"' > ../config.h; \
+	echo '#define VERSION "0.7.5-beta"' > ../config.h; \
 	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
 #	echo '#define HAVE_FILE_PROG' >> ../config.h; \
 
