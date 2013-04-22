@@ -101,7 +101,7 @@ static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-static void unescape(char s[], int regexp);
+TSTATIC void unescape(char s[], int regexp);
 static void replace_double_squotes(char s[]);
 static void replace_esc(char s[]);
 
@@ -1020,7 +1020,7 @@ get_last_argument(const char cmd[], size_t *len)
 }
 
 /* Splits argument string into array of strings.  Returns NULL if no arguments
- * are found or an error occurred.  Allways sets *count (to zero on errors). */
+ * are found or an error occurred.  Always sets *count (to zero on errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
@@ -1178,7 +1178,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	return params;
 }
 
-static void
+TSTATIC void
 unescape(char s[], int regexp)
 {
 	char *p;
@@ -1188,7 +1188,11 @@ unescape(char s[], int regexp)
 	{
 		if(s[0] == '\\' && (!regexp || s[1] == '/'))
 			s++;
-		*p++ = *s++;
+		*p++ = s[0];
+		if(s[0] != '\0')
+		{
+			s++;
+		}
 	}
 	*p = '\0';
 }
