@@ -111,7 +111,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         dos2unix "$dir/data/vifm-help.txt"
         dos2unix "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"
-        pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL README THANKS TODO'
+        pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
