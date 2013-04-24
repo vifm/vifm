@@ -1,5 +1,7 @@
 0.7.5-beta to current
 
+	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
