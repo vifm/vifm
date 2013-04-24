@@ -4,6 +4,8 @@
 
 #include "../../src/color_manager.h"
 
+#include "test.h"
+
 void basic_tests(void);
 
 static void
@@ -20,7 +22,7 @@ main(void)
 	initscr();
 	assert(has_colors() && "Terminal should support colors.");
 	start_color();
-	colmgr_init();
+	colmgr_init(MAX_COLOR_PAIRS);
 	endwin();
 
 	result = run_tests(all_tests);

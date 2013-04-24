@@ -5,6 +5,8 @@
 #include "../../src/colors.h"
 #include "../../src/color_manager.h"
 
+#include "test.h"
+
 static int count_available_pairs(void);
 
 static void
@@ -16,7 +18,7 @@ setup(void)
 static void
 test_number_of_available_pairs(void)
 {
-	assert_true(count_available_pairs() >= COLOR_PAIRS - FCOLOR_BASE);
+	assert_true(count_available_pairs() >= MAX_COLOR_PAIRS - FCOLOR_BASE);
 }
 
 static void
@@ -24,7 +26,7 @@ test_number_of_available_pairs_after_reset(void)
 {
 	(void)count_available_pairs();
 	colmgr_reset();
-	assert_true(count_available_pairs() >= COLOR_PAIRS - FCOLOR_BASE);
+	assert_true(count_available_pairs() >= MAX_COLOR_PAIRS - FCOLOR_BASE);
 }
 
 static int

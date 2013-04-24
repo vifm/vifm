@@ -348,7 +348,7 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
-	colmgr_init();
+	colmgr_init(COLOR_PAIRS);
 	init_modes();
 	init_undo_list(&perform_operation, NULL, &cfg.undo_levels);
 	load_local_options(curr_view);

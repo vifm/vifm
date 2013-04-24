@@ -15,7 +15,7 @@ ifneq ($(OS),Windows_NT)
 		echo '==================================================';\
 		echo;\
 		echo;\
-		if ! TERM=xterm $$test; then\
+		if ! $$test; then\
 			exit 1;\
 		fi;\
 		echo;\
@@ -29,7 +29,7 @@ else
 		echo '==================================================';\
 		echo;\
 		echo;\
-		if ! TERM=xterm $$test; then\
+		if ! $$test; then\
 			exit 1;\
 		fi;\
 		echo;\

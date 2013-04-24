@@ -2,6 +2,9 @@
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
 
+	Make running tests of color manager depend less on type of terminal.
+	Thanks to Hendrik Jaeger (a.k.a. henk).
+
 	Don't link against libdl when it's not used.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
