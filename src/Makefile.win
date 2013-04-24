@@ -103,7 +103,7 @@ update_compile_info:
 
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(which groff)" != "x" -a "x$$(which sed)" != "x" ]; then \
-		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' | sed 's/.\[[0-9]*m//g' | sed 's/\r//g' > ../data/vifm-help.txt; \
+		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' | sed 's/\x1b\[[0-9]*m//g' | sed 's/\r//g' >| ../data/vifm-help.txt; \
 	fi
 
 tags.c: ../data/vim/doc/vifm.txt
