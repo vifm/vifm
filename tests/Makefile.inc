@@ -61,16 +61,17 @@ else
 	$(MAKE) -C ../../src/ -f Makefile.win vifm.exe
 endif
 
-../bin/dummy:
-	-mkdir ../bin
+../bin/dummy: ../bin
 	touch ../bin/dummy
 
 bin/%.o: %.c bin/dummy
 	gcc -c -o $@ $< $(CFLAGS)
 
-bin/dummy:
-	-mkdir bin
+bin/dummy: bin
 	touch bin/dummy
+
+../bin bin:
+	mkdir $@
 
 ../bin/%.o: ../seatest/%.c
 	gcc -c -o $@ $< $(CFLAGS)

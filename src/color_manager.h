@@ -20,7 +20,7 @@
 #define __COLOR_MANAGER_H__
 
 /* Initializes color manager unit.  Creates and prepares internal variables. */
-void colmgr_init(void);
+void colmgr_init(int max_color_pairs);
 /* Resets all color pairs that are available for dynamic allocation. */
 void colmgr_reset(void);
 /* Dynamically allocates color pair of specified foreground (fg) and background
