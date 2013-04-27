@@ -601,10 +601,10 @@ utils/utf8.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/utils.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
-vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES)
+vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES) 
 	@rm -f vifm$(EXEEXT)
 	$(LINK) $(vifm_OBJECTS) $(vifm_LDADD) $(LIBS)
-vifmrc-converter$(EXEEXT): $(vifmrc_converter_OBJECTS) $(vifmrc_converter_DEPENDENCIES) $(EXTRA_vifmrc_converter_DEPENDENCIES)
+vifmrc-converter$(EXEEXT): $(vifmrc_converter_OBJECTS) $(vifmrc_converter_DEPENDENCIES) $(EXTRA_vifmrc_converter_DEPENDENCIES) 
 	@rm -f vifmrc-converter$(EXEEXT)
 	$(LINK) $(vifmrc_converter_OBJECTS) $(vifmrc_converter_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
