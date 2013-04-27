@@ -8,6 +8,10 @@
 	Don't link against libdl when it's not used.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
+	Commit src/Makefile.in file as it is (do not remove odd trailing
+	whitespace characters), it could cause issues with automated building.
+	Thanks to Hendrik Jaeger (a.k.a. henk).
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
