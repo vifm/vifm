@@ -1,6 +1,9 @@
+#include <string.h>
+
 #include "seatest.h"
 
 #include "../../src/filelist.h"
+#include "../../src/ui.h"
 
 #ifndef _WIN32
 #define ROOT "/"
@@ -11,25 +14,25 @@
 static void
 test_empty_path(void)
 {
-	char path[PATH_MAX] = "";
-	leave_invalid_dir(NULL, path);
-	assert_string_equal(ROOT, path);
+	strcpy(lwin.curr_dir, "");
+	leave_invalid_dir(&lwin);
+	assert_string_equal(ROOT, lwin.curr_dir);
 }
 
 static void
 test_wrong_path_without_trailing_slash(void)
 {
-	char path[PATH_MAX] = "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc";
-	leave_invalid_dir(NULL, path);
-	assert_string_equal(ROOT, path);
+	strcpy(lwin.curr_dir, "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc");
+	leave_invalid_dir(&lwin);
+	assert_string_equal(ROOT, lwin.curr_dir);
 }
 
 static void
 test_wrong_path_with_trailing_slash(void)
 {
-	char path[PATH_MAX] = "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc/";
-	leave_invalid_dir(NULL, path);
-	assert_string_equal(ROOT, path);
+	strcpy(lwin.curr_dir, "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc/");
+	leave_invalid_dir(&lwin);
+	assert_string_equal(ROOT, lwin.curr_dir);
 }
 
 void
@@ -44,4 +47,5 @@ leave_invalid_dir_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

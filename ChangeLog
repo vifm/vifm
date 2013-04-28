@@ -15,6 +15,9 @@
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
+	Fixed cd'ing to a directory after showing "Directory Access Error"
+	message.
+
 0.7.4b to 0.7.5-beta
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).

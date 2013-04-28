@@ -130,8 +130,9 @@ void navigate_to(FileView *view, const char path[]);
 int change_directory(FileView *view, const char *path);
 /* Changes pane directory handling path just like cd command does. */
 int cd(FileView *view, const char *base_dir, const char *path);
-/* Modifies path. */
-void leave_invalid_dir(FileView *view, char *path);
+/* Ensures that current directory of the view is a valid one.  Modifies
+ * view->curr_dir. */
+void leave_invalid_dir(FileView *view);
 int pane_in_dir(FileView *view, const char *path);
 
 /* Selection related functions. */

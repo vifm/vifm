@@ -357,8 +357,8 @@ unmount_fuse(void)
 		runner = runner->next;
 	}
 
-	leave_invalid_dir(&lwin, lwin.curr_dir);
-	leave_invalid_dir(&rwin, rwin.curr_dir);
+	leave_invalid_dir(&lwin);
+	leave_invalid_dir(&rwin);
 }
 
 int
