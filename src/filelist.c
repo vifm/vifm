@@ -1891,7 +1891,9 @@ change_directory(FileView *view, const char *directory)
 	if(!is_valid_dir(dir_dup))
 	{
 		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
-		leave_invalid_dir(view, dir_dup);
+		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
+		leave_invalid_dir(view, view->curr_dir);
+		snprintf(dir_dup, sizeof(dir_dup), "%s", view->curr_dir);
 	}
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
