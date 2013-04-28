@@ -1665,8 +1665,10 @@ erase_selection(FileView *view)
 }
 
 void
-leave_invalid_dir(FileView *view, char *path)
+leave_invalid_dir(FileView *view)
 {
+	char *const path = view->curr_dir;
+
 	if(try_updir_from_fuse_mount(path, view))
 	{
 		return;
@@ -1892,7 +1894,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
-		leave_invalid_dir(view, view->curr_dir);
+		leave_invalid_dir(view);
 		snprintf(dir_dup, sizeof(dir_dup), "%s", view->curr_dir);
 	}
 
@@ -2888,7 +2890,7 @@ check_if_filelists_have_changed(FileView *view)
 
 		show_error_msgf("Directory Change Check", "Cannot open %s", view->curr_dir);
 
-		leave_invalid_dir(view, view->curr_dir);
+		leave_invalid_dir(view);
 		(void)change_directory(view, view->curr_dir);
 		clean_selected_files(view);
 		reload_window(view);
