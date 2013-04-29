@@ -1,5 +1,6 @@
 /* UTF-8 isn't used on Windows yet. */
 
+#include <locale.h> /* setlocale() */
 #include <string.h>
 
 #include "seatest.h"
@@ -107,6 +108,8 @@ void
 strchar2str_tests(void)
 {
 	test_fixture_start();
+
+	(void)setlocale(LC_ALL, "en_US.utf8");
 
 	cfg.tab_stop = 8;
 
