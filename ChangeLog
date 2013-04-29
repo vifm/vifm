@@ -12,6 +12,9 @@
 	whitespace characters), it could cause issues with automated building.
 	Thanks to Hendrik Jaeger (a.k.a. henk).
 
+	Set locale for tests that rely on it explicitly.  Thanks to Hendrik
+	Jaeger (a.k.a. henk).
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
