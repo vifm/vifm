@@ -54,11 +54,9 @@ static char * catopt(char s0[], const char s1[]);
 char *
 hasmntopt(const struct mntent *mnt, const char option[])
 {
-	int found;
 	char *opt, *optbuf;
 
 	optbuf = strdup(mnt->mnt_opts);
-	found = 0;
 	for(opt = optbuf; (opt = strtok(opt, " ")) != NULL; opt = NULL)
 	{
 		if(!strcasecmp(opt, option))
