@@ -54,11 +54,9 @@ static char * catopt(char s0[], const char s1[]);
 char *
 hasmntopt(const struct mntent *mnt, const char option[])
 {
-	int found;
 	char *opt, *optbuf;
 
 	optbuf = strdup(mnt->mnt_opts);
-	found = 0;
 	for(opt = optbuf; (opt = strtok(opt, " ")) != NULL; opt = NULL)
 	{
 		if(!strcasecmp(opt, option))
@@ -143,7 +141,6 @@ flags2opts(int flags)
 static char *
 catopt(char s0[], const char s1[])
 {
-	size_t i;
 	char *cp;
 
 	if(s1 == NULL || *s1 == '\0')
@@ -152,7 +149,7 @@ catopt(char s0[], const char s1[])
 	}
 	if(s0 && *s0)
 	{
-		i = strlen(s0) + strlen(s1) + 1 + 1;
+		const size_t i = strlen(s0) + strlen(s1) + 1 + 1;
 		if((cp = malloc(i)) == NULL)
 		{
 			return NULL;
