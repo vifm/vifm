@@ -59,8 +59,11 @@ utf8_tests(void)
 	(void)setlocale(LC_ALL, "en_US.utf8");
 
 	run_test(test_get_real_string_width_full);
-	run_test(test_get_real_string_width_in_the_middle_a);
-	run_test(test_get_real_string_width_in_the_middle_b);
+	if(wcwidth(L'丝') == 2)
+	{
+		run_test(test_get_real_string_width_in_the_middle_a);
+		run_test(test_get_real_string_width_in_the_middle_b);
+	}
 
 	test_fixture_end();
 }
