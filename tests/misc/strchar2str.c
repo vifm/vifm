@@ -115,8 +115,11 @@ strchar2str_tests(void)
 
 #ifndef _WIN32
 	/* UTF-8 isn't used on Windows yet. */
-	run_test(test_chinese_character_width_is_determined_correctly);
-	run_test(test_cyrillic_character_width_is_determined_correctly);
+	if(wcwidth(L'丝') == 2)
+	{
+		run_test(test_chinese_character_width_is_determined_correctly);
+		run_test(test_cyrillic_character_width_is_determined_correctly);
+	}
 #endif
 	run_test(test_tabulation_is_expanded_properly);
 	run_test(test_space_is_untouched_and_has_width_of_one_character);
