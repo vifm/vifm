@@ -29,6 +29,12 @@
 
 #include "bracket_notation.h"
 
+#ifdef __PDCURSES__
+#define BACKSPACE_KEY L'\b'
+#else
+#define BACKSPACE_KEY KEY_BACKSPACE
+#endif
+
 /* Bracket notation entry description structure. */
 typedef struct
 {
@@ -50,7 +56,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<c-e>",      L"\x05"              },
 	{ L"<c-f>",      L"\x06"              },
 	{ L"<c-g>",      L"\x07"              },
-	{ L"<c-h>",      { KEY_BACKSPACE, 0 } },
+	{ L"<c-h>",      { BACKSPACE_KEY, 0 } },
 	{ L"<c-i>",      L"\x09"              },
 	{ L"<c-j>",      L"\x0a"              },
 	{ L"<c-k>",      L"\x0b"              },
@@ -363,7 +369,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<right>",    { KEY_RIGHT,     0 } },
 	{ L"<up>",       { KEY_UP,        0 } },
 	{ L"<down>",     { KEY_DOWN,      0 } },
-	{ L"<bs>",       { KEY_BACKSPACE, 0 } },
+	{ L"<bs>",       { BACKSPACE_KEY, 0 } },
 	{ L"<delete>",   { KEY_DC,        0 } },
 	{ L"<pageup>",   { KEY_PPAGE,     0 } },
 	{ L"<pagedown>", { KEY_NPAGE,     0 } },
