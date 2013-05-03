@@ -21,6 +21,8 @@
 	Fixed cd'ing to a directory after showing "Directory Access Error"
 	message.
 
+	Fixed mapping of <c-h> and <bs> on Windows.  Thanks to filterfalse.
+
 0.7.4b to 0.7.5-beta
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).
