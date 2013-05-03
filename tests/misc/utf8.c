@@ -56,7 +56,11 @@ utf8_tests(void)
 {
 	test_fixture_start();
 
-	(void)setlocale(LC_ALL, "en_US.utf8");
+	(void)setlocale(LC_ALL, "");
+	if(wcwidth(L'丝') != 2)
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
 
 	run_test(test_get_real_string_width_full);
 	if(wcwidth(L'丝') == 2)

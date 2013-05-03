@@ -109,7 +109,11 @@ strchar2str_tests(void)
 {
 	test_fixture_start();
 
-	(void)setlocale(LC_ALL, "en_US.utf8");
+	(void)setlocale(LC_ALL, "");
+	if(wcwidth(L'丝') != 2)
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
 
 	cfg.tab_stop = 8;
 
