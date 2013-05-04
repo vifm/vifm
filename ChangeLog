@@ -23,6 +23,9 @@
 
 	Fixed mapping of <c-h> and <bs> on Windows.  Thanks to filterfalse.
 
+	Fixed Tab key description in documentation, the part related to
+	'cpoptions' flag.  Thanks to filterfalse.
+
 0.7.4b to 0.7.5-beta
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).
