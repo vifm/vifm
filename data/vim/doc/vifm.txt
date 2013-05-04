@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5-beta  Last change: 2013 Apr 22
+*vifm.txt*    For Vifm version 0.7.5-beta  Last change: 2013 May 04
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -299,7 +299,7 @@ Other Normal Mode Keys~
 Ctrl-O - go backward through history.
 
                                                *vifm-CTRL-I* *vifm-Tab*
-Ctrl-I - if |vifm-'cpoptions'| contains "f" flag, <tab> and <c-i> switch
+Ctrl-I - if |vifm-'cpoptions'| contains "t" flag, <tab> and <c-i> switch
     active pane just like |vifm-Space| does, otherwise it goes forward
     through directory history of the current view.
 
