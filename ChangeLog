@@ -26,6 +26,8 @@
 	Fixed Tab key description in documentation, the part related to
 	'cpoptions' flag.  Thanks to filterfalse.
 
+	Fixed potential issues pointed out by clang static analyzer.
+
 0.7.4b to 0.7.5-beta
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).
