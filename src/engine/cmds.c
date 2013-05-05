@@ -646,6 +646,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	const char *t;
 	size_t len;
 
+	assert(buf_len != 0 && "The buffer is expected to be of size > 0.");
+
 	if(cmd[0] == '!')
 	{
 		strcpy(buf, "!");
