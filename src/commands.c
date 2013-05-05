@@ -34,6 +34,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <signal.h>
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* system() free() */
 #include <string.h> /* strncmp() */
@@ -2008,7 +2009,7 @@ static char *
 try_eval_arglist(const cmd_info_t *cmd_info)
 {
 	char *eval_result;
-	const char *error_pos;
+	const char *error_pos = NULL;
 
 	if(cmd_info->argc == 0)
 	{

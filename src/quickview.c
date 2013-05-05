@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stddef.h> /* size_t */
-#include <string.h> /* memmove() strlen() */
+#include <stddef.h> /* NULL size_t */
+#include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
 #include "modes/modes.h"
@@ -109,7 +109,7 @@ quick_view_file(FileView *view)
 			}
 			if(!ends_with_slash(buf) && is_dir(buf))
 			{
-				strncat(buf, "/", sizeof(buf) - 1);
+				strncat(buf, "/", sizeof(buf) - strlen(buf) - 1);
 			}
 			/* break intensionally omitted */
 		case UNKNOWN:

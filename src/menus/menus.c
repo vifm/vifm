@@ -680,9 +680,14 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	show_progress("", 0);
 	while((line = read_line(file, line)) != NULL)
 	{
+		char *expanded_line;
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		m->items[x++] = expand_tabulation_a(line, cfg.tab_stop);
+		expanded_line = expand_tabulation_a(line, cfg.tab_stop);
+		if(expanded_line != NULL)
+		{
+			m->items[x++] = expanded_line;
+		}
 	}
 	m->len = x;
 
