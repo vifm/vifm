@@ -36,7 +36,7 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* system() free() */
+#include <stdlib.h> /* EXIT_SUCCESS system() free() */
 #include <string.h> /* strncmp() */
 #include <time.h>
 
@@ -2256,21 +2256,37 @@ help_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "%s -c 'help vifm.txt' -c only",
+			snprintf(buf, sizeof(buf), "%s -c \"help vifm.txt\" -c only",
 					get_vicmd(&bg));
 		}
 	}
 	else
 	{
+#ifndef _WIN32
+		char *escaped;
+#endif
+
+		if(cmd_info->argc != 0)
+		{
+			status_bar_error("No arguments are allowed when 'vimhelp' option is off");
+			return 1;
+		}
+
 		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
 		{
-			show_error_msgf("No help file",
-					"Can't find \"%s/" VIFM_HELP "\" file", cfg.config_dir);
+			show_error_msgf("No help file", "Can't find \"%s/" VIFM_HELP "\" file",
+					cfg.config_dir);
 			return 0;
 		}
 
-		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg),
+#ifndef _WIN32
+		escaped = escape_filename(cfg.config_dir, 0);
+		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
+		free(escaped);
+#else
+		snprintf(buf, sizeof(buf), "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
 				cfg.config_dir);
+#endif
 	}
 
 	if(bg)
@@ -2285,7 +2301,10 @@ help_cmd(const cmd_info_t *cmd_info)
 		def_prog_mode();
 		endwin();
 		system("cls");
-		system(buf);
+		if(system(buf) != EXIT_SUCCESS)
+		{
+			system("pause");
+		}
 		update_screen(UT_FULL);
 #endif
 	}

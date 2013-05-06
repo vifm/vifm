@@ -154,3 +154,5 @@ Code improvements.
     Fix code duplication related to composing of undo messages.
     Add a function like add_to_string_array(), but which won't duplicate
         string.
+    On Windows check for cmd shell when it's set instead of checking it every
+        time it is used.

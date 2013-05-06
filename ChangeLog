@@ -15,6 +15,13 @@
 	Set locale for tests that rely on it explicitly.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
+	Don't accept arguments to the :help command when 'vimhelp' option is off.
+
+	Pause on Windows on failed execution of a help command.  Thanks to
+	filterfalse.
+
+	Pause on Windows, when executing of shell command fails.
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
@@ -27,6 +34,13 @@
 	'cpoptions' flag.  Thanks to filterfalse.
 
 	Fixed potential issues pointed out by clang static analyzer.
+
+	Fixed calling Vim on :help command without arguments on Windows.  Thanks
+	to filterfalse.
+
+	Fixed calling Vim on :help command with 'vimhelp' option turned off and a
+	path with spaces in vifm's configuration directory.  Thanks to
+	filterfalse.
 
 0.7.4b to 0.7.5-beta
 

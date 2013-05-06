@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5-beta  Last change: 2013 May 04
+*vifm.txt*    For Vifm version 0.7.5-beta  Last change: 2013 May 06
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -991,7 +991,8 @@ The builtin commands are:
                                                *vifm-:help* *vifm-:h*
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.  Use
-    vifm-<something> to get help on vifm (tab completion works).
+    vifm-<something> to get help on vifm (tab completion works).  This
+    form of the command doesn't work when |vifm-'vimhelp'| option is off.
 
                                                *vifm-:highlight* *vifm-:hi*
 :hi[ghlight] - will show information about all highlight groups in the
