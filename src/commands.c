@@ -36,7 +36,7 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* system() free() */
+#include <stdlib.h> /* EXIT_SUCCESS system() free() */
 #include <string.h> /* strncmp() */
 #include <time.h>
 
@@ -2291,7 +2291,10 @@ help_cmd(const cmd_info_t *cmd_info)
 		def_prog_mode();
 		endwin();
 		system("cls");
-		system(buf);
+		if(system(buf) != EXIT_SUCCESS)
+		{
+			system("pause");
+		}
 		update_screen(UT_FULL);
 #endif
 	}

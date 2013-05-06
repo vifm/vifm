@@ -17,6 +17,9 @@
 
 	Don't accept arguments to the :help command when 'vimhelp' option is off.
 
+	Pause on Windows on failed execution of a help command.  Thanks to
+	filterfalse.
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
@@ -30,7 +33,8 @@
 
 	Fixed potential issues pointed out by clang static analyzer.
 
-	Fixed calling Vim on :help command without arguments on Windows.
+	Fixed calling Vim on :help command without arguments on Windows.  Thanks
+	to filterfalse.
 
 0.7.4b to 0.7.5-beta
 
