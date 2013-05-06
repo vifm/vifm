@@ -20,6 +20,8 @@
 	Pause on Windows on failed execution of a help command.  Thanks to
 	filterfalse.
 
+	Pause on Windows, when executing of shell command fails.
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 

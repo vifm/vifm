@@ -71,7 +71,16 @@ static void unquote(char quoted[]);
 #endif
 
 int
-my_system(char *command)
+my_system(char command[])
+{
+#ifdef _WIN32
+	system("cls");
+#endif
+	return my_system_no_cls(command);
+}
+
+int
+my_system_no_cls(char command[])
 {
 #ifndef _WIN32
 	typedef void (*sig_handler)(int);
@@ -139,8 +148,6 @@ my_system(char *command)
 	return result;
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
-
-	system("cls");
 
 	if(stroscmp(cfg.shell, "cmd") == 0)
 	{

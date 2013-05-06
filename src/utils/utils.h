@@ -56,7 +56,12 @@ const char * get_regexp_error(int err, regex_t *re);
 
 /* Program running. */
 
-int my_system(char *command);
+/* Executes an external command.  Clears the screen up on Windows before running
+ * the command.  Returns error code, which is zero on success. */
+int my_system(char command[]);
+/* Executes an external command without clearing up the screen.  Returns error
+ * code, which is zero on success. */
+int my_system_no_cls(char command[]);
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 /* Other functions. */
