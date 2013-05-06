@@ -2262,6 +2262,10 @@ help_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
+#ifndef _WIN32
+		char *escaped;
+#endif
+
 		if(cmd_info->argc != 0)
 		{
 			status_bar_error("No arguments are allowed when 'vimhelp' option is off");
@@ -2270,13 +2274,19 @@ help_cmd(const cmd_info_t *cmd_info)
 
 		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
 		{
-			show_error_msgf("No help file",
-					"Can't find \"%s/" VIFM_HELP "\" file", cfg.config_dir);
+			show_error_msgf("No help file", "Can't find \"%s/" VIFM_HELP "\" file",
+					cfg.config_dir);
 			return 0;
 		}
 
-		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg),
+#ifndef _WIN32
+		escaped = escape_filename(cfg.config_dir, 0);
+		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
+		free(escaped);
+#else
+		snprintf(buf, sizeof(buf), "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
 				cfg.config_dir);
+#endif
 	}
 
 	if(bg)
