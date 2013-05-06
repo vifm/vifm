@@ -2262,6 +2262,12 @@ help_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
+		if(cmd_info->argc != 0)
+		{
+			status_bar_error("No arguments are allowed when 'vimhelp' option is off");
+			return 1;
+		}
+
 		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
 		{
 			show_error_msgf("No help file",

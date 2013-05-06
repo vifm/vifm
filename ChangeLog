@@ -15,6 +15,8 @@
 	Set locale for tests that rely on it explicitly.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
+	Don't accept arguments to the :help command when 'vimhelp' option is off.
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
