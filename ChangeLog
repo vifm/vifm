@@ -28,6 +28,8 @@
 
 	Fixed potential issues pointed out by clang static analyzer.
 
+	Fixed calling Vim on :help command without arguments on Windows.
+
 0.7.4b to 0.7.5-beta
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).

@@ -2256,7 +2256,7 @@ help_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "%s -c 'help vifm.txt' -c only",
+			snprintf(buf, sizeof(buf), "%s -c \"help vifm.txt\" -c only",
 					get_vicmd(&bg));
 		}
 	}
