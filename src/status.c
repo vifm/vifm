@@ -25,7 +25,7 @@
 #endif
 
 #include <assert.h> /* assert() */
-#include <limits.h>
+#include <limits.h> /* INT_MIN */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -113,6 +113,9 @@ load_def_values(status_t *stats)
 	stats->env_type = ENVTYPE_EMULATOR;
 
 	stats->using_screen = 0;
+
+	stats->initial_lines = INT_MIN;
+	stats->initial_columns = INT_MIN;
 }
 
 static void

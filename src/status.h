@@ -119,6 +119,9 @@ typedef struct
 	/* Stores last command-line mode command that was executed or an empty line
 	 * (e.g. right after startup or :restart command). */
 	char *last_cmdline_command;
+
+	int initial_lines; /* Initial terminal height in lines. */
+	int initial_columns; /* Initial terminal width in characters. */
 }
 status_t;
 

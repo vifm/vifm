@@ -43,6 +43,8 @@ Windows.
         two bytes equal to '$!'.
     Make 'slowfs' option available on Windows and provide a support for builtin
         file system time 'winnetwork', which will mean network resources.
+    Maybe sort completion items ignoring their case on Windows.
+    Handle numpad keys better, just like corresponding non-numpad keys.
 
 Vi(m) specific features that need to be added.
     Fix '' to go back to all jumps G gg links (in one directory?).

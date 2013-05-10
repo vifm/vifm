@@ -22,6 +22,9 @@
 
 	Pause on Windows, when executing of shell command fails.
 
+	Resize terminal window back to its original size after :help on Windows.
+	Thanks to filterfalse.
+
 	Fixed generation of vifm-help.txt file on Windows (all occurrences of the
 	"[m" sequence were removed).  Thanks to Sebastian Cyprych.
 
@@ -41,6 +44,9 @@
 	Fixed calling Vim on :help command with 'vimhelp' option turned off and a
 	path with spaces in vifm's configuration directory.  Thanks to
 	filterfalse.
+
+	Fixed resetting of 'lines' and 'columns' options to their default values.
+	Thanks to filterfalse.
 
 0.7.4b to 0.7.5-beta
 
