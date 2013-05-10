@@ -616,7 +616,11 @@ columns_handler(OPT_OP op, optval_t val)
 	/* Handle case when 'columns' value wasn't yet initialized. */
 	if(val.int_val == INT_MIN)
 	{
-		val.int_val = getmaxx(stdscr);
+		val.int_val = curr_stats.initial_columns;
+		if(val.int_val == INT_MIN)
+		{
+			val.int_val = getmaxx(stdscr);
+		}
 	}
 
 	if(val.int_val < MIN_TERM_WIDTH)
@@ -781,7 +785,11 @@ lines_handler(OPT_OP op, optval_t val)
 	/* Handle case when 'lines' value wasn't yet initialized. */
 	if(val.int_val == INT_MIN)
 	{
-		val.int_val = getmaxy(stdscr);
+		val.int_val = curr_stats.initial_lines;
+		if(val.int_val == INT_MIN)
+		{
+			val.int_val = getmaxy(stdscr);
+		}
 	}
 
 	if(val.int_val < MIN_TERM_HEIGHT)
