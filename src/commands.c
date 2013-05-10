@@ -2306,6 +2306,7 @@ help_cmd(const cmd_info_t *cmd_info)
 			system("pause");
 		}
 		update_screen(UT_FULL);
+		update_screen(UT_REDRAW);
 #endif
 	}
 	return 0;

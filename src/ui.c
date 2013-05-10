@@ -1089,6 +1089,11 @@ resize_all(void)
 	resize_term(ws.ws_row, ws.ws_col);
 #endif
 
+#ifdef _WIN32
+	getmaxyx(stdscr, screen_y, screen_x);
+	resize_term(screen_y, screen_x);
+#endif
+
 	getmaxyx(stdscr, screen_y, screen_x);
 	cfg.lines = screen_y;
 	cfg.columns = screen_x;
