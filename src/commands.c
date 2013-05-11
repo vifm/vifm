@@ -163,6 +163,7 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
+static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
 static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
@@ -2161,14 +2162,29 @@ filter_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			set_view_filter(curr_view, "", !cmd_info->emark);
+			const int invert_filter = get_filter_inversion_state(cmd_info);
+			set_view_filter(curr_view, "", invert_filter);
 		}
+		return 0;
 	}
 	else
 	{
-		return set_view_filter(curr_view, cmd_info->argv[0], !cmd_info->emark) != 0;
+		const int invert_filter = get_filter_inversion_state(cmd_info);
+		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter) != 0;
 	}
-	return 0;
+}
+
+/* Returns value for filter inversion basing on current configuration and
+ * filter command. */
+static int
+get_filter_inversion_state(const cmd_info_t *cmd_info)
+{
+	int invert_filter = cfg.filter_inverted_by_default;
+	if(cmd_info->emark)
+	{
+		invert_filter = !invert_filter;
+	}
+	return invert_filter;
 }
 
 static int
