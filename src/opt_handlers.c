@@ -149,7 +149,7 @@ static const char * sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
-static const char cpoptions_list[] = "st";
+static const char cpoptions_list[] = "fst";
 static const char * cpoptions_vals = cpoptions_list;
 #define cpoptions_count ARRAY_LEN(cpoptions_list)
 
@@ -359,8 +359,9 @@ static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s", cfg.selection_is_primary ? "s" : "",
-			cfg.tab_switches_pane ? "t" : "");
+	snprintf(buf, sizeof(buf), "%s%s%s",
+			cfg.filter_inverted_by_default ? "f" : "",
+			cfg.selection_is_primary ? "s" : "", cfg.tab_switches_pane ? "t" : "");
 	val->str_val = buf;
 }
 
@@ -653,13 +654,18 @@ cpoptions_handler(OPT_OP op, optval_t val)
 {
 	char *p;
 
+	cfg.filter_inverted_by_default = 0;
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
 
 	p = val.str_val;
 	while(*p != '\0')
 	{
-		if(*p == 's')
+		if(*p == 'f')
+		{
+			cfg.filter_inverted_by_default = 1;
+		}
+		else if(*p == 's')
 		{
 			cfg.selection_is_primary = 1;
 		}

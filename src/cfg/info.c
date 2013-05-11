@@ -678,7 +678,9 @@ update_info_file(const char filename[])
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=columns=%d\n", cfg.columns);
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
-		fprintf(fp, "=cpoptions=%s%s\n", cfg.selection_is_primary ? "s" : "",
+		fprintf(fp, "=cpoptions=%s%s%s\n",
+				cfg.filter_inverted_by_default ? "f" : "",
+				cfg.selection_is_primary ? "s" : "",
 				cfg.tab_switches_pane ? "t" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
