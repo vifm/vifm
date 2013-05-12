@@ -25,6 +25,7 @@ Basic things that need to be done.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
+    Don't complete subdirectories for :filter command.
 
 Documentation.
     Better documentation.
