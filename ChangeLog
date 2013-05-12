@@ -6,6 +6,9 @@
 
 	Added helptags for 'cpoptions' flags in documentation in Vim format.
 
+	Use last search pattern as filename filter when :filter command gets an
+	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).

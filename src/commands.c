@@ -164,6 +164,8 @@ static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static int set_view_filter(FileView *view, const char filter[], int invert);
+static const char * get_filter_value(const char filter[]);
+static const char * try_compile_regex(const char regex[], int cflags);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
 static int finish_cmd(const cmd_info_t *cmd_info);
@@ -2143,7 +2145,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 		else
 		{
 			const int invert_filter = get_filter_inversion_state(cmd_info);
-			set_view_filter(curr_view, "", invert_filter);
+			set_view_filter(curr_view, NULL, invert_filter);
 		}
 		return 0;
 	}
@@ -2168,26 +2170,70 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
 }
 
 /* Tries to update filter of the view rejecting incorrect regular expression.
- * Returns non-zero if message on the statusbar should be saved, otherwise zero
- * is returned. */
+ * NULL as filter value means filter reset, empty string means using of the last
+ * search pattern.  Returns non-zero if message on the statusbar should be
+ * saved, otherwise zero is returned. */
 static int
 set_view_filter(FileView *view, const char filter[], int invert)
 {
-	regex_t re;
-	int err;
+	const char *error_msg;
 
-	if((err = regcomp(&re, filter, REG_EXTENDED)) != 0)
+	filter = get_filter_value(filter);
+
+	error_msg = try_compile_regex(filter, REG_EXTENDED);
+	if(error_msg != NULL)
 	{
-		status_bar_errorf("Filter not set: %s", get_regexp_error(err, &re));
-		regfree(&re);
+		status_bar_errorf("Filter not set: %s", error_msg);
 		return 1;
 	}
-	regfree(&re);
 
 	view->invert = invert;
 	set_filename_filter(view, filter);
 	load_saving_pos(view, 1);
 	return 0;
+}
+
+/* Returns new value for a filter taking special values of the filter into
+ * account.  NULL means filter reset, empty string means using of the last
+ * search pattern.  Returns possibly changed filter value, which might be
+ * invalidated after adding new search pattern/changing history size. */
+static const char *
+get_filter_value(const char filter[])
+{
+	if(filter == NULL)
+	{
+		filter = "";
+	}
+	else if(filter[0] == '\0')
+	{
+		if(cfg.search_history_num >= 0)
+		{
+			filter = cfg.search_history[0];
+		}
+	}
+	return filter;
+}
+
+/* Tries to compile given regular expression and specified compile flags.
+ * Returns NULL on success, otherwise statically allocated message describing
+ * compiling error is returned. */
+static const char *
+try_compile_regex(const char regex[], int cflags)
+{
+	const char *error_msg = NULL;
+
+	if(regex[0] != '\0')
+	{
+		regex_t re;
+		const int err = regcomp(&re, regex, cflags);
+		if(err != 0)
+		{
+			error_msg = get_regexp_error(err, &re);
+		}
+		regfree(&re);
+	}
+
+	return error_msg;
 }
 
 static int
