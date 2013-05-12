@@ -164,6 +164,8 @@ init_config(void)
 
 	cfg.trunc_normal_sb_msgs = 0;
 
+	cfg.filter_inverted_by_default = 1;
+
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

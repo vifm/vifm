@@ -2039,7 +2039,7 @@ TSTATIC int
 regexp_filter_match(FileView *view, const char filename[])
 {
 	if(!view->filter_is_valid)
-		return view->invert;
+		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
 
 	if(regexec(&view->filter_regex, filename, 0, NULL, 0) == 0)
 	{

@@ -1,3 +1,11 @@
+0.7.5 to current
+
+	Added "f" flag to 'cpoptions' option.  It controls initial state of
+	filename filter inversion for :filter[!] {regex} command (in other words,
+	it inverts meaning of exclamation mark).  Thanks to filterfalse.
+
+	Added helptags for 'cpoptions' flags in documentation in Vim format.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
