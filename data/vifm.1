@@ -1,4 +1,4 @@
-.TH vifm 1 "May 06, 2013" "" "Vifm"
+.TH vifm 1 "May 12, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1069,18 +1069,19 @@ command which output is captured and showed in the second pane of vifm after
 running :view command.  Currently only * and ? are treated as special symbols in
 the pattern.
 .TP
-.BI ":filter regular_expression_pattern"
-.BI ":filter /regular_expression_pattern/"
+.BI ":filter[!] regular_expression_pattern"
+.BI ":filter[!] /regular_expression_pattern/"
 will filter all the files out of the directory listing that match the regular
-expression.  Using second variant you can use | symbol without escaping.  Add
-\'!' to invert filter.
+expression.  Using second variant you can use the bar ('|') symbol without
+escaping.  Use '!' to control state of filter inversion after updating filter
+value (also see 'cpoptions' description).
 .br
 :filter /\.o$ would filter all files ending in .o from the filelist.
 .br
 Note: vifm uses extended regular expressions.
 .TP
 .BI ":filter"
-would filter no files from the filelist.
+reset filter (set it to empty string) and show all files.
 .TP
 .BI ":filter!"
 same as :invert.
@@ -1859,10 +1860,14 @@ operation).
 .BI "cpoptions cpo"
 type: charset
 .br
-default: "st"
+default: "fst"
 .br
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
+.br
+f \- when included, running :filter command results in not inverted (matching
+files are filtered out) and :filter! in inverted (matching files are left)
+filter, when omitted, meaning of the exclamation mark changes to the opposite;
 .br
 s \- when included, yy, dd and DD normal mode commands act on selection, \
 otherwise they operate on current file only;
