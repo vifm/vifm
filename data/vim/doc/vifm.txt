@@ -299,9 +299,9 @@ Other Normal Mode Keys~
 Ctrl-O - go backward through history.
 
                                                *vifm-CTRL-I* *vifm-Tab*
-Ctrl-I - if |vifm-'cpoptions'| contains "t" flag, <tab> and <c-i> switch
-    active pane just like |vifm-Space| does, otherwise it goes forward
-    through directory history of the current view.
+Ctrl-I - if |vifm-'cpoptions'| contains "t" flag (|vifm-cpo-t|), <tab> and
+    <c-i> switch active pane just like |vifm-Space| does, otherwise it
+    goes forward through directory history of the current view.
 
                                                *vifm-CTRL-G*
 Ctrl-G - creates a window showing detailed information about the current
@@ -961,7 +961,7 @@ The builtin commands are:
     out of directory listing.  Use :filter to show all files.  Using second
     variant you can use the bar ('|') symbol without escaping.  Use '!' to
     control state of filter inversion after updating filter value (see
-    |vifm-'cpoptions'|).
+    |vifm-cpo-f|).
     See |vifm-filters|.
 :filter - reset filter (set it to empty string) and show all files.
 :filter! - same as :invert.
@@ -1609,12 +1609,15 @@ type: charset
 default: "fst"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
+                                               *vifm-cpo-f*
 f - when included, running |vifm-:filter| command results in not inverted
     (matching files are filtered out) and :filter! in inverted (matching files
     are left) filter, when omitted, meaning of the exclamation mark changes to
     the opposite;
+                                               *vifm-cpo-s*
 s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act on
     selection, otherwise they operate on current file only;
+                                               *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
     pane, otherwise <c-i> goes forward in the view history.
 
