@@ -2830,6 +2830,12 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
+$as_echo "#define PACKAGE_DATA_DIR /**/" >>confdefs.h
+
+
+$as_echo "#define PACKAGE_SOURCE_DIR /**/" >>confdefs.h
+
+
 DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"

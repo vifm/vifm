@@ -9,6 +9,9 @@
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 
+	Removed deprecated acconfig.h file.  Thanks to Hendrik Jaeger (a.k.a.
+	henk).
+
 	Use last search pattern as filename filter when :filter command gets an
 	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
 
