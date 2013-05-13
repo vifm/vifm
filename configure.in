@@ -4,6 +4,8 @@ AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(vifm, 0.7.5)
 AM_CONFIG_HEADER(config.h)
 
+AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
+AC_DEFINE([PACKAGE_SOURCE_DIR], [], [Source directory of the package.])
 
 AC_ISC_POSIX
 AC_PROG_CC
