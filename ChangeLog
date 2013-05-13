@@ -12,6 +12,8 @@
 	Removed deprecated acconfig.h file.  Thanks to Hendrik Jaeger (a.k.a.
 	henk).
 
+	Replace compile symbolic link with actual file.
+
 	Use last search pattern as filename filter when :filter command gets an
 	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
 
