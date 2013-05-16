@@ -692,7 +692,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
 	const char *tmp_args = args;
 	int result = 0;
 
-	if(cur == NULL || cur->id == -1)
+	if(cur == NULL || (cur->id >= NO_COMPLETION_BOUNDARY && cur->id < 0))
 		return 0;
 
 	args = parse_tail(cur, tmp_args, cmd_info);

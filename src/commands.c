@@ -96,10 +96,10 @@
 
 #include "commands.h"
 
+/* Commands without completion. */
 enum
 {
-	/* FIXME: commands without completion */
-	COM_FILTER = -100,
+	COM_FILTER = NO_COMPLETION_BOUNDARY,
 	COM_SUBSTITUTE,
 	COM_TR,
 	COM_IF_STMT,
