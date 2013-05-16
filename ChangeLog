@@ -20,6 +20,8 @@
 	Use last search pattern as filename filter when :filter command gets an
 	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
 
+	Don't complete commands like :filter, :tr, :substitute, etc.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
