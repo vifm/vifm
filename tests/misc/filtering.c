@@ -97,6 +97,32 @@ test_filtering(void)
 }
 
 static void
+test_filtering_file_does_not_filter_dir(void)
+{
+	rwin.dir_entry[6].selected = 1;
+	rwin.selected_files = 1;
+
+	filter_selected_files(&rwin);
+
+	assert_hidden(rwin, rwin.dir_entry[6].name, 0);
+	/* Pass 0 as if for file, because we already have trailing slash there. */
+	assert_visible(rwin, rwin.dir_entry[7].name, 0);
+}
+
+static void
+test_filtering_dir_does_not_filter_file(void)
+{
+	rwin.dir_entry[7].selected = 1;
+	rwin.selected_files = 1;
+
+	filter_selected_files(&rwin);
+
+	/* Pass 0 as if for file, because we already have trailing slash there. */
+	assert_hidden(rwin, rwin.dir_entry[7].name, 0);
+	assert_visible(rwin, rwin.dir_entry[6].name, 0);
+}
+
+static void
 test_filtering_files_does_not_filter_dirs(void)
 {
 	set_filename_filter(&rwin, "^.*\\.d$");
@@ -144,6 +170,8 @@ filtering_tests(void)
 	fixture_teardown(teardown);
 
 	run_test(test_filtering);
+	run_test(test_filtering_file_does_not_filter_dir);
+	run_test(test_filtering_dir_does_not_filter_file);
 	run_test(test_filtering_files_does_not_filter_dirs);
 	run_test(test_filtering_dirs_does_not_filter_files);
 	run_test(test_filtering_files_and_dirs);

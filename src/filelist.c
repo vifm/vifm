@@ -2739,7 +2739,6 @@ filter_selected_files(FileView *view)
 			continue;
 
 		name = escape_name_for_filter(view->dir_entry[x].name);
-		chosp(name);
 
 		/* realloc memory allocated for filter */
 		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
