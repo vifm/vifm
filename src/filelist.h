@@ -198,7 +198,7 @@ int set_view_path(FileView *view, const char *path);
 uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 
 TSTATIC_DEFS(
-	int regexp_filter_match(FileView *view, const char filename[]);
+	int regexp_filter_match(FileView *view, const char filename[], int is_dir);
 )
 
 #endif

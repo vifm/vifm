@@ -2039,12 +2039,17 @@ reset_selected_files(FileView *view, int need_free)
  * view->invert if given filename matches filter, otherwise !view->invert is
  * returned. */
 TSTATIC int
-regexp_filter_match(FileView *view, const char filename[])
+regexp_filter_match(FileView *view, const char filename[], int is_dir)
 {
+	char name_with_slash[strlen(filename) + 1 + 1];
 	if(!view->filter_is_valid)
+	{
 		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
+	}
 
-	if(regexec(&view->filter_regex, filename, 0, NULL, 0) == 0)
+	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
+
+	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
 	{
 		return !view->invert;
 	}
@@ -2193,7 +2198,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, d->d_name) == 0)
+		else if(regexp_filter_match(view, d->d_name, d->d_type == DT_DIR) == 0)
 		{
 			view->filtered++;
 			view->list_rows--;
