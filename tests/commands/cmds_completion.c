@@ -11,24 +11,25 @@ extern cmds_conf_t cmds_conf;
 
 static cmd_info_t cmdi;
 
-static int goto_cmd(const cmd_info_t *cmd_info);
+static int dummy_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
-static int windo_cmd(const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 
 enum { COM_WINDO };
 
 static const cmd_add_t commands[] = {
-	{ .name = "",       .abbr = NULL, .handler = goto_cmd,   .id = -1,    .range = 1,    .cust_sep = 0,
+	{ .name = "",       .abbr = NULL, .handler = dummy_cmd,  .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 0, },
 	{ .name = "delete", .abbr = "d",  .handler = delete_cmd, .id = 1,     .range = 1,    .cust_sep = 0,
 		.emark = 1,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 1, },
+	{ .name = "yank",   .abbr = "y",  .handler = dummy_cmd,  .id = -10,   .range = 0,    .cust_sep = 0,
+		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 1, },
 	{ .name = "windo",            .abbr = NULL,    .emark = 0,  .id = COM_WINDO,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = windo_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+		.handler = dummy_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 };
 
 static int
-goto_cmd(const cmd_info_t *cmd_info)
+dummy_cmd(const cmd_info_t *cmd_info)
 {
 	return 0;
 }
@@ -37,12 +38,6 @@ static int
 delete_cmd(const cmd_info_t *cmd_info)
 {
 	cmdi = *cmd_info;
-	return 0;
-}
-
-static int
-windo_cmd(const cmd_info_t *cmd_info)
-{
 	return 0;
 }
 
@@ -75,7 +70,7 @@ test_skip_goto(void)
 
 	reset_completion();
 	assert_int_equal(0, complete_cmd(""));
-	assert_int_equal(6, get_completion_count());
+	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
 	completion = next_completion();
@@ -223,7 +218,7 @@ test_windo_windo_completion(void)
 
 	reset_completion();
 	assert_int_equal(12, complete_cmd("windo windo "));
-	assert_int_equal(6, get_completion_count());
+	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
 	completion = next_completion();
@@ -249,6 +244,14 @@ test_windo_args_completion(void)
 	free(completion);
 }
 
+static void
+test_no_completion_for_negative_ids(void)
+{
+	reset_completion();
+	assert_int_equal(4, complete_cmd("yank "));
+	assert_int_equal(0, get_completion_count());
+}
+
 void
 completion_tests(void)
 {
@@ -267,6 +270,7 @@ completion_tests(void)
 	run_test(test_windo_completion);
 	run_test(test_windo_windo_completion);
 	run_test(test_windo_args_completion);
+	run_test(test_no_completion_for_negative_ids);
 
 	test_fixture_end();
 }

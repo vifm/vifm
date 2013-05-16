@@ -46,6 +46,8 @@ enum
 
 enum
 {
+	/* Commands with ids in range [NO_COMPLETION_BOUNDARY; 0) not completed. */
+	NO_COMPLETION_BOUNDARY = -127,
 	USER_CMD_ID = -128,
 	COMCLEAR_CMD_ID = -129,
 	COMMAND_CMD_ID = -130,
