@@ -124,6 +124,8 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
+TSTATIC int regexp_filter_match(FileView *view, const char filename[],
+		int is_dir);
 static size_t get_filetype_decoration_width(FileType type);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -2035,27 +2037,6 @@ reset_selected_files(FileView *view, int need_free)
 	}
 }
 
-/* Checks whether file/directory matches filename filter of the view.  Returns
- * view->invert if given filename matches filter, otherwise !view->invert is
- * returned. */
-TSTATIC int
-regexp_filter_match(FileView *view, const char filename[], int is_dir)
-{
-	char name_with_slash[strlen(filename) + 1 + 1];
-	if(!view->filter_is_valid)
-	{
-		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
-	}
-
-	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
-
-	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
-	{
-		return !view->invert;
-	}
-	return view->invert;
-}
-
 #ifdef _WIN32
 static void
 fill_with_shared(FileView *view)
@@ -2418,6 +2399,27 @@ fill_dir_list(FileView *view)
 	}
 
 	return 0;
+}
+
+/* Checks whether file/directory matches filename filter of the view.  Returns
+ * view->invert if given filename matches filter, otherwise !view->invert is
+ * returned. */
+TSTATIC int
+regexp_filter_match(FileView *view, const char filename[], int is_dir)
+{
+	char name_with_slash[strlen(filename) + 1 + 1];
+	if(!view->filter_is_valid)
+	{
+		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
+	}
+
+	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
+
+	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
+	{
+		return !view->invert;
+	}
+	return view->invert;
 }
 
 /* Returns additional number of characters which are needed to display names of
