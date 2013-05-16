@@ -2035,6 +2035,9 @@ reset_selected_files(FileView *view, int need_free)
 	}
 }
 
+/* Checks whether file/directory matches filename filter of the view.  Returns
+ * view->invert if given filename matches filter, otherwise !view->invert is
+ * returned. */
 TSTATIC int
 regexp_filter_match(FileView *view, const char filename[])
 {
