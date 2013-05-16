@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 12
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 16
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -284,6 +284,18 @@ Each file list has its own filter.
 
 Filtered files are not checked in / search or :commands.
 
+Files and directories are filtered separately.  For this a slash is appended
+to a directory name before testing whether it matches the filter.  Examples:
+>
+ " filter directories which names end with '.files'
+ :filter /^.*\.files/$/
+
+ " filter files which names end with '.d'
+ :filter /^.*\.d$/
+
+ " filter files and directories which names end with '.o'
+ :filter /^.*\.o\/?$/
+<
 Note: vifm uses extended regular expressions.
 
 Other Normal Mode Keys~

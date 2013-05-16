@@ -1,4 +1,4 @@
-.TH vifm 1 "May 12, 2013" "" "Vifm"
+.TH vifm 1 "May 16, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -304,6 +304,21 @@ All directorys will show the ../ file no matter what the filter setting is with 
 Each file list has its own filter.
 .TP
 Filtered files are not checked in / search or :commands.
+.TP
+Files and directories are filtered separately.  For this a slash is appended \
+to a directory name before testing whether it matches the filter.  Examples:
+.EX
+.LP
+
+  " filter directories which names end with '.files'
+  :filter /^.*\\.files\\/$/
+
+  " filter files which names end with '.d'
+  :filter /^.*\\.d$/
+
+  " filter files and directories which names end with '.o'
+  :filter /^.*\\.o\\/?$/
+.EE
 .TP
 .BI zo
 Show all of the dot files.
