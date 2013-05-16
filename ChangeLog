@@ -14,6 +14,9 @@
 
 	Replace compile symbolic link with actual file.
 
+	Distinguish files and directories in filename filter by appending a slash
+	to names of directories.
+
 	Use last search pattern as filename filter when :filter command gets an
 	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
 
