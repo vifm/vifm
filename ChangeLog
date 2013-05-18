@@ -22,6 +22,9 @@
 
 	Don't complete commands like :filter, :tr, :substitute, etc.
 
+	Fixed configuration when set_escdelay() function is not available.
+	Thanks to Russell Urquhart.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
