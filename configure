@@ -8021,8 +8021,8 @@ fi
 ac_fn_c_check_func "$LINENO" "set_escdelay" "ac_cv_func_set_escdelay"
 if test "x$ac_cv_func_set_escdelay" = xyes; then :
 
-else
-  as_fn_error $? "set_escdelay() function not found." "$LINENO" 5
+$as_echo "#define HAVE_SET_ESCDELAY_FUNC 1" >>confdefs.h
+
 fi
 
 ac_fn_c_check_func "$LINENO" "start_color" "ac_cv_func_start_color"

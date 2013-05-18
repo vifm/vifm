@@ -37,6 +37,9 @@
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
 
+/* set_escdelay() function is available. */
+#undef HAVE_SET_ESCDELAY_FUNC
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
