@@ -22,7 +22,7 @@
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() malloc() qsort() */
 #include <string.h> /* strlen() */
-#include <wchar.h> /* wcscpy() wcslen() wcscasecmp() wcsncasecmp() */
+#include <wchar.h> /* wcscpy() wcslen() */
 
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -47,6 +47,7 @@ key_pair_t;
 static int notation_sorter(const void *first, const void *second);
 static const key_pair_t * find_notation(const wchar_t str[]);
 
+/* All notation fields must be written in lower case. */
 static key_pair_t key_pairs[] = {
 	{ L"<esc>",      L"\x1b"              },
 	{ L"<c-a>",      L"\x01"              },
@@ -508,7 +509,7 @@ notation_sorter(const void *first, const void *second)
 	const key_pair_t *pairb = (const key_pair_t *)second;
 	const wchar_t *stra = paira->notation;
 	const wchar_t *strb = pairb->notation;
-	return wcscasecmp(stra, strb);
+	return wcscmp(stra, strb);
 }
 
 wchar_t *
@@ -554,12 +555,17 @@ substitute_specs(const char cmd[])
 static const key_pair_t *
 find_notation(const wchar_t str[])
 {
+	wchar_t str_lowered[wcslen(str) + 1];
 	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
+
+	wcscpy(str_lowered, str);
+	wcstolower(str_lowered);
+
 	while(l <= u)
 	{
 		const int i = (l + u)/2;
 		const key_pair_t *const key_pair = &key_pairs[i];
-		const int comp = wcsncasecmp(str, key_pair->notation, key_pair->len);
+		const int comp = wcsncmp(str_lowered, key_pair->notation, key_pair->len);
 		if(comp == 0)
 		{
 			return key_pair;

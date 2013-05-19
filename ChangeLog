@@ -25,6 +25,9 @@
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
+	Fixed building when wcscasecmp() and wcsncasecmp() functions are not
+	available (just don't use those functions).  Thanks to Russell Urquhart.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
