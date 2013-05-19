@@ -37,6 +37,9 @@
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
 
+/* set_escdelay() function is available. */
+#undef HAVE_SET_ESCDELAY_FUNC
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -52,7 +55,7 @@
 /* Define to 1 if `st_mtim' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_MTIM
 
-/* strverscmp() funcion is available. */
+/* strverscmp() function is available. */
 #undef HAVE_STRVERSCMP_FUNC
 
 /* Define to 1 if you have the <sys/stat.h> header file. */

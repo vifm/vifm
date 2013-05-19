@@ -28,6 +28,7 @@
 #include <stdlib.h> /* malloc() mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
 #include <wchar.h> /* vswprintf() wchar_t wcwidth() */
+#include <wctype.h> /* towlower() */
 
 #include "macros.h"
 #include "utf8.h"
@@ -137,6 +138,16 @@ strtolower(char *s)
 	while(*s != '\0')
 	{
 		*s = tolower(*s);
+		s++;
+	}
+}
+
+void
+wcstolower(wchar_t s[])
+{
+	while(*s != L'\0')
+	{
+		*s = towlower(*s);
 		s++;
 	}
 }

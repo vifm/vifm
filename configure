@@ -718,6 +718,7 @@ ac_user_opts='
 enable_option_checking
 enable_dependency_tracking
 enable_largefile
+with_curses_name
 with_curses
 with_gtk
 with_libmagic
@@ -1364,6 +1365,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-curses-name=NAME name of curses library file [default=ncursesw]
   --with-curses=DIR       where ncurses is installed
   --with-gtk              use GTK+ to determine mimetypes if available
                           [default=yes]
@@ -7722,6 +7724,14 @@ else
 fi
 
 
+curses_lib_name=ncursesw
+
+# Check whether --with-curses-name was given.
+if test "${with_curses_name+set}" = set; then :
+  withval=$with_curses_name; curses_lib_name=$withval
+fi
+
+
 vifm_cv_curses=/usr
 
 # Check whether --with-curses was given.
@@ -7731,19 +7741,20 @@ if test "${with_curses+set}" = set; then :
 	fi
 	if test x$vifm_cv_curses != x/usr; then
 		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
-		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/ncursesw"
+		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
 	fi
 fi
 
 
 ncurses_found=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lncursesw" >&5
-$as_echo_n "checking for initscr in -lncursesw... " >&6; }
-if ${ac_cv_lib_ncursesw_initscr+:} false; then :
+as_ac_Lib=`$as_echo "ac_cv_lib_${curses_lib_name}''_initscr" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -l${curses_lib_name}" >&5
+$as_echo_n "checking for initscr in -l${curses_lib_name}... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lncursesw  $LIBS"
+LIBS="-l${curses_lib_name}  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7763,20 +7774,21 @@ return initscr ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ncursesw_initscr=yes
+  eval "$as_ac_Lib=yes"
 else
-  ac_cv_lib_ncursesw_initscr=no
+  eval "$as_ac_Lib=no"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ncursesw_initscr" >&5
-$as_echo "$ac_cv_lib_ncursesw_initscr" >&6; }
-if test "x$ac_cv_lib_ncursesw_initscr" = xyes; then :
-  LIBS="$LIBS -lncursesw"
-	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
-		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  LIBS="$LIBS -l${curses_lib_name}"
+	if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
+		CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
 	fi
 	ncurses_found=yes
 fi
@@ -8021,8 +8033,8 @@ fi
 ac_fn_c_check_func "$LINENO" "set_escdelay" "ac_cv_func_set_escdelay"
 if test "x$ac_cv_func_set_escdelay" = xyes; then :
 
-else
-  as_fn_error $? "set_escdelay() function not found." "$LINENO" 5
+$as_echo "#define HAVE_SET_ESCDELAY_FUNC 1" >>confdefs.h
+
 fi
 
 ac_fn_c_check_func "$LINENO" "start_color" "ac_cv_func_start_color"

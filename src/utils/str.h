@@ -51,6 +51,8 @@ int starts_with(const char *str, const char *prefix);
 int ends_with(const char *str, const char *suffix);
 char * to_multibyte(const wchar_t *s);
 void strtolower(char *s);
+/* Converts all characters of the string s to their lowercase equivalents. */
+void wcstolower(wchar_t s[]);
 void break_at(char *str, char c);
 void break_atr(char *str, char c);
 char * skip_non_whitespace(const char *str);

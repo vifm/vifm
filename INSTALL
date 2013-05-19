@@ -3,7 +3,10 @@ Installation
 
 On *nix you need:
 
-    A working version of ncursesw and an ascii compliant terminal.
+    A working version of ncursesw build as a shared library (*.so files,
+    enabled by the --with-shared switch of ncurses' configure script) and
+    an ascii compliant terminal.
+
     Vifm will currently not work with Solaris curses or with PDcurses.
 
 *nix Installation:
@@ -13,8 +16,8 @@ On *nix you need:
     ("su" if you don't have access to /usr/local/bin)
     make install
 
-    ./configure has the following options (the value in square brackets shows
-    is the default one):
+    ./configure has the following options (the value in square brackets is
+    the default one):
 
       --disable/[enable]-extended-keys - controls whether to build vifm with
           support of extended keys (like arrows, home, end, etc.).
@@ -35,6 +38,10 @@ On *nix you need:
 
       --without/[with]-dyn-X11 - load libX11 dynamically
 
+      --with-curses=[/usr] - path to installation root of curses library
+
+      --with-curses-name=[ncursesw] - name of the curses library
+
     You can install vifm in your ~/ directory if you prefer.  To do this
     manually copy the vifm, vifmrc-converter and vifm-pause executables
     from the src/ directory to where you want to run them.  Another
@@ -47,19 +54,25 @@ On *nix you need:
     file.  It will be at ~/.vifm/vifmrc.  See help for description of other
     files in ~/.vifm directory.
 
-On Mac OS you need:
+On OS X you need:
 
-    Get and install libscursesw or libncursesw.
+    Get and install libscursesw or libncursesw as shared libraries (*.so
+    files, enabled by the --with-shared switch of ncurses' configure script).
+
     Proceed like in *nix Installation section.
+
     Also you probably want to pass --with-gtk=no argument to ./configure
     script to omit unwanted error message when vifm starts.
 
 On Windows you need:
 
     Mingw
-    Pdcurses for Mingw
-    Regex for Mingw
-    pthreads for Windows
+
+    The following libraries installed from dev-packages for Mingw (they
+    should include DLL's):
+     - Pdcurses for Mingw
+     - Regex for Mingw
+     - pthreads for Windows
 
 Windows Installation:
 
@@ -77,7 +90,7 @@ Windows Installation:
     Note: symbolic links are supported on Windows starting from Windows Vista.
 
     If you use *nix shells copy vifm-pause to some directory that is
-    included to the %PATH%.  The better solution is to put it into
+    included in the %PATH%.  The better solution is to put it into
     %HOME%/.vifm/scripts or %APPDATA%/Vifm/scripts.
 
     On Windows you can also use vifm in a portable way (e.g. keep it on a

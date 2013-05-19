@@ -6,6 +6,10 @@
 
 	Added helptags for 'cpoptions' flags in documentation in Vim format.
 
+	Added --with-curses-name=NAME option to the configure script to allow
+	specifying name of the curses library to link against.  Thanks to
+	Russell Urquhart.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 
@@ -21,6 +25,12 @@
 	empty argument (:filter//, :filter"", :filter'').  Thanks to filterfalse.
 
 	Don't complete commands like :filter, :tr, :substitute, etc.
+
+	Fixed configuration when set_escdelay() function is not available.
+	Thanks to Russell Urquhart.
+
+	Fixed building when wcscasecmp() and wcsncasecmp() functions are not
+	available (just don't use those functions).  Thanks to Russell Urquhart.
 
 0.7.5-beta to 0.7.5
 
