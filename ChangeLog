@@ -6,6 +6,10 @@
 
 	Added helptags for 'cpoptions' flags in documentation in Vim format.
 
+	Added --with-curses-name=NAME option to the configure script to allow
+	specifying name of the curses library to link against.  Thanks to
+	Russell Urquhart.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

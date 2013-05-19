@@ -13,8 +13,8 @@ On *nix you need:
     ("su" if you don't have access to /usr/local/bin)
     make install
 
-    ./configure has the following options (the value in square brackets shows
-    is the default one):
+    ./configure has the following options (the value in square brackets is
+    the default one):
 
       --disable/[enable]-extended-keys - controls whether to build vifm with
           support of extended keys (like arrows, home, end, etc.).
@@ -34,6 +34,10 @@ On *nix you need:
           changing it to restore it on exit.
 
       --without/[with]-dyn-X11 - load libX11 dynamically
+
+      --with-curses=[/usr] - path to installation root of curses library
+
+      --with-curses-name=[ncursesw] - name of the curses library
 
     You can install vifm in your ~/ directory if you prefer.  To do this
     manually copy the vifm, vifmrc-converter and vifm-pause executables
