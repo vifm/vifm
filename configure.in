@@ -312,6 +312,12 @@ AC_CHECK_TYPE([pthread_mutex_t], [], [AC_MSG_ERROR([pthread_mutex_t type not fou
 AC_CHECK_DECL([PTHREAD_ONCE_INIT], [], [AC_MSG_ERROR([PTHREAD_ONCE_INIT not found in pthread.h])], [[#include <pthread.h>]])
 AC_CHECK_DECL([PTHREAD_MUTEX_INITIALIZER], [], [AC_MSG_ERROR([PTHREAD_MUTEX_INITIALIZER not found in pthread.h])], [[#include <pthread.h>]])
 
+dnl Name of curses library file.
+curses_lib_name=ncursesw
+AC_ARG_WITH(curses-name,
+	[  --with-curses-name=NAME name of curses library file @<:@default=ncursesw@:>@],
+	[curses_lib_name=$withval])
+
 dnl AC_CHECK_LIB(XCurses, initscr)
 vifm_cv_curses=/usr
 AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
@@ -320,16 +326,16 @@ AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
 	fi
 	if test x$vifm_cv_curses != x/usr; then
 		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
-		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/ncursesw"
+		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
 	fi])
 
 dnl Try to find ncurses library.
 ncurses_found=no
-dnl Firstly check for libncursesw.
-AC_CHECK_LIB(ncursesw, initscr,
-	[LIBS="$LIBS -lncursesw"
-	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
-		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
+dnl Firstly check for lib${curses_lib_name}.
+AC_CHECK_LIB(${curses_lib_name}, initscr,
+	[LIBS="$LIBS -l${curses_lib_name}"
+	if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
+		CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
 	fi
 	ncurses_found=yes])
 dnl If libncursesw is not found on OS X, check for libncurses.  On OS X it has
