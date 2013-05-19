@@ -558,10 +558,11 @@ find_notation(const wchar_t str[])
 	while(l <= u)
 	{
 		const int i = (l + u)/2;
-		const int comp = wcsncasecmp(str, key_pairs[i].notation, key_pairs[i].len);
+		const key_pair_t *const key_pair = &key_pairs[i];
+		const int comp = wcsncasecmp(str, key_pair->notation, key_pair->len);
 		if(comp == 0)
 		{
-			return &key_pairs[i];
+			return key_pair;
 		}
 		else if(comp < 0)
 		{
