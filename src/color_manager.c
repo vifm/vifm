@@ -43,7 +43,7 @@ colmgr_init(int max_color_pairs)
 	avail_pairs = max_color_pairs - FCOLOR_BASE;
 	assert(avail_pairs >= 0 && "Too few color pairs available.");
 
-	color_pair_map = calloc(avail_pairs, avail_pairs);
+	color_pair_map = calloc(avail_pairs, 1);
 	assert((color_pair_map != NULL || avail_pairs == 0) && "Not enough memory.");
 }
 
