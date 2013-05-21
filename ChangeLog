@@ -10,6 +10,8 @@
 	specifying name of the curses library to link against.  Thanks to
 	Russell Urquhart.
 
+	Added "Globals" section to the documentation.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 
