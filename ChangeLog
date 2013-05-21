@@ -26,6 +26,8 @@
 
 	Don't complete commands like :filter, :tr, :substitute, etc.
 
+	Match only filename against global in :fileviewer instead of full path.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

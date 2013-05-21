@@ -118,7 +118,8 @@ quick_view_file(FileView *view)
 				const char *viewer;
 				FILE *fp;
 
-				viewer = get_viewer_for_file(buf);
+				/* FIXME: same code is in modes/view.c */
+				viewer = get_viewer_for_file(after_last(buf, '/'));
 				if(viewer == NULL && is_dir(buf))
 				{
 					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
