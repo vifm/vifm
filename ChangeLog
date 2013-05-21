@@ -32,6 +32,8 @@
 	Fixed building when wcscasecmp() and wcsncasecmp() functions are not
 	available (just don't use those functions).  Thanks to Russell Urquhart.
 
+	Fixed reserving of about 1 GiB piece of memory on 256-color terminals.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
