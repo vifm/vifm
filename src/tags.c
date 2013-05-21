@@ -153,7 +153,7 @@ const char *tags[] = {
 	"vifm-:filet",
 	"vifm-:filetype",
 	"vifm-:filev",
-	"vifm-:filevtype",
+	"vifm-:fileviewer",
 	"vifm-:filex",
 	"vifm-:filextype",
 	"vifm-:filter",

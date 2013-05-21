@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 16
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 21
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -960,7 +960,7 @@ The builtin commands are:
     as :filetype, but vifm will ignore this command if it's not running in X.
     In X :filextype is equal to :filetype.  See also |vifm-fuse|.
 
-                                               *vifm-:filevtype* *vifm-:filev*
+                                               *vifm-:fileviewer* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Viewer is a command which output is
     captured and showed in the second pane of vifm after running :view
