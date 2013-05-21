@@ -948,10 +948,12 @@ The builtin commands are:
     a command means running of the command in the background.  Optional
     description can be given to each command to ease understanding of what
     command will do in the :file menu.  Vifm will try the rest of the
-    programs for an association when the default isn't found.  On Windows
-    path to executables containing spaces can (and should be for correct
-    work with such paths) be double quoted.  See |vifm-globals| for pattern
-    definition.  See also |vifm-fuse|.
+    programs for an association when the default isn't found.  When program
+    entry doesn't contain any of vifm macros, name of current file is
+    appended as if program entry ended with %c macro.  On Windows path to
+    executables containing spaces can (and should be for correct work with
+    such paths) be double quoted.  See |vifm-globals| for pattern definition.
+    See also |vifm-fuse|.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
@@ -963,7 +965,9 @@ The builtin commands are:
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Viewer is a command which output is
     captured and showed in the second pane of vifm after running :view
-    command.  See |vifm-globals| for pattern definition.
+    command.  When the command doesn't contain any of vifm macros, name of
+    current file is appended as if command ended with %c macro.  See
+    |vifm-globals| for pattern definition.
 
                                                *vifm-:filter*
 :filter[!] regular_expression
