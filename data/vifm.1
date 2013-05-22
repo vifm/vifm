@@ -1,4 +1,4 @@
-.TH vifm 1 "May 21, 2013" "" "Vifm"
+.TH vifm 1 "May 22, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1826,25 +1826,67 @@ Background operations cannot be undone.
 .\" ---------------------------------------------------------------------------
 .SH Globals
 .\" ---------------------------------------------------------------------------
-:filetype, :filextype and :fileviewer commands support globals to match file
-names.  Here is a short overview of globals and some important points that one
-needs to know.
+:filetype, :filextype and :fileviewer commands support globals
+to match file names.  Here is a short overview of globals and some important
+points that one needs to know.
 
-Only names of files are matched by the globals, not full paths.
+Only names of files are matched by the globals, not full paths.  E.g.
+.EX
+ :filetype Makefile make %c
+.EE
+will match files with name "Makefile" regardless whether it's in root or home
+directory.
 
-*, ?, [ and ] are treated as special symbols in the pattern.
+*, ?, [ and ] are treated as special symbols in the pattern.  E.g.
+.EX
+ :filetype * less %c
+.EE
+matches all files.  One can use character classes for escaping, so
+.EX
+ :filetype [*] less %c
+.EE
+matches only one file name, the one which contains only asterisk symbol.
 
 * means any number of any characters (possibly an empty substring), with one
 exception: asterisk at the pattern beginning doesn't match dot in the first
-position.
+position.  E.g.
+.EX
+ :fileviewer *.zip,*.jar zip \-sf %c
+.EE
+associates using of zip program to preview all files with zip or jar
+extensions as listing of their content.
 
-? means any character at this position.
+? means any character at this position.  E.g.
+.EX
+ :fileviewer ?.out file %c
+.EE
+calls file tool for all files which has exactly one character before their
+extension (e.g. a.out, b.out).
 
 Square brackets designate character class, which means that whole character
-class matches against any of characters listed in it.
+class matches against any of characters listed in it.  For example
+.EX
+ :fileviewer *.[ch] highlight \-O xterm256 \-s dante \-\-syntax c %c
+.EE
+makes vifm call highlight program to colorize source and header files in C
+language for a 256-color terminal.  Equal command would be
+.EX
+ :fileviewer *.c,*.h highlight \-O xterm256 \-s dante \-\-syntax c %c
+.EE
 
 Inside square brackets ^ or ! can be used for symbol class negotiation and
-the \- symbol to set a range.
+the \- symbol to set a range. ^ and ! should appear right after the opening
+square bracket.  For example
+.EX
+ :filetype *.[!d]/ inspect_dir
+.EE
+associates inspect_dir as additional handler for all directories that have one
+character extension unless it's "d" letter.  And
+.EX
+ :filetype [0-9].jpg sxiv
+.EE
+associates sxiv picture viewer only for JPEG-files that contain single digit
+in their name.
 .\" ---------------------------------------------------------------------------
 .SH :set options
 .\" ---------------------------------------------------------------------------

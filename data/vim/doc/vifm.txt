@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 21
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1580,21 +1580,45 @@ Background operations cannot be undone.
 to match file names.  Here is a short overview of globals and some important
 points that one needs to know.
 
-Only names of files are matched by the globals, not full paths.
+Only names of files are matched by the globals, not full paths.  E.g. >
+ :filetype Makefile make %c
+will match files with name "Makefile" regardless whether it's in root or home
+directory.
 
-*, ?, [ and ] are treated as special symbols in the pattern.
+*, ?, [ and ] are treated as special symbols in the pattern.  E.g. >
+ :filetype * less %c
+matches all files.  One can use character classes for escaping, so >
+ :filetype [*] less %c
+matches only one file name, the one which contains only asterisk symbol.
 
 * means any number of any characters (possibly an empty substring), with one
 exception: asterisk at the pattern beginning doesn't match dot in the first
-position.
+position.  E.g. >
+ :fileviewer *.zip,*.jar zip -sf %c
+associates using of zip program to preview all files with zip or jar
+extensions as listing of their content.
 
-? means any character at this position.
+? means any character at this position.  E.g. >
+ :fileviewer ?.out file %c
+calls file tool for all files which has exactly one character before their
+extension (e.g. a.out, b.out).
 
 Square brackets designate character class, which means that whole character
-class matches against any of characters listed in it.
+class matches against any of characters listed in it.  For example >
+ :fileviewer *.[ch] highlight -O xterm256 -s dante --syntax c %c
+makes vifm call highlight program to colorize source and header files in C
+language for a 256-color terminal.  Equal command would be >
+ :fileviewer *.c,*.h highlight -O xterm256 -s dante --syntax c %c
 
 Inside square brackets ^ or ! can be used for symbol class negotiation and
-the - symbol to set a range.
+the - symbol to set a range. ^ and ! should appear right after the opening
+square bracket.  For example >
+ :filetype *.[!d]/ inspect_dir
+associates inspect_dir as additional handler for all directories that have one
+character extension unless it's "d" letter.  And >
+ :filetype [0-9].jpg sxiv
+associates sxiv picture viewer only for JPEG-files that contain single digit
+in their name.
 
 --------------------------------------------------------------------------------
 *vifm-set-options*
