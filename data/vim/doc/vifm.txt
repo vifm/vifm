@@ -953,8 +953,16 @@ The builtin commands are:
     appended as if program entry ended with %c macro.  On Windows path to
     executables containing spaces can (and should be for correct work with
     such paths) be double quoted.  See |vifm-globals| for pattern definition.
-    See also |vifm-fuse|.
+    See also |vifm-fuse|.  Example for zip archives and several actions: >
 
+    filetype *.zip,*.jar,*.war,*.ear
+           \ {Mount with fuse-zip}
+           \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+           \ {View contents}
+           \ zip -sf %c | less,
+           \ {Extract here}
+           \ tar -xf %c,
+<
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
@@ -967,8 +975,10 @@ The builtin commands are:
     captured and showed in the second pane of vifm after running :view
     command.  When the command doesn't contain any of vifm macros, name of
     current file is appended as if command ended with %c macro.  See
-    |vifm-globals| for pattern definition.
+    |vifm-globals| for pattern definition.  Example for zip archives: >
 
+    fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+<
                                                *vifm-:filter*
 :filter[!] regular_expression
 :filter[!] /regular_expression/ - will filter files matching the pattern
