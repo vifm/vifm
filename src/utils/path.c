@@ -453,6 +453,28 @@ expand_tilde(char *path)
 #endif
 }
 
+char *
+get_last_path_component(const char path[])
+{
+	char *slash = strrchr(path, '/');
+	if(slash == NULL)
+	{
+		slash = (char *)path;
+	}
+	else if(slash[1] == '\0')
+	{
+		while(slash > path && slash[0] == '/')
+			slash--;
+		while(slash > path + 1 && slash[-1] != '/')
+			slash--;
+	}
+	else
+	{
+		slash++;
+	}
+	return slash;
+}
+
 void
 remove_last_path_component(char *path)
 {

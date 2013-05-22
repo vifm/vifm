@@ -119,7 +119,7 @@ quick_view_file(FileView *view)
 				FILE *fp;
 
 				/* FIXME: same code is in modes/view.c */
-				viewer = get_viewer_for_file(after_last(buf, '/'));
+				viewer = get_viewer_for_file(get_last_path_component(buf));
 				if(viewer == NULL && is_dir(buf))
 				{
 					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");

@@ -237,7 +237,7 @@ enter_view_mode(int explore)
 	}
 
 	/* FIXME: same code is in ../quickview.c */
-	viewer = get_viewer_for_file(after_last(buf, '/'));
+	viewer = get_viewer_for_file(get_last_path_component(buf));
 	if(is_null_or_empty(viewer))
 		fp = fopen(buf, "r");
 	else

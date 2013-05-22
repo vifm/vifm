@@ -33,6 +33,7 @@ void read_line_tests(void);
 void history_tests(void);
 void extract_part_tests(void);
 void strchar2str_tests(void);
+void get_last_path_component_tests(void);
 
 void
 all_tests(void)
@@ -70,6 +71,7 @@ all_tests(void)
 	history_tests();
 	extract_part_tests();
 	strchar2str_tests();
+	get_last_path_component_tests();
 }
 
 int
