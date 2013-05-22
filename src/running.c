@@ -83,7 +83,7 @@ static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
-static void get_last_path_component(const char *path, char* buf);
+static void extract_last_path_component(const char path[], char buf[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -690,7 +690,7 @@ cd_updir(FileView *view)
 {
 	char dir_name[NAME_MAX + 1] = "";
 
-	get_last_path_component(view->curr_dir, dir_name);
+	extract_last_path_component(view->curr_dir, dir_name);
 	strcat(dir_name, "/");
 
 	if(change_directory(view, "../") != 1)
@@ -700,20 +700,13 @@ cd_updir(FileView *view)
 	}
 }
 
+/* Extracts last part of the path into buf.  Assumes that size of the buf is
+ * large enough. */
 static void
-get_last_path_component(const char *path, char* buf)
+extract_last_path_component(const char path[], char buf[])
 {
-	const char *p, *q;
-
-	p = path + strlen(path) - 1;
-	if(*p == '/')
-		p--;
-
-	q = p;
-	while(p - 1 >= path && *(p - 1) != '/')
-		p--;
-
-	snprintf(buf, q - p + 1 + 1, "%s", p);
+	const char *const last = get_last_path_component(path);
+	snprintf(buf, until_first(last, '/') - last + 1, "%s", last);
 }
 
 void _gnuc_noreturn

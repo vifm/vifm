@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 16
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -10,6 +10,7 @@
 |vifm-command-line|       Command line mode keys.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
+|vifm-globals|            Description of how about globals work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
@@ -942,31 +943,42 @@ The builtin commands are:
 :filet[ype] pat1,pat2,... [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
     will associate given program list to each of the patterns.  Associated
     program (command) is used by handlers of l and Enter keys (and also in
-    the :file menu).  *, ?, [ and ] are treated as special symbols in the
-    pattern.  Inside square brackets ^ or ! can be used for symbol class
-    negotiation and the - symbol to set a range.  Asterisk at the pattern
-    beginning don't match dot in the first position.  If you need to insert
-    comma into command just double it (",,").  Space followed by an
-    ampersand as two last characters of a command means running of the
-    command in the background.  Optional description can be given to each
-    command to ease understanding of what command will do in the :file menu.
-    Vifm will try the rest of the programs for an association when the
-    default isn't found.  On Windows path to executables containing spaces
-    can (and should be for correct work with such paths) be double quoted.
-    See also |vifm-fuse|.
+    the :file menu).  If you need to insert comma into command just double
+    it (",,").  Space followed by an ampersand as two last characters of
+    a command means running of the command in the background.  Optional
+    description can be given to each command to ease understanding of what
+    command will do in the :file menu.  Vifm will try the rest of the
+    programs for an association when the default isn't found.  When program
+    entry doesn't contain any of vifm macros, name of current file is
+    appended as if program entry ended with %c macro.  On Windows path to
+    executables containing spaces can (and should be for correct work with
+    such paths) be double quoted.  See |vifm-globals| for pattern definition.
+    See also |vifm-fuse|.  Example for zip archives and several actions: >
 
+    filetype *.zip,*.jar,*.war,*.ear
+           \ {Mount with fuse-zip}
+           \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+           \ {View contents}
+           \ zip -sf %c | less,
+           \ {Extract here}
+           \ tar -xf %c,
+<
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
-    In X :filextype is equal to :filetype.  See also |vifm-fuse|.
+    In X :filextype is equal to :filetype.  See |vifm-globals| for pattern
+    definition.  See also |vifm-fuse|.
 
-                                               *vifm-:filevtype* *vifm-:filev*
+                                               *vifm-:fileviewer* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Viewer is a command which output is
     captured and showed in the second pane of vifm after running :view
-    command.  Currently only * and ? are treated as special symbols in the
-    pattern.
+    command.  When the command doesn't contain any of vifm macros, name of
+    current file is appended as if command ended with %c macro.  See
+    |vifm-globals| for pattern definition.  Example for zip archives: >
 
+    fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+<
                                                *vifm-:filter*
 :filter[!] regular_expression
 :filter[!] /regular_expression/ - will filter files matching the pattern
@@ -1570,6 +1582,53 @@ You can see if command is still running in the :jobs menu.  Backgrounded
 commands have progress instead of process id at the line beginning.
 
 Background operations cannot be undone.
+
+--------------------------------------------------------------------------------
+*vifm-globals*
+
+|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globals
+to match file names.  Here is a short overview of globals and some important
+points that one needs to know.
+
+Only names of files are matched by the globals, not full paths.  E.g. >
+ :filetype Makefile make %c
+will match files with name "Makefile" regardless whether it's in root or home
+directory.
+
+*, ?, [ and ] are treated as special symbols in the pattern.  E.g. >
+ :filetype * less %c
+matches all files.  One can use character classes for escaping, so >
+ :filetype [*] less %c
+matches only one file name, the one which contains only asterisk symbol.
+
+* means any number of any characters (possibly an empty substring), with one
+exception: asterisk at the pattern beginning doesn't match dot in the first
+position.  E.g. >
+ :fileviewer *.zip,*.jar zip -sf %c
+associates using of zip program to preview all files with zip or jar
+extensions as listing of their content.
+
+? means any character at this position.  E.g. >
+ :fileviewer ?.out file %c
+calls file tool for all files which has exactly one character before their
+extension (e.g. a.out, b.out).
+
+Square brackets designate character class, which means that whole character
+class matches against any of characters listed in it.  For example >
+ :fileviewer *.[ch] highlight -O xterm256 -s dante --syntax c %c
+makes vifm call highlight program to colorize source and header files in C
+language for a 256-color terminal.  Equal command would be >
+ :fileviewer *.c,*.h highlight -O xterm256 -s dante --syntax c %c
+
+Inside square brackets ^ or ! can be used for symbol class negotiation and
+the - symbol to set a range. ^ and ! should appear right after the opening
+square bracket.  For example >
+ :filetype *.[!d]/ inspect_dir
+associates inspect_dir as additional handler for all directories that have one
+character extension unless it's "d" letter.  And >
+ :filetype [0-9].jpg sxiv
+associates sxiv picture viewer only for JPEG-files that contain single digit
+in their name.
 
 --------------------------------------------------------------------------------
 *vifm-set-options*
