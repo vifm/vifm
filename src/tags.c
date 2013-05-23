@@ -531,6 +531,7 @@ const char *tags[] = {
 	"vifm-reserved",
 	"vifm-rl",
 	"vifm-scripts",
+	"vifm-see-also",
 	"vifm-selectors",
 	"vifm-set-options",
 	"vifm-startup",
