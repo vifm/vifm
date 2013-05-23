@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 22
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 23
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -27,6 +27,7 @@
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
+|vifm-see-also|           Other resources about vifm.
 
 Tag name structure:
 
@@ -2695,6 +2696,14 @@ commands.
 
   g[lobal]
   v[global]
+
+--------------------------------------------------------------------------------
+*vifm-see-also*
+
+Website: http://vifm.sourceforge.net/
+
+Esperanto translation of the documentation by Sebastian Cyprych:
+http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
