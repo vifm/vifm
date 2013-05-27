@@ -25,8 +25,9 @@
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() mbstowcs() wcstombs() */
-#include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
+#include <stdlib.h> /* malloc() mbstowcs() wcstombs() realloc() */
+#include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
+                       strncpy() */
 #include <wchar.h> /* vswprintf() wchar_t wcwidth() */
 #include <wctype.h> /* towlower() */
 
@@ -394,6 +395,21 @@ get_first_wchar(const char str[])
 {
 	wchar_t wc[2];
 	return (mbstowcs(wc, str, ARRAY_LEN(wc)) >= 1) ? wc[0] : str[0];
+}
+
+char *
+extend_string(char str[], const char with[], size_t *len)
+{
+	size_t with_len = strlen(with);
+	char *new = realloc(str, *len + with_len + 1);
+	if(new == NULL)
+	{
+		return str;
+	}
+
+	strncpy(new + *len, with, with_len + 1);
+	*len += with_len;
+	return new;
 }
 
 #ifdef _WIN32
