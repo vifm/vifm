@@ -21,7 +21,7 @@
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* realloc() free() calloc() */
-#include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
+#include <string.h> /* strchr() strncat() strcpy() strlen() strcat() strdup() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -388,6 +388,67 @@ append_to_expanded(char *expanded, const char* str)
 	}
 	strcat(t, str);
 	return t;
+}
+
+char *
+expand_custom_macros(const char pattern[], size_t nmacros,
+		custom_macro_t macros[])
+{
+	int i;
+	char *expanded = strdup("");
+	size_t len = 0;
+	while(*pattern != '\0')
+	{
+		int i;
+
+		if(pattern[0] != '%' || strchr("%", pattern[1]) != NULL)
+		{
+			if(pattern[0] != '%')
+			{
+				const char single_char[] = { *pattern, '\0' };
+				expanded = extend_string(expanded, single_char, &len);
+			}
+			else
+			{
+				expanded = extend_string(expanded, "%", &len);
+				pattern++;
+			}
+			if(pattern[0] != '\0')
+			{
+				pattern++;
+			}
+			continue;
+		}
+
+		pattern++;
+		for(i = 0; i < nmacros; i++)
+		{
+			custom_macro_t *const macro = &macros[i];
+			if(macro->letter == *pattern)
+			{
+				expanded = extend_string(expanded, macro->value, &len);
+				if(macro->uses_left > 0)
+				{
+					macro->uses_left--;
+				}
+				break;
+			}
+		}
+		pattern++;
+	}
+
+	for(i = 0; i < nmacros; i++)
+	{
+		custom_macro_t *const macro = &macros[i];
+		while(macro->uses_left > 0)
+		{
+			expanded = extend_string(expanded, " ", &len);
+			expanded = extend_string(expanded, macro->value, &len);
+			macro->uses_left--;
+		}
+	}
+
+	return expanded;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
