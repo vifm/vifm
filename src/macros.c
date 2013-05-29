@@ -46,6 +46,8 @@ static char * expand_register(const char curr_dir[], char expanded[],
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
+static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
+		custom_macro_t macros[]);
 
 char *
 expand_macros(const char *command, const char *args, MacroFlags *flags,
@@ -394,49 +396,52 @@ char *
 expand_custom_macros(const char pattern[], size_t nmacros,
 		custom_macro_t macros[])
 {
-	int i;
 	char *expanded = strdup("");
 	size_t len = 0;
 	while(*pattern != '\0')
 	{
-		int i;
-
-		if(pattern[0] != '%' || strchr("%", pattern[1]) != NULL)
+		if(pattern[0] != '%')
 		{
-			if(pattern[0] != '%')
-			{
-				const char single_char[] = { *pattern, '\0' };
-				expanded = extend_string(expanded, single_char, &len);
-			}
-			else
-			{
-				expanded = extend_string(expanded, "%", &len);
-				pattern++;
-			}
-			if(pattern[0] != '\0')
-			{
-				pattern++;
-			}
-			continue;
+			const char single_char[] = { *pattern, '\0' };
+			expanded = extend_string(expanded, single_char, &len);
 		}
-
-		pattern++;
-		for(i = 0; i < nmacros; i++)
+		else if(pattern[1] == '%' || pattern[1] == '\0')
 		{
-			custom_macro_t *const macro = &macros[i];
-			if(macro->letter == *pattern)
+			expanded = extend_string(expanded, "%", &len);
+			pattern += pattern[1] == '%';
+		}
+		else
+		{
+			int i = 0;
+			pattern++;
+			while(i < nmacros && macros[i].letter != *pattern)
 			{
-				expanded = extend_string(expanded, macro->value, &len);
-				if(macro->uses_left > 0)
+				i++;
+			}
+			if(i < nmacros)
+			{
+				expanded = extend_string(expanded, macros[i].value, &len);
+				if(macros[i].uses_left > 0)
 				{
-					macro->uses_left--;
+					macros[i].uses_left--;
 				}
-				break;
 			}
 		}
 		pattern++;
 	}
 
+	expanded = add_missing_macros(expanded, len, nmacros, macros);
+
+	return expanded;
+}
+
+/* Ensures that the expanded string contains required number of mandatory
+ * macros.  Returns reallocated expanded. */
+static char *
+add_missing_macros(char expanded[], size_t len, size_t nmacros,
+		custom_macro_t macros[])
+{
+	int i;
 	for(i = 0; i < nmacros; i++)
 	{
 		custom_macro_t *const macro = &macros[i];
@@ -447,7 +452,6 @@ expand_custom_macros(const char pattern[], size_t nmacros,
 			macro->uses_left--;
 		}
 	}
-
 	return expanded;
 }
 
