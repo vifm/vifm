@@ -166,6 +166,8 @@ init_config(void)
 
 	cfg.filter_inverted_by_default = 1;
 
+	cfg.apropos_prg = strdup("apropos %a");
+
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

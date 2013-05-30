@@ -21,7 +21,10 @@
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
 
+#include "../cfg/config.h"
+#include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../macros.h"
 #include "../running.h"
 #include "../status.h"
 #include "menus.h"
@@ -31,7 +34,12 @@
 int
 show_apropos_menu(FileView *view, const char args[])
 {
-	char cmd_buf[256];
+	char *cmd;
+	int save_msg;
+	custom_macro_t macros[] =
+	{
+		{ .letter = 'a', .value = args, .uses_left = 1 },
+	};
 
 	static menu_info m;
 	init_menu_info(&m, APROPOS, format_str("No matches for \'%s\'", args));
@@ -40,8 +48,10 @@ show_apropos_menu(FileView *view, const char args[])
 
 	status_bar_message("apropos...");
 
-	snprintf(cmd_buf, sizeof(cmd_buf), "apropos %s", args);
-	return capture_output_to_menu(view, cmd_buf, &m);
+	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
+	save_msg = capture_output_to_menu(view, cmd, &m);
+	free(cmd);
+	return save_msg;
 }
 
 void

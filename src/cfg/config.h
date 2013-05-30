@@ -115,6 +115,7 @@ typedef struct
 	char decorations[FILE_TYPE_COUNT][2]; /* Prefixes and suffixes of files. */
 	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
+	char *apropos_prg; /* apropos tool calling pattern. */
 }config_t;
 
 extern config_t cfg;

@@ -75,6 +75,7 @@ static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
+static void apropos_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
 static const char * pick_out_decoration(char classify_item[], FileType *type);
@@ -218,6 +219,8 @@ static struct
 	optval_t val;
 }options[] = {
 	/* global options */
+	{ "aproposprg",   "",    OPT_STR,     0,                          NULL,            &apropos_handler,
+		{ .ref.str_val = &cfg.apropos_prg }                                                                   },
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,
 		{ .ref.bool_val = &cfg.auto_ch_pos }                                                                   },
 	{ "classify",    "",     OPT_STRLIST, 0,                          NULL,            &classify_handler,
@@ -523,6 +526,12 @@ process_set_args(const char *args)
 		status_bar_message(text_buffer);
 	}
 	return error ? -1 : (text_buffer[0] != '\0');
+}
+
+static void
+apropos_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.apropos_prg, val.str_val);
 }
 
 static void

@@ -675,6 +675,7 @@ update_info_file(const char filename[])
 	if(cfg.vifm_info & VIFMINFO_OPTIONS)
 	{
 		fputs("\n# Options:\n", fp);
+		fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=columns=%d\n", cfg.columns);
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
