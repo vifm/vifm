@@ -167,6 +167,7 @@ init_config(void)
 	cfg.filter_inverted_by_default = 1;
 
 	cfg.apropos_prg = strdup("apropos %a");
+	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
 
 #ifndef _WIN32

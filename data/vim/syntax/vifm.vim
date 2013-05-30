@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: June 17, 2013
+" Last Change: June 18, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -61,9 +61,9 @@ syntax case match
 " Options
 syntax keyword vifmOption contained aproposprg autochpos classify columns co
 		\ confirm cf cpoptions cpo dotdirs fastrun followlinks fusehome gdefault
-		\ history hi hlsearch hls iec ignorecase ic incsearch is laststatus lines
-		\ locateprg ls lsview rulerformat ruf runexec scrollbind scb scrolloff so
-		\ sort sortorder shell sh shortmess shm slowfs smartcase scs sortnumbers
+		\ grepprg history hi hlsearch hls iec ignorecase ic incsearch is laststatus
+		\ lines locateprg ls lsview rulerformat ruf runexec scrollbind scb scrolloff
+		\ so sort sortorder shell sh shortmess shm slowfs smartcase scs sortnumbers
 		\ statusline stl tabstop timefmt timeoutlen trash trashdir ts undolevels ul
 		\ vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wrap wrapscan ws
 

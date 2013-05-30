@@ -87,6 +87,7 @@ static void fastrun_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void gdefault_handler(OPT_OP op, optval_t val);
+static void grep_handler(OPT_OP op, optval_t val);
 static void history_handler(OPT_OP op, optval_t val);
 static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
@@ -242,6 +243,8 @@ static struct
 		{ .ref.str_val = &cfg.fuse_home }                                                                      },
 	{ "gdefault",    "gd",   OPT_BOOL,    0,                          NULL,            &gdefault_handler,
 		{ .ref.bool_val = &cfg.gdefault }                                                                      },
+	{ "grepprg",     "",     OPT_STR,     0,                          NULL,            &grep_handler,
+		{ .ref.str_val = &cfg.grep_prg }                                                                       },
 	{ "history",     "hi",   OPT_INT,     0,                          NULL,            &history_handler,
 		{ .ref.int_val = &cfg.history_len }                                                                    },
 	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,
@@ -726,6 +729,12 @@ static void
 gdefault_handler(OPT_OP op, optval_t val)
 {
 	cfg.gdefault = val.bool_val;
+}
+
+static void
+grep_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.grep_prg, val.str_val);
 }
 
 static void
