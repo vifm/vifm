@@ -94,6 +94,7 @@ static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
+static void locate_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
@@ -255,6 +256,8 @@ static struct
 		{ .ref.bool_val = &cfg.last_status }                                                                   },
 	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,
 		{ .ref.int_val = &cfg.lines }                                                                          },
+	{ "locateprg",   "",     OPT_STR,     0,                          NULL,            &locate_handler,
+		{ .ref.str_val = &cfg.locate_prg }                                                                     },
 	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler,
 		{ .ref.str_val = &cfg.ruler_format }                                                                   },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,
@@ -825,6 +828,12 @@ lines_handler(OPT_OP op, optval_t val)
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.lines;
 	set_option("lines", val);
+}
+
+static void
+locate_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.locate_prg, val.str_val);
 }
 
 static void

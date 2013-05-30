@@ -694,6 +694,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
 		fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
 		fprintf(fp, "=lines=%d\n", cfg.lines);
+		fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
 		fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");

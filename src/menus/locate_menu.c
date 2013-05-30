@@ -18,9 +18,14 @@
  */
 
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include "../cfg/config.h"
+#include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
+#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -29,19 +34,25 @@
 int
 show_locate_menu(FileView *view, const char args[])
 {
-	char cmd_buf[256];
+	char *cmd;
+	int save_msg;
+	custom_macro_t macros[] =
+	{
+		{ .letter = 'a', .value = args, .uses_left = 1 },
+	};
 
 	static menu_info m;
 	init_menu_info(&m, LOCATE, strdup("No files found"));
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
-
-	snprintf(cmd_buf, sizeof(cmd_buf), "locate %s", m.args);
-
-	m.title = strdup(cmd_buf);
+	m.title = format_str(" Locate %s ", m.args);
 
 	status_bar_message("locate...");
 
-	return capture_output_to_menu(view, cmd_buf, &m);
+	cmd = expand_custom_macros(cfg.locate_prg, ARRAY_LEN(macros), macros);
+	save_msg = capture_output_to_menu(view, cmd, &m);
+	free(cmd);
+
+	return save_msg;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
