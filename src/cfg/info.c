@@ -684,6 +684,7 @@ update_info_file(const char filename[])
 				cfg.selection_is_primary ? "s" : "",
 				cfg.tab_switches_pane ? "t" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
+		fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
 		fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");

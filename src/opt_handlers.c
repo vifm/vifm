@@ -44,6 +44,8 @@
 
 #include "opt_handlers.h"
 
+/* TODO: provide default primitive type based handlers (see *prg_handler). */
+
 /* Default value of 'viewcolumns' option, used when it's empty. */
 #define DEFAULT_VIEW_COLUMNS "-{name},{}"
 
@@ -84,6 +86,7 @@ static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
+static void findprg_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void gdefault_handler(OPT_OP op, optval_t val);
@@ -237,6 +240,8 @@ static struct
 		{ .ref.set_items = &cfg.dot_dirs }                                                                     },
 	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,
 		{ .ref.bool_val = &cfg.fast_run }                                                                      },
+	{ "findprg",     "",     OPT_STR,     0,                          NULL,            &findprg_handler,
+		{ .ref.str_val = &cfg.find_prg }                                                                       },
 	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler,
 		{ .ref.bool_val = &cfg.follow_links }                                                                  },
 	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,
@@ -703,6 +708,12 @@ static void
 fastrun_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_run = val.bool_val;
+}
+
+static void
+findprg_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.find_prg, val.str_val);
 }
 
 static void

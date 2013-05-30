@@ -12,8 +12,8 @@
 
 	Added "Globals" section to the documentation.
 
-	Added 'aproposprg', 'grepprg' and 'locateprg' options to specify external
-	command format.
+	Added 'aproposprg', 'findprg', 'grepprg' and 'locateprg' options to specify
+	external commands format.
 
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
