@@ -34,7 +34,7 @@ show_apropos_menu(FileView *view, const char args[])
 	char cmd_buf[256];
 
 	static menu_info m;
-	init_menu_info(&m, APROPOS, format_str("No matches for \'%s\'", m.title));
+	init_menu_info(&m, APROPOS, format_str("No matches for \'%s\'", args));
 	m.args = strdup(args);
 	m.title = format_str(" Apropos %s ", args);
 

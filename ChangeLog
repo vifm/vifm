@@ -75,6 +75,9 @@
 	Fixed terminal hang after executing several external commands in a row.
 	Thanks to filterfalse.
 
+	Fixed "No matches..." message for :apropos command, which accessed
+	freed memory.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
