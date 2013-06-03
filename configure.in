@@ -363,9 +363,6 @@ AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
 AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([COLOR_PAIR], [], [AC_MSG_ERROR([COLOR_PAIR not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])
-if test -z "$OSX_HOST" ; then
-	AC_CHECK_TYPE([WINDOW], [], [AC_MSG_ERROR([WINDOW type not found in curses.h])], [[#include <curses.h>]])
-fi
 AC_CHECK_FUNC([curs_set], [], [AC_MSG_ERROR([curs_set() function not found.])])
 AC_CHECK_FUNC([def_prog_mode], [], [AC_MSG_ERROR([def_prog_mode() function not found.])])
 AC_CHECK_FUNC([doupdate], [], [AC_MSG_ERROR([doupdate() function not found.])])
