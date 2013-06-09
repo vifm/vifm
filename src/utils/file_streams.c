@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stddef.h> /* size_t ssize_t */
+#include <stddef.h> /* NULL size_t ssize_t */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strlen() */
@@ -76,14 +76,14 @@ get_line(FILE *fp, char buf[], size_t bufsz)
 	int c = '\0';
 	char *start = buf;
 
-	while(bufsz-- > 1 && (c = get_char(fp)) != EOF)
+	while(bufsz > 1 && (c = get_char(fp)) != EOF)
 	{
 		*buf++ = c;
+		bufsz--;
 		if(c == '\n')
 		{
 			break;
 		}
-		bufsz--;
 	}
 	*buf = '\0';
 
