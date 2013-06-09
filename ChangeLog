@@ -41,6 +41,8 @@
 
 	Fixed reserving of about 1 GiB piece of memory on 256-color terminals.
 
+	Fixed hanging on previewing files with long lines and code highlighting.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
