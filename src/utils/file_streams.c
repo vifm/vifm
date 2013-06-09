@@ -76,6 +76,11 @@ get_line(FILE *fp, char buf[], size_t bufsz)
 	int c = '\0';
 	char *start = buf;
 
+	if(bufsz <= 1)
+	{
+		return NULL;
+	}
+
 	while(bufsz > 1 && (c = get_char(fp)) != EOF)
 	{
 		*buf++ = c;
