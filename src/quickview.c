@@ -42,6 +42,9 @@
 /* Column at which quickview content should be displayed. */
 #define COL 1
 
+/* Size of buffer holding preview line (in characters). */
+#define PREVIEW_LINE_BUF_LEN 4096
+
 static void view_file(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -157,7 +160,7 @@ view_file(FILE *fp, int wrapped)
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_y = other_view->window_rows - 1;
 
-	char line[1024];
+	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
 	int y = LINE;
 	const char *res = get_line(fp, line, sizeof(line));
