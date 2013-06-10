@@ -282,7 +282,9 @@ static void
 execute_file(char full_path[])
 {
 #ifndef _WIN32
-	shellout(full_path, 1, 1);
+	char *const escaped = escape_filename(full_path, 0);
+	shellout(escaped, 1, 1);
+	free(escaped);
 #else
 	to_back_slash(full_path);
 	run_win_executable(full_path);
