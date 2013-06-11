@@ -2310,7 +2310,8 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, ffd.cFileName) == 0)
+		else if(regexp_filter_match(view, ffd.cFileName,
+				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
 		{
 			view->filtered++;
 			continue;
