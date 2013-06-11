@@ -2820,6 +2820,7 @@ void
 set_filename_filter(FileView *view, const char *filter)
 {
 	int ret;
+	int cflags = REG_EXTENDED;
 
 	if(view->filter_is_valid)
 	{
@@ -2833,7 +2834,11 @@ set_filename_filter(FileView *view, const char *filter)
 		return;
 	}
 
-	ret = regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED);
+#ifdef _WIN32
+	cflags |= REG_ICASE;
+#endif
+
+	ret = regcomp(&view->filter_regex, view->filename_filter, cflags);
 	view->filter_is_valid = ret == 0;
 }
 
