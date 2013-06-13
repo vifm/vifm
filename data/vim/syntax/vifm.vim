@@ -78,26 +78,26 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invwrap invwrapscan invws
 
 " Expressions
-syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs,vifmComment
 		\,vifmExprCommandSt,vifmNormalCommandSt
-syntax region vifmCmdCommandSt start='^\s*com\%[mand]'
+syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmCmdCommand,vifmComment
-syntax region vifmColoCommandSt start='^\s*colo\%[rscheme]\>' end='$' keepend
+syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$' keepend
 		\ oneline contains=vifmColoCommand
-syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
+syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend oneline
 		\ contains=vifmMarkCommand
-syntax region vifmFtCommandSt start='^\s*file[tvx]'
+syntax region vifmFtCommandSt start='^\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
 syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$' keepend
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
 		\,vifmOperator,vifmEnvVar
-syntax region vifmNormalCommandSt start='^\s*norm\%[al]\>' end='$' keepend
+syntax region vifmNormalCommandSt start='^\(\s\|:\)*norm\%[al]\>' end='$' keepend
 		\ oneline
 		\ contains=vifmNormalCommand
 syntax region vifmExecute start='!' end='$' keepend oneline
@@ -109,21 +109,21 @@ syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2,vifmExprCommandSt
 syntax region vifmHi matchgroup=vifmCommand
-		\ start='^\s*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
 		\,vifmComment
 syntax region vifmSet
 		\ matchgroup=vifmCommand
-		\ start='^\s*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment
 syntax region vifmSet2 contained
 		\ matchgroup=vifmCommand
-		\ start='^\s*:\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmLet
 		\ matchgroup=vifmCommand
-		\ start='^\s*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmEnvVar,vifmString,vifmStringInExpr
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
@@ -140,7 +140,7 @@ syntax match vifmNotation '<\(esc\|cr\|space\|del\|\(s-\)\?tabhome\|end\|left\|r
 syntax case match
 
 " Whole line comments
-syntax region vifmComment contained start="^\s*\"" end="$"
+syntax region vifmComment contained start='^\(\s\|:\)*"' end='$'
 
 " Empty line
 syntax match vifmEmpty /^\s*$/
