@@ -26,7 +26,7 @@ syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
 		\ mn[oremap] mu[nmap] nm[ap] nn[oremap] no[remap] nun[map] qm[ap] qn[oremap]
 		\ qun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
-		\ skipwhite nextgroup=vifmMapLhs
+		\ skipwhite nextgroup=vifmMapArgs
 
 " Other commands
 syntax keyword vifmCmdCommand contained com[mand]
@@ -81,8 +81,14 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
-		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs,vifmComment
-		\,vifmExprCommandSt,vifmNormalCommandSt
+		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
+		\,vifmNormalCommandSt
+syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='$' keepend
+		\ contained
+		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
+		\,vifmNormalCommandSt,vifmNotation
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmCmdCommand,vifmComment
@@ -93,6 +99,9 @@ syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend on
 syntax region vifmFtCommandSt start='^\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
+syntax region vifmMapSt start='^\(\s\|:\)*\(cm\%[ap]\|cno\%[remap]\|cu\%[nmap]\|map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nmap]\|nm\%[ap]\|nn\%[oremap]\|no\%[remap]\|nun\%[map]\|qm\%[ap]\|qn\%[oremap]\|qun\%[map]\|unm\%[ap]\|vm\%[ap]\|vn\%[oremap]\|vu\%[nmap]\)'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ contains=vifmMap
 syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$' keepend
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
@@ -102,12 +111,14 @@ syntax region vifmNormalCommandSt start='^\(\s\|:\)*norm\%[al]\>' end='$' keepen
 		\ contains=vifmNormalCommand
 syntax region vifmExecute start='!' end='$' keepend oneline
 		\ contains=vifmNotation
-syntax region vifmCommands start=':' end='$' keepend oneline
-		\ contains=vifmCommand,vifmNotation,vifmExecute
-syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
-		\ nextgroup=vifmMapRhs
-syntax match vifmMapRhs /\s\+\S\+/ contained
-		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2,vifmExprCommandSt
+syntax region vifmMapArgs start='\S\+'
+		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ contained
+		\ contains=vifmNotation,vifmMapRhs
+syntax region vifmMapRhs start='\s*:\s*\S\+'
+		\ end='$'
+		\ contained
+		\ contains=vifmStatementC
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend

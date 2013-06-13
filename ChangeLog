@@ -39,6 +39,9 @@
 	Updated syntax file to highlight arguments of the :execute command as
 	expressions.
 
+	Updated syntax file to highlight arguments of all map commands smarter
+	then before.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
