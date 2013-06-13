@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: April 14, 2013
+" Last Change: June 13, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -38,7 +38,7 @@ syntax keyword vifmNormalCommand contained norm[al]
 syntax keyword vifmExecuteCommand contained exe[cute]
 
 " Builtin functions
-syntax match vifmBuiltinFunction 'filetype\ze('
+syntax match vifmBuiltinFunction '\(filetype\|expand\)\ze('
 
 " Operators
 syntax match vifmOperator "\(==\|!=\)" skipwhite
@@ -114,21 +114,21 @@ syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2,vifmExprCommandSt
 		\,vifmExecuteCommandSt
 syntax region vifmHi matchgroup=vifmCommand
-		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\s*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
 		\,vifmComment
 syntax region vifmSet
 		\ matchgroup=vifmCommand
-		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\s*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment
 syntax region vifmSet2 contained
 		\ matchgroup=vifmCommand
-		\ start=':\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ start='^\s*:\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmLet
 		\ matchgroup=vifmCommand
-		\ start='\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='^\s*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmEnvVar,vifmString,vifmStringInExpr
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
