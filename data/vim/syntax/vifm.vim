@@ -33,9 +33,8 @@ syntax keyword vifmCmdCommand contained com[mand]
 syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
-syntax keyword vifmExprCommand contained if ec[ho]
+syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
-syntax keyword vifmExecuteCommand contained exe[cute]
 
 " Builtin functions
 syntax match vifmBuiltinFunction '\(filetype\|expand\)\ze('
@@ -83,7 +82,7 @@ syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs,vifmComment
-		\,vifmExprCommandSt,vifmNormalCommandSt,vifmExecuteCommandSt
+		\,vifmExprCommandSt,vifmNormalCommandSt
 syntax region vifmCmdCommandSt start='^\s*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmCmdCommand,vifmComment
@@ -94,16 +93,13 @@ syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
 syntax region vifmFtCommandSt start='^\s*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
-syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\)\>'
+syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$' keepend
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
 		\,vifmOperator,vifmEnvVar
 syntax region vifmNormalCommandSt start='^\s*norm\%[al]\>' end='$' keepend
 		\ oneline
 		\ contains=vifmNormalCommand
-syntax region vifmExecuteCommandSt start='\<*exe\%[cute]\>' end='$' keepend
-		\ oneline
-		\ contains=vifmExecuteCommand
 syntax region vifmExecute start='!' end='$' keepend oneline
 		\ contains=vifmNotation
 syntax region vifmCommands start=':' end='$' keepend oneline
@@ -112,7 +108,6 @@ syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 		\ nextgroup=vifmMapRhs
 syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2,vifmExprCommandSt
-		\,vifmExecuteCommandSt
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='^\s*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
@@ -159,7 +154,6 @@ highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmExprCommand Statement
 highlight link vifmNormalCommand Statement
-highlight link vifmExecuteCommand Statement
 highlight link vifmBuiltinFunction Function
 highlight link vifmOperator Operator
 highlight link vifmMap Statement

@@ -36,6 +36,9 @@
 	Updated syntax file to ignore non-sense characters in front of some
 	commands (e.g. :set, :let, :highlight).  Thanks to filterfalse.
 
+	Updated syntax file to highlight arguments of the :execute command as
+	expressions.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
