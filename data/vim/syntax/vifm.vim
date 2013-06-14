@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: June 13, 2013
+" Last Change: June 14, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -29,7 +29,7 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
 		\ skipwhite nextgroup=vifmMapArgs
 
 " Other commands
-syntax keyword vifmCmdCommand contained com[mand]
+syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
@@ -80,18 +80,25 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
-		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
 		\,vifmNormalCommandSt
 syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contained
-		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
 		\,vifmNormalCommandSt,vifmNotation
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
-		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmCmdCommand,vifmComment
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ contains=vifmCmdCommand
+syntax region vifmCmdCommandName contained start='\s\+[a-zA-Z]\+' end='\ze\s'
+		\ skip='\(\s*\\\)\|\(\s*".*$\)'
+		\ nextgroup=vifmCmdArgs
+syntax region vifmCmdArgs start='\(\s*\n\s*\\\)\?\s*\S\+'
+		\ end='\s' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ contained
+		\ contains=vifmColonSubcommand
 syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$' keepend
 		\ oneline contains=vifmColoCommand
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend oneline
@@ -114,9 +121,14 @@ syntax region vifmExecute start='!' end='$' keepend oneline
 syntax region vifmMapArgs start='\S\+'
 		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ contains=vifmNotation,vifmMapRhs
-syntax region vifmMapRhs start='\s*:\s*\S\+'
-		\ end='$'
+		\ contains=vifmMapLhs
+syntax region vifmMapLhs start='\S\+'
+		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
+		\ contained
+		\ contains=vifmNotation
+		\ nextgroup=vifmColonSubcommand
+syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
+		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmStatementC
 syntax region vifmHi matchgroup=vifmCommand
