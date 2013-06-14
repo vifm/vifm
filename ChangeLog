@@ -33,6 +33,15 @@
 	Removed check for WINDOW type in curses.h from configure script (didn't
 	work for OS X and cygwin).  Thanks to filterfalse.
 
+	Updated syntax file to ignore non-sense characters in front of some
+	commands (e.g. :set, :let, :highlight).  Thanks to filterfalse.
+
+	Updated syntax file to highlight arguments of the :execute command as
+	expressions.
+
+	Updated syntax file to highlight arguments of all map and for :command
+	commands smarter than before.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
