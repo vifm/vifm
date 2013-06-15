@@ -112,10 +112,10 @@ syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$' kee
 		\ oneline contains=vifmColoCommand
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend oneline
 		\ contains=vifmMarkCommand
-syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
+syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contains=vifmCdCommand,vifmEnvVar
 " Highlight for :cd command with highlighting of angle-brace notation.
-syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$' keepend oneline
+syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contained
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation
 syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
@@ -128,7 +128,7 @@ syntax region vifmMapSt start='^\(\s\|:\)*\(cm\%[ap]\|cno\%[remap]\|cu\%[nmap]\|
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmMap
 syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
-		\ end='$' keepend
+		\ end='$\||' keepend
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
 		\,vifmOperator,vifmEnvVar
 syntax region vifmNormalCommandSt start='\(\s\|:\)*norm\%[al]\>' end='$' keepend
@@ -139,12 +139,16 @@ syntax region vifmExecute start='!' end='$' keepend oneline
 syntax region vifmMapArgs start='\S\+'
 		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ contains=vifmMapLhs
+		\ contains=vifmMapLhs,vifmMapRhs
 syntax region vifmMapLhs start='\S\+'
 		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmNotation,vifmComment
 		\ nextgroup=vifmColonSubcommandN
+syntax region vifmMapRhs start='\s'
+		\ end='<cr>' skip='\(\s*\\\)\|\(\s*".*$\)'
+		\ contained keepend
+		\ contains=vifmNotation,vifmComment,vifmColonSubcommandN
 syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
 		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
