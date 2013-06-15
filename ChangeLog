@@ -46,6 +46,9 @@
 
 	Updated syntax file to highlight <home>.  Thanks to filterfalse.
 
+	Updated syntax file to highlight environment variables in argument list
+	of the :cd command.  Thanks to filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

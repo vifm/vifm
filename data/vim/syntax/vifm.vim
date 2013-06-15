@@ -13,7 +13,7 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 " General commands
-syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
+syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
 		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] hi[ghlight] his[tory]
 		\ invert jobs let locate ls marks mes[sages] mkdir m[ove] noh[lsearch]
@@ -29,6 +29,7 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
 		\ skipwhite nextgroup=vifmMapArgs
 
 " Other commands
+syntax keyword vifmCdCommand contained cd
 syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
@@ -82,13 +83,13 @@ syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt
+		\,vifmNormalCommandSt,vifmCdCommandSt
 syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt,vifmNotation
+		\,vifmNormalCommandSt,vifmNotation,vifmCdCommandSt
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -103,6 +104,11 @@ syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$' kee
 		\ oneline contains=vifmColoCommand
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend oneline
 		\ contains=vifmMarkCommand
+syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
+		\ contains=vifmCdCommand,vifmEnvVar
+syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
+		\ contained
+		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation
 syntax region vifmFtCommandSt start='^\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
@@ -171,6 +177,7 @@ syntax match vifmEmpty /^\s*$/
 " Highlight
 highlight link vifmComment Comment
 highlight link vifmCommand Statement
+highlight link vifmCdCommand Statement
 highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
 highlight link vifmMarkCommand Statement
