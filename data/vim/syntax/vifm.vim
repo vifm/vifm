@@ -35,7 +35,7 @@ syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
-syntax keyword vifmNormalCommand contained norm[al]
+syntax keyword vifmNormalCommand contained norm[al] nextgroup=vifmColonSubcommand
 
 " Builtin functions
 syntax match vifmBuiltinFunction '\(filetype\|expand\)\ze('
@@ -128,7 +128,7 @@ syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$' keepend
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
 		\,vifmOperator,vifmEnvVar
-syntax region vifmNormalCommandSt start='^\(\s\|:\)*norm\%[al]\>' end='$' keepend
+syntax region vifmNormalCommandSt start='\(\s\|:\)*norm\%[al]\>' end='$' keepend
 		\ oneline
 		\ contains=vifmNormalCommand
 syntax region vifmExecute start='!' end='$' keepend oneline
