@@ -178,7 +178,7 @@ syntax region vifmLet
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax region vifmStringInExpr contained start=+=\@<="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
-syntax region vifmStringInExpr contained start=+=\@<='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
+syntax region vifmStringInExpr contained start=+=\@<='+hs=s+1 skip=+\\\\\|\\'\|''+  end=+'+
 syntax region vifmStringInExpr contained start=+[.( ]"+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmStringInExpr contained start=+[.( ]'+hs=s+1 skip=+\\\\\|\\'\|''+  end=+'+
 syntax region vifmArgument contained start=+"+ skip=+\\\\\|\\"+  end=+"+
