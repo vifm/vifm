@@ -83,7 +83,7 @@ syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt,vifmCdCommandSt,vifmArgument
+		\,vifmNormalCommandSt,vifmCdCommandSt,vifmSet,vifmArgument
 " Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
@@ -97,7 +97,7 @@ syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)
 		\ contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt,vifmCdCommandSt,vifmArgument
+		\,vifmNormalCommandSt,vifmCdCommandSt,vifmSet,vifmArgument
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -158,7 +158,7 @@ syntax region vifmHi matchgroup=vifmCommand
 		\,vifmComment
 syntax region vifmSet
 		\ matchgroup=vifmCommand
-		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment
 syntax region vifmSet2 contained
 		\ matchgroup=vifmCommand
