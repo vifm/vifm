@@ -84,12 +84,20 @@ syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
 		\,vifmNormalCommandSt,vifmCdCommandSt
+" Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt,vifmNotation,vifmCdCommandSt
+		\,vifmNormalCommandSt,vifmCdCommandSt
+" Contained statement with highlighting of angle-brace notation.
+syntax region vifmStatementCN start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='$' keepend
+		\ contained
+		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
+		\,vifmNormalCommandSt,vifmNotation,vifmCdCommandStN
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -106,7 +114,8 @@ syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend on
 		\ contains=vifmMarkCommand
 syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
 		\ contains=vifmCdCommand,vifmEnvVar
-syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
+" Highlight for :cd command with highlighting of angle-brace notation.
+syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$' keepend oneline
 		\ contained
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation
 syntax region vifmFtCommandSt start='^\(\s\|:\)*file[tvx]'
@@ -132,11 +141,16 @@ syntax region vifmMapLhs start='\S\+'
 		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmNotation,vifmComment
-		\ nextgroup=vifmColonSubcommand
+		\ nextgroup=vifmColonSubcommandN
 syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
 		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmStatementC
+" Contained sub command with highlighting of angle-brace notation.
+syntax region vifmColonSubcommandN start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
+		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
+		\ contained
+		\ contains=vifmStatementCN
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
