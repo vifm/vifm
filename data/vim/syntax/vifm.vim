@@ -88,9 +88,9 @@ syntax region vifmStatement start='^\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)
 syntax region vifmStatementCN start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contained
-		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandStN
 		\,vifmMap,vifmMapSt,vifmExecute,vifmComment,vifmExprCommandSt
-		\,vifmNormalCommandSt,vifmNotation,vifmCdCommandStN,vifmArgument
+		\,vifmNormalCommandSt,vifmNotation,vifmCdCommandStN,vifmSetN,vifmArgument
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
@@ -118,9 +118,12 @@ syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$' keepend oneline
 syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$' keepend oneline
 		\ contained
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation
-syntax region vifmFtCommandSt start='^\(\s\|:\)*file[tvx]'
+syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
+syntax region vifmFtCommandStN start='\(\s\|:\)*file[tvx]'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\|\(<[cC][rR]>\)' keepend
+		\ contains=vifmFtCommand,vifmComment,vifmNotation
 syntax region vifmMapSt start='^\(\s\|:\)*\(cm\%[ap]\|cno\%[remap]\|cu\%[nmap]\|map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nmap]\|nm\%[ap]\|nn\%[oremap]\|no\%[remap]\|nun\%[map]\|qm\%[ap]\|qn\%[oremap]\|qun\%[map]\|unm\%[ap]\|vm\%[ap]\|vn\%[oremap]\|vu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmMap
@@ -160,6 +163,10 @@ syntax region vifmSet
 		\ matchgroup=vifmCommand
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment
+syntax region vifmSetN
+		\ matchgroup=vifmCommand
+		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmSet2 contained
 		\ matchgroup=vifmCommand
 		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
