@@ -44,6 +44,8 @@
 
 	Filter in case insensitive way on Windows.
 
+	Updated syntax file to highlight <home>.  Thanks to filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
