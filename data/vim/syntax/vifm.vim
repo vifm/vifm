@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: June 15, 2013
+" Last Change: June 16, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -15,12 +15,11 @@ set cpo-=C
 " General commands
 syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
-		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] hi[ghlight] his[tory]
-		\ invert jobs let locate ls marks mes[sages] mkdir m[ove] noh[lsearch]
-		\ on[ly] popd pushd pwd q[uit] reg[isters] rename restart restore rlink
-		\ screen se[t] sh[ell] sor[t] so[urce] sp[lit] s[ubstitute] touch tr sync
-		\ undol[ist] unl[et] ve[rsion] vie[w] vifm windo winrun w[rite] wq x[it]
-		\ y[ank]
+		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] invert jobs
+		\ locate ls marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
+		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
+		\ so[urce] sp[lit] s[ubstitute] touch tr sync undol[ist] unl[et] ve[rsion]
+		\ vie[w] vifm windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
@@ -32,6 +31,9 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
 syntax keyword vifmCdCommand contained cd
 syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
+syntax keyword vifmHiCommand contained hi[ghlight]
+syntax keyword vifmLetCommand contained let
+syntax keyword vifmSetCommand contained se[t]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
@@ -158,27 +160,23 @@ syntax region vifmColonSubcommandN start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
 		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmStatementCN
-syntax region vifmHi matchgroup=vifmCommand
+syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
+		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
 		\,vifmComment
 syntax region vifmSet
-		\ matchgroup=vifmCommand
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment
+		\ keepend contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment
 syntax region vifmSetN
-		\ matchgroup=vifmCommand
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
+		\ keepend contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmSet2 contained
-		\ matchgroup=vifmCommand
 		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
+		\ contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmLet
-		\ matchgroup=vifmCommand
 		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmEnvVar,vifmString,vifmStringInExpr
+		\ keepend contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax region vifmStringInExpr contained start=+=\@<="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
@@ -207,10 +205,13 @@ highlight link vifmCommand Statement
 highlight link vifmCdCommand Statement
 highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
+highlight link vifmHiCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmExprCommand Statement
 highlight link vifmNormalCommand Statement
+highlight link vifmLetCommand Statement
+highlight link vifmSetCommand Statement
 highlight link vifmBuiltinFunction Function
 highlight link vifmOperator Operator
 highlight link vifmMap Statement
