@@ -418,7 +418,7 @@ prepare_view(FileView *view)
 	strncpy(view->regexp, "", sizeof(view->regexp));
 	(void)replace_string(&view->prev_filter, "");
 	set_filename_filter(view, "");
-	view->invert = 1;
+	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
 	view->max_filename_len = 0;
@@ -2796,7 +2796,7 @@ remove_filename_filter(FileView *view)
 	set_filename_filter(view, "");
 
 	view->prev_invert = view->invert;
-	view->invert = 1;
+	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	load_saving_pos(view, 0);
 }
 
