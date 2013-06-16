@@ -44,6 +44,18 @@
 
 	Filter in case insensitive way on Windows.
 
+	Updated syntax file to highlight <home>.  Thanks to filterfalse.
+
+	Updated syntax file to highlight <home> and environment variables in
+	argument list of the :cd command.  Thanks to filterfalse.
+
+	Updated syntax file to highlight :normal when it's not first in the line
+	and treat its arguments as command-line if it starts with a colon.
+	Thanks to filterfalse.
+
+	Updated syntax file to do not highlight anything inside quoted strings
+	except when they are part of an expression.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
