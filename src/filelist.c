@@ -2796,7 +2796,7 @@ remove_filename_filter(FileView *view)
 	set_filename_filter(view, "");
 
 	view->prev_invert = view->invert;
-	view->invert = 1;
+	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	load_saving_pos(view, 0);
 }
 
