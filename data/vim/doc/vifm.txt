@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 May 23
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 11
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -987,7 +987,8 @@ The builtin commands are:
     variant you can use the bar ('|') symbol without escaping.  Empty
     regular expression (specified by //, "" or '') means using of the last
     search pattern.  Use '!' to control state of filter inversion after
-    updating filter value (see |vifm-cpo-f|).
+    updating filter value (see |vifm-cpo-f|).  Filter is matched case
+    sensitively on *nix and case insensitively on Windows.
     See |vifm-filters|.
 :filter - reset filter (set it to empty string) and show all files.
 :filter! - same as :invert.

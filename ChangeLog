@@ -42,6 +42,8 @@
 	Updated syntax file to highlight arguments of all map and for :command
 	commands smarter than before.
 
+	Filter in case insensitive way on Windows.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
