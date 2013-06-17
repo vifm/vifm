@@ -66,6 +66,9 @@
 
 	Fixed hanging on previewing files with long lines and code highlighting.
 
+	Fixed running of executable with symbols that require escaping in their
+	name (*nix only).
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
