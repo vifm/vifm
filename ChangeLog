@@ -56,6 +56,9 @@
 	Updated syntax file to do not highlight anything inside quoted strings
 	except when they are part of an expression.
 
+	Remove escape-codes from generated plain-text documentation on cygwin.
+	Thanks to filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
