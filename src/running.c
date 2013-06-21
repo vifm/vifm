@@ -877,7 +877,6 @@ shellout(const char *command, int pause, int allow_screen)
 		}
 	}
 
-	def_prog_mode();
 	endwin();
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
