@@ -24,7 +24,6 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../utils/utils.h"
 #include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
@@ -41,7 +40,15 @@ int
 show_find_menu(FileView *view, int with_path, const char args[])
 {
 	int save_msg;
+	char *custom_args = NULL;
+	char *targets = NULL;
 	char *cmd;
+
+	custom_macro_t macros[] =
+	{
+		{ .letter = 's', .value = NULL, .uses_left = 1 },
+		{ .letter = 'a', .value = NULL, .uses_left = 1 },
+	};
 
 	static menu_info m;
 	init_menu_info(&m, FIND, strdup("No files found"));
@@ -50,22 +57,12 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	if(with_path)
 	{
-		char cmd_name[256];
-		(void)get_command_name(cfg.find_prg, 1, sizeof(cmd_name), cmd_name);
-
-		cmd = format_str("%s %s", cmd_name, args);
+		macros[0].value = args;
+		macros[1].value = "";
 	}
 	else
 	{
-		char *custom_args = NULL;
-		char *const targets = get_cmd_target();
-
-		custom_macro_t macros[] =
-		{
-			{ .letter = 's', .value = NULL, .uses_left = 1 },
-			{ .letter = 'a', .value = NULL, .uses_left = 1 },
-		};
-
+		targets = get_cmd_target();
 		macros[0].value = targets;
 
 		if(args[0] == '-')
@@ -75,17 +72,18 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		else
 		{
 			char *const escaped_args = escape_filename(args, 0);
-			macros[1].value = format_str("%s %s", DEFAULT_PREDICATE, escaped_args);
+			custom_args = format_str("%s %s", DEFAULT_PREDICATE, escaped_args);
+			macros[1].value = custom_args;
 			free(escaped_args);
 		}
-
-		cmd = expand_custom_macros(cfg.find_prg, ARRAY_LEN(macros), macros);
-
-		free(targets);
-		free(custom_args);
 	}
 
 	status_bar_message("find...");
+
+	cmd = expand_custom_macros(cfg.find_prg, ARRAY_LEN(macros), macros);
+
+	free(targets);
+	free(custom_args);
 
 	save_msg = capture_output_to_menu(view, cmd, &m);
 	free(cmd);
