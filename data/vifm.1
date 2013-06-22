@@ -1,4 +1,4 @@
-.TH vifm 1 "Jun 11, 2013" "" "Vifm"
+.TH vifm 1 "Jun 22, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -869,8 +869,10 @@ creates absolute symbolic links of files in directory of other view giving each
 next link a corresponding name from the argument list.  "!" forces overwrite.
 .TP
 .BI ":apropos manpage"
-will create a menu of items returned by the apropos command. Selecting an item
-in the menu will open the corresponding manpage.
+will create a menu of items returned by the apropos command.  Selecting an item
+in the menu will open the corresponding manpage.  By default the command relies
+on the external "apropos" utility, which can be customized by altering value of
+the 'aproposprg' option.
 .TP
 .BI :apropos
 repeats last :apropos command.
@@ -1122,7 +1124,8 @@ show current filter value.
 .TP
 .BI ":[range]fin[d] pattern"
 will show results of find command in the menu.  Searches among selected files if
-any.  Accepts macros.
+any.  Accepts macros.  By default the command relies on the external "find"
+utility, which can be customized by altering value of the 'findprg' option.
 .TP
 .BI ":[range]fin[d] \-opt..."
 same as :find above, but user defines all find arguments.  Searches among
@@ -1140,9 +1143,11 @@ Stop sourcing a script. Can only be used in a vifm script file. This is a quick
 way to skip the rest of the file.
 .TP
 .BI ":[range]gr[ep][!] pattern"
-will show results of grep command in the menu.  Add "!" to search lines that do
-not match pattern.  Searches among selected files if any and no range given.
-Ignores binary files.
+will show results of grep command in the menu.  Add "!" to request inversion of
+search (look for lines that do not match pattern).  Searches among selected
+files if any and no range given.  Ignores binary files by default.  By default
+the command relies on the external "grep" utility, which can be customized by
+altering value of the 'grepprg' option.
 .TP
 .BI ":[range]gr[ep][!] \-opt..."
 same as :grep above, but user defines all find arguments, which are not escaped.
@@ -1287,7 +1292,9 @@ order using the '.' operator.  Any whitespace is ignored.
 .BI ":locate filename"
 uses the locate command to create a menu of filenames
 Selecting a file from the menu will reload the current file list in vifm
-to show the selected file.
+to show the selected file.  By default the command relies on the external
+"locate" utility (it's assumed that its database is already built), which can be
+customized by altering value of the 'locateprg' option.
 .TP
 .BI :locate
 repeats last :locate command.
@@ -1910,6 +1917,18 @@ in their name.
 These are kind of options that are local to a specific view. So you can set
 ascending sorting order for left pane and descending order for right pane.
 .TP
+.BI aproposprg
+type: string
+.br
+default: "apropos %a"
+.br
+Specifies format for an external command to be invoked by the :apropos command.
+The format supports expanding of macros, specific for a particular *prg option,
+and %% sequence for inserting percent sign literally.  This option should
+include the %a macro to specify placement of arguments passed to the :apropos
+command.  If the macro is not used, it will be implicitly added after a space to
+the value of this option.
+.TP
 .BI autochpos
 type: boolean
 .br
@@ -1991,6 +2010,27 @@ default: false
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 .TP
+.BI findprg
+type: string
+.br
+default: "find %s %a \-print , -type d \\( ! \-readable -o ! -executable \\) \-prune"
+.br
+Specifies format for an external command to be invoked by the :find command.
+The format supports expanding of macros, specific for a particular *prg option,
+and %% sequence for inserting percent sign literally.  This option should
+include the %s macro to specify placement of list of paths to search in and the
+%a macro to specify placement of arguments passed to the :find command.  If some
+of the macros are not used, they will be implicitly added after a space to the
+value of the option in the following order: %s, %a.
+
+%s and %a macro can slightly change their meaning depending on :find command
+arguments.  When the first argument points to an existing directory, %s is
+assigned all arguments and %a is left empty.  Otherwise, %s is assigned a dot
+(".") meaning current directory or list of selected filenames if any.  %a is
+assigned arguments when first argument starts with a dash ("\-"), otherwise an
+escaped version of arguments, prepended by "\-name" (on *nix) or "\-iname" (on
+Windows) predicate.
+.TP
 .BI followlinks
 type: boolean
 .br
@@ -2013,6 +2053,21 @@ type: boolean
 default: false
 .br
 When on, 'g' flag is on for :substitute by default.
+.TP
+.BI grepprg
+type: string
+.br
+default: "grep \-n \-H \-I \-r %i %a %s"
+.br
+Specifies format for an external command to be invoked by the :grep command.
+The format supports expanding of macros, specific for a particular *prg option,
+and %% sequence for inserting percent sign literally.  This option should
+include the %i macro to specify placement of "\-v" string when inversion of
+results is requested, the %a macro to specify placement of arguments passed to
+the :grep command and the %s macro to specify placement of list of files to
+search in.  If some of the macros are not used, they will be implicitly added
+after a space to the value of the 'grepprg' option in the following order: %i,
+%a, %s.
 .TP
 .BI "history hi"
 type: integer
@@ -2065,6 +2120,18 @@ type: int
 default: terminal height on startup
 .br
 Terminal height in lines.
+.TP
+.BI locateprg
+type: string
+.br
+default: "locate %a"
+.br
+Specifies format for an external command to be invoked by the :locate command.
+The format supports expanding of macros, specific for a particular *prg option,
+and %% sequence for inserting percent sign literally.  This option should
+include the %a macro to specify placement of arguments passed to the :locate
+command.  If the macro is not used, it will be implicitly added after a space to
+the value of this option.
 .TP
 .BI lsview
 type: boolean
