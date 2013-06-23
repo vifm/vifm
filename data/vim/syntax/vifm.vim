@@ -107,7 +107,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
-syntax region vifmCmdCommandName contained start='\s\+[a-zA-Z]\+' end='\ze\s'
+syntax region vifmCmdCommandName contained start='!\?\s\+[a-zA-Z]\+' end='\ze\s'
 		\ skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ nextgroup=vifmCmdArgs
 syntax region vifmCmdArgs start='\(\s*\n\s*\\\)\?\s*\S\+'
