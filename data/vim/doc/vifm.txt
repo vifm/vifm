@@ -1788,6 +1788,14 @@ placement of list of files to search in.  If some of the macros are not
 used, they will be implicitly added after a space to the value of the
 |vifm-'grepprg'| option in the following order: %i, %a, %s.
 
+Example of setup to use ack (http://beyondgrep.com/) instead of grep:
+>
+    set grepprg=ack\ -n\ -H\ -r\ %i\ %a\ %s
+<
+or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
+>
+    set grepprg=ag\ -n\ -r\ %i\ %a\ %s
+<
                                                *vifm-'history'* *vifm-'hi'*
 history hi
 type: integer

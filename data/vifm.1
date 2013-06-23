@@ -2068,6 +2068,16 @@ the :grep command and the %s macro to specify placement of list of files to
 search in.  If some of the macros are not used, they will be implicitly added
 after a space to the value of the 'grepprg' option in the following order: %i,
 %a, %s.
+
+Example of setup to use ack (http://beyondgrep.com/) instead of grep:
+.EX
+    set grepprg=ack\\ \-n\\ \-H\\ \-r\\ %i\\ %a\\ %s
+.EE
+or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
+.EX
+    set grepprg=ag\\ \-n\\ \-r\\ %i\\ %a\\ %s
+.EE
+
 .TP
 .BI "history hi"
 type: integer
