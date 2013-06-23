@@ -102,6 +102,9 @@ const char * expand_tabulation(const char line[], size_t max, size_t tab_stops,
 		char buf[]);
 /* Returns the first wide character of a multi-byte string. */
 wchar_t get_first_wchar(const char str[]);
+/* Concatenates the str with the with by reallocating string.  Returns str, when
+ * there is not enough memory. */
+char * extend_string(char str[], const char with[], size_t *len);
 #ifdef _WIN32
 char * strtok_r(char str[], const char delim[], char *saveptr[]);
 #endif

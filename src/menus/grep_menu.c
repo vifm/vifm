@@ -20,8 +20,11 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include "../cfg/config.h"
+#include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -31,34 +34,42 @@ int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
 	char *targets;
-	int result;
-	const char *inv_str = invert ? "-v" : "";
-	const char grep_cmd[] = "grep -n -H -I -r";
+	int save_msg;
 	char *cmd;
+	char *escaped_args = NULL;
+
+	custom_macro_t macros[] =
+	{
+		{ .letter = 'i', .value = NULL, .uses_left = 1 },
+		{ .letter = 'a', .value = NULL, .uses_left = 1 },
+		{ .letter = 's', .value = NULL, .uses_left = 1 },
+	};
 
 	static menu_info m;
 	init_menu_info(&m, GREP, strdup("No matches found"));
 
-	m.title = format_str("grep %s", args);
+	m.title = format_str(" Grep %s ", args);
 
 	targets = get_cmd_target();
-	if(args[0] == '-')
+	macros[0].value = invert ? "-v" : "";
+	macros[1].value = args;
+	macros[2].value = targets;
+	if(args[0] != '-')
 	{
-		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, targets);
+		escaped_args = escape_filename(args, 0);
+		macros[1].value = escaped_args;
 	}
-	else
-	{
-		char *const escaped_args = escape_filename(args, 0);
-		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, escaped_args, targets);
-		free(escaped_args);
-	}
+
+	cmd = expand_custom_macros(cfg.grep_prg, ARRAY_LEN(macros), macros);
+
+	free(escaped_args);
 	free(targets);
 
 	status_bar_message("grep...");
-
-	result = capture_output_to_menu(view, cmd, &m);
+	save_msg = capture_output_to_menu(view, cmd, &m);
 	free(cmd);
-	return result;
+
+	return save_msg;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

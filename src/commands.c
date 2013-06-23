@@ -36,8 +36,8 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS system() free() */
-#include <string.h> /* strncmp() */
+#include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
+#include <string.h> /* strncmp() strncpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -149,7 +149,6 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
-static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
@@ -1851,23 +1850,6 @@ echo_cmd(const cmd_info_t *cmd_info)
 	status_bar_message(eval_result);
 	free(eval_result);
 	return 1;
-}
-
-/* Concatenates the str with the with by reallocating string.  Returns str, when
- * there is not enough memory. */
-static char *
-extend_string(char *str, const char with[], size_t *len)
-{
-	size_t with_len = strlen(with);
-	char *new = realloc(str, *len + with_len + 1);
-	if(new == NULL)
-	{
-		return str;
-	}
-
-	strncpy(new + *len, with, with_len + 1);
-	*len += with_len;
-	return new;
 }
 
 static int

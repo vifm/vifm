@@ -675,6 +675,7 @@ update_info_file(const char filename[])
 	if(cfg.vifm_info & VIFMINFO_OPTIONS)
 	{
 		fputs("\n# Options:\n", fp);
+		fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=columns=%d\n", cfg.columns);
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
@@ -683,9 +684,11 @@ update_info_file(const char filename[])
 				cfg.selection_is_primary ? "s" : "",
 				cfg.tab_switches_pane ? "t" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
+		fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
 		fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
+		fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
 		fprintf(fp, "=history=%d\n", cfg.history_len);
 		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
 		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
@@ -693,6 +696,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
 		fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
 		fprintf(fp, "=lines=%d\n", cfg.lines);
+		fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
 		fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");

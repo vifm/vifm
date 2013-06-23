@@ -9,6 +9,9 @@ On *nix you need:
 
     Vifm will currently not work with Solaris curses or with PDcurses.
 
+    Hint for building on Debian-based systems: ncurses package you need to
+    build vifm is called libncursesw5-dev.
+
 *nix Installation:
 
     ./configure

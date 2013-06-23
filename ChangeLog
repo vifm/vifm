@@ -12,6 +12,9 @@
 
 	Added "Globals" section to the documentation.
 
+	Added 'aproposprg', 'findprg', 'grepprg' and 'locateprg' options to specify
+	external commands format.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 
@@ -74,6 +77,9 @@
 
 	Fixed terminal hang after executing several external commands in a row.
 	Thanks to filterfalse.
+
+	Fixed "No matches..." message for :apropos command, which accessed
+	freed memory.
 
 0.7.5-beta to 0.7.5
 

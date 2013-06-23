@@ -21,7 +21,7 @@
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* realloc() free() calloc() */
-#include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
+#include <string.h> /* strchr() strncat() strcpy() strlen() strcat() strdup() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -46,6 +46,8 @@ static char * expand_register(const char curr_dir[], char expanded[],
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
+static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
+		custom_macro_t macros[]);
 
 char *
 expand_macros(const char *command, const char *args, MacroFlags *flags,
@@ -388,6 +390,69 @@ append_to_expanded(char *expanded, const char* str)
 	}
 	strcat(t, str);
 	return t;
+}
+
+char *
+expand_custom_macros(const char pattern[], size_t nmacros,
+		custom_macro_t macros[])
+{
+	char *expanded = strdup("");
+	size_t len = 0;
+	while(*pattern != '\0')
+	{
+		if(pattern[0] != '%')
+		{
+			const char single_char[] = { *pattern, '\0' };
+			expanded = extend_string(expanded, single_char, &len);
+		}
+		else if(pattern[1] == '%' || pattern[1] == '\0')
+		{
+			expanded = extend_string(expanded, "%", &len);
+			pattern += pattern[1] == '%';
+		}
+		else
+		{
+			int i = 0;
+			pattern++;
+			while(i < nmacros && macros[i].letter != *pattern)
+			{
+				i++;
+			}
+			if(i < nmacros)
+			{
+				expanded = extend_string(expanded, macros[i].value, &len);
+				if(macros[i].uses_left > 0)
+				{
+					macros[i].uses_left--;
+				}
+			}
+		}
+		pattern++;
+	}
+
+	expanded = add_missing_macros(expanded, len, nmacros, macros);
+
+	return expanded;
+}
+
+/* Ensures that the expanded string contains required number of mandatory
+ * macros.  Returns reallocated expanded. */
+static char *
+add_missing_macros(char expanded[], size_t len, size_t nmacros,
+		custom_macro_t macros[])
+{
+	int i;
+	for(i = 0; i < nmacros; i++)
+	{
+		custom_macro_t *const macro = &macros[i];
+		while(macro->uses_left > 0)
+		{
+			expanded = extend_string(expanded, " ", &len);
+			expanded = extend_string(expanded, macro->value, &len);
+			macro->uses_left--;
+		}
+	}
+	return expanded;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

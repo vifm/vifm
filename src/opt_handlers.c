@@ -44,6 +44,8 @@
 
 #include "opt_handlers.h"
 
+/* TODO: provide default primitive type based handlers (see *prg_handler). */
+
 /* Default value of 'viewcolumns' option, used when it's empty. */
 #define DEFAULT_VIEW_COLUMNS "-{name},{}"
 
@@ -75,6 +77,7 @@ static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
+static void apropos_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
 static const char * pick_out_decoration(char classify_item[], FileType *type);
@@ -83,9 +86,11 @@ static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
+static void findprg_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void gdefault_handler(OPT_OP op, optval_t val);
+static void grep_handler(OPT_OP op, optval_t val);
 static void history_handler(OPT_OP op, optval_t val);
 static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
@@ -93,6 +98,7 @@ static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
+static void locate_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
@@ -218,6 +224,8 @@ static struct
 	optval_t val;
 }options[] = {
 	/* global options */
+	{ "aproposprg",   "",    OPT_STR,     0,                          NULL,            &apropos_handler,
+		{ .ref.str_val = &cfg.apropos_prg }                                                                   },
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,
 		{ .ref.bool_val = &cfg.auto_ch_pos }                                                                   },
 	{ "classify",    "",     OPT_STRLIST, 0,                          NULL,            &classify_handler,
@@ -232,12 +240,16 @@ static struct
 		{ .ref.set_items = &cfg.dot_dirs }                                                                     },
 	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,
 		{ .ref.bool_val = &cfg.fast_run }                                                                      },
+	{ "findprg",     "",     OPT_STR,     0,                          NULL,            &findprg_handler,
+		{ .ref.str_val = &cfg.find_prg }                                                                       },
 	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler,
 		{ .ref.bool_val = &cfg.follow_links }                                                                  },
 	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,
 		{ .ref.str_val = &cfg.fuse_home }                                                                      },
 	{ "gdefault",    "gd",   OPT_BOOL,    0,                          NULL,            &gdefault_handler,
 		{ .ref.bool_val = &cfg.gdefault }                                                                      },
+	{ "grepprg",     "",     OPT_STR,     0,                          NULL,            &grep_handler,
+		{ .ref.str_val = &cfg.grep_prg }                                                                       },
 	{ "history",     "hi",   OPT_INT,     0,                          NULL,            &history_handler,
 		{ .ref.int_val = &cfg.history_len }                                                                    },
 	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,
@@ -252,6 +264,8 @@ static struct
 		{ .ref.bool_val = &cfg.last_status }                                                                   },
 	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,
 		{ .ref.int_val = &cfg.lines }                                                                          },
+	{ "locateprg",   "",     OPT_STR,     0,                          NULL,            &locate_handler,
+		{ .ref.str_val = &cfg.locate_prg }                                                                     },
 	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler,
 		{ .ref.str_val = &cfg.ruler_format }                                                                   },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,
@@ -526,6 +540,12 @@ process_set_args(const char *args)
 }
 
 static void
+apropos_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.apropos_prg, val.str_val);
+}
+
+static void
 autochpos_handler(OPT_OP op, optval_t val)
 {
 	cfg.auto_ch_pos = val.bool_val;
@@ -691,6 +711,12 @@ fastrun_handler(OPT_OP op, optval_t val)
 }
 
 static void
+findprg_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.find_prg, val.str_val);
+}
+
+static void
 followlinks_handler(OPT_OP op, optval_t val)
 {
 	cfg.follow_links = val.bool_val;
@@ -714,6 +740,12 @@ static void
 gdefault_handler(OPT_OP op, optval_t val)
 {
 	cfg.gdefault = val.bool_val;
+}
+
+static void
+grep_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.grep_prg, val.str_val);
 }
 
 static void
@@ -816,6 +848,12 @@ lines_handler(OPT_OP op, optval_t val)
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.lines;
 	set_option("lines", val);
+}
+
+static void
+locate_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.locate_prg, val.str_val);
 }
 
 static void
