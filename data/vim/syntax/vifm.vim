@@ -18,8 +18,8 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] invert jobs
 		\ locate ls marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
-		\ so[urce] sp[lit] s[ubstitute] touch tr sync undol[ist] unl[et] ve[rsion]
-		\ vie[w] vifm windo winrun w[rite] wq x[it] y[ank]
+		\ sp[lit] s[ubstitute] touch tr sync undol[ist] unl[et] ve[rsion] vie[w]
+		\ vifm windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
@@ -35,6 +35,7 @@ syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmHiCommand contained hi[ghlight]
 syntax keyword vifmLetCommand contained let
 syntax keyword vifmSetCommand contained se[t]
+syntax keyword vifmSoCommand contained so[urce]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
@@ -89,21 +90,21 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument
+		\,vifmArgument,vifmSoCommandSt
 " Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandStN,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
-		\,vifmCdCommandStN,vifmSetN,vifmArgument
+		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument
+		\,vifmArgument,vifmSoCommand,vifmSoCommandSt
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -116,6 +117,10 @@ syntax region vifmCmdArgs start='\(\s*\n\s*\\\)\?\s*\S\+'
 		\ contains=vifmColonSubcommand,vifmComment
 syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$'
 		\ keepend oneline contains=vifmColoCommand
+syntax region vifmSoCommandSt start='\(\s\|:\)*so\%[urce]\>' end='$\||'
+		\ keepend oneline contains=vifmSoCommand
+syntax region vifmSoCommandStN start='\(\s\|:\)*so\%[urce]\>' end='$\||'
+		\ contained keepend oneline contains=vifmSoCommand,vifmNotation
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend
 		\ oneline contains=vifmMarkCommand
 syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
@@ -241,6 +246,7 @@ highlight link vifmExprCommand Statement
 highlight link vifmNormalCommand Statement
 highlight link vifmLetCommand Statement
 highlight link vifmSetCommand Statement
+highlight link vifmSoCommand Statement
 highlight link vifmBuiltinFunction Function
 highlight link vifmOperator Operator
 highlight link vifmMap Statement
