@@ -54,7 +54,8 @@ Vi(m) specific features that need to be added.
     Some kind of selection mode (multiple blocks, mixing).
     Better registers support.
     /, ?, n, N as selectors.
-    Make n, N, / and ? with count behave like Vim on nowrapscan and match fail.
+    Make n, N, / and ? with count behave like Vim on nowrapscan and match fail
+        (this means "don't move cursor on search failure").
     :map without arguments
     Better ranges (add support for search patterns).
     Ctrl-W F key.

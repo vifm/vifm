@@ -1680,13 +1680,13 @@ search(key_info_t key_info, int backward)
 	{
 		const char *pattern = (curr_view->regexp[0] == '\0') ?
 				cfg.search_history[0] : curr_view->regexp;
-		found = find_pattern(curr_view, pattern, backward, 1);
-		curr_stats.save_msg = found;
+		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found);
+		if(!found)
+		{
+			return;
+		}
 		key_info.count--;
 	}
-
-	if(curr_view->matches == 0)
-		return;
 
 	while(key_info.count-- > 0)
 	{
@@ -1696,14 +1696,15 @@ search(key_info_t key_info, int backward)
 			found += find_next_pattern(curr_view, cfg.wrap_scan) != 0;
 	}
 
-	if(!found)
+	if(found)
+	{
+		status_bar_messagef("%c%s", backward ? '?' : '/', curr_view->regexp);
+	}
+	else
 	{
 		print_search_fail_msg(curr_view, backward);
-		curr_stats.save_msg = 1;
-		return;
 	}
 
-	status_bar_messagef("%c%s", backward ? '?' : '/', curr_view->regexp);
 	curr_stats.save_msg = 1;
 }
 
@@ -2176,10 +2177,11 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-find_npattern(FileView *view, const char *pattern, int backward, int move)
+find_npattern(FileView *view, const char *pattern, int backward)
 {
 	int i;
-	int found = find_pattern(view, pattern, backward, move);
+	int found;
+	(void)find_pattern(view, pattern, backward, 1, &found);
 	for(i = 0; i < search_repeat - 1; i++)
 	{
 		if(backward)

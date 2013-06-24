@@ -62,6 +62,9 @@
 	Remove escape-codes from generated plain-text documentation on cygwin.
 	Thanks to filterfalse.
 
+	Do not reset selection on search when 'hlsearch' is reset.  Thanks to
+	filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
@@ -80,6 +83,9 @@
 
 	Fixed "No matches..." message for :apropos command, which accessed
 	freed memory.
+
+	Fixed displaying of search results message for different combinations of
+	'wrapscan' and 'hlsearch' options states.
 
 0.7.5-beta to 0.7.5
 

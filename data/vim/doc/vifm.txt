@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 22
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 24
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -224,13 +224,17 @@ Searching~
 ?regular expression - select files matching regular expression. Backward
     search.
 
-                                               *vifm-n*
-[count]n - previous file matching last search pattern.  Considers last
-    search direction.
+                                               *vifm-n* *vifm-N*
+[count]n - go to the next file matching last search pattern.  Takes last
+    search direction into account.
+[count]N - go to the previous file matching last search pattern.  Takes
+    last search direction into account.
 
-                                               *vifm-N*
-[count]N - previous file matching last search pattern.  Considers last
-    search direction.
+    If |vifm-'hlsearch'| is set, hitting n/N to perform search and go to the
+    first matching item resets current selection in normal mode.  It is
+    not the case if search was already performed on files in the directory,
+    thus selection is not reset after clearing selection with escape key
+    and hitting n/N key again.
 
 Note: vifm uses extended regular expressions for / and ?.
 

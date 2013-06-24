@@ -39,7 +39,7 @@ void normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
 void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 int ffind(int ch, int backward, int wrap);
 int cmd_paren(int lb, int ub, int inc);
-int find_npattern(FileView *view, const char *pattern, int backward, int move);
+int find_npattern(FileView *view, const char *pattern, int backward);
 
 #endif
 

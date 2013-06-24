@@ -40,6 +40,8 @@ enum
 	NEXT
 };
 
+static void print_result(const FileView *const view, int found, int backward);
+
 static int
 find_next_pattern_match(FileView *view, int start, int direction)
 {
@@ -100,21 +102,27 @@ find_next_pattern(FileView *view, int wrap)
 }
 
 int
-find_pattern(FileView *view, const char *pattern, int backward, int move)
+find_pattern(FileView *view, const char pattern[], int backward, int move,
+		int *const found)
 {
 	int cflags;
-	int found = 0;
+	int nmatches = 0;
 	regex_t re;
 	int x;
 	int err;
 
-	if(move)
+	if(move && cfg.hl_search)
 		clean_selected_files(view);
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].search_match = 0;
 
+	*found = 0;
+
 	if(pattern[0] == '\0')
+	{
+		*found = 1;
 		return 0;
+	}
 
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
@@ -140,7 +148,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 				view->dir_entry[x].selected = 1;
 				view->selected_files++;
 			}
-			found++;
+			nmatches++;
 		}
 		regfree(&re);
 	}
@@ -154,8 +162,8 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view);
 
-	view->matches = found;
-	if(found > 0)
+	view->matches = nmatches;
+	if(nmatches > 0)
 	{
 		int was_found = 1;
 		if(move)
@@ -165,15 +173,17 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 			else
 				was_found = find_next_pattern(view, cfg.wrap_scan);
 		}
+		*found = was_found;
+
+		if(cfg.hl_search && !was_found)
+		{
+			/* Update the view.  It look might have changed, because of selection. */
+			move_to_list_pos(view, view->list_pos);
+		}
+
 		if(!cfg.hl_search)
 		{
-			if(!was_found)
-			{
-				print_search_fail_msg(view, backward);
-				return 1;
-			}
-
-			print_search_msg(view, backward);
+			print_result(view, was_found, backward);
 			return 1;
 		}
 		return 0;
@@ -183,6 +193,21 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		move_to_list_pos(view, view->list_pos);
 		print_search_fail_msg(view, backward);
 		return 1;
+	}
+}
+
+/* Prints success or error message, determined by the found argument, about
+ * search results to a user. */
+static void
+print_result(const FileView *const view, int found, int backward)
+{
+	if(found)
+	{
+		print_search_msg(view, backward);
+	}
+	else
+	{
+		print_search_fail_msg(view, backward);
 	}
 }
 
