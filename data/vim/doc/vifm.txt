@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 22
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 24
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -225,7 +225,7 @@ Searching~
     search.
 
                                                *vifm-n*
-[count]n - previous file matching last search pattern.  Considers last
+[count]n - next file matching last search pattern.  Considers last
     search direction.
 
                                                *vifm-N*
