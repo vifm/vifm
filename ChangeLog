@@ -62,6 +62,9 @@
 	Remove escape-codes from generated plain-text documentation on cygwin.
 	Thanks to filterfalse.
 
+	Do not reset selection on search when 'hlsearch' is reset.  Thanks to
+	filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

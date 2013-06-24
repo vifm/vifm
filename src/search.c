@@ -108,7 +108,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	int x;
 	int err;
 
-	if(move)
+	if(move && cfg.hl_search)
 		clean_selected_files(view);
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].search_match = 0;
