@@ -84,6 +84,9 @@
 	Fixed "No matches..." message for :apropos command, which accessed
 	freed memory.
 
+	Fixed displaying of search results message for different combinations of
+	'wrapscan' and 'hlsearch' options states.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).

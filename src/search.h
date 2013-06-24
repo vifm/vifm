@@ -23,9 +23,11 @@
 #include "ui.h"
 
 /* The move argument specifies whether cursor in the view should be adjusted to
- * point to just found file in case of successful search.  Returns non-zero when
- * a message was printed to a user, otherwise zero is returned. */
-int find_pattern(FileView *view, const char *pattern, int backward, int move);
+ * point to just found file in case of successful search.  Sets *found to
+ * non-zero if pattern was found, otherwise it's assigned zero.  Returns
+ * non-zero when a message was printed to a user, otherwise zero is returned. */
+int find_pattern(FileView *view, const char pattern[], int backward, int move,
+		int *const found);
 /* returns non-zero if pattern was found */
 int find_next_pattern(FileView *view, int wrap);
 /* returns non-zero if pattern was found */
