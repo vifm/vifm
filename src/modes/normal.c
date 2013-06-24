@@ -2176,10 +2176,10 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-find_npattern(FileView *view, const char *pattern, int backward, int move)
+find_npattern(FileView *view, const char *pattern, int backward)
 {
 	int i;
-	int found = find_pattern(view, pattern, backward, move);
+	int found = find_pattern(view, pattern, backward, 1);
 	for(i = 0; i < search_repeat - 1; i++)
 	{
 		if(backward)
