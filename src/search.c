@@ -40,6 +40,8 @@ enum
 	NEXT
 };
 
+static void print_result(const FileView *const view, int found, int backward);
+
 static int
 find_next_pattern_match(FileView *view, int start, int direction)
 {
@@ -167,13 +169,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		}
 		if(!cfg.hl_search)
 		{
-			if(!was_found)
-			{
-				print_search_fail_msg(view, backward);
-				return 1;
-			}
-
-			print_search_msg(view, backward);
+			print_result(view, was_found, backward);
 			return 1;
 		}
 		return 0;
@@ -183,6 +179,21 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		move_to_list_pos(view, view->list_pos);
 		print_search_fail_msg(view, backward);
 		return 1;
+	}
+}
+
+/* Prints success or error message, determined by the found argument, about
+ * search results to a user. */
+static void
+print_result(const FileView *const view, int found, int backward)
+{
+	if(found)
+	{
+		print_search_msg(view, backward);
+	}
+	else
+	{
+		print_search_fail_msg(view, backward);
 	}
 }
 
