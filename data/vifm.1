@@ -1,4 +1,4 @@
-.TH vifm 1 "Jun 22, 2013" "" "Vifm"
+.TH vifm 1 "Jun 24, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -277,6 +277,11 @@ find the next match of / or ?.
 .TP
 .BI [count]N
 find the previous match of / or ?.
+.TP
+If 'hlsearch' option is set, hitting n/N to perform search and go to the first \
+matching item resets current selection in normal mode.  It is not the case if \
+search was already performed on files in the directory, thus selection is not \
+reset after clearing selection with escape key and hitting n/N key again.
 .TP
 .BI [count]f[character]
 search forward for file with [character] as first character in name.  Search
