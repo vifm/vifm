@@ -1,4 +1,4 @@
-.TH vifm 1 "Jun 24, 2013" "" "Vifm"
+.TH vifm 1 "Jun 25, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2076,11 +2076,11 @@ after a space to the value of the 'grepprg' option in the following order: %i,
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 .EX
-    set grepprg=ack\\ \-n\\ \-H\\ \-r\\ %i\\ %a\\ %s
+    set grepprg=ack\\ \-H\\ \-r\\ %i\\ %a\\ %s
 .EE
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 .EX
-    set grepprg=ag\\ \-n\\ \-r\\ %i\\ %a\\ %s
+    set grepprg=ag\\ \-\-line-numbers\\ %i\\ %a\\ %s
 .EE
 
 .TP
