@@ -65,6 +65,8 @@
 	Do not reset selection on search when 'hlsearch' is reset.  Thanks to
 	filterfalse.
 
+	Preserve current cursor position on view resort.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

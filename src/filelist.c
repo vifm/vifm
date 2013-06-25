@@ -2588,11 +2588,28 @@ is_dir_big(const char path[])
 void
 resort_dir_list(int msg, FileView *view)
 {
+	/* Using this pointer after sorting is safe, because file entries are just
+	 * moved in the array. */
+	const char *const filename = (view->list_pos < view->list_rows) ?
+			view->dir_entry[view->list_pos].name : NULL;
+	int top_delta = view->list_pos - view->top_line;
+
 	if(msg && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
 	{
 		status_bar_message("Sorting directory...");
 	}
+
 	sort_view(view);
+
+	if(filename != NULL)
+	{
+		const int new_pos = find_file_pos_in_list(view, filename);
+		if(new_pos != -1)
+		{
+			view->top_line = new_pos - top_delta;
+			view->list_pos = new_pos;
+		}
+	}
 
 	if(msg && get_mode() != CMDLINE_MODE)
 	{
