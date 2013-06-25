@@ -857,6 +857,12 @@ reset_view_sort(FileView *view)
 }
 
 void
+invert_sorting_order(FileView *view)
+{
+	view->sort[0] = -view->sort[0];
+}
+
+void
 draw_dir_list(FileView *view)
 {
 	int attr;
@@ -1664,6 +1670,16 @@ erase_selection(FileView *view)
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
 	view->selected_files = 0;
+}
+
+void
+invert_selection(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; i++)
+	{
+		view->dir_entry[i].selected = !view->dir_entry[i].selected;
+	}
 }
 
 void

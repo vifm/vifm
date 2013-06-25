@@ -103,6 +103,8 @@ int consider_scroll_offset(FileView *view);
 
 /* Reinitializes view columns. */
 void reset_view_sort(FileView *view);
+/* Inverts primary key sorting order. */
+void invert_sorting_order(FileView *view);
 void draw_dir_list(FileView *view);
 void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
@@ -141,6 +143,8 @@ int pane_in_dir(FileView *view, const char *path);
 void clean_selected_files(FileView *view);
 /* Erases selection not saving anything. */
 void erase_selection(FileView *view);
+/* Inverts selection of files in the view. */
+void invert_selection(FileView *view);
 void get_all_selected_files(FileView *view);
 void get_selected_files(FileView *view, int count, const int *indexes);
 void count_selected(FileView *view);
