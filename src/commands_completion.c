@@ -61,6 +61,7 @@ static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
+static void complete_invert(const char str[]);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
@@ -108,6 +109,8 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 		complete_help(args);
 	else if(id == COM_HISTORY)
 		complete_history(args);
+	else if(id == COM_INVERT)
+		complete_invert(args);
 	else if(id == COM_CHOWN)
 		start += complete_chown(args);
 	else if(id == COM_FILE)
@@ -259,6 +262,28 @@ complete_history(const char *str)
 	{
 		if(strncmp(str, lines[i], len) == 0)
 			add_completion(lines[i]);
+	}
+	completion_group_end();
+	add_completion(str);
+}
+
+static void
+complete_invert(const char str[])
+{
+	static const char *lines[] =
+	{
+		"f",
+		"s",
+		"o",
+	};
+	int i;
+	const size_t len = strlen(str);
+	for(i = 0; i < ARRAY_LEN(lines); i++)
+	{
+		if(strncmp(str, lines[i], len) == 0)
+		{
+			add_completion(lines[i]);
+		}
 	}
 	completion_group_end();
 	add_completion(str);
