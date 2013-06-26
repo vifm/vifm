@@ -60,8 +60,10 @@
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
 static void complete_help(const char *str);
-static void complete_history(const char *str);
+static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
+static void complete_from_string_list(const char str[], const char *list[],
+		size_t list_len);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
@@ -241,9 +243,10 @@ complete_help(const char *str)
 }
 
 static void
-complete_history(const char *str)
+complete_history(const char str[])
 {
-	static const char *lines[] = {
+	static const char *lines[] =
+	{
 		".",
 		"dir",
 		"@",
@@ -256,15 +259,7 @@ complete_history(const char *str)
 		":",
 		"cmd",
 	};
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < ARRAY_LEN(lines); i++)
-	{
-		if(strncmp(str, lines[i], len) == 0)
-			add_completion(lines[i]);
-	}
-	completion_group_end();
-	add_completion(str);
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
 static void
@@ -276,13 +271,20 @@ complete_invert(const char str[])
 		"s",
 		"o",
 	};
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+}
+
+/* Performs str completion using items in the list of length list_len. */
+static void
+complete_from_string_list(const char str[], const char *list[], size_t list_len)
+{
 	int i;
 	const size_t len = strlen(str);
-	for(i = 0; i < ARRAY_LEN(lines); i++)
+	for(i = 0; i < list_len; i++)
 	{
-		if(strncmp(str, lines[i], len) == 0)
+		if(strncmp(str, list[i], len) == 0)
 		{
-			add_completion(lines[i]);
+			add_completion(list[i]);
 		}
 	}
 	completion_group_end();
