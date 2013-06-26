@@ -110,9 +110,15 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 	else if(id == COM_HELP)
 		complete_help(args);
 	else if(id == COM_HISTORY)
+	{
 		complete_history(args);
+		start = args;
+	}
 	else if(id == COM_INVERT)
+	{
 		complete_invert(args);
+		start = args;
+	}
 	else if(id == COM_CHOWN)
 		start += complete_chown(args);
 	else if(id == COM_FILE)

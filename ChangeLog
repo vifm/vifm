@@ -67,6 +67,8 @@
 
 	Preserve current cursor position on view resort.
 
+	Don't let completion of the :history command eat all available memory.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
