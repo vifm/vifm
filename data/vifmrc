@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 2 Jun, 2012)
+" Sample configuration file for vifm (last updated: 27 Jun, 2013)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -179,7 +179,7 @@ filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv
         \ {View using mplayer}
         \ mplayer %f,
 fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob
-         \ ffprobe -show_files -pretty %f 2> /dev/null
+         \ ffprobe -pretty %c 2>&1
 
 " Web
 filetype *.html,*.htm links,mozilla,uzbl-browser %f %i &
