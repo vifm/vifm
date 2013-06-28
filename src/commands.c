@@ -177,6 +177,8 @@ static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int if_cmd(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
+static void print_inversion_state(char state_type);
+static void invert_state(char state_type);
 static int jobs_cmd(const cmd_info_t *cmd_info);
 static int let_cmd(const cmd_info_t *cmd_info);
 static int locate_cmd(const cmd_info_t *cmd_info);
@@ -328,8 +330,8 @@ static const cmd_add_t commands[] = {
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "if",               .abbr = NULL,    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = if_cmd,          .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = COM_INVERT,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = invert_cmd,      .qmark = 2,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "let",              .abbr = NULL,    .emark = 0,  .id = COM_LET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2590,17 +2592,75 @@ if_cmd(const cmd_info_t *cmd_info)
 static int
 invert_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->qmark)
+	const char *const type_str = (cmd_info->argc == 0) ? "f" : cmd_info->argv[0];
+	const char state_type = type_str[0];
+
+	if(type_str[1] != '\0' || !char_is_one_of("fso", type_str[0]))
 	{
-		if(curr_view->invert)
-			status_bar_message("Filter is not inverted");
-		else
-			status_bar_message("Filter is inverted");
-		return 1;
+		return CMDS_ERR_INVALID_ARG;
 	}
 
-	toggle_filter_inversion(curr_view);
-	return 0;
+	if(cmd_info->qmark)
+	{
+		print_inversion_state(state_type);
+		return 1;
+	}
+	else
+	{
+		invert_state(state_type);
+		return 0;
+	}
+}
+
+/* Prints inversion state of the feature specified by the state_type
+ * argument. */
+static void
+print_inversion_state(char state_type)
+{
+	if(state_type == 'f')
+	{
+		status_bar_messagef("Filter is %sinverted",
+				curr_view->invert ? "" : "not ");
+	}
+	else if(state_type == 's')
+	{
+		status_bar_message("Selection does not have inversion state");
+	}
+	else if(state_type == 'o')
+	{
+		status_bar_messagef("Primary key is sorted in %s order",
+				(curr_view->sort[0] > 0) ? "ascending" : "descending");
+	}
+	else
+	{
+		assert(0 && "Unexpected state type.");
+	}
+}
+
+/* Inverts state of the feature specified by the state_type argument. */
+static void
+invert_state(char state_type)
+{
+	if(state_type == 'f')
+	{
+		toggle_filter_inversion(curr_view);
+	}
+	else if(state_type == 's')
+	{
+		invert_selection(curr_view);
+		redraw_view(curr_view);
+		need_clean_selection = 0;
+	}
+	else if(state_type == 'o')
+	{
+		invert_sorting_order(curr_view);
+		resort_dir_list(1, curr_view);
+		redraw_view(curr_view);
+	}
+	else
+	{
+		assert(0 && "Unexpected state type.");
+	}
 }
 
 static int

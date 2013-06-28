@@ -55,6 +55,7 @@ enum
 	COM_RENAME,
 	COM_ECHO,
 	COM_EXE,
+	COM_INVERT,
 };
 
 /* values of type argument for filename_completion() function */

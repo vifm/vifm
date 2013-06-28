@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 24
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 26
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1132,8 +1132,11 @@ of the hierarchy and transparency for all others.
     non-zero, otherwise they are ignored.
 
                                                *vifm-:invert*
-:invert - invert file name filter.
-:invert? - show current filter state.
+:invert [f] - invert file name filter.
+:invert? [f] - show current filter state.
+:invert s - invert selection.
+:invert o - invert sorting order of the primary sorting key.
+:invert? o - show sorting order of the primary sorting key.
 
                                                *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.
@@ -1794,11 +1797,11 @@ used, they will be implicitly added after a space to the value of the
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 >
-    set grepprg=ack\ -n\ -H\ -r\ %i\ %a\ %s
+    set grepprg=ack\ -H\ -r\ %i\ %a\ %s
 <
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 >
-    set grepprg=ag\ -n\ -r\ %i\ %a\ %s
+    set grepprg=ag\ --line-numbers\ %i\ %a\ %s
 <
                                                *vifm-'history'* *vifm-'hi'*
 history hi

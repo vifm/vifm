@@ -60,7 +60,10 @@
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
 static void complete_help(const char *str);
-static void complete_history(const char *str);
+static void complete_history(const char str[]);
+static void complete_invert(const char str[]);
+static void complete_from_string_list(const char str[], const char *list[],
+		size_t list_len);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
@@ -107,7 +110,15 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 	else if(id == COM_HELP)
 		complete_help(args);
 	else if(id == COM_HISTORY)
+	{
 		complete_history(args);
+		start = args;
+	}
+	else if(id == COM_INVERT)
+	{
+		complete_invert(args);
+		start = args;
+	}
 	else if(id == COM_CHOWN)
 		start += complete_chown(args);
 	else if(id == COM_FILE)
@@ -238,9 +249,10 @@ complete_help(const char *str)
 }
 
 static void
-complete_history(const char *str)
+complete_history(const char str[])
 {
-	static const char *lines[] = {
+	static const char *lines[] =
+	{
 		".",
 		"dir",
 		"@",
@@ -253,12 +265,33 @@ complete_history(const char *str)
 		":",
 		"cmd",
 	};
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < ARRAY_LEN(lines); i++)
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+}
+
+static void
+complete_invert(const char str[])
+{
+	static const char *lines[] =
 	{
-		if(strncmp(str, lines[i], len) == 0)
-			add_completion(lines[i]);
+		"f",
+		"s",
+		"o",
+	};
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+}
+
+/* Performs str completion using items in the list of length list_len. */
+static void
+complete_from_string_list(const char str[], const char *list[], size_t list_len)
+{
+	int i;
+	const size_t len = strlen(str);
+	for(i = 0; i < list_len; i++)
+	{
+		if(strncmp(str, list[i], len) == 0)
+		{
+			add_completion(list[i]);
+		}
 	}
 	completion_group_end();
 	add_completion(str);

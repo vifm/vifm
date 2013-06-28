@@ -1,4 +1,4 @@
-.TH vifm 1 "Jun 24, 2013" "" "Vifm"
+.TH vifm 1 "Jun 26, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1274,11 +1274,20 @@ starts conditional block.  Commands are executed until next matching :else of
 :endif command if {expr1} evaluates to non-zero, otherwise they are ignored.
 See also help on :else and :endif commands.
 .TP
-.BI :invert
+.BI ":invert [f]"
 invert file name filter.
 .TP
-.BI :invert?
+.BI ":invert? [f]"
 show current filter state.
+.TP
+.BI ":invert s"
+invert selection.
+.TP
+.BI ":invert o"
+invert sorting order of the primary sorting key.
+.TP
+.BI ":invert? o"
+show sorting order of the primary sorting key.
 .TP
 .BI :jobs
 shows menu of current backgrounded processes.
@@ -2076,11 +2085,11 @@ after a space to the value of the 'grepprg' option in the following order: %i,
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 .EX
-    set grepprg=ack\\ \-n\\ \-H\\ \-r\\ %i\\ %a\\ %s
+    set grepprg=ack\\ \-H\\ \-r\\ %i\\ %a\\ %s
 .EE
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 .EX
-    set grepprg=ag\\ \-n\\ \-r\\ %i\\ %a\\ %s
+    set grepprg=ag\\ \-\-line-numbers\\ %i\\ %a\\ %s
 .EE
 
 .TP
