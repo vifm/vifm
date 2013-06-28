@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 25
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 26
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1132,8 +1132,11 @@ of the hierarchy and transparency for all others.
     non-zero, otherwise they are ignored.
 
                                                *vifm-:invert*
-:invert - invert file name filter.
-:invert? - show current filter state.
+:invert [f] - invert file name filter.
+:invert? [f] - show current filter state.
+:invert s - invert selection.
+:invert o - invert sorting order of the primary sorting key.
+:invert? o - show sorting order of the primary sorting key.
 
                                                *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.
