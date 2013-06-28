@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: June 23, 2013
+" Last Change: June 28, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -15,11 +15,11 @@ set cpo-=C
 " General commands
 syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
-		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] invert jobs
-		\ locate ls marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
-		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
-		\ sp[lit] s[ubstitute] touch tr sync undol[ist] unl[et] ve[rsion] vie[w]
-		\ vifm windo winrun w[rite] wq x[it] y[ank]
+		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] jobs locate ls
+		\ marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd q[uit]
+		\ reg[isters] rename restart restore rlink screen sh[ell] sor[t] sp[lit]
+		\ s[ubstitute] touch tr sync undol[ist] unl[et] ve[rsion] vie[w] vifm windo
+		\ winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
@@ -33,6 +33,7 @@ syntax keyword vifmCdCommand contained cd
 syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmHiCommand contained hi[ghlight]
+syntax keyword vifmInvertCommand contained invert
 syntax keyword vifmLetCommand contained let
 syntax keyword vifmSetCommand contained se[t]
 syntax keyword vifmSoCommand contained so[urce]
@@ -98,13 +99,15 @@ syntax region vifmStatementCN start='\(\s\|:\)*'
 		\,vifmFtCommandStN,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
 		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
+		\,vifmInvertCommand,vifmInvertCommandStN
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommand,vifmSoCommandSt
+		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
+		\,vifmInvertCommandSt
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -117,6 +120,10 @@ syntax region vifmCmdArgs start='\(\s*\n\s*\\\)\?\s*\S\+'
 		\ contains=vifmColonSubcommand,vifmComment
 syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$'
 		\ keepend oneline contains=vifmColoCommand
+syntax region vifmInvertCommandSt start='\(\s\|:\)*invert\>' end='$\||'
+		\ keepend oneline contains=vifmInvertCommand
+syntax region vifmInvertCommandStN start='\(\s\|:\)*invert\>' end='$\||'
+		\ contained keepend oneline contains=vifmInvertCommand,vifmNotation
 syntax region vifmSoCommandSt start='\(\s\|:\)*so\%[urce]\>' end='$\||'
 		\ keepend oneline contains=vifmSoCommand
 syntax region vifmSoCommandStN start='\(\s\|:\)*so\%[urce]\>' end='$\||'
@@ -240,6 +247,7 @@ highlight link vifmCdCommand Statement
 highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
 highlight link vifmHiCommand Statement
+highlight link vifmInvertCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmExprCommand Statement
