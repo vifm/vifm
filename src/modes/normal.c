@@ -91,7 +91,6 @@ static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
-static void go_to_other_window(void);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void switch_panes(void);
 static FileView * get_view(void);
@@ -99,6 +98,9 @@ static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_other_window(void);
+static void go_to_other_pane(void);
+static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
@@ -486,7 +488,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	go_to_other_window();
+	go_to_other_pane();
 }
 
 /* Processes !! normal mode command, which can be prepended by a count, which is
@@ -542,7 +544,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(cfg.tab_switches_pane)
 	{
-		go_to_other_window();
+		cmd_space(key_info, keys_info);
 	}
 	else
 	{
@@ -729,14 +731,6 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	go_to_other_window();
 }
 
-static void
-go_to_other_window(void)
-{
-	change_window();
-	if(curr_view->explore_mode)
-		activate_view_mode();
-}
-
 void
 normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -744,7 +738,7 @@ normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view != &lwin)
 	{
 		switch_panes();
-		go_to_other_window();
+		go_to_other_pane();
 	}
 }
 
@@ -755,7 +749,7 @@ normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view != &rwin)
 	{
 		switch_panes();
-		go_to_other_window();
+		go_to_other_pane();
 	}
 }
 
@@ -766,7 +760,7 @@ normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view != &lwin)
 	{
 		switch_panes();
-		go_to_other_window();
+		go_to_other_pane();
 	}
 }
 
@@ -777,7 +771,7 @@ normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view != &rwin)
 	{
 		switch_panes();
-		go_to_other_window();
+		go_to_other_pane();
 	}
 }
 
@@ -923,10 +917,46 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(!try_switch_into_view_mode())
+	{
+		if(other_view->explore_mode)
+		{
+			go_to_other_window();
+		}
+	}
+}
+
+/* Activates view mode on the preview, or just switches active pane. */
+static void
+go_to_other_window(void)
+{
+	if(!try_switch_into_view_mode())
+	{
+		go_to_other_pane();
+	}
+}
+
+/* Switches to other pane, ignoring state of the preview and entering view mode
+ * in case the other pane has explore mode active. */
+static void
+go_to_other_pane(void)
+{
+	change_window();
+	if(curr_view->explore_mode)
+		activate_view_mode();
+}
+
+/* Tries to go into view mode in case the other pane displays preview.  Returns
+ * non-zero on success, otherwise zero is returned. */
+static int
+try_switch_into_view_mode(void)
+{
 	if(curr_stats.view)
+	{
 		enter_view_mode(0);
-	else if(other_view->explore_mode)
-		go_to_other_window();
+		return 1;
+	}
+	return 0;
 }
 
 /* Clone selection.  Count specifies number of copies of each file or directory
