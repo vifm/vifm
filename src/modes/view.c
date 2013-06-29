@@ -22,7 +22,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
-#include <string.h> /* strcpy() strlen() */
+#include <string.h> /* strcpy() strdup() strlen() */
 #include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
@@ -68,9 +68,11 @@ typedef struct
 	int width;
 	FileView *view;
 	regex_t re;
-	int last_search_backward;
+	int last_search_backward; /* Value -1 means no search was performed. */
 	int search_repeat;
 	int wrap;
+	int abandoned; /* Shows whether view mode was abandoned. */
+	char *filename;
 }view_info_t;
 
 /* View information structure indexes and count. */
@@ -82,9 +84,9 @@ enum
 	VI_COUNT, /* Number of view information structures. */
 };
 
-static int get_file_to_explore(const FileView *view, char buf[],
-		size_t buf_len);
+static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
+static void free_view_info(view_info_t *vi);
 static void redraw(void);
 static void calc_vlines(void);
 static void calc_vlines_wrapped(view_info_t *vi);
@@ -96,8 +98,16 @@ static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_space(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -120,6 +130,9 @@ static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
+static int is_trying_the_same_file(void);
+static int get_file_to_explore(const FileView *view, char buf[],
+		size_t buf_len);
 
 static int *mode;
 view_info_t view_info[VI_COUNT];
@@ -143,6 +156,23 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
 	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
 	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
+	{L"\x17"L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
+	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
+	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
+	{L"\x17\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
+	{L"\x17j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
+	{L"\x17\x0b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
+	{L"\x17k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
+	{L"\x17\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17\x14", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wt}}},
+	{L"\x17t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wt}}},
+	{L"\x17\x17", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
 	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
@@ -226,20 +256,26 @@ init_view_mode(int *key_mode)
 void
 enter_view_mode(int explore)
 {
-	char buf[PATH_MAX];
+	char full_path[PATH_MAX];
 	const char *viewer;
 	FILE *fp;
 
-	if(get_file_to_explore(curr_view, buf, sizeof(buf)) != 0)
+	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
 		show_error_msg("File exploring", "The file cannot be explored");
 		return;
 	}
 
+	if(vi->filename != NULL && stroscmp(vi->filename, full_path) == 0)
+	{
+		*mode = VIEW_MODE;
+		return;
+	}
+
 	/* FIXME: same code is in ../quickview.c */
-	viewer = get_viewer_for_file(get_last_path_component(buf));
+	viewer = get_viewer_for_file(get_last_path_component(full_path));
 	if(is_null_or_empty(viewer))
-		fp = fopen(buf, "r");
+		fp = fopen(full_path, "r");
 	else
 		fp = use_info_prog(viewer);
 
@@ -267,6 +303,8 @@ enter_view_mode(int explore)
 		return;
 	}
 
+	vi->filename = strdup(full_path);
+
 	*mode = VIEW_MODE;
 	update_view_title(&lwin);
 	update_view_title(&rwin);
@@ -282,35 +320,6 @@ enter_view_mode(int explore)
 	}
 
 	view_redraw();
-}
-
-/* Gets full path to the file that will be explored (the current file of the
- * view).  Returns non-zero if file cannot be explored. */
-static int
-get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
-{
-	const dir_entry_t *entry = &view->dir_entry[view->list_pos];
-
-	snprintf(buf, buf_len, "%s/%s", view->curr_dir, entry->name);
-	switch(entry->type)
-	{
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
-		case FIFO:
-#ifndef _WIN32
-		case SOCKET:
-#endif
-			return 1;
-		case LINK:
-			if(get_link_target_abs(buf, view->curr_dir, buf, buf_len) != 0)
-			{
-				return 1;
-			}
-			return (access(buf, R_OK) != 0);
-
-		default:
-			return 0;
-	}
 }
 
 void
@@ -388,11 +397,7 @@ leave_view_mode(void)
 
 	update_view_title(curr_view);
 
-	free_string_array(vi->lines, vi->nlines);
-	free(vi->widths);
-	if(vi->last_search_backward != -1)
-		regfree(&vi->re);
-	init_view_info(vi);
+	reset_view_info(vi);
 
 	if(curr_view->explore_mode || other_view->explore_mode)
 	{
@@ -400,6 +405,15 @@ leave_view_mode(void)
 	}
 }
 
+/* Frees and initializes anew view_into_t structure instance. */
+static void
+reset_view_info(view_info_t *vi)
+{
+	free_view_info(vi);
+	init_view_info(vi);
+}
+
+/* Initializes view_into_t structure instance with safe default values. */
 static void
 init_view_info(view_info_t *vi)
 {
@@ -416,6 +430,19 @@ init_view_info(view_info_t *vi)
 	vi->last_search_backward = -1;
 	vi->search_repeat = 0;
 	vi->wrap = 0;
+	vi->filename = NULL;
+	vi->abandoned = 0;
+}
+
+/* Frees all resources allocated by view_into_t structure instance. */
+static void
+free_view_info(view_info_t *vi)
+{
+	free_string_array(vi->lines, vi->nlines);
+	free(vi->widths);
+	if(vi->last_search_backward != -1)
+		regfree(&vi->re);
+	free(vi->filename);
 }
 
 /* Updates line width and redraws the view. */
@@ -614,6 +641,52 @@ view_switch_views(void)
 	view_info[VI_RWIN].view = &rwin;
 }
 
+/* Go to bottom-right window. */
+static void
+cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &rwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+static void
+cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &lwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+static void
+cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &rwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+static void
+cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &lwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+static void
+cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &rwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -622,10 +695,36 @@ cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
+cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &lwin)
+	{
+		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
 	comm_split(VSPLIT);
 	view_redraw();
+}
+
+static void
+cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
+{
+	vi->abandoned = 1;
+	*mode = NORMAL_MODE;
+	if(curr_view->explore_mode)
+	{
+		go_to_other_pane();
+	}
+}
+
+static void
+cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
+{
+	switch_panes();
 }
 
 static void
@@ -1025,6 +1124,71 @@ cmd_z(key_info_t key_info, keys_info_t *keys_info)
 	else
 		key_info.count = vi->view->window_rows - 2;
 	cmd_j(key_info, keys_info);
+}
+
+int
+draw_abandoned_view_mode(void)
+{
+	if(!vi->abandoned)
+	{
+		return 0;
+	}
+
+	if(is_trying_the_same_file())
+	{
+		redraw();
+		return 1;
+	}
+
+	reset_view_info(vi);
+	return 0;
+}
+
+static int
+is_trying_the_same_file(void)
+{
+	char full_path[PATH_MAX];
+
+	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
+	{
+		return 0;
+	}
+
+	if(stroscmp(vi->filename, full_path) != 0)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+/* Gets full path to the file that will be explored (the current file of the
+ * view).  Returns non-zero if file cannot be explored. */
+static int
+get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
+{
+	const dir_entry_t *entry = &view->dir_entry[view->list_pos];
+
+	snprintf(buf, buf_len, "%s/%s", view->curr_dir, entry->name);
+	switch(entry->type)
+	{
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
+		case FIFO:
+#ifndef _WIN32
+		case SOCKET:
+#endif
+			return 1;
+		case LINK:
+			if(get_link_target_abs(buf, view->curr_dir, buf, buf_len) != 0)
+			{
+				return 1;
+			}
+			return (access(buf, R_OK) != 0);
+
+		default:
+			return 0;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
