@@ -1660,6 +1660,18 @@ refresh_view_win(FileView *view)
 }
 
 void
+move_window(FileView *view, int horizontally, int first)
+{
+	const SPLIT split_type = horizontally ? HSPLIT : VSPLIT;
+	const FileView *const desired_view = first ? &lwin : &rwin;
+	split_view(split_type);
+	if(view != desired_view)
+	{
+		switch_windows();
+	}
+}
+
+void
 switch_windows(void)
 {
 	switch_panes_content();
@@ -1718,6 +1730,25 @@ go_to_other_pane(void)
 {
 	change_window();
 	try_activate_view_mode();
+}
+
+void
+split_view(SPLIT orientation)
+{
+	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
+		return;
+
+	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
+	{
+		if(orientation == VSPLIT)
+			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
+		else
+			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
+	}
+
+	curr_stats.split = orientation;
+	curr_stats.number_of_windows = 2;
+	curr_stats.need_update = UT_REDRAW;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

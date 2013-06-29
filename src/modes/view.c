@@ -580,41 +580,45 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &lwin)
+	FileView *const view = curr_stats.view ? other_view : curr_view;
+	if(view != &lwin)
 	{
 		view_switch_views();
 	}
-	normal_cmd_ctrl_wH(key_info, keys_info);
+	move_window(view, 0, 1);
 }
 
 static void
 cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &rwin)
+	FileView *const view = curr_stats.view ? other_view : curr_view;
+	if(view != &rwin)
 	{
 		view_switch_views();
 	}
-	normal_cmd_ctrl_wJ(key_info, keys_info);
+	move_window(view, 1, 0);
 }
 
 static void
 cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &lwin)
+	FileView *const view = curr_stats.view ? other_view : curr_view;
+	if(view != &lwin)
 	{
 		view_switch_views();
 	}
-	normal_cmd_ctrl_wK(key_info, keys_info);
+	move_window(view, 1, 1);
 }
 
 static void
 cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &rwin)
+	FileView *const view = curr_stats.view ? other_view : curr_view;
+	if(view != &rwin)
 	{
 		view_switch_views();
 	}
-	normal_cmd_ctrl_wL(key_info, keys_info);
+	move_window(view, 0, 0);
 }
 
 void
@@ -690,7 +694,7 @@ cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
+	split_view(HSPLIT);
 	view_redraw();
 }
 
@@ -706,7 +710,7 @@ cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
+	split_view(VSPLIT);
 	view_redraw();
 }
 

@@ -81,6 +81,10 @@ static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void scroll_view(ssize_t offset);
+static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -92,7 +96,6 @@ static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
-static void move_window(int horizontally, int first);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
@@ -217,10 +220,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x12", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
-	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wH}}},
-	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wJ}}},
-	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wK}}},
-	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wL}}},
+	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wH}}},
+	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
+	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
+	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
 	{L"\x17"L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
 	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
 	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
@@ -706,7 +709,7 @@ cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
+	split_view(HSPLIT);
 }
 
 /* Go to top-left window. */
@@ -721,7 +724,7 @@ cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
+	split_view(VSPLIT);
 }
 
 static void
@@ -730,42 +733,28 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	go_to_other_window();
 }
 
-void
-normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
-{
-	move_window(0, 1);
-}
-
-void
-normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
-{
-	move_window(1, 0);
-}
-
-void
-normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
-{
-	move_window(1, 1);
-}
-
-void
-normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
-{
-	move_window(0, 0);
-}
-
-/* Layouts current window in correct corner with correct relative position
- * (horizontally/vertically, left-top/right-bottom). */
 static void
-move_window(int horizontally, int first)
+cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	const SPLIT split_type = horizontally ? HSPLIT : VSPLIT;
-	const FileView *const desired_view = first ? &lwin : &rwin;
-	comm_split(split_type);
-	if(curr_view != desired_view)
-	{
-		switch_windows();
-	}
+	move_window(curr_view, 0, 1);
+}
+
+static void
+cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
+{
+	move_window(curr_view, 1, 0);
+}
+
+static void
+cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
+{
+	move_window(curr_view, 1, 1);
+}
+
+static void
+cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
+{
+	move_window(curr_view, 0, 0);
 }
 
 void

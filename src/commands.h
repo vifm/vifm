@@ -47,7 +47,6 @@ int exec_command(const char cmd[], FileView *view, int type);
 char * find_last_command(char *cmd);
 void comm_quit(int write_info, int force);
 void comm_only(void);
-void comm_split(SPLIT orientation);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);
