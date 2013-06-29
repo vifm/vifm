@@ -92,6 +92,7 @@ static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
+static void switch_windows(void);
 static void switch_panes(void);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
@@ -737,8 +738,7 @@ normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(VSPLIT);
 	if(curr_view != &lwin)
 	{
-		switch_panes();
-		go_to_other_pane();
+		switch_windows();
 	}
 }
 
@@ -748,8 +748,7 @@ normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(HSPLIT);
 	if(curr_view != &rwin)
 	{
-		switch_panes();
-		go_to_other_pane();
+		switch_windows();
 	}
 }
 
@@ -759,8 +758,7 @@ normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(HSPLIT);
 	if(curr_view != &lwin)
 	{
-		switch_panes();
-		go_to_other_pane();
+		switch_windows();
 	}
 }
 
@@ -770,9 +768,17 @@ normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(VSPLIT);
 	if(curr_view != &rwin)
 	{
-		switch_panes();
-		go_to_other_pane();
+		switch_windows();
 	}
+}
+
+/* Switches two panes saving current windows as the active one (left/top or
+ * right/bottom). */
+static void
+switch_windows(void)
+{
+	switch_panes();
+	go_to_other_pane();
 }
 
 void
