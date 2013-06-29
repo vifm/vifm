@@ -182,8 +182,9 @@ void populate_dir_list(FileView *view, int reload);
 /* Loads filelist for the view and redraws the view.  The reload parameter
  * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
-/* Resorts view without reloading it.  msg parameter controls whether to show
- * "Sorting..." statusbar message. */
+/* Resorts view without reloading it and preserving currently file under cursor
+ * along with its relative position in the list.  msg parameter controls whether
+ * to show "Sorting..." statusbar message. */
 void resort_dir_list(int msg, FileView *view);
 void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
