@@ -94,7 +94,6 @@ static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void move_window(int horizontally, int first);
 static void switch_windows(void);
-static void switch_panes(void);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
@@ -776,7 +775,7 @@ move_window(int horizontally, int first)
 static void
 switch_windows(void)
 {
-	switch_panes();
+	switch_panes_content();
 	go_to_other_pane();
 }
 
@@ -853,52 +852,12 @@ move_splitter(key_info_t key_info, int fact)
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
-	switch_panes();
+	switch_panes_content();
 	/* In case ex-other pane was in explore mode, activate it. */
 	if(curr_view->explore_mode)
 	{
 		activate_view_mode();
 	}
-}
-
-/* Switch panes. */
-static void
-switch_panes(void)
-{
-	FileView tmp_view;
-	WINDOW* tmp;
-	int t;
-
-	if(get_mode() != VIEW_MODE)
-	{
-		view_switch_views();
-	}
-
-	tmp = lwin.win;
-	lwin.win = rwin.win;
-	rwin.win = tmp;
-
-	t = lwin.window_rows;
-	lwin.window_rows = rwin.window_rows;
-	rwin.window_rows = t;
-
-	t = lwin.window_width;
-	lwin.window_width = rwin.window_width;
-	rwin.window_width = t;
-
-	t = lwin.color_scheme;
-	lwin.color_scheme = rwin.color_scheme;
-	rwin.color_scheme = t;
-
-	tmp = lwin.title;
-	lwin.title = rwin.title;
-	rwin.title = tmp;
-
-	tmp_view = lwin;
-	lwin = rwin;
-	rwin = tmp_view;
-
-	curr_stats.need_update = UT_REDRAW;
 }
 
 static void

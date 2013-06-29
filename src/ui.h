@@ -234,6 +234,8 @@ void request_view_update(FileView *view);
 void resize_for_menu_like(void);
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);
+/* Switches panes content. */
+void switch_panes_content(void);
 
 #endif
 

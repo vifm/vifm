@@ -1658,5 +1658,44 @@ refresh_view_win(FileView *view)
 	}
 }
 
+void
+switch_panes_content(void)
+{
+	FileView tmp_view;
+	WINDOW* tmp;
+	int t;
+
+	if(get_mode() != VIEW_MODE)
+	{
+		view_switch_views();
+	}
+
+	tmp = lwin.win;
+	lwin.win = rwin.win;
+	rwin.win = tmp;
+
+	t = lwin.window_rows;
+	lwin.window_rows = rwin.window_rows;
+	rwin.window_rows = t;
+
+	t = lwin.window_width;
+	lwin.window_width = rwin.window_width;
+	rwin.window_width = t;
+
+	t = lwin.color_scheme;
+	lwin.color_scheme = rwin.color_scheme;
+	rwin.color_scheme = t;
+
+	tmp = lwin.title;
+	lwin.title = rwin.title;
+	rwin.title = tmp;
+
+	tmp_view = lwin;
+	lwin = rwin;
+	rwin = tmp_view;
+
+	curr_stats.need_update = UT_REDRAW;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
