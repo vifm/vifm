@@ -92,6 +92,7 @@ static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
+static void move_window(int horizontally, int first);
 static void switch_windows(void);
 static void switch_panes(void);
 static FileView * get_view(void);
@@ -735,38 +736,36 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
-	if(curr_view != &lwin)
-	{
-		switch_windows();
-	}
+	move_window(0, 1);
 }
 
 void
 normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
-	if(curr_view != &rwin)
-	{
-		switch_windows();
-	}
+	move_window(1, 0);
 }
 
 void
 normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
-	if(curr_view != &lwin)
-	{
-		switch_windows();
-	}
+	move_window(1, 1);
 }
 
 void
 normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
-	if(curr_view != &rwin)
+	move_window(0, 0);
+}
+
+/* Layouts current window in correct corner with correct relative position
+ * (horizontally/vertically, left-top/right-bottom). */
+static void
+move_window(int horizontally, int first)
+{
+	const SPLIT split_type = horizontally ? HSPLIT : VSPLIT;
+	const FileView *const desired_view = first ? &lwin : &rwin;
+	comm_split(split_type);
+	if(curr_view != desired_view)
 	{
 		switch_windows();
 	}
