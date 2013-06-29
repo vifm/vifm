@@ -22,7 +22,8 @@
 void init_view_mode(int *key_mode);
 void enter_view_mode(int explore);
 void leave_view_mode(void);
-void activate_view_mode(void);
+/* In case current pane is in explore mode, activate the mode. */
+void try_activate_view_mode(void);
 void view_pre(void);
 void view_post(void);
 void view_redraw(void);

@@ -85,6 +85,7 @@ static void reload_lists(void);
 static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
+static void switch_panes_content(void);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -1659,6 +1660,21 @@ refresh_view_win(FileView *view)
 }
 
 void
+switch_windows(void)
+{
+	switch_panes_content();
+	go_to_other_pane();
+}
+
+void
+switch_panes(void)
+{
+	switch_panes_content();
+	try_activate_view_mode();
+}
+
+/* Switches panes content. */
+static void
 switch_panes_content(void)
 {
 	FileView tmp_view;
@@ -1695,6 +1711,13 @@ switch_panes_content(void)
 	rwin = tmp_view;
 
 	curr_stats.need_update = UT_REDRAW;
+}
+
+void
+go_to_other_pane(void)
+{
+	change_window();
+	try_activate_view_mode();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

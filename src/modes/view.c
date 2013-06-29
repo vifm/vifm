@@ -314,10 +314,13 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 }
 
 void
-activate_view_mode(void)
+try_activate_view_mode(void)
 {
-	*mode = VIEW_MODE;
-	pick_vi(curr_view->explore_mode);
+	if(curr_view->explore_mode)
+	{
+		*mode = VIEW_MODE;
+		pick_vi(curr_view->explore_mode);
+	}
 }
 
 void

@@ -93,14 +93,12 @@ static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void move_window(int horizontally, int first);
-static void switch_windows(void);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_other_window(void);
-static void go_to_other_pane(void);
 static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
@@ -770,15 +768,6 @@ move_window(int horizontally, int first)
 	}
 }
 
-/* Switches two panes saving current windows as the active one (left/top or
- * right/bottom). */
-static void
-switch_windows(void)
-{
-	switch_panes_content();
-	go_to_other_pane();
-}
-
 void
 normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -852,12 +841,7 @@ move_splitter(key_info_t key_info, int fact)
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
-	switch_panes_content();
-	/* In case ex-other pane was in explore mode, activate it. */
-	if(curr_view->explore_mode)
-	{
-		activate_view_mode();
-	}
+	switch_panes();
 }
 
 static void
@@ -898,16 +882,6 @@ go_to_other_window(void)
 	{
 		go_to_other_pane();
 	}
-}
-
-/* Switches to other pane, ignoring state of the preview and entering view mode
- * in case the other pane has explore mode active. */
-static void
-go_to_other_pane(void)
-{
-	change_window();
-	if(curr_view->explore_mode)
-		activate_view_mode();
 }
 
 /* Tries to go into view mode in case the other pane displays preview.  Returns
