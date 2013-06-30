@@ -258,7 +258,7 @@ my_chdir(const char *path)
 }
 
 char *
-cmds_expand_envvars(const char str[])
+expand_envvars(const char str[])
 {
 	char *result = NULL;
 	size_t len = 0;

@@ -583,7 +583,7 @@ filename_completion(const char *str, CompletionType type)
 	dirname = expand_tilde(strdup(str));
 	filename = strdup(dirname);
 
-	temp = cmds_expand_envvars(dirname);
+	temp = expand_envvars(dirname);
 	free(dirname);
 	dirname = temp;
 
