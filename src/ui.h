@@ -234,6 +234,21 @@ void request_view_update(FileView *view);
 void resize_for_menu_like(void);
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);
+/* Layouts the view in correct corner with correct relative position
+ * (horizontally/vertically, left-top/right-bottom). */
+void move_window(FileView *view, int horizontally, int first);
+/* Switches two panes saving current windows as the active one (left/top or
+ * right/bottom). */
+void switch_windows(void);
+/* Swaps current and other views. */
+void switch_panes(void);
+/* Switches to other pane, ignoring state of the preview and entering view mode
+ * in case the other pane has explore mode active. */
+void go_to_other_pane(void);
+/* Splits windows according to the value of orientation. */
+void split_view(SPLIT orientation);
+/* Switches view to one-window mode. */
+void only(void);
 
 #endif
 

@@ -81,6 +81,10 @@ static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void scroll_view(ssize_t offset);
+static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -91,14 +95,14 @@ static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
-static void go_to_other_window(void);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
-static void switch_panes(void);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_other_window(void);
+static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
@@ -216,21 +220,21 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x12", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
-	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wH}}},
-	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wJ}}},
-	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wK}}},
-	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wL}}},
+	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wH}}},
+	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
+	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
+	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
 	{L"\x17"L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
 	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
 	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
 	{L"\x17\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
 	{L"\x17j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
-	{L"\x17\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
-	{L"\x17o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
 	{L"\x17\x0b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
 	{L"\x17k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
 	{L"\x17\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
 	{L"\x17l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
+	{L"\x17o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
 	{L"\x17\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
@@ -486,7 +490,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	go_to_other_window();
+	go_to_other_pane();
 }
 
 /* Processes !! normal mode command, which can be prepended by a count, which is
@@ -542,7 +546,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(cfg.tab_switches_pane)
 	{
-		go_to_other_window();
+		cmd_space(key_info, keys_info);
 	}
 	else
 	{
@@ -694,18 +698,18 @@ cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 		go_to_other_window();
 }
 
-/* Leave only one pane. */
+/* Leave only one (current) pane. */
 static void
 cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_only();
+	only();
 }
 
 /* To split pane horizontally. */
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
+	split_view(HSPLIT);
 }
 
 /* Go to top-left window. */
@@ -720,7 +724,7 @@ cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
+	split_view(VSPLIT);
 }
 
 static void
@@ -730,55 +734,27 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-go_to_other_window(void)
+cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	change_window();
-	if(curr_view->explore_mode)
-		activate_view_mode();
+	move_window(curr_view, 0, 1);
 }
 
-void
-normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
+static void
+cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(VSPLIT);
-	if(curr_view != &lwin)
-	{
-		switch_panes();
-		go_to_other_window();
-	}
+	move_window(curr_view, 1, 0);
 }
 
-void
-normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
+static void
+cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
-	if(curr_view != &rwin)
-	{
-		switch_panes();
-		go_to_other_window();
-	}
+	move_window(curr_view, 1, 1);
 }
 
-void
-normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
+static void
+cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(HSPLIT);
-	if(curr_view != &lwin)
-	{
-		switch_panes();
-		go_to_other_window();
-	}
-}
-
-void
-normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
-{
-	comm_split(VSPLIT);
-	if(curr_view != &rwin)
-	{
-		switch_panes();
-		go_to_other_window();
-	}
+	move_window(curr_view, 0, 0);
 }
 
 void
@@ -855,51 +831,11 @@ static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
 	switch_panes();
-	/* In case ex-other pane was in explore mode, activate it. */
-	if(curr_view->explore_mode)
+	if(curr_stats.view)
 	{
-		activate_view_mode();
+		change_window();
+		(void)try_switch_into_view_mode();
 	}
-}
-
-/* Switch panes. */
-static void
-switch_panes(void)
-{
-	FileView tmp_view;
-	WINDOW* tmp;
-	int t;
-
-	if(get_mode() != VIEW_MODE)
-	{
-		view_switch_views();
-	}
-
-	tmp = lwin.win;
-	lwin.win = rwin.win;
-	rwin.win = tmp;
-
-	t = lwin.window_rows;
-	lwin.window_rows = rwin.window_rows;
-	rwin.window_rows = t;
-
-	t = lwin.window_width;
-	lwin.window_width = rwin.window_width;
-	rwin.window_width = t;
-
-	t = lwin.color_scheme;
-	lwin.color_scheme = rwin.color_scheme;
-	rwin.color_scheme = t;
-
-	tmp = lwin.title;
-	lwin.title = rwin.title;
-	rwin.title = tmp;
-
-	tmp_view = lwin;
-	lwin = rwin;
-	rwin = tmp_view;
-
-	curr_stats.need_update = UT_REDRAW;
 }
 
 static void
@@ -923,10 +859,36 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(!try_switch_into_view_mode())
+	{
+		if(other_view->explore_mode)
+		{
+			go_to_other_window();
+		}
+	}
+}
+
+/* Activates view mode on the preview, or just switches active pane. */
+static void
+go_to_other_window(void)
+{
+	if(!try_switch_into_view_mode())
+	{
+		go_to_other_pane();
+	}
+}
+
+/* Tries to go into view mode in case the other pane displays preview.  Returns
+ * non-zero on success, otherwise zero is returned. */
+static int
+try_switch_into_view_mode(void)
+{
 	if(curr_stats.view)
+	{
 		enter_view_mode(0);
-	else if(other_view->explore_mode)
-		go_to_other_window();
+		return 1;
+	}
+	return 0;
 }
 
 /* Clone selection.  Count specifies number of copies of each file or directory

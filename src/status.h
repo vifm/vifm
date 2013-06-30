@@ -67,7 +67,7 @@ typedef struct
 	int curr_register;
 	int register_saved;
 	int number_of_windows;
-	int view;
+	int view; /* Shows whether preview mode is activated. */
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 

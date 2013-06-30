@@ -85,6 +85,7 @@ static void reload_lists(void);
 static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
+static void switch_panes_content(void);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -1655,6 +1656,108 @@ refresh_view_win(FileView *view)
 	{
 		touchwin(stat_win);
 		wrefresh(stat_win);
+	}
+}
+
+void
+move_window(FileView *view, int horizontally, int first)
+{
+	const SPLIT split_type = horizontally ? HSPLIT : VSPLIT;
+	const FileView *const desired_view = first ? &lwin : &rwin;
+	split_view(split_type);
+	if(view != desired_view)
+	{
+		switch_windows();
+	}
+}
+
+void
+switch_windows(void)
+{
+	switch_panes_content();
+	go_to_other_pane();
+}
+
+void
+switch_panes(void)
+{
+	switch_panes_content();
+	try_activate_view_mode();
+}
+
+/* Switches panes content. */
+static void
+switch_panes_content(void)
+{
+	FileView tmp_view;
+	WINDOW* tmp;
+	int t;
+
+	if(get_mode() != VIEW_MODE)
+	{
+		view_switch_views();
+	}
+
+	tmp = lwin.win;
+	lwin.win = rwin.win;
+	rwin.win = tmp;
+
+	t = lwin.window_rows;
+	lwin.window_rows = rwin.window_rows;
+	rwin.window_rows = t;
+
+	t = lwin.window_width;
+	lwin.window_width = rwin.window_width;
+	rwin.window_width = t;
+
+	t = lwin.color_scheme;
+	lwin.color_scheme = rwin.color_scheme;
+	rwin.color_scheme = t;
+
+	tmp = lwin.title;
+	lwin.title = rwin.title;
+	rwin.title = tmp;
+
+	tmp_view = lwin;
+	lwin = rwin;
+	rwin = tmp_view;
+
+	curr_stats.need_update = UT_REDRAW;
+}
+
+void
+go_to_other_pane(void)
+{
+	change_window();
+	try_activate_view_mode();
+}
+
+void
+split_view(SPLIT orientation)
+{
+	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
+		return;
+
+	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
+	{
+		if(orientation == VSPLIT)
+			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
+		else
+			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
+	}
+
+	curr_stats.split = orientation;
+	curr_stats.number_of_windows = 2;
+	curr_stats.need_update = UT_REDRAW;
+}
+
+void
+only(void)
+{
+	if(curr_stats.number_of_windows != 1)
+	{
+		curr_stats.number_of_windows = 1;
+		update_screen(UT_REDRAW);
 	}
 }
 

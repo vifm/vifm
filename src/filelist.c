@@ -129,6 +129,7 @@ TSTATIC int regexp_filter_match(FileView *view, const char filename[],
 static size_t get_filetype_decoration_width(FileType type);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
+static void sort_dir_list(int msg, FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -2534,7 +2535,7 @@ populate_dir_list_internal(FileView *view, int reload)
 		add_parent_dir(view);
 	}
 
-	resort_dir_list(!reload, view);
+	sort_dir_list(!reload, view);
 
 	if(!reload && get_mode() != CMDLINE_MODE)
 	{
@@ -2592,14 +2593,9 @@ resort_dir_list(int msg, FileView *view)
 	 * moved in the array. */
 	const char *const filename = (view->list_pos < view->list_rows) ?
 			view->dir_entry[view->list_pos].name : NULL;
-	int top_delta = view->list_pos - view->top_line;
+	const int top_delta = view->list_pos - view->top_line;
 
-	if(msg && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
-	{
-		status_bar_message("Sorting directory...");
-	}
-
-	sort_view(view);
+	sort_dir_list(msg, view);
 
 	if(filename != NULL)
 	{
@@ -2610,6 +2606,19 @@ resort_dir_list(int msg, FileView *view)
 			view->list_pos = new_pos;
 		}
 	}
+}
+
+/* Resorts view without reloading it.  msg parameter controls whether to show
+ * "Sorting..." statusbar message. */
+static void
+sort_dir_list(int msg, FileView *view)
+{
+	if(msg && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
+	{
+		status_bar_message("Sorting directory...");
+	}
+
+	sort_view(view);
 
 	if(msg && get_mode() != CMDLINE_MODE)
 	{

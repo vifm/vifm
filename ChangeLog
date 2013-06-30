@@ -71,6 +71,8 @@
 
 	Don't let completion of the :history command eat all available memory.
 
+	Made all Ctrl-W x keys available view mode.  Thanks to filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

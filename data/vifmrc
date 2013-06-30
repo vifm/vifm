@@ -167,7 +167,7 @@ filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a
        \ {Play using ffplay}
        \ ffplay %c,
        \ {Play using MPlayer}
-       \ play_music %f,
+       \ mplayer %f,
 fileviewer *.mp3 mp3info
 
 " Video

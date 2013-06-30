@@ -22,6 +22,7 @@
 
 #include "cfg/config.h"
 #include "modes/modes.h"
+#include "modes/view.h"
 #include "utils/file_streams.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -79,6 +80,11 @@ quick_view_file(FileView *view)
 
 	if(curr_stats.number_of_windows == 1)
 		return;
+
+	if(draw_abandoned_view_mode())
+	{
+		return;
+	}
 
 	werase(other_view->win);
 	werase(other_view->title);

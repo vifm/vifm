@@ -1320,42 +1320,10 @@ comm_quit(int write_info, int force)
 	exit(0);
 }
 
-void
-comm_only(void)
-{
-	/* TODO: move this to ui.c */
-	if(curr_stats.number_of_windows == 1)
-		return;
-
-	curr_stats.number_of_windows = 1;
-	update_screen(UT_REDRAW);
-}
-
-void
-comm_split(SPLIT orientation)
-{
-	/* TODO: move this to ui.c */
-	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
-		return;
-
-	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
-	{
-		if(orientation == VSPLIT)
-			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
-		else
-			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
-	}
-
-	curr_stats.split = orientation;
-	curr_stats.number_of_windows = 2;
-	curr_stats.need_update = UT_REDRAW;
-}
-
 /* Return value of all functions below which name ends with "_cmd" mean:
  *  <0 - one of CMDS_* errors from cmds.h
  *  =0 - nothing was outputted to the status bar, don't need to save its state
  *  <0 - someting was outputted to the status bar, need to save its state */
-
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
@@ -2980,7 +2948,7 @@ nunmap_cmd(const cmd_info_t *cmd_info)
 static int
 only_cmd(const cmd_info_t *cmd_info)
 {
-	comm_only();
+	only();
 	return 0;
 }
 
@@ -3577,15 +3545,15 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 	if(cmd_info->emark)
 	{
 		if(curr_stats.number_of_windows == 1)
-			comm_split(orientation);
+			split_view(orientation);
 		else
-			comm_only();
+			only();
 	}
 	else
 	{
 		if(cmd_info->argc == 1)
 			cd(other_view, curr_view->curr_dir, cmd_info->argv[0]);
-		comm_split(orientation);
+		split_view(orientation);
 	}
 	return 0;
 }

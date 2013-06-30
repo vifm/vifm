@@ -24,10 +24,6 @@
 #include "../ui.h"
 
 void init_normal_mode(int *key_mode);
-void normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
-void normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
-void normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
-void normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
 void normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info);
 void normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 void normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info);

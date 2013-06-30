@@ -1,4 +1,4 @@
-.TH vifm 1 "Jun 26, 2013" "" "Vifm"
+.TH vifm 1 "Jun 30, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -700,12 +700,61 @@ go to beginning of file (or N percent into file).
 .TP
 .BI v
 edit the current file with vim.
+
 .TP
-.BI "Ctrl-W S"
+.BI "Ctrl-W H"
+move the pane to the far left.
+.TP
+.BI "Ctrl-W J"
+move the pane to the very bottom.
+.TP
+.BI "Ctrl-W K"
+move the pane to the very top.
+.TP
+.BI "Ctrl-W L"
+move the pane to the far right.
+
+.TP
+.BI "Ctrl-W h"
+switch to left pane.
+.TP
+.BI "Ctrl-W j"
+switch to pane below.
+.TP
+.BI "Ctrl-W k"
+switch to pane above.
+.TP
+.BI "Ctrl-W l"
+switch to right pane.
+
+.TP
+.BI "Ctrl-W b"
+switch to bottom-right window.
+.TP
+.BI "Ctrl-W t"
+switch to top-left window.
+
+.TP
+.BI "Ctrl-W p"
+switch to previous window.
+.TP
+.BI "Ctrl-W w"
+switch to other pane.
+
+.TP
+.BI "Ctrl-W o"
+leave only one pane.
+.TP
+.BI "Ctrl-W s"
 split window horizontally.
 .TP
-.BI "Ctrl-W V"
+.BI "Ctrl-W v"
 split window vertically.
+
+.TP
+.BI "Ctrl-W x"
+exchange panes.
+
 .TP
 .BI "Ctrl-W +"
 increase size of the view.
@@ -727,6 +776,14 @@ maximize current view.
 .TP
 .BI "Ctrl-W ="
 make size of two views equal.
+
+.LP
+In general, all "Ctrl-W x" keys above work the same was as in Normal mode.
+Active mode is automatically changed on navigating among windows.  When
+less-like mode activated on file preview is left using one by "Ctrl-W x" keys,
+its state is stored until another file is showed using preview (it's possible to
+leave the mode, hide preview pane, do something else, then get back to the file
+and show preview pane again with previously stored state in it).
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------
