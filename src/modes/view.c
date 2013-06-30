@@ -126,7 +126,7 @@ static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void goto_search_result(key_info_t key_info, int inverse_direction);
-static void find_previous(int o);
+static void find_previous(int vline_offset);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
@@ -1001,7 +1001,7 @@ goto_search_result(key_info_t key_info, int inverse_direction)
 }
 
 static void
-find_previous(int o)
+find_previous(int vline_offset)
 {
 	int i;
 	int offset = 0;
@@ -1011,7 +1011,7 @@ find_previous(int o)
 	if(vi->last_search_backward == -1)
 		return;
 
-	vl = vi->linev - o;
+	vl = vi->linev - vline_offset;
 	l = vi->line;
 
 	if(l > 0 && vl < vi->widths[l][0])
