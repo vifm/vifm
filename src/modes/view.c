@@ -69,7 +69,7 @@ typedef struct
 	FileView *view;
 	regex_t re;
 	int last_search_backward; /* Value -1 means no search was performed. */
-	int search_repeat;
+	int search_repeat; /* Saved count prefix of search commands. */
 	int wrap;
 	int abandoned; /* Shows whether view mode was abandoned. */
 	char *filename;
@@ -125,7 +125,8 @@ static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
-static void goto_search_result(key_info_t key_info, int inverse_direction);
+static void goto_search_result(int repeat_count, int inverse_direction);
+static void search(int repeat_count, int backward);
 static void find_previous(int vline_offset);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
@@ -433,7 +434,7 @@ init_view_info(view_info_t *vi)
 	vi->width = -1;
 	vi->view = NULL;
 	vi->last_search_backward = -1;
-	vi->search_repeat = 0;
+	vi->search_repeat = NO_COUNT_GIVEN;
 	vi->wrap = 0;
 	vi->filename = NULL;
 	vi->abandoned = 0;
@@ -565,13 +566,7 @@ find_vwpattern(const char *pattern, int backward)
 
 	vi->last_search_backward = backward;
 
-	while(vi->search_repeat-- > 0)
-	{
-		if(backward)
-			find_previous(0);
-		else
-			find_next();
-	}
+	search(vi->search_repeat, backward);
 
 	return curr_stats.save_msg;
 }
@@ -815,20 +810,14 @@ pick_vi(int explore)
 static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		vi->search_repeat = 1;
-	else
-		vi->search_repeat = key_info.count;
+	vi->search_repeat = key_info.count;
 	enter_cmdline_mode(VIEW_SEARCH_FORWARD_SUBMODE, L"", NULL);
 }
 
 static void
 cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		vi->search_repeat = 1;
-	else
-		vi->search_repeat = key_info.count;
+	vi->search_repeat = key_info.count;
 	enter_cmdline_mode(VIEW_SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
@@ -855,7 +844,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_search_result(key_info, 1);
+	goto_search_result(key_info.count, 1);
 }
 
 static void
@@ -972,22 +961,33 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_search_result(key_info, 0);
+	goto_search_result(key_info.count, 0);
 }
 
-/* Goes to next/previous results of the last search. */
+/* Goes to the next/previous match of the last search. */
 static void
-goto_search_result(key_info_t key_info, int inverse_direction)
+goto_search_result(int repeat_count, int inverse_direction)
 {
 	const int backward = inverse_direction ?
 		!vi->last_search_backward : vi->last_search_backward;
+	search(repeat_count, backward);
+}
 
-	if(key_info.count == NO_COUNT_GIVEN)
+/* Performs search and navigation to the first match. */
+static void
+search(int repeat_count, int backward)
+{
+	if(vi->last_search_backward == -1)
 	{
-		key_info.count = 1;
+		return;
 	}
 
-	while(key_info.count-- > 0 && curr_stats.save_msg == 0)
+	if(repeat_count == NO_COUNT_GIVEN)
+	{
+		repeat_count = 1;
+	}
+
+	while(repeat_count-- > 0 && curr_stats.save_msg == 0)
 	{
 		if(backward)
 		{
@@ -1007,9 +1007,6 @@ find_previous(int vline_offset)
 	int offset = 0;
 	char buf[(vi->view->window_width - 1)*4];
 	int vl, l;
-
-	if(vi->last_search_backward == -1)
-		return;
 
 	vl = vi->linev - vline_offset;
 	l = vi->line;
@@ -1054,9 +1051,6 @@ find_next(void)
 	int offset = 0;
 	char buf[(vi->view->window_width - 1)*4];
 	int vl, l;
-
-	if(vi->last_search_backward == -1)
-		return;
 
 	vl = vi->linev + 1;
 	l = vi->line;
