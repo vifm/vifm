@@ -462,7 +462,7 @@ static cmds_conf_t cmds_conf = {
 	.swap_range = swap_range,
 	.resolve_mark = resolve_mark,
 	.expand_macros = cmds_expand_macros,
-	.expand_envvars = expand_envvars,
+	.expand_envvars = cmds_expand_envvars,
 	.post = post,
 	.select_range = select_range,
 	.skip_at_beginning = skip_at_beginning,
@@ -527,6 +527,12 @@ cmds_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
 	*usr1 = flags;
 
 	return result;
+}
+
+char *
+cmds_expand_envvars(const char str[])
+{
+	return expand_envvars(str, 1);
 }
 
 static void

@@ -260,13 +260,13 @@ my_chdir(const char *path)
 char *
 expand_path(const char path[])
 {
-	char *const expanded_envvars = expand_envvars(path);
+	char *const expanded_envvars = expand_envvars(path, 0);
 	/* expand_tilde() frees memory pointed to by expand_envvars. */
 	return expand_tilde(expanded_envvars);
 }
 
 char *
-expand_envvars(const char str[])
+expand_envvars(const char str[], int escape_vals)
 {
 	char *result = NULL;
 	size_t len = 0;
@@ -287,8 +287,14 @@ expand_envvars(const char str[])
 			var_value = env_get(var_name);
 			if(var_value != NULL)
 			{
-				char *escaped_var_value = escape_filename(var_value, 1);
-				result = extend_string(result, escaped_var_value, &len);
+				char *escaped_var_value = NULL;
+				if(escape_vals)
+				{
+					escaped_var_value = escape_filename(var_value, 1);
+					var_value = escaped_var_value;
+				}
+
+				result = extend_string(result, var_value, &len);
 				free(escaped_var_value);
 
 				str = p;
@@ -300,10 +306,14 @@ expand_envvars(const char str[])
 		}
 		else
 		{
-			const char single_char[] = { *str, '\0' };
-			result = extend_string(result, single_char, &len);
-
 			prev_slash = (*str == '\\') ? !prev_slash : 0;
+
+			if(!prev_slash || escape_vals)
+			{
+				const char single_char[] = { *str, '\0' };
+				result = extend_string(result, single_char, &len);
+			}
+
 			str++;
 		}
 	}

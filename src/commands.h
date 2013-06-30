@@ -50,6 +50,9 @@ void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);
 void exec_startup_commands(int argc, char **argv);
+/* Expands all environment variables in the str.  Allocates and returns memory
+ * that should be freed by the caller. */
+char * cmds_expand_envvars(const char str[]);
 
 #ifdef TEST
 #include "engine/cmds.h"
