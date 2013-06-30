@@ -831,6 +831,11 @@ static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
 	switch_panes();
+	if(curr_stats.view)
+	{
+		change_window();
+		(void)try_switch_into_view_mode();
+	}
 }
 
 static void
