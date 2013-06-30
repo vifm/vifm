@@ -725,8 +725,8 @@ followlinks_handler(OPT_OP op, optval_t val)
 static void
 fusehome_handler(OPT_OP op, optval_t val)
 {
+	char *const expanded_path = expand_path(val.str_val);
 	/* Set cfg.fuse_home in the correct way. */
-	char *expanded_path = expand_tilde(strdup(val.str_val));
 	(void)set_fuse_home(expanded_path);
 	free(expanded_path);
 
@@ -1172,10 +1172,10 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
-	char *s = expand_tilde(strdup(val.str_val));
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", s);
+	char *const expanded_path = expand_path(val.str_val);
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", expanded_path);
 	create_trash_dir();
-	free(s);
+	free(expanded_path);
 }
 
 static void

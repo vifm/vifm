@@ -258,6 +258,14 @@ my_chdir(const char *path)
 }
 
 char *
+expand_path(const char path[])
+{
+	char *const expanded_envvars = expand_envvars(path);
+	/* expand_tilde() frees memory pointed to by expand_envvars. */
+	return expand_tilde(expanded_envvars);
+}
+
+char *
 expand_envvars(const char str[])
 {
 	char *result = NULL;
