@@ -125,6 +125,7 @@ static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void goto_search_result(key_info_t key_info, int inverse_direction);
 static void find_previous(int o);
 static void find_next(int o);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
@@ -854,16 +855,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	while(key_info.count-- > 0 && curr_stats.save_msg == 0)
-	{
-		if(vi->last_search_backward)
-			find_next(1);
-		else
-			find_previous(1);
-	}
+	goto_search_result(key_info, 1);
 }
 
 static void
@@ -980,15 +972,31 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
+	goto_search_result(key_info, 0);
+}
+
+/* Goes to next/previous results of the last search. */
+static void
+goto_search_result(key_info_t key_info, int inverse_direction)
+{
+	const int backward = inverse_direction ?
+		!vi->last_search_backward : vi->last_search_backward;
+
 	if(key_info.count == NO_COUNT_GIVEN)
+	{
 		key_info.count = 1;
+	}
 
 	while(key_info.count-- > 0 && curr_stats.save_msg == 0)
 	{
-		if(vi->last_search_backward)
+		if(backward)
+		{
 			find_previous(1);
+		}
 		else
+		{
 			find_next(1);
+		}
 	}
 }
 
