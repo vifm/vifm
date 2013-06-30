@@ -275,23 +275,22 @@ expand_envvars(const char str[])
 	{
 		if(!prev_slash && *str == '$' && isalpha(str[1]))
 		{
-			char name[NAME_MAX];
+			char var_name[NAME_MAX];
 			const char *p = str + 1;
-			char *q = name;
-			const char *cq;
-			while((isalnum(*p) || *p == '_') && q - name < sizeof(name) - 1)
+			char *q = var_name;
+			const char *var_value;
+
+			while((isalnum(*p) || *p == '_') && q - var_name < sizeof(var_name) - 1)
 				*q++ = *p++;
 			*q = '\0';
 
-			cq = env_get(name);
-			if(cq != NULL)
+			var_value = env_get(var_name);
+			if(var_value != NULL)
 			{
-				size_t old_len = len;
-				q = escape_filename(cq, 1);
-				len += strlen(q);
-				result = realloc(result, len + 1);
-				strcpy(result + old_len, q);
-				free(q);
+				char *escaped_var_value = escape_filename(var_value, 1);
+				result = extend_string(result, escaped_var_value, &len);
+				free(escaped_var_value);
+
 				str = p;
 			}
 			else
@@ -301,14 +300,11 @@ expand_envvars(const char str[])
 		}
 		else
 		{
-			if(*str == '\\')
-				prev_slash = !prev_slash;
-			else
-				prev_slash = 0;
+			const char single_char[] = { *str, '\0' };
+			result = extend_string(result, single_char, &len);
 
-			result = realloc(result, len + 1 + 1);
-			result[len++] = *str++;
-			result[len] = '\0';
+			prev_slash = (*str == '\\') ? !prev_slash : 0;
+			str++;
 		}
 	}
 	if(result == NULL)
