@@ -127,7 +127,7 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void goto_search_result(key_info_t key_info, int inverse_direction);
 static void find_previous(int o);
-static void find_next(int o);
+static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
@@ -570,7 +570,7 @@ find_vwpattern(const char *pattern, int backward)
 		if(backward)
 			find_previous(0);
 		else
-			find_next(0);
+			find_next();
 	}
 
 	return curr_stats.save_msg;
@@ -995,7 +995,7 @@ goto_search_result(key_info_t key_info, int inverse_direction)
 		}
 		else
 		{
-			find_next(1);
+			find_next();
 		}
 	}
 }
@@ -1048,7 +1048,7 @@ find_previous(int o)
 }
 
 static void
-find_next(int o)
+find_next(void)
 {
 	int i;
 	int offset = 0;
