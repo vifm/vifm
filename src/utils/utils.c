@@ -51,9 +51,7 @@
 #include "../fuse.h"
 #include "../status.h"
 #include "../ui.h"
-#ifdef _WIN32
 #include "env.h"
-#endif
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -257,6 +255,57 @@ my_chdir(const char *path)
 			return 0;
 	}
 	return chdir(path);
+}
+
+char *
+cmds_expand_envvars(const char str[])
+{
+	char *result = NULL;
+	size_t len = 0;
+	int prev_slash = 0;
+	while(*str != '\0')
+	{
+		if(!prev_slash && *str == '$' && isalpha(str[1]))
+		{
+			char name[NAME_MAX];
+			const char *p = str + 1;
+			char *q = name;
+			const char *cq;
+			while((isalnum(*p) || *p == '_') && q - name < sizeof(name) - 1)
+				*q++ = *p++;
+			*q = '\0';
+
+			cq = env_get(name);
+			if(cq != NULL)
+			{
+				size_t old_len = len;
+				q = escape_filename(cq, 1);
+				len += strlen(q);
+				result = realloc(result, len + 1);
+				strcpy(result + old_len, q);
+				free(q);
+				str = p;
+			}
+			else
+			{
+				str++;
+			}
+		}
+		else
+		{
+			if(*str == '\\')
+				prev_slash = !prev_slash;
+			else
+				prev_slash = 0;
+
+			result = realloc(result, len + 1 + 1);
+			result[len++] = *str++;
+			result[len] = '\0';
+		}
+	}
+	if(result == NULL)
+		result = strdup("");
+	return result;
 }
 
 #ifndef _WIN32

@@ -74,6 +74,8 @@ int is_on_slow_fs(const char *full_path);
 int friendly_size_notation(uint64_t num, int str_size, char *str);
 const char * enclose_in_dquotes(const char *str);
 int my_chdir(const char *path);
+/* Allocates memory, that should be freed by the caller. */
+char * cmds_expand_envvars(const char str[]);
 /* Makes filename unique by adding an unique suffix to it.
  * Returns pointer to a statically allocated buffer */
 const char * make_name_unique(const char filename[]);
