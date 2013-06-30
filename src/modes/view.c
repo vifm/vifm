@@ -103,6 +103,7 @@ static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
@@ -165,6 +166,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x17k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
 	{L"\x17\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
 	{L"\x17l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
+	{L"\x17o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
 	{L"\x17\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x14", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wt}}},
@@ -688,6 +691,21 @@ cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view != &rwin)
 	{
 		cmd_ctrl_ww(key_info, keys_info);
+	}
+}
+
+/* Leave only one (current) pane. */
+static void
+cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(vi->view->explore_mode)
+	{
+		comm_only();
+	}
+	else
+	{
+		status_bar_error("Can't leave preview window alone on the screen.");
+		curr_stats.save_msg = 1;
 	}
 }
 
