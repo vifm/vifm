@@ -5,10 +5,11 @@
 #include "../../src/utils/env.h"
 #include "../../src/utils/utils.h"
 
-#define VAR_A       "VAR_A"
-#define VAR_A_VAL   "VAR_A_VAL"
-#define VAR_B       "VAR_B"
-#define VAR_B_VAL   "VAR_B_VAL"
+#define VAR_A               "VAR_A"
+#define VAR_A_VAL           "VAR_ _VAL"
+#define VAR_A_ESCAPED_VAL   "VAR_\\ _VAL"
+#define VAR_B               "VAR_B"
+#define VAR_B_VAL           "VAR_B_VAL"
 
 static void
 setup(void)
@@ -47,7 +48,8 @@ test_expanding_works(void)
 {
 	const char *const path = "/$" VAR_A "/$" VAR_B "/vifm";
 	char *const expanded_path = expand_envvars(path);
-	assert_string_equal("/" VAR_A_VAL "/" VAR_B_VAL "/vifm", expanded_path);
+	assert_string_equal("/" VAR_A_ESCAPED_VAL "/" VAR_B_VAL "/vifm",
+			expanded_path);
 	free(expanded_path);
 }
 
@@ -61,11 +63,20 @@ test_ends_with_dollar_sign_ok(void)
 }
 
 static void
-test_double_dollar_sign_folded_ok(void)
+test_double_dollar_sign_not_folded(void)
 {
-	const char *const path = "/usr/b$$in/vifm";
+	const char *const path = "/usr/b$$" VAR_A "/vifm";
 	char *const expanded_path = expand_envvars(path);
-	assert_string_equal("/usr/b$in/vifm", expanded_path);
+	assert_string_equal("/usr/b$" VAR_A_ESCAPED_VAL "/vifm", expanded_path);
+	free(expanded_path);
+}
+
+static void
+test_escaped_dollar_sign_not_expanded(void)
+{
+	const char *const path = "/usr/b\\$in/vifm";
+	char *const expanded_path = expand_envvars(path);
+	assert_string_equal("/usr/b\\$in/vifm", expanded_path);
 	free(expanded_path);
 }
 
@@ -81,7 +92,8 @@ expand_envvars_tests(void)
 	run_test(test_no_envvars_ok);
 	run_test(test_expanding_works);
 	run_test(test_ends_with_dollar_sign_ok);
-	run_test(test_double_dollar_sign_folded_ok);
+	run_test(test_double_dollar_sign_not_folded);
+	run_test(test_escaped_dollar_sign_not_expanded);
 
 	test_fixture_end();
 }
