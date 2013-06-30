@@ -93,6 +93,7 @@ static void calc_vlines_wrapped(view_info_t *vi);
 static void calc_vlines_non_wrapped(view_info_t *vi);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
+static void display_error(const char error_msg[]);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
@@ -338,11 +339,11 @@ try_activate_view_mode(void)
 void
 view_pre(void)
 {
-	if(curr_stats.save_msg != 0)
-		return;
-
-	status_bar_message("-- VIEW -- ");
-	curr_stats.save_msg = 2;
+	if(curr_stats.save_msg == 0)
+	{
+		status_bar_message("-- VIEW -- ");
+		curr_stats.save_msg = 2;
+	}
 }
 
 void
@@ -704,8 +705,7 @@ cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		status_bar_error("Can't leave preview window alone on the screen.");
-		curr_stats.save_msg = 1;
+		display_error("Can't leave preview window alone on the screen.");
 	}
 }
 
@@ -1035,8 +1035,7 @@ find_previous(int o)
 	draw();
 	if(vi->line != l)
 	{
-		status_bar_error("Pattern not found");
-		curr_stats.save_msg = 1;
+		display_error("Pattern not found");
 	}
 }
 
@@ -1082,8 +1081,7 @@ find_next(int o)
 	draw();
 	if(vi->line != l)
 	{
-		status_bar_error("Pattern not found");
-		curr_stats.save_msg = 1;
+		display_error("Pattern not found");
 	}
 }
 
@@ -1100,6 +1098,14 @@ get_part(const char line[], int offset, size_t max_len, char part[])
 	const char *const end = expand_tabulation(begin, max_len, cfg.tab_stop, part);
 	free(no_esc);
 	return end - no_esc;
+}
+
+/* Displays the error message in the status bar. */
+static void
+display_error(const char error_msg[])
+{
+	status_bar_error(error_msg);
+	curr_stats.save_msg = 1;
 }
 
 static void
