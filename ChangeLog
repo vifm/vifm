@@ -73,6 +73,9 @@
 
 	Made all Ctrl-W x keys available view mode.  Thanks to filterfalse.
 
+	Expand environment variables in values of the 'fusehome' and 'trashdir'
+	options.  Thanks to filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

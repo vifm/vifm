@@ -1806,9 +1806,12 @@ Follow links on l or Enter.
 fusehome
 type: string
 default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
-Directory to be used as a root dir for FUSE mounts.
+Directory to be used as a root dir for FUSE mounts.  Value of the option can
+contain environment variables (in form "$envname"), which will be expanded
+(prepend it with a slash to prevent expansion).
+
 If you change this option, vifm won't remount anything.  It affects future
-mounts only. See |vifm-fuse| section for more information about FUSE mounts.
+mounts only.  See |vifm-fuse| section for more information about FUSE mounts.
 
                                                *vifm-'gdefault'* |vifm-'gd'|
 gdefault gd
@@ -2072,7 +2075,11 @@ Use |vifm-trash| directory.
 trashdir
 type: string
 default: "$HOME/.vifm/Trash
-Sets path to |vifm-trash| directory.  Will attempt to create the directory
+Sets path to |vifm-trash| directory.  Value of the option can contain
+environment variables (in form "$envname"), which will be expanded
+(prepend it with a slash to prevent expansion).
+
+Will attempt to create the directory
 if it does not exist.
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*
