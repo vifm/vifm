@@ -702,7 +702,7 @@ cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_only();
+	only();
 }
 
 /* To split pane horizontally. */

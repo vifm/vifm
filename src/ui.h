@@ -247,6 +247,8 @@ void switch_panes(void);
 void go_to_other_pane(void);
 /* Splits windows according to the value of orientation. */
 void split_view(SPLIT orientation);
+/* Switches view to one-window mode. */
+void only(void);
 
 #endif
 

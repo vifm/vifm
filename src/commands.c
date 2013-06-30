@@ -1320,17 +1320,6 @@ comm_quit(int write_info, int force)
 	exit(0);
 }
 
-void
-comm_only(void)
-{
-	/* TODO: move this to ui.c */
-	if(curr_stats.number_of_windows == 1)
-		return;
-
-	curr_stats.number_of_windows = 1;
-	update_screen(UT_REDRAW);
-}
-
 /* Return value of all functions below which name ends with "_cmd" mean:
  *  <0 - one of CMDS_* errors from cmds.h
  *  =0 - nothing was outputted to the status bar, don't need to save its state
@@ -2959,7 +2948,7 @@ nunmap_cmd(const cmd_info_t *cmd_info)
 static int
 only_cmd(const cmd_info_t *cmd_info)
 {
-	comm_only();
+	only();
 	return 0;
 }
 
@@ -3558,7 +3547,7 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 		if(curr_stats.number_of_windows == 1)
 			split_view(orientation);
 		else
-			comm_only();
+			only();
 	}
 	else
 	{

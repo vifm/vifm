@@ -697,7 +697,7 @@ cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(vi->view->explore_mode)
 	{
-		comm_only();
+		only();
 	}
 	else
 	{

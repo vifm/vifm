@@ -1751,5 +1751,15 @@ split_view(SPLIT orientation)
 	curr_stats.need_update = UT_REDRAW;
 }
 
+void
+only(void)
+{
+	if(curr_stats.number_of_windows != 1)
+	{
+		curr_stats.number_of_windows = 1;
+		update_screen(UT_REDRAW);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
