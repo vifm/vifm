@@ -126,8 +126,8 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 			/* skip_dotdir_if_any() function did all job for us. */
 		}
 		else if(prev_dir_present &&
-				(strnoscmp(p, "../", 3) == 0 || stroscmp(p, "..") == 0) &&
-				stroscmp(buf, "../") != 0)
+				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
+				strcmp(buf, "../") != 0)
 		{
 			/* Remove the last path component added. */
 #ifdef _WIN32
@@ -566,6 +566,13 @@ exclude_file_name(char *path)
 {
 	if(path_exists(path) && !is_valid_dir(path))
 		remove_last_path_component(path);
+}
+
+int
+is_parent_dir(const char path[])
+{
+	return path[0] == '.' && path[1] == '.' &&
+		((path[2] == '/' && path[3] == '\0') || path[2] == '\0');
 }
 
 #ifdef _WIN32

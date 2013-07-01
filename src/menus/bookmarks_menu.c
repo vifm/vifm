@@ -81,8 +81,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
 		}
-		else if(!stroscmp(bookmarks[j].file, "..") ||
-				!stroscmp(bookmarks[j].file, "../"))
+		else if(is_parent_dir(bookmarks[j].file))
 		{
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");

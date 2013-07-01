@@ -188,9 +188,9 @@ sort_dir_list(const void *one, const void *two)
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
 
-	if(stroscmp(first->name, "../") == 0)
+	if(is_parent_dir(first->name))
 		return -1;
-	else if(stroscmp(second->name, "../") == 0)
+	else if(is_parent_dir(second->name))
 		return 1;
 
 	retval = 0;

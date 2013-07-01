@@ -673,7 +673,7 @@ handle_dir(FileView *view)
 
 	filename = get_current_file_name(view);
 
-	if(stroscmp(filename, "../") == 0)
+	if(is_parent_dir(filename))
 	{
 		cd_updir(view);
 		return;

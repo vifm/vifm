@@ -273,7 +273,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		char full_buf[PATH_MAX];
 		int result;
 
-		if(stroscmp(view->selected_filelist[x], "../") == 0)
+		if(is_parent_dir(view->selected_filelist[x]))
 		{
 			show_error_msg("Background Process Error",
 					"You cannot delete the ../ directory");
@@ -380,7 +380,7 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 	{
 		char full_buf[PATH_MAX];
 
-		if(stroscmp(list[i], "../") == 0)
+		if(is_parent_dir(list[i]))
 			continue;
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
@@ -581,7 +581,7 @@ rename_current_file(FileView *view, int name_only)
 		return;
 
 	snprintf(filename, sizeof(filename), "%s", get_current_file_name(view));
-	if(stroscmp(filename, "../") == 0)
+	if(is_parent_dir(filename))
 	{
 		show_error_msg("Rename error",
 				"You can't rename parent directory this way");
@@ -886,7 +886,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(stroscmp(view->dir_entry[i].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[i].name))
 			continue;
 		if(recursive)
 		{
@@ -1623,7 +1623,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 	
 	if(stroscmp(filename, "./") == 0)
 		return;
-	if(stroscmp(filename, "../") == 0)
+	if(is_parent_dir(filename))
 		return;
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
@@ -2056,7 +2056,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(stroscmp(view->dir_entry[i].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[i].name))
 			continue;
 
 		if(buf[len - 2] != ':')
@@ -2076,7 +2076,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(stroscmp(view->dir_entry[i].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[i].name))
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -2142,7 +2142,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(stroscmp(view->dir_entry[i].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[i].name))
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -2240,7 +2240,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(stroscmp(view->dir_entry[i].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[i].name))
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
