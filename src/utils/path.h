@@ -62,6 +62,9 @@ char * find_slashr(const char *path);
 char * extract_extension(char *path);
 /* Removes file name from path. */
 void exclude_file_name(char *path);
+/* Checks wether path equals to ".." or "../".  Returns non-zero if it is,
+ * otherwise zero is returned. */
+int is_parent_dir(const char path[]);
 
 #ifdef _WIN32
 

@@ -46,7 +46,7 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() malloc() */
-#include <string.h> /* memset() strcat() strlen() */
+#include <string.h> /* memset() strcat() strcmp() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -675,7 +675,7 @@ get_all_selected_files(FileView *view)
 	{
 		if(!view->dir_entry[x].selected)
 			continue;
-		if(stroscmp(view->dir_entry[x].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[x].name))
 		{
 			view->dir_entry[x].selected = 0;
 			continue;
@@ -713,7 +713,7 @@ get_selected_files(FileView *view, int count, const int *indexes)
 	y = 0;
 	for(x = 0; x < count; x++)
 	{
-		if(stroscmp(view->dir_entry[indexes[x]].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[indexes[x]].name))
 			continue;
 
 		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
@@ -1679,7 +1679,11 @@ invert_selection(FileView *view)
 	int i;
 	for(i = 0; i < view->list_rows; i++)
 	{
-		view->dir_entry[i].selected = !view->dir_entry[i].selected;
+		dir_entry_t *const e = &view->dir_entry[i];
+		if(!is_parent_dir(e->name))
+		{
+			e->selected = !e->selected;
+		}
 	}
 }
 
@@ -1922,7 +1926,7 @@ change_directory(FileView *view, const char *directory)
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
-	if(!stroscmp(directory, "../") && in_mounted_dir(view->curr_dir))
+	if(is_parent_dir(directory) && in_mounted_dir(view->curr_dir))
 	{
 		FileView *other = (view == curr_view) ? other_view : curr_view;
 		if(!path_starts_with(other->curr_dir, view->curr_dir))
@@ -2780,7 +2784,7 @@ filter_selected_files(FileView *view)
 		if(!view->dir_entry[x].selected)
 			continue;
 
-		if(stroscmp(view->dir_entry[x].name, "../") == 0)
+		if(is_parent_dir(view->dir_entry[x].name))
 			continue;
 
 		name = escape_name_for_filter(view->dir_entry[x].name);
@@ -3103,7 +3107,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 static int
 file_can_be_displayed(const char directory[], const char filename[])
 {
-	if(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0)
+	if(is_parent_dir(filename))
 	{
 		return parent_dir_is_visible(is_root_dir(directory));
 	}
@@ -3150,7 +3154,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
 			snprintf(dir, sizeof(dir), "%s/%s", base_dir, arg);
-		updir = (strcmp(arg, "..") == 0 || strcmp(arg, "../") == 0);
+		updir = is_parent_dir(arg);
 		free(arg);
 	}
 	else
