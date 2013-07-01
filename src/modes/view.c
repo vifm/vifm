@@ -99,6 +99,7 @@ static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
+static FileView * get_active_view(void);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -582,45 +583,49 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &lwin)
+	if(is_right_or_bottom())
 	{
 		view_switch_views();
 	}
-	move_window(view, 0, 1);
+	move_window(get_active_view(), 0, 1);
 }
 
 static void
 cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &rwin)
+	if(is_top_or_left())
 	{
 		view_switch_views();
 	}
-	move_window(view, 1, 0);
+	move_window(get_active_view(), 1, 0);
 }
 
 static void
 cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &lwin)
+	if(is_right_or_bottom())
 	{
 		view_switch_views();
 	}
-	move_window(view, 1, 1);
+	move_window(get_active_view(), 1, 1);
 }
 
 static void
 cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &rwin)
+	if(is_top_or_left())
 	{
 		view_switch_views();
 	}
-	move_window(view, 0, 0);
+	move_window(get_active_view(), 0, 0);
+}
+
+/* Gets pointer to the currently active view from the view point of the
+ * view-mode.  Returns that pointer. */
+static FileView *
+get_active_view(void)
+{
+	return curr_stats.view ? other_view : curr_view;
 }
 
 void
