@@ -46,7 +46,7 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() malloc() */
-#include <string.h> /* memset() strcat() strlen() */
+#include <string.h> /* memset() strcat() strcmp() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1679,7 +1679,11 @@ invert_selection(FileView *view)
 	int i;
 	for(i = 0; i < view->list_rows; i++)
 	{
-		view->dir_entry[i].selected = !view->dir_entry[i].selected;
+		dir_entry_t *const e = &view->dir_entry[i];
+		if(strcmp(e->name, "..") != 0 && strcmp(e->name, "../") != 0)
+		{
+			e->selected = !e->selected;
+		}
 	}
 }
 
