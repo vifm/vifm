@@ -665,7 +665,7 @@ cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
+	if(curr_stats.split == VSPLIT && is_right_or_bottom())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -674,7 +674,7 @@ cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
+	if(curr_stats.split == HSPLIT && is_top_or_left())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -683,7 +683,7 @@ cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
+	if(curr_stats.split == HSPLIT && is_right_or_bottom())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -692,7 +692,7 @@ cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
+	if(curr_stats.split == VSPLIT && is_top_or_left())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
