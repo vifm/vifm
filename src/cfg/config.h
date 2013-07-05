@@ -50,6 +50,7 @@ typedef struct
 {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
+	/* This one should be set using set_trash_dir() function. */
 	char trash_dir[PATH_MAX];
 	char log_file[PATH_MAX];
 	char *vi_command;
@@ -136,12 +137,17 @@ int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
 /* Generates name of file inside tmp folder. */
 void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
-void create_trash_dir(void);
+/* Ensures existence of trash directory.  Returns zero on success, otherwise
+ * non-zero value is returned. */
+int create_trash_dir(const char trash_dir[]);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
 /* Sets value of cfg.fuse_home.  Returns non-zero in case of memory allocation
  * error. */
 int set_fuse_home(const char new_value[]);
+/* Sets value of cfg.trash_dir.  Returns non-zero in case of error, otherwise
+ * zero is returned. */
+int set_trash_dir(const char new_value[]);
 /* Sets whether screen support is enabled. */
 void set_use_screen(int use_screen);
 /* Frees memory previously allocated for specified history items. */

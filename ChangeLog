@@ -76,6 +76,9 @@
 	Expand environment variables in values of the 'fusehome' and 'trashdir'
 	options.  Thanks to filterfalse.
 
+	Provided more adequate reaction on setting 'trashdir' variable to wrong
+	value.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

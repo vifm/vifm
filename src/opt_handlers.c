@@ -1173,8 +1173,12 @@ static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
 	char *const expanded_path = expand_path(val.str_val);
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", expanded_path);
-	create_trash_dir();
+	if(set_trash_dir(expanded_path) != 0)
+	{
+		/* Reset the 'trashdir' option to its previous value. */
+		val.str_val = cfg.trash_dir;
+		set_option("trashdir", val);
+	}
 	free(expanded_path);
 }
 

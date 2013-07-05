@@ -309,12 +309,9 @@ directory_accessible(const char *path)
 	return (path_exists(path) && access(path, X_OK) == 0) || is_unc_root(path);
 }
 
-/* path should be absolute */
 int
-is_dir_writable(const char *path)
+is_dir_writable(const char path[])
 {
-	assert(is_path_absolute(path));
-
 	if(!is_unc_root(path))
 	{
 #ifdef _WIN32
