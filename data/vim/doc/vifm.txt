@@ -2384,7 +2384,7 @@ zL - scroll menu items half of screen width characters to the left.
 
                                                *vifm-m_:*
 : - enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
-and :range are supported).
+and :{range} are supported).
 
 Apropos menu~
 
