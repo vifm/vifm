@@ -831,6 +831,14 @@ set_fuse_home(const char new_value[])
 	new_value = with_forward_slashes;
 #endif
 	canonicalize_path(new_value, canonicalized, sizeof(canonicalized));
+
+	if(!is_path_absolute(new_value))
+	{
+		show_error_msgf("Error Setting FUSE Home Directory",
+				"The path is not absolute: %s", canonicalized);
+		return 1;
+	}
+
 	return replace_string(&cfg.fuse_home, canonicalized);
 }
 

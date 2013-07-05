@@ -727,13 +727,13 @@ fusehome_handler(OPT_OP op, optval_t val)
 {
 	char *const expanded_path = expand_path(val.str_val);
 	/* Set cfg.fuse_home in the correct way. */
-	(void)set_fuse_home(expanded_path);
+	if(set_fuse_home(expanded_path) != 0)
+	{
+		/* Reset the 'fusehome' options to its previous value. */
+		val.str_val = cfg.fuse_home;
+		set_option("fusehome", val);
+	}
 	free(expanded_path);
-
-	/* Update value of 'fusehome' in options unit to show its real value to
-	 * user. */
-	val.str_val = cfg.fuse_home;
-	set_option("fusehome", val);
 }
 
 static void

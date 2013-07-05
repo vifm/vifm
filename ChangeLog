@@ -79,6 +79,8 @@
 	Provided more adequate reaction on setting 'trashdir' variable to wrong
 	value.
 
+	From now on not absolute paths for the 'fusehome' options are rejected.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

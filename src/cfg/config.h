@@ -142,8 +142,8 @@ void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
 int create_trash_dir(const char trash_dir[]);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
-/* Sets value of cfg.fuse_home.  Returns non-zero in case of memory allocation
- * error. */
+/* Sets value of cfg.fuse_home.  Returns non-zero in case of error, otherwise
+ * zero is returned. */
 int set_fuse_home(const char new_value[]);
 /* Sets value of cfg.trash_dir.  Returns non-zero in case of error, otherwise
  * zero is returned. */
