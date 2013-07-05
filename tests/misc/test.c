@@ -36,6 +36,7 @@ void strchar2str_tests(void);
 void get_last_path_component_tests(void);
 void get_line_tests(void);
 void expand_custom_macros_tests(void);
+void expand_envvars_tests(void);
 
 void
 all_tests(void)
@@ -76,6 +77,7 @@ all_tests(void)
 	get_last_path_component_tests();
 	get_line_tests();
 	expand_custom_macros_tests();
+	expand_envvars_tests();
 }
 
 int

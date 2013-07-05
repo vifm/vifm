@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jun 30
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 05
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1806,9 +1806,13 @@ Follow links on l or Enter.
 fusehome
 type: string
 default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
-Directory to be used as a root dir for FUSE mounts.
+Directory to be used as a root dir for FUSE mounts.  Value of the option can
+contain environment variables (in form "$envname"), which will be expanded
+(prepend it with a slash to prevent expansion).  The value should expand to
+an absolute path.
+
 If you change this option, vifm won't remount anything.  It affects future
-mounts only. See |vifm-fuse| section for more information about FUSE mounts.
+mounts only.  See |vifm-fuse| section for more information about FUSE mounts.
 
                                                *vifm-'gdefault'* |vifm-'gd'|
 gdefault gd
@@ -2072,8 +2076,12 @@ Use |vifm-trash| directory.
 trashdir
 type: string
 default: "$HOME/.vifm/Trash
-Sets path to |vifm-trash| directory.  Will attempt to create the directory
-if it does not exist.
+Sets path to |vifm-trash| directory.  Value of the option can contain
+environment variables (in form "$envname"), which will be expanded
+(prepend it with a slash to prevent expansion).  The value should
+expand to an absolute path.
+
+Will attempt to create the directory if it does not exist.
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*
 timeoutlen tm
@@ -2376,7 +2384,7 @@ zL - scroll menu items half of screen width characters to the left.
 
                                                *vifm-m_:*
 : - enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
-and :range are supported).
+and :{range} are supported).
 
 Apropos menu~
 

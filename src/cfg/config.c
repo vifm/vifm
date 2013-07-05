@@ -508,19 +508,24 @@ add_default_bookmarks(void)
 	add_bookmark('z', cfg.config_dir, "../");
 }
 
-/* ensures existence of trash directory */
-void
-create_trash_dir(void)
+int
+create_trash_dir(const char trash_dir[])
 {
 	LOG_FUNC_ENTER;
 
-	if(is_dir_writable(cfg.trash_dir))
-		return;
+	if(is_dir_writable(trash_dir))
+	{
+		return 0;
+	}
 
-	if(make_dir(cfg.trash_dir, 0777) != 0)
+	if(make_dir(trash_dir, 0777) != 0)
+	{
 		show_error_msgf("Error Setting Trash Directory",
-				"Could not set trash directory to %s: %s",
-				cfg.trash_dir, strerror(errno));
+				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
+		return 1;
+	}
+
+	return 0;
 }
 
 void
@@ -826,7 +831,32 @@ set_fuse_home(const char new_value[])
 	new_value = with_forward_slashes;
 #endif
 	canonicalize_path(new_value, canonicalized, sizeof(canonicalized));
+
+	if(!is_path_absolute(new_value))
+	{
+		show_error_msgf("Error Setting FUSE Home Directory",
+				"The path is not absolute: %s", canonicalized);
+		return 1;
+	}
+
 	return replace_string(&cfg.fuse_home, canonicalized);
+}
+
+int
+set_trash_dir(const char new_value[])
+{
+	if(!is_path_absolute(new_value))
+	{
+		show_error_msgf("Error Setting Trash Directory",
+				"The path is not absolute: %s", new_value);
+		return 1;
+	}
+	if(create_trash_dir(new_value) != 0)
+	{
+		return 1;
+	}
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", new_value);
+	return 0;
 }
 
 void

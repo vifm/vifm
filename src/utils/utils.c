@@ -51,9 +51,7 @@
 #include "../fuse.h"
 #include "../status.h"
 #include "../ui.h"
-#ifdef _WIN32
 #include "env.h"
-#endif
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -257,6 +255,71 @@ my_chdir(const char *path)
 			return 0;
 	}
 	return chdir(path);
+}
+
+char *
+expand_path(const char path[])
+{
+	char *const expanded_envvars = expand_envvars(path, 0);
+	/* expand_tilde() frees memory pointed to by expand_envvars. */
+	return expand_tilde(expanded_envvars);
+}
+
+char *
+expand_envvars(const char str[], int escape_vals)
+{
+	char *result = NULL;
+	size_t len = 0;
+	int prev_slash = 0;
+	while(*str != '\0')
+	{
+		if(!prev_slash && *str == '$' && isalpha(str[1]))
+		{
+			char var_name[NAME_MAX];
+			const char *p = str + 1;
+			char *q = var_name;
+			const char *var_value;
+
+			while((isalnum(*p) || *p == '_') && q - var_name < sizeof(var_name) - 1)
+				*q++ = *p++;
+			*q = '\0';
+
+			var_value = env_get(var_name);
+			if(var_value != NULL)
+			{
+				char *escaped_var_value = NULL;
+				if(escape_vals)
+				{
+					escaped_var_value = escape_filename(var_value, 1);
+					var_value = escaped_var_value;
+				}
+
+				result = extend_string(result, var_value, &len);
+				free(escaped_var_value);
+
+				str = p;
+			}
+			else
+			{
+				str++;
+			}
+		}
+		else
+		{
+			prev_slash = (*str == '\\') ? !prev_slash : 0;
+
+			if(!prev_slash || escape_vals)
+			{
+				const char single_char[] = { *str, '\0' };
+				result = extend_string(result, single_char, &len);
+			}
+
+			str++;
+		}
+	}
+	if(result == NULL)
+		result = strdup("");
+	return result;
 }
 
 #ifndef _WIN32

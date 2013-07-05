@@ -74,6 +74,13 @@ int is_on_slow_fs(const char *full_path);
 int friendly_size_notation(uint64_t num, int str_size, char *str);
 const char * enclose_in_dquotes(const char *str);
 int my_chdir(const char *path);
+/* Expands all environment variables and tilde in the path.  Allocates
+ * memory, that should be freed by the caller. */
+char * expand_path(const char path[]);
+/* Expands all environment variables in the str of form "$envvar".  Non-zero
+ * escape_vals means escaping suitable for internal use.  Allocates and returns
+ * memory that should be freed by the caller. */
+char * expand_envvars(const char str[], int escape_vals);
 /* Makes filename unique by adding an unique suffix to it.
  * Returns pointer to a statically allocated buffer */
 const char * make_name_unique(const char filename[]);

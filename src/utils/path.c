@@ -414,13 +414,8 @@ expand_tilde(char *path)
 
 	if(path[1] == '\0' || path[1] == '/')
 	{
-		char *result;
-
-		result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
-		if(result == NULL)
-			return NULL;
-
-		sprintf(result, "%s%s", cfg.home_dir, (path[1] == '/') ? (path + 2) : "");
+		char *const result = format_str("%s%s", cfg.home_dir,
+				(path[1] == '/') ? (path + 2) : "");
 		free(path);
 		return result;
 	}
@@ -441,10 +436,7 @@ expand_tilde(char *path)
 		return path;
 
 	chosp(pw->pw_dir);
-	result = malloc(strlen(pw->pw_dir) + strlen(path) + 1);
-	if(result == NULL)
-		return NULL;
-	sprintf(result, "%s/%s", pw->pw_dir, p);
+	result = format_str("%s/%s", pw->pw_dir, p);
 	free(path);
 
 	return result;

@@ -49,8 +49,8 @@ int symlinks_available(void);
 /* Checks if one can change current directory to a path. */
 int directory_accessible(const char *path);
 /* Checks if one can write in directory specified by the path, which should be
- * absolute. */
-int is_dir_writable(const char *path);
+ * absolute (in order for this function to work correctly). */
+int is_dir_writable(const char path[]);
 /* Gets correct file size independently of platform. */
 uint64_t get_file_size(const char *path);
 /* Lists all regular files inside the path directory.  Allocates an array of
