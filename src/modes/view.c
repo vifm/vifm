@@ -275,10 +275,18 @@ enter_view_mode(int explore)
 		return;
 	}
 
+	/* Either make use of abandoned view or prune it. */
 	if(vi->filename != NULL && stroscmp(vi->filename, full_path) == 0)
 	{
-		*mode = VIEW_MODE;
-		return;
+		if(explore)
+		{
+			reset_view_info(vi);
+		}
+		else
+		{
+			*mode = VIEW_MODE;
+			return;
+		}
 	}
 
 	/* FIXME: same code is in ../quickview.c */
