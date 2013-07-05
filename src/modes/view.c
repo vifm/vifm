@@ -99,6 +99,7 @@ static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
+static FileView * get_active_view(void);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -107,6 +108,8 @@ static void cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
+static int is_right_or_bottom(void);
+static int is_top_or_left(void);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
@@ -272,10 +275,18 @@ enter_view_mode(int explore)
 		return;
 	}
 
+	/* Either make use of abandoned view or prune it. */
 	if(vi->filename != NULL && stroscmp(vi->filename, full_path) == 0)
 	{
-		*mode = VIEW_MODE;
-		return;
+		if(explore)
+		{
+			reset_view_info(vi);
+		}
+		else
+		{
+			*mode = VIEW_MODE;
+			return;
+		}
 	}
 
 	/* FIXME: same code is in ../quickview.c */
@@ -580,45 +591,49 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &lwin)
+	if(is_right_or_bottom())
 	{
 		view_switch_views();
 	}
-	move_window(view, 0, 1);
+	move_window(get_active_view(), 0, 1);
 }
 
 static void
 cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &rwin)
+	if(is_top_or_left())
 	{
 		view_switch_views();
 	}
-	move_window(view, 1, 0);
+	move_window(get_active_view(), 1, 0);
 }
 
 static void
 cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &lwin)
+	if(is_right_or_bottom())
 	{
 		view_switch_views();
 	}
-	move_window(view, 1, 1);
+	move_window(get_active_view(), 1, 1);
 }
 
 static void
 cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	FileView *const view = curr_stats.view ? other_view : curr_view;
-	if(view != &rwin)
+	if(is_top_or_left())
 	{
 		view_switch_views();
 	}
-	move_window(view, 0, 0);
+	move_window(get_active_view(), 0, 0);
+}
+
+/* Gets pointer to the currently active view from the view point of the
+ * view-mode.  Returns that pointer. */
+static FileView *
+get_active_view(void)
+{
+	return curr_stats.view ? other_view : curr_view;
 }
 
 void
@@ -649,7 +664,7 @@ view_switch_views(void)
 static void
 cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &rwin)
+	if(is_top_or_left())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -658,7 +673,7 @@ cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &lwin)
+	if(curr_stats.split == VSPLIT && is_right_or_bottom())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -667,7 +682,7 @@ cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &rwin)
+	if(curr_stats.split == HSPLIT && is_top_or_left())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -676,7 +691,7 @@ cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &lwin)
+	if(curr_stats.split == HSPLIT && is_right_or_bottom())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -685,7 +700,7 @@ cmd_ctrl_wk(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wl(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &rwin)
+	if(curr_stats.split == VSPLIT && is_top_or_left())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
@@ -715,10 +730,27 @@ cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view != &lwin)
+	if(is_right_or_bottom())
 	{
 		cmd_ctrl_ww(key_info, keys_info);
 	}
+}
+
+/* Checks whether active window is right of bottom one.  Returns non-zero if it
+ * is, otherwise zero is returned. */
+static int
+is_right_or_bottom(void)
+{
+	return !is_top_or_left();
+}
+
+/* Checks whether active window is top of left one.  Returns non-zero if it is,
+ * otherwise zero is returned. */
+static int
+is_top_or_left(void)
+{
+	const FileView *const top_or_left = curr_view->explore_mode ? &lwin : &rwin;
+	return curr_view == top_or_left;
 }
 
 static void
