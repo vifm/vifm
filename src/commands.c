@@ -33,6 +33,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -62,6 +63,7 @@
 #include "modes/view.h"
 #include "modes/visual.h"
 #include "utils/env.h"
+#include "utils/file_streams.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/int_stack.h"
@@ -533,6 +535,84 @@ char *
 cmds_expand_envvars(const char str[])
 {
 	return expand_envvars(str, 1);
+}
+
+void
+get_and_execute_command(const char line[], int type)
+{
+	char file[PATH_MAX];
+	char *cmd = NULL;
+	FILE *fp;
+	int i;
+	int history_num;
+	char **history;
+
+	/* 1. Create temporary file. */
+	generate_tmp_file_name("vifm.cmdline", file, sizeof(file));
+
+	/* 2. Fill it with history (more recent goes first, first line is empty). */
+	fp = fopen(file, "wt");
+	if(fp == NULL)
+	{
+		show_error_msgf("Error Creating Temporary File",
+				"Could not create file %s: %s", file, strerror(errno));
+		return;
+	}
+	if(type == GET_COMMAND)
+	{
+		history = cfg.cmd_history;
+		history_num = cfg.cmd_history_num;
+	}
+	else
+	{
+		history = cfg.search_history;
+		history_num = cfg.search_history_num;
+	}
+	fputs(line, fp);
+	fputc('\n', fp);
+	for(i = 0; i <= history_num; i++)
+	{
+		fputs(history[i], fp);
+		fputc('\n', fp);
+	}
+	if(type == GET_COMMAND)
+	{
+		fputs("\" vim: set filetype=vifm :", fp);
+	}
+	fclose(fp);
+
+	/* 3. Edit the file with 'vicmd'. */
+	view_file(file, 0, 0);
+
+	/* 4. Read first line of the file. */
+	fp = fopen(file, "rt");
+	if(fp != NULL)
+	{
+		cmd = read_line(fp, NULL);
+		fclose(fp);
+	}
+
+	/* 5. Delete the file. */
+	unlink(file);
+
+	if(cmd != NULL)
+	{
+		if(type == GET_COMMAND)
+		{
+			/* 6. Save the command in command history. */
+			save_command_history(cmd);
+			/* 7. Execute the command. */
+			curr_stats.save_msg = exec_commands(cmd, curr_view, type);
+		}
+		else
+		{
+			/* 6. Save the command in command history. */
+			save_search_history(cmd);
+			/* 7. Execute the command. */
+			curr_stats.save_msg = exec_command(cmd, curr_view, type);
+		}
+		free(cmd);
+	}
 }
 
 static void
