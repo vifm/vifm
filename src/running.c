@@ -451,7 +451,14 @@ view_file(const char *filename, int line, int do_fork)
 
 	if(!path_exists(filename))
 	{
-		show_error_msg("Broken Link", "Link destination doesn't exist");
+		if(access(filename, F_OK) != 0)
+		{
+			show_error_msg("Broken Link", "Link destination doesn't exist");
+		}
+		else
+		{
+			show_error_msg("Wrong Path", "File doesn't exist");
+		}
 		return;
 	}
 
