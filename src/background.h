@@ -51,9 +51,10 @@ typedef struct job_t
 
 extern struct job_t *jobs;
 
-/* Prepere background unit for the work. */
+/* Prepare background unit for the work. */
 void init_background(void);
 
+/* Returns zero on success, otherwise non-zero is returned. */
 int start_background_job(const char *cmd, int skip_errors);
 int background_and_wait_for_status(char *cmd);
 int background_and_wait_for_errors(char *cmd);

@@ -384,7 +384,7 @@ run_file(FileView *view, int dont_execute)
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			view_file(buf, -1, 1);
+			(void)view_file(buf, -1, 1);
 		}
 		else
 		{
@@ -439,15 +439,15 @@ multi_run_compat(FileView *view, const char *program)
 	return 1;
 }
 
-/* negative line means ignore it */
-void
-view_file(const char *filename, int line, int do_fork)
+int
+view_file(const char filename[], int line, int do_fork)
 {
 	char vicmd[PATH_MAX];
 	char command[PATH_MAX + 5] = "";
 	const char *fork_str = do_fork ? "" : "--nofork";
 	char *escaped;
 	int bg;
+	int result;
 
 	if(!path_exists(filename))
 	{
@@ -459,7 +459,7 @@ view_file(const char *filename, int line, int do_fork)
 		{
 			show_error_msg("Wrong Path", "File doesn't exist");
 		}
-		return;
+		return 1;
 	}
 
 #ifndef _WIN32
@@ -489,10 +489,12 @@ view_file(const char *filename, int line, int do_fork)
 #endif
 
 	if(bg && do_fork)
-		start_background_job(command, 0);
+		result = start_background_job(command, 0);
 	else
-		shellout(command, -1, 1);
+		result = shellout(command, -1, 1);
 	curs_set(FALSE);
+
+	return result;
 }
 
 int
@@ -542,7 +544,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			view_file(buf, -1, 1);
+			(void)view_file(buf, -1, 1);
 		}
 		else
 			fuse_try_mount(view, program);
