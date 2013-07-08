@@ -130,6 +130,7 @@ static int setup_extcmd_file(const char path[], const char beginning[],
 static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
 static char * get_file_first_line(const char path[]);
 static void execute_extcmd(const char command[], int type);
+static void save_extcmd(const char command[], int type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
@@ -547,8 +548,13 @@ void
 get_and_execute_command(const char line[], int type)
 {
 	char *const cmd = get_ext_command(line, type);
-	if(cmd != NULL)
+	if(cmd == NULL)
 	{
+		save_extcmd(line, type);
+	}
+	else
+	{
+		save_extcmd(cmd, type);
 		execute_extcmd(cmd, type);
 		free(cmd);
 	}
@@ -633,19 +639,31 @@ get_file_first_line(const char path[])
 	return result;
 }
 
-/* Executes the command of the type saving it to the appropriate history. */
+/* Executes the command of the type. */
 static void
 execute_extcmd(const char command[], int type)
 {
 	if(type == GET_COMMAND)
 	{
-		save_command_history(command);
 		curr_stats.save_msg = exec_commands(command, curr_view, type);
 	}
 	else
 	{
-		save_search_history(command);
 		curr_stats.save_msg = exec_command(command, curr_view, type);
+	}
+}
+
+/* Saves the command to the appropriate history. */
+static void
+save_extcmd(const char command[], int type)
+{
+	if(type == GET_COMMAND)
+	{
+		save_command_history(command);
+	}
+	else
+	{
+		save_search_history(command);
 	}
 }
 
