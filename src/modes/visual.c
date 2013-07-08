@@ -94,6 +94,7 @@ static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
+static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
@@ -548,18 +549,14 @@ cmd_semicolon(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 0;
-	enter_cmdline_mode(VSEARCH_FORWARD_SUBMODE, L"", NULL);
+	activate_search(key_info.count, 0, 0);
 }
 
 /* Search backward. */
 static void
 cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 1;
-	enter_cmdline_mode(VSEARCH_BACKWARD_SUBMODE, L"", NULL);
+	activate_search(key_info.count, 1, 0);
 }
 
 static void
@@ -815,18 +812,32 @@ cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_q_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 0;
-	get_and_execute_command("", GET_VFSEARCH_PATTERN);
+	activate_search(key_info.count, 0, 1);
 }
 
 /* Runs external editor to get search pattern. */
 static void
 cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 1;
-	get_and_execute_command("", GET_VBSEARCH_PATTERN);
+	activate_search(key_info.count, 1, 1);
+}
+
+/* Activates search of different kinds. */
+static void
+activate_search(int count, int back, int external)
+{
+	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
+	curr_stats.last_search_backward = back;
+	if(external)
+	{
+		const int type = back ? GET_VBSEARCH_PATTERN : GET_VFSEARCH_PATTERN;
+		get_and_execute_command("", type);
+	}
+	else
+	{
+		const int type = back ? VSEARCH_BACKWARD_SUBMODE : VSEARCH_FORWARD_SUBMODE;
+		enter_cmdline_mode(type, L"", NULL);
+	}
 }
 
 static void
