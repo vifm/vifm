@@ -177,6 +177,10 @@ static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void put_files(key_info_t key_info, int move);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_q_colon(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
+static void activate_search(int count, int back, int external);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
@@ -336,6 +340,9 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
 	{L"rl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_rl}}},
+	{L"q:", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_colon}}},
+	{L"q/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_slash}}},
+	{L"q?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_question}}},
 	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
 	{L"yy", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
@@ -1349,18 +1356,14 @@ cmd_semicolon(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 0;
-	enter_cmdline_mode(SEARCH_FORWARD_SUBMODE, L"", NULL);
+	activate_search(key_info.count, 0, 0);
 }
 
 /* Search backward. */
 static void
 cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
-	curr_stats.last_search_backward = 1;
-	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
+	activate_search(key_info.count, 1, 0);
 }
 
 /* Create link with absolute path */
@@ -1696,6 +1699,45 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 1);
 	load_saving_pos(&lwin, 1);
 	load_saving_pos(&rwin, 1);
+}
+
+/* Runs external editor to get command-line command. */
+static void
+cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
+{
+	get_and_execute_command("", GET_COMMAND);
+}
+
+/* Runs external editor to get search pattern. */
+static void
+cmd_q_slash(key_info_t key_info, keys_info_t *keys_info)
+{
+	activate_search(key_info.count, 0, 1);
+}
+
+/* Runs external editor to get search pattern. */
+static void
+cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
+{
+	activate_search(key_info.count, 1, 1);
+}
+
+/* Activates search of different kinds. */
+static void
+activate_search(int count, int back, int external)
+{
+	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
+	curr_stats.last_search_backward = back;
+	if(external)
+	{
+		const int type = back ? GET_BSEARCH_PATTERN : GET_FSEARCH_PATTERN;
+		get_and_execute_command("", type);
+	}
+	else
+	{
+		const int type = back ? SEARCH_BACKWARD_SUBMODE : SEARCH_FORWARD_SUBMODE;
+		enter_cmdline_mode(type, L"", NULL);
+	}
 }
 
 /* Tag file. */

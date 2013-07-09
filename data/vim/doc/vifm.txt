@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 05
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 09
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -8,9 +8,10 @@
 |vifm-visual|             Visual mode keys.
 |vifm-view|               View mode keys.
 |vifm-command-line|       Command line mode keys.
+|vifm-command-line-edit|  External editing of command line content.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
-|vifm-globals|            Description of how about globals work in vifm.
+|vifm-globs|              Description of how about globs work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
@@ -314,6 +315,20 @@ Other Normal Mode Keys~
 
                                                *vifm-:*
 [count]: - enter command line mode.  Count will add range.
+
+                                               *vifm-q:*
+q: - open external editor to prompt for command-line command.  See
+    |vifm-command-line-edit| section for details.
+
+                                               *vifm-q/*
+q/ - open external editor to prompt for search pattern to be searched
+    in forward direction.  See |vifm-command-line-edit| section for
+    details.
+
+                                               *vifm-q?*
+q? - open external editor to prompt for search pattern to be searched
+    in backward direction.  See |vifm-command-line-edit| section for
+    details.
 
                                                *vifm-!!*
 [count]!! and [count]!<selector> - enter command line mode with entered !
@@ -759,6 +774,10 @@ Ctrl-T - swap the order of current and previous character and move cursor
 Alt-. - insert last part of previous command to current cursor position.
     Each next call will insert last part of older command.
 
+                                               *vifm-c_CTRL-G*
+Ctrl-G - edit command-line content in external editor.  See
+    |vifm-command-line-edit| section for details.
+
                                                *vifm-c_CTRL-N*
 Ctrl-N - recall more recent command-line from history.
 
@@ -772,6 +791,39 @@ Up - recall more recent command-line from history, that begins as the
                                                *vifm-c_Down*
 Down - recall older command-line from history, that begins as the current
     command-line.
+
+--------------------------------------------------------------------------------
+*vifm-command-line-edit*
+
+vifm provides a facility to edit several kinds of data, that is usually edited
+in command-line mode, in external editor (using command specified by
+|vifm-'vicmd'| or |vifm-'vixcmd'| option).  This has at least two advantages
+over built-in command-line mode:
+ - one can use full power of Vim to edit text;
+ - finding and reusing history entries becomes possible.
+
+The facility is supported by the three input submodes of the command-line:
+ - command;
+ - forward search;
+ - backward search.
+
+Editing command-line using external editor is activated by the |vifm-c_CTRL-G|
+shortcut.  It's also possible to do almost the same from Normal and Visual
+modes using |vifm-q:|, |vifm-q/| and |vifm-q?| commands.
+
+Temporary file created for the purpose of editing the line has the following
+structure:
+ 1. First line, which is either empty or contains text already entered in
+    command-line.
+ 2. 2nd and all other lines with history items starting with the most recent
+    one.  Altering this lines in any way won't change history items stored by
+    vifm.
+
+After editing application is finished the first line of the file is taken as
+the result of operation, when the application returns zero exit code.  If the
+application returns an error (see |:cquit| command in Vim), all the edits made
+to the file are ignored, but the initial value of the first line is saved in
+appropriate history.
 
 --------------------------------------------------------------------------------
 *vifm-commands*
@@ -993,7 +1045,7 @@ The builtin commands are:
     entry doesn't contain any of vifm macros, name of current file is
     appended as if program entry ended with %c macro.  On Windows path to
     executables containing spaces can (and should be for correct work with
-    such paths) be double quoted.  See |vifm-globals| for pattern definition.
+    such paths) be double quoted.  See |vifm-globs| for pattern definition.
     See also |vifm-fuse|.  Example for zip archives and several actions: >
 
     filetype *.zip,*.jar,*.war,*.ear
@@ -1007,7 +1059,7 @@ The builtin commands are:
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
-    In X :filextype is equal to :filetype.  See |vifm-globals| for pattern
+    In X :filextype is equal to :filetype.  See |vifm-globs| for pattern
     definition.  See also |vifm-fuse|.
 
                                                *vifm-:fileviewer* *vifm-:filev*
@@ -1016,7 +1068,7 @@ The builtin commands are:
     captured and showed in the second pane of vifm after running :view
     command.  When the command doesn't contain any of vifm macros, name of
     current file is appended as if command ended with %c macro.  See
-    |vifm-globals| for pattern definition.  Example for zip archives: >
+    |vifm-globs| for pattern definition.  Example for zip archives: >
 
     fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
 <
@@ -1637,13 +1689,13 @@ commands have progress instead of process id at the line beginning.
 Background operations cannot be undone.
 
 --------------------------------------------------------------------------------
-*vifm-globals*
+*vifm-globs*
 
-|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globals
-to match file names.  Here is a short overview of globals and some important
-points that one needs to know.
+|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globs
+to match file names.  Here is a short overview of globs and some important
+points that one needs to know about them.
 
-Only names of files are matched by the globals, not full paths.  E.g. >
+Only names of files are matched by the globs, not full paths.  E.g. >
  :filetype Makefile make %c
 will match files with name "Makefile" regardless whether it's in root or home
 directory.

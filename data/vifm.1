@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 05, 2013" "" "Vifm"
+.TH vifm 1 "Jul 09, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -351,6 +351,18 @@ Remove all filters.
 .TP
 .BI [count]:
 enter command line mode.  Count will add range.
+.TP
+.BI q:
+open external editor to prompt for command-line command.  See
+"Command line editing" section for details.
+.TP
+.BI q/
+open external editor to prompt for search pattern to be searched in forward
+direction.  See "Command line editing" section for details.
+.TP
+.BI q?
+open external editor to prompt for search pattern to be searched in backward
+direction.  See "Command line editing" section for details.
 .TP
 .BI "[count]!! and [count]!<selector>"
 enter command line mode with entered ! command.  Count will modify range.
@@ -852,6 +864,10 @@ cursor past the end of line, swap the order of two last characters in the line.
 insert last part of previous command to current cursor position.  Each next call
 will insert last part of older command.
 .TP
+.BI Ctrl-G
+edit command-line content in external editor.  See "Command line editing"
+section for details.
+.TP
 .BI Ctrl-N
 recall more recent command-line from history.
 .TP
@@ -864,6 +880,40 @@ command-line.
 .TP
 .BI Down
 recall older command-line from history, that begins as the current command-line.
+.\" ---------------------------------------------------------------------------
+.SH Command line editing
+.\" ---------------------------------------------------------------------------
+vifm provides a facility to edit several kinds of data, that is usually edited
+in command-line mode, in external editor (using command specified by
+\'vicmd' or 'vixcmd' option).  This has at least two advantages
+over built-in command-line mode:
+ \- one can use full power of Vim to edit text;
+ \- finding and reusing history entries becomes possible.
+
+The facility is supported by the three input submodes of the command-line:
+ \- command;
+ \- forward search;
+ \- backward search.
+
+Editing command-line using external editor is activated by the c_CTRL-G
+shortcut.  It's also possible to do almost the same from Normal and Visual
+modes using q:, q/ and q? commands.
+
+Temporary file created for the purpose of editing the line has the following
+structure:
+.IP 1. 4
+First line, which is either empty or contains text already entered in
+command-line.
+.IP 2. 4
+2nd and all other lines with history items starting with the most recent one.
+Altering this lines in any way won't change history items stored by vifm.
+.LP
+
+After editing application is finished the first line of the file is taken as
+the result of operation, when the application returns zero exit code.  If the
+application returns an error (see :cquit command in Vim), all the edits made to
+the file are ignored, but the initial value of the first line is saved in
+appropriate history.
 .\" ---------------------------------------------------------------------------
 .SH Commands
 .\" ---------------------------------------------------------------------------
@@ -1132,7 +1182,7 @@ given to each command to ease understanding of what command will do in the
 the default isn't found.  When program entry doesn't contain any of vifm
 macros, name of current file is appended as if program entry ended with %c
 macro.  On Windows path to executables containing spaces can (and should be
-for correct work with such paths) be double quoted.  See "Globals" section
+for correct work with such paths) be double quoted.  See "Globs" section
 below for pattern definition.  See also "Automatic FUSE mounts" section
 below.  Example for zip archives and several actions:
 
@@ -1148,7 +1198,7 @@ below.  Example for zip archives and several actions:
 .TP
 .BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
 same as :filetype, but vifm will ignore this command if it's not running in X.
-In X :filextype is equal to :filetype.  See "Globals" section below for pattern
+In X :filextype is equal to :filetype.  See "Globs" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
 .TP
 .BI ":filev[iewer] pat1,pat2,... command"
@@ -1156,7 +1206,7 @@ will associate given command as a viewer to each of the patterns.  Viewer is a
 command which output is captured and showed in the second pane of vifm after
 running :view command.  When the command doesn't contain any of vifm macros,
 name of current file is appended as if command ended with %c macro.  See
-"Globals" section below for pattern definition.  Example for zip archives:
+"Globs" section below for pattern definition.  Example for zip archives:
 
 .EE
  fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
@@ -1917,13 +1967,13 @@ commands have progress instead of process id at the line beginning.
 
 Background operations cannot be undone.
 .\" ---------------------------------------------------------------------------
-.SH Globals
+.SH Globs
 .\" ---------------------------------------------------------------------------
-:filetype, :filextype and :fileviewer commands support globals
-to match file names.  Here is a short overview of globals and some important
-points that one needs to know.
+:filetype, :filextype and :fileviewer commands support globs
+to match file names.  Here is a short overview of globs and some important
+points that one needs to know about them.
 
-Only names of files are matched by the globals, not full paths.  E.g.
+Only names of files are matched by the globs, not full paths.  E.g.
 .EX
  :filetype Makefile make %c
 .EE

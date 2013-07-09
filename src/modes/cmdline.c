@@ -116,6 +116,8 @@ static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
+static int submode_to_editable_command_type(int sub_mode);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -167,6 +169,7 @@ static void stop_history_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x07",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
 	/* backspace */
 	{L"\x08",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
 	{L"\x09",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
@@ -633,6 +636,46 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	if(sub_mode == CMD_SUBMODE)
 	{
 		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
+	}
+}
+
+/* Opens the editor with already typed in characters, gets entered line and
+ * executes it as if it was typed. */
+static void
+cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
+{
+	const int type = submode_to_editable_command_type(sub_mode);
+	if(type != -1)
+	{
+		char *const mbstr = (input_stat.line == NULL) ?
+			strdup("") : to_multibyte(input_stat.line);
+		leave_cmdline_mode();
+		get_and_execute_command(mbstr, type);
+		free(mbstr);
+	}
+}
+
+/* Converts command-line sub-mode to type of command for the commands.c unit,
+ * which supports editing.  Returns -1 when there is no appropriate command
+ * type. */
+static int
+submode_to_editable_command_type(int sub_mode)
+{
+	switch(sub_mode)
+	{
+		case CMD_SUBMODE:
+			return GET_COMMAND;
+		case SEARCH_FORWARD_SUBMODE:
+			return GET_FSEARCH_PATTERN;
+		case SEARCH_BACKWARD_SUBMODE:
+			return GET_BSEARCH_PATTERN;
+		case VSEARCH_FORWARD_SUBMODE:
+			return GET_VFSEARCH_PATTERN;
+		case VSEARCH_BACKWARD_SUBMODE:
+			return GET_VBSEARCH_PATTERN;
+
+		default:
+			return -1;
 	}
 }
 

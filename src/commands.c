@@ -33,6 +33,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -62,6 +63,7 @@
 #include "modes/view.h"
 #include "modes/visual.h"
 #include "utils/env.h"
+#include "utils/file_streams.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/int_stack.h"
@@ -122,6 +124,13 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
 		int *usr2);
+static char * get_ext_command(const char beginning[], int type);
+static int setup_extcmd_file(const char path[], const char beginning[],
+		int type);
+static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
+static char * get_file_first_line(const char path[]);
+static void execute_extcmd(const char command[], int type);
+static void save_extcmd(const char command[], int type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
@@ -533,6 +542,129 @@ char *
 cmds_expand_envvars(const char str[])
 {
 	return expand_envvars(str, 1);
+}
+
+void
+get_and_execute_command(const char line[], int type)
+{
+	char *const cmd = get_ext_command(line, type);
+	if(cmd == NULL)
+	{
+		save_extcmd(line, type);
+	}
+	else
+	{
+		save_extcmd(cmd, type);
+		execute_extcmd(cmd, type);
+		free(cmd);
+	}
+}
+
+/* Opens the editor with the beginning.  Type is used to provide useful context.
+ * Returns entered command as a newly allocated string, which should be freed by
+ * the caller. */
+static char *
+get_ext_command(const char beginning[], int type)
+{
+	char cmd_file[PATH_MAX];
+	char *cmd = NULL;
+
+	generate_tmp_file_name("vifm.cmdline", cmd_file, sizeof(cmd_file));
+
+	if(setup_extcmd_file(cmd_file, beginning, type) == 0)
+	{
+		if(view_file(cmd_file, 0, 0) == 0)
+		{
+			cmd = get_file_first_line(cmd_file);
+		}
+	}
+	else
+	{
+		show_error_msgf("Error Creating Temporary File",
+				"Could not create file %s: %s", cmd_file, strerror(errno));
+	}
+
+	unlink(cmd_file);
+	return cmd;
+}
+
+/* Create and fill file for external command prompt.  Returns zero on success,
+ * otherwise non-zero is returned and errno contains valid value. */
+static int
+setup_extcmd_file(const char path[], const char beginning[], int type)
+{
+	FILE *const fp = fopen(path, "wt");
+	if(fp == NULL)
+	{
+		return 1;
+	}
+	prepare_extcmd_file(fp, beginning, type);
+	fclose(fp);
+	return 0;
+}
+
+/* Fills the file with history (more recent goes first). */
+static void
+prepare_extcmd_file(FILE *fp, const char beginning[], int type)
+{
+	const int is_cmd = (type == GET_COMMAND);
+	const int history_num = is_cmd ? cfg.cmd_history_num : cfg.search_history_num;
+	char **const history = is_cmd ? cfg.cmd_history : cfg.search_history;
+	int i;
+
+	fprintf(fp, "%s\n", beginning);
+	for(i = 0; i <= history_num; i++)
+	{
+		fprintf(fp, "%s\n", history[i]);
+	}
+	if(is_cmd)
+	{
+		fputs("\" vim: set filetype=vifm :\n", fp);
+	}
+}
+
+/* Reads the first line of the file specified by the path.  Returns NULL on
+ * error or an empty file, otherwise a newly allocated string, which should be
+ * freed by the caller, is returned. */
+static char *
+get_file_first_line(const char path[])
+{
+	FILE *const fp = fopen(path, "rt");
+	char *result;
+	if(fp != NULL)
+	{
+		result = read_line(fp, NULL);
+		fclose(fp);
+	}
+	return result;
+}
+
+/* Executes the command of the type. */
+static void
+execute_extcmd(const char command[], int type)
+{
+	if(type == GET_COMMAND)
+	{
+		curr_stats.save_msg = exec_commands(command, curr_view, type);
+	}
+	else
+	{
+		curr_stats.save_msg = exec_command(command, curr_view, type);
+	}
+}
+
+/* Saves the command to the appropriate history. */
+static void
+save_extcmd(const char command[], int type)
+{
+	if(type == GET_COMMAND)
+	{
+		save_command_history(command);
+	}
+	else
+	{
+		save_search_history(command);
+	}
 }
 
 static void
@@ -1812,7 +1944,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 				get_current_file_name(curr_view));
-		view_file(buf, -1, 1);
+		(void)view_file(buf, -1, 1);
 	}
 	else
 	{

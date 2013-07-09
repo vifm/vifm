@@ -53,6 +53,9 @@ void exec_startup_commands(int argc, char **argv);
 /* Expands all environment variables in the str.  Allocates and returns memory
  * that should be freed by the caller. */
 char * cmds_expand_envvars(const char str[]);
+/* Opens the editor with the line, gets entered command and executes it in the
+ * way dependent on the type of command. */
+void get_and_execute_command(const char beginning[], int type);
 
 #ifdef TEST
 #include "engine/cmds.h"

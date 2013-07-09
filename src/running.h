@@ -30,10 +30,13 @@ void handle_file(FileView *view, int dont_execute, int force_follow);
 int edit_selection(void);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
-void view_file(const char *filename, int line, int do_fork);
+/* Negative line means ignore it.  Returns zero on success, on error non-zero is
+ * returned. */
+int view_file(const char filename[], int line, int do_fork);
 void handle_dir(FileView *view);
 void cd_updir(FileView *view);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
+/* Returns zero on success, otherwise non-zero is returned. */
 int shellout(const char *command, int pause, int allow_screen);
 void output_to_nowhere(const char *cmd);
 /* Returns zero on successful running. */

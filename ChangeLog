@@ -10,12 +10,15 @@
 	specifying name of the curses library to link against.  Thanks to
 	Russell Urquhart.
 
-	Added "Globals" section to the documentation.
+	Added "Globs" section to the documentation.
 
 	Added 'aproposprg', 'findprg', 'grepprg' and 'locateprg' options to specify
 	external commands format.
 
 	Added optional argument for :invert command.  Thanks to filterfalse.
+
+	Added editing command-line using Vim (like command window in Vim).  Thanks
+	to filterfalse.
 
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
