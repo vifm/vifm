@@ -17,6 +17,9 @@
 
 	Added optional argument for :invert command.  Thanks to filterfalse.
 
+	Added editing command-line using Vim (like command window in Vim).  Thanks
+	to filterfalse.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

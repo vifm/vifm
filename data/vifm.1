@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 05, 2013" "" "Vifm"
+.TH vifm 1 "Jul 09, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -351,6 +351,18 @@ Remove all filters.
 .TP
 .BI [count]:
 enter command line mode.  Count will add range.
+.TP
+.BI q:
+open external editor to prompt for command-line command.  See
+"Command line editing" section for details.
+.TP
+.BI q/
+open external editor to prompt for search pattern to be searched in forward
+direction.  See "Command line editing" section for details.
+.TP
+.BI q?
+open external editor to prompt for search pattern to be searched in backward
+direction.  See "Command line editing" section for details.
 .TP
 .BI "[count]!! and [count]!<selector>"
 enter command line mode with entered ! command.  Count will modify range.
@@ -852,6 +864,10 @@ cursor past the end of line, swap the order of two last characters in the line.
 insert last part of previous command to current cursor position.  Each next call
 will insert last part of older command.
 .TP
+.BI Ctrl-G
+edit command-line content in external editor.  See "Command line editing"
+section for details.
+.TP
 .BI Ctrl-N
 recall more recent command-line from history.
 .TP
@@ -864,6 +880,40 @@ command-line.
 .TP
 .BI Down
 recall older command-line from history, that begins as the current command-line.
+.\" ---------------------------------------------------------------------------
+.SH Command line editing
+.\" ---------------------------------------------------------------------------
+vifm provides a facility to edit several kinds of data, that is usually edited
+in command-line mode, in external editor (using command specified by
+\'vicmd' or 'vixcmd' option).  This has at least two advantages
+over built-in command-line mode:
+ \- one can use full power of Vim to edit text;
+ \- finding and reusing history entries becomes possible.
+
+The facility is supported by the three input submodes of the command-line:
+ \- command;
+ \- forward search;
+ \- backward search.
+
+Editing command-line using external editor is activated by the c_CTRL-G
+shortcut.  It's also possible to do almost the same from Normal and Visual
+modes using q:, q/ and q? commands.
+
+Temporary file created for the purpose of editing the line has the following
+structure:
+.IP 1. 4
+First line, which is either empty or contains text already entered in
+command-line.
+.IP 2. 4
+2nd and all other lines with history items starting with the most recent one.
+Altering this lines in any way won't change history items stored by vifm.
+.LP
+
+After editing application is finished the first line of the file is taken as
+the result of operation, when the application returns zero exit code.  If the
+application returns an error (see :cquit command in Vim), all the edits made to
+the file are ignored, but the initial value of the first line is saved in
+appropriate history.
 .\" ---------------------------------------------------------------------------
 .SH Commands
 .\" ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 05
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 09
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -8,6 +8,7 @@
 |vifm-visual|             Visual mode keys.
 |vifm-view|               View mode keys.
 |vifm-command-line|       Command line mode keys.
+|vifm-command-line-edit|  External editing of command line content.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-globals|            Description of how about globals work in vifm.
@@ -314,6 +315,20 @@ Other Normal Mode Keys~
 
                                                *vifm-:*
 [count]: - enter command line mode.  Count will add range.
+
+                                               *vifm-q:*
+q: - open external editor to prompt for command-line command.  See
+    |vifm-command-line-edit| section for details.
+
+                                               *vifm-q/*
+q/ - open external editor to prompt for search pattern to be searched
+    in forward direction.  See |vifm-command-line-edit| section for
+    details.
+
+                                               *vifm-q?*
+q? - open external editor to prompt for search pattern to be searched
+    in backward direction.  See |vifm-command-line-edit| section for
+    details.
 
                                                *vifm-!!*
 [count]!! and [count]!<selector> - enter command line mode with entered !
@@ -759,6 +774,10 @@ Ctrl-T - swap the order of current and previous character and move cursor
 Alt-. - insert last part of previous command to current cursor position.
     Each next call will insert last part of older command.
 
+                                               *vifm-c_CTRL-G*
+Ctrl-G - edit command-line content in external editor.  See
+    |vifm-command-line-edit| section for details.
+
                                                *vifm-c_CTRL-N*
 Ctrl-N - recall more recent command-line from history.
 
@@ -772,6 +791,39 @@ Up - recall more recent command-line from history, that begins as the
                                                *vifm-c_Down*
 Down - recall older command-line from history, that begins as the current
     command-line.
+
+--------------------------------------------------------------------------------
+*vifm-command-line-edit*
+
+vifm provides a facility to edit several kinds of data, that is usually edited
+in command-line mode, in external editor (using command specified by
+|vifm-'vicmd'| or |vifm-'vixcmd'| option).  This has at least two advantages
+over built-in command-line mode:
+ - one can use full power of Vim to edit text;
+ - finding and reusing history entries becomes possible.
+
+The facility is supported by the three input submodes of the command-line:
+ - command;
+ - forward search;
+ - backward search.
+
+Editing command-line using external editor is activated by the |vifm-c_CTRL-G|
+shortcut.  It's also possible to do almost the same from Normal and Visual
+modes using |vifm-q:|, |vifm-q/| and |vifm-q?| commands.
+
+Temporary file created for the purpose of editing the line has the following
+structure:
+ 1. First line, which is either empty or contains text already entered in
+    command-line.
+ 2. 2nd and all other lines with history items starting with the most recent
+    one.  Altering this lines in any way won't change history items stored by
+    vifm.
+
+After editing application is finished the first line of the file is taken as
+the result of operation, when the application returns zero exit code.  If the
+application returns an error (see |:cquit| command in Vim), all the edits made
+to the file are ignored, but the initial value of the first line is saved in
+appropriate history.
 
 --------------------------------------------------------------------------------
 *vifm-commands*
