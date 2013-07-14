@@ -68,6 +68,7 @@ vifm_SOURCES = \
 	\
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
+	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \

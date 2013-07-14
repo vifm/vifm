@@ -107,6 +107,7 @@ Package content
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
     |  |  |-- file_streams.c - file stream reading related functions
+    |  |  |-- filter.c - small abstraction over filter driven by a regexp
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
