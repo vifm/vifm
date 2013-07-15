@@ -66,7 +66,7 @@ filter_dispose(filter_t *filter)
 int
 filter_is_empty(filter_t *filter)
 {
-	return filter->raw[0] == '\0';
+	return filter->raw[0] == '\0' && !filter->is_regex_valid;
 }
 
 void
@@ -79,7 +79,12 @@ filter_clear(filter_t *filter)
 int
 filter_set(filter_t *filter, const char value[])
 {
-	if(replace_string(&filter->raw, value) == 0)
+	if(value[0] == '\0')
+	{
+		filter_clear(filter);
+		return 0;
+	}
+	else if(replace_string(&filter->raw, value) == 0)
 	{
 		reset_regex(filter, value);
 		return (filter->is_regex_valid || filter->raw[0] == '\0') ? 0 : 1;
