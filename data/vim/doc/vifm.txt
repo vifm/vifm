@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 09
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 13
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -580,8 +580,9 @@ gU, U - make names of selected files uppercase.
 --------------------------------------------------------------------------------
 *vifm-view*
 
-This mode tries to imitate the less program. Currently the following keys are
-supported:
+This mode tries to imitate the less program.  List of builtin shortcuts can be
+found below.  Shortcuts can be customized using |vifm-:qmap|, |vifm-:qnoremap| and
+|vifm-:qunmap| command-line commands.
 
                                                *vifm-q_SHIFT-Tab* *vifm-q_Tab*
                                                *vifm-q_q* *vifm-q_Q* *vifm-q_ZZ*
