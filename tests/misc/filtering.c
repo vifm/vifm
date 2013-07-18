@@ -3,18 +3,27 @@
 
 #include "seatest.h"
 
+#include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
 #include "../../src/ui.h"
 
 #define assert_hidden(view, name, dir) \
-	assert_true(regexp_filter_match(&view, name, dir) == !view.invert)
+	assert_true(regexp_filter_match(&view, name, dir) == 0)
 
 #define assert_visible(view, name, dir) \
-	assert_true(regexp_filter_match(&view, name, dir) == view.invert)
+	assert_true(regexp_filter_match(&view, name, dir) != 0)
+
+#ifdef _WIN32
+#define CASE_SENSATIVE_FILTER 0
+#else
+#define CASE_SENSATIVE_FILTER 1
+#endif
 
 static void
 setup(void)
 {
+	cfg.filter_inverted_by_default = 1;
+
 	lwin.list_rows = 7;
 	lwin.list_pos = 2;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
@@ -36,7 +45,8 @@ setup(void)
 	lwin.selected_files = 6;
 
 	lwin.filename_filter = strdup("");
-	lwin.invert = 0;
+	filter_init(&lwin.auto_filter, CASE_SENSATIVE_FILTER);
+	lwin.invert = cfg.filter_inverted_by_default;
 
 	lwin.column_count = 1;
 
@@ -62,7 +72,8 @@ setup(void)
 	rwin.selected_files = 0;
 
 	rwin.filename_filter = strdup("");
-	rwin.invert = 0;
+	filter_init(&rwin.auto_filter, CASE_SENSATIVE_FILTER);
+	rwin.invert = cfg.filter_inverted_by_default;
 
 	rwin.column_count = 1;
 }
@@ -75,6 +86,7 @@ static void cleanup_view(FileView *view)
 		free(view->dir_entry[i].name);
 	free(view->dir_entry);
 	free(view->filename_filter);
+	filter_dispose(&view->auto_filter);
 }
 
 static void

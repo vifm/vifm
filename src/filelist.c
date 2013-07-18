@@ -54,6 +54,7 @@
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "utils/env.h"
+#include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
@@ -81,6 +82,12 @@
 #include "term_title.h"
 #include "types.h"
 #include "ui.h"
+
+#ifdef _WIN32
+#define CASE_SENSATIVE_FILTER 0
+#else
+#define CASE_SENSATIVE_FILTER 1
+#endif
 
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
@@ -424,6 +431,15 @@ prepare_view(FileView *view)
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
+
+	if(view->auto_filter.raw == NULL)
+	{
+		filter_init(&view->auto_filter, CASE_SENSATIVE_FILTER);
+	}
+	else
+	{
+		filter_clear(&view->auto_filter);
+	}
 
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
@@ -2424,18 +2440,23 @@ fill_dir_list(FileView *view)
 }
 
 /* Checks whether file/directory matches filename filter of the view.  Returns
- * view->invert if given filename matches filter, otherwise !view->invert is
- * returned. */
+ * zero if given filename matches filter and should be hidden, otherwise
+ * non-zero is returned. */
 TSTATIC int
 regexp_filter_match(FileView *view, const char filename[], int is_dir)
 {
 	char name_with_slash[strlen(filename) + 1 + 1];
+	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
+
+	if(filter_matches(&view->auto_filter, name_with_slash))
+	{
+		return 0;
+	}
+
 	if(!view->filter_is_valid)
 	{
 		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
 	}
-
-	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
 
 	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
 	{
@@ -2645,6 +2666,7 @@ rescue_from_empty_filelist(FileView * view)
 		show_error_msgf("Filter error",
 				"The %s\"%s\" pattern did not match any files. It was reset.",
 				view->invert ? "" : "inverted ", view->filename_filter);
+		filter_clear(&view->auto_filter);
 		set_filename_filter(view, "");
 		view->invert = 1;
 
@@ -2723,99 +2745,25 @@ add_parent_dir(FileView *view)
 	}
 }
 
-/*
- * Escape the filename for the purpose of using it in filename filter.
- *
- * Returns new string, caller should free it.
- */
-static char *
-escape_name_for_filter(const char *string)
-{
-	size_t len;
-	size_t i;
-	char *ret, *dup;
-
-	len = strlen(string);
-
-	dup = ret = malloc(len*2 + 2 + 1);
-
-	for(i = 0; i < len; i++)
-	{
-		switch(*string)
-		{
-			case '\\':
-			case '[':
-			case ']':
-			case '(':
-			case ')':
-			case '{':
-			case '}':
-			case '+':
-			case '*':
-			case '^':
-			case '$':
-			case '.':
-			case '?':
-			case '|':
-				*dup++ = '\\';
-				break;
-		}
-		*dup++ = *string++;
-	}
-	*dup = '\0';
-	return ret;
-}
-
 void
 filter_selected_files(FileView *view)
 {
-	char *filter = strdup(view->filename_filter);
-	int x;
+	int i;
 
 	if(!view->selected_files)
 		view->dir_entry[view->list_pos].selected = 1;
 
-	for(x = 0; x < view->list_rows; x++)
+	for(i = 0; i < view->list_rows; i++)
 	{
-		size_t buf_size;
-		char *name;
-		char *new_filter;
+		const dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(!view->dir_entry[x].selected)
-			continue;
-
-		if(is_parent_dir(view->dir_entry[x].name))
-			continue;
-
-		name = escape_name_for_filter(view->dir_entry[x].name);
-
-		/* realloc memory allocated for filter */
-		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
-		new_filter = realloc(filter, buf_size);
-
-		if(new_filter != NULL)
+		if(entry->selected && !is_parent_dir(entry->name))
 		{
-			filter = new_filter;
-
-			/* add OR if needed */
-			if(filter[0] != '\0')
-			{
-				strcat(filter, "|");
-			}
-
-			/* update filename filter */
-			strcat(filter, "^");
-			strcat(filter, name);
-			strcat(filter, "$");
+			filter_append(&view->auto_filter, entry->name);
 		}
-
-		free(name);
 	}
-	set_filename_filter(view, filter);
-	free(filter);
 
 	/* reload view */
-	view->invert = 1;
 	clean_status_bar();
 	load_dir_list(view, 1);
 	move_to_list_pos(view, view->list_pos);

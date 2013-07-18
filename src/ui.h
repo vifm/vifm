@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "utils/filter.h"
 #include "utils/fs_limits.h"
 #include "color_scheme.h"
 #include "column_view.h"
@@ -166,6 +167,9 @@ typedef struct _FileView
 	char *prev_filter; /* for remove/restore with filename_filter, not NULL */
 	int filter_is_valid;
 	regex_t filter_regex;
+
+	/* Filter which is controlled automatically and never filled by user. */
+	filter_t auto_filter;
 
 	char sort[SORT_OPTION_COUNT];
 
