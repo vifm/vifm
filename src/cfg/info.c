@@ -23,6 +23,7 @@
 
 #include "../engine/cmds.h"
 #include "../utils/file_streams.h"
+#include "../utils/filter.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -374,6 +375,13 @@ set_view_property(FileView *view, char type, const char value[])
 	{
 		const int bool_val = atoi(value);
 		view->hide_dot = bool_val;
+	}
+	else if(type == PROP_TYPE_AUTO_FILTER)
+	{
+		if(filter_set(&view->auto_filter, value) != 0)
+		{
+			LOG_ERROR_MSG("Error setting auto filename filter to: %s", value);
+		}
 	}
 	else
 	{
@@ -956,9 +964,11 @@ update_info_file(const char filename[])
 		fprintf(fp, "f%s\n", lwin.filename_filter);
 		fprintf(fp, "i%d\n", lwin.invert);
 		fprintf(fp, "[.%d\n", lwin.hide_dot);
+		fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
 		fprintf(fp, "F%s\n", rwin.filename_filter);
 		fprintf(fp, "I%d\n", rwin.invert);
 		fprintf(fp, "].%d\n", rwin.hide_dot);
+		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
 		fprintf(fp, "s%d\n", cfg.use_screen);
 	}
 
