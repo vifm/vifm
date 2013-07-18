@@ -131,8 +131,7 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
-TSTATIC int regexp_filter_match(FileView *view, const char filename[],
-		int is_dir);
+TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static size_t get_filetype_decoration_width(FileType type);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -2216,7 +2215,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, d->d_name, d->d_type == DT_DIR) == 0)
+		else if(file_is_visible(view, d->d_name, d->d_type == DT_DIR) == 0)
 		{
 			view->filtered++;
 			view->list_rows--;
@@ -2347,7 +2346,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, ffd.cFileName,
+		else if(file_is_visible(view, ffd.cFileName,
 				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
 		{
 			view->filtered++;
@@ -2439,11 +2438,11 @@ fill_dir_list(FileView *view)
 	return 0;
 }
 
-/* Checks whether file/directory matches filename filter of the view.  Returns
- * zero if given filename matches filter and should be hidden, otherwise
- * non-zero is returned. */
+/* Checks whether file/directory passes filename filters of the view.  Returns
+ * non-zero if given filename passes filter and should be visible, otherwise
+ * zero is returned, in which case the file should be hidden. */
 TSTATIC int
-regexp_filter_match(FileView *view, const char filename[], int is_dir)
+file_is_visible(FileView *view, const char filename[], int is_dir)
 {
 	char name_with_slash[strlen(filename) + 1 + 1];
 	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
