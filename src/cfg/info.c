@@ -961,11 +961,11 @@ update_info_file(const char filename[])
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
 		fputs("\n# State:\n", fp);
-		fprintf(fp, "f%s\n", lwin.filename_filter);
+		fprintf(fp, "f%s\n", lwin.name_filter.raw);
 		fprintf(fp, "i%d\n", lwin.invert);
 		fprintf(fp, "[.%d\n", lwin.hide_dot);
 		fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
-		fprintf(fp, "F%s\n", rwin.filename_filter);
+		fprintf(fp, "F%s\n", rwin.name_filter.raw);
 		fprintf(fp, "I%d\n", rwin.invert);
 		fprintf(fp, "].%d\n", rwin.hide_dot);
 		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);

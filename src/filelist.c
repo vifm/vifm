@@ -17,10 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#if(defined(BSD) && (BSD>=199103))
-	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
-#endif
-
 #ifdef _WIN32
 #include <windows.h>
 #include <winioctl.h>
@@ -29,8 +25,6 @@
 #endif
 
 #include <curses.h>
-
-#include <regex.h>
 
 #include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
@@ -116,6 +110,7 @@ static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void init_view(FileView *view);
 static void prepare_view(FileView *view);
+static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
@@ -424,24 +419,31 @@ prepare_view(FileView *view)
 {
 	strncpy(view->regexp, "", sizeof(view->regexp));
 	(void)replace_string(&view->prev_filter, "");
-	set_filename_filter(view, "");
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
 
-	if(view->auto_filter.raw == NULL)
-	{
-		filter_init(&view->auto_filter, CASE_SENSATIVE_FILTER);
-	}
-	else
-	{
-		filter_clear(&view->auto_filter);
-	}
+	reset_filter(&view->name_filter);
+	reset_filter(&view->auto_filter);
 
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
+}
+
+/* Resets filter to empty state (either initializes or clears it). */
+static void
+reset_filter(filter_t *filter)
+{
+	if(filter->raw == NULL)
+	{
+		filter_init(filter, CASE_SENSATIVE_FILTER);
+	}
+	else
+	{
+		filter_clear(filter);
+	}
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -2452,15 +2454,11 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 0;
 	}
 
-	if(!view->filter_is_valid)
-	{
-		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
-	}
-
-	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
+	if(filter_matches(&view->name_filter, name_with_slash))
 	{
 		return !view->invert;
 	}
+
 	return view->invert;
 }
 
@@ -2660,11 +2658,11 @@ rescue_from_empty_filelist(FileView * view)
 	 * in the / directory.  All other directories will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
-	if(is_path_absolute(view->curr_dir) && view->filename_filter[0] != '\0')
+	if(is_path_absolute(view->curr_dir) && !filter_is_empty(&view->name_filter))
 	{
 		show_error_msgf("Filter error",
 				"The %s\"%s\" pattern did not match any files. It was reset.",
-				view->invert ? "" : "inverted ", view->filename_filter);
+				view->invert ? "" : "inverted ", view->name_filter.raw);
 		filter_clear(&view->auto_filter);
 		set_filename_filter(view, "");
 		view->invert = 1;
@@ -2785,7 +2783,7 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	(void)replace_string(&view->prev_filter, view->filename_filter);
+	(void)replace_string(&view->prev_filter, view->name_filter.raw);
 	set_filename_filter(view, "");
 
 	view->prev_invert = view->invert;
@@ -2812,27 +2810,7 @@ toggle_filter_inversion(FileView *view)
 void
 set_filename_filter(FileView *view, const char *filter)
 {
-	int ret;
-	int cflags = REG_EXTENDED;
-
-	if(view->filter_is_valid)
-	{
-		regfree(&view->filter_regex);
-	}
-
-	(void)replace_string(&view->filename_filter, filter);
-	if(view->filename_filter[0] == '\0')
-	{
-		view->filter_is_valid = 0;
-		return;
-	}
-
-#ifdef _WIN32
-	cflags |= REG_ICASE;
-#endif
-
-	ret = regcomp(&view->filter_regex, view->filename_filter, cflags);
-	view->filter_is_valid = ret == 0;
+	(void)filter_set(&view->name_filter, filter);
 }
 
 void

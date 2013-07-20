@@ -24,8 +24,6 @@
 #include <windows.h>
 #endif
 
-#include <regex.h>
-
 #include <curses.h>
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* off_t mode_t... */
@@ -163,10 +161,11 @@ typedef struct _FileView
 	int user_selection;
 	int explore_mode; /* shows whether this view is used for file exploring */
 
-	char *filename_filter; /* regexp for filtering files in dir list, not NULL */
-	char *prev_filter; /* for remove/restore with filename_filter, not NULL */
-	int filter_is_valid;
-	regex_t filter_regex;
+	/* Filter which is controlled by user. */
+	filter_t name_filter;
+	/* Stores previous raw value of the name_filter to make filter restoring
+	 * possible.  Not NULL. */
+	char *prev_filter;
 
 	/* Filter which is controlled automatically and never filled by user. */
 	filter_t auto_filter;

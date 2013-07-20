@@ -16,6 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#if(defined(BSD) && (BSD>=199103))
+#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
+#endif
+
 #include <regex.h> /* REG_EXTENDED REG_ICASE regex_t regfree() */
 
 #include <assert.h> /* assert */
@@ -170,7 +174,6 @@ escape_name_for_filter(const char string[])
 {
 	static const char *NEED_ESCAPING = "\\[](){}+*^$.?|";
 	size_t len;
-	size_t i;
 	char *ret, *dup;
 
 	len = strlen(string);

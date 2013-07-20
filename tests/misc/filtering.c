@@ -44,7 +44,7 @@ setup(void)
 	lwin.dir_entry[6].selected = 0;
 	lwin.selected_files = 6;
 
-	lwin.filename_filter = strdup("");
+	filter_init(&lwin.name_filter, CASE_SENSATIVE_FILTER);
 	filter_init(&lwin.auto_filter, CASE_SENSATIVE_FILTER);
 	lwin.invert = cfg.filter_inverted_by_default;
 
@@ -71,7 +71,7 @@ setup(void)
 	rwin.dir_entry[6].selected = 0;
 	rwin.selected_files = 0;
 
-	rwin.filename_filter = strdup("");
+	filter_init(&rwin.name_filter, CASE_SENSATIVE_FILTER);
 	filter_init(&rwin.auto_filter, CASE_SENSATIVE_FILTER);
 	rwin.invert = cfg.filter_inverted_by_default;
 
@@ -85,7 +85,7 @@ static void cleanup_view(FileView *view)
 	for(i = 0; i < view->list_rows; i++)
 		free(view->dir_entry[i].name);
 	free(view->dir_entry);
-	free(view->filename_filter);
+	filter_dispose(&view->name_filter);
 	filter_dispose(&view->auto_filter);
 }
 
