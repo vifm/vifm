@@ -2218,7 +2218,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(file_is_visible(view, d->d_name, d->d_type == DT_DIR) == 0)
+		else if(!file_is_visible(view, d->d_name, d->d_type == DT_DIR))
 		{
 			view->filtered++;
 			view->list_rows--;
@@ -2349,8 +2349,8 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(file_is_visible(view, ffd.cFileName,
-				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+		else if(!file_is_visible(view, ffd.cFileName,
+				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			view->filtered++;
 			continue;
@@ -2460,7 +2460,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return !view->invert;
 	}
 
-	return view->invert;
+	return 1;
 }
 
 /* Returns additional number of characters which are needed to display names of

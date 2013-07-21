@@ -8,10 +8,10 @@
 #include "../../src/ui.h"
 
 #define assert_hidden(view, name, dir) \
-	assert_true(file_is_visible(&view, name, dir) == 0)
+	assert_false(file_is_visible(&view, name, dir))
 
 #define assert_visible(view, name, dir) \
-	assert_true(file_is_visible(&view, name, dir) != 0)
+	assert_true(file_is_visible(&view, name, dir))
 
 #ifdef _WIN32
 #define CASE_SENSATIVE_FILTER 0
