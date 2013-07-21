@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: June 28, 2013
+" Last Change: July 21, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -125,17 +125,18 @@ syntax region vifmInvertCommandSt start='\(\s\|:\)*invert\>' end='$\||'
 syntax region vifmInvertCommandStN start='\(\s\|:\)*invert\>' end='$\||'
 		\ contained keepend oneline contains=vifmInvertCommand,vifmNotation
 syntax region vifmSoCommandSt start='\(\s\|:\)*so\%[urce]\>' end='$\||'
-		\ keepend oneline contains=vifmSoCommand
+		\ keepend oneline contains=vifmSoCommand,vifmStringInExpr
 syntax region vifmSoCommandStN start='\(\s\|:\)*so\%[urce]\>' end='$\||'
-		\ contained keepend oneline contains=vifmSoCommand,vifmNotation
+		\ contained keepend oneline
+		\ contains=vifmSoCommand,vifmNotation,vifmStringInExpr
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend
 		\ oneline contains=vifmMarkCommand
 syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
-		\ contains=vifmCdCommand,vifmEnvVar
+		\ contains=vifmCdCommand,vifmEnvVar,vifmStringInExpr
 " Highlight for :cd command with highlighting of angle-brace notation.
 syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contained
-		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation
+		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
 syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
