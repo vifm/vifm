@@ -31,7 +31,7 @@
 /* Prepares views for the first time. */
 void init_filelists(void);
 /* Reinitializes views. */
-void prepare_views(void);
+void reset_views(void);
 /* Loads view file list for the first time. */
 void load_initial_directory(FileView *view, const char *dir);
 

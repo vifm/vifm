@@ -3211,7 +3211,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* this update is needed as clear_variables() will reset $PATH */
 	update_path_env(1);
 
-	prepare_views();
+	reset_views();
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);

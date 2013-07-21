@@ -109,7 +109,7 @@ static void format_time(int id, const void *data, size_t buf_len, char *buf);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void init_view(FileView *view);
-static void prepare_view(FileView *view);
+static void reset_view(FileView *view);
 static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
@@ -399,23 +399,23 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
-	prepare_view(view);
+	reset_view(view);
 
 	init_view_history(view);
 	reset_view_sort(view);
 }
 
 void
-prepare_views(void)
+reset_views(void)
 {
-	prepare_view(&lwin);
-	prepare_view(&rwin);
+	reset_view(&lwin);
+	reset_view(&rwin);
 }
 
 /* Loads some of view parameters that should be restored on configuration
  * reloading (e.g. on :restart command). */
 static void
-prepare_view(FileView *view)
+reset_view(FileView *view)
 {
 	strncpy(view->regexp, "", sizeof(view->regexp));
 	(void)replace_string(&view->prev_filter, "");
