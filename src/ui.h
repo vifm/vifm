@@ -165,10 +165,13 @@ typedef struct _FileView
 	filter_t name_filter;
 	/* Stores previous raw value of the name_filter to make filter restoring
 	 * possible.  Not NULL. */
-	char *prev_filter;
+	char *prev_name_filter;
 
 	/* Filter which is controlled automatically and never filled by user. */
 	filter_t auto_filter;
+	/* Stores previous raw value of the name_filter to make filter restoring
+	 * possible.  Not NULL. */
+	char *prev_auto_filter;
 
 	char sort[SORT_OPTION_COUNT];
 

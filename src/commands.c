@@ -2224,12 +2224,13 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	error_msg = try_compile_regex(filter, REG_EXTENDED);
 	if(error_msg != NULL)
 	{
-		status_bar_errorf("Filter not set: %s", error_msg);
+		status_bar_errorf("Name filter not set: %s", error_msg);
 		return 1;
 	}
 
 	view->invert = invert;
 	(void)filter_set(&view->name_filter, filter);
+	(void)filter_clear(&view->auto_filter);
 	load_saving_pos(view, 1);
 	return 0;
 }

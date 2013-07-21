@@ -418,14 +418,15 @@ static void
 reset_view(FileView *view)
 {
 	strncpy(view->regexp, "", sizeof(view->regexp));
-	(void)replace_string(&view->prev_filter, "");
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
 
+	(void)replace_string(&view->prev_name_filter, "");
 	reset_filter(&view->name_filter);
+	(void)replace_string(&view->prev_auto_filter, "");
 	reset_filter(&view->auto_filter);
 
 	view->sort[0] = DEFAULT_SORT_KEY;
@@ -2783,8 +2784,10 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	(void)replace_string(&view->prev_filter, view->name_filter.raw);
+	(void)replace_string(&view->prev_name_filter, view->name_filter.raw);
 	filter_clear(&view->name_filter);
+	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
+	filter_clear(&view->auto_filter);
 
 	view->prev_invert = view->invert;
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
@@ -2794,7 +2797,8 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	filter_set(&view->name_filter, view->prev_filter);
+	filter_set(&view->name_filter, view->prev_name_filter);
+	filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
 }
