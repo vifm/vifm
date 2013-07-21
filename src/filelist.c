@@ -2448,19 +2448,26 @@ TSTATIC int
 file_is_visible(FileView *view, const char filename[], int is_dir)
 {
 	char name_with_slash[strlen(filename) + 1 + 1];
-	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
+	sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
 
 	if(filter_matches(&view->auto_filter, name_with_slash))
 	{
 		return 0;
 	}
 
+	if(filter_is_empty(&view->name_filter))
+	{
+		return 1;
+	}
+
 	if(filter_matches(&view->name_filter, name_with_slash))
 	{
 		return !view->invert;
 	}
-
-	return 1;
+	else
+	{
+		return view->invert;
+	}
 }
 
 /* Returns additional number of characters which are needed to display names of
