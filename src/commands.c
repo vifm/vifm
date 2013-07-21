@@ -2169,10 +2169,12 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		if(filter_is_empty(&curr_view->name_filter))
-			status_bar_message("Filter is empty");
-		else
-			status_bar_message(curr_view->name_filter.raw);
+		const char *const name_state = (curr_view->name_filter.raw[0] == '\0') ?
+				" is empty" : ": ";
+		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
+				" is empty" : ": ";
+		status_bar_messagef("Name filter%s%s\nAuto filter%s%s", name_state,
+				curr_view->name_filter.raw, auto_state, curr_view->auto_filter.raw);
 		return 1;
 	}
 	if(cmd_info->argc == 0)
