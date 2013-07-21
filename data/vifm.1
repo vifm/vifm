@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 13, 2013" "" "Vifm"
+.TH vifm 1 "Jul 21, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -302,9 +302,20 @@ alone and they don't wrap when they are used as selectors.
 .\" ---------------------------------------------------------------------------
 .SH File Filters
 .\" ---------------------------------------------------------------------------
+There are three basic file filters:
+.IP \- 2
+dot files filter (excluding "." and ".." special directories, which appearance
+is controlled by the 'dotdirs' option)
+.IP \- 2
+manual filter for file names
+.IP \- 2
+automatic filter for file names
+.LP
+Performing operations on manual filter for file names automatically does the
+same on automatic one.  The file name filter is separated mainly for
+convenience purpose and to get more deterministic behaviour.
+
 The basic vim folding key bindings are used for filtering files.
-.TP
-All directorys will show the ../ file no matter what the filter setting is with the exception of the / directory.
 .TP
 Each file list has its own filter.
 .TP
@@ -1233,7 +1244,7 @@ reset filter (set it to empty string) and show all files.
 same as :invert.
 .TP
 .BI :filter?
-show current filter value.
+show current value of name and auto filters.
 .TP
 .BI ":[range]fin[d] pattern"
 will show results of find command in the menu.  Searches among selected files if
