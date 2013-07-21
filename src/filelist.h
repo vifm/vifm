@@ -162,8 +162,6 @@ void restore_filename_filter(FileView *view);
 /* Toggles filter inversion state of the view.  Reloads filelist and resets
  * cursor position. */
 void toggle_filter_inversion(FileView *view);
-/* Sets filter regexp for the view. */
-void set_filename_filter(FileView *view, const char *filter);
 
 /* Directory history related functions. */
 

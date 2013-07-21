@@ -2664,7 +2664,7 @@ rescue_from_empty_filelist(FileView * view)
 				"The %s\"%s\" pattern did not match any files. It was reset.",
 				view->invert ? "" : "inverted ", view->name_filter.raw);
 		filter_clear(&view->auto_filter);
-		set_filename_filter(view, "");
+		filter_clear(&view->name_filter);
 		view->invert = 1;
 
 		load_dir_list(view, 1);
@@ -2784,7 +2784,7 @@ void
 remove_filename_filter(FileView *view)
 {
 	(void)replace_string(&view->prev_filter, view->name_filter.raw);
-	set_filename_filter(view, "");
+	filter_clear(&view->name_filter);
 
 	view->prev_invert = view->invert;
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
@@ -2794,7 +2794,7 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	set_filename_filter(view, view->prev_filter);
+	filter_set(&view->name_filter, view->prev_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
 }
@@ -2805,12 +2805,6 @@ toggle_filter_inversion(FileView *view)
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
 	move_to_list_pos(view, 0);
-}
-
-void
-set_filename_filter(FileView *view, const char *filter)
-{
-	(void)filter_set(&view->name_filter, filter);
 }
 
 void

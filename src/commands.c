@@ -2227,7 +2227,7 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	}
 
 	view->invert = invert;
-	set_filename_filter(view, filter);
+	(void)filter_set(&view->name_filter, filter);
 	load_saving_pos(view, 1);
 	return 0;
 }
@@ -3883,7 +3883,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
 		curr_view->invert = 1;
-		set_filename_filter(curr_view, strchr(expanded_com, ' ') + 1);
+		(void)filter_set(&curr_view->name_filter, strchr(expanded_com, ' ') + 1);
 
 		load_saving_pos(curr_view, 1);
 		external = 0;

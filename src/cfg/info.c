@@ -267,12 +267,12 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
 			(void)replace_string(&lwin.prev_filter, line_val);
-			set_filename_filter(&lwin, line_val);
+			(void)filter_set(&lwin.name_filter, line_val);
 		}
 		else if(type == LINE_TYPE_RWIN_FILT)
 		{
 			(void)replace_string(&rwin.prev_filter, line_val);
-			set_filename_filter(&rwin, line_val);
+			(void)filter_set(&rwin.name_filter, line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{

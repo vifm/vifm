@@ -137,7 +137,7 @@ test_filtering_dir_does_not_filter_file(void)
 static void
 test_filtering_files_does_not_filter_dirs(void)
 {
-	set_filename_filter(&rwin, "^.*\\.d$");
+	(void)filter_set(&rwin.name_filter, "^.*\\.d$");
 
 	assert_visible(rwin, rwin.dir_entry[0].name, 1);
 	assert_visible(rwin, rwin.dir_entry[1].name, 1);
@@ -150,7 +150,7 @@ test_filtering_files_does_not_filter_dirs(void)
 static void
 test_filtering_dirs_does_not_filter_files(void)
 {
-	set_filename_filter(&rwin, "^.*\\.d/$");
+	(void)filter_set(&rwin.name_filter, "^.*\\.d/$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
@@ -163,7 +163,7 @@ test_filtering_dirs_does_not_filter_files(void)
 static void
 test_filtering_files_and_dirs(void)
 {
-	set_filename_filter(&rwin, "^.*\\.d/?$");
+	(void)filter_set(&rwin.name_filter, "^.*\\.d/?$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
