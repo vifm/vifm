@@ -17,10 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#if(defined(BSD) && (BSD>=199103))
-	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
-#endif
-
 #ifdef _WIN32
 #include <windows.h>
 #include <winioctl.h>
@@ -29,8 +25,6 @@
 #endif
 
 #include <curses.h>
-
-#include <regex.h>
 
 #include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
@@ -54,6 +48,7 @@
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "utils/env.h"
+#include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
@@ -82,6 +77,12 @@
 #include "types.h"
 #include "ui.h"
 
+#ifdef _WIN32
+#define CASE_SENSATIVE_FILTER 0
+#else
+#define CASE_SENSATIVE_FILTER 1
+#endif
+
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
@@ -108,7 +109,8 @@ static void format_time(int id, const void *data, size_t buf_len, char *buf);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void init_view(FileView *view);
-static void prepare_view(FileView *view);
+static void reset_view(FileView *view);
+static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
@@ -124,8 +126,7 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
-TSTATIC int regexp_filter_match(FileView *view, const char filename[],
-		int is_dir);
+TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static size_t get_filetype_decoration_width(FileType type);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -398,35 +399,52 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
-	prepare_view(view);
+	reset_view(view);
 
 	init_view_history(view);
 	reset_view_sort(view);
 }
 
 void
-prepare_views(void)
+reset_views(void)
 {
-	prepare_view(&lwin);
-	prepare_view(&rwin);
+	reset_view(&lwin);
+	reset_view(&rwin);
 }
 
 /* Loads some of view parameters that should be restored on configuration
  * reloading (e.g. on :restart command). */
 static void
-prepare_view(FileView *view)
+reset_view(FileView *view)
 {
 	strncpy(view->regexp, "", sizeof(view->regexp));
-	(void)replace_string(&view->prev_filter, "");
-	set_filename_filter(view, "");
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
 
+	(void)replace_string(&view->prev_name_filter, "");
+	reset_filter(&view->name_filter);
+	(void)replace_string(&view->prev_auto_filter, "");
+	reset_filter(&view->auto_filter);
+
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
+}
+
+/* Resets filter to empty state (either initializes or clears it). */
+static void
+reset_filter(filter_t *filter)
+{
+	if(filter->raw == NULL)
+	{
+		filter_init(filter, CASE_SENSATIVE_FILTER);
+	}
+	else
+	{
+		filter_clear(filter);
+	}
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -2200,7 +2218,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, d->d_name, d->d_type == DT_DIR) == 0)
+		else if(!file_is_visible(view, d->d_name, d->d_type == DT_DIR))
 		{
 			view->filtered++;
 			view->list_rows--;
@@ -2331,8 +2349,8 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(regexp_filter_match(view, ffd.cFileName,
-				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+		else if(!file_is_visible(view, ffd.cFileName,
+				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			view->filtered++;
 			continue;
@@ -2423,25 +2441,33 @@ fill_dir_list(FileView *view)
 	return 0;
 }
 
-/* Checks whether file/directory matches filename filter of the view.  Returns
- * view->invert if given filename matches filter, otherwise !view->invert is
- * returned. */
+/* Checks whether file/directory passes filename filters of the view.  Returns
+ * non-zero if given filename passes filter and should be visible, otherwise
+ * zero is returned, in which case the file should be hidden. */
 TSTATIC int
-regexp_filter_match(FileView *view, const char filename[], int is_dir)
+file_is_visible(FileView *view, const char filename[], int is_dir)
 {
 	char name_with_slash[strlen(filename) + 1 + 1];
-	if(!view->filter_is_valid)
+	sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
+
+	if(filter_matches(&view->auto_filter, name_with_slash))
 	{
-		return cfg.filter_inverted_by_default ? view->invert : !view->invert;
+		return 0;
 	}
 
-	sprintf(name_with_slash, "%s%s", filename, is_dir ? "/" : "");
+	if(filter_is_empty(&view->name_filter))
+	{
+		return 1;
+	}
 
-	if(regexec(&view->filter_regex, name_with_slash, 0, NULL, 0) == 0)
+	if(filter_matches(&view->name_filter, name_with_slash))
 	{
 		return !view->invert;
 	}
-	return view->invert;
+	else
+	{
+		return view->invert;
+	}
 }
 
 /* Returns additional number of characters which are needed to display names of
@@ -2640,12 +2666,13 @@ rescue_from_empty_filelist(FileView * view)
 	 * in the / directory.  All other directories will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
-	if(is_path_absolute(view->curr_dir) && view->filename_filter[0] != '\0')
+	if(is_path_absolute(view->curr_dir) && !filter_is_empty(&view->name_filter))
 	{
 		show_error_msgf("Filter error",
 				"The %s\"%s\" pattern did not match any files. It was reset.",
-				view->invert ? "" : "inverted ", view->filename_filter);
-		set_filename_filter(view, "");
+				view->invert ? "" : "inverted ", view->name_filter.raw);
+		filter_clear(&view->auto_filter);
+		filter_clear(&view->name_filter);
 		view->invert = 1;
 
 		load_dir_list(view, 1);
@@ -2723,99 +2750,25 @@ add_parent_dir(FileView *view)
 	}
 }
 
-/*
- * Escape the filename for the purpose of using it in filename filter.
- *
- * Returns new string, caller should free it.
- */
-static char *
-escape_name_for_filter(const char *string)
-{
-	size_t len;
-	size_t i;
-	char *ret, *dup;
-
-	len = strlen(string);
-
-	dup = ret = malloc(len*2 + 2 + 1);
-
-	for(i = 0; i < len; i++)
-	{
-		switch(*string)
-		{
-			case '\\':
-			case '[':
-			case ']':
-			case '(':
-			case ')':
-			case '{':
-			case '}':
-			case '+':
-			case '*':
-			case '^':
-			case '$':
-			case '.':
-			case '?':
-			case '|':
-				*dup++ = '\\';
-				break;
-		}
-		*dup++ = *string++;
-	}
-	*dup = '\0';
-	return ret;
-}
-
 void
 filter_selected_files(FileView *view)
 {
-	char *filter = strdup(view->filename_filter);
-	int x;
+	int i;
 
 	if(!view->selected_files)
 		view->dir_entry[view->list_pos].selected = 1;
 
-	for(x = 0; x < view->list_rows; x++)
+	for(i = 0; i < view->list_rows; i++)
 	{
-		size_t buf_size;
-		char *name;
-		char *new_filter;
+		const dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(!view->dir_entry[x].selected)
-			continue;
-
-		if(is_parent_dir(view->dir_entry[x].name))
-			continue;
-
-		name = escape_name_for_filter(view->dir_entry[x].name);
-
-		/* realloc memory allocated for filter */
-		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
-		new_filter = realloc(filter, buf_size);
-
-		if(new_filter != NULL)
+		if(entry->selected && !is_parent_dir(entry->name))
 		{
-			filter = new_filter;
-
-			/* add OR if needed */
-			if(filter[0] != '\0')
-			{
-				strcat(filter, "|");
-			}
-
-			/* update filename filter */
-			strcat(filter, "^");
-			strcat(filter, name);
-			strcat(filter, "$");
+			filter_append(&view->auto_filter, entry->name);
 		}
-
-		free(name);
 	}
-	set_filename_filter(view, filter);
-	free(filter);
 
 	/* reload view */
-	view->invert = 1;
 	clean_status_bar();
 	load_dir_list(view, 1);
 	move_to_list_pos(view, view->list_pos);
@@ -2838,8 +2791,10 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	(void)replace_string(&view->prev_filter, view->filename_filter);
-	set_filename_filter(view, "");
+	(void)replace_string(&view->prev_name_filter, view->name_filter.raw);
+	filter_clear(&view->name_filter);
+	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
+	filter_clear(&view->auto_filter);
 
 	view->prev_invert = view->invert;
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
@@ -2849,7 +2804,8 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	set_filename_filter(view, view->prev_filter);
+	filter_set(&view->name_filter, view->prev_name_filter);
+	filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
 }
@@ -2860,32 +2816,6 @@ toggle_filter_inversion(FileView *view)
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
 	move_to_list_pos(view, 0);
-}
-
-void
-set_filename_filter(FileView *view, const char *filter)
-{
-	int ret;
-	int cflags = REG_EXTENDED;
-
-	if(view->filter_is_valid)
-	{
-		regfree(&view->filter_regex);
-	}
-
-	(void)replace_string(&view->filename_filter, filter);
-	if(view->filename_filter[0] == '\0')
-	{
-		view->filter_is_valid = 0;
-		return;
-	}
-
-#ifdef _WIN32
-	cflags |= REG_ICASE;
-#endif
-
-	ret = regcomp(&view->filter_regex, view->filename_filter, cflags);
-	view->filter_is_valid = ret == 0;
 }
 
 void

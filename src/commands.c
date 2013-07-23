@@ -2169,10 +2169,12 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		if(curr_view->filename_filter[0] == '\0')
-			status_bar_message("Filter is empty");
-		else
-			status_bar_message(curr_view->filename_filter);
+		const char *const name_state = (curr_view->name_filter.raw[0] == '\0') ?
+				" is empty" : ": ";
+		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
+				" is empty" : ": ";
+		status_bar_messagef("Name filter%s%s\nAuto filter%s%s", name_state,
+				curr_view->name_filter.raw, auto_state, curr_view->auto_filter.raw);
 		return 1;
 	}
 	if(cmd_info->argc == 0)
@@ -2222,12 +2224,13 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	error_msg = try_compile_regex(filter, REG_EXTENDED);
 	if(error_msg != NULL)
 	{
-		status_bar_errorf("Filter not set: %s", error_msg);
+		status_bar_errorf("Name filter not set: %s", error_msg);
 		return 1;
 	}
 
 	view->invert = invert;
-	set_filename_filter(view, filter);
+	(void)filter_set(&view->name_filter, filter);
+	(void)filter_clear(&view->auto_filter);
 	load_saving_pos(view, 1);
 	return 0;
 }
@@ -3211,7 +3214,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* this update is needed as clear_variables() will reset $PATH */
 	update_path_env(1);
 
-	prepare_views();
+	reset_views();
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
@@ -3883,7 +3886,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
 		curr_view->invert = 1;
-		set_filename_filter(curr_view, strchr(expanded_com, ' ') + 1);
+		(void)filter_set(&curr_view->name_filter, strchr(expanded_com, ' ') + 1);
 
 		load_saving_pos(curr_view, 1);
 		external = 0;

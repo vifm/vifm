@@ -84,6 +84,9 @@
 
 	From now on not absolute paths for the 'fusehome' options are rejected.
 
+	Separated file name filter into manual and automatic mainly for
+	convenience.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

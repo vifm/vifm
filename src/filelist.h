@@ -31,7 +31,7 @@
 /* Prepares views for the first time. */
 void init_filelists(void);
 /* Reinitializes views. */
-void prepare_views(void);
+void reset_views(void);
 /* Loads view file list for the first time. */
 void load_initial_directory(FileView *view, const char *dir);
 
@@ -162,8 +162,6 @@ void restore_filename_filter(FileView *view);
 /* Toggles filter inversion state of the view.  Reloads filelist and resets
  * cursor position. */
 void toggle_filter_inversion(FileView *view);
-/* Sets filter regexp for the view. */
-void set_filename_filter(FileView *view, const char *filter);
 
 /* Directory history related functions. */
 
@@ -203,7 +201,7 @@ int set_view_path(FileView *view, const char *path);
 uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 
 TSTATIC_DEFS(
-	int regexp_filter_match(FileView *view, const char filename[], int is_dir);
+	int file_is_visible(FileView *view, const char filename[], int is_dir);
 )
 
 #endif
