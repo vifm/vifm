@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "tree.h"
+
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h>
 #include <string.h>
@@ -25,8 +27,6 @@
 #endif
 #include "fs_limits.h"
 #include "str.h"
-
-#include "tree.h"
 
 typedef struct node_t
 {

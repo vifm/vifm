@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "status.h"
+
 #ifdef HAVE_LIBGTK
 #include <gio/gio.h>
 #include <gtk/gtk.h>
@@ -35,8 +37,6 @@
 #include "utils/str.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
-
-#include "status.h"
 
 static void load_def_values(status_t *stats);
 static void set_gtk_available(status_t *stats);

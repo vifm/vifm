@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "undolist_menu.h"
+
 #include <stdlib.h> /* realloc() */
 #include <string.h> /* strdup() strlen() */
 
@@ -25,8 +27,6 @@
 #include "../ui.h"
 #include "../undo.h"
 #include "menus.h"
-
-#include "undolist_menu.h"
 
 int
 show_undolist_menu(FileView *view, int with_details)

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "search.h"
+
 #include <sys/types.h>
 
 #include <curses.h>
@@ -31,8 +33,6 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "ui.h"
-
-#include "search.h"
 
 enum
 {

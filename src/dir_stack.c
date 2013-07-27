@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "dir_stack.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "filelist.h"
 #include "ui.h"
-
-#include "dir_stack.h"
 
 stack_entry_t *stack;
 unsigned int stack_top;

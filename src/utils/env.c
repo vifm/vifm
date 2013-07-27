@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "env.h"
+
 #include <stdarg.h> /* va_list va_start() va_arg() va_end() */
 #ifdef _WIN32
 #include <stdio.h> /* sprintf() */
 #include <string.h> /* strlen() */
 #endif
 #include <stdlib.h> /* getenv() unsetenv() env_set() */
-
-#include "env.h"
 
 const char *
 env_get(const char name[])

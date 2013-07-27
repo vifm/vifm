@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "filetypes_menu.h"
+
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strlen() */
 
@@ -30,8 +32,6 @@
 #include "../running.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "filetypes_menu.h"
 
 static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);

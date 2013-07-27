@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "bracket_notation.h"
+
 #include <curses.h>
 
 #include <assert.h> /* assert() */
@@ -26,8 +28,6 @@
 
 #include "utils/macros.h"
 #include "utils/str.h"
-
-#include "bracket_notation.h"
 
 #ifdef __PDCURSES__
 #define BACKSPACE_KEY L'\b'

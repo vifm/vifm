@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "jobs_menu.h"
+
 #include <signal.h> /* sig* */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() realloc() */
@@ -27,8 +29,6 @@
 #include "../background.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "jobs_menu.h"
 
 int
 show_jobs_menu(FileView *view)

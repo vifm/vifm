@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "var.h"
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* sprintf() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
-
-#include "var.h"
 
 var_t
 var_false(void)

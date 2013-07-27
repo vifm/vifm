@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "colorscheme_menu.h"
+
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strdup() strcmp() */
@@ -27,8 +29,6 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "menus.h"
-
-#include "colorscheme_menu.h"
 
 static int sorter(const void *first, const void *second);
 

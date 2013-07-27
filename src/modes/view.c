@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "view.h"
+
 #include <regex.h>
 
 #include <curses.h>
@@ -49,8 +51,6 @@
 #include "cmdline.h"
 #include "modes.h"
 #include "normal.h"
-
-#include "view.h"
 
 /* Column at which view content should be displayed. */
 #define COL 1

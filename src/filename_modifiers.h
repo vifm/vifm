@@ -19,6 +19,8 @@
 #ifndef __FILENAME_MODIFIERS_H__
 #define __FILENAME_MODIFIERS_H__
 
+#include <stddef.h> /* size_t */
+
 /* Applies all filename modifiers. */
 const char * apply_mods(const char *path, const char *parent, const char *mod,
 		int for_shell);

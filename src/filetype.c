@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "filetype.h"
+
 #include <curses.h>
 
 #include <ctype.h> /* isspace() */
@@ -28,8 +30,6 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "globals.h"
-
-#include "filetype.h"
 
 const assoc_record_t NONE_PSEUDO_PROG =
 {

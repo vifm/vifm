@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "signals.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -56,8 +58,6 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include "status.h"
 #include "term_title.h"
 #include "ui.h"
-
-#include "signals.h"
 
 /* Handle term resizing in X */
 static void

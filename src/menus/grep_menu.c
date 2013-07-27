@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "grep_menu.h"
+
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
@@ -27,8 +29,6 @@
 #include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "grep_menu.h"
 
 int
 show_grep_menu(FileView *view, const char args[], int invert)

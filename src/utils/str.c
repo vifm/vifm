@@ -21,6 +21,8 @@
                      * needed in Linux for wide char function wcwidth().
                      */
 
+#include "str.h"
+
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* size_t */
@@ -39,8 +41,6 @@
 #endif
 
 #include "macros.h"
-
-#include "str.h"
 
 void
 chomp(char str[])

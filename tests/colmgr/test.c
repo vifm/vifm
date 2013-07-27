@@ -1,10 +1,10 @@
+#include "test.h"
+
 #include <assert.h>
 
 #include "seatest.h"
 
 #include "../../src/color_manager.h"
-
-#include "test.h"
 
 void basic_tests(void);
 

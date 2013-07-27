@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "bookmarks_menu.h"
+
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strcpy() strlen() */
 
@@ -29,8 +31,6 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../bookmarks.h"
-
-#include "bookmarks_menu.h"
 
 static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
 

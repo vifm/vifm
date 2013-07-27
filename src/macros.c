@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "macros.h"
+
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t */
@@ -32,8 +34,6 @@
 #include "utils/utils.h"
 #include "filename_modifiers.h"
 #include "registers.h"
-
-#include "macros.h"
 
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);

@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "filename_modifiers.h"
+
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() strchr() strlen() strrchr() */
@@ -26,8 +28,6 @@
 #include "utils/str.h"
 #include "fileops.h"
 #include "ui.h"
-
-#include "filename_modifiers.h"
 
 static const char * apply_mod(const char *path, const char *parent,
 		const char *mod, int *mod_len, int for_shell);

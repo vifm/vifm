@@ -20,6 +20,8 @@
                      * needed in Linux for wide char function wcwidth().
                      */
 
+#include "escape.h"
+
 #include <regex.h>
 
 #include <curses.h>
@@ -41,8 +43,6 @@
 #endif
 #include "color_manager.h"
 #include "ui.h"
-
-#include "escape.h"
 
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re);

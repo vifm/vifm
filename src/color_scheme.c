@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "color_scheme.h"
+
 #include <curses.h>
 
 #include <sys/stat.h>
@@ -37,7 +39,6 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
-#include "color_scheme.h"
 #include "filelist.h"
 #include "status.h"
 

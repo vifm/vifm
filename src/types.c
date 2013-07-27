@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "types.h"
+
 #include <sys/stat.h> /* S_*() */
 #include <sys/types.h> /* mode_t */
 #include <dirent.h> /* struct dirent, DT_* */
@@ -25,8 +27,6 @@
 
 #include "utils/macros.h"
 #include "utils/utils.h"
-
-#include "types.h"
 
 const char *
 get_mode_str(mode_t mode)

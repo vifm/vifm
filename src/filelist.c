@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "filelist.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #include <winioctl.h>
@@ -62,7 +64,6 @@
 #include "background.h"
 #include "color_scheme.h"
 #include "column_view.h"
-#include "filelist.h"
 #include "fileops.h"
 #include "fileops.h"
 #include "filetype.h"

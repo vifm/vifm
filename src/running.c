@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "running.h"
+
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() */
@@ -56,8 +58,6 @@
 #include "macros.h"
 #include "status.h"
 #include "ui.h"
-
-#include "running.h"
 
 #ifndef _WIN32
 #define PAUSE_CMD "vifm-pause"

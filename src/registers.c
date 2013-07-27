@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "registers.h"
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -30,8 +32,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-
-#include "registers.h"
 
 /* Name of the "unnamed" (the default) register. */
 #define UNNAMED_REG_NAME '"'

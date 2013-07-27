@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "path.h"
+
 #ifdef _WIN32
 #include <ctype.h>
 #endif
@@ -36,8 +38,6 @@
 #include "fs.h"
 #include "fs_limits.h"
 #include "str.h"
-
-#include "path.h"
 
 static int skip_dotdir_if_any(const char *path[], int fully);
 

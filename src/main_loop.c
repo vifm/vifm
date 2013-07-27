@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "main_loop.h"
+
 #define _GNU_SOURCE /* I don't know how portable this is but it is
 					   needed in Linux for the ncurses wide char
 					   functions
@@ -54,8 +56,6 @@
 #include "ipc.h"
 #include "status.h"
 #include "ui.h"
-
-#include "main_loop.h"
 
 static wchar_t buf[128];
 static int pos;

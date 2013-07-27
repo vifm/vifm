@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "ops.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
@@ -37,8 +39,6 @@
 #include "status.h"
 #include "trash.h"
 #include "undo.h"
-
-#include "ops.h"
 
 #ifdef SUPPORT_NO_CLOBBER
 #define NO_CLOBBER "-n"

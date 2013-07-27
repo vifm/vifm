@@ -16,11 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "int_stack.h"
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* realloc() */
-
-#include "int_stack.h"
 
 static int ensure_available(int_stack_t *const stack);
 

@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "term_title.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -35,8 +37,6 @@
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-
-#include "term_title.h"
 
 static struct
 {

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "background.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -43,8 +45,6 @@
 #include "utils/utils.h"
 #include "commands_completion.h"
 #include "status.h"
-
-#include "background.h"
 
 job_t *jobs;
 

@@ -1,3 +1,5 @@
+#include "test.h"
+
 #include <assert.h>
 
 #include "seatest.h"

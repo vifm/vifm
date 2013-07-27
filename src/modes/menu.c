@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "menu.h"
+
 #include <regex.h>
 
 #include <curses.h>
@@ -39,8 +41,6 @@
 #include "../ui.h"
 #include "cmdline.h"
 #include "modes.h"
-
-#include "menu.h"
 
 static const int SCROLL_GAP = 2;
 

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "visual.h"
+
 #include <curses.h>
 
 #include <assert.h>
@@ -38,8 +40,6 @@
 #include "cmdline.h"
 #include "modes.h"
 #include "normal.h"
-
-#include "visual.h"
 
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);

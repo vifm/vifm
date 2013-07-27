@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "info.h"
+
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
@@ -42,8 +44,6 @@
 #include "../ui.h"
 #include "config.h"
 #include "info_chars.h"
-
-#include "info.h"
 
 static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);

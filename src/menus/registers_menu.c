@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "registers_menu.h"
+
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
@@ -24,8 +26,6 @@
 #include "../registers.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "registers_menu.h"
 
 int
 show_register_menu(FileView *view, const char registers[])

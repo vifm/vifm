@@ -22,6 +22,8 @@
                      * functions (wcswidth() and wcwidth()).
                      */
 
+#include "cmdline.h"
+
 #ifdef __APPLE__
 /* Enable wide functions of ncurses for Mac OS. */
 #define _XOPEN_SOURCE_EXTENDED
@@ -63,8 +65,6 @@
 #include "menu.h"
 #include "modes.h"
 #include "visual.h"
-
-#include "cmdline.h"
 
 #ifndef TEST
 

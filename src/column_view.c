@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "column_view.h"
+
 /* This is to be able to use wcswidth() function. */
 #define _XOPEN_SOURCE
 
@@ -32,8 +34,6 @@
 #ifdef _WIN32
 #include "utils/utils.h"
 #endif
-
-#include "column_view.h"
 
 #define MAX_ELLIPSIS_DOT_COUNT 3
 #define GAP_FILL_CHAR ' '

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "config.h"
+
 #define HOME_EV "HOME"
 #define VIFM_EV "VIFM"
 #define MYVIFMRC_EV "MYVIFMRC"
@@ -55,8 +57,6 @@
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../ui.h"
-
-#include "config.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
 #define MAX_VIFMRC_LINE_LEN 4*1024

@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "keys.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <limits.h> /* INT_MAX */
@@ -27,8 +29,6 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
-
-#include "keys.h"
 
 typedef struct key_chunk_t
 {

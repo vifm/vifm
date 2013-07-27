@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "fileops.h"
+
 #define _GNU_SOURCE
 
 #include <regex.h>
@@ -60,7 +62,6 @@
 #include "commands.h"
 #include "commands_completion.h"
 #include "filelist.h"
-#include "fileops.h"
 #include "filetype.h"
 #include "ops.h"
 #include "registers.h"

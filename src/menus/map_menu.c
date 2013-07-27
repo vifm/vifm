@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "map_menu.h"
+
 #include <ctype.h> /* tolower() */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* strdup() strlen() strcat() */
@@ -28,8 +30,6 @@
 #include "../utils/utils.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "map_menu.h"
 
 static void add_mapping_item(menu_info *m, const wchar_t map_info[]);
 static char * uchar2str(const wchar_t c[], size_t *len);

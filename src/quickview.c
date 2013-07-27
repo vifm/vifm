@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "quickview.h"
+
 #include <stddef.h> /* NULL size_t */
 #include <string.h> /* memmove() strlen() strncat() */
 
@@ -35,8 +37,6 @@
 #include "filetype.h"
 #include "status.h"
 #include "ui.h"
-
-#include "quickview.h"
 
 /* Line at which quickview content should be displayed. */
 #define LINE 1

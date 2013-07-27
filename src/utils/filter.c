@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "filter.h"
+
 #if(defined(BSD) && (BSD>=199103))
 #include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
@@ -28,8 +30,6 @@
 #include <string.h> /* strdup() strlen() */
 
 #include "str.h"
-
-#include "filter.h"
 
 static int append_to_filter(filter_t *filter, const char value[]);
 static void reset_regex(filter_t *filter, const char value[]);

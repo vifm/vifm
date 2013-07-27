@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "change_dialog.h"
+
 #include <curses.h>
 
 #include <assert.h>
@@ -36,8 +38,6 @@
 #include "../cmdline.h"
 #include "../modes.h"
 #include "attr_dialog.h"
-
-#include "change_dialog.h"
 
 static void leave_change_mode(int clean_selection);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);

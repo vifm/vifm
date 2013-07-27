@@ -19,6 +19,8 @@
 
 #define _GNU_SOURCE
 
+#include "sort.h"
+
 #include <curses.h>
 
 #include <fcntl.h> /* access */
@@ -39,8 +41,6 @@
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
-
-#include "sort.h"
 
 static FileView* view;
 static int sort_descending;

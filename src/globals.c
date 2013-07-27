@@ -16,14 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "globals.h"
+
 #include <regex.h>
 
 #include <stdlib.h> /* realloc() free() */
 #include <string.h> /* strdup() strchr() */
 
 #include "utils/str.h"
-
-#include "globals.h"
 
 static char * to_regex(const char *global);
 

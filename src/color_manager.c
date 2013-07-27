@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "color_manager.h"
+
 #include <curses.h>
 
 #include <assert.h> /* assert() */
@@ -26,8 +28,6 @@
 
 #include "utils/macros.h"
 #include "colors.h"
-
-#include "color_manager.h"
 
 static int find_pair(int fg, int bg);
 static int color_pair_matches(int pair, int fg, int bg);

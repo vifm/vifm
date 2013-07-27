@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "path_env.h"
+
 #include <dirent.h> /* DIR opendir() readdir() closedir() DT_DIR */
 
 #include <stdlib.h> /* malloc() free() */
@@ -29,8 +31,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-
-#include "path_env.h"
 
 static int path_env_was_changed(int force);
 static void append_scripts_dirs(void);

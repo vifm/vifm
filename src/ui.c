@@ -22,6 +22,8 @@
                      * functions
                      */
 
+#include "ui.h"
+
 #ifdef __APPLE__
 /* Enable wide functions of ncurses for Mac OS. */
 #define _XOPEN_SOURCE_EXTENDED
@@ -65,8 +67,6 @@
 #include "quickview.h"
 #include "signals.h"
 #include "status.h"
-
-#include "ui.h"
 
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
