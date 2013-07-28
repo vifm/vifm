@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __KEYS_H__
-#define __KEYS_H__
+#ifndef VIFM__ENGINE__KEYS_H__
+#define VIFM__ENGINE__KEYS_H__
 
 #include <wchar.h>
 
@@ -211,7 +211,7 @@ TSTATIC_DEFS(
 	key_conf_t* add_selector(const wchar_t keys[], int mode);
 )
 
-#endif /* __KEYS_H__ */
+#endif /* VIFM__ENGINE__KEYS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
 /* vim: set cinoptions+=t0 : */

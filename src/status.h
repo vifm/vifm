@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __STATUS_H__
-#define __STATUS_H__
+#ifndef VIFM__STATUS_H__
+#define VIFM__STATUS_H__
 
 #include <sys/stat.h>
 
@@ -148,7 +148,7 @@ void set_using_screen(int use_screen);
 /* Updates last_cmdline_command field of the status structure. */
 void update_last_cmdline_command(const char cmd[]);
 
-#endif /* __STATUS_H__ */
+#endif /* VIFM__STATUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

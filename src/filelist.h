@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FILELIST_H__
-#define __FILELIST_H__
+#ifndef VIFM__FILELIST_H__
+#define VIFM__FILELIST_H__
 
 #include <stddef.h> /* size_t ssize_t */
 
@@ -204,7 +204,7 @@ TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);
 )
 
-#endif /* __FILELIST_H__ */
+#endif /* VIFM__FILELIST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

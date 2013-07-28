@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MAP_MENU_H__
-#define __MAP_MENU_H__
+#ifndef VIFM__MENUS__MAP_MENU_H__
+#define VIFM__MENUS__MAP_MENU_H__
 
 #include <wchar.h> /* wchar_t */
 
@@ -28,7 +28,7 @@
 int show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		const wchar_t start[]);
 
-#endif /* __MAP_MENU_H__ */
+#endif /* VIFM__MENUS__MAP_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

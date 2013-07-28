@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MENU_H__
-#define __MENU_H__
+#ifndef VIFM__MODES__MENU_H__
+#define VIFM__MODES__MENU_H__
 
 #include "../menus/menus.h"
 #include "../ui.h"
@@ -40,7 +40,7 @@ void execute_cmdline_command(const char cmd[]);
  * threated correctly. */
 int get_last_visible_line(const menu_info *m);
 
-#endif /* __MENU_H__ */
+#endif /* VIFM__MODES__MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

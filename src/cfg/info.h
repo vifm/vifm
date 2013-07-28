@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __INFO_H__
-#define __INFO_H__
+#ifndef VIFM__CFG__INFO_H__
+#define VIFM__CFG__INFO_H__
 
 void read_info_file(int reread);
 /* Writes vifminfo file updating it with state of the current instance. */
 void write_info_file(void);
 
-#endif /* __INFO_H__ */
+#endif /* VIFM__CFG__INFO_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

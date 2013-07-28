@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __CMDLINE_H__
-#define __CMDLINE_H__
+#ifndef VIFM__MODES__CMDLINE_H__
+#define VIFM__MODES__CMDLINE_H__
 
 #ifdef TEST
 #include "../utils/fs_limits.h"
@@ -84,7 +84,7 @@ typedef struct
 
 #endif
 
-#endif /* __CMDLINE_H__ */
+#endif /* VIFM__MODES__CMDLINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

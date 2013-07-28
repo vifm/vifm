@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#ifndef VIFM__TYPES_H__
+#define VIFM__TYPES_H__
 
 #include <sys/types.h> /* mode_t */
 #include <dirent.h> /* struct dirent */
@@ -52,7 +52,7 @@ FileType get_type_from_mode(mode_t mode);
 FileType type_from_dir_entry(const struct dirent *d);
 #endif
 
-#endif /* __TYPES_H__ */
+#endif /* VIFM__TYPES_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -1,5 +1,5 @@
-#ifndef __ASSERTS_H__
-#define __ASSERTS_H__
+#ifndef VIFM_TESTS__MISC__ASSERTS_H__
+#define VIFM_TESTS__MISC__ASSERTS_H__
 
 /* This should be a macro to see what test has failed. */
 #define ASSERT_NEXT_MATCH(str) \
@@ -9,7 +9,7 @@
 		free(buf); \
 	}
 
-#endif /* __ASSERTS_H__ */
+#endif /* VIFM_TESTS__MISC__ASSERTS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

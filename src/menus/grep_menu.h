@@ -17,15 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __GREP_MENU_H__
-#define __GREP_MENU_H__
+#ifndef VIFM__MENUS__GREP_MENU_H__
+#define VIFM__MENUS__GREP_MENU_H__
 
 #include "../ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_grep_menu(FileView *view, const char args[], int invert);
 
-#endif /* __GREP_MENU_H__ */
+#endif /* VIFM__MENUS__GREP_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __COLOR_MANAGER_H__
-#define __COLOR_MANAGER_H__
+#ifndef VIFM__COLOR_MANAGER_H__
+#define VIFM__COLOR_MANAGER_H__
 
 /* Initializes color manager unit.  Creates and prepares internal variables. */
 void colmgr_init(int max_color_pairs);
@@ -27,7 +27,7 @@ void colmgr_reset(void);
  * (bg) colors.  Returns -1 on allocation failure. */
 int colmgr_alloc_pair(int fg, int bg);
 
-#endif /* __COLOR_MANAGER_H__ */
+#endif /* VIFM__COLOR_MANAGER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

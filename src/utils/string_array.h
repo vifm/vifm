@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __STRING_ARRAY_H__
-#define __STRING_ARRAY_H__
+#ifndef VIFM__UTILS__STRING_ARRAY_H__
+#define VIFM__UTILS__STRING_ARRAY_H__
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
@@ -40,7 +40,7 @@ void free_strings(char *array[], size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
 char ** read_file_lines(FILE *f, int *nlines);
 
-#endif /* __STRING_ARRAY_H__ */
+#endif /* VIFM__UTILS__STRING_ARRAY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

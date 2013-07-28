@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __RUNNING_H__
-#define __RUNNING_H__
+#ifndef VIFM__RUNNING_H__
+#define VIFM__RUNNING_H__
 
 #include "utils/macros.h"
 #include "utils/test_helpers.h"
@@ -46,7 +46,7 @@ TSTATIC_DEFS(
 	char * format_edit_selection_cmd(int *bg);
 )
 
-#endif /* __RUNNING_H__ */
+#endif /* VIFM__RUNNING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

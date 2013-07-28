@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FUNCTIONS_H__
-#define __FUNCTIONS_H__
+#ifndef VIFM__ENGINE__FUNCTIONS_H__
+#define VIFM__ENGINE__FUNCTIONS_H__
 
 #include <stddef.h> /* size_t */
 
@@ -58,7 +58,7 @@ void function_call_info_add_arg(call_info_t *call_info, var_t var);
 /* Frees resources allocated for the call_info structure. */
 void function_call_info_free(call_info_t *call_info);
 
-#endif /* __FUNCTIONS_H__ */
+#endif /* VIFM__ENGINE__FUNCTIONS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

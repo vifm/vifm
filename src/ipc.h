@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __IPC_H__
-#define __IPC_H__
+#ifndef VIFM__IPC_H__
+#define VIFM__IPC_H__
 
 typedef void (*recieve_callback)(char *args[]);
 
@@ -32,7 +32,7 @@ void ipc_send(char *data[]);
 /* Returns non-zero value if current instance is a server. */
 int ipc_server(void);
 
-#endif /* __IPC_H__ */
+#endif /* VIFM__IPC_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

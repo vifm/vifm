@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __DIRSTASK_MENU_H__
-#define __DIRSTASK_MENU_H__
+#ifndef VIFM__MENUS__DIRSTASK_MENU_H__
+#define VIFM__MENUS__DIRSTASK_MENU_H__
 
 #include "../ui.h"
 #include "menus.h"
@@ -27,7 +27,7 @@
 int show_dirstack_menu(FileView *view);
 void execute_dirstack_cb(FileView *view, menu_info *m);
 
-#endif /* __DIRSTASK_MENU_H__ */
+#endif /* VIFM__MENUS__DIRSTASK_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

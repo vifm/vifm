@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __OPTIONS_H__
-#define __OPTIONS_H__
+#ifndef VIFM__ENGINE__OPTIONS_H__
+#define VIFM__ENGINE__OPTIONS_H__
 
 /* The module processes :set command arguments and handles all operations on
  * options. */
@@ -77,7 +77,7 @@ int set_options(const char args[]);
 /* Completes set arguments list. */
 void complete_options(const char args[], const char **start);
 
-#endif /* __OPTIONS_H__ */
+#endif /* VIFM__ENGINE__OPTIONS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

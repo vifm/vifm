@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VAR_H__
-#define __VAR_H__
+#ifndef VIFM__ENGINE__VAR_H__
+#define VIFM__ENGINE__VAR_H__
 
 /* This unit provides all necessary to work with variables. */
 
@@ -68,7 +68,7 @@ int var_to_boolean(const var_t var);
 /* Frees resources allocated for the var if any. */
 void var_free(const var_t var);
 
-#endif /* __VAR_H__ */
+#endif /* VIFM__ENGINE__VAR_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

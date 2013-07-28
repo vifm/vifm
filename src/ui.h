@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __UI_H__
-#define __UI_H__
+#ifndef VIFM__UI_H__
+#define VIFM__UI_H__
 
 #ifdef _WIN32
 #include <windows.h>
@@ -256,7 +256,7 @@ void split_view(SPLIT orientation);
 /* Switches view to one-window mode. */
 void only(void);
 
-#endif /* __UI_H__ */
+#endif /* VIFM__UI_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

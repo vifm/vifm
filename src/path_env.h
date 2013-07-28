@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __PATH_ENV_H__
-#define __PATH_ENV_H__
+#ifndef VIFM__PATH_ENV_H__
+#define VIFM__PATH_ENV_H__
 
 #include <stddef.h> /* size_t */
 
@@ -37,7 +37,7 @@ void load_clean_path_env(void);
  * needs. */
 void load_real_path_env(void);
 
-#endif /* __PATH_ENV_H__ */
+#endif /* VIFM__PATH_ENV_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

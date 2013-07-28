@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FILETYPE_H__
-#define __FILETYPE_H__
+#ifndef VIFM__FILETYPE_H__
+#define VIFM__FILETYPE_H__
 
 #include "utils/test_helpers.h"
 
@@ -103,7 +103,7 @@ TSTATIC_DEFS(
 	void replace_double_comma(char cmd[], int put_null);
 )
 
-#endif /* __FILETYPE_H__ */
+#endif /* VIFM__FILETYPE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

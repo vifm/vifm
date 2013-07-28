@@ -17,15 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __QUICKVIEW_H__
-#define __QUICKVIEW_H__
+#ifndef VIFM__QUICKVIEW_H__
+#define VIFM__QUICKVIEW_H__
 
 #include "ui.h"
 
 void quick_view_file(FileView * view);
 void toggle_quick_view(void);
 
-#endif /* __QUICKVIEW_H__ */
+#endif /* VIFM__QUICKVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

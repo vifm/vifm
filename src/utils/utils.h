@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __UTILS_H__
-#define __UTILS_H__
+#ifndef VIFM__UTILS__UTILS_H__
+#define VIFM__UTILS__UTILS_H__
 
 #ifdef _WIN32
 #include <windef.h>
@@ -110,7 +110,7 @@ const char *attr_str(DWORD attr);
 const char *attr_str_long(DWORD attr);
 #endif
 
-#endif /* __UTILS_H__ */
+#endif /* VIFM__UTILS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

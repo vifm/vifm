@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __COLORS_H__
-#define __COLORS_H__
+#ifndef VIFM__COLORS_H__
+#define VIFM__COLORS_H__
 
 /* Color information structure. */
 typedef struct
@@ -64,7 +64,7 @@ enum
 	FCOLOR_BASE = RCOLOR_BASE + MAXNUM_COLOR  /* Free. */
 };
 
-#endif /* __COLORS_H__ */
+#endif /* VIFM__COLORS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
