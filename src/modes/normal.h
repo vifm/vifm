@@ -37,7 +37,7 @@ int ffind(int ch, int backward, int wrap);
 int cmd_paren(int lb, int ub, int inc);
 int find_npattern(FileView *view, const char *pattern, int backward);
 
-#endif
+#endif /* __NORMAL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

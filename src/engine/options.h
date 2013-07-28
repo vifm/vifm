@@ -77,7 +77,7 @@ int set_options(const char args[]);
 /* Completes set arguments list. */
 void complete_options(const char args[], const char **start);
 
-#endif
+#endif /* __OPTIONS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

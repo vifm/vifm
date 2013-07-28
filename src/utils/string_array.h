@@ -40,7 +40,7 @@ void free_strings(char *array[], size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
 char ** read_file_lines(FILE *f, int *nlines);
 
-#endif
+#endif /* __STRING_ARRAY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

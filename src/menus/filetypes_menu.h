@@ -27,7 +27,7 @@
 int show_filetypes_menu(FileView *view, int background);
 void execute_filetype_cb(FileView *view, menu_info *m);
 
-#endif
+#endif /* __FILETYPES_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

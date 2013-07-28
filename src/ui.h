@@ -256,7 +256,7 @@ void split_view(SPLIT orientation);
 /* Switches view to one-window mode. */
 void only(void);
 
-#endif
+#endif /* __UI_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

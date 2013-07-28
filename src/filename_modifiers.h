@@ -26,7 +26,7 @@ const char * apply_mods(const char *path, const char *parent, const char *mod,
 		int for_shell);
 size_t get_mods_len(const char *str);
 
-#endif
+#endif /* __FILENAME_MODIFIERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

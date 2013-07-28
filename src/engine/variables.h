@@ -49,7 +49,7 @@ int unlet_variables(const char *cmd);
 /* Performs :let command completion */
 void complete_variables(const char *cmd, const char **start);
 
-#endif
+#endif /* __VARIABLES_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -26,7 +26,7 @@ const char * get_mimetype(const char *file);
 /* Caller shouldn't free anything. */
 assoc_records_t get_magic_handlers(const char *file);
 
-#endif
+#endif /* __FILE_MAGIC_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

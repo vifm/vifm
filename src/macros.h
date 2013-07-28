@@ -64,7 +64,7 @@ TSTATIC_DEFS(
 			int quotes, const char *mod);
 )
 
-#endif
+#endif /* __MACROS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -27,7 +27,7 @@
 int show_dirstack_menu(FileView *view);
 void execute_dirstack_cb(FileView *view, menu_info *m);
 
-#endif
+#endif /* __DIRSTASK_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -67,7 +67,7 @@ int filter_append(filter_t *filter, const char value[]);
  * otherwise zero is returned. */
 int filter_matches(filter_t *filter, const char pattern[]);
 
-#endif
+#endif /* __FILTER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

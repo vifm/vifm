@@ -25,7 +25,7 @@ void init_attr_dialog_mode(int *key_mode);
 void enter_attr_mode(FileView *active_view);
 void redraw_attr_dialog(void);
 
-#endif
+#endif /* __ATTR_DIALOG_WIN_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -110,7 +110,7 @@ const char *attr_str(DWORD attr);
 const char *attr_str_long(DWORD attr);
 #endif
 
-#endif
+#endif /* __UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

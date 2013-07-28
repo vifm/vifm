@@ -58,7 +58,7 @@ void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);
 void log_cwd(void);
 
-#endif
+#endif /* __LOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

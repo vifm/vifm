@@ -30,7 +30,7 @@ void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
 void update_visual_mode(void);
 int find_vpattern(FileView *view, const char *pattern, int backward);
 
-#endif
+#endif /* __VISUAL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

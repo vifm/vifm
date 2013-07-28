@@ -46,7 +46,7 @@ int get_completion_pos(void);
  */
 void rewind_completion(void);
 
-#endif
+#endif /* __COMPLETION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

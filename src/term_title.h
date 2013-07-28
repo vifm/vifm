@@ -22,7 +22,7 @@
 /* Updates terminal title. If title_part is NULL, resets terminal title. */
 void set_term_title(const char *title_part);
 
-#endif
+#endif /* __TERM_TITLE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

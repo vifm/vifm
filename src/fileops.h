@@ -87,7 +87,7 @@ TSTATIC_DEFS(
 	const char * add_to_name(const char filename[], int k);
 )
 
-#endif
+#endif /* __FILEOPS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

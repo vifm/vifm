@@ -73,7 +73,7 @@ job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 
-#endif
+#endif /* __BACKGROUND_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

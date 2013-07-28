@@ -54,7 +54,7 @@ void load_geometry(void);
  * representation of the 'classify' option value. */
 const char * classify_to_str(void);
 
-#endif
+#endif /* __OPT_HANDLERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

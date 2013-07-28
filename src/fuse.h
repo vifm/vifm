@@ -47,7 +47,7 @@ TSTATIC_DEFS(
 		const char param[], const char format[], size_t buf_size, char buf[]);
 )
 
-#endif
+#endif /* __FUSE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

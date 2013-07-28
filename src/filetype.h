@@ -103,7 +103,7 @@ TSTATIC_DEFS(
 	void replace_double_comma(char cmd[], int put_null);
 )
 
-#endif
+#endif /* __FILETYPE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

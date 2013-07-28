@@ -51,7 +51,7 @@ typedef enum
 
 int perform_operation(OPS op, void *data, const char *src, const char *dst);
 
-#endif
+#endif /* __OPS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

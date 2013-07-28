@@ -129,7 +129,7 @@ int get_undolist_pos(int detail);
  */
 void clean_cmds_with_trash(void);
 
-#endif
+#endif /* __UNDO_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

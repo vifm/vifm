@@ -128,7 +128,7 @@ int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
  * status bar message should be saved. */
 int display_menu(menu_info *m, FileView *view);
 
-#endif
+#endif /* __MENUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

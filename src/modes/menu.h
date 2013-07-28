@@ -40,7 +40,7 @@ void execute_cmdline_command(const char cmd[]);
  * threated correctly. */
 int get_last_visible_line(const menu_info *m);
 
-#endif
+#endif /* __MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

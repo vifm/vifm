@@ -39,7 +39,7 @@ char * get_line(FILE *fp, char buf[], size_t bufsz);
 /* Skips file stream content until and including eol character. */
 void skip_until_eol(FILE *fp);
 
-#endif
+#endif /* __FILE_STREAMS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

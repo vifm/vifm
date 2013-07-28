@@ -27,7 +27,7 @@ void init_bracket_notation(void);
  * wide string, which should be freed by the caller. */
 wchar_t * substitute_specs(const char cmd[]);
 
-#endif
+#endif /* __BRACKET_NOTATION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

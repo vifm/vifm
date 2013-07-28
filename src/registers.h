@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __REGISTERS_H_
-#define __REGISTERS_H_
+#ifndef __REGISTERS_H__
+#define __REGISTERS_H__
 
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
@@ -48,7 +48,7 @@ void rename_in_registers(const char old[], const char new[]);
 void clean_regs_with_trash(void);
 void update_unnamed_reg(int reg);
 
-#endif
+#endif /* __REGISTERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

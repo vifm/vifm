@@ -43,7 +43,7 @@ int tree_set_data(tree_t tree, const char *path, tree_val_t data);
  * error. */
 int tree_get_data(tree_t tree, const char *path, tree_val_t *data);
 
-#endif
+#endif /* __TREE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

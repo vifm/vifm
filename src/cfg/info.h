@@ -24,7 +24,7 @@ void read_info_file(int reread);
 /* Writes vifminfo file updating it with state of the current instance. */
 void write_info_file(void);
 
-#endif
+#endif /* __INFO_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

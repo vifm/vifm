@@ -63,7 +63,7 @@ int remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
 int init_active_bookmarks(const char *marks);
 
-#endif
+#endif /* __BOOKMARKS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

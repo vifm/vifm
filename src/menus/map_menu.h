@@ -28,7 +28,7 @@
 int show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		const wchar_t start[]);
 
-#endif
+#endif /* __MAP_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

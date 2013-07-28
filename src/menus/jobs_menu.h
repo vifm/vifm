@@ -27,7 +27,7 @@
 int show_jobs_menu(FileView *view);
 void execute_jobs_cb(FileView *view, menu_info *m);
 
-#endif
+#endif /* __JOBS_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

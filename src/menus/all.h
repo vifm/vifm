@@ -39,7 +39,7 @@
 #include "vifm_menu.h"
 #include "volumes_menu.h"
 
-#endif
+#endif /* __ALL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

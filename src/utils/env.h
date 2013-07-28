@@ -35,7 +35,7 @@ void env_set(const char name[], const char value[]);
 /* Removes environment variable */
 void env_remove(const char name[]);
 
-#endif
+#endif /* __ENV_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

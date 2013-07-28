@@ -25,7 +25,7 @@
 /* Returns non-zero if status bar message should be saved. */
 int show_find_menu(FileView *view, int with_path, const char args[]);
 
-#endif
+#endif /* __FIND_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -27,7 +27,7 @@
 int show_apropos_menu(FileView *view, const char args[]);
 void execute_apropos_cb(menu_info *m);
 
-#endif
+#endif /* __APROPOS_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

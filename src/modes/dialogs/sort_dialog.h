@@ -26,7 +26,7 @@ void init_sort_dialog_mode(int *key_mode);
 void enter_sort_mode(FileView *active_view);
 void redraw_sort_dialog(void);
 
-#endif
+#endif /* __SORT_DIALOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

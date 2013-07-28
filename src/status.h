@@ -148,7 +148,7 @@ void set_using_screen(int use_screen);
 /* Updates last_cmdline_command field of the status structure. */
 void update_last_cmdline_command(const char cmd[]);
 
-#endif
+#endif /* __STATUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
