@@ -6,7 +6,7 @@
 #include "../../src/engine/completion.h"
 #include "../../src/commands.h"
 
-#include "test.h"
+#include "asserts.h"
 
 static void
 vim_like_completion(void)

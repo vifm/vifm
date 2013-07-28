@@ -4,7 +4,7 @@
 
 #include "../../src/engine/parsing.h"
 
-#include "test.h"
+#include "asserts.h"
 
 static const char *
 ge(const char *name)

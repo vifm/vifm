@@ -6,7 +6,7 @@
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
 
-#include "test.h"
+#include "asserts.h"
 
 static var_t
 dummy(const call_info_t *call_info)
