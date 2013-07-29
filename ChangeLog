@@ -87,6 +87,9 @@
 	Separated file name filter into manual and automatic mainly for
 	convenience.
 
+	Use AC_GNU_SOURCE macro in configure.in, which is the correct way to
+	request for GNU extensions across various operating systems.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

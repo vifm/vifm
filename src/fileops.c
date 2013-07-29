@@ -19,8 +19,6 @@
 
 #include "fileops.h"
 
-#define _GNU_SOURCE
-
 #include <regex.h>
 
 #include <curses.h>

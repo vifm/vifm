@@ -16,10 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-                     * needed in Linux for wide char function wcwidth().
-                     */
-
 #include "escape.h"
 
 #include <regex.h>

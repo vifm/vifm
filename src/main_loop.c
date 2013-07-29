@@ -19,16 +19,6 @@
 
 #include "main_loop.h"
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-					   needed in Linux for the ncurses wide char
-					   functions
-					   */
-
-#ifdef __APPLE__
-/* Enable wide functions of ncurses for Mac OS. */
-#define _XOPEN_SOURCE_EXTENDED
-#endif
-
 #include <curses.h>
 
 #ifdef _WIN32

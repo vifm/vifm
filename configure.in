@@ -7,6 +7,9 @@ AM_CONFIG_HEADER(config.h)
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
 AC_DEFINE([PACKAGE_SOURCE_DIR], [], [Source directory of the package.])
 
+dnl Request GNU extensions if available.
+AC_GNU_SOURCE
+
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -28,6 +31,11 @@ case "$host_os" in
 		OSX_HOST=
 		;;
 esac
+
+if test -n "$OSX_HOST" ; then
+	AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
+	          [Define to 1 to enable wide functions of ncurses on OS X.])
+fi
 
 dnl Check for system headers.
 AC_CHECK_HEADER([assert.h], [], [AC_MSG_ERROR([assert.h header not found.])])
