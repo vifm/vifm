@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "ipc.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -40,8 +42,6 @@
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "status.h"
-
-#include "ipc.h"
 
 #define PORT 31230
 

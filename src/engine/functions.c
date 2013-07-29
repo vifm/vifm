@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "functions.h"
+
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* realloc() */
 #include <string.h> /* memset() strcmp() */
@@ -24,8 +26,6 @@
 #include "../ui.h"
 #include "text_buffer.h"
 #include "var.h"
-
-#include "functions.h"
 
 static int function_registered(const char func_name[]);
 static int add_function(const function_t *func_info);

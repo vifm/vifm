@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __TERM_TITLE_H__
-#define __TERM_TITLE_H__
+#ifndef VIFM__TERM_TITLE_H__
+#define VIFM__TERM_TITLE_H__
 
 /* Updates terminal title. If title_part is NULL, resets terminal title. */
 void set_term_title(const char *title_part);
 
-#endif
+#endif /* VIFM__TERM_TITLE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

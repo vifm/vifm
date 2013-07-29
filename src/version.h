@@ -16,14 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#ifndef VIFM__VERSION_H__
+#define VIFM__VERSION_H__
 
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */
 int fill_version_info(char **list);
 
-#endif
+#endif /* VIFM__VERSION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

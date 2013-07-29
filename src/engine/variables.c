@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "variables.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -29,8 +31,6 @@
 #include "parsing.h"
 #include "text_buffer.h"
 #include "var.h"
-
-#include "variables.h"
 
 #define VAR_NAME_MAX 64
 #define VAL_LEN_MAX 2048

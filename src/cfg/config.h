@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef VIFM__CFG__CONFIG_H__
+#define VIFM__CFG__CONFIG_H__
 
 #include <curses.h>
 
@@ -153,7 +153,7 @@ void set_use_screen(int use_screen);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
 
-#endif
+#endif /* VIFM__CFG__CONFIG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

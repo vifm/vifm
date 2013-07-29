@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __STR_H__
-#define __STR_H__
+#ifndef VIFM__UTILS__STR_H__
+#define VIFM__UTILS__STR_H__
 
 #include <stddef.h> /* size_t */
 #include <wchar.h> /* wchar_t */
@@ -109,7 +109,7 @@ char * extend_string(char str[], const char with[], size_t *len);
 char * strtok_r(char str[], const char delim[], char *saveptr[]);
 #endif
 
-#endif
+#endif /* VIFM__UTILS__STR_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

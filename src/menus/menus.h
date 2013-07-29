@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MENUS_H__
-#define __MENUS_H__
+#ifndef VIFM__MENUS__MENUS_H__
+#define VIFM__MENUS__MENUS_H__
 
 #include <stdio.h> /* FILE */
 
@@ -128,7 +128,7 @@ int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
  * status bar message should be saved. */
 int display_menu(menu_info *m, FileView *view);
 
-#endif
+#endif /* VIFM__MENUS__MENUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

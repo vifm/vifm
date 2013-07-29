@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "commands.h"
+
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
@@ -95,8 +97,6 @@
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
-
-#include "commands.h"
 
 /* Commands without completion. */
 enum

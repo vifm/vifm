@@ -1,7 +1,8 @@
+#include "test.h"
+
 #include "seatest.h"
 
 #include "../../src/column_view.h"
-#include "test.h"
 
 void align_tests(void);
 void callbacks_tests(void);

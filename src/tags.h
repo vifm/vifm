@@ -16,12 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __TAGS_H__
-#define __TAGS_H__
+#ifndef VIFM__TAGS_H__
+#define VIFM__TAGS_H__
 
 extern const char *tags[];
 
-#endif
+#endif /* VIFM__TAGS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "sort_dialog.h"
+
 #include <curses.h>
 
 #include <assert.h> /* assert() */
@@ -35,8 +37,6 @@
 #include "../../ui.h"
 #include "../cmdline.h"
 #include "../modes.h"
-
-#include "sort_dialog.h"
 
 static int *mode;
 static FileView *view;

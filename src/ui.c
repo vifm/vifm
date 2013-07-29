@@ -17,15 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-                     * needed in Linux for the ncurses wide char
-                     * functions
-                     */
-
-#ifdef __APPLE__
-/* Enable wide functions of ncurses for Mac OS. */
-#define _XOPEN_SOURCE_EXTENDED
-#endif
+#include "ui.h"
 
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
@@ -65,8 +57,6 @@
 #include "quickview.h"
 #include "signals.h"
 #include "status.h"
-
-#include "ui.h"
 
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 

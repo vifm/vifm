@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "file_info.h"
+
 #ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
@@ -44,8 +46,6 @@
 #include "../status.h"
 #include "../ui.h"
 #include "modes.h"
-
-#include "file_info.h"
 
 static void leave_file_info_mode(void);
 static int show_file_type(FileView *view, int curr_y);

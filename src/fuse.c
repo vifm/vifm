@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "fuse.h"
+
 #include <sys/stat.h> /* S_IRWXU */
 
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
@@ -33,8 +35,6 @@
 #include "background.h"
 #include "filelist.h"
 #include "status.h"
-
-#include "fuse.h"
 
 typedef struct fuse_mount_t
 {

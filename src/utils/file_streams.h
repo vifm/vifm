@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FILE_STREAMS_H__
-#define __FILE_STREAMS_H__
+#ifndef VIFM__UTILS__FILE_STREAMS_H__
+#define VIFM__UTILS__FILE_STREAMS_H__
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
@@ -39,7 +39,7 @@ char * get_line(FILE *fp, char buf[], size_t bufsz);
 /* Skips file stream content until and including eol character. */
 void skip_until_eol(FILE *fp);
 
-#endif
+#endif /* VIFM__UTILS__FILE_STREAMS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

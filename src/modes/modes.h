@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MODES_H__
-#define __MODES_H__
+#ifndef VIFM__MODES__MODES_H__
+#define VIFM__MODES__MODES_H__
 
 #include <stddef.h>
 
@@ -49,7 +49,7 @@ int get_mode(void);
 int is_in_menu_like_mode(void);
 void print_selected_msg(void);
 
-#endif
+#endif /* VIFM__MODES__MODES_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

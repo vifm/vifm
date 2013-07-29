@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __INT_STACK_H__
-#define __INT_STACK_H__
+#ifndef VIFM__UTILS__INT_STACK_H__
+#define VIFM__UTILS__INT_STACK_H__
 
 #include <stddef.h> /* NULL, size_t */
 
@@ -49,7 +49,7 @@ int int_stack_push(int_stack_t *const stack, const int val);
  * least one element */
 void int_stack_pop(int_stack_t *const stack);
 
-#endif /* __INT_STACK_H__ */
+#endif /* VIFM__UTILS__INT_STACK_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

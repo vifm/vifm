@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "completion.h"
+
 #include <assert.h> /* assert() */
 #include <stdlib.h> /* qsort() */
 #include <string.h>
@@ -23,8 +25,6 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-
-#include "completion.h"
 
 static enum
 {

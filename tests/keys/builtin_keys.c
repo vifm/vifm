@@ -1,3 +1,5 @@
+#include "builtin_keys.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,8 +7,6 @@
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
-
-#include "builtin_keys.h"
 
 #ifdef TEST
 #define printf(...)

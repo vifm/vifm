@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "bookmarks.h"
+
 #include <sys/types.h>
 
 #include <ctype.h> /* isalnum() */
@@ -28,8 +30,6 @@
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
-
-#include "bookmarks.h"
 
 const char valid_bookmarks[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',

@@ -5,7 +5,7 @@
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
 
-#include "test.h"
+#include "asserts.h"
 
 static void
 setup(void)

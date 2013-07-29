@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "utils.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #include <winioctl.h>
@@ -58,8 +60,6 @@
 #include "macros.h"
 #include "path.h"
 #include "str.h"
-
-#include "utils.h"
 
 #ifdef _WIN32
 

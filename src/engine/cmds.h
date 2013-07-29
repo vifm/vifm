@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __CMDS_H__
-#define __CMDS_H__
+#ifndef VIFM__ENGINE__CMDS_H__
+#define VIFM__ENGINE__CMDS_H__
 
 #include <stddef.h> /* size_t */
 
@@ -145,7 +145,7 @@ TSTATIC_DEFS(
 	void unescape(char s[], int regexp);
 )
 
-#endif
+#endif /* VIFM__ENGINE__CMDS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

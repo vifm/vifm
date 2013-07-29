@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "undo.h"
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -33,8 +35,6 @@
 #include "utils/str.h"
 #include "ops.h"
 #include "registers.h"
-
-#include "undo.h"
 
 typedef struct
 {

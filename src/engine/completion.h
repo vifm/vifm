@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __COMPLETION_H__
-#define __COMPLETION_H__
+#ifndef VIFM__ENGINE__COMPLETION_H__
+#define VIFM__ENGINE__COMPLETION_H__
 
 /*
  * Returns zero on success
@@ -46,7 +46,7 @@ int get_completion_pos(void);
  */
 void rewind_completion(void);
 
-#endif
+#endif /* VIFM__ENGINE__COMPLETION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

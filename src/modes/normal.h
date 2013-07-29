@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __NORMAL_H__
-#define __NORMAL_H__
+#ifndef VIFM__MODES__NORMAL_H__
+#define VIFM__MODES__NORMAL_H__
 
 #include "../engine/keys.h"
 #include "../ui.h"
@@ -37,7 +37,7 @@ int ffind(int ch, int backward, int wrap);
 int cmd_paren(int lb, int ub, int inc);
 int find_npattern(FileView *view, const char *pattern, int backward);
 
-#endif
+#endif /* VIFM__MODES__NORMAL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

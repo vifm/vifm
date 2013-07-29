@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "log.h"
+
 #include <unistd.h>
 
 #include <stdarg.h>
@@ -26,8 +28,6 @@
 #include "../cfg/config.h"
 #include "../status.h"
 #include "fs_limits.h"
-
-#include "log.h"
 
 static FILE *log;
 static int verbosity;

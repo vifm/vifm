@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __OPT_HANDLERS_H__
-#define __OPT_HANDLERS_H__
+#ifndef VIFM__OPT_HANDLERS_H__
+#define VIFM__OPT_HANDLERS_H__
 
 #include "ui.h"
 
@@ -54,7 +54,7 @@ void load_geometry(void);
  * representation of the 'classify' option value. */
 const char * classify_to_str(void);
 
-#endif
+#endif /* VIFM__OPT_HANDLERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FUSE_H__
-#define __FUSE_H__
+#ifndef VIFM__FUSE_H__
+#define VIFM__FUSE_H__
 
 #include "utils/test_helpers.h"
 #include "ui.h"
@@ -47,7 +47,7 @@ TSTATIC_DEFS(
 		const char param[], const char format[], size_t buf_size, char buf[]);
 )
 
-#endif
+#endif /* VIFM__FUSE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

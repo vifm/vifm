@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __TEXT_BUFFER_H__
-#define __TEXT_BUFFER_H__
+#ifndef VIFM__ENGINE__TEXT_BUFFER_H__
+#define VIFM__ENGINE__TEXT_BUFFER_H__
 
 /* Makes buffer empty. */
 void text_buffer_clear(void);
@@ -32,7 +32,7 @@ void text_buffer_addf(const char format[], ...);
  * call of functions in this module.  Never returns NULL, only empty string. */
 const char * text_buffer_get(void);
 
-#endif /* __TEXT_BUFFER_H__ */
+#endif /* VIFM__ENGINE__TEXT_BUFFER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

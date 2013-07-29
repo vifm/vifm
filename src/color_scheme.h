@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __COLOR_SCHEME_H__
-#define __COLOR_SCHEME_H__
+#ifndef VIFM__COLOR_SCHEME_H__
+#define VIFM__COLOR_SCHEME_H__
 
 #include "utils/fs_limits.h"
 #ifdef _WIN32
@@ -54,7 +54,7 @@ void assoc_dir(const char *name, const char *dir);
 void write_color_scheme_file(void);
 void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
-#endif
+#endif /* VIFM__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

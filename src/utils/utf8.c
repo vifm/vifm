@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "utf8.h"
+
 /* To get wcwidth() function. */
 #define _XOPEN_SOURCE
 
@@ -29,8 +31,6 @@
 #ifdef _WIN32
 #include "utils.h"
 #endif
-
-#include "utf8.h"
 
 static size_t guess_char_width(char c);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);

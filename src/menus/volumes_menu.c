@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "volumes_menu.h"
+
 #include <windows.h>
 
 #include <stdio.h> /* snprintf() */
@@ -28,8 +30,6 @@
 #include "../filelist.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "volumes_menu.h"
 
 int
 show_volumes_menu(FileView *view)

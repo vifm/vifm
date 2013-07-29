@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "builtin_functions.h"
+
 #include <sys/types.h> /* mode_t */
 
 #include <assert.h> /* assert() */
@@ -29,8 +31,6 @@
 #include "utils/utils.h"
 #include "macros.h"
 #include "ui.h"
-
-#include "builtin_functions.h"
 
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);

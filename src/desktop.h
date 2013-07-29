@@ -16,14 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __DESKTOP_H__
-#define __DESKTOP_H__
+#ifndef VIFM__DESKTOP_H__
+#define VIFM__DESKTOP_H__
 
 #include "filetype.h"
 
 assoc_records_t parse_desktop_files(const char *path, const char *mime_type);
 
-#endif
+#endif /* VIFM__DESKTOP_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "parsing.h"
+
 #include <assert.h>
 #include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <math.h>
@@ -27,8 +29,6 @@
 #include "../utils/utils.h"
 #include "functions.h"
 #include "var.h"
-
-#include "parsing.h"
 
 #define ENVVAR_NAME_LENGTH_MAX 1024
 #define NAME_LENGTH_MAX 256

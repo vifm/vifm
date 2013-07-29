@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "dirstask_menu.h"
+
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
 #include "../dir_stack.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "dirstask_menu.h"
 
 int
 show_dirstack_menu(FileView *view)

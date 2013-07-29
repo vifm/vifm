@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __SORT_DIALOG_H__
-#define __SORT_DIALOG_H__
+#ifndef VIFM__MODES__DIALOGS__SORT_DIALOG_H__
+#define VIFM__MODES__DIALOGS__SORT_DIALOG_H__
 
 #include "../../ui.h"
 
@@ -26,7 +26,7 @@ void init_sort_dialog_mode(int *key_mode);
 void enter_sort_mode(FileView *active_view);
 void redraw_sort_dialog(void);
 
-#endif
+#endif /* VIFM__MODES__DIALOGS__SORT_DIALOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

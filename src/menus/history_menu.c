@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "history_menu.h"
+
 #include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strdup() strcpy() strlen() */
 
@@ -25,8 +27,6 @@
 #include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "history_menu.h"
 
 static int show_history(FileView *view, int type, int len, char *hist[],
 		const char title[]);

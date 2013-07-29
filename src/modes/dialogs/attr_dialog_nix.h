@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __ATTR_DIALOG_NIX_H__
-#define __ATTR_DIALOG_NIX_H__
+#ifndef VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__
+#define VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__
 
 #include "../../ui.h"
 
@@ -27,7 +27,7 @@ void enter_attr_mode(FileView *active_view);
 void redraw_attr_dialog(void);
 void files_chmod(FileView *view, const char *mode, int recurse_dirs);
 
-#endif
+#endif /* VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

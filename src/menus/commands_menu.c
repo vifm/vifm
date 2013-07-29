@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "commands_menu.h"
+
 #include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
@@ -28,8 +30,6 @@
 #include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "commands_menu.h"
 
 static int command_khandler(struct menu_info *m, wchar_t keys[]);
 

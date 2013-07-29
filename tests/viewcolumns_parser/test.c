@@ -1,3 +1,5 @@
+#include "test.h"
+
 #include <string.h>
 
 #include "seatest.h"

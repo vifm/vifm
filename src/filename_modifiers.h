@@ -16,15 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FILENAME_MODIFIERS_H__
-#define __FILENAME_MODIFIERS_H__
+#ifndef VIFM__FILENAME_MODIFIERS_H__
+#define VIFM__FILENAME_MODIFIERS_H__
+
+#include <stddef.h> /* size_t */
 
 /* Applies all filename modifiers. */
 const char * apply_mods(const char *path, const char *parent, const char *mod,
 		int for_shell);
 size_t get_mods_len(const char *str);
 
-#endif
+#endif /* VIFM__FILENAME_MODIFIERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

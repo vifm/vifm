@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VIEW_H__
-#define __VIEW_H__
+#ifndef VIFM__MODES__VIEW_H__
+#define VIFM__MODES__VIEW_H__
 
 void init_view_mode(int *key_mode);
 void enter_view_mode(int explore);
@@ -34,7 +34,7 @@ void view_switch_views(void);
  * Returns non-zero on success, otherwise zero is returned. */
 int draw_abandoned_view_mode(void);
 
-#endif
+#endif /* VIFM__MODES__VIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

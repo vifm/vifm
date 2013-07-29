@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "text_buffer.h"
+
 #include <stdarg.h> /* va_list va_copy() va_start() va_end() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* vsnprintf() vsprintf() */
 #include <stdlib.h> /* realloc() */
 #include <string.h> /* strcpy() */
-
-#include "text_buffer.h"
 
 static void ensure_allocated(size_t extra);
 

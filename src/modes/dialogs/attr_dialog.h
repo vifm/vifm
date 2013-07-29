@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __ATTR_DIALOG_H__
-#define __ATTR_DIALOG_H__
+#ifndef VIFM__MODES__DIALOGS__ATTR_DIALOG_H__
+#define VIFM__MODES__DIALOGS__ATTR_DIALOG_H__
 
 #ifndef _WIN32
 #include "attr_dialog_nix.h"
@@ -25,7 +25,7 @@
 #include "attr_dialog_win.h"
 #endif
 
-#endif
+#endif /* VIFM__MODES__DIALOGS__ATTR_DIALOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __ALL_H__
-#define __ALL_H__
+#ifndef VIFM__MENUS__ALL_H__
+#define VIFM__MENUS__ALL_H__
 
 #include "apropos_menu.h"
 #include "bookmarks_menu.h"
@@ -39,7 +39,7 @@
 #include "vifm_menu.h"
 #include "volumes_menu.h"
 
-#endif
+#endif /* VIFM__MENUS__ALL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

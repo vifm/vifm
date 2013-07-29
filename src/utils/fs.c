@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "fs.h"
+
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0500 /* to get GetFileSizeEx() */
 #include <windows.h>
@@ -44,8 +46,6 @@
 #endif
 #include "string_array.h"
 #include "utils.h"
-
-#include "fs.h"
 
 static int path_exists_internal(const char *path, const char *filename);
 

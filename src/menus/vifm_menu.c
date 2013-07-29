@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "vifm_menu.h"
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strdup() */
@@ -25,8 +27,6 @@
 #include "../ui.h"
 #include "../version.h"
 #include "menus.h"
-
-#include "vifm_menu.h"
 
 int
 show_vifm_menu(FileView *view)

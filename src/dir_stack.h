@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __DIR_STACK_H__
-#define __DIR_STACK_H__
+#ifndef VIFM__DIR_STACK_H__
+#define VIFM__DIR_STACK_H__
 
 typedef struct
 {
@@ -67,7 +67,7 @@ void clean_stack(void);
  */
 char ** dir_stack_list(void);
 
-#endif
+#endif /* VIFM__DIR_STACK_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

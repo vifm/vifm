@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "version.h"
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 #include <string.h> /* strdup() */

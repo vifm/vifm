@@ -17,9 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-                     * needed in Linux for wide char function wcwidth().
-                     */
+#include "str.h"
 
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
@@ -39,8 +37,6 @@
 #endif
 
 #include "macros.h"
-
-#include "str.h"
 
 void
 chomp(char str[])

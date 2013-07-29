@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __LOG_H__
-#define __LOG_H__
+#ifndef VIFM__UTILS__LOG_H__
+#define VIFM__UTILS__LOG_H__
 
 #define LOG_FUNC_ENTER \
     { \
@@ -58,7 +58,7 @@ void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);
 void log_cwd(void);
 
-#endif
+#endif /* VIFM__UTILS__LOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

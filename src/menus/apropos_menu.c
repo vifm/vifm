@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "apropos_menu.h"
+
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
@@ -28,8 +30,6 @@
 #include "../running.h"
 #include "../status.h"
 #include "menus.h"
-
-#include "apropos_menu.h"
 
 int
 show_apropos_menu(FileView *view, const char args[])

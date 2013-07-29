@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "opt_handlers.h"
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <math.h> /* abs() */
@@ -41,8 +43,6 @@
 #include "status.h"
 #include "ui.h"
 #include "viewcolumns_parser.h"
-
-#include "opt_handlers.h"
 
 /* TODO: provide default primitive type based handlers (see *prg_handler). */
 

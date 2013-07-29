@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "cmds.h"
+
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stddef.h> /* size_t */
@@ -29,8 +31,6 @@
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
 #include "completion.h"
-
-#include "cmds.h"
 
 #define MAX_CMD_RECURSION 16
 #define MAX_CMD_NAME_LEN 256

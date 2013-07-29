@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "users_menu.h"
+
 #include <string.h> /* strdup() */
 
 #include "../status.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "users_menu.h"
 
 int
 show_user_menu(FileView *view, const char command[], int navigate)

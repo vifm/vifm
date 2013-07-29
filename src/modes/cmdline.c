@@ -17,15 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-                     * needed in Linux for the ncurses wide char
-                     * functions (wcswidth() and wcwidth()).
-                     */
-
-#ifdef __APPLE__
-/* Enable wide functions of ncurses for Mac OS. */
-#define _XOPEN_SOURCE_EXTENDED
-#endif
+#include "cmdline.h"
 
 #include <curses.h>
 
@@ -63,8 +55,6 @@
 #include "menu.h"
 #include "modes.h"
 #include "visual.h"
-
-#include "cmdline.h"
 
 #ifndef TEST
 

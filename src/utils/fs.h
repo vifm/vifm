@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FS_H__
-#define __FS_H__
+#ifndef VIFM__UTILS__FS_H__
+#define VIFM__UTILS__FS_H__
 
 #include <sys/types.h> /* size_t mode_t */
 
@@ -75,7 +75,7 @@ int drive_exists(char letter);
 
 #endif
 
-#endif
+#endif /* VIFM__UTILS__FS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

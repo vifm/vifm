@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VARIABLES_H__
-#define __VARIABLES_H__
+#ifndef VIFM__ENGINE__VARIABLES_H__
+#define VIFM__ENGINE__VARIABLES_H__
 
 /* This module handles :let command */
 
@@ -49,7 +49,7 @@ int unlet_variables(const char *cmd);
 /* Performs :let command completion */
 void complete_variables(const char *cmd, const char **start);
 
-#endif
+#endif /* VIFM__ENGINE__VARIABLES_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

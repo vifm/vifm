@@ -1,7 +1,7 @@
-#ifndef __TEST_H__
-#define __TEST_H__
+#ifndef VIFM_TESTS__PARSING__ASSERTS_H__
+#define VIFM_TESTS__PARSING__ASSERTS_H__
 
-/* This should be a macro to see what test have failed. */
+/* This should be a macro to see what test has failed. */
 #define ASSERT_OK(str, result) \
 	{ \
 		char *str_res; \
@@ -13,7 +13,7 @@
 		var_free(res_var); \
 	}
 
-/* This should be a macro to see what test have failed. */
+/* This should be a macro to see what test has failed. */
 #define ASSERT_FAIL(str, error) \
 	{ \
 		var_t res_var = var_false(); \
@@ -21,7 +21,7 @@
 		var_free(res_var); \
 	}
 
-#endif /* __TEST_H__ */
+#endif /* VIFM_TESTS__PARSING__ASSERTS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

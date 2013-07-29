@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "string_array.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +26,6 @@
 #include "file_streams.h"
 #include "fs_limits.h"
 #include "str.h"
-
-#include "string_array.h"
 
 int
 add_to_string_array(char ***array, int len, int count, ...)

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __ENV_H__
-#define __ENV_H__
+#ifndef VIFM__UTILS__ENV_H__
+#define VIFM__UTILS__ENV_H__
 
 /* Environment variables related functions */
 
@@ -35,7 +35,7 @@ void env_set(const char name[], const char value[]);
 /* Removes environment variable */
 void env_remove(const char name[]);
 
-#endif
+#endif /* VIFM__UTILS__ENV_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

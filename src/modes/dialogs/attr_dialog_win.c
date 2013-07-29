@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "attr_dialog_win.h"
+
 #include <windows.h>
 
 #include <assert.h>
@@ -32,8 +34,6 @@
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
-
-#include "attr_dialog_win.h"
 
 /* enumeration of properties */
 enum

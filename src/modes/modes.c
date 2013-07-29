@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "modes.h"
+
 #include <assert.h> /* assert() */
 #include <stdlib.h>
 
@@ -37,8 +39,6 @@
 #include "normal.h"
 #include "view.h"
 #include "visual.h"
-
-#include "modes.h"
 
 static int mode = NORMAL_MODE;
 

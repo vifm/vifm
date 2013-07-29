@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "trash.h"
+
 #ifdef _WIN32
 #include <dirent.h> /* DIR */
 #endif
@@ -32,8 +34,6 @@
 #include "ops.h"
 #include "registers.h"
 #include "undo.h"
-
-#include "trash.h"
 
 static void empty_trash_dir(void);
 static void empty_trash_list(void);

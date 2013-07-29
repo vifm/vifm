@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE
+#include "sort.h"
 
 #include <curses.h>
 
@@ -39,8 +39,6 @@
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
-
-#include "sort.h"
 
 static FileView* view;
 static int sort_descending;

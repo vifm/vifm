@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __BOOKMARKS_H__
-#define __BOOKMARKS_H__
+#ifndef VIFM__BOOKMARKS_H__
+#define VIFM__BOOKMARKS_H__
 
 #include "ui.h"
 
@@ -63,7 +63,7 @@ int remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
 int init_active_bookmarks(const char *marks);
 
-#endif
+#endif /* VIFM__BOOKMARKS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

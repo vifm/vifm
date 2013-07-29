@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __BRACKET_NOTATION_H__
-#define __BRACKET_NOTATION_H__
+#ifndef VIFM__BRACKET_NOTATION_H__
+#define VIFM__BRACKET_NOTATION_H__
 
 #include <stddef.h> /* wchar_t */
 
@@ -27,7 +27,7 @@ void init_bracket_notation(void);
  * wide string, which should be freed by the caller. */
 wchar_t * substitute_specs(const char cmd[]);
 
-#endif
+#endif /* VIFM__BRACKET_NOTATION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

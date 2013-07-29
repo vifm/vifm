@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __SIGNALS_H__
-#define __SIGNALS_H__
+#ifndef VIFM__SIGNALS_H__
+#define VIFM__SIGNALS_H__
 
 void setup_signals(void);
 
-#endif
+#endif /* VIFM__SIGNALS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

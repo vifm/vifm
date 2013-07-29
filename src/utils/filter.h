@@ -18,8 +18,8 @@
 
 /* Small abstraction over filter driven by a regular expression. */
 
-#ifndef __FILTER_H__
-#define __FILTER_H__
+#ifndef VIFM__UTILS__FILTER_H__
+#define VIFM__UTILS__FILTER_H__
 
 #include <regex.h> /* regex_t */
 
@@ -67,7 +67,7 @@ int filter_append(filter_t *filter, const char value[]);
  * otherwise zero is returned. */
 int filter_matches(filter_t *filter, const char pattern[]);
 
-#endif
+#endif /* VIFM__UTILS__FILTER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __COMMANDS_COMPLETION_H__
-#define __COMMANDS_COMPLETION_H__
+#ifndef VIFM__COMMANDS_COMPLETION_H__
+#define VIFM__COMMANDS_COMPLETION_H__
 
 /* identifiers for commands with completion */
 enum
@@ -82,7 +82,7 @@ void complete_group_name(const char *str);
  * $PATH environment variable or can be found by full path. */
 int external_command_exists(const char command[]);
 
-#endif
+#endif /* VIFM__COMMANDS_COMPLETION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "dirhistory_menu.h"
+
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
 
@@ -27,8 +29,6 @@
 #include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
-
-#include "dirhistory_menu.h"
 
 int
 show_history_menu(FileView *view)

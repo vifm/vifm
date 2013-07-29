@@ -37,6 +37,8 @@
 
 /* Most of this was ripped from the mount(3) source. */
 
+#include "mntent.h"
+
 #if !defined(HAVE_MNTENT_H) || !HAVE_MNTENT_H
 #include <sys/param.h>
 #include <sys/ucred.h>
@@ -44,8 +46,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "mntent.h"
 
 static struct mntent * statfs_to_mntent(struct statfs *mntbuf);
 static char * flags2opts(int flags);

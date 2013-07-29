@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "attr_dialog_nix.h"
+
 #include <fcntl.h>
 
 #include <assert.h> /* assert() */
@@ -35,8 +37,6 @@
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
-
-#include "attr_dialog_nix.h"
 
 static const char * get_title(void);
 static int is_one_file_selected(int first_file_index);

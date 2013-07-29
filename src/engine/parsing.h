@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __PARSING_H__
-#define __PARSING_H__
+#ifndef VIFM__ENGINE__PARSING_H__
+#define VIFM__ENGINE__PARSING_H__
 
 #include "var.h"
 
@@ -60,7 +60,7 @@ var_t get_parsing_result(void);
 /* Returns non-zero if previously read token was whitespace. */
 int is_prev_token_whitespace(void);
 
-#endif
+#endif /* VIFM__ENGINE__PARSING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

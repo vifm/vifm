@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __SEARCH_H__
-#define __SEARCH_H__
+#ifndef VIFM__SEARCH_H__
+#define VIFM__SEARCH_H__
 
 #include "ui.h"
 
@@ -38,7 +38,7 @@ void print_search_msg(const FileView *view, int backward);
 /* Prints error message about failed search to the user. */
 void print_search_fail_msg(const FileView *view, int backward);
 
-#endif
+#endif /* VIFM__SEARCH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

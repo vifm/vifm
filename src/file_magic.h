@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FILE_MAGIC_H__
-#define __FILE_MAGIC_H__
+#ifndef VIFM__FILE_MAGIC_H__
+#define VIFM__FILE_MAGIC_H__
 
 #include "filetype.h"
 
@@ -26,7 +26,7 @@ const char * get_mimetype(const char *file);
 /* Caller shouldn't free anything. */
 assoc_records_t get_magic_handlers(const char *file);
 
-#endif
+#endif /* VIFM__FILE_MAGIC_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

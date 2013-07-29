@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "options.h"
+
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stddef.h> /* NULL size_t */
@@ -27,8 +29,6 @@
 #include "../utils/string_array.h"
 #include "completion.h"
 #include "text_buffer.h"
-
-#include "options.h"
 
 #define OPTION_NAME_MAX 64
 

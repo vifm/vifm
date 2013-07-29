@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "file_streams.h"
+
 #include <stddef.h> /* NULL size_t ssize_t */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strlen() */
-
-#include "file_streams.h"
 
 static int get_char(FILE *fp);
 

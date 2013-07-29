@@ -16,9 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define _GNU_SOURCE /* I don't know how portable this is but it is
-                     * needed in Linux for wide char function wcwidth().
-                     */
+#include "escape.h"
 
 #include <regex.h>
 
@@ -41,8 +39,6 @@
 #endif
 #include "color_manager.h"
 #include "ui.h"
-
-#include "escape.h"
 
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re);

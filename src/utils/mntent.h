@@ -31,8 +31,8 @@
 #if defined(HAVE_MNTENT_H) && HAVE_MNTENT_H
 #include <mntent.h>
 #else
-#ifndef __MNTENT_H__
-#define __MNTENT_H__
+#ifndef VIFM__UTILS__MNTENT_H__
+#define VIFM__UTILS__MNTENT_H__
 #include <stddef.h>
 #include <stdio.h>
 
@@ -55,9 +55,9 @@ struct mntent *getmntent __P ((FILE *fp));
 char *hasmntopt __P ((const struct mntent *mnt, const char option[]));
 #define endmntent(x) ((int)1)
 
-#endif /* __MNTENT_H__ */
+#endif /* VIFM__UTILS__MNTENT_H__ */
 #endif /* HAVE_MNTENT_H */
-#endif /* __WIN32 */
+#endif /* _WIN32 */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
