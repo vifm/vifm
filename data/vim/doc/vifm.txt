@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 21
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 30
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -2084,7 +2084,7 @@ default: ""
 Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
-    %t - file name
+    %t - file name (considering value of the 'classify' option)
     %A - file attributes (permissions on *nix or properties on Windows)
     %u - user name or uid (if it cannot be resolved)
     %g - group name or gid (if it cannot be resolved)

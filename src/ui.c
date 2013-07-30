@@ -33,9 +33,9 @@
 #include <ctype.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
-#include <stdlib.h> /* malloc */
+#include <stdlib.h> /* malloc() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h>
+#include <string.h> /* strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -44,6 +44,7 @@
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "modes/view.h"
+#include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -306,7 +307,7 @@ expand_status_line_macros(FileView *view, const char *format)
 		switch(c)
 		{
 			case 't':
-				snprintf(buf, sizeof(buf), "%s", get_current_file_name(view));
+				format_entry_name(curr_view, view->list_pos, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32
@@ -1748,6 +1749,40 @@ only(void)
 	{
 		curr_stats.number_of_windows = 1;
 		update_screen(UT_REDRAW);
+	}
+}
+
+void
+format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
+{
+	dir_entry_t *const entry = &view->dir_entry[pos];
+	char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
+	const FileType type = (entry->type == LINK && check_link_is_dir(full_path)) ?
+		DIRECTORY : entry->type;
+
+	const char prefix[2] = { cfg.decorations[type][DECORATION_PREFIX] };
+	const char suffix[2] = { cfg.decorations[type][DECORATION_SUFFIX] };
+	size_t name_len = 1;
+
+	free(full_path);
+
+	/* FIXME: remove this hack for directories. */
+	if(type == DIRECTORY)
+	{
+		name_len = strlen(entry->name);
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '\0';
+		}
+	}
+	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
+	/* FIXME: remove this hack for directories. */
+	if(type == DIRECTORY)
+	{
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '/';
+		}
 	}
 }
 

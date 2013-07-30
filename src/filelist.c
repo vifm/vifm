@@ -237,37 +237,7 @@ static void
 format_name(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
-
-	char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
-	const FileType type = (entry->type == LINK && check_link_is_dir(full_path)) ?
-		DIRECTORY : entry->type;
-
-	const char prefix[2] = { cfg.decorations[type][DECORATION_PREFIX] };
-	const char suffix[2] = { cfg.decorations[type][DECORATION_SUFFIX] };
-	size_t name_len = 1;
-
-	free(full_path);
-
-	/* FIXME: remove this hack for directories. */
-	if(type == DIRECTORY)
-	{
-		name_len = strlen(entry->name);
-		if(name_len > 0)
-		{
-			entry->name[name_len - 1] = '\0';
-		}
-	}
-	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
-	/* FIXME: remove this hack for directories. */
-	if(type == DIRECTORY)
-	{
-		if(name_len > 0)
-		{
-			entry->name[name_len - 1] = '/';
-		}
-	}
+	format_entry_name(cdt->view, cdt->line, buf_len + 1, buf);
 }
 
 /* File size format callback for column_view unit. */
