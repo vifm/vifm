@@ -90,6 +90,8 @@
 	Use AC_GNU_SOURCE macro in configure.in, which is the correct way to
 	request for GNU extensions across various operating systems.
 
+	Check whether current directory is writable on :mkdir command.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
