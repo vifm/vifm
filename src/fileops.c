@@ -2770,7 +2770,14 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
 	int n;
-	void *cp = (void *)(long)create_parent;
+	void *cp;
+
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
+		return;
+	}
+
+	cp = (void *)(long)create_parent;
 
 	for(i = 0; i < count; i++)
 	{
