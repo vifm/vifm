@@ -255,6 +255,9 @@ void go_to_other_pane(void);
 void split_view(SPLIT orientation);
 /* Switches view to one-window mode. */
 void only(void);
+/* File name formatter which takes 'classify' option into account and applies
+ * type dependent name decorations. */
+void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
 
 #endif /* VIFM__UI_H__ */
 
