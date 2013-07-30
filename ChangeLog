@@ -92,6 +92,9 @@
 
 	Check whether current directory is writable on :mkdir command.
 
+	Check destination path existence before changing directory to it on :sync
+	command.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
