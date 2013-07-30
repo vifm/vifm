@@ -307,7 +307,7 @@ expand_status_line_macros(FileView *view, const char *format)
 		switch(c)
 		{
 			case 't':
-				snprintf(buf, sizeof(buf), "%s", get_current_file_name(view));
+				format_entry_name(curr_view, view->list_pos, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32
