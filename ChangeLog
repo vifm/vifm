@@ -95,6 +95,8 @@
 	Check destination path existence before changing directory to it on :sync
 	command.
 
+	Consider 'classify' option on displaying file name in the statusbar.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
