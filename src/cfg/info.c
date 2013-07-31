@@ -469,6 +469,7 @@ update_info_file(const char filename[])
 {
 	/* TODO: refactor this function update_info_file() */
 
+	const int dir_stack_was_empty = stack_top == 0;
 	FILE *fp;
 	char ** list;
 	int nlist = -1;
@@ -489,7 +490,7 @@ update_info_file(const char filename[])
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
-		char *line = NULL, *line2 = NULL, *line3 = NULL;
+		char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
 			const char type = line[0];
@@ -660,6 +661,19 @@ update_info_file(const char filename[])
 					continue;
 				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 			}
+			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
+			{
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+				{
+					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
+					{
+						if((line4 = read_vifminfo_line(fp, line4)) != NULL)
+						{
+							push_to_dirstack(line_val, line2, line3 + 1, line4);
+						}
+					}
+				}
+			}
 			else if(type == LINE_TYPE_REG)
 			{
 				if(register_exists(line_val[0]))
@@ -670,11 +684,16 @@ update_info_file(const char filename[])
 		free(line);
 		free(line2);
 		free(line3);
+		free(line4);
 		fclose(fp);
 	}
 
 	if((fp = fopen(filename, "w")) == NULL)
 	{
+		if(dir_stack_was_empty)
+		{
+			clean_stack();
+		}
 		return;
 	}
 
@@ -995,6 +1014,11 @@ update_info_file(const char filename[])
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
+
+	if(dir_stack_was_empty)
+	{
+		clean_stack();
+	}
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character

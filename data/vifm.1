@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 30, 2013" "" "Vifm"
+.TH vifm 1 "Jul 31, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2578,14 +2578,15 @@ Controls what will be saved in the $VIFM/vifminfo file.
    commands  \- user defined commands (see :command description)
    bookmarks \- bookmarks, except special ones like '< and '>
    tui       \- state of the user interface (sorting, number of windows, quick
-               view state, active view)
+                view state, active view)
    dhistory  \- directory history
    state     \- file name and dot filters and screen program using state
    cs        \- default color scheme
    savedirs  \- save last visited directory (needs dhistory)
    chistory  \- command line history
    shistory  \- search history (/ and ? commands)
-   dirstack  \- directory stack
+   dirstack  \- directory stack overwrites previous stack, unless stack of
+                current session is empty
    registers \- registers content
    phistory  \- prompt history
 .TP
