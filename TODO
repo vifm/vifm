@@ -133,6 +133,7 @@ Other (questionable) things.
     Maybe expand macros for :touch amd :mkdir commands (for :touch %"d)
     Live preview of color schemes.
     "Blow directory" command to replace directory with its content.
+    Add file selector based on file extensions.
 
 Code improvements.
     Write more tests.
