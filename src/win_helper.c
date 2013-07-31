@@ -16,10 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifdef _WIN32
+#ifndef WINVER
 #define WINVER 0x0600
-#include <windows.h>
+#elif WINVER < 0x0600
+#error Version of Windows API is lower than required by win_helper, \
+       expected it to be >= 0x0600.
 #endif
+#include <windows.h>
 
 #include <stdio.h>
 #include <string.h>
