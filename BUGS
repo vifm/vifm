@@ -14,3 +14,9 @@ Files with names containing Unicode characters are not always processed correctl
 screen-open-region-with-program).
 
 "Can't open file for reading" message for directories on e.
+
+Something is wrong with checking program existance on Windows.
+
+Maybe search doesn't work when filename contains () (starts with "(2005) - ")
+
+A bug? Last search pattern is stored per window, but history is common.

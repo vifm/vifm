@@ -25,7 +25,7 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h>
 #include <wchar.h> /* wcswidth() wcwidth() */
 #include <wctype.h>
@@ -68,8 +68,8 @@ typedef enum
 typedef struct
 {
 	wchar_t *line;            /* the line reading */
-	int index;                /* index of the current character */
-	int curs_pos;             /* position of the cursor */
+	int index;                /* index of the current character in cmdline */
+	int curs_pos;             /* position of the cursor in status bar*/
 	int len;                  /* length of the string */
 	int cmd_pos;              /* position in the history */
 	wchar_t prompt[NAME_MAX]; /* prompt */
@@ -640,7 +640,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		char *const mbstr = (input_stat.line == NULL) ?
 			strdup("") : to_multibyte(input_stat.line);
 		leave_cmdline_mode();
-		get_and_execute_command(mbstr, type);
+		get_and_execute_command(mbstr, input_stat.index + 1, type);
 		free(mbstr);
 	}
 }

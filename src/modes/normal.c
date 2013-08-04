@@ -1705,7 +1705,7 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", GET_COMMAND);
+	get_and_execute_command("", 0U, GET_COMMAND);
 }
 
 /* Runs external editor to get search pattern. */
@@ -1731,7 +1731,7 @@ activate_search(int count, int back, int external)
 	if(external)
 	{
 		const int type = back ? GET_BSEARCH_PATTERN : GET_FSEARCH_PATTERN;
-		get_and_execute_command("", type);
+		get_and_execute_command("", 0U, type);
 	}
 	else
 	{
