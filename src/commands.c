@@ -123,7 +123,8 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
 		int *usr2);
-static char * get_ext_command(const char beginning[], int type);
+static char * get_ext_command(const char beginning[], size_t line_pos,
+		int type);
 static int setup_extcmd_file(const char path[], const char beginning[],
 		int type);
 static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
@@ -544,9 +545,9 @@ cmds_expand_envvars(const char str[])
 }
 
 void
-get_and_execute_command(const char line[], int type)
+get_and_execute_command(const char line[], size_t line_pos, int type)
 {
-	char *const cmd = get_ext_command(line, type);
+	char *const cmd = get_ext_command(line, line_pos, type);
 	if(cmd == NULL)
 	{
 		save_extcmd(line, type);
@@ -559,11 +560,11 @@ get_and_execute_command(const char line[], int type)
 	}
 }
 
-/* Opens the editor with the beginning.  Type is used to provide useful context.
- * Returns entered command as a newly allocated string, which should be freed by
- * the caller. */
+/* Opens the editor with the beginning at the line_pos column.  Type is used to
+ * provide useful context.  Returns entered command as a newly allocated string,
+ * which should be freed by the caller. */
 static char *
-get_ext_command(const char beginning[], int type)
+get_ext_command(const char beginning[], size_t line_pos, int type)
 {
 	char cmd_file[PATH_MAX];
 	char *cmd = NULL;
@@ -572,7 +573,7 @@ get_ext_command(const char beginning[], int type)
 
 	if(setup_extcmd_file(cmd_file, beginning, type) == 0)
 	{
-		if(view_file(cmd_file, 1, -1, 0) == 0)
+		if(view_file(cmd_file, 1, line_pos, 0) == 0)
 		{
 			cmd = get_file_first_line(cmd_file);
 		}
