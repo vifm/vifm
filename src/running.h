@@ -30,7 +30,8 @@ void handle_file(FileView *view, int dont_execute, int force_follow);
 int edit_selection(void);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
-/* Negative line/column means ignore parameter.  Returns zero on success, on
+/* Negative line/column means ignore parameter.  First line/column number has
+ * number one, while zero means don't change it.  Returns zero on success, on
  * error non-zero is returned. */
 int view_file(const char filename[], int line, int column, int do_fork);
 void handle_dir(FileView *view);
