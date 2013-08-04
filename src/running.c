@@ -384,7 +384,7 @@ run_file(FileView *view, int dont_execute)
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			(void)view_file(buf, -1, 1);
+			(void)view_file(buf, -1, -1, 1);
 		}
 		else
 		{
@@ -440,7 +440,7 @@ multi_run_compat(FileView *view, const char *program)
 }
 
 int
-view_file(const char filename[], int line, int do_fork)
+view_file(const char filename[], int line, int column, int do_fork)
 {
 	char vicmd[PATH_MAX];
 	char command[PATH_MAX + 5] = "";
@@ -479,11 +479,15 @@ view_file(const char filename[], int line, int do_fork)
 		}
 	}
 
-	if(line < 0)
+	if(line < 0 && column < 0)
 		snprintf(command, sizeof(command), "%s %s %s", vicmd, fork_str, escaped);
-	else
+	else if(column < 0)
 		snprintf(command, sizeof(command), "%s %s +%d %s", vicmd, fork_str, line,
 				escaped);
+	else
+		snprintf(command, sizeof(command), "%s %s \"+call cursor(%d, %d)\" %s",
+				vicmd, fork_str, line, column, escaped);
+
 #ifndef _WIN32
 	free(escaped);
 #endif
@@ -544,7 +548,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			(void)view_file(buf, -1, 1);
+			(void)view_file(buf, -1, -1, 1);
 		}
 		else
 			fuse_try_mount(view, program);

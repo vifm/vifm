@@ -765,7 +765,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 		stat(rename_file, &st_before);
 
-		(void)view_file(rename_file, -1, 0);
+		(void)view_file(rename_file, -1, -1, 0);
 
 		stat(rename_file, &st_after);
 
@@ -779,7 +779,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	}
 	else
 	{
-		(void)view_file(rename_file, -1, 0);
+		(void)view_file(rename_file, -1, -1, 0);
 	}
 
 	if((f = fopen(rename_file, "r")) == NULL)

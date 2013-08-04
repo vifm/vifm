@@ -572,7 +572,7 @@ get_ext_command(const char beginning[], int type)
 
 	if(setup_extcmd_file(cmd_file, beginning, type) == 0)
 	{
-		if(view_file(cmd_file, 0, 0) == 0)
+		if(view_file(cmd_file, 0, -1, 0) == 0)
 		{
 			cmd = get_file_first_line(cmd_file);
 		}
@@ -1943,7 +1943,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 				get_current_file_name(curr_view));
-		(void)view_file(buf, -1, 1);
+		(void)view_file(buf, -1, -1, 1);
 	}
 	else
 	{
