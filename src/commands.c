@@ -619,7 +619,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	}
 	if(is_cmd)
 	{
-		fputs("\" vim: set filetype=vifm-cmdedit :\n", fp);
+		fputs("\" vim: set filetype=vifm-cmdedit syntax=vifm :\n", fp);
 	}
 }
 
