@@ -46,6 +46,7 @@
                        sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
                        SIG_UNBLOCK */
 #include <stddef.h> /* size_t */
+#include <stdlib.h> /* free() */
 #include <string.h>
 #include <wctype.h>
 
@@ -430,28 +431,28 @@ friendly_size_notation(uint64_t num, int str_size, char *str)
 }
 
 int
-get_regexp_cflags(const char *pattern)
+get_regexp_cflags(const char pattern[])
 {
-	int result;
-
-	result = REG_EXTENDED;
-	if(cfg.ignore_case)
-		result |= REG_ICASE;
-
-	if(cfg.ignore_case && cfg.smart_case)
+	int result = REG_EXTENDED;
+	if(regexp_should_ignore_case(pattern))
 	{
-		wchar_t *wstring, *p;
-		wstring = to_wide(pattern);
-		p = wstring - 1;
-		while(*++p != L'\0')
-			if(iswupper(*p))
-			{
-				result &= ~REG_ICASE;
-				break;
-			}
-		free(wstring);
+		result |= REG_ICASE;
 	}
 	return result;
+}
+
+int
+regexp_should_ignore_case(const char pattern[])
+{
+	int ignore_case = cfg.ignore_case;
+	if(cfg.ignore_case && cfg.smart_case)
+	{
+		if(has_uppercase_letters(pattern))
+		{
+			ignore_case = 0;
+		}
+	}
+	return ignore_case;
 }
 
 const char *

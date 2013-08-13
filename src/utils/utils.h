@@ -51,7 +51,13 @@
 
 /* Regular expressions. */
 
-int get_regexp_cflags(const char *pattern);
+/* Gets flags for compiling a regular expression specified by the pattern taking
+ * 'ignorecase' and 'smartcase' options into account.  Returns regex flags. */
+int get_regexp_cflags(const char pattern[]);
+/* Decides whether case should be ignored for the pattern.  Considers
+ * 'ignorecase' and 'smartcase' options.  Returns non-zero when case should be
+ * ignored, otherwise zero is returned. */
+int regexp_should_ignore_case(const char pattern[]);
 const char * get_regexp_error(int err, regex_t *re);
 
 /* Program running. */
