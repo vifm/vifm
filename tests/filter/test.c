@@ -6,6 +6,7 @@ void lifetime_tests(void);
 void clear_tests(void);
 void set_tests(void);
 void append_tests(void);
+void change_tests(void);
 
 static void
 all_tests(void)
@@ -14,6 +15,7 @@ all_tests(void)
 	clear_tests();
 	set_tests();
 	append_tests();
+	change_tests();
 }
 
 int
