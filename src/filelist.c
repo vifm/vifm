@@ -2421,7 +2421,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	char name_with_slash[strlen(filename) + 1 + 1];
 	sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
 
-	if(filter_matches(&view->auto_filter, name_with_slash))
+	if(filter_matches(&view->auto_filter, name_with_slash) > 0)
 	{
 		return 0;
 	}
@@ -2431,7 +2431,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 1;
 	}
 
-	if(filter_matches(&view->name_filter, name_with_slash))
+	if(filter_matches(&view->name_filter, name_with_slash) > 0)
 	{
 		return !view->invert;
 	}

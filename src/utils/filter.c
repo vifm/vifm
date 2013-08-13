@@ -215,7 +215,7 @@ filter_matches(filter_t *filter, const char pattern[])
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 
