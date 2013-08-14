@@ -24,6 +24,7 @@
 #include <pthread.h>
 
 #include <assert.h> /* assert() */
+#include <stdlib.h> /* free() */
 #include <string.h>
 #include <wctype.h> /* wtoupper() */
 
@@ -106,6 +107,7 @@ static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_equal(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dot(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
@@ -274,6 +276,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L"=", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_equal}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L".", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
 	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
@@ -1300,6 +1303,15 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 	pick_or_move(keys_info, line - 1);
 }
 
+/* Go to local filter mode. */
+static void
+cmd_equal(key_info_t key_info, keys_info_t *keys_info)
+{
+	wchar_t *previous = to_wide(curr_view->local_filter.raw);
+	enter_cmdline_mode(FILTER_SUBMODE, previous, NULL);
+	free(previous);
+}
+
 static void
 cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1893,6 +1905,7 @@ static void
 cmd_zM(key_info_t key_info, keys_info_t *keys_info)
 {
 	restore_filename_filter(curr_view);
+	local_filter_restore(curr_view);
 	set_dot_files_visible(curr_view, 0);
 }
 
@@ -1908,6 +1921,7 @@ static void
 cmd_zR(key_info_t key_info, keys_info_t *keys_info)
 {
 	remove_filename_filter(curr_view);
+	local_filter_remove(curr_view);
 	set_dot_files_visible(curr_view, 1);
 }
 
