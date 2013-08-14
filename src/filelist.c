@@ -41,7 +41,7 @@
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* calloc() malloc() */
+#include <stdlib.h> /* calloc() free() malloc() */
 #include <string.h> /* memset() strcat() strcmp() strlen() */
 #include <time.h>
 
@@ -1998,6 +1998,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(stroscmp(dir_dup, view->curr_dir) != 0)
 	{
+		filter_clear(&view->local_filter);
 		free_saved_selection(view);
 	}
 	else
