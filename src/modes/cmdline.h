@@ -38,7 +38,9 @@ typedef enum
 	PROMPT_SUBMODE,
 	VIEW_SEARCH_FORWARD_SUBMODE,
 	VIEW_SEARCH_BACKWARD_SUBMODE,
-}CMD_LINE_SUBMODES;
+	FILTER_SUBMODE,
+}
+CMD_LINE_SUBMODES;
 
 typedef void (*prompt_cb)(const char *renponse);
 typedef int (*complete_cmd_func)(const char *cmd);

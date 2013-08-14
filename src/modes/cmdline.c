@@ -23,7 +23,7 @@
 
 #include <limits.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdlib.h> /* free() */
 #include <string.h>
@@ -104,6 +104,8 @@ static void input_line_changed(void);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
+static void save_view_port(void);
+static void set_view_port(void);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
@@ -326,22 +328,10 @@ input_line_changed(void)
 {
 	static wchar_t *previous;
 
-	if(!cfg.inc_search || !input_stat.search_mode)
+	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != FILTER_SUBMODE))
 		return;
 
-	if(prev_mode != MENU_MODE)
-	{
-		curr_view->top_line = input_stat.old_top;
-		curr_view->list_pos = input_stat.old_pos;
-		if(prev_mode == VISUAL_MODE)
-		{
-			update_visual_mode();
-		}
-	}
-	else
-	{
-		load_menu_pos();
-	}
+	set_view_port();
 
 	if(input_stat.line == NULL || input_stat.line[0] == L'\0')
 	{
@@ -359,6 +349,11 @@ input_line_changed(void)
 		}
 		free(previous);
 		previous = NULL;
+
+		if(sub_mode == FILTER_SUBMODE)
+		{
+			local_filter_set(curr_view, "");
+		}
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
@@ -380,6 +375,10 @@ input_line_changed(void)
 			exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
 		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
 			exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+		else if(sub_mode == FILTER_SUBMODE)
+		{
+			local_filter_set(curr_view, p);
+		}
 
 		free(p);
 	}
@@ -431,13 +430,26 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 	sub_mode = cl_sub_mode;
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
+	{
 		prompt = L":";
+	}
+	else if(sub_mode == FILTER_SUBMODE)
+	{
+		prompt = L"=";
+	}
 	else if(is_forward_search(sub_mode))
+	{
 		prompt = L"/";
+	}
 	else if(is_backward_search(sub_mode))
+	{
 		prompt = L"?";
+	}
 	else
+	{
+		assert(0 && "Unknown command line submode.");
 		prompt = L"E";
+	}
 
 	prepare_cmdline_mode(prompt, cmd, complete_cmd);
 }
@@ -513,15 +525,11 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
 	{
 		input_stat.search_mode = 1;
-		if(prev_mode != MENU_MODE)
-		{
-			input_stat.old_top = curr_view->top_line;
-			input_stat.old_pos = curr_view->list_pos;
-		}
-		else
-		{
-			save_menu_pos();
-		}
+	}
+
+	if(input_stat.search_mode || sub_mode == FILTER_SUBMODE)
+	{
+		save_view_port();
 	}
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
@@ -552,6 +560,50 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 
 	if(prev_mode == NORMAL_MODE)
 		init_commands();
+}
+
+/* Stores view port parameters (top line, current position). */
+static void
+save_view_port(void)
+{
+	if(prev_mode != MENU_MODE)
+	{
+		input_stat.old_top = curr_view->top_line;
+		input_stat.old_pos = curr_view->list_pos;
+	}
+	else
+	{
+		save_menu_pos();
+	}
+}
+
+/* Sets view port parameters to appropriate for current submode state. */
+static void
+set_view_port(void)
+{
+	if(prev_mode != MENU_MODE)
+	{
+		if(sub_mode == FILTER_SUBMODE &&
+				(input_stat.line != NULL && input_stat.line[0] != L'\0'))
+		{
+			curr_view->top_line = 0;
+			curr_view->list_pos = 0;
+		}
+		else
+		{
+			curr_view->top_line = input_stat.old_top;
+			curr_view->list_pos = input_stat.old_pos;
+		}
+
+		if(prev_mode == VISUAL_MODE)
+		{
+			update_visual_mode();
+		}
+	}
+	else
+	{
+		load_menu_pos();
+	}
 }
 
 static void
@@ -611,7 +663,10 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 		input_stat.line[0] = L'\0';
 	}
-	input_line_changed();
+	if(sub_mode != FILTER_SUBMODE)
+	{
+		input_line_changed();
+	}
 
 	leave_cmdline_mode();
 
@@ -626,6 +681,11 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	if(sub_mode == CMD_SUBMODE)
 	{
 		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
+	}
+	else if(sub_mode == FILTER_SUBMODE)
+	{
+		local_filter_cancel(curr_view);
+		redraw_current_view();
 	}
 }
 
@@ -914,6 +974,10 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		modes_pre();
 		cb = (prompt_cb)sub_mode_ptr;
 		cb(p);
+	}
+	else if(sub_mode == FILTER_SUBMODE)
+	{
+		local_filter_accept(curr_view);
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
 	{
