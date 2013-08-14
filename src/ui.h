@@ -173,6 +173,20 @@ typedef struct _FileView
 	 * possible.  Not NULL. */
 	char *prev_auto_filter;
 
+	/* Local filename filter. */
+	filter_t local_filter;
+	/* Whether interactive filtering in progress. */
+	int filtering;
+	/* Removed value of local filename filter.  Stored for restore
+	 * operation. */
+	char *prev_local_filter;
+	/* Unfiltered file entries. */
+	dir_entry_t *unfiltered;
+	/* Number of unfiltered entries. */
+	size_t unfiltered_count;
+	/* Temporary storage for local filename filter, when its overwritten. */
+	char *saved_local_filter;
+
 	char sort[SORT_OPTION_COUNT];
 
 	int history_num;
