@@ -273,6 +273,7 @@ const char *tags[] = {
 	"vifm-:y",
 	"vifm-:yank",
 	"vifm-;",
+	"vifm-=",
 	"vifm-?",
 	"vifm-C",
 	"vifm-CTRL-A",

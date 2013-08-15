@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 31, 2013" "" "Vifm"
+.TH vifm 1 "Aug 11, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -310,6 +310,8 @@ is controlled by the 'dotdirs' option)
 manual filter for file names
 .IP \- 2
 automatic filter for file names
+.IP \- 2
+local filter for file names (see description of the "=" normal mode command)
 .LP
 Performing operations on manual filter for file names automatically does the
 same on automatic one.  The file name filter is separated mainly for
@@ -317,7 +319,7 @@ convenience purpose and to get more deterministic behaviour.
 
 The basic vim folding key bindings are used for filtering files.
 .TP
-Each file list has its own filter.
+Each file list has its own copy of each filter.
 .TP
 Filtered files are not checked in / search or :commands.
 .TP
@@ -349,13 +351,17 @@ Toggle the showing and hiding of dot files.
 Filter all of the dot files.
 .TP
 .BI zO
-Show the filtered files.
+Show the files filtered out by filename filter.
 .TP
 .BI zM
 Filter the files matching the filename filter.
 .TP
 .BI zR
 Remove all filters.
+.TP
+.BI "=regular expression pattern[Return]"
+filter out files that don't match regular expression.  This kind of filter is
+automatically reset when directory is changed.
 .\" ---------------------------------------------------------------------------
 .SH Other Normal Mode Keys
 .\" ---------------------------------------------------------------------------

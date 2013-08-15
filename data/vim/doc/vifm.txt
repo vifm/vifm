@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 31
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 11
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -270,6 +270,7 @@ There are three basic file filters:
    appearance is controlled by the |vifm-'dotdirs'| option)
  - manual filter for file names
  - automatic filter for file names
+ - local filter for file names (see |vifm-=|)
 
 Performing operations on manual filter for file names automatically does the
 same on automatic one.  The file name filter is separated mainly for
@@ -290,7 +291,7 @@ zf - add the selected files to the file name filter.
 zm - hide the dot files.
 
                                                *vifm-zO*
-zO - show the hidden file name files.
+zO - show the hidden by file name filter files.
 
                                                *vifm-zM*
 zM - restore all filters.
@@ -298,7 +299,11 @@ zM - restore all filters.
                                                *vifm-zR*
 zR - remove all filters.
 
-Each file list has its own filter.
+                                               *vifm-=*
+=regular expression - filter out files that don't match regular expression.
+    This kind of filter is automatically reset when directory is changed.
+
+Each file list has its own copy of each filter.
 
 Filtered files are not checked in / search or :commands.
 
