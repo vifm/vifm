@@ -1307,7 +1307,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_equal(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t *previous = to_wide(curr_view->local_filter.raw);
+	wchar_t *previous = to_wide(curr_view->local_filter.filter.raw);
 	enter_cmdline_mode(FILTER_SUBMODE, previous, NULL);
 	free(previous);
 }

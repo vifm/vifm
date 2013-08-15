@@ -404,10 +404,10 @@ reset_view(FileView *view)
 	(void)replace_string(&view->prev_auto_filter, "");
 	reset_filter(&view->auto_filter);
 
-	(void)replace_string(&view->prev_local_filter, "");
-	reset_filter(&view->local_filter);
-	view->filtering = 0;
-	view->saved_local_filter = NULL;
+	(void)replace_string(&view->local_filter.prev, "");
+	reset_filter(&view->local_filter.filter);
+	view->local_filter.in_progress = 0;
+	view->local_filter.saved = NULL;
 
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
@@ -1998,7 +1998,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(stroscmp(dir_dup, view->curr_dir) != 0)
 	{
-		filter_clear(&view->local_filter);
+		filter_clear(&view->local_filter.filter);
 		free_saved_selection(view);
 	}
 	else
@@ -2436,7 +2436,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 0;
 	}
 
-	if(filter_matches(&view->local_filter, name_with_slash) == 0)
+	if(filter_matches(&view->local_filter.filter, name_with_slash) == 0)
 	{
 		return 0;
 	}
@@ -2807,23 +2807,23 @@ toggle_filter_inversion(FileView *view)
 void
 local_filter_set(FileView *view, const char filter[])
 {
-	if(!view->filtering)
+	if(!view->local_filter.in_progress)
 	{
-		view->filtering = 1;
+		view->local_filter.in_progress = 1;
 
-		view->saved_local_filter = strdup(view->local_filter.raw);
+		view->local_filter.saved = strdup(view->local_filter.filter.raw);
 
 		if(view->filtered > 0)
 		{
-			filter_clear(&view->local_filter);
+			filter_clear(&view->local_filter.filter);
 			populate_dir_list(view, 1);
 		}
-		view->unfiltered = view->dir_entry;
-		view->unfiltered_count = view->list_rows;
+		view->local_filter.unfiltered = view->dir_entry;
+		view->local_filter.unfiltered_count = view->list_rows;
 		view->dir_entry = NULL;
 	}
 
-	(void)filter_change(&view->local_filter, filter,
+	(void)filter_change(&view->local_filter.filter, filter,
 			!regexp_should_ignore_case(filter));
 
 	update_filtering_lists(view, 1, 0);
@@ -2832,7 +2832,7 @@ local_filter_set(FileView *view, const char filter[])
 void
 local_filter_accept(FileView *view)
 {
-	if(!view->filtering)
+	if(!view->local_filter.in_progress)
 	{
 		return;
 	}
@@ -2845,12 +2845,12 @@ local_filter_accept(FileView *view)
 void
 local_filter_cancel(FileView *view)
 {
-	if(!view->filtering)
+	if(!view->local_filter.in_progress)
 	{
 		return;
 	}
 
-	(void)filter_set(&view->local_filter, view->saved_local_filter);
+	(void)filter_set(&view->local_filter.filter, view->local_filter.saved);
 
 	free(view->dir_entry);
 	view->dir_entry = NULL;
@@ -2866,10 +2866,10 @@ update_filtering_lists(FileView *view, int add, int clear)
 	size_t i;
 	size_t list_size = 0U;
 
-	for(i = 0; i < view->unfiltered_count; i++)
+	for(i = 0; i < view->local_filter.unfiltered_count; i++)
 	{
-		const dir_entry_t *const entry = &view->unfiltered[i];
-		if(filter_matches(&view->local_filter, entry->name) != 0)
+		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
+		if(filter_matches(&view->local_filter.filter, entry->name) != 0)
 		{
 			if(add)
 			{
@@ -2888,7 +2888,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 	if(add)
 	{
 		view->list_rows = list_size;
-		view->filtered = view->unfiltered_count - list_size;
+		view->filtered = view->local_filter.unfiltered_count - list_size;
 
 		if(list_size == 0U)
 		{
@@ -2901,23 +2901,23 @@ update_filtering_lists(FileView *view, int add, int clear)
 static void
 local_filter_finish(FileView *view)
 {
-	free(view->unfiltered);
-	free(view->saved_local_filter);
-	view->filtering = 0;
+	free(view->local_filter.unfiltered);
+	free(view->local_filter.saved);
+	view->local_filter.in_progress = 0;
 }
 
 void
 local_filter_remove(FileView *view)
 {
-	(void)replace_string(&view->prev_local_filter, view->local_filter.raw);
-	filter_clear(&view->local_filter);
+	(void)replace_string(&view->local_filter.prev, view->local_filter.filter.raw);
+	filter_clear(&view->local_filter.filter);
 }
 
 void
 local_filter_restore(FileView *view)
 {
-	(void)filter_set(&view->local_filter, view->prev_local_filter);
-	(void)replace_string(&view->prev_local_filter, "");
+	(void)filter_set(&view->local_filter.filter, view->local_filter.prev);
+	(void)replace_string(&view->local_filter.prev, "");
 }
 
 /* Adds new entry to the *list of length *list_size and updates them
