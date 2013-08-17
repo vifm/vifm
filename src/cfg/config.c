@@ -104,9 +104,10 @@ init_config(void)
 	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 
-	(void)hist_init(&cfg.search_hist, cfg.history_len);
 	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_init(&cfg.search_hist, cfg.history_len);
 	(void)hist_init(&cfg.prompt_hist, cfg.history_len);
+	(void)hist_init(&cfg.filter_hist, cfg.history_len);
 
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
@@ -727,6 +728,7 @@ disable_history(void)
 	(void)hist_reset(&cfg.search_hist, cfg.history_len);
 	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
 	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
+	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
 
 	cfg.history_len = 0;
 }
@@ -755,6 +757,7 @@ decrease_history(size_t new_len, size_t removed_count)
 	hist_trunc(&cfg.search_hist, new_len, removed_count);
 	hist_trunc(&cfg.cmd_hist, new_len, removed_count);
 	hist_trunc(&cfg.prompt_hist, new_len, removed_count);
+	hist_trunc(&cfg.filter_hist, new_len, removed_count);
 }
 
 /* Moves items of directory history when size of history becomes smaller. */
@@ -786,8 +789,9 @@ reallocate_history(size_t new_len)
 	rwin.history = realloc(rwin.history, hist_item_len);
 
 	cfg.cmd_hist.items = realloc(cfg.cmd_hist.items, str_item_len);
-	cfg.prompt_hist.items = realloc(cfg.prompt_hist.items, str_item_len);
 	cfg.search_hist.items = realloc(cfg.search_hist.items, str_item_len);
+	cfg.prompt_hist.items = realloc(cfg.prompt_hist.items, str_item_len);
+	cfg.filter_hist.items = realloc(cfg.filter_hist.items, str_item_len);
 }
 
 /* Zeroes new elements of the history.  The old_len specifies old history size,
@@ -802,8 +806,9 @@ zero_new_history_items(size_t old_len, size_t delta)
 	memset(rwin.history + old_len, 0, hist_item_len);
 
 	memset(cfg.cmd_hist.items + old_len, 0, str_item_len);
-	memset(cfg.prompt_hist.items + old_len, 0, str_item_len);
 	memset(cfg.search_hist.items + old_len, 0, str_item_len);
+	memset(cfg.prompt_hist.items + old_len, 0, str_item_len);
+	memset(cfg.filter_hist.items + old_len, 0, str_item_len);
 }
 
 int
@@ -883,6 +888,12 @@ void
 save_prompt_history(const char input[])
 {
 	save_into_history(input, &cfg.prompt_hist, cfg.history_len);
+}
+
+void
+save_filter_history(const char input[])
+{
+	save_into_history(input, &cfg.filter_hist, cfg.history_len);
 }
 
 /* Adaptor for the hist_add() function, which handles signed history length. */

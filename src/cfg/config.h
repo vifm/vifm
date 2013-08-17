@@ -79,6 +79,8 @@ typedef struct
 	hist_t search_hist;
 	/* History of prompt input. */
 	hist_t prompt_hist;
+	/* History of local filter patterns. */
+	hist_t filter_hist;
 
 	col_scheme_t cs;
 
@@ -157,6 +159,8 @@ void save_command_history(const char command[]);
 void save_search_history(const char pattern[]);
 /* Saves input to prompt history. */
 void save_prompt_history(const char input[]);
+/* Saves input to local filter history. */
+void save_filter_history(const char pattern[]);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

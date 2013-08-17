@@ -1134,6 +1134,10 @@ search_next(void)
 	{
 		complete_next(&cfg.prompt_hist, cfg.history_len);
 	}
+	else if(sub_mode == FILTER_SUBMODE)
+	{
+		complete_next(&cfg.filter_hist, cfg.history_len);
+	}
 }
 
 static void
@@ -1534,6 +1538,10 @@ search_prev(void)
 	else if(sub_mode == PROMPT_SUBMODE)
 	{
 		complete_prev(&cfg.prompt_hist, cfg.history_len);
+	}
+	else if(sub_mode == FILTER_SUBMODE)
+	{
+		complete_prev(&cfg.filter_hist, cfg.history_len);
 	}
 }
 

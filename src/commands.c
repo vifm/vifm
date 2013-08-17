@@ -3118,9 +3118,10 @@ restart_cmd(const cmd_info_t *cmd_info)
 	rwin.history_pos = 0;
 
 	/* All kinds of history. */
-	hist_clear(&cfg.search_hist);
 	hist_clear(&cfg.cmd_hist);
+	hist_clear(&cfg.search_hist);
 	hist_clear(&cfg.prompt_hist);
+	hist_clear(&cfg.filter_hist);
 
 	/* directory stack */
 	clean_stack();

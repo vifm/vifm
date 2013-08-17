@@ -2840,6 +2840,8 @@ local_filter_accept(FileView *view)
 	update_filtering_lists(view, 0, 1);
 
 	local_filter_finish(view);
+
+	save_filter_history(view->local_filter.filter.raw);
 }
 
 void
