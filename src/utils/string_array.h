@@ -29,10 +29,10 @@ void remove_from_string_array(char **array, size_t len, int pos);
 int is_in_string_array(char *array[], size_t len, const char item[]);
 int is_in_string_array_case(char *array[], size_t len, const char item[]);
 char ** copy_string_array(char **array, size_t len);
-/* Returns position of the key in the array, -1 if no match found. */
-int string_array_pos(char *array[], size_t len, const char key[]);
-/* Returns position of the key in the array, -1 if no match found. */
-int string_array_pos_case(char *array[], size_t len, const char key[]);
+/* Returns position of the item in the array, -1 if no match found. */
+int string_array_pos(char *array[], size_t len, const char item[]);
+/* Returns position of the item in the array, -1 if no match found. */
+int string_array_pos_case(char *array[], size_t len, const char item[]);
 /* Frees memory of all array items and from the array itself. */
 void free_string_array(char *array[], size_t len);
 /* Frees memory of all array items, but not from the array itself. */

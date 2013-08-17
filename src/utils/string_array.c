@@ -86,14 +86,14 @@ copy_string_array(char **array, size_t len)
 }
 
 int
-string_array_pos(char *array[], size_t len, const char key[])
+string_array_pos(char *array[], size_t len, const char item[])
 {
 	size_t i = len;
-	if(key != NULL)
+	if(item != NULL)
 	{
 		for(i = 0; i < len; i++)
 		{
-			if(strcmp(array[i], key) == 0)
+			if(strcmp(array[i], item) == 0)
 			{
 				break;
 			}
@@ -103,14 +103,14 @@ string_array_pos(char *array[], size_t len, const char key[])
 }
 
 int
-string_array_pos_case(char *array[], size_t len, const char key[])
+string_array_pos_case(char *array[], size_t len, const char item[])
 {
 	size_t i = len;
-	if(key != NULL)
+	if(item != NULL)
 	{
 		for(i = 0; i < len; i++)
 		{
-			if(strcasecmp(array[i], key) == 0)
+			if(strcasecmp(array[i], item) == 0)
 			{
 				break;
 			}
