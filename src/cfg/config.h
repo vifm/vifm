@@ -151,6 +151,12 @@ int set_trash_dir(const char new_value[]);
 void set_use_screen(int use_screen);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
+/* Saves command to command history. */
+void save_command_history(const char command[]);
+/* Saves pattern to search history. */
+void save_search_history(const char pattern[]);
+/* Saves input to prompt history. */
+void save_prompt_history(const char input[]);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

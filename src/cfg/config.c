@@ -34,9 +34,10 @@
 #include <assert.h> /* assert() */
 #include <errno.h>
 #include <limits.h> /* INT_MIN */
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memset() strncpy() */
+#include <string.h> /* memmove() memset() strncpy() */
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
@@ -93,6 +94,7 @@ static void decrease_history(size_t new_len, size_t removed_count);
 static void reduce_view_history(FileView *view, size_t size);
 static void reallocate_history(size_t new_len);
 static void zero_new_history_items(size_t old_len, size_t delta);
+static void save_into_history(const char item[], hist_t *hist, int len);
 
 void
 init_config(void)
@@ -858,6 +860,38 @@ free_history_items(const history_t history[], size_t len)
 	{
 		free(history[i].dir);
 		free(history[i].file);
+	}
+}
+
+void
+save_command_history(const char command[])
+{
+	if(is_history_command(command))
+	{
+		update_last_cmdline_command(command);
+		save_into_history(command, &cfg.cmd_hist, cfg.history_len);
+	}
+}
+
+void
+save_search_history(const char pattern[])
+{
+	save_into_history(pattern, &cfg.search_hist, cfg.history_len);
+}
+
+void
+save_prompt_history(const char input[])
+{
+	save_into_history(input, &cfg.prompt_hist, cfg.history_len);
+}
+
+/* Adaptor for the hist_add() function, which handles signed history length. */
+static void
+save_into_history(const char item[], hist_t *hist, int len)
+{
+	if(len >= 0)
+	{
+		hist_add(hist, item, len);
 	}
 }
 

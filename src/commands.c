@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strncmp() strncpy() strlen() */
+#include <string.h> /* strcmp() strncmp() strncpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -667,6 +667,13 @@ save_extcmd(const char command[], int type)
 	}
 }
 
+int
+is_history_command(const char command[])
+{
+	/* Don't add :!! or :! to history list. */
+	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;
+}
+
 static void
 post(int id)
 {
@@ -797,74 +804,6 @@ init_commands(void)
 
 	init_bracket_notation();
 	init_variables();
-}
-
-static void
-save_history(const char *line, hist_t *hist, int *len)
-{
-	int x;
-
-	if(*len <= 0)
-		return;
-
-	/* Don't add empty lines */
-	if(line[0] == '\0')
-		return;
-
-	/* Don't add duplicates */
-	for(x = 0; x <= hist->pos; x++)
-	{
-		if(strcmp(hist->items[x], line) == 0)
-		{
-			/* move line to the last position */
-			char *t;
-			if(x == 0)
-				return;
-			t = hist->items[x];
-			memmove(hist->items + 1, hist->items, sizeof(char *)*x);
-			hist->items[0] = t;
-			return;
-		}
-	}
-
-	if(hist->pos + 1 >= *len)
-		hist->pos = x = *len - 1;
-	else
-		x = hist->pos + 1;
-
-	while(x > 0)
-	{
-		(void)replace_string(&hist->items[x], hist->items[x - 1]);
-		x--;
-	}
-
-	(void)replace_string(&hist->items[0], line);
-	hist->pos++;
-	if(hist->pos >= *len)
-		hist->pos = *len - 1;
-}
-
-void
-save_search_history(const char *pattern)
-{
-	save_history(pattern, &cfg.search_hist, &cfg.history_len);
-}
-
-void
-save_command_history(const char *command)
-{
-	/* Don't add :!! or :! to history list. */
-	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
-	{
-		update_last_cmdline_command(command);
-		save_history(command, &cfg.cmd_hist, &cfg.history_len);
-	}
-}
-
-void
-save_prompt_history(const char *line)
-{
-	save_history(line, &cfg.prompt_hist, &cfg.history_len);
 }
 
 static void
