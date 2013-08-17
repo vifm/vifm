@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 11
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 17
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -2200,10 +2200,11 @@ Controls what will be saved in the $VIFM/vifminfo file.
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history
    shistory  - search history (/ and ? commands)
+   phistory  - prompt history
+   fhistory  - filter history (see |vifm-=|)
    dirstack  - directory stack overwrites previous stack, unless stack of
                current session is empty
    registers - registers content
-   phistory  - prompt history
 
                                                *vifm-'vimhelp'*
 vimhelp

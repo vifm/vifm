@@ -20,6 +20,9 @@
 	Added editing command-line using Vim (like command window in Vim).  Thanks
 	to filterfalse.
 
+	Added "fhistory" to 'vifminfo', which controls storing of local filter
+	history.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

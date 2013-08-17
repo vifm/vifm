@@ -76,6 +76,9 @@
 /* Prompt history. */
 #define LINE_TYPE_PROMPT_HIST 'p'
 
+/* Local filter history. */
+#define LINE_TYPE_FILTER_HIST '|'
+
 /* Directory stack. */
 #define LINE_TYPE_DIR_STACK 'S'
 

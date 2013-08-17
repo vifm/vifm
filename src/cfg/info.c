@@ -237,6 +237,11 @@ read_info_file(int reread)
 			inc_history(&cfg.prompt_hist, &cfg.history_len);
 			save_prompt_history(line_val);
 		}
+		else if(type == LINE_TYPE_FILTER_HIST)
+		{
+			inc_history(&cfg.filter_hist, &cfg.history_len);
+			save_filter_history(line_val);
+		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
@@ -476,9 +481,9 @@ update_info_file(const char filename[])
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL;
 	size_t nlhp = 0, nrhp = 0;
-	char **prompt = NULL, **trash = NULL;
+	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
-	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, ntrash = 0;
+	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
 	int i;
 
 	if(cfg.vifm_info == 0)
@@ -660,6 +665,13 @@ update_info_file(const char filename[])
 					nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 				}
 			}
+			else if(type == LINE_TYPE_FILTER_HIST)
+			{
+				if(!hist_contains(&cfg.filter_hist, line_val))
+				{
+					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
+				}
+			}
 			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
@@ -782,6 +794,8 @@ update_info_file(const char filename[])
 			fprintf(fp, ",shistory");
 		if(cfg.vifm_info & VIFMINFO_PHISTORY)
 			fprintf(fp, ",phistory");
+		if(cfg.vifm_info & VIFMINFO_FHISTORY)
+			fprintf(fp, ",fhistory");
 		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 			fprintf(fp, ",dirstack");
 		if(cfg.vifm_info & VIFMINFO_REGISTERS)
@@ -938,6 +952,15 @@ update_info_file(const char filename[])
 			fprintf(fp, "p%s\n", prompt[i]);
 		for(i = cfg.prompt_hist.pos; i >= 0; i--)
 			fprintf(fp, "p%s\n", cfg.prompt_hist.items[i]);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_FHISTORY)
+	{
+		fputs("\n# Local filter history (oldest to newest):\n", fp);
+		for(i = 0; i < nfilter; i++)
+			fprintf(fp, "|%s\n", filter[i]);
+		for(i = cfg.filter_hist.pos; i >= 0; i--)
+			fprintf(fp, "|%s\n", cfg.filter_hist.items[i]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_REGISTERS)

@@ -37,6 +37,7 @@ enum
 	VIFMINFO_DIRSTACK  = 1 << 11,
 	VIFMINFO_REGISTERS = 1 << 12,
 	VIFMINFO_PHISTORY  = 1 << 13,
+	VIFMINFO_FHISTORY  = 1 << 14,
 };
 
 const char * cursorline_enum[3];
