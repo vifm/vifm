@@ -63,11 +63,14 @@ typedef enum
 	HIST_NONE,
 	HIST_GO,
 	HIST_SEARCH
-}HIST;
+}
+HIST;
 
+/* Holds state of the command-line editing mode. */
 typedef struct
 {
 	wchar_t *line;            /* the line reading */
+	wchar_t *initial_line;    /* initial state of the line */
 	int index;                /* index of the current character in cmdline */
 	int curs_pos;             /* position of the cursor in status bar*/
 	int len;                  /* length of the string */
@@ -86,7 +89,9 @@ typedef struct
 	int search_mode;
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
-}line_stats_t;
+	int line_edited;          /* Cache for whether input line changed flag. */
+}
+line_stats_t;
 
 #endif
 
@@ -106,6 +111,7 @@ static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
 static void save_view_port(void);
 static void set_view_port(void);
+static int is_line_edited(void);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
@@ -506,6 +512,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	*mode = CMDLINE_MODE;
 
 	input_stat.line = NULL;
+	input_stat.initial_line = NULL;
 	input_stat.index = wcslen(cmd);
 	input_stat.curs_pos = 0;
 	input_stat.len = input_stat.index;
@@ -517,6 +524,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	input_stat.complete = complete;
 	input_stat.search_mode = 0;
 	input_stat.dot_pos = -1;
+	input_stat.line_edited = 0;
 
 	if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
@@ -550,6 +558,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 			wcscpy(input_stat.line, cmd);
 			input_stat.curs_pos += wcswidth(input_stat.line, (size_t)-1);
 		}
+		input_stat.initial_line = my_wcsdup(input_stat.line);
 	}
 
 	curs_set(TRUE);
@@ -584,8 +593,7 @@ set_view_port(void)
 {
 	if(prev_mode != MENU_MODE)
 	{
-		if(sub_mode == FILTER_SUBMODE &&
-				(input_stat.line != NULL && input_stat.line[0] != L'\0'))
+		if(sub_mode == FILTER_SUBMODE && is_line_edited())
 		{
 			curr_view->top_line = 0;
 			curr_view->list_pos = 0;
@@ -605,6 +613,30 @@ set_view_port(void)
 	{
 		load_menu_pos();
 	}
+}
+
+/* Checks whether line was edited since entering command-line mode. */
+static int
+is_line_edited(void)
+{
+	if(input_stat.line_edited)
+	{
+		return 1;
+	}
+
+	if(input_stat.line == NULL && input_stat.initial_line == NULL)
+	{
+		/* Do nothing, nothing was changed. */
+	}
+	else if(input_stat.line == NULL || input_stat.initial_line == NULL)
+	{
+		input_stat.line_edited = 1;
+	}
+	else
+	{
+		input_stat.line_edited = wcscmp(input_stat.line, input_stat.initial_line);
+	}
+	return input_stat.line_edited;
 }
 
 static void
@@ -631,6 +663,7 @@ leave_cmdline_mode(void)
 	curs_set(FALSE);
 	curr_stats.save_msg = 0;
 	free(input_stat.line);
+	free(input_stat.initial_line);
 	free(input_stat.line_buf);
 	clean_status_bar();
 
@@ -649,6 +682,8 @@ leave_cmdline_mode(void)
 	}
 }
 
+/* Initiates leaving of command-line mode and reverting related changes in other
+ * parts of the interface. */
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -686,6 +721,8 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	else if(sub_mode == FILTER_SUBMODE)
 	{
 		local_filter_cancel(curr_view);
+		curr_view->top_line = input_stat.old_top;
+		curr_view->list_pos = input_stat.old_pos;
 		redraw_current_view();
 	}
 }
