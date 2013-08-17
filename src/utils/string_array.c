@@ -19,6 +19,7 @@
 #include "string_array.h"
 
 #include <stdarg.h>
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,27 +62,17 @@ remove_from_string_array(char **array, size_t len, int pos)
 }
 
 int
-is_in_string_array(char **array, size_t len, const char *key)
+is_in_string_array(char *array[], size_t len, const char item[])
 {
-	int i;
-
-	if(key == NULL)
-		return 0;
-
-	for(i = 0; i < len; i++)
-		if(strcmp(array[i], key) == 0)
-			return 1;
-	return 0;
+	const int pos = string_array_pos(array, len, item);
+	return pos >= 0;
 }
 
 int
-is_in_string_array_case(char **array, size_t len, const char *key)
+is_in_string_array_case(char *array[], size_t len, const char item[])
 {
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcasecmp(array[i], key) == 0)
-			return 1;
-	return 0;
+	const int pos = string_array_pos_case(array, len, item);
+	return pos >= 0;
 }
 
 char **
@@ -97,21 +88,35 @@ copy_string_array(char **array, size_t len)
 int
 string_array_pos(char *array[], size_t len, const char key[])
 {
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcmp(array[i], key) == 0)
-			return i;
-	return -1;
+	size_t i = len;
+	if(key != NULL)
+	{
+		for(i = 0; i < len; i++)
+		{
+			if(strcmp(array[i], key) == 0)
+			{
+				break;
+			}
+		}
+	}
+	return (i < len) ? i : -1;
 }
 
 int
 string_array_pos_case(char *array[], size_t len, const char key[])
 {
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcasecmp(array[i], key) == 0)
-			return i;
-	return -1;
+	size_t i = len;
+	if(key != NULL)
+	{
+		for(i = 0; i < len; i++)
+		{
+			if(strcasecmp(array[i], key) == 0)
+			{
+				break;
+			}
+		}
+	}
+	return (i < len) ? i : -1;
 }
 
 void
