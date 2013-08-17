@@ -28,6 +28,7 @@
 #include "../color_scheme.h"
 #include "../types.h"
 #include "../ui.h"
+#include "hist.h"
 
 #define VIFM_HELP "vifm-help.txt"
 #define SCRIPTS_DIR "scripts"
@@ -72,14 +73,12 @@ typedef struct
 	char *time_format;
 	char *fuse_home; /* This one should be set using set_fuse_home() function. */
 
-	char **search_history;
-	int search_history_num;
-
-	char **cmd_history;
-	int cmd_history_num;
-
-	char **prompt_history;
-	int prompt_history_num;
+	/* History command-line commands. */
+	hist_t cmd_hist;
+	/* History of search patterns. */
+	hist_t search_hist;
+	/* History of prompt input. */
+	hist_t prompt_hist;
 
 	col_scheme_t cs;
 

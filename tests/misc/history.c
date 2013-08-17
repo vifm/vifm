@@ -11,9 +11,9 @@
 
 /* This should be a macro to see what test have failed. */
 #define VALIDATE_HISTORY(i, str) \
-	assert_string_equal(str, cfg.cmd_history[i]); \
-	assert_string_equal(str, cfg.search_history[i]); \
-	assert_string_equal(str, cfg.prompt_history[i]); \
+	assert_string_equal(str, cfg.cmd_hist.items[i]); \
+	assert_string_equal(str, cfg.search_hist.items[i]); \
+	assert_string_equal(str, cfg.prompt_hist.items[i]); \
 	\
 	assert_string_equal(str, lwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, lwin.history[(i) + 1].file); \
@@ -40,9 +40,9 @@ setup(void)
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 
-	cfg.cmd_history_num = -1;
-	cfg.prompt_history_num = -1;
-	cfg.search_history_num = -1;
+	hist_clear(&cfg.cmd_hist);
+	hist_clear(&cfg.prompt_hist);
+	hist_clear(&cfg.search_hist);
 
 	resize_history(INITIAL_SIZE);
 }

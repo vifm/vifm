@@ -608,8 +608,8 @@ static void
 prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 {
 	const int is_cmd = (type == GET_COMMAND);
-	const int history_num = is_cmd ? cfg.cmd_history_num : cfg.search_history_num;
-	char **const history = is_cmd ? cfg.cmd_history : cfg.search_history;
+	const int history_num = is_cmd ? cfg.cmd_hist.pos : cfg.search_hist.pos;
+	char **const history = is_cmd ? cfg.cmd_hist.items : cfg.search_hist.items;
 	int i;
 
 	fprintf(fp, "%s\n", beginning);
@@ -800,7 +800,7 @@ init_commands(void)
 }
 
 static void
-save_history(const char *line, char **hist, int *num, int *len)
+save_history(const char *line, hist_t *hist, int *len)
 {
 	int x;
 
@@ -812,43 +812,42 @@ save_history(const char *line, char **hist, int *num, int *len)
 		return;
 
 	/* Don't add duplicates */
-	for(x = 0; x <= *num; x++)
+	for(x = 0; x <= hist->pos; x++)
 	{
-		if(strcmp(hist[x], line) == 0)
+		if(strcmp(hist->items[x], line) == 0)
 		{
 			/* move line to the last position */
 			char *t;
 			if(x == 0)
 				return;
-			t = hist[x];
-			memmove(hist + 1, hist, sizeof(char *)*x);
-			hist[0] = t;
+			t = hist->items[x];
+			memmove(hist->items + 1, hist->items, sizeof(char *)*x);
+			hist->items[0] = t;
 			return;
 		}
 	}
 
-	if(*num + 1 >= *len)
-		*num = x = *len - 1;
+	if(hist->pos + 1 >= *len)
+		hist->pos = x = *len - 1;
 	else
-		x = *num + 1;
+		x = hist->pos + 1;
 
 	while(x > 0)
 	{
-		(void)replace_string(&hist[x], hist[x - 1]);
+		(void)replace_string(&hist->items[x], hist->items[x - 1]);
 		x--;
 	}
 
-	(void)replace_string(&hist[0], line);
-	(*num)++;
-	if(*num >= *len)
-		*num = *len - 1;
+	(void)replace_string(&hist->items[0], line);
+	hist->pos++;
+	if(hist->pos >= *len)
+		hist->pos = *len - 1;
 }
 
 void
 save_search_history(const char *pattern)
 {
-	save_history(pattern, cfg.search_history, &cfg.search_history_num,
-			&cfg.history_len);
+	save_history(pattern, &cfg.search_hist, &cfg.history_len);
 }
 
 void
@@ -858,16 +857,14 @@ save_command_history(const char *command)
 	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
 	{
 		update_last_cmdline_command(command);
-		save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
-				&cfg.history_len);
+		save_history(command, &cfg.cmd_hist, &cfg.history_len);
 	}
 }
 
 void
 save_prompt_history(const char *line)
 {
-	save_history(line, cfg.prompt_history, &cfg.prompt_history_num,
-			&cfg.history_len);
+	save_history(line, &cfg.prompt_hist, &cfg.history_len);
 }
 
 static void
@@ -2248,9 +2245,9 @@ get_filter_value(const char filter[])
 	}
 	else if(filter[0] == '\0')
 	{
-		if(cfg.search_history_num >= 0)
+		if(!hist_is_empty(&cfg.search_hist))
 		{
-			filter = cfg.search_history[0];
+			filter = cfg.search_hist.items[0];
 		}
 	}
 	return filter;
@@ -3181,14 +3178,10 @@ restart_cmd(const cmd_info_t *cmd_info)
 	rwin.history_num = 0;
 	rwin.history_pos = 0;
 
-	/* command line history */
-	cfg.cmd_history_num = 0;
-
-	/* prompt history */
-	cfg.prompt_history_num = -1;
-
-	/* search history */
-	cfg.search_history_num = -1;
+	/* All kinds of history. */
+	hist_clear(&cfg.search_hist);
+	hist_clear(&cfg.cmd_hist);
+	hist_clear(&cfg.prompt_hist);
 
 	/* directory stack */
 	clean_stack();

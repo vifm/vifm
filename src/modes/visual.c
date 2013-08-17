@@ -770,18 +770,19 @@ static void
 search(key_info_t key_info, int backward)
 {
 	int found;
-	if(cfg.search_history_num < 0)
+
+	if(hist_is_empty(&cfg.search_hist))
+	{
 		return;
+	}
 
 	if(view->matches == 0)
 	{
 		const char *pattern = (view->regexp[0] == '\0') ?
-				cfg.search_history[0] : view->regexp;
+				cfg.search_hist.items[0] : view->regexp;
 		curr_stats.save_msg = find_vpattern(view, pattern, backward);
-	}
-
-	if(view->matches == 0)
 		return;
+	}
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;

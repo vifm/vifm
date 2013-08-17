@@ -28,41 +28,40 @@
 #include "../ui.h"
 #include "menus.h"
 
-static int show_history(FileView *view, int type, int len, char *hist[],
+static int show_history(FileView *view, int type, hist_t *hist,
 		const char title[]);
 
 int
 show_cmdhistory_menu(FileView *view)
 {
-	return show_history(view, CMDHISTORY, cfg.cmd_history_num + 1,
-			cfg.cmd_history, " Command Line History ");
+	return show_history(view, CMDHISTORY, &cfg.cmd_hist,
+			" Command Line History ");
 }
 
 int
 show_prompthistory_menu(FileView *view)
 {
-	return show_history(view, PROMPTHISTORY, cfg.prompt_history_num + 1,
-			cfg.prompt_history, " Prompt History ");
+	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist,
+			" Prompt History ");
 }
 
 int
 show_fsearchhistory_menu(FileView *view)
 {
-	return show_history(view, FSEARCHHISTORY, cfg.search_history_num + 1,
-			cfg.search_history, " Search History ");
+	return show_history(view, FSEARCHHISTORY, &cfg.search_hist,
+			" Search History ");
 }
 
 int
 show_bsearchhistory_menu(FileView *view)
 {
-	return show_history(view, BSEARCHHISTORY, cfg.search_history_num + 1,
-			cfg.search_history, " Search History ");
+	return show_history(view, BSEARCHHISTORY, &cfg.search_hist,
+			" Search History ");
 }
 
 /* Returns non-zero if status bar message should be saved. */
 static int
-show_history(FileView *view, int type, int len, char *hist[],
-		const char title[])
+show_history(FileView *view, int type, hist_t *hist, const char title[])
 {
 	int i;
 	static menu_info m;
@@ -70,9 +69,9 @@ show_history(FileView *view, int type, int len, char *hist[],
 	init_menu_info(&m, type, strdup("History disabled or empty"));
 	m.title = strdup(title);
 
-	for(i = 0; i < len; i++)
+	for(i = 0; i <= hist->pos; i++)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, hist[i]);
+		m.len = add_to_string_array(&m.items, m.len, 1, hist->items[i]);
 	}
 
 	return display_menu(&m, view);

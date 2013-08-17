@@ -21,6 +21,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
+#include <stdlib.h> /* realloc() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -46,7 +47,7 @@
 #include "info_chars.h"
 
 static void get_sort_info(FileView *view, const char line[]);
-static void inc_history(char ***hist, int *num, int *len);
+static void inc_history(hist_t *hist, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
 static void set_view_property(FileView *view, char type, const char value[]);
@@ -223,19 +224,17 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
+			inc_history(&cfg.cmd_hist, &cfg.history_len);
 			save_command_history(line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			inc_history(&cfg.search_history, &cfg.search_history_num,
-					&cfg.history_len);
+			inc_history(&cfg.search_hist, &cfg.history_len);
 			save_search_history(line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
-					&cfg.history_len);
+			inc_history(&cfg.prompt_hist, &cfg.history_len);
 			save_prompt_history(line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
@@ -336,19 +335,19 @@ get_sort_info(FileView *view, const char line[])
 }
 
 static void
-inc_history(char ***hist, int *num, int *len)
+inc_history(hist_t *hist, int *len)
 {
 	void *p;
 
-	if(*num != *len)
+	if(hist->pos != *len)
 		return;
 
-	p = realloc(*hist, sizeof(char*)*(*len + 1));
+	p = realloc(hist->items, sizeof(char*)*(*len + 1));
 	if(p == NULL)
 		return;
 
-	(*len)++;
-	*hist = p;
+	++*len;
+	hist->items = p;
 }
 
 static void
@@ -642,24 +641,24 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_CMDLINE_HIST)
 			{
-				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
-						cfg.cmd_history_num + 1, line_val))
-					continue;
-				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
+				if(!hist_contains(&cfg.cmd_hist, line_val))
+				{
+					ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_SEARCH_HIST)
 			{
-				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
-						cfg.search_history_num + 1, line_val))
-					continue;
-				nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
+				if(!hist_contains(&cfg.search_hist, line_val))
+				{
+					nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_PROMPT_HIST)
 			{
-				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
-						cfg.prompt_history_num + 1, line_val))
-					continue;
-				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
+				if(!hist_contains(&cfg.prompt_hist, line_val))
+				{
+					nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
 			{
@@ -917,10 +916,10 @@ update_info_file(const char filename[])
 	if(cfg.vifm_info & VIFMINFO_CHISTORY)
 	{
 		fputs("\n# Command line history (oldest to newest):\n", fp);
-		for(i = 0; i < MIN(ncmdh, cfg.history_len - cfg.cmd_history_num); i++)
+		for(i = 0; i < MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos); i++)
 			fprintf(fp, ":%s\n", cmdh[i]);
-		for(i = cfg.cmd_history_num; i >= 0; i--)
-			fprintf(fp, ":%s\n", cfg.cmd_history[i]);
+		for(i = cfg.cmd_hist.pos; i >= 0; i--)
+			fprintf(fp, ":%s\n", cfg.cmd_hist.items[i]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_SHISTORY)
@@ -928,8 +927,8 @@ update_info_file(const char filename[])
 		fputs("\n# Search history (oldest to newest):\n", fp);
 		for(i = 0; i < nsrch; i++)
 			fprintf(fp, "/%s\n", srch[i]);
-		for(i = cfg.search_history_num; i >= 0; i--)
-			fprintf(fp, "/%s\n", cfg.search_history[i]);
+		for(i = cfg.search_hist.pos; i >= 0; i--)
+			fprintf(fp, "/%s\n", cfg.search_hist.items[i]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_PHISTORY)
@@ -937,8 +936,8 @@ update_info_file(const char filename[])
 		fputs("\n# Prompt history (oldest to newest):\n", fp);
 		for(i = 0; i < nprompt; i++)
 			fprintf(fp, "p%s\n", prompt[i]);
-		for(i = cfg.prompt_history_num; i >= 0; i--)
-			fprintf(fp, "p%s\n", cfg.prompt_history[i]);
+		for(i = cfg.prompt_hist.pos; i >= 0; i--)
+			fprintf(fp, "p%s\n", cfg.prompt_hist.items[i]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_REGISTERS)

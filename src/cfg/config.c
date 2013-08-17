@@ -57,6 +57,7 @@
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../ui.h"
+#include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
 #define MAX_VIFMRC_LINE_LEN 4*1024
@@ -88,7 +89,7 @@ static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
-static void decrease_history(size_t new_len, size_t delta);
+static void decrease_history(size_t new_len, size_t removed_count);
 static void reduce_view_history(FileView *view, size_t size);
 static void reallocate_history(size_t new_len);
 static void zero_new_history_items(size_t old_len, size_t delta);
@@ -101,14 +102,9 @@ init_config(void)
 	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 
-	cfg.search_history_num = -1;
-	cfg.search_history = calloc(cfg.history_len, sizeof(char *));
-
-	cfg.cmd_history_num = -1;
-	cfg.cmd_history = calloc(cfg.history_len, sizeof(char *));
-
-	cfg.prompt_history_num = -1;
-	cfg.prompt_history = calloc(cfg.history_len, sizeof(char *));
+	(void)hist_init(&cfg.search_hist, cfg.history_len);
+	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_init(&cfg.prompt_hist, cfg.history_len);
 
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
@@ -726,17 +722,9 @@ disable_history(void)
 	free_view_history(&lwin);
 	free_view_history(&rwin);
 
-	free_string_array(cfg.cmd_history, cfg.history_len);
-	cfg.cmd_history = NULL;
-	cfg.cmd_history_num = -1;
-
-	free_string_array(cfg.prompt_history, cfg.history_len);
-	cfg.prompt_history = NULL;
-	cfg.prompt_history_num = -1;
-
-	free_string_array(cfg.search_history, cfg.history_len);
-	cfg.search_history = NULL;
-	cfg.search_history_num = -1;
+	(void)hist_reset(&cfg.search_hist, cfg.history_len);
+	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
 
 	cfg.history_len = 0;
 }
@@ -754,21 +742,17 @@ free_view_history(FileView *view)
 }
 
 /* Reduces amount of memory taken by the history.  The new_len specifies new
- * size of the history, while delta parameter designates number of removed
- * elements. */
+ * size of the history, while removed_count parameter designates number of
+ * removed elements. */
 static void
-decrease_history(size_t new_len, size_t delta)
+decrease_history(size_t new_len, size_t removed_count)
 {
 	reduce_view_history(&lwin, new_len);
 	reduce_view_history(&rwin, new_len);
 
-	free_strings(cfg.cmd_history + new_len, delta);
-	free_strings(cfg.prompt_history + new_len, delta);
-	free_strings(cfg.search_history + new_len, delta);
-
-	cfg.cmd_history_num = MIN(cfg.cmd_history_num, new_len - 1);
-	cfg.prompt_history_num = MIN(cfg.prompt_history_num, new_len - 1);
-	cfg.search_history_num = MIN(cfg.search_history_num, new_len - 1);
+	hist_trunc(&cfg.search_hist, new_len, removed_count);
+	hist_trunc(&cfg.cmd_hist, new_len, removed_count);
+	hist_trunc(&cfg.prompt_hist, new_len, removed_count);
 }
 
 /* Moves items of directory history when size of history becomes smaller. */
@@ -799,9 +783,9 @@ reallocate_history(size_t new_len)
 	lwin.history = realloc(lwin.history, hist_item_len);
 	rwin.history = realloc(rwin.history, hist_item_len);
 
-	cfg.cmd_history = realloc(cfg.cmd_history, str_item_len);
-	cfg.prompt_history = realloc(cfg.prompt_history, str_item_len);
-	cfg.search_history = realloc(cfg.search_history, str_item_len);
+	cfg.cmd_hist.items = realloc(cfg.cmd_hist.items, str_item_len);
+	cfg.prompt_hist.items = realloc(cfg.prompt_hist.items, str_item_len);
+	cfg.search_hist.items = realloc(cfg.search_hist.items, str_item_len);
 }
 
 /* Zeroes new elements of the history.  The old_len specifies old history size,
@@ -815,9 +799,9 @@ zero_new_history_items(size_t old_len, size_t delta)
 	memset(lwin.history + old_len, 0, hist_item_len);
 	memset(rwin.history + old_len, 0, hist_item_len);
 
-	memset(cfg.cmd_history + old_len, 0, str_item_len);
-	memset(cfg.prompt_history + old_len, 0, str_item_len);
-	memset(cfg.search_history + old_len, 0, str_item_len);
+	memset(cfg.cmd_hist.items + old_len, 0, str_item_len);
+	memset(cfg.prompt_hist.items + old_len, 0, str_item_len);
+	memset(cfg.search_hist.items + old_len, 0, str_item_len);
 }
 
 int
