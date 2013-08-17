@@ -23,6 +23,9 @@
 	Added "fhistory" to 'vifminfo', which controls storing of local filter
 	history.
 
+	Added "=" and "filter" values for :history command, to show history of
+	local filter.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

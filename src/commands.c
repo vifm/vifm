@@ -2553,13 +2553,15 @@ history_cmd(const cmd_info_t *cmd_info)
 
 	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
 		return show_cmdhistory_menu(curr_view) != 0;
-	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
-		return show_prompthistory_menu(curr_view) != 0;
 	else if(strcmp(type, "/") == 0 || strncmp("search", type, len) == 0 ||
 			strncmp("fsearch", type, len) == 0)
 		return show_fsearchhistory_menu(curr_view) != 0;
 	else if(strcmp(type, "?") == 0 || strncmp("bsearch", type, len) == 0)
 		return show_bsearchhistory_menu(curr_view) != 0;
+	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
+		return show_prompthistory_menu(curr_view) != 0;
+	else if(strcmp(type, "=") == 0 || strncmp("filter", type, MAX(2, len)) == 0)
+		return show_filterhistory_menu(curr_view) != 0;
 	else if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
 		return show_history_menu(curr_view) != 0;
 	else

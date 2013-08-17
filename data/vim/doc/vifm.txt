@@ -1217,11 +1217,12 @@ of the hierarchy and transparency for all others.
 :his[tory] x
     x can be:
       d[ir]     or .  show directory history.
-      i[nput]   or @  show prompt history (e.g. on one file renaming).
+      c[md]     or :  show command line history.
       s[earch]  or /  show search history and search forward on l key.
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
-      c[md]     or :  show command line history.
+      i[nput]   or @  show prompt history (e.g. on one file renaming).
+      fi[lter]  or =  show filter history (see |vifm-=|).
 
                                                *vifm-:if*
 :if {expr1} - starts conditional block.  Commands are executed until next

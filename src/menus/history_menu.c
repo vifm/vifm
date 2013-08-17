@@ -39,13 +39,6 @@ show_cmdhistory_menu(FileView *view)
 }
 
 int
-show_prompthistory_menu(FileView *view)
-{
-	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist,
-			" Prompt History ");
-}
-
-int
 show_fsearchhistory_menu(FileView *view)
 {
 	return show_history(view, FSEARCHHISTORY, &cfg.search_hist,
@@ -57,6 +50,20 @@ show_bsearchhistory_menu(FileView *view)
 {
 	return show_history(view, BSEARCHHISTORY, &cfg.search_hist,
 			" Search History ");
+}
+
+int
+show_prompthistory_menu(FileView *view)
+{
+	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist,
+			" Prompt History ");
+}
+
+int
+show_filterhistory_menu(FileView *view)
+{
+	return show_history(view, FILTERHISTORY, &cfg.filter_hist,
+			" Filter History ");
 }
 
 /* Returns non-zero if status bar message should be saved. */
