@@ -21,6 +21,7 @@ MOSTLYCLEANFILES = compile_info.c \
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
+	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	\
 	engine/cmds.c engine/cmds.h \

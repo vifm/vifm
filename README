@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2013
 
-Updated: 10 May, 2013
+Updated: 17 Aug, 2013
 Version: 0.7.5
 
 Brief Description
@@ -47,6 +47,7 @@ Package content
     |  |-- cfg/ - code related to configuration
     |  |  |
     |  |  |-- config.c - reads scripts and manages configuration
+    |  |  |-- hist.c - convenient history list abstraction
     |  |  `-- info.c - read and write vifminfo
     |  |
     |  |-- engine/ - the core of vi[m]-like functionality

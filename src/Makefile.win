@@ -13,7 +13,7 @@ LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
 DIRS := ./ cfg/ engine/ menus/ modes/ modes/dialogs/ utils/
 
-cfg := config.c info.c
+cfg := config.c hist.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
