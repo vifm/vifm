@@ -20,6 +20,10 @@
 	Added editing command-line using Vim (like command window in Vim).  Thanks
 	to filterfalse.
 
+	Added local to directory temporary file name filter.
+
+	Added "=" normal mode key, which activates file name filtering.
+
 	Added "fhistory" to 'vifminfo', which controls storing of local filter
 	history.
 

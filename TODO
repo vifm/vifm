@@ -134,6 +134,7 @@ Other (questionable) things.
     Live preview of color schemes.
     "Blow directory" command to replace directory with its content.
     Add file selector based on file extensions.
+    Add zr normal key to remove local file name filter.
 
 Code improvements.
     Write more tests.
