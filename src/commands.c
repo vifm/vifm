@@ -621,6 +621,10 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	{
 		fputs("\" vim: set filetype=vifm-cmdedit syntax=vifm :\n", fp);
 	}
+	else
+	{
+		fputs("\" vim: set filetype=vifm-patedit :\n", fp);
+	}
 }
 
 /* Reads the first line of the file specified by the path.  Returns NULL on

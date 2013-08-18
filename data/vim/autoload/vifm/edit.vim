@@ -1,0 +1,14 @@
+" common functions for vifm command-line editing buffer filetype plugins
+" Maintainer:  xaizek <xaizek@openmailbox.org>
+" Last Change: August 18, 2013
+
+" Prepare buffer
+function! vifm#edit#Init()
+    " Mappings for quick leaving the buffer (behavior similar to Command line
+    " buffer in Vim)
+    nnoremap <buffer> <cr> :copy 0 \| wq<cr>
+    imap <buffer> <cr> <esc><cr>
+
+    " Start buffer editing in insert mode
+    startinsert
+endfunction
