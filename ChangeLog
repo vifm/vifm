@@ -20,6 +20,24 @@
 	Added editing command-line using Vim (like command window in Vim).  Thanks
 	to filterfalse.
 
+	Added Ctrl-G command-line key to start editing command-line in external
+	editor.
+
+	Added q:, q/, q? and q= normal and visual modes keys (except q=, which is
+	defined for normal mode only) to prompt for command-line in external
+	editor.
+
+	Added local to directory temporary file name filter.  Thanks to Alexandre
+	Viau and filterfalse.
+
+	Added "=" normal mode key, which activates file name filtering.
+
+	Added "fhistory" to 'vifminfo', which controls storing of local filter
+	history.
+
+	Added "=" and "filter" values for :history command, to show history of
+	local filter.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

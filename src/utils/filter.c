@@ -100,6 +100,20 @@ filter_set(filter_t *filter, const char value[])
 }
 
 int
+filter_change(filter_t *filter, const char value[], int case_sensitive)
+{
+	if(case_sensitive)
+	{
+		filter->cflags &= ~REG_ICASE;
+	}
+	else
+	{
+		filter->cflags |= REG_ICASE;
+	}
+	return filter_set(filter, value);
+}
+
+int
 filter_append(filter_t *filter, const char value[])
 {
 	if(value[0] == '\0')
@@ -201,7 +215,7 @@ filter_matches(filter_t *filter, const char pattern[])
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 

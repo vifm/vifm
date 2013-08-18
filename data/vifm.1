@@ -1,4 +1,4 @@
-.TH vifm 1 "Jul 31, 2013" "" "Vifm"
+.TH vifm 1 "Aug 18, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -310,6 +310,8 @@ is controlled by the 'dotdirs' option)
 manual filter for file names
 .IP \- 2
 automatic filter for file names
+.IP \- 2
+local filter for file names (see description of the "=" normal mode command)
 .LP
 Performing operations on manual filter for file names automatically does the
 same on automatic one.  The file name filter is separated mainly for
@@ -317,7 +319,7 @@ convenience purpose and to get more deterministic behaviour.
 
 The basic vim folding key bindings are used for filtering files.
 .TP
-Each file list has its own filter.
+Each file list has its own copy of each filter.
 .TP
 Filtered files are not checked in / search or :commands.
 .TP
@@ -349,13 +351,17 @@ Toggle the showing and hiding of dot files.
 Filter all of the dot files.
 .TP
 .BI zO
-Show the filtered files.
+Show the files filtered out by filename filter.
 .TP
 .BI zM
 Filter the files matching the filename filter.
 .TP
 .BI zR
 Remove all filters.
+.TP
+.BI "=regular expression pattern[Return]"
+filter out files that don't match regular expression.  This kind of filter is
+automatically reset when directory is changed.
 .\" ---------------------------------------------------------------------------
 .SH Other Normal Mode Keys
 .\" ---------------------------------------------------------------------------
@@ -374,6 +380,11 @@ direction.  See "Command line editing" section for details.
 .BI q?
 open external editor to prompt for search pattern to be searched in backward
 direction.  See "Command line editing" section for details.
+.TP
+.BI q=
+open external editor to prompt for filter pattern.  See "Command line editing"
+section for details.  Unlike other q{x} commands this one doesn't work in Visual
+mode.
 .TP
 .BI "[count]!! and [count]!<selector>"
 enter command line mode with entered ! command.  Count will modify range.
@@ -1378,7 +1389,7 @@ x can be:
 .br
 d[ir]     or . show directory history.
 .br
-i[nput]   or @ show prompt history (e.g. on one file renaming).
+c[md]     or : show command line history.
 .br
 s[earch]  or / show search history and search forward on l key.
 .br
@@ -1386,7 +1397,9 @@ f[search] or / show search history and search forward on l key.
 .br
 b[search] or ? show search history and search backward on l key.
 .br
-c[md]     or : show command line history.
+i[nput]   or @ show prompt history (e.g. on one file renaming).
+.br
+fi[lter]  or = show filter history (see description of the "=" normal mode command).
 .TP
 .BI ":if {expr1}"
 starts conditional block.  Commands are executed until next matching :else of
@@ -2585,10 +2598,11 @@ Controls what will be saved in the $VIFM/vifminfo file.
    savedirs  \- save last visited directory (needs dhistory)
    chistory  \- command line history
    shistory  \- search history (/ and ? commands)
+   phistory  \- prompt history
+   fhistory  \- filter history (see description of the "=" normal mode command)
    dirstack  \- directory stack overwrites previous stack, unless stack of
                 current session is empty
    registers \- registers content
-   phistory  \- prompt history
 .TP
 .BI vimhelp
 type: boolean

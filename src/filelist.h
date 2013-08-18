@@ -22,7 +22,6 @@
 
 #include <stddef.h> /* size_t ssize_t */
 
-
 #include "utils/test_helpers.h"
 #include "ui.h"
 
@@ -162,6 +161,22 @@ void restore_filename_filter(FileView *view);
 /* Toggles filter inversion state of the view.  Reloads filelist and resets
  * cursor position. */
 void toggle_filter_inversion(FileView *view);
+
+/* Sets regular expression of the local filter for the view.  First call of this
+ * function initiates filter set process, which should be ended by call to
+ * local_filter_apply() or local_filter_cancel(). */
+void local_filter_set(FileView *view, const char filter[]);
+/* Accepts current value of local filter. */
+void local_filter_accept(FileView *view);
+/* Sets local filter non-interactively. */
+void local_filter_apply(FileView *view, const char filter[]);
+/* Cancels local filter set process.  Restores previous values of the filter. */
+void local_filter_cancel(FileView *view);
+/* Removes local filter after storing its current value to make restore
+ * operation possible. */
+void local_filter_remove(FileView *view);
+/* Restores previously removed local filter. */
+void local_filter_restore(FileView *view);
 
 /* Directory history related functions. */
 

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Jul 31
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 18
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -270,6 +270,7 @@ There are three basic file filters:
    appearance is controlled by the |vifm-'dotdirs'| option)
  - manual filter for file names
  - automatic filter for file names
+ - local filter for file names (see |vifm-=|)
 
 Performing operations on manual filter for file names automatically does the
 same on automatic one.  The file name filter is separated mainly for
@@ -290,7 +291,7 @@ zf - add the selected files to the file name filter.
 zm - hide the dot files.
 
                                                *vifm-zO*
-zO - show the hidden file name files.
+zO - show the hidden by file name filter files.
 
                                                *vifm-zM*
 zM - restore all filters.
@@ -298,7 +299,11 @@ zM - restore all filters.
                                                *vifm-zR*
 zR - remove all filters.
 
-Each file list has its own filter.
+                                               *vifm-=*
+=regular expression - filter out files that don't match regular expression.
+    This kind of filter is automatically reset when directory is changed.
+
+Each file list has its own copy of each filter.
 
 Filtered files are not checked in / search or :commands.
 
@@ -334,6 +339,11 @@ q/ - open external editor to prompt for search pattern to be searched
 q? - open external editor to prompt for search pattern to be searched
     in backward direction.  See |vifm-command-line-edit| section for
     details.
+
+                                               *vifm-q=*
+q= - open external editor to prompt for filter pattern.  See
+    |vifm-command-line-edit| section for details.  Unlike other q{x}
+    commands this one doesn't work in Visual mode.
 
                                                *vifm-!!*
 [count]!! and [count]!<selector> - enter command line mode with entered !
@@ -1212,11 +1222,12 @@ of the hierarchy and transparency for all others.
 :his[tory] x
     x can be:
       d[ir]     or .  show directory history.
-      i[nput]   or @  show prompt history (e.g. on one file renaming).
+      c[md]     or :  show command line history.
       s[earch]  or /  show search history and search forward on l key.
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
-      c[md]     or :  show command line history.
+      i[nput]   or @  show prompt history (e.g. on one file renaming).
+      fi[lter]  or =  show filter history (see |vifm-=|).
 
                                                *vifm-:if*
 :if {expr1} - starts conditional block.  Commands are executed until next
@@ -2195,10 +2206,11 @@ Controls what will be saved in the $VIFM/vifminfo file.
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history
    shistory  - search history (/ and ? commands)
+   phistory  - prompt history
+   fhistory  - filter history (see |vifm-=|)
    dirstack  - directory stack overwrites previous stack, unless stack of
                current session is empty
    registers - registers content
-   phistory  - prompt history
 
                                                *vifm-'vimhelp'*
 vimhelp

@@ -21,6 +21,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
+#include <stdlib.h> /* realloc() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -46,13 +47,21 @@
 #include "info_chars.h"
 
 static void get_sort_info(FileView *view, const char line[]);
-static void inc_history(char ***hist, int *num, int *len);
+static void append_to_history(hist_t *hist, void (*saver)(const char[]),
+		const char item[]);
+static void ensure_history_not_full(hist_t *hist, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
 static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static void write_assocs(FILE *fp, const char str[], char mark,
+		assoc_list_t *assocs, int prev_count, char *prev[]);
+static void write_view_history(FILE *fp, FileView *view, const char str[],
+		char mark, int prev_count, char *prev[], int pos[]);
+static void write_history(FILE *fp, const char str[], char mark, int prev_count,
+		char *prev[], const hist_t *hist);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -223,20 +232,19 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
-			save_command_history(line_val);
+			append_to_history(&cfg.cmd_hist, save_command_history, line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			inc_history(&cfg.search_history, &cfg.search_history_num,
-					&cfg.history_len);
-			save_search_history(line_val);
+			append_to_history(&cfg.search_hist, save_search_history, line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
-					&cfg.history_len);
-			save_prompt_history(line_val);
+			append_to_history(&cfg.prompt_hist, save_prompt_history, line_val);
+		}
+		else if(type == LINE_TYPE_FILTER_HIST)
+		{
+			append_to_history(&cfg.filter_hist, save_filter_history, line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -335,20 +343,31 @@ get_sort_info(FileView *view, const char line[])
 	reset_view_sort(view);
 }
 
+/* Appends item to the hist extending the history to fit it if needed. */
 static void
-inc_history(char ***hist, int *num, int *len)
+append_to_history(hist_t *hist, void (*saver)(const char[]),
+		const char item[])
+{
+	ensure_history_not_full(hist, &cfg.history_len);
+	saver(item);
+}
+
+/* Checks that history has at least one more empty slot or extends history by
+ * one more element. */
+static void
+ensure_history_not_full(hist_t *hist, int *len)
 {
 	void *p;
 
-	if(*num != *len)
+	if(hist->pos != *len)
 		return;
 
-	p = realloc(*hist, sizeof(char*)*(*len + 1));
+	p = realloc(hist->items, sizeof(char*)*(*len + 1));
 	if(p == NULL)
 		return;
 
-	(*len)++;
-	*hist = p;
+	++*len;
+	hist->items = p;
 }
 
 static void
@@ -477,9 +496,9 @@ update_info_file(const char filename[])
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL;
 	size_t nlhp = 0, nrhp = 0;
-	char **prompt = NULL, **trash = NULL;
+	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
-	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, ntrash = 0;
+	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
 	int i;
 
 	if(cfg.vifm_info == 0)
@@ -642,24 +661,31 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_CMDLINE_HIST)
 			{
-				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
-						cfg.cmd_history_num + 1, line_val))
-					continue;
-				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
+				if(!hist_contains(&cfg.cmd_hist, line_val))
+				{
+					ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_SEARCH_HIST)
 			{
-				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
-						cfg.search_history_num + 1, line_val))
-					continue;
-				nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
+				if(!hist_contains(&cfg.search_hist, line_val))
+				{
+					nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_PROMPT_HIST)
 			{
-				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
-						cfg.prompt_history_num + 1, line_val))
-					continue;
-				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
+				if(!hist_contains(&cfg.prompt_hist, line_val))
+				{
+					nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
+				}
+			}
+			else if(type == LINE_TYPE_FILTER_HIST)
+			{
+				if(!hist_contains(&cfg.filter_hist, line_val))
+				{
+					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
+				}
 			}
 			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
 			{
@@ -783,6 +809,8 @@ update_info_file(const char filename[])
 			fprintf(fp, ",shistory");
 		if(cfg.vifm_info & VIFMINFO_PHISTORY)
 			fprintf(fp, ",phistory");
+		if(cfg.vifm_info & VIFMINFO_FHISTORY)
+			fprintf(fp, ",fhistory");
 		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 			fprintf(fp, ",dirstack");
 		if(cfg.vifm_info & VIFMINFO_REGISTERS)
@@ -796,60 +824,10 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_FILETYPES)
 	{
-		fputs("\n# Filetypes:\n", fp);
-		for(i = 0; i < filetypes.count; i++)
-		{
-			int j;
-			assoc_t ft_assoc = filetypes.list[i];
-			for(j = 0; j < ft_assoc.records.count; j++)
-			{
-				assoc_record_t ft_record = ft_assoc.records.list[j];
-				/* The type check is to prevent builtin fake associations to be written
-				 * into vifminfo file */
-				if(ft_record.command[0] != '\0' && ft_record.type != ART_BUILTIN)
-				{
-					fprintf(fp, ".%s\n\t{%s}%s\n", ft_assoc.pattern,
-							ft_record.description, ft_record.command);
-				}
-			}
-		}
-		for(i = 0; i < nft; i += 2)
-			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
-
-		fputs("\n# X Filetypes:\n", fp);
-		for(i = 0; i < xfiletypes.count; i++)
-		{
-			int j;
-			assoc_t xft_assoc = xfiletypes.list[i];
-			for(j = 0; j < xft_assoc.records.count; j++)
-			{
-				assoc_record_t xft_record = xft_assoc.records.list[j];
-				if(xft_record.command[0] != '\0')
-				{
-					fprintf(fp, "x%s\n\t{%s}%s\n", xft_assoc.pattern,
-							xft_record.description, xft_record.command);
-				}
-			}
-		}
-		for(i = 0; i < nfx; i += 2)
-			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
-
-		fputs("\n# Fileviewers:\n", fp);
-		for(i = 0; i < fileviewers.count; i++)
-		{
-			int j;
-			assoc_t fv_assoc = fileviewers.list[i];
-			for(j = 0; j < fv_assoc.records.count; j++)
-			{
-				assoc_record_t fv_record = fileviewers.list[i].records.list[j];
-				if(fv_record.command[0] != '\0')
-				{
-					fprintf(fp, ",%s\n\t%s\n", fv_assoc.pattern, fv_record.command);
-				}
-			}
-		}
-		for(i = 0; i < nfv; i += 2)
-			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);
+		write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE , &filetypes, nft, ft);
+		write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx, fx);
+		write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
+				fv);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_COMMANDS)
@@ -863,7 +841,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
 	{
-		int len = init_active_bookmarks(valid_bookmarks);
+		const int len = init_active_bookmarks(valid_bookmarks);
 
 		fputs("\n# Bookmarks:\n", fp);
 		for(i = 0; i < len; i++)
@@ -893,52 +871,32 @@ update_info_file(const char filename[])
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
 	{
-		save_view_history(&lwin, NULL, NULL, -1);
-		fputs("\n# Left window history (oldest to newest):\n", fp);
-		for(i = 0; i < nlh; i += 2)
-			fprintf(fp, "d%s\n\t%s\n%d\n", lh[i], lh[i + 1], lhp[i/2]);
-		for(i = 0; i <= lwin.history_pos; i++)
-			fprintf(fp, "d%s\n\t%s\n%d\n", lwin.history[i].dir, lwin.history[i].file,
-					lwin.history[i].rel_pos);
-		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
-			fprintf(fp, "d\n");
-
-		save_view_history(&rwin, NULL, NULL, -1);
-		fputs("\n# Right window history (oldest to newest):\n", fp);
-		for(i = 0; i < nrh; i += 2)
-			fprintf(fp, "D%s\n\t%s\n%d\n", rh[i], rh[i + 1], rhp[i/2]);
-		for(i = 0; i <= rwin.history_pos; i++)
-			fprintf(fp, "D%s\n\t%s\n%d\n", rwin.history[i].dir, rwin.history[i].file,
-					rwin.history[i].rel_pos);
-		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
-			fprintf(fp, "D\n");
+		write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
+		write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_CHISTORY)
 	{
-		fputs("\n# Command line history (oldest to newest):\n", fp);
-		for(i = 0; i < MIN(ncmdh, cfg.history_len - cfg.cmd_history_num); i++)
-			fprintf(fp, ":%s\n", cmdh[i]);
-		for(i = cfg.cmd_history_num; i >= 0; i--)
-			fprintf(fp, ":%s\n", cfg.cmd_history[i]);
+		write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
+				MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_SHISTORY)
 	{
-		fputs("\n# Search history (oldest to newest):\n", fp);
-		for(i = 0; i < nsrch; i++)
-			fprintf(fp, "/%s\n", srch[i]);
-		for(i = cfg.search_history_num; i >= 0; i--)
-			fprintf(fp, "/%s\n", cfg.search_history[i]);
+		write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
+				&cfg.search_hist);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_PHISTORY)
 	{
-		fputs("\n# Prompt history (oldest to newest):\n", fp);
-		for(i = 0; i < nprompt; i++)
-			fprintf(fp, "p%s\n", prompt[i]);
-		for(i = cfg.prompt_history_num; i >= 0; i--)
-			fprintf(fp, "p%s\n", cfg.prompt_history[i]);
+		write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
+				&cfg.prompt_hist);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_FHISTORY)
+	{
+		write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
+				&cfg.filter_hist);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_REGISTERS)
@@ -1018,6 +976,82 @@ update_info_file(const char filename[])
 	if(dir_stack_was_empty)
 	{
 		clean_stack();
+	}
+}
+
+/* Stores list of associations to the file. */
+static void
+write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
+		int prev_count, char *prev[])
+{
+	int i;
+	fprintf(fp, "\n# %s:\n", str);
+	for(i = 0; i < assocs->count; i++)
+	{
+		int j;
+		assoc_t assoc = assocs->list[i];
+		for(j = 0; j < assoc.records.count; j++)
+		{
+			assoc_record_t ft_record = assoc.records.list[j];
+			/* The type check is to prevent builtin fake associations to be written
+			 * into vifminfo file. */
+			if(ft_record.command[0] != '\0' && ft_record.type != ART_BUILTIN)
+			{
+				if(ft_record.description[0] == '\0')
+				{
+					fprintf(fp, "%c%s\n\t%s\n", mark, assoc.pattern, ft_record.command);
+				}
+				else
+				{
+					fprintf(fp, "%c%s\n\t{%s}%s\n", mark, assoc.pattern,
+							ft_record.description, ft_record.command);
+				}
+			}
+		}
+	}
+	for(i = 0; i < prev_count; i += 2)
+	{
+		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
+	}
+}
+
+/* Stores history of the view to the file. */
+static void
+write_view_history(FILE *fp, FileView *view, const char str[], char mark,
+		int prev_count, char *prev[], int pos[])
+{
+	int i;
+	save_view_history(view, NULL, NULL, -1);
+	fprintf(fp, "\n# %s window history (oldest to newest):\n", str);
+	for(i = 0; i < prev_count; i += 2)
+	{
+		fprintf(fp, "%c%s\n\t%s\n%d\n", mark, prev[i], prev[i + 1], pos[i/2]);
+	}
+	for(i = 0; i <= view->history_pos; i++)
+	{
+		fprintf(fp, "%c%s\n\t%s\n%d\n", mark, view->history[i].dir,
+				view->history[i].file, view->history[i].rel_pos);
+	}
+	if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+	{
+		fprintf(fp, "%c\n", mark);
+	}
+}
+
+/* Stores history items to the file. */
+static void
+write_history(FILE *fp, const char str[], char mark, int prev_count,
+		char *prev[], const hist_t *hist)
+{
+	int i;
+	fprintf(fp, "\n# %s history (oldest to newest):\n", str);
+	for(i = 0; i < prev_count; i++)
+	{
+		fprintf(fp, "%c%s\n", mark, prev[i]);
+	}
+	for(i = hist->pos; i >= 0; i--)
+	{
+		fprintf(fp, "%c%s\n", mark, hist->items[i]);
 	}
 }
 

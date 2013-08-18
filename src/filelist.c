@@ -41,7 +41,7 @@
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* calloc() malloc() */
+#include <stdlib.h> /* calloc() free() malloc() */
 #include <string.h> /* memset() strcat() strcmp() strlen() */
 #include <time.h>
 
@@ -134,6 +134,10 @@ static int is_dir_big(const char path[]);
 static void sort_dir_list(int msg, FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
+static void local_filter_finish(FileView *view);
+static void update_filtering_lists(FileView *view, int add, int clear);
+static int add_dir_entry(dir_entry_t **list, size_t *list_size,
+		const dir_entry_t *entry);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 
@@ -399,6 +403,11 @@ reset_view(FileView *view)
 	reset_filter(&view->name_filter);
 	(void)replace_string(&view->prev_auto_filter, "");
 	reset_filter(&view->auto_filter);
+
+	(void)replace_string(&view->local_filter.prev, "");
+	reset_filter(&view->local_filter.filter);
+	view->local_filter.in_progress = 0;
+	view->local_filter.saved = NULL;
 
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
@@ -1989,6 +1998,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(stroscmp(dir_dup, view->curr_dir) != 0)
 	{
+		filter_clear(&view->local_filter.filter);
 		free_saved_selection(view);
 	}
 	else
@@ -2421,7 +2431,12 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	char name_with_slash[strlen(filename) + 1 + 1];
 	sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
 
-	if(filter_matches(&view->auto_filter, name_with_slash))
+	if(filter_matches(&view->auto_filter, name_with_slash) > 0)
+	{
+		return 0;
+	}
+
+	if(filter_matches(&view->local_filter.filter, name_with_slash) == 0)
 	{
 		return 0;
 	}
@@ -2431,7 +2446,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 1;
 	}
 
-	if(filter_matches(&view->name_filter, name_with_slash))
+	if(filter_matches(&view->name_filter, name_with_slash) > 0)
 	{
 		return !view->invert;
 	}
@@ -2775,8 +2790,8 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	filter_set(&view->name_filter, view->prev_name_filter);
-	filter_set(&view->auto_filter, view->prev_auto_filter);
+	(void)filter_set(&view->name_filter, view->prev_name_filter);
+	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
 }
@@ -2787,6 +2802,155 @@ toggle_filter_inversion(FileView *view)
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
 	move_to_list_pos(view, 0);
+}
+
+void
+local_filter_set(FileView *view, const char filter[])
+{
+	if(!view->local_filter.in_progress)
+	{
+		view->local_filter.in_progress = 1;
+
+		view->local_filter.saved = strdup(view->local_filter.filter.raw);
+
+		if(view->filtered > 0)
+		{
+			filter_clear(&view->local_filter.filter);
+			populate_dir_list(view, 1);
+		}
+		view->local_filter.unfiltered = view->dir_entry;
+		view->local_filter.unfiltered_count = view->list_rows;
+		view->dir_entry = NULL;
+	}
+
+	(void)filter_change(&view->local_filter.filter, filter,
+			!regexp_should_ignore_case(filter));
+
+	update_filtering_lists(view, 1, 0);
+}
+
+void
+local_filter_accept(FileView *view)
+{
+	if(!view->local_filter.in_progress)
+	{
+		return;
+	}
+
+	update_filtering_lists(view, 0, 1);
+
+	local_filter_finish(view);
+
+	save_filter_history(view->local_filter.filter.raw);
+}
+
+void
+local_filter_apply(FileView *view, const char filter[])
+{
+	if(view->local_filter.in_progress)
+	{
+		assert(!view->local_filter.in_progress && "Wrong local filter applying.");
+		return;
+	}
+
+	(void)filter_set(&view->local_filter.filter, filter);
+	save_filter_history(view->local_filter.filter.raw);
+}
+
+void
+local_filter_cancel(FileView *view)
+{
+	if(!view->local_filter.in_progress)
+	{
+		return;
+	}
+
+	(void)filter_set(&view->local_filter.filter, view->local_filter.saved);
+
+	free(view->dir_entry);
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	update_filtering_lists(view, 1, 1);
+	local_filter_finish(view);
+}
+
+static void
+update_filtering_lists(FileView *view, int add, int clear)
+{
+	size_t i;
+	size_t list_size = 0U;
+
+	for(i = 0; i < view->local_filter.unfiltered_count; i++)
+	{
+		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
+		if(filter_matches(&view->local_filter.filter, entry->name) != 0)
+		{
+			if(add)
+			{
+				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+			}
+		}
+		else
+		{
+			if(clear)
+			{
+				free(entry->name);
+			}
+		}
+	}
+
+	if(add)
+	{
+		view->list_rows = list_size;
+		view->filtered = view->local_filter.unfiltered_count - list_size;
+
+		if(list_size == 0U)
+		{
+			add_parent_dir(view);
+		}
+	}
+}
+
+/* Finishes filtering process and frees associated resources. */
+static void
+local_filter_finish(FileView *view)
+{
+	free(view->local_filter.unfiltered);
+	free(view->local_filter.saved);
+	view->local_filter.in_progress = 0;
+}
+
+void
+local_filter_remove(FileView *view)
+{
+	(void)replace_string(&view->local_filter.prev, view->local_filter.filter.raw);
+	filter_clear(&view->local_filter.filter);
+}
+
+void
+local_filter_restore(FileView *view)
+{
+	(void)filter_set(&view->local_filter.filter, view->local_filter.prev);
+	(void)replace_string(&view->local_filter.prev, "");
+}
+
+/* Adds new entry to the *list of length *list_size and updates them
+ * appropriately.  Returns zero on success, otherwise non-zero is returned. */
+static int
+add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
+{
+	dir_entry_t *const new_entry_list = realloc(*list,
+			sizeof(dir_entry_t)*(*list_size + 1));
+	if(new_entry_list == NULL)
+	{
+		return 1;
+	}
+
+	*list = new_entry_list;
+	new_entry_list[*list_size] = *entry;
+	++*list_size;
+	return 0;
 }
 
 void

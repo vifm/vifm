@@ -770,18 +770,19 @@ static void
 search(key_info_t key_info, int backward)
 {
 	int found;
-	if(cfg.search_history_num < 0)
+
+	if(hist_is_empty(&cfg.search_hist))
+	{
 		return;
+	}
 
 	if(view->matches == 0)
 	{
 		const char *pattern = (view->regexp[0] == '\0') ?
-				cfg.search_history[0] : view->regexp;
+				cfg.search_hist.items[0] : view->regexp;
 		curr_stats.save_msg = find_vpattern(view, pattern, backward);
-	}
-
-	if(view->matches == 0)
 		return;
+	}
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -800,7 +801,7 @@ search(key_info_t key_info, int backward)
 	curr_stats.save_msg = 1;
 }
 
-/* Runs external editor to get command-line command. */
+/* Runs external editor to get command-line command and then executes it. */
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -808,14 +809,14 @@ cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 	get_and_execute_command("", 0U, GET_COMMAND);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	activate_search(key_info.count, 0, 1);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 {

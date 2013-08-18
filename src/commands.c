@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strncmp() strncpy() strlen() */
+#include <string.h> /* strcmp() strncmp() strncpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -608,8 +608,8 @@ static void
 prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 {
 	const int is_cmd = (type == GET_COMMAND);
-	const int history_num = is_cmd ? cfg.cmd_history_num : cfg.search_history_num;
-	char **const history = is_cmd ? cfg.cmd_history : cfg.search_history;
+	const int history_num = is_cmd ? cfg.cmd_hist.pos : cfg.search_hist.pos;
+	char **const history = is_cmd ? cfg.cmd_hist.items : cfg.search_hist.items;
 	int i;
 
 	fprintf(fp, "%s\n", beginning);
@@ -620,6 +620,10 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	if(is_cmd)
 	{
 		fputs("\" vim: set filetype=vifm-cmdedit syntax=vifm :\n", fp);
+	}
+	else
+	{
+		fputs("\" vim: set filetype=vifm-patedit :\n", fp);
 	}
 }
 
@@ -665,6 +669,13 @@ save_extcmd(const char command[], int type)
 	{
 		save_search_history(command);
 	}
+}
+
+int
+is_history_command(const char command[])
+{
+	/* Don't add :!! or :! to history list. */
+	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;
 }
 
 static void
@@ -797,77 +808,6 @@ init_commands(void)
 
 	init_bracket_notation();
 	init_variables();
-}
-
-static void
-save_history(const char *line, char **hist, int *num, int *len)
-{
-	int x;
-
-	if(*len <= 0)
-		return;
-
-	/* Don't add empty lines */
-	if(line[0] == '\0')
-		return;
-
-	/* Don't add duplicates */
-	for(x = 0; x <= *num; x++)
-	{
-		if(strcmp(hist[x], line) == 0)
-		{
-			/* move line to the last position */
-			char *t;
-			if(x == 0)
-				return;
-			t = hist[x];
-			memmove(hist + 1, hist, sizeof(char *)*x);
-			hist[0] = t;
-			return;
-		}
-	}
-
-	if(*num + 1 >= *len)
-		*num = x = *len - 1;
-	else
-		x = *num + 1;
-
-	while(x > 0)
-	{
-		(void)replace_string(&hist[x], hist[x - 1]);
-		x--;
-	}
-
-	(void)replace_string(&hist[0], line);
-	(*num)++;
-	if(*num >= *len)
-		*num = *len - 1;
-}
-
-void
-save_search_history(const char *pattern)
-{
-	save_history(pattern, cfg.search_history, &cfg.search_history_num,
-			&cfg.history_len);
-}
-
-void
-save_command_history(const char *command)
-{
-	/* Don't add :!! or :! to history list. */
-	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
-	{
-		update_last_cmdline_command(command);
-		save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
-				&cfg.history_len);
-	}
-}
-
-void
-save_prompt_history(const char *line)
-{
-	save_history(line, cfg.prompt_history, &cfg.prompt_history_num,
-			&cfg.history_len);
 }
 
 static void
@@ -1318,6 +1258,13 @@ exec_command(const char cmd[], FileView *view, int type)
 			return execute_command(view, cmd, 0);
 		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
 			return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
+		if(type == GET_FILTER_PATTERN)
+		{
+			local_filter_apply(view, "");
+			return 0;
+		}
+
+		assert(0 && "Received command execution request of unexpected type.");
 		return 0;
 	}
 
@@ -1343,6 +1290,13 @@ exec_command(const char cmd[], FileView *view, int type)
 	{
 		return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
 	}
+	else if(type == GET_FILTER_PATTERN)
+	{
+		local_filter_apply(view, cmd);
+		return 0;
+	}
+
+	assert(0 && "Received command execution request of unknown/unexpected type.");
 	return 0;
 }
 
@@ -2248,9 +2202,9 @@ get_filter_value(const char filter[])
 	}
 	else if(filter[0] == '\0')
 	{
-		if(cfg.search_history_num >= 0)
+		if(!hist_is_empty(&cfg.search_hist))
 		{
-			filter = cfg.search_history[0];
+			filter = cfg.search_hist.items[0];
 		}
 	}
 	return filter;
@@ -2617,13 +2571,15 @@ history_cmd(const cmd_info_t *cmd_info)
 
 	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
 		return show_cmdhistory_menu(curr_view) != 0;
-	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
-		return show_prompthistory_menu(curr_view) != 0;
 	else if(strcmp(type, "/") == 0 || strncmp("search", type, len) == 0 ||
 			strncmp("fsearch", type, len) == 0)
 		return show_fsearchhistory_menu(curr_view) != 0;
 	else if(strcmp(type, "?") == 0 || strncmp("bsearch", type, len) == 0)
 		return show_bsearchhistory_menu(curr_view) != 0;
+	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
+		return show_prompthistory_menu(curr_view) != 0;
+	else if(strcmp(type, "=") == 0 || strncmp("filter", type, MAX(2, len)) == 0)
+		return show_filterhistory_menu(curr_view) != 0;
 	else if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
 		return show_history_menu(curr_view) != 0;
 	else
@@ -3181,14 +3137,11 @@ restart_cmd(const cmd_info_t *cmd_info)
 	rwin.history_num = 0;
 	rwin.history_pos = 0;
 
-	/* command line history */
-	cfg.cmd_history_num = 0;
-
-	/* prompt history */
-	cfg.prompt_history_num = -1;
-
-	/* search history */
-	cfg.search_history_num = -1;
+	/* All kinds of history. */
+	hist_clear(&cfg.cmd_hist);
+	hist_clear(&cfg.search_hist);
+	hist_clear(&cfg.prompt_hist);
+	hist_clear(&cfg.filter_hist);
 
 	/* directory stack */
 	clean_stack();

@@ -264,6 +264,8 @@ complete_history(const char str[])
 		"bsearch",
 		":",
 		"cmd",
+		"=",
+		"filter",
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }

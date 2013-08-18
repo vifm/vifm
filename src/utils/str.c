@@ -23,11 +23,11 @@
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() mbstowcs() wcstombs() realloc() */
+#include <stdlib.h> /* free() malloc() mbstowcs() wcstombs() realloc() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* vswprintf() wchar_t wcwidth() */
-#include <wctype.h> /* towlower() */
+#include <wctype.h> /* towlower() iswupper() */
 
 #include "macros.h"
 #include "utf8.h"
@@ -406,6 +406,24 @@ extend_string(char str[], const char with[], size_t *len)
 	strncpy(new + *len, with, with_len + 1);
 	*len += with_len;
 	return new;
+}
+
+int
+has_uppercase_letters(const char str[])
+{
+	int has_uppercase = 0;
+	wchar_t *const wstring = to_wide(str);
+	const wchar_t *p = wstring - 1;
+	while(*++p != L'\0')
+	{
+		if(iswupper(*p))
+		{
+			has_uppercase = 1;
+			break;
+		}
+	}
+	free(wstring);
+	return has_uppercase;
 }
 
 #ifdef _WIN32

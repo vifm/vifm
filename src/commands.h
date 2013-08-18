@@ -37,20 +37,22 @@ enum
 	GET_VBSEARCH_PATTERN,
 	GET_VWFSEARCH_PATTERN,
 	GET_VWBSEARCH_PATTERN,
+	GET_FILTER_PATTERN,
 };
 
 void init_commands(void);
 /* Executes one or more commands separated by a bar.  Returns zero on success if
- * no message should be save in the status bar, positive value to save message
+ * no message should be saved in the status bar, positive value to save message
  * on successful execution and negative value in case of error with error
  * message. */
 int exec_commands(const char cmd[], FileView *view, int type);
+/* Executes command of specified kind.  Returns zero on success if no message
+ * should be saved in the status bar, positive value to save message on
+ * successful execution and negative value in case of error with error
+ * message. */
 int exec_command(const char cmd[], FileView *view, int type);
 char * find_last_command(char *cmd);
 void comm_quit(int write_info, int force);
-void save_command_history(const char *command);
-void save_search_history(const char *pattern);
-void save_prompt_history(const char *line);
 void exec_startup_commands(int argc, char **argv);
 /* Expands all environment variables in the str.  Allocates and returns memory
  * that should be freed by the caller. */
@@ -58,6 +60,9 @@ char * cmds_expand_envvars(const char str[]);
 /* Opens the editor with the line at given column, gets entered command and
  * executes it in the way dependent on the type of command. */
 void get_and_execute_command(const char line[], size_t line_pos, int type);
+/* Checks whether command should be stored in command-line history.  Returns
+ * non-zero if it should be stored, otherwise zero is returned. */
+int is_history_command(const char command[]);
 
 #ifdef TEST
 #include "engine/cmds.h"

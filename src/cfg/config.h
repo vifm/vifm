@@ -28,6 +28,7 @@
 #include "../color_scheme.h"
 #include "../types.h"
 #include "../ui.h"
+#include "hist.h"
 
 #define VIFM_HELP "vifm-help.txt"
 #define SCRIPTS_DIR "scripts"
@@ -72,14 +73,14 @@ typedef struct
 	char *time_format;
 	char *fuse_home; /* This one should be set using set_fuse_home() function. */
 
-	char **search_history;
-	int search_history_num;
-
-	char **cmd_history;
-	int cmd_history_num;
-
-	char **prompt_history;
-	int prompt_history_num;
+	/* History command-line commands. */
+	hist_t cmd_hist;
+	/* History of search patterns. */
+	hist_t search_hist;
+	/* History of prompt input. */
+	hist_t prompt_hist;
+	/* History of local filter patterns. */
+	hist_t filter_hist;
 
 	col_scheme_t cs;
 
@@ -152,6 +153,14 @@ int set_trash_dir(const char new_value[]);
 void set_use_screen(int use_screen);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
+/* Saves command to command history. */
+void save_command_history(const char command[]);
+/* Saves pattern to search history. */
+void save_search_history(const char pattern[]);
+/* Saves input to prompt history. */
+void save_prompt_history(const char input[]);
+/* Saves input to local filter history. */
+void save_filter_history(const char pattern[]);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

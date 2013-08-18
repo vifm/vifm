@@ -210,6 +210,7 @@ static const char * vifminfo_set[] = {
 	"dirstack",
 	"registers",
 	"phistory",
+	"fhistory",
 };
 
 static struct
