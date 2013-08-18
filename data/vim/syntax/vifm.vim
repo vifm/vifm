@@ -1,5 +1,5 @@
 " vifm syntax file
-" Maintainer:  xaizek <xaizek@lavabit.com>
+" Maintainer:  xaizek <xaizek@openmailbox.org>
 " Last Change: July 21, 2013
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
