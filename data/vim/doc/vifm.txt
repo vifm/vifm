@@ -1,6 +1,6 @@
 *vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 18
 
- Email for bugs and suggestions: <xaizek@lavabit.com>
+ Email for bugs and suggestions: <xaizek@openmailbox.org>
 
 |vifm-options|            Command line arguments.
 |vifm-general-keys|       General keys, that work in the most of modes.
