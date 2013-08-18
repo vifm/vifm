@@ -1254,6 +1254,13 @@ exec_command(const char cmd[], FileView *view, int type)
 			return execute_command(view, cmd, 0);
 		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
 			return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
+		if(type == GET_FILTER_PATTERN)
+		{
+			local_filter_apply(view, "");
+			return 0;
+		}
+
+		assert(0 && "Received command execution request of unexpected type.");
 		return 0;
 	}
 
@@ -1279,6 +1286,13 @@ exec_command(const char cmd[], FileView *view, int type)
 	{
 		return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
 	}
+	else if(type == GET_FILTER_PATTERN)
+	{
+		local_filter_apply(view, cmd);
+		return 0;
+	}
+
+	assert(0 && "Received command execution request of unknown/unexpected type.");
 	return 0;
 }
 

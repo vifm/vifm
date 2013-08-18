@@ -761,6 +761,8 @@ submode_to_editable_command_type(int sub_mode)
 			return GET_VFSEARCH_PATTERN;
 		case VSEARCH_BACKWARD_SUBMODE:
 			return GET_VBSEARCH_PATTERN;
+		case FILTER_SUBMODE:
+			return GET_FILTER_PATTERN;
 
 		default:
 			return -1;

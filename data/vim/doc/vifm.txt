@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 17
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Aug 18
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -339,6 +339,11 @@ q/ - open external editor to prompt for search pattern to be searched
 q? - open external editor to prompt for search pattern to be searched
     in backward direction.  See |vifm-command-line-edit| section for
     details.
+
+                                               *vifm-q=*
+q= - open external editor to prompt for filter pattern.  See
+    |vifm-command-line-edit| section for details.  Unlike other q{x}
+    commands this one doesn't work in Visual mode.
 
                                                *vifm-!!*
 [count]!! and [count]!<selector> - enter command line mode with entered !

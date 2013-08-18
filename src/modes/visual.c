@@ -801,7 +801,7 @@ search(key_info_t key_info, int backward)
 	curr_stats.save_msg = 1;
 }
 
-/* Runs external editor to get command-line command. */
+/* Runs external editor to get command-line command and then executes it. */
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -809,14 +809,14 @@ cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 	get_and_execute_command("", 0U, GET_COMMAND);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	activate_search(key_info.count, 0, 1);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 {

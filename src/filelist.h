@@ -168,6 +168,8 @@ void toggle_filter_inversion(FileView *view);
 void local_filter_set(FileView *view, const char filter[]);
 /* Accepts current value of local filter. */
 void local_filter_accept(FileView *view);
+/* Sets local filter non-interactively. */
+void local_filter_apply(FileView *view, const char filter[]);
 /* Cancels local filter set process.  Restores previous values of the filter. */
 void local_filter_cancel(FileView *view);
 /* Removes local filter after storing its current value to make restore

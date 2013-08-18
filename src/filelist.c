@@ -2845,6 +2845,19 @@ local_filter_accept(FileView *view)
 }
 
 void
+local_filter_apply(FileView *view, const char filter[])
+{
+	if(view->local_filter.in_progress)
+	{
+		assert(!view->local_filter.in_progress && "Wrong local filter applying.");
+		return;
+	}
+
+	(void)filter_set(&view->local_filter.filter, filter);
+	save_filter_history(view->local_filter.filter.raw);
+}
+
+void
 local_filter_cancel(FileView *view)
 {
 	if(!view->local_filter.in_progress)

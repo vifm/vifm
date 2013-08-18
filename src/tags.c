@@ -481,6 +481,7 @@ const char *tags[] = {
 	"vifm-plugin",
 	"vifm-q/",
 	"vifm-q:",
+	"vifm-q=",
 	"vifm-q?",
 	"vifm-q_%",
 	"vifm-q_/",

@@ -183,6 +183,7 @@ static void cmd_q_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
+static void cmd_q_equals(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
@@ -346,6 +347,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"q:", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_colon}}},
 	{L"q/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_slash}}},
 	{L"q?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_question}}},
+	{L"q=", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_equals}}},
 	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
 	{L"yy", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
@@ -1715,21 +1717,21 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 	load_saving_pos(&rwin, 1);
 }
 
-/* Runs external editor to get command-line command. */
+/* Runs external editor to get command-line command and then executes it. */
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	get_and_execute_command("", 0U, GET_COMMAND);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	activate_search(key_info.count, 0, 1);
 }
 
-/* Runs external editor to get search pattern. */
+/* Runs external editor to get search pattern and then executes it. */
 static void
 cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1752,6 +1754,13 @@ activate_search(int count, int back, int external)
 		const int type = back ? SEARCH_BACKWARD_SUBMODE : SEARCH_FORWARD_SUBMODE;
 		enter_cmdline_mode(type, L"", NULL);
 	}
+}
+
+/* Runs external editor to get local filter pattern and then executes it. */
+static void
+cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
+{
+	get_and_execute_command("", 0U, GET_FILTER_PATTERN);
 }
 
 /* Tag file. */
