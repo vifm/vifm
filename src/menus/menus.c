@@ -90,8 +90,8 @@ clean_menu_position(menu_info *m)
 
 	buf = malloc(x + 2);
 
-	/* TODO: check if this can be false. */
-	if(m->items != NULL && m->items[m->pos] != NULL)
+	/* TODO: check if this can ever be false. */
+	if(m->items[m->pos] != NULL)
 	{
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[m->pos][off] != '\0')
