@@ -486,8 +486,8 @@ start_background_job(const char *cmd, int skip_errors)
 		extern char **environ;
 
 		int nullfd;
-		close(2);                    /* Close stderr */
-		if(dup(error_pipe[1]) == -1) /* Redirect stderr to write end of pipe. */
+		/* Redirect stderr to write end of pipe. */
+		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
 			perror("dup");
 			exit(-1);
