@@ -643,12 +643,16 @@ filename_completion(const char *str, CompletionType type)
 	else
 	{
 		filename_completion_internal(dir, dirname, filename, type);
-		closedir(dir);
 		(void)my_chdir(curr_view->curr_dir);
 	}
 
 	free(filename);
 	free(dirname);
+
+	if(dir != NULL)
+	{
+		closedir(dir);
+	}
 }
 
 static void
