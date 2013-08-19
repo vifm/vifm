@@ -310,9 +310,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	curr_view = &lwin;
-	other_view = &rwin;
-
 	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
 
 	/* Tell file type module what function to use to check availability of

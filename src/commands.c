@@ -681,13 +681,11 @@ is_history_command(const char command[])
 static void
 post(int id)
 {
-	if(id == COM_GOTO)
-		return;
-	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
-		return;
-
-	clean_selected_files(curr_view);
-	load_saving_pos(curr_view, 1);
+	if(id != COM_GOTO && curr_view->selected_files > 0 && need_clean_selection)
+	{
+		clean_selected_files(curr_view);
+		load_saving_pos(curr_view, 1);
+	}
 }
 
 TSTATIC void

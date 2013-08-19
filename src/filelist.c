@@ -168,6 +168,9 @@ init_filelists(void)
 
 	init_view(&rwin);
 	init_view(&lwin);
+
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 /* Print callback for column_view unit. */
