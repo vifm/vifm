@@ -2884,7 +2884,14 @@ update_filtering_lists(FileView *view, int add, int clear)
 	for(i = 0; i < view->local_filter.unfiltered_count; i++)
 	{
 		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
-		if(filter_matches(&view->local_filter.filter, entry->name) != 0)
+		if(is_parent_dir(entry->name))
+		{
+			if(add && parent_dir_is_visible(is_root_dir(view->curr_dir)))
+			{
+				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+			}
+		}
+		else if(filter_matches(&view->local_filter.filter, entry->name) != 0)
 		{
 			if(add)
 			{
