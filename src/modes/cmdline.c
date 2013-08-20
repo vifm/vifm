@@ -738,6 +738,12 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 		char *const mbstr = (input_stat.line == NULL) ?
 			strdup("") : to_multibyte(input_stat.line);
 		leave_cmdline_mode();
+
+		if(sub_mode == FILTER_SUBMODE)
+		{
+			local_filter_cancel(curr_view);
+		}
+
 		get_and_execute_command(mbstr, input_stat.index + 1, type);
 		free(mbstr);
 	}
