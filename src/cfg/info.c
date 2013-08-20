@@ -19,6 +19,7 @@
 
 #include "info.h"
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* realloc() */
@@ -1116,20 +1117,26 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 	fputc('\n', fp);
 }
 
+/* Ensures that the next character of the stream is a digit and reads a number.
+ * Returns read number or -1 in case there is no digit. */
 static int
 read_possible_pos(FILE *f)
 {
-	char c;
-	int result;
+	int pos = -1;
+	const int c = getc(f);
 
-	c = getc(f);
-	ungetc(c, f);
-	if(!isdigit(c) || fscanf(f, "%d\n", &result) != 1)
+	if(c != EOF)
 	{
-		result = -1;
+		ungetc(c, f);
+		if(isdigit(c))
+		{
+			const int nread = fscanf(f, "%d\n", &pos);
+			assert(nread == 1 && "Wrong number of read numbers.");
+			(void)nread;
+		}
 	}
 
-	return result;
+	return pos;
 }
 
 static size_t
