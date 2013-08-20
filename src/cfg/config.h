@@ -38,7 +38,8 @@ typedef enum
 	DD_ROOT_PARENT    = 1 << 0,
 	DD_NONROOT_PARENT = 1 << 1,
 	NUM_DOT_DIRS      =      2
-}DotDirs;
+}
+DotDirs;
 
 /* Indexes for cfg.decorations. */
 enum
@@ -113,7 +114,8 @@ typedef struct
 	char *status_line;
 	int lines; /* Terminal height in lines. */
 	int columns; /* Terminal width in characters. */
-	int dot_dirs; /* Controls displaying of dot directories. */
+	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
+	int dot_dirs;
 	char decorations[FILE_TYPE_COUNT][2]; /* Prefixes and suffixes of files. */
 	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
