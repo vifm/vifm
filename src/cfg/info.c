@@ -66,7 +66,7 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
-static int read_possible_possible_pos(FILE *f);
+static int read_possible_pos(FILE *f);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
 void
@@ -208,7 +208,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
 
-			pos = read_possible_possible_pos(fp);
+			pos = read_possible_pos(fp);
 			get_history(&lwin, reread, line_val, line2, pos);
 		}
 		else if(type == LINE_TYPE_RWIN_HIST)
@@ -227,7 +227,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
 
-			pos = read_possible_possible_pos(fp);
+			pos = read_possible_pos(fp);
 			get_history(&rwin, reread, line_val, line2, pos);
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
@@ -596,7 +596,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&lwin, line_val))
 						continue;
 
-					pos = read_possible_possible_pos(fp);
+					pos = read_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2 > nlhp)
 					{
@@ -618,7 +618,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&rwin, line_val))
 						continue;
 
-					pos = read_possible_possible_pos(fp);
+					pos = read_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2 > nrhp)
 					{
@@ -1117,7 +1117,7 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 }
 
 static int
-read_possible_possible_pos(FILE *f)
+read_possible_pos(FILE *f)
 {
 	char c;
 	int result;
