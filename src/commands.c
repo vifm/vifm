@@ -634,7 +634,7 @@ static char *
 get_file_first_line(const char path[])
 {
 	FILE *const fp = fopen(path, "rt");
-	char *result;
+	char *result = NULL;
 	if(fp != NULL)
 	{
 		result = read_line(fp, NULL);
