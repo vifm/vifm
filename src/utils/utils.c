@@ -185,9 +185,11 @@ run_from_fork(int pipe[2], int err, char *cmd)
 	char *args[4];
 	int nullfd;
 
-	close(err ? STDERR_FILENO : STDOUT_FILENO);
-	if(dup(pipe[1]) == -1) /* Redirect stderr or stdout to write end of pipe. */
+	/* Redirect stderr or stdout to write end of pipe. */
+	if(dup2(pipe[1], err ? STDERR_FILENO : STDOUT_FILENO) == -1)
+	{
 		exit(1);
+	}
 	close(pipe[0]);        /* Close read end of pipe. */
 	close(STDIN_FILENO);
 	close(err ? STDOUT_FILENO : STDERR_FILENO);
