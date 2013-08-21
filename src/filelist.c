@@ -607,11 +607,9 @@ get_viewer_command(const char *viewer)
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *escaped = escape_filename(
-				curr_view->dir_entry[curr_view->list_pos].name, 0);
-		char *t = malloc(strlen(viewer) + 1 + strlen(escaped) + 1);
-		sprintf(t, "%s %s", viewer, escaped);
-		result = t;
+		char *const escaped = escape_filename(get_current_file_name(curr_view), 0);
+		result = format_str("%s %s", viewer, escaped);
+		free(escaped);
 	}
 	else
 	{
