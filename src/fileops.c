@@ -2602,7 +2602,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
 		if(path_exists(dst_full))
 		{
-			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+			(void)perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
 		}
 
 		if(move)
