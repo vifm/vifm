@@ -177,6 +177,11 @@ expand_ruler_macros(FileView *view, const char *format)
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
 				break;
+
+			default:
+				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
+				snprintf(buf, sizeof(buf), "%%%c", c);
+				break;
 		}
 		if(strlen(buf) < width)
 		{
