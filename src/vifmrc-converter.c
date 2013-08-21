@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
+#include <errno.h> /* ENOENT */
 #include <locale.h> /* setlocale() */
 #include <stdio.h>
 #include <stdlib.h>
@@ -489,6 +490,7 @@ main(int argc, char **argv)
 	char colorschemes_file[PATH_MAX], colors_dir[PATH_MAX];
 	int vifm_like;
 	char *vifmrc_arg, *vifminfo_arg;
+	int err;
 
 	(void)setlocale(LC_ALL, "");
 
@@ -570,27 +572,22 @@ main(int argc, char **argv)
 	read_config_file(config_file);
 	read_config_file(vifminfo_file);
 
-	if(access(config_file, F_OK) == 0)
+	(void)unlink(config_file_bak);
+	err = rename(config_file, config_file_bak);
+	if(err != 0 && err != ENOENT)
 	{
-		if(access(config_file_bak, F_OK) == 0)
-			unlink(config_file_bak);
-		if(rename(config_file, config_file_bak) != 0)
-		{
-			fprintf(stderr, "Can't move vifmrc file to make a backup copy "
-					"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
-			exit(1);
-		}
+		fprintf(stderr, "Can't move vifmrc file to make a backup copy "
+				"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
+		exit(1);
 	}
-	if(access(vifminfo_file, F_OK) == 0)
+
+	(void)unlink(vifminfo_file_bak);
+	err = rename(vifminfo_file, vifminfo_file_bak);
+	if(err != 0 && err != ENOENT)
 	{
-		if(access(vifminfo_file_bak, F_OK) == 0)
-			unlink(vifminfo_file_bak);
-		if(rename(vifminfo_file, vifminfo_file_bak) != 0)
-		{
-			fprintf(stderr, "Can't move vifminfo file to make a backup copy "
-					"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
-			exit(1);
-		}
+		fprintf(stderr, "Can't move vifminfo file to make a backup copy "
+				"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
+		exit(1);
 	}
 
 	write_vifmrc(vifmrc_arg, vifm_like);
