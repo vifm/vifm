@@ -120,10 +120,13 @@ void
 log_msg(const char *msg, ...)
 {
 	va_list ap;
-	va_start(ap, msg);
 
 	if(verbosity <= 0 || log == NULL)
+	{
 		return;
+	}
+
+	va_start(ap, msg);
 
 	fprintf(log, "               ");
 	vfprintf(log, msg, ap);
