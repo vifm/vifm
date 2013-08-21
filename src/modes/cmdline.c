@@ -1738,9 +1738,8 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 {
 	void *t;
 	wchar_t *line_ending;
-	int new_len;
 
-	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
+	const size_t new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
 			+ (stat->len - stat->index) + 1;
 
 	line_ending = my_wcsdup(stat->line + stat->index);
@@ -1748,8 +1747,11 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 		return -1;
 
 	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+	{
+		free(line_ending);
 		return -1;
-	stat->line = (wchar_t *) t;
+	}
+	stat->line = t;
 
 	my_swprintf(stat->line + (p - line_mb), new_len,
 			L"%" WPRINTF_MBSTR L"%" WPRINTF_WSTR, completed, line_ending);
