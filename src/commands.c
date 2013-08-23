@@ -68,6 +68,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/int_stack.h"
+#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -1347,7 +1348,14 @@ comm_quit(int write_info, int force)
 
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
-		fclose(fp);
+		if(fp != NULL)
+		{
+			fclose(fp);
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
+		}
 	}
 
 #ifdef _WIN32
