@@ -31,10 +31,11 @@
 #endif
 #endif
 
+#include <errno.h> /* errno */
 #include <signal.h> /* sighandler_t, signal() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS malloc() free() */
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
                        strdup() strncmp() */
 
@@ -84,6 +85,8 @@ static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
+static void store_for_external(const FileView *view, FILE *fp, int argc,
+		char *argv[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -728,10 +731,36 @@ void _gnuc_noreturn
 use_vim_plugin(FileView *view, int argc, char **argv)
 {
 	FILE *fp;
-	char filepath[PATH_MAX] = "";
+	char filepath[PATH_MAX];
+	int exit_code = EXIT_SUCCESS;
 
 	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
 	fp = fopen(filepath, "w");
+	if(fp != NULL)
+	{
+		store_for_external(view, fp, argc, argv);
+		fclose(fp);
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	endwin();
+	exit(exit_code);
+}
+
+/* Writes list of full paths to files into the file pointed to by fp.  argv and
+ * argc parameters can be used to supply list of file names in the currecnt
+ * directory of the view.  Otherwise current selection is used if current files
+ * is selected, if current file is not selected it's the only one that is
+ * stored. */
+static void
+store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
+{
 	if(argc == 0)
 	{
 		if(!view->dir_entry[view->list_pos].selected)
@@ -759,12 +788,6 @@ use_vim_plugin(FileView *view, int argc, char **argv)
 			else
 				fprintf(fp, "%s/%s\n", view->curr_dir, argv[i]);
 	}
-	fclose(fp);
-
-	write_info_file();
-
-	endwin();
-	exit(0);
 }
 
 /*
