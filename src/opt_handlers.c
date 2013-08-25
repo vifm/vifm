@@ -21,6 +21,7 @@
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <math.h> /* abs() */
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
 #include <string.h> /* memcpy() memset() strstr() */
@@ -80,7 +81,10 @@ static void add_options(void);
 static void apropos_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static const char * pick_out_decoration(char classify_item[], FileType *type);
+static int str_to_classify(const char str[],
+		char decorations[FILE_TYPE_COUNT][2]);
+static const char * pick_out_decoration(const char classify_item[],
+		FileType *type);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -560,12 +564,43 @@ autochpos_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
+	char decorations[FILE_TYPE_COUNT][2] = {};
+
+	if(str_to_classify(val.str_val, decorations) == 0)
+	{
+		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
+		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+
+		update_screen(UT_REDRAW);
+	}
+	else
+	{
+		error = 1;
+	}
+
+	init_classify(&val);
+	set_option("classify", val);
+}
+
+/* Fills the decorations array with parsed classification values from the str.
+ * It's assumed that decorations array is zeroed.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+str_to_classify(const char str[], char decorations[FILE_TYPE_COUNT][2])
+{
 	char *saveptr;
 	char *str_copy;
 	char *token;
-	char decorations[FILE_TYPE_COUNT][2] = {};
+	int error_encountered;
 
-	str_copy = strdup(val.str_val);
+	str_copy = strdup(str);
+	if(str_copy == NULL)
+	{
+		/* Not enough memory. */
+		return 1;
+	}
+
+	error_encountered = 0;
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		FileType type;
@@ -573,23 +608,23 @@ classify_handler(OPT_OP op, optval_t val)
 		if(suffix == NULL)
 		{
 			text_buffer_addf("Invalid filetype: %s", token);
-			error = 1;
+			error_encountered = 1;
 		}
 		else
 		{
 			if(strlen(token) > 1)
 			{
 				text_buffer_addf("Invalid prefix: %s", token);
-				error = 1;
+				error_encountered = 1;
 			}
 			if(strlen(suffix) > 1)
 			{
 				text_buffer_addf("Invalid suffix: %s", suffix);
-				error = 1;
+				error_encountered = 1;
 			}
 		}
 
-		if(!error)
+		if(!error_encountered)
 		{
 			decorations[type][DECORATION_PREFIX] = token[0];
 			decorations[type][DECORATION_SUFFIX] = suffix[0];
@@ -597,22 +632,13 @@ classify_handler(OPT_OP op, optval_t val)
 	}
 	free(str_copy);
 
-	if(!error)
-	{
-		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
-		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
-
-		update_screen(UT_REDRAW);
-	}
-
-	init_classify(&val);
-	set_option("classify", val);
+	return error_encountered;
 }
 
 /* Puts '\0' after prefix end and returns pointer to the suffix beginning or
  * NULL on unknown filetype specifier. */
 static const char *
-pick_out_decoration(char classify_item[], FileType *type)
+pick_out_decoration(const char classify_item[], FileType *type)
 {
 	int filetype;
 	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
