@@ -29,8 +29,9 @@
 #include <sys/types.h>
 #include <unistd.h> /* getcwd() */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <errno.h>
+#include <stddef.h> /* ssize_t */
 #include <stdlib.h>
 #include <string.h> /* strlen() strcpy() */
 
@@ -49,7 +50,7 @@ static void clean_at_exit(void);
 static void try_become_a_server(void);
 static int create_socket(void);
 static void close_socket(void);
-static void recieve_data(void);
+static void receive_data(void);
 static void parse_data(const char *buf);
 
 static recieve_callback callback;
@@ -131,7 +132,7 @@ ipc_check(void)
 	maxfd = MAX(sock, 0);
 
 	if(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
-		recieve_data();
+		receive_data();
 }
 
 static void
@@ -203,20 +204,21 @@ close_socket(void)
 	}
 }
 
+/* Receives data from the socket, parses it and executes commands. */
 static void
-recieve_data(void)
+receive_data(void)
 {
 	char buf[8192];
-	int result;
-
-	result = recv(sock, buf, sizeof(buf), 0);
-	if(result == -1)
+	const ssize_t nread = recv(sock, buf, sizeof(buf), 0);
+	if(nread == -1)
 	{
 		LOG_ERROR_MSG("Can't read socket data");
-		return;
 	}
-
-	parse_data(buf);
+	else if(nread != 0)
+	{
+		assert(buf[nread - 1] == '\0' && "Received data should end with \\0.");
+		parse_data(buf);
+	}
 }
 
 static void
