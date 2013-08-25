@@ -23,7 +23,7 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
 #include <stdlib.h> /* free() */
 
@@ -1122,16 +1122,17 @@ find_next(void)
 /* Extracts part of the line replacing all occurrences of horizontal tabulation
  * character with appropriate number of spaces.  The offset specifies beginning
  * of the part in the line.  The max_len parameter designates the maximum number
- * of screen characters to put into the part.  Returns newly allocated
- * string. */
+ * of screen characters to put into the part.  Returns number of processed items
+ * of the line. */
 static int
 get_part(const char line[], int offset, size_t max_len, char part[])
 {
-	char *no_esc = esc_remove(line);
+	char *const no_esc = esc_remove(line);
 	const char *const begin = no_esc + offset;
 	const char *const end = expand_tabulation(begin, max_len, cfg.tab_stop, part);
+	const ptrdiff_t processed_chars = end - no_esc;
 	free(no_esc);
-	return end - no_esc;
+	return processed_chars;
 }
 
 /* Displays the error message in the status bar. */
