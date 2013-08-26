@@ -470,6 +470,8 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->cmd = NULL;
 	cmd_info->sep = ' ';
 	cmd_info->bg = 0;
+	cmd_info->usr1 = 0;
+	cmd_info->usr2 = 0;
 }
 
 /* Returns command id */
