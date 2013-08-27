@@ -33,8 +33,9 @@
 #include <pwd.h> /* getpwent setpwent */
 #endif
 
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strncasecmp() strncmp() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -69,7 +70,7 @@ static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
-static void complete_envvar(const char *str);
+static void complete_envvar(const char str[]);
 static void complete_winrun(const char *str);
 static void exec_completion(const char str[]);
 static void filename_completion_in_dir(const char *path, const char *str,
@@ -441,21 +442,27 @@ complete_highlight_arg(const char *str)
 	return result;
 }
 
+/* Completes name of the environment variables. */
 static void
-complete_envvar(const char *str)
+complete_envvar(const char str[])
 {
 	extern char **environ;
 	char **p = environ;
-	size_t len = strlen(str);
+	const size_t len = strlen(str);
 
 	while(*p != NULL)
 	{
 		if(strncmp(*p, str, len) == 0)
 		{
-			char *equal = strchr(*p, '=');
-			*equal = '\0';
-			add_completion(*p);
-			*equal = '=';
+			char *const equal = strchr(*p, '=');
+			/* Actually equal shouldn't be NULL unless environ content is corrupted.
+			 * But the check below won't harm. */
+			if(equal != NULL)
+			{
+				*equal = '\0';
+				add_completion(*p);
+				*equal = '=';
+			}
 		}
 		p++;
 	}
