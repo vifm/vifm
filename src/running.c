@@ -36,8 +36,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS malloc() free() */
-#include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
-                       strdup() strncmp() */
+#include <string.h> /* strcmp() strerror() strrchr() strcat() strstr() strlen()
+                       strchr() strdup() strncmp() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -595,17 +595,16 @@ follow_link(FileView *view, int follow_dirs)
 {
 	/* TODO: refactor this big function follow_link() */
 
-	struct stat s;
-	int is_dir = 0;
+	struct stat target_stat;
 	char *dir = NULL, *file = NULL, *link_dup;
-	char buf[PATH_MAX];
+	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
-	char *filename;
+	const char *filename;
 
 	filename = view->dir_entry[view->list_pos].name;
-	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, filename);
 
-	if(get_link_target(buf, linkto, sizeof(linkto)) != 0)
+	if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return;
@@ -615,37 +614,43 @@ follow_link(FileView *view, int follow_dirs)
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination. It might be broken");
-		curr_stats.save_msg = 1;
 		return;
 	}
 
 	chosp(linkto);
+
+	if(lstat(linkto, &target_stat) != 0)
+	{
+		show_error_msgf("Link Follow", "Can't stat link destination \"%s\": %s",
+				linkto, strerror(errno));
+		return;
+	}
+
 	link_dup = strdup(linkto);
 
-	lstat(linkto, &s);
-
-	if((s.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
+	if((target_stat.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
 	{
-		is_dir = 1;
-		dir = strdup(view->dir_entry[view->list_pos].name);
+		dir = strdup(filename);
 	}
 	else
 	{
-		int x;
-		for(x = strlen(linkto) - 1; x > 0; x--)
+		int i;
+		for(i = strlen(linkto) - 1; i > 0; i--)
 		{
-			if(linkto[x] == '/')
+			if(linkto[i] == '/')
 			{
-				struct stat s;
-				linkto[x] = '\0';
-				if(lstat(linkto, &s) != 0)
+				struct stat part_stat;
+				linkto[i] = '\0';
+				if(lstat(linkto, &part_stat) != 0)
 				{
 					strcat(linkto, "/");
-					lstat(linkto, &s);
+					if(lstat(linkto, &part_stat) != 0)
+					{
+						continue;
+					}
 				}
-				if((s.st_mode & S_IFMT) == S_IFDIR)
+				if((part_stat.st_mode & S_IFMT) == S_IFDIR)
 				{
-					is_dir = 1;
 					dir = strdup(linkto);
 					break;
 				}
@@ -653,17 +658,17 @@ follow_link(FileView *view, int follow_dirs)
 		}
 		if((file = strrchr(link_dup, '/')) != NULL)
 			file++;
-		else if(is_dir == 0)
+		else if(dir == NULL)
 			file = link_dup;
 	}
-	if(is_dir)
+	if(dir != NULL)
 	{
 		navigate_to(view, dir);
 	}
 	if(file != NULL)
 	{
 		int pos;
-		if((s.st_mode & S_IFMT) == S_IFDIR)
+		if((target_stat.st_mode & S_IFMT) == S_IFDIR)
 		{
 			size_t len;
 
