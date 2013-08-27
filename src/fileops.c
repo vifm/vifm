@@ -37,10 +37,11 @@
 
 #include <assert.h>
 #include <ctype.h> /* isdigit() */
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
-#include <string.h>
+#include <string.h> /* strerror() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -111,6 +112,9 @@ static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int have_read_access(FileView *view);
+static char ** edit_list(size_t count, char **orig, int *nlines,
+		int ignore_change);
+static int edit_file(const char filepath[], int force_changed);
 
 /* returns new value for save_msg */
 int
@@ -660,7 +664,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 	return 1;
 }
 
-/* Returns count of renamed files */
+/* Returns number of renamed files. */
 static int
 perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		char **list)
@@ -737,93 +741,32 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	return renamed;
 }
 
-static char **
-read_list_from_file(int count, char **names, int *nlines, int require_change)
-{
-	char rename_file[PATH_MAX];
-	char **list;
-	FILE *f;
-	int i;
-
-	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
-
-	if((f = fopen(rename_file, "w")) == NULL)
-	{
-		status_bar_error("Can't create temp file");
-		curr_stats.save_msg = 1;
-		return NULL;
-	}
-
-	for(i = 0; i < count; i++)
-		fprintf(f, "%s\n", names[i]);
-
-	fclose(f);
-
-	if(require_change)
-	{
-		struct stat st_before, st_after;
-
-		stat(rename_file, &st_before);
-
-		(void)view_file(rename_file, -1, -1, 0);
-
-		stat(rename_file, &st_after);
-
-		if(memcmp(&st_after.st_mtime, &st_before.st_mtime,
-				sizeof(st_after.st_mtime)) == 0)
-		{
-			unlink(rename_file);
-			curr_stats.save_msg = 0;
-			return NULL;
-		}
-	}
-	else
-	{
-		(void)view_file(rename_file, -1, -1, 0);
-	}
-
-	if((f = fopen(rename_file, "r")) == NULL)
-	{
-		unlink(rename_file);
-		status_bar_error("Can't open temporary file");
-		curr_stats.save_msg = 1;
-		return NULL;
-	}
-
-	list = read_file_lines(f, nlines);
-	fclose(f);
-	unlink(rename_file);
-
-	curr_stats.save_msg = 0;
-	return list;
-}
-
 static void
 rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 {
 	char **list;
-	int nlines, renamed = -1;
+	int nlines;
 
-	if(len == 0)
+	if(len == 0 || (list = edit_list(len, files, &nlines, 0)) == NULL)
 	{
 		status_bar_message("0 files renamed");
-		return;
-	}
-
-	if((list = read_list_from_file(len, files, &nlines, 1)) == NULL)
-	{
-		status_bar_message("0 files renamed");
+		curr_stats.save_msg = 1;
 		return;
 	}
 
 	if(is_name_list_ok(len, nlines, list, files) &&
 			is_rename_list_ok(files, is_dup, len, list))
-		renamed = perform_renaming(view, files, is_dup, len, list);
-	free_string_array(list, nlines);
+	{
+		const int renamed = perform_renaming(view, files, is_dup, len, list);
+		if(renamed >= 0)
+		{
+			status_bar_messagef("%d file%s renamed", renamed,
+					(renamed == 1) ? "" : "s");
+			curr_stats.save_msg = 1;
+		}
+	}
 
-	if(renamed >= 0)
-		status_bar_messagef("%d file%s renamed", renamed,
-				(renamed == 1) ? "" : "s");
+	free_string_array(list, nlines);
 }
 
 static char **
@@ -1711,12 +1654,11 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = read_list_from_file(view->selected_files, view->selected_filelist,
-				&nlines, 1);
+		list = edit_list(view->selected_files, view->selected_filelist, &nlines, 0);
 		if(list == NULL)
 		{
 			free_selected_file_array(view);
-			return curr_stats.save_msg;
+			return 0;
 		}
 	}
 
@@ -2472,10 +2414,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	*from_file = *nlines < 0;
 	if(*from_file)
 	{
-		*list = read_list_from_file(view->selected_files, view->selected_filelist,
-				nlines, 0);
+		*list = edit_list(view->selected_files, view->selected_filelist, nlines, 1);
 		if(*list == NULL)
-			return curr_stats.save_msg;
+		{
+			return -1;
+		}
 	}
 
 	if(*nlines > 0 &&
@@ -2544,6 +2487,72 @@ have_read_access(FileView *view)
 		}
 	}
 	return 1;
+}
+
+/* Prompts user with a file containing lines from orig array of length count and
+ * returns modified list of strings of length *nlines or NULL on error.  The
+ * ignore_change parameter makes function think that file is always changed. */
+static char **
+edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+{
+	char rename_file[PATH_MAX];
+	char **list = NULL;
+
+	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
+
+	if(write_file_of_lines(rename_file, orig, count) != 0)
+	{
+		show_error_msgf("Error Getting List Of Renames",
+				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
+		return NULL;
+	}
+
+	if(edit_file(rename_file, ignore_change) > 0)
+	{
+		list = read_file_of_lines(rename_file, nlines);
+		if(list == NULL)
+		{
+			show_error_msgf("Error Getting List Of Renames",
+					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+		}
+	}
+
+	unlink(rename_file);
+	return list;
+}
+
+/* Edits the filepath in the editor checking whether it was changed.  Returns
+ * negative value on error, zero when no changes were detected and positive
+ * number otherwise. */
+static int
+edit_file(const char filepath[], int force_changed)
+{
+	struct stat st_before, st_after;
+
+	if(force_changed && stat(filepath, &st_before) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" before edit: %s", filepath,
+				strerror(errno));
+		return -1;
+	}
+
+	if(view_file(filepath, -1, -1, 0) != 0)
+	{
+		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
+				filepath);
+		return -1;
+	}
+
+	if(force_changed && stat(filepath, &st_after) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));
+		return -1;
+	}
+
+	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
+			sizeof(st_after.st_mtime)) == 0;
 }
 
 int
