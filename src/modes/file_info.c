@@ -32,7 +32,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strlen() */
 #include <time.h>
 
 #include "../cfg/config.h"
@@ -280,8 +280,10 @@ show_file_type(FileView *view, int curr_y)
 		pclose(pipe);
 
 		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		if(strlen(buf) > x - 9)
+		if(x > 9 && strlen(buf) > x - 9)
+		{
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
+		}
 #else /* #ifdef HAVE_FILE_PROG */
 		if(view->dir_entry[view->list_pos].type == EXECUTABLE)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
