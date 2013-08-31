@@ -814,6 +814,12 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	int i;
 	int *is_dup;
 
+	if(recursive && nlines != 0)
+	{
+		status_bar_error("Recursive rename doesn't accept list of new names");
+		return 1;
+	}
+
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 

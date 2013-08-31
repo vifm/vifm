@@ -3066,21 +3066,12 @@ registers_cmd(const cmd_info_t *cmd_info)
 	return show_register_menu(curr_view, buf) != 0;
 }
 
+/* Renames current selection. */
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->emark && cmd_info->argc != 0)
-	{
-		status_bar_error("No arguments are allowed if you use \"!\"");
-		return 1;
-	}
-
-	if(cmd_info->emark)
-		return rename_files(curr_view, NULL, 0, 1) != 0;
-	else if(cmd_info->argc == 0)
-		return rename_files(curr_view, NULL, 0, 0) != 0;
-	else
-		return rename_files(curr_view, cmd_info->argv, cmd_info->argc, 0) != 0;
+	return rename_files(curr_view, cmd_info->argv, cmd_info->argc,
+			cmd_info->emark) != 0;
 }
 
 static int
