@@ -53,8 +53,12 @@ char * to_multibyte(const wchar_t *s);
 void strtolower(char *s);
 /* Converts all characters of the string s to their lowercase equivalents. */
 void wcstolower(wchar_t s[]);
-void break_at(char *str, char c);
-void break_atr(char *str, char c);
+/* Replaces first occurrence of the c character in the str with '\0'.  Nothing
+ * is done if the character isn't found. */
+void break_at(char str[], char c);
+/* Replaces the last occurrence of the c character in the str with '\0'.
+ * Nothing is done if the character isn't found. */
+void break_atr(char str[], char c);
 char * skip_non_whitespace(const char *str);
 /* Skips consecutive whitespace characters. */
 char * skip_whitespace(const char *str);

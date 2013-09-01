@@ -21,7 +21,7 @@
 
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() wcstombs() realloc() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
@@ -149,22 +149,24 @@ wcstolower(wchar_t s[])
 	}
 }
 
-/* Replaces the first found occurrence of c char in str with '\0' */
 void
-break_at(char *str, char c)
+break_at(char str[], char c)
 {
-	char *p = strchr(str, c);
+	char *const p = strchr(str, c);
 	if(p != NULL)
+	{
 		*p = '\0';
+	}
 }
 
-/* Replaces the last found occurrence of c char in str with '\0' */
 void
-break_atr(char *str, char c)
+break_atr(char str[], char c)
 {
-	char *p = strrchr(str, c);
+	char *const p = strrchr(str, c);
 	if(p != NULL)
+	{
 		*p = '\0';
+	}
 }
 
 /* Skips consecutive non-whitespace characters. */
