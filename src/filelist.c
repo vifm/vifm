@@ -188,7 +188,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
+	checked_wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
 	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
@@ -905,7 +905,7 @@ draw_dir_list(FileView *view)
 	y = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
-		wmove(view->win, y, 1);
+		checked_wmove(view->win, y, 1);
 		wclrtoeol(view->win);
 		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
 		columns_format_line(view->columns, &cdt, col_width);

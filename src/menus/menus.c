@@ -128,7 +128,7 @@ clean_menu_position(menu_info *m)
 	init_pair(DCOLOR_BASE + type, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
-	wmove(menu_win, m->current, 1);
+	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
@@ -381,7 +381,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
-	wmove(menu_win, m->current, 1);
+	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
@@ -596,7 +596,7 @@ draw_menu(menu_info *m)
 
 	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
-	wmove(menu_win, 0, 3);
+	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, m->title);
 	wattroff(menu_win, A_BOLD);
 
@@ -636,7 +636,7 @@ draw_menu(menu_info *m)
 			if(buf[z] == '\t')
 				buf[z] = ' ';
 
-		wmove(menu_win, i, 2);
+		checked_wmove(menu_win, i, 2);
 		if(get_screen_string_length(buf) > win_len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
@@ -841,7 +841,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		y = 6;
 		wresize(error_win, y, x);
 		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		wmove(error_win, 2, (x - z)/2);
+		checked_wmove(error_win, 2, (x - z)/2);
 		wprint(error_win, message);
 	}
 	else
@@ -872,7 +872,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 			mvwin(error_win, (sy - y)/2, (sx - x)/2);
 			wresize(error_win, y, x);
 
-			wmove(error_win, cy++, 1);
+			checked_wmove(error_win, cy++, 1);
 			wprint(error_win, buf);
 		}
 	}

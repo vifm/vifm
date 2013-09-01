@@ -906,7 +906,7 @@ draw_wild_menu(int op)
 	}
 
 	werase(stat_win);
-	wmove(stat_win, 0, 0);
+	checked_wmove(stat_win, 0, 0);
 
 	for(i = last_pos; i < count && len > 0; i++)
 	{
@@ -1565,7 +1565,7 @@ cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 static void
 update_cursor(void)
 {
-	wmove(status_bar, input_stat.curs_pos/line_width,
+	checked_wmove(status_bar, input_stat.curs_pos/line_width,
 			input_stat.curs_pos%line_width);
 }
 

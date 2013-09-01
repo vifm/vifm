@@ -276,6 +276,9 @@ void only(void);
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
 void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
+/* Moves cursor to position specified by coordinates checking result of the
+ * movement. */
+void checked_wmove(WINDOW *win, int y, int x);
 
 #endif /* VIFM__UI_H__ */
 

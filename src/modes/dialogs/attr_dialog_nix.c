@@ -296,7 +296,7 @@ redraw_attr_dialog(void)
 	}
 
 	curs_set(TRUE);
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
@@ -544,7 +544,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 		permnum++;
 	}
 
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
@@ -557,7 +557,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 		permnum--;
 	}
 
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
@@ -627,7 +627,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	}
 	mvwaddch(change_win, curr, col, c);
 
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
@@ -643,7 +643,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		permnum--;
 	}
 
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
@@ -659,7 +659,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 		permnum++;
 	}
 
-	wmove(change_win, curr, col);
+	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
 
