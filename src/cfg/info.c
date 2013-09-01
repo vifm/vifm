@@ -23,7 +23,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* realloc() */
-#include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
+#include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
 #include "../utils/file_streams.h"
@@ -195,41 +195,39 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_HIST)
 		{
-			int pos;
-
 			if(line_val[0] == '\0')
 			{
-				if(reread)
-					continue;
-				if(lwin.history_num > 0)
-					strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
+				if(!reread && lwin.history_num > 0)
+				{
+					copy_str(lwin.curr_dir, sizeof(lwin.curr_dir),
+							lwin.history[lwin.history_pos].dir);
+				}
 				continue;
 			}
 
-			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
-				continue;
-
-			pos = read_possible_pos(fp);
-			get_history(&lwin, reread, line_val, line2, pos);
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+			{
+				const int pos = read_possible_pos(fp);
+				get_history(&lwin, reread, line_val, line2, pos);
+			}
 		}
 		else if(type == LINE_TYPE_RWIN_HIST)
 		{
-			int pos;
-
 			if(line_val[0] == '\0')
 			{
-				if(reread)
-					continue;
-				if(rwin.history_num > 0)
-					strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
+				if(!reread && rwin.history_num > 0)
+				{
+					copy_str(rwin.curr_dir, sizeof(rwin.curr_dir),
+							rwin.history[rwin.history_pos].dir);
+				}
 				continue;
 			}
 
-			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
-				continue;
-
-			pos = read_possible_pos(fp);
-			get_history(&rwin, reread, line_val, line2, pos);
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+			{
+				const int pos = read_possible_pos(fp);
+				get_history(&rwin, reread, line_val, line2, pos);
+			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
@@ -300,7 +298,8 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
-			strcpy(curr_stats.color_scheme, line_val);
+			copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme),
+					line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
