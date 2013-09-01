@@ -502,8 +502,6 @@ mv_file(const char *src, const char *src_path, const char *dst,
 
 	if(tmpfile_num <= 0)
 		op = OP_MOVE;
-	else if(tmpfile_num == -1)
-		op = OP_MOVETMP0;
 	else if(tmpfile_num == 1)
 		op = OP_MOVETMP1;
 	else if(tmpfile_num == 2)

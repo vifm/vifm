@@ -80,7 +80,6 @@ static op_func op_funcs[] = {
 	op_removesl, /* OP_REMOVESL */
 	op_copy,     /* OP_COPY */
 	op_move,     /* OP_MOVE */
-	op_move,     /* OP_MOVETMP0 */
 	op_move,     /* OP_MOVETMP1 */
 	op_move,     /* OP_MOVETMP2 */
 	op_move,     /* OP_MOVETMP3 */

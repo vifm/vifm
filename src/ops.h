@@ -27,7 +27,6 @@ typedef enum
 	OP_REMOVESL, /* cl */
 	OP_COPY,     /* copy and clone */
 	OP_MOVE,     /* move, rename and substitute */
-	OP_MOVETMP0, /* multiple files rename */
 	OP_MOVETMP1, /* multiple files rename */
 	OP_MOVETMP2, /* multiple files rename */
 	OP_MOVETMP3, /* multiple files rename */
