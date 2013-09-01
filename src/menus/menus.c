@@ -33,7 +33,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL size_t */
-#include <string.h> /* memset() strdup() strchr() strlen() */
+#include <string.h> /* memset() strdup() strchr() strlen() strrchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -474,12 +474,16 @@ goto_selected_file(FileView *view, menu_info *m)
 	if(access(file, R_OK) == 0)
 	{
 		int isdir = 0;
+		char *last_slash;
 
 		if(is_dir(file))
 			isdir = 1;
 
-		file = strrchr(dir, '/');
-		*file++ = '\0';
+		if((last_slash = strrchr(dir, '/')) != NULL)
+		{
+			*last_slash = '\0';
+			file = last_slash + 1;
+		}
 
 		if(change_directory(view, dir) >= 0)
 		{
