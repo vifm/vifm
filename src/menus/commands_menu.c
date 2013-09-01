@@ -22,11 +22,12 @@
 #include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strdup() strlen() strchr() */
+#include <string.h> /* strdup() strlen() */
 #include <wchar.h> /* wcscmp() */
 
 #include "../engine/cmds.h"
 #include "../modes/menu.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
@@ -73,7 +74,7 @@ command_khandler(struct menu_info *m, wchar_t keys[])
 	{
 		char cmd_buf[512];
 
-		*strchr(m->items[m->pos], ' ') = '\0';
+		break_at(m->items[m->pos], ' ');
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
 		execute_cmdline_command(cmd_buf);
 
