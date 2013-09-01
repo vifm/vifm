@@ -28,7 +28,7 @@
 #include <unistd.h> /* getcwd, stat, sysconf */
 
 #include <locale.h> /* setlocale */
-#include <string.h> /* strncpy */
+#include <string.h>
 
 #include "cfg/config.h"
 #include "cfg/info.h"

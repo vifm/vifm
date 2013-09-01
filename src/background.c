@@ -136,7 +136,7 @@ check_background_jobs(void)
 			}
 			else if(nread > 0)
 			{
-				error_buf = malloc( (size_t)nread + 1);
+				error_buf = malloc((size_t)nread + 1);
 				if(error_buf == NULL)
 				{
 					show_error_msg("Memory Error", "Unable to allocate enough memory");

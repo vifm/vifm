@@ -428,6 +428,18 @@ has_uppercase_letters(const char str[])
 	return has_uppercase;
 }
 
+void
+copy_str(char dst[], size_t dst_len, const char src[])
+{
+	if(dst_len != 0U)
+	{
+		if(memccpy(dst, src, '\0', dst_len) == NULL)
+		{
+			dst[dst_len - 1] = '\0';
+		}
+	}
+}
+
 #ifdef _WIN32
 char *
 strtok_r(char str[], const char delim[], char *saveptr[])

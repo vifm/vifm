@@ -112,6 +112,10 @@ char * extend_string(char str[], const char with[], size_t *len);
 /* Checks that at least one of Unicode letters (for UTF-8) is an uppercase
  * letter.  Returns non-zero for that case, otherwise zero is returned. */
 int has_uppercase_letters(const char str[]);
+/* Copies characters from the string pointed to by str to piece of memory of
+ * size dst_len pointed to by dst.  Ensures that copied string ends with null
+ * character.  Does nothing for zero dst_len. */
+void copy_str(char dst[], size_t dst_len, const char src[]);
 #ifdef _WIN32
 char * strtok_r(char str[], const char delim[], char *saveptr[]);
 #endif

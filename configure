@@ -6666,6 +6666,13 @@ else
   as_fn_error $? "memcpy() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "memccpy" "ac_cv_func_memccpy"
+if test "x$ac_cv_func_memccpy" = xyes; then :
+
+else
+  as_fn_error $? "memccpy() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "memmove" "ac_cv_func_memmove"
 if test "x$ac_cv_func_memmove" = xyes; then :
 
