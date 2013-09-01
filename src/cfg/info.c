@@ -193,40 +193,21 @@ read_info_file(int reread)
 		{
 			get_sort_info(&rwin, line_val);
 		}
-		else if(type == LINE_TYPE_LWIN_HIST)
+		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
+			FileView *const view = (type == LINE_TYPE_LWIN_HIST ) ? &lwin : &rwin;
 			if(line_val[0] == '\0')
 			{
-				if(!reread && lwin.history_num > 0)
+				if(!reread && view->history_num > 0)
 				{
-					copy_str(lwin.curr_dir, sizeof(lwin.curr_dir),
-							lwin.history[lwin.history_pos].dir);
+					copy_str(view->curr_dir, sizeof(view->curr_dir),
+							view->history[view->history_pos].dir);
 				}
-				continue;
 			}
-
-			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				const int pos = read_possible_pos(fp);
-				get_history(&lwin, reread, line_val, line2, pos);
-			}
-		}
-		else if(type == LINE_TYPE_RWIN_HIST)
-		{
-			if(line_val[0] == '\0')
-			{
-				if(!reread && rwin.history_num > 0)
-				{
-					copy_str(rwin.curr_dir, sizeof(rwin.curr_dir),
-							rwin.history[rwin.history_pos].dir);
-				}
-				continue;
-			}
-
-			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
-			{
-				const int pos = read_possible_pos(fp);
-				get_history(&rwin, reread, line_val, line2, pos);
+				get_history(view, reread, line_val, line2, pos);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
