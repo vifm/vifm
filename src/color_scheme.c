@@ -107,7 +107,6 @@ static const int default_colors[][3] = {
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
-static void color_to_str(int color, size_t buf_len, char str_buf[]);
 static void init_color_scheme(col_scheme_t *cs);
 static void load_color_pairs(int base, const col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
@@ -222,9 +221,7 @@ write_color_scheme_file(void)
 	fclose(fp);
 }
 
-/* Converts color specified by an integer to a string and writes result in a
- * buffer of length buf_len pointed to by str_buf. */
-static void
+void
 color_to_str(int color, size_t buf_len, char str_buf[])
 {
 	if(color == -1)

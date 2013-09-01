@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcmp() strncmp() strncpy() strlen() */
+#include <string.h> /* strcmp() strcpy() strncmp() strncpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -2446,6 +2446,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Composes string representation of highlight group definition. */
 static const char *
 get_group_str(int group, col_attr_t col)
 {
@@ -2453,22 +2454,12 @@ get_group_str(int group, col_attr_t col)
 
 	char fg_buf[16], bg_buf[16];
 
-	if(col.fg == -1)
-		strcpy(fg_buf, "none");
-	else if(col.fg < ARRAY_LEN(COLOR_NAMES))
-		strcpy(fg_buf, COLOR_NAMES[col.fg]);
-	else
-		snprintf(fg_buf, sizeof(fg_buf), "%d", col.fg);
-
-	if(col.bg == -1)
-		strcpy(bg_buf, "none");
-	else if(col.bg < ARRAY_LEN(COLOR_NAMES))
-		strcpy(bg_buf, COLOR_NAMES[col.bg]);
-	else
-		snprintf(bg_buf, sizeof(bg_buf), "%d", col.bg);
+	color_to_str(col.fg, sizeof(fg_buf), fg_buf);
+	color_to_str(col.bg, sizeof(bg_buf), bg_buf);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
 			HI_GROUPS[group], attrs_to_str(col.attr), fg_buf, bg_buf);
+
 	return buf;
 }
 
