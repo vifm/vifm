@@ -20,7 +20,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strcpy() strchr() strlen() strrchr() */
+#include <string.h> /* strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
 #include "utils/fs_limits.h"
@@ -47,19 +47,22 @@ static int apply_s_gs_mod(const char *path, const char *mod,
 static const char * find_nth_chr(const char *str, char c, int n);
 
 const char *
-apply_mods(const char *path, const char *parent, const char *mod, int for_shell)
+apply_mods(const char path[], const char parent[], const char mod[],
+		int for_shell)
 {
 	static char buf[PATH_MAX];
 	int napplied = 0;
 
-	strcpy(buf, path);
+	copy_str(buf, sizeof(buf), path);
 	while(*mod != '\0')
 	{
 		int mod_len;
-		const char *p = apply_mod(buf, parent, mod, &mod_len, for_shell);
+		const char *const p = apply_mod(buf, parent, mod, &mod_len, for_shell);
 		if(p == NULL)
+		{
 			break;
-		strcpy(buf, p);
+		}
+		copy_str(buf, sizeof(buf), p);
 		mod += mod_len;
 		napplied++;
 	}
