@@ -458,7 +458,9 @@ parse_recieved_arguments(char *args[])
 	exec_startup_commands(argc, args);
 
 	if(get_mode() != NORMAL_MODE && get_mode() != VIEW_MODE)
+	{
 		return;
+	}
 
 #ifdef _WIN32
 	SwitchToThisWindow(GetConsoleWindow(), TRUE);
@@ -466,14 +468,20 @@ parse_recieved_arguments(char *args[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if((lcd = view_is_at_path(&lwin, lwin_path)))
+	if((lcd = view_needs_cd(&lwin, lwin_path)))
+	{
 		remote_cd(&lwin, lwin_path, lwin_handle);
+	}
 
-	if((rcd = view_is_at_path(&rwin, rwin_path)))
+	if((rcd = view_needs_cd(&rwin, rwin_path)))
+	{
 		remote_cd(&rwin, rwin_path, rwin_handle);
+	}
 
 	if(lcd && !rcd && curr_view != &lwin)
+	{
 		change_window();
+	}
 
 	clean_status_bar();
 	curr_stats.save_msg = 0;

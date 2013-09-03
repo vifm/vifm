@@ -207,8 +207,9 @@ void check_if_filelists_have_changed(FileView *view);
 int cd_is_possible(const char *path);
 /* Checks whether directory list was loaded at least once since startup. */
 int is_dir_list_loaded(FileView *view);
-/* Returns non-zero if path should be changed. */
-int view_is_at_path(const FileView *view, const char path[]);
+/* Checks whether view can and should be navigated to the path (no need to do
+ * anything if already there).  Returns non-zero if path should be changed. */
+int view_needs_cd(const FileView *view, const char path[]);
 /* Sets view's current directory from path value.
  * Returns non-zero if view's directory was changed. */
 int set_view_path(FileView *view, const char *path);

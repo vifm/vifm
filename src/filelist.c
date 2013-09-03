@@ -3262,7 +3262,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 }
 
 int
-view_is_at_path(const FileView *view, const char path[])
+view_needs_cd(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
 		return 0;
@@ -3272,7 +3272,7 @@ view_is_at_path(const FileView *view, const char path[])
 int
 set_view_path(FileView *view, const char *path)
 {
-	if(!view_is_at_path(view, path))
+	if(!view_needs_cd(view, path))
 		return 0;
 
 	strcpy(view->curr_dir, path);
