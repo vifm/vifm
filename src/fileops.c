@@ -2257,7 +2257,7 @@ str_toupper(char *str)
 }
 
 int
-change_case(FileView *view, int toupper, int count, int *indexes)
+change_case(FileView *view, int toupper, int count, int indexes[])
 {
 	int i;
 	char **dest = NULL;
@@ -2284,7 +2284,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 		struct stat st;
 
 		chosp(view->selected_filelist[i]);
-		strcpy(buf, view->selected_filelist[i]);
+		copy_str(buf, sizeof(buf), view->selected_filelist[i]);
 		if(toupper)
 			str_toupper(buf);
 		else
