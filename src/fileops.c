@@ -41,7 +41,7 @@
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
-#include <string.h> /* strerror() */
+#include <string.h> /* strcpy() strerror() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -960,19 +960,28 @@ add_to_name(const char filename[], int k)
 	int i, n;
 
 	if((b = strpbrk(filename, "0123456789")) == NULL)
-		return strcpy(result, filename);
+	{
+		copy_str(result, sizeof(result), filename);
+		return result;
+	}
 
 	n = 0;
 	while(b[n] == '0' && isdigit(b[n + 1]))
+	{
 		n++;
+	}
 
 	if(b != filename && b[-1] == '-')
+	{
 		b--;
+	}
 
 	i = strtol(b, &e, 10);
 
 	if(i + k < 0)
+	{
 		n++;
+	}
 
 	snprintf(result, b - filename + 1, "%s", filename);
 	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
