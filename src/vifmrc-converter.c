@@ -29,9 +29,9 @@
 #include <ctype.h>
 #include <errno.h> /* ENOENT */
 #include <locale.h> /* setlocale() */
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strcpy() */
 
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
@@ -1328,14 +1328,14 @@ write_color_schemes(const char *colors_dir)
 			if(fg == -1)
 				strcpy(fg_buf, "none");
 			else if(fg < ARRAY_LEN(COLOR_NAMES))
-				strcpy(fg_buf, COLOR_NAMES[fg]);
+				snprintf(fg_buf, sizeof(fg_buf), "%s", COLOR_NAMES[fg]);
 			else
 				snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
 
 			if(bg == -1)
 				strcpy(bg_buf, "none");
 			else if(bg < ARRAY_LEN(COLOR_NAMES))
-				strcpy(bg_buf, COLOR_NAMES[bg]);
+				snprintf(bg_buf, sizeof(bg_buf), "%s", COLOR_NAMES[bg]);
 			else
 				snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
