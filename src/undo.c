@@ -25,7 +25,7 @@
 #include <assert.h> /* assert() */
 #include <stdio.h>
 #include <stdlib.h> /* free() */
-#include <string.h> /* strdup() */
+#include <string.h> /* strcpy() strdup() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -747,7 +747,7 @@ get_op_desc(op_t op)
 			strcpy(buf, "<no operation>");
 			break;
 		case OP_USR:
-			strcpy(buf, (char *)op.data);
+			copy_str(buf, sizeof(buf), (const char *)op.data);
 			break;
 		case OP_REMOVE:
 		case OP_REMOVESL:
