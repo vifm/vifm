@@ -41,7 +41,7 @@ int is_unc_root(const char *path);
 char * escape_filename(const char *string, int quote_percent);
 /* Returns pointer to a statically allocated buffer */
 char * replace_home_part(const char *directory);
-char * expand_tilde(char *path);
+char * expand_tilde(char path[]);
 /* Find beginning of the last component in the path ignoring trailing
  * slashes. */
 char * get_last_path_component(const char path[]);
