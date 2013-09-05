@@ -1348,9 +1348,9 @@ prompt_what_to_do(const char *src_name)
 	enter_prompt_mode(buf, "", put_decide_cb, NULL);
 }
 
-/* Returns 0 on success */
+/* Returns 0 on success, otherwise non-zero is returned. */
 static int
-put_next(const char *dest_name, int override)
+put_next(const char dest_name[], int override)
 {
 	char *filename;
 	struct stat st;
@@ -1374,7 +1374,7 @@ put_next(const char *dest_name, int override)
 	if(dest_name[0] == '\0')
 		dest_name = find_slashr(filename) + 1;
 
-	strcpy(src_buf, filename);
+	copy_str(src_buf, sizeof(src_buf), filename);
 	chosp(src_buf);
 
 	if(from_trash)
@@ -1410,7 +1410,10 @@ put_next(const char *dest_name, int override)
 	{
 		op = OP_SYMLINK;
 		if(put_confirm.link == 2)
-			strcpy(src_buf, make_rel_path(filename, put_confirm.view->curr_dir));
+		{
+			copy_str(src_buf, sizeof(src_buf),
+					make_rel_path(filename, put_confirm.view->curr_dir));
+		}
 	}
 	else if(move)
 	{
