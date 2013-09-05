@@ -41,8 +41,9 @@
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() */
-#include <string.h> /* memset() strcat() strcmp() strlen() */
+#include <string.h> /* memset() strcat() strcmp() strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1416,8 +1417,8 @@ check_view_dir_history(FileView *view)
 				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
 		{
 			char buf[NAME_MAX];
-			strcpy(buf, view->last_dir + strlen(view->curr_dir));
-			strcat(buf, "/");
+			snprintf(buf, sizeof(buf), "%s/",
+					view->last_dir + strlen(view->curr_dir));
 
 			pos = find_file_pos_in_list(view, buf);
 			rel_pos = -1;
