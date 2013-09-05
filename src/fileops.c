@@ -1962,7 +1962,7 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 }
 
 const char *
-substitute_in_name(const char *name, const char *pattern, const char *sub,
+substitute_in_name(const char name[], const char pattern[], const char sub[],
 		int glob)
 {
 	static char buf[PATH_MAX];
@@ -1970,7 +1970,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 	regmatch_t matches[10];
 	const char *dst;
 
-	strcpy(buf, name);
+	copy_str(buf, sizeof(buf), name);
 
 	if(regcomp(&re, pattern, REG_EXTENDED) != 0)
 	{
@@ -1988,7 +1988,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 		dst = gsubstitute_regexp(&re, name, sub, matches);
 	else
 		dst = substitute_regexp(name, sub, matches, NULL);
-	strcpy(buf, dst);
+	copy_str(buf, sizeof(buf), dst);
 
 	regfree(&re);
 	return buf;
