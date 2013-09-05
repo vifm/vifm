@@ -35,7 +35,7 @@
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h> /* strlen() */
+#include <string.h> /* strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1525,7 +1525,7 @@ load_color_scheme(const char name[])
 		show_error_msgf("Color Scheme", "Can't load colorscheme: \"%s\"", name);
 		return 0;
 	}
-	strcpy(cfg.cs.name, name);
+	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
 	check_color_scheme(&cfg.cs);
 
 	update_attributes();
