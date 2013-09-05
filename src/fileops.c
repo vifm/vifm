@@ -1939,13 +1939,15 @@ substitute_regexp(const char *src, const char *sub, const regmatch_t *matches,
 	return buf;
 }
 
+/* Returns pointer to a statically allocated buffer. */
 static const char *
-gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
-		regmatch_t *matches)
+gsubstitute_regexp(regex_t *re, const char src[], const char sub[],
+		regmatch_t matches[])
 {
 	static char buf[NAME_MAX];
 	int off = 0;
-	strcpy(buf, src);
+
+	copy_str(buf, sizeof(buf), src);
 	do
 	{
 		int i;
@@ -1956,11 +1958,13 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 		}
 
 		src = substitute_regexp(buf, sub, matches, &off);
-		strcpy(buf, src);
+		copy_str(buf, sizeof(buf), src);
 
 		if(matches[0].rm_eo == matches[0].rm_so)
 			break;
-	}while(regexec(re, buf + off, 10, matches, 0) == 0);
+	}
+	while(regexec(re, buf + off, 10, matches, 0) == 0);
+
 	return buf;
 }
 
