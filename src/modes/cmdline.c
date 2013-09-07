@@ -25,6 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <string.h>
 #include <wchar.h> /* wcswidth() wcwidth() */
@@ -552,13 +553,14 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		{
 			input_stat.index = 0;
 			input_stat.len = 0;
+			input_stat.initial_line = NULL;
 		}
 		else
 		{
 			wcscpy(input_stat.line, cmd);
 			input_stat.curs_pos += wcswidth(input_stat.line, (size_t)-1);
+			input_stat.initial_line = my_wcsdup(input_stat.line);
 		}
-		input_stat.initial_line = my_wcsdup(input_stat.line);
 	}
 
 	curs_set(TRUE);
