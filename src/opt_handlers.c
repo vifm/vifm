@@ -479,7 +479,8 @@ load_sort_option(FileView *view)
 	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
 
 	optval_t val;
-	char buf[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
+	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
+	size_t opt_val_len = 0U;
 	int j, i;
 
 	/* Ensure that list of sorting keys contains either "name" or "iname". */
@@ -502,15 +503,16 @@ load_sort_option(FileView *view)
 	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
 		const int sort_option = view->sort[i];
-		if(buf[0] != '\0')
-		{
-			strcat(buf, ",");
-		}
-		strcat(buf, (sort_option < 0) ? "-" : "+");
-		strcat(buf, sort_enum[abs(sort_option) - 1]);
+		const char *const comma = (opt_val_len == 0U) ? "" : ",";
+		const char option_mark = (sort_option < 0) ? '-' : '+';
+		const char *const option_name = sort_enum[abs(sort_option) - 1];
+
+		opt_val_len += snprintf(opt_val + opt_val_len,
+				sizeof(opt_val) - opt_val_len, "%s%c%s", comma, option_mark,
+				option_name);
 	}
 
-	val.str_val = buf;
+	val.str_val = opt_val;
 	set_option("sort", val);
 
 	val.enum_item = (view->sort[0] < 0);
