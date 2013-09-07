@@ -23,7 +23,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> /* memset() strcmp() strcpy() */
+#include <string.h> /* memset() strcmp() strcpy() strlen() */
 
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -87,7 +87,7 @@ static void charset_remove(char buffer[], char value);
 static void for_each_char_of(char buffer[], mod_t func, const char input[]);
 static int replace_if_changed(char **current, const char new[]);
 static char * str_add(char old[], const char value[]);
-static void str_remove(char old[], const char value[]);
+static int str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
 static const char * get_value(const opt_t *opt);
@@ -653,13 +653,7 @@ set_remove(opt_t *opt, const char value[])
 	}
 	else if(*value != '\0')
 	{
-		size_t len = 0;
-		if(opt->val.str_val != NULL)
-			len = strlen(opt->val.str_val);
-
-		str_remove(opt->val.str_val, value);
-
-		if(opt->val.str_val != NULL && len != strlen(opt->val.str_val))
+		if(str_remove(opt->val.str_val, value))
 		{
 			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
@@ -832,10 +826,13 @@ str_add(char *old, const char *value)
 }
 
 /* Removes an element from string list or does nothing if there is no such
- * element. */
-static void
+ * element.  Returns non-zero when value of the option is changed, otherwise
+ * zero is returned. */
+static int
 str_remove(char old[], const char value[])
 {
+	int changed = 0;
+
 	while(*old != '\0')
 	{
 		char *p;
@@ -851,6 +848,7 @@ str_remove(char old[], const char value[])
 			else
 				memmove(old, p + 1, strlen(p + 1) + 1);
 			p = old;
+			changed = 1;
 		}
 
 		if(*p == '\0')
@@ -858,6 +856,7 @@ str_remove(char old[], const char value[])
 
 		old = p + 1;
 	}
+	return changed;
 }
 
 /* Returns index of the value in the list of options value, or -1 if value name

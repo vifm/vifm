@@ -37,10 +37,11 @@
 
 #include <assert.h>
 #include <ctype.h> /* isdigit() */
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
-#include <string.h>
+#include <string.h> /* strcpy() strerror() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -111,6 +112,9 @@ static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int have_read_access(FileView *view);
+static char ** edit_list(size_t count, char **orig, int *nlines,
+		int ignore_change);
+static int edit_file(const char filepath[], int force_changed);
 
 /* returns new value for save_msg */
 int
@@ -498,8 +502,6 @@ mv_file(const char *src, const char *src_path, const char *dst,
 
 	if(tmpfile_num <= 0)
 		op = OP_MOVE;
-	else if(tmpfile_num == -1)
-		op = OP_MOVETMP0;
 	else if(tmpfile_num == 1)
 		op = OP_MOVETMP1;
 	else if(tmpfile_num == 2)
@@ -660,7 +662,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 	return 1;
 }
 
-/* Returns count of renamed files */
+/* Returns number of renamed files. */
 static int
 perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		char **list)
@@ -737,93 +739,32 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	return renamed;
 }
 
-static char **
-read_list_from_file(int count, char **names, int *nlines, int require_change)
-{
-	char rename_file[PATH_MAX];
-	char **list;
-	FILE *f;
-	int i;
-
-	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
-
-	if((f = fopen(rename_file, "w")) == NULL)
-	{
-		status_bar_error("Can't create temp file");
-		curr_stats.save_msg = 1;
-		return NULL;
-	}
-
-	for(i = 0; i < count; i++)
-		fprintf(f, "%s\n", names[i]);
-
-	fclose(f);
-
-	if(require_change)
-	{
-		struct stat st_before, st_after;
-
-		stat(rename_file, &st_before);
-
-		(void)view_file(rename_file, -1, -1, 0);
-
-		stat(rename_file, &st_after);
-
-		if(memcmp(&st_after.st_mtime, &st_before.st_mtime,
-				sizeof(st_after.st_mtime)) == 0)
-		{
-			unlink(rename_file);
-			curr_stats.save_msg = 0;
-			return NULL;
-		}
-	}
-	else
-	{
-		(void)view_file(rename_file, -1, -1, 0);
-	}
-
-	if((f = fopen(rename_file, "r")) == NULL)
-	{
-		unlink(rename_file);
-		status_bar_error("Can't open temporary file");
-		curr_stats.save_msg = 1;
-		return NULL;
-	}
-
-	list = read_file_lines(f, nlines);
-	fclose(f);
-	unlink(rename_file);
-
-	curr_stats.save_msg = 0;
-	return list;
-}
-
 static void
 rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 {
 	char **list;
-	int nlines, renamed = -1;
+	int nlines;
 
-	if(len == 0)
+	if(len == 0 || (list = edit_list(len, files, &nlines, 0)) == NULL)
 	{
 		status_bar_message("0 files renamed");
-		return;
-	}
-
-	if((list = read_list_from_file(len, files, &nlines, 1)) == NULL)
-	{
-		status_bar_message("0 files renamed");
+		curr_stats.save_msg = 1;
 		return;
 	}
 
 	if(is_name_list_ok(len, nlines, list, files) &&
 			is_rename_list_ok(files, is_dup, len, list))
-		renamed = perform_renaming(view, files, is_dup, len, list);
-	free_string_array(list, nlines);
+	{
+		const int renamed = perform_renaming(view, files, is_dup, len, list);
+		if(renamed >= 0)
+		{
+			status_bar_messagef("%d file%s renamed", renamed,
+					(renamed == 1) ? "" : "s");
+			curr_stats.save_msg = 1;
+		}
+	}
 
-	if(renamed >= 0)
-		status_bar_messagef("%d file%s renamed", renamed,
-				(renamed == 1) ? "" : "s");
+	free_string_array(list, nlines);
 }
 
 static char **
@@ -870,6 +811,12 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	int len;
 	int i;
 	int *is_dup;
+
+	if(recursive && nlines != 0)
+	{
+		status_bar_error("Recursive rename doesn't accept list of new names");
+		return 1;
+	}
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
@@ -1013,19 +960,28 @@ add_to_name(const char filename[], int k)
 	int i, n;
 
 	if((b = strpbrk(filename, "0123456789")) == NULL)
-		return strcpy(result, filename);
+	{
+		copy_str(result, sizeof(result), filename);
+		return result;
+	}
 
 	n = 0;
 	while(b[n] == '0' && isdigit(b[n + 1]))
+	{
 		n++;
+	}
 
 	if(b != filename && b[-1] == '-')
+	{
 		b--;
+	}
 
 	i = strtol(b, &e, 10);
 
 	if(i + k < 0)
+	{
 		n++;
+	}
 
 	snprintf(result, b - filename + 1, "%s", filename);
 	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
@@ -1392,9 +1348,9 @@ prompt_what_to_do(const char *src_name)
 	enter_prompt_mode(buf, "", put_decide_cb, NULL);
 }
 
-/* Returns 0 on success */
+/* Returns 0 on success, otherwise non-zero is returned. */
 static int
-put_next(const char *dest_name, int override)
+put_next(const char dest_name[], int override)
 {
 	char *filename;
 	struct stat st;
@@ -1418,7 +1374,7 @@ put_next(const char *dest_name, int override)
 	if(dest_name[0] == '\0')
 		dest_name = find_slashr(filename) + 1;
 
-	strcpy(src_buf, filename);
+	copy_str(src_buf, sizeof(src_buf), filename);
 	chosp(src_buf);
 
 	if(from_trash)
@@ -1454,7 +1410,10 @@ put_next(const char *dest_name, int override)
 	{
 		op = OP_SYMLINK;
 		if(put_confirm.link == 2)
-			strcpy(src_buf, make_rel_path(filename, put_confirm.view->curr_dir));
+		{
+			copy_str(src_buf, sizeof(src_buf),
+					make_rel_path(filename, put_confirm.view->curr_dir));
+		}
 	}
 	else if(move)
 	{
@@ -1711,12 +1670,11 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = read_list_from_file(view->selected_files, view->selected_filelist,
-				&nlines, 1);
+		list = edit_list(view->selected_files, view->selected_filelist, &nlines, 0);
 		if(list == NULL)
 		{
 			free_selected_file_array(view);
-			return curr_stats.save_msg;
+			return 0;
 		}
 	}
 
@@ -1981,13 +1939,15 @@ substitute_regexp(const char *src, const char *sub, const regmatch_t *matches,
 	return buf;
 }
 
+/* Returns pointer to a statically allocated buffer. */
 static const char *
-gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
-		regmatch_t *matches)
+gsubstitute_regexp(regex_t *re, const char src[], const char sub[],
+		regmatch_t matches[])
 {
 	static char buf[NAME_MAX];
 	int off = 0;
-	strcpy(buf, src);
+
+	copy_str(buf, sizeof(buf), src);
 	do
 	{
 		int i;
@@ -1998,16 +1958,18 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 		}
 
 		src = substitute_regexp(buf, sub, matches, &off);
-		strcpy(buf, src);
+		copy_str(buf, sizeof(buf), src);
 
 		if(matches[0].rm_eo == matches[0].rm_so)
 			break;
-	}while(regexec(re, buf + off, 10, matches, 0) == 0);
+	}
+	while(regexec(re, buf + off, 10, matches, 0) == 0);
+
 	return buf;
 }
 
 const char *
-substitute_in_name(const char *name, const char *pattern, const char *sub,
+substitute_in_name(const char name[], const char pattern[], const char sub[],
 		int glob)
 {
 	static char buf[PATH_MAX];
@@ -2015,7 +1977,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 	regmatch_t matches[10];
 	const char *dst;
 
-	strcpy(buf, name);
+	copy_str(buf, sizeof(buf), name);
 
 	if(regcomp(&re, pattern, REG_EXTENDED) != 0)
 	{
@@ -2033,7 +1995,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 		dst = gsubstitute_regexp(&re, name, sub, matches);
 	else
 		dst = substitute_regexp(name, sub, matches, NULL);
-	strcpy(buf, dst);
+	copy_str(buf, sizeof(buf), dst);
 
 	regfree(&re);
 	return buf;
@@ -2302,7 +2264,7 @@ str_toupper(char *str)
 }
 
 int
-change_case(FileView *view, int toupper, int count, int *indexes)
+change_case(FileView *view, int toupper, int count, int indexes[])
 {
 	int i;
 	char **dest = NULL;
@@ -2329,7 +2291,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 		struct stat st;
 
 		chosp(view->selected_filelist[i]);
-		strcpy(buf, view->selected_filelist[i]);
+		copy_str(buf, sizeof(buf), view->selected_filelist[i]);
 		if(toupper)
 			str_toupper(buf);
 		else
@@ -2472,10 +2434,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	*from_file = *nlines < 0;
 	if(*from_file)
 	{
-		*list = read_list_from_file(view->selected_files, view->selected_filelist,
-				nlines, 0);
+		*list = edit_list(view->selected_files, view->selected_filelist, nlines, 1);
 		if(*list == NULL)
-			return curr_stats.save_msg;
+		{
+			return -1;
+		}
 	}
 
 	if(*nlines > 0 &&
@@ -2546,6 +2509,72 @@ have_read_access(FileView *view)
 	return 1;
 }
 
+/* Prompts user with a file containing lines from orig array of length count and
+ * returns modified list of strings of length *nlines or NULL on error.  The
+ * ignore_change parameter makes function think that file is always changed. */
+static char **
+edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+{
+	char rename_file[PATH_MAX];
+	char **list = NULL;
+
+	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
+
+	if(write_file_of_lines(rename_file, orig, count) != 0)
+	{
+		show_error_msgf("Error Getting List Of Renames",
+				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
+		return NULL;
+	}
+
+	if(edit_file(rename_file, ignore_change) > 0)
+	{
+		list = read_file_of_lines(rename_file, nlines);
+		if(list == NULL)
+		{
+			show_error_msgf("Error Getting List Of Renames",
+					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+		}
+	}
+
+	unlink(rename_file);
+	return list;
+}
+
+/* Edits the filepath in the editor checking whether it was changed.  Returns
+ * negative value on error, zero when no changes were detected and positive
+ * number otherwise. */
+static int
+edit_file(const char filepath[], int force_changed)
+{
+	struct stat st_before, st_after;
+
+	if(force_changed && stat(filepath, &st_before) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" before edit: %s", filepath,
+				strerror(errno));
+		return -1;
+	}
+
+	if(view_file(filepath, -1, -1, 0) != 0)
+	{
+		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
+				filepath);
+		return -1;
+	}
+
+	if(force_changed && stat(filepath, &st_after) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));
+		return -1;
+	}
+
+	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
+			sizeof(st_after.st_mtime)) == 0;
+}
+
 int
 cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force)
@@ -2602,7 +2631,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
 		if(path_exists(dst_full))
 		{
-			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+			(void)perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
 		}
 
 		if(move)

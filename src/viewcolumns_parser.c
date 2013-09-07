@@ -22,9 +22,10 @@
 #include "column_view.h"
 
 #include <ctype.h> /* isdigit() */
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strchr() strtok_r() */
+#include <string.h> /* strchr() strdup() strtok_r() */
 
 #ifdef _WIN32
 #include "utils/str.h" /* strtok_r() */
@@ -69,6 +70,11 @@ parse_all(map_name_cb cn, const char *str, size_t *len)
 	size_t percents = 0;
 
 	str_copy = strdup(str);
+	if(str_copy == NULL)
+	{
+		return NULL;
+	}
+
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		column_info_t info;

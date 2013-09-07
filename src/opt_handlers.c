@@ -21,6 +21,7 @@
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <math.h> /* abs() */
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
 #include <string.h> /* memcpy() memset() strstr() */
@@ -80,7 +81,10 @@ static void add_options(void);
 static void apropos_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static const char * pick_out_decoration(char classify_item[], FileType *type);
+static int str_to_classify(const char str[],
+		char decorations[FILE_TYPE_COUNT][2]);
+static const char * pick_out_decoration(const char classify_item[],
+		FileType *type);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -475,7 +479,8 @@ load_sort_option(FileView *view)
 	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
 
 	optval_t val;
-	char buf[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
+	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
+	size_t opt_val_len = 0U;
 	int j, i;
 
 	/* Ensure that list of sorting keys contains either "name" or "iname". */
@@ -498,15 +503,16 @@ load_sort_option(FileView *view)
 	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
 		const int sort_option = view->sort[i];
-		if(buf[0] != '\0')
-		{
-			strcat(buf, ",");
-		}
-		strcat(buf, (sort_option < 0) ? "-" : "+");
-		strcat(buf, sort_enum[abs(sort_option) - 1]);
+		const char *const comma = (opt_val_len == 0U) ? "" : ",";
+		const char option_mark = (sort_option < 0) ? '-' : '+';
+		const char *const option_name = sort_enum[abs(sort_option) - 1];
+
+		opt_val_len += snprintf(opt_val + opt_val_len,
+				sizeof(opt_val) - opt_val_len, "%s%c%s", comma, option_mark,
+				option_name);
 	}
 
-	val.str_val = buf;
+	val.str_val = opt_val;
 	set_option("sort", val);
 
 	val.enum_item = (view->sort[0] < 0);
@@ -560,12 +566,43 @@ autochpos_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
+	char decorations[FILE_TYPE_COUNT][2] = {};
+
+	if(str_to_classify(val.str_val, decorations) == 0)
+	{
+		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
+		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+
+		update_screen(UT_REDRAW);
+	}
+	else
+	{
+		error = 1;
+	}
+
+	init_classify(&val);
+	set_option("classify", val);
+}
+
+/* Fills the decorations array with parsed classification values from the str.
+ * It's assumed that decorations array is zeroed.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+str_to_classify(const char str[], char decorations[FILE_TYPE_COUNT][2])
+{
 	char *saveptr;
 	char *str_copy;
 	char *token;
-	char decorations[FILE_TYPE_COUNT][2] = {};
+	int error_encountered;
 
-	str_copy = strdup(val.str_val);
+	str_copy = strdup(str);
+	if(str_copy == NULL)
+	{
+		/* Not enough memory. */
+		return 1;
+	}
+
+	error_encountered = 0;
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		FileType type;
@@ -573,23 +610,23 @@ classify_handler(OPT_OP op, optval_t val)
 		if(suffix == NULL)
 		{
 			text_buffer_addf("Invalid filetype: %s", token);
-			error = 1;
+			error_encountered = 1;
 		}
 		else
 		{
 			if(strlen(token) > 1)
 			{
 				text_buffer_addf("Invalid prefix: %s", token);
-				error = 1;
+				error_encountered = 1;
 			}
 			if(strlen(suffix) > 1)
 			{
 				text_buffer_addf("Invalid suffix: %s", suffix);
-				error = 1;
+				error_encountered = 1;
 			}
 		}
 
-		if(!error)
+		if(!error_encountered)
 		{
 			decorations[type][DECORATION_PREFIX] = token[0];
 			decorations[type][DECORATION_SUFFIX] = suffix[0];
@@ -597,22 +634,13 @@ classify_handler(OPT_OP op, optval_t val)
 	}
 	free(str_copy);
 
-	if(!error)
-	{
-		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
-		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
-
-		update_screen(UT_REDRAW);
-	}
-
-	init_classify(&val);
-	set_option("classify", val);
+	return error_encountered;
 }
 
 /* Puts '\0' after prefix end and returns pointer to the suffix beginning or
  * NULL on unknown filetype specifier. */
 static const char *
-pick_out_decoration(char classify_item[], FileType *type)
+pick_out_decoration(const char classify_item[], FileType *type)
 {
 	int filetype;
 	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)

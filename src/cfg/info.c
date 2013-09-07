@@ -19,10 +19,11 @@
 
 #include "info.h"
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* realloc() */
-#include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
+#include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
 #include "../utils/file_streams.h"
@@ -66,7 +67,7 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
-static int read_possible_possible_pos(FILE *f);
+static int read_possible_pos(FILE *f);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
 void
@@ -192,43 +193,22 @@ read_info_file(int reread)
 		{
 			get_sort_info(&rwin, line_val);
 		}
-		else if(type == LINE_TYPE_LWIN_HIST)
+		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
-			int pos;
-
+			FileView *const view = (type == LINE_TYPE_LWIN_HIST ) ? &lwin : &rwin;
 			if(line_val[0] == '\0')
 			{
-				if(reread)
-					continue;
-				if(lwin.history_num > 0)
-					strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
-				continue;
+				if(!reread && view->history_num > 0)
+				{
+					copy_str(view->curr_dir, sizeof(view->curr_dir),
+							view->history[view->history_pos].dir);
+				}
 			}
-
-			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
-				continue;
-
-			pos = read_possible_possible_pos(fp);
-			get_history(&lwin, reread, line_val, line2, pos);
-		}
-		else if(type == LINE_TYPE_RWIN_HIST)
-		{
-			int pos;
-
-			if(line_val[0] == '\0')
+			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				if(reread)
-					continue;
-				if(rwin.history_num > 0)
-					strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
-				continue;
+				const int pos = read_possible_pos(fp);
+				get_history(view, reread, line_val, line2, pos);
 			}
-
-			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
-				continue;
-
-			pos = read_possible_possible_pos(fp);
-			get_history(&rwin, reread, line_val, line2, pos);
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
@@ -299,7 +279,8 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
-			strcpy(curr_stats.color_scheme, line_val);
+			copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme),
+					line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
@@ -596,7 +577,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&lwin, line_val))
 						continue;
 
-					pos = read_possible_possible_pos(fp);
+					pos = read_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2 > nlhp)
 					{
@@ -618,7 +599,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&rwin, line_val))
 						continue;
 
-					pos = read_possible_possible_pos(fp);
+					pos = read_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2 > nrhp)
 					{
@@ -1116,20 +1097,26 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 	fputc('\n', fp);
 }
 
+/* Ensures that the next character of the stream is a digit and reads a number.
+ * Returns read number or -1 in case there is no digit. */
 static int
-read_possible_possible_pos(FILE *f)
+read_possible_pos(FILE *f)
 {
-	char c;
-	int result;
+	int pos = -1;
+	const int c = getc(f);
 
-	c = getc(f);
-	ungetc(c, f);
-	if(!isdigit(c) || fscanf(f, "%d\n", &result) != 1)
+	if(c != EOF)
 	{
-		result = -1;
+		ungetc(c, f);
+		if(isdigit(c))
+		{
+			const int nread = fscanf(f, "%d\n", &pos);
+			assert(nread == 1 && "Wrong number of read numbers.");
+			(void)nread;
+		}
 	}
 
-	return result;
+	return pos;
 }
 
 static size_t

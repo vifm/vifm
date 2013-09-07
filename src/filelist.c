@@ -41,8 +41,9 @@
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() */
-#include <string.h> /* memset() strcat() strcmp() strlen() */
+#include <string.h> /* memset() strcat() strcmp() strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -168,6 +169,9 @@ init_filelists(void)
 
 	init_view(&rwin);
 	init_view(&lwin);
+
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 /* Print callback for column_view unit. */
@@ -185,7 +189,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
+	checked_wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
 	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
@@ -604,11 +608,9 @@ get_viewer_command(const char *viewer)
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *escaped = escape_filename(
-				curr_view->dir_entry[curr_view->list_pos].name, 0);
-		char *t = malloc(strlen(viewer) + 1 + strlen(escaped) + 1);
-		sprintf(t, "%s %s", viewer, escaped);
-		result = t;
+		char *const escaped = escape_filename(get_current_file_name(curr_view), 0);
+		result = format_str("%s %s", viewer, escaped);
+		free(escaped);
 	}
 	else
 	{
@@ -904,7 +906,7 @@ draw_dir_list(FileView *view)
 	y = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
-		wmove(view->win, y, 1);
+		checked_wmove(view->win, y, 1);
 		wclrtoeol(view->win);
 		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
 		columns_format_line(view->columns, &cdt, col_width);
@@ -1415,8 +1417,8 @@ check_view_dir_history(FileView *view)
 				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
 		{
 			char buf[NAME_MAX];
-			strcpy(buf, view->last_dir + strlen(view->curr_dir));
-			strcat(buf, "/");
+			snprintf(buf, sizeof(buf), "%s/",
+					view->last_dir + strlen(view->curr_dir));
 
 			pos = find_file_pos_in_list(view, buf);
 			rel_pos = -1;
@@ -3261,7 +3263,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 }
 
 int
-view_is_at_path(const FileView *view, const char path[])
+view_needs_cd(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
 		return 0;
@@ -3269,12 +3271,12 @@ view_is_at_path(const FileView *view, const char path[])
 }
 
 int
-set_view_path(FileView *view, const char *path)
+set_view_path(FileView *view, const char path[])
 {
-	if(!view_is_at_path(view, path))
+	if(!view_needs_cd(view, path))
 		return 0;
 
-	strcpy(view->curr_dir, path);
+	copy_str(view->curr_dir, sizeof(view->curr_dir), path);
 	exclude_file_name(view->curr_dir);
 	return 1;
 }

@@ -28,7 +28,7 @@
 #include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strlen() */
+#include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -210,28 +210,32 @@ write_color_scheme_file(void)
 	for(y = 0; y < MAXNUM_COLOR - 2; y++)
 	{
 		char fg_buf[16], bg_buf[16];
-		int fg = cfg.cs.color[y].fg;
-		int bg = cfg.cs.color[y].bg;
 
-		if(fg == -1)
-			strcpy(fg_buf, "default");
-		else if(fg < ARRAY_LEN(COLOR_NAMES))
-			strcpy(fg_buf, COLOR_NAMES[fg]);
-		else
-			snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
-
-		if(bg == -1)
-			strcpy(bg_buf, "default");
-		else if(bg < ARRAY_LEN(COLOR_NAMES))
-			strcpy(bg_buf, COLOR_NAMES[bg]);
-		else
-			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
+		color_to_str(cfg.cs.color[y].fg, sizeof(fg_buf), fg_buf);
+		color_to_str(cfg.cs.color[y].bg, sizeof(bg_buf), bg_buf);
 
 		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y],
 				attrs_to_str(cfg.cs.color[y].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
+}
+
+void
+color_to_str(int color, size_t buf_len, char str_buf[])
+{
+	if(color == -1)
+	{
+		copy_str(str_buf, buf_len, "default");
+	}
+	else if(color >= 0 && color < ARRAY_LEN(COLOR_NAMES))
+	{
+		copy_str(str_buf, buf_len, COLOR_NAMES[color]);
+	}
+	else
+	{
+		snprintf(str_buf, buf_len, "%d", color);
+	}
 }
 
 void

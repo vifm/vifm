@@ -334,7 +334,7 @@ update_vmode_input(void)
 	if(is_input_buf_empty())
 	{
 		werase(input_win);
-		wmove(input_win, 0, 0);
+		checked_wmove(input_win, 0, 0);
 		wprintw(input_win, "%d", curr_view->selected_files);
 		wrefresh(input_win);
 	}

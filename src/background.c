@@ -136,7 +136,7 @@ check_background_jobs(void)
 			}
 			else if(nread > 0)
 			{
-				error_buf = malloc( (size_t)nread + 1);
+				error_buf = malloc((size_t)nread + 1);
 				if(error_buf == NULL)
 				{
 					show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -358,11 +358,9 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 		close(out_pipe[0]);
 		close(error_pipe[0]);
-		close(STDOUT_FILENO);
-		if(dup(out_pipe[1]) == -1)
+		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
 			exit(-1);
-		close(STDERR_FILENO);
-		if(dup(error_pipe[1]) == -1)
+		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 			exit(-1);
 
 		args[0] = "/bin/sh";
@@ -488,8 +486,8 @@ start_background_job(const char *cmd, int skip_errors)
 		extern char **environ;
 
 		int nullfd;
-		close(2);                    /* Close stderr */
-		if(dup(error_pipe[1]) == -1) /* Redirect stderr to write end of pipe. */
+		/* Redirect stderr to write end of pipe. */
+		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
 			perror("dup");
 			exit(-1);

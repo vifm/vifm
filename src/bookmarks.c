@@ -26,6 +26,7 @@
 
 #include "cfg/config.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/str.h"
 #include "filelist.h"
 #include "status.h"
@@ -90,28 +91,40 @@ index2mark(const int x)
  * test if a bookmark already exists
  */
 int
-is_bookmark(const int x)
+is_bookmark(const int bmark_index)
 {
+	if(bmark_index < 0 || bmark_index >= ARRAY_LEN(bookmarks))
+	{
+		return 0;
+	}
 	/* the bookmark is valid if the file and the directory exists */
-	if(is_bookmark_empty(x))
+	else if(is_bookmark_empty(bmark_index))
+	{
 		return 0;
-	else if(is_valid_dir(bookmarks[x].directory))
-		return 1;
+	}
 	else
-		return 0;
+	{
+		return is_valid_dir(bookmarks[bmark_index].directory);
+	}
 }
 
 int
-is_bookmark_empty(const int x)
+is_bookmark_empty(const int bmark_index)
 {
+	if(bmark_index < 0 || bmark_index >= ARRAY_LEN(bookmarks))
+	{
+		return 1;
+	}
+
 	/* Checking both is a bit paranoid, one should be enough. */
-	return bookmarks[x].directory == NULL || bookmarks[x].file == NULL;
+	return bookmarks[bmark_index].directory == NULL ||
+			bookmarks[bmark_index].file == NULL;
 }
 
 int
 is_spec_bookmark(const int x)
 {
-	char mark = index2mark(x);
+	const char mark = index2mark(x);
 	return mark == '<' || mark == '>';
 }
 
@@ -187,21 +200,21 @@ set_specmark(const char mark, const char *directory, const char *file)
 int
 move_to_bookmark(FileView *view, char mark)
 {
-	int x = mark2index(mark);
+	int bmark_index = mark2index(mark);
 
-	if(x != -1 && is_bookmark(x))
+	if(bmark_index != -1 && is_bookmark(bmark_index))
 	{
-		if(change_directory(view, bookmarks[x].directory) >= 0)
+		if(change_directory(view, bookmarks[bmark_index].directory) >= 0)
 		{
 			load_dir_list(view, 1);
-			(void)ensure_file_is_selected(view, bookmarks[x].file);
+			(void)ensure_file_is_selected(view, bookmarks[bmark_index].file);
 		}
 	}
 	else
 	{
 		if(!isalnum(mark))
 			status_bar_message("Invalid mark name");
-		else if(is_bookmark_empty(x))
+		else if(is_bookmark_empty(bmark_index))
 			status_bar_message("Mark is not set");
 		else
 			status_bar_message("Mark is invalid");

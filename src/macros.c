@@ -22,6 +22,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() strdup() */
 
@@ -281,12 +282,12 @@ static char *
 append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 		int quotes, const char *mod, int for_shell)
 {
-	char buf[PATH_MAX] = "";
+	char buf[PATH_MAX];
 	const char *modified;
 
-	if(dir_name_len != 0)
-		strcat(strcpy(buf, view->curr_dir), "/");
-	strcat(buf, view->dir_entry[pos].name);
+	snprintf(buf, sizeof(buf), "%s%s%s",
+			(dir_name_len != 0) ? view->curr_dir : "", (dir_name_len != 0) ? "/" : "",
+			view->dir_entry[pos].name);
 	chosp(buf);
 
 	modified = apply_mods(buf, view->curr_dir, mod, for_shell);

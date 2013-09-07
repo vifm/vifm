@@ -32,7 +32,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strlen() */
 #include <time.h>
 
 #include "../cfg/config.h"
@@ -160,7 +160,7 @@ redraw_file_info_dialog(void)
 	curr_y = 2;
 	mvwaddstr(menu_win, curr_y, 2, "File: ");
 	name_buf[getmaxx(menu_win) - 8] = '\0';
-	wmove(menu_win, curr_y, 8);
+	checked_wmove(menu_win, curr_y, 8);
 	wprint(menu_win, name_buf);
 	curr_y += 2;
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
@@ -186,14 +186,14 @@ redraw_file_info_dialog(void)
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
+	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
+	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
@@ -204,7 +204,7 @@ redraw_file_info_dialog(void)
 #endif
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
+	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
@@ -219,7 +219,7 @@ redraw_file_info_dialog(void)
 #endif
 
 	box(menu_win, 0, 0);
-	wmove(menu_win, 0, 3);
+	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, " File Information ");
 	wrefresh(menu_win);
 
@@ -280,8 +280,10 @@ show_file_type(FileView *view, int curr_y)
 		pclose(pipe);
 
 		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		if(strlen(buf) > x - 9)
+		if(x > 9 && strlen(buf) > x - 9)
+		{
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
+		}
 #else /* #ifdef HAVE_FILE_PROG */
 		if(view->dir_entry[view->list_pos].type == EXECUTABLE)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");

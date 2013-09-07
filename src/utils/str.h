@@ -53,8 +53,12 @@ char * to_multibyte(const wchar_t *s);
 void strtolower(char *s);
 /* Converts all characters of the string s to their lowercase equivalents. */
 void wcstolower(wchar_t s[]);
-void break_at(char *str, char c);
-void break_atr(char *str, char c);
+/* Replaces first occurrence of the c character in the str with '\0'.  Nothing
+ * is done if the character isn't found. */
+void break_at(char str[], char c);
+/* Replaces the last occurrence of the c character in the str with '\0'.
+ * Nothing is done if the character isn't found. */
+void break_atr(char str[], char c);
 char * skip_non_whitespace(const char *str);
 /* Skips consecutive whitespace characters. */
 char * skip_whitespace(const char *str);
@@ -103,11 +107,16 @@ const char * expand_tabulation(const char line[], size_t max, size_t tab_stops,
 /* Returns the first wide character of a multi-byte string. */
 wchar_t get_first_wchar(const char str[]);
 /* Concatenates the str with the with by reallocating string.  Returns str, when
- * there is not enough memory. */
+ * there is not enough memory or it was enough space in piece of memory pointed
+ * to by the str (check *len in this case). */
 char * extend_string(char str[], const char with[], size_t *len);
 /* Checks that at least one of Unicode letters (for UTF-8) is an uppercase
  * letter.  Returns non-zero for that case, otherwise zero is returned. */
 int has_uppercase_letters(const char str[]);
+/* Copies characters from the string pointed to by str to piece of memory of
+ * size dst_len pointed to by dst.  Ensures that copied string ends with null
+ * character.  Does nothing for zero dst_len. */
+void copy_str(char dst[], size_t dst_len, const char src[]);
 #ifdef _WIN32
 char * strtok_r(char str[], const char delim[], char *saveptr[]);
 #endif

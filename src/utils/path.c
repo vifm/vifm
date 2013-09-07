@@ -401,7 +401,7 @@ replace_home_part(const char *directory)
 }
 
 char *
-expand_tilde(char *path)
+expand_tilde(char path[])
 {
 #ifndef _WIN32
 	char name[NAME_MAX];
@@ -424,7 +424,7 @@ expand_tilde(char *path)
 	if((p = strchr(path, '/')) == NULL)
 	{
 		p = path + strlen(path);
-		strcpy(name, path + 1);
+		copy_str(name, sizeof(name), path + 1);
 	}
 	else
 	{

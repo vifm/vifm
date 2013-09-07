@@ -24,8 +24,8 @@
 
 #include <assert.h> /* assert() */
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> /* free() */
+#include <string.h> /* strcpy() strdup() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -74,7 +74,6 @@ static OPS undo_op[] = {
 	OP_SYMLINK,  /* OP_REMOVESL */
 	OP_REMOVE,   /* OP_COPY   */
 	OP_MOVE,     /* OP_MOVE */
-	OP_MOVETMP0, /* OP_MOVETMP0 */
 	OP_MOVETMP1, /* OP_MOVETMP1 */
 	OP_MOVETMP2, /* OP_MOVETMP2 */
 	OP_MOVETMP3, /* OP_MOVETMP1 */
@@ -115,8 +114,6 @@ static enum
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE */
-	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP0 */
-		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP0 */
 	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP1 */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_MOVETMP2 */
@@ -160,7 +157,6 @@ static int data_is_ptr[] = {
 	0, /* OP_REMOVESL */
 	0, /* OP_COPY   */
 	0, /* OP_MOVE */
-	0, /* OP_MOVETMP0 */
 	0, /* OP_MOVETMP1 */
 	0, /* OP_MOVETMP2 */
 	0, /* OP_MOVETMP3 */
@@ -211,7 +207,7 @@ static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const op_t *op);
 static void change_filename_in_trash(cmd_t *cmd, const char *filename);
-static void update_entry(const char **e, const char *old, const char *new);
+static void update_entry(const char **e, const char old[], const char new[]);
 static char ** fill_undolist_detail(char **list);
 static const char * get_op_desc(op_t op);
 static char **fill_undolist_nondetail(char **list);
@@ -643,7 +639,7 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	rename_in_registers(filename, buf);
 
 	old = cmd->buf2;
-	(void)replace_string(&cmd->buf2, buf);
+	cmd->buf2 = strdup(buf);
 
 	update_entry(&cmd->do_op.src, old, cmd->buf2);
 	update_entry(&cmd->do_op.dst, old, cmd->buf2);
@@ -653,13 +649,18 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	update_entry(&cmd->undo_op.dst, old, cmd->buf2);
 	update_entry(&cmd->undo_op.exists, old, cmd->buf2);
 	update_entry(&cmd->undo_op.dont_exist, old, cmd->buf2);
+
+	free(old);
 }
 
+/* Checks whether *e equals old and updates it to new if so. */
 static void
-update_entry(const char **e, const char *old, const char *new)
+update_entry(const char **e, const char old[], const char new[])
 {
 	if(*e == old)
+	{
 		*e = new;
+	}
 }
 
 char **
@@ -746,7 +747,7 @@ get_op_desc(op_t op)
 			strcpy(buf, "<no operation>");
 			break;
 		case OP_USR:
-			strcpy(buf, (char *)op.data);
+			copy_str(buf, sizeof(buf), (const char *)op.data);
 			break;
 		case OP_REMOVE:
 		case OP_REMOVESL:
@@ -756,7 +757,6 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
 			break;
 		case OP_MOVE:
-		case OP_MOVETMP0:
 		case OP_MOVETMP1:
 		case OP_MOVETMP2:
 			snprintf(buf, sizeof(buf), "mv %s to %s", op.src, op.dst);

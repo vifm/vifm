@@ -31,12 +31,13 @@
 #endif
 #endif
 
+#include <errno.h> /* errno */
 #include <signal.h> /* sighandler_t, signal() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
-                       strdup() strncmp() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS malloc() free() */
+#include <string.h> /* strcmp() strerror() strrchr() strcat() strstr() strlen()
+                       strchr() strdup() strncmp() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -84,6 +85,8 @@ static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
+static void store_for_external(const FileView *view, FILE *fp, int argc,
+		char *argv[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -592,17 +595,16 @@ follow_link(FileView *view, int follow_dirs)
 {
 	/* TODO: refactor this big function follow_link() */
 
-	struct stat s;
-	int is_dir = 0;
+	struct stat target_stat;
 	char *dir = NULL, *file = NULL, *link_dup;
-	char buf[PATH_MAX];
+	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
-	char *filename;
+	const char *filename;
 
 	filename = view->dir_entry[view->list_pos].name;
-	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, filename);
 
-	if(get_link_target(buf, linkto, sizeof(linkto)) != 0)
+	if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return;
@@ -612,37 +614,43 @@ follow_link(FileView *view, int follow_dirs)
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination. It might be broken");
-		curr_stats.save_msg = 1;
 		return;
 	}
 
 	chosp(linkto);
+
+	if(lstat(linkto, &target_stat) != 0)
+	{
+		show_error_msgf("Link Follow", "Can't stat link destination \"%s\": %s",
+				linkto, strerror(errno));
+		return;
+	}
+
 	link_dup = strdup(linkto);
 
-	lstat(linkto, &s);
-
-	if((s.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
+	if((target_stat.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
 	{
-		is_dir = 1;
-		dir = strdup(view->dir_entry[view->list_pos].name);
+		dir = strdup(filename);
 	}
 	else
 	{
-		int x;
-		for(x = strlen(linkto) - 1; x > 0; x--)
+		int i;
+		for(i = strlen(linkto) - 1; i > 0; i--)
 		{
-			if(linkto[x] == '/')
+			if(linkto[i] == '/')
 			{
-				struct stat s;
-				linkto[x] = '\0';
-				if(lstat(linkto, &s) != 0)
+				struct stat part_stat;
+				linkto[i] = '\0';
+				if(lstat(linkto, &part_stat) != 0)
 				{
 					strcat(linkto, "/");
-					lstat(linkto, &s);
+					if(lstat(linkto, &part_stat) != 0)
+					{
+						continue;
+					}
 				}
-				if((s.st_mode & S_IFMT) == S_IFDIR)
+				if((part_stat.st_mode & S_IFMT) == S_IFDIR)
 				{
-					is_dir = 1;
 					dir = strdup(linkto);
 					break;
 				}
@@ -650,17 +658,17 @@ follow_link(FileView *view, int follow_dirs)
 		}
 		if((file = strrchr(link_dup, '/')) != NULL)
 			file++;
-		else if(is_dir == 0)
+		else if(dir == NULL)
 			file = link_dup;
 	}
-	if(is_dir)
+	if(dir != NULL)
 	{
 		navigate_to(view, dir);
 	}
 	if(file != NULL)
 	{
 		int pos;
-		if((s.st_mode & S_IFMT) == S_IFDIR)
+		if((target_stat.st_mode & S_IFMT) == S_IFDIR)
 		{
 			size_t len;
 
@@ -728,10 +736,36 @@ void _gnuc_noreturn
 use_vim_plugin(FileView *view, int argc, char **argv)
 {
 	FILE *fp;
-	char filepath[PATH_MAX] = "";
+	char filepath[PATH_MAX];
+	int exit_code = EXIT_SUCCESS;
 
 	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
 	fp = fopen(filepath, "w");
+	if(fp != NULL)
+	{
+		store_for_external(view, fp, argc, argv);
+		fclose(fp);
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	endwin();
+	exit(exit_code);
+}
+
+/* Writes list of full paths to files into the file pointed to by fp.  argv and
+ * argc parameters can be used to supply list of file names in the currecnt
+ * directory of the view.  Otherwise current selection is used if current files
+ * is selected, if current file is not selected it's the only one that is
+ * stored. */
+static void
+store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
+{
 	if(argc == 0)
 	{
 		if(!view->dir_entry[view->list_pos].selected)
@@ -759,12 +793,6 @@ use_vim_plugin(FileView *view, int argc, char **argv)
 			else
 				fprintf(fp, "%s/%s\n", view->curr_dir, argv[i]);
 	}
-	fclose(fp);
-
-	write_info_file();
-
-	endwin();
-	exit(0);
 }
 
 /*

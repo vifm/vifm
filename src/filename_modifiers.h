@@ -21,9 +21,10 @@
 
 #include <stddef.h> /* size_t */
 
-/* Applies all filename modifiers. */
-const char * apply_mods(const char *path, const char *parent, const char *mod,
-		int for_shell);
+/* Applies all filename modifiers.  Returns pointer to statically allocated
+ * buffer containing result. */
+const char * apply_mods(const char path[], const char parent[],
+		const char mod[], int for_shell);
 size_t get_mods_len(const char *str);
 
 #endif /* VIFM__FILENAME_MODIFIERS_H__ */

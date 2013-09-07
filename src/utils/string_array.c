@@ -20,7 +20,7 @@
 
 #include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h>
+#include <stdio.h> /* FILE fprintf() */
 #include <stdlib.h>
 #include <string.h>
 
@@ -143,6 +143,28 @@ free_wstring_array(wchar_t **array, size_t len)
 }
 
 char **
+read_file_of_lines(const char filepath[], int *nlines)
+{
+	char **list;
+	FILE *fp;
+
+	if((fp = fopen(filepath, "r")) == NULL)
+	{
+		return NULL;
+	}
+
+	list = read_file_lines(fp, nlines);
+	if(list == NULL)
+	{
+		list = malloc(1U);
+		*nlines = 0;
+	}
+
+	fclose(fp);
+	return list;
+}
+
+char **
 read_file_lines(FILE *f, int *nlines)
 {
 	char **list = NULL;
@@ -154,6 +176,26 @@ read_file_lines(FILE *f, int *nlines)
 		*nlines = add_to_string_array(&list, *nlines, 1, line);
 	}
 	return list;
+}
+
+int
+write_file_of_lines(const char filepath[], char *lines[], size_t nlines)
+{
+	FILE *fp;
+	size_t i;
+
+	if((fp = fopen(filepath, "w")) == NULL)
+	{
+		return 1;
+	}
+
+	for(i = 0U; i < nlines; i++)
+	{
+		fprintf(fp, "%s\n", lines[i]);
+	}
+
+	fclose(fp);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

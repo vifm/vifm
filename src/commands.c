@@ -39,7 +39,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcmp() strncmp() strncpy() strlen() */
+#include <string.h> /* strcat() strcmp() strcpy() strncmp() strncpy()
+                       strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -68,6 +69,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/int_stack.h"
+#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -200,6 +202,7 @@ static int mkdir_cmd(const cmd_info_t *cmd_info);
 static int mmap_cmd(const cmd_info_t *cmd_info);
 static int mnoremap_cmd(const cmd_info_t *cmd_info);
 static int move_cmd(const cmd_info_t *cmd_info);
+static int cpmv_cmd(const cmd_info_t *cmd_info, int move);
 static int munmap_cmd(const cmd_info_t *cmd_info);
 static int nmap_cmd(const cmd_info_t *cmd_info);
 static int nnoremap_cmd(const cmd_info_t *cmd_info);
@@ -220,6 +223,7 @@ static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
+static int link_cmd(const cmd_info_t *cmd_info, int type);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
@@ -634,7 +638,7 @@ static char *
 get_file_first_line(const char path[])
 {
 	FILE *const fp = fopen(path, "rt");
-	char *result;
+	char *result = NULL;
 	if(fp != NULL)
 	{
 		result = read_line(fp, NULL);
@@ -681,13 +685,11 @@ is_history_command(const char command[])
 static void
 post(int id)
 {
-	if(id == COM_GOTO)
-		return;
-	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
-		return;
-
-	clean_selected_files(curr_view);
-	load_saving_pos(curr_view, 1);
+	if(id != COM_GOTO && curr_view->selected_files > 0 && need_clean_selection)
+	{
+		clean_selected_files(curr_view);
+		load_saving_pos(curr_view, 1);
+	}
 }
 
 TSTATIC void
@@ -1349,7 +1351,14 @@ comm_quit(int write_info, int force)
 
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
-		fclose(fp);
+		if(fp != NULL)
+		{
+			fclose(fp);
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
+		}
 	}
 
 #ifdef _WIN32
@@ -1439,23 +1448,11 @@ emark_cmd(const cmd_info_t *cmd_info)
 	return save_msg;
 }
 
+/* Creates symbolic links with absolute paths to files. */
 static int
 alink_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->qmark)
-	{
-		if(cmd_info->argc > 0)
-		{
-			status_bar_error("No arguments are allowed if you use \"!\"");
-			return 1;
-		}
-		return cpmv_files(curr_view, NULL, -1, 0, 1, 0) != 0;
-	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 1,
-				cmd_info->emark) != 0;
-	}
+	return link_cmd(cmd_info, 1);
 }
 
 static int
@@ -1749,31 +1746,11 @@ command_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
+/* Copies files. */
 static int
 copy_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->qmark)
-	{
-		if(cmd_info->argc > 0)
-		{
-			status_bar_error("No arguments are allowed if you use \"?\"");
-			return 1;
-		}
-		if(cmd_info->bg)
-			return cpmv_files_bg(curr_view, NULL, -1, 0, cmd_info->emark) != 0;
-		else
-			return cpmv_files(curr_view, NULL, -1, 0, 0, 0) != 0;
-	}
-	else if(cmd_info->bg)
-	{
-		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, 0,
-				cmd_info->emark) != 0;
-	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 0,
-				cmd_info->emark) != 0;
-	}
+	return cpmv_cmd(cmd_info, 0);
 }
 
 static int
@@ -2381,14 +2358,16 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		char buf[256*(MAXNUM_COLOR - 2)] = "";
+		char msg[256*(MAXNUM_COLOR - 2)];
+		size_t msg_len = 0U;
+		msg[0] = '\0';
 		for(i = 0; i < MAXNUM_COLOR - 2; i++)
 		{
-			strcat(buf, get_group_str(i, curr_view->cs.color[i]));
-			if(i < MAXNUM_COLOR - 2 - 1)
-				strcat(buf, "\n");
+			msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
+					get_group_str(i, curr_view->cs.color[i]),
+					(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
 		}
-		status_bar_message(buf);
+		status_bar_message(msg);
 		return 1;
 	}
 
@@ -2470,6 +2449,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Composes string representation of highlight group definition. */
 static const char *
 get_group_str(int group, col_attr_t col)
 {
@@ -2477,22 +2457,12 @@ get_group_str(int group, col_attr_t col)
 
 	char fg_buf[16], bg_buf[16];
 
-	if(col.fg == -1)
-		strcpy(fg_buf, "none");
-	else if(col.fg < ARRAY_LEN(COLOR_NAMES))
-		strcpy(fg_buf, COLOR_NAMES[col.fg]);
-	else
-		snprintf(fg_buf, sizeof(fg_buf), "%d", col.fg);
-
-	if(col.bg == -1)
-		strcpy(bg_buf, "none");
-	else if(col.bg < ARRAY_LEN(COLOR_NAMES))
-		strcpy(bg_buf, COLOR_NAMES[col.bg]);
-	else
-		snprintf(bg_buf, sizeof(bg_buf), "%d", col.bg);
+	color_to_str(col.fg, sizeof(fg_buf), fg_buf);
+	color_to_str(col.bg, sizeof(bg_buf), bg_buf);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
 			HI_GROUPS[group], attrs_to_str(col.attr), fg_buf, bg_buf);
+
 	return buf;
 }
 
@@ -2881,29 +2851,37 @@ mnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Menu", MENU_MODE, 1) != 0;
 }
 
+/* Moves files. */
 static int
 move_cmd(const cmd_info_t *cmd_info)
+{
+	return cpmv_cmd(cmd_info, 1);
+}
+
+/* Common part of copy and move commands interface implementation. */
+static int
+cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
 		if(cmd_info->bg)
-			return cpmv_files_bg(curr_view, NULL, -1, 1, cmd_info->emark) != 0;
+			return cpmv_files_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
 		else
-			return cpmv_files(curr_view, NULL, -1, 1, 0, 0) != 0;
+			return cpmv_files(curr_view, NULL, -1, move, 0, 0) != 0;
 	}
 	else if(cmd_info->bg)
 	{
-		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, 1,
+		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
 				cmd_info->emark) != 0;
 	}
 	else
 	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1, 0,
+		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, move, 0,
 				cmd_info->emark) != 0;
 	}
 }
@@ -3082,21 +3060,12 @@ registers_cmd(const cmd_info_t *cmd_info)
 	return show_register_menu(curr_view, buf) != 0;
 }
 
+/* Renames current selection. */
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->emark && cmd_info->argc != 0)
-	{
-		status_bar_error("No arguments are allowed if you use \"!\"");
-		return 1;
-	}
-
-	if(cmd_info->emark)
-		return rename_files(curr_view, NULL, 0, 1) != 0;
-	else if(cmd_info->argc == 0)
-		return rename_files(curr_view, NULL, 0, 0) != 0;
-	else
-		return rename_files(curr_view, cmd_info->argv, cmd_info->argc, 0) != 0;
+	return rename_files(curr_view, cmd_info->argv, cmd_info->argc,
+			cmd_info->emark) != 0;
 }
 
 static int
@@ -3212,21 +3181,29 @@ restore_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
+/* Creates symbolic links with relative paths to files. */
 static int
 rlink_cmd(const cmd_info_t *cmd_info)
+{
+	return link_cmd(cmd_info, 2);
+}
+
+/* Common part of alink and rlink commands interface implementation. */
+static int
+link_cmd(const cmd_info_t *cmd_info, int type)
 {
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return cpmv_files(curr_view, NULL, -1, 0, 2, 0) != 0;
+		return cpmv_files(curr_view, NULL, -1, 0, type, 0) != 0;
 	}
 	else
 	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 2,
+		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, type,
 				cmd_info->emark) != 0;
 	}
 }
@@ -3373,9 +3350,8 @@ sync_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	snprintf(dstPath, sizeof(dstPath), "%s/", curr_view->curr_dir);
-	if(cmd_info->argc > 0)
-		strcat(dstPath, cmd_info->argv[0]);
+	snprintf(dstPath, sizeof(dstPath), "%s/%s", curr_view->curr_dir,
+			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
 
 	if(cd_is_possible(dstPath) && change_directory(other_view, dstPath) >= 0)
 	{

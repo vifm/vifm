@@ -232,8 +232,9 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	unlink(errors_file);
 	status_bar_message("FUSE mount success");
 
-	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
-	strcpy(fuse_item->source_file_name, file_full_path);
+	fuse_item = malloc(sizeof(*fuse_item));
+	copy_str(fuse_item->source_file_name, sizeof(fuse_item->source_file_name),
+			file_full_path);
 	strcpy(fuse_item->source_file_dir, view->curr_dir);
 	canonicalize_path(mount_point, fuse_item->mount_point,
 			sizeof(fuse_item->mount_point));

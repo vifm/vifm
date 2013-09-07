@@ -35,7 +35,7 @@
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h> /* strlen() */
+#include <string.h> /* strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -176,6 +176,11 @@ expand_ruler_macros(FileView *view, const char *format)
 				break;
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
+				break;
+
+			default:
+				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
+				snprintf(buf, sizeof(buf), "%%%c", c);
 				break;
 		}
 		if(strlen(buf) < width)
@@ -371,6 +376,11 @@ expand_status_line_macros(FileView *view, const char *format)
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
 				break;
+
+			default:
+				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
+				snprintf(buf, sizeof(buf), "%%%c", c);
+				break;
 		}
 		if(strlen(buf) < width)
 		{
@@ -439,7 +449,7 @@ update_stat_window_old(FileView *view)
 
 	werase(stat_win);
 	cur_x = 2;
-	wmove(stat_win, 0, cur_x);
+	checked_wmove(stat_win, 0, cur_x);
 	wprint(stat_win, name_buf);
 	cur_x += 22;
 	if(x > 83)
@@ -493,7 +503,7 @@ update_stat_window(FileView *view)
 	buf = break_in_two(buf, getmaxx(stdscr));
 
 	werase(stat_win);
-	wmove(stat_win, 0, 0);
+	checked_wmove(stat_win, 0, 0);
 	wprint(stat_win, buf);
 	wrefresh(stat_win);
 
@@ -617,7 +627,7 @@ status_bar_message_i(const char *message, int error)
 	{
 		wresize(status_bar, lines, getmaxx(stdscr));
 	}
-	wmove(status_bar, 0, 0);
+	checked_wmove(status_bar, 0, 0);
 
 	if(err)
 	{
@@ -637,7 +647,8 @@ status_bar_message_i(const char *message, int error)
 	multiline_status_bar = lines > 1;
 	if(multiline_status_bar)
 	{
-		wmove(status_bar, lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
+		checked_wmove(status_bar,
+				lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
 		wclrtoeol(status_bar);
 		if(lines < status_bar_lines)
 			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
@@ -1514,7 +1525,7 @@ load_color_scheme(const char name[])
 		show_error_msgf("Color Scheme", "Can't load colorscheme: \"%s\"", name);
 		return 0;
 	}
-	strcpy(cfg.cs.name, name);
+	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
 	check_color_scheme(&cfg.cs);
 
 	update_attributes();
@@ -1783,6 +1794,15 @@ format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
 		{
 			entry->name[name_len - 1] = '/';
 		}
+	}
+}
+
+void
+checked_wmove(WINDOW *win, int y, int x)
+{
+	if(wmove(win, y, x) == ERR)
+	{
+		LOG_INFO_MSG("Error moving cursor on a window to (x=%d, y=%d).", x, y);
 	}
 }
 

@@ -33,7 +33,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL size_t */
-#include <string.h> /* memset() strdup() strchr() strlen() */
+#include <string.h> /* memset() strdup() strchr() strlen() strrchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -90,8 +90,8 @@ clean_menu_position(menu_info *m)
 
 	buf = malloc(x + 2);
 
-	/* TODO: check if this can be false. */
-	if(m->items != NULL && m->items[m->pos] != NULL)
+	/* TODO: check if this can ever be false. */
+	if(m->items[m->pos] != NULL)
 	{
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[m->pos][off] != '\0')
@@ -128,7 +128,7 @@ clean_menu_position(menu_info *m)
 	init_pair(DCOLOR_BASE + type, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
-	wmove(menu_win, m->current, 1);
+	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
@@ -381,7 +381,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
-	wmove(menu_win, m->current, 1);
+	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
@@ -474,12 +474,16 @@ goto_selected_file(FileView *view, menu_info *m)
 	if(access(file, R_OK) == 0)
 	{
 		int isdir = 0;
+		char *last_slash;
 
 		if(is_dir(file))
 			isdir = 1;
 
-		file = strrchr(dir, '/');
-		*file++ = '\0';
+		if((last_slash = strrchr(dir, '/')) != NULL)
+		{
+			*last_slash = '\0';
+			file = last_slash + 1;
+		}
 
 		if(change_directory(view, dir) >= 0)
 		{
@@ -532,7 +536,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			load_color_scheme(m->items[m->pos]);
 			break;
 		case COMMAND:
-			*strchr(m->items[m->pos], ' ') = '\0';
+			break_at(m->items[m->pos], ' ');
 			exec_command(m->items[m->pos], view, GET_COMMAND);
 			break;
 		case FILETYPE:
@@ -592,7 +596,7 @@ draw_menu(menu_info *m)
 
 	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
-	wmove(menu_win, 0, 3);
+	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, m->title);
 	wattroff(menu_win, A_BOLD);
 
@@ -632,7 +636,7 @@ draw_menu(menu_info *m)
 			if(buf[z] == '\t')
 				buf[z] = ' ';
 
-		wmove(menu_win, i, 2);
+		checked_wmove(menu_win, i, 2);
 		if(get_screen_string_length(buf) > win_len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
@@ -837,7 +841,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		y = 6;
 		wresize(error_win, y, x);
 		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		wmove(error_win, 2, (x - z)/2);
+		checked_wmove(error_win, 2, (x - z)/2);
 		wprint(error_win, message);
 	}
 	else
@@ -868,7 +872,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 			mvwin(error_win, (sy - y)/2, (sx - x)/2);
 			wresize(error_win, y, x);
 
-			wmove(error_win, cy++, 1);
+			checked_wmove(error_win, cy++, 1);
 			wprint(error_win, buf);
 		}
 	}

@@ -19,6 +19,7 @@
 
 #include "apropos_menu.h"
 
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
@@ -87,13 +88,16 @@ execute_apropos_cb(menu_info *m)
 
 		num_str[z] = '\0';
 		line = strchr(line, ' ');
-		line[0] = '\0';
+		if(line != NULL)
+		{
+			line[0] = '\0';
 
-		snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
+			snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
 
-		curr_stats.auto_redraws = 1;
-		shellout(command, 0, 1);
-		curr_stats.auto_redraws = 0;
+			curr_stats.auto_redraws = 1;
+			shellout(command, 0, 1);
+			curr_stats.auto_redraws = 0;
+		}
 	}
 	free(free_this);
 }

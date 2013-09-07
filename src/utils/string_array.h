@@ -38,7 +38,17 @@ void free_string_array(char *array[], size_t len);
 /* Frees memory of all array items, but not from the array itself. */
 void free_strings(char *array[], size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
+/* Reads file specified by filepath into an array of strings.  Returns non-NULL
+ * on success, otherwise NULL is returned, *nlines is untouched and errno
+ * contains error code.  For empty file non-NULL will be returned, but *nlines
+ * will be zero. */
+char ** read_file_of_lines(const char filepath[], int *nlines);
+/* Reads content of the file stream f into array of strings.  Returns NULL for
+ * an empty file stream. */
 char ** read_file_lines(FILE *f, int *nlines);
+/* Overwrites file specified by filepath with lines.  Returns zero on success,
+ * otherwise non-zero is returned and errno contains error code. */
+int write_file_of_lines(const char filepath[], char *lines[], size_t nlines);
 
 #endif /* VIFM__UTILS__STRING_ARRAY_H__ */
 

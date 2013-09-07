@@ -27,10 +27,11 @@
 #include <unistd.h>
 
 #include <ctype.h>
+#include <errno.h> /* ENOENT */
 #include <locale.h> /* setlocale() */
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strcpy() */
 
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
@@ -489,6 +490,7 @@ main(int argc, char **argv)
 	char colorschemes_file[PATH_MAX], colors_dir[PATH_MAX];
 	int vifm_like;
 	char *vifmrc_arg, *vifminfo_arg;
+	int err;
 
 	(void)setlocale(LC_ALL, "");
 
@@ -570,27 +572,22 @@ main(int argc, char **argv)
 	read_config_file(config_file);
 	read_config_file(vifminfo_file);
 
-	if(access(config_file, F_OK) == 0)
+	(void)unlink(config_file_bak);
+	err = rename(config_file, config_file_bak);
+	if(err != 0 && err != ENOENT)
 	{
-		if(access(config_file_bak, F_OK) == 0)
-			unlink(config_file_bak);
-		if(rename(config_file, config_file_bak) != 0)
-		{
-			fprintf(stderr, "Can't move vifmrc file to make a backup copy "
-					"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
-			exit(1);
-		}
+		fprintf(stderr, "Can't move vifmrc file to make a backup copy "
+				"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
+		exit(1);
 	}
-	if(access(vifminfo_file, F_OK) == 0)
+
+	(void)unlink(vifminfo_file_bak);
+	err = rename(vifminfo_file, vifminfo_file_bak);
+	if(err != 0 && err != ENOENT)
 	{
-		if(access(vifminfo_file_bak, F_OK) == 0)
-			unlink(vifminfo_file_bak);
-		if(rename(vifminfo_file, vifminfo_file_bak) != 0)
-		{
-			fprintf(stderr, "Can't move vifminfo file to make a backup copy "
-					"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
-			exit(1);
-		}
+		fprintf(stderr, "Can't move vifminfo file to make a backup copy "
+				"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
+		exit(1);
 	}
 
 	write_vifmrc(vifmrc_arg, vifm_like);
@@ -1331,14 +1328,14 @@ write_color_schemes(const char *colors_dir)
 			if(fg == -1)
 				strcpy(fg_buf, "none");
 			else if(fg < ARRAY_LEN(COLOR_NAMES))
-				strcpy(fg_buf, COLOR_NAMES[fg]);
+				snprintf(fg_buf, sizeof(fg_buf), "%s", COLOR_NAMES[fg]);
 			else
 				snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
 
 			if(bg == -1)
 				strcpy(bg_buf, "none");
 			else if(bg < ARRAY_LEN(COLOR_NAMES))
-				strcpy(bg_buf, COLOR_NAMES[bg]);
+				snprintf(bg_buf, sizeof(bg_buf), "%s", COLOR_NAMES[bg]);
 			else
 				snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 

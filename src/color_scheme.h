@@ -20,6 +20,8 @@
 #ifndef VIFM__COLOR_SCHEME_H__
 #define VIFM__COLOR_SCHEME_H__
 
+#include <stddef.h> /* size_t */
+
 #include "utils/fs_limits.h"
 #ifdef _WIN32
 #include "utils/utils.h"
@@ -52,6 +54,9 @@ const char * attrs_to_str(int attrs);
 void check_color_scheme(col_scheme_t *cs);
 void assoc_dir(const char *name, const char *dir);
 void write_color_scheme_file(void);
+/* Converts color specified by an integer to a string and writes result in a
+ * buffer of length buf_len pointed to by str_buf. */
+void color_to_str(int color, size_t buf_len, char str_buf[]);
 void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 #endif /* VIFM__COLOR_SCHEME_H__ */

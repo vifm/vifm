@@ -282,7 +282,7 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 {
 	const char *curr = line;
 	size_t pos = 0;
-	wmove(win, row, col);
+	checked_wmove(win, row, col);
 	while(pos <= max_width && *curr != '\0')
 	{
 		size_t screen_width;

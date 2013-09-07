@@ -21,9 +21,10 @@
 #include <assert.h>
 #include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <math.h>
-#include <stdio.h>
+#include <stddef.h> /* size_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* strcmp() */
+#include <string.h> /* strcat() strcmp() */
 
 #include "../utils/str.h"
 #include "../utils/utils.h"
@@ -196,10 +197,11 @@ eval_statement(const char **in)
 static var_t
 eval_expression(const char **in)
 {
-	char buffer[CMD_LINE_LENGTH_MAX];
+	char res[CMD_LINE_LENGTH_MAX];
+	size_t res_len = 0U;
 	char *old_target_buffer = target_buffer;
-	buffer[0] = '\0';
-	target_buffer = buffer;
+	res[0] = '\0';
+	target_buffer = res;
 
 	while(last_error == PE_NO_ERROR)
 	{
@@ -218,8 +220,8 @@ eval_expression(const char **in)
 			break;
 		}
 
-		strcat(buffer, term.value.string);
-		var_free(term);
+		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s",
+				term.value.string);
 
 		if(last_token.type != DOT)
 		{
@@ -233,7 +235,7 @@ eval_expression(const char **in)
 
 	if(last_error == PE_NO_ERROR)
 	{
-		const var_val_t var_val = { .string = buffer };
+		const var_val_t var_val = { .string = res };
 		return var_new(VTYPE_STRING, var_val);
 	}
 	else

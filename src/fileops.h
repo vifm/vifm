@@ -45,6 +45,10 @@ void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
 void rename_current_file(FileView *view, int name_only);
+/* Renames selection to names given in the list of length nlines (or filled in
+ * by the user, when the list is empty).  Recursively traverses directories in
+ * selection when recursive flag is not zero.  Recursive traversal is
+ * incompatible with list of names.  Returns new value for save_msg flag. */
 int rename_files(FileView *view, char **list, int nlines, int recursive);
 /* Returns new value for save_msg flag. */
 int incdec_names(FileView *view, int k);
@@ -68,9 +72,10 @@ int substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		int ic, int glob);
 /* Returns new value for save_msg flag. */
 int tr_in_names(FileView *view, const char *pattern, const char *sub);
-const char * substitute_in_name(const char *name, const char *pattern,
-		const char *sub, int glob);
-int change_case(FileView *view, int toupper, int count, int *indexes);
+/* Returns pointer to a statically allocated buffer. */
+const char * substitute_in_name(const char name[], const char pattern[],
+		const char sub[], int glob);
+int change_case(FileView *view, int toupper, int count, int indexes[]);
 int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force);
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
