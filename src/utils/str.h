@@ -107,7 +107,8 @@ const char * expand_tabulation(const char line[], size_t max, size_t tab_stops,
 /* Returns the first wide character of a multi-byte string. */
 wchar_t get_first_wchar(const char str[]);
 /* Concatenates the str with the with by reallocating string.  Returns str, when
- * there is not enough memory. */
+ * there is not enough memory or it was enough space in piece of memory pointed
+ * to by the str (check *len in this case). */
 char * extend_string(char str[], const char with[], size_t *len);
 /* Checks that at least one of Unicode letters (for UTF-8) is an uppercase
  * letter.  Returns non-zero for that case, otherwise zero is returned. */
