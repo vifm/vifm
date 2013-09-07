@@ -2358,14 +2358,16 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		char buf[256*(MAXNUM_COLOR - 2)] = "";
+		char msg[256*(MAXNUM_COLOR - 2)];
+		size_t msg_len = 0U;
+		msg[0] = '\0';
 		for(i = 0; i < MAXNUM_COLOR - 2; i++)
 		{
-			strcat(buf, get_group_str(i, curr_view->cs.color[i]));
-			if(i < MAXNUM_COLOR - 2 - 1)
-				strcat(buf, "\n");
+			msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
+					get_group_str(i, curr_view->cs.color[i]),
+					(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
 		}
-		status_bar_message(buf);
+		status_bar_message(msg);
 		return 1;
 	}
 
