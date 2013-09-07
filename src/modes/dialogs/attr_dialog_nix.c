@@ -23,6 +23,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strncat() strlen() */
 
 #include "../../engine/keys.h"
@@ -411,7 +412,8 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 	char *sub_perm[] = {"u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
 											"o-r", "o-w", "o-x", "o-t"};
 	char *add_adv_perm[] = {"u-x+X", "g-x+X", "o-x+X"};
-	char perm_string[64] = " ";
+	char perm_str[64] = " ";
+	size_t perm_str_len = strlen(perm_str);
 
 	if(adv_perms[0] && adv_perms[1] && adv_perms[2])
 	{
@@ -420,10 +422,13 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 		adv_perms[2] = -1;
 	}
 
-	strcat(perm_string, "a-x+X,");
+	perm_str_len += snprintf(perm_str + perm_str_len,
+			sizeof(perm_str) - perm_str_len, "a-x+X,");
 
 	for(i = 0; i < 12; i++)
 	{
+		const char *perm;
+
 		if(perms[i] == -1)
 			continue;
 
@@ -436,23 +441,25 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 		if((i == 2 || i == 6 || i == 10) && adv_perms[i/4] < 0)
 			continue;
 
-		if(perms[i])
+		if(!perms[i])
 		{
-			if((i == 2 || i == 6 || i == 10) && adv_perms[i/4])
-				strcat(perm_string, add_adv_perm[i/4]);
-			else
-				strcat(perm_string, add_perm[i]);
+			perm = sub_perm[i];
+		}
+		else if((i == 2 || i == 6 || i == 10) && adv_perms[i/4])
+		{
+			perm = add_adv_perm[i/4];
 		}
 		else
 		{
-			strcat(perm_string, sub_perm[i]);
+			perm = add_perm[i];
 		}
 
-		strcat(perm_string, ",");
+		perm_str_len += snprintf(perm_str + perm_str_len,
+				sizeof(perm_str) - perm_str_len, "%s,", perm);
 	}
-	perm_string[strlen(perm_string) - 1] = '\0'; /* Remove last , */
+	perm_str[strlen(perm_str) - 1] = '\0'; /* Remove last comma (','). */
 
-	files_chmod(view, perm_string, perms[12]);
+	files_chmod(view, perm_str, perms[12]);
 }
 
 void
