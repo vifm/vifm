@@ -39,7 +39,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcmp() strcpy() strncmp() strncpy() strlen() */
+#include <string.h> /* strcat() strcmp() strcpy() strncmp() strncpy()
+                       strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -3347,9 +3348,8 @@ sync_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	snprintf(dstPath, sizeof(dstPath), "%s/", curr_view->curr_dir);
-	if(cmd_info->argc > 0)
-		strcat(dstPath, cmd_info->argv[0]);
+	snprintf(dstPath, sizeof(dstPath), "%s/%s", curr_view->curr_dir,
+			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
 
 	if(cd_is_possible(dstPath) && change_directory(other_view, dstPath) >= 0)
 	{
