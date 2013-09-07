@@ -139,6 +139,8 @@
 	Fixed displaying of search results message for different combinations of
 	'wrapscan' and 'hlsearch' options states.
 
+	Fixed real/potential issues discovered using Coverity scanner.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
