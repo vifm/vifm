@@ -726,6 +726,7 @@ with_X11
 with_dyn_X11
 enable_extended_keys
 enable_desktop_files
+enable_developer
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1361,6 +1362,8 @@ Optional Features:
   --disable-desktop-files disable parsing of *.desktop files found on your
                           system to get a list of programs associated with
                           filetypes [default=enabled]
+  --enable-developer      enables features of interest to developers
+                          [default=disabled]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -8613,6 +8616,14 @@ else
 fi
 
 
+# Check whether --enable-developer was given.
+if test "${enable_developer+set}" = set; then :
+  enableval=$enable_developer; developer=$enableval
+else
+  developer=no
+fi
+
+
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
@@ -8623,6 +8634,10 @@ if test "$desktop_files" = "yes"; then
 
 $as_echo "#define ENABLE_DESKTOP_FILES 1" >>confdefs.h
 
+fi
+
+if test "$developer" = "yes"; then
+	CFLAGS="$CFLAGS -g -Og -Werror"
 fi
 
 if test "$use_dyn_libX11" = "yes"; then

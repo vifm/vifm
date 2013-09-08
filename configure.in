@@ -517,12 +517,24 @@ AC_ARG_ENABLE(desktop_files,
 	[desktop_files=$enableval],
 	[desktop_files=yes])
 
+AC_ARG_ENABLE(developer,
+	AS_HELP_STRING(
+		[--enable-developer],
+		[enables features of interest to developers
+		 @<:@default=disabled@:>@     ]),
+	[developer=$enableval],
+	[developer=no])
+
 if test "$extended_keys" = "yes"; then
 	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
 fi
 
 if test "$desktop_files" = "yes"; then
 	AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
+fi
+
+if test "$developer" = "yes"; then
+	CFLAGS="$CFLAGS -g -Og -Werror"
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
