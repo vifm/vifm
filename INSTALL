@@ -31,6 +31,12 @@ On *nix you need:
           *.desktop files found on your system to get a list of programs
           associated with mimetype of a file.
 
+      --[disable]/enable-developer - enables features of interest to
+          developers:
+           - debug information
+           - debug-friendly optimizations
+           - treating compilation warnings as errors
+
       --without/[with]-gtk - use GTK+ to determine mimetypes if available.
 
       --without/[with]-libmagic - use libmagic to determine mimetypes if
