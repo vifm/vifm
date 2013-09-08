@@ -763,19 +763,17 @@ int
 query_user_menu(char *title, char *message)
 {
 	int key;
-	int done = 0;
 	char *dup = strdup(message);
 
 	curr_stats.errmsg_shown = 2;
 
 	redraw_error_msg(title, message, 0);
 
-	while(!done)
+	do
 	{
 		key = wgetch(error_win);
-		if(key == 'y' || key == 'n' || key == ERR)
-			done = 1;
 	}
+	while(key != 'y' && key != 'n' && key != ERR);
 
 	free(dup);
 
@@ -791,10 +789,7 @@ query_user_menu(char *title, char *message)
 	if(curr_stats.need_update != UT_NONE)
 		update_screen(UT_FULL);
 
-	if(key == 'y')
-		return 1;
-	else
-		return 0;
+	return key == 'y';
 }
 
 void

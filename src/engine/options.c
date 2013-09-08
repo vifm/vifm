@@ -956,6 +956,8 @@ complete_options(const char args[], const char **start)
 		buf[0] = '\0';
 	}
 
+	bool_only = 0;
+
 	p = skip_alphas(buf);
 	is_value_completion = (p[0] == '=' || p[0] == ':');
 	is_value_completion = is_value_completion || (p[0] == '-' && p[1] == '=');
@@ -987,10 +989,6 @@ complete_options(const char args[], const char **start)
 		*start += 3;
 		memmove(buf, buf + 3, strlen(buf) - 3 + 1);
 		bool_only = 1;
-	}
-	else
-	{
-		bool_only = 0;
 	}
 
 	if(!is_value_completion)
