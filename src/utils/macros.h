@@ -59,7 +59,9 @@
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
 #define ARRAY_GUARD(x, len) \
-    typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]
+    typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]; \
+    /* Fake use to suppress "Unused local variable" warning. */ \
+    enum { x##_array_guard_fake_use = (long int)(x##_array_guard*)0 }
 
 #define MIN(a,b) ({ \
 										typeof(a) _a = (a); \
