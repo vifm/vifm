@@ -1,6 +1,6 @@
 CC := gcc
 
-CFLAGS := -c -Wall -Werror -MMD $(CFLAGS) -include ../config.h
+CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else
