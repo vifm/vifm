@@ -31,11 +31,6 @@
 #define WPRINTF_WSTR L"s"
 #endif
 
-#ifdef _WIN32
-#define wcscasecmp(s, t) wcsicmp((s), (t))
-#define wcsncasecmp(s, t, n) wcsnicmp((s), (t), (n))
-#endif
-
 /* Various string functions. */
 
 /* Removes at most one trailing newline character. */

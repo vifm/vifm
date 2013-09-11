@@ -25,6 +25,7 @@ Basic things that need to be done.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
+    Cancel calls of external applications on Ctrl-C, e.g. after `:grep`.
 
 Documentation.
     Better documentation.
@@ -81,6 +82,7 @@ Vi(m) specific features that need to be added.
     Make gUU and similar commands accept [count].
     Make gU2U and similar commands work as in Vim.
     Lazy redraw support (useful for mappings and udf).
+    'nrformats' option as in Vim.
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
@@ -109,6 +111,14 @@ Possible things to add.
     Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
     Invalidate calculated directory size if it's modification time changed.
+    Merge directory stacks in vifminfo file. Need to come up with a good
+        policy about this.
+    Add search history for less-like mode.
+    Update visible symbolic links in the other pane on updating current pane
+        (to show broken links to the user).
+    Print an error message when navigation to a menu item failed.
+    Highlight first line of command-editing buffer of vifm in different
+        color, like gitcommit syntax file does.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -134,6 +144,17 @@ Other (questionable) things.
     "Blow directory" command to replace directory with its content.
     Add file selector based on file extensions.
     Add zr normal key to remove local file name filter.
+    Add a key to menu mode to repeat command and update menu.
+    :edit - select the file after exiting editor?
+    Add a builtin function (or variable?) to get number of selected files
+        in a view (at least in current).  To be used in udf commands to
+        make a choice between using %b and %f.  Or maybe adding a macro
+        for this is a better way to go?
+    Add a builtin function to check whether some external application is
+        available?
+    Use custom title for fuse mounts, e.g.:
+        - fuse://...
+        - /../fuse_file/...
 
 Code improvements.
     Write more tests.
@@ -158,3 +179,7 @@ Code improvements.
         string.
     On Windows check for cmd shell when it's set instead of checking it every
         time it is used.
+    Maybe show "An error occurred" message on fail to build menus like
+        apropos or locate instead of "No files found" (check that list is
+        empty AND an error occurred).
+    Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with copy_str().

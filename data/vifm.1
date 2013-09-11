@@ -1,4 +1,4 @@
-.TH vifm 1 "Aug 18, 2013" "" "Vifm"
+.TH vifm 1 "Sep 11, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2571,6 +2571,11 @@ Format string containing list of columns in the view.  When this option is empty
 view columns to show are chosen automatically using sorting keys (see 'sort') as
 a base.  Value of this option is ignored if 'lsview' is set.  See Column view
 section below for format description.
+
+An example of setting the options for both panes (note vifm-windo command):
+.EX
+ windo set viewcolumns=-{name}..,6{size},11{perms}
+.EE
 .TP
 .BI vixcmd
 type: string
