@@ -1,0 +1,37 @@
+This file is part of MXE.
+See index.html for further information.
+
+This patch has been taken from:
+https://sourceforge.net/p/pdcurses/bugs/79/
+
+Three window related functions didn't copy _delayms member of the
+WINDOW structure, thus loosing delay length.  Patch is for 3.4
+release version and fixes the bug (but there might be more similar
+bugs).
+
+--- a/pdcurses/window.c	2008-07-13 19:08:18.000000000 +0300
++++ b/pdcurses/window.c	2011-12-29 10:45:33.681640600 +0200
+@@ -323,6 +323,7 @@
+     win->_leaveit = orig->_leaveit;
+     win->_scroll = orig->_scroll;
+     win->_nodelay = orig->_nodelay;
++    win->_delayms = orig->_delayms;
+     win->_use_keypad = orig->_use_keypad;
+     win->_immed = orig->_immed;
+     win->_sync = orig->_sync;
+@@ -410,6 +411,7 @@
+     new->_leaveit = win->_leaveit;
+     new->_scroll = win->_scroll;
+     new->_nodelay = win->_nodelay;
++    new->_delayms = win->_delayms;
+     new->_use_keypad = win->_use_keypad;
+     new->_tmarg = win->_tmarg;
+     new->_bmarg = win->_bmarg;
+@@ -486,6 +488,7 @@
+     new->_leaveit = win->_leaveit;
+     new->_scroll = win->_scroll;
+     new->_nodelay = win->_nodelay;
++    new->_delayms = win->_delayms;
+     new->_use_keypad = win->_use_keypad;
+     new->_tmarg = (win->_tmarg > new->_maxy - 1) ? 0 : win->_tmarg;
+     new->_bmarg = (win->_bmarg == win->_maxy - 1) ?
