@@ -15,8 +15,38 @@ screen-open-region-with-program).
 
 "Can't open file for reading" message for directories on e.
 
-Something is wrong with checking program existance on Windows.
+Something is wrong with checking program existance on Windows (probably false
+positive).
 
 Maybe search doesn't work when filename contains () (starts with "(2005) - ")
 
 A bug? Last search pattern is stored per window, but history is common.
+
+When output of something like `:filter?` fills whole screen two character
+positions filled with border color are left (in left and right top corners).
+It also displays only beginning of a message, there is no way to scroll it.
+
+:;q in vifm doesn't produce same result as if it's run in Vim
+
+gid/uid are displayed as -1 on some file systems.
+
+:apropos command doesn't escape its arguments, thus characters like | are
+passed directory to a shell.
+
+:filetype checks doesn't expand ~ and environment variables.
+
+explore mode thinks that tests/not_empty_file/0976452f0cd3ffb6.dat file is empty
+
+When directory is not readable, one cannot navigate to it from a menu.
+
+Something is wrong with search in menu mode, it print "not matches" to often.
+
+Fix syntax highlighting for: touch copy-init.cp; m e20-en.avi; mkdir mkdir.
+
+Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
+
+`:mkdir 'hello` shows 'Too few arguments' error message, while it should be
+"Unclosed quote" or "Wrong expression", whatever, but definitely not
+'Too few arguments'.
+
+Screen split title cannot be overwritten when it's run from `:shell`.
