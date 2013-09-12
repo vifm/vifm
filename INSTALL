@@ -79,9 +79,23 @@ On Windows you need:
 
     The following libraries installed from dev-packages for Mingw (they
     should include DLL's):
-     - Pdcurses for Mingw
+     - Pdcurses for Mingw (with applied patches under patches/pdcurses/)
      - Regex for Mingw
      - pthreads for Windows
+
+Cross-compiling for Windows using MXE (http://mxe.cc/):
+
+    Required MXE packages:
+     - gcc
+     - pdcurses (put patches from patches/pdcurses/ to src/ directory of MXE)
+     - libgnurx
+     - pthreads
+
+    To build vifm using i686-pc-mingw32 toolchain:
+     - add usr/bin/ directory of MXE to the PATH environment variable, e.g.
+         PATH="$MXE_ROOT/usr/bin/:$PATH"
+     - cd src/
+     - make -f Makefile.win CROSS=i686-pc-mingw32-
 
 Windows Installation:
 
