@@ -185,6 +185,7 @@ static void
 run_win_executable(char full_path[])
 {
 	int running_error = 0;
+	int running_error_code = NO_ERROR;
 	if(curr_stats.as_admin && is_vista_and_above())
 	{
 		running_error = run_win_executable_as_evaluated(full_path);
@@ -207,13 +208,24 @@ run_win_executable(char full_path[])
 			else
 			{
 				running_error = 1;
+				running_error_code = error;
 			}
 		}
 		update_screen(UT_FULL);
 	}
 	if(running_error)
 	{
-		show_error_msg("Program running error", "Can't run an executable.");
+		char err_msg[512];
+		err_msg[0] = '\0';
+		if(running_error_code != NO_ERROR && FormatMessageA(
+				FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
+				running_error_code, 0, err_msg, sizeof(err_msg), NULL) == 0)
+		{
+			LOG_WERROR(GetLastError());
+		}
+
+		show_error_msgf("Program running error", "Can't run an executable%s%s",
+				(err_msg[0] == '\0') ? "." : ": ", err_msg);
 	}
 }
 
