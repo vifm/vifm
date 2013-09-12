@@ -1,6 +1,8 @@
-CC := gcc
+CC = $(CROSS)gcc
+LD = $(CROSS)ld
+WINDRES = $(CROSS)windres
 
-CFLAGS := -c -Wall -Werror -MMD $(CFLAGS) -include ../config.h
+CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else
@@ -73,10 +75,10 @@ $(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 vifm.res: vifm.rc ../data/vifm.ico
-	windres --use-temp-file -i ./vifm.rc -o vifm.res
+	$(WINDRES) --use-temp-file -i ./vifm.rc -o vifm.res
 
 vifmres.o: vifm.res
-	windres --use-temp-file -i ./vifm.res -o vifmres.o
+	$(WINDRES) --use-temp-file -i ./vifm.res -o vifmres.o
 
 ../config.h:
 	@echo Creating sample ../config.h

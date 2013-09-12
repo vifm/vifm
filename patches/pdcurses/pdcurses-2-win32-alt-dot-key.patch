@@ -1,0 +1,33 @@
+This file is part of MXE.
+See index.html for further information.
+
+This patch has been taken from:
+https://sourceforge.net/p/pdcurses/discussion/95730/thread/75b9a1ea/
+
+Add support for Alt-. shortcut on Win32.
+
+--- a/curses.h
++++ b/curses.h
+@@ -864,8 +864,10 @@ bits), 8 bits for other attributes, and 16 bits for character data.
+ #define KEY_SUP       0x223  /* Shifted up arrow */
+ #define KEY_SDOWN     0x224  /* Shifted down arrow */
+ 
++#define ALT_PERIOD    0x225  /* alt-period */
++
+ #define KEY_MIN       KEY_BREAK      /* Minimum curses key value */
+-#define KEY_MAX       KEY_SDOWN      /* Maximum curses key */
++#define KEY_MAX       ALT_PERIOD     /* Maximum curses key */
+ 
+ #define KEY_F(n)      (KEY_F0 + (n))
+ 
+--- a/win32/pdckbd.c
++++ b/win32/pdckbd.c
+@@ -194,7 +194,7 @@ static KPTAB kptab[] =
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
++   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, ALT_PERIOD, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},

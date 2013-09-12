@@ -40,6 +40,8 @@ Package content
     |  |-- colors/ - sample color schemes
     |  `-- vim/ - plugin for Vim
     |
+    |-- patches/ - patches for software vifm depends on
+    |
     |-- pkgs/ - package build-scripts
     |
     |-- src/ - the source code of vifm

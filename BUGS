@@ -35,7 +35,8 @@ passed directory to a shell.
 
 :filetype checks doesn't expand ~ and environment variables.
 
-explore mode thinks that tests/not_empty_file/0976452f0cd3ffb6.dat file is empty
+Explore mode thinks that complains about file for empty input (e.g wrong on
+viewer name).
 
 When directory is not readable, one cannot navigate to it from a menu.
 
