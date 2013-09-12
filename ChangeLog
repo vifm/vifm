@@ -117,6 +117,8 @@
 
 	Don't overwrite directory stack stored in vifminfo with an empty one.
 
+	Better error messages on application run failure on Windows.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
