@@ -41,7 +41,7 @@
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
-#include <string.h> /* strcpy() strerror() */
+#include <string.h> /* memcmp() strcpy() strerror() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -2572,7 +2572,7 @@ edit_file(const char filepath[], int force_changed)
 	}
 
 	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
-			sizeof(st_after.st_mtime)) == 0;
+			sizeof(st_after.st_mtime)) != 0;
 }
 
 int
