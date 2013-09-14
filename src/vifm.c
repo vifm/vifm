@@ -543,7 +543,7 @@ run_converter(int vifm_like_mode)
 			break;
 	}
 
-	return exec_program(buf, &returned_exit_code);
+	return win_exec_cmd(buf, &returned_exit_code);
 #endif
 }
 

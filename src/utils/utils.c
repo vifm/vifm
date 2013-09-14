@@ -171,7 +171,7 @@ my_system_no_cls(char command[])
 		*p = '\0';
 
 		strcat(buf, "'");
-		return exec_program(buf, &returned_exit_code);
+		return win_exec_cmd(buf, &returned_exit_code);
 	}
 #endif
 }
@@ -645,7 +645,7 @@ wcswidth(const wchar_t str[], size_t max_len)
 }
 
 int
-exec_program(char cmd[], int *const returned_exit_code)
+win_exec_cmd(char cmd[], int *const returned_exit_code)
 {
 	BOOL ret;
 	DWORD exit_code;

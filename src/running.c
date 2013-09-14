@@ -193,7 +193,7 @@ run_win_executable(char full_path[])
 	else
 	{
 		int returned_exit_code;
-		const int error = exec_program(full_path, &returned_exit_code);
+		const int error = win_exec_cmd(full_path, &returned_exit_code);
 		if(error != 0 && !returned_exit_code)
 		{
 			if(error == ERROR_ELEVATION_REQUIRED && is_vista_and_above())
