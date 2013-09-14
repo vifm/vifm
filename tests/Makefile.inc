@@ -19,14 +19,13 @@ VIFM_BIN := ../../src/vifm$(EXE_SUFFIX)
 
 SOURCES += ../seatest/seatest.c
 ifeq ($(OS),Windows_NT)
-    DIALOG := ../../src/modes/dialogs/attr_dialog_nix.c
     SOURCES := $(filter-out ../../src/desktop.c, $(SOURCES))
     SOURCES := $(filter-out ../../src/utils/mntent.c, $(SOURCES))
+    SOURCES := $(filter-out %_nix.c, $(SOURCES))
 else
-    DIALOG := ../../src/modes/dialogs/attr_dialog_win.c
     SOURCES := $(filter-out ../../src/menus/volumes_menu.c, $(SOURCES))
+    SOURCES := $(filter-out %_win.c, $(SOURCES))
 endif
-SOURCES := $(filter-out $(DIALOG), $(SOURCES))
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)

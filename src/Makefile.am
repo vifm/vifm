@@ -81,6 +81,7 @@ vifm_SOURCES = \
 	utils/tree.c utils/tree.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
+	utils/utils_nix.c utils/utils_nix.h \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
