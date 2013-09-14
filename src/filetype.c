@@ -80,7 +80,7 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 	while(j < records.count)
 	{
 		char name_buf[NAME_MAX];
-		(void)get_command_name(records.list[j].command, 0, sizeof(name_buf),
+		(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
 				name_buf);
 		if(external_command_exists_func == NULL ||
 				external_command_exists_func(name_buf))

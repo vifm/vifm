@@ -10,7 +10,7 @@ test_empty_command_line(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("", command);
 	assert_string_equal("", args);
 }
@@ -22,7 +22,7 @@ test_command_name_only(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("", args);
 }
@@ -34,7 +34,7 @@ test_leading_whitespase_ignored(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("", args);
 }
@@ -46,7 +46,7 @@ test_with_argument_list(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("arg1 arg2", args);
 }
@@ -58,7 +58,7 @@ test_whitespace_after_command_ignored(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("arg1 arg2", args);
 }
@@ -70,7 +70,7 @@ test_fusemount_part_removed(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("archivemount", command);
 	assert_string_equal("%SOURCE_FILE %DESTINATION_DIR", args);
 }
@@ -82,7 +82,7 @@ test_fusemount2_part_removed(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("sshfs", command);
 	assert_string_equal("%PARAM %DESTINATION_DIR", args);
 }
@@ -95,7 +95,7 @@ test_quoted_command_raw_ok(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 1, sizeof(command), command);
+	args = extract_cmd_name(cmd, 1, sizeof(command), command);
 	assert_string_equal("\"quoted cmd\"", command);
 	assert_string_equal("arg1 arg2", args);
 }
@@ -107,7 +107,7 @@ test_quoted_command_coocked_ok(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("quoted cmd", command);
 	assert_string_equal("arg1 arg2", args);
 }

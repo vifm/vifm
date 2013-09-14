@@ -95,7 +95,7 @@ unsigned int get_pid(void);
 /* Finds command name in the command line and writes it to the buf.
  * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */
-char * get_command_name(const char line[], int raw, size_t buf_len, char buf[]);
+char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);

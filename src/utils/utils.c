@@ -522,7 +522,7 @@ get_pid(void)
 }
 
 char *
-get_command_name(const char line[], int raw, size_t buf_len, char buf[])
+extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 {
 	const char *result;
 #ifdef _WIN32

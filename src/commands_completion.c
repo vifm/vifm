@@ -346,7 +346,7 @@ complete_progs(const char *str, assoc_records_t records)
 	{
 		char command[NAME_MAX];
 
-		(void)get_command_name(records.list[i].command, 1, sizeof(command),
+		(void)extract_cmd_name(records.list[i].command, 1, sizeof(command),
 				command);
 
 		if(strnoscmp(command, str, len) == 0)
@@ -495,7 +495,7 @@ fast_run_complete(const char *cmd)
 	char command[NAME_MAX];
 	char *completed;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 
 	reset_completion();
 	exec_completion(command);
