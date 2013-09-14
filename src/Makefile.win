@@ -132,6 +132,6 @@ tests:
 clean:
 	-$(RM) $(addsuffix *.o, $(DIRS))
 	-$(RM) $(addsuffix *.d, $(DIRS))
-	-$(RM) *.exe
+	-$(RM) *.res *.exe
 
 include $(wildcard $(addsuffix *.d, $(DIRS)))
