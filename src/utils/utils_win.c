@@ -28,10 +28,12 @@
 
 #include <ctype.h> /* toupper() */
 #include <stddef.h> /* size_t */
+#include <stdint.h> /* uint32_t */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../commands_completion.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
@@ -39,7 +41,17 @@
 #include "macros.h"
 #include "str.h"
 
+#define PE_HDR_SIGNATURE 0x00004550U
+#define PE_HDR_OFFSET 0x3cU
+#define PE_HDR_SUBSYSTEM_OFFSET 0x5cU
+#define SUBSYSTEM_GUI 2
+
 static const char PATHEXT_EXT_DEF[] = ".bat;.exe;.com";
+
+static int should_wait_for_program(const char cmd[]);
+static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
+static int get_subsystem(const char filename[]);
+static int get_stream_subsystem(FILE *fp);
 
 int
 my_system_no_cls(char command[])
@@ -102,7 +114,7 @@ int
 win_exec_cmd(char cmd[], int *const returned_exit_code)
 {
 	BOOL ret;
-	DWORD exit_code;
+	DWORD code;
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
 
@@ -119,25 +131,124 @@ win_exec_cmd(char cmd[], int *const returned_exit_code)
 
 	CloseHandle(pinfo.hThread);
 
-	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
+	code = handle_process(cmd, pinfo.hProcess, returned_exit_code);
+	if(!*returned_exit_code && code != NO_ERROR)
 	{
-		const DWORD last_error = GetLastError();
-		LOG_WERROR(last_error);
-
-		CloseHandle(pinfo.hProcess);
-		return last_error;
+		LOG_WERROR(code);
 	}
-	if(GetExitCodeProcess(pinfo.hProcess, &exit_code) == 0)
-	{
-		const DWORD last_error = GetLastError();
-		LOG_WERROR(last_error);
 
-		CloseHandle(pinfo.hProcess);
-		return last_error;
-	}
 	CloseHandle(pinfo.hProcess);
-	*returned_exit_code = 1;
+	return code;
+}
+
+/* Handles process execution.  Returns system error code when sets
+ * *got_exit_code to 0 and exit code of the process otherwise. */
+static DWORD
+handle_process(const char cmd[], HANDLE proc, int *got_exit_code)
+{
+	DWORD exit_code;
+
+	if(!should_wait_for_program(cmd))
+	{
+		return 0;
+	}
+
+	if(WaitForSingleObject(proc, INFINITE) != WAIT_OBJECT_0)
+	{
+		return GetLastError();
+	}
+
+	if(GetExitCodeProcess(proc, &exit_code) == 0)
+	{
+		return GetLastError();
+	}
+
+	*got_exit_code = 1;
 	return exit_code;
+}
+
+/* Checks whether execution should be paused until command is finished.  Returns
+ * non-zero when such synchronization is required, otherwise zero is
+ * returned. */
+static int
+should_wait_for_program(const char cmd[])
+{
+	char name[NAME_MAX];
+	char full_path[PATH_MAX];
+
+	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
+
+	if(get_full_cmd_path(name, sizeof(full_path), full_path) == 0)
+	{
+		return get_subsystem(full_path) != SUBSYSTEM_GUI;
+	}
+	return 1;
+}
+
+/* Gets subsystem of the executable pointed to by the filename.  Returns
+ * subsystem or -1 on error. */
+static int
+get_subsystem(const char filename[])
+{
+	int subsystem;
+
+	FILE *const fp = fopen(filename, "rb");
+	if(fp == NULL)
+	{
+		return -1;
+	}
+
+	subsystem = get_stream_subsystem(fp);
+
+	fclose(fp);
+
+	return subsystem;
+}
+
+/* Gets subsystem of the executable contained in the fp stream.  Assumed that fp
+ * is at the beginning of the stream.  Returns subsystem or -1 on error. */
+static int
+get_stream_subsystem(FILE *fp)
+{
+	uint32_t pe_offset, pe_signature;
+	uint16_t subsystem;
+
+	if(fgetc(fp) != 'M' || fgetc(fp) != 'Z')
+	{
+		return -1;
+	}
+
+	if(fseek(fp, PE_HDR_OFFSET, SEEK_SET) != 0)
+	{
+		return -1;
+	}
+	if(fread(&pe_offset, sizeof(pe_offset), 1U, fp) != 1U)
+	{
+		return -1;
+	}
+
+	if(fseek(fp, pe_offset, SEEK_SET) != 0)
+	{
+		return -1;
+	}
+	if(fread(&pe_signature, sizeof(pe_signature), 1U, fp) != 1U)
+	{
+		return -1;
+	}
+	if(pe_signature != PE_HDR_SIGNATURE)
+	{
+		return -1;
+	}
+
+	if(fseek(fp, pe_offset + PE_HDR_SUBSYSTEM_OFFSET, SEEK_SET) != 0)
+	{
+		return -1;
+	}
+	if(fread(&subsystem, sizeof(subsystem), 1U, fp) != 1U)
+	{
+		return -1;
+	}
+	return subsystem;
 }
 
 static void
