@@ -118,6 +118,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static int submode_to_editable_command_type(int sub_mode);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
+static int should_quit_on_backspace(void);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
@@ -777,13 +778,14 @@ submode_to_editable_command_type(int sub_mode)
 	}
 }
 
+/* Handles backspace. */
 static void
 cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
 
-	if(input_stat.index == 0 && input_stat.len == 0 && sub_mode != PROMPT_SUBMODE)
+	if(should_quit_on_backspace())
 	{
 		cmd_ctrl_c(key_info, keys_info);
 		return;
@@ -810,6 +812,17 @@ cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	update_cmdline_text();
+}
+
+/* Checks whether backspace key pressed in current state should quit
+ * command-line mode.  Returns non-zero if so, otherwise zero is returned. */
+static int
+should_quit_on_backspace(void)
+{
+	return input_stat.index == 0
+	    && input_stat.len == 0
+	    && sub_mode != PROMPT_SUBMODE
+	    && sub_mode != FILTER_SUBMODE;
 }
 
 static void
