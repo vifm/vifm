@@ -119,6 +119,7 @@ static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static int submode_to_editable_command_type(int sub_mode);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
+static int no_initial_line(void);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
@@ -822,7 +823,16 @@ should_quit_on_backspace(void)
 	return input_stat.index == 0
 	    && input_stat.len == 0
 	    && sub_mode != PROMPT_SUBMODE
-	    && sub_mode != FILTER_SUBMODE;
+	    && (sub_mode != FILTER_SUBMODE || no_initial_line());
+}
+
+/* Checks whether initial line was empty.  Returns non-zero if so, otherwise
+ * non-zero is returned. */
+static int
+no_initial_line(void)
+{
+	return input_stat.initial_line == NULL
+	    || input_stat.initial_line[0] == L'\0';
 }
 
 static void
