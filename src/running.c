@@ -827,36 +827,66 @@ shellout(const char *command, int pause, int allow_screen)
 
 	if(command != NULL)
 	{
-		if(allow_screen && curr_stats.using_screen)
+		if(allow_screen && (curr_stats.using_screen || curr_stats.using_tmux))
 		{
 			int bg;
 			char *escaped;
 			char *ptr = NULL;
 			char *title = strstr(command, get_vicmd(&bg));
 			char *escaped_sh = escape_filename(cfg.shell, 0);
+			char *escaped_dir = escape_filename(curr_view->curr_dir, 0);
 
 			/* Needed for symlink directories and sshfs mounts */
-			escaped = escape_filename(curr_view->curr_dir, 0);
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
-			free(escaped);
-
-			my_system(buf);
+			if(curr_stats.using_screen)
+			{
+				snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped_dir);
+				my_system(buf);
+			}
 
 			if(title != NULL)
 			{
+				title = escape_filename(title + strlen(get_vicmd(&bg)) + 1, 0);
 				if(pause > 0)
 				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
+					if(curr_stats.using_tmux)
+					{
+						snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "%s -c %s", escaped_sh, escaped);
+						free(escaped);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "tmux new-window -c %s -n %s %s",
+								escaped_dir, title, escaped);
+						free(escaped);
+					}
+					else
+					{
+						snprintf(buf, sizeof(buf),
+								"screen -t %s %s -c '%s" PAUSE_STR "'",
+								title, escaped_sh, command);
+					}
 				}
 				else
 				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
-					free(escaped);
+					if(curr_stats.using_tmux)
+					{
+						escaped = escape_filename(command, 0);
+						snprintf(buf, sizeof(buf), "%s -c %s", escaped_sh, escaped);
+						free(escaped);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "tmux new-window -c %s -n %s %s",
+								escaped_dir, title, escaped);
+						free(escaped);
+					}
+					else
+					{
+						escaped = escape_filename(command, 0);
+						snprintf(buf, sizeof(buf), "screen -t %s %s -c %s",
+								title, escaped_sh, escaped);
+						free(escaped);
+					}
 				}
+				free(title);
 			}
 			else
 			{
@@ -877,24 +907,62 @@ shellout(const char *command, int pause, int allow_screen)
 				title_arg_buffer[0] = '\0';
 				if(!is_null_or_empty(title))
 				{
-					snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-t \"%.10s\"",
-							title);
+					if(curr_stats.using_tmux)
+					{
+						escaped = escape_filename(title, 0);
+						snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-n %.10s",
+								escaped);
+						free(escaped);
+					}
+					else
+					{
+						snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-t \"%.10s\"",
+								title);
+					}
 				}
 				if(pause > 0)
 				{
-					snprintf(buf, sizeof(buf), "screen %s %s -c '%s" PAUSE_STR "'",
-							title_arg_buffer, escaped_sh, command);
+					if(curr_stats.using_tmux)
+					{
+						snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "%s -c %s", escaped_sh, escaped);
+						free(escaped);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "tmux new-window -c %s %s %s",
+								escaped_dir, title_arg_buffer, escaped);
+						free(escaped);
+					}
+					else
+					{
+						snprintf(buf, sizeof(buf), "screen %s %s -c '%s" PAUSE_STR "'",
+								title_arg_buffer, escaped_sh, command);
+					}
 				}
 				else
 				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen %s %s -c %s", title_arg_buffer,
-							escaped_sh, escaped);
-					free(escaped);
+					if(curr_stats.using_tmux)
+					{
+						escaped = escape_filename(command, 0);
+						snprintf(buf, sizeof(buf), "%s -c %s", escaped_sh, escaped);
+						free(escaped);
+						escaped = escape_filename(buf, 0);
+						snprintf(buf, sizeof(buf), "tmux new-window -c %s %s %s",
+								escaped_dir, title_arg_buffer, escaped);
+						free(escaped);
+					}
+					else
+					{
+						escaped = escape_filename(command, 0);
+						snprintf(buf, sizeof(buf), "screen %s %s -c %s", title_arg_buffer,
+								escaped_sh, escaped);
+						free(escaped);
+					}
 				}
 				free(title);
 			}
 			free(escaped_sh);
+			free(escaped_dir);
 		}
 		else
 		{
@@ -923,6 +991,10 @@ shellout(const char *command, int pause, int allow_screen)
 			my_system(buf);
 
 			snprintf(buf, sizeof(buf), "screen");
+		}
+		else if(allow_screen && curr_stats.using_tmux)
+		{
+			snprintf(buf, sizeof(buf), "tmux new-window -c %s", curr_view->curr_dir);
 		}
 		else
 		{

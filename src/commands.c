@@ -819,19 +819,33 @@ split_screen(const FileView *view, const char command[])
 
 	if(command != NULL)
 	{
-		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-		my_system(buf);
+		if(curr_stats.using_tmux)
+		{
+			snprintf(buf, sizeof(buf), "tmux new-window -c \"%s\" \"%s\"", view->curr_dir, command);
+		}
+		else
+		{
+			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
+			my_system(buf);
 
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
-				command);
+			snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
+					command);
+		}
 		my_system(buf);
 	}
 	else
 	{
-		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-		my_system(buf);
+		if(curr_stats.using_tmux)
+		{
+			snprintf(buf, sizeof(buf), "tmux new-window -c \"%s\" \"%s\"", view->curr_dir, cfg.shell);
+		}
+		else
+		{
+			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
+			my_system(buf);
 
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
+			snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
+		}
 		my_system(buf);
 	}
 }
@@ -1413,7 +1427,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
+	else if(flags == MACRO_SPLIT && (curr_stats.using_screen || curr_stats.using_tmux))
 	{
 		split_screen(curr_view, com);
 	}
@@ -2689,6 +2703,11 @@ locate_cmd(const cmd_info_t *cmd_info)
 static int
 ls_cmd(const cmd_info_t *cmd_info)
 {
+	if(curr_stats.using_tmux)
+	{
+		my_system("tmux choose-window");
+		return 0;
+	}
 	if(!curr_stats.using_screen)
 	{
 		status_bar_message("screen program isn't used");
@@ -3215,7 +3234,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cfg.use_screen)
 		{
-			if(curr_stats.using_screen)
+			if(curr_stats.using_screen || curr_stats.using_tmux)
 			{
 				status_bar_message("Screen support is enabled");
 			}
@@ -3808,7 +3827,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
+	else if(flags == MACRO_SPLIT && (curr_stats.using_screen || curr_stats.using_tmux))
 	{
 		split_screen(curr_view, expanded_com);
 	}
