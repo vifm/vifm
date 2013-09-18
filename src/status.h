@@ -115,6 +115,7 @@ typedef struct
 
 	/* Shows whether screen functionality is active at the moment. */
 	int using_screen;
+	int using_tmux;
 
 	/* Stores last command-line mode command that was executed or an empty line
 	 * (e.g. right after startup or :restart command). */
