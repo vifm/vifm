@@ -816,12 +816,16 @@ static void
 split_screen(const FileView *view, const char command[])
 {
 	char buf[1024];
+	char *escaped;
+	char *escaped_dir = escape_filename(view->curr_dir, 0);
 
 	if(command != NULL)
 	{
 		if(curr_stats.using_tmux)
 		{
-			snprintf(buf, sizeof(buf), "tmux new-window -c \"%s\" \"%s\"", view->curr_dir, command);
+			escaped = escape_filename(command, 0);
+			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
+			free(escaped);
 		}
 		else
 		{
@@ -837,7 +841,9 @@ split_screen(const FileView *view, const char command[])
 	{
 		if(curr_stats.using_tmux)
 		{
-			snprintf(buf, sizeof(buf), "tmux new-window -c \"%s\" \"%s\"", view->curr_dir, cfg.shell);
+			escaped = escape_filename(cfg.shell, 0);
+			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
+			free(escaped);
 		}
 		else
 		{
@@ -848,6 +854,8 @@ split_screen(const FileView *view, const char command[])
 		}
 		my_system(buf);
 	}
+
+	free(escaped_dir);
 }
 
 static void
