@@ -197,10 +197,10 @@ is_redraw_scheduled(void)
 }
 
 void
-set_using_screen(int use_screen)
+set_using_term_multiplexer(int use_term_multiplexer)
 {
-	curr_stats.using_screen = inside_screen && use_screen;
-	curr_stats.using_tmux = inside_tmux && use_screen;
+	curr_stats.using_screen = inside_screen && use_term_multiplexer;
+	curr_stats.using_tmux = inside_tmux && use_term_multiplexer;
 }
 
 void

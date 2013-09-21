@@ -854,7 +854,7 @@ void
 set_use_screen(int use_screen)
 {
 	cfg.use_screen = use_screen;
-	set_using_screen(use_screen);
+	set_using_term_multiplexer(use_screen);
 }
 
 void

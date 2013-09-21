@@ -142,9 +142,9 @@ void schedule_redraw(void);
  * was scheduled and resets internal flag. */
 int is_redraw_scheduled(void);
 
-/* Updates curr_stats.using_screen using parameter, which shows whether screen
- * support is enabled. */
-void set_using_screen(int use_screen);
+/* Updates curr_stats to reflect whether terminal multiplexers support is
+ * enabled. */
+void set_using_term_multiplexer(int use_term_multiplexer);
 
 /* Updates last_cmdline_command field of the status structure. */
 void update_last_cmdline_command(const char cmd[]);
