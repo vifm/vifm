@@ -791,24 +791,23 @@ cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 		cmd_ctrl_c(key_info, keys_info);
 		return;
 	}
+
 	if(input_stat.index == 0)
+	{
 		return;
+	}
+
+	input_stat.index--;
+	input_stat.len--;
+
+	input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
 
 	if(input_stat.index == input_stat.len)
 	{
-		input_stat.index--;
-		input_stat.len--;
-
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
-
 		input_stat.line[input_stat.index] = L'\0';
 	}
 	else
 	{
-		input_stat.index--;
-		input_stat.len--;
-
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
 		wcsdel(input_stat.line, input_stat.index + 1, 1);
 	}
 
