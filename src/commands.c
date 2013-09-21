@@ -3235,6 +3235,7 @@ link_cmd(const cmd_info_t *cmd_info, int type)
 	}
 }
 
+/* Shows status of terminal multiplexers support or toggles it. */
 static int
 screen_cmd(const cmd_info_t *cmd_info)
 {
@@ -3244,16 +3245,18 @@ screen_cmd(const cmd_info_t *cmd_info)
 		{
 			if(curr_stats.using_screen || curr_stats.using_tmux)
 			{
-				status_bar_message("Screen support is enabled");
+				status_bar_messagef("Integration with %s is active",
+						curr_stats.using_screen ? "GNU screen" : "tmux");
 			}
 			else
 			{
-				status_bar_message("Screen support is enabled but inactive");
+				status_bar_message("Integration with terminal multiplexers is enabled "
+						"but inactive");
 			}
 		}
 		else
 		{
-			status_bar_message("Screen support is disabled");
+			status_bar_message("Integration with terminal multiplexers is disabled");
 		}
 		return 1;
 	}
