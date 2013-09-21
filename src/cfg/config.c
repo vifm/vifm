@@ -851,10 +851,10 @@ set_trash_dir(const char new_value[])
 }
 
 void
-set_use_screen(int use_screen)
+set_use_term_multiplexer(int use_term_multiplexer)
 {
-	cfg.use_term_multiplexer = use_screen;
-	set_using_term_multiplexer(use_screen);
+	cfg.use_term_multiplexer = use_term_multiplexer;
+	set_using_term_multiplexer(use_term_multiplexer);
 }
 
 void

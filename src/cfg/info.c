@@ -275,7 +275,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
 			const int i = atoi(line_val);
-			set_use_screen(i != 0);
+			set_use_term_multiplexer(i != 0);
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{

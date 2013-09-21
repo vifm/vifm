@@ -3257,7 +3257,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 		}
 		return 1;
 	}
-	set_use_screen(!cfg.use_term_multiplexer);
+	set_use_term_multiplexer(!cfg.use_term_multiplexer);
 	return 0;
 }
 
