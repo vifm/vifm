@@ -3240,7 +3240,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		if(cfg.use_screen)
+		if(cfg.use_term_multiplexer)
 		{
 			if(curr_stats.using_screen || curr_stats.using_tmux)
 			{
@@ -3257,7 +3257,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 		}
 		return 1;
 	}
-	set_use_screen(!cfg.use_screen);
+	set_use_screen(!cfg.use_term_multiplexer);
 	return 0;
 }
 

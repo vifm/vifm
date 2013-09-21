@@ -62,7 +62,10 @@ typedef struct
 	int num_bookmarks; /* Number of active bookmarks (set at the moment) */
 	int use_trash;
 	int vim_filter;
-	int use_screen;
+
+	/* Whether support of terminal multiplexers is enabled. */
+	int use_term_multiplexer;
+
 	int use_vim_help;
 	int history_len;
 

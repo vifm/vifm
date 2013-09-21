@@ -927,7 +927,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "I%d\n", rwin.invert);
 		fprintf(fp, "].%d\n", rwin.hide_dot);
 		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
-		fprintf(fp, "s%d\n", cfg.use_screen);
+		fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_CS)
