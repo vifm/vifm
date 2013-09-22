@@ -896,92 +896,49 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 {
 	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
 
+	char title_arg_buffer[128];
 	int bg;
-	char *escaped;
-	char *ptr = NULL;
-	char *title = strstr(cmd, get_vicmd(&bg));
-	char *escaped_sh = escape_filename(cfg.shell, 0);
-	char *escaped_dir = escape_filename(curr_view->curr_dir, 0);
+	char *escaped, *escaped_sh, *escaped_dir, *title;
 
-	/* Needed for symlink directories and sshfs mounts */
+	if(curr_stats.term_multiplexer != TM_TMUX &&
+			curr_stats.term_multiplexer != TM_SCREEN)
+	{
+		assert(0 && "Unexpected active terminal multiplexer value.");
+		return;
+	}
+
+	title = strstr(cmd, get_vicmd(&bg));
+	escaped_sh = escape_filename(cfg.shell, 0);
+	escaped_dir = escape_filename(curr_view->curr_dir, 0);
+
+	/* Needed for symlink directories and sshfs mounts. */
 	if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
 		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
 		my_system(shell_cmd);
 	}
 
+	title_arg_buffer[0] = '\0';
 	if(title != NULL)
 	{
-		if(pause)
-		{
-			if(curr_stats.term_multiplexer == TM_TMUX)
-			{
-				snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
-				escaped = escape_filename(shell_cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
-				free(escaped);
-				escaped = escape_filename(shell_cmd, 0);
-				title = escape_filename(title + strlen(get_vicmd(&bg)) + 1, 0);
-				snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s -n %s %s",
-						escaped_dir, title, escaped);
-				free(escaped);
-				free(title);
-			}
-			else if(curr_stats.term_multiplexer == TM_SCREEN)
-			{
-				snprintf(shell_cmd, shell_cmd_len,
-						"screen -t %s %s -c '%s" PAUSE_STR "'",
-						title + strlen(get_vicmd(&bg)) + 1, escaped_sh, cmd);
-			}
-			else
-			{
-				assert(0 && "Unexpected active terminal multiplexer value.");
-			}
-		}
-		else
-		{
-			if(curr_stats.term_multiplexer == TM_TMUX)
-			{
-				escaped = escape_filename(cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
-				free(escaped);
-				escaped = escape_filename(shell_cmd, 0);
-				title = escape_filename(title + strlen(get_vicmd(&bg)) + 1, 0);
-				snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s -n %s %s",
-						escaped_dir, title, escaped);
-				free(escaped);
-				free(title);
-			}
-			else if(curr_stats.term_multiplexer == TM_SCREEN)
-			{
-				escaped = escape_filename(cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "screen -t %s %s -c %s",
-						title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
-				free(escaped);
-			}
-			else
-			{
-				assert(0 && "Unexpected active terminal multiplexer value.");
-			}
-		}
+		char *const escaped_title =
+				escape_filename(title + strlen(get_vicmd(&bg)) + 1, 0);
+		snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-%c %s",
+				(curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n',
+				escaped_title);
+		free(escaped_title);
 	}
 	else
 	{
-		char title_arg_buffer[128];
-
-		ptr = strchr(cmd, ' ');
+		char *title = NULL;
+		char *const ptr = strchr(cmd, ' ');
 		if(ptr != NULL)
 		{
 			*ptr = '\0';
 			title = strdup(cmd);
 			*ptr = ' ';
 		}
-		else
-		{
-			title = NULL;
-		}
 
-		title_arg_buffer[0] = '\0';
 		if(!is_null_or_empty(title))
 		{
 			if(curr_stats.term_multiplexer == TM_TMUX)
@@ -1001,55 +958,57 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 				assert(0 && "Unexpected active terminal multiplexer value.");
 			}
 		}
-		if(pause)
+		free(title);
+	}
+
+	if(pause)
+	{
+		if(curr_stats.term_multiplexer == TM_TMUX)
 		{
-			if(curr_stats.term_multiplexer == TM_TMUX)
-			{
-				snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
-				escaped = escape_filename(shell_cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
-				free(escaped);
-				escaped = escape_filename(shell_cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s %s %s",
-						escaped_dir, title_arg_buffer, escaped);
-				free(escaped);
-			}
-			else if(curr_stats.term_multiplexer == TM_SCREEN)
-			{
-				snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c '%s" PAUSE_STR "'",
-						title_arg_buffer, escaped_sh, cmd);
-			}
-			else
-			{
-				assert(0 && "Unexpected active terminal multiplexer value.");
-			}
+			snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
+			escaped = escape_filename(shell_cmd, 0);
+			snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
+			free(escaped);
+			escaped = escape_filename(shell_cmd, 0);
+			snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s %s %s",
+					escaped_dir, title_arg_buffer, escaped);
+			free(escaped);
+		}
+		else if(curr_stats.term_multiplexer == TM_SCREEN)
+		{
+			snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c '%s" PAUSE_STR "'",
+					title_arg_buffer, escaped_sh, cmd);
 		}
 		else
 		{
-			if(curr_stats.term_multiplexer == TM_TMUX)
-			{
-				escaped = escape_filename(cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
-				free(escaped);
-				escaped = escape_filename(shell_cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s %s %s",
-						escaped_dir, title_arg_buffer, escaped);
-				free(escaped);
-			}
-			else if(curr_stats.term_multiplexer == TM_SCREEN)
-			{
-				escaped = escape_filename(cmd, 0);
-				snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s",
-						title_arg_buffer, escaped_sh, escaped);
-				free(escaped);
-			}
-			else
-			{
-				assert(0 && "Unexpected active terminal multiplexer value.");
-			}
+			assert(0 && "Unexpected active terminal multiplexer value.");
 		}
-		free(title);
 	}
+	else
+	{
+		if(curr_stats.term_multiplexer == TM_TMUX)
+		{
+			escaped = escape_filename(cmd, 0);
+			snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
+			free(escaped);
+			escaped = escape_filename(shell_cmd, 0);
+			snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s %s %s",
+					escaped_dir, title_arg_buffer, escaped);
+			free(escaped);
+		}
+		else if(curr_stats.term_multiplexer == TM_SCREEN)
+		{
+			escaped = escape_filename(cmd, 0);
+			snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s",
+					title_arg_buffer, escaped_sh, escaped);
+			free(escaped);
+		}
+		else
+		{
+			assert(0 && "Unexpected active terminal multiplexer value.");
+		}
+	}
+
 	free(escaped_sh);
 	free(escaped_dir);
 }
