@@ -38,6 +38,11 @@
 #include "utils/tree.h"
 #include "color_scheme.h"
 
+/* Environment variables by which application hosted by terminal multiplexer can
+ * identify the host. */
+#define SCREEN_ENVVAR "STY"
+#define TMUX_ENVVAR "TMUX"
+
 static void load_def_values(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats);
@@ -54,8 +59,8 @@ static int inside_tmux;
 int
 init_status(void)
 {
-	inside_screen = !is_null_or_empty(env_get("STY"));
-	inside_tmux = !is_null_or_empty(env_get("TMUX"));
+	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
+	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
 
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
