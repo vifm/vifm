@@ -61,14 +61,6 @@
 #include "status.h"
 #include "ui.h"
 
-#ifndef _WIN32
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR "; "PAUSE_CMD
-#else
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR " && pause || pause"
-#endif
-
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,

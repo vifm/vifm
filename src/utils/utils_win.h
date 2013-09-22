@@ -37,6 +37,9 @@
 
 #define lstat stat
 
+#define PAUSE_CMD "vifm-pause"
+#define PAUSE_STR " && pause || pause"
+
 int wcwidth(wchar_t c);
 
 int wcswidth(const wchar_t str[], size_t max_len);

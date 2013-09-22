@@ -25,6 +25,9 @@
 #include <sys/types.h> /* gid_t mode_t uid_t */
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 
+#define PAUSE_CMD "vifm-pause"
+#define PAUSE_STR "; "PAUSE_CMD
+
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 /* Converts the mode to string representation of permissions. */
