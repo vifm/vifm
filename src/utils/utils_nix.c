@@ -18,6 +18,7 @@
  */
 
 #include "utils_nix.h"
+#include "utils_int.h"
 
 #include <sys/stat.h> /* S_* */
 #include <sys/types.h> /* gid_t mode_t uid_t */
@@ -43,8 +44,14 @@
 
 static int begins_with_list_item(const char pattern[], const char list[]);
 
+void
+pause_shell(void)
+{
+	run_in_shell_no_cls(PAUSE_CMD);
+}
+
 int
-my_system_no_cls(char command[])
+run_in_shell_no_cls(char command[])
 {
 	typedef void (*sig_handler)(int);
 

@@ -18,6 +18,7 @@
  */
 
 #include "utils.h"
+#include "utils_int.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -61,7 +62,7 @@ my_system(char command[])
 #ifdef _WIN32
 	system("cls");
 #endif
-	return my_system_no_cls(command);
+	return run_in_shell_no_cls(command);
 }
 
 int

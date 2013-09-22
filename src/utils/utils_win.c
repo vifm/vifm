@@ -18,6 +18,7 @@
  */
 
 #include "utils_win.h"
+#include "utils_int.h"
 
 #include <windows.h>
 #include <winioctl.h>
@@ -53,8 +54,21 @@ static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 
+void
+pause_shell(void)
+{
+	if(stroscmp(cfg.shell, "cmd") == 0)
+	{
+		run_in_shell_no_cls("pause");
+	}
+	else
+	{
+		run_in_shell_no_cls(PAUSE_CMD);
+	}
+}
+
 int
-my_system_no_cls(char command[])
+run_in_shell_no_cls(char command[])
 {
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 

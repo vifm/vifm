@@ -834,16 +834,7 @@ shellout(const char *command, int pause, int allow_screen)
 	{
 		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", buf,
 				result, result, ec);
-#ifdef _WIN32
-		if(stroscmp(cfg.shell, "cmd") == 0)
-		{
-			my_system_no_cls("pause");
-		}
-		else
-#endif
-		{
-			my_system_no_cls(PAUSE_CMD);
-		}
+		pause_shell();
 	}
 
 	/* force views update */
