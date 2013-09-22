@@ -119,6 +119,9 @@
 
 	Better error messages on application run failure on Windows.
 
+	Don't wait finishing of GUI applications on Windows.  Thanks to Robert
+	Sarkozi.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

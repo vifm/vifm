@@ -20,34 +20,12 @@
 #ifndef VIFM__UTILS__UTILS_H__
 #define VIFM__UTILS__UTILS_H__
 
-#ifdef _WIN32
-#include <windef.h>
-#endif
-
 #include <regex.h>
 
-#include <sys/types.h> /* mode_t */
-#ifndef _WIN32
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
-#endif
+#include <sys/types.h> /* gid_t mode_t uid_t */
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <wchar.h> /* wchar_t ... */
-
-#include "macros.h"
-
-#ifdef _WIN32
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(a) (a)
-#endif
-
-#ifndef WIFEXITED
-#define WIFEXITED(a) 1
-#endif
-
-#define lstat stat
-#endif
 
 /* Regular expressions. */
 
@@ -68,13 +46,10 @@ int my_system(char command[]);
 /* Executes an external command without clearing up the screen.  Returns error
  * code, which is zero on success. */
 int my_system_no_cls(char command[]);
-void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 /* Other functions. */
 
-/* Converts the mode to string representation of permissions. */
-void get_perm_string(char buf[], int len, mode_t mode);
-int is_on_slow_fs(const char *full_path);
+int is_on_slow_fs(const char full_path[]);
 /* Fills supplied buffer with user friendly representation of file size.
  * Returns non-zero in case resulting string is a shortened variant of size. */
 int friendly_size_notation(uint64_t num, int str_size, char *str);
@@ -95,25 +70,12 @@ unsigned int get_pid(void);
 /* Finds command name in the command line and writes it to the buf.
  * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */
-char * get_command_name(const char line[], int raw, size_t buf_len, char buf[]);
+char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
 
-#ifndef _WIN32
-int get_uid(const char *user, uid_t *uid);
-int get_gid(const char *group, gid_t *gid);
-int S_ISEXE(mode_t mode);
+#ifdef _WIN32
+#include "utils_win.h"
 #else
-int wcwidth(wchar_t c);
-int wcswidth(const wchar_t str[], size_t max_len);
-/* Executes a command (cmd) using CreateProcess() API function.  On internal
- * error returns last error code and sets *returned_exit_code to zero, otherwise
- * sets *returned_exit_code to non-zero and returns exit code of a process. */
-int exec_program(char cmd[], int *const returned_exit_code);
-/* Checks executable existence trying to add executable extensions if needed. */
-int win_executable_exists(const char *path);
-int is_win_executable(const char *name);
-int is_vista_and_above(void);
-const char *attr_str(DWORD attr);
-const char *attr_str_long(DWORD attr);
+#include "utils_nix.h"
 #endif
 
 #endif /* VIFM__UTILS__UTILS_H__ */

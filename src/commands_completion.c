@@ -84,7 +84,7 @@ static int is_entry_exec(const struct dirent *d);
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
-static int executable_exists_in_path(const char command_name[]);
+static int complete_cmd_in_path(const char cmd[], size_t path_len, char path[]);
 static int executable_exists(const char full_path[]);
 
 int
@@ -346,7 +346,7 @@ complete_progs(const char *str, assoc_records_t records)
 	{
 		char command[NAME_MAX];
 
-		(void)get_command_name(records.list[i].command, 1, sizeof(command),
+		(void)extract_cmd_name(records.list[i].command, 1, sizeof(command),
 				command);
 
 		if(strnoscmp(command, str, len) == 0)
@@ -495,7 +495,7 @@ fast_run_complete(const char *cmd)
 	char command[NAME_MAX];
 	char *completed;
 
-	args = get_command_name(cmd, 0, sizeof(command), command);
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 
 	reset_completion();
 	exec_completion(command);
@@ -871,26 +871,40 @@ complete_with_shared(const char *server, const char *file)
 #endif
 
 int
-external_command_exists(const char command[])
+external_command_exists(const char cmd[])
 {
-	if(starts_with(command, "!!"))
+	char full_path[PATH_MAX];
+
+	if(get_full_cmd_path(cmd, sizeof(full_path), full_path) == 0)
 	{
-		command += 2;
+		return executable_exists(full_path);
+	}
+	return 0;
+}
+
+int
+get_full_cmd_path(const char cmd[], size_t path_len, char path[])
+{
+	if(starts_with(cmd, "!!"))
+	{
+		cmd += 2;
 	}
 
-	if(strchr(command, '/') == NULL)
+	if(contains_slash(cmd))
 	{
-		return executable_exists_in_path(command);
+		copy_str(path, path_len, cmd);
+		return 0;
 	}
 	else
 	{
-		return executable_exists(command);
+		return complete_cmd_in_path(cmd, path_len, path);
 	}
 }
 
-/* Checks for executable in all directories in PATH environment variables. */
+/* Completes path to executable using all directories from PATH environment
+ * variable.  Returns zero on success, otherwise non-zero is returned. */
 static int
-executable_exists_in_path(const char command_name[])
+complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
 {
 	size_t i;
 	size_t paths_count;
@@ -900,14 +914,15 @@ executable_exists_in_path(const char command_name[])
 	for(i = 0; i < paths_count; i++)
 	{
 		char full_path[PATH_MAX];
-		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], command_name);
+		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], cmd);
 
-		if(executable_exists(full_path))
+		if(path_exists(full_path))
 		{
-			return 1;
+			copy_str(path, path_len, full_path);
+			return 0;
 		}
 	}
-	return 0;
+	return 1;
 }
 
 /* Checks for executable by its full path. */
@@ -915,10 +930,6 @@ static int
 executable_exists(const char full_path[])
 {
 #ifndef _WIN32
-	if(!path_exists(full_path))
-	{
-		return 0;
-	}
 	return access(full_path, X_OK) == 0;
 #else
 	return win_executable_exists(full_path);

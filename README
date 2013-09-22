@@ -119,7 +119,9 @@ Package content
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- tree.c - cache for ga command results
     |  |  |-- utf8.c - functions to handle utf8 strings
-    |  |  `-- utils.c - various utilities
+    |  |  |-- utils.c - various utilities
+    |  |  |-- utils_nix.c - various utilities for *nix systems
+    |  |  `-- utils_win.c - various utilities for MS Windows
     |  |
     |  |-- background.c - runs commands in background
     |  |-- bookmarks.c - stores information about bookmarked directories

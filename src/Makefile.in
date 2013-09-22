@@ -95,7 +95,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) \
+	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
 	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
 	color_manager.$(OBJEXT) commands.$(OBJEXT) \
@@ -339,6 +340,7 @@ vifm_SOURCES = \
 	utils/tree.c utils/tree.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
+	utils/utils_nix.c utils/utils_nix.h \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
@@ -606,6 +608,8 @@ utils/utf8.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/utils.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/utils_nix.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES) 
 	@rm -f vifm$(EXEEXT)
 	$(LINK) $(vifm_OBJECTS) $(vifm_LDADD) $(LIBS)
@@ -703,6 +707,7 @@ mostlyclean-compile:
 	-rm -f utils/tree.$(OBJEXT)
 	-rm -f utils/utf8.$(OBJEXT)
 	-rm -f utils/utils.$(OBJEXT)
+	-rm -f utils/utils_nix.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -803,6 +808,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utf8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils_nix.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
