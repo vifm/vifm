@@ -815,59 +815,36 @@ init_commands(void)
 static void
 split_screen(const FileView *view, const char command[])
 {
-	char buf[1024];
-	char *escaped;
-	char *escaped_dir = escape_filename(view->curr_dir, 0);
+	const char *const cmd_to_run = (command == NULL) ? cfg.shell : command;
 
-	if(command != NULL)
+	char *const escaped = escape_filename(cmd_to_run, 0);
+	char *const escaped_dir = escape_filename(view->curr_dir, 0);
+
+	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		if(curr_stats.term_multiplexer == TM_TMUX)
-		{
-			escaped = escape_filename(command, 0);
-			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
-			free(escaped);
-		}
-		else if(curr_stats.term_multiplexer == TM_SCREEN)
-		{
-			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-			my_system(buf);
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir,
+				escaped);
+		my_system(buf);
+	}
+	else if(curr_stats.term_multiplexer == TM_SCREEN)
+	{
+		char buf[1024];
 
-			snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
-					command);
-		}
-		else
-		{
-			assert(0 && "Unexpected active terminal multiplexer value.");
-			free(escaped_dir);
-			return;
-		}
+		/* FIXME: path that contain single quote won't work */
+		snprintf(buf, sizeof(buf), "screen -X eval chdir\\ \\'%s\\'", escaped_dir);
+		my_system(buf);
+
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", escaped);
 		my_system(buf);
 	}
 	else
 	{
-		if(curr_stats.term_multiplexer == TM_TMUX)
-		{
-			escaped = escape_filename(cfg.shell, 0);
-			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
-			free(escaped);
-		}
-		else if(curr_stats.term_multiplexer == TM_SCREEN)
-		{
-			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-			my_system(buf);
-
-			snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
-		}
-		else
-		{
-			assert(0 && "Unexpected active terminal multiplexer value.");
-			free(escaped_dir);
-			return;
-		}
-		my_system(buf);
+		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
 
 	free(escaped_dir);
+	free(escaped);
 }
 
 static void

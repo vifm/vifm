@@ -183,3 +183,4 @@ Code improvements.
         apropos or locate instead of "No files found" (check that list is
         empty AND an error occurred).
     Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with copy_str().
+    Rename escape_filename() to shell_escape() or similar, but quite generic.
