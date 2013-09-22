@@ -821,13 +821,13 @@ split_screen(const FileView *view, const char command[])
 
 	if(command != NULL)
 	{
-		if(curr_stats.using_tmux)
+		if(curr_stats.term_multiplexer == TM_TMUX)
 		{
 			escaped = escape_filename(command, 0);
 			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
 			free(escaped);
 		}
-		else
+		else if(curr_stats.term_multiplexer == TM_SCREEN)
 		{
 			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
 			my_system(buf);
@@ -835,22 +835,34 @@ split_screen(const FileView *view, const char command[])
 			snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
 					command);
 		}
+		else
+		{
+			assert(0 && "Unexpected active terminal multiplexer value.");
+			free(escaped_dir);
+			return;
+		}
 		my_system(buf);
 	}
 	else
 	{
-		if(curr_stats.using_tmux)
+		if(curr_stats.term_multiplexer == TM_TMUX)
 		{
 			escaped = escape_filename(cfg.shell, 0);
 			snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir, escaped);
 			free(escaped);
 		}
-		else
+		else if(curr_stats.term_multiplexer == TM_SCREEN)
 		{
 			snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
 			my_system(buf);
 
 			snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
+		}
+		else
+		{
+			assert(0 && "Unexpected active terminal multiplexer value.");
+			free(escaped_dir);
+			return;
 		}
 		my_system(buf);
 	}
@@ -1435,7 +1447,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && (curr_stats.using_screen || curr_stats.using_tmux))
+	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
 		split_screen(curr_view, com);
 	}
@@ -2711,12 +2723,12 @@ locate_cmd(const cmd_info_t *cmd_info)
 static int
 ls_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_stats.using_tmux)
+	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
 		my_system("tmux choose-window || tmux command-prompt choose-window");
 		return 0;
 	}
-	if(!curr_stats.using_screen)
+	if(curr_stats.term_multiplexer != TM_SCREEN)
 	{
 		status_bar_message("screen program isn't used");
 		return 1;
@@ -3243,10 +3255,10 @@ screen_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cfg.use_term_multiplexer)
 		{
-			if(curr_stats.using_screen || curr_stats.using_tmux)
+			if(curr_stats.term_multiplexer != TM_NONE)
 			{
 				status_bar_messagef("Integration with %s is active",
-						curr_stats.using_screen ? "GNU screen" : "tmux");
+						(curr_stats.term_multiplexer == TM_SCREEN) ? "GNU screen" : "tmux");
 			}
 			else
 			{
@@ -3838,7 +3850,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && (curr_stats.using_screen || curr_stats.using_tmux))
+	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
 		split_screen(curr_view, expanded_com);
 	}

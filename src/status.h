@@ -50,6 +50,15 @@ typedef enum
 	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
 }EnvType;
 
+/* List of terminal multiplexers. */
+typedef enum
+{
+	TM_NONE,   /* Plain console. */
+	TM_SCREEN, /* GNU screen. */
+	TM_TMUX,   /* tmux. */
+}
+TermMultiplexer;
+
 typedef enum
 {
 	UT_NONE, /* no update needed */
@@ -113,9 +122,9 @@ typedef struct
 
 	EnvType env_type; /* Specifies execution environment type. */
 
-	/* Shows whether screen functionality is active at the moment. */
-	int using_screen;
-	int using_tmux;
+	/* Shows which of supported terminal multiplexers is currently in use, if
+	 * any. */
+	TermMultiplexer term_multiplexer;
 
 	/* Stores last command-line mode command that was executed or an empty line
 	 * (e.g. right after startup or :restart command). */

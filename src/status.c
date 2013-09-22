@@ -114,8 +114,7 @@ load_def_values(status_t *stats)
 
 	stats->env_type = ENVTYPE_EMULATOR;
 
-	stats->using_screen = 0;
-	stats->using_tmux = 0;
+	stats->term_multiplexer = TM_NONE;
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
@@ -199,8 +198,22 @@ is_redraw_scheduled(void)
 void
 set_using_term_multiplexer(int use_term_multiplexer)
 {
-	curr_stats.using_screen = inside_screen && use_term_multiplexer;
-	curr_stats.using_tmux = inside_tmux && use_term_multiplexer;
+	if(!use_term_multiplexer)
+	{
+		curr_stats.term_multiplexer = TM_NONE;
+	}
+	else if(inside_screen)
+	{
+		curr_stats.term_multiplexer = TM_SCREEN;
+	}
+	else if(inside_tmux)
+	{
+		curr_stats.term_multiplexer = TM_TMUX;
+	}
+	else
+	{
+		curr_stats.term_multiplexer = TM_NONE;
+	}
 }
 
 void
