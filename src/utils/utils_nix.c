@@ -118,6 +118,12 @@ run_in_shell_no_cls(char command[])
 	return result;
 }
 
+void
+recover_after_shellout(void)
+{
+	/* Do nothing.  No need to recover anything on this platform. */
+}
+
 /* if err == 1 then use stderr and close stdin and stdout */
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err, char *cmd)

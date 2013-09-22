@@ -99,6 +99,13 @@ run_in_shell_no_cls(char command[])
 	}
 }
 
+void
+recover_after_shellout(void)
+{
+	reset_prog_mode();
+	resize_term(cfg.lines, cfg.columns);
+}
+
 int
 is_on_slow_fs(const char full_path[])
 {

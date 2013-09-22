@@ -45,6 +45,8 @@ const char * get_regexp_error(int err, regex_t *re);
 int my_system(char command[]);
 /* Pauses shell.  Assumes that curses interface is off. */
 void pause_shell(void);
+/* Called after return from a shellout to provide point to recover UI. */
+void recover_after_shellout(void);
 
 /* Other functions. */
 

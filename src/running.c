@@ -841,10 +841,8 @@ shellout(const char *command, int pause, int allow_screen)
 	request_view_update(&lwin);
 	request_view_update(&rwin);
 
-#ifdef _WIN32
-	reset_prog_mode();
-	resize_term(cfg.lines, cfg.columns);
-#endif
+	recover_after_shellout();
+
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)
 		curr_stats.need_update = UT_FULL;
