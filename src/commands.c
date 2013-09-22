@@ -2720,21 +2720,27 @@ locate_cmd(const cmd_info_t *cmd_info)
 	return show_locate_menu(curr_view, last_args) != 0;
 }
 
+/* Lists active windows of terminal multiplexer in use, if any. */
 static int
 ls_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_stats.term_multiplexer == TM_TMUX)
+	switch(curr_stats.term_multiplexer)
 	{
-		my_system("tmux choose-window || tmux command-prompt choose-window");
-		return 0;
+		case TM_NONE:
+			status_bar_message("No terminal multiplexer is in use");
+			return 1;
+		case TM_SCREEN:
+			my_system("screen -X eval 'windowlist'");
+			return 0;
+		case TM_TMUX:
+			my_system("tmux choose-window || tmux command-prompt choose-window");
+			return 0;
+
+		default:
+			assert(0 && "Unknown active terminal multiplexer value");
+			status_bar_message("Unknown terminal multiplexer is in use");
+			return 1;
 	}
-	if(curr_stats.term_multiplexer != TM_SCREEN)
-	{
-		status_bar_message("screen program isn't used");
-		return 1;
-	}
-	my_system("screen -X eval 'windowlist'");
-	return 0;
 }
 
 static int
