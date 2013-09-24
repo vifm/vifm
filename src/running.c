@@ -911,13 +911,6 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 	escaped_sh = escape_filename(cfg.shell, 0);
 	escaped_dir = escape_filename(curr_view->curr_dir, 0);
 
-	/* Needed for symlink directories and sshfs mounts. */
-	if(curr_stats.term_multiplexer == TM_SCREEN)
-	{
-		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		my_system(shell_cmd);
-	}
-
 	gen_term_multiplexer_title_arg(cmd, sizeof(title_arg_buffer),
 			title_arg_buffer);
 
@@ -939,8 +932,14 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
 		char *const escaped = escape_filename(shell_cmd, 0);
+
+		/* Needed for symlink directories and sshfs mounts. */
+		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
+		my_system(shell_cmd);
+
 		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
 				escaped_sh, escaped);
+
 		free(escaped);
 	}
 
@@ -1013,24 +1012,26 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 static void
 gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
 {
+	char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
+
 	if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD \'%s\'",
-				curr_view->curr_dir);
-
+		/* Needed for symlink directories and sshfs mounts. */
+		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
 		my_system(shell_cmd);
 
 		snprintf(shell_cmd, shell_cmd_len, "screen");
 	}
 	else if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s",
-				curr_view->curr_dir);
+		snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s", escaped_dir);
 	}
 	else
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
+
+	free(escaped_dir);
 }
 
 void

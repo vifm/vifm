@@ -51,3 +51,5 @@ Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
 'Too few arguments'.
 
 Screen split title cannot be overwritten when it's run from `:shell`.
+
+Search ignores first element, even when it's not .. directory!

@@ -3896,25 +3896,31 @@ run_in_split(const FileView *view, const char cmd[])
 {
 	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
 
-	char *const escaped = escape_filename(cmd_to_run, 0);
+	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
 	char *const escaped_dir = escape_filename(view->curr_dir, 0);
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
 		char buf[1024];
 		snprintf(buf, sizeof(buf), "tmux split-window -c %s %s", escaped_dir,
-				escaped);
+				escaped_cmd);
 		my_system(buf);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
 		char buf[1024];
+		char *escaped_chdir;
 
-		/* FIXME: path that contain single quote won't work */
-		snprintf(buf, sizeof(buf), "screen -X eval chdir\\ \\'%s\\'", escaped_dir);
+		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
+
+		escaped_chdir = escape_filename(buf, 0);
+		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
+		free(escaped_chdir);
+
 		my_system(buf);
 
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", escaped);
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
+				escaped_cmd);
 		my_system(buf);
 	}
 	else
@@ -3923,7 +3929,7 @@ run_in_split(const FileView *view, const char cmd[])
 	}
 
 	free(escaped_dir);
-	free(escaped);
+	free(escaped_cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
