@@ -84,6 +84,8 @@ static void gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
 		size_t shell_cmd_len, char shell_cmd[]);
 static void gen_term_multiplexer_cmd(const char cmd[], int pause,
 		size_t shell_cmd_len, char shell_cmd[]);
+static void gen_term_multiplexer_title_arg(const char cmd[],
+		size_t title_arg_len, char title_arg[]);
 static void gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		char shell_cmd[]);
 static void gen_term_multiplexer_run_cmd(size_t shell_cmd_len,
@@ -897,8 +899,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
 
 	char title_arg_buffer[128];
-	int bg;
-	char *escaped_sh, *escaped_dir, *title;
+	char *escaped_sh, *escaped_dir;
 
 	if(curr_stats.term_multiplexer != TM_TMUX &&
 			curr_stats.term_multiplexer != TM_SCREEN)
@@ -907,7 +908,6 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		return;
 	}
 
-	title = strstr(cmd, get_vicmd(&bg));
 	escaped_sh = escape_filename(cfg.shell, 0);
 	escaped_dir = escape_filename(curr_view->curr_dir, 0);
 
@@ -918,43 +918,8 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		my_system(shell_cmd);
 	}
 
-	title_arg_buffer[0] = '\0';
-	if(title != NULL)
-	{
-		char *const escaped_title =
-				escape_filename(title + strlen(get_vicmd(&bg)) + 1, 0);
-		snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-%c %s",
-				(curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n', escaped_title);
-		free(escaped_title);
-	}
-	else
-	{
-		char *title = NULL;
-		char *const ptr = strchr(cmd, ' ');
-		if(ptr != NULL)
-		{
-			*ptr = '\0';
-			title = strdup(cmd);
-			*ptr = ' ';
-		}
-
-		if(!is_null_or_empty(title))
-		{
-			if(curr_stats.term_multiplexer == TM_TMUX)
-			{
-				char *const escaped = escape_filename(title, 0);
-				snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-n %.10s",
-						escaped);
-				free(escaped);
-			}
-			else if(curr_stats.term_multiplexer == TM_SCREEN)
-			{
-				snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-t \"%.10s\"",
-						title);
-			}
-		}
-		free(title);
-	}
+	gen_term_multiplexer_title_arg(cmd, sizeof(title_arg_buffer),
+			title_arg_buffer);
 
 	snprintf(shell_cmd, shell_cmd_len, "%s%s", cmd, pause ? PAUSE_STR : "");
 
@@ -981,6 +946,46 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 
 	free(escaped_sh);
 	free(escaped_dir);
+}
+
+/* Composes title for window of a terminal multiplexer. */
+static void
+gen_term_multiplexer_title_arg(const char cmd[], size_t title_arg_len,
+		char title_arg[])
+{
+	int bg;
+	const char *const vicmd = get_vicmd(&bg);
+	const char *const visubcmd = strstr(cmd, vicmd);
+	char *command_name = NULL;
+	const char *title;
+
+	title_arg[0] = '\0';
+
+	if(visubcmd != NULL)
+	{
+		title = visubcmd + strlen(vicmd) + 1;
+	}
+	else
+	{
+		char *const separator = strchr(cmd, ' ');
+		if(separator != NULL)
+		{
+			*separator = '\0';
+			command_name = strdup(cmd);
+			*separator = ' ';
+		}
+		title = command_name;
+	}
+
+	if(!is_null_or_empty(title))
+	{
+		const char opt_c = (curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n';
+		char *const escaped_title = escape_filename(title, 0);
+		snprintf(title_arg, title_arg_len, "-%c %s", opt_c, escaped_title);
+		free(escaped_title);
+	}
+
+	free(command_name);
 }
 
 /* Composes command to be run without terminal multiplexer. */
