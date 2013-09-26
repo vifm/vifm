@@ -2713,7 +2713,7 @@ ls_cmd(const cmd_info_t *cmd_info)
 {
 	if(curr_stats.using_tmux)
 	{
-		my_system("tmux choose-window");
+		my_system("tmux choose-window || tmux command-prompt choose-window");
 		return 0;
 	}
 	if(!curr_stats.using_screen)
