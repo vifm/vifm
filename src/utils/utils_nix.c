@@ -18,6 +18,7 @@
  */
 
 #include "utils_nix.h"
+#include "utils_int.h"
 
 #include <sys/stat.h> /* S_* */
 #include <sys/types.h> /* gid_t mode_t uid_t */
@@ -43,8 +44,14 @@
 
 static int begins_with_list_item(const char pattern[], const char list[]);
 
+void
+pause_shell(void)
+{
+	run_in_shell_no_cls(PAUSE_CMD);
+}
+
 int
-my_system_no_cls(char command[])
+run_in_shell_no_cls(char command[])
 {
 	typedef void (*sig_handler)(int);
 
@@ -109,6 +116,12 @@ my_system_no_cls(char command[])
 	signal(SIGTSTP, sigtstp_handler);
 	sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
 	return result;
+}
+
+void
+recover_after_shellout(void)
+{
+	/* Do nothing.  No need to recover anything on this platform. */
 }
 
 /* if err == 1 then use stderr and close stdin and stdout */

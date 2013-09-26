@@ -132,7 +132,7 @@ init_config(void)
 		assert(update_stat == 0);
 	}
 
-	cfg.use_screen = 0;
+	cfg.use_term_multiplexer = 0;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
 	cfg.ignore_case = 0;
@@ -851,10 +851,10 @@ set_trash_dir(const char new_value[])
 }
 
 void
-set_use_screen(int use_screen)
+set_use_term_multiplexer(int use_term_multiplexer)
 {
-	cfg.use_screen = use_screen;
-	set_using_screen(use_screen);
+	cfg.use_term_multiplexer = use_term_multiplexer;
+	set_using_term_multiplexer(use_term_multiplexer);
 }
 
 void

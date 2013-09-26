@@ -62,7 +62,10 @@ typedef struct
 	int num_bookmarks; /* Number of active bookmarks (set at the moment) */
 	int use_trash;
 	int vim_filter;
-	int use_screen;
+
+	/* Whether support of terminal multiplexers is enabled. */
+	int use_term_multiplexer;
+
 	int use_vim_help;
 	int history_len;
 
@@ -151,8 +154,8 @@ int set_fuse_home(const char new_value[]);
 /* Sets value of cfg.trash_dir.  Returns non-zero in case of error, otherwise
  * zero is returned. */
 int set_trash_dir(const char new_value[]);
-/* Sets whether screen support is enabled. */
-void set_use_screen(int use_screen);
+/* Sets whether support of terminal multiplexers is enabled. */
+void set_use_term_multiplexer(int use_term_multiplexer);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
 /* Saves command to command history. */

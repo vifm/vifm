@@ -31,6 +31,7 @@
 #endif
 #endif
 
+#include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <signal.h> /* sighandler_t, signal() */
 #include <stddef.h> /* NULL size_t */
@@ -60,14 +61,6 @@
 #include "status.h"
 #include "ui.h"
 
-#ifndef _WIN32
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR "; "PAUSE_CMD
-#else
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR " && pause || pause"
-#endif
-
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
@@ -87,6 +80,16 @@ static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
 static void store_for_external(const FileView *view, FILE *fp, int argc,
 		char *argv[]);
+static void gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
+		size_t shell_cmd_len, char shell_cmd[]);
+static void gen_term_multiplexer_cmd(const char cmd[], int pause,
+		size_t shell_cmd_len, char shell_cmd[]);
+static void gen_term_multiplexer_title_arg(const char cmd[],
+		size_t title_arg_len, char title_arg[]);
+static void gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
+		char shell_cmd[]);
+static void gen_term_multiplexer_run_cmd(size_t shell_cmd_len,
+		char shell_cmd[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -816,8 +819,6 @@ store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
 int
 shellout(const char *command, int pause, int allow_screen)
 {
-	/* TODO: refactor this big function shellout() */
-
 	char buf[cfg.max_args];
 	int result;
 	int ec;
@@ -825,110 +826,7 @@ shellout(const char *command, int pause, int allow_screen)
 	if(pause > 0 && command != NULL && ends_with(command, "&"))
 		pause = -1;
 
-	if(command != NULL)
-	{
-		if(allow_screen && curr_stats.using_screen)
-		{
-			int bg;
-			char *escaped;
-			char *ptr = NULL;
-			char *title = strstr(command, get_vicmd(&bg));
-			char *escaped_sh = escape_filename(cfg.shell, 0);
-
-			/* Needed for symlink directories and sshfs mounts */
-			escaped = escape_filename(curr_view->curr_dir, 0);
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
-			free(escaped);
-
-			my_system(buf);
-
-			if(title != NULL)
-			{
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
-					free(escaped);
-				}
-			}
-			else
-			{
-				char title_arg_buffer[128];
-
-				ptr = strchr(command, ' ');
-				if(ptr != NULL)
-				{
-					*ptr = '\0';
-					title = strdup(command);
-					*ptr = ' ';
-				}
-				else
-				{
-					title = NULL;
-				}
-
-				title_arg_buffer[0] = '\0';
-				if(!is_null_or_empty(title))
-				{
-					snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-t \"%.10s\"",
-							title);
-				}
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf), "screen %s %s -c '%s" PAUSE_STR "'",
-							title_arg_buffer, escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen %s %s -c %s", title_arg_buffer,
-							escaped_sh, escaped);
-					free(escaped);
-				}
-				free(title);
-			}
-			free(escaped_sh);
-		}
-		else
-		{
-			if(pause > 0)
-			{
-#ifdef _WIN32
-				if(stroscmp(cfg.shell, "cmd") == 0)
-					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
-				else
-#endif
-					snprintf(buf, sizeof(buf), "%s; " PAUSE_CMD, command);
-			}
-			else
-			{
-				snprintf(buf, sizeof(buf), "%s", command);
-			}
-		}
-	}
-	else
-	{
-		if(allow_screen && curr_stats.using_screen)
-		{
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-					curr_view->curr_dir);
-
-			my_system(buf);
-
-			snprintf(buf, sizeof(buf), "screen");
-		}
-		else
-		{
-			snprintf(buf, sizeof(buf), "%s", cfg.shell);
-		}
-	}
+	gen_shell_cmd(command, pause > 0, allow_screen, sizeof(buf), buf);
 
 	endwin();
 
@@ -944,26 +842,15 @@ shellout(const char *command, int pause, int allow_screen)
 	{
 		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", buf,
 				result, result, ec);
-#ifdef _WIN32
-		if(stroscmp(cfg.shell, "cmd") == 0)
-		{
-			my_system_no_cls("pause");
-		}
-		else
-#endif
-		{
-			my_system_no_cls(PAUSE_CMD);
-		}
+		pause_shell();
 	}
 
 	/* force views update */
 	request_view_update(&lwin);
 	request_view_update(&rwin);
 
-#ifdef _WIN32
-	reset_prog_mode();
-	resize_term(cfg.lines, cfg.columns);
-#endif
+	recover_after_shellout();
+
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)
 		curr_stats.need_update = UT_FULL;
@@ -971,6 +858,180 @@ shellout(const char *command, int pause, int allow_screen)
 	curs_set(FALSE);
 
 	return result;
+}
+
+/* Composes shell command to run basing on parameters for execution.  NULL cmd
+ * parameter opens shell. */
+static void
+gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
+		size_t shell_cmd_len, char shell_cmd[])
+{
+	shell_cmd[0] = '\0';
+
+	if(cmd != NULL)
+	{
+		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
+		{
+			gen_term_multiplexer_cmd(cmd, pause, shell_cmd_len, shell_cmd);
+		}
+		else
+		{
+			gen_normal_cmd(cmd, pause, shell_cmd_len, shell_cmd);
+		}
+	}
+	else if(use_term_multiplexer)
+	{
+		gen_term_multiplexer_run_cmd(shell_cmd_len, shell_cmd);
+	}
+
+	if(shell_cmd[0] == '\0')
+	{
+		copy_str(shell_cmd, shell_cmd_len, cfg.shell);
+	}
+}
+
+/* Composes command to be run using terminal multiplexer.  Doesn't change buffer
+ * pointed to by shell_cmd on error. */
+static void
+gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
+		char shell_cmd[])
+{
+	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
+
+	char title_arg_buffer[128];
+	char *escaped_sh;
+
+	if(curr_stats.term_multiplexer != TM_TMUX &&
+			curr_stats.term_multiplexer != TM_SCREEN)
+	{
+		assert(0 && "Unexpected active terminal multiplexer value.");
+		return;
+	}
+
+	escaped_sh = escape_filename(cfg.shell, 0);
+
+	gen_term_multiplexer_title_arg(cmd, sizeof(title_arg_buffer),
+			title_arg_buffer);
+
+	snprintf(shell_cmd, shell_cmd_len, "%s%s", cmd, pause ? PAUSE_STR : "");
+
+	if(curr_stats.term_multiplexer == TM_TMUX)
+	{
+		char *escaped;
+
+		escaped = escape_filename(shell_cmd, 0);
+		snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
+		free(escaped);
+
+		escaped = escape_filename(shell_cmd, 0);
+		snprintf(shell_cmd, shell_cmd_len, "tmux new-window %s %s",
+				title_arg_buffer, escaped);
+		free(escaped);
+	}
+	else if(curr_stats.term_multiplexer == TM_SCREEN)
+	{
+		char *const escaped = escape_filename(shell_cmd, 0);
+		char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
+
+		/* Needed for symlink directories and sshfs mounts. */
+		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
+		my_system(shell_cmd);
+
+		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
+				escaped_sh, escaped);
+
+		free(escaped_dir);
+		free(escaped);
+	}
+
+	free(escaped_sh);
+}
+
+/* Composes title for window of a terminal multiplexer. */
+static void
+gen_term_multiplexer_title_arg(const char cmd[], size_t title_arg_len,
+		char title_arg[])
+{
+	int bg;
+	const char *const vicmd = get_vicmd(&bg);
+	const char *const visubcmd = strstr(cmd, vicmd);
+	char *command_name = NULL;
+	const char *title;
+
+	title_arg[0] = '\0';
+
+	if(visubcmd != NULL)
+	{
+		title = visubcmd + strlen(vicmd) + 1;
+	}
+	else
+	{
+		char *const separator = strchr(cmd, ' ');
+		if(separator != NULL)
+		{
+			*separator = '\0';
+			command_name = strdup(cmd);
+			*separator = ' ';
+		}
+		title = command_name;
+	}
+
+	if(!is_null_or_empty(title))
+	{
+		const char opt_c = (curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n';
+		char *const escaped_title = escape_filename(title, 0);
+		snprintf(title_arg, title_arg_len, "-%c %s", opt_c, escaped_title);
+		free(escaped_title);
+	}
+
+	free(command_name);
+}
+
+/* Composes command to be run without terminal multiplexer. */
+static void
+gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
+		char shell_cmd[])
+{
+	if(pause)
+	{
+#ifdef _WIN32
+		if(stroscmp(cfg.shell, "cmd") == 0)
+			snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
+		else
+#endif
+			snprintf(shell_cmd, shell_cmd_len, "%s; " PAUSE_CMD, cmd);
+	}
+	else
+	{
+		copy_str(shell_cmd, shell_cmd_len, cmd);
+	}
+}
+
+/* Composes shell command to run active terminal multiplexer.  Doesn't change
+ * buffer pointed to by shell_cmd on error. */
+static void
+gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
+{
+	char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
+
+	if(curr_stats.term_multiplexer == TM_SCREEN)
+	{
+		/* Needed for symlink directories and sshfs mounts. */
+		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
+		my_system(shell_cmd);
+
+		snprintf(shell_cmd, shell_cmd_len, "screen");
+	}
+	else if(curr_stats.term_multiplexer == TM_TMUX)
+	{
+		copy_str(shell_cmd, shell_cmd_len, "tmux new-window");
+	}
+	else
+	{
+		assert(0 && "Unexpected active terminal multiplexer value.");
+	}
+
+	free(escaped_dir);
 }
 
 void

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Sep 11
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Sep 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1318,7 +1318,9 @@ order using the '.' operator.  Any whitespace is ignored.
     check if there are any of backgrounded commands still running).
 
                                                *vifm-:ls*
-:ls - shows list of screen program windows (only when screen is used).
+:ls - lists windows of active terminal multiplexer (only when terminal
+    multiplexer is used).  This is achieved by issuing proper command for
+    active terminal multiplexer, thus the list is not handled by vifm.
 
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters] - popup menu with registers content.
@@ -1355,14 +1357,17 @@ order using the '.' operator.  Any whitespace is ignored.
     the argument list.  "!" forces overwrite.
 
                                                *vifm-:screen*
-:screen - toggles whether to use the screen program or not.
-    The default configuration has the |vifm-'screen'| option turned off.
-    The screen program uses pseudo terminals to allow multiple windows to
-    be used in the console or in a single xterm.  Starting vifm from screen
-    with the screen option turned on will cause vifm to open a new screen
-    window for each new file edited or program launched from vifm.
-    This requires screen version 3.9.9 or newer for the screen -X argument.
-:screen? - shows whether screen program is used.
+:screen - toggles whether to use the terminal multiplexer or not.
+    A terminal multiplexer uses pseudo terminals to allow multiple windows
+    to be used in the console or in a single xterm.  Starting vifm from
+    terminal multiplexer with appropriate support turned on will cause vifm
+    to open a new terminal multiplexer window for each new file edited or
+    program launched from vifm.  This requires screen version 3.9.9 or newer
+    for the screen -X argument or tmux (version or newer 1.8 is recommented).
+:screen? - shows whether integration with terminal multiplexers is enabled.
+
+Note: the command is called screen for historical reasons (when tmux wasn't
+yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:set* *vifm-:se*
 :se[t] - shows all options that differ from their default value.
@@ -1619,7 +1624,8 @@ The command macros may be used in user commands.
                                                                *vifm-%S*
   %S        show command output in the status bar.
                                                                *vifm-%s*
-  %s        execute command in screen split (ignored if not running in screen).
+  %s        execute command in split window of active terminal
+            multiplexer (ignored if not running inside one).
                                                                *vifm-%i*
   %i        completely ignore command output.
 
@@ -2204,7 +2210,8 @@ Controls what will be saved in the $VIFM/vifminfo file.
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  - directory history
-   state     - file name and dot filters and screen program using state
+   state     - file name and dot filters and terminal multiplexers integration
+               state
    cs        - default color scheme
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history

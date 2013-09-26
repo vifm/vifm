@@ -38,6 +38,11 @@
 #include "utils/tree.h"
 #include "color_scheme.h"
 
+/* Environment variables by which application hosted by terminal multiplexer can
+ * identify the host. */
+#define SCREEN_ENVVAR "STY"
+#define TMUX_ENVVAR "TMUX"
+
 static void load_def_values(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats);
@@ -49,11 +54,13 @@ status_t curr_stats;
 
 static int pending_redraw;
 static int inside_screen;
+static int inside_tmux;
 
 int
 init_status(void)
 {
-	inside_screen = !is_null_or_empty(env_get("STY"));
+	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
+	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
 
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
@@ -112,7 +119,7 @@ load_def_values(status_t *stats)
 
 	stats->env_type = ENVTYPE_EMULATOR;
 
-	stats->using_screen = 0;
+	stats->term_multiplexer = TM_NONE;
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
@@ -194,9 +201,24 @@ is_redraw_scheduled(void)
 }
 
 void
-set_using_screen(int use_screen)
+set_using_term_multiplexer(int use_term_multiplexer)
 {
-	curr_stats.using_screen = inside_screen && use_screen;
+	if(!use_term_multiplexer)
+	{
+		curr_stats.term_multiplexer = TM_NONE;
+	}
+	else if(inside_screen)
+	{
+		curr_stats.term_multiplexer = TM_SCREEN;
+	}
+	else if(inside_tmux)
+	{
+		curr_stats.term_multiplexer = TM_TMUX;
+	}
+	else
+	{
+		curr_stats.term_multiplexer = TM_NONE;
+	}
 }
 
 void

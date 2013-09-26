@@ -38,14 +38,15 @@ int get_regexp_cflags(const char pattern[]);
 int regexp_should_ignore_case(const char pattern[]);
 const char * get_regexp_error(int err, regex_t *re);
 
-/* Program running. */
+/* Shell and program running. */
 
 /* Executes an external command.  Clears the screen up on Windows before running
  * the command.  Returns error code, which is zero on success. */
 int my_system(char command[]);
-/* Executes an external command without clearing up the screen.  Returns error
- * code, which is zero on success. */
-int my_system_no_cls(char command[]);
+/* Pauses shell.  Assumes that curses interface is off. */
+void pause_shell(void);
+/* Called after return from a shellout to provide point to recover UI. */
+void recover_after_shellout(void);
 
 /* Other functions. */
 

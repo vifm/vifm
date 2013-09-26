@@ -260,6 +260,7 @@ static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static void output_to_statusbar(const char *cmd);
+static void run_in_split(const FileView *view, const char cmd[]);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -810,30 +811,6 @@ init_commands(void)
 
 	init_bracket_notation();
 	init_variables();
-}
-
-static void
-split_screen(const FileView *view, const char command[])
-{
-	char buf[1024];
-
-	if(command != NULL)
-	{
-		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-		my_system(buf);
-
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
-				command);
-		my_system(buf);
-	}
-	else
-	{
-		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
-		my_system(buf);
-
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
-		my_system(buf);
-	}
 }
 
 static void
@@ -1413,9 +1390,9 @@ emark_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
+	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
-		split_screen(curr_view, com);
+		run_in_split(curr_view, com);
 	}
 	else if(cmd_info->bg)
 	{
@@ -2686,16 +2663,34 @@ locate_cmd(const cmd_info_t *cmd_info)
 	return show_locate_menu(curr_view, last_args) != 0;
 }
 
+/* Lists active windows of terminal multiplexer in use, if any. */
 static int
 ls_cmd(const cmd_info_t *cmd_info)
 {
-	if(!curr_stats.using_screen)
+	switch(curr_stats.term_multiplexer)
 	{
-		status_bar_message("screen program isn't used");
-		return 1;
+		case TM_NONE:
+			status_bar_message("No terminal multiplexer is in use");
+			return 1;
+		case TM_SCREEN:
+			my_system("screen -X eval windowlist");
+			return 0;
+		case TM_TMUX:
+			if(my_system("tmux choose-window") != EXIT_SUCCESS)
+			{
+				/* Refresh all windows as failed command outputs message, which can't be
+				 * suppressed. */
+				update_all_windows();
+				/* Fall back to worse way of doing the same for tmux versions < 1.8. */
+				my_system("tmux command-prompt choose-window");
+			}
+			return 0;
+
+		default:
+			assert(0 && "Unknown active terminal multiplexer value");
+			status_bar_message("Unknown terminal multiplexer is in use");
+			return 1;
 	}
-	my_system("screen -X eval 'windowlist'");
-	return 0;
 }
 
 static int
@@ -3208,29 +3203,32 @@ link_cmd(const cmd_info_t *cmd_info, int type)
 	}
 }
 
+/* Shows status of terminal multiplexers support or toggles it. */
 static int
 screen_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		if(cfg.use_screen)
+		if(cfg.use_term_multiplexer)
 		{
-			if(curr_stats.using_screen)
+			if(curr_stats.term_multiplexer != TM_NONE)
 			{
-				status_bar_message("Screen support is enabled");
+				status_bar_messagef("Integration with %s is active",
+						(curr_stats.term_multiplexer == TM_SCREEN) ? "GNU screen" : "tmux");
 			}
 			else
 			{
-				status_bar_message("Screen support is enabled but inactive");
+				status_bar_message("Integration with terminal multiplexers is enabled "
+						"but inactive");
 			}
 		}
 		else
 		{
-			status_bar_message("Screen support is disabled");
+			status_bar_message("Integration with terminal multiplexers is disabled");
 		}
 		return 1;
 	}
-	set_use_screen(!cfg.use_screen);
+	set_use_term_multiplexer(!cfg.use_term_multiplexer);
 	return 0;
 }
 
@@ -3808,9 +3806,9 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
+	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
-		split_screen(curr_view, expanded_com);
+		run_in_split(curr_view, expanded_com);
 	}
 	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
@@ -3896,6 +3894,48 @@ output_to_statusbar(const char *cmd)
 
 	status_bar_message((lines == NULL) ? "" : lines);
 	free(lines);
+}
+
+/* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
+ * is NULL. */
+static void
+run_in_split(const FileView *view, const char cmd[])
+{
+	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
+
+	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
+
+	if(curr_stats.term_multiplexer == TM_TMUX)
+	{
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "tmux split-window %s", escaped_cmd);
+		my_system(buf);
+	}
+	else if(curr_stats.term_multiplexer == TM_SCREEN)
+	{
+		char buf[1024];
+		char *escaped_chdir;
+
+		char *const escaped_dir = escape_filename(view->curr_dir, 0);
+		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
+		free(escaped_dir);
+
+		escaped_chdir = escape_filename(buf, 0);
+		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
+		free(escaped_chdir);
+
+		my_system(buf);
+
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
+				escaped_cmd);
+		my_system(buf);
+	}
+	else
+	{
+		assert(0 && "Unexpected active terminal multiplexer value.");
+	}
+
+	free(escaped_cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

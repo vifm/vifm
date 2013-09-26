@@ -275,7 +275,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
 			const int i = atoi(line_val);
-			set_use_screen(i != 0);
+			set_use_term_multiplexer(i != 0);
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
@@ -927,7 +927,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "I%d\n", rwin.invert);
 		fprintf(fp, "].%d\n", rwin.hide_dot);
 		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
-		fprintf(fp, "s%d\n", cfg.use_screen);
+		fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_CS)
