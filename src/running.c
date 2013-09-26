@@ -899,7 +899,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
 
 	char title_arg_buffer[128];
-	char *escaped_sh, *escaped_dir;
+	char *escaped_sh;
 
 	if(curr_stats.term_multiplexer != TM_TMUX &&
 			curr_stats.term_multiplexer != TM_SCREEN)
@@ -909,7 +909,6 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 	}
 
 	escaped_sh = escape_filename(cfg.shell, 0);
-	escaped_dir = escape_filename(curr_view->curr_dir, 0);
 
 	gen_term_multiplexer_title_arg(cmd, sizeof(title_arg_buffer),
 			title_arg_buffer);
@@ -925,13 +924,14 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		free(escaped);
 
 		escaped = escape_filename(shell_cmd, 0);
-		snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s %s %s",
-				escaped_dir, title_arg_buffer, escaped);
+		snprintf(shell_cmd, shell_cmd_len, "tmux new-window %s %s",
+				title_arg_buffer, escaped);
 		free(escaped);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
 		char *const escaped = escape_filename(shell_cmd, 0);
+		char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
 
 		/* Needed for symlink directories and sshfs mounts. */
 		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
@@ -940,11 +940,11 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
 				escaped_sh, escaped);
 
+		free(escaped_dir);
 		free(escaped);
 	}
 
 	free(escaped_sh);
-	free(escaped_dir);
 }
 
 /* Composes title for window of a terminal multiplexer. */
@@ -1024,7 +1024,7 @@ gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
 	}
 	else if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		snprintf(shell_cmd, shell_cmd_len, "tmux new-window -c %s", escaped_dir);
+		copy_str(shell_cmd, shell_cmd_len, "tmux new-window");
 	}
 	else
 	{
