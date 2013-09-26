@@ -38,6 +38,8 @@
 	Added "=" and "filter" values for :history command, to show history of
 	local filter.
 
+	Added integration with tmux.  Thanks to Seth VanHeulen (a.k.a. svanheulen).
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

@@ -69,3 +69,5 @@ Miles (pkordy) provided a patch to fix opening of tagged (selected) symbolic
 links to a directory.
 
 Gentoo ebuild by Oleg Gordienko (gordio).
+
+Seth VanHeulen (a.k.a. svanheulen) added integration with tmux.
