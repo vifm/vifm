@@ -46,6 +46,7 @@
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
+#include "log.h"
 #include "macros.h"
 #include "path.h"
 #include "str.h"
@@ -62,6 +63,7 @@ my_system(char command[])
 #ifdef _WIN32
 	system("cls");
 #endif
+	LOG_INFO_MSG("Shell command: %s", command);
 	return run_in_shell_no_cls(command);
 }
 

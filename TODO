@@ -26,6 +26,7 @@ Basic things that need to be done.
     Better failed operation messages (list of errors, not just one first error).
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
     Cancel calls of external applications on Ctrl-C, e.g. after `:grep`.
+    Process shell pause request for running in %s.
 
 Documentation.
     Better documentation.
