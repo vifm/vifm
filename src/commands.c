@@ -2673,10 +2673,17 @@ ls_cmd(const cmd_info_t *cmd_info)
 			status_bar_message("No terminal multiplexer is in use");
 			return 1;
 		case TM_SCREEN:
-			my_system("screen -X eval 'windowlist'");
+			my_system("screen -X eval windowlist");
 			return 0;
 		case TM_TMUX:
-			my_system("tmux choose-window || tmux command-prompt choose-window");
+			if(my_system("tmux choose-window") != EXIT_SUCCESS)
+			{
+				/* Refresh all windows as failed command outputs message, which can't be
+				 * suppressed. */
+				update_all_windows();
+				/* Fall back to worse way of doing the same for tmux versions < 1.8. */
+				my_system("tmux command-prompt choose-window");
+			}
 			return 0;
 
 		default:
