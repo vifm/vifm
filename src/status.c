@@ -49,11 +49,13 @@ status_t curr_stats;
 
 static int pending_redraw;
 static int inside_screen;
+static int inside_tmux;
 
 int
 init_status(void)
 {
 	inside_screen = !is_null_or_empty(env_get("STY"));
+	inside_tmux = !is_null_or_empty(env_get("TMUX"));
 
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
@@ -113,6 +115,7 @@ load_def_values(status_t *stats)
 	stats->env_type = ENVTYPE_EMULATOR;
 
 	stats->using_screen = 0;
+	stats->using_tmux = 0;
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
@@ -197,6 +200,7 @@ void
 set_using_screen(int use_screen)
 {
 	curr_stats.using_screen = inside_screen && use_screen;
+	curr_stats.using_tmux = inside_tmux && use_screen;
 }
 
 void
