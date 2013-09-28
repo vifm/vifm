@@ -35,30 +35,37 @@
 #include "filelist.h"
 #include "ui.h"
 
+static int find_and_goto_pattern(FileView *view, int wrap, int wrap_start,
+		int backward);
 static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
 int
 find_previous_pattern(FileView *view, int wrap)
 {
-	if(find_and_goto_match(view, view->list_pos, 1))
-		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_and_goto_match(view, view->list_rows, 1))
-		move_to_list_pos(view, view->list_pos);
-	else
-		return 0;
-	return 1;
+	return find_and_goto_pattern(view, wrap, view->list_rows, 1);
 }
 
 int
 find_next_pattern(FileView *view, int wrap)
 {
-	if(find_and_goto_match(view, view->list_pos, 0))
-		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_and_goto_match(view, -1, 0))
-		move_to_list_pos(view, view->list_pos);
-	else
-		return 0;
+	return find_and_goto_pattern(view, wrap, -1, 0);
+}
+
+/* Looks for a search match in specified direction navigates to it if match is
+ * found.  Wraps search around specified wrap start position, when requested.
+ * Returns non-zero if something was found, otherwise zero is returned. */
+static int
+find_and_goto_pattern(FileView *view, int wrap, int wrap_start, int backward)
+{
+	if(!find_and_goto_match(view, view->list_pos, backward))
+	{
+		if(!wrap || !find_and_goto_match(view, wrap_start, backward))
+		{
+			return 0;
+		}
+	}
+	move_to_list_pos(view, view->list_pos);
 	return 1;
 }
 
