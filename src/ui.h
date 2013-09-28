@@ -121,7 +121,7 @@ typedef struct
 	int list_num; /* to be used by sorting comparer to perform stable sort */
 }dir_entry_t;
 
-typedef struct _FileView
+typedef struct FileView_
 {
 	WINDOW *win;
 	WINDOW *title;

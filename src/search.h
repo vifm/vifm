@@ -20,7 +20,7 @@
 #ifndef VIFM__SEARCH_H__
 #define VIFM__SEARCH_H__
 
-#include "ui.h"
+typedef struct FileView_ FileView;
 
 /* The move argument specifies whether cursor in the view should be adjusted to
  * point to just found file in case of successful search.  Sets *found to
