@@ -35,22 +35,16 @@
 #include "filelist.h"
 #include "ui.h"
 
-enum
-{
-	PREVIOUS,
-	NEXT
-};
-
-static int find_and_goto_match(FileView *view, int start, int direction);
+static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
 /* returns non-zero if pattern was found */
 int
 find_previous_pattern(FileView *view, int wrap)
 {
-	if(find_and_goto_match(view, view->list_pos, PREVIOUS))
+	if(find_and_goto_match(view, view->list_pos, 1))
 		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_and_goto_match(view, view->list_rows, PREVIOUS))
+	else if(wrap && find_and_goto_match(view, view->list_rows, 1))
 		move_to_list_pos(view, view->list_pos);
 	else
 		return 0;
@@ -61,9 +55,9 @@ find_previous_pattern(FileView *view, int wrap)
 int
 find_next_pattern(FileView *view, int wrap)
 {
-	if(find_and_goto_match(view, view->list_pos, NEXT))
+	if(find_and_goto_match(view, view->list_pos, 0))
 		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_and_goto_match(view, 0, NEXT))
+	else if(wrap && find_and_goto_match(view, 0, 0))
 		move_to_list_pos(view, view->list_pos);
 	else
 		return 0;
@@ -71,12 +65,12 @@ find_next_pattern(FileView *view, int wrap)
 }
 
 static int
-find_and_goto_match(FileView *view, int start, int direction)
+find_and_goto_match(FileView *view, int start, int backward)
 {
 	int i;
 	int begin, end, step;
 
-	if(direction == PREVIOUS)
+	if(backward)
 	{
 		begin = start - 1;
 		end = 0;
