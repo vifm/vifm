@@ -125,8 +125,6 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
 		int *usr2);
-static char * get_ext_command(const char beginning[], size_t line_pos,
-		int type);
 static int setup_extcmd_file(const char path[], const char beginning[],
 		int type);
 static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
@@ -565,10 +563,7 @@ get_and_execute_command(const char line[], size_t line_pos, int type)
 	}
 }
 
-/* Opens the editor with the beginning at the line_pos column.  Type is used to
- * provide useful context.  Returns entered command as a newly allocated string,
- * which should be freed by the caller. */
-static char *
+char *
 get_ext_command(const char beginning[], size_t line_pos, int type)
 {
 	char cmd_file[PATH_MAX];
@@ -613,14 +608,15 @@ static void
 prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 {
 	const int is_cmd = (type == GET_COMMAND);
-	const int history_num = is_cmd ? cfg.cmd_hist.pos : cfg.search_hist.pos;
-	char **const history = is_cmd ? cfg.cmd_hist.items : cfg.search_hist.items;
+	const int is_prompt = (type == GET_PROMPT_INPUT);
+	const hist_t *const hist = is_cmd ? &cfg.cmd_hist :
+		(is_prompt ? &cfg.prompt_hist : &cfg.search_hist);
 	int i;
 
 	fprintf(fp, "%s\n", beginning);
-	for(i = 0; i <= history_num; i++)
+	for(i = 0; i <= hist->pos; i++)
 	{
-		fprintf(fp, "%s\n", history[i]);
+		fprintf(fp, "%s\n", hist->items[i]);
 	}
 	if(is_cmd)
 	{
