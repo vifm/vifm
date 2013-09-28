@@ -31,15 +31,10 @@ typedef struct FileView_ FileView;
 int find_pattern(FileView *view, const char pattern[], int backward, int move,
 		int *const found);
 
-/* Looks for a search match in backward direction from current cursor position
+/* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
  * found, otherwise zero is returned. */
-int find_previous_pattern(FileView *view);
-
-/* Looks for a search match in forward direction from current cursor position
- * taking search wrapping into account.  Returns non-zero if something was
- * found, otherwise zero is returned. */
-int find_next_pattern(FileView *view);
+int goto_search_match(FileView *view, int backward);
 
 /* Auxiliary functions. */
 

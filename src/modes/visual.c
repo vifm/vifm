@@ -1044,14 +1044,9 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 static int
 find_update(FileView *view, int backward)
 {
-	int found;
-	int old_pos, new_pos;
-	old_pos = view->list_pos;
-	if(backward)
-		found = find_previous_pattern(view);
-	else
-		found = find_next_pattern(view);
-	new_pos = view->list_pos;
+	const int old_pos = view->list_pos;
+	const int found = goto_search_match(view, backward);
+	const int new_pos = view->list_pos;
 	view->list_pos = old_pos;
 	goto_pos(new_pos);
 	return found;
