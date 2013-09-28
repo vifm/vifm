@@ -603,7 +603,7 @@ rename_current_file(FileView *view, int name_only)
 
 	clean_selected_files(view);
 	enter_prompt_mode(L"New name: ", filename, rename_file_cb,
-			complete_filename_only);
+			complete_filename_only, 1);
 }
 
 TSTATIC int
@@ -1198,9 +1198,9 @@ change_owner(void)
 	}
 	clean_selected_files(curr_view);
 #ifndef _WIN32
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner);
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner, 0);
 #else
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL);
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL, 0);
 #endif
 }
 
@@ -1243,9 +1243,9 @@ change_group(void)
 	}
 	clean_selected_files(curr_view);
 #ifndef _WIN32
-	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group);
+	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group, 0);
 #else
-	enter_prompt_mode(L"New group: ", "", change_group_cb, NULL);
+	enter_prompt_mode(L"New group: ", "", change_group_cb, NULL, 0);
 #endif
 }
 
@@ -1320,7 +1320,7 @@ change_link(FileView *view)
 	}
 
 	enter_prompt_mode(L"Link target: ", linkto, change_link_cb,
-			&complete_filename);
+			&complete_filename, 0);
 	return 0;
 }
 
@@ -1331,7 +1331,7 @@ prompt_dest_name(const char *src_name)
 
 	my_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
 			src_name);
-	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL);
+	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
 }
 
 static void
@@ -1345,7 +1345,7 @@ prompt_what_to_do(const char *src_name)
 	}
 	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ", src_name);
-	enter_prompt_mode(buf, "", put_decide_cb, NULL);
+	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
 /* Returns 0 on success, otherwise non-zero is returned. */

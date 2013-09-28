@@ -102,6 +102,7 @@ static CMD_LINE_SUBMODES sub_mode;
 static line_stats_t input_stat;
 static int line_width = 1;
 static void *sub_mode_ptr;
+static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
@@ -117,6 +118,7 @@ static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static int submode_to_editable_command_type(int sub_mode);
+static void extedit_prompt(const char input[], int cursor_col);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
 static int no_initial_line(void);
@@ -127,6 +129,7 @@ static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void save_command(const keys_info_t *keys_info, const char cmd[]);
+static void finish_prompt_submode(const char input[]);
 static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
 static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
@@ -438,6 +441,7 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 
 	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
+	sub_mode_allows_ee = 0;
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
@@ -465,13 +469,14 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 }
 
 void
-enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb,
-		complete_cmd_func complete)
+enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
+		complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *buf;
 
 	sub_mode_ptr = cb;
 	sub_mode = PROMPT_SUBMODE;
+	sub_mode_allows_ee = allow_ee;
 
 	buf = to_wide(cmd);
 	if(buf == NULL)
@@ -737,7 +742,8 @@ static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int type = submode_to_editable_command_type(sub_mode);
-	if(type != -1)
+	const int prompt_ee = sub_mode == PROMPT_SUBMODE && sub_mode_allows_ee;
+	if(type != -1 || prompt_ee)
 	{
 		char *const mbstr = (input_stat.line == NULL) ?
 			strdup("") : to_multibyte(input_stat.line);
@@ -748,7 +754,15 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 			local_filter_cancel(curr_view);
 		}
 
-		get_and_execute_command(mbstr, input_stat.index + 1, type);
+		if(prompt_ee)
+		{
+			extedit_prompt(mbstr, input_stat.index + 1);
+		}
+		else
+		{
+			get_and_execute_command(mbstr, input_stat.index + 1, type);
+		}
+
 		free(mbstr);
 	}
 }
@@ -777,6 +791,27 @@ submode_to_editable_command_type(int sub_mode)
 		default:
 			return -1;
 	}
+}
+
+/* Queries prompt input using external editor. */
+static void
+extedit_prompt(const char input[], int cursor_col)
+{
+	char *const ext_cmd = get_ext_command(input, cursor_col, GET_PROMPT_INPUT);
+
+	if(ext_cmd != NULL)
+	{
+		finish_prompt_submode(ext_cmd);
+	}
+	else
+	{
+		save_prompt_history(input);
+
+		status_bar_error("Error querying data from external source.");
+		curr_stats.save_msg = 1;
+	}
+
+	free(ext_cmd);
 }
 
 /* Handles backspace. */
@@ -1036,14 +1071,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{
-		prompt_cb cb;
-
-		if(p != NULL && p[0] != '\0')
-			save_prompt_history(p);
-		modes_post();
-		modes_pre();
-		cb = (prompt_cb)sub_mode_ptr;
-		cb(p);
+		finish_prompt_submode(p);
 	}
 	else if(sub_mode == FILTER_SUBMODE)
 	{
@@ -1114,6 +1142,23 @@ save_command(const keys_info_t *keys_info, const char cmd[])
 			}
 		}
 	}
+}
+
+/* Performs final actions on successful querying of prompt input. */
+static void
+finish_prompt_submode(const char input[])
+{
+	const prompt_cb cb = (prompt_cb)sub_mode_ptr;
+
+	if(!is_null_or_empty(input))
+	{
+		save_prompt_history(input);
+	}
+
+	modes_post();
+	modes_pre();
+
+	cb(input);
 }
 
 /* Checks whether specified mode is one of forward searching modes.  Returns
