@@ -628,7 +628,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	}
 	else
 	{
-		fputs("\" vim: set filetype=vifm-patedit :\n", fp);
+		fputs("\" vim: set filetype=vifm-edit :\n", fp);
 	}
 }
 
