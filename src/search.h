@@ -22,19 +22,30 @@
 
 typedef struct FileView_ FileView;
 
+/* Search and navigation functions. */
+
 /* The move argument specifies whether cursor in the view should be adjusted to
  * point to just found file in case of successful search.  Sets *found to
  * non-zero if pattern was found, otherwise it's assigned zero.  Returns
  * non-zero when a message was printed to a user, otherwise zero is returned. */
 int find_pattern(FileView *view, const char pattern[], int backward, int move,
 		int *const found);
-/* returns non-zero if pattern was found */
-int find_next_pattern(FileView *view, int wrap);
-/* returns non-zero if pattern was found */
+
+/* Looks for a search match in backward direction from current cursor position
+ * taking search wrapping into account.  Returns non-zero if something was
+ * found, otherwise zero is returned. */
 int find_previous_pattern(FileView *view, int wrap);
+
+/* Looks for a search match in forward direction from current cursor position
+ * taking search wrapping into account.  Returns non-zero if something was
+ * found, otherwise zero is returned. */
+int find_next_pattern(FileView *view, int wrap);
+
+/* Auxiliary functions. */
 
 /* Prints results or error message about search operation to the user. */
 void print_search_msg(const FileView *view, int backward);
+
 /* Prints error message about failed search to the user. */
 void print_search_fail_msg(const FileView *view, int backward);
 

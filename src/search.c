@@ -38,7 +38,6 @@
 static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
-/* returns non-zero if pattern was found */
 int
 find_previous_pattern(FileView *view, int wrap)
 {
@@ -51,7 +50,6 @@ find_previous_pattern(FileView *view, int wrap)
 	return 1;
 }
 
-/* returns non-zero if pattern was found */
 int
 find_next_pattern(FileView *view, int wrap)
 {
@@ -64,6 +62,10 @@ find_next_pattern(FileView *view, int wrap)
 	return 1;
 }
 
+/* Looks for a search match in specified direction from given start position and
+ * navigates to it if match is found.  Starting position is not included in
+ * searched range.  Returns non-zero if something was found, otherwise zero is
+ * returned. */
 static int
 find_and_goto_match(FileView *view, int start, int backward)
 {
