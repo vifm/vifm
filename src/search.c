@@ -24,6 +24,7 @@
 #include <curses.h>
 #include <regex.h>
 
+#include <assert.h> /* assert() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -72,34 +73,36 @@ find_next_pattern(FileView *view, int wrap)
 static int
 find_and_goto_match(FileView *view, int start, int direction)
 {
-	int found = 0;
-	int x;
+	int i;
+	int begin, end, step;
 
 	if(direction == PREVIOUS)
 	{
-		for(x = start - 1; x > 0; x--)
-		{
-			if(view->dir_entry[x].search_match)
-			{
-				found = 1;
-				view->list_pos = x;
-				break;
-			}
-		}
+		begin = start - 1;
+		end = 0;
+		step = -1;
+
+		assert(begin >= end && "Wrong range.");
 	}
-	else if(direction == NEXT)
+	else
 	{
-		for(x = start + 1; x < view->list_rows; x++)
+		begin = start + 1;
+		end = view->list_rows;
+		step = 1;
+
+		assert(begin <= end && "Wrong range.");
+	}
+
+	for(i = begin; i != end; i += step)
+	{
+		if(view->dir_entry[i].search_match)
 		{
-			if(view->dir_entry[x].search_match)
-			{
-				found = 1;
-				view->list_pos = x;
-				break;
-			}
+			view->list_pos = i;
+			break;
 		}
 	}
-	return found;
+
+	return i != end;
 }
 
 int
