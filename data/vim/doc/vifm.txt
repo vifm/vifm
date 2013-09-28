@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Sep 26
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Sep 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -818,10 +818,11 @@ over built-in command-line mode:
  - one can use full power of Vim to edit text;
  - finding and reusing history entries becomes possible.
 
-The facility is supported by the three input submodes of the command-line:
+The facility is supported by four input submodes of the command-line:
  - command;
  - forward search;
- - backward search.
+ - backward search;
+ - file rename (see |vifm-cw| and |vifm-cW|).
 
 Editing command-line using external editor is activated by the |vifm-c_CTRL-G|
 shortcut.  It's also possible to do almost the same from Normal and Visual

@@ -21,7 +21,7 @@
 	to filterfalse.
 
 	Added Ctrl-G command-line key to start editing command-line in external
-	editor.
+	editor (for editing command, search pattern and new file names).
 
 	Added q:, q/, q? and q= normal and visual modes keys (except q=, which is
 	defined for normal mode only) to prompt for command-line in external
