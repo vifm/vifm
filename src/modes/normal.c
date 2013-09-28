@@ -1672,9 +1672,9 @@ search(key_info_t key_info, int backward)
 	while(key_info.count-- > 0)
 	{
 		if(backward)
-			found += find_previous_pattern(curr_view, cfg.wrap_scan) != 0;
+			found += find_previous_pattern(curr_view) != 0;
 		else
-			found += find_next_pattern(curr_view, cfg.wrap_scan) != 0;
+			found += find_next_pattern(curr_view) != 0;
 	}
 
 	if(found)
@@ -2214,9 +2214,9 @@ find_npattern(FileView *view, const char *pattern, int backward)
 	for(i = 0; i < search_repeat - 1; i++)
 	{
 		if(backward)
-			found += find_previous_pattern(view, cfg.wrap_scan) != 0;
+			found += find_previous_pattern(view) != 0;
 		else
-			found += find_next_pattern(view, cfg.wrap_scan) != 0;
+			found += find_next_pattern(view) != 0;
 	}
 	return found;
 }

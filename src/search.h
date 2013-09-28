@@ -34,12 +34,12 @@ int find_pattern(FileView *view, const char pattern[], int backward, int move,
 /* Looks for a search match in backward direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
  * found, otherwise zero is returned. */
-int find_previous_pattern(FileView *view, int wrap);
+int find_previous_pattern(FileView *view);
 
 /* Looks for a search match in forward direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
  * found, otherwise zero is returned. */
-int find_next_pattern(FileView *view, int wrap);
+int find_next_pattern(FileView *view);
 
 /* Auxiliary functions. */
 
