@@ -1671,10 +1671,7 @@ search(key_info_t key_info, int backward)
 
 	while(key_info.count-- > 0)
 	{
-		if(backward)
-			found += find_previous_pattern(curr_view) != 0;
-		else
-			found += find_next_pattern(curr_view) != 0;
+		found += goto_search_match(curr_view, backward) != 0;
 	}
 
 	if(found)
@@ -2213,10 +2210,7 @@ find_npattern(FileView *view, const char *pattern, int backward)
 	(void)find_pattern(view, pattern, backward, 1, &found);
 	for(i = 0; i < search_repeat - 1; i++)
 	{
-		if(backward)
-			found += find_previous_pattern(view) != 0;
-		else
-			found += find_next_pattern(view) != 0;
+		found += goto_search_match(view, backward) != 0;
 	}
 	return found;
 }

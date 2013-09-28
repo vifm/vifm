@@ -40,15 +40,10 @@ static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
 int
-find_previous_pattern(FileView *view)
+goto_search_match(FileView *view, int backward)
 {
-	return find_and_goto_pattern(view, view->list_rows, 1);
-}
-
-int
-find_next_pattern(FileView *view)
-{
-	return find_and_goto_pattern(view, -1, 0);
+	const int wrap_start = backward ? view->list_rows : -1;
+	return find_and_goto_pattern(view, wrap_start, backward);
 }
 
 /* Looks for a search match in specified direction navigates to it if match is
@@ -171,14 +166,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	view->matches = nmatches;
 	if(nmatches > 0)
 	{
-		int was_found = 1;
-		if(move)
-		{
-			if(backward)
-				was_found = find_previous_pattern(view);
-			else
-				was_found = find_next_pattern(view);
-		}
+		const int was_found = move ? goto_search_match(view, backward) : 1;
 		*found = was_found;
 
 		if(cfg.hl_search && !was_found)
