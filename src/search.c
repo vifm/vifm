@@ -40,16 +40,16 @@ enum
 	NEXT
 };
 
-static int find_next_pattern_match(FileView *view, int start, int direction);
+static int find_and_goto_match(FileView *view, int start, int direction);
 static void print_result(const FileView *const view, int found, int backward);
 
 /* returns non-zero if pattern was found */
 int
 find_previous_pattern(FileView *view, int wrap)
 {
-	if(find_next_pattern_match(view, view->list_pos, PREVIOUS))
+	if(find_and_goto_match(view, view->list_pos, PREVIOUS))
 		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_next_pattern_match(view, view->list_rows, PREVIOUS))
+	else if(wrap && find_and_goto_match(view, view->list_rows, PREVIOUS))
 		move_to_list_pos(view, view->list_pos);
 	else
 		return 0;
@@ -60,9 +60,9 @@ find_previous_pattern(FileView *view, int wrap)
 int
 find_next_pattern(FileView *view, int wrap)
 {
-	if(find_next_pattern_match(view, view->list_pos, NEXT))
+	if(find_and_goto_match(view, view->list_pos, NEXT))
 		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_next_pattern_match(view, 0, NEXT))
+	else if(wrap && find_and_goto_match(view, 0, NEXT))
 		move_to_list_pos(view, view->list_pos);
 	else
 		return 0;
@@ -70,7 +70,7 @@ find_next_pattern(FileView *view, int wrap)
 }
 
 static int
-find_next_pattern_match(FileView *view, int start, int direction)
+find_and_goto_match(FileView *view, int start, int direction)
 {
 	int found = 0;
 	int x;
