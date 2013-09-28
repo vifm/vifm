@@ -24,6 +24,7 @@
 #include <curses.h>
 #include <regex.h>
 
+#include <assert.h> /* assert() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -34,71 +35,76 @@
 #include "filelist.h"
 #include "ui.h"
 
-enum
-{
-	PREVIOUS,
-	NEXT
-};
-
+static int find_and_goto_pattern(FileView *view, int wrap_start, int backward);
+static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
+int
+find_previous_pattern(FileView *view)
+{
+	return find_and_goto_pattern(view, view->list_rows, 1);
+}
+
+int
+find_next_pattern(FileView *view)
+{
+	return find_and_goto_pattern(view, -1, 0);
+}
+
+/* Looks for a search match in specified direction navigates to it if match is
+ * found.  Wraps search around specified wrap start position, when requested.
+ * Returns non-zero if something was found, otherwise zero is returned. */
 static int
-find_next_pattern_match(FileView *view, int start, int direction)
+find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 {
-	int found = 0;
-	int x;
-
-	if(direction == PREVIOUS)
+	if(!find_and_goto_match(view, view->list_pos, backward))
 	{
-		for(x = start - 1; x > 0; x--)
+		if(!cfg.wrap_scan || !find_and_goto_match(view, wrap_start, backward))
 		{
-			if(view->dir_entry[x].search_match)
-			{
-				found = 1;
-				view->list_pos = x;
-				break;
-			}
+			return 0;
 		}
 	}
-	else if(direction == NEXT)
-	{
-		for(x = start + 1; x < view->list_rows; x++)
-		{
-			if(view->dir_entry[x].search_match)
-			{
-				found = 1;
-				view->list_pos = x;
-				break;
-			}
-		}
-	}
-	return found;
-}
-
-/* returns non-zero if pattern was found */
-int
-find_previous_pattern(FileView *view, int wrap)
-{
-	if(find_next_pattern_match(view, view->list_pos, PREVIOUS))
-		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_next_pattern_match(view, view->list_rows, PREVIOUS))
-		move_to_list_pos(view, view->list_pos);
-	else
-		return 0;
+	move_to_list_pos(view, view->list_pos);
 	return 1;
 }
 
-/* returns non-zero if pattern was found */
-int
-find_next_pattern(FileView *view, int wrap)
+/* Looks for a search match in specified direction from given start position and
+ * navigates to it if match is found.  Starting position is not included in
+ * searched range.  Returns non-zero if something was found, otherwise zero is
+ * returned. */
+static int
+find_and_goto_match(FileView *view, int start, int backward)
 {
-	if(find_next_pattern_match(view, view->list_pos, NEXT))
-		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_next_pattern_match(view, 0, NEXT))
-		move_to_list_pos(view, view->list_pos);
+	int i;
+	int begin, end, step;
+
+	if(backward)
+	{
+		begin = start - 1;
+		end = -1;
+		step = -1;
+
+		assert(begin >= end && "Wrong range.");
+	}
 	else
-		return 0;
-	return 1;
+	{
+		begin = start + 1;
+		end = view->list_rows;
+		step = 1;
+
+		assert(begin <= end && "Wrong range.");
+	}
+
+	for(i = begin; i != end; i += step)
+	{
+		if(view->dir_entry[i].search_match)
+		{
+			view->list_pos = i;
+			break;
+		}
+	}
+
+	return i != end;
 }
 
 int
@@ -169,9 +175,9 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		if(move)
 		{
 			if(backward)
-				was_found = find_previous_pattern(view, cfg.wrap_scan);
+				was_found = find_previous_pattern(view);
 			else
-				was_found = find_next_pattern(view, cfg.wrap_scan);
+				was_found = find_next_pattern(view);
 		}
 		*found = was_found;
 
