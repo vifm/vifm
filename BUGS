@@ -18,8 +18,6 @@ screen-open-region-with-program).
 Something is wrong with checking program existance on Windows (probably false
 positive).
 
-Maybe search doesn't work when filename contains () (starts with "(2005) - ")
-
 A bug? Last search pattern is stored per window, but history is common.
 
 When output of something like `:filter?` fills whole screen two character
@@ -51,5 +49,3 @@ Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
 'Too few arguments'.
 
 Screen split title cannot be overwritten when it's run from `:shell`.
-
-Search ignores first element, even when it's not .. directory!

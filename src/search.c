@@ -55,7 +55,7 @@ find_next_pattern(FileView *view, int wrap)
 {
 	if(find_and_goto_match(view, view->list_pos, 0))
 		move_to_list_pos(view, view->list_pos);
-	else if(wrap && find_and_goto_match(view, 0, 0))
+	else if(wrap && find_and_goto_match(view, -1, 0))
 		move_to_list_pos(view, view->list_pos);
 	else
 		return 0;
@@ -75,7 +75,7 @@ find_and_goto_match(FileView *view, int start, int backward)
 	if(backward)
 	{
 		begin = start - 1;
-		end = 0;
+		end = -1;
 		step = -1;
 
 		assert(begin >= end && "Wrong range.");
