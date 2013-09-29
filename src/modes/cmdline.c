@@ -129,7 +129,7 @@ static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void save_input_to_history(const keys_info_t *keys_info,
-		const char cmd[]);
+		const char input[]);
 static void finish_prompt_submode(const char input[]);
 static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
 static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
@@ -1125,22 +1125,24 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	free(p);
 }
 
-/* Saves command in command line history.  cmd can be NULL. */
+/* Saves command-line input into appropriate history.  input can be NULL, in
+ * which case it's ignored. */
 static void
-save_input_to_history(const keys_info_t *keys_info, const char cmd[])
+save_input_to_history(const keys_info_t *keys_info, const char input[])
 {
-	if(cmd != NULL)
+	if(input == NULL)
 	{
-		if(input_stat.search_mode)
+		return;
+	}
+	else if(input_stat.search_mode)
+	{
+		save_search_history(input);
+	}
+	else if(sub_mode == CMD_SUBMODE)
+	{
+		if(!keys_info->mapped && !keys_info->recursive)
 		{
-			save_search_history(cmd);
-		}
-		else if(sub_mode == CMD_SUBMODE)
-		{
-			if(!keys_info->mapped && !keys_info->recursive)
-			{
-				save_command_history(cmd);
-			}
+			save_command_history(input);
 		}
 	}
 }
