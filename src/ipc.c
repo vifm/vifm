@@ -31,7 +31,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h>
-#include <stddef.h> /* ssize_t */
+#include <stddef.h> /* NULL size_t ssize_t */
 #include <stdlib.h>
 #include <string.h> /* strlen() strcpy() */
 
@@ -231,7 +231,7 @@ parse_data(const char *buf)
 		len = add_to_string_array(&array, len, 1, buf);
 		buf += strlen(buf) + 1;
 	}
-	len = add_to_string_array(&array, len, 1, NULL);
+	len = put_into_string_array(&array, len, NULL);
 	callback(array);
 	free_string_array(array, len);
 }

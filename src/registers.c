@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <stddef.h> /* NULL size_t */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -197,7 +198,7 @@ list_registers_content(const char registers[])
 		}
 	}
 
-	(void)add_to_string_array(&list, len, 1, NULL);
+	(void)put_into_string_array(&list, len, NULL);
 	return list;
 }
 
