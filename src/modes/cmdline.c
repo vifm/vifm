@@ -128,7 +128,8 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
-static void save_command(const keys_info_t *keys_info, const char cmd[]);
+static void save_input_to_history(const keys_info_t *keys_info,
+		const char cmd[]);
 static void finish_prompt_submode(const char input[]);
 static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
 static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
@@ -703,7 +704,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	if(input_stat.line != NULL)
 	{
 		char *mbstr = to_multibyte(input_stat.line);
-		save_command(keys_info, mbstr);
+		save_input_to_history(keys_info, mbstr);
 		free(mbstr);
 
 		input_stat.line[0] = L'\0';
@@ -1057,7 +1058,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
-	save_command(keys_info, p);
+	save_input_to_history(keys_info, p);
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
@@ -1126,7 +1127,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 /* Saves command in command line history.  cmd can be NULL. */
 static void
-save_command(const keys_info_t *keys_info, const char cmd[])
+save_input_to_history(const keys_info_t *keys_info, const char cmd[])
 {
 	if(cmd != NULL)
 	{
