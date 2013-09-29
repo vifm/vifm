@@ -728,7 +728,8 @@ Down, Up, Left, Right, Home, End and Delete are extended keys and they are not
 available if vifm is compiled with --disable-extended-keys option.
 
                                                *vifm-c_Esc* *vifm-c_CTRL-C*
-Esc, Ctrl-C - leave command line mode, cancels input.
+Esc, Ctrl-C - leave command line mode, cancels input.  Cancelled input is
+    saved into appropriate history and can be recalled later.
 
                                                *vifm-c_CTRL-M* *vifm-c_Enter*
 Ctrl-M, Enter - execute command and leave command line mode.

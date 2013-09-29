@@ -124,6 +124,8 @@
 	Don't wait finishing of GUI applications on Windows.  Thanks to Robert
 	Sarkozi.
 
+	Store cancelled prompt input in prompt history.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
