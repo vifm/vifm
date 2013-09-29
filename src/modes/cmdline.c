@@ -1145,6 +1145,10 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 			save_command_history(input);
 		}
 	}
+	else if(sub_mode == PROMPT_SUBMODE)
+	{
+		save_prompt_history(input);
+	}
 }
 
 /* Performs final actions on successful querying of prompt input. */
@@ -1152,11 +1156,6 @@ static void
 finish_prompt_submode(const char input[])
 {
 	const prompt_cb cb = (prompt_cb)sub_mode_ptr;
-
-	if(!is_null_or_empty(input))
-	{
-		save_prompt_history(input);
-	}
 
 	modes_post();
 	modes_pre();
