@@ -168,6 +168,9 @@ void toggle_filter_inversion(FileView *view);
  * function initiates filter set process, which should be ended by call to
  * local_filter_apply() or local_filter_cancel(). */
 void local_filter_set(FileView *view, const char filter[]);
+/* Updates cursor position and top line of the view according to interactive
+ * local filter in progress. */
+void local_filter_update_view(FileView *view, int rel_pos);
 /* Accepts current value of local filter. */
 void local_filter_accept(FileView *view);
 /* Sets local filter non-interactively. */

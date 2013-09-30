@@ -338,6 +338,7 @@ update_cmdline_text(void)
 	wrefresh(status_bar);
 }
 
+/* Callback-like function, which is called every time input line is changed. */
 static void
 input_line_changed(void)
 {
@@ -423,7 +424,9 @@ input_line_changed(void)
 static void
 set_local_filter(const char value[])
 {
+	const int rel_pos = input_stat.old_pos - input_stat.old_top;
 	local_filter_set(curr_view, value);
+	local_filter_update_view(curr_view, rel_pos);
 }
 
 /* Insert a string into another string
@@ -620,27 +623,21 @@ save_view_port(void)
 static void
 set_view_port(void)
 {
-	if(prev_mode != MENU_MODE)
-	{
-		if(sub_mode == FILTER_SUBMODE && is_line_edited())
-		{
-			curr_view->top_line = 0;
-			curr_view->list_pos = 0;
-		}
-		else
-		{
-			curr_view->top_line = input_stat.old_top;
-			curr_view->list_pos = input_stat.old_pos;
-		}
-
-		if(prev_mode == VISUAL_MODE)
-		{
-			update_visual_mode();
-		}
-	}
-	else
+	if(prev_mode == MENU_MODE)
 	{
 		load_menu_pos();
+		return;
+	}
+
+	if(sub_mode != FILTER_SUBMODE || !is_line_edited())
+	{
+		curr_view->top_line = input_stat.old_top;
+		curr_view->list_pos = input_stat.old_pos;
+	}
+
+	if(prev_mode == VISUAL_MODE)
+	{
+		update_visual_mode();
 	}
 }
 

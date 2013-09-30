@@ -25,6 +25,7 @@
 #endif
 
 #include <curses.h>
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* off_t mode_t... */
 #include <inttypes.h> /* uintmax_t */
@@ -182,12 +183,18 @@ typedef struct FileView_
 		int in_progress;
 		/* Removed value of local filename filter.  Stored for restore operation. */
 		char *prev;
+		/* Temporary storage for local filename filter, when its overwritten. */
+		char *saved;
+
 		/* Unfiltered file entries. */
 		dir_entry_t *unfiltered;
 		/* Number of unfiltered entries. */
 		size_t unfiltered_count;
-		/* Temporary storage for local filename filter, when its overwritten. */
-		char *saved;
+
+		/* List of previous cursor positions in the unfiltered array. */
+		int *poshist;
+		/* Number of elements in the poshist field. */
+		size_t poshist_len;
 	}
 	local_filter;
 
