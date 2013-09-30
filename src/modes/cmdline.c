@@ -108,6 +108,7 @@ static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
 static void input_line_changed(void);
+static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
@@ -366,7 +367,7 @@ input_line_changed(void)
 
 		if(sub_mode == FILTER_SUBMODE)
 		{
-			local_filter_set(curr_view, "");
+			set_local_filter("");
 		}
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
@@ -391,7 +392,7 @@ input_line_changed(void)
 			exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
 		else if(sub_mode == FILTER_SUBMODE)
 		{
-			local_filter_set(curr_view, p);
+			set_local_filter(p);
 		}
 
 		free(p);
@@ -405,6 +406,13 @@ input_line_changed(void)
 	{
 		menu_redraw();
 	}
+}
+
+/* Updates value of the local filter of the current view. */
+static void
+set_local_filter(const char value[])
+{
+	local_filter_set(curr_view, value);
 }
 
 /* Insert a string into another string
