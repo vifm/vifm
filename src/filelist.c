@@ -738,13 +738,15 @@ count_selected(FileView *view)
 }
 
 int
-find_file_pos_in_list(FileView *view, const char *file)
+find_file_pos_in_list(const FileView *const view, const char file[])
 {
-	int x;
-	for(x = 0; x < view->list_rows; x++)
+	int i;
+	for(i = 0; i < view->list_rows; i++)
 	{
-		if(stroscmp(view->dir_entry[x].name, file) == 0)
-			return x;
+		if(stroscmp(view->dir_entry[i].name, file) == 0)
+		{
+			return i;
+		}
 	}
 	return -1;
 }
