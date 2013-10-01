@@ -3224,6 +3224,11 @@ load_saving_pos(FileView *view, int reload)
 	if(!window_shows_dirlist(view))
 		return;
 
+	if(view->local_filter.in_progress)
+	{
+		return;
+	}
+
 	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, reload);
