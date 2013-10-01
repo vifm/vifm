@@ -137,6 +137,12 @@ static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
+static int load_unfiltered_list(FileView *const view);
+static int get_unfiltered_pos(const FileView *const view, int pos);
+static void store_local_filter_position(FileView *const view, int pos);
+static int extract_previously_selected_pos(FileView *const view);
+static void clear_local_filter_hist_after(FileView *const view, int pos);
+static int find_nearest_neighour(const FileView *const view);
 static int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -412,6 +418,8 @@ reset_view(FileView *view)
 	reset_filter(&view->local_filter.filter);
 	view->local_filter.in_progress = 0;
 	view->local_filter.saved = NULL;
+	view->local_filter.poshist = NULL;
+	view->local_filter.poshist_len = 0U;
 
 	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
@@ -738,13 +746,15 @@ count_selected(FileView *view)
 }
 
 int
-find_file_pos_in_list(FileView *view, const char *file)
+find_file_pos_in_list(const FileView *const view, const char file[])
 {
-	int x;
-	for(x = 0; x < view->list_rows; x++)
+	int i;
+	for(i = 0; i < view->list_rows; i++)
 	{
-		if(stroscmp(view->dir_entry[x].name, file) == 0)
-			return x;
+		if(stroscmp(view->dir_entry[i].name, file) == 0)
+		{
+			return i;
+		}
 	}
 	return -1;
 }
@@ -2809,26 +2819,153 @@ toggle_filter_inversion(FileView *view)
 void
 local_filter_set(FileView *view, const char filter[])
 {
-	if(!view->local_filter.in_progress)
+	const int current_file_pos = view->local_filter.in_progress
+		? get_unfiltered_pos(view, view->list_pos)
+		: load_unfiltered_list(view);
+
+	if(current_file_pos >= 0)
 	{
-		view->local_filter.in_progress = 1;
-
-		view->local_filter.saved = strdup(view->local_filter.filter.raw);
-
-		if(view->filtered > 0)
-		{
-			filter_clear(&view->local_filter.filter);
-			populate_dir_list(view, 1);
-		}
-		view->local_filter.unfiltered = view->dir_entry;
-		view->local_filter.unfiltered_count = view->list_rows;
-		view->dir_entry = NULL;
+		store_local_filter_position(view, current_file_pos);
 	}
 
 	(void)filter_change(&view->local_filter.filter, filter,
 			!regexp_should_ignore_case(filter));
 
 	update_filtering_lists(view, 1, 0);
+}
+
+/* Loads full list of files into unfiltered list of the view.  Returns positon
+ * of file under cursor in the unfiltered list. */
+static int
+load_unfiltered_list(FileView *const view)
+{
+	int current_file_pos = view->list_pos;
+
+	view->local_filter.in_progress = 1;
+
+	view->local_filter.saved = strdup(view->local_filter.filter.raw);
+
+	if(view->filtered > 0)
+	{
+		char *const filename = strdup(view->dir_entry[view->list_pos].name);
+
+		filter_clear(&view->local_filter.filter);
+		populate_dir_list(view, 1);
+
+		/* Resolve current file position in updated list. */
+		current_file_pos = find_file_pos_in_list(view, filename);
+		free(filename);
+	}
+
+	view->local_filter.unfiltered = view->dir_entry;
+	view->local_filter.unfiltered_count = view->list_rows;
+	view->dir_entry = NULL;
+
+	return current_file_pos;
+}
+
+/* Gets position of an item in dir_entry list at position pos in the unfiltered
+ * list.  Returns index on success, otherwise -1 is returned. */
+static int
+get_unfiltered_pos(const FileView *const view, int pos)
+{
+	const size_t count = view->local_filter.unfiltered_count;
+	const char *const filename = view->dir_entry[pos].name;
+	while(pos < count)
+	{
+		/* Compare pointers, which are the same for same entry in two arrays. */
+		if(view->local_filter.unfiltered[pos].name == filename)
+		{
+			return pos;
+		}
+		pos++;
+	}
+	return -1;
+}
+
+/* Adds local filter position (in unfiltered list) to position history. */
+static void
+store_local_filter_position(FileView *const view, int pos)
+{
+	size_t *const len = &view->local_filter.poshist_len;
+	int *const arr = realloc(view->local_filter.poshist, sizeof(int)*(*len + 1));
+	if(arr != NULL)
+	{
+		view->local_filter.poshist = arr;
+		arr[*len] = pos;
+		++*len;
+	}
+}
+
+void
+local_filter_update_view(FileView *view, int rel_pos)
+{
+	int pos = extract_previously_selected_pos(view);
+
+	if(pos < 0)
+	{
+		pos = find_nearest_neighour(view);
+	}
+
+	if(pos >= 0)
+	{
+		view->list_pos = pos;
+		view->top_line = pos - rel_pos;
+	}
+}
+
+/* Finds one of previously selected files and updates list of visited files
+ * if needed.  Returns file position in current list of files or -1. */
+static int
+extract_previously_selected_pos(FileView *const view)
+{
+	size_t i;
+	for(i = 0; i < view->local_filter.poshist_len; i++)
+	{
+		const int unfiltered_pos = view->local_filter.poshist[i];
+		const char *const file = view->local_filter.unfiltered[unfiltered_pos].name;
+		const int filtered_pos = find_file_pos_in_list(view, file);
+
+		if(filtered_pos >= 0)
+		{
+			clear_local_filter_hist_after(view, i);
+			return filtered_pos;
+		}
+	}
+	return -1;
+}
+
+/* Clears all positions after the pos. */
+static void
+clear_local_filter_hist_after(FileView *const view, int pos)
+{
+	view->local_filter.poshist_len -= view->local_filter.poshist_len - (pos + 1);
+}
+
+/* Find nearest filtered neighbour.  Returns index of nearest unfiltered
+ * neighbour of the entry initially pointed to by cursor. */
+static int
+find_nearest_neighour(const FileView *const view)
+{
+	const int count = view->local_filter.unfiltered_count;
+
+	if(view->local_filter.poshist_len > 0U)
+	{
+		const int unfiltered_orig_pos = view->local_filter.poshist[0U];
+		int i;
+		for(i = unfiltered_orig_pos; i < count; i++)
+		{
+			const int filtered_pos = find_file_pos_in_list(view,
+					view->local_filter.unfiltered[i].name);
+			if(filtered_pos >= 0)
+			{
+				return filtered_pos;
+			}
+		}
+	}
+
+	assert(view->list_rows > 0 && "List of files is empty.");
+	return view->list_rows - 1;
 }
 
 void
@@ -2877,6 +3014,10 @@ local_filter_cancel(FileView *view)
 	local_filter_finish(view);
 }
 
+/* Copies/moves elements of the unfiltered list into dir_entry list.  add
+ * parameter controls whether entries matching filter are copied into dir_entry
+ * list.  clear parameter controls whether entries not matching filter are
+ * cleared in unfiltered list. */
 static void
 update_filtering_lists(FileView *view, int add, int clear)
 {
@@ -2928,6 +3069,10 @@ local_filter_finish(FileView *view)
 	free(view->local_filter.unfiltered);
 	free(view->local_filter.saved);
 	view->local_filter.in_progress = 0;
+
+	free(view->local_filter.poshist);
+	view->local_filter.poshist = NULL;
+	view->local_filter.poshist_len = 0U;
 }
 
 void
@@ -3078,6 +3223,11 @@ load_saving_pos(FileView *view, int reload)
 
 	if(!window_shows_dirlist(view))
 		return;
+
+	if(view->local_filter.in_progress)
+	{
+		return;
+	}
 
 	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);

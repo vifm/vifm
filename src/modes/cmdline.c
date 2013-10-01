@@ -108,6 +108,7 @@ static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
 static void input_line_changed(void);
+static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
@@ -337,6 +338,7 @@ update_cmdline_text(void)
 	wrefresh(status_bar);
 }
 
+/* Callback-like function, which is called every time input line is changed. */
 static void
 input_line_changed(void)
 {
@@ -366,35 +368,46 @@ input_line_changed(void)
 
 		if(sub_mode == FILTER_SUBMODE)
 		{
-			local_filter_set(curr_view, "");
+			set_local_filter("");
 		}
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
-		char *p;
+		char *mbinput;
 
 		free(previous);
 		previous = my_wcsdup(input_stat.line);
 
-		p = to_multibyte(input_stat.line);
+		mbinput = to_multibyte(input_stat.line);
 
-		if(sub_mode == SEARCH_FORWARD_SUBMODE)
-			exec_command(p, curr_view, GET_FSEARCH_PATTERN);
-		else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
-			exec_command(p, curr_view, GET_BSEARCH_PATTERN);
-		else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
-				sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
-			search_menu_list(p, sub_mode_ptr);
-		else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
-			exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
-		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
-			exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
-		else if(sub_mode == FILTER_SUBMODE)
+		switch(sub_mode)
 		{
-			local_filter_set(curr_view, p);
+			case SEARCH_FORWARD_SUBMODE:
+				exec_command(mbinput, curr_view, GET_FSEARCH_PATTERN);
+				break;
+			case SEARCH_BACKWARD_SUBMODE:
+				exec_command(mbinput, curr_view, GET_BSEARCH_PATTERN);
+				break;
+			case VSEARCH_FORWARD_SUBMODE:
+				exec_command(mbinput, curr_view, GET_VFSEARCH_PATTERN);
+				break;
+			case VSEARCH_BACKWARD_SUBMODE:
+				exec_command(mbinput, curr_view, GET_VBSEARCH_PATTERN);
+				break;
+			case MENU_SEARCH_FORWARD_SUBMODE:
+			case MENU_SEARCH_BACKWARD_SUBMODE:
+				search_menu_list(mbinput, sub_mode_ptr);
+				break;
+			case FILTER_SUBMODE:
+				set_local_filter(mbinput);
+				break;
+
+			default:
+				assert("Unexpected filter type.");
+				break;
 		}
 
-		free(p);
+		free(mbinput);
 	}
 
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
@@ -405,6 +418,15 @@ input_line_changed(void)
 	{
 		menu_redraw();
 	}
+}
+
+/* Updates value of the local filter of the current view. */
+static void
+set_local_filter(const char value[])
+{
+	const int rel_pos = input_stat.old_pos - input_stat.old_top;
+	local_filter_set(curr_view, value);
+	local_filter_update_view(curr_view, rel_pos);
 }
 
 /* Insert a string into another string
@@ -601,27 +623,21 @@ save_view_port(void)
 static void
 set_view_port(void)
 {
-	if(prev_mode != MENU_MODE)
-	{
-		if(sub_mode == FILTER_SUBMODE && is_line_edited())
-		{
-			curr_view->top_line = 0;
-			curr_view->list_pos = 0;
-		}
-		else
-		{
-			curr_view->top_line = input_stat.old_top;
-			curr_view->list_pos = input_stat.old_pos;
-		}
-
-		if(prev_mode == VISUAL_MODE)
-		{
-			update_visual_mode();
-		}
-	}
-	else
+	if(prev_mode == MENU_MODE)
 	{
 		load_menu_pos();
+		return;
+	}
+
+	if(sub_mode != FILTER_SUBMODE || !is_line_edited())
+	{
+		curr_view->top_line = input_stat.old_top;
+		curr_view->list_pos = input_stat.old_pos;
+	}
+
+	if(prev_mode == VISUAL_MODE)
+	{
+		update_visual_mode();
 	}
 }
 
@@ -1080,35 +1096,35 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
 	{
-		if(sub_mode == SEARCH_FORWARD_SUBMODE)
+		switch(sub_mode)
 		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
-		}
-		else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
-		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
-		}
-		else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
-				sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
-		{
-			curr_stats.need_update = UT_FULL;
-			search_menu_list(p, sub_mode_ptr);
-		}
-		else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
-		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
-		}
-		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
-		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
-		}
-		else if(sub_mode == VIEW_SEARCH_FORWARD_SUBMODE)
-		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_VWFSEARCH_PATTERN);
-		}
-		else if(sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE)
-		{
-			curr_stats.save_msg = exec_command(p, curr_view, GET_VWBSEARCH_PATTERN);
+			case SEARCH_FORWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
+				break;
+			case SEARCH_BACKWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
+				break;
+			case VSEARCH_FORWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
+				break;
+			case VSEARCH_BACKWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+				break;
+			case VIEW_SEARCH_FORWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_VWFSEARCH_PATTERN);
+				break;
+			case VIEW_SEARCH_BACKWARD_SUBMODE:
+				curr_stats.save_msg = exec_command(p, curr_view, GET_VWBSEARCH_PATTERN);
+				break;
+			case MENU_SEARCH_FORWARD_SUBMODE:
+			case MENU_SEARCH_BACKWARD_SUBMODE:
+				curr_stats.need_update = UT_FULL;
+				search_menu_list(p, sub_mode_ptr);
+				break;
+
+			default:
+				assert(0 && "Unknown command line submode.");
+				break;
 		}
 	}
 	else if(cfg.inc_search && input_stat.search_mode)

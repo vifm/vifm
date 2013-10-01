@@ -54,6 +54,18 @@ add_to_string_array(char ***array, int len, int count, ...)
 	return len;
 }
 
+int
+put_into_string_array(char ***array, int len, char item[])
+{
+	char **const arr = realloc(*array, sizeof(char *)*(len + 1));
+	if(arr != NULL)
+	{
+		*array = arr;
+		arr[len++] = item;
+	}
+	return len;
+}
+
 void
 remove_from_string_array(char **array, size_t len, int pos)
 {

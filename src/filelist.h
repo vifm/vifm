@@ -36,7 +36,9 @@ void load_initial_directory(FileView *view, const char *dir);
 
 /* Position related functions. */
 
-int find_file_pos_in_list(FileView *view, const char *file);
+/* Find index of the file within list of currently visible files of the view.
+ * Returns file entry index or -1, if file wasn't found. */
+int find_file_pos_in_list(const FileView *const view, const char file[]);
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);
 /* Tries to move cursor by pos_delta positions.  A wrapper for
@@ -166,6 +168,9 @@ void toggle_filter_inversion(FileView *view);
  * function initiates filter set process, which should be ended by call to
  * local_filter_apply() or local_filter_cancel(). */
 void local_filter_set(FileView *view, const char filter[]);
+/* Updates cursor position and top line of the view according to interactive
+ * local filter in progress. */
+void local_filter_update_view(FileView *view, int rel_pos);
 /* Accepts current value of local filter. */
 void local_filter_accept(FileView *view);
 /* Sets local filter non-interactively. */

@@ -25,27 +25,44 @@
 
 /* Input pointers can be NULL.  Returns new length of the array. */
 int add_to_string_array(char ***array, int len, int count, ...);
+
+/* Puts pointer into string array without making a copy.  Reallocates *array.
+ * Returns new size of the array, which can be equal to len on reallocation
+ * failure. */
+int put_into_string_array(char **array[], int len, char item[]);
+
 void remove_from_string_array(char **array, size_t len, int pos);
+
 int is_in_string_array(char *array[], size_t len, const char item[]);
+
 int is_in_string_array_case(char *array[], size_t len, const char item[]);
+
 char ** copy_string_array(char **array, size_t len);
+
 /* Returns position of the item in the array, -1 if no match found. */
 int string_array_pos(char *array[], size_t len, const char item[]);
+
 /* Returns position of the item in the array, -1 if no match found. */
 int string_array_pos_case(char *array[], size_t len, const char item[]);
+
 /* Frees memory of all array items and from the array itself. */
 void free_string_array(char *array[], size_t len);
+
 /* Frees memory of all array items, but not from the array itself. */
 void free_strings(char *array[], size_t len);
+
 void free_wstring_array(wchar_t **array, size_t len);
+
 /* Reads file specified by filepath into an array of strings.  Returns non-NULL
  * on success, otherwise NULL is returned, *nlines is untouched and errno
  * contains error code.  For empty file non-NULL will be returned, but *nlines
  * will be zero. */
 char ** read_file_of_lines(const char filepath[], int *nlines);
+
 /* Reads content of the file stream f into array of strings.  Returns NULL for
  * an empty file stream. */
 char ** read_file_lines(FILE *f, int *nlines);
+
 /* Overwrites file specified by filepath with lines.  Returns zero on success,
  * otherwise non-zero is returned and errno contains error code. */
 int write_file_of_lines(const char filepath[], char *lines[], size_t nlines);

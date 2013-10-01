@@ -20,7 +20,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h> /* calloc() malloc() free() realloc() */
 #include <string.h>
@@ -1167,7 +1167,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	free(cmdstr);
 
 	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
-			add_to_string_array(&params, *count, 1, NULL) != *count + 1)
+			put_into_string_array(&params, *count, NULL) != *count + 1)
 	{
 		free_string_array(params, *count);
 		*count = 0;
