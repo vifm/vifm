@@ -126,6 +126,8 @@
 
 	Store cancelled prompt input in prompt history.
 
+	Better order of command-line command checks.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

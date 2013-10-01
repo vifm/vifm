@@ -249,18 +249,9 @@ execute_cmd(const char cmd[])
 			cur->regexp, cur->quote, NULL, NULL, &last_end);
 	cmd_info.args[last_end] = '\0';
 
-	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
-			!cur->range)
+	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) && !cur->range)
 	{
 		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
-	}
-	else if(cmd_info.argc < cur->min_args)
-	{
-		execution_code = CMDS_ERR_TOO_FEW_ARGS;
-	}
-	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
-	{
-		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
 	else if(cmd_info.emark && !cur->emark)
 	{
@@ -271,6 +262,14 @@ execute_cmd(const char cmd[])
 		execution_code = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
 	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
+	{
+		execution_code = CMDS_ERR_TRAILING_CHARS;
+	}
+	else if(cmd_info.argc < cur->min_args)
+	{
+		execution_code = CMDS_ERR_TOO_FEW_ARGS;
+	}
+	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
 	{
 		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
