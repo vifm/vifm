@@ -153,6 +153,8 @@
 	Fixed search of the first element in file list when displaying of parent
 	directory is disabled.
 
+	Fixed small memory leak in expression parser.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
