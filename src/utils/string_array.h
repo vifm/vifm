@@ -45,7 +45,8 @@ int string_array_pos(char *array[], size_t len, const char item[]);
 /* Returns position of the item in the array, -1 if no match found. */
 int string_array_pos_case(char *array[], size_t len, const char item[]);
 
-/* Frees memory of all array items and from the array itself. */
+/* Frees memory of all array items and from the array itself.  Does nothing for
+ * NULL arrays. */
 void free_string_array(char *array[], size_t len);
 
 /* Frees memory of all array items, but not from the array itself. */
