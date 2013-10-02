@@ -610,6 +610,12 @@ test_qmark_is_checked_before_number_of_args(void)
 	assert_int_equal(CMDS_ERR_NO_QMARK_ALLOWED, execute_cmd("quit? from here"));
 }
 
+static void
+test_missing_quotes_are_allowed(void)
+{
+	assert_int_equal(CMDS_ERR_INVALID_ARG, execute_cmd("call 'ismissing"));
+}
+
 void
 input_tests(void)
 {
@@ -647,6 +653,7 @@ input_tests(void)
 	run_test(test_extra_long_command_name);
 	run_test(test_emark_is_checked_before_number_of_args);
 	run_test(test_qmark_is_checked_before_number_of_args);
+	run_test(test_missing_quotes_are_allowed);
 
 	test_fixture_end();
 }

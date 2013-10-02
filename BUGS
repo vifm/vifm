@@ -44,8 +44,4 @@ Fix syntax highlighting for: touch copy-init.cp; m e20-en.avi; mkdir mkdir.
 
 Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
 
-`:mkdir 'hello` shows 'Too few arguments' error message, while it should be
-"Unclosed quote" or "Wrong expression", whatever, but definitely not
-'Too few arguments'.
-
 Screen split title cannot be overwritten when it's run from `:shell`.

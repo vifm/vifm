@@ -253,6 +253,10 @@ execute_cmd(const char cmd[])
 	{
 		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
 	}
+	else if(cmd_info.argc < 0)
+	{
+		execution_code = CMDS_ERR_INVALID_ARG;
+	}
 	else if(cmd_info.emark && !cur->emark)
 	{
 		execution_code = CMDS_ERR_NO_BANG_ALLOWED;
@@ -1023,7 +1027,8 @@ get_last_argument(const char cmd[], size_t *len)
 }
 
 /* Splits argument string into array of strings.  Returns NULL if no arguments
- * are found or an error occurred.  Always sets *count (to zero on errors). */
+ * are found or an error occurred.  Always sets *count (to negative value on
+ * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
@@ -1163,13 +1168,14 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			state = BEGIN;
 		}
 	}
+
 	free(cmdstr);
 
 	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
 			put_into_string_array(&params, *count, NULL) != *count + 1)
 	{
 		free_string_array(params, *count);
-		*count = 0;
+		*count = (state == S_QUOTING || state == D_QUOTING) ? -1 : 0;
 		return NULL;
 	}
 

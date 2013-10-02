@@ -128,6 +128,8 @@
 
 	Better order of command-line command checks.
 
+	Show better error message on unmatched quotes in command arguments.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
