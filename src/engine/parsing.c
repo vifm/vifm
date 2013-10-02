@@ -212,6 +212,7 @@ eval_expression(const char **in)
 		skip_whitespace_tokens(in);
 		if(last_error != PE_NO_ERROR)
 		{
+			var_free(term);
 			break;
 		}
 		else if(last_token.type == WHITESPACE && !whitespace_allowed)
@@ -222,6 +223,8 @@ eval_expression(const char **in)
 
 		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s",
 				term.value.string);
+
+		var_free(term);
 
 		if(last_token.type != DOT)
 		{
