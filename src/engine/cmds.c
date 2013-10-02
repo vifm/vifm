@@ -249,18 +249,13 @@ execute_cmd(const char cmd[])
 			cur->regexp, cur->quote, NULL, NULL, &last_end);
 	cmd_info.args[last_end] = '\0';
 
-	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
-			!cur->range)
+	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) && !cur->range)
 	{
 		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
 	}
-	else if(cmd_info.argc < cur->min_args)
+	else if(cmd_info.argc < 0)
 	{
-		execution_code = CMDS_ERR_TOO_FEW_ARGS;
-	}
-	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
-	{
-		execution_code = CMDS_ERR_TRAILING_CHARS;
+		execution_code = CMDS_ERR_INVALID_ARG;
 	}
 	else if(cmd_info.emark && !cur->emark)
 	{
@@ -271,6 +266,14 @@ execute_cmd(const char cmd[])
 		execution_code = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
 	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
+	{
+		execution_code = CMDS_ERR_TRAILING_CHARS;
+	}
+	else if(cmd_info.argc < cur->min_args)
+	{
+		execution_code = CMDS_ERR_TOO_FEW_ARGS;
+	}
+	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
 	{
 		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
@@ -1024,7 +1027,8 @@ get_last_argument(const char cmd[], size_t *len)
 }
 
 /* Splits argument string into array of strings.  Returns NULL if no arguments
- * are found or an error occurred.  Always sets *count (to zero on errors). */
+ * are found or an error occurred.  Always sets *count (to negative value on
+ * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
@@ -1164,13 +1168,14 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			state = BEGIN;
 		}
 	}
+
 	free(cmdstr);
 
 	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
 			put_into_string_array(&params, *count, NULL) != *count + 1)
 	{
 		free_string_array(params, *count);
-		*count = 0;
+		*count = (state == S_QUOTING || state == D_QUOTING) ? -1 : 0;
 		return NULL;
 	}
 

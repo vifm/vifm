@@ -134,8 +134,11 @@ string_array_pos_case(char *array[], size_t len, const char item[])
 void
 free_string_array(char *array[], size_t len)
 {
-	free_strings(array, len);
-	free(array);
+	if(array != NULL)
+	{
+		free_strings(array, len);
+		free(array);
+	}
 }
 
 void
