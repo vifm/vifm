@@ -159,6 +159,9 @@
 
 	Fixed small memory leak in expression parser.
 
+	Fixed local options after startup (could be loaded for wrong pane).
+	Thanks to filterfalse.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).

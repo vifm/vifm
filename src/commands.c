@@ -3658,17 +3658,25 @@ static int
 winrun(FileView *view, const char cmd[])
 {
 	int result;
-	FileView *tmp_curr = curr_view;
-	FileView *tmp_other = other_view;
+	FileView *const tmp_curr = curr_view;
+	FileView *const tmp_other = other_view;
 
 	curr_view = view;
 	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
+	if(curr_view != tmp_curr)
+	{
+		load_local_options(curr_view);
+	}
 
-	load_local_options(curr_view);
 	result = exec_commands(cmd, curr_view, GET_COMMAND);
 
 	curr_view = tmp_curr;
 	other_view = tmp_other;
+	if(curr_view != view)
+	{
+		load_local_options(curr_view);
+	}
+
 	return result;
 }
 
