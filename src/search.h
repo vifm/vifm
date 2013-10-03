@@ -20,7 +20,7 @@
 #ifndef VIFM__SEARCH_H__
 #define VIFM__SEARCH_H__
 
-typedef struct FileView_ FileView;
+#include "ui.h"
 
 /* Search and navigation functions. */
 
