@@ -122,8 +122,7 @@ typedef struct
 	int list_num; /* to be used by sorting comparer to perform stable sort */
 }dir_entry_t;
 
-typedef struct FileView_ FileView;
-struct FileView_
+typedef struct
 {
 	WINDOW *win;
 	WINDOW *title;
@@ -215,7 +214,8 @@ struct FileView_
 	size_t max_filename_len; /* max length of filename in current directory */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
-};
+}
+FileView;
 
 FileView lwin;
 FileView rwin;
