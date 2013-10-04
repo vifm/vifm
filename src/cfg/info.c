@@ -708,95 +708,95 @@ update_info_file(const char filename[])
 		fclose(fp);
 	}
 
-	if((fp = fopen(filename, "w")) == NULL)
+	if((fp = fopen(filename, "w")) != NULL)
 	{
-		return;
+		fprintf(fp, "# You can edit this file by hand, but it's recommended not to "
+				"do that.\n");
+
+		if(cfg.vifm_info & VIFMINFO_OPTIONS)
+		{
+			write_options(fp);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_FILETYPES)
+		{
+			write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE, &filetypes, nft, ft);
+			write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx,
+					fx);
+			write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
+					fv);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_COMMANDS)
+		{
+			write_commands(fp, cmds_list, cmds, ncmds);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		{
+			write_bookmarks(fp, marks, nmarks);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_TUI)
+		{
+			write_tui_state(fp);
+		}
+
+		if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
+		{
+			write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
+			write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_CHISTORY)
+		{
+			write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
+					MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_SHISTORY)
+		{
+			write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
+					&cfg.search_hist);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_PHISTORY)
+		{
+			write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
+					&cfg.prompt_hist);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_FHISTORY)
+		{
+			write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
+					&cfg.filter_hist);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_REGISTERS)
+		{
+			write_registers(fp, regs, nregs);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+		{
+			write_dir_stack(fp, dir_stack, ndir_stack);
+		}
+
+		write_trash(fp, trash, ntrash);
+
+		if(cfg.vifm_info & VIFMINFO_STATE)
+		{
+			write_general_state(fp);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_CS)
+		{
+			fputs("\n# Color scheme:\n", fp);
+			fprintf(fp, "c%s\n", cfg.cs.name);
+		}
+
+		fclose(fp);
 	}
-
-	fprintf(fp, "# You can edit this file by hand, but it's recommended not to do that.\n");
-
-	if(cfg.vifm_info & VIFMINFO_OPTIONS)
-	{
-		write_options(fp);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_FILETYPES)
-	{
-		write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE, &filetypes, nft, ft);
-		write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx, fx);
-		write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
-				fv);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_COMMANDS)
-	{
-		write_commands(fp, cmds_list, cmds, ncmds);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
-	{
-		write_bookmarks(fp, marks, nmarks);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_TUI)
-	{
-		write_tui_state(fp);
-	}
-
-	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
-	{
-		write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
-		write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_CHISTORY)
-	{
-		write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
-				MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_SHISTORY)
-	{
-		write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
-				&cfg.search_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_PHISTORY)
-	{
-		write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
-				&cfg.prompt_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_FHISTORY)
-	{
-		write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
-				&cfg.filter_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_REGISTERS)
-	{
-		write_registers(fp, regs, nregs);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
-	{
-		write_dir_stack(fp, dir_stack, ndir_stack);
-	}
-
-	write_trash(fp, trash, ntrash);
-
-	if(cfg.vifm_info & VIFMINFO_STATE)
-	{
-		write_general_state(fp);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_CS)
-	{
-		fputs("\n# Color scheme:\n", fp);
-		fprintf(fp, "c%s\n", cfg.cs.name);
-	}
-
-	fclose(fp);
 
 	free_string_array(ft, nft);
 	free_string_array(fv, nfv);
