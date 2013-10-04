@@ -294,6 +294,8 @@ read_info_file(int reread)
 	free(line3);
 	free(line4);
 	fclose(fp);
+
+	dir_stack_freeze();
 }
 
 /* Parses sort description line of the view and initialized its sort field. */
@@ -469,7 +471,7 @@ update_info_file(const char filename[])
 {
 	/* TODO: refactor this function update_info_file() */
 
-	const int dir_stack_was_empty = stack_top == 0;
+	const int dir_stack_was_changed = dir_stack_changed();
 	FILE *fp;
 	char ** list;
 	int nlist = -1;
@@ -480,6 +482,8 @@ update_info_file(const char filename[])
 	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
+	char **dir_stack = NULL;
+	int ndir_stack = 0;
 	int i;
 
 	if(cfg.vifm_info == 0)
@@ -668,7 +672,7 @@ update_info_file(const char filename[])
 					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
 				}
 			}
-			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
+			else if(type == LINE_TYPE_DIR_STACK && !dir_stack_was_changed)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -676,7 +680,8 @@ update_info_file(const char filename[])
 					{
 						if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 						{
-							push_to_dirstack(line_val, line2, line3 + 1, line4);
+							ndir_stack = add_to_string_array(&dir_stack, ndir_stack, 4,
+									line_val, line2, line3 + 1, line4);
 						}
 					}
 				}
@@ -697,10 +702,6 @@ update_info_file(const char filename[])
 
 	if((fp = fopen(filename, "w")) == NULL)
 	{
-		if(dir_stack_was_empty)
-		{
-			clean_stack();
-		}
 		return;
 	}
 
@@ -902,11 +903,17 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 	{
+		int i;
 		fputs("\n# Directory stack (oldest to newest):\n", fp);
 		for(i = 0; i < stack_top; i++)
 		{
 			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
 			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+		}
+		for(i = 0; i < ndir_stack; i += 4)
+		{
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
 		}
 	}
 
@@ -953,11 +960,7 @@ update_info_file(const char filename[])
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
-
-	if(dir_stack_was_empty)
-	{
-		clean_stack();
-	}
+	free_string_array(dir_stack, ndir_stack);
 }
 
 /* Stores list of associations to the file. */
