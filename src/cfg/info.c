@@ -70,6 +70,7 @@ static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
 static void write_registers(FILE *const fp, char *regs[], int nregs);
 static void write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack);
+static void write_trash(FILE *const fp, char *trash[], int ntrash);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -781,11 +782,7 @@ update_info_file(const char filename[])
 		write_dir_stack(fp, dir_stack, ndir_stack);
 	}
 
-	fputs("\n# Trash content:\n", fp);
-	for(i = 0; i < nentries; i++)
-		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
-	for(i = 0; i < ntrash; i += 2)
-		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
+	write_trash(fp, trash, ntrash);
 
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
@@ -1113,6 +1110,23 @@ write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack)
 			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
 			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
 		}
+	}
+}
+
+/* Writes trash entries to vifminfo file.  trash is a list of length ntrash
+ * entries read from vifminfo. */
+static void
+write_trash(FILE *const fp, char *trash[], int ntrash)
+{
+	int i;
+	fputs("\n# Trash content:\n", fp);
+	for(i = 0; i < nentries; i++)
+	{
+		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
+	}
+	for(i = 0; i < ntrash; i += 2)
+	{
+		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
 	}
 }
 
