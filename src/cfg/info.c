@@ -71,6 +71,7 @@ static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 static void write_registers(FILE *const fp, char *regs[], int nregs);
 static void write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack);
 static void write_trash(FILE *const fp, char *trash[], int ntrash);
+static void write_general_state(FILE *const fp);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -786,16 +787,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
-		fputs("\n# State:\n", fp);
-		fprintf(fp, "f%s\n", lwin.name_filter.raw);
-		fprintf(fp, "i%d\n", lwin.invert);
-		fprintf(fp, "[.%d\n", lwin.hide_dot);
-		fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
-		fprintf(fp, "F%s\n", rwin.name_filter.raw);
-		fprintf(fp, "I%d\n", rwin.invert);
-		fprintf(fp, "].%d\n", rwin.hide_dot);
-		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
-		fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
+		write_general_state(fp);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_CS)
@@ -1128,6 +1120,22 @@ write_trash(FILE *const fp, char *trash[], int ntrash)
 	{
 		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
 	}
+}
+
+/* Writes general state to vifminfo file. */
+static void
+write_general_state(FILE *const fp)
+{
+	fputs("\n# State:\n", fp);
+	fprintf(fp, "f%s\n", lwin.name_filter.raw);
+	fprintf(fp, "i%d\n", lwin.invert);
+	fprintf(fp, "[.%d\n", lwin.hide_dot);
+	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
+	fprintf(fp, "F%s\n", rwin.name_filter.raw);
+	fprintf(fp, "I%d\n", rwin.invert);
+	fprintf(fp, "].%d\n", rwin.hide_dot);
+	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
+	fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character
