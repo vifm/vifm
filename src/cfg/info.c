@@ -62,6 +62,7 @@ static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
+static void write_bookmarks(FILE *const fp, char *marks[], int nmarks);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
@@ -730,19 +731,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
 	{
-		const int len = init_active_bookmarks(valid_bookmarks);
-
-		fputs("\n# Bookmarks:\n", fp);
-		for(i = 0; i < len; i++)
-		{
-			int j = active_bookmarks[i];
-			if(is_spec_bookmark(j))
-				continue;
-			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j), bookmarks[j].directory);
-			fprintf(fp, "%s\n", bookmarks[j].file);
-		}
-		for(i = 0; i < nmarks; i += 3)
-			fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
+		write_bookmarks(fp, marks, nmarks);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
@@ -1021,6 +1010,31 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 	for(i = 0; i < ncmds; i += 2)
 	{
 		fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
+	}
+}
+
+/* Writes bookmarks to vifminfo file.  cmds is a list of length ncmds bookmarks
+ * read from vifminfo. */
+static void
+write_bookmarks(FILE *const fp, char *marks[], int nmarks)
+{
+	const int len = init_active_bookmarks(valid_bookmarks);
+	int i;
+
+	fputs("\n# Bookmarks:\n", fp);
+	for(i = 0; i < len; i++)
+	{
+		const int index = active_bookmarks[i];
+		if(!is_spec_bookmark(index))
+		{
+			fprintf(fp, "'%c\n\t%s\n\t", index2mark(index),
+					bookmarks[index].directory);
+			fprintf(fp, "%s\n", bookmarks[index].file);
+		}
+	}
+	for(i = 0; i < nmarks; i += 3)
+	{
+		fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
 	}
 }
 
