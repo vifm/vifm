@@ -60,6 +60,8 @@ static void update_info_file(const char filename[]);
 static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
+static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
+		int ncmds);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
@@ -474,9 +476,9 @@ update_info_file(const char filename[])
 
 	const int dir_stack_was_changed = dir_stack_changed();
 	FILE *fp;
-	char ** list;
-	int nlist = -1;
-	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
+	char **cmds_list;
+	int ncmds_list = -1;
+	char **ft = NULL, **fx = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL;
 	size_t nlhp = 0, nrhp = 0;
@@ -490,8 +492,8 @@ update_info_file(const char filename[])
 	if(cfg.vifm_info == 0)
 		return;
 
-	list = list_udf();
-	while(list[++nlist] != NULL);
+	cmds_list = list_udf();
+	while(cmds_list[++ncmds_list] != NULL);
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
@@ -555,9 +557,9 @@ update_info_file(const char filename[])
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					const char *p = line_val;
-					for(i = 0; i < nlist; i += 2)
+					for(i = 0; i < ncmds_list; i += 2)
 					{
-						int cmp = strcmp(list[i], p);
+						int cmp = strcmp(cmds_list[i], p);
 						if(cmp < 0)
 							continue;
 						if(cmp == 0)
@@ -715,7 +717,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_FILETYPES)
 	{
-		write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE , &filetypes, nft, ft);
+		write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE, &filetypes, nft, ft);
 		write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx, fx);
 		write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
 				fv);
@@ -723,11 +725,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_COMMANDS)
 	{
-		fputs("\n# Commands:\n", fp);
-		for(i = 0; list[i] != NULL; i += 2)
-			fprintf(fp, "!%s\n\t%s\n", list[i], list[i + 1]);
-		for(i = 0; i < ncmds; i += 2)
-			fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
+		write_commands(fp, cmds_list, cmds, ncmds);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
@@ -859,7 +857,7 @@ update_info_file(const char filename[])
 	free_string_array(fx, nfx);
 	free_string_array(cmds, ncmds);
 	free_string_array(marks, nmarks);
-	free_string_array(list, nlist);
+	free_string_array(cmds_list, ncmds_list);
 	free_string_array(lh, nlh);
 	free_string_array(rh, nrh);
 	free(lhp);
@@ -1004,6 +1002,25 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 	for(i = 0; i < prev_count; i += 2)
 	{
 		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
+	}
+}
+
+/* Writes user-defined commands to vifminfo file.  cmds_list is a NULL
+ * terminated list of commands existing in current session, cmds is a list of
+ * length ncmds with unseen commands read from vifminfo. */
+static void
+write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
+{
+	int i;
+
+	fputs("\n# Commands:\n", fp);
+	for(i = 0; cmds_list[i] != NULL; i += 2)
+	{
+		fprintf(fp, "!%s\n\t%s\n", cmds_list[i], cmds_list[i + 1]);
+	}
+	for(i = 0; i < ncmds; i += 2)
+	{
+		fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
 	}
 }
 
