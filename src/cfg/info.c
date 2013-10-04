@@ -69,6 +69,7 @@ static void write_view_history(FILE *fp, FileView *view, const char str[],
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
 static void write_registers(FILE *const fp, char *regs[], int nregs);
+static void write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -477,7 +478,6 @@ update_info_file(const char filename[])
 {
 	/* TODO: refactor this function update_info_file() */
 
-	const int dir_stack_was_changed = dir_stack_changed();
 	FILE *fp;
 	char **cmds_list;
 	int ncmds_list = -1;
@@ -678,7 +678,7 @@ update_info_file(const char filename[])
 					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
 				}
 			}
-			else if(type == LINE_TYPE_DIR_STACK && !dir_stack_was_changed)
+			else if(type == LINE_TYPE_DIR_STACK)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -778,18 +778,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 	{
-		int i;
-		fputs("\n# Directory stack (oldest to newest):\n", fp);
-		for(i = 0; i < stack_top; i++)
-		{
-			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
-			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
-		}
-		for(i = 0; i < ndir_stack; i += 4)
-		{
-			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
-			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
-		}
+		write_dir_stack(fp, dir_stack, ndir_stack);
 	}
 
 	fputs("\n# Trash content:\n", fp);
@@ -1097,6 +1086,32 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 					fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
 				}
 			}
+		}
+	}
+}
+
+/* Writes directory stack to vifminfo file.  dir_stack is a list of length
+ * ndir_stack entries (4 lines per entry) read from vifminfo. */
+static void
+write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack)
+{
+	fputs("\n# Directory stack (oldest to newest):\n", fp);
+	if(dir_stack_changed())
+	{
+		int i;
+		for(i = 0; i < stack_top; i++)
+		{
+			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
+			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+		}
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < ndir_stack; i += 4)
+		{
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
 		}
 	}
 }
