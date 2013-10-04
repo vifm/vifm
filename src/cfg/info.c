@@ -68,6 +68,7 @@ static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
+static void write_registers(FILE *const fp, char *regs[], int nregs);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -772,22 +773,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_REGISTERS)
 	{
-		fputs("\n# Registers:\n", fp);
-		for(i = 0; i < nregs; i++)
-			fprintf(fp, "%s\n", regs[i]);
-		for(i = 0; valid_registers[i] != '\0'; i++)
-		{
-			int j;
-			registers_t *reg = find_register(valid_registers[i]);
-			if(reg == NULL)
-				continue;
-			for(j = 0; j < reg->num_files; j++)
-			{
-				if(reg->files[j] == NULL)
-					continue;
-				fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
-			}
-		}
+		write_registers(fp, regs, nregs);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
@@ -1006,8 +992,8 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 	}
 }
 
-/* Writes bookmarks to vifminfo file.  cmds is a list of length ncmds bookmarks
- * read from vifminfo. */
+/* Writes bookmarks to vifminfo file.  marks is a list of length nmarks
+ * bookmarks read from vifminfo. */
 static void
 write_bookmarks(FILE *const fp, char *marks[], int nmarks)
 {
@@ -1083,6 +1069,35 @@ write_history(FILE *fp, const char str[], char mark, int prev_count,
 	for(i = hist->pos; i >= 0; i--)
 	{
 		fprintf(fp, "%c%s\n", mark, hist->items[i]);
+	}
+}
+
+/* Writes bookmarks to vifminfo file.  regs is a list of length nregs registers
+ * read from vifminfo. */
+static void
+write_registers(FILE *const fp, char *regs[], int nregs)
+{
+	int i;
+
+	fputs("\n# Registers:\n", fp);
+	for(i = 0; i < nregs; i++)
+	{
+		fprintf(fp, "%s\n", regs[i]);
+	}
+	for(i = 0; valid_registers[i] != '\0'; i++)
+	{
+		const registers_t *const reg = find_register(valid_registers[i]);
+		if(reg != NULL)
+		{
+			int j;
+			for(j = 0; j < reg->num_files; j++)
+			{
+				if(reg->files[j] != NULL)
+				{
+					fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
+				}
+			}
+		}
 	}
 }
 
