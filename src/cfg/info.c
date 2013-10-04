@@ -63,6 +63,7 @@ static void write_assocs(FILE *fp, const char str[], char mark,
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
 static void write_bookmarks(FILE *const fp, char *marks[], int nmarks);
+static void write_tui_state(FILE *const fp);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
@@ -736,15 +737,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
 	{
-		fputs("\n# TUI:\n", fp);
-		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
-		fprintf(fp, "q%d\n", curr_stats.view);
-		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
-		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
-		fprintf(fp, "m%d\n", curr_stats.splitter_pos);
-
-		put_sort_info(fp, 'l', &lwin);
-		put_sort_info(fp, 'r', &rwin);
+		write_tui_state(fp);
 	}
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
@@ -1036,6 +1029,21 @@ write_bookmarks(FILE *const fp, char *marks[], int nmarks)
 	{
 		fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
 	}
+}
+
+/* Writes state of the TUI to vifminfo file. */
+static void
+write_tui_state(FILE *const fp)
+{
+	fputs("\n# TUI:\n", fp);
+	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
+	fprintf(fp, "q%d\n", curr_stats.view);
+	fprintf(fp, "v%d\n", curr_stats.number_of_windows);
+	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
+	fprintf(fp, "m%d\n", curr_stats.splitter_pos);
+
+	put_sort_info(fp, 'l', &lwin);
+	put_sort_info(fp, 'r', &rwin);
 }
 
 /* Stores history of the view to the file. */
