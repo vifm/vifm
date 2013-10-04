@@ -53,6 +53,14 @@ void clean_stack(void);
 /* Last element of list returned is NULL.  Returns NULL on error. */
 char ** dir_stack_list(void);
 
+/* Freezes change in the directory stack.  In combination with
+ * dir_stack_changed() function might be used to detect changes in the stack. */
+void dir_stack_freeze(void);
+
+/* Checks that directory stack was ever changed or changed after last freezing.
+ * Returns non-zero if it was changed, otherwise zero is returned. */
+int dir_stack_changed(void);
+
 #endif /* VIFM__DIR_STACK_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
