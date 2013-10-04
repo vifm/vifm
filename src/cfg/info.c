@@ -57,6 +57,7 @@ static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
@@ -709,99 +710,7 @@ update_info_file(const char filename[])
 
 	if(cfg.vifm_info & VIFMINFO_OPTIONS)
 	{
-		fputs("\n# Options:\n", fp);
-		fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
-		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
-		fprintf(fp, "=columns=%d\n", cfg.columns);
-		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
-		fprintf(fp, "=cpoptions=%s%s%s\n",
-				cfg.filter_inverted_by_default ? "f" : "",
-				cfg.selection_is_primary ? "s" : "",
-				cfg.tab_switches_pane ? "t" : "");
-		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
-		fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
-		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
-		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
-		fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
-		fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
-		fprintf(fp, "=history=%d\n", cfg.history_len);
-		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
-		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
-		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
-		fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
-		fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
-		fprintf(fp, "=lines=%d\n", cfg.lines);
-		fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
-		fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
-		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
-		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
-		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
-		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-		fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
-#ifndef _WIN32
-		fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
-#endif
-		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
-		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
-		fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
-		fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
-		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
-		fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
-		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
-		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
-		fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
-				cfg.vi_cmd_bg ? " &" : "");
-		fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
-				cfg.vi_cmd_bg ? " &" : "");
-		fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
-		fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
-		fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
-		fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
-		fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
-
-		fprintf(fp, "%s", "=dotdirs=");
-		if(cfg.dot_dirs & DD_ROOT_PARENT)
-			fprintf(fp, "%s", "rootparent,");
-		if(cfg.dot_dirs & DD_NONROOT_PARENT)
-			fprintf(fp, "%s", "nonrootparent,");
-		fprintf(fp, "\n");
-
-		fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
-
-		fprintf(fp, "=vifminfo=options");
-		if(cfg.vifm_info & VIFMINFO_FILETYPES)
-			fprintf(fp, ",filetypes");
-		if(cfg.vifm_info & VIFMINFO_COMMANDS)
-			fprintf(fp, ",commands");
-		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
-			fprintf(fp, ",bookmarks");
-		if(cfg.vifm_info & VIFMINFO_TUI)
-			fprintf(fp, ",tui");
-		if(cfg.vifm_info & VIFMINFO_DHISTORY)
-			fprintf(fp, ",dhistory");
-		if(cfg.vifm_info & VIFMINFO_STATE)
-			fprintf(fp, ",state");
-		if(cfg.vifm_info & VIFMINFO_CS)
-			fprintf(fp, ",cs");
-		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
-			fprintf(fp, ",savedirs");
-		if(cfg.vifm_info & VIFMINFO_CHISTORY)
-			fprintf(fp, ",chistory");
-		if(cfg.vifm_info & VIFMINFO_SHISTORY)
-			fprintf(fp, ",shistory");
-		if(cfg.vifm_info & VIFMINFO_PHISTORY)
-			fprintf(fp, ",phistory");
-		if(cfg.vifm_info & VIFMINFO_FHISTORY)
-			fprintf(fp, ",fhistory");
-		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
-			fprintf(fp, ",dirstack");
-		if(cfg.vifm_info & VIFMINFO_REGISTERS)
-			fprintf(fp, ",registers");
-		fprintf(fp, "\n");
-
-		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
-		fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
-		fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
+		write_options(fp);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_FILETYPES)
@@ -961,6 +870,105 @@ update_info_file(const char filename[])
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
 	free_string_array(dir_stack, ndir_stack);
+}
+
+/* Writes current values of all options into vifminfo file. */
+static void
+write_options(FILE *const fp)
+{
+	fputs("\n# Options:\n", fp);
+	fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
+	fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
+	fprintf(fp, "=columns=%d\n", cfg.columns);
+	fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
+	fprintf(fp, "=cpoptions=%s%s%s\n",
+			cfg.filter_inverted_by_default ? "f" : "",
+			cfg.selection_is_primary ? "s" : "",
+			cfg.tab_switches_pane ? "t" : "");
+	fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
+	fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
+	fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
+	fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
+	fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
+	fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
+	fprintf(fp, "=history=%d\n", cfg.history_len);
+	fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
+	fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
+	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
+	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
+	fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
+	fprintf(fp, "=lines=%d\n", cfg.lines);
+	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
+	fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
+	fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
+	fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
+	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
+	fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
+#ifndef _WIN32
+	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
+#endif
+	fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
+	fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
+	fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
+	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
+	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
+	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
+	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
+	fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
+	fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
+			cfg.vi_cmd_bg ? " &" : "");
+	fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
+			cfg.vi_cmd_bg ? " &" : "");
+	fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
+	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
+	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
+	fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
+	fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
+
+	fprintf(fp, "%s", "=dotdirs=");
+	if(cfg.dot_dirs & DD_ROOT_PARENT)
+		fprintf(fp, "%s", "rootparent,");
+	if(cfg.dot_dirs & DD_NONROOT_PARENT)
+		fprintf(fp, "%s", "nonrootparent,");
+	fprintf(fp, "\n");
+
+	fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
+
+	fprintf(fp, "=vifminfo=options");
+	if(cfg.vifm_info & VIFMINFO_FILETYPES)
+		fprintf(fp, ",filetypes");
+	if(cfg.vifm_info & VIFMINFO_COMMANDS)
+		fprintf(fp, ",commands");
+	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		fprintf(fp, ",bookmarks");
+	if(cfg.vifm_info & VIFMINFO_TUI)
+		fprintf(fp, ",tui");
+	if(cfg.vifm_info & VIFMINFO_DHISTORY)
+		fprintf(fp, ",dhistory");
+	if(cfg.vifm_info & VIFMINFO_STATE)
+		fprintf(fp, ",state");
+	if(cfg.vifm_info & VIFMINFO_CS)
+		fprintf(fp, ",cs");
+	if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+		fprintf(fp, ",savedirs");
+	if(cfg.vifm_info & VIFMINFO_CHISTORY)
+		fprintf(fp, ",chistory");
+	if(cfg.vifm_info & VIFMINFO_SHISTORY)
+		fprintf(fp, ",shistory");
+	if(cfg.vifm_info & VIFMINFO_PHISTORY)
+		fprintf(fp, ",phistory");
+	if(cfg.vifm_info & VIFMINFO_FHISTORY)
+		fprintf(fp, ",fhistory");
+	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+		fprintf(fp, ",dirstack");
+	if(cfg.vifm_info & VIFMINFO_REGISTERS)
+		fprintf(fp, ",registers");
+	fprintf(fp, "\n");
+
+	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
+	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
+	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 
 /* Stores list of associations to the file. */
