@@ -80,6 +80,7 @@
 static void quit_on_invalid_arg(void);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
+static void load_scheme(void);
 static int run_converter(int vifm_like_mode);
 
 static void
@@ -362,20 +363,7 @@ main(int argc, char *argv[])
 
 	if(!old_config && !no_configs)
 	{
-		if(are_old_color_schemes())
-		{
-			if(run_converter(2) != 0)
-			{
-				endwin();
-				fputs("Problems with running vifmrc-converter", stderr);
-				exit(0);
-			}
-		}
-		if(color_scheme_exists(curr_stats.color_scheme))
-		{
-			load_color_scheme(curr_stats.color_scheme);
-		}
-		load_color_scheme_colors();
+		load_scheme();
 		source_config();
 	}
 
@@ -515,6 +503,27 @@ remote_cd(FileView *view, const char *path, int handle)
 
 	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
+}
+
+/* Loads color scheme.  Converts old format to the new one if needed.
+ * Terminates application with error message on error. */
+static void
+load_scheme(void)
+{
+	if(are_old_color_schemes())
+	{
+		if(run_converter(2) != 0)
+		{
+			endwin();
+			fputs("Problems with running vifmrc-converter\n", stderr);
+			exit(0);
+		}
+	}
+	if(color_scheme_exists(curr_stats.color_scheme))
+	{
+		load_color_scheme(curr_stats.color_scheme);
+	}
+	load_color_scheme_colors();
 }
 
 /* Runs vifmrc-converter in mode specified by the vifm_like_mode argument.
