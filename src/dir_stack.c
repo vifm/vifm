@@ -18,6 +18,7 @@
 
 #include "dir_stack.h"
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,6 +28,9 @@
 stack_entry_t *stack;
 unsigned int stack_top;
 static unsigned int stack_size;
+
+/* Whether directory stack was changed since its creation or last freezing. */
+static int changed;
 
 static void free_entry(const stack_entry_t *entry);
 
@@ -44,7 +48,9 @@ push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 	{
 		stack_entry_t *s = realloc(stack, (stack_size + 1)*sizeof(*stack));
 		if(s == NULL)
+		{
 			return -1;
+		}
 
 		stack = s;
 		stack_size++;
@@ -64,6 +70,7 @@ push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 	}
 
 	stack_top++;
+	changed = 1;
 
 	return 0;
 }
@@ -147,7 +154,9 @@ void
 clean_stack(void)
 {
 	while(stack_top > 0)
+	{
 		free_entry(&stack[--stack_top]);
+	}
 }
 
 static void
@@ -157,6 +166,10 @@ free_entry(const stack_entry_t *entry)
 	free(entry->lpane_file);
 	free(entry->rpane_dir);
 	free(entry->rpane_file);
+
+	/* This function is called almost from all other public ones on successful
+	 * scenario, so it's a good place to put change detection. */
+	changed = 1;
 }
 
 char **
@@ -203,6 +216,18 @@ dir_stack_list(void)
 	*p = NULL;
 
 	return list;
+}
+
+void
+dir_stack_freeze(void)
+{
+	changed = 0;
+}
+
+int
+dir_stack_changed(void)
+{
+	return changed;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

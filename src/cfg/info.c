@@ -57,12 +57,21 @@ static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
+static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
+		int ncmds);
+static void write_bookmarks(FILE *const fp, char *marks[], int nmarks);
+static void write_tui_state(FILE *const fp);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
+static void write_registers(FILE *const fp, char *regs[], int nregs);
+static void write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack);
+static void write_trash(FILE *const fp, char *trash[], int ntrash);
+static void write_general_state(FILE *const fp);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -294,6 +303,8 @@ read_info_file(int reread)
 	free(line3);
 	free(line4);
 	fclose(fp);
+
+	dir_stack_freeze();
 }
 
 /* Parses sort description line of the view and initialized its sort field. */
@@ -469,24 +480,25 @@ update_info_file(const char filename[])
 {
 	/* TODO: refactor this function update_info_file() */
 
-	const int dir_stack_was_empty = stack_top == 0;
 	FILE *fp;
-	char ** list;
-	int nlist = -1;
-	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
+	char **cmds_list;
+	int ncmds_list = -1;
+	char **ft = NULL, **fx = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL;
 	size_t nlhp = 0, nrhp = 0;
 	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
+	char **dir_stack = NULL;
+	int ndir_stack = 0;
 	int i;
 
 	if(cfg.vifm_info == 0)
 		return;
 
-	list = list_udf();
-	while(list[++nlist] != NULL);
+	cmds_list = list_udf();
+	while(cmds_list[++ncmds_list] != NULL);
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
@@ -550,9 +562,9 @@ update_info_file(const char filename[])
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					const char *p = line_val;
-					for(i = 0; i < nlist; i += 2)
+					for(i = 0; i < ncmds_list; i += 2)
 					{
-						int cmp = strcmp(list[i], p);
+						int cmp = strcmp(cmds_list[i], p);
 						if(cmp < 0)
 							continue;
 						if(cmp == 0)
@@ -668,7 +680,7 @@ update_info_file(const char filename[])
 					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
 				}
 			}
-			else if(type == LINE_TYPE_DIR_STACK && dir_stack_was_empty)
+			else if(type == LINE_TYPE_DIR_STACK)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -676,7 +688,8 @@ update_info_file(const char filename[])
 					{
 						if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 						{
-							push_to_dirstack(line_val, line2, line3 + 1, line4);
+							ndir_stack = add_to_string_array(&dir_stack, ndir_stack, 4,
+									line_val, line2, line3 + 1, line4);
 						}
 					}
 				}
@@ -695,255 +708,102 @@ update_info_file(const char filename[])
 		fclose(fp);
 	}
 
-	if((fp = fopen(filename, "w")) == NULL)
+	if((fp = fopen(filename, "w")) != NULL)
 	{
-		if(dir_stack_was_empty)
+		fprintf(fp, "# You can edit this file by hand, but it's recommended not to "
+				"do that.\n");
+
+		if(cfg.vifm_info & VIFMINFO_OPTIONS)
 		{
-			clean_stack();
+			write_options(fp);
 		}
-		return;
-	}
 
-	fprintf(fp, "# You can edit this file by hand, but it's recommended not to do that.\n");
-
-	if(cfg.vifm_info & VIFMINFO_OPTIONS)
-	{
-		fputs("\n# Options:\n", fp);
-		fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
-		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
-		fprintf(fp, "=columns=%d\n", cfg.columns);
-		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
-		fprintf(fp, "=cpoptions=%s%s%s\n",
-				cfg.filter_inverted_by_default ? "f" : "",
-				cfg.selection_is_primary ? "s" : "",
-				cfg.tab_switches_pane ? "t" : "");
-		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
-		fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
-		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
-		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
-		fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
-		fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
-		fprintf(fp, "=history=%d\n", cfg.history_len);
-		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
-		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
-		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
-		fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
-		fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
-		fprintf(fp, "=lines=%d\n", cfg.lines);
-		fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
-		fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
-		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
-		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
-		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
-		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-		fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
-#ifndef _WIN32
-		fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
-#endif
-		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
-		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
-		fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
-		fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
-		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
-		fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
-		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
-		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
-		fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
-				cfg.vi_cmd_bg ? " &" : "");
-		fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
-				cfg.vi_cmd_bg ? " &" : "");
-		fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
-		fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
-		fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
-		fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
-		fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
-
-		fprintf(fp, "%s", "=dotdirs=");
-		if(cfg.dot_dirs & DD_ROOT_PARENT)
-			fprintf(fp, "%s", "rootparent,");
-		if(cfg.dot_dirs & DD_NONROOT_PARENT)
-			fprintf(fp, "%s", "nonrootparent,");
-		fprintf(fp, "\n");
-
-		fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
-
-		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
-			fprintf(fp, ",filetypes");
+		{
+			write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE, &filetypes, nft, ft);
+			write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx,
+					fx);
+			write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
+					fv);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_COMMANDS)
-			fprintf(fp, ",commands");
+		{
+			write_commands(fp, cmds_list, cmds, ncmds);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
-			fprintf(fp, ",bookmarks");
+		{
+			write_bookmarks(fp, marks, nmarks);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_TUI)
-			fprintf(fp, ",tui");
-		if(cfg.vifm_info & VIFMINFO_DHISTORY)
-			fprintf(fp, ",dhistory");
-		if(cfg.vifm_info & VIFMINFO_STATE)
-			fprintf(fp, ",state");
-		if(cfg.vifm_info & VIFMINFO_CS)
-			fprintf(fp, ",cs");
-		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
-			fprintf(fp, ",savedirs");
+		{
+			write_tui_state(fp);
+		}
+
+		if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
+		{
+			write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
+			write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_CHISTORY)
-			fprintf(fp, ",chistory");
+		{
+			write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
+					MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_SHISTORY)
-			fprintf(fp, ",shistory");
+		{
+			write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
+					&cfg.search_hist);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_PHISTORY)
-			fprintf(fp, ",phistory");
+		{
+			write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
+					&cfg.prompt_hist);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_FHISTORY)
-			fprintf(fp, ",fhistory");
-		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
-			fprintf(fp, ",dirstack");
+		{
+			write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
+					&cfg.filter_hist);
+		}
+
 		if(cfg.vifm_info & VIFMINFO_REGISTERS)
-			fprintf(fp, ",registers");
-		fprintf(fp, "\n");
-
-		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
-		fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
-		fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
-	}
-
-	if(cfg.vifm_info & VIFMINFO_FILETYPES)
-	{
-		write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE , &filetypes, nft, ft);
-		write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx, fx);
-		write_assocs(fp, "Fileviewers", LINE_TYPE_FILEVIEWER, &fileviewers, nfv,
-				fv);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_COMMANDS)
-	{
-		fputs("\n# Commands:\n", fp);
-		for(i = 0; list[i] != NULL; i += 2)
-			fprintf(fp, "!%s\n\t%s\n", list[i], list[i + 1]);
-		for(i = 0; i < ncmds; i += 2)
-			fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
-	{
-		const int len = init_active_bookmarks(valid_bookmarks);
-
-		fputs("\n# Bookmarks:\n", fp);
-		for(i = 0; i < len; i++)
 		{
-			int j = active_bookmarks[i];
-			if(is_spec_bookmark(j))
-				continue;
-			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j), bookmarks[j].directory);
-			fprintf(fp, "%s\n", bookmarks[j].file);
+			write_registers(fp, regs, nregs);
 		}
-		for(i = 0; i < nmarks; i += 3)
-			fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
-	}
 
-	if(cfg.vifm_info & VIFMINFO_TUI)
-	{
-		fputs("\n# TUI:\n", fp);
-		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
-		fprintf(fp, "q%d\n", curr_stats.view);
-		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
-		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
-		fprintf(fp, "m%d\n", curr_stats.splitter_pos);
-
-		put_sort_info(fp, 'l', &lwin);
-		put_sort_info(fp, 'r', &rwin);
-	}
-
-	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
-	{
-		write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
-		write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_CHISTORY)
-	{
-		write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
-				MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_SHISTORY)
-	{
-		write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
-				&cfg.search_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_PHISTORY)
-	{
-		write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
-				&cfg.prompt_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_FHISTORY)
-	{
-		write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
-				&cfg.filter_hist);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_REGISTERS)
-	{
-		fputs("\n# Registers:\n", fp);
-		for(i = 0; i < nregs; i++)
-			fprintf(fp, "%s\n", regs[i]);
-		for(i = 0; valid_registers[i] != '\0'; i++)
+		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 		{
-			int j;
-			registers_t *reg = find_register(valid_registers[i]);
-			if(reg == NULL)
-				continue;
-			for(j = 0; j < reg->num_files; j++)
-			{
-				if(reg->files[j] == NULL)
-					continue;
-				fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
-			}
+			write_dir_stack(fp, dir_stack, ndir_stack);
 		}
-	}
 
-	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
-	{
-		fputs("\n# Directory stack (oldest to newest):\n", fp);
-		for(i = 0; i < stack_top; i++)
+		write_trash(fp, trash, ntrash);
+
+		if(cfg.vifm_info & VIFMINFO_STATE)
 		{
-			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
-			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+			write_general_state(fp);
 		}
+
+		if(cfg.vifm_info & VIFMINFO_CS)
+		{
+			fputs("\n# Color scheme:\n", fp);
+			fprintf(fp, "c%s\n", cfg.cs.name);
+		}
+
+		fclose(fp);
 	}
-
-	fputs("\n# Trash content:\n", fp);
-	for(i = 0; i < nentries; i++)
-		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
-	for(i = 0; i < ntrash; i += 2)
-		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
-
-	if(cfg.vifm_info & VIFMINFO_STATE)
-	{
-		fputs("\n# State:\n", fp);
-		fprintf(fp, "f%s\n", lwin.name_filter.raw);
-		fprintf(fp, "i%d\n", lwin.invert);
-		fprintf(fp, "[.%d\n", lwin.hide_dot);
-		fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
-		fprintf(fp, "F%s\n", rwin.name_filter.raw);
-		fprintf(fp, "I%d\n", rwin.invert);
-		fprintf(fp, "].%d\n", rwin.hide_dot);
-		fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
-		fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
-	}
-
-	if(cfg.vifm_info & VIFMINFO_CS)
-	{
-		fputs("\n# Color scheme:\n", fp);
-		fprintf(fp, "c%s\n", cfg.cs.name);
-	}
-
-	fclose(fp);
 
 	free_string_array(ft, nft);
 	free_string_array(fv, nfv);
 	free_string_array(fx, nfx);
 	free_string_array(cmds, ncmds);
 	free_string_array(marks, nmarks);
-	free_string_array(list, nlist);
+	free_string_array(cmds_list, ncmds_list);
 	free_string_array(lh, nlh);
 	free_string_array(rh, nrh);
 	free(lhp);
@@ -953,11 +813,106 @@ update_info_file(const char filename[])
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
+	free_string_array(dir_stack, ndir_stack);
+}
 
-	if(dir_stack_was_empty)
-	{
-		clean_stack();
-	}
+/* Writes current values of all options into vifminfo file. */
+static void
+write_options(FILE *const fp)
+{
+	fputs("\n# Options:\n", fp);
+	fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
+	fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
+	fprintf(fp, "=columns=%d\n", cfg.columns);
+	fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
+	fprintf(fp, "=cpoptions=%s%s%s\n",
+			cfg.filter_inverted_by_default ? "f" : "",
+			cfg.selection_is_primary ? "s" : "",
+			cfg.tab_switches_pane ? "t" : "");
+	fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
+	fprintf(fp, "=findprg=%s\n", escape_spaces(cfg.find_prg));
+	fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
+	fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
+	fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
+	fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
+	fprintf(fp, "=history=%d\n", cfg.history_len);
+	fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
+	fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
+	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
+	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
+	fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
+	fprintf(fp, "=lines=%d\n", cfg.lines);
+	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
+	fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
+	fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
+	fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
+	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
+	fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
+#ifndef _WIN32
+	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
+#endif
+	fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
+	fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
+	fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
+	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
+	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
+	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
+	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
+	fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
+	fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
+			cfg.vi_cmd_bg ? " &" : "");
+	fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
+			cfg.vi_cmd_bg ? " &" : "");
+	fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
+	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
+	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
+	fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
+	fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
+
+	fprintf(fp, "%s", "=dotdirs=");
+	if(cfg.dot_dirs & DD_ROOT_PARENT)
+		fprintf(fp, "%s", "rootparent,");
+	if(cfg.dot_dirs & DD_NONROOT_PARENT)
+		fprintf(fp, "%s", "nonrootparent,");
+	fprintf(fp, "\n");
+
+	fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
+
+	fprintf(fp, "=vifminfo=options");
+	if(cfg.vifm_info & VIFMINFO_FILETYPES)
+		fprintf(fp, ",filetypes");
+	if(cfg.vifm_info & VIFMINFO_COMMANDS)
+		fprintf(fp, ",commands");
+	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		fprintf(fp, ",bookmarks");
+	if(cfg.vifm_info & VIFMINFO_TUI)
+		fprintf(fp, ",tui");
+	if(cfg.vifm_info & VIFMINFO_DHISTORY)
+		fprintf(fp, ",dhistory");
+	if(cfg.vifm_info & VIFMINFO_STATE)
+		fprintf(fp, ",state");
+	if(cfg.vifm_info & VIFMINFO_CS)
+		fprintf(fp, ",cs");
+	if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+		fprintf(fp, ",savedirs");
+	if(cfg.vifm_info & VIFMINFO_CHISTORY)
+		fprintf(fp, ",chistory");
+	if(cfg.vifm_info & VIFMINFO_SHISTORY)
+		fprintf(fp, ",shistory");
+	if(cfg.vifm_info & VIFMINFO_PHISTORY)
+		fprintf(fp, ",phistory");
+	if(cfg.vifm_info & VIFMINFO_FHISTORY)
+		fprintf(fp, ",fhistory");
+	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+		fprintf(fp, ",dirstack");
+	if(cfg.vifm_info & VIFMINFO_REGISTERS)
+		fprintf(fp, ",registers");
+	fprintf(fp, "\n");
+
+	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
+	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
+	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 
 /* Stores list of associations to the file. */
@@ -994,6 +949,65 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 	{
 		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
 	}
+}
+
+/* Writes user-defined commands to vifminfo file.  cmds_list is a NULL
+ * terminated list of commands existing in current session, cmds is a list of
+ * length ncmds with unseen commands read from vifminfo. */
+static void
+write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
+{
+	int i;
+
+	fputs("\n# Commands:\n", fp);
+	for(i = 0; cmds_list[i] != NULL; i += 2)
+	{
+		fprintf(fp, "!%s\n\t%s\n", cmds_list[i], cmds_list[i + 1]);
+	}
+	for(i = 0; i < ncmds; i += 2)
+	{
+		fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
+	}
+}
+
+/* Writes bookmarks to vifminfo file.  marks is a list of length nmarks
+ * bookmarks read from vifminfo. */
+static void
+write_bookmarks(FILE *const fp, char *marks[], int nmarks)
+{
+	const int len = init_active_bookmarks(valid_bookmarks);
+	int i;
+
+	fputs("\n# Bookmarks:\n", fp);
+	for(i = 0; i < len; i++)
+	{
+		const int index = active_bookmarks[i];
+		if(!is_spec_bookmark(index))
+		{
+			fprintf(fp, "'%c\n\t%s\n\t", index2mark(index),
+					bookmarks[index].directory);
+			fprintf(fp, "%s\n", bookmarks[index].file);
+		}
+	}
+	for(i = 0; i < nmarks; i += 3)
+	{
+		fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
+	}
+}
+
+/* Writes state of the TUI to vifminfo file. */
+static void
+write_tui_state(FILE *const fp)
+{
+	fputs("\n# TUI:\n", fp);
+	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
+	fprintf(fp, "q%d\n", curr_stats.view);
+	fprintf(fp, "v%d\n", curr_stats.number_of_windows);
+	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
+	fprintf(fp, "m%d\n", curr_stats.splitter_pos);
+
+	put_sort_info(fp, 'l', &lwin);
+	put_sort_info(fp, 'r', &rwin);
 }
 
 /* Stores history of the view to the file. */
@@ -1034,6 +1048,94 @@ write_history(FILE *fp, const char str[], char mark, int prev_count,
 	{
 		fprintf(fp, "%c%s\n", mark, hist->items[i]);
 	}
+}
+
+/* Writes bookmarks to vifminfo file.  regs is a list of length nregs registers
+ * read from vifminfo. */
+static void
+write_registers(FILE *const fp, char *regs[], int nregs)
+{
+	int i;
+
+	fputs("\n# Registers:\n", fp);
+	for(i = 0; i < nregs; i++)
+	{
+		fprintf(fp, "%s\n", regs[i]);
+	}
+	for(i = 0; valid_registers[i] != '\0'; i++)
+	{
+		const registers_t *const reg = find_register(valid_registers[i]);
+		if(reg != NULL)
+		{
+			int j;
+			for(j = 0; j < reg->num_files; j++)
+			{
+				if(reg->files[j] != NULL)
+				{
+					fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
+				}
+			}
+		}
+	}
+}
+
+/* Writes directory stack to vifminfo file.  dir_stack is a list of length
+ * ndir_stack entries (4 lines per entry) read from vifminfo. */
+static void
+write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack)
+{
+	fputs("\n# Directory stack (oldest to newest):\n", fp);
+	if(dir_stack_changed())
+	{
+		int i;
+		for(i = 0; i < stack_top; i++)
+		{
+			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
+			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+		}
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < ndir_stack; i += 4)
+		{
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
+			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
+		}
+	}
+}
+
+/* Writes trash entries to vifminfo file.  trash is a list of length ntrash
+ * entries read from vifminfo. */
+static void
+write_trash(FILE *const fp, char *trash[], int ntrash)
+{
+	int i;
+	fputs("\n# Trash content:\n", fp);
+	for(i = 0; i < nentries; i++)
+	{
+		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
+	}
+	for(i = 0; i < ntrash; i += 2)
+	{
+		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
+	}
+}
+
+/* Writes general state to vifminfo file. */
+static void
+write_general_state(FILE *const fp)
+{
+	fputs("\n# State:\n", fp);
+	fprintf(fp, "f%s\n", lwin.name_filter.raw);
+	fprintf(fp, "i%d\n", lwin.invert);
+	fprintf(fp, "[.%d\n", lwin.hide_dot);
+	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
+	fprintf(fp, "F%s\n", rwin.name_filter.raw);
+	fprintf(fp, "I%d\n", rwin.invert);
+	fprintf(fp, "].%d\n", rwin.hide_dot);
+	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
+	fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character

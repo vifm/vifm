@@ -47,6 +47,8 @@ struct
 	char *directory;
 }bookmarks[NUM_BOOKMARKS];
 
+/* Represents array of booleans each of which shows whether bookmark with
+ * specified bookmark index is active.  Filled by init_active_bookmarks(). */
 int active_bookmarks[NUM_BOOKMARKS];
 
 int mark2index(const char mark);

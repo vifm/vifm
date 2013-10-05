@@ -117,7 +117,8 @@
 
 	Consider 'classify' option on displaying file name in the statusbar.
 
-	Don't overwrite directory stack stored in vifminfo with an empty one.
+	Don't overwrite directory stack stored in vifminfo on exit unless it was
+	changed in current session.
 
 	Better error messages on application run failure on Windows.
 
