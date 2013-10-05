@@ -341,6 +341,12 @@ main(int argc, char *argv[])
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
 
+	/* Force split view when two paths are specified on command-line. */
+	if(lwin_path[0] != '\0' && rwin_path[0] != '\0')
+	{
+		curr_stats.number_of_windows = 2;
+	}
+
 	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())
 		return -1;

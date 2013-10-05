@@ -1,4 +1,4 @@
-.TH vifm 1 "Sep 29, 2013" "" "Vifm"
+.TH vifm 1 "Oct 05, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -28,6 +28,10 @@ Starts Vifm in the specified path.
 .TP
 .BI "<lwinpath> <rwinpath>"
 Starts Vifm in the specified paths.
+.LP
+Specifying two directories triggers split view even when vifm was in single-view
+mode on finishing previous session.  To suppress this behaviour :only command
+can be put in the vifmrc file.
 .LP
 Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with \-\-select.

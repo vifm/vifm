@@ -131,6 +131,9 @@
 
 	Show better error message on unmatched quotes in command arguments.
 
+	Force split-view when two paths are specified on command-line.  Thanks to
+	filterfalse.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
