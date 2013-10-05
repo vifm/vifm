@@ -276,7 +276,6 @@ main(int argc, char *argv[])
 	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
 	int no_configs;
-	int lcd, rcd;
 
 	init_config();
 
@@ -332,11 +331,14 @@ main(int argc, char *argv[])
 
 	init_background();
 
-	lcd = set_view_path(&lwin, lwin_path);
-	rcd = set_view_path(&rwin, rwin_path);
+	set_view_path(&lwin, lwin_path);
+	set_view_path(&rwin, rwin_path);
 
-	if(lcd && !rcd && curr_view != &lwin)
+	/* Force view switch when path is specified for invisible pane. */
+	if(lwin_path[0] != '\0' && rwin_path[0] == '\0' && curr_view != &lwin)
+	{
 		change_window();
+	}
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -420,8 +422,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		(void)set_view_path(&lwin, lwin_path);
-		(void)set_view_path(&rwin, rwin_path);
+		set_view_path(&lwin, lwin_path);
+		set_view_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -454,10 +456,11 @@ parse_recieved_arguments(char *args[])
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
 	int argc = 0;
-	int lcd, rcd;
 
 	while(args[argc] != NULL)
+	{
 		argc++;
+	}
 
 	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
 			&rwin_handle);
@@ -474,17 +477,17 @@ parse_recieved_arguments(char *args[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if((lcd = view_needs_cd(&lwin, lwin_path)))
+	if(view_needs_cd(&lwin, lwin_path))
 	{
 		remote_cd(&lwin, lwin_path, lwin_handle);
 	}
 
-	if((rcd = view_needs_cd(&rwin, rwin_path)))
+	if(view_needs_cd(&rwin, rwin_path))
 	{
 		remote_cd(&rwin, rwin_path, rwin_handle);
 	}
 
-	if(lcd && !rcd && curr_view != &lwin)
+	if(lwin_path[0] != '\0' && rwin_path[0] == '\0' && curr_view != &lwin)
 	{
 		change_window();
 	}

@@ -215,9 +215,8 @@ int is_dir_list_loaded(FileView *view);
 /* Checks whether view can and should be navigated to the path (no need to do
  * anything if already there).  Returns non-zero if path should be changed. */
 int view_needs_cd(const FileView *view, const char path[]);
-/* Sets view's current directory from path value.
- * Returns non-zero if view's directory was changed. */
-int set_view_path(FileView *view, const char path[]);
+/* Sets view's current directory from path value. */
+void set_view_path(FileView *view, const char path[]);
 /* Returns possible cached or calculated value of file size. */
 uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 

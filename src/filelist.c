@@ -3420,15 +3420,14 @@ view_needs_cd(const FileView *view, const char path[])
 	return 1;
 }
 
-int
+void
 set_view_path(FileView *view, const char path[])
 {
-	if(!view_needs_cd(view, path))
-		return 0;
-
-	copy_str(view->curr_dir, sizeof(view->curr_dir), path);
-	exclude_file_name(view->curr_dir);
-	return 1;
+	if(view_needs_cd(view, path))
+	{
+		copy_str(view->curr_dir, sizeof(view->curr_dir), path);
+		exclude_file_name(view->curr_dir);
+	}
 }
 
 uint64_t

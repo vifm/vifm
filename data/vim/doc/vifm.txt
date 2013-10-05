@@ -59,6 +59,10 @@ Specifying two directories triggers split view even when vifm was in
 single-view mode on finishing previous session.  To suppress this behaviour
 |vifm-:only| command can be put in the vifmrc file.
 
+When only one path argument is found on command-line, the left/top pane is
+automatically set as the current view.
+
+
                                                *vifm---select*
 Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with --select.

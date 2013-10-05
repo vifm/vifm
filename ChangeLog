@@ -134,6 +134,9 @@
 	Force split-view when two paths are specified on command-line.  Thanks to
 	filterfalse.
 
+	Corrected view switching when vifm gets only one argument on
+	command-line (didn't switch if pane was already at specified path).
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
