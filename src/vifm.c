@@ -81,6 +81,7 @@ static void quit_on_invalid_arg(void);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void load_scheme(void);
+static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
 
 static void
@@ -372,39 +373,7 @@ main(int argc, char *argv[])
 
 	if(old_config && !no_configs)
 	{
-		int vifm_like_mode;
-		if(!query_user_menu("Configuration update", "Your vifmrc will be "
-				"upgraded to a new format.  Your current configuration will be copied "
-				"before performing any changes, but if you don't want to take the risk "
-				"and would like to make one more copy say No to exit vifm.  Continue?"))
-		{
-#ifdef _WIN32
-			system("cls");
-#endif
-			endwin();
-			exit(0);
-		}
-
-		vifm_like_mode = !query_user_menu("Configuration update", "This version of "
-				"vifm is able to save changes in the configuration files automatically "
-				"when quitting, as it was possible in older versions.  It is from now "
-				"on recommended though, to save permanent changes manually in the "
-				"configuration file as it is done in vi/vim.  Do you want vifm to "
-				"behave like vi/vim?");
-
-		if(run_converter(vifm_like_mode) != 0)
-		{
-			endwin();
-			fputs("Problems with running vifmrc-converter", stderr);
-			exit(0);
-		}
-
-		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
-				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
-				"vifm will not write anything to vifmrc, and all variables that are "
-				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
-				"(you can edit it by hand, but do it carefully).  You can control what "
-				"vifm stores in vifminfo with 'vifminfo' option.");
+		convert_configs();
 
 		curr_stats.load_stage = 0;
 		read_info_file(0);
@@ -524,6 +493,48 @@ load_scheme(void)
 		load_color_scheme(curr_stats.color_scheme);
 	}
 	load_color_scheme_colors();
+}
+
+/* Converts old versions of configuration files to new ones.  Terminates
+ * application with error message on error or when user chooses to do not update
+ * anything. */
+static void
+convert_configs(void)
+{
+	int vifm_like_mode;
+
+	if(!query_user_menu("Configuration update", "Your vifmrc will be "
+			"upgraded to a new format.  Your current configuration will be copied "
+			"before performing any changes, but if you don't want to take the risk "
+			"and would like to make one more copy say No to exit vifm.  Continue?"))
+	{
+#ifdef _WIN32
+		system("cls");
+#endif
+		endwin();
+		exit(0);
+	}
+
+	vifm_like_mode = !query_user_menu("Configuration update", "This version of "
+			"vifm is able to save changes in the configuration files automatically "
+			"when quitting, as it was possible in older versions.  It is from now "
+			"on recommended though, to save permanent changes manually in the "
+			"configuration file as it is done in vi/vim.  Do you want vifm to "
+			"behave like vi/vim?");
+
+	if(run_converter(vifm_like_mode) != 0)
+	{
+		endwin();
+		fputs("Problems with running vifmrc-converter\n", stderr);
+		exit(0);
+	}
+
+	show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
+			"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
+			"vifm will not write anything to vifmrc, and all variables that are "
+			"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
+			"(you can edit it by hand, but do it carefully).  You can control what "
+			"vifm stores in vifminfo with 'vifminfo' option.");
 }
 
 /* Runs vifmrc-converter in mode specified by the vifm_like_mode argument.
