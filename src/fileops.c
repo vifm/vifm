@@ -79,6 +79,7 @@ static struct
 	int x, y;
 	char *name;
 	int overwrite_all;
+	int merge;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
 }put_confirm;
 
@@ -1344,7 +1345,7 @@ prompt_what_to_do(const char *src_name)
 		(void)replace_string(&put_confirm.name, src_name);
 	}
 	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ", src_name);
+			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll/[m]erge: ", src_name);
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
@@ -1353,7 +1354,7 @@ static int
 put_next(const char dest_name[], int override)
 {
 	char *filename;
-	struct stat st;
+	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
 	int op;
@@ -1365,7 +1366,7 @@ put_next(const char dest_name[], int override)
 
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
-	if(lstat(filename, &st) != 0)
+	if(lstat(filename, &src_st) != 0)
 		return 0;
 
 	from_trash = strnoscmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
@@ -1396,11 +1397,18 @@ put_next(const char dest_name[], int override)
 
 	if(override)
 	{
-		struct stat st;
-		if(lstat(dst_buf, &st) == 0)
+		struct stat dst_st;
+		if(lstat(dst_buf, &dst_st) == 0 && (!put_confirm.merge ||
+				S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 		{
 			if(perform_operation(OP_REMOVESL, NULL, dst_buf, NULL) != 0)
+			{
 				return 0;
+			}
+		}
+		else
+		{
+			remove_last_path_component(dst_buf);
 		}
 
 		request_view_update(put_confirm.view);
@@ -1501,6 +1509,15 @@ put_decide_cb(const char *choice)
 			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 		}
 	}
+	else if(strcmp(choice, "m") == 0)
+	{
+		put_confirm.merge = 1;
+		if(put_next("", 1) == 0)
+		{
+			put_confirm.x++;
+			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		}
+	}
 	else
 	{
 		prompt_what_to_do(put_confirm.name);
@@ -1531,6 +1548,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 	put_confirm.view = view;
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = 0;
+	put_confirm.merge = 0;
 	return put_files_from_register_i(view, 1);
 }
 
@@ -1850,6 +1868,7 @@ put_links(FileView *view, int reg_name, int relative)
 	put_confirm.view = view;
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = relative ? 2 : 1;
+	put_confirm.merge = 0;
 	return put_files_from_register_i(view, 1);
 }
 
