@@ -218,7 +218,7 @@ op_copy(void *data, const char *src, const char *dst)
 
 		if(is_vista_and_above())
 			strcat(cmd, "/B ");
-		strcat(cmd, "/E /I /H > NUL");
+		strcat(cmd, "/E /I /H /R /Y > NUL");
 		ret = system(cmd);
 	}
 	else

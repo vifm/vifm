@@ -1408,7 +1408,9 @@ put_next(const char dest_name[], int override)
 		}
 		else
 		{
+#ifndef _WIN32
 			remove_last_path_component(dst_buf);
+#endif
 		}
 
 		request_view_update(put_confirm.view);
