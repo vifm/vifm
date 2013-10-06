@@ -20,9 +20,11 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
-#include <stdio.h> /* sprintf() snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdio.h> /* sprintf() */
+#include <stdlib.h> /* calloc() free() */
 #include <string.h> /* strdup() */
+
+#include "../utils/str.h"
 
 var_t
 var_false(void)
@@ -63,15 +65,11 @@ var_to_string(const var_t var)
 		case VTYPE_STRING:
 			return strdup(var.value.string);
 		case VTYPE_INT:
-			{
-				size_t len = snprintf(NULL, 0, "%d", var.value.integer);
-				char *str = malloc(len + 1);
-				(void)sprintf(str, "%d", var.value.integer);
-				return str;
-			}
+			return format_str("%d", var.value.integer);
 
 		default:
 			assert(0 && "Var -> String function: unhandled variable type");
+			return calloc(1U, 1U);
 	}
 }
 
@@ -87,6 +85,7 @@ var_to_boolean(const var_t var)
 
 		default:
 			assert(0 && "Var -> Boolean function: unhandled variable type");
+			return 0;
 	}
 }
 
