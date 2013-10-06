@@ -1340,10 +1340,7 @@ prompt_what_to_do(const char *src_name)
 {
 	wchar_t buf[NAME_MAX];
 
-	if(src_name != put_confirm.name)
-	{
-		(void)replace_string(&put_confirm.name, src_name);
-	}
+	(void)replace_string(&put_confirm.name, src_name);
 	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll/[m]erge: ", src_name);
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
