@@ -79,9 +79,11 @@ static struct
 	int x, y;
 	char *name;
 	int overwrite_all;
+	int allow_merge;
 	int merge;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
-}put_confirm;
+}
+put_confirm;
 
 typedef struct
 {
@@ -1378,6 +1380,9 @@ put_next(const char dest_name[], int override)
 
 	if(path_exists(dst_buf) && !override)
 	{
+		struct stat dst_st;
+		put_confirm.allow_merge = lstat(dst_buf, &dst_st) == 0 &&
+				S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
 		prompt_what_to_do(dest_name);
 		return 1;
 	}
@@ -1498,7 +1503,7 @@ put_decide_cb(const char *choice)
 			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 		}
 	}
-	else if(strcmp(choice, "m") == 0)
+	else if(put_confirm.allow_merge && strcmp(choice, "m") == 0)
 	{
 		put_confirm.merge = 1;
 		if(put_next("", 1) == 0)
@@ -1521,7 +1526,8 @@ prompt_what_to_do(const char src_name[])
 
 	(void)replace_string(&put_confirm.name, src_name);
 	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll/[m]erge: ", src_name);
+			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll%" WPRINTF_MBSTR ": ",
+			src_name, put_confirm.allow_merge ? "/[m]erge" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
@@ -1550,6 +1556,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = 0;
 	put_confirm.merge = 0;
+	put_confirm.allow_merge = 0;
 	return put_files_from_register_i(view, 1);
 }
 
@@ -1870,6 +1877,7 @@ put_links(FileView *view, int reg_name, int relative)
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = relative ? 2 : 1;
 	put_confirm.merge = 0;
+	put_confirm.allow_merge = 0;
 	return put_files_from_register_i(view, 1);
 }
 
