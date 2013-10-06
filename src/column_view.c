@@ -22,7 +22,7 @@
 #define _XOPEN_SOURCE
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* memmove() memset() strlen() */
 #include <wchar.h> /* wcswidth() */
@@ -242,7 +242,8 @@ init_new_column(column_t *col, column_info_t info)
 	col->func = get_column_func(info.column_id);
 }
 
-/* Returns a pointer to column formatting function by the column id. */
+/* Returns a pointer to column formatting function by the column id or NULL on
+ * unknown column_id. */
 static column_func
 get_column_func(int column_id)
 {
@@ -256,6 +257,7 @@ get_column_func(int column_id)
 		}
 	}
 	assert(0 && "Unknown column id");
+	return NULL;
 }
 
 void
