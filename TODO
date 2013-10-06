@@ -183,3 +183,5 @@ Code improvements.
         empty AND an error occurred).
     Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with copy_str().
     Rename escape_filename() to shell_escape() or similar, but quite generic.
+    Maybe allow specifying limit of input characters for command-line prompt
+        submode. Would it make conflict resolution prompt easier to use?

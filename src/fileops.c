@@ -1419,11 +1419,11 @@ put_next(const char dest_name[], int override)
 	}
 	else if(move)
 	{
-		op = OP_MOVE;
+		op = put_confirm.merge ? OP_MOVEF : OP_MOVE;
 	}
 	else
 	{
-		op = OP_COPY;
+		op = put_confirm.merge ? OP_COPYF : OP_COPY;
 	}
 
 	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
