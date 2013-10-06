@@ -1,4 +1,4 @@
-.TH vifm 1 "Oct 05, 2013" "" "Vifm"
+.TH vifm 1 "Oct 07, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -434,16 +434,16 @@ restore last t selection, like gv for visual mode selection.
 .BI gu<selector>
 make names of selected files lowercase.
 .TP
-.BI guu
-.BI gugu
-make name of current file lowercase.
+.BI "[count]guu and [count]gugu"
+make names of [count] files starting from the current one lowercase.  Without
+[count] only current file is affected.
 .TP
 .BI gU<selector>
 make names of selected files uppercase.
 .TP
-.BI gUU
-.BI gUgU
-make name of current file uppercase.
+.BI "[count]gUU and [count]gUgU"
+make names of [count] files starting from the current one uppercase.  Without
+[count] only current file is affected.
 .TP
 .BI e
 explore file in the current pane.

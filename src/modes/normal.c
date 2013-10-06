@@ -163,6 +163,7 @@ static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gUgg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gugg(key_info_t key_info, keys_info_t *keys_info);
+static void do_gu(key_info_t key_info, keys_info_t *keys_info, int upper);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
@@ -1141,24 +1142,15 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->count == 0)
-	{
-		curr_stats.save_msg = change_case(curr_view, 1, 1, &curr_view->list_pos);
-	}
-	else
-	{
-		curr_stats.save_msg = change_case(curr_view, 1, keys_info->count,
-				keys_info->indexes);
-
-		free_list_of_file_indexes(keys_info);
-	}
+	do_gu(key_info, keys_info, 1);
 }
 
+/* Special handler for combination of gU<selector> and gg motion. */
 static void
 cmd_gUgg(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_files(curr_view, 0, keys_info);
-	cmd_gU(key_info, keys_info);
+	do_gu(key_info, keys_info, 1);
 }
 
 /* Handles gu<selector>, gugu and guu normal mode commands, which convert file
@@ -1166,24 +1158,33 @@ cmd_gUgg(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->count == 0)
-	{
-		curr_stats.save_msg = change_case(curr_view, 0, 1, &curr_view->list_pos);
-	}
-	else
-	{
-		curr_stats.save_msg = change_case(curr_view, 0, keys_info->count,
-				keys_info->indexes);
-
-		free_list_of_file_indexes(keys_info);
-	}
+	do_gu(key_info, keys_info, 0);
 }
 
+/* Special handler for combination of gu<selector> and gg motion. */
 static void
 cmd_gugg(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_files(curr_view, 0, keys_info);
-	cmd_gu(key_info, keys_info);
+	do_gu(key_info, keys_info, 0);
+}
+
+/* Handles gUU, gU<selector>, gUgU, gu<selector>, guu and gugu commands. */
+static void
+do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
+{
+	/* If nothing was selected, do selection count elements down. */
+	if(keys_info->count == 0)
+	{
+		const int count = (key_info.count == NO_COUNT_GIVEN)
+			? 0
+			: (key_info.count - 1);
+		pick_files(curr_view, curr_view->list_pos + count, keys_info);
+	}
+
+	curr_stats.save_msg = change_case(curr_view, upper, keys_info->count,
+			keys_info->indexes);
+	free_list_of_file_indexes(keys_info);
 }
 
 static void
