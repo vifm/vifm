@@ -443,17 +443,18 @@ add_assoc_record(assoc_records_t *records, const char *command,
 }
 
 void
-add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
+add_assoc_records(assoc_records_t *assocs, const assoc_records_t *src)
 {
 	int i;
 	void *p;
+	const int src_count = src->count;
 
-	if(src.count == 0)
+	if(src_count == 0)
 	{
 		return;
 	}
 
-	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src.count));
+	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src_count));
 	if(p == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -462,15 +463,15 @@ add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
 
 	assocs->list = p;
 
-	for(i = 0; i < src.count; i++)
+	for(i = 0; i < src_count; i++)
 	{
-		assocs->list[assocs->count + i].command = strdup(src.list[i].command);
+		assocs->list[assocs->count + i].command = strdup(src->list[i].command);
 		assocs->list[assocs->count + i].description =
-				strdup(src.list[i].description);
-		assocs->list[assocs->count + i].type = src.list[i].type;
+				strdup(src->list[i].description);
+		assocs->list[assocs->count + i].type = src->list[i].type;
 	}
 
-	assocs->count += src.count;
+	assocs->count += src_count;
 }
 
 static void
