@@ -108,6 +108,7 @@ TSTATIC const char * add_to_name(const char filename[], int k);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
+static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
@@ -1335,17 +1336,6 @@ prompt_dest_name(const char *src_name)
 	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
 }
 
-static void
-prompt_what_to_do(const char *src_name)
-{
-	wchar_t buf[NAME_MAX];
-
-	(void)replace_string(&put_confirm.name, src_name);
-	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll/[m]erge: ", src_name);
-	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
-}
-
 /* Returns 0 on success, otherwise non-zero is returned. */
 static int
 put_next(const char dest_name[], int override)
@@ -1521,6 +1511,18 @@ put_decide_cb(const char *choice)
 	{
 		prompt_what_to_do(put_confirm.name);
 	}
+}
+
+/* Prompt user for conflict resolution strategy about given filename. */
+static void
+prompt_what_to_do(const char src_name[])
+{
+	wchar_t buf[NAME_MAX];
+
+	(void)replace_string(&put_confirm.name, src_name);
+	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
+			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll/[m]erge: ", src_name);
+	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
 /* Returns new value for save_msg flag. */
