@@ -180,7 +180,7 @@ parse_app_dir(const char *directory, const char *mime_type,
 		assoc_records_t *result)
 {
 	assoc_records_t desktop_assocs = parse_desktop_files(directory, mime_type);
-	add_assoc_records(result, desktop_assocs);
+	add_assoc_records(result, &desktop_assocs);
 	free_assoc_records(&desktop_assocs);
 }
 #endif
