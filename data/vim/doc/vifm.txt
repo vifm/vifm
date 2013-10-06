@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 06
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -395,13 +395,21 @@ gs - restore last t selection, like gv for visual mode selection.
 
                                                *vifm-gu*
 gu<selector> - make names of selected files lowercase.
-guu - make name of current file lowercase.     *vifm-guu*
-gugu - make name of current file lowercase.    *vifm-gugu*
+                                               *vifm-guu*
+[count]guu - make names of [count] files starting from the current
+    one lowercase.  Without [count] only current file is affected.
+                                               *vifm-gugu*
+[count]gugu - make names of [count] files starting from the current
+    one lowercase.  Without [count] only current file is affected.
 
                                                *vifm-gU*
 gU<selector> - make names of selected files uppercase.
-gUU - make name of current file uppercase.     *vifm-gUU*
-gUgU - make name of current file uppercase.    *vifm-gUgU*
+                                               *vifm-gUU*
+[count]gUU - make names of [count] files starting from the current
+    one uppercase.  Without [count] only current file is affected.
+                                               *vifm-gUgU*
+[count]gUgU - make names of [count] files starting from the current
+    one uppercase.  Without [count] only current file is affected.
 
 
                                                *vifm-e*

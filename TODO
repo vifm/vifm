@@ -81,7 +81,6 @@ Vi(m) specific features that need to be added.
     Maybe add 'titleold' option.
     Maybe add "%p" and "%P" macros to 'rulerformat' option.
     Support :set foo+=bar for strings (should append value).
-    Make gUU and similar commands accept [count].
     Make gU2U and similar commands work as in Vim.
     Lazy redraw support (useful for mappings and udf).
     'nrformats' option as in Vim.
