@@ -40,6 +40,9 @@
 
 	Added integration with tmux.  Thanks to Seth VanHeulen (a.k.a. svanheulen).
 
+	Added merge option for name conflict resolution, which allows merging two
+	directories overwriting files with matching names.
+
 	Updated config.guess and config.sub files to their latest versions.  Thanks
 	to Hendrik Jaeger (a.k.a. henk).
 

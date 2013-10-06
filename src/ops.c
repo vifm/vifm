@@ -55,8 +55,12 @@
 static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
 static int op_removesl(void *data, const char *src, const char *dst);
-static int op_copy(void *data, const char *src, const char *dst);
-static int op_move(void *data, const char *src, const char *dst);
+static int op_copy(void *data, const char src[], const char dst[]);
+static int op_copyf(void *data, const char src[], const char dst[]);
+static int op_cp(void *data, const char src[], const char dst[], int overwrite);
+static int op_move(void *data, const char src[], const char dst[]);
+static int op_movef(void *data, const char src[], const char dst[]);
+static int op_mv(void *data, const char src[], const char dst[], int overwrite);
 static int op_chown(void *data, const char *src, const char *dst);
 static int op_chgrp(void *data, const char *src, const char *dst);
 #ifndef _WIN32
@@ -79,7 +83,9 @@ static op_func op_funcs[] = {
 	op_remove,   /* OP_REMOVE */
 	op_removesl, /* OP_REMOVESL */
 	op_copy,     /* OP_COPY */
+	op_copyf,    /* OP_COPYF */
 	op_move,     /* OP_MOVE */
+	op_movef,    /* OP_MOVEF */
 	op_move,     /* OP_MOVETMP1 */
 	op_move,     /* OP_MOVETMP2 */
 	op_move,     /* OP_MOVETMP3 */
@@ -181,8 +187,27 @@ op_removesl(void *data, const char *src, const char *dst)
 #endif
 }
 
+/* OP_COPY operation handler.  Copies file/directory without overwriting
+ * destination files (when it's supported by the system).  Returns non-zero on
+ * error, otherwise zero is returned. */
 static int
-op_copy(void *data, const char *src, const char *dst)
+op_copy(void *data, const char src[], const char dst[])
+{
+	return op_cp(data, src, dst, 0);
+}
+
+/* OP_COPYF operation handler.  Copies file/directory overwriting destination
+ * files.  Returns non-zero on error, otherwise zero is returned. */
+static int
+op_copyf(void *data, const char src[], const char dst[])
+{
+	return op_cp(data, src, dst, 1);
+}
+
+/* Copies file/directory overwriting destination files if requested.  Returns
+ * non-zero on error, otherwise zero is returned. */
+static int
+op_cp(void *data, const char src[], const char dst[], int overwrite)
 {
 #ifndef _WIN32
 	char *escaped_src, *escaped_dst;
@@ -199,8 +224,8 @@ op_copy(void *data, const char *src, const char *dst)
 	}
 
 	snprintf(cmd, sizeof(cmd),
-			"cp " NO_CLOBBER " -R " PRESERVE_FLAGS " %s %s",
-			escaped_src, escaped_dst);
+			"cp %s -R " PRESERVE_FLAGS " %s %s",
+			overwrite ? "" : NO_CLOBBER, escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd);
 
@@ -218,7 +243,11 @@ op_copy(void *data, const char *src, const char *dst)
 
 		if(is_vista_and_above())
 			strcat(cmd, "/B ");
-		strcat(cmd, "/E /I /H > NUL");
+		if(overwrite)
+		{
+			strcat(cmd, "/Y ");
+		}
+		strcat(cmd, "/E /I /H /R > NUL");
 		ret = system(cmd);
 	}
 	else
@@ -230,8 +259,27 @@ op_copy(void *data, const char *src, const char *dst)
 #endif
 }
 
+/* OP_MOVE operation handler.  Moves file/directory without overwriting
+ * destination files (when it's supported by the system).  Returns non-zero on
+ * error, otherwise zero is returned. */
 static int
-op_move(void *data, const char *src, const char *dst)
+op_move(void *data, const char src[], const char dst[])
+{
+	return op_mv(data, src, dst, 0);
+}
+
+/* OP_MOVEF operation handler.  Moves file/directory overwriting destination
+ * files.  Returns non-zero on error, otherwise zero is returned. */
+static int
+op_movef(void *data, const char src[], const char dst[])
+{
+	return op_mv(data, src, dst, 1);
+}
+
+/* Moves file/directory overwriting destination files if requested.  Returns
+ * non-zero on error, otherwise zero is returned. */
+static int
+op_mv(void *data, const char src[], const char dst[], int overwrite)
 {
 #ifndef _WIN32
 	struct stat st;
@@ -251,8 +299,8 @@ op_move(void *data, const char *src, const char *dst)
 		return -1;
 	}
 
-	snprintf(cmd, sizeof(cmd), "mv " NO_CLOBBER " %s %s", escaped_src,
-			escaped_dst);
+	snprintf(cmd, sizeof(cmd), "mv %s %s %s", overwrite ? "" : NO_CLOBBER,
+			escaped_src, escaped_dst);
 	free(escaped_dst);
 	free(escaped_src);
 
@@ -269,7 +317,7 @@ op_move(void *data, const char *src, const char *dst)
 	BOOL ret = MoveFile(src, dst);
 	if(!ret && GetLastError() == 5)
 	{
-		int r = op_copy(data, src, dst);
+		int r = op_cp(data, src, dst, overwrite);
 		if(r != 0)
 			return r;
 		return op_removesl(data, src, NULL);

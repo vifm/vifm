@@ -72,8 +72,10 @@ static OPS undo_op[] = {
 	OP_NONE,     /* OP_USR */
 	OP_NONE,     /* OP_REMOVE */
 	OP_SYMLINK,  /* OP_REMOVESL */
-	OP_REMOVE,   /* OP_COPY   */
+	OP_REMOVE,   /* OP_COPY */
+	OP_REMOVE,   /* OP_COPYF */
 	OP_MOVE,     /* OP_MOVE */
+	OP_MOVE,     /* OP_MOVEF */
 	OP_MOVETMP1, /* OP_MOVETMP1 */
 	OP_MOVETMP2, /* OP_MOVETMP2 */
 	OP_MOVETMP3, /* OP_MOVETMP1 */
@@ -112,8 +114,12 @@ static enum
 	  OPER_2ND, OPER_1ST, OPER_NON, OPER_NON, }, /* undo OP_SYMLINK2 */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPY   */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPYF  */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVEF */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE  */
 	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP1 */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_MOVETMP2 */
@@ -155,8 +161,10 @@ static int data_is_ptr[] = {
 	1, /* OP_USR */
 	0, /* OP_REMOVE */
 	0, /* OP_REMOVESL */
-	0, /* OP_COPY   */
+	0, /* OP_COPY */
+	0, /* OP_COPYF */
 	0, /* OP_MOVE */
+	0, /* OP_MOVEF */
 	0, /* OP_MOVETMP1 */
 	0, /* OP_MOVETMP2 */
 	0, /* OP_MOVETMP3 */
@@ -756,10 +764,16 @@ get_op_desc(op_t op)
 		case OP_COPY:
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
 			break;
+		case OP_COPYF:
+			snprintf(buf, sizeof(buf), "cp -f %s to %s", op.src, op.dst);
+			break;
 		case OP_MOVE:
 		case OP_MOVETMP1:
 		case OP_MOVETMP2:
 			snprintf(buf, sizeof(buf), "mv %s to %s", op.src, op.dst);
+			break;
+		case OP_MOVEF:
+			snprintf(buf, sizeof(buf), "mv -f %s to %s", op.src, op.dst);
 			break;
 		case OP_CHOWN:
 			snprintf(buf, sizeof(buf), "chown %ld %s", (long)op.data, op.src);
