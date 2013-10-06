@@ -43,8 +43,6 @@ typedef enum
 }
 TOKENS_TYPE;
 
-static const int whitespace_allowed = 1;
-
 static var_t eval_statement(const char **in);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
@@ -211,11 +209,6 @@ eval_expression(const char **in)
 		term = eval_term(in);
 		skip_whitespace_tokens(in);
 		if(last_error != PE_NO_ERROR)
-		{
-			var_free(term);
-			break;
-		}
-		else if(last_token.type == WHITESPACE && !whitespace_allowed)
 		{
 			var_free(term);
 			break;
@@ -514,10 +507,10 @@ eval_arg(const char **in, call_info_t *call_info)
 static void
 skip_whitespace_tokens(const char **in)
 {
-	if(!whitespace_allowed)
-		return;
 	while(last_token.type == WHITESPACE)
+	{
 		get_next(in);
+	}
 }
 
 /* Gets next token from input. Configures last_token global variable. */
