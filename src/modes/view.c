@@ -63,7 +63,7 @@ typedef struct
 	int nlinesv;
 	int line;
 	int linev;
-	int win;
+	int win_size; /* Scroll window size. */
 	int half_win;
 	int width;
 	FileView *view;
@@ -440,7 +440,7 @@ init_view_info(view_info_t *vi)
 	vi->nlinesv = 0;
 	vi->line = 0;
 	vi->linev = 0;
-	vi->win = -1;
+	vi->win_size = -1;
 	vi->half_win = -1;
 	vi->width = -1;
 	vi->view = NULL;
@@ -788,8 +788,8 @@ cmd_meta_space(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
+		if(vi->win_size > 0)
+			key_info.count = vi->win_size;
 		else
 			key_info.count = vi->view->window_rows - 2;
 	}
@@ -884,8 +884,8 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
+		if(vi->win_size > 0)
+			key_info.count = vi->win_size;
 		else
 			key_info.count = vi->view->window_rows - 2;
 	}
@@ -909,8 +909,8 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
+		if(vi->win_size > 0)
+			key_info.count = vi->win_size;
 		else
 			key_info.count = vi->view->window_rows - 2;
 	}
@@ -1178,9 +1178,9 @@ static void
 cmd_w(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win = key_info.count;
-	else if(vi->win > 0)
-		key_info.count = vi->win;
+		vi->win_size = key_info.count;
+	else if(vi->win_size > 0)
+		key_info.count = vi->win_size;
 	else
 		key_info.count = vi->view->window_rows - 2;
 	cmd_k(key_info, keys_info);
@@ -1190,9 +1190,9 @@ static void
 cmd_z(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win = key_info.count;
-	else if(vi->win > 0)
-		key_info.count = vi->win;
+		vi->win_size = key_info.count;
+	else if(vi->win_size > 0)
+		key_info.count = vi->win_size;
 	else
 		key_info.count = vi->view->window_rows - 2;
 	cmd_j(key_info, keys_info);
