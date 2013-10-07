@@ -124,6 +124,8 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
+static void check_and_set_from_default_win(key_info_t *const key_info);
+static void set_from_default_win(key_info_t *const key_info);
 static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -134,9 +136,11 @@ static void find_previous(int vline_offset);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
+static void update_with_half_win(key_info_t *const key_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
+static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
@@ -786,13 +790,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_meta_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win_size > 0)
-			key_info.count = vi->win_size;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	key_info.reg = 1;
 	cmd_j(key_info, keys_info);
 }
@@ -882,39 +880,32 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win_size > 0)
-			key_info.count = vi->win_size;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	cmd_k(key_info, keys_info);
 }
 
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->half_win = key_info.count;
-	else if(vi->half_win > 0)
-		key_info.count = vi->half_win;
-	else
-		key_info.count = (vi->view->window_rows - 1)/2;
+	update_with_half_win(&key_info);
 	cmd_j(key_info, keys_info);
 }
 
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win_size > 0)
-			key_info.count = vi->win_size;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	cmd_j(key_info, keys_info);
+}
+
+/* Sets key count from scroll window size when count is not specified. */
+static void
+check_and_set_from_default_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		set_from_default_win(key_info);
+	}
 }
 
 static void
@@ -1152,13 +1143,25 @@ cmd_q(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->half_win = key_info.count;
-	else if(vi->half_win > 0)
-		key_info.count = vi->half_win;
-	else
-		key_info.count = (vi->view->window_rows - 1)/2;
+	update_with_half_win(&key_info);
 	cmd_k(key_info, keys_info);
+}
+
+/* Sets key count from half window size when count is not specified, otherwise
+ * specified count is stored as new size of the half window size. */
+static void
+update_with_half_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		key_info->count = (vi->half_win > 0)
+			? vi->half_win
+			: (vi->view->window_rows - 1)/2;
+	}
+	else
+	{
+		vi->half_win = key_info->count;
+	}
 }
 
 static void
@@ -1177,25 +1180,39 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_w(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win_size = key_info.count;
-	else if(vi->win_size > 0)
-		key_info.count = vi->win_size;
-	else
-		key_info.count = vi->view->window_rows - 2;
+	update_with_win(&key_info);
 	cmd_k(key_info, keys_info);
 }
 
 static void
 cmd_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win_size = key_info.count;
-	else if(vi->win_size > 0)
-		key_info.count = vi->win_size;
-	else
-		key_info.count = vi->view->window_rows - 2;
+	update_with_win(&key_info);
 	cmd_j(key_info, keys_info);
+}
+
+/* Sets key count from scroll window size when count is not specified, otherwise
+ * specified count is stored as new size of the scroll window. */
+static void
+update_with_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		set_from_default_win(key_info);
+	}
+	else
+	{
+		vi->win_size = key_info->count;
+	}
+}
+
+/* Sets key count from scroll window size. */
+static void
+set_from_default_win(key_info_t *const key_info)
+{
+	key_info->count = (vi->win_size > 0)
+		? vi->win_size
+		: (vi->view->window_rows - 2);
 }
 
 int
