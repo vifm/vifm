@@ -25,7 +25,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* malloc() free() */
 
 #include "../cfg/config.h"
 #include "../engine/keys.h"
@@ -121,6 +121,8 @@ static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static int load_view_data(view_info_t *vi, const char action[],
+		const char file_to_view[]);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
@@ -270,8 +272,6 @@ void
 enter_view_mode(int explore)
 {
 	char full_path[PATH_MAX];
-	const char *viewer;
-	FILE *fp;
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -293,34 +293,10 @@ enter_view_mode(int explore)
 		}
 	}
 
-	/* FIXME: same code is in ../quickview.c */
-	viewer = get_viewer_for_file(get_last_path_component(full_path));
-	if(is_null_or_empty(viewer))
-		fp = fopen(full_path, "r");
-	else
-		fp = use_info_prog(viewer);
-
-	if(fp == NULL)
-	{
-		show_error_msg("File exploring", "Cannot open file for reading");
-		return;
-	}
-
 	pick_vi(explore);
-	vi->lines = read_file_lines(fp, &vi->nlines);
-	fclose(fp);
 
-	if(vi->lines == NULL)
+	if(load_view_data(vi, "File exploring", full_path) != 0)
 	{
-		show_error_msg("File exploring", "Won't explore empty file");
-		return;
-	}
-	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
-	if(vi->widths == NULL)
-	{
-		free_string_array(vi->lines, vi->nlines);
-		vi->lines = NULL;
-		vi->nlines = 0;
 		return;
 	}
 
@@ -875,6 +851,47 @@ static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_search_result(key_info.count, 1);
+}
+
+/* Loads list of strings and related data into view_info_t structure from
+ * specified file.  The action parameter is a title to be used for error
+ * messages.  Returns non-zero on error, otherwise zero is returned. */
+static int
+load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
+{
+	/* FIXME: code with same functionality is in ../quickview.c */
+	const char *const viewer =
+		get_viewer_for_file(get_last_path_component(file_to_view));
+	FILE *const fp = is_null_or_empty(viewer)
+		? fopen(file_to_view, "r")
+		: use_info_prog(viewer);
+
+	if(fp == NULL)
+	{
+		show_error_msg(action, "Cannot open file for reading");
+		return 1;
+	}
+
+	vi->lines = read_file_lines(fp, &vi->nlines);
+	fclose(fp);
+
+	if(vi->lines == NULL)
+	{
+		show_error_msg(action, "Won't explore empty file");
+		return 1;
+	}
+
+	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
+	if(vi->widths == NULL)
+	{
+		free_string_array(vi->lines, vi->nlines);
+		vi->lines = NULL;
+		vi->nlines = 0;
+		show_error_msg(action, "Not enough memory");
+		return 1;
+	}
+
+	return 0;
 }
 
 static void
