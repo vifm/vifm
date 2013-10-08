@@ -25,7 +25,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* malloc() free() */
 
 #include "../cfg/config.h"
 #include "../engine/keys.h"
@@ -63,7 +63,7 @@ typedef struct
 	int nlinesv;
 	int line;
 	int linev;
-	int win;
+	int win_size; /* Scroll window size. */
 	int half_win;
 	int width;
 	FileView *view;
@@ -121,9 +121,15 @@ static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
+static int load_view_data(view_info_t *vi, const char action[],
+		const char file_to_view[]);
+static void replace_vi(view_info_t *const orig, view_info_t *const new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
+static void check_and_set_from_default_win(key_info_t *const key_info);
+static void set_from_default_win(key_info_t *const key_info);
 static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -134,9 +140,11 @@ static void find_previous(int vline_offset);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
+static void update_with_half_win(key_info_t *const key_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
+static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
@@ -216,7 +224,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"Q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
-	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
+	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_R}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
@@ -266,8 +274,6 @@ void
 enter_view_mode(int explore)
 {
 	char full_path[PATH_MAX];
-	const char *viewer;
-	FILE *fp;
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -289,34 +295,10 @@ enter_view_mode(int explore)
 		}
 	}
 
-	/* FIXME: same code is in ../quickview.c */
-	viewer = get_viewer_for_file(get_last_path_component(full_path));
-	if(is_null_or_empty(viewer))
-		fp = fopen(full_path, "r");
-	else
-		fp = use_info_prog(viewer);
-
-	if(fp == NULL)
-	{
-		show_error_msg("File exploring", "Cannot open file for reading");
-		return;
-	}
-
 	pick_vi(explore);
-	vi->lines = read_file_lines(fp, &vi->nlines);
-	fclose(fp);
 
-	if(vi->lines == NULL)
+	if(load_view_data(vi, "File exploring", full_path) != 0)
 	{
-		show_error_msg("File exploring", "Won't explore empty file");
-		return;
-	}
-	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
-	if(vi->widths == NULL)
-	{
-		free_string_array(vi->lines, vi->nlines);
-		vi->lines = NULL;
-		vi->nlines = 0;
 		return;
 	}
 
@@ -440,7 +422,7 @@ init_view_info(view_info_t *vi)
 	vi->nlinesv = 0;
 	vi->line = 0;
 	vi->linev = 0;
-	vi->win = -1;
+	vi->win_size = -1;
 	vi->half_win = -1;
 	vi->width = -1;
 	vi->view = NULL;
@@ -786,13 +768,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_meta_space(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	key_info.reg = 1;
 	cmd_j(key_info, keys_info);
 }
@@ -879,42 +855,116 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 	goto_search_result(key_info.count, 1);
 }
 
+/* Handles view data reloading key. */
+static void
+cmd_R(key_info_t key_info, keys_info_t *keys_info)
+{
+	view_info_t new_vi;
+
+	init_view_info(&new_vi);
+
+	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
+	{
+		replace_vi(vi, &new_vi);
+		view_redraw();
+	}
+}
+
+/* Loads list of strings and related data into view_info_t structure from
+ * specified file.  The action parameter is a title to be used for error
+ * messages.  Returns non-zero on error, otherwise zero is returned. */
+static int
+load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
+{
+	/* FIXME: code with same functionality is in ../quickview.c */
+	const char *const viewer =
+		get_viewer_for_file(get_last_path_component(file_to_view));
+	FILE *const fp = is_null_or_empty(viewer)
+		? fopen(file_to_view, "r")
+		: use_info_prog(viewer);
+
+	if(fp == NULL)
+	{
+		show_error_msg(action, "Cannot open file for reading");
+		return 1;
+	}
+
+	vi->lines = read_file_lines(fp, &vi->nlines);
+	fclose(fp);
+
+	if(vi->lines == NULL)
+	{
+		show_error_msg(action, "Won't explore empty file");
+		return 1;
+	}
+
+	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
+	if(vi->widths == NULL)
+	{
+		free_string_array(vi->lines, vi->nlines);
+		vi->lines = NULL;
+		vi->nlines = 0;
+		show_error_msg(action, "Not enough memory");
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Replaces view_info_t structure with another one preserving as much as
+ * possible. */
+static void
+replace_vi(view_info_t *const orig, view_info_t *const new)
+{
+	new->filename = orig->filename;
+	orig->filename = NULL;
+
+	if(orig->last_search_backward != -1)
+	{
+		new->last_search_backward = orig->last_search_backward;
+		new->re = orig->re;
+		orig->last_search_backward = -1;
+	}
+
+	new->win_size = orig->win_size;
+	new->half_win = orig->half_win;
+	new->line = orig->line;
+	new->linev = orig->linev;
+	new->view = orig->view;
+
+	free_view_info(orig);
+	*orig = *new;
+}
+
 static void
 cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	cmd_k(key_info, keys_info);
 }
 
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->half_win = key_info.count;
-	else if(vi->half_win > 0)
-		key_info.count = vi->half_win;
-	else
-		key_info.count = (vi->view->window_rows - 1)/2;
+	update_with_half_win(&key_info);
 	cmd_j(key_info, keys_info);
 }
 
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-	{
-		if(vi->win > 0)
-			key_info.count = vi->win;
-		else
-			key_info.count = vi->view->window_rows - 2;
-	}
+	check_and_set_from_default_win(&key_info);
 	cmd_j(key_info, keys_info);
+}
+
+/* Sets key count from scroll window size when count is not specified. */
+static void
+check_and_set_from_default_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		set_from_default_win(key_info);
+	}
 }
 
 static void
@@ -1152,13 +1202,25 @@ cmd_q(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->half_win = key_info.count;
-	else if(vi->half_win > 0)
-		key_info.count = vi->half_win;
-	else
-		key_info.count = (vi->view->window_rows - 1)/2;
+	update_with_half_win(&key_info);
 	cmd_k(key_info, keys_info);
+}
+
+/* Sets key count from half window size when count is not specified, otherwise
+ * specified count is stored as new size of the half window size. */
+static void
+update_with_half_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		key_info->count = (vi->half_win > 0)
+			? vi->half_win
+			: (vi->view->window_rows - 1)/2;
+	}
+	else
+	{
+		vi->half_win = key_info->count;
+	}
 }
 
 static void
@@ -1177,25 +1239,39 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_w(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win = key_info.count;
-	else if(vi->win > 0)
-		key_info.count = vi->win;
-	else
-		key_info.count = vi->view->window_rows - 2;
+	update_with_win(&key_info);
 	cmd_k(key_info, keys_info);
 }
 
 static void
 cmd_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		vi->win = key_info.count;
-	else if(vi->win > 0)
-		key_info.count = vi->win;
-	else
-		key_info.count = vi->view->window_rows - 2;
+	update_with_win(&key_info);
 	cmd_j(key_info, keys_info);
+}
+
+/* Sets key count from scroll window size when count is not specified, otherwise
+ * specified count is stored as new size of the scroll window. */
+static void
+update_with_win(key_info_t *const key_info)
+{
+	if(key_info->count == NO_COUNT_GIVEN)
+	{
+		set_from_default_win(key_info);
+	}
+	else
+	{
+		vi->win_size = key_info->count;
+	}
+}
+
+/* Sets key count from scroll window size. */
+static void
+set_from_default_win(key_info_t *const key_info)
+{
+	key_info->count = (vi->win_size > 0)
+		? vi->win_size
+		: (vi->view->window_rows - 2);
 }
 
 int

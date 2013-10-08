@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 07
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -664,8 +664,11 @@ backward one window (or [count] lines).
 
 
                                                *vifm-q_r* *vifm-q_CTRL-R*
-                                               *vifm-q_R* *vifm-q_CTRL-L*
+                                                        *vifm-q_CTRL-L*
 r, Ctrl-R, Ctrl-L, R - repaint screen.
+
+                                               *vifm-q_R*
+reload view preserving scroll position.
 
 
                                                *vifm-q_/*

@@ -143,6 +143,9 @@
 	Process [count] passed to gUU, gU<selector>, gUgU, gu<selector>, guu and
 	gugu commands.
 
+	Changed meaning of the R key in view mode from redrawing view to
+	reloading it preserving scroll position.  Thanks to Robert Sarkozi.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 
