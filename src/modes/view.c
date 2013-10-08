@@ -121,8 +121,10 @@ static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(view_info_t *vi, const char action[],
 		const char file_to_view[]);
+static void replace_vi(view_info_t *const orig, view_info_t *const new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
@@ -222,7 +224,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"Q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
-	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
+	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_R}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
@@ -853,6 +855,21 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 	goto_search_result(key_info.count, 1);
 }
 
+/* Handles view data reloading key. */
+static void
+cmd_R(key_info_t key_info, keys_info_t *keys_info)
+{
+	view_info_t new_vi;
+
+	init_view_info(&new_vi);
+
+	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
+	{
+		replace_vi(vi, &new_vi);
+		view_redraw();
+	}
+}
+
 /* Loads list of strings and related data into view_info_t structure from
  * specified file.  The action parameter is a title to be used for error
  * messages.  Returns non-zero on error, otherwise zero is returned. */
@@ -892,6 +909,31 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 	}
 
 	return 0;
+}
+
+/* Replaces view_info_t structure with another one preserving as much as
+ * possible. */
+static void
+replace_vi(view_info_t *const orig, view_info_t *const new)
+{
+	new->filename = orig->filename;
+	orig->filename = NULL;
+
+	if(orig->last_search_backward != -1)
+	{
+		new->last_search_backward = orig->last_search_backward;
+		new->re = orig->re;
+		orig->last_search_backward = -1;
+	}
+
+	new->win_size = orig->win_size;
+	new->half_win = orig->half_win;
+	new->line = orig->line;
+	new->linev = orig->linev;
+	new->view = orig->view;
+
+	free_view_info(orig);
+	*orig = *new;
 }
 
 static void
