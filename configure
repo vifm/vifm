@@ -8637,7 +8637,7 @@ $as_echo "#define ENABLE_DESKTOP_FILES 1" >>confdefs.h
 fi
 
 if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -Og -Werror"
+	CFLAGS="$CFLAGS -g -O0 -Werror"
 fi
 
 if test "$use_dyn_libX11" = "yes"; then

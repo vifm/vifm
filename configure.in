@@ -534,7 +534,7 @@ if test "$desktop_files" = "yes"; then
 fi
 
 if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -Og -Werror"
+	CFLAGS="$CFLAGS -g -O0 -Werror"
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
