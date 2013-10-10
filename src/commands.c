@@ -113,9 +113,13 @@ enum
 	COM_FILEVIEWER,
 	COM_FILEXTYPE,
 	COM_MAP,
+	COM_MMAP,
+	COM_MNOREMAP,
 	COM_NMAP,
 	COM_NNOREMAP,
 	COM_NORMAL,
+	COM_QMAP,
+	COM_QNOREMAP,
 	COM_VMAP,
 	COM_VNOREMAP,
 	COM_NOREMAP,
@@ -362,9 +366,9 @@ static const cmd_add_t commands[] = {
 		.handler = messages_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "mkdir",            .abbr = NULL,    .emark = 1,  .id = COM_MKDIR,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = mkdir_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "mmap",             .abbr = "mm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "mmap",             .abbr = "mm",    .emark = 0,  .id = COM_MMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = mmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "mnoremap",         .abbr = "mno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "mnoremap",         .abbr = "mno",   .emark = 0,  .id = COM_MNOREMAP,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = mnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "move",             .abbr = "m",     .emark = 1,  .id = COM_MOVE,        .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = move_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -390,9 +394,9 @@ static const cmd_add_t commands[] = {
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "qmap",             .abbr = "qm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "qmap",             .abbr = "qm",    .emark = 0,  .id = COM_QMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = qmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "qnoremap",         .abbr = "qno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "qnoremap",         .abbr = "qno",   .emark = 0,  .id = COM_QNOREMAP,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = qnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -1149,9 +1153,13 @@ is_whole_line_command(const char cmd[])
 		case COM_FILEVIEWER:
 		case COM_FILEXTYPE:
 		case COM_MAP:
+		case COM_MMAP:
+		case COM_MNOREMAP:
 		case COM_NMAP:
 		case COM_NNOREMAP:
 		case COM_NORMAL:
+		case COM_QMAP:
+		case COM_QNOREMAP:
 		case COM_VMAP:
 		case COM_VNOREMAP:
 		case COM_NOREMAP:
