@@ -533,10 +533,6 @@ if test "$desktop_files" = "yes"; then
 	AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
 fi
 
-if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -Og -Werror"
-fi
-
 if test "$use_dyn_libX11" = "yes"; then
 	AC_CHECK_LIB(dl, dlopen, [use_dyn_libX11=yes], [use_dyn_libX11=no])
 	AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
@@ -557,6 +553,10 @@ if test "$use_libX11" = "yes"; then
 			LIBS="$LIBS -lX11"
 		fi
 		])
+fi
+
+if test "$developer" = "yes"; then
+	CFLAGS="$CFLAGS -g -O0 -Werror"
 fi
 
 dnl Include config.h in all translation units implicitly

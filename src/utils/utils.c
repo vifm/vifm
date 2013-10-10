@@ -270,7 +270,7 @@ extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 {
 	const char *result;
 #ifdef _WIN32
-	int left_quote, right_quote;
+	int left_quote, right_quote = 0;
 #endif
 
 	line = skip_whitespace(line);
