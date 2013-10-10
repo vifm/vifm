@@ -1,4 +1,4 @@
-.TH vifm 1 "Oct 08, 2013" "" "Vifm"
+.TH vifm 1 "Oct 10, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -954,11 +954,40 @@ appropriate history.
 .\" ---------------------------------------------------------------------------
 Commands are executed with :command_name<Return>
 
+Commented out lines should start with the double quote symbol, which may be
+preceded by whitespace characters.
+
 \'|' can be used to separate commands, so you can give multiple commands in one
 line.  If you want to use '|' in an argument, precede it with '\\'.
 
-Commented out lines should start with the double quote symbol, which may be
-preceded by whitespace characters.
+These commands see '|' as part of their arguments even when it's escaped:
+
+    :[range]!
+    :cmap
+    :cnoremap
+    :command
+    :filetype
+    :fileviewer
+    :filextype
+    :map
+    :mmap
+    :mnoremap
+    :nmap
+    :nnoremap
+    :noremap
+    :normal
+    :qmap
+    :qnoremap
+    :vmap
+    :vnoremap
+    :windo
+    :winrun
+
+To be able to use another command after one of these, wrap it with the :execute
+command.  An example:
+.EX
+    if filetype('.') == 'reg' | execute '!!echo regular file' | endif
+.EE
 .TP
 .BI :[count]
 .TP

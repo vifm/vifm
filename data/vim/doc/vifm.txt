@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 08
+*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -867,9 +867,6 @@ appropriate history.
 
 vifm-commands are executed with :command_name<Return>
 
-'|' can be used to separate commands, so you can give multiple commands in one
-line.  If you want to use '|' in an argument, precede it with '\'.
-
 Commented out lines should start with the double quote symbol, which may be
 preceded by whitespace characters.
 
@@ -878,6 +875,38 @@ Example:
 :noh[lsearch]
 This means the complete command is nohlsearch, and the short one is noh.
 
+                                               *vifm-:bar*
+'|' can be used to separate commands, so you can give multiple commands in one
+line.  If you want to use '|' in an argument, precede it with '\'.
+
+These commands see '|' as part of their arguments even when it's escaped:
+
+    :[range]!
+    :cmap
+    :cnoremap
+    :command
+    :filetype
+    :fileviewer
+    :filextype
+    :map
+    :mmap
+    :mnoremap
+    :nmap
+    :nnoremap
+    :noremap
+    :normal
+    :qmap
+    :qnoremap
+    :vmap
+    :vnoremap
+    :windo
+    :winrun
+
+To be able to use another command after one of these, wrap it with the
+|vifm-:execute| command.  An example: >
+
+    if filetype('.') == 'reg' | execute '!!echo regular file' | endif
+<
                                                *vifm-:range*
 :number - move to the file number.
 :12 would move to the 12th file in the list.
