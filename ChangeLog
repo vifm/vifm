@@ -146,6 +146,9 @@
 	Changed meaning of the R key in view mode from redrawing view to
 	reloading it preserving scroll position.  Thanks to Robert Sarkozi.
 
+	Documented how | is treated on command line by some commands.  Thanks to
+	Roger Bongers.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

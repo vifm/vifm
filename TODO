@@ -33,8 +33,6 @@ Documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
     Document single and double quotes treating in the command-line mode.
     Document name conflict resolution options.
-    Document priorities of command-line commands (e.g. that :! takes rest
-        of the line as its arguments).
 
 Windows.
     Make :chmod accept arguments.
