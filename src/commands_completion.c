@@ -36,7 +36,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strlen() strncasecmp() strncmp() */
+#include <string.h> /* strdup() strlen() strncasecmp() strncmp() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -497,6 +497,11 @@ fast_run_complete(const char cmd[])
 	char *completed;
 
 	args = extract_cmd_name(cmd, 0, sizeof(command), command);
+
+	if(is_path_absolute(command))
+	{
+		return strdup(cmd);
+	}
 
 	reset_completion();
 	exec_completion(command);
