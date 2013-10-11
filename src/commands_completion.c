@@ -488,7 +488,7 @@ complete_winrun(const char *str)
 }
 
 char *
-fast_run_complete(const char *cmd)
+fast_run_complete(const char cmd[])
 {
 	char *result = NULL;
 	const char *args;
