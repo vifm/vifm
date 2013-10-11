@@ -34,8 +34,9 @@
 #endif
 
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h>
-#include <string.h> /* strncasecmp() strncmp() */
+#include <stdlib.h> /* free() */
+#include <stdio.h> /* snprintf() */
+#include <string.h> /* strlen() strncasecmp() strncmp() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -527,8 +528,7 @@ fast_run_complete(const char cmd[])
 	{
 		free(completed);
 		completed = next_completion();
-		result = malloc(strlen(completed) + 1 + strlen(args) + 1);
-		sprintf(result, "%s %s", completed, args);
+		result = format_str("%s %s", completed, args);
 	}
 	free(completed);
 
