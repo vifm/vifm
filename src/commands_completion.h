@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* size_t */
 
-/* identifiers for commands with completion */
+/* Identifiers for commands with completion. */
 enum
 {
 	COM_CD,
@@ -60,17 +60,17 @@ enum
 	COM_INVERT,
 };
 
-/* values of type argument for filename_completion() function */
+/* Values of type argument for filename_completion() function. */
 typedef enum
 {
-	CT_ALL,      /* all files and directories */
-	CT_ALL_WOS,  /* all files and directories without trailing slash */
-	CT_ALL_WOE,  /* all files and directories without escaping */
-	CT_FILE,     /* only files in the current directory */
-	CT_FILE_WOE, /* only files in the current directory without escaping */
-	CT_DIRONLY,  /* only directories */
-	CT_EXECONLY, /* only executable files */
-	CT_DIREXEC   /* directories and executable files */
+	CT_ALL,      /* All files and directories. */
+	CT_ALL_WOS,  /* All files and directories without trailing slash. */
+	CT_ALL_WOE,  /* All files and directories without escaping. */
+	CT_FILE,     /* Only files in the current directory. */
+	CT_FILE_WOE, /* Only files in the current directory without escaping. */
+	CT_DIRONLY,  /* Only directories. */
+	CT_EXECONLY, /* Only executable files. */
+	CT_DIREXEC   /* Directories and executable files. */
 }
 CompletionType;
 
