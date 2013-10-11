@@ -73,7 +73,7 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static void complete_winrun(const char *str);
-static void exec_completion(const char str[]);
+static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
@@ -190,7 +190,7 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 				if(*arg == '.')
 					filename_completion(arg, CT_DIREXEC);
 				else
-					exec_completion(arg);
+					complete_command_name(arg);
 			}
 			else
 				filename_completion(arg, CT_ALL);
@@ -504,7 +504,7 @@ fast_run_complete(const char cmd[])
 	}
 
 	reset_completion();
-	exec_completion(command);
+	complete_command_name(command);
 	completed = next_completion();
 
 	if(get_completion_count() > 2)
@@ -542,7 +542,7 @@ fast_run_complete(const char cmd[])
 
 /* Fills list of complitions with executables in $PATH. */
 static void
-exec_completion(const char str[])
+complete_command_name(const char beginning[])
 {
 	int i;
 	char ** paths;
@@ -553,9 +553,9 @@ exec_completion(const char str[])
 	{
 		if(my_chdir(paths[i]) != 0)
 			continue;
-		filename_completion(str, CT_EXECONLY);
+		filename_completion(beginning, CT_EXECONLY);
 	}
-	add_completion(str);
+	add_completion(beginning);
 }
 
 static void
