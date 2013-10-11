@@ -77,13 +77,19 @@ CompletionType;
 /* argv isn't array of pointers to constant strings to omit type conversion. */
 int complete_args(int id, const char args[], int argc, char *argv[],
 		int arg_pos);
+
 char * fast_run_complete(const char *cmd);
+
 void filename_completion(const char *str, CompletionType type);
+
 void complete_user_name(const char *str);
+
 void complete_group_name(const char *str);
+
 /* Checks whether program with given name is an executable that present in the
  * $PATH environment variable or can be found by full path. */
 int external_command_exists(const char cmd[]);
+
 /* Gets full path to an executable expanding command name using $PATH if needed.
  * Returns zero on success, otherwise non-zero is returned. */
 int get_full_cmd_path(const char cmd[], size_t path_len, char path[]);
