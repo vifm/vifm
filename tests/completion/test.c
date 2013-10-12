@@ -5,6 +5,7 @@
 #include "../../src/engine/completion.h"
 
 void completion_tests(void);
+void groups_unite_tests(void);
 
 static void
 setup(void)
@@ -21,6 +22,7 @@ static void
 all_tests(void)
 {
 	completion_tests();
+	groups_unite_tests();
 }
 
 int
