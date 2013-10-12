@@ -24,6 +24,10 @@ int add_completion(const char *completion);
 
 void completion_group_end(void);
 
+/* Squashes all existing completion groups into one.  Performs resorting and
+ * de-duplication of resulting single group. */
+void completion_groups_unite(void);
+
 void reset_completion(void);
 
 /* Returns copy of the string or NULL. */

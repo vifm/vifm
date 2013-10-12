@@ -88,6 +88,16 @@ completion_group_end(void)
 	group_begin = count;
 }
 
+void
+completion_groups_unite(void)
+{
+	assert(state != COMPLETING);
+
+	qsort(lines, count, sizeof(*lines), sorter);
+	count = remove_duplicates(lines, count);
+	group_begin = count;
+}
+
 static int
 sorter(const void *first, const void *second)
 {
