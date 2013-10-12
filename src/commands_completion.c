@@ -34,8 +34,9 @@
 #endif
 
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h>
-#include <string.h> /* strncasecmp() strncmp() */
+#include <stdlib.h> /* free() */
+#include <stdio.h> /* snprintf() */
+#include <string.h> /* strdup() strlen() strncasecmp() strncmp() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -72,7 +73,7 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static void complete_winrun(const char *str);
-static void exec_completion(const char str[]);
+static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
@@ -189,7 +190,7 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 				if(*arg == '.')
 					filename_completion(arg, CT_DIREXEC);
 				else
-					exec_completion(arg);
+					complete_command_name(arg);
 			}
 			else
 				filename_completion(arg, CT_ALL);
@@ -488,7 +489,7 @@ complete_winrun(const char *str)
 }
 
 char *
-fast_run_complete(const char *cmd)
+fast_run_complete(const char cmd[])
 {
 	char *result = NULL;
 	const char *args;
@@ -497,8 +498,14 @@ fast_run_complete(const char *cmd)
 
 	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 
+	if(is_path_absolute(command))
+	{
+		return strdup(cmd);
+	}
+
 	reset_completion();
-	exec_completion(command);
+	complete_command_name(command);
+	completion_groups_unite();
 	completed = next_completion();
 
 	if(get_completion_count() > 2)
@@ -527,8 +534,7 @@ fast_run_complete(const char *cmd)
 	{
 		free(completed);
 		completed = next_completion();
-		result = malloc(strlen(completed) + 1 + strlen(args) + 1);
-		sprintf(result, "%s %s", completed, args);
+		result = format_str("%s %s", completed, args);
 	}
 	free(completed);
 
@@ -537,7 +543,7 @@ fast_run_complete(const char *cmd)
 
 /* Fills list of complitions with executables in $PATH. */
 static void
-exec_completion(const char str[])
+complete_command_name(const char beginning[])
 {
 	int i;
 	char ** paths;
@@ -548,9 +554,9 @@ exec_completion(const char str[])
 	{
 		if(my_chdir(paths[i]) != 0)
 			continue;
-		filename_completion(str, CT_EXECONLY);
+		filename_completion(beginning, CT_EXECONLY);
 	}
-	add_completion(str);
+	add_completion(beginning);
 }
 
 static void

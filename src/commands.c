@@ -1416,7 +1416,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			(void)shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1);
+			(void)shellout(com + i, cmd_info->emark ? 1 : -1, 1);
 		}
 	}
 

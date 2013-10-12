@@ -39,6 +39,7 @@ static int curr = -1;
 static int group_begin;
 static int order;
 
+static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
 static size_t remove_duplicates(char **arr, size_t count);
 
@@ -77,14 +78,27 @@ add_completion(const char *completion)
 void
 completion_group_end(void)
 {
-	size_t n_group_items;
+	const size_t n_group_items = count - group_begin;
+	group_unique_sort(group_begin, n_group_items);
+}
+
+void
+completion_groups_unite(void)
+{
+	group_unique_sort(0, count);
+}
+
+/* Sorts items of the list in range [start_index, start_index + len) with
+ * de-duplication.  Updates number of list elements and next group beginning. */
+static void
+group_unique_sort(size_t start_index, size_t len)
+{
+	char **const group_start = lines + start_index;
 
 	assert(state != COMPLETING);
 
-	n_group_items = count - group_begin;
-	qsort(lines + group_begin, n_group_items, sizeof(*lines), sorter);
-	count = group_begin + remove_duplicates(lines + group_begin, n_group_items);
-
+	qsort(group_start, len, sizeof(*group_start), sorter);
+	count = start_index + remove_duplicates(group_start, len);
 	group_begin = count;
 }
 

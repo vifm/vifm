@@ -181,6 +181,12 @@
 	Fixed local options after startup (could be loaded for wrong pane).
 	Thanks to filterfalse.
 
+	Fixed fails on using absolute path to executables when 'fastrun' option
+	is on.  Thanks to MadMaverick9.
+
+	Fixed running external commands with 'fastrun' option set, in case when
+	there are more than one executable with given name.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
