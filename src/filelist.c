@@ -3134,7 +3134,7 @@ reload_window(FileView *view)
 
 	curr_stats.skip_history = 1;
 
-	load_saving_pos(view, 1);
+	load_saving_pos(view, is_dir_list_loaded(view));
 
 	if(view != curr_view)
 	{
