@@ -19,18 +19,14 @@
 #ifndef VIFM__ENGINE__COMPLETION_H__
 #define VIFM__ENGINE__COMPLETION_H__
 
-/*
- * Returns zero on success
- */
+/* Returns zero on success. */
 int add_completion(const char *completion);
 
 void completion_group_end(void);
 
 void reset_completion(void);
 
-/*
- * Returns copy of the string or NULL
- */
+/* Returns copy of the string or NULL. */
 char * next_completion(void);
 
 int get_completion_count(void);
@@ -41,9 +37,7 @@ const char ** get_completion_list(void);
 
 int get_completion_pos(void);
 
-/*
- * Go to the last item (probably to user input)
- */
+/* Go to the last item (probably to user input). */
 void rewind_completion(void);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
