@@ -400,6 +400,14 @@ main(int argc, char *argv[])
 	update_screen(UT_FULL);
 	modes_update();
 
+	/* Update histories of the views to ensure that their current directories,
+	 * which might have been set using command-line parameters, are stored in the
+	 * history.  This is not done automatically as history manipulation should be
+	 * postponed until views are fully loaded, otherwise there is no correct
+	 * information about current file and relative cursor position. */
+	save_view_history(&lwin, NULL, NULL, -1);
+	save_view_history(&rwin, NULL, NULL, -1);
+
 	curr_stats.load_stage = 3;
 
 	main_loop();
