@@ -190,6 +190,9 @@
 	Fixed cursor position of the other view after switching quick view off
 	right after startup.
 
+	Fixed storing directories passed as command-line parameters in
+	directory history.  Thanks to filterfalse.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
