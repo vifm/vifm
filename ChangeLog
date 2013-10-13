@@ -187,6 +187,9 @@
 	Fixed running external commands with 'fastrun' option set, in case when
 	there are more than one executable with given name.
 
+	Fixed cursor position of the other view after switching quick view off
+	right after startup.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
