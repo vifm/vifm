@@ -1,0 +1,31 @@
+# local automatically generated files
+/data/vim/doc/tags
+/data/vifm-help.txt
+/src/compile_info.c
+
+# created during build process
+bin/
+
+# autotools generated files
+/autom4te.cache/
+/src/Makefile
+/Makefile
+/config.h
+/config.log
+/config.status
+/libtool
+/stamp-h1
+.deps/
+.dirstamp
+
+# *nix executables
+/src/vifm
+/src/vifmrc-converter
+
+# compiler output
+*.o
+*.d
+
+# windows specific
+src/*.exe
+src/*.res
