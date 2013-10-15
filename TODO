@@ -186,3 +186,4 @@ Code improvements.
     Maybe allow specifying limit of input characters for command-line prompt
         submode. Would it make conflict resolution prompt easier to use?
     Maybe pass var by pointer to var_free and cleanup the structure.
+    Write tests for get_lines functions in string_array.c
