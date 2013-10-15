@@ -18,9 +18,6 @@
 
 #include "utf8.h"
 
-/* To get wcwidth() function. */
-#define _XOPEN_SOURCE
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t wchar_t */
 #include <string.h> /* strlen() */
