@@ -2,7 +2,7 @@ CC = $(CROSS)gcc
 LD = $(CROSS)ld
 WINDRES = $(CROSS)windres
 
-CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE $(CFLAGS) -include ../config.h
+CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else

@@ -18,9 +18,6 @@
 
 #include "column_view.h"
 
-/* This is to be able to use wcswidth() function. */
-#define _XOPEN_SOURCE
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
