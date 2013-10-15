@@ -7,8 +7,10 @@ AM_CONFIG_HEADER(config.h)
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
 AC_DEFINE([PACKAGE_SOURCE_DIR], [], [Source directory of the package.])
 
-dnl Request GNU extensions if available.
-AC_GNU_SOURCE
+dnl Request some additional extensions.  The macro makes it possible to use
+dnl features of Posix that are extensions to C, as well as platform extensions
+dnl not defined by Posix.
+AC_USE_SYSTEM_EXTENSIONS
 
 AC_ISC_POSIX
 AC_PROG_CC
