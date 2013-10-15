@@ -892,7 +892,7 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 	vi->lines = read_file_lines(fp, &vi->nlines);
 	fclose(fp);
 
-	if(vi->lines == NULL)
+	if(vi->lines == NULL || vi->nlines == 0)
 	{
 		show_error_msg(action, "Won't explore empty file");
 		return 1;
