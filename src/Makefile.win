@@ -74,7 +74,7 @@ $(converter_EXECUTABLE): $(converter_OBJECTS)
 $(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-vifm.res: vifm.rc ../data/vifm.ico
+vifm.res: vifm.rc ../data/graphics/vifm.ico
 	$(WINDRES) --use-temp-file -i ./vifm.rc -o vifm.res
 
 vifmres.o: vifm.res

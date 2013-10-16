@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2013
 
-Updated: 17 Aug, 2013
+Updated: 16 Oct, 2013
 Version: 0.7.5
 
 Brief Description
@@ -38,6 +38,7 @@ Package content
     |-- data/ - documentation, sample vifmrc, icons
     |  |
     |  |-- colors/ - sample color schemes
+    |  |-- graphics/ - icons
     |  `-- vim/ - plugin for Vim
     |
     |-- patches/ - patches for software vifm depends on
