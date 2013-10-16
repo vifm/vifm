@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=System;FileTools;FileManager;ConsoleOnly;
+Comment=Vim like ncurses based file manager
+Exec=vifm %F
+GenericName=File Manager
+Icon=vifm
+Name=Vifm
+Terminal=true
+TryExec=vifm
+Type=Application
