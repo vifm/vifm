@@ -149,6 +149,9 @@
 	Documented how | is treated on command line by some commands.  Thanks to
 	Roger Bongers.
 
+	Increased performance of (re)loading content for view mode.  Thanks to
+	Robert Sarkozi.
+
 	Fixed configuration when set_escdelay() function is not available.
 	Thanks to Russell Urquhart.
 

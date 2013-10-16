@@ -20,13 +20,22 @@
 
 #include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fprintf() */
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fopen() fprintf() fread()
+                      ftell() fseek() */
+#include <stdlib.h> /* free() malloc() realloc() */
+#include <string.h> /* strcspn() */
 
 #include "file_streams.h"
 #include "fs_limits.h"
 #include "str.h"
+
+static char * read_whole_file(const char filepath[]);
+static char * read_stream_remaining(FILE *const fp);
+static char * read_nonseekable_stream(FILE *const fp);
+static char * read_seekable_stream(FILE *const fp);
+static size_t get_remaining_stream_size(FILE *const fp);
+static char ** text_to_lines(char text[], int *nlines);
+static char ** break_into_lines(char text[], int *nlines);
 
 int
 add_to_string_array(char ***array, int len, int count, ...)
@@ -160,36 +169,178 @@ free_wstring_array(wchar_t **array, size_t len)
 char **
 read_file_of_lines(const char filepath[], int *nlines)
 {
-	char **list;
-	FILE *fp;
-
-	if((fp = fopen(filepath, "r")) == NULL)
-	{
-		return NULL;
-	}
-
-	list = read_file_lines(fp, nlines);
+	char **list = text_to_lines(read_whole_file(filepath), nlines);
 	if(list == NULL)
 	{
-		list = malloc(1U);
+		list = malloc(1);
 		*nlines = 0;
 	}
-
-	fclose(fp);
 	return list;
+}
+
+/* Reads file specified by filepath into null terminated string.  Returns
+ * string to be freed by caller on success, otherwise NULL is returned. */
+static char *
+read_whole_file(const char filepath[])
+{
+	char *content = NULL;
+	FILE *fp;
+
+	if((fp = fopen(filepath, "rt")) != NULL)
+	{
+		content = read_stream_remaining(fp);
+		fclose(fp);
+	}
+
+	return content;
 }
 
 char **
 read_file_lines(FILE *f, int *nlines)
 {
+	return text_to_lines(read_stream_remaining(f), nlines);
+}
+
+/* Reads content of the fp stream until end-of-file into null terminated string.
+ * Returns string to be freed by caller on success, otherwise NULL is
+ * returned. */
+static char *
+read_stream_remaining(FILE *const fp)
+{
+	if(ftell(fp) == -1)
+	{
+		return read_nonseekable_stream(fp);
+	}
+	else
+	{
+		return read_seekable_stream(fp);
+	}
+}
+
+/* Reads content of the fp stream that doesn't support seek operation (e.g. it
+ * points to a pipe) until end-of-file into null terminated string.  Returns
+ * string to be freed by caller on success, otherwise NULL is returned. */
+static char *
+read_nonseekable_stream(FILE *const fp)
+{
+	enum { PIECE_LEN = 4096 };
+	char *content = malloc(PIECE_LEN + 1);
+
+	if(content != NULL)
+	{
+		char *last_allocated_block = content;
+		size_t len = 0U, piece_len;
+		while((piece_len = fread(content + len, 1, PIECE_LEN, fp)) != 0U)
+		{
+			const size_t new_size = len + piece_len + PIECE_LEN + 1U;
+			if((last_allocated_block = realloc(content, new_size)) == NULL)
+			{
+				break;
+			}
+
+			content = last_allocated_block;
+			len += piece_len;
+		}
+		content[len] = '\0';
+
+		if(last_allocated_block == NULL)
+		{
+			free(content);
+			content = NULL;
+		}
+	}
+
+	return content;
+}
+
+/* Reads content of the fp stream that supports seek operation (points to a
+ * file) until end-of-file into null terminated string.  Returns string to be
+ * freed by caller on success, otherwise NULL is returned. */
+static char *
+read_seekable_stream(FILE *const fp)
+{
+	char *content;
+	const size_t len = get_remaining_stream_size(fp);
+
+	if((content = malloc(len + 1U)) == NULL)
+	{
+		return NULL;
+	}
+
+	if(fread(content, len, 1U, fp) == 1U)
+	{
+		content[len] = '\0';
+	}
+	else
+	{
+		free(content);
+		content = NULL;
+	}
+
+	return content;
+}
+
+/* Calculates remaining size of the stream.  Assumes that the fp stream supports
+ * seek operation.  Returns the size. */
+static size_t
+get_remaining_stream_size(FILE *const fp)
+{
+	size_t remaining_size;
+	const long pos = ftell(fp);
+
+	(void)fseek(fp, 0, SEEK_END);
+	remaining_size = ftell(fp) - pos;
+	(void)fseek(fp, pos, SEEK_SET);
+
+	return remaining_size;
+}
+
+/* Converts text into an array of strings.  Always frees piece of memory pointed
+ * to by the text.  Returns non-NULL on success, otherwise NULL is returned,
+ * *nlines is untouched.  For empty file non-NULL will be returned, but *nlines
+ * will be zero. */
+static char **
+text_to_lines(char text[], int *nlines)
+{
 	char **list = NULL;
-	char *line = NULL;
+
+	if(text != NULL)
+	{
+		list = break_into_lines(text, nlines);
+		free(text);
+	}
+	return list;
+}
+
+/* Converts text into an array of strings.  Returns non-NULL on success,
+ * otherwise NULL is returned, *nlines is untouched.  For empty file non-NULL
+ * will be returned, but *nlines will be zero. */
+static char **
+break_into_lines(char text[], int *nlines)
+{
+	char **list = NULL;
 
 	*nlines = 0;
-	while((line = read_line(f, line)) != NULL)
+	while(*text != '\0')
 	{
-		*nlines = add_to_string_array(&list, *nlines, 1, line);
+		const size_t line_len = strcspn(text, "\n\r");
+
+		char *after_line = text + line_len;
+		if(after_line[0] == '\n')
+		{
+			after_line += 1;
+		}
+		else if(after_line[0] == '\r')
+		{
+			after_line += (after_line[1] == '\n') ? 2 : 1;
+		}
+
+		text[line_len] = '\0';
+		*nlines = add_to_string_array(&list, *nlines, 1, text);
+
+		text = after_line;
 	}
+
 	return list;
 }
 
