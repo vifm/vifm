@@ -200,6 +200,8 @@
 	Fixed storing directories passed as command-line parameters in
 	directory history.  Thanks to filterfalse.
 
+	Fixed compilation for systems, where coreutils doesn't support -n flag.
+
 0.7.5-beta to 0.7.5
 
 	Better Makefile for tests.  Thanks to Hendrik Jaeger (a.k.a. henk).
