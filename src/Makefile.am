@@ -18,6 +18,14 @@ man_MANS = ../data/vifm.1 \
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt
 
+desktopappdir = $(datadir)/applications
+desktopappfile = ../data/vifm.desktop
+desktopapp_DATA = $(desktopappfile)
+
+desktoppixdir = $(datadir)/pixmaps
+desktoppixfile = ../data/vifm.png
+desktoppix_DATA = $(desktoppixfile)
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \

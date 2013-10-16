@@ -65,7 +65,8 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
+	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" \
+	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
@@ -164,7 +165,7 @@ am__can_run_installinfo = \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
-DATA = $(pkgdata_DATA)
+DATA = $(desktopapp_DATA) $(desktoppix_DATA) $(pkgdata_DATA)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -277,6 +278,12 @@ man_MANS = ../data/vifm.1 \
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt
 
+desktopappdir = $(datadir)/applications
+desktopappfile = ../data/vifm.desktop
+desktopapp_DATA = $(desktopappfile)
+desktoppixdir = $(datadir)/pixmaps
+desktoppixfile = ../data/vifm.png
+desktoppix_DATA = $(desktoppixfile)
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
@@ -868,6 +875,48 @@ uninstall-man1:
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^1][0-9a-z]*$$,1,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
 	dir='$(DESTDIR)$(man1dir)'; $(am__uninstall_files_from_dir)
+install-desktopappDATA: $(desktopapp_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(desktopapp_DATA)'; test -n "$(desktopappdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(desktopappdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(desktopappdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(desktopappdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(desktopappdir)" || exit $$?; \
+	done
+
+uninstall-desktopappDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(desktopapp_DATA)'; test -n "$(desktopappdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(desktopappdir)'; $(am__uninstall_files_from_dir)
+install-desktoppixDATA: $(desktoppix_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(desktoppix_DATA)'; test -n "$(desktoppixdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(desktoppixdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(desktoppixdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(desktoppixdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(desktoppixdir)" || exit $$?; \
+	done
+
+uninstall-desktoppixDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(desktoppix_DATA)'; test -n "$(desktoppixdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(desktoppixdir)'; $(am__uninstall_files_from_dir)
 install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -1084,7 +1133,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1153,7 +1202,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-man install-pkgdataDATA
+install-data-am: install-desktopappDATA install-desktoppixDATA \
+	install-man install-pkgdataDATA
 
 install-dvi: install-dvi-am
 
@@ -1198,8 +1248,9 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-man \
-	uninstall-pkgdataDATA
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-desktopappDATA uninstall-desktoppixDATA \
+	uninstall-man uninstall-pkgdataDATA
 
 uninstall-man: uninstall-man1
 
@@ -1210,15 +1261,17 @@ uninstall-man: uninstall-man1
 	distclean-compile distclean-generic distclean-local \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-binSCRIPTS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-pkgdataDATA install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-man uninstall-man1 \
+	install-data install-data-am install-desktopappDATA \
+	install-desktoppixDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-man1 install-pdf \
+	install-pdf-am install-pkgdataDATA install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-desktopappDATA \
+	uninstall-desktoppixDATA uninstall-man uninstall-man1 \
 	uninstall-pkgdataDATA
 
 
