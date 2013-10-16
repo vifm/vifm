@@ -43,7 +43,7 @@
 #ifdef SUPPORT_NO_CLOBBER
 #define NO_CLOBBER "-n"
 #else /* SUPPORT_NO_CLOBBER */
-#define NO_CLOBBER
+#define NO_CLOBBER ""
 #endif /* SUPPORT_NO_CLOBBER */
 
 #ifdef GNU_TOOLCHAIN
