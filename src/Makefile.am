@@ -23,7 +23,7 @@ desktopappfile = ../data/vifm.desktop
 desktopapp_DATA = $(desktopappfile)
 
 desktoppixdir = $(datadir)/pixmaps
-desktoppixfile = ../data/vifm.png
+desktoppixfile = ../data/graphics/vifm.png
 desktoppix_DATA = $(desktoppixfile)
 
 vifm_SOURCES = \
