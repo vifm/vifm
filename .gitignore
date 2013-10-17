@@ -2,6 +2,7 @@
 /data/vim/doc/tags
 /data/vifm-help.txt
 /src/compile_info.c
+/src/runtests
 
 # created during build process
 bin/
