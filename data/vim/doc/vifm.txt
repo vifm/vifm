@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.5  Last change: 2013 Oct 10
+*vifm.txt*    For Vifm version 0.7.6-beta  Last change: 2013 Oct 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
