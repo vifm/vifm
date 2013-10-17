@@ -1,4 +1,4 @@
-0.7.5 to current
+0.7.5 to 0.7.6-beta
 
 	Added "f" flag to 'cpoptions' option.  It controls initial state of
 	filename filter inversion for :filter[!] {regex} command (in other words,
