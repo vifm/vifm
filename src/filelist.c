@@ -20,10 +20,10 @@
 #include "filelist.h"
 
 #ifdef _WIN32
+#include <fcntl.h>
+#include <lm.h>
 #include <windows.h>
 #include <winioctl.h>
-#include <lm.h>
-#include <fcntl.h>
 #endif
 
 #include <curses.h>
