@@ -23,12 +23,21 @@
 #include <stddef.h> /* size_t */
 #include <wchar.h> /* wchar_t */
 
-#ifndef _WIN32
+#if defined(_WIN64)
 #define WPRINTF_MBSTR L"s"
 #define WPRINTF_WSTR L"ls"
-#else
+#define PRINTF_PID_T "%llu"
+#define PRINTF_SIZE_T "%llu"
+#elif defined(_WIN32)
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
+#define PRINTF_PID_T "%d"
+#define PRINTF_SIZE_T "%u"
+#else
+#define WPRINTF_MBSTR L"s"
+#define WPRINTF_WSTR L"ls"
+#define PRINTF_PID_T "%d"
+#define PRINTF_SIZE_T "%lu"
 #endif
 
 /* Various string functions. */

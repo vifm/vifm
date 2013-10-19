@@ -25,6 +25,7 @@
 #include <string.h> /* strlen() strdup() */
 
 #include "../modes/menu.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../background.h"
 #include "../ui.h"
@@ -66,7 +67,8 @@ show_jobs_menu(FileView *view)
 				snprintf(item_buf, sizeof(item_buf), " %d/%d %s ", p->done + 1,
 						p->total, p->cmd);
 			else
-				snprintf(item_buf, sizeof(item_buf), " %d %s ", p->pid, p->cmd);
+				snprintf(item_buf, sizeof(item_buf), " " PRINTF_PID_T " %s ", p->pid,
+						p->cmd);
 			i = add_to_string_array(&m.items, i, 1, item_buf);
 		}
 

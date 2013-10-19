@@ -777,10 +777,10 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "mv -f %s to %s", op.src, op.dst);
 			break;
 		case OP_CHOWN:
-			snprintf(buf, sizeof(buf), "chown %ld %s", (size_t)op.data, op.src);
+			snprintf(buf, sizeof(buf), "chown " PRINTF_SIZE_T " %s", (size_t)op.data, op.src);
 			break;
 		case OP_CHGRP:
-			snprintf(buf, sizeof(buf), "chown :%ld %s", (size_t)op.data, op.src);
+			snprintf(buf, sizeof(buf), "chown :" PRINTF_SIZE_T " %s", (size_t)op.data, op.src);
 			break;
 #ifndef _WIN32
 		case OP_CHMOD:
