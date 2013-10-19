@@ -252,7 +252,7 @@ filextype *.pro qtcreator %f &
 filextype */
         \ {View in thunar}
         \ Thunar %f &,
-fileview */ tree %f
+fileview .*/,*/ tree %f
 
 " Open all other files with default system programs (you can also remove all
 " :file[x]type commands above to ensure they don't interfere with system-wide
@@ -271,7 +271,7 @@ fileview */ tree %f
 " set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs
 " Like in vi
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
-    \phistory,dirstack,registers,bookmarks
+    \phistory,fhistory,dirstack,registers,bookmarks
 
 " Sample mappings
 
