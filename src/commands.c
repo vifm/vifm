@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcat() strcmp() strcpy() strncmp() strncpy()
+#include <string.h> /* strcat() strchr() strcmp() strcpy() strncmp() strncpy()
                        strlen() */
 #include <time.h>
 
@@ -3824,10 +3824,10 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
-		curr_view->invert = 1;
-		(void)filter_set(&curr_view->name_filter, strchr(expanded_com, ' ') + 1);
+		const char *filter_val = strchr(expanded_com, ' ') + 1;
+		const int invert_filter = cfg.filter_inverted_by_default;
+		(void)set_view_filter(curr_view, filter_val, invert_filter);
 
-		load_saving_pos(curr_view, 1);
 		external = 0;
 	}
 	else if(expanded_com[0] == '!')
