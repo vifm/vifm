@@ -96,9 +96,15 @@ my_wcsdup(const wchar_t *ws)
 }
 
 int
-starts_with(const char *str, const char *prefix)
+starts_with(const char str[], const char prefix[])
 {
 	size_t prefix_len = strlen(prefix);
+	return starts_withn(str, prefix, prefix_len);
+}
+
+int
+starts_withn(const char str[], const char prefix[], size_t prefix_len)
+{
 	return strncmp(str, prefix, prefix_len) == 0;
 }
 
