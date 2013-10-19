@@ -39,8 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcat() strcmp() strcpy() strncmp() strncpy()
-                       strlen() */
+#include <string.h> /* strcat() strchr() strcmp() strcpy() strncpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1190,13 +1189,13 @@ find_last_command(char *cmd)
 			p += 2;
 		}
 		else if((*p == '|' &&
-				line_pos(cmd, q, ' ', strncmp(cmd, "fil", 3) == 0) == 0) || *p == '\0')
+				line_pos(cmd, q, ' ', starts_with_lit(cmd, "fil")) == 0) || *p == '\0')
 		{
 			if(*p != '\0')
 				p++;
 
 			cmd = skip_command_beginning(cmd);
-			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
+			if(*cmd == '!' || starts_with_lit(cmd, "com"))
 				break;
 
 			q = p;
@@ -2520,18 +2519,18 @@ history_cmd(const cmd_info_t *cmd_info)
 	const char *const type = (cmd_info->argc == 0) ? "." : cmd_info->argv[0];
 	const size_t len = strlen(type);
 
-	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
+	if(strcmp(type, ":") == 0 || starts_withn("cmd", type, len))
 		return show_cmdhistory_menu(curr_view) != 0;
-	else if(strcmp(type, "/") == 0 || strncmp("search", type, len) == 0 ||
-			strncmp("fsearch", type, len) == 0)
+	else if(strcmp(type, "/") == 0 || starts_withn("search", type, len) ||
+			starts_withn("fsearch", type, len))
 		return show_fsearchhistory_menu(curr_view) != 0;
-	else if(strcmp(type, "?") == 0 || strncmp("bsearch", type, len) == 0)
+	else if(strcmp(type, "?") == 0 || starts_withn("bsearch", type, len))
 		return show_bsearchhistory_menu(curr_view) != 0;
-	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
+	else if(strcmp(type, "@") == 0 || starts_withn("input", type, len))
 		return show_prompthistory_menu(curr_view) != 0;
-	else if(strcmp(type, "=") == 0 || strncmp("filter", type, MAX(2, len)) == 0)
+	else if(strcmp(type, "=") == 0 || starts_withn("filter", type, MAX(2, len)))
 		return show_filterhistory_menu(curr_view) != 0;
-	else if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
+	else if(strcmp(type, ".") == 0 || starts_withn("dir", type, len))
 		return show_history_menu(curr_view) != 0;
 	else
 		return CMDS_ERR_TRAILING_CHARS;
@@ -3822,12 +3821,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		run_in_split(curr_view, expanded_com);
 	}
-	else if(strncmp(expanded_com, "filter ", 7) == 0)
+	else if(starts_with_lit(expanded_com, "filter "))
 	{
-		curr_view->invert = 1;
-		(void)filter_set(&curr_view->name_filter, strchr(expanded_com, ' ') + 1);
+		const char *filter_val = strchr(expanded_com, ' ') + 1;
+		const int invert_filter = cfg.filter_inverted_by_default;
+		(void)set_view_filter(curr_view, filter_val, invert_filter);
 
-		load_saving_pos(curr_view, 1);
 		external = 0;
 	}
 	else if(expanded_com[0] == '!')

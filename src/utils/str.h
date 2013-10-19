@@ -33,6 +33,11 @@
 
 /* Various string functions. */
 
+/* Checks whether str starts with the given prefix, which should be string
+ * literal.  Returns non-zero if it's so, otherwise zero is returned. */
+#define starts_with_lit(str, prefix) \
+	starts_withn((str), (prefix), sizeof(prefix)/sizeof((prefix)[0]) - 1U)
+
 /* Removes at most one trailing newline character. */
 void chomp(char str[]);
 /* Removes all trailing whitespace. Returns new length of the string. */
@@ -42,7 +47,12 @@ size_t trim_right(char *text);
  * returned. */
 wchar_t * to_wide(const char s[]);
 wchar_t * my_wcsdup(const wchar_t *ws);
-int starts_with(const char *str, const char *prefix);
+/* Checks whether str starts with the given prefix.  Returns non-zero if it's
+ * so, otherwise zero is returned. */
+int starts_with(const char str[], const char prefix[]);
+/* Checks whether str starts with the given prefix of specified length.  Returns
+ * non-zero if it's so, otherwise zero is returned. */
+int starts_withn(const char str[], const char prefix[], size_t prefix_len);
 int ends_with(const char *str, const char *suffix);
 char * to_multibyte(const wchar_t *s);
 void strtolower(char *s);

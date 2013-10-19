@@ -1,5 +1,8 @@
 0.7.6-beta to current
 
+	Consider initial filter inversion value in user defined filter command.
+	Thanks to filterfalse.
+
 	Several minor fixes/updates in documentation and sample vifmrc.  Thanks to
 	filterfalse.
 
