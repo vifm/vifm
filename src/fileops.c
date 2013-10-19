@@ -39,6 +39,7 @@
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
 #include <signal.h>
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <string.h> /* memcmp() strcpy() strerror() */
@@ -2852,7 +2853,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 		return;
 	}
 
-	cp = (void *)(long)create_parent;
+	cp = (void *)(size_t)create_parent;
 
 	for(i = 0; i < count; i++)
 	{

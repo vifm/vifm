@@ -23,6 +23,7 @@
 #include <shellapi.h>
 #endif
 
+#include <stddef.h> /* size_t */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -395,8 +396,8 @@ op_chmodr(void *data, const char *src, const char *dst)
 static int
 op_addattr(void *data, const char *src, const char *dst)
 {
-	DWORD add_mask = (DWORD)data;
-	DWORD attrs = GetFileAttributesA(src);
+	const DWORD add_mask = (size_t)data;
+	const DWORD attrs = GetFileAttributesA(src);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
 		LOG_WERROR(GetLastError());
@@ -413,8 +414,8 @@ op_addattr(void *data, const char *src, const char *dst)
 static int
 op_subattr(void *data, const char *src, const char *dst)
 {
-	DWORD sub_mask = (DWORD)data;
-	DWORD attrs = GetFileAttributesA(src);
+	const DWORD sub_mask = (size_t)data;
+	const DWORD attrs = GetFileAttributesA(src);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
 		LOG_WERROR(GetLastError());
