@@ -33,6 +33,11 @@
 
 /* Various string functions. */
 
+/* Checks whether str starts with the given prefix, which should be string
+ * literal.  Returns non-zero if it's so, otherwise zero is returned. */
+#define starts_with_lit(str, prefix) \
+	starts_withn((str), (prefix), sizeof(prefix)/sizeof((prefix)[0]) - 1U)
+
 /* Removes at most one trailing newline character. */
 void chomp(char str[]);
 /* Removes all trailing whitespace. Returns new length of the string. */
