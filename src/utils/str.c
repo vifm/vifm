@@ -268,7 +268,7 @@ my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
 
 	va_start(ap, format);
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(_WIN64)
 	result = vswprintf(str, len, format, ap);
 #else
 	result = vswprintf(str, format, ap);
