@@ -52,8 +52,10 @@ create_symlink(const char *link, const char *target)
 
 	flag = is_dir(target) ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0;
 
-	if(!CreateSymbolicLink(link, target, flag))
+	if(!CreateSymbolicLink((char *)link, (char *)target, flag))
+	{
 		return -1;
+	}
 
 	return 0;
 }
