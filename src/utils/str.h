@@ -122,8 +122,9 @@ int has_uppercase_letters(const char str[]);
  * size dst_len pointed to by dst.  Ensures that copied string ends with null
  * character.  Does nothing for zero dst_len. */
 void copy_str(char dst[], size_t dst_len, const char src[]);
-#ifdef _WIN32
-char * strtok_r(char str[], const char delim[], char *saveptr[]);
+
+#if defined(_WIN32) && !defined(strtok_r)
+#define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
 #endif
 
 #endif /* VIFM__UTILS__STR_H__ */
