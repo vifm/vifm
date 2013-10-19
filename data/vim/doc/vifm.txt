@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6-beta  Last change: 2013 Oct 17
+*vifm.txt*    For Vifm version 0.7.6-beta  Last change: 2013 Oct 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1021,7 +1021,7 @@ The builtin commands are:
     the background you must set it as a background command with & at the end
     of the commands action (:com rm rm %f &).  Command name cannot contain
     numbers or special symbols (except '?' and '!').
-:com[mand] backup /pattern - will set search pattern.
+:com[mand] name /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
 :com[mand] cmd :commands - will set kind of alias for internal command (like
     in a shell).  Will pass range given to alias to an aliased command, so
