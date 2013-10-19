@@ -1383,7 +1383,6 @@ order using the '.' operator.  Any whitespace is ignored.
     recursively through directories.
 :[range]rename name1 name2... - rename each of selected files to a
     corresponding name.
-:[range]rename - rename files using vi to edit names.
 
                                                *vifm-:restart*
 :restart - will free a lot of things (histories, commands, etc.), reread
