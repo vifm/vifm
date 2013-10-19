@@ -22,6 +22,7 @@
 #ifdef _WIN32
 #include <fcntl.h>
 #include <lm.h>
+#include <ntdef.h>
 #include <windows.h>
 #include <winioctl.h>
 #endif
