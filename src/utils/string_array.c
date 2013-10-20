@@ -30,7 +30,6 @@
 #include "str.h"
 
 static char * read_whole_file(const char filepath[]);
-static char * read_stream_remaining(FILE *const fp);
 static char * read_nonseekable_stream(FILE *const fp);
 static char * read_seekable_stream(FILE *const fp);
 static size_t get_remaining_stream_size(FILE *const fp);
@@ -188,7 +187,7 @@ read_whole_file(const char filepath[])
 
 	if((fp = fopen(filepath, "rt")) != NULL)
 	{
-		content = read_stream_remaining(fp);
+		content = read_seekable_stream(fp);
 		fclose(fp);
 	}
 
@@ -198,23 +197,13 @@ read_whole_file(const char filepath[])
 char **
 read_file_lines(FILE *f, int *nlines)
 {
-	return text_to_lines(read_stream_remaining(f), nlines);
+	return text_to_lines(read_seekable_stream(f), nlines);
 }
 
-/* Reads content of the fp stream until end-of-file into null terminated string.
- * Returns string to be freed by caller on success, otherwise NULL is
- * returned. */
-static char *
-read_stream_remaining(FILE *const fp)
+char **
+read_stream_lines(FILE *f, int *nlines)
 {
-	if(ftell(fp) == -1)
-	{
-		return read_nonseekable_stream(fp);
-	}
-	else
-	{
-		return read_seekable_stream(fp);
-	}
+	return text_to_lines(read_nonseekable_stream(f), nlines);
 }
 
 /* Reads content of the fp stream that doesn't support seek operation (e.g. it

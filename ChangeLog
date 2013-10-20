@@ -15,6 +15,9 @@
 	Fixed running executables without specifying their extension on Windows.
 	Thanks to filterfalse.
 
+	Fixed viewing of files with custom viewers on Windows.  Thanks to
+	filterfalse.
+
 0.7.5 to 0.7.6-beta
 
 	Added "f" flag to 'cpoptions' option.  It controls initial state of
