@@ -49,6 +49,9 @@ int int_stack_push(int_stack_t *const stack, const int val);
  * one element */
 void int_stack_pop(int_stack_t *const stack);
 
+/* Removes all element from the stack. */
+void int_stack_clear(int_stack_t *const stack);
+
 #endif /* VIFM__UTILS__INT_STACK_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
