@@ -35,7 +35,7 @@
 #endif
 #include <unistd.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
 #include <signal.h>
@@ -1117,15 +1117,20 @@ check_file_rename(const char dir[], const char old[], const char new[],
 
 	if(path_exists_at(dir, new) && stroscmp(old, new) != 0)
 	{
-		if(signal_type == ST_STATUS_BAR)
+		switch(signal_type)
 		{
-			status_bar_errorf("File \"%s\" already exists", new);
-			curr_stats.save_msg = 1;
-		}
-		else
-		{
-			show_error_msg("File exists",
-					"That file already exists. Will not overwrite.");
+			case ST_STATUS_BAR:
+				status_bar_errorf("File \"%s\" already exists", new);
+				curr_stats.save_msg = 1;
+				break;
+			case ST_DIALOG:
+				show_error_msg("File exists",
+						"That file already exists. Will not overwrite.");
+				break;
+
+			default:
+				assert(signal_type == ST_NONE && "Unhandled signaling type");
+				break;
 		}
 		return 0;
 	}

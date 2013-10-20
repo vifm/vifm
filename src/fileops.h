@@ -31,11 +31,14 @@ typedef enum
 	DR_DESTINATION,
 }DirRole;
 
+/* Type of reaction on an error. */
 typedef enum
 {
-	ST_STATUS_BAR, /* show message in the status bar */
-	ST_DIALOG, /* shows error dialog */
-}SignalType;
+	ST_NONE,       /* Show message in the status bar. */
+	ST_STATUS_BAR, /* Show message in the status bar. */
+	ST_DIALOG,     /* Shows error dialog. */
+}
+SignalType;
 
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
