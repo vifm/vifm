@@ -109,6 +109,7 @@ TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 TSTATIC const char * add_to_name(const char filename[], int k);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
+static int is_file_name_changed(const char old[], const char new[]);
 static void put_confirm_cb(const char *dest_name);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
@@ -1109,9 +1110,10 @@ TSTATIC int
 check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type)
 {
-	/* Filename unchanged */
-	if(new[0] == '\0' || strcmp(old, new) == 0)
+	if(!is_file_name_changed(old, new))
+	{
 		return -1;
+	}
 
 	if(path_exists_at(dir, new) && stroscmp(old, new) != 0)
 	{
@@ -1129,6 +1131,18 @@ check_file_rename(const char dir[], const char old[], const char new[],
 	}
 
 	return 1;
+}
+
+/* Checks whether file name change was performed.  Returns non-zero if change is
+ * detected, otherwise zero is returned. */
+static int
+is_file_name_changed(const char old[], const char new[])
+{
+	/* Empty new name means reuse of the old name (rename cancellation).  Names
+	 * are always compared in a case sensitive way, so that changes in case of
+	 * letters triggers rename operation even for systems where paths are case
+	 * insensitive. */
+	return (new[0] != '\0' && strcmp(old, new) != 0);
 }
 
 #ifndef _WIN32
