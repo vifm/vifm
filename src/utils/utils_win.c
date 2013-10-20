@@ -195,13 +195,13 @@ static int
 should_wait_for_program(const char cmd[])
 {
 	char name[NAME_MAX];
-	char full_path[PATH_MAX];
+	char path[PATH_MAX];
 
 	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
 
-	if(get_full_cmd_path(name, sizeof(full_path), full_path) == 0)
+	if(get_cmd_path(name, sizeof(path), path) == 0)
 	{
-		return get_subsystem(full_path) != SUBSYSTEM_GUI;
+		return get_subsystem(path) != SUBSYSTEM_GUI;
 	}
 	return 1;
 }
