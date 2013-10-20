@@ -86,6 +86,7 @@ static void create_rc_file(void);
 #endif
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
+static void show_sourcing_error(const char filename[], int line_num);
 static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
 static void disable_history(void);
@@ -592,20 +593,40 @@ source_file_internal(FILE *fp, const char filename[])
 		}
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
-			/* User choice is saved by show_error_promptf internally. */
-			(void)prompt_error_msgf("File Sourcing Error", "Error in %s at %d line",
-					filename, line_num);
+			show_sourcing_error(filename, line_num);
 		}
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
+
 		if(p == NULL)
+		{
+			/* Artificially increment line number to simulate as if all that happens
+			 * after the loop relates to something past end of the file. */
+			line_num++;
 			break;
+		}
+
 		copy_str(line, sizeof(line), p);
 		line_num += line_num_delta;
 	}
 
 	free(next_line);
+
+	if(commands_block_finished() != 0)
+	{
+		show_sourcing_error(filename, line_num);
+	}
+
 	return 0;
+}
+
+/* Displays sourcing error message to a user. */
+static void
+show_sourcing_error(const char filename[], int line_num)
+{
+	/* User choice is saved by prompt_error_msgf internally. */
+	(void)prompt_error_msgf("File Sourcing Error", "Error in %s at %d line",
+			filename, line_num);
 }
 
 int
