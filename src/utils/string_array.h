@@ -60,9 +60,13 @@ void free_wstring_array(wchar_t **array, size_t len);
  * will be zero. */
 char ** read_file_of_lines(const char filepath[], int *nlines);
 
-/* Reads content of the file stream f into array of strings.  Returns NULL for
- * an empty file stream. */
+/* Reads content of the file stream (required to be seekable) f into array of
+ * strings.  Returns NULL for an empty file stream. */
 char ** read_file_lines(FILE *f, int *nlines);
+
+/* Reads content of the stream (not required to be seekable) f into array of
+ * strings.  Returns NULL for an empty file stream. */
+char ** read_stream_lines(FILE *f, int *nlines);
 
 /* Overwrites file specified by filepath with lines.  Returns zero on success,
  * otherwise non-zero is returned and errno contains error code. */
