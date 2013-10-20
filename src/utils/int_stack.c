@@ -82,5 +82,11 @@ int_stack_pop(int_stack_t *const stack)
 	stack->top--;
 }
 
+void
+int_stack_clear(int_stack_t *const stack)
+{
+	stack->top = 0U;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

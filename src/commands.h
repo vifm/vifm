@@ -55,6 +55,12 @@ int exec_commands(const char cmd[], FileView *view, int type);
  * message. */
 int exec_command(const char cmd[], FileView *view, int type);
 
+/* An event like function, which should be used to inform commands unit that
+ * set of a command has come to its end.  Allows for performing some of internal
+ * checks.  Returns non-zero when there were errors, otherwise zero is
+ * returned. */
+int commands_block_finished(void);
+
 char * find_last_command(char *cmd);
 
 void comm_quit(int write_info, int force);

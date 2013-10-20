@@ -6,6 +6,9 @@
 	Several minor fixes/updates in documentation and sample vifmrc.  Thanks to
 	filterfalse.
 
+	Display error after sourcing file with unmatched :if/:endif statements.
+	Thanks to filterfalse.
+
 	Fixed displaying of barely visible false error messages on the status bar
 	on some rename operations.
 
