@@ -889,7 +889,10 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 		return 1;
 	}
 
-	vi->lines = read_file_lines(fp, &vi->nlines);
+	vi->lines = is_null_or_empty(viewer)
+		? read_file_lines(fp, &vi->nlines)
+		: read_stream_lines(fp, &vi->nlines);
+
 	fclose(fp);
 
 	if(vi->lines == NULL || vi->nlines == 0)
