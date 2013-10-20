@@ -922,7 +922,9 @@ complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
 		char full_path[PATH_MAX];
 		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], cmd);
 
-		if(path_exists(full_path))
+		/* Need to check for executable, not just a file, as this additionally
+		 * checks for path with different executable extensions on Windows. */
+		if(executable_exists(full_path))
 		{
 			copy_str(path, path_len, full_path);
 			return 0;
