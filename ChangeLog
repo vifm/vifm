@@ -6,6 +6,9 @@
 	Several minor fixes/updates in documentation and sample vifmrc.  Thanks to
 	filterfalse.
 
+	Fixed displaying of barely visible false error messages on the status bar
+	on some rename operations.
+
 0.7.5 to 0.7.6-beta
 
 	Added "f" flag to 'cpoptions' option.  It controls initial state of

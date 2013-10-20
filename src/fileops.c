@@ -893,10 +893,9 @@ is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 	for(i = 0; i < len; i++)
 	{
 		int j;
-		int check_result;
 
-		check_result = check_file_rename(curr_view->curr_dir, files[i], list[i],
-				ST_STATUS_BAR);
+		const int check_result =
+			check_file_rename(curr_view->curr_dir, files[i], list[i], ST_NONE);
 		if(check_result < 0)
 		{
 			continue;
