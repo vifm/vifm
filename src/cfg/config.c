@@ -37,7 +37,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memmove() memset() strncpy() */
+#include <string.h> /* memmove() memset() */
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
@@ -600,8 +600,7 @@ source_file_internal(FILE *fp, const char filename[])
 			break;
 		if(p == NULL)
 			break;
-		strncpy(line, p, sizeof(line));
-		line[sizeof(line) - 1] = '\0';
+		copy_str(line, sizeof(line), p);
 		line_num += line_num_delta;
 	}
 
@@ -674,7 +673,7 @@ generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
 #ifdef _WIN32
 	to_forward_slash(buf);
 #endif
-	strncpy(buf, make_name_unique(buf), buf_len);
+	copy_str(buf, buf_len, make_name_unique(buf));
 }
 
 /* Returns path to tmp directory.  Uses environment variables to determine the
