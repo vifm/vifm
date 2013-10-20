@@ -1282,6 +1282,18 @@ exec_command(const char cmd[], FileView *view, int type)
 	return 0;
 }
 
+int
+commands_block_finished(void)
+{
+	if(!int_stack_is_empty(&if_levels))
+	{
+		status_bar_error("Missing :endif");
+		int_stack_clear(&if_levels);
+		return 1;
+	}
+	return 0;
+}
+
 void
 comm_quit(int write_info, int force)
 {
