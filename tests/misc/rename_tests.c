@@ -69,12 +69,12 @@ static void
 test_single_file_rename(void)
 {
 	chdir("test-data/rename");
-	assert_true(check_file_rename(".", "a", "a", ST_STATUS_BAR) < 0);
-	assert_true(check_file_rename(".", "a", "", ST_STATUS_BAR) < 0);
-	assert_true(check_file_rename(".", "a", "b", ST_STATUS_BAR) > 0);
-	assert_true(check_file_rename(".", "a", "aa", ST_STATUS_BAR) == 0);
+	assert_true(check_file_rename(".", "a", "a", ST_NONE) < 0);
+	assert_true(check_file_rename(".", "a", "", ST_NONE) < 0);
+	assert_true(check_file_rename(".", "a", "b", ST_NONE) > 0);
+	assert_true(check_file_rename(".", "a", "aa", ST_NONE) == 0);
 #ifdef _WIN32
-	assert_true(check_file_rename(".", "a", "A", ST_STATUS_BAR) > 0);
+	assert_true(check_file_rename(".", "a", "A", ST_NONE) > 0);
 #endif
 	chdir("../..");
 }
