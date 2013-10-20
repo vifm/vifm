@@ -93,9 +93,10 @@ void complete_group_name(const char *str);
  * $PATH environment variable or can be found by full path. */
 int external_command_exists(const char cmd[]);
 
-/* Gets full path to an executable expanding command name using $PATH if needed.
- * Returns zero on success, otherwise non-zero is returned. */
-int get_full_cmd_path(const char cmd[], size_t path_len, char path[]);
+/* Gets path to an executable expanding command name using $PATH if needed.
+ * Might not include extension of a command on Windows.  Returns zero on
+ * success, otherwise non-zero is returned. */
+int get_cmd_path(const char cmd[], size_t path_len, char path[]);
 
 #endif /* VIFM__COMMANDS_COMPLETION_H__ */
 
