@@ -880,7 +880,7 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 	const char *const viewer =
 		get_viewer_for_file(get_last_path_component(file_to_view));
 	FILE *const fp = is_null_or_empty(viewer)
-		? fopen(file_to_view, "r")
+		? fopen(file_to_view, "rb")
 		: use_info_prog(viewer);
 
 	if(fp == NULL)

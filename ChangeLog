@@ -18,6 +18,8 @@
 	Fixed viewing of files with custom viewers on Windows.  Thanks to
 	filterfalse.
 
+	Fixed issues with reading files on Windows.  Thanks to Robert Sarkozi.
+
 0.7.5 to 0.7.6-beta
 
 	Added "f" flag to 'cpoptions' option.  It controls initial state of

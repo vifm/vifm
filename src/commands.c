@@ -637,7 +637,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 static char *
 get_file_first_line(const char path[])
 {
-	FILE *const fp = fopen(path, "rt");
+	FILE *const fp = fopen(path, "rb");
 	char *result = NULL;
 	if(fp != NULL)
 	{
