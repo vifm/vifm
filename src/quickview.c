@@ -135,7 +135,7 @@ quick_view_file(FileView *view)
 					break;
 				}
 				if(is_null_or_empty(viewer))
-					fp = fopen(buf, "r");
+					fp = fopen(buf, "rb");
 				else
 					fp = use_info_prog(viewer);
 
