@@ -1,3 +1,23 @@
+October 24, 2013
+================
+
+vifm v0.7.6 beta testing continued
+----------------------------------
+
+First beta version revealed some issues with new functionality and
+degradation of previously existing features.  That's why second beta
+version is released.  Included fixes primary target Windows platform,
+but some of them are related to \*nix systems as well.
+
+Thanks to filterfalse and Robert Sarkozi for their help in finding and
+solving those issues.
+
+Additionally, Win64 build is available now.
+
+See change log for quite short list of fixes and updates.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 17, 2013
 ================
 
