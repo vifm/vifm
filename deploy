@@ -105,16 +105,16 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         mkdir "$dir"
         cp -R data "$dir"
         for i in "$dir/colors"/*; do
-            dos2unix "$i"
+            unix2dos "$i"
         done
-        dos2unix "$dir/data/vifm-help.txt"
-        dos2unix "$dir/data/vifmrc"
+        unix2dos "$dir/data/vifm-help.txt"
+        unix2dos "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"
         pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
-            dos2unix "$dest"
+            unix2dos "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
