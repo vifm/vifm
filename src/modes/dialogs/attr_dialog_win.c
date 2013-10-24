@@ -484,13 +484,21 @@ file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 	}
 	if(add != 0)
 	{
-		if(perform_operation(OP_ADDATTR, (void *)add, path, NULL) == 0)
-			add_operation(OP_ADDATTR, (void *)add, (void *)(~attrs & add), path, "");
+		const size_t wadd = add;
+		if(perform_operation(OP_ADDATTR, (void *)wadd, path, NULL) == 0)
+		{
+			add_operation(OP_ADDATTR, (void *)wadd, (void *)(~attrs & wadd), path,
+					"");
+		}
 	}
 	if(sub != 0)
 	{
-		if(perform_operation(OP_SUBATTR, (void *)sub, path, NULL) == 0)
-			add_operation(OP_SUBATTR, (void *)sub, (void *)(~attrs & sub), path, "");
+		const size_t wsub = sub;
+		if(perform_operation(OP_SUBATTR, (void *)wsub, path, NULL) == 0)
+		{
+			add_operation(OP_SUBATTR, (void *)wsub, (void *)(~attrs & wsub), path,
+					"");
+		}
 	}
 }
 

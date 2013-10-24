@@ -19,6 +19,8 @@
 #ifndef VIFM__UTILS__MACROS_H__
 #define VIFM__UTILS__MACROS_H__
 
+#include <stddef.h> /* size_t */
+
 /* some useful macros */
 
 /* for portable use of GNUC extensions (see Robert Love's book about system
@@ -61,7 +63,7 @@
 #define ARRAY_GUARD(x, len) \
     typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]; \
     /* Fake use to suppress "Unused local variable" warning. */ \
-    enum { x##_array_guard_fake_use = (long int)(x##_array_guard*)0 }
+    enum { x##_array_guard_fake_use = (size_t)(x##_array_guard*)0 }
 
 #define MIN(a,b) ({ \
 										typeof(a) _a = (a); \

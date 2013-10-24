@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
+#include <stddef.h> /* size_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
@@ -776,10 +777,10 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "mv -f %s to %s", op.src, op.dst);
 			break;
 		case OP_CHOWN:
-			snprintf(buf, sizeof(buf), "chown %ld %s", (long)op.data, op.src);
+			snprintf(buf, sizeof(buf), "chown " PRINTF_SIZE_T " %s", (size_t)op.data, op.src);
 			break;
 		case OP_CHGRP:
-			snprintf(buf, sizeof(buf), "chown :%ld %s", (long)op.data, op.src);
+			snprintf(buf, sizeof(buf), "chown :" PRINTF_SIZE_T " %s", (size_t)op.data, op.src);
 			break;
 #ifndef _WIN32
 		case OP_CHMOD:
@@ -788,10 +789,10 @@ get_op_desc(op_t op)
 			break;
 #else
 		case OP_ADDATTR:
-			snprintf(buf, sizeof(buf), "attrib +%s", attr_str((DWORD)op.data));
+			snprintf(buf, sizeof(buf), "attrib +%s", attr_str((size_t)op.data));
 			break;
 		case OP_SUBATTR:
-			snprintf(buf, sizeof(buf), "attrib -%s", attr_str((DWORD)op.data));
+			snprintf(buf, sizeof(buf), "attrib -%s", attr_str((size_t)op.data));
 			break;
 #endif
 		case OP_SYMLINK:

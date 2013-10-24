@@ -20,10 +20,11 @@
 #include "filelist.h"
 
 #ifdef _WIN32
+#include <fcntl.h>
+#include <lm.h>
+#include <ntdef.h>
 #include <windows.h>
 #include <winioctl.h>
-#include <lm.h>
-#include <fcntl.h>
 #endif
 
 #include <curses.h>
@@ -39,7 +40,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h>
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() */
@@ -335,6 +336,7 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
+
 	switch(id)
 	{
 		case SORT_BY_TIME_MODIFIED:
@@ -349,9 +351,18 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 
 		default:
 			assert(0 && "Unknown sort by time type");
+			tm_ptr = NULL;
 			break;
 	}
-	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
+
+	if(tm_ptr != NULL)
+	{
+		strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
+	}
+	else
+	{
+		buf[0] = '\0';
+	}
 }
 
 #ifndef _WIN32

@@ -268,7 +268,7 @@ my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
 
 	va_start(ap, format);
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(_WIN64)
 	result = vswprintf(str, len, format, ap);
 #else
 	result = vswprintf(str, format, ap);
@@ -445,14 +445,6 @@ copy_str(char dst[], size_t dst_len, const char src[])
 		}
 	}
 }
-
-#ifdef _WIN32
-char *
-strtok_r(char str[], const char delim[], char *saveptr[])
-{
-	return strtok(str, delim);
-}
-#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

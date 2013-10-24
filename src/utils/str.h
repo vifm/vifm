@@ -23,12 +23,21 @@
 #include <stddef.h> /* size_t */
 #include <wchar.h> /* wchar_t */
 
-#ifndef _WIN32
+#if defined(_WIN64)
 #define WPRINTF_MBSTR L"s"
 #define WPRINTF_WSTR L"ls"
-#else
+#define PRINTF_PID_T "%llu"
+#define PRINTF_SIZE_T "%llu"
+#elif defined(_WIN32)
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
+#define PRINTF_PID_T "%d"
+#define PRINTF_SIZE_T "%u"
+#else
+#define WPRINTF_MBSTR L"s"
+#define WPRINTF_WSTR L"ls"
+#define PRINTF_PID_T "%d"
+#define PRINTF_SIZE_T "%lu"
 #endif
 
 /* Various string functions. */
@@ -122,8 +131,9 @@ int has_uppercase_letters(const char str[]);
  * size dst_len pointed to by dst.  Ensures that copied string ends with null
  * character.  Does nothing for zero dst_len. */
 void copy_str(char dst[], size_t dst_len, const char src[]);
-#ifdef _WIN32
-char * strtok_r(char str[], const char delim[], char *saveptr[]);
+
+#if defined(_WIN32) && !defined(strtok_r)
+#define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
 #endif
 
 #endif /* VIFM__UTILS__STR_H__ */
