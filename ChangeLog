@@ -1,5 +1,7 @@
 0.7.6-beta to current
 
+	Made building for Windows64 platform possible.
+
 	Consider initial filter inversion value in user defined filter command.
 	Thanks to filterfalse.
 
