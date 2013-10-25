@@ -320,10 +320,11 @@ text_to_lines(char text[], size_t text_len, int *nlines)
 static char **
 break_into_lines(char text[], size_t text_len, int *nlines)
 {
+	const char *const end = text + text_len;
 	char **list = NULL;
 
 	*nlines = 0;
-	while(*text != '\0')
+	while(text < end)
 	{
 		const size_t line_len = strcspn(text, "\n\r");
 
@@ -335,6 +336,10 @@ break_into_lines(char text[], size_t text_len, int *nlines)
 		else if(after_line[0] == '\r')
 		{
 			after_line += (after_line[1] == '\n') ? 2 : 1;
+		}
+		else if(after_line[0] == '\0')
+		{
+			after_line++;
 		}
 
 		text[line_len] = '\0';
