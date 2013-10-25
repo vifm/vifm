@@ -32,6 +32,9 @@
 #include "../ui.h"
 #include "menus.h"
 
+/* Minimal length of command name column. */
+#define CMDNAME_COLUMN_MIN_WIDTH 10
+
 static int command_khandler(struct menu_info *m, wchar_t keys[]);
 
 int
@@ -39,6 +42,7 @@ show_commands_menu(FileView *view)
 {
 	char **list;
 	int i;
+	int cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_info m;
 	init_menu_info(&m, COMMAND, strdup("No commands set"));
@@ -49,19 +53,24 @@ show_commands_menu(FileView *view)
 	list = list_udf();
 
 	m.len = -1;
-	while(list[++m.len] != NULL);
-	assert(m.len % 2 == 0);
+	while(list[++m.len] != NULL)
+	{
+		const size_t cmdname_len = strlen(list[m.len]);
+		if(cmdname_len > cmdname_width)
+		{
+			cmdname_width = cmdname_len;
+		}
+
+		assert(list[++m.len] != NULL && "Broken list of user-defined commands.");
+	}
 	m.len /= 2;
 
 	m.items = malloc(sizeof(char *)*m.len);
 	for(i = 0; i < m.len; i++)
 	{
-		char *buf;
-
-		buf = malloc(strlen(list[i*2]) + 20 + 1 + strlen(list[i*2 + 1]) + 1);
-		sprintf(buf, "%-*s %s", 10, list[i*2], list[i*2 + 1]);
-		m.items[i] = buf;
+		m.items[i] = format_str("%-*s %s", cmdname_width, list[i*2], list[i*2 + 1]);
 	}
+
 	free_string_array(list, m.len*2);
 
 	return display_menu(&m, view);

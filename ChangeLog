@@ -1,3 +1,8 @@
+0.7.6-beta2 to current
+
+	Made command name columns of the :command menu automatically expand for
+	long names.  Thanks to MadMaverick9.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.
