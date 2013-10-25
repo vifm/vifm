@@ -26,15 +26,12 @@
 #include <stdlib.h> /* free() malloc() mbstowcs() wcstombs() realloc() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
-#include <wchar.h> /* vswprintf() wchar_t wcwidth() */
+#include <wchar.h> /* vswprintf() wchar_t */
 #include <wctype.h> /* towlower() iswupper() */
 
 #include "macros.h"
 #include "utf8.h"
-#ifdef _WIN32
-/* For wcwidth() stub. */
 #include "utils.h"
-#endif
 
 #include "macros.h"
 

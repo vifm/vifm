@@ -21,13 +21,9 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t wchar_t */
 #include <string.h> /* strlen() */
-#include <wchar.h> /* wcwidth() */
 
 #include "macros.h"
-/* For wcwidth() stub. */
-#ifdef _WIN32
 #include "utils.h"
-#endif
 
 static size_t guess_char_width(char c);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
@@ -169,7 +165,7 @@ static size_t
 get_char_screen_width(const char str[], size_t char_width)
 {
 	const wchar_t wide = utf8_char_to_wchar(str, char_width);
-	const size_t result = wcwidth(wide);
+	const size_t result = vifm_wcwidth(wide);
 	return (result == (size_t)-1) ? 1 : result;
 }
 

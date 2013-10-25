@@ -5,6 +5,8 @@
 
 	Fixed partial displaying of binary data in view mode.
 
+	Fixed displaying of non-printable characters in preview and view mode.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.
