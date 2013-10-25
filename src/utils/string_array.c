@@ -339,7 +339,11 @@ break_into_lines(char text[], size_t text_len, int *nlines)
 		}
 		else if(after_line[0] == '\0')
 		{
-			after_line++;
+			do
+			{
+				after_line++;
+			}
+			while(after_line < end && after_line[0] == '\0');
 		}
 
 		text[line_len] = '\0';
