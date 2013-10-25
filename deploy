@@ -107,7 +107,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         for i in "$dir/colors"/*; do
             unix2dos "$i"
         done
-        rm "$dir"/*.desktop "$dir"/*.1
+        rm "$dir/data"/*.desktop "$dir/data"/*.1
         unix2dos "$dir/data/vifm-help.txt"
         unix2dos "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"
