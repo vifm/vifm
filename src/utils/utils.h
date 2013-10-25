@@ -26,6 +26,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
+#include <wchar.h> /* wchar_t */
 
 /* Regular expressions. */
 
@@ -72,6 +73,9 @@ unsigned int get_pid(void);
  * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */
 char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
+/* Determines columns needed for a wide character.  Returns number of columns,
+ * on error default value of 1 is returned. */
+int vifm_wcwidth(wchar_t c);
 
 #ifdef _WIN32
 #include "utils_win.h"

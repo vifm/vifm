@@ -326,5 +326,12 @@ unquote(char quoted[])
 }
 #endif
 
+int
+vifm_wcwidth(wchar_t wc)
+{
+	const int width = wcwidth(wc);
+	return (width == -1) ? 1 : width;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
