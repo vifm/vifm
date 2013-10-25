@@ -28,7 +28,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <string.h>
-#include <wchar.h> /* wcswidth() wcwidth() */
+#include <wchar.h> /* wcswidth() */
 #include <wctype.h>
 
 #include "../cfg/config.h"
@@ -40,10 +40,7 @@
 #include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
-#ifdef _WIN32
-/* For wcswidth() and wcwidth() stubs. */
 #include "../utils/utils.h"
-#endif
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"
@@ -279,7 +276,7 @@ def_handler(wchar_t key)
 	wcsins(input_stat.line, buf, input_stat.index);
 	input_stat.len++;
 
-	input_stat.curs_pos += wcwidth(key);
+	input_stat.curs_pos += vifm_wcwidth(key);
 
 	update_cmdline_size();
 	update_cmdline_text();
@@ -852,7 +849,7 @@ cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index--;
 	input_stat.len--;
 
-	input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
+	input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index]);
 
 	if(input_stat.index == input_stat.len)
 	{
@@ -1358,7 +1355,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	if(iswalnum(input_stat.line[input_stat.index - 1]))
@@ -1366,7 +1363,8 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 		while(input_stat.index > 0 &&
 				iswalnum(input_stat.line[input_stat.index - 1]))
 		{
-			input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
+			const wchar_t curr_wchar = input_stat.line[input_stat.index - 1];
+			input_stat.curs_pos -= vifm_wcwidth(curr_wchar);
 			input_stat.index--;
 		}
 	}
@@ -1376,7 +1374,8 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 				!iswalnum(input_stat.line[input_stat.index - 1]) &&
 				!iswspace(input_stat.line[input_stat.index - 1]))
 		{
-			input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
+			const wchar_t curr_wchar = input_stat.line[input_stat.index - 1];
+			input_stat.curs_pos -= vifm_wcwidth(curr_wchar);
 			input_stat.index--;
 		}
 	}
@@ -1420,13 +1419,13 @@ find_prev_word(void)
 {
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	while(input_stat.index > 0 &&
 			!iswspace(input_stat.line[input_stat.index - 1]))
 	{
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
+		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 }
@@ -1577,13 +1576,13 @@ find_next_word(void)
 	while(input_stat.index < input_stat.len
 			&& iswspace(input_stat.line[input_stat.index]))
 	{
-		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 	while(input_stat.index < input_stat.len
 			&& !iswspace(input_stat.line[input_stat.index]))
 	{
-		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 }
@@ -1597,7 +1596,7 @@ cmd_left(key_info_t key_info, keys_info_t *keys_info)
 	if(input_stat.index > 0)
 	{
 		input_stat.index--;
-		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index]);
 		update_cursor();
 	}
 }
@@ -1610,7 +1609,7 @@ cmd_right(key_info_t key_info, keys_info_t *keys_info)
 
 	if(input_stat.index < input_stat.len)
 	{
-		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 		update_cursor();
 	}
@@ -1770,7 +1769,7 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
+		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 

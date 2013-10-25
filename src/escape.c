@@ -27,16 +27,12 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() realloc() strtol() */
 #include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
-#include <wchar.h> /* wcwidth() */
 
 #include "cfg/config.h"
 #include "utils/test_helpers.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
-#ifdef _WIN32
-/* For wcwidth() stub. */
 #include "utils/utils.h"
-#endif
 #include "color_manager.h"
 #include "ui.h"
 
@@ -487,7 +483,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	{
 		memcpy(buf, str, char_width);
 		buf[char_width] = '\0';
-		*screen_width = wcwidth(get_first_wchar(str));
+		*screen_width = vifm_wcwidth(get_first_wchar(str));
 	}
 	else if(str[0] == '\n')
 	{
