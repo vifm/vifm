@@ -25,7 +25,12 @@ void leave_view_mode(void);
 /* In case current pane is in explore mode, activate the mode. */
 void try_activate_view_mode(void);
 void view_pre(void);
+/* Performs post main loop actions for the view mode, which is assumed to be
+ * activated. */
 void view_post(void);
+/* Displays view mode specific position information.  Assumes that view mode is
+ * active. */
+void view_draw_pos(void);
 void view_redraw(void);
 int find_vwpattern(const char *pattern, int backward);
 /* Handles switch of panes. */
