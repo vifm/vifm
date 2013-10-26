@@ -40,6 +40,3 @@ Fix syntax highlighting for: touch copy-init.cp; m e20-en.avi; mkdir mkdir.
 Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
 
 Screen split title cannot be overwritten when it's run from `:shell`.
-
-With disabled wrapping search highlight of view mode highlights too many
-after highlight on line edge.
