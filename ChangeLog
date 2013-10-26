@@ -13,6 +13,8 @@
 
 	Fixed small drawing issue with menu lines containing Control+x characters.
 
+	Fixed search result highlighting of view mode on line edges.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.
