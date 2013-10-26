@@ -217,9 +217,7 @@ update_pos_window(FileView *view)
 	buf = expand_ruler_macros(view, cfg.ruler_format);
 	buf = break_in_two(buf, POS_WIN_WIDTH);
 
-	werase(pos_win);
-	mvwaddstr(pos_win, 0, 0, buf);
-	wrefresh(pos_win);
+	ui_pos_window_set(buf);
 
 	free(buf);
 }
