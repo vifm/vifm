@@ -330,7 +330,14 @@ int
 vifm_wcwidth(wchar_t wc)
 {
 	const int width = wcwidth(wc);
-	return (width == -1) ? 1 : width;
+	if(width == -1)
+	{
+		return ((size_t)wc < (size_t)L' ') ? 2 : 1;
+	}
+	else
+	{
+		return width;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

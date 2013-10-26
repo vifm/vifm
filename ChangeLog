@@ -11,6 +11,8 @@
 
 	Fixed redrawing ruler on terminal resize while being in explore mode.
 
+	Fixed small drawing issue with menu lines containing Control+x characters.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.
