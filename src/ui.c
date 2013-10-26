@@ -224,6 +224,16 @@ update_pos_window(FileView *view)
 	free(buf);
 }
 
+void
+ui_pos_window_set(const char val[])
+{
+	const int x = POS_WIN_WIDTH - strlen(val);
+
+	werase(pos_win);
+	mvwaddstr(pos_win, 0, MAX(x, 0), val);
+	wnoutrefresh(pos_win);
+}
+
 static void
 get_uid_string(FileView *view, size_t len, char *out_buf)
 {
