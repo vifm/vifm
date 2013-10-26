@@ -72,9 +72,8 @@ show_position_in_menu(menu_info *m)
 {
 	char pos_buf[POS_WIN_WIDTH + 1];
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
-	werase(pos_win);
-	mvwaddstr(pos_win, 0, POS_WIN_WIDTH - strlen(pos_buf),  pos_buf);
-	wrefresh(pos_win);
+
+	ui_pos_window_set(pos_buf);
 }
 
 void

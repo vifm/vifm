@@ -344,14 +344,17 @@ view_pre(void)
 void
 view_post(void)
 {
-	char buf[POS_WIN_WIDTH + 1];
-
 	update_screen(curr_stats.need_update);
+	view_draw_pos();
+}
 
-	werase(pos_win);
+void
+view_draw_pos(void)
+{
+	char buf[POS_WIN_WIDTH + 1];
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
-	mvwaddstr(pos_win, 0, POS_WIN_WIDTH - strlen(buf), buf);
-	wnoutrefresh(pos_win);
+
+	ui_pos_window_set(buf);
 }
 
 void

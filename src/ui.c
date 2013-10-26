@@ -217,11 +217,19 @@ update_pos_window(FileView *view)
 	buf = expand_ruler_macros(view, cfg.ruler_format);
 	buf = break_in_two(buf, POS_WIN_WIDTH);
 
-	werase(pos_win);
-	mvwaddstr(pos_win, 0, 0, buf);
-	wrefresh(pos_win);
+	ui_pos_window_set(buf);
 
 	free(buf);
+}
+
+void
+ui_pos_window_set(const char val[])
+{
+	const int x = POS_WIN_WIDTH - strlen(val);
+
+	werase(pos_win);
+	mvwaddstr(pos_win, 0, MAX(x, 0), val);
+	wnoutrefresh(pos_win);
 }
 
 static void
@@ -1249,13 +1257,20 @@ update_screen(UpdateType update_kind)
 		else
 			clean_status_bar();
 
-		update_pos_window(curr_view);
+		if(get_mode() == VIEW_MODE)
+		{
+			view_draw_pos();
+		}
+		else
+		{
+			update_pos_window(curr_view);
+		}
 	}
 
 	if(curr_stats.save_msg == 0)
 		status_bar_message("");
 
-	if(get_mode() == VIEW_MODE || curr_view->explore_mode ||
+	if(get_mode() == VIEW_MODE ||
 			(curr_stats.number_of_windows == 2 && other_view->explore_mode))
 		view_redraw();
 

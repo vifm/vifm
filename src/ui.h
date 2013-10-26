@@ -244,6 +244,9 @@ float get_splitter_pos(int max);
  * argument). */
 void update_screen(UpdateType update_kind);
 void update_pos_window(FileView *view);
+/* Sets text to be displayed in position window (ruler).  Real window update is
+ * postponed for efficiency reasons. */
+void ui_pos_window_set(const char val[]);
 void status_bar_messagef(const char *format, ...);
 void status_bar_message(const char *message);
 void status_bar_error(const char *message);
