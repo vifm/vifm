@@ -13,8 +13,6 @@ Files with names containing Unicode characters are not always processed correctl
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).
 
-"Can't open file for reading" message for directories on e.
-
 Something is wrong with checking program existance on Windows (probably false
 positive).
 
@@ -32,9 +30,6 @@ gid/uid are displayed as -1 on some file systems.
 passed directory to a shell.
 
 :filetype checks doesn't expand ~ and environment variables.
-
-Explore mode thinks that complains about file for empty input (e.g wrong on
-viewer name).
 
 When directory is not readable, one cannot navigate to it from a menu.
 
