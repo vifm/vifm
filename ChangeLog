@@ -7,6 +7,8 @@
 
 	Fixed displaying of non-printable characters in preview and view mode.
 
+	Fixed redrawing ruler on terminal resize while being in explore mode.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.

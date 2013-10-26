@@ -1257,7 +1257,14 @@ update_screen(UpdateType update_kind)
 		else
 			clean_status_bar();
 
-		update_pos_window(curr_view);
+		if(get_mode() == VIEW_MODE)
+		{
+			view_draw_pos();
+		}
+		else
+		{
+			update_pos_window(curr_view);
+		}
 	}
 
 	if(curr_stats.save_msg == 0)
