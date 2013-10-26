@@ -124,6 +124,7 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(view_info_t *vi, const char action[],
 		const char file_to_view[]);
+static int get_view_data(view_info_t *vi, const char file_to_view[]);
 static void replace_vi(view_info_t *const orig, view_info_t *const new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
@@ -879,29 +880,27 @@ cmd_R(key_info_t key_info, keys_info_t *keys_info)
 static int
 load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 {
-	/* FIXME: code with same functionality is in ../quickview.c */
-	const char *const viewer =
-		get_viewer_for_file(get_last_path_component(file_to_view));
-	FILE *const fp = is_null_or_empty(viewer)
-		? fopen(file_to_view, "rb")
-		: use_info_prog(viewer);
-
-	if(fp == NULL)
+	switch(get_view_data(vi, file_to_view))
 	{
-		show_error_msg(action, "Cannot open file for reading");
-		return 1;
-	}
+		case 0:
+			break;
 
-	vi->lines = is_null_or_empty(viewer)
-		? read_file_lines(fp, &vi->nlines)
-		: read_stream_lines(fp, &vi->nlines);
+		case 1:
+			show_error_msg(action, "Can't explore a directory");
+			return 1;
+		case 2:
+			show_error_msg(action, "Can't open file for reading");
+			return 1;
+		case 3:
+			show_error_msg(action, "Can't get data from viewer");
+			return 1;
+		case 4:
+			show_error_msg(action, "Nothing to explore");
+			return 1;
 
-	fclose(fp);
-
-	if(vi->lines == NULL || vi->nlines == 0)
-	{
-		show_error_msg(action, "Won't explore empty file");
-		return 1;
+		default:
+			assert(0 && "Unhandled error code.");
+			return 1;
 	}
 
 	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
@@ -912,6 +911,47 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
 		vi->nlines = 0;
 		show_error_msg(action, "Not enough memory");
 		return 1;
+	}
+
+	return 0;
+}
+
+/* Reads data to be displayed handling error cases.  Returns zero on success, 1
+ * if file is a directory, 2 on file reading error, 3 on issues with viewer or
+ * 4 on empty input. */
+static int
+get_view_data(view_info_t *vi, const char file_to_view[])
+{
+	FILE *fp;
+
+	const char *const viewer =
+		get_viewer_for_file(get_last_path_component(file_to_view));
+
+	if(is_null_or_empty(viewer))
+	{
+		if(is_dir(file_to_view))
+		{
+			return 1;
+		}
+		else if((fp = fopen(file_to_view, "rb")) == NULL)
+		{
+			return 2;
+		}
+	}
+	else if((fp = use_info_prog(viewer)) == NULL)
+	{
+		return 3;
+	}
+
+	vi->lines = is_null_or_empty(viewer)
+		? read_file_lines(fp, &vi->nlines)
+		: read_stream_lines(fp, &vi->nlines);
+
+	fclose(fp);
+
+	if(vi->lines == NULL || vi->nlines == 0)
+	{
+		return 4;
 	}
 
 	return 0;

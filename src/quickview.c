@@ -127,7 +127,6 @@ quick_view_file(FileView *view)
 				const char *viewer;
 				FILE *fp;
 
-				/* FIXME: same code is in modes/view.c */
 				viewer = get_viewer_for_file(get_last_path_component(buf));
 				if(viewer == NULL && is_dir(buf))
 				{
