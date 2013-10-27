@@ -1,6 +1,6 @@
 0.7.6-beta2 to current
 
-	Made command name columns of the :command menu automatically expand for
+	Made command name column of the :command menu automatically expand for
 	long names.  Thanks to MadMaverick9.
 
 	Provided better error messages on entering view mode.
@@ -14,6 +14,9 @@
 	Fixed small drawing issue with menu lines containing Control+x characters.
 
 	Fixed search result highlighting of view mode on line edges.
+
+	Fixed unexpected view redraw on :sync command with view mode active in the
+	other pane.  Thanks to filterfalse.
 
 0.7.6-beta to 0.7.6-beta2
 

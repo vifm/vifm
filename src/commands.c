@@ -3381,8 +3381,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 			save_view_history(other_view, NULL, NULL, -1);
 		}
 
-		draw_dir_list(other_view);
-		refresh_view_win(other_view);
+		redraw_view(other_view);
 	}
 	return 0;
 }

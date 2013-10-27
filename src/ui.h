@@ -290,6 +290,8 @@ void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */
 void checked_wmove(WINDOW *win, int y, int x);
+/* Notifies TUI module about updated window of the view. */
+void ui_view_win_changed(FileView *view);
 
 #endif /* VIFM__UI_H__ */
 
