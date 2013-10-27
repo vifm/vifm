@@ -948,6 +948,8 @@ draw_dir_list(FileView *view)
 	{
 		consider_scroll_bind(view);
 	}
+
+	ui_view_win_changed(view);
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
