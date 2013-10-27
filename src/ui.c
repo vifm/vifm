@@ -1821,5 +1821,11 @@ checked_wmove(WINDOW *win, int y, int x)
 	}
 }
 
+void
+ui_view_win_changed(FileView *view)
+{
+	wnoutrefresh(view->win);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
