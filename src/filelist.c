@@ -3125,18 +3125,18 @@ redraw_view(FileView *view)
 {
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
 	{
-		draw_dir_list(view);
-		move_to_list_pos(view, view->list_pos);
+		if(window_shows_dirlist(view))
+		{
+			draw_dir_list(view);
+			move_to_list_pos(view, view->list_pos);
+		}
 	}
 }
 
 void
 redraw_current_view(void)
 {
-	if(!curr_view->explore_mode)
-	{
-		redraw_view(curr_view);
-	}
+	redraw_view(curr_view);
 }
 
 static void
