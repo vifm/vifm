@@ -3128,7 +3128,10 @@ redraw_view(FileView *view)
 		if(window_shows_dirlist(view))
 		{
 			draw_dir_list(view);
-			move_to_list_pos(view, view->list_pos);
+			if(view == curr_view)
+			{
+				move_to_list_pos(view, view->list_pos);
+			}
 		}
 	}
 }
