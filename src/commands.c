@@ -3352,6 +3352,9 @@ substitute_cmd(const cmd_info_t *cmd_info)
 	return substitute_in_names(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
+/* Synchronizes path/cursor position of the other pane with corresponding
+ * properties of the current one, possibly including some relative path
+ * changes. */
 static int
 sync_cmd(const cmd_info_t *cmd_info)
 {
