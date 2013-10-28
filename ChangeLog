@@ -20,6 +20,11 @@
 
 	Fixed search result highlighting of view mode on line edges.
 
+	Fixed backward search in view mode for the first line.
+
+	Fixed view mode highlighting for multi-byte characters.  Thanks to
+	filterfalse.
+
 0.7.6-beta to 0.7.6-beta2
 
 	Made building for Windows64 platform possible.

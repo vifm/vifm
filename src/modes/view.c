@@ -1162,7 +1162,8 @@ find_previous(int vline_offset)
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
 		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 
-	while(l > 0)
+	/* Don't stop until we go above first virtual line of the first line. */
+	while(l >= 0 && vl >= 0)
 	{
 		if(regexec(&vi->re, buf, 0, NULL, 0) == 0)
 		{
@@ -1200,7 +1201,7 @@ find_next(void)
 	vl = vi->linev + 1;
 	l = vi->line;
 
-	if(l < vi->nlines && vl == vi->widths[l + 1][0])
+	if(l < vi->nlines - 1 && vl == vi->widths[l + 1][0])
 		l++;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
