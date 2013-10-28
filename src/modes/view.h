@@ -19,11 +19,17 @@
 #ifndef VIFM__MODES__VIEW_H__
 #define VIFM__MODES__VIEW_H__
 
+#include "../ui.h"
+
 void init_view_mode(int *key_mode);
 
 void enter_view_mode(int explore);
 
 void leave_view_mode(void);
+
+/* Quits view from explore mode.  Assumes the view is not an active one.
+ * Automatically redraws view. */
+void view_explore_mode_quit(FileView *view);
 
 /* In case current pane is in explore mode, activate the mode. */
 void try_activate_view_mode(void);
