@@ -105,10 +105,10 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 	const size_t len = strlen(line);
 
 	int *const offsets = malloc(sizeof(int)*(len + 1));
-	int noffsets = 0;
 
 	char *const no_esc = malloc(len + 1);
 	char *no_esc_sym = no_esc;
+	int no_esc_sym_pos = 0;
 
 	/* Fill no_esc and offsets. */
 	const char *src_sym = line;
@@ -117,14 +117,23 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 		const size_t char_width_esc = get_char_width_esc(src_sym);
 		if(*src_sym != '\033')
 		{
-			offsets[noffsets++] = src_sym - line;
+			int i;
+			const int offset = src_sym - line;
+			/* Each offset value is filled over whole character width. */
+			for(i = 0; i < char_width_esc; i++)
+			{
+				offsets[no_esc_sym_pos + i] = offset;
+			}
+			no_esc_sym_pos += char_width_esc;
+
 			memcpy(no_esc_sym, src_sym, char_width_esc);
 			no_esc_sym += char_width_esc;
 		}
 		src_sym += char_width_esc;
 	}
-	offsets[noffsets++] = src_sym - line;
+	offsets[no_esc_sym_pos] = src_sym - line;
 	*no_esc_sym = '\0';
+	assert(no_esc_sym_pos == no_esc_sym - no_esc);
 
 	processed = add_pattern_highlights(line, len, no_esc, offsets, re);
 
@@ -204,7 +213,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 }
 
 /* Corrects offset inside the line so that it points to the char after previous
- * character instead of the beginning of the current one.. */
+ * character instead of the beginning of the current one. */
 static size_t
 correct_offset(const char line[], const int offsets[], size_t offset)
 {
