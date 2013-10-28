@@ -8,6 +8,8 @@
 	Made :sync force view mode exit for the other pane.  Thanks to
 	filterfalse.
 
+	Made local filter work when 'incsearch' is not set.
+
 	Fixed partial displaying of binary data in view mode.
 
 	Fixed displaying of non-printable characters in preview and view mode.
