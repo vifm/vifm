@@ -408,6 +408,23 @@ leave_view_mode(void)
 	}
 }
 
+void
+view_explore_mode_quit(FileView *view)
+{
+	assert(*mode != VIEW_MODE && "Unexpected mode.");
+	if(!view->explore_mode)
+	{
+		return;
+	}
+
+	view->explore_mode = 0;
+
+	reset_view_info(&view_info[(view == &lwin) ? VI_LWIN : VI_RWIN]);
+
+	redraw_view(view);
+	update_view_title(view);
+}
+
 /* Frees and initializes anew view_into_t structure instance. */
 static void
 reset_view_info(view_info_t *vi)
