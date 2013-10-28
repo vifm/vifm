@@ -5,6 +5,9 @@
 
 	Provided better error messages on entering view mode.
 
+	Made :sync force view mode exit for the other pane.  Thanks to
+	filterfalse.
+
 	Fixed partial displaying of binary data in view mode.
 
 	Fixed displaying of non-printable characters in preview and view mode.
@@ -14,9 +17,6 @@
 	Fixed small drawing issue with menu lines containing Control+x characters.
 
 	Fixed search result highlighting of view mode on line edges.
-
-	Fixed unexpected view redraw on :sync command with view mode active in the
-	other pane.  Thanks to filterfalse.
 
 0.7.6-beta to 0.7.6-beta2
 

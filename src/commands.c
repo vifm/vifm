@@ -3384,7 +3384,14 @@ sync_cmd(const cmd_info_t *cmd_info)
 			save_view_history(other_view, NULL, NULL, -1);
 		}
 
-		redraw_view(other_view);
+		if(other_view->explore_mode)
+		{
+			view_explore_mode_quit(other_view);
+		}
+		else
+		{
+			redraw_view(other_view);
+		}
 	}
 	return 0;
 }
