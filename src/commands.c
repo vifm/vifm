@@ -3355,7 +3355,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 static int
 sync_cmd(const cmd_info_t *cmd_info)
 {
-	char dstPath[PATH_MAX];
+	char dst_path[PATH_MAX];
 
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
@@ -3363,10 +3363,10 @@ sync_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	snprintf(dstPath, sizeof(dstPath), "%s/%s", curr_view->curr_dir,
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", curr_view->curr_dir,
 			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
 
-	if(cd_is_possible(dstPath) && change_directory(other_view, dstPath) >= 0)
+	if(cd_is_possible(dst_path) && change_directory(other_view, dst_path) >= 0)
 	{
 		populate_dir_list(other_view, 0);
 
