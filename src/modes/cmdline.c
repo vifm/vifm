@@ -1089,7 +1089,15 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(sub_mode == FILTER_SUBMODE)
 	{
-		local_filter_accept(curr_view);
+		if(cfg.inc_search)
+		{
+			local_filter_accept(curr_view);
+		}
+		else
+		{
+			local_filter_apply(curr_view, p);
+			load_saving_pos(curr_view, 1);
+		}
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
 	{
