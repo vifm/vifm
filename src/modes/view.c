@@ -1201,7 +1201,7 @@ find_next(void)
 	vl = vi->linev + 1;
 	l = vi->line;
 
-	if(l < vi->nlines && vl == vi->widths[l + 1][0])
+	if(l < vi->nlines - 1 && vl == vi->widths[l + 1][0])
 		l++;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
