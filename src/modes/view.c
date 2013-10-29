@@ -320,7 +320,9 @@ enter_view_mode(int explore)
 static int
 try_ressurect_abandoned(const char full_path[], int explore)
 {
-	const int same_file = vi->filename != NULL
+	const int same_file = vi->abandoned
+	                   && vi->view == (explore ? curr_view : other_view)
+	                   && vi->filename != NULL
 	                   && stroscmp(vi->filename, full_path) == 0;
 	if(!same_file)
 	{
