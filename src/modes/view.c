@@ -84,6 +84,7 @@ enum
 	VI_COUNT, /* Number of view information structures. */
 };
 
+static int try_ressurect_abandoned(const char full_path[], int explore);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -283,17 +284,9 @@ enter_view_mode(int explore)
 	}
 
 	/* Either make use of abandoned view or prune it. */
-	if(vi->filename != NULL && stroscmp(vi->filename, full_path) == 0)
+	if(try_ressurect_abandoned(full_path, explore) == 0)
 	{
-		if(explore)
-		{
-			reset_view_info(vi);
-		}
-		else
-		{
-			*mode = VIEW_MODE;
-			return;
-		}
+		return;
 	}
 
 	pick_vi(explore);
@@ -320,6 +313,33 @@ enter_view_mode(int explore)
 	}
 
 	view_redraw();
+}
+
+/* Either makes use of abandoned view or prunes it.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+try_ressurect_abandoned(const char full_path[], int explore)
+{
+	const int same_file = vi->abandoned
+	                   && vi->view == (explore ? curr_view : other_view)
+	                   && vi->filename != NULL
+	                   && stroscmp(vi->filename, full_path) == 0;
+	if(!same_file)
+	{
+		return 1;
+	}
+
+	if(explore)
+	{
+		vi->view->explore_mode = 0;
+		reset_view_info(vi);
+		return 1;
+	}
+	else
+	{
+		*mode = VIEW_MODE;
+		return 0;
+	}
 }
 
 void
