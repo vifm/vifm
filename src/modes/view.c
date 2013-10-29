@@ -287,6 +287,7 @@ enter_view_mode(int explore)
 	{
 		if(explore)
 		{
+			vi->view->explore_mode = 0;
 			reset_view_info(vi);
 		}
 		else
