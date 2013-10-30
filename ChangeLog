@@ -5,9 +5,6 @@
 
 	Provided better error messages on entering view mode.
 
-	Made :sync force view mode exit for the other pane.  Thanks to
-	filterfalse.
-
 	Made local filter work when 'incsearch' is not set.
 
 	Fixed partial displaying of binary data in view mode.
@@ -27,6 +24,9 @@
 
 	Fixed segmentation fault on exploring same file in both views.  Thanks to
 	filterfalse.
+
+	Fixed unexpected view redraw on :sync command with view mode active in the
+	other pane.  Thanks to filterfalse.
 
 0.7.6-beta to 0.7.6-beta2
 
