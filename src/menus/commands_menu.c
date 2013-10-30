@@ -61,7 +61,8 @@ show_commands_menu(FileView *view)
 			cmdname_width = cmdname_len;
 		}
 
-		assert(list[++m.len] != NULL && "Broken list of user-defined commands.");
+		m.len++;
+		assert(list[m.len] != NULL && "Broken list of user-defined commands.");
 	}
 	m.len /= 2;
 
