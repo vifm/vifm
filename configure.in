@@ -396,7 +396,6 @@ AC_CHECK_FUNC([resizeterm], [], [AC_MSG_ERROR([resizeterm() function not found.]
 AC_CHECK_FUNC([scrollok], [], [AC_MSG_ERROR([scrollok() function not found.])])
 AC_CHECK_FUNC([set_escdelay], [AC_DEFINE([HAVE_SET_ESCDELAY_FUNC], [1], [set_escdelay() function is available.])])
 AC_CHECK_FUNC([start_color], [], [AC_MSG_ERROR([start_color() function not found.])])
-AC_CHECK_FUNC([stdscr], [], [AC_MSG_ERROR([stdscr() function not found.])])
 AC_CHECK_FUNC([use_default_colors], [], [AC_MSG_ERROR([use_default_colors() function not found.])])
 AC_CHECK_FUNC([waddch], [], [AC_MSG_ERROR([waddch() function not found.])])
 AC_CHECK_FUNC([waddnstr], [], [AC_MSG_ERROR([waddnstr() function not found.])])

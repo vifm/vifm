@@ -1,5 +1,7 @@
 0.7.6-beta2 to current
 
+	Removed check for stdscr from the configure.  Thanks to jtbm37.
+
 	Made command name column of the :command menu automatically expand for
 	long names.  Thanks to MadMaverick9.
 
