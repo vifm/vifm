@@ -1,3 +1,131 @@
+October 31, 2013
+================
+
+vifm v0.7.6 release
+-------------------
+
+New minor version brings better integration with environment and external tools
+as well as enhances file filtering capabilities in several ways.  Apart from
+that, old features were tweaked and some build issues and bugs were resolved.
+New Win32 and Win64 single-executable (no DLLs) packages appear first time with
+this release.
+
+This time beta stage was quite fruitful.  Thanks to all who installed and tried
+beta versions, and special thanks to filterfalse.
+
+Main changes:
+ - added interactive local filter;
+ - added external editing of command-line content with 'vicmd';
+ - added integration with tmux;
+ - added options to configure external commands for :apropos, :find, :grep
+   and :locate commands;
+ - added desktop entry file (\*nix only) and updated application icon;
+ - fixed build for some combinations of OS/environments (OS X, 32/64-bit
+   cygwin, Windows).
+
+Notice: if you mapped q key to something, new q:, q/, q? and q= keys won't be
+available; suggested solution is to change the mapping to qq.
+
+More detailed list of changes.
+
+Performance:
+ - increased performance of (re)loading content for view mode (thanks to Robert
+   Sarkozi).
+
+Key bindings:
+ - process [count] passed to gUU, gU<selector>, gUgU, gu<selector>, guu and gugu
+   commands;
+ - made all Ctrl-W x keys available in view mode (thanks to filterfalse);
+ - changed meaning of the R key in view mode from redrawing view to reloading it
+   preserving scroll position (thanks to Robert Sarkozi).
+
+Normal and visual modes related changes:
+ - added q:, q/, q? and q= keys (q= is defined for normal mode only) to prompt
+   for command-line in external editor;
+ - added "=" normal mode key, which activates file name filtering.
+
+Command-line mode related changes:
+ - added "=" and "filter" values for :history command, to show history of local
+   filter;
+ - added Ctrl-G key to start editing in external editor (for editing command,
+   search pattern and file renames);
+ - added optional argument for :invert command to control more kinds of
+   inversion (thanks to filterfalse);
+ - better order of command validity checks;
+ - show better error message on unmatched quotes in command arguments;
+ - store cancelled prompt input in prompt history;
+ - check destination path existence before changing directory to it on :sync
+   command;
+ - use last search pattern as filename filter when :filter command gets an empty
+   argument (:filter//, :filter"", :filter'') (thanks to filterfalse);
+ - match only filename against pattern in :fileviewer instead of full path.
+
+:set command and options:
+ - added 'aproposprg', 'findprg', 'grepprg' and 'locateprg' options to specify
+   external commands format;
+ - added "fhistory" to 'vifminfo', which controls storing of local filter
+   history;
+ - added "f" flag to 'cpoptions' option.  It controls initial state of filename
+   filter inversion for :filter[!] {regex} command (thanks to filterfalse);
+ - from now on not absolute paths for the 'fusehome' options are rejected;
+ - expand environment variables in values of the 'fusehome' and 'trashdir'
+   options (thanks to filterfalse);
+ - more adequate reaction on setting 'trashdir' option to wrong value;
+ - do not reset selection on search when 'hlsearch' is reset (thanks to
+   filterfalse).
+
+File filtering:
+ - distinguish files and directories in filename filter by appending a slash to
+   names of directories;
+ - separated file name filter into manual and automatic, mainly for convenience.
+
+TUI (Text User Interface):
+ - preserve current cursor position on view resorting;
+ - force split-view when two paths are specified on command-line (thanks to
+   filterfalse);
+ - consider 'classify' option on displaying file name in the statusbar (thanks
+   to Thomas Nemeth).
+
+For Vim:
+ - added syntax and filetype plugins for command-line editing buffers (thanks to
+   filterfalse);
+ - updated syntax file to highlight more elements (thanks to filterfalse).
+
+Only on Windows:
+ - filter files in case insensitive way on Windows;
+ - don't wait finishing of GUI applications on Windows (thanks to Robert
+   Sarkozi).
+
+Other changes:
+ - added integration with tmux (thanks to Seth VanHeulen, a.k.a. svanheulen);
+ - added desktop entry file (thanks to Richard Benson);
+ - added merge option for name conflict resolution, which allows for merging two
+   directories overwriting files with matching names;
+ - updated application icon (thanks to Richard Benson for making it);
+ - don't overwrite directory stack stored in vifminfo on exit unless it was
+   changed in current session;
+ - improved documentation on several subjects;
+ - display error after sourcing file with unmatched :if/:endif
+   statements (thanks to filterfalse).
+
+Major fixes:
+ - fixed configuration when wcscasecmp(), wcsncasecmp() or set\_escdelay()
+   functions is not available (thanks to Russell Urquhart);
+ - fixed reserving of about 1 GiB piece of memory on 256-color terminals (sorry
+   about that);
+ - fixed running of executable with symbols that require escaping in their
+   name (\*nix only).  Strangely enough, it wasn't noticed before;
+ - fixed terminal hang after executing several external commands in a
+   row (thanks to filterfalse);
+ - fixed search of the first element in file list when displaying of parent
+   directory is disabled;
+ - fixed fails on running executables when 'fastrun' option is on (thanks to
+   MadMaverick9).
+
+See change log for full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 24, 2013
 ================
 
@@ -37,7 +165,7 @@ Main changes:
  - added interactive local filter;
  - added external editing of command-line content with 'vicmd';
  - added integration with tmux;
- - added options to configure externals commands for :apropos, :find, :grep
+ - added options to configure external commands for :apropos, :find, :grep
    and :locate commands;
  - added desktop entry file (\*nix only) and updated application icon;
  - fixed build on some versions of OS X.
