@@ -8224,13 +8224,6 @@ else
   as_fn_error $? "start_color() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "stdscr" "ac_cv_func_stdscr"
-if test "x$ac_cv_func_stdscr" = xyes; then :
-
-else
-  as_fn_error $? "stdscr() function not found." "$LINENO" 5
-fi
-
 ac_fn_c_check_func "$LINENO" "use_default_colors" "ac_cv_func_use_default_colors"
 if test "x$ac_cv_func_use_default_colors" = xyes; then :
 
