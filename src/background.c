@@ -48,12 +48,6 @@
 
 job_t *jobs;
 
-#ifndef _WIN32
-job_t * add_background_job(pid_t pid, const char *cmd, int fd);
-#else
-job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
-#endif
-
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
