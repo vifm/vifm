@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h> /* NULL size_t ssize_t */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
@@ -46,13 +48,11 @@
 #include "commands_completion.h"
 #include "status.h"
 
-job_t *jobs;
+static int set_sigchld(int block);
+static void job_check(job_t *const job);
+static void job_free(job_t *const job);
 
-#ifndef _WIN32
-job_t * add_background_job(pid_t pid, const char *cmd, int fd);
-#else
-job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
-#endif
+job_t *jobs;
 
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
@@ -84,134 +84,167 @@ add_finished_job(pid_t pid, int status)
 void
 check_background_jobs(void)
 {
-#ifndef _WIN32
 	job_t *p = jobs;
 	job_t *prev = NULL;
-	sigset_t new_mask;
-	fd_set ready;
-	int maxfd;
-	struct timeval ts;
 
 	if(p == NULL)
+	{
 		return;
+	}
 
 	/* SIGCHLD needs to be blocked. */
-	if(sigemptyset(&new_mask) == -1)
+	if(set_sigchld(1) != 0)
+	{
 		return;
-	if(sigaddset(&new_mask, SIGCHLD) == -1)
-		return;
-	if(sigprocmask(SIG_BLOCK, &new_mask, NULL) == -1)
-		return;
-
-	ts.tv_sec = 0;
-	ts.tv_usec = 1000;
+	}
 
 	while(p != NULL)
 	{
-		/* Setup pipe for reading */
+		job_check(p);
 
-		FD_ZERO(&ready);
-		if(p->fd >= 0)
-			FD_SET(p->fd, &ready);
-		maxfd = MAX(p->fd, 0);
-
-		if(p->error != NULL)
+		/* Remove job if it is finished now. */
+		if(!p->running)
 		{
-			if(!p->skip_errors)
-				p->skip_errors = prompt_error_msg("Background Process Error", p->error);
-			free(p->error);
-			p->error = NULL;
+			job_t *j = p;
+			if(prev != NULL)
+				prev->next = p->next;
+			else
+				jobs = p->next;
+
+			p = p->next;
+			job_free(j);
+		}
+		else
+		{
+			prev = p;
+			p = p->next;
+		}
+	}
+
+	/* Unblock SIGCHLD signal. */
+	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
+	 *        blocked. */
+	(void)set_sigchld(0);
+}
+
+/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
+ * is returned. */
+static int
+set_sigchld(int block)
+{
+#ifndef _WIN32
+	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
+	sigset_t sigchld_mask;
+
+	if(sigemptyset(&sigchld_mask) == -1 ||
+	   sigaddset(&sigchld_mask, SIGCHLD) == -1 ||
+	   sigprocmask(action, &sigchld_mask, NULL) == -1)
+	{
+		return 1;
+	}
+#endif
+
+	return 0;
+}
+
+/* Checks status of the job.  Processes error stream or checks whether process
+ * is still running. */
+static void
+job_check(job_t *const job)
+{
+#ifndef _WIN32
+	fd_set ready;
+	int max_fd = 0;
+	struct timeval ts = { .tv_sec = 0, .tv_usec = 1000 };
+
+	/* Setup pipe for reading */
+	FD_ZERO(&ready);
+	if(job->fd >= 0)
+	{
+		FD_SET(job->fd, &ready);
+		max_fd = job->fd;
+	}
+
+	if(job->error != NULL)
+	{
+		if(!job->skip_errors)
+		{
+			job->skip_errors =
+				prompt_error_msg("Background Process Error", job->error);
+		}
+		free(job->error);
+		job->error = NULL;
+	}
+
+	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
+	{
+		char buf[256];
+		ssize_t nread;
+		char *error_buf = NULL;
+
+		nread = read(job->fd, buf, sizeof(buf) - 1);
+		if(nread == 0)
+		{
+			break;
+		}
+		else if(nread > 0)
+		{
+			error_buf = malloc((size_t)nread + 1);
+			if(error_buf == NULL)
+			{
+				show_error_msg("Memory Error", "Unable to allocate enough memory");
+			}
+			else
+			{
+				copy_str(error_buf, (size_t)nread + 1, buf);
+			}
 		}
 
-		while(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
+		if(error_buf != NULL)
 		{
-			char buf[256];
-			ssize_t nread;
-			char *error_buf = NULL;
-
-			nread = read(p->fd, buf, sizeof(buf) - 1);
-			if(nread == 0)
+			if(!job->skip_errors)
 			{
-				break;
-			}
-			else if(nread > 0)
-			{
-				error_buf = malloc((size_t)nread + 1);
-				if(error_buf == NULL)
-				{
-					show_error_msg("Memory Error", "Unable to allocate enough memory");
-				}
-				else
-				{
-					strncpy(error_buf, buf, (size_t)nread);
-					error_buf[nread] = '\0';
-				}
-			}
-			if(error_buf == NULL)
-				continue;
-
-			if(!p->skip_errors)
-			{
-				p->skip_errors = prompt_error_msg("Background Process Error",
+				job->skip_errors = prompt_error_msg("Background Process Error",
 						error_buf);
 			}
 			free(error_buf);
 		}
-
-		/* Remove any finished jobs. */
-		if(!p->running)
-		{
-			job_t *j = p;
-			if(prev != NULL)
-				prev->next = p->next;
-			else
-				jobs = p->next;
-
-			p = p->next;
-			free(j->cmd);
-			free(j);
-		}
-		else
-		{
-			prev = p;
-			p = p->next;
-		}
 	}
-
-	/* Unblock SIGCHLD signal */
-	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
 #else
-	job_t *p = jobs;
-	job_t *prev = NULL;
-
-	while(p != NULL)
+	DWORD retcode;
+	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
 	{
-		DWORD retcode;
-		if(GetExitCodeProcess(p->hprocess, &retcode) != 0)
-			if(retcode != STILL_ACTIVE)
-				p->running = 0;
-
-		/* Remove any finished jobs. */
-		if(!p->running)
+		if(retcode != STILL_ACTIVE)
 		{
-			job_t *j = p;
-
-			if(prev != NULL)
-				prev->next = p->next;
-			else
-				jobs = p->next;
-
-			p = p->next;
-			free(j->cmd);
-			free(j);
-		}
-		else
-		{
-			prev = p;
-			p = p->next;
+			job->running = 0;
 		}
 	}
 #endif
+}
+
+/* Frees resources allocated by the job as well as the job_t structure itself.
+ * The job can be NULL. */
+static void
+job_free(job_t *const job)
+{
+	if(job == NULL)
+	{
+		return;
+	}
+
+#ifndef _WIN32
+	if(job->fd != -1)
+	{
+		close(job->fd);
+	}
+#else
+	if(job->hprocess != INVALID_HANDLE)
+	{
+		CloseHandle(job->hprocess);
+	}
+#endif
+	free(job->cmd);
+	free(job);
 }
 
 /* Used for FUSE mounting and unmounting only */
