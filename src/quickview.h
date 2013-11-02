@@ -23,7 +23,11 @@
 #include "ui.h"
 
 void quick_view_file(FileView * view);
+
 void toggle_quick_view(void);
+
+/* Quits preview pane or view modes. */
+void preview_close(void);
 
 #endif /* VIFM__QUICKVIEW_H__ */
 
