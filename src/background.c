@@ -48,6 +48,7 @@
 #include "commands_completion.h"
 #include "status.h"
 
+static int set_sigchld(int block);
 static void job_free(job_t *const job);
 
 job_t *jobs;
@@ -85,21 +86,20 @@ check_background_jobs(void)
 #ifndef _WIN32
 	job_t *p = jobs;
 	job_t *prev = NULL;
-	sigset_t new_mask;
 	fd_set ready;
 	int maxfd;
 	struct timeval ts;
 
 	if(p == NULL)
+	{
 		return;
+	}
 
 	/* SIGCHLD needs to be blocked. */
-	if(sigemptyset(&new_mask) == -1)
+	if(set_sigchld(1) != 0)
+	{
 		return;
-	if(sigaddset(&new_mask, SIGCHLD) == -1)
-		return;
-	if(sigprocmask(SIG_BLOCK, &new_mask, NULL) == -1)
-		return;
+	}
 
 	ts.tv_sec = 0;
 	ts.tv_usec = 1000;
@@ -175,8 +175,10 @@ check_background_jobs(void)
 		}
 	}
 
-	/* Unblock SIGCHLD signal */
-	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
+	/* Unblock SIGCHLD signal. */
+	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
+	 *        blocked. */
+	(void)set_sigchld(0);
 #else
 	job_t *p = jobs;
 	job_t *prev = NULL;
@@ -208,6 +210,26 @@ check_background_jobs(void)
 		}
 	}
 #endif
+}
+
+/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
+ * is returned. */
+static int
+set_sigchld(int block)
+{
+#ifndef _WIN32
+	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
+	sigset_t sigchld_mask;
+
+	if(sigemptyset(&sigchld_mask) == -1 ||
+	   sigaddset(&sigchld_mask, SIGCHLD) == -1 ||
+	   sigprocmask(action, &sigchld_mask, NULL) == -1)
+	{
+		return 1;
+	}
+#endif
+
+	return 0;
 }
 
 /* Frees resources allocated by the job as well as the job_t structure itself.
