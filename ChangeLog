@@ -1,5 +1,8 @@
 0.7.6 to current
 
+	Added Ctrl-W z key to normal and view modes, which closes preview pane or
+	view modes.  Thanks to filterfalse.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

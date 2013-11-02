@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Oct 31
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -205,6 +205,7 @@ Ctrl-W s - shortcut for |vifm-:split|.           *vifm-CTRL-W_s*
 Ctrl-W v - shortcut for |vifm-:vsplit|.          *vifm-CTRL-W_v*
 
 Ctrl-W x - exchange panes.                     *vifm-CTRL-W_x*
+Ctrl-W z - quit preview pane or view modes.    *vifm-CTRL-W_z*
 
 Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
 Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
@@ -720,6 +721,7 @@ Ctrl-W s - split window horizontally.          *vifm-q_CTRL-W_s*
 Ctrl-W v - split window vertically.            *vifm-q_CTRL-W_v*
 
 Ctrl-W x - exchange panes.                     *vifm-q_CTRL-W_x*
+Ctrl-W z - quit preview pane or view modes.    *vifm-q_CTRL-W_z*
 
 Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
 Ctrl-W - - decrease size of the view.          *vifm-q_CTRL-W_-*
