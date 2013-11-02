@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h> /* NULL */
+#include <stdlib.h> /* free() */
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
@@ -45,6 +47,8 @@
 #include "utils/utils.h"
 #include "commands_completion.h"
 #include "status.h"
+
+static void job_free(job_t *const job);
 
 job_t *jobs;
 
@@ -162,9 +166,7 @@ check_background_jobs(void)
 				jobs = p->next;
 
 			p = p->next;
-			close(j->fd);
-			free(j->cmd);
-			free(j);
+			job_free(j);
 		}
 		else
 		{
@@ -197,9 +199,7 @@ check_background_jobs(void)
 				jobs = p->next;
 
 			p = p->next;
-			CloseHandle(j->hprocess);
-			free(j->cmd);
-			free(j);
+			job_free(j);
 		}
 		else
 		{
@@ -208,6 +208,31 @@ check_background_jobs(void)
 		}
 	}
 #endif
+}
+
+/* Frees resources allocated by the job as well as the job_t structure itself.
+ * The job can be NULL. */
+static void
+job_free(job_t *const job)
+{
+	if(job == NULL)
+	{
+		return;
+	}
+
+#ifndef _WIN32
+	if(job->fd != -1)
+	{
+		close(job->fd);
+	}
+#else
+	if(job->hprocess != INVALID_HANDLE)
+	{
+		CloseHandle(job->hprocess);
+	}
+#endif
+	free(job->cmd);
+	free(job);
 }
 
 /* Used for FUSE mounting and unmounting only */
