@@ -97,6 +97,7 @@ static void cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
@@ -255,6 +256,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
 	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x17\x1a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
+	{L"\x17z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
 	{L"\x17=", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wequal}}},
 	{L"\x17<", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wless}}},
 	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wgreater}}},
@@ -839,7 +842,7 @@ move_splitter(key_info_t key_info, int fact)
 	update_screen(UT_REDRAW);
 }
 
-/* Switch views. */
+/* Switches views. */
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -849,6 +852,13 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 		change_window();
 		(void)try_switch_into_view_mode();
 	}
+}
+
+/* Quits preview pane or view modes. */
+static void
+cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
+{
+	preview_close();
 }
 
 static void
