@@ -228,5 +228,22 @@ add_to_line(FILE *fp, size_t max, char line[], size_t len)
 	return curr_len;
 }
 
+void
+preview_close(void)
+{
+	if(curr_stats.view)
+	{
+		toggle_quick_view();
+	}
+	if(lwin.explore_mode)
+	{
+		view_explore_mode_quit(&lwin);
+	}
+	if(rwin.explore_mode)
+	{
+		view_explore_mode_quit(&rwin);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

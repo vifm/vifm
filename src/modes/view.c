@@ -114,6 +114,7 @@ static int is_top_or_left(void);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_space(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -192,6 +193,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
 	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x17\x1a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
+	{L"\x17z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
 	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
@@ -794,6 +797,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Switches views. */
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -804,6 +808,14 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 	{
 		change_window();
 	}
+}
+
+/* Quits preview pane or view modes. */
+static void
+cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
+{
+	leave_view_mode();
+	preview_close();
 }
 
 static void
