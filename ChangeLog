@@ -1,3 +1,8 @@
+0.7.6 to current
+
+	Fixed file descriptor leak on finishing background tasks.  Thanks to
+	anonymous from linux.org.ru.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

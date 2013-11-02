@@ -168,6 +168,7 @@ check_background_jobs(void)
 				jobs = p->next;
 
 			p = p->next;
+			close(j->fd);
 			free(j->cmd);
 			free(j);
 		}
@@ -202,6 +203,7 @@ check_background_jobs(void)
 				jobs = p->next;
 
 			p = p->next;
+			CloseHandle(j->hprocess);
 			free(j->cmd);
 			free(j);
 		}
