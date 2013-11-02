@@ -31,8 +31,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
-#include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
+#include <stddef.h> /* NULL size_t ssize_t */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
@@ -49,6 +49,7 @@
 #include "status.h"
 
 static int set_sigchld(int block);
+static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 
 job_t *jobs;
@@ -83,12 +84,8 @@ add_finished_job(pid_t pid, int status)
 void
 check_background_jobs(void)
 {
-#ifndef _WIN32
 	job_t *p = jobs;
 	job_t *prev = NULL;
-	fd_set ready;
-	int maxfd;
-	struct timeval ts;
 
 	if(p == NULL)
 	{
@@ -101,62 +98,11 @@ check_background_jobs(void)
 		return;
 	}
 
-	ts.tv_sec = 0;
-	ts.tv_usec = 1000;
-
 	while(p != NULL)
 	{
-		/* Setup pipe for reading */
+		job_check(p);
 
-		FD_ZERO(&ready);
-		if(p->fd >= 0)
-			FD_SET(p->fd, &ready);
-		maxfd = MAX(p->fd, 0);
-
-		if(p->error != NULL)
-		{
-			if(!p->skip_errors)
-				p->skip_errors = prompt_error_msg("Background Process Error", p->error);
-			free(p->error);
-			p->error = NULL;
-		}
-
-		while(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
-		{
-			char buf[256];
-			ssize_t nread;
-			char *error_buf = NULL;
-
-			nread = read(p->fd, buf, sizeof(buf) - 1);
-			if(nread == 0)
-			{
-				break;
-			}
-			else if(nread > 0)
-			{
-				error_buf = malloc((size_t)nread + 1);
-				if(error_buf == NULL)
-				{
-					show_error_msg("Memory Error", "Unable to allocate enough memory");
-				}
-				else
-				{
-					strncpy(error_buf, buf, (size_t)nread);
-					error_buf[nread] = '\0';
-				}
-			}
-			if(error_buf == NULL)
-				continue;
-
-			if(!p->skip_errors)
-			{
-				p->skip_errors = prompt_error_msg("Background Process Error",
-						error_buf);
-			}
-			free(error_buf);
-		}
-
-		/* Remove any finished jobs. */
+		/* Remove job if it is finished now. */
 		if(!p->running)
 		{
 			job_t *j = p;
@@ -179,37 +125,6 @@ check_background_jobs(void)
 	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
 	 *        blocked. */
 	(void)set_sigchld(0);
-#else
-	job_t *p = jobs;
-	job_t *prev = NULL;
-
-	while(p != NULL)
-	{
-		DWORD retcode;
-		if(GetExitCodeProcess(p->hprocess, &retcode) != 0)
-			if(retcode != STILL_ACTIVE)
-				p->running = 0;
-
-		/* Remove any finished jobs. */
-		if(!p->running)
-		{
-			job_t *j = p;
-
-			if(prev != NULL)
-				prev->next = p->next;
-			else
-				jobs = p->next;
-
-			p = p->next;
-			job_free(j);
-		}
-		else
-		{
-			prev = p;
-			p = p->next;
-		}
-	}
-#endif
 }
 
 /* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
@@ -230,6 +145,81 @@ set_sigchld(int block)
 #endif
 
 	return 0;
+}
+
+/* Checks status of the job.  Processes error stream or checks whether process
+ * is still running. */
+static void
+job_check(job_t *const job)
+{
+#ifndef _WIN32
+	fd_set ready;
+	int max_fd = 0;
+	struct timeval ts = { .tv_sec = 0, .tv_usec = 1000 };
+
+	/* Setup pipe for reading */
+	FD_ZERO(&ready);
+	if(job->fd >= 0)
+	{
+		FD_SET(job->fd, &ready);
+		max_fd = job->fd;
+	}
+
+	if(job->error != NULL)
+	{
+		if(!job->skip_errors)
+		{
+			job->skip_errors =
+				prompt_error_msg("Background Process Error", job->error);
+		}
+		free(job->error);
+		job->error = NULL;
+	}
+
+	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
+	{
+		char buf[256];
+		ssize_t nread;
+		char *error_buf = NULL;
+
+		nread = read(job->fd, buf, sizeof(buf) - 1);
+		if(nread == 0)
+		{
+			break;
+		}
+		else if(nread > 0)
+		{
+			error_buf = malloc((size_t)nread + 1);
+			if(error_buf == NULL)
+			{
+				show_error_msg("Memory Error", "Unable to allocate enough memory");
+			}
+			else
+			{
+				copy_str(error_buf, (size_t)nread + 1, buf);
+			}
+		}
+
+		if(error_buf != NULL)
+		{
+			if(!job->skip_errors)
+			{
+				job->skip_errors = prompt_error_msg("Background Process Error",
+						error_buf);
+			}
+			free(error_buf);
+		}
+	}
+#else
+	DWORD retcode;
+	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
+	{
+		if(retcode != STILL_ACTIVE)
+		{
+			job->running = 0;
+		}
+	}
+#endif
 }
 
 /* Frees resources allocated by the job as well as the job_t structure itself.
