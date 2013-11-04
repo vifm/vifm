@@ -39,6 +39,8 @@ void execute_cmdline_command(const char cmd[]);
  * greater than or equal to number of lines in the menu, which should be
  * threated correctly. */
 int get_last_visible_line(const menu_info *m);
+/* Prints results or error message about search operation to the user. */
+void menu_print_search_msg(const menu_info *m);
 
 #endif /* VIFM__MODES__MENU_H__ */
 
