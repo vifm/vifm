@@ -33,8 +33,6 @@ passed directory to a shell.
 
 When directory is not readable, one cannot navigate to it from a menu.
 
-Something is wrong with search in menu mode, it print "not matches" to often.
-
 Fix syntax highlighting for: touch copy-init.cp; m e20-en.avi; mkdir mkdir.
 
 Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).

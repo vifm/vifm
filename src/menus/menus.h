@@ -70,6 +70,7 @@ typedef struct menu_info
 	int win_rows;
 	int type;
 	int match_dir;
+	/* Number of menu entries that actually match the regexp. */
 	int matching_entries;
 	int *matches;
 	char *regexp;

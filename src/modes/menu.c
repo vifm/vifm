@@ -900,6 +900,8 @@ search_menu(menu_info *m, int start_pos)
 static int
 search_menu_forwards(menu_info *m, int start_pos)
 {
+	/* FIXME: code duplicatio with search_menu_backwards. */
+
 	int match_up = -1;
 	int match_down = -1;
 	int x;
@@ -935,16 +937,19 @@ search_menu_forwards(menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		move_to_menu_pos(pos, m);
-		status_bar_messagef("%d %s", m->matching_entries,
-				(m->matching_entries == 1) ? "match" : "matches");
+		menu_print_search_msg(m);
 	}
 	else
 	{
 		move_to_menu_pos(m->pos, m);
 		if(!cfg.wrap_scan)
+		{
 			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		}
 		else
-			status_bar_errorf("No matches for: %s", m->regexp);
+		{
+			menu_print_search_msg(m);
+		}
 		return 1;
 	}
 	return 0;
@@ -953,6 +958,8 @@ search_menu_forwards(menu_info *m, int start_pos)
 static int
 search_menu_backwards(menu_info *m, int start_pos)
 {
+	/* FIXME: code duplicatio with search_menu_forwards. */
+
 	int match_up = -1;
 	int match_down = -1;
 	int x;
@@ -988,16 +995,19 @@ search_menu_backwards(menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		move_to_menu_pos(pos, m);
-		status_bar_messagef("%d %s", m->matching_entries,
-				(m->matching_entries == 1) ? "match" : "matches");
+		menu_print_search_msg(m);
 	}
 	else
 	{
 		move_to_menu_pos(m->pos, m);
 		if(!cfg.wrap_scan)
+		{
 			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		}
 		else
-			status_bar_errorf("No matches for: %s", m->regexp);
+		{
+			menu_print_search_msg(m);
+		}
 		return 1;
 	}
 	return 0;
@@ -1011,6 +1021,20 @@ execute_cmdline_command(const char cmd[])
 		status_bar_error("An error occuried while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
+}
+
+void
+menu_print_search_msg(const menu_info *m)
+{
+	if(m->matching_entries > 0)
+	{
+		status_bar_messagef("%d %s", m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
+	}
+	else
+	{
+		status_bar_errorf("No matches for: %s", m->regexp);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
