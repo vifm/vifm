@@ -351,6 +351,26 @@ test_range_and_spaces(void)
 }
 
 static void
+test_empty_range_empty_command_called(void)
+{
+	cmds_conf.begin = 10;
+	cmds_conf.current = 50;
+	cmds_conf.end = 100;
+
+	assert_int_equal(0, execute_cmd(""));
+	assert_int_equal(NOT_DEF, cmdi.begin);
+	assert_int_equal(NOT_DEF, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(","));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(";"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+}
+
+static void
 test_bang_acceptance(void)
 {
 	assert_int_equal(0, execute_cmd("q"));
@@ -668,6 +688,7 @@ input_tests(void)
 	run_test(test_semicolon_range);
 	run_test(test_range_plus_minus);
 	run_test(test_range_and_spaces);
+	run_test(test_empty_range_empty_command_called);
 	run_test(test_bang_acceptance);
 	run_test(test_bang);
 	run_test(test_qmark_acceptance);

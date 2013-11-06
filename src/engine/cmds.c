@@ -621,14 +621,14 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
 		return cmd;
 
-	for(;;)
+	while(*cmd != '\0')
 	{
 		cmd_info->begin = cmd_info->end;
 
-		cmd = parse_limit(cmd, cmd_info);
-
-		if(cmd == NULL)
+		if((cmd = parse_limit(cmd, cmd_info)) == NULL)
+		{
 			return NULL;
+		}
 
 		cmd = correct_limit(cmd, cmd_info);
 
