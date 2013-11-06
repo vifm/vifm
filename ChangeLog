@@ -8,6 +8,9 @@
 
 	Fixed displaying of search messages in menus.
 
+	Fixed check for whether temporary files with list of file names during
+	bulk rename operation.  Thanks to Daniel R., a.k.a. reicheltd.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
