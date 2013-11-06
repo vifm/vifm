@@ -75,6 +75,9 @@ typedef struct
 	int udf_count;
 }inner_t;
 
+/* List of characters, which are treated as range separators. */
+static const char *RANGE_SEPARATORS = ",;";
+
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
@@ -325,7 +328,7 @@ parse_limit(const char cmd[], cmd_info_t *cmd_info)
 		cmd_info->end = cmds_conf->current;
 		cmd++;
 	}
-	else if(*cmd == ',')
+	else if(char_is_one_of(RANGE_SEPARATORS, *cmd))
 	{
 		cmd_info->end = cmds_conf->current;
 	}
@@ -634,8 +637,10 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 
 		cmd = skip_whitespace(cmd);
 
-		if(*cmd != ',')
+		if(!char_is_one_of(RANGE_SEPARATORS, *cmd))
+		{
 			break;
+		}
 
 		cmd++;
 
