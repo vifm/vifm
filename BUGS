@@ -22,8 +22,6 @@ When output of something like `:filter?` fills whole screen two character
 positions filled with border color are left (in left and right top corners).
 It also displays only beginning of a message, there is no way to scroll it.
 
-:;q in vifm doesn't produce same result as if it's run in Vim
-
 gid/uid are displayed as -1 on some file systems.
 
 :apropos command doesn't escape its arguments, thus characters like | are

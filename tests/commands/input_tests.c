@@ -189,7 +189,11 @@ static void
 test_range_acceptance(void)
 {
 	assert_int_equal(0, execute_cmd("%delete"));
+	assert_int_equal(0, execute_cmd(",%delete"));
+	assert_int_equal(0, execute_cmd(";%delete"));
 	assert_int_equal(CMDS_ERR_NO_RANGE_ALLOWED, execute_cmd("%history"));
+	assert_int_equal(CMDS_ERR_NO_RANGE_ALLOWED, execute_cmd("%,history"));
+	assert_int_equal(CMDS_ERR_NO_RANGE_ALLOWED, execute_cmd("%;history"));
 }
 
 static void
@@ -256,6 +260,39 @@ test_range(void)
 }
 
 static void
+test_semicolon_range(void)
+{
+	cmds_conf.begin = 0;
+	cmds_conf.current = 50;
+	cmds_conf.end = 100;
+
+	assert_int_equal(0, execute_cmd(".;$delete!"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(100, cmdi.end);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd(";$delete!"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(100, cmdi.end);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("$;delete!"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(100, cmdi.end);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd(";;delete!"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("5;6;7delete!"));
+	assert_int_equal(5, cmdi.begin);
+	assert_int_equal(6, cmdi.end);
+	assert_true(cmdi.emark);
+}
+
+static void
 test_range_plus_minus(void)
 {
 	cmds_conf.begin = 0;
@@ -311,6 +348,26 @@ test_range_and_spaces(void)
 	assert_int_equal(50, cmdi.begin);
 	assert_int_equal(100, cmdi.end);
 	assert_true(cmdi.emark);
+}
+
+static void
+test_empty_range_empty_command_called(void)
+{
+	cmds_conf.begin = 10;
+	cmds_conf.current = 50;
+	cmds_conf.end = 100;
+
+	assert_int_equal(0, execute_cmd(""));
+	assert_int_equal(NOT_DEF, cmdi.begin);
+	assert_int_equal(NOT_DEF, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(","));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(";"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
 }
 
 static void
@@ -628,8 +685,10 @@ input_tests(void)
 	run_test(test_range_acceptance);
 	run_test(test_single_quote_doubling);
 	run_test(test_range);
+	run_test(test_semicolon_range);
 	run_test(test_range_plus_minus);
 	run_test(test_range_and_spaces);
+	run_test(test_empty_range_empty_command_called);
 	run_test(test_bang_acceptance);
 	run_test(test_bang);
 	run_test(test_qmark_acceptance);

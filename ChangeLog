@@ -3,6 +3,11 @@
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or
 	view modes.  Thanks to filterfalse.
 
+	Treat semicolon (";") as a valid range separator for command-line
+	commands.
+
+	Allow empty ranges for command without name (as in :4).
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
