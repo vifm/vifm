@@ -8,6 +8,8 @@
 
 	Allow empty ranges for command without name (as in :4).
 
+	Don't reset view selection on :if and :else commands.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

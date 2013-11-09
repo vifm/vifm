@@ -1910,6 +1910,7 @@ else_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
+	need_clean_selection = 0;
 	return 0;
 }
 
@@ -2562,6 +2563,7 @@ if_cmd(const cmd_info_t *cmd_info)
 	}
 	int_stack_push(&if_levels, var_to_boolean(condition));
 	var_free(condition);
+	need_clean_selection = 0;
 	return 0;
 }
 
