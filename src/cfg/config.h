@@ -77,7 +77,7 @@ typedef struct
 	char *time_format;
 	char *fuse_home; /* This one should be set using set_fuse_home() function. */
 
-	/* History command-line commands. */
+	/* History of command-line commands. */
 	hist_t cmd_hist;
 	/* History of search patterns. */
 	hist_t search_hist;
