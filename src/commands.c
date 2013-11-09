@@ -3083,6 +3083,7 @@ rename_cmd(const cmd_info_t *cmd_info)
 			cmd_info->emark) != 0;
 }
 
+/* Resets internal state and reloads configuration files. */
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
@@ -3097,9 +3098,20 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* user defined commands */
 	execute_cmd("comclear");
 
-	/* options of current pane */
+	/* Directory histories. */
+	clean_view_history(&lwin);
+	clean_view_history(&rwin);
+
+	/* All kinds of history. */
+	(void)hist_reset(&cfg.search_hist, cfg.history_len);
+	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
+	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
+	cfg.history_len = 0;
+
+	/* Options of current pane. */
 	reset_options_to_default();
-	/* options of other pane */
+	/* Options of other pane. */
 	tmp_view = curr_view;
 	curr_view = other_view;
 	load_local_options(other_view);
@@ -3114,16 +3126,6 @@ restart_cmd(const cmd_info_t *cmd_info)
 
 	/* undo list */
 	reset_undo_list();
-
-	/* Directory histories. */
-	clean_view_history(&lwin);
-	clean_view_history(&rwin);
-
-	/* All kinds of history. */
-	hist_clear(&cfg.cmd_hist);
-	hist_clear(&cfg.search_hist);
-	hist_clear(&cfg.prompt_hist);
-	hist_clear(&cfg.filter_hist);
 
 	/* directory stack */
 	clean_stack();
