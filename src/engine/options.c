@@ -548,7 +548,8 @@ set_set(opt_t *opt, const char value[])
 static int
 set_reset(opt_t *opt)
 {
-	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+	if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_CHARSET)
 	{
 		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
 		{
