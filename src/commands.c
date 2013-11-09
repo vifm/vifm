@@ -483,7 +483,9 @@ static cmds_conf_t cmds_conf = {
 	.skip_at_beginning = skip_at_beginning,
 };
 
-static int need_clean_selection;
+/* Shows whether view selection should be preserved on command-line finishing.
+ * By default it's reset. */
+static int keep_view_selection;
 /* Stores condition evaluation result for all nesting if-endif statements. */
 static int_stack_t if_levels;
 
@@ -685,7 +687,7 @@ is_history_command(const char command[])
 static void
 post(int id)
 {
-	if(id != COM_GOTO && curr_view->selected_files > 0 && need_clean_selection)
+	if(id != COM_GOTO && curr_view->selected_files > 0 && !keep_view_selection)
 	{
 		clean_selected_files(curr_view);
 		load_saving_pos(curr_view, 1);
@@ -874,7 +876,7 @@ execute_command(FileView *view, const char command[], int menu)
 		cmd_group_end();
 	}
 
-	need_clean_selection = 1;
+	keep_view_selection = 0;
 	result = execute_cmd(command);
 
 	if(result >= 0)
@@ -1529,7 +1531,7 @@ static int
 change_cmd(const cmd_info_t *cmd_info)
 {
 	enter_change_mode(curr_view);
-	need_clean_selection = 0;
+	keep_view_selection = 1;
 	return 0;
 }
 
@@ -1545,7 +1547,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 0)
 	{
 		enter_attr_mode(curr_view);
-		need_clean_selection = 0;
+		keep_view_selection = 1;
 		return 0;
 	}
 
@@ -1910,6 +1912,7 @@ else_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
+	keep_view_selection = 1;
 	return 0;
 }
 
@@ -2035,7 +2038,7 @@ file_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
-		need_clean_selection = 0;
+		keep_view_selection = 1;
 		return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
 	}
 	else
@@ -2562,6 +2565,7 @@ if_cmd(const cmd_info_t *cmd_info)
 	}
 	int_stack_push(&if_levels, var_to_boolean(condition));
 	var_free(condition);
+	keep_view_selection = 1;
 	return 0;
 }
 
@@ -2625,7 +2629,7 @@ invert_state(char state_type)
 	{
 		invert_selection(curr_view);
 		redraw_view(curr_view);
-		need_clean_selection = 0;
+		keep_view_selection = 1;
 	}
 	else if(state_type == 'o')
 	{
@@ -3271,7 +3275,7 @@ static int
 sort_cmd(const cmd_info_t *cmd_info)
 {
 	enter_sort_mode(curr_view);
-	need_clean_selection = 0;
+	keep_view_selection = 1;
 	return 0;
 }
 
@@ -3868,7 +3872,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
 		external = 0;
-		need_clean_selection = 0;
+		keep_view_selection = 1;
 	}
 	else if(bg)
 	{

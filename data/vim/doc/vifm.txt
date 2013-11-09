@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 02
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -873,9 +873,15 @@ Commented out lines should start with the double quote symbol, which may be
 preceded by whitespace characters.
 
 Most of the commands have two forms: complete and the short one.
-Example:
-:noh[lsearch]
+Example: >
+    :noh[lsearch]
 This means the complete command is nohlsearch, and the short one is noh.
+
+                                               *vifm-commands-and-selection*
+Most of command-line commands completely reset selection in the current view.
+However, there are several exceptions:
+ - ":invert s" will most likely leave some files selected;
+ - :if and :else commands doesn't affect selection on successful execution.
 
                                                *vifm-:bar*
 '|' can be used to separate commands, so you can give multiple commands in one
@@ -1075,7 +1081,8 @@ The builtin commands are:
 
                                                *vifm-:else* *vifm-:el*
 :el[se] - executes commands until next matching |vifm-:endif| if they
-    previously were not being executed.  See also |vifm-:if|.
+    previously were not being executed.  See also |vifm-:if| and
+    |vifm-commands-and-selection|.
 
                                                *vifm-:empty*
 :empty - permanently remove files from |vifm-trash| directory.  It will also
@@ -1284,14 +1291,17 @@ of the hierarchy and transparency for all others.
                                                *vifm-:if*
 :if {expr1} - starts conditional block.  Commands are executed until next
     matching |vifm-:else| or |vifm-:endif| command if {expr1} evaluates to
-    non-zero, otherwise they are ignored.
+    non-zero, otherwise they are ignored.  See
+    also |vifm-commands-and-selection|.
 
                                                *vifm-:invert*
 :invert [f] - invert file name filter.
 :invert? [f] - show current filter state.
-:invert s - invert selection.
+:invert s - invert selection.  See also |vifm-commands-and-selection|.
 :invert o - invert sorting order of the primary sorting key.
 :invert? o - show sorting order of the primary sorting key.
+
+
 
                                                *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.

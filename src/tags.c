@@ -382,6 +382,7 @@ const char *tags[] = {
 	"vifm-command-line",
 	"vifm-command-line-edit",
 	"vifm-commands",
+	"vifm-commands-and-selection",
 	"vifm-commands-bg",
 	"vifm-configure",
 	"vifm-count",
