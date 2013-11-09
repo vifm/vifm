@@ -23,6 +23,9 @@
 
 	Fixed memory leaks on :restart command.
 
+	Fixed format arguments parsing on displaying "Invalid expression" error
+	message for :echo and :execute commands.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

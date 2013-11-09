@@ -1971,7 +1971,7 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 	if(eval_result == NULL)
 	{
 		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
-		status_bar_errorf(text_buffer_get());
+		status_bar_error(text_buffer_get());
 	}
 
 	return eval_result;
