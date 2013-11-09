@@ -548,7 +548,8 @@ set_set(opt_t *opt, const char value[])
 static int
 set_reset(opt_t *opt)
 {
-	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+	if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_CHARSET)
 	{
 		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
 		{
@@ -729,7 +730,8 @@ static int
 charset_add_all(opt_t *opt, const char value[])
 {
 	char new_val[opt->val_count + 1];
-	strcpy(new_val, opt->val.str_val);
+	copy_str(new_val, sizeof(new_val), opt->val.str_val);
+	assert(strlen(opt->val.str_val) <= opt->val_count);
 
 	for_each_char_of(new_val, charset_add, value);
 	return replace_if_changed(&opt->val.str_val, new_val);
@@ -752,7 +754,8 @@ static int
 charset_remove_all(opt_t *opt, const char value[])
 {
 	char new_val[opt->val_count + 1];
-	strcpy(new_val, opt->val.str_val);
+	copy_str(new_val, sizeof(new_val), opt->val.str_val);
+	assert(strlen(opt->val.str_val) <= opt->val_count);
 
 	for_each_char_of(new_val, charset_remove, value);
 	return replace_if_changed(&opt->val.str_val, new_val);

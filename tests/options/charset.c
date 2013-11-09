@@ -152,6 +152,29 @@ test_chars_not_from_the_list_are_ignored_on_removal(void)
 	assert_string_equal("abc", cpoptions);
 }
 
+static void
+test_reset_compares_values_as_strings(void)
+{
+	int res;
+
+	/* Change value from the default one. */
+	res = set_options("cpoptions=abc");
+	assert_int_equal(0, res);
+	assert_string_equal("abc", cpoptions);
+
+	/* Restore default value. */
+	res = set_options("cpoptions=");
+	assert_int_equal(0, res);
+	assert_string_equal("", cpoptions);
+
+	/* Try resetting the value. */
+	cpoptions_handler_calls = 0;
+	res = set_options("cpoptions&");
+	assert_int_equal(0, res);
+	assert_string_equal("", cpoptions);
+	assert_int_equal(0, cpoptions_handler_calls);
+}
+
 void
 charset_tests(void)
 {
@@ -168,6 +191,7 @@ charset_tests(void)
 	run_test(test_chars_not_from_the_list_are_rejected_on_assignment);
 	run_test(test_chars_not_from_the_list_are_rejected_on_addition);
 	run_test(test_chars_not_from_the_list_are_ignored_on_removal);
+	run_test(test_reset_compares_values_as_strings);
 
 	test_fixture_end();
 }
