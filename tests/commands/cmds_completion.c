@@ -252,6 +252,46 @@ test_no_completion_for_negative_ids(void)
 	assert_int_equal(0, get_completion_count());
 }
 
+static void
+test_udf_completion(void)
+{
+	char *buf;
+
+	execute_cmd("command bar a");
+	execute_cmd("command baz b");
+	execute_cmd("command foo c");
+
+	reset_completion();
+	assert_int_equal(5, complete_cmd("comm b"));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("baz", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("b", buf);
+	free(buf);
+
+	reset_completion();
+	assert_int_equal(5, complete_cmd("comm f"));
+	buf = next_completion();
+	assert_string_equal("foo", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("foo", buf);
+	free(buf);
+
+	reset_completion();
+	assert_int_equal(5, complete_cmd("comm b"));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("baz", buf);
+	free(buf);
+}
+
 void
 completion_tests(void)
 {
@@ -271,6 +311,7 @@ completion_tests(void)
 	run_test(test_windo_windo_completion);
 	run_test(test_windo_args_completion);
 	run_test(test_no_completion_for_negative_ids);
+	run_test(test_udf_completion);
 
 	test_fixture_end();
 }

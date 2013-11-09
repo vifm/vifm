@@ -7,7 +7,6 @@ void path_starts_with_tests(void);
 void comments_tests(void);
 void format_edit_selection_cmd_tests(void);
 void test_reserved_commands(void);
-void test_user_commands(void);
 void test_cmdline_completion(void);
 void test_dispatch_line(void);
 void test_command_separation(void);
@@ -50,7 +49,6 @@ all_tests(void)
 	comments_tests();
 	format_edit_selection_cmd_tests();
 	test_reserved_commands();
-	test_user_commands();
 	test_cmdline_completion();
 	test_dispatch_line();
 	test_command_separation();
