@@ -46,12 +46,6 @@ hist_reset(hist_t *hist, size_t size)
 	hist->pos = NO_POS;
 }
 
-void
-hist_clear(hist_t *hist)
-{
-	hist->pos = NO_POS;
-}
-
 int
 hist_is_empty(const hist_t *hist)
 {

@@ -40,10 +40,6 @@ setup(void)
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 
-	hist_clear(&cfg.cmd_hist);
-	hist_clear(&cfg.prompt_hist);
-	hist_clear(&cfg.search_hist);
-
 	resize_history(INITIAL_SIZE);
 }
 

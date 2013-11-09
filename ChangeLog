@@ -21,6 +21,8 @@
 	Fixed reset of charset options (like 'cpoptions'), which could result in
 	segmentation faults.
 
+	Fixed memory leaks on :restart command.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
