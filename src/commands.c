@@ -222,6 +222,7 @@ static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
+static void clean_view_history(FileView *const view);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int type);
@@ -3114,11 +3115,9 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* undo list */
 	reset_undo_list();
 
-	/* directory history */
-	lwin.history_num = 0;
-	lwin.history_pos = 0;
-	rwin.history_num = 0;
-	rwin.history_pos = 0;
+	/* Directory histories. */
+	clean_view_history(&lwin);
+	clean_view_history(&rwin);
 
 	/* All kinds of history. */
 	hist_clear(&cfg.cmd_hist);
@@ -3161,6 +3160,15 @@ restart_cmd(const cmd_info_t *cmd_info)
 	curr_stats.restart_in_progress = 0;
 
 	return 0;
+}
+
+/* Cleans directory history of the view. */
+static void
+clean_view_history(FileView *const view)
+{
+	free_history_items(view->history, view->history_num);
+	view->history_num = 0;
+	view->history_pos = 0;
 }
 
 static int
