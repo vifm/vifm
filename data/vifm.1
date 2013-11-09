@@ -970,6 +970,14 @@ Example:
 .EE
 This means the complete command is nohlsearch, and the short one is noh.
 
+Most of command-line commands completely reset selection in the current view.
+However, there are several exceptions:
+.IP \- 2
+":invert s" will most likely leave some files selected;
+.IP \- 2
+:if and :else commands doesn't affect selection on successful execution.
+.LP
+
 \'|' can be used to separate commands, so you can give multiple commands in one
 line.  If you want to use '|' in an argument, precede it with '\\'.
 
