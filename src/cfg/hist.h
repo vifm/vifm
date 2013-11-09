@@ -40,9 +40,6 @@ int hist_init(hist_t *hist, size_t size);
  * resources are freed. */
 void hist_reset(hist_t *hist, size_t size);
 
-/* Clears history object.  Associated resources might not be freed. */
-void hist_clear(hist_t *hist);
-
 /* Checks whether history is empty.  Returns non-zero for empty history,
  * otherwise non-zero is returned. */
 int hist_is_empty(const hist_t *hist);
