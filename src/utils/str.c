@@ -434,11 +434,22 @@ has_uppercase_letters(const char str[])
 void
 copy_str(char dst[], size_t dst_len, const char src[])
 {
+	copy_substr(dst, dst_len, src, '\0');
+}
+
+void
+copy_substr(char dst[], size_t dst_len, const char src[], char terminator)
+{
 	if(dst_len != 0U)
 	{
-		if(memccpy(dst, src, '\0', dst_len) == NULL)
+		char *past_end;
+		if((past_end = memccpy(dst, src, terminator, dst_len)) == NULL)
 		{
 			dst[dst_len - 1] = '\0';
+		}
+		else
+		{
+			past_end[-1] = '\0';
 		}
 	}
 }

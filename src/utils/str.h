@@ -131,6 +131,11 @@ int has_uppercase_letters(const char str[]);
  * size dst_len pointed to by dst.  Ensures that copied string ends with null
  * character.  Does nothing for zero dst_len. */
 void copy_str(char dst[], size_t dst_len, const char src[]);
+/* Copies characters from the string pointed to by str and terminated by the
+ * terminator to piece of memory of size dst_len pointed to by dst.  Ensures
+ * that copied string ends with null character.  Does nothing for zero
+ * dst_len. */
+void copy_substr(char dst[], size_t dst_len, const char src[], char terminator);
 
 #if defined(_WIN32) && !defined(strtok_r)
 #define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
