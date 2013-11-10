@@ -2453,15 +2453,19 @@ fill_dir_list(FileView *view)
 TSTATIC int
 file_is_visible(FileView *view, const char filename[], int is_dir)
 {
-	char name_with_slash[strlen(filename) + 1 + 1];
-	sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
+	char name_with_slash[NAME_MAX + 1 + 1];
+	if(is_dir)
+	{
+		sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
+		filename = name_with_slash;
+	}
 
-	if(filter_matches(&view->auto_filter, name_with_slash) > 0)
+	if(filter_matches(&view->auto_filter, filename) > 0)
 	{
 		return 0;
 	}
 
-	if(filter_matches(&view->local_filter.filter, name_with_slash) == 0)
+	if(filter_matches(&view->local_filter.filter, filename) == 0)
 	{
 		return 0;
 	}
@@ -2471,7 +2475,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 1;
 	}
 
-	if(filter_matches(&view->name_filter, name_with_slash) > 0)
+	if(filter_matches(&view->name_filter, filename) > 0)
 	{
 		return !view->invert;
 	}

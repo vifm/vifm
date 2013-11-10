@@ -18,8 +18,11 @@ setup(void)
 	lwin.list_rows = 3;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].type = REGULAR;
 	lwin.dir_entry[1].name = strdup("_");
+	lwin.dir_entry[1].type = REGULAR;
 	lwin.dir_entry[2].name = strdup("A");
+	lwin.dir_entry[2].type = REGULAR;
 }
 
 static void

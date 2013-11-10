@@ -10,6 +10,8 @@
 
 	Don't reset view selection on :if and :else commands.
 
+	Optimized file name comparison on sorting.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

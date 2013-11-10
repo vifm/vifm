@@ -51,6 +51,8 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
+static int compare_file_names(int dirs, const char s[], const char t[],
+		int ignore_case);
 
 void
 sort_view(FileView *v)
@@ -78,28 +80,6 @@ sort_view(FileView *v)
 
 		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 	}
-}
-
-static int
-compare_file_names(const char *s, const char *t, int ignore_case)
-{
-	char s_buf[NAME_MAX];
-	char t_buf[NAME_MAX];
-
-	snprintf(s_buf, sizeof(s_buf), "%s", s);
-	chosp(s_buf);
-	s = s_buf;
-	snprintf(t_buf, sizeof(t_buf), "%s", t);
-	chosp(t_buf);
-	t = t_buf;
-
-	if(ignore_case)
-	{
-		strtolower(s_buf);
-		strtolower(t_buf);
-	}
-
-	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 /* Compares file names containing numbers correctly. */
@@ -172,6 +152,7 @@ sort_dir_list(const void *one, const void *two)
 	dir_entry_t *second = (dir_entry_t *) two;
 	int first_is_dir = 0;
 	int second_is_dir = 0;
+	int dirs;
 
 	if(first->type == DIRECTORY)
 		first_is_dir = 1;
@@ -185,6 +166,7 @@ sort_dir_list(const void *one, const void *two)
 
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
+	dirs = first_is_dir;
 
 	if(is_parent_dir(first->name))
 		return -1;
@@ -201,7 +183,7 @@ sort_dir_list(const void *one, const void *two)
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = compare_file_names(first->name, second->name,
+				retval = compare_file_names(dirs, first->name, second->name,
 						sort_type == SORT_BY_INAME);
 			break;
 
@@ -210,11 +192,11 @@ sort_dir_list(const void *one, const void *two)
 			psecond = strrchr(second->name, '.');
 
 			if(pfirst && psecond)
-				retval = compare_file_names(++pfirst, ++psecond, 0);
+				retval = compare_file_names(dirs, ++pfirst, ++psecond, 0);
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
-				retval = compare_file_names(first->name, second->name, 0);
+				retval = compare_file_names(dirs, first->name, second->name, 0);
 			break;
 
 		case SORT_BY_SIZE:
@@ -277,6 +259,42 @@ sort_dir_list(const void *one, const void *two)
 		retval = -retval;
 
 	return retval;
+}
+
+/* Compares two filenames.  Returns positive value if s greater than t, zero if
+ * they are equal, otherwise negative value is returned. */
+static int
+compare_file_names(int dirs, const char s[], const char t[], int ignore_case)
+{
+	char s_buf[NAME_MAX];
+	char t_buf[NAME_MAX];
+
+	/* TODO: FIXME: get rid of this when slash is removed from directory names. */
+	if(dirs)
+	{
+		copy_substr(s_buf, sizeof(s_buf), s, '/');
+		s = s_buf;
+
+		copy_substr(t_buf, sizeof(t_buf), t, '/');
+		t = t_buf;
+	}
+
+	if(ignore_case)
+	{
+		if(!dirs)
+		{
+			copy_str(s_buf, sizeof(s_buf), s);
+			s = s_buf;
+
+			copy_str(t_buf, sizeof(t_buf), t);
+			t = t_buf;
+		}
+
+		strtolower(s_buf);
+		strtolower(t_buf);
+	}
+
+	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 int
