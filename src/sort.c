@@ -51,6 +51,8 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
+static int compare_file_names(int dirs, const char s[], const char t[],
+		int ignore_case);
 
 void
 sort_view(FileView *v)
@@ -78,42 +80,6 @@ sort_view(FileView *v)
 
 		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 	}
-}
-
-/* Compares two filenames.  Returns positive value if s greater than t, zero if
- * they are equal, otherwise negative value is returned. */
-static int
-compare_file_names(int dirs, const char s[], const char t[], int ignore_case)
-{
-	char s_buf[NAME_MAX];
-	char t_buf[NAME_MAX];
-
-	/* TODO: FIXME: get rid of this when slash is removed from directory names. */
-	if(dirs)
-	{
-		copy_substr(s_buf, sizeof(s_buf), s, '/');
-		s = s_buf;
-
-		copy_substr(t_buf, sizeof(t_buf), t, '/');
-		t = t_buf;
-	}
-
-	if(ignore_case)
-	{
-		if(!dirs)
-		{
-			copy_str(s_buf, sizeof(s_buf), s);
-			s = s_buf;
-
-			copy_str(t_buf, sizeof(t_buf), t);
-			t = t_buf;
-		}
-
-		strtolower(s_buf);
-		strtolower(t_buf);
-	}
-
-	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 /* Compares file names containing numbers correctly. */
@@ -293,6 +259,42 @@ sort_dir_list(const void *one, const void *two)
 		retval = -retval;
 
 	return retval;
+}
+
+/* Compares two filenames.  Returns positive value if s greater than t, zero if
+ * they are equal, otherwise negative value is returned. */
+static int
+compare_file_names(int dirs, const char s[], const char t[], int ignore_case)
+{
+	char s_buf[NAME_MAX];
+	char t_buf[NAME_MAX];
+
+	/* TODO: FIXME: get rid of this when slash is removed from directory names. */
+	if(dirs)
+	{
+		copy_substr(s_buf, sizeof(s_buf), s, '/');
+		s = s_buf;
+
+		copy_substr(t_buf, sizeof(t_buf), t, '/');
+		t = t_buf;
+	}
+
+	if(ignore_case)
+	{
+		if(!dirs)
+		{
+			copy_str(s_buf, sizeof(s_buf), s);
+			s = s_buf;
+
+			copy_str(t_buf, sizeof(t_buf), t);
+			t = t_buf;
+		}
+
+		strtolower(s_buf);
+		strtolower(t_buf);
+	}
+
+	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 int
