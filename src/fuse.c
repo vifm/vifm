@@ -356,9 +356,11 @@ unmount_fuse(void)
 		snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_filename);
 		free(escaped_filename);
 
-		my_system(buf);
+		(void)vifm_system(buf);
 		if(path_exists(runner->mount_point))
+		{
 			rmdir(runner->mount_point);
+		}
 
 		runner = runner->next;
 	}

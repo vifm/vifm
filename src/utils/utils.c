@@ -58,7 +58,7 @@ static void unquote(char quoted[]);
 #endif
 
 int
-my_system(char command[])
+vifm_system(char command[])
 {
 #ifdef _WIN32
 	system("cls");

@@ -45,7 +45,7 @@ const char * get_regexp_error(int err, regex_t *re);
 
 /* Executes an external command.  Clears the screen up on Windows before running
  * the command.  Returns error code, which is zero on success. */
-int my_system(char command[]);
+int vifm_system(char command[]);
 
 /* Pauses shell.  Assumes that curses interface is off. */
 void pause_shell(void);

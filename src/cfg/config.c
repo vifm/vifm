@@ -484,7 +484,7 @@ create_help_file(void)
 	LOG_FUNC_ENTER;
 
 	char command[] = CP_HELP;
-	(void)my_system(command);
+	(void)vifm_system(command);
 }
 
 /* Copies example vifmrc file from shared files to the ~/.vifm directory. */
@@ -494,7 +494,7 @@ create_rc_file(void)
 	LOG_FUNC_ENTER;
 
 	char command[] = CP_RC;
-	(void)my_system(command);
+	(void)vifm_system(command);
 }
 #endif
 

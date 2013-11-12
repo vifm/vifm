@@ -833,8 +833,8 @@ shellout(const char *command, int pause, int allow_screen)
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", curr_view->curr_dir);
 
-	ec = my_system(buf);
-	/* No WIFEXITED(ec) check here, since my_system(...) shouldn't return until
+	ec = vifm_system(buf);
+	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
 
@@ -935,7 +935,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 
 		/* Needed for symlink directories and sshfs mounts. */
 		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		my_system(shell_cmd);
+		(void)vifm_system(shell_cmd);
 
 		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
 				escaped_sh, escaped);
@@ -1018,7 +1018,7 @@ gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
 	{
 		/* Needed for symlink directories and sshfs mounts. */
 		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		my_system(shell_cmd);
+		(void)vifm_system(shell_cmd);
 
 		snprintf(shell_cmd, shell_cmd_len, "screen");
 	}
