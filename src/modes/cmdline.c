@@ -373,7 +373,7 @@ input_line_changed(void)
 		char *mbinput;
 
 		free(previous);
-		previous = my_wcsdup(input_stat.line);
+		previous = vifm_wcsdup(input_stat.line);
 
 		mbinput = to_multibyte(input_stat.line);
 
@@ -586,7 +586,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		{
 			wcscpy(input_stat.line, cmd);
 			input_stat.curs_pos += wcswidth(input_stat.line, (size_t)-1);
-			input_stat.initial_line = my_wcsdup(input_stat.line);
+			input_stat.initial_line = vifm_wcsdup(input_stat.line);
 		}
 	}
 
@@ -917,13 +917,17 @@ static void
 do_completion(void)
 {
 	if(input_stat.complete == NULL)
+	{
 		return;
+	}
 
 	if(input_stat.line == NULL)
 	{
-		input_stat.line = my_wcsdup(L"");
+		input_stat.line = vifm_wcsdup(L"");
 		if(input_stat.line == NULL)
+		{
 			return;
+		}
 	}
 
 	line_completion(&input_stat);
@@ -1218,7 +1222,7 @@ static void
 save_users_input(void)
 {
 	free(input_stat.line_buf);
-	input_stat.line_buf = my_wcsdup((input_stat.line != NULL) ?
+	input_stat.line_buf = vifm_wcsdup((input_stat.line != NULL) ?
 			input_stat.line : L"");
 }
 
@@ -1227,7 +1231,7 @@ restore_user_input(void)
 {
 	input_stat.cmd_pos = -1;
 	free(input_stat.line);
-	input_stat.line = my_wcsdup(input_stat.line_buf);
+	input_stat.line = vifm_wcsdup(input_stat.line_buf);
 	input_stat.len = wcslen(input_stat.line);
 	update_cmdline();
 }
@@ -1844,9 +1848,11 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	const size_t new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
 			+ (stat->len - stat->index) + 1;
 
-	line_ending = my_wcsdup(stat->line + stat->index);
+	line_ending = vifm_wcsdup(stat->line + stat->index);
 	if(line_ending == NULL)
+	{
 		return -1;
+	}
 
 	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
 	{

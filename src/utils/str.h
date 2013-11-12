@@ -58,7 +58,9 @@ size_t trim_right(char *text);
  * returned. */
 wchar_t * to_wide(const char s[]);
 
-wchar_t * my_wcsdup(const wchar_t *ws);
+/* Duplicates a wide-character string.  Returns pointer to new string or NULL on
+ * error. */
+wchar_t * vifm_wcsdup(const wchar_t ws[]);
 
 /* Checks whether str starts with the given prefix.  Returns non-zero if it's
  * so, otherwise zero is returned. */

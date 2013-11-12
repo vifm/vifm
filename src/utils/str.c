@@ -82,12 +82,14 @@ to_wide(const char s[])
 
 /* I'm really worry about the portability... */
 wchar_t *
-my_wcsdup(const wchar_t *ws)
+vifm_wcsdup(const wchar_t ws[])
 {
 	const size_t len = wcslen(ws) + 1;
 	wchar_t * const result = malloc(len*sizeof(wchar_t));
 	if(result == NULL)
+	{
 		return NULL;
+	}
 	wcsncpy(result, ws, len);
 	return result;
 }

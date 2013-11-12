@@ -628,10 +628,12 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r)
 
 	curr = add_keys_inner(&user_cmds_root[mode], keys);
 	if(curr->conf.type == USER_CMD)
+	{
 		free((void*)curr->conf.data.cmd);
+	}
 
 	curr->conf.type = USER_CMD;
-	curr->conf.data.cmd = my_wcsdup(cmd);
+	curr->conf.data.cmd = vifm_wcsdup(cmd);
 	curr->no_remap = no_r;
 	return 0;
 }
@@ -837,7 +839,7 @@ list_cmds(int mode)
 	if(j == -1)
 		j = i;
 
-	result[j++] = my_wcsdup(L"");
+	result[j++] = vifm_wcsdup(L"");
 
 	if(fill_list(&builtin_cmds_root[mode], 0, result + j) < 0)
 	{
