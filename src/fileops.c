@@ -272,7 +272,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	cmd_group_begin(buf);
 
 	y = 0;
-	if(my_chdir(curr_view->curr_dir) != 0)
+	if(vifm_chdir(curr_view->curr_dir) != 0)
 	{
 		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
@@ -1352,7 +1352,7 @@ prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];
 
-	my_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
 			src_name);
 	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
 }
@@ -1544,7 +1544,7 @@ prompt_what_to_do(const char src_name[])
 	wchar_t buf[NAME_MAX];
 
 	(void)replace_string(&put_confirm.name, src_name);
-	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll%" WPRINTF_MBSTR ": ",
 			src_name, put_confirm.allow_merge ? "/[m]erge" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
@@ -1922,7 +1922,7 @@ put_files_from_register_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(my_chdir(view->curr_dir) != 0)
+	if(vifm_chdir(view->curr_dir) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;

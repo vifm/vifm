@@ -58,7 +58,7 @@ static void unquote(char quoted[]);
 #endif
 
 int
-my_system(char command[])
+vifm_system(char command[])
 {
 #ifdef _WIN32
 	system("cls");
@@ -68,13 +68,15 @@ my_system(char command[])
 }
 
 int
-my_chdir(const char *path)
+vifm_chdir(const char path[])
 {
 	char curr_path[PATH_MAX];
 	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)
 	{
 		if(stroscmp(curr_path, path) == 0)
+		{
 			return 0;
+		}
 	}
 	return chdir(path);
 }

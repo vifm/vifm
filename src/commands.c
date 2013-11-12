@@ -2693,16 +2693,16 @@ ls_cmd(const cmd_info_t *cmd_info)
 			status_bar_message("No terminal multiplexer is in use");
 			return 1;
 		case TM_SCREEN:
-			my_system("screen -X eval windowlist");
+			(void)vifm_system("screen -X eval windowlist");
 			return 0;
 		case TM_TMUX:
-			if(my_system("tmux choose-window") != EXIT_SUCCESS)
+			if(vifm_system("tmux choose-window") != EXIT_SUCCESS)
 			{
 				/* Refresh all windows as failed command outputs message, which can't be
 				 * suppressed. */
 				update_all_windows();
 				/* Fall back to worse way of doing the same for tmux versions < 1.8. */
-				my_system("tmux command-prompt choose-window");
+				(void)vifm_system("tmux command-prompt choose-window");
 			}
 			return 0;
 
@@ -3948,7 +3948,7 @@ run_in_split(const FileView *view, const char cmd[])
 	{
 		char buf[1024];
 		snprintf(buf, sizeof(buf), "tmux split-window %s", escaped_cmd);
-		my_system(buf);
+		(void)vifm_system(buf);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
@@ -3963,11 +3963,11 @@ run_in_split(const FileView *view, const char cmd[])
 		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
 		free(escaped_chdir);
 
-		my_system(buf);
+		(void)vifm_system(buf);
 
 		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
 				escaped_cmd);
-		my_system(buf);
+		(void)vifm_system(buf);
 	}
 	else
 	{

@@ -2009,7 +2009,7 @@ change_directory(FileView *view, const char *directory)
 		}
 	}
 
-	if(my_chdir(dir_dup) == -1 && !is_unc_root(dir_dup))
+	if(vifm_chdir(dir_dup) != 0 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
@@ -2544,17 +2544,21 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	if(curr_stats.load_stage < 2)
+	{
 		update_all_windows();
+	}
 
 	/* this is needed for lstat() below */
-	if(my_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
+	if(vifm_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
 		return 1;
 	}
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
+	{
 		get_all_selected_files(view);
+	}
 
 	if(view->dir_entry != NULL)
 	{

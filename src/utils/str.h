@@ -58,7 +58,9 @@ size_t trim_right(char *text);
  * returned. */
 wchar_t * to_wide(const char s[]);
 
-wchar_t * my_wcsdup(const wchar_t *ws);
+/* Duplicates a wide-character string.  Returns pointer to new string or NULL on
+ * error. */
+wchar_t * vifm_wcsdup(const wchar_t ws[]);
 
 /* Checks whether str starts with the given prefix.  Returns non-zero if it's
  * so, otherwise zero is returned. */
@@ -117,7 +119,7 @@ char * strcatch(char *str, char c);
 
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */
-int my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...);
+int vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...);
 
 /* Extracts next non-empry part of string with separators.  Returns pointer to
  * the beginning of the next part or NULL at the end of a string. */
