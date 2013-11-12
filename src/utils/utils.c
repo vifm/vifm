@@ -68,7 +68,7 @@ my_system(char command[])
 }
 
 int
-my_chdir(const char *path)
+vifm_chdir(const char *path)
 {
 	char curr_path[PATH_MAX];
 	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)

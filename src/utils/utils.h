@@ -56,7 +56,7 @@ int is_on_slow_fs(const char full_path[]);
  * Returns non-zero in case resulting string is a shortened variant of size. */
 int friendly_size_notation(uint64_t num, int str_size, char *str);
 const char * enclose_in_dquotes(const char *str);
-int my_chdir(const char *path);
+int vifm_chdir(const char *path);
 /* Expands all environment variables and tilde in the path.  Allocates
  * memory, that should be freed by the caller. */
 char * expand_path(const char path[]);

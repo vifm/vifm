@@ -21,6 +21,7 @@
 
 #include <sys/stat.h> /* S_IRWXU */
 
+#include <stddef.h> /* NULL */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
@@ -188,7 +189,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		 paths, Otherwise the fuse-zip command fails with
 		 "fusermount: failed to open current directory: permission denied"
 		 (this happens when mounting JARs from mounted JARs) */
-	if(my_chdir(cfg.fuse_home) != 0)
+	if(vifm_chdir(cfg.fuse_home) != 0)
 	{
 		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
 		return -1;
@@ -226,7 +227,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		if(path_exists(mount_point))
 			rmdir(mount_point);
 		show_error_msg("FUSE MOUNT ERROR", file_full_path);
-		(void)my_chdir(view->curr_dir);
+		(void)vifm_chdir(view->curr_dir);
 		return -1;
 	}
 	unlink(errors_file);
@@ -336,13 +337,17 @@ unmount_fuse(void)
 	fuse_mount_t *runner;
 
 	if(fuse_mounts == NULL)
+	{
 		return;
+	}
 
-	if(my_chdir("/") != 0)
+	if(vifm_chdir("/") != 0)
+	{
 		return;
+	}
 
 	runner = fuse_mounts;
-	while(runner)
+	while(runner != NULL)
 	{
 		char buf[14 + PATH_MAX + 1];
 		char *escaped_filename;
@@ -415,7 +420,9 @@ try_unmount_fuse(FileView *view)
 	}
 
 	if(runner == NULL)
+	{
 		return 0;
+	}
 
 	/* we are exiting a top level dir */
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
@@ -425,7 +432,7 @@ try_unmount_fuse(FileView *view)
 	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
-	if(my_chdir(cfg.fuse_home) != 0)
+	if(vifm_chdir(cfg.fuse_home) != 0)
 	{
 		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
 		return -1;
@@ -440,7 +447,7 @@ try_unmount_fuse(FileView *view)
 		werase(status_bar);
 		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
 				runner->source_file_name);
-		(void)my_chdir(view->curr_dir);
+		(void)vifm_chdir(view->curr_dir);
 		return -1;
 	}
 

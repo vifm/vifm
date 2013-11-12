@@ -165,7 +165,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 	int x;
 	int select = 0;
 
-	(void)my_chdir(dir);
+	(void)vifm_chdir(dir);
 
 	/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)

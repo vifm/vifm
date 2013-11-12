@@ -553,9 +553,10 @@ complete_command_name(const char beginning[])
 	paths = get_paths(&paths_count);
 	for(i = 0; i < paths_count; i++)
 	{
-		if(my_chdir(paths[i]) != 0)
-			continue;
-		filename_completion(beginning, CT_EXECONLY);
+		if(vifm_chdir(paths[i]) == 0)
+		{
+			filename_completion(beginning, CT_EXECONLY);
+		}
 	}
 	add_completion(beginning);
 }
@@ -650,14 +651,14 @@ filename_completion(const char *str, CompletionType type)
 
 	dir = opendir(dirname);
 
-	if(dir == NULL || my_chdir(dirname) != 0)
+	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
 		add_completion(filename);
 	}
 	else
 	{
 		filename_completion_internal(dir, dirname, filename, type);
-		(void)my_chdir(curr_view->curr_dir);
+		(void)vifm_chdir(curr_view->curr_dir);
 	}
 
 	free(filename);

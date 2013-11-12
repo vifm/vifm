@@ -272,7 +272,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	cmd_group_begin(buf);
 
 	y = 0;
-	if(my_chdir(curr_view->curr_dir) != 0)
+	if(vifm_chdir(curr_view->curr_dir) != 0)
 	{
 		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
@@ -1922,7 +1922,7 @@ put_files_from_register_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(my_chdir(view->curr_dir) != 0)
+	if(vifm_chdir(view->curr_dir) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
