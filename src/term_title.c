@@ -227,7 +227,7 @@ set_terminal_title(const char *path)
 {
 #ifdef _WIN32
 	wchar_t buf[2048];
-	my_swprintf(buf, ARRAY_LEN(buf), L"%" WPRINTF_MBSTR L" - VIFM", path);
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"%" WPRINTF_MBSTR L" - VIFM", path);
 	SetConsoleTitleW(buf);
 #else
 	printf("\033]2;%s - VIFM\007", path);

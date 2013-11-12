@@ -258,7 +258,7 @@ strcatch(char *str, char c)
 }
 
 int
-my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
+vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...)
 {
 	int result;
 	va_list ap;

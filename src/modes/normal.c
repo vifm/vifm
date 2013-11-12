@@ -523,7 +523,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+			vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 		}
 	}
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
@@ -1361,7 +1361,9 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t buf[16] = L"";
 	if(key_info.count != NO_COUNT_GIVEN)
-		my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
+	{
+		vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
+	}
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 

@@ -1352,7 +1352,7 @@ prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];
 
-	my_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
 			src_name);
 	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
 }
@@ -1544,7 +1544,7 @@ prompt_what_to_do(const char src_name[])
 	wchar_t buf[NAME_MAX];
 
 	(void)replace_string(&put_confirm.name, src_name);
-	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll%" WPRINTF_MBSTR ": ",
 			src_name, put_confirm.allow_merge ? "/[m]erge" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);

@@ -1855,7 +1855,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	}
 	stat->line = t;
 
-	my_swprintf(stat->line + (p - line_mb), new_len,
+	vifm_swprintf(stat->line + (p - line_mb), new_len,
 			L"%" WPRINTF_MBSTR L"%" WPRINTF_WSTR, completed, line_ending);
 	free(line_ending);
 

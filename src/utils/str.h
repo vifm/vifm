@@ -117,7 +117,7 @@ char * strcatch(char *str, char c);
 
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */
-int my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...);
+int vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...);
 
 /* Extracts next non-empry part of string with separators.  Returns pointer to
  * the beginning of the next part or NULL at the end of a string. */
