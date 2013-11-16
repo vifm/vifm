@@ -1947,7 +1947,10 @@ change_directory(FileView *view, const char *directory)
 
 	location_changed = stroscmp(dir_dup, view->curr_dir) != 0;
 
-	copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
+	if(location_changed)
+	{
+		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
+	}
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.

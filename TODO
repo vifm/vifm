@@ -111,9 +111,7 @@ Possible things to add.
         help files available were those provided by vifm.
     Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
-    Invalidate calculated directory size if it's modification time changed.
-    Merge directory stacks in vifminfo file. Need to come up with a good
-        policy about this.
+    Invalidate calculated directory size if its modification time changed.
     Add search history for less-like mode.
     Update visible symbolic links in the other pane on updating current pane
         (to show broken links to the user).
