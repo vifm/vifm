@@ -1904,6 +1904,7 @@ change_directory(FileView *view, const char *directory)
 {
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
+	int location_changed;
 
 	if(is_dir_list_loaded(view))
 	{
@@ -1943,6 +1944,8 @@ change_directory(FileView *view, const char *directory)
 		leave_invalid_dir(view);
 		snprintf(dir_dup, sizeof(dir_dup), "%s", view->curr_dir);
 	}
+
+	location_changed = stroscmp(dir_dup, view->curr_dir) != 0;
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
@@ -2002,7 +2005,7 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		if(stroscmp(view->curr_dir, dir_dup) != 0)
+		if(location_changed)
 		{
 			show_error_msgf("Directory Access Error",
 					"You do not have read access on %s", dir_dup);
@@ -2021,7 +2024,7 @@ change_directory(FileView *view, const char *directory)
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
-	if(stroscmp(dir_dup, view->curr_dir) != 0)
+	if(location_changed)
 	{
 		filter_clear(&view->local_filter.filter);
 		free_saved_selection(view);
