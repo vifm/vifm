@@ -12,6 +12,8 @@
 
 	Optimized file name comparison on sorting.
 
+	Improved documentation on bookmarks (documented special bookmarks).
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
@@ -27,6 +29,11 @@
 
 	Fixed format arguments parsing on displaying "Invalid expression" error
 	message for :echo and :execute commands.
+
+	Fixed overwrite of previously visited directory on view update (made
+	`:cd -` and '' useless after, for instance, switching panes).
+
+	Fixed error message on navigating to a wrong bookmark.
 
 0.7.6-beta2 to 0.7.6
 

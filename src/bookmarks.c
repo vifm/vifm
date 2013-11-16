@@ -41,6 +41,14 @@ const char valid_bookmarks[] = {
 	'\0'
 };
 
+/* List of special bookmarks that can't be set manually, hence require special
+ * treating in some cases. */
+static const char spec_bookmarks[] =
+{
+	'<', '>', '\'',
+	'\0'
+};
+
 /*
  * transform a mark to an index
  * (0=48->0, 9=57->9, <=60->10, >=60->11, A=65->12,...,Z=90->37, a=97 -> 38,
@@ -125,7 +133,7 @@ int
 is_spec_bookmark(const int x)
 {
 	const char mark = index2mark(x);
-	return mark == '<' || mark == '>';
+	return char_is_one_of(spec_bookmarks, mark);
 }
 
 /*
@@ -178,9 +186,10 @@ add_mark(const char mark, const char *directory, const char *file)
 int
 add_bookmark(const char mark, const char *directory, const char *file)
 {
-	if(!isalnum(mark))
+	if(!char_is_one_of(valid_bookmarks, mark) ||
+			char_is_one_of(spec_bookmarks, mark))
 	{
-		status_bar_message("Invalid mark");
+		status_bar_message("Invalid mark name");
 		return 1;
 	}
 
@@ -191,10 +200,10 @@ add_bookmark(const char mark, const char *directory, const char *file)
 void
 set_specmark(const char mark, const char *directory, const char *file)
 {
-	if(mark != '<' && mark != '>')
-		return;
-
-	add_mark(mark, directory, file);
+	if(char_is_one_of(spec_bookmarks, mark))
+	{
+		add_mark(mark, directory, file);
+	}
 }
 
 int
@@ -212,7 +221,7 @@ move_to_bookmark(FileView *view, char mark)
 	}
 	else
 	{
-		if(!isalnum(mark))
+		if(!char_is_one_of(valid_bookmarks, mark))
 			status_bar_message("Invalid mark name");
 		else if(is_bookmark_empty(bmark_index))
 			status_bar_message("Mark is not set");

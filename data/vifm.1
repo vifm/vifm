@@ -1,4 +1,4 @@
-.TH vifm 1 "Nov 09, 2013" "" "Vifm"
+.TH vifm 1 "Nov 16, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -268,10 +268,20 @@ Marks are set the same way as they are in vi.
 You can use this characters for marks [a\-z][A\-Z][0\-9].
 .TP
 .BI m[a\-z][A\-Z][0\-9]
-to set a mark for the current file.
+to set a mark for the file at the current cursor position.
 .TP
 .BI '[a\-z][A\-Z][0\-9]
 moves to the file set for the mark.
+
+.LP
+There are also several special marks that can't be set manually:
+.IP \- 2
+\' (single quote) \- previously visited directory of the view, thus hitting
+\'' allows switching between two last locations
+.IP \- 2
+< \- the first file of the last visually selected block
+.IP \- 2
+> \- the last file of the last visually selected block
 .\" ---------------------------------------------------------------------------
 .SH Searching
 .\" ---------------------------------------------------------------------------
