@@ -33,6 +33,8 @@
 	Fixed overwrite of previously visited directory on view update (made
 	`:cd -` and '' useless after, for instance, switching panes).
 
+	Fixed error message on navigating to a wrong bookmark.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
