@@ -231,6 +231,13 @@ m[a-z][A-Z][0-9] will set a mark at the current cursor position.
                                                *vifm-'*
 '[a-z][A-Z][0-9] moves to the file set for the mark.
 
+
+There are also several special marks that can't be set manually:
+ ' (single quote) - previously visited directory of the view, thus hitting
+                    '' allows switching between two last locations
+ < - the first file of the last visually selected block
+ > - the last file of the last visually selected block
+
 Searching~
 
                                                *vifm-/*
