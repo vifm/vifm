@@ -1940,14 +1940,14 @@ change_directory(FileView *view, const char *directory)
 	if(!is_valid_dir(dir_dup))
 	{
 		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
-		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
+		copy_str(view->curr_dir, sizeof(view->curr_dir), dir_dup);
 		leave_invalid_dir(view);
-		snprintf(dir_dup, sizeof(dir_dup), "%s", view->curr_dir);
+		copy_str(dir_dup, sizeof(dir_dup), view->curr_dir);
 	}
 
 	location_changed = stroscmp(dir_dup, view->curr_dir) != 0;
 
-	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
+	copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.
@@ -2038,7 +2038,7 @@ change_directory(FileView *view, const char *directory)
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", dir_dup);
 
-	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
+	copy_str(view->curr_dir, sizeof(view->curr_dir), dir_dup);
 
 	if(is_dir_list_loaded(view))
 	{
