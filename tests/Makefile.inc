@@ -1,4 +1,4 @@
-SOURCES := ../../src/*.c ../../src/cfg/*.c ../../src/engine/*.c
+SOURCES := ../../src/*.c ../../src/cfg/*.c ../../src/engine/*.c ../../src/io/*.c
 SOURCES += ../../src/modes/dialogs/*.c ../../src/menus/*.c ../../src/modes/*.c
 SOURCES += ../../src/utils/*.c
 

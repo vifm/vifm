@@ -30,6 +30,7 @@
 #include <stdlib.h> /* free() */
 
 #include "cfg/config.h"
+#include "io/ior.h"
 #include "menus/menus.h"
 #ifdef _WIN32
 #include "utils/fs.h"
@@ -140,55 +141,13 @@ op_remove(void *data, const char *src, const char *dst)
 static int
 op_removesl(void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
-	char *escaped;
-	char cmd[16 + PATH_MAX];
-	int result;
-	const int cancellable = data == NULL;
-
-	escaped = escape_filename(src, 0);
-	if(escaped == NULL)
-		return -1;
-
-	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
-	LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, cancellable);
-
-	free(escaped);
-	return result;
-#else
-	if(is_dir(src))
+	io_args_t args =
 	{
-		char buf[PATH_MAX];
-		int err;
-		int i;
-		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
-		for(i = 0; buf[i] != '\0'; i++)
-			if(buf[i] == '/')
-				buf[i] = '\\';
-		SHFILEOPSTRUCTA fo = {
-			.hwnd = NULL,
-			.wFunc = FO_DELETE,
-			.pFrom = buf,
-			.pTo = NULL,
-			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
-		};
-		err = SHFileOperation(&fo);
-		log_msg("Error: %d", err);
-		return err;
-	}
-	else
-	{
-		int ok;
-		DWORD attributes = GetFileAttributesA(src);
-		if(attributes & FILE_ATTRIBUTE_READONLY)
-			SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
-		ok = DeleteFile(src);
-		if(!ok)
-			LOG_WERROR(GetLastError());
-		return !ok;
-	}
-#endif
+		.arg1.src = src,
+
+		.cancellable = data == NULL,
+	};
+	return ior_rm(&args);
 }
 
 /* OP_COPY operation handler.  Copies file/directory without overwriting

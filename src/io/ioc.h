@@ -60,6 +60,8 @@ typedef struct
 	}
 	arg3;
 
+	int cancellable;
+
 	io_result_t result;
 }
 io_args_t;
