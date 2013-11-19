@@ -61,18 +61,18 @@ ior_rm(io_args_t *const args)
 	{
 		char buf[PATH_MAX];
 		int err;
-		int i;
-		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
-		for(i = 0; buf[i] != '\0'; i++)
-			if(buf[i] == '/')
-				buf[i] = '\\';
-		SHFILEOPSTRUCTA fo = {
+		SHFILEOPSTRUCTA fo =
+		{
 			.hwnd = NULL,
 			.wFunc = FO_DELETE,
 			.pFrom = buf,
 			.pTo = NULL,
 			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
 		};
+
+		/* The string should be terminated with two null characters. */
+		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
+		to_back_slash(buf);
 		err = SHFileOperation(&fo);
 		log_msg("Error: %d", err);
 		return err;
@@ -82,10 +82,14 @@ ior_rm(io_args_t *const args)
 		int ok;
 		DWORD attributes = GetFileAttributesA(src);
 		if(attributes & FILE_ATTRIBUTE_READONLY)
+		{
 			SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
+		}
 		ok = DeleteFile(src);
 		if(!ok)
+		{
 			LOG_WERROR(GetLastError());
+		}
 		return !ok;
 	}
 #endif
