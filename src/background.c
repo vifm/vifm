@@ -238,7 +238,7 @@ job_free(job_t *const job)
 		close(job->fd);
 	}
 #else
-	if(job->hprocess != INVALID_HANDLE)
+	if(job->hprocess != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(job->hprocess);
 	}
