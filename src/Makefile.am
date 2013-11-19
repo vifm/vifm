@@ -42,6 +42,11 @@ vifm_SOURCES = \
 	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
+	io/ioc.h \
+	io/ioe.h \
+	io/iop.c io/iop.h \
+	io/ior.c io/ior.h \
+	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bookmarks_menu.c menus/bookmarks_menu.h \

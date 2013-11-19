@@ -23,6 +23,9 @@ engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
           text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
+engine := iop.c ior.c
+engine := $(addprefix io/, $(engine))
+
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
          dirhistory_menu.c dirstack_menu.c filetypes_menu.c find_menu.c \
          grep_menu.c history_menu.c jobs_menu.c locate_menu.c trash_menu.c \
