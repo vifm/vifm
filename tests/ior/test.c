@@ -1,11 +1,28 @@
 #include "seatest.h"
 
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
+
+#include "../../src/cfg/config.h"
+
 void chgrp_tests(void);
 void chmod_tests(void);
 void chown_tests(void);
 void cp_tests(void);
 void mv_tests(void);
 void rm_tests(void);
+
+static void
+setup(void)
+{
+	cfg.shell = strdup("/bin/bash");
+}
+
+static void
+teardown(void)
+{
+	free(cfg.shell);
+}
 
 void
 all_tests(void)
@@ -21,6 +38,8 @@ all_tests(void)
 int
 main(void)
 {
+	suite_setup(setup);
+	suite_teardown(teardown);
 	return run_tests(all_tests) == 0;
 }
 

@@ -49,12 +49,12 @@ ior_rm(io_args_t *const args)
 	{
 		return -1;
 	}
-
 	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
+	free(escaped);
+
 	LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd, args->cancellable);
 
-	free(escaped);
 	return result;
 #else
 	if(is_dir(src))
