@@ -40,9 +40,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	custom_macro_t macros[] =
 	{
-		{ .letter = 'i', .value = NULL, .uses_left = 1 },
-		{ .letter = 'a', .value = NULL, .uses_left = 1 },
-		{ .letter = 's', .value = NULL, .uses_left = 1 },
+		{ .letter = 'i', .value = NULL, .uses_left = 1, .group = -1 },
+		{ .letter = 'a', .value = NULL, .uses_left = 1, .group = -1 },
+		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;

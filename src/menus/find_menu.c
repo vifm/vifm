@@ -46,8 +46,8 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	custom_macro_t macros[] =
 	{
-		{ .letter = 's', .value = NULL, .uses_left = 1 },
-		{ .letter = 'a', .value = NULL, .uses_left = 1 },
+		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
+		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 	};
 
 	static menu_info m;

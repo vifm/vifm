@@ -39,7 +39,7 @@ show_apropos_menu(FileView *view, const char args[])
 	int save_msg;
 	custom_macro_t macros[] =
 	{
-		{ .letter = 'a', .value = args, .uses_left = 1 },
+		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;
