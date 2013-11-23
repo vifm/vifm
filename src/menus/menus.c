@@ -43,6 +43,7 @@
 #include "../modes/modes.h"
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
+#include "../utils/log.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
@@ -674,6 +675,8 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	FILE *file, *err;
 	char *line = NULL;
 	int x;
+
+	LOG_INFO_MSG("Capturing outpu of the command to a menu: %s", cmd);
 
 	if(background_and_capture((char *)cmd, &file, &err) != 0)
 	{

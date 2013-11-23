@@ -24,7 +24,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() calloc() */
-#include <string.h> /* strchr() strncat() strcpy() strlen() strcat() strdup() */
+#include <string.h> /* memset() strchr() strncat() strcpy() strlen() strcat()
+                       strdup() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -422,10 +423,7 @@ expand_custom_macros(const char pattern[], size_t nmacros,
 			if(i < nmacros)
 			{
 				expanded = extend_string(expanded, macros[i].value, &len);
-				if(macros[i].uses_left > 0)
-				{
-					macros[i].uses_left--;
-				}
+				macros[i].uses_left--;
 			}
 		}
 		pattern++;
@@ -442,15 +440,30 @@ static char *
 add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[])
 {
+	int groups[nmacros];
 	int i;
+
+	memset(&groups, 0, sizeof(groups));
 	for(i = 0; i < nmacros; i++)
 	{
 		custom_macro_t *const macro = &macros[i];
-		while(macro->uses_left > 0)
+		const int group = macro->group;
+		if(group >= 0)
+		{
+			groups[group] += macro->uses_left;
+		}
+	}
+
+	for(i = 0; i < nmacros; i++)
+	{
+		custom_macro_t *const macro = &macros[i];
+		const int group = macro->group;
+		int *const uses_left = (group >= 0) ? &groups[group] : &macro->uses_left;
+		while(*uses_left > 0)
 		{
 			expanded = extend_string(expanded, " ", &len);
 			expanded = extend_string(expanded, macro->value, &len);
-			macro->uses_left--;
+			--*uses_left;
 		}
 	}
 	return expanded;

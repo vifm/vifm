@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 16
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1927,18 +1927,27 @@ Specifies format for an external command to be invoked by the |vifm-:find|
 command.  The format supports expanding of macros, specific for a particular
 *prg option, and %% sequence for inserting percent sign literally.  This
 option should include the %s macro to specify placement of list of paths to
-search in and the %a macro to specify placement of arguments passed to the
+search in and %a or %A macro to specify placement of arguments passed to the
 |vifm-:find| command.  If some of the macros are not used, they will be
 implicitly added after a space to the value of the option in the following
-order: %s, %a.
+order: %s, %a.  Note that when neither %a nor %A are specified, it's %a which
+is added implicitly.
 
-%s and %a macro can slightly change their meaning depending on |vifm-:find|
-command arguments.  When the first argument points to an existing directory,
-%s is assigned all arguments and %a is left empty.  Otherwise, %s is assigned
-a dot (".") meaning current directory or list of selected filenames if any.
-%a is assigned arguments when first argument starts with a dash ("-"),
-otherwise an escaped version of arguments, prepended by "-name" (on *nix) or
-"-iname" (on Windows) predicate.
+The macros can slightly change their meaning depending on |vifm-:find| command
+arguments.  When the first argument points to an existing directory, %s is
+assigned all arguments and %a/%a are left empty.  Otherwise, %s is assigned
+a dot (".") meaning current directory or list of selected filenames, if any.
+%a/%A are assigned arguments when first argument starts with a dash ("-"),
+otherwise %a gets an escaped version of arguments, prepended by "-name"
+(on *nix) or "-iname" (on Windows) predicate.
+
+Starting from Windows Server 2003 a where command is available, one can
+configure vifm to use it in the following way: >
+
+    set findprg="where /R %s %A"
+<
+As the syntax of this command is rather limited, one can't use |vifm-:find|
+command with selection of more than one item in this case.
 
                                                *vifm-'followlinks'*
 followlinks
