@@ -30,6 +30,7 @@
 #include <stdlib.h> /* free() */
 
 #include "cfg/config.h"
+#include "io/iop.h"
 #include "io/ior.h"
 #include "menus/menus.h"
 #ifdef _WIN32
@@ -143,7 +144,7 @@ op_removesl(void *data, const char *src, const char *dst)
 {
 	io_args_t args =
 	{
-		.arg1.src = src,
+		.arg1.path = src,
 
 		.cancellable = data == NULL,
 	};
@@ -506,25 +507,11 @@ op_rmdir(void *data, const char *src, const char *dst)
 static int
 op_mkfile(void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "touch %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	HANDLE hfile;
-
-	hfile = CreateFileA(src, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	CloseHandle(hfile);
-	return 0;
-#endif
+	io_args_t args =
+	{
+		.arg1.path = src,
+	};
+	return iop_mkfile(&args);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
