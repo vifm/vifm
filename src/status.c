@@ -234,8 +234,8 @@ update_last_cmdline_command(const char cmd[])
 static void
 set_last_cmdline_command(const char cmd[])
 {
-	const int success = replace_string(&curr_stats.last_cmdline_command, cmd);
-	if(!success)
+	const int err = replace_string(&curr_stats.last_cmdline_command, cmd);
+	if(err != 0)
 	{
 		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
 	}
