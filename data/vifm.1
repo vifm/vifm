@@ -1,4 +1,4 @@
-.TH vifm 1 "Nov 16, 2013" "" "Vifm"
+.TH vifm 1 "Nov 23, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2240,21 +2240,32 @@ type: string
 .br
 default: "find %s %a \-print , -type d \\( ! \-readable -o ! -executable \\) \-prune"
 .br
-Specifies format for an external command to be invoked by the :find command.
-The format supports expanding of macros, specific for a particular *prg option,
-and %% sequence for inserting percent sign literally.  This option should
-include the %s macro to specify placement of list of paths to search in and the
-%a macro to specify placement of arguments passed to the :find command.  If some
-of the macros are not used, they will be implicitly added after a space to the
-value of the option in the following order: %s, %a.
+Specifies format for an external command to be invoked by the :find
+command.  The format supports expanding of macros, specific for a particular
+*prg option, and %% sequence for inserting percent sign literally.  This
+option should include the %s macro to specify placement of list of paths to
+search in and %a or %A macro to specify placement of arguments passed to the
+:find command.  If some of the macros are not used, they will be
+implicitly added after a space to the value of the option in the following
+order: %s, %a.  Note that when neither %a nor %A are specified, it's %a which
+is added implicitly.
 
-%s and %a macro can slightly change their meaning depending on :find command
+The macros can slightly change their meaning depending on :find command
 arguments.  When the first argument points to an existing directory, %s is
-assigned all arguments and %a is left empty.  Otherwise, %s is assigned a dot
-(".") meaning current directory or list of selected filenames if any.  %a is
-assigned arguments when first argument starts with a dash ("\-"), otherwise an
-escaped version of arguments, prepended by "\-name" (on *nix) or "\-iname" (on
-Windows) predicate.
+assigned all arguments and %a/%a are left empty.  Otherwise, %s is assigned
+a dot (".") meaning current directory or list of selected filenames, if any.
+%a/%A are assigned arguments when first argument starts with a dash ("\-"),
+otherwise %a gets an escaped version of arguments, prepended by "\-name"
+(on *nix) or "\-iname" (on Windows) predicate.
+
+Starting from Windows Server 2003 a where command is available, one can
+configure vifm to use it in the following way:
+.EX
+    set findprg="where /R %s %A"
+.EE
+As the syntax of this command is rather limited, one can't use :find
+command with selection of more than one item in this case.
+
 .TP
 .BI followlinks
 type: boolean
