@@ -48,6 +48,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	{
 		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
 		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
+		{ .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
 	};
 
 	static menu_info m;
@@ -59,11 +60,13 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	{
 		macros[0].value = args;
 		macros[1].value = "";
+		macros[2].value = "";
 	}
 	else
 	{
 		targets = get_cmd_target();
 		macros[0].value = targets;
+		macros[2].value = args;
 
 		if(args[0] == '-')
 		{
