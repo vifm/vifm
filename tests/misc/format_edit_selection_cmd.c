@@ -69,10 +69,12 @@ teardown(void)
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
 	free(lwin.dir_entry);
+	lwin.list_rows = 0;
 
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
 	free(rwin.dir_entry);
+	rwin.list_rows = 0;
 
 	free(cfg.vi_command);
 }
