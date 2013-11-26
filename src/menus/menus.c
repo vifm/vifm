@@ -33,6 +33,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memset() strdup() strchr() strlen() strrchr() */
 #include <stdarg.h>
 #include <signal.h>
@@ -44,6 +45,7 @@
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
@@ -425,18 +427,24 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *free_this;
 	char *num = NULL;
 	char *p = NULL;
+	const size_t bufs_len = 2 + strlen(m->items[m->pos]) + 1 + 1;
 
-	free_this = file = dir = malloc(2 + strlen(m->items[m->pos]) + 1 + 1);
+	free_this = file = dir = malloc(bufs_len);
 	if(free_this == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	if(m->items[m->pos][0] != '/')
-		strcpy(dir, "./");
-	else
+	if(is_path_absolute(m->items[m->pos]))
+	{
 		dir[0] = '\0';
+	}
+	else
+	{
+		copy_str(dir, bufs_len, "./");
+	}
+
 	if(m->type == GREP)
 	{
 		p = strchr(m->items[m->pos], ':');
@@ -479,7 +487,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		if(is_dir(file))
 			isdir = 1;
 
-		if((last_slash = strrchr(dir, '/')) != NULL)
+		if((last_slash = find_slashr(dir)) != NULL)
 		{
 			*last_slash = '\0';
 			file = last_slash + 1;

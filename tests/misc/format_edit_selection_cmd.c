@@ -8,6 +8,8 @@
 #include "../../src/running.h"
 #include "../../src/ui.h"
 
+static void teardown_view(FileView *view);
+
 static void
 setup_lwin(void)
 {
@@ -64,17 +66,23 @@ setup(void)
 static void
 teardown(void)
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	free(rwin.dir_entry);
+	teardown_view(&lwin);
+	teardown_view(&rwin);
 
 	free(cfg.vi_command);
+}
+
+static void
+teardown_view(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; i++)
+	{
+		free(view->dir_entry[i].name);
+	}
+	free(view->dir_entry);
+	view->list_rows = 0;
+	view->selected_files = 0;
 }
 
 static void
