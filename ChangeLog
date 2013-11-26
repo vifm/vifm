@@ -6,6 +6,9 @@
 	Added %A macro to 'findprg' option, which expands to unmodified list of
 	arguments.  Thanks to Robert Sarkozi.
 
+	Added handling of paths with backward slashes for :find/:locate/:grep/%M
+	menus on Windows.  Thanks to Robert Sarkozi.
+
 	Treat semicolon (";") as a valid range separator for command-line
 	commands.
 
