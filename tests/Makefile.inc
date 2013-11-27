@@ -60,14 +60,10 @@ else
 	$(MAKE) -C ../../src/ -f Makefile.win vifm.exe
 endif
 
-../bin/.timestamp:
-	mkdir -p $(dir $@)
-	touch $@
-
 bin/%.o: %.c bin/.timestamp
 	gcc -c -o $@ $< $(CFLAGS)
 
-bin/.timestamp:
+../bin/.timestamp bin/.timestamp:
 	mkdir -p $(dir $@)
 	touch $@
 
