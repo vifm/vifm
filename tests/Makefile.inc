@@ -48,29 +48,24 @@ ifneq ($(OS),Windows_NT)
     endif
 endif
 
-.PHONY: $(VIFM_BIN) clean
+.PHONY: clean
 
-$(BIN): $(VIFM_BIN) ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
+$(BIN): $(VIFM_BIN) ../bin/.timestamp $(OBJECTS) $(LOCAL_OBJECTS)
 	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
 
-$(VIFM_BIN):
+$(VIFM_BIN): $(SOURCES)
 ifneq ($(OS),Windows_NT)
 	$(MAKE) -C ../../src/ vifm
 else
 	$(MAKE) -C ../../src/ -f Makefile.win vifm.exe
 endif
 
-../bin/dummy: ../bin
-	touch ../bin/dummy
-
-bin/%.o: %.c bin/dummy
+bin/%.o: %.c bin/.timestamp
 	gcc -c -o $@ $< $(CFLAGS)
 
-bin/dummy: bin
-	touch bin/dummy
-
-../bin bin:
-	mkdir $@
+../bin/.timestamp bin/.timestamp:
+	mkdir -p $(dir $@)
+	touch $@
 
 ../bin/%.o: ../seatest/%.c
 	gcc -c -o $@ $< $(CFLAGS)
