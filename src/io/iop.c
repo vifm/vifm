@@ -25,6 +25,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 
+#include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/path.h"
@@ -56,6 +57,56 @@ iop_mkfile(io_args_t *const args)
 
 	CloseHandle(file);
 	return 0;
+#endif
+}
+
+int
+iop_mkdir(io_args_t *const args)
+{
+	const char *const path = args->arg1.path;
+	const int create_parent = args->arg3.process_parents;
+
+#ifndef _WIN32
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(path, 0);
+	snprintf(cmd, sizeof(cmd), "mkdir %s %s", create_parent ? "-p" : "", escaped);
+	free(escaped);
+	LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
+	return background_and_wait_for_errors(cmd, 1);
+#else
+	if(create_parent)
+	{
+		char *p;
+		char t;
+
+		p = strchr(path + 2, '/');
+		do
+		{
+			t = *p;
+			*p = '\0';
+
+			if(!is_dir(path))
+			{
+				if(!CreateDirectory(path, NULL))
+				{
+					*p = t;
+					return -1;
+				}
+			}
+
+			*p = t;
+			if((p = strchr(p + 1, '/')) == NULL)
+				p = (char *)path + strlen(path);
+		}
+		while(t != '\0');
+		return 0;
+	}
+	else
+	{
+		return CreateDirectory(path, NULL) == 0;
+	}
 #endif
 }
 

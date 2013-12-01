@@ -442,49 +442,12 @@ op_symlink(void *data, const char *src, const char *dst)
 static int
 op_mkdir(void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
-			escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	if(data == NULL)
+	io_args_t args =
 	{
-		return CreateDirectory(src, NULL) == 0;
-	}
-	else
-	{
-		char *p;
-		char t;
-
-		p = strchr(src + 2, '/');
-		do
-		{
-			t = *p;
-			*p = '\0';
-
-			if(!is_dir(src))
-			{
-				if(!CreateDirectory(src, NULL))
-				{
-					*p = t;
-					return -1;
-				}
-			}
-
-			*p = t;
-			if((p = strchr(p + 1, '/')) == NULL)
-				p = (char *)src + strlen(src);
-		}
-		while(t != '\0');
-		return 0;
-	}
-#endif
+		.arg1.path = src,
+		.arg3.process_parents = data != NULL,
+	};
+	return iop_mkdir(&args);
 }
 
 static int
