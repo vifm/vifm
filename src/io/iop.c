@@ -111,5 +111,24 @@ iop_mkdir(io_args_t *const args)
 #endif
 }
 
+int
+iop_rmdir(io_args_t *const args)
+{
+	const char *const path = args->arg1.path;
+
+#ifndef _WIN32
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(path, 0);
+	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
+	free(escaped);
+	LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
+	return background_and_wait_for_errors(cmd, 1);
+#else
+	return RemoveDirectory(path) == 0;
+#endif
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

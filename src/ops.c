@@ -453,18 +453,11 @@ op_mkdir(void *data, const char *src, const char *dst)
 static int
 op_rmdir(void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	return RemoveDirectory(src) == 0;
-#endif
+	io_args_t args =
+	{
+		.arg1.path = src,
+	};
+	return iop_rmdir(&args);
 }
 
 static int

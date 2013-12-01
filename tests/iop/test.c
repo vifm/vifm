@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include <unistd.h> /* chdir() */
+
 #include "../../src/cfg/config.h"
 
 void chgrp_tests(void);
