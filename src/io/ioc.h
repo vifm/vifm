@@ -50,7 +50,8 @@ typedef struct
 
 	union
 	{
-		int parent;
+		/* Whether operation should consider parent elements of path. */
+		int process_parents;
 		int overwrite;
 		mode_t mode;
 #ifndef _WIN32
