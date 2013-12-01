@@ -24,11 +24,13 @@
 
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strchr() */
 
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../background.h"
 #include "ioc.h"
 
@@ -97,8 +99,7 @@ iop_mkdir(io_args_t *const args)
 			}
 
 			*p = t;
-			if((p = strchr(p + 1, '/')) == NULL)
-				p = (char *)path + strlen(path);
+			p = until_first(p + 1, '/');
 		}
 		while(t != '\0');
 		return 0;
