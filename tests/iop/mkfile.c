@@ -83,7 +83,10 @@ mkfile_tests(void)
 	fixture_teardown(teardown);
 
 	run_test(test_file_is_created);
-	/* run_test(test_fails_if_file_exists); */
+	/* Currently there is no check that file exists on *nix, so test will fail. */
+#ifdef _WIN32
+	run_test(test_fails_if_file_exists);
+#endif
 
 	test_fixture_end();
 }
