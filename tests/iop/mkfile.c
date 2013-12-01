@@ -7,18 +7,6 @@
 static const char *const FILE_NAME = "file-to-create";
 
 static void
-setup(void)
-{
-	assert_int_equal(0, chdir("test-data/sandbox"));
-}
-
-static void
-teardown(void)
-{
-	assert_int_equal(0, chdir("../.."));
-}
-
-static void
 test_file_is_created(void)
 {
 	assert_int_equal(-1, access(FILE_NAME, F_OK));
@@ -78,9 +66,6 @@ void
 mkfile_tests(void)
 {
 	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
 
 	run_test(test_file_is_created);
 	/* Currently there is no check that file exists on *nix, so test will fail. */
