@@ -1369,9 +1369,7 @@ put_next(const char dest_name[], int override)
 
 	if(from_trash)
 	{
-		while(isdigit(*dest_name))
-			dest_name++;
-		dest_name++;
+		dest_name = get_real_name_from_trash_name(dest_name);
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
@@ -2650,9 +2648,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		if(from_trash)
 		{
-			while(isdigit(*dst))
-				dst++;
-			dst++;
+			dst = get_real_name_from_trash_name(dst);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
@@ -2705,9 +2701,7 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
 		if(from_trash)
 		{
-			while(isdigit(*dst))
-				dst++;
-			dst++;
+			dst = get_real_name_from_trash_name(dst);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);

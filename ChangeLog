@@ -43,6 +43,9 @@
 
 	Fixed error message on navigating to a wrong bookmark.
 
+	Fixed possible removing files at destination on restoring files from trash
+	manually.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
