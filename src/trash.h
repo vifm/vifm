@@ -43,6 +43,10 @@ int restore_from_trash(const char trash_name[]);
 
 int remove_from_trash(const char trash_name[]);
 
+/* Generates unique name for a file in a trash directory.  Returns string
+ * containing full path that needs to be freed by caller. */
+char * gen_trash_name(const char name[]);
+
 #endif /* VIFM__TRASH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

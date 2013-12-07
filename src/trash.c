@@ -22,9 +22,12 @@
 #include <dirent.h> /* DIR */
 #endif
 
-#include <stdio.h>
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* lstat */
+
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strdup() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -213,6 +216,23 @@ remove_from_trash(const char trash_name[])
 
 	nentries--;
 	return 0;
+}
+
+char *
+gen_trash_name(const char name[])
+{
+	struct stat st;
+	char buf[PATH_MAX];
+	int i = 0;
+
+	do
+	{
+		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
+		chosp(buf);
+	}
+	while(lstat(buf, &st) == 0);
+
+	return strdup(buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

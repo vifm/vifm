@@ -67,6 +67,7 @@
 #include "registers.h"
 #include "running.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "undo.h"
 
@@ -177,23 +178,6 @@ progress_msg(const char *text, int ready, int total)
 	sprintf(msg, "%s %d/%d", text, ready, total);
 	show_progress(msg, 1);
 	curr_stats.save_msg = 2;
-}
-
-/* returns string that needs to be released by caller */
-static char *
-gen_trash_name(const char *name)
-{
-	struct stat st;
-	char buf[PATH_MAX];
-	int i = 0;
-
-	do
-	{
-		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
-		chosp(buf);
-	}
-	while(lstat(buf, &st) == 0);
-	return strdup(buf);
 }
 
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
