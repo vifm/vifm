@@ -47,6 +47,17 @@ int remove_from_trash(const char trash_name[]);
  * containing full path that needs to be freed by caller. */
 char * gen_trash_name(const char name[]);
 
+/* Checks whether given absolute path points to a file under trash directory.
+ * Returns non-zero if so, otherwise zero is returned. */
+int is_under_trash(const char path[]);
+
+/* Checks whether given absolute path points to a trash directory.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int is_trash_directory(const char path[]);
+
+/* Gets pointer to real name part of the trash name.  Returns that pointer. */
+const char * get_real_name_from_trash_name(const char trash_name[]);
+
 #endif /* VIFM__TRASH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

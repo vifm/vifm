@@ -27,7 +27,7 @@
 
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* strdup() */
+#include <string.h> /* strchr() strdup() strlen() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -233,6 +233,24 @@ gen_trash_name(const char name[])
 	while(lstat(buf, &st) == 0);
 
 	return strdup(buf);
+}
+
+int
+is_under_trash(const char path[])
+{
+	return path_starts_with(path, cfg.trash_dir);
+}
+
+int
+is_trash_directory(const char path[])
+{
+	return stroscmp(path, cfg.trash_dir) == 0;
+}
+
+const char *
+get_real_name_from_trash_name(const char trash_name[])
+{
+	return strchr(trash_name + strlen(cfg.trash_dir), '_') + 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

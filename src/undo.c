@@ -36,6 +36,7 @@
 #include "utils/str.h"
 #include "ops.h"
 #include "registers.h"
+#include "trash.h"
 
 typedef struct
 {
@@ -200,8 +201,6 @@ static cmd_t cmds = {
 };
 static cmd_t *current = &cmds;
 
-static size_t trash_dir_len;
-
 static int group_opened;
 static long long next_group;
 static group_t *last_group;
@@ -230,8 +229,6 @@ init_undo_list(perform_func exec_func, op_available_func op_avail,
 	do_func = exec_func;
 	op_avail_func = op_avail;
 	undo_levels = max_levels;
-
-	trash_dir_len = strlen(cfg.trash_dir);
 }
 
 void
@@ -622,7 +619,7 @@ is_op_possible(const op_t *op)
 		return 0;
 	if(op->dont_exist != NULL && lstat(op->dont_exist, &st) == 0)
 	{
-		if(strnoscmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
+		if(is_under_trash(op->dst))
 			return -1;
 		return 0;
 	}
@@ -632,23 +629,17 @@ is_op_possible(const op_t *op)
 static void
 change_filename_in_trash(cmd_t *cmd, const char *filename)
 {
-	char *p;
-	int i;
-	char buf[PATH_MAX];
+	const char *name_tail;
+	char *new;
 	char *old;
 
-	p = strchr(filename + trash_dir_len, '_') + 1;
-
-	i = -1;
-	do
-	{
-		snprintf(buf, sizeof(buf), "%s/%03i_%s", cfg.trash_dir, ++i, p);
-	}
-	while(path_exists(buf));
-	rename_in_registers(filename, buf);
+	name_tail = get_real_name_from_trash_name(filename);
+	new = gen_trash_name(name_tail);
 
 	old = cmd->buf2;
-	cmd->buf2 = strdup(buf);
+	cmd->buf2 = new;
+
+	rename_in_registers(filename, new);
 
 	update_entry(&cmd->do_op.src, old, cmd->buf2);
 	update_entry(&cmd->do_op.dst, old, cmd->buf2);
@@ -874,14 +865,12 @@ clean_cmds_with_trash(void)
 
 		if(cur->group->balance < 0)
 		{
-			if(cur->do_op.exists != NULL &&
-					strnoscmp(cur->do_op.exists, cfg.trash_dir, trash_dir_len) == 0)
+			if(cur->do_op.exists != NULL && is_under_trash(cur->do_op.exists))
 				remove_cmd(cur);
 		}
 		else
 		{
-			if(cur->undo_op.exists != NULL &&
-					strnoscmp(cur->undo_op.exists, cfg.trash_dir, trash_dir_len) == 0)
+			if(cur->undo_op.exists != NULL && is_under_trash(cur->undo_op.exists))
 				remove_cmd(cur);
 		}
 		cur = prev;

@@ -211,8 +211,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
-	if(cfg.use_trash && use_trash &&
-			path_starts_with(view->curr_dir, cfg.trash_dir))
+	if(cfg.use_trash && use_trash && is_under_trash(view->curr_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
@@ -280,7 +279,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			if(stroscmp(full_buf, cfg.trash_dir) == 0)
+			if(is_trash_directory(full_buf))
 			{
 				show_error_msg("Background Process Error",
 						"You cannot delete trash directory to trash");
@@ -381,11 +380,9 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 
 		if(use_trash)
 		{
-			if(strcmp(full_buf, cfg.trash_dir) != 0)
+			if(!is_trash_directory(full_buf))
 			{
-				char *dest;
-
-				dest = gen_trash_name(list[i]);
+				char *const dest = gen_trash_name(list[i]);
 				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
 				free(dest);
 			}
@@ -413,7 +410,7 @@ delete_file_bg(FileView *view, int use_trash)
 	args = malloc(sizeof(*args));
 	args->from_trash = cfg.use_trash && use_trash;
 
-	if(args->from_trash && path_starts_with(view->curr_dir, cfg.trash_dir))
+	if(args->from_trash && is_under_trash(view->curr_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
@@ -1361,7 +1358,7 @@ put_next(const char dest_name[], int override)
 	if(lstat(filename, &src_st) != 0)
 		return 0;
 
-	from_trash = strnoscmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+	from_trash = is_under_trash(filename);
 	move = from_trash || put_confirm.force_move;
 
 	if(dest_name[0] == '\0')
@@ -1892,8 +1889,7 @@ put_files_from_register_i(FileView *view, int start)
 	{
 		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
 		const char *op = "UNKNOWN";
-		int from_trash = strnoscmp(put_confirm.reg->files[0], cfg.trash_dir,
-				strlen(cfg.trash_dir)) == 0;
+		const int from_trash = is_under_trash(put_confirm.reg->files[0]);
 		if(put_confirm.link == 0)
 			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
 		else if(put_confirm.link == 1)
@@ -2510,7 +2506,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		view->list_pos = i;
 	}
 
-	*from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
+	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
 }
 
