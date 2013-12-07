@@ -99,7 +99,7 @@ add_to_trash(const char path[], const char trash_name[])
 {
 	void *p;
 
-	if(!path_exists_at(cfg.trash_dir, trash_name))
+	if(!exists_in_trash(trash_name))
 	{
 		return -1;
 	}
@@ -140,6 +140,12 @@ is_in_trash(const char trash_name[])
 			return 1;
 	}
 	return 0;
+}
+
+int
+exists_in_trash(const char trash_name[])
+{
+	return path_exists_at(cfg.trash_dir, trash_name);
 }
 
 int

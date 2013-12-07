@@ -35,6 +35,10 @@ int add_to_trash(const char path[], const char trash_name[]);
 
 int is_in_trash(const char trash_name[]);
 
+/* Checks whether file with given name exists in the trash directory.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int exists_in_trash(const char trash_name[]);
+
 int restore_from_trash(const char trash_name[]);
 
 int remove_from_trash(const char trash_name[]);

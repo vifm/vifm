@@ -643,11 +643,10 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!path_exists_at(cfg.trash_dir, line_val))
-						continue;
-					if(is_in_trash(line_val))
-						continue;
-					ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
+					if(exists_in_trash(line_val) && !is_in_trash(line_val))
+					{
+						ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
+					}
 				}
 			}
 			else if(type == LINE_TYPE_CMDLINE_HIST)
