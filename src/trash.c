@@ -25,9 +25,10 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat */
 
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* strchr() strdup() strlen() */
+#include <string.h> /* strchr() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -250,7 +251,22 @@ is_trash_directory(const char path[])
 const char *
 get_real_name_from_trash_name(const char trash_name[])
 {
-	return strchr(trash_name + strlen(cfg.trash_dir), '_') + 1;
+	size_t prefix_len;
+	const char *real_name = trash_name;
+
+	if(is_path_absolute(real_name))
+	{
+		real_name += strlen(cfg.trash_dir);
+		real_name = skip_char(real_name, '/');
+	}
+
+	prefix_len = strspn(real_name, "0123456789");
+	if(real_name[prefix_len] == '_')
+	{
+		real_name += prefix_len + 1;
+	}
+
+	return real_name;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
