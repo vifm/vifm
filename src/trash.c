@@ -95,7 +95,7 @@ empty_trash_list(void)
 }
 
 int
-add_to_trash(const char *path, const char *trash_name)
+add_to_trash(const char path[], const char trash_name[])
 {
 	void *p;
 
@@ -130,7 +130,7 @@ add_to_trash(const char *path, const char *trash_name)
 }
 
 int
-is_in_trash(const char *trash_name)
+is_in_trash(const char trash_name[])
 {
 	int i;
 
@@ -143,7 +143,7 @@ is_in_trash(const char *trash_name)
 }
 
 int
-restore_from_trash(const char *trash_name)
+restore_from_trash(const char trash_name[])
 {
 	int i;
 	char full[PATH_MAX];
@@ -189,7 +189,7 @@ restore_from_trash(const char *trash_name)
 }
 
 int
-remove_from_trash(const char *trash_name)
+remove_from_trash(const char trash_name[])
 {
 	int i;
 	for(i = 0; i < nentries; i++)

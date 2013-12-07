@@ -23,16 +23,21 @@ typedef struct
 {
 	char *path;
 	char *trash_name;
-}trash_entry_t;
+}
+trash_entry_t;
 
 trash_entry_t *trash_list;
 int nentries;
 
 void empty_trash(void);
-int add_to_trash(const char *path, const char *trash_name);
-int is_in_trash(const char *trash_name);
-int restore_from_trash(const char *trash_name);
-int remove_from_trash(const char *trash_name);
+
+int add_to_trash(const char path[], const char trash_name[]);
+
+int is_in_trash(const char trash_name[]);
+
+int restore_from_trash(const char trash_name[]);
+
+int remove_from_trash(const char trash_name[]);
 
 #endif /* VIFM__TRASH_H__ */
 
