@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -97,6 +98,11 @@ int
 add_to_trash(const char *path, const char *trash_name)
 {
 	void *p;
+
+	if(!path_exists_at(cfg.trash_dir, trash_name))
+	{
+		return -1;
+	}
 
 	if(is_in_trash(trash_name))
 	{

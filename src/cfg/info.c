@@ -252,9 +252,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				if(!path_exists_at(cfg.trash_dir, line_val))
-					continue;
-				add_to_trash(line2, line_val);
+				(void)add_to_trash(line2, line_val);
 			}
 		}
 		else if(type == LINE_TYPE_REG)
