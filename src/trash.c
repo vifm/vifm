@@ -229,7 +229,7 @@ remove_from_trash(const char trash_name[])
 }
 
 char *
-gen_trash_name(const char name[])
+gen_trash_name(const char base_dir[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX];

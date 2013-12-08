@@ -632,9 +632,14 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	const char *name_tail;
 	char *new;
 	char *old;
+	char *const base_dir = strdup(filename);
+
+	remove_last_path_component(base_dir);
 
 	name_tail = get_real_name_from_trash_name(filename);
-	new = gen_trash_name(name_tail);
+	new = gen_trash_name(base_dir, name_tail);
+
+	free(base_dir);
 
 	old = cmd->buf2;
 	cmd->buf2 = new;

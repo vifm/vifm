@@ -289,7 +289,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			{
 				char *dest;
 
-				dest = gen_trash_name(view->selected_filelist[x]);
+				dest = gen_trash_name(view->curr_dir, view->selected_filelist[x]);
 				result = perform_operation(OP_MOVE, NULL, full_buf, dest);
 				if(result == 0)
 				{
@@ -382,7 +382,7 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 		{
 			if(!is_trash_directory(full_buf))
 			{
-				char *const dest = gen_trash_name(list[i]);
+				char *const dest = gen_trash_name(curr_dir, list[i]);
 				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
 				free(dest);
 			}
