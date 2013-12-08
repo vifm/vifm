@@ -1111,7 +1111,8 @@ write_trash(FILE *const fp, char *trash[], int ntrash)
 	fputs("\n# Trash content:\n", fp);
 	for(i = 0; i < nentries; i++)
 	{
-		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
+		fprintf(fp, "t%s/%s\n\t%s\n", cfg.trash_dir, trash_list[i].trash_name,
+				trash_list[i].path);
 	}
 	for(i = 0; i < ntrash; i += 2)
 	{

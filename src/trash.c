@@ -120,7 +120,7 @@ add_to_trash(const char path[], const char trash_name[])
 	trash_list = p;
 
 	trash_list[nentries].path = strdup(path);
-	trash_list[nentries].trash_name = strdup(trash_name);
+	trash_list[nentries].trash_name = strdup(get_last_path_component(trash_name));
 	if(trash_list[nentries].path == NULL ||
 			trash_list[nentries].trash_name == NULL)
 	{
@@ -138,6 +138,8 @@ is_in_trash(const char trash_name[])
 {
 	int i;
 
+	trash_name = get_last_path_component(trash_name);
+
 	for(i = 0; i < nentries; i++)
 	{
 		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
@@ -149,7 +151,14 @@ is_in_trash(const char trash_name[])
 int
 exists_in_trash(const char trash_name[])
 {
-	return path_exists_at(cfg.trash_dir, trash_name);
+	if(is_path_absolute(trash_name))
+	{
+		return path_exists(trash_name);
+	}
+	else
+	{
+		return path_exists_at(cfg.trash_dir, trash_name);
+	}
 }
 
 int
