@@ -96,11 +96,12 @@ if has('win32')
 endif
 
 if !exists('s:vifm_home')
-	if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
+	if exists('$HOME') && isdirectory($VIM .'/.vifm/')
 		let s:vifm_home = $HOME."/.vifm"
-	elseif exists('$APPDATA')
+	elseif exists('$APPDATA') && isdirectory($APPDATA.'/Vifm/')
 		let s:vifm_home = $APPDATA."/Vifm"
 	else
+		echohl WarningMsg | echo 'Impossible to find your vifm configuration directory. Launch vifm one time and try again.' | echohl None
 		finish
 	endif
 endif
