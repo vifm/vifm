@@ -9,6 +9,8 @@
 	Added handling of paths with backward slashes for :find/:locate/:grep/%M
 	menus on Windows.  Thanks to Robert Sarkozi.
 
+	Added sample light color scheme (proposed by Daniel R., a.k.a. reicheltd).
+
 	Treat semicolon (";") as a valid range separator for command-line
 	commands.
 
