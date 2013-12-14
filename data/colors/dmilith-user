@@ -1,5 +1,7 @@
 " vim: filetype=vifm :
 
+" Author: Daniel Dettlaff (a.k.a. dmilith)
+
 highlight Win cterm=none ctermfg=white ctermbg=black
 highlight Directory cterm=bold ctermfg=cyan ctermbg=black
 highlight Link cterm=bold ctermfg=yellow ctermbg=black
