@@ -143,9 +143,13 @@ int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
 /* Generates name of file inside tmp folder. */
 void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
-/* Ensures existence of trash directory.  Returns zero on success, otherwise
- * non-zero value is returned. */
+/* Ensures existence of trash directory.  Displays error message dialog, if
+ * directory creation failed.  Returns zero on success, otherwise non-zero value
+ * is returned. */
 int create_trash_dir(const char trash_dir[]);
+/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
+ * value is returned. */
+int try_create_trash_dir(const char trash_dir[]);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
 /* Sets value of cfg.fuse_home.  Returns non-zero in case of error, otherwise

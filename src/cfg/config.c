@@ -513,12 +513,7 @@ create_trash_dir(const char trash_dir[])
 {
 	LOG_FUNC_ENTER;
 
-	if(is_dir_writable(trash_dir))
-	{
-		return 0;
-	}
-
-	if(make_dir(trash_dir, 0777) != 0)
+	if(try_create_trash_dir(trash_dir) != 0)
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
@@ -526,6 +521,19 @@ create_trash_dir(const char trash_dir[])
 	}
 
 	return 0;
+}
+
+int
+try_create_trash_dir(const char trash_dir[])
+{
+	LOG_FUNC_ENTER;
+
+	if(is_dir_writable(trash_dir))
+	{
+		return 0;
+	}
+
+	return make_dir(trash_dir, 0777);
 }
 
 void
