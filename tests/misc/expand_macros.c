@@ -4,6 +4,7 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
@@ -254,6 +255,7 @@ static void
 test_r_ill_formed(void)
 {
 	char key;
+	char expected[] = "a b cx";
 
 	chdir("test-data/existing-files");
 
@@ -263,15 +265,19 @@ test_r_ill_formed(void)
 	append_to_register(DEFAULT_REG_NAME, "b");
 	append_to_register(DEFAULT_REG_NAME, "c");
 
+	key = '\0';
 	do
 	{
 		char line[32];
-		char *expanded;
-		snprintf(line, sizeof(line), "%%r%c", key);
+		snprintf(line, sizeof(line), "%%r%c", ++key);
 
-		expanded = expand_macros(line, NULL, NULL, 0);
-		assert_string_equal("a b c", expanded);
-		free(expanded);
+		if(!char_is_one_of(valid_registers, key) && key != '%')
+		{
+			char *const expanded = expand_macros(line, NULL, NULL, 0);
+			expected[5] = key;
+			assert_string_equal(expected, expanded);
+			free(expanded);
+		}
 	}
 	while(key != '\0');
 
