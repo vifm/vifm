@@ -1,6 +1,7 @@
 #include "seatest.h"
 
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"
 
 static char **

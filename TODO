@@ -43,7 +43,7 @@ Windows.
     Use UTF8 internally.
     Make 'fastrun' understand file extensions on Windows (to ignore them).
     Maybe read first bytes of files and threat files as executable if first
-        two bytes equal to '$!'.
+        two bytes equal to '#!'.
     Make 'slowfs' option available on Windows and provide a support for builtin
         file system time 'winnetwork', which will mean network resources.
     Maybe sort completion items ignoring their case on Windows.

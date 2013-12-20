@@ -2,7 +2,9 @@
 
 #include "seatest.h"
 
+#include "../../src/engine/completion.h"
 #include "../../src/engine/variables.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/utils.h"
 
 void format_tests(void);

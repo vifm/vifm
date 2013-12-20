@@ -32,7 +32,7 @@ OBJECTS := $(SOURCES:.c=.o)
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
 LOCAL_OBJECTS := $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
 
-CFLAGS := -MMD -g -Werror -I../seatest -DTEST -include ../../config.h
+CFLAGS := -MMD -g -Wall -Werror -I../seatest -DTEST -include ../../config.h
 LDFLAGS := -lpthread
 ifneq ($(OS),Windows_NT)
     LDFLAGS += `grep LIBS\ = ../../src/Makefile | sed 's/^[^=]\+=//'`

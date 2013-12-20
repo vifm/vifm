@@ -3,6 +3,7 @@
 #include "seatest.h"
 
 #include "../../src/engine/variables.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/utils.h"
 
 #define VAR_NAME "VAR"

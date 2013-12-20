@@ -1,6 +1,6 @@
 #include "seatest.h"
 
-#include "../../src/utils/utils.h"
+#include "../../src/utils/path.h"
 
 static void
 test_yes(void)
