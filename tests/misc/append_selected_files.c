@@ -76,7 +76,6 @@ teardown(void)
 static void
 test_f(void)
 {
-	char *buf;
 	char *expanded;
 
 	expanded = strdup("");
