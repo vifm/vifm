@@ -310,9 +310,9 @@ op_mv(void *data, const char src[], const char dst[], int overwrite)
 		return result;
 
 	if(is_under_trash(dst))
-		add_to_trash(src, get_last_path_component(dst));
+		add_to_trash(src, dst);
 	else if(is_under_trash(src))
-		remove_from_trash(get_last_path_component(src));
+		remove_from_trash(src);
 	return 0;
 #else
 	BOOL ret = MoveFile(src, dst);

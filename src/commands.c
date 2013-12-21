@@ -3190,11 +3190,12 @@ restore_cmd(const cmd_info_t *cmd_info)
 	cmd_group_end();
 	for(i = 0; i < curr_view->list_rows; i++)
 	{
-		char buf[NAME_MAX];
+		char buf[PATH_MAX];
 		if(!curr_view->dir_entry[i].selected)
 			continue;
 
-		snprintf(buf, sizeof(buf), "%s", curr_view->dir_entry[i].name);
+		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
+				curr_view->dir_entry[i].name);
 		chosp(buf);
 		if(restore_from_trash(buf) == 0)
 			m++;

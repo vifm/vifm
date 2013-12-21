@@ -27,7 +27,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
@@ -35,6 +35,7 @@
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "ops.h"
 #include "registers.h"
@@ -42,6 +43,8 @@
 
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
+static char * pick_trash_dir(const char base_dir[]);
+static char * get_ideal_trash_dir(const char base_dir[]);
 
 void
 empty_trash(void)
@@ -120,7 +123,7 @@ add_to_trash(const char path[], const char trash_name[])
 	trash_list = p;
 
 	trash_list[nentries].path = strdup(path);
-	trash_list[nentries].trash_name = strdup(get_last_path_component(trash_name));
+	trash_list[nentries].trash_name = strdup(trash_name);
 	if(trash_list[nentries].path == NULL ||
 			trash_list[nentries].trash_name == NULL)
 	{
@@ -137,9 +140,6 @@ int
 is_in_trash(const char trash_name[])
 {
 	int i;
-
-	trash_name = get_last_path_component(trash_name);
-
 	for(i = 0; i < nentries; i++)
 	{
 		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
@@ -176,9 +176,8 @@ restore_from_trash(const char trash_name[])
 	if(i >= nentries)
 		return -1;
 	
-	snprintf(buf, sizeof(buf), "%s", trash_list[i].path);
-	snprintf(full, sizeof(full), "%s/%s", cfg.trash_dir,
-			trash_list[i].trash_name);
+	copy_str(buf, sizeof(buf), trash_list[i].path);
+	copy_str(full, sizeof(full), trash_list[i].trash_name);
 	if(perform_operation(OP_MOVE, NULL, full, trash_list[i].path) == 0)
 	{
 		char *msg, *p;
@@ -189,7 +188,7 @@ restore_from_trash(const char trash_name[])
 		msg = replace_group_msg(NULL);
 		len = strlen(msg);
 		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
-		if (p == NULL)
+		if(p == NULL)
 			len = COMMAND_GROUP_INFO_LEN;
 		else
 			msg = p;
@@ -234,27 +233,63 @@ gen_trash_name(const char base_dir[], const char name[])
 	struct stat st;
 	char buf[PATH_MAX];
 	int i = 0;
+	char *const trash_dir = pick_trash_dir(base_dir);
 
 	do
 	{
-		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
+		snprintf(buf, sizeof(buf), "%s/%03d_%s", trash_dir, i++, name);
 		chosp(buf);
 	}
 	while(lstat(buf, &st) == 0);
 
+	free(trash_dir);
+
 	return strdup(buf);
+}
+
+/* Picks trash directory basing on original directory of a file that is being
+ * trashed.  Returns absolute path to picked trash directory. */
+static char *
+pick_trash_dir(const char base_dir[])
+{
+	char *const trash_dir = get_ideal_trash_dir(base_dir);
+	if(try_create_trash_dir(trash_dir) == 0)
+	{
+		return trash_dir;
+	}
+	return strdup(cfg.trash_dir);
 }
 
 int
 is_under_trash(const char path[])
 {
-	return path_starts_with(path, cfg.trash_dir);
+	char *const ideal_trash_dir = get_ideal_trash_dir(path);
+	const int under_trash = path_starts_with(path, ideal_trash_dir);
+	free(ideal_trash_dir);
+	return under_trash;
 }
 
 int
 is_trash_directory(const char path[])
 {
-	return stroscmp(path, cfg.trash_dir) == 0;
+	char *const ideal_trash_dir = get_ideal_trash_dir(path);
+	const int trash_directory = stroscmp(path, ideal_trash_dir) == 0;
+	free(ideal_trash_dir);
+	return trash_directory;
+}
+
+/* Gets path to a preferred trash directory for files of a base directory.
+ * Returns newly allocated string that should be freed by the caller. */
+static char *
+get_ideal_trash_dir(const char base_dir[])
+{
+	char full[PATH_MAX];
+	if(get_mount_point(base_dir, sizeof(full), full) == 0)
+	{
+		return format_str("%s/.vifm-Trash", full);
+	}
+
+	return strdup(cfg.trash_dir);
 }
 
 const char *
