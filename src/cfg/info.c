@@ -323,10 +323,7 @@ get_sort_info(FileView *view, const char line[])
 		{
 			line++;
 		}
-		while(*line == ',')
-		{
-			line++;
-		}
+		line = skip_char(line, ',');
 	}
 	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
 
