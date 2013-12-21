@@ -68,6 +68,7 @@
 #include "signals.h"
 #include "sort.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "undo.h"
 #include "version.h"

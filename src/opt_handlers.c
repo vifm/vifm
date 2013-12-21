@@ -42,6 +42,7 @@
 #include "quickview.h"
 #include "sort.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "viewcolumns_parser.h"
 

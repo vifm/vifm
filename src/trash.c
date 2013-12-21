@@ -25,26 +25,132 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat */
 
-#include <stddef.h> /* size_t */
+#include <errno.h> /* errno */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
+#include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
+#include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "ops.h"
 #include "registers.h"
 #include "undo.h"
 
+static int trash_dir_is_ok(const char trash_dir[]);
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
 static char * get_ideal_trash_dir(const char base_dir[]);
+
+static char **trash_dirs;
+static int ntrash_dirs;
+
+int
+set_trash_dir(const char trash_dir[])
+{
+	char **dirs = NULL;
+	int ndirs = 0;
+
+	int error = 0;
+	char *const free_this = strdup(trash_dir);
+	char *element = free_this;
+
+	for(;;)
+	{
+		char *const p = until_first(element, ',');
+		const int last_element = *p == '\0';
+		*p = '\0';
+
+		if(!trash_dir_is_ok(element))
+		{
+			error = 1;
+			break;
+		}
+
+		ndirs = add_to_string_array(&dirs, ndirs, 1, element);
+
+		if(last_element)
+		{
+			break;
+		}
+		element = p + 1;
+	}
+
+	free(free_this);
+
+	if(!error)
+	{
+		free_string_array(trash_dirs, ntrash_dirs);
+		trash_dirs = dirs;
+		ntrash_dirs = ndirs;
+
+		copy_str(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir);
+	}
+	else
+	{
+		free_string_array(dirs, ndirs);
+	}
+
+	return error;
+}
+
+/* Validates trash directory specification.  Returns non-zero if it's OK,
+ * otherwise zero is returned and an error message is displayed. */
+static int
+trash_dir_is_ok(const char trash_dir[])
+{
+	if(is_path_absolute(trash_dir))
+	{
+		if(create_trash_dir(trash_dir) != 0)
+		{
+			return 0;
+		}
+	}
+	else if(!starts_with_lit(trash_dir, "%r/") || trash_dir[3] == '\0')
+	{
+		show_error_msgf("Error Setting Trash Directory",
+				"The path specification is of incorrect format: %s", trash_dir);
+		return 0;
+	}
+	return 1;
+}
+
+int
+create_trash_dir(const char trash_dir[])
+{
+	LOG_FUNC_ENTER;
+
+	if(try_create_trash_dir(trash_dir) != 0)
+	{
+		show_error_msgf("Error Setting Trash Directory",
+				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
+		return 1;
+	}
+
+	return 0;
+}
+
+int
+try_create_trash_dir(const char trash_dir[])
+{
+	LOG_FUNC_ENTER;
+
+	if(is_dir_writable(trash_dir))
+	{
+		return 0;
+	}
+
+	return make_dir(trash_dir, 0777);
+}
 
 void
 empty_trash(void)

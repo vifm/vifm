@@ -32,7 +32,6 @@
 #endif
 
 #include <assert.h> /* assert() */
-#include <errno.h>
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
@@ -508,34 +507,6 @@ add_default_bookmarks(void)
 	add_bookmark('z', cfg.config_dir, "../");
 }
 
-int
-create_trash_dir(const char trash_dir[])
-{
-	LOG_FUNC_ENTER;
-
-	if(try_create_trash_dir(trash_dir) != 0)
-	{
-		show_error_msgf("Error Setting Trash Directory",
-				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
-		return 1;
-	}
-
-	return 0;
-}
-
-int
-try_create_trash_dir(const char trash_dir[])
-{
-	LOG_FUNC_ENTER;
-
-	if(is_dir_writable(trash_dir))
-	{
-		return 0;
-	}
-
-	return make_dir(trash_dir, 0777);
-}
-
 void
 source_config(void)
 {
@@ -859,23 +830,6 @@ set_fuse_home(const char new_value[])
 	}
 
 	return replace_string(&cfg.fuse_home, canonicalized);
-}
-
-int
-set_trash_dir(const char new_value[])
-{
-	if(!is_path_absolute(new_value))
-	{
-		show_error_msgf("Error Setting Trash Directory",
-				"The path is not absolute: %s", new_value);
-		return 1;
-	}
-	if(create_trash_dir(new_value) != 0)
-	{
-		return 1;
-	}
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", new_value);
-	return 0;
 }
 
 void

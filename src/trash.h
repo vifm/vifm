@@ -29,6 +29,20 @@ trash_entry_t;
 trash_entry_t *trash_list;
 int nentries;
 
+/* Parses trash directory name specification.  Sets value of cfg.trash_dir as a
+ * side effect.  Returns non-zero in case of error, otherwise zero is
+ * returned. */
+int set_trash_dir(const char trash_dir[]);
+
+/* Ensures existence of trash directory.  Displays error message dialog, if
+ * directory creation failed.  Returns zero on success, otherwise non-zero value
+ * is returned. */
+int create_trash_dir(const char trash_dir[]);
+
+/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
+ * value is returned. */
+int try_create_trash_dir(const char trash_dir[]);
+
 void empty_trash(void);
 
 int add_to_trash(const char path[], const char trash_name[]);
