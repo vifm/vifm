@@ -45,7 +45,7 @@
 #include "registers.h"
 #include "undo.h"
 
-static int trash_dir_is_ok(const char trash_dir[]);
+static int validate_trash_dir(const char trash_dir[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
@@ -71,7 +71,7 @@ set_trash_dir(const char trash_dir[])
 		const int last_element = *p == '\0';
 		*p = '\0';
 
-		if(!trash_dir_is_ok(element))
+		if(!validate_trash_dir(element))
 		{
 			error = 1;
 			break;
@@ -107,7 +107,7 @@ set_trash_dir(const char trash_dir[])
 /* Validates trash directory specification.  Returns non-zero if it's OK,
  * otherwise zero is returned and an error message is displayed. */
 static int
-trash_dir_is_ok(const char trash_dir[])
+validate_trash_dir(const char trash_dir[])
 {
 	if(is_path_absolute(trash_dir))
 	{
