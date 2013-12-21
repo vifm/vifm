@@ -34,11 +34,6 @@ int nentries;
  * returned. */
 int set_trash_dir(const char trash_dir[]);
 
-/* Ensures existence of trash directory.  Displays error message dialog, if
- * directory creation failed.  Returns zero on success, otherwise non-zero value
- * is returned. */
-int create_trash_dir(const char trash_dir[]);
-
 /* Tries to create trash directory.  Returns zero on success, otherwise non-zero
  * value is returned. */
 int try_create_trash_dir(const char trash_dir[]);

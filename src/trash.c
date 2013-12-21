@@ -46,6 +46,7 @@
 #include "undo.h"
 
 static int trash_dir_is_ok(const char trash_dir[]);
+static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
@@ -124,7 +125,10 @@ trash_dir_is_ok(const char trash_dir[])
 	return 1;
 }
 
-int
+/* Ensures existence of trash directory.  Displays error message dialog, if
+ * directory creation failed.  Returns zero on success, otherwise non-zero value
+ * is returned. */
+static int
 create_trash_dir(const char trash_dir[])
 {
 	LOG_FUNC_ENTER;
