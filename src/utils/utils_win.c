@@ -375,5 +375,12 @@ attr_str_long(DWORD attr)
 	return buf;
 }
 
+int
+get_mount_point(const char path[], size_t buf_len, char buf[])
+{
+	snprintf(buf, buf_len, "%c:/", path[0]);
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

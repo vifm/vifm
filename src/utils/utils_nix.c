@@ -41,6 +41,7 @@
 #include "log.h"
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
+#include "str.h"
 
 static int begins_with_list_item(const char pattern[], const char list[]);
 
@@ -225,6 +226,35 @@ is_on_slow_fs(const char full_path[])
 
 	endmntent(f);
 	return (max[0] == '\0') ? 0 : begins_with_list_item(max, cfg.slow_fs_list);
+}
+
+int
+get_mount_point(const char path[], size_t buf_len, char buf[])
+{
+	FILE *f;
+	struct mntent *ent;
+	size_t len = 0U;
+
+	if((f = setmntent("/etc/mtab", "r")) == NULL)
+	{
+		return 1;
+	}
+
+	while((ent = getmntent(f)) != NULL)
+	{
+		if(path_starts_with(path, ent->mnt_dir))
+		{
+			const size_t new_len = strlen(ent->mnt_dir);
+			if(new_len > len)
+			{
+				len = new_len;
+				copy_str(buf, buf_len, ent->mnt_dir);
+			}
+		}
+	}
+
+	endmntent(f);
+	return 0;
 }
 
 static int

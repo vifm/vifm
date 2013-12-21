@@ -92,6 +92,10 @@ char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
  * on error default value of 1 is returned. */
 int vifm_wcwidth(wchar_t c);
 
+/* Fills buf of the length buf_len with path to mount point of the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+int get_mount_point(const char path[], size_t buf_len, char buf[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else
