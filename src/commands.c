@@ -3190,15 +3190,18 @@ restore_cmd(const cmd_info_t *cmd_info)
 	cmd_group_end();
 	for(i = 0; i < curr_view->list_rows; i++)
 	{
-		char buf[PATH_MAX];
-		if(!curr_view->dir_entry[i].selected)
-			continue;
+		if(curr_view->dir_entry[i].selected)
+		{
+			char full_path[PATH_MAX];
+			snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
+					curr_view->dir_entry[i].name);
+			chosp(full_path);
 
-		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
-				curr_view->dir_entry[i].name);
-		chosp(buf);
-		if(restore_from_trash(buf) == 0)
-			m++;
+			if(restore_from_trash(full_path) == 0)
+			{
+				m++;
+			}
+		}
 	}
 
 	load_saving_pos(curr_view, 1);
