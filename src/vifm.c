@@ -390,6 +390,8 @@ main(int argc, char *argv[])
 		source_config();
 	}
 
+	/* Ensure trash directories exist, it might not have been called during
+	 * configuration file sourcing if there is no `set trashdir=...` command. */
 	(void)set_trash_dir(cfg.trash_dir);
 
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
