@@ -2502,11 +2502,8 @@ get_attrs(const char *text)
 	int result = 0;
 	while(*text != '\0')
 	{
-		const char *p;
+		const char *const p = until_first(text, ',');
 		char buf[64];
-
-		if((p = strchr(text, ',')) == 0)
-			p = text + strlen(text);
 
 		snprintf(buf, p - text + 1, "%s", text);
 		if(strcasecmp(buf, "bold") == 0)
