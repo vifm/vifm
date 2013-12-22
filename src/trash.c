@@ -63,7 +63,8 @@ static int pick_trash_dir_traverser(const char base_dir[],
 static int is_rooted_trash_dir(const char spec[]);
 static int is_under_trash_traverser(const char path[], const char trash_dir[],
 		void *arg);
-static char * get_ideal_trash_dir(const char base_dir[]);
+static int is_trash_directory_traverser(const char path[],
+		const char trash_dir[], void *arg);
 static void traverse_specs(const char base_dir[], traverser client, void *arg);
 static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
 
@@ -431,24 +432,24 @@ is_under_trash_traverser(const char path[], const char trash_dir[], void *arg)
 int
 is_trash_directory(const char path[])
 {
-	char *const ideal_trash_dir = get_ideal_trash_dir(path);
-	const int trash_directory = stroscmp(path, ideal_trash_dir) == 0;
-	free(ideal_trash_dir);
+	int trash_directory = 0;
+	traverse_specs(path, &is_trash_directory_traverser, &trash_directory);
 	return trash_directory;
 }
 
-/* Gets path to a preferred trash directory for files of a base directory.
- * Returns newly allocated string that should be freed by the caller. */
-static char *
-get_ideal_trash_dir(const char base_dir[])
+/* traverse_specs client that check that the path is one of trash
+ * directories. */
+static int
+is_trash_directory_traverser(const char path[], const char trash_dir[],
+		void *arg)
 {
-	char full[PATH_MAX];
-	if(get_mount_point(base_dir, sizeof(full), full) == 0)
+	if(stroscmp(path, trash_dir) == 0)
 	{
-		return format_str("%s/.vifm-Trash", full);
+		int *const result = arg;
+		*result = 1;
+		return 1;
 	}
-
-	return strdup(cfg.trash_dir);
+	return 0;
 }
 
 /* Calls client traverser for each trash directory specification defined by
