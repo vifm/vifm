@@ -61,6 +61,8 @@ static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
+static int is_under_trash_traverser(const char path[], const char trash_dir[],
+		void *arg);
 static char * get_ideal_trash_dir(const char base_dir[]);
 static void traverse_specs(const char base_dir[], traverser client, void *arg);
 static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
@@ -407,10 +409,23 @@ is_rooted_trash_dir(const char spec[])
 int
 is_under_trash(const char path[])
 {
-	char *const ideal_trash_dir = get_ideal_trash_dir(path);
-	const int under_trash = path_starts_with(path, ideal_trash_dir);
-	free(ideal_trash_dir);
+	int under_trash = 0;
+	traverse_specs(path, &is_under_trash_traverser, &under_trash);
 	return under_trash;
+}
+
+/* traverse_specs client that check that the path is under one of trash
+ * directories. */
+static int
+is_under_trash_traverser(const char path[], const char trash_dir[], void *arg)
+{
+	if(path_starts_with(path, trash_dir))
+	{
+		int *const result = arg;
+		*result = 1;
+		return 1;
+	}
+	return 0;
 }
 
 int
