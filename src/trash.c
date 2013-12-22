@@ -48,13 +48,21 @@
 #define ROOTED_SPEC_PREFIX "%r/"
 #define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
 
+/* Client of the traverse_specs() function.  Should return non-zero to stop
+ * traversal. */
+typedef int (*traverser)(const char base_dir[], const char trash_dir[],
+		void *arg);
+
 static int validate_trash_dir(const char trash_dir[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
+static int pick_trash_dir_traverser(const char base_dir[],
+		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
 static char * get_ideal_trash_dir(const char base_dir[]);
+static void traverse_specs(const char base_dir[], traverser client, void *arg);
 static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
 
 static char **trash_dirs;
@@ -368,27 +376,23 @@ static char *
 pick_trash_dir(const char base_dir[])
 {
 	char *trash_dir = NULL;
-	int i;
-	for(i = 0; i < ntrash_dirs; i++)
-	{
-		const char *const spec = trash_dirs[i];
-		if(is_rooted_trash_dir(spec))
-		{
-			trash_dir = get_rooted_trash_dir(base_dir, spec);
-		}
-		else
-		{
-			trash_dir = strdup(spec);
-		}
-
-		if(trash_dir != NULL && try_create_trash_dir(trash_dir) == 0)
-		{
-			break;
-		}
-
-		free(trash_dir);
-	}
+	traverse_specs(base_dir, &pick_trash_dir_traverser, &trash_dir);
 	return trash_dir;
+}
+
+/* traverse_specs client that finds first available trash directory suitable for
+ * the base_dir. */
+static int
+pick_trash_dir_traverser(const char base_dir[], const char trash_dir[],
+		void *arg)
+{
+	if(try_create_trash_dir(trash_dir) == 0)
+	{
+		char **const result = arg;
+		*result = strdup(trash_dir);
+		return 1;
+	}
+	return 0;
 }
 
 /* Checks whether the spec refers to a rooted trash directory.  Returns non-zero
@@ -430,6 +434,38 @@ get_ideal_trash_dir(const char base_dir[])
 	}
 
 	return strdup(cfg.trash_dir);
+}
+
+/* Calls client traverser for each trash directory specification defined by
+ * trash_dirs array. */
+static void
+traverse_specs(const char base_dir[], traverser client, void *arg)
+{
+	int i;
+	for(i = 0; i < ntrash_dirs; i++)
+	{
+		char *to_free = NULL;
+		const char *trash_dir;
+
+		const char *const spec = trash_dirs[i];
+		if(is_rooted_trash_dir(spec))
+		{
+			to_free = get_rooted_trash_dir(base_dir, spec);
+			trash_dir = to_free;
+		}
+		else
+		{
+			trash_dir = spec;
+		}
+
+		if(trash_dir != NULL && client(base_dir, trash_dir, arg))
+		{
+			free(to_free);
+			break;
+		}
+
+		free(to_free);
+	}
 }
 
 /* Expands rooted trash directory specification into a string.  Returns NULL on
