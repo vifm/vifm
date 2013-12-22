@@ -45,11 +45,15 @@
 #include "registers.h"
 #include "undo.h"
 
+#define ROOTED_SPEC_PREFIX "%r/"
+#define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
+
 static int validate_trash_dir(const char trash_dir[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dir(void);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
+static int is_rooted_trash_dir(const char spec[]);
 static char * get_ideal_trash_dir(const char base_dir[]);
 
 static char **trash_dirs;
@@ -116,7 +120,7 @@ validate_trash_dir(const char trash_dir[])
 			return 0;
 		}
 	}
-	else if(!starts_with_lit(trash_dir, "%r/") || trash_dir[3] == '\0')
+	else if(!is_rooted_trash_dir(trash_dir))
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"The path specification is of incorrect format: %s", trash_dir);
@@ -368,6 +372,15 @@ pick_trash_dir(const char base_dir[])
 		return trash_dir;
 	}
 	return strdup(cfg.trash_dir);
+}
+
+/* Checks whether the spec refers to a rooted trash directory.  Returns non-zero
+ * if so, otherwise non-zero is returned. */
+static int
+is_rooted_trash_dir(const char spec[])
+{
+	return starts_with_lit(spec, ROOTED_SPEC_PREFIX)
+	    && spec[ROOTED_SPEC_PREFIX_LEN] != '\0';
 }
 
 int
