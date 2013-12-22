@@ -1,6 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/filelist.h"
+#include "../../src/utils/fs_limits.h"
+#include "../../src/utils/path.h"
 
 #ifndef _WIN32
 #define ABS_PREFIX
@@ -81,6 +82,7 @@ complex_tests(void)
 	assert_string_equal(ABS_PREFIX "/a/", buf);
 }
 
+#ifdef _WIN32
 static void
 allow_unc(void)
 {
@@ -101,6 +103,7 @@ allow_unc(void)
 	canonicalize_path("//server/resource/../", buf, sizeof(buf));
 	assert_string_equal("//server/", buf);
 }
+#endif
 
 static void
 treat_many_dots_right(void)

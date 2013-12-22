@@ -1,5 +1,7 @@
 #include "test.h"
 
+#include <curses.h>
+
 #include <assert.h>
 
 #include "seatest.h"

@@ -20,10 +20,12 @@
 #ifndef VIFM__MODES__CMDLINE_H__
 #define VIFM__MODES__CMDLINE_H__
 
+#include <wchar.h>
+
 #ifdef TEST
 #include "../utils/fs_limits.h"
 #endif
-#include <wchar.h>
+#include "../utils/test_helpers.h"
 
 typedef enum
 {
@@ -94,8 +96,10 @@ typedef struct
 	int line_edited;          /* Cache for whether input line changed flag. */
 }
 line_stats_t;
-
 #endif
+TSTATIC_DEFS(
+	int line_completion(line_stats_t *stat);
+)
 
 #endif /* VIFM__MODES__CMDLINE_H__ */
 

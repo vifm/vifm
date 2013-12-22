@@ -7,6 +7,7 @@
 #include "seatest.h"
 
 #include "../../src/utils/utf8.h"
+#include "../../src/utils/utils.h"
 #include "../../src/column_view.h"
 #include "test.h"
 
@@ -157,7 +158,7 @@ utf8_tests(void)
 	test_fixture_start();
 
 	(void)setlocale(LC_ALL, "");
-	if(wcwidth(L'丝') != 2)
+	if(vifm_wcwidth(L'丝') != 2)
 	{
 		(void)setlocale(LC_ALL, "en_US.utf8");
 	}
@@ -165,7 +166,7 @@ utf8_tests(void)
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
-	if(wcwidth(L'丝') == 2)
+	if(vifm_wcwidth(L'丝') == 2)
 	{
 		run_test(test_not_truncating_short_utf8_ok);
 		run_test(test_donot_add_ellipsis_short_utf8_ok);

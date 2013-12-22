@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h> /* strcmp() */
 
 #include "seatest.h"
 

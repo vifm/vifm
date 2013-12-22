@@ -32,12 +32,6 @@ execute(OPS op, void *data, const char *src, const char *dst)
 	return 0;
 }
 
-static int
-exec_dummy(OPS op, void *data, const char *src, const char *dst)
-{
-	return 0;
-}
-
 static void
 setup(void)
 {
