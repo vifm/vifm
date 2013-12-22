@@ -21,6 +21,7 @@ void put_wait_points(void);
 void remap_users(void);
 void same_multi_and_motion(void);
 void users_key_to_key(void);
+void def_keys_and_user_mappings(void);
 void pick_longest(void);
 void unmap_tests(void);
 void noremap_tests(void);
