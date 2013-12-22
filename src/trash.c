@@ -55,6 +55,7 @@ static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
 static int is_rooted_trash_dir(const char spec[]);
 static char * get_ideal_trash_dir(const char base_dir[]);
+static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
 
 static char **trash_dirs;
 static int ntrash_dirs;
@@ -366,12 +367,28 @@ gen_trash_name(const char base_dir[], const char name[])
 static char *
 pick_trash_dir(const char base_dir[])
 {
-	char *const trash_dir = get_ideal_trash_dir(base_dir);
-	if(try_create_trash_dir(trash_dir) == 0)
+	char *trash_dir = NULL;
+	int i;
+	for(i = 0; i < ntrash_dirs; i++)
 	{
-		return trash_dir;
+		const char *const spec = trash_dirs[i];
+		if(is_rooted_trash_dir(spec))
+		{
+			trash_dir = get_rooted_trash_dir(base_dir, spec);
+		}
+		else
+		{
+			trash_dir = strdup(spec);
+		}
+
+		if(trash_dir != NULL && try_create_trash_dir(trash_dir) == 0)
+		{
+			break;
+		}
+
+		free(trash_dir);
 	}
-	return strdup(cfg.trash_dir);
+	return trash_dir;
 }
 
 /* Checks whether the spec refers to a rooted trash directory.  Returns non-zero
@@ -413,6 +430,21 @@ get_ideal_trash_dir(const char base_dir[])
 	}
 
 	return strdup(cfg.trash_dir);
+}
+
+/* Expands rooted trash directory specification into a string.  Returns NULL on
+ * error, otherwise newly allocated string that should be freed by the caller is
+ * returned. */
+static char *
+get_rooted_trash_dir(const char base_dir[], const char spec[])
+{
+	char full[PATH_MAX];
+	if(get_mount_point(base_dir, sizeof(full), full) == 0)
+	{
+		return format_str("%s/%s", full, spec + ROOTED_SPEC_PREFIX_LEN);
+	}
+
+	return NULL;
 }
 
 const char *
