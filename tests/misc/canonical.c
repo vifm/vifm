@@ -1,6 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/filelist.h"
+#include "../../src/utils/fs_limits.h"
+#include "../../src/utils/path.h"
 
 #ifndef _WIN32
 #define ABS_PREFIX
