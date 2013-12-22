@@ -27,7 +27,7 @@ alignment_tests(void)
 {
 	test_fixture_start();
 
-	run_test(test_right_alignment_ok);
+	run_test(test_left_alignment_ok);
 	run_test(test_right_alignment_ok);
 
 	test_fixture_end();
