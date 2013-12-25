@@ -30,7 +30,7 @@
 #include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
                        sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
                        SIG_UNBLOCK */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* atoi() */
 #include <string.h> /* strchr() strlen() strncmp() */
@@ -42,7 +42,19 @@
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
 #include "str.h"
+#include "utils.h"
 
+/* State for get_mount_point() traverser. */
+typedef struct
+{
+	const char *path; /* Path whose mount point we're looking for. */
+	size_t buf_len;   /* Output buffer length. */
+	char *buf;        /* Output buffer. */
+	size_t curr_len;  /* Max length among all found points (len of buf string). */
+}
+get_mount_point_traverser_state;
+
+static int get_mount_point_traverser(const char mount_point[], void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
 void
@@ -231,9 +243,38 @@ is_on_slow_fs(const char full_path[])
 int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {
+	get_mount_point_traverser_state state =
+	{
+		.path = path,
+		.buf_len = buf_len,
+		.buf = buf,
+		.curr_len = 0UL,
+	};
+	return traverse_mount_points(&get_mount_point_traverser, &state);
+}
+
+/* traverse_mount_points client that finds mount point for a given path. */
+static int
+get_mount_point_traverser(const char mount_point[], void *arg)
+{
+	get_mount_point_traverser_state *const state = arg;
+	if(path_starts_with(state->path, mount_point))
+	{
+		const size_t new_len = strlen(mount_point);
+		if(new_len > state->curr_len)
+		{
+			state->curr_len = new_len;
+			copy_str(state->buf, state->buf_len, mount_point);
+		}
+	}
+	return 0;
+}
+
+int
+traverse_mount_points(mptraverser client, void *arg)
+{
 	FILE *f;
 	struct mntent *ent;
-	size_t len = 0U;
 
 	if((f = setmntent("/etc/mtab", "r")) == NULL)
 	{
@@ -242,15 +283,7 @@ get_mount_point(const char path[], size_t buf_len, char buf[])
 
 	while((ent = getmntent(f)) != NULL)
 	{
-		if(path_starts_with(path, ent->mnt_dir))
-		{
-			const size_t new_len = strlen(ent->mnt_dir);
-			if(new_len > len)
-			{
-				len = new_len;
-				copy_str(buf, buf_len, ent->mnt_dir);
-			}
-		}
+		client(ent->mnt_dir, arg);
 	}
 
 	endmntent(f);

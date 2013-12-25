@@ -28,7 +28,7 @@
 #include <fcntl.h>
 
 #include <ctype.h> /* toupper() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
@@ -379,6 +379,23 @@ int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len, "%c:/", path[0]);
+	return 0;
+}
+
+int
+traverse_mount_points(mptraverser client, void *arg)
+{
+	char c;
+
+	for(c = 'a'; c < 'z'; c++)
+	{
+		if(drive_exists(c))
+		{
+			const char drive[] = { c, ':', '/', '\0' };
+			client(drive, arg);
+		}
+	}
+
 	return 0;
 }
 
