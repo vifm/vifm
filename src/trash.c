@@ -55,7 +55,7 @@ typedef int (*traverser)(const char base_dir[], const char trash_dir[],
 
 static int validate_trash_dir(const char trash_dir[]);
 static int create_trash_dir(const char trash_dir[]);
-static void empty_trash_dir(void);
+static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
@@ -176,19 +176,20 @@ void
 empty_trash(void)
 {
 	clean_regs_with_trash();
-	empty_trash_dir();
+	empty_trash_dir(cfg.trash_dir);
 	clean_cmds_with_trash();
 	empty_trash_list();
 }
 
+/* Removes all files inside given trash directory. */
 static void
-empty_trash_dir(void)
+empty_trash_dir(const char trash_dir[])
 {
 #ifndef _WIN32
-	char cmd[25 + strlen(cfg.trash_dir)*2 + 1];
+	char cmd[25 + strlen(trash_dir)*2 + 1];
 	char *escaped;
 
-	escaped = escape_filename(cfg.trash_dir, 0);
+	escaped = escape_filename(trash_dir, 0);
 	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[!.]*'", escaped, escaped);
 	free(escaped);
 
@@ -197,7 +198,7 @@ empty_trash_dir(void)
 	DIR *dir;
 	struct dirent *d;
 
-	dir = opendir(cfg.trash_dir);
+	dir = opendir(trash_dir);
 	if(dir == NULL)
 		return;
 	while((d = readdir(dir)) != NULL)
@@ -205,7 +206,7 @@ empty_trash_dir(void)
 		char full[PATH_MAX];
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
-		snprintf(full, sizeof(full), "%s/%s", cfg.trash_dir, d->d_name);
+		snprintf(full, sizeof(full), "%s/%s", trash_dir, d->d_name);
 		perform_operation(OP_REMOVESL, NULL, full, NULL);
 	}
 	closedir(dir);
