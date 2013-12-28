@@ -54,7 +54,7 @@
 typedef int (*traverser)(const char base_dir[], const char trash_dir[],
 		void *arg);
 
-static int validate_trash_dir(const char trash_dir[]);
+static int validate_trash_dir(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static int empty_trash_dirs_traverser(struct mntent *entry, void *arg);
@@ -72,49 +72,49 @@ static void traverse_specs(const char base_dir[], traverser client, void *arg);
 static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
 static char * format_root_spec(const char spec[], const char mount_point[]);
 
-static char **trash_dirs;
-static int ntrash_dirs;
+static char **specs;
+static int nspecs;
 
 int
-set_trash_dir(const char trash_dir[])
+set_trash_dir(const char new_specs[])
 {
 	char **dirs = NULL;
 	int ndirs = 0;
 
 	int error = 0;
-	char *const free_this = strdup(trash_dir);
-	char *element = free_this;
+	char *const free_this = strdup(new_specs);
+	char *spec = free_this;
 
 	for(;;)
 	{
-		char *const p = until_first(element, ',');
+		char *const p = until_first(spec, ',');
 		const int last_element = *p == '\0';
 		*p = '\0';
 
-		if(!validate_trash_dir(element))
+		if(!validate_trash_dir(spec))
 		{
 			error = 1;
 			break;
 		}
 
-		ndirs = add_to_string_array(&dirs, ndirs, 1, element);
+		ndirs = add_to_string_array(&dirs, ndirs, 1, spec);
 
 		if(last_element)
 		{
 			break;
 		}
-		element = p + 1;
+		spec = p + 1;
 	}
 
 	free(free_this);
 
 	if(!error)
 	{
-		free_string_array(trash_dirs, ntrash_dirs);
-		trash_dirs = dirs;
-		ntrash_dirs = ndirs;
+		free_string_array(specs, nspecs);
+		specs = dirs;
+		nspecs = ndirs;
 
-		copy_str(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir);
+		copy_str(cfg.trash_dir, sizeof(cfg.trash_dir), new_specs);
 	}
 	else
 	{
@@ -127,19 +127,19 @@ set_trash_dir(const char trash_dir[])
 /* Validates trash directory specification.  Returns non-zero if it's OK,
  * otherwise zero is returned and an error message is displayed. */
 static int
-validate_trash_dir(const char trash_dir[])
+validate_trash_dir(const char spec[])
 {
-	if(is_path_absolute(trash_dir))
+	if(is_path_absolute(spec))
 	{
-		if(create_trash_dir(trash_dir) != 0)
+		if(create_trash_dir(spec) != 0)
 		{
 			return 0;
 		}
 	}
-	else if(!is_rooted_trash_dir(trash_dir))
+	else if(!is_rooted_trash_dir(spec))
 	{
 		show_error_msgf("Error Setting Trash Directory",
-				"The path specification is of incorrect format: %s", trash_dir);
+				"The path specification is of incorrect format: %s", spec);
 		return 0;
 	}
 	return 1;
@@ -191,9 +191,9 @@ static void
 empty_trash_dirs(void)
 {
 	int i;
-	for(i = 0; i < ntrash_dirs; i++)
+	for(i = 0; i < nspecs; i++)
 	{
-		const char *const spec = trash_dirs[i];
+		const char *const spec = specs[i];
 		if(is_rooted_trash_dir(spec))
 		{
 			(void)traverse_mount_points(&empty_trash_dirs_traverser, (void *)spec);
@@ -495,17 +495,17 @@ is_trash_directory_traverser(const char path[], const char trash_dir[],
 }
 
 /* Calls client traverser for each trash directory specification defined by
- * trash_dirs array. */
+ * specs array. */
 static void
 traverse_specs(const char base_dir[], traverser client, void *arg)
 {
 	int i;
-	for(i = 0; i < ntrash_dirs; i++)
+	for(i = 0; i < nspecs; i++)
 	{
 		char *to_free = NULL;
 		const char *trash_dir;
 
-		const char *const spec = trash_dirs[i];
+		const char *const spec = specs[i];
 		if(is_rooted_trash_dir(spec))
 		{
 			to_free = get_rooted_trash_dir(base_dir, spec);
