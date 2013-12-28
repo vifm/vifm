@@ -55,9 +55,11 @@ void recover_after_shellout(void);
 
 /* Other functions. */
 
+struct mntent;
+
 /* Client of the traverse_mount_points() function.  Should return non-zero to
  * stop traversal. */
-typedef int (*mptraverser)(const char mount_point[], void *arg);
+typedef int (*mptraverser)(struct mntent *entry, void *arg);
 
 int is_on_slow_fs(const char full_path[]);
 

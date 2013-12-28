@@ -22,11 +22,14 @@
 
 #include <sys/stat.h> /* S_* */
 #include <sys/types.h> /* gid_t mode_t uid_t */
-#include <ctype.h> /* isdigit() */
-#include <errno.h> /* EINTR errno */
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
+#include <unistd.h> /* dup2() getpid() */
+
+#include <assert.h> /* assert() */
+#include <ctype.h> /* isdigit() */
+#include <errno.h> /* EINTR errno */
 #include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
                        sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
                        SIG_UNBLOCK */
@@ -34,7 +37,6 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* atoi() */
 #include <string.h> /* strchr() strlen() strncmp() */
-#include <unistd.h> /* dup2() getpid() */
 
 #include "../cfg/config.h"
 #include "fs_limits.h"
@@ -44,9 +46,18 @@
 #include "str.h"
 #include "utils.h"
 
+/* Types of mount point information for get_mount_point_traverser_state. */
+typedef enum
+{
+	MI_MOUNT_POINT, /* Path to the mount point. */
+	MI_FS_TYPE,     /* File system name. */
+}
+mntinfo;
+
 /* State for get_mount_point() traverser. */
 typedef struct
 {
+	mntinfo type;     /* Type of information to put into the buffer. */
 	const char *path; /* Path whose mount point we're looking for. */
 	size_t buf_len;   /* Output buffer length. */
 	char *buf;        /* Output buffer. */
@@ -54,7 +65,7 @@ typedef struct
 }
 get_mount_point_traverser_state;
 
-static int get_mount_point_traverser(const char mount_point[], void *arg);
+static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
 void
@@ -245,26 +256,39 @@ get_mount_point(const char path[], size_t buf_len, char buf[])
 {
 	get_mount_point_traverser_state state =
 	{
+		.type = MI_MOUNT_POINT,
 		.path = path,
 		.buf_len = buf_len,
 		.buf = buf,
 		.curr_len = 0UL,
 	};
-	return traverse_mount_points(&get_mount_point_traverser, &state);
+	return traverse_mount_points(&get_mount_info_traverser, &state);
 }
 
-/* traverse_mount_points client that finds mount point for a given path. */
+/* traverse_mount_points client that gets mount point info for a given path. */
 static int
-get_mount_point_traverser(const char mount_point[], void *arg)
+get_mount_info_traverser(struct mntent *entry, void *arg)
 {
 	get_mount_point_traverser_state *const state = arg;
-	if(path_starts_with(state->path, mount_point))
+	if(path_starts_with(state->path, entry->mnt_dir))
 	{
-		const size_t new_len = strlen(mount_point);
+		const size_t new_len = strlen(entry->mnt_dir);
 		if(new_len > state->curr_len)
 		{
 			state->curr_len = new_len;
-			copy_str(state->buf, state->buf_len, mount_point);
+			switch(state->type)
+			{
+				case MI_MOUNT_POINT:
+					copy_str(state->buf, state->buf_len, entry->mnt_dir);
+					break;
+				case MI_FS_TYPE:
+					copy_str(state->buf, state->buf_len, entry->mnt_type);
+					break;
+
+				default:
+					assert(0 && "Unknown mount information type.");
+					break;
+			}
 		}
 	}
 	return 0;
@@ -283,7 +307,7 @@ traverse_mount_points(mptraverser client, void *arg)
 
 	while((ent = getmntent(f)) != NULL)
 	{
-		client(ent->mnt_dir, arg);
+		client(ent, arg);
 	}
 
 	endmntent(f);

@@ -40,6 +40,7 @@
 #include "fs_limits.h"
 #include "log.h"
 #include "macros.h"
+#include "mntent.h"
 #include "str.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
@@ -392,7 +393,12 @@ traverse_mount_points(mptraverser client, void *arg)
 		if(drive_exists(c))
 		{
 			const char drive[] = { c, ':', '/', '\0' };
-			client(drive, arg);
+			struct mntent entry =
+			{
+				.mnt_dir = drive,
+				.mnt_type = "",
+			};
+			client(&entry, arg);
 		}
 	}
 
