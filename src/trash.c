@@ -36,6 +36,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
+#include "utils/mntent.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -55,6 +56,8 @@ typedef int (*traverser)(const char base_dir[], const char trash_dir[],
 
 static int validate_trash_dir(const char trash_dir[]);
 static int create_trash_dir(const char trash_dir[]);
+static void empty_trash_dirs(void);
+static int empty_trash_dirs_traverser(struct mntent *entry, void *arg);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_list(void);
 static char * pick_trash_dir(const char base_dir[]);
@@ -67,6 +70,7 @@ static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], void *arg);
 static void traverse_specs(const char base_dir[], traverser client, void *arg);
 static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
+static char * format_root_spec(const char spec[], const char mount_point[]);
 
 static char **trash_dirs;
 static int ntrash_dirs;
@@ -176,12 +180,49 @@ void
 empty_trash(void)
 {
 	clean_regs_with_trash();
-	empty_trash_dir(cfg.trash_dir);
+	empty_trash_dirs();
 	clean_cmds_with_trash();
 	empty_trash_list();
 }
 
-/* Removes all files inside given trash directory. */
+/* Empties all trash directories (all specifications on all mount points are
+ * expanded). */
+static void
+empty_trash_dirs(void)
+{
+	int i;
+	for(i = 0; i < ntrash_dirs; i++)
+	{
+		const char *const spec = trash_dirs[i];
+		if(is_rooted_trash_dir(spec))
+		{
+			(void)traverse_mount_points(&empty_trash_dirs_traverser, (void *)spec);
+		}
+		else
+		{
+			empty_trash_dir(spec);
+		}
+	}
+}
+
+/* traverse_mount_points client that empties every reachable trash on every
+ * mount point.  Path to a trash is composed using trash directory specification
+ * given in the arg. */
+static int
+empty_trash_dirs_traverser(struct mntent *entry, void *arg)
+{
+	const char *const spec = arg;
+	char *const trash_dir = format_root_spec(spec, entry->mnt_dir);
+	if(is_dir_writable(trash_dir))
+	{
+		empty_trash_dir(trash_dir);
+	}
+	free(trash_dir);
+	return 0;
+}
+
+/* Removes all files inside given trash directory (even those that this instance
+ * of vifm is not aware of). */
 static void
 empty_trash_dir(const char trash_dir[])
 {
@@ -494,10 +535,18 @@ get_rooted_trash_dir(const char base_dir[], const char spec[])
 	char full[PATH_MAX];
 	if(get_mount_point(base_dir, sizeof(full), full) == 0)
 	{
-		return format_str("%s/%s", full, spec + ROOTED_SPEC_PREFIX_LEN);
+		return format_root_spec(spec, full);
 	}
 
 	return NULL;
+}
+
+/* Expands rooted trash directory specification into a string.  Returns newly
+ * allocated string that should be freed by the caller. */
+static char *
+format_root_spec(const char spec[], const char mount_point[])
+{
+	return format_str("%s/%s", mount_point, spec + ROOTED_SPEC_PREFIX_LEN);
 }
 
 const char *
