@@ -219,36 +219,30 @@ get_perm_string(char buf[], int len, mode_t mode)
 int
 is_on_slow_fs(const char full_path[])
 {
-	FILE *f;
-	struct mntent *ent;
-	size_t len = 0;
-	char max[PATH_MAX] = "";
+	char fs_name[PATH_MAX];
+	get_mount_point_traverser_state state =
+	{
+		.type = MI_FS_TYPE,
+		.path = full_path,
+		.buf_len = sizeof(fs_name),
+		.buf = fs_name,
+		.curr_len = 0UL,
+	};
 
+	/* Empty list optimization. */
 	if(cfg.slow_fs_list[0] == '\0')
 	{
 		return 0;
 	}
 
-	if((f = setmntent("/etc/mtab", "r")) == NULL)
+	if(traverse_mount_points(&get_mount_info_traverser, &state) == 0)
 	{
-		return 0;
-	}
-
-	while((ent = getmntent(f)) != NULL)
-	{
-		if(path_starts_with(full_path, ent->mnt_dir))
+		if(state.curr_len > 0)
 		{
-			const size_t new_len = strlen(ent->mnt_dir);
-			if(new_len > len)
-			{
-				len = new_len;
-				snprintf(max, sizeof(max), "%s", ent->mnt_fsname);
-			}
+			return begins_with_list_item(fs_name, cfg.slow_fs_list);
 		}
 	}
-
-	endmntent(f);
-	return (max[0] == '\0') ? 0 : begins_with_list_item(max, cfg.slow_fs_list);
+	return 0;
 }
 
 int
