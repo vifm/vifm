@@ -11,6 +11,10 @@
 
 	Added sample light color scheme (proposed by Daniel R., a.k.a. reicheltd).
 
+	Extended 'trashdir' to handle list of path, some of which can specify
+	location of trash directories local to each mount point.  Thanks to
+	smpolymen and Sergei Shilovsky.
+
 	Treat semicolon (";") as a valid range separator for command-line
 	commands.
 
