@@ -262,18 +262,18 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	for(x = 0; x < view->selected_files; x++)
 	{
+		const char *const fname = view->selected_filelist[x];
 		char full_buf[PATH_MAX];
 		int result;
 
-		if(is_parent_dir(view->selected_filelist[x]))
+		if(is_parent_dir(fname))
 		{
 			show_error_msg("Can't perform deletion",
 					"You cannot delete the ../ directory");
 			continue;
 		}
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
-				view->selected_filelist[x]);
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
@@ -283,7 +283,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			{
 				char *dest;
 
-				dest = gen_trash_name(view->curr_dir, view->selected_filelist[x]);
+				dest = gen_trash_name(view->curr_dir, fname);
 				result = perform_operation(OP_MOVE, NULL, full_buf, dest);
 				if(result == 0)
 				{
@@ -312,7 +312,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 		else if(!view->dir_entry[view->list_pos].selected)
 		{
-			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+			const int pos = find_file_pos_in_list(view, fname);
 			if(pos >= 0)
 				view->list_pos = pos;
 		}
@@ -370,19 +370,22 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 	int i;
 	for(i = 0; i < count; i++)
 	{
+		const char *const fname = list[i];
 		char full_buf[PATH_MAX];
 
-		if(is_parent_dir(list[i]))
+		if(is_parent_dir(fname))
+		{
 			continue;
+		}
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, fname);
 		chosp(full_buf);
 
 		if(use_trash)
 		{
 			if(!is_trash_directory(full_buf))
 			{
-				char *const dest = gen_trash_name(curr_dir, list[i]);
+				char *const dest = gen_trash_name(curr_dir, fname);
 				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
 				free(dest);
 			}
