@@ -267,7 +267,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		if(is_parent_dir(view->selected_filelist[x]))
 		{
-			show_error_msg("Background Process Error",
+			show_error_msg("Can't perform deletion",
 					"You cannot delete the ../ directory");
 			continue;
 		}
@@ -281,7 +281,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			if(is_trash_directory(full_buf))
 			{
-				show_error_msg("Background Process Error",
+				show_error_msg("Can't perform deletion",
 						"You cannot delete trash directory to trash");
 				result = -1;
 			}
