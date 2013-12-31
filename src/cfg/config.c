@@ -56,6 +56,7 @@
 #include "../filelist.h"
 #include "../opt_handlers.h"
 #include "../status.h"
+#include "../trash.h"
 #include "../ui.h"
 #include "hist.h"
 
@@ -436,6 +437,8 @@ store_config_paths(void)
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
+
+	(void)set_trash_dir(cfg.trash_dir);
 }
 
 /* ensures existence of configuration directory */
