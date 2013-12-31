@@ -552,16 +552,8 @@ format_root_spec(const char spec[], const char mount_point[])
 const char *
 get_real_name_from_trash_name(const char trash_name[])
 {
-	size_t prefix_len;
-	const char *real_name = trash_name;
-
-	if(is_path_absolute(real_name))
-	{
-		real_name += strlen(cfg.trash_dir);
-		real_name = skip_char(real_name, '/');
-	}
-
-	prefix_len = strspn(real_name, "0123456789");
+	const char *real_name = after_last(trash_name, '/');
+	const size_t prefix_len = strspn(real_name, "0123456789");
 	if(real_name[prefix_len] == '_')
 	{
 		real_name += prefix_len + 1;
