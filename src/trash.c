@@ -400,9 +400,15 @@ gen_trash_name(const char base_dir[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX];
-	int i = 0;
+	int i;
 	char *const trash_dir = pick_trash_dir(base_dir);
 
+	if(trash_dir == NULL)
+	{
+		return NULL;
+	}
+
+	i = 0;
 	do
 	{
 		snprintf(buf, sizeof(buf), "%s/%03d_%s", trash_dir, i++, name);
@@ -416,7 +422,8 @@ gen_trash_name(const char base_dir[], const char name[])
 }
 
 /* Picks trash directory basing on original directory of a file that is being
- * trashed.  Returns absolute path to picked trash directory. */
+ * trashed.  Returns absolute path to picked trash directory on success,
+ * otherwise NULL is returned. */
 static char *
 pick_trash_dir(const char base_dir[])
 {

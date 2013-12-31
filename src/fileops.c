@@ -281,16 +281,24 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			if(!is_trash_directory(full_buf))
 			{
-				char *dest;
-
-				dest = gen_trash_name(view->curr_dir, fname);
-				result = perform_operation(OP_MOVE, NULL, full_buf, dest);
-				if(result == 0)
+				char *const dest = gen_trash_name(view->curr_dir, fname);
+				if(dest != NULL)
 				{
-					add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
-					append_to_register(reg, dest);
+					result = perform_operation(OP_MOVE, NULL, full_buf, dest);
+					if(result == 0)
+					{
+						add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+						append_to_register(reg, dest);
+					}
+					free(dest);
 				}
-				free(dest);
+				else
+				{
+					show_error_msgf("No trash directory is available",
+							"Either correct trash directory paths or prune files.  "
+							"Deletion failed on: %s", fname);
+					result = -1;
+				}
 			}
 			else
 			{
@@ -385,9 +393,10 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 		{
 			if(!is_trash_directory(full_buf))
 			{
-				char *const dest = gen_trash_name(curr_dir, fname);
+				char *const trash_name = gen_trash_name(curr_dir, fname);
+				const char *const dest = (trash_name != NULL) ? trash_name : fname;
 				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
-				free(dest);
+				free(trash_name);
 			}
 		}
 		else
