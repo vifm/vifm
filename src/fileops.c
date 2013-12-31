@@ -279,13 +279,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			if(is_trash_directory(full_buf))
-			{
-				show_error_msg("Can't perform deletion",
-						"You cannot delete trash directory to trash");
-				result = -1;
-			}
-			else
+			if(!is_trash_directory(full_buf))
 			{
 				char *dest;
 
@@ -297,6 +291,12 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 					append_to_register(reg, dest);
 				}
 				free(dest);
+			}
+			else
+			{
+				show_error_msg("Can't perform deletion",
+						"You cannot delete trash directory to trash");
+				result = -1;
 			}
 		}
 		else
