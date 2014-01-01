@@ -319,7 +319,7 @@ is_in_trash(const char trash_name[])
 int
 exists_in_trash(const char trash_name[])
 {
-	return is_under_trash(trash_name) && path_exists(trash_name);
+	return path_exists(trash_name);
 }
 
 int
