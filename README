@@ -79,6 +79,7 @@ Package content
     |  |  |                    history
     |  |  |-- jobs_menu.c - handles :jobs menu
     |  |  |-- locate_menu.c - handles :locale menu
+    |  |  |-- trash_menu.c - handles :lstrash menu
     |  |  |-- map_menu.c - handles :map menu
     |  |  |-- menus.c - handles all kinds of menus
     |  |  |-- registers_menu.c - handles :registers menu

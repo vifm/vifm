@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2013 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +16,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MENUS__ALL_H__
-#define VIFM__MENUS__ALL_H__
-
-#include "apropos_menu.h"
-#include "bookmarks_menu.h"
-#include "colorscheme_menu.h"
-#include "commands_menu.h"
-#include "dirhistory_menu.h"
-#include "dirstask_menu.h"
-#include "filetypes_menu.h"
-#include "find_menu.h"
-#include "grep_menu.h"
-#include "history_menu.h"
-#include "jobs_menu.h"
-#include "locate_menu.h"
-#include "map_menu.h"
-#include "registers_menu.h"
 #include "trash_menu.h"
-#include "undolist_menu.h"
-#include "users_menu.h"
-#include "vifm_menu.h"
-#include "volumes_menu.h"
 
-#endif /* VIFM__MENUS__ALL_H__ */
+#include <string.h> /* strdup() */
+
+#include "../utils/string_array.h"
+#include "../trash.h"
+
+int
+show_trash_menu(FileView *view)
+{
+	int i;
+
+	static menu_info m;
+	init_menu_info(&m, TRASH_MENU, strdup("No files in trash"));
+
+	m.title = strdup(" Original paths of files in trash ");
+
+	for(i = 0; i < nentries; i++)
+	{
+		const trash_entry_t *const entry = &trash_list[i];
+		m.len = add_to_string_array(&m.items, m.len, 1, entry->path);
+	}
+
+	return display_menu(&m, view);
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
