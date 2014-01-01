@@ -41,7 +41,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	int max_len;
 
 	static menu_info m;
-	init_menu_info(&m, BOOKMARK, strdup("No bookmarks set"));
+	init_menu_info(&m, BOOKMARK_MENU, strdup("No bookmarks set"));
 	m.key_handler = bookmark_khandler;
 
 	m.len = init_active_bookmarks(marks);

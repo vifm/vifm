@@ -46,7 +46,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	};
 
 	static menu_info m;
-	init_menu_info(&m, GREP, strdup("No matches found"));
+	init_menu_info(&m, GREP_MENU, strdup("No matches found"));
 
 	m.title = format_str(" Grep %s ", args);
 

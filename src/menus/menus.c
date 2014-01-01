@@ -445,7 +445,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		copy_str(dir, bufs_len, "./");
 	}
 
-	if(m->type == GREP)
+	if(m->type == GREP_MENU)
 	{
 		p = strchr(m->items[m->pos], ':');
 		if(p != NULL)
@@ -460,7 +460,7 @@ goto_selected_file(FileView *view, menu_info *m)
 	}
 	strcat(dir, m->items[m->pos]);
 	chomp(file);
-	if(m->type == GREP && p != NULL)
+	if(m->type == GREP_MENU && p != NULL)
 	{
 		int n = 1;
 
@@ -509,7 +509,7 @@ goto_selected_file(FileView *view, menu_info *m)
 			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
 		}
 	}
-	else if(m->type == LOCATE || m->type == USER_NAVIGATE)
+	else if(m->type == LOCATE_MENU || m->type == USER_NAVIGATE_MENU)
 	{
 		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
 	}
@@ -522,35 +522,35 @@ execute_menu_cb(FileView *view, menu_info *m)
 {
 	switch(m->type)
 	{
-		case APROPOS:
+		case APROPOS_MENU:
 			execute_apropos_cb(m);
 			return 1;
-		case BOOKMARK:
+		case BOOKMARK_MENU:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
-		case CMDHISTORY:
+		case CMDHISTORY_MENU:
 			save_command_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_COMMAND);
 			break;
-		case FSEARCHHISTORY:
+		case FSEARCHHISTORY_MENU:
 			save_search_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
 			break;
-		case BSEARCHHISTORY:
+		case BSEARCHHISTORY_MENU:
 			save_search_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
 			break;
-		case COLORSCHEME:
+		case COLORSCHEME_MENU:
 			load_color_scheme(m->items[m->pos]);
 			break;
-		case COMMAND:
+		case COMMAND_MENU:
 			break_at(m->items[m->pos], ' ');
 			exec_command(m->items[m->pos], view, GET_COMMAND);
 			break;
-		case FILETYPE:
+		case FILETYPE_MENU:
 			execute_filetype_cb(view, m);
 			break;
-		case DIRHISTORY:
+		case DIRHISTORY_MENU:
 			if(!cfg.auto_ch_pos)
 			{
 				clean_positions_in_history(curr_view);
@@ -560,21 +560,21 @@ execute_menu_cb(FileView *view, menu_info *m)
 			if(!cfg.auto_ch_pos)
 				curr_stats.ch_pos = 1;
 			break;
-		case DIRSTACK:
+		case DIRSTACK_MENU:
 			execute_dirstack_cb(view, m);
 			break;
-		case JOBS:
+		case JOBS_MENU:
 			execute_jobs_cb(view, m);
 			break;
-		case LOCATE:
-		case FIND:
-		case USER_NAVIGATE:
+		case LOCATE_MENU:
+		case FIND_MENU:
+		case USER_NAVIGATE_MENU:
 			goto_selected_file(view, m);
 			break;
-		case GREP:
+		case GREP_MENU:
 			goto_selected_file(view, m);
 			return 1;
-		case VIFM:
+		case VIFM_MENU:
 			break;
 #ifdef _WIN32
 		case VOLUMES:

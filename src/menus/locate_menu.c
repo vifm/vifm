@@ -42,7 +42,7 @@ show_locate_menu(FileView *view, const char args[])
 	};
 
 	static menu_info m;
-	init_menu_info(&m, LOCATE, strdup("No files found"));
+	init_menu_info(&m, LOCATE_MENU, strdup("No files found"));
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.title = format_str(" Locate %s ", m.args);
 

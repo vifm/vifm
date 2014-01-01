@@ -45,7 +45,7 @@ show_commands_menu(FileView *view)
 	int cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_info m;
-	init_menu_info(&m, COMMAND, strdup("No commands set"));
+	init_menu_info(&m, COMMAND_MENU, strdup("No commands set"));
 	m.key_handler = command_khandler;
 
 	m.title = strdup(" Command ------ Action ");
