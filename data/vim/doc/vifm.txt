@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Dec 29
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1391,6 +1391,12 @@ order using the '.' operator.  Any whitespace is ignored.
 :ls - lists windows of active terminal multiplexer (only when terminal
     multiplexer is used).  This is achieved by issuing proper command for
     active terminal multiplexer, thus the list is not handled by vifm.
+
+                                               *vifm-:lstrash*
+
+:lstrash - displays a menu with list of files in trash.  Each element of
+    the list is original path of a deleted file, thus the list can contain
+    duplicates.
 
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters] - popup menu with registers content.
