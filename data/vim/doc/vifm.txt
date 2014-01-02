@@ -2571,8 +2571,11 @@ dd on a command to remove.
 
 Bookmarks menu~
 
-Escape or Ctrl-C to abort j and k to move through.
 dd on a bookmark to remove.
+
+Trash menu~
+
+r on a file name to restore it from trash.
 
 Directory stack menu~
 

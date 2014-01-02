@@ -18,10 +18,16 @@
 
 #include "trash_menu.h"
 
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../utils/string_array.h"
+#include "../status.h"
 #include "../trash.h"
+#include "../ui.h"
+#include "../undo.h"
+
+static int trash_khandler(menu_info *m, wchar_t keys[]);
 
 int
 show_trash_menu(FileView *view)
@@ -30,6 +36,7 @@ show_trash_menu(FileView *view)
 
 	static menu_info m;
 	init_menu_info(&m, TRASH_MENU, strdup("No files in trash"));
+	m.key_handler = trash_khandler;
 
 	m.title = strdup(" Original paths of files in trash ");
 
@@ -40,6 +47,47 @@ show_trash_menu(FileView *view)
 	}
 
 	return display_menu(&m, view);
+}
+
+/* Processes key presses on menu items.  Returns value > 0 to request menu
+ * window refresh and < 0 on unsupported key. */
+static int
+trash_khandler(menu_info *m, wchar_t keys[])
+{
+	if(wcscmp(keys, L"r") == 0)
+	{
+		char *const trash_path = strdup(trash_list[m->pos].trash_name);
+
+		cmd_group_begin("restore: ");
+		cmd_group_end();
+
+		if(restore_from_trash(trash_path) != 0)
+		{
+			const char *const orig_path = m->items[m->pos];
+			status_bar_errorf("Failed to restore %s", orig_path);
+			curr_stats.save_msg = 1;
+			free(trash_path);
+			return -1;
+		}
+		free(trash_path);
+
+		clean_menu_position(m);
+
+		remove_from_string_array(m->items, m->len, m->pos);
+		if(m->matches != NULL)
+		{
+			if(m->matches[m->pos])
+				m->matching_entries--;
+			memmove(m->matches + m->pos, m->matches + m->pos + 1,
+					sizeof(int)*((m->len - 1) - m->pos));
+		}
+		m->len--;
+		draw_menu(m);
+
+		move_to_menu_pos(m->pos, m);
+		return 1;
+	}
+	return -1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
