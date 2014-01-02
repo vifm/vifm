@@ -88,18 +88,7 @@ command_khandler(struct menu_info *m, wchar_t keys[])
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
 		execute_cmdline_command(cmd_buf);
 
-		remove_from_string_array(m->items, m->len, m->pos);
-		if(m->matches != NULL)
-		{
-			if(m->matches[m->pos])
-				m->matching_entries--;
-			memmove(m->matches + m->pos, m->matches + m->pos + 1,
-					sizeof(int)*((m->len - 1) - m->pos));
-		}
-		m->len--;
-		draw_menu(m);
-
-		move_to_menu_pos(m->pos, m);
+		remove_current_item(m);
 		return 1;
 	}
 	return -1;

@@ -34,7 +34,8 @@
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* memset() strdup() strchr() strlen() strrchr() */
+#include <string.h> /* memmove() memset() strdup() strchr() strlen()
+                       strrchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -77,6 +78,25 @@ show_position_in_menu(menu_info *m)
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
 	ui_pos_window_set(pos_buf);
+}
+
+void
+remove_current_item(menu_info *m)
+{
+	clean_menu_position(m);
+
+	remove_from_string_array(m->items, m->len, m->pos);
+	if(m->matches != NULL)
+	{
+		if(m->matches[m->pos])
+			m->matching_entries--;
+		memmove(m->matches + m->pos, m->matches + m->pos + 1,
+				sizeof(int)*((m->len - 1) - m->pos));
+	}
+	m->len--;
+	draw_menu(m);
+
+	move_to_menu_pos(m->pos, m);
 }
 
 void

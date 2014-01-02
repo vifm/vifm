@@ -112,6 +112,8 @@ int prompt_error_msgf(const char title[], const char format[], ...);
 int query_user_menu(char *title, char *message);
 /* Redraws currently visible error message on the screen. */
 void redraw_error_msg_window(void);
+/* Removes current menu item and redraws the menu. */
+void remove_current_item(menu_info *m);
 void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);

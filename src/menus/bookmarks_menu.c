@@ -20,7 +20,7 @@
 #include "bookmarks_menu.h"
 
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strdup() strcpy() strlen() */
+#include <string.h> /* memmove() strdup() strcpy() strlen() */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
@@ -104,23 +104,11 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
-		clean_menu_position(m);
 		remove_bookmark(active_bookmarks[m->pos]);
 		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
 				sizeof(int)*(m->len - 1 - m->pos));
 
-		remove_from_string_array(m->items, m->len, m->pos);
-		if(m->matches != NULL)
-		{
-			if(m->matches[m->pos])
-				m->matching_entries--;
-			memmove(m->matches + m->pos, m->matches + m->pos + 1,
-					sizeof(int)*((m->len - 1) - m->pos));
-		}
-		m->len--;
-		draw_menu(m);
-
-		move_to_menu_pos(m->pos, m);
+		remove_current_item(m);
 		return 1;
 	}
 	return -1;
