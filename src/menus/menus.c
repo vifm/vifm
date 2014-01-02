@@ -540,6 +540,8 @@ goto_selected_file(FileView *view, menu_info *m)
 int
 execute_menu_cb(FileView *view, menu_info *m)
 {
+	/* TODO: reimplement this using key_handler mechanism. */
+
 	switch(m->type)
 	{
 		case APROPOS_MENU:
@@ -547,29 +549,29 @@ execute_menu_cb(FileView *view, menu_info *m)
 			return 1;
 		case BOOKMARK_MENU:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
-			break;
+			return 0;
 		case CMDHISTORY_MENU:
 			save_command_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_COMMAND);
-			break;
+			return 0;
 		case FSEARCHHISTORY_MENU:
 			save_search_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
-			break;
+			return 0;
 		case BSEARCHHISTORY_MENU:
 			save_search_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
-			break;
+			return 0;
 		case COLORSCHEME_MENU:
 			load_color_scheme(m->items[m->pos]);
-			break;
+			return 0;
 		case COMMAND_MENU:
 			break_at(m->items[m->pos], ' ');
 			exec_command(m->items[m->pos], view, GET_COMMAND);
-			break;
+			return 0;
 		case FILETYPE_MENU:
 			execute_filetype_cb(view, m);
-			break;
+			return 0;
 		case DIRHISTORY_MENU:
 			if(!cfg.auto_ch_pos)
 			{
@@ -579,32 +581,30 @@ execute_menu_cb(FileView *view, menu_info *m)
 			navigate_to(view, m->items[m->pos]);
 			if(!cfg.auto_ch_pos)
 				curr_stats.ch_pos = 1;
-			break;
+			return 0;
 		case DIRSTACK_MENU:
 			execute_dirstack_cb(view, m);
-			break;
+			return 0;
 		case JOBS_MENU:
 			execute_jobs_cb(view, m);
-			break;
+			return 0;
 		case LOCATE_MENU:
 		case FIND_MENU:
 		case USER_NAVIGATE_MENU:
 			goto_selected_file(view, m);
-			break;
+			return 0;
 		case GREP_MENU:
 			goto_selected_file(view, m);
 			return 1;
-		case VIFM_MENU:
-			break;
 #ifdef _WIN32
 		case VOLUMES:
 			execute_volumes_cb(view, m);
-			break;
+			return 0;
 #endif
+
 		default:
-			break;
+			return 0;
 	}
-	return 0;
 }
 
 void
