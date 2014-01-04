@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
-2001 - 2013
+2001 - 2014
 
-Updated: 31 October, 2013
+Updated: 04 January, 2014
 Version: 0.7.6
 
 Brief Description
@@ -80,6 +80,7 @@ Package content
     |  |  |-- jobs_menu.c - handles :jobs menu
     |  |  |-- locate_menu.c - handles :locale menu
     |  |  |-- trash_menu.c - handles :lstrash menu
+    |  |  |-- trashes_menu.c - handles :trashes menu
     |  |  |-- map_menu.c - handles :map menu
     |  |  |-- menus.c - handles all kinds of menus
     |  |  |-- registers_menu.c - handles :registers menu

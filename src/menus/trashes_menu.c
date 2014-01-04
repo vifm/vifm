@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +16,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MENUS__ALL_H__
-#define VIFM__MENUS__ALL_H__
-
-#include "apropos_menu.h"
-#include "bookmarks_menu.h"
-#include "colorscheme_menu.h"
-#include "commands_menu.h"
-#include "dirhistory_menu.h"
-#include "dirstask_menu.h"
-#include "filetypes_menu.h"
-#include "find_menu.h"
-#include "grep_menu.h"
-#include "history_menu.h"
-#include "jobs_menu.h"
-#include "locate_menu.h"
-#include "map_menu.h"
-#include "registers_menu.h"
-#include "trash_menu.h"
 #include "trashes_menu.h"
-#include "undolist_menu.h"
-#include "users_menu.h"
-#include "vifm_menu.h"
-#include "volumes_menu.h"
 
-#endif /* VIFM__MENUS__ALL_H__ */
+#include <string.h> /* strdup() */
+
+#include "../utils/string_array.h"
+#include "../trash.h"
+#include "../ui.h"
+
+int
+show_trashes_menu(FileView *view)
+{
+	char **trashes;
+	int ntrashes;
+	int i;
+
+	static menu_info m;
+	init_menu_info(&m, TRASHES_MENU, strdup("No trash directories found"));
+
+	m.title = strdup(" Trash directories ");
+
+	trashes = list_trashes(&ntrashes);
+
+	for(i = 0; i < ntrashes; i++)
+	{
+		m.len = add_to_string_array(&m.items, m.len, 1, trashes[i]);
+	}
+
+	free_string_array(trashes, ntrashes);
+
+	return display_menu(&m, view);
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

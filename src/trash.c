@@ -313,6 +313,14 @@ is_in_trash(const char trash_name[])
 	return 0;
 }
 
+char **
+list_trashes(int *ntrashes)
+{
+	trashes_list list = get_list_of_trashes();
+	*ntrashes = list.ntrashes;
+	return list.trashes;
+}
+
 /* Lists all non-empty trash directories.  Caller should free array and all its
  * elements using free(). */
 static trashes_list

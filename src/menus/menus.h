@@ -57,6 +57,7 @@ enum
 	VIFM_MENU,
 	GREP_MENU,
 	TRASH_MENU,
+	TRASHES_MENU,
 #ifdef _WIN32
 	VOLUMES_MENU,
 #endif

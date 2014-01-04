@@ -81,10 +81,10 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
 	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
 	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/sort_dialog.$(OBJEXT) modes/cmdline.$(OBJEXT) \
@@ -315,6 +315,7 @@ vifm_SOURCES = \
 	menus/jobs_menu.c menus/jobs_menu.h \
 	menus/locate_menu.c menus/locate_menu.h \
 	menus/trash_menu.c menus/trash_menu.h \
+	menus/trashes_menu.c menus/trashes_menu.h \
 	menus/map_menu.c menus/map_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \
@@ -542,6 +543,8 @@ menus/locate_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/trash_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
+menus/trashes_menu.$(OBJEXT): menus/$(am__dirstamp) \
+	menus/$(DEPDIR)/$(am__dirstamp)
 menus/map_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/menus.$(OBJEXT): menus/$(am__dirstamp) \
@@ -693,6 +696,7 @@ mostlyclean-compile:
 	-rm -f menus/menus.$(OBJEXT)
 	-rm -f menus/registers_menu.$(OBJEXT)
 	-rm -f menus/trash_menu.$(OBJEXT)
+	-rm -f menus/trashes_menu.$(OBJEXT)
 	-rm -f menus/undolist_menu.$(OBJEXT)
 	-rm -f menus/users_menu.$(OBJEXT)
 	-rm -f menus/vifm_menu.$(OBJEXT)
@@ -795,6 +799,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/menus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/registers_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trash_menu.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trashes_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/undolist_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/users_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/vifm_menu.Po@am__quote@
