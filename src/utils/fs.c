@@ -88,6 +88,29 @@ is_dir(const char *path)
 }
 
 int
+is_dir_empty(const char path[])
+{
+	DIR *dir;
+	struct dirent *d;
+
+	if((dir = opendir(path)) == NULL)
+	{
+		return 0;
+	}
+
+	while((d = readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			break;
+		}
+	}
+	closedir(dir);
+
+	return d == NULL;
+}
+
+int
 is_valid_dir(const char *path)
 {
 	return is_dir(path) || is_unc_root(path);

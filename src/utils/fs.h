@@ -29,6 +29,10 @@
 /* Checks if path is an existing directory. */
 int is_dir(const char *path);
 
+/* Checks whether directory is empty.  Returns non-zero if it isn't, in case of
+ * error or when directory is empty zero is returned. */
+int is_dir_empty(const char path[]);
+
 /* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
 int is_valid_dir(const char *path);
 

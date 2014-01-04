@@ -32,9 +32,10 @@ show_trashes_menu(FileView *view)
 	int i;
 
 	static menu_info m;
-	init_menu_info(&m, TRASHES_MENU, strdup("No trash directories found"));
+	init_menu_info(&m, TRASHES_MENU,
+			strdup("No non-empty trash directories found"));
 
-	m.title = strdup(" Trash directories ");
+	m.title = strdup(" Non-empty trash directories ");
 
 	trashes = list_trashes(&ntrashes);
 

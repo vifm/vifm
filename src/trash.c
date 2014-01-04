@@ -381,7 +381,7 @@ get_list_of_trashes_traverser(struct mntent *entry, void *arg)
 static int
 is_trash_valid(const char trash_dir[])
 {
-	return is_dir_writable(trash_dir);
+	return is_dir_writable(trash_dir) && !is_dir_empty(trash_dir);
 }
 
 int
