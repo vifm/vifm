@@ -54,12 +54,30 @@
 typedef int (*traverser)(const char base_dir[], const char trash_dir[],
 		void *arg);
 
+/* List of trash directories. */
+typedef struct
+{
+	char **trashes; /* List of trashes. */
+	int ntrashes;   /* Number of elements in trashes array. */
+}
+trashes_list;
+
+/* State for get_list_of_trashes() traverser. */
+typedef struct
+{
+	trashes_list *list; /* List of valid trash directories. */
+	const char *spec;   /* Trash directory name specification. */
+}
+get_list_of_trashes_traverser_state;
+
 static int validate_trash_dir(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
-static int empty_trash_dirs_traverser(struct mntent *entry, void *arg);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_list(void);
+static trashes_list get_list_of_trashes(void);
+static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
+static int is_trash_valid(const char trash_dir[]);
 static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
 		const char trash_dir[], void *arg);
@@ -190,35 +208,14 @@ empty_trash(void)
 static void
 empty_trash_dirs(void)
 {
+	const trashes_list list = get_list_of_trashes();
 	int i;
-	for(i = 0; i < nspecs; i++)
+	for(i = 0; i < list.ntrashes; i++)
 	{
-		const char *const spec = specs[i];
-		if(is_rooted_trash_dir(spec))
-		{
-			(void)traverse_mount_points(&empty_trash_dirs_traverser, (void *)spec);
-		}
-		else
-		{
-			empty_trash_dir(spec);
-		}
+		empty_trash_dir(list.trashes[i]);
 	}
-}
 
-/* traverse_mount_points client that empties every reachable trash on every
- * mount point.  Path to a trash is composed using trash directory specification
- * given in the arg. */
-static int
-empty_trash_dirs_traverser(struct mntent *entry, void *arg)
-{
-	const char *const spec = arg;
-	char *const trash_dir = format_root_spec(spec, entry->mnt_dir);
-	if(is_dir_writable(trash_dir))
-	{
-		empty_trash_dir(trash_dir);
-	}
-	free(trash_dir);
-	return 0;
+	free_string_array(list.trashes, list.ntrashes);
 }
 
 /* Removes all files inside given trash directory (even those that this instance
@@ -314,6 +311,68 @@ is_in_trash(const char trash_name[])
 			return 1;
 	}
 	return 0;
+}
+
+/* Lists all non-empty trash directories.  Caller should free array and all its
+ * elements using free(). */
+static trashes_list
+get_list_of_trashes(void)
+{
+	trashes_list list =
+	{
+		.trashes = NULL,
+		.ntrashes = 0,
+	};
+
+	int i;
+	for(i = 0; i < nspecs; i++)
+	{
+		const char *const spec = specs[i];
+		if(is_rooted_trash_dir(spec))
+		{
+			get_list_of_trashes_traverser_state state =
+			{
+				.list = &list,
+				.spec = spec,
+			};
+			(void)traverse_mount_points(&get_list_of_trashes_traverser, &state);
+		}
+		else if(is_trash_valid(spec))
+		{
+			list.ntrashes = add_to_string_array(&list.trashes, list.ntrashes, 1,
+					spec);
+		}
+	}
+
+	return list;
+}
+
+/* traverse_mount_points() client that collects valid trash directories into a
+ * list the base_dir. */
+static int
+get_list_of_trashes_traverser(struct mntent *entry, void *arg)
+{
+	get_list_of_trashes_traverser_state *const params = arg;
+	trashes_list *const list = params->list;
+	const char *const spec = params->spec;
+
+	char *const trash_dir = format_root_spec(spec, entry->mnt_dir);
+	if(is_trash_valid(trash_dir))
+	{
+		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
+				trash_dir);
+	}
+	free(trash_dir);
+
+	return 0;
+}
+
+/* Checks whether trash directory is valid (e.g. exists, writable and
+ * non-empty).  Returns non-zero if so, otherwise zero is returned. */
+static int
+is_trash_valid(const char trash_dir[])
+{
+	return is_dir_writable(trash_dir);
 }
 
 int
