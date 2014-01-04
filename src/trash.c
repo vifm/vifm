@@ -70,7 +70,7 @@ typedef struct
 }
 get_list_of_trashes_traverser_state;
 
-static int validate_trash_dir(const char spec[]);
+static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
@@ -109,7 +109,7 @@ set_trash_dir(const char new_specs[])
 		const int last_element = *p == '\0';
 		*p = '\0';
 
-		if(!validate_trash_dir(spec))
+		if(!validate_spec(spec))
 		{
 			error = 1;
 			break;
@@ -145,7 +145,7 @@ set_trash_dir(const char new_specs[])
 /* Validates trash directory specification.  Returns non-zero if it's OK,
  * otherwise zero is returned and an error message is displayed. */
 static int
-validate_trash_dir(const char spec[])
+validate_spec(const char spec[])
 {
 	if(is_path_absolute(spec))
 	{
