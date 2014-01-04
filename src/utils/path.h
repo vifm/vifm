@@ -82,9 +82,13 @@ char * extract_extension(char *path);
 /* Removes file name from path. */
 void exclude_file_name(char *path);
 
-/* Checks wether path equals to ".." or "../".  Returns non-zero if it is,
+/* Checks whether path equals to ".." or "../".  Returns non-zero if it is,
  * otherwise zero is returned. */
 int is_parent_dir(const char path[]);
+
+/* Checks whether path equals to "." or "..".  Returns non-zero if it is,
+ * otherwise zero is returned. */
+int is_builtin_dir(const char name[]);
 
 #ifdef _WIN32
 

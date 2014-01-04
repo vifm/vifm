@@ -788,15 +788,12 @@ add_files_to_list(const char *path, char **files, int *len)
 
 	while((dentry = readdir(dir)) != NULL)
 	{
-		char buf[PATH_MAX];
-
-		if(stroscmp(dentry->d_name, ".") == 0)
-			continue;
-		else if(stroscmp(dentry->d_name, "..") == 0)
-			continue;
-
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-		files = add_files_to_list(buf, files, len);
+		if(!is_builtin_dir(dentry->d_name))
+		{
+			char buf[PATH_MAX];
+			snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+			files = add_files_to_list(buf, files, len);
+		}
 	}
 
 	closedir(dir);
@@ -1815,10 +1812,10 @@ calc_dirsize(const char *path, int force_update)
 	{
 		char buf[PATH_MAX];
 
-		if(stroscmp(dentry->d_name, ".") == 0)
+		if(is_builtin_dir(dentry->d_name))
+		{
 			continue;
-		else if(stroscmp(dentry->d_name, "..") == 0)
-			continue;
+		}
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
 		if(entry_is_dir(buf, dentry))

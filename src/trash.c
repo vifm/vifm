@@ -241,11 +241,12 @@ empty_trash_dir(const char trash_dir[])
 		return;
 	while((d = readdir(dir)) != NULL)
 	{
-		char full[PATH_MAX];
-		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
-			continue;
-		snprintf(full, sizeof(full), "%s/%s", trash_dir, d->d_name);
-		perform_operation(OP_REMOVESL, NULL, full, NULL);
+		if(!is_builtin_dir(dentry->d_name))
+		{
+			char full[PATH_MAX];
+			snprintf(full, sizeof(full), "%s/%s", trash_dir, d->d_name);
+			perform_operation(OP_REMOVESL, NULL, full, NULL);
+		}
 	}
 	closedir(dir);
 #endif

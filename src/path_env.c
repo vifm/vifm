@@ -110,10 +110,10 @@ add_dirs_to_path(const char *path)
 	{
 		char buf[PATH_MAX];
 
-		if(stroscmp(dentry->d_name, ".") == 0)
+		if(is_builtin_dir(dentry->d_name))
+		{
 			continue;
-		else if(stroscmp(dentry->d_name, "..") == 0)
-			continue;
+		}
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
 #ifndef _WIN32

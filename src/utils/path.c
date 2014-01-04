@@ -567,6 +567,13 @@ is_parent_dir(const char path[])
 		((path[2] == '/' && path[3] == '\0') || path[2] == '\0');
 }
 
+int
+is_builtin_dir(const char name[])
+{
+	return name[0] == '.'
+	    && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0'));
+}
+
 #ifdef _WIN32
 
 int
