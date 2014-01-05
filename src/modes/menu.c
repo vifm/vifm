@@ -301,6 +301,7 @@ menu_post(void)
 		wrefresh(menu_win);
 		curr_stats.need_update = UT_NONE;
 	}
+	status_bar_message(curr_stats.save_msg ? NULL : "");
 }
 
 void

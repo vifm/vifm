@@ -40,7 +40,7 @@ show_jobs_menu(FileView *view)
 #endif
 	int i;
 	static menu_info m;
-	init_menu_info(&m, JOBS, strdup("No jobs currently running"));
+	init_menu_info(&m, JOBS_MENU, strdup("No jobs currently running"));
 	m.title = strdup(" Pid --- Command ");
 
 	/*

@@ -34,6 +34,7 @@
 #include "locate_menu.h"
 #include "map_menu.h"
 #include "registers_menu.h"
+#include "trash_menu.h"
 #include "undolist_menu.h"
 #include "users_menu.h"
 #include "vifm_menu.h"

@@ -55,6 +55,7 @@ vifm_SOURCES = \
 	menus/history_menu.c menus/history_menu.h \
 	menus/jobs_menu.c menus/jobs_menu.h \
 	menus/locate_menu.c menus/locate_menu.h \
+	menus/trash_menu.c menus/trash_menu.h \
 	menus/map_menu.c menus/map_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \

@@ -195,6 +195,7 @@ static int jobs_cmd(const cmd_info_t *cmd_info);
 static int let_cmd(const cmd_info_t *cmd_info);
 static int locate_cmd(const cmd_info_t *cmd_info);
 static int ls_cmd(const cmd_info_t *cmd_info);
+static int lstrash_cmd(const cmd_info_t *cmd_info);
 static int map_cmd(const cmd_info_t *cmd_info);
 static int mark_cmd(const cmd_info_t *cmd_info);
 static int marks_cmd(const cmd_info_t *cmd_info);
@@ -356,6 +357,8 @@ static const cmd_add_t commands[] = {
 		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "lstrash",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = lstrash_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = COM_MAP,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "mark",             .abbr = "ma",    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -2708,6 +2711,13 @@ ls_cmd(const cmd_info_t *cmd_info)
 			status_bar_message("Unknown terminal multiplexer is in use");
 			return 1;
 	}
+}
+
+/* Lists files in trash. */
+static int
+lstrash_cmd(const cmd_info_t *cmd_info)
+{
+	return show_trash_menu(curr_view) != 0;
 }
 
 static int

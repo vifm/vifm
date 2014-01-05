@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2013 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,29 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "registers_menu.h"
+#ifndef VIFM__MENUS__TRASH_MENU_H__
+#define VIFM__MENUS__TRASH_MENU_H__
 
-#include <string.h> /* strdup() */
-
-#include "../modes/menu.h"
-#include "../utils/string_array.h"
-#include "../registers.h"
 #include "../ui.h"
 #include "menus.h"
 
-int
-show_register_menu(FileView *view, const char registers[])
-{
-	static menu_info m;
-	init_menu_info(&m, REGISTER_MENU, strdup("Registers are empty"));
-	m.title = strdup(" Registers ");
+/* Returns non-zero if status bar message should be saved. */
+int show_trash_menu(FileView *view);
 
-	m.items = list_registers_content(registers);
-	while(m.items[m.len] != NULL)
-		m.len++;
-
-	return display_menu(&m, view);
-}
+#endif /* VIFM__MENUS__TRASH_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

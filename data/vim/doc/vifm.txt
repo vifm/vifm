@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Dec 29
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1392,6 +1392,12 @@ order using the '.' operator.  Any whitespace is ignored.
     multiplexer is used).  This is achieved by issuing proper command for
     active terminal multiplexer, thus the list is not handled by vifm.
 
+                                               *vifm-:lstrash*
+
+:lstrash - displays a menu with list of files in trash.  Each element of
+    the list is original path of a deleted file, thus the list can contain
+    duplicates.
+
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters] - popup menu with registers content.
 :reg[isters] list - display the contents of the numbered and named
@@ -2565,8 +2571,11 @@ dd on a command to remove.
 
 Bookmarks menu~
 
-Escape or Ctrl-C to abort j and k to move through.
 dd on a bookmark to remove.
+
+Trash menu~
+
+r on a file name to restore it from trash.
 
 Directory stack menu~
 

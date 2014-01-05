@@ -34,35 +34,35 @@ static int show_history(FileView *view, int type, hist_t *hist,
 int
 show_cmdhistory_menu(FileView *view)
 {
-	return show_history(view, CMDHISTORY, &cfg.cmd_hist,
+	return show_history(view, CMDHISTORY_MENU, &cfg.cmd_hist,
 			" Command Line History ");
 }
 
 int
 show_fsearchhistory_menu(FileView *view)
 {
-	return show_history(view, FSEARCHHISTORY, &cfg.search_hist,
+	return show_history(view, FSEARCHHISTORY_MENU, &cfg.search_hist,
 			" Search History ");
 }
 
 int
 show_bsearchhistory_menu(FileView *view)
 {
-	return show_history(view, BSEARCHHISTORY, &cfg.search_hist,
+	return show_history(view, BSEARCHHISTORY_MENU, &cfg.search_hist,
 			" Search History ");
 }
 
 int
 show_prompthistory_menu(FileView *view)
 {
-	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist,
+	return show_history(view, PROMPTHISTORY_MENU, &cfg.prompt_hist,
 			" Prompt History ");
 }
 
 int
 show_filterhistory_menu(FileView *view)
 {
-	return show_history(view, FILTERHISTORY, &cfg.filter_hist,
+	return show_history(view, FILTERHISTORY_MENU, &cfg.filter_hist,
 			" Filter History ");
 }
 

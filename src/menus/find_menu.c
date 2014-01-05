@@ -52,7 +52,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	};
 
 	static menu_info m;
-	init_menu_info(&m, FIND, strdup("No files found"));
+	init_menu_info(&m, FIND_MENU, strdup("No files found"));
 
 	m.title = format_str(" Find %s ", args);
 

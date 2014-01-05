@@ -180,6 +180,7 @@ const char *tags[] = {
 	"vifm-:let",
 	"vifm-:locate",
 	"vifm-:ls",
+	"vifm-:lstrash",
 	"vifm-:m",
 	"vifm-:ma",
 	"vifm-:map",

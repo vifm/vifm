@@ -31,32 +31,34 @@ enum
 	DOWN
 };
 
+/* List of menu identifiers. */
 enum
 {
-	APROPOS,
-	BOOKMARK,
-	CMDHISTORY,
-	FSEARCHHISTORY,
-	BSEARCHHISTORY,
-	PROMPTHISTORY,
-	FILTERHISTORY,
-	COLORSCHEME,
-	COMMAND,
-	DIRSTACK,
-	FILETYPE,
-	FIND,
-	DIRHISTORY,
-	JOBS,
-	LOCATE,
-	MAP,
-	REGISTER,
-	UNDOLIST,
-	USER,
-	USER_NAVIGATE,
-	VIFM,
-	GREP,
+	APROPOS_MENU,
+	BOOKMARK_MENU,
+	CMDHISTORY_MENU,
+	FSEARCHHISTORY_MENU,
+	BSEARCHHISTORY_MENU,
+	PROMPTHISTORY_MENU,
+	FILTERHISTORY_MENU,
+	COLORSCHEME_MENU,
+	COMMAND_MENU,
+	DIRSTACK_MENU,
+	FILETYPE_MENU,
+	FIND_MENU,
+	DIRHISTORY_MENU,
+	JOBS_MENU,
+	LOCATE_MENU,
+	MAP_MENU,
+	REGISTER_MENU,
+	UNDOLIST_MENU,
+	USER_MENU,
+	USER_NAVIGATE_MENU,
+	VIFM_MENU,
+	GREP_MENU,
+	TRASH_MENU,
 #ifdef _WIN32
-	VOLUMES,
+	VOLUMES_MENU,
 #endif
 };
 
@@ -110,6 +112,8 @@ int prompt_error_msgf(const char title[], const char format[], ...);
 int query_user_menu(char *title, char *message);
 /* Redraws currently visible error message on the screen. */
 void redraw_error_msg_window(void);
+/* Removes current menu item and redraws the menu. */
+void remove_current_item(menu_info *m);
 void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);

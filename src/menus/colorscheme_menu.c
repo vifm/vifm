@@ -36,7 +36,7 @@ int
 show_colorschemes_menu(FileView *view)
 {
 	static menu_info m;
-	init_menu_info(&m, COLORSCHEME, strdup("No color schemes found"));
+	init_menu_info(&m, COLORSCHEME_MENU, strdup("No color schemes found"));
 	m.title = strdup(" Choose the default Color Scheme ");
 
 	m.items = list_color_schemes(&m.len);

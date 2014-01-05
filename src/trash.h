@@ -48,6 +48,8 @@ int is_in_trash(const char trash_name[]);
  * non-zero if so, otherwise zero is returned. */
 int exists_in_trash(const char trash_name[]);
 
+/* Restores a file specified by its trash_name (from trash_list array).  Returns
+ * zero on success, otherwise non-zero is returned. */
 int restore_from_trash(const char trash_name[]);
 
 int remove_from_trash(const char trash_name[]);

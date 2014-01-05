@@ -1,4 +1,4 @@
-.TH vifm 1 "Dec 29, 2013" "" "Vifm"
+.TH vifm 1 "Jan 02, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1584,6 +1584,10 @@ lists windows of active terminal multiplexer (only when terminal multiplexer is
 used).  This is achieved by issuing proper command for active terminal
 multiplexer, thus the list is not handled by vifm.
 .TP
+.BI :lstrash
+displays a menu with list of files in trash.  Each element of the list is
+original path of a deleted file, thus the list can contain duplicates.
+.TP
 .BI :reg[isters]
 popup menu with registers content.
 .TP
@@ -3025,9 +3029,11 @@ dd on a command to remove.
 
 .B Bookmarks menu
 
-Escape or Ctrl-C to abort j and k to move through.
-.br
 dd on a bookmark to remove.
+
+.B Trash menu
+
+r on a file name to restore it from trash.
 
 .B Directory stack menu
 

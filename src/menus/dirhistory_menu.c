@@ -36,7 +36,7 @@ show_history_menu(FileView *view)
 	int i;
 	static menu_info m;
 
-	init_menu_info(&m, DIRHISTORY, strdup("History disabled or empty"));
+	init_menu_info(&m, DIRHISTORY_MENU, strdup("History disabled or empty"));
 
 	m.title = strdup(" Directory History ");
 

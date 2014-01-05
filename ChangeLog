@@ -11,6 +11,9 @@
 
 	Added sample light color scheme (proposed by Daniel R., a.k.a. reicheltd).
 
+	Added :lstrash command-line command, which displays list of files in trash.
+	Thanks to Sergei Shilovsky.
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.
