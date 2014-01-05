@@ -1732,6 +1732,11 @@ Macros are expanded.
 for each file in range transliterate the characters which appear in pattern to
 the corresponding character in string.  When string is shorter than pattern,
 it's padded with its last character.
+.TP
+.BI :trashes
+lists all valid trash directories in a menu.  Only non-empty and writable trash
+directories are shown.  This is exactly the list of directories that are cleared
+when :empty command is executed.
 .LP
 String can contain \0...\9 to link to capture groups (0 \- all match, 1 \- first
 group, etc.).
