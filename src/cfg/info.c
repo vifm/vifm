@@ -22,7 +22,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
-#include <stdlib.h> /* realloc() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -31,6 +31,7 @@
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
@@ -57,6 +58,7 @@ static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static char * convert_old_trash_path(const char trash_path[]);
 static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
@@ -252,9 +254,9 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				if(!path_exists_at(cfg.trash_dir, line_val))
-					continue;
-				add_to_trash(line2, line_val);
+				char *const trash_name = convert_old_trash_path(line_val);
+				(void)add_to_trash(line2, trash_name);
+				free(trash_name);
 			}
 		}
 		else if(type == LINE_TYPE_REG)
@@ -325,10 +327,7 @@ get_sort_info(FileView *view, const char line[])
 		{
 			line++;
 		}
-		while(*line == ',')
-		{
-			line++;
-		}
+		line = skip_char(line, ',');
 	}
 	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
 
@@ -645,11 +644,12 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!path_exists_at(cfg.trash_dir, line_val))
-						continue;
-					if(is_in_trash(line_val))
-						continue;
-					ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
+					char *const trash_name = convert_old_trash_path(line_val);
+					if(exists_in_trash(trash_name) && !is_in_trash(trash_name))
+					{
+						ntrash = add_to_string_array(&trash, ntrash, 2, trash_name, line2);
+					}
+					free(trash_name);
 				}
 			}
 			else if(type == LINE_TYPE_CMDLINE_HIST)
@@ -814,6 +814,24 @@ update_info_file(const char filename[])
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
 	free_string_array(dir_stack, ndir_stack);
+}
+
+/* Performs conversions on files in trash required for partial backward
+ * compatibility.  Returns newly allocated string that should be freed by the
+ * caller. */
+static char *
+convert_old_trash_path(const char trash_path[])
+{
+	if(!is_path_absolute(trash_path) && is_dir_writable(cfg.trash_dir))
+	{
+		char *const full_path = format_str("%s/%s", cfg.trash_dir, trash_path);
+		if(path_exists(full_path))
+		{
+			return full_path;
+		}
+		free(full_path);
+	}
+	return strdup(trash_path);
 }
 
 /* Writes current values of all options into vifminfo file. */

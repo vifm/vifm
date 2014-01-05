@@ -55,6 +55,12 @@ void recover_after_shellout(void);
 
 /* Other functions. */
 
+struct mntent;
+
+/* Client of the traverse_mount_points() function.  Should return non-zero to
+ * stop traversal. */
+typedef int (*mptraverser)(struct mntent *entry, void *arg);
+
 int is_on_slow_fs(const char full_path[]);
 
 /* Fills supplied buffer with user friendly representation of file size.
@@ -91,6 +97,14 @@ char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
 /* Determines columns needed for a wide character.  Returns number of columns,
  * on error default value of 1 is returned. */
 int vifm_wcwidth(wchar_t c);
+
+/* Fills buf of the length buf_len with path to mount point of the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+int get_mount_point(const char path[], size_t buf_len, char buf[]);
+
+/* Calls client traverser for each mount point.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int traverse_mount_points(mptraverser client, void *arg);
 
 #ifdef _WIN32
 #include "utils_win.h"

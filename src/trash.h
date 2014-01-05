@@ -23,16 +23,50 @@ typedef struct
 {
 	char *path;
 	char *trash_name;
-}trash_entry_t;
+}
+trash_entry_t;
 
 trash_entry_t *trash_list;
 int nentries;
 
+/* Parses trash directory name specification.  Sets value of cfg.trash_dir as a
+ * side effect.  Returns non-zero in case of error, otherwise zero is
+ * returned. */
+int set_trash_dir(const char trash_dir[]);
+
+/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
+ * value is returned. */
+int try_create_trash_dir(const char trash_dir[]);
+
 void empty_trash(void);
-int add_to_trash(const char *path, const char *trash_name);
-int is_in_trash(const char *trash_name);
-int restore_from_trash(const char *trash_name);
-int remove_from_trash(const char *trash_name);
+
+int add_to_trash(const char path[], const char trash_name[]);
+
+int is_in_trash(const char trash_name[]);
+
+/* Checks whether file with given name exists in the trash directory.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int exists_in_trash(const char trash_name[]);
+
+int restore_from_trash(const char trash_name[]);
+
+int remove_from_trash(const char trash_name[]);
+
+/* Generates unique name for a file at base_dir/name in a trash directory.
+ * Returns string containing full path that needs to be freed by caller, if no
+ * trash directory available NULL is returned. */
+char * gen_trash_name(const char base_dir[], const char name[]);
+
+/* Checks whether given absolute path points to a file under trash directory.
+ * Returns non-zero if so, otherwise zero is returned. */
+int is_under_trash(const char path[]);
+
+/* Checks whether given absolute path points to a trash directory.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int is_trash_directory(const char path[]);
+
+/* Gets pointer to real name part of the trash name.  Returns that pointer. */
+const char * get_real_name_from_trash_name(const char trash_name[]);
 
 #endif /* VIFM__TRASH_H__ */
 

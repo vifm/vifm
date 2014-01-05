@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Nov 23
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2013 Dec 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2228,12 +2228,21 @@ Use |vifm-trash| directory.
                                                *vifm-'trashdir'*
 trashdir
 type: string
-default: "$HOME/.vifm/Trash
-Sets path to |vifm-trash| directory.  Value of the option can contain
-environment variables (in form "$envname"), which will be expanded
-(prepend it with a slash to prevent expansion).  The value should
-expand to an absolute path.
+default: "$HOME/.vifm/Trash"
+List of trash directory path specifications, separated with commas.
+Each list item either defines an absolute path to |vifm-trash| directory
+or a path relative to a mount point root, when list element starts with "%r/".
+Value of the option can contain environment variables (in form "$envname"),
+which will be expanded (prepend it with a slash to prevent expansion).
+Environment variables are expanded when the option is set.
 
+When new file gets cut (deleted) vifm traverses each element of the option in
+the order of their appearance and uses first trash directory that it was able
+to create or that is already writable.
+
+Example of customization to get one trash directory per mount point: >
+ set trashdir=%r/.vifm-Trash,$HOME/.vifm/Trash
+<
 Will attempt to create the directory if it does not exist.
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*

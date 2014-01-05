@@ -33,6 +33,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "trash.h"
 
 /* Name of the "unnamed" (the default) register. */
 #define UNNAMED_REG_NAME '"'
@@ -225,14 +226,13 @@ void
 clean_regs_with_trash(void)
 {
 	int x;
-	int trash_dir_len = strlen(cfg.trash_dir);
 	for(x = 0; x < NUM_REGISTERS; x++)
 	{
 		int y, n, needs_pack = 0;
 		n = registers[x].num_files;
 		for(y = 0; y < n; y++)
 		{
-			if(strnoscmp(registers[x].files[y], cfg.trash_dir, trash_dir_len) != 0)
+			if(!is_under_trash(registers[x].files[y]))
 				continue;
 			if(!path_exists(registers[x].files[y]))
 				continue;

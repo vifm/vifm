@@ -22,26 +22,50 @@
 
 #include <sys/stat.h> /* S_* */
 #include <sys/types.h> /* gid_t mode_t uid_t */
-#include <ctype.h> /* isdigit() */
-#include <errno.h> /* EINTR errno */
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
+#include <unistd.h> /* dup2() getpid() */
+
+#include <assert.h> /* assert() */
+#include <ctype.h> /* isdigit() */
+#include <errno.h> /* EINTR errno */
 #include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
                        sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
                        SIG_UNBLOCK */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* atoi() */
 #include <string.h> /* strchr() strlen() strncmp() */
-#include <unistd.h> /* dup2() getpid() */
 
 #include "../cfg/config.h"
 #include "fs_limits.h"
 #include "log.h"
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
+#include "str.h"
+#include "utils.h"
 
+/* Types of mount point information for get_mount_point_traverser_state. */
+typedef enum
+{
+	MI_MOUNT_POINT, /* Path to the mount point. */
+	MI_FS_TYPE,     /* File system name. */
+}
+mntinfo;
+
+/* State for get_mount_point() traverser. */
+typedef struct
+{
+	mntinfo type;     /* Type of information to put into the buffer. */
+	const char *path; /* Path whose mount point we're looking for. */
+	size_t buf_len;   /* Output buffer length. */
+	char *buf;        /* Output buffer. */
+	size_t curr_len;  /* Max length among all found points (len of buf string). */
+}
+get_mount_point_traverser_state;
+
+static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
 void
@@ -195,36 +219,93 @@ get_perm_string(char buf[], int len, mode_t mode)
 int
 is_on_slow_fs(const char full_path[])
 {
-	FILE *f;
-	struct mntent *ent;
-	size_t len = 0;
-	char max[PATH_MAX] = "";
+	char fs_name[PATH_MAX];
+	get_mount_point_traverser_state state =
+	{
+		.type = MI_FS_TYPE,
+		.path = full_path,
+		.buf_len = sizeof(fs_name),
+		.buf = fs_name,
+		.curr_len = 0UL,
+	};
 
+	/* Empty list optimization. */
 	if(cfg.slow_fs_list[0] == '\0')
 	{
 		return 0;
 	}
 
+	if(traverse_mount_points(&get_mount_info_traverser, &state) == 0)
+	{
+		if(state.curr_len > 0)
+		{
+			return begins_with_list_item(fs_name, cfg.slow_fs_list);
+		}
+	}
+	return 0;
+}
+
+int
+get_mount_point(const char path[], size_t buf_len, char buf[])
+{
+	get_mount_point_traverser_state state =
+	{
+		.type = MI_MOUNT_POINT,
+		.path = path,
+		.buf_len = buf_len,
+		.buf = buf,
+		.curr_len = 0UL,
+	};
+	return traverse_mount_points(&get_mount_info_traverser, &state);
+}
+
+/* traverse_mount_points client that gets mount point info for a given path. */
+static int
+get_mount_info_traverser(struct mntent *entry, void *arg)
+{
+	get_mount_point_traverser_state *const state = arg;
+	if(path_starts_with(state->path, entry->mnt_dir))
+	{
+		const size_t new_len = strlen(entry->mnt_dir);
+		if(new_len > state->curr_len)
+		{
+			state->curr_len = new_len;
+			switch(state->type)
+			{
+				case MI_MOUNT_POINT:
+					copy_str(state->buf, state->buf_len, entry->mnt_dir);
+					break;
+				case MI_FS_TYPE:
+					copy_str(state->buf, state->buf_len, entry->mnt_type);
+					break;
+
+				default:
+					assert(0 && "Unknown mount information type.");
+					break;
+			}
+		}
+	}
+	return 0;
+}
+
+int
+traverse_mount_points(mptraverser client, void *arg)
+{
+	FILE *f;
+	struct mntent *ent;
+
 	if((f = setmntent("/etc/mtab", "r")) == NULL)
 	{
-		return 0;
+		return 1;
 	}
 
 	while((ent = getmntent(f)) != NULL)
 	{
-		if(path_starts_with(full_path, ent->mnt_dir))
-		{
-			const size_t new_len = strlen(ent->mnt_dir);
-			if(new_len > len)
-			{
-				len = new_len;
-				snprintf(max, sizeof(max), "%s", ent->mnt_fsname);
-			}
-		}
+		client(ent, arg);
 	}
 
 	endmntent(f);
-	return (max[0] == '\0') ? 0 : begins_with_list_item(max, cfg.slow_fs_list);
+	return 0;
 }
 
 static int

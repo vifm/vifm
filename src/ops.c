@@ -309,10 +309,10 @@ op_mv(void *data, const char src[], const char dst[], int overwrite)
 	if((result = background_and_wait_for_errors(cmd)) != 0)
 		return result;
 
-	if(path_starts_with(dst, cfg.trash_dir))
-		add_to_trash(src, strrchr(dst, '/') + 1);
-	else if(path_starts_with(src, cfg.trash_dir))
-		remove_from_trash(strrchr(src, '/') + 1);
+	if(is_under_trash(dst))
+		add_to_trash(src, dst);
+	else if(is_under_trash(src))
+		remove_from_trash(src);
 	return 0;
 #else
 	BOOL ret = MoveFile(src, dst);

@@ -68,6 +68,7 @@
 #include "signals.h"
 #include "sort.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "undo.h"
 #include "version.h"
@@ -389,7 +390,9 @@ main(int argc, char *argv[])
 		source_config();
 	}
 
-	(void)create_trash_dir(cfg.trash_dir);
+	/* Ensure trash directories exist, it might not have been called during
+	 * configuration file sourcing if there is no `set trashdir=...` command. */
+	(void)set_trash_dir(cfg.trash_dir);
 
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);

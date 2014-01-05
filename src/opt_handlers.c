@@ -42,6 +42,7 @@
 #include "quickview.h"
 #include "sort.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "viewcolumns_parser.h"
 
@@ -301,7 +302,7 @@ static struct
 		{ .ref.int_val = &cfg.timeout_len }                                                                    },
 	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,
 		{ .ref.bool_val = &cfg.use_trash }                                                                     },
-	{ "trashdir",    "",     OPT_STR,     0,                          NULL,            &trashdir_handler,
+	{ "trashdir",    "",     OPT_STRLIST, 0,                          NULL,            &trashdir_handler,
 		{ .init = &init_trash_dir }                                                                            },
 	{ "undolevels",  "ul",   OPT_INT,     0,                          NULL,            &undolevels_handler,
 		{ .ref.int_val = &cfg.undo_levels }                                                                    },

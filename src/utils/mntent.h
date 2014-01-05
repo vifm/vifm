@@ -57,6 +57,12 @@ char *hasmntopt __P ((const struct mntent *mnt, const char option[]));
 
 #endif /* VIFM__UTILS__MNTENT_H__ */
 #endif /* HAVE_MNTENT_H */
+#else
+struct mntent
+{
+	const char *mnt_dir;
+	const char *mnt_type;
+};
 #endif /* _WIN32 */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

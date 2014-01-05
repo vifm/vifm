@@ -28,7 +28,7 @@
 #include <fcntl.h>
 
 #include <ctype.h> /* toupper() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
@@ -40,6 +40,7 @@
 #include "fs_limits.h"
 #include "log.h"
 #include "macros.h"
+#include "mntent.h"
 #include "str.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
@@ -373,6 +374,35 @@ attr_str_long(DWORD attr)
 	buf[9] ^= ((attr & FILE_ATTRIBUTE_SPARSE_FILE) != 0)*0x20;
 
 	return buf;
+}
+
+int
+get_mount_point(const char path[], size_t buf_len, char buf[])
+{
+	snprintf(buf, buf_len, "%c:/", path[0]);
+	return 0;
+}
+
+int
+traverse_mount_points(mptraverser client, void *arg)
+{
+	char c;
+
+	for(c = 'a'; c < 'z'; c++)
+	{
+		if(drive_exists(c))
+		{
+			const char drive[] = { c, ':', '/', '\0' };
+			struct mntent entry =
+			{
+				.mnt_dir = drive,
+				.mnt_type = "",
+			};
+			client(&entry, arg);
+		}
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

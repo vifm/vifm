@@ -67,6 +67,7 @@
 #include "registers.h"
 #include "running.h"
 #include "status.h"
+#include "trash.h"
 #include "ui.h"
 #include "undo.h"
 
@@ -179,23 +180,6 @@ progress_msg(const char *text, int ready, int total)
 	curr_stats.save_msg = 2;
 }
 
-/* returns string that needs to be released by caller */
-static char *
-gen_trash_name(const char *name)
-{
-	struct stat st;
-	char buf[PATH_MAX];
-	int i = 0;
-
-	do
-	{
-		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
-		chosp(buf);
-	}
-	while(lstat(buf, &st) == 0);
-	return strdup(buf);
-}
-
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
 static void
 get_group_file_list(char **list, int count, char *buf)
@@ -227,8 +211,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
-	if(cfg.use_trash && use_trash &&
-			path_starts_with(view->curr_dir, cfg.trash_dir))
+	if(cfg.use_trash && use_trash && is_under_trash(view->curr_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
@@ -279,41 +262,49 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	for(x = 0; x < view->selected_files; x++)
 	{
+		const char *const fname = view->selected_filelist[x];
 		char full_buf[PATH_MAX];
 		int result;
 
-		if(is_parent_dir(view->selected_filelist[x]))
+		if(is_parent_dir(fname))
 		{
-			show_error_msg("Background Process Error",
+			show_error_msg("Can't perform deletion",
 					"You cannot delete the ../ directory");
 			continue;
 		}
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
-				view->selected_filelist[x]);
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			if(stroscmp(full_buf, cfg.trash_dir) == 0)
+			if(!is_trash_directory(full_buf))
 			{
-				show_error_msg("Background Process Error",
-						"You cannot delete trash directory to trash");
-				result = -1;
+				char *const dest = gen_trash_name(view->curr_dir, fname);
+				if(dest != NULL)
+				{
+					result = perform_operation(OP_MOVE, NULL, full_buf, dest);
+					if(result == 0)
+					{
+						add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+						append_to_register(reg, dest);
+					}
+					free(dest);
+				}
+				else
+				{
+					show_error_msgf("No trash directory is available",
+							"Either correct trash directory paths or prune files.  "
+							"Deletion failed on: %s", fname);
+					result = -1;
+				}
 			}
 			else
 			{
-				char *dest;
-
-				dest = gen_trash_name(view->selected_filelist[x]);
-				result = perform_operation(OP_MOVE, NULL, full_buf, dest);
-				if(result == 0)
-				{
-					add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
-					append_to_register(reg, dest);
-				}
-				free(dest);
+				show_error_msg("Can't perform deletion",
+						"You cannot delete trash directory to trash");
+				result = -1;
 			}
 		}
 		else
@@ -329,7 +320,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 		else if(!view->dir_entry[view->list_pos].selected)
 		{
-			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+			const int pos = find_file_pos_in_list(view, fname);
 			if(pos >= 0)
 				view->list_pos = pos;
 		}
@@ -387,23 +378,25 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 	int i;
 	for(i = 0; i < count; i++)
 	{
+		const char *const fname = list[i];
 		char full_buf[PATH_MAX];
 
-		if(is_parent_dir(list[i]))
+		if(is_parent_dir(fname))
+		{
 			continue;
+		}
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, fname);
 		chosp(full_buf);
 
 		if(use_trash)
 		{
-			if(strcmp(full_buf, cfg.trash_dir) != 0)
+			if(!is_trash_directory(full_buf))
 			{
-				char *dest;
-
-				dest = gen_trash_name(list[i]);
+				char *const trash_name = gen_trash_name(curr_dir, fname);
+				const char *const dest = (trash_name != NULL) ? trash_name : fname;
 				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
-				free(dest);
+				free(trash_name);
 			}
 		}
 		else
@@ -429,7 +422,7 @@ delete_file_bg(FileView *view, int use_trash)
 	args = malloc(sizeof(*args));
 	args->from_trash = cfg.use_trash && use_trash;
 
-	if(args->from_trash && path_starts_with(view->curr_dir, cfg.trash_dir))
+	if(args->from_trash && is_under_trash(view->curr_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
@@ -1377,7 +1370,7 @@ put_next(const char dest_name[], int override)
 	if(lstat(filename, &src_st) != 0)
 		return 0;
 
-	from_trash = strnoscmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+	from_trash = is_under_trash(filename);
 	move = from_trash || put_confirm.force_move;
 
 	if(dest_name[0] == '\0')
@@ -1388,9 +1381,7 @@ put_next(const char dest_name[], int override)
 
 	if(from_trash)
 	{
-		while(isdigit(*dest_name))
-			dest_name++;
-		dest_name++;
+		dest_name = get_real_name_from_trash_name(dest_name);
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
@@ -1908,8 +1899,7 @@ put_files_from_register_i(FileView *view, int start)
 	{
 		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
 		const char *op = "UNKNOWN";
-		int from_trash = strnoscmp(put_confirm.reg->files[0], cfg.trash_dir,
-				strlen(cfg.trash_dir)) == 0;
+		const int from_trash = is_under_trash(put_confirm.reg->files[0]);
 		if(put_confirm.link == 0)
 			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
 		else if(put_confirm.link == 1)
@@ -2526,7 +2516,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		view->list_pos = i;
 	}
 
-	*from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
+	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
 }
 
@@ -2670,9 +2660,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		if(from_trash)
 		{
-			while(isdigit(*dst))
-				dst++;
-			dst++;
+			dst = get_real_name_from_trash_name(dst);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
@@ -2725,9 +2713,7 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
 		if(from_trash)
 		{
-			while(isdigit(*dst))
-				dst++;
-			dst++;
+			dst = get_real_name_from_trash_name(dst);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
