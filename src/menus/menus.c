@@ -573,6 +573,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			execute_filetype_cb(view, m);
 			return 0;
 		case DIRHISTORY_MENU:
+		case TRASHES_MENU:
 			if(!cfg.auto_ch_pos)
 			{
 				clean_positions_in_history(curr_view);
@@ -580,7 +581,9 @@ execute_menu_cb(FileView *view, menu_info *m)
 			}
 			navigate_to(view, m->items[m->pos]);
 			if(!cfg.auto_ch_pos)
+			{
 				curr_stats.ch_pos = 1;
+			}
 			return 0;
 		case DIRSTACK_MENU:
 			execute_dirstack_cb(view, m);

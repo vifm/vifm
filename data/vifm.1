@@ -1,4 +1,4 @@
-.TH vifm 1 "Jan 02, 2014" "" "Vifm"
+.TH vifm 1 "Jan 05, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1732,6 +1732,11 @@ Macros are expanded.
 for each file in range transliterate the characters which appear in pattern to
 the corresponding character in string.  When string is shorter than pattern,
 it's padded with its last character.
+.TP
+.BI :trashes
+lists all valid trash directories in a menu.  Only non-empty and writable trash
+directories are shown.  This is exactly the list of directories that are cleared
+when :empty command is executed.
 .LP
 String can contain \0...\9 to link to capture groups (0 \- all match, 1 \- first
 group, etc.).
@@ -2166,9 +2171,10 @@ default: true
 When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
-and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
-l key in the :history . menu is treated like :cd command.  This option affects
-bookmarks, file position will not preserved.
+and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
+l key in the ":history ." and ":trashes" menus is treated like :cd command.
+This option also affects bookmarks so that navigating to a bookmark doesn't
+restore cursor position.
 .TP
 .BI "columns co"
 type: int
@@ -3035,10 +3041,15 @@ dd on a bookmark to remove.
 
 r on a file name to restore it from trash.
 
+.B Directory history and Trashes menus
+
+Selecting directory name will change directory of the current view as if :cd
+command was used.
+
 .B Directory stack menu
 
-Pressing l or Enter on directory name will rotate stack to place selected
-directory pair at the top of the stack.
+Selecting directory name will rotate stack to put selected directory pair at the
+top of the stack.
 
 .B Filetype menu
 

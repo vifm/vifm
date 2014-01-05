@@ -44,6 +44,11 @@ int add_to_trash(const char path[], const char trash_name[]);
 
 int is_in_trash(const char trash_name[]);
 
+/* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
+ * Caller should free array and all its elements using free().  On error returns
+ * NULL and sets *ntrashes to zero. */
+char ** list_trashes(int *ntrashes);
+
 /* Checks whether file with given name exists in the trash directory.  Returns
  * non-zero if so, otherwise zero is returned. */
 int exists_in_trash(const char trash_name[]);

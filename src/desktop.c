@@ -74,8 +74,7 @@ parse_desktop_files_internal(const char *path, const char *mime_type,
 	{
 		char buf[PATH_MAX];
 
-		if(stroscmp(dentry->d_name, ".") == 0 ||
-				stroscmp(dentry->d_name, "..") == 0)
+		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
