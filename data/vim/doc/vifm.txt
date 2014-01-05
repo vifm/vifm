@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 02
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 05
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1858,9 +1858,10 @@ default: true
 When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
-and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
-l key in the :history . menu is treated like :cd command.  This option affects
-bookmarks, file position will not preserved.
+and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
+l key in the ":history ." and ":trashes" menus is treated like :cd command.
+This option also affects bookmarks so that navigating to a bookmark doesn't
+restore cursor position.
 
                                                *vifm-'classify'*
 classify
@@ -2565,7 +2566,7 @@ Apropos menu~
 l key won't close the menu allowing user to pick another man page, use :q to
 close the menu.
 
-vifm-commands menu~
+Commands menu~
 
 dd on a command to remove.
 
@@ -2577,10 +2578,15 @@ Trash menu~
 
 r on a file name to restore it from trash.
 
+Directory history and Trashes menus~
+
+Selecting directory name will change directory of the current view as if
+|vifm-:cd| command was used.
+
 Directory stack menu~
 
-Pressing l or Enter on directory name will rotate stack to place selected
-directory pair at the top of the stack.
+Selecting directory name will rotate stack to put selected directory pair at
+the top of the stack.
 
 Filetype menu~
 
