@@ -88,6 +88,7 @@ typedef struct
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
 	int line_edited;          /* Cache for whether input line changed flag. */
+	int entered_by_mapping;   /* The mode was entered by a mapping. */
 }
 line_stats_t;
 
@@ -553,6 +554,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	input_stat.search_mode = 0;
 	input_stat.dot_pos = -1;
 	input_stat.line_edited = 0;
+	input_stat.entered_by_mapping = is_inside_mapping();
 
 	if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
@@ -1173,7 +1175,9 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 	}
 	else if(sub_mode == CMD_SUBMODE)
 	{
-		if(!keys_info->mapped && !keys_info->recursive)
+		const int mapped_input = input_stat.entered_by_mapping && keys_info->mapped;
+		const int ignore_input = mapped_input || keys_info->recursive;
+		if(!ignore_input)
 		{
 			save_command_history(input);
 		}

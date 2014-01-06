@@ -56,6 +56,10 @@
 	Fixed possible removing files at destination on restoring files from trash
 	manually.
 
+	Fixed ignoring command-line commands that entered by a mapping: ignore
+	only commands entirely entered by a mapping, not finished by one. Thanks
+	to Евгений Жаров (a.k.a. ezharov).
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
