@@ -27,6 +27,7 @@ void unmap_tests(void);
 void noremap_tests(void);
 void num_in_the_middle_tests(void);
 void selectors_tests(void);
+void mapping_state_tests(void);
 
 void
 all_tests(void)
@@ -52,6 +53,7 @@ all_tests(void)
 	noremap_tests();
 	num_in_the_middle_tests();
 	selectors_tests();
+	mapping_state_tests();
 }
 
 void
