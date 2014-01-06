@@ -18,7 +18,7 @@
 
 #include "keys.h"
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <limits.h> /* INT_MAX */
 #include <stdlib.h>
@@ -53,6 +53,8 @@ static default_handler *def_handlers;
 static size_t counter;
 /* Main external functions enter recursion level. */
 static size_t enters_counter;
+/* Shows whether a mapping handler is being executed at the moment. */
+static int inside_mapping;
 
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
@@ -84,6 +86,8 @@ static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
+static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
+static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -447,8 +451,14 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	if(info->type != USER_CMD && info->type != BUILTIN_CMD)
 	{
 		if(info->data.handler == NULL)
+		{
 			return KEYS_UNKNOWN;
+		}
+
+		pre_execute_mapping_handler(keys_info);
 		info->data.handler(key_info, keys_info);
+		post_execute_mapping_handler(keys_info);
+
 		return 0;
 	}
 	else
@@ -953,6 +963,28 @@ static int
 is_recursive(void)
 {
 	return enters_counter > 1;
+}
+
+int
+is_inside_mapping(void)
+{
+	return inside_mapping != 0;
+}
+
+/* Pre-execution of a mapping handler callback. */
+static void
+pre_execute_mapping_handler(const keys_info_t *const keys_info)
+{
+	inside_mapping += keys_info->mapped != 0;
+	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
+}
+
+/* Post-execution of a mapping handler callback. */
+static void
+post_execute_mapping_handler(const keys_info_t *const keys_info)
+{
+	inside_mapping -= keys_info->mapped != 0;
+	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

@@ -199,6 +199,12 @@ wchar_t ** list_cmds(int mode);
  */
 size_t get_key_counter(void);
 
+/*
+ * Checks whether a mapping handler is currently been executed.
+ * Returns non-zero if so, otherwise zero is returned.
+ */
+int is_inside_mapping(void);
+
 TSTATIC_DEFS(
 	/*
 	 * Returns NULL on error
