@@ -15,6 +15,8 @@
 int last; /* 1 = k, 2 = j */
 int last_command_count; /* for ctrl+w <, dd and d + selector*/
 int last_selector_count; /* for k */
+int key_is_mapped; /* for : and m */
+int is_in_maping_state; /* for : and m */
 
 static int* mode;
 
@@ -165,11 +167,15 @@ static void
 keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	*mode = CMDLINE_MODE;
+	key_is_mapped = keys_info->mapped;
+	is_in_maping_state = is_inside_mapping();
 }
 
 static void
 keys_m(key_info_t key_info, keys_info_t *keys_info)
 {
+	key_is_mapped = keys_info->mapped;
+	is_in_maping_state = is_inside_mapping();
 	printf("(%d)m in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
 }
