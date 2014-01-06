@@ -86,6 +86,8 @@ static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
+static int execute_mapping_handler(const key_conf_t *const info,
+		key_info_t key_info, keys_info_t *const keys_info);
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 
@@ -450,16 +452,7 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 	if(info->type != USER_CMD && info->type != BUILTIN_CMD)
 	{
-		if(info->data.handler == NULL)
-		{
-			return KEYS_UNKNOWN;
-		}
-
-		pre_execute_mapping_handler(keys_info);
-		info->data.handler(key_info, keys_info);
-		post_execute_mapping_handler(keys_info);
-
-		return 0;
+		return execute_mapping_handler(info, key_info, keys_info);
 	}
 	else
 	{
@@ -969,6 +962,22 @@ int
 is_inside_mapping(void)
 {
 	return inside_mapping != 0;
+}
+
+/* Executes handler for a mapping, if any.  Error or success code is
+ * returned. */
+static int
+execute_mapping_handler(const key_conf_t *const info, key_info_t key_info,
+		keys_info_t *const keys_info)
+{
+	if(info->data.handler != NULL)
+	{
+		pre_execute_mapping_handler(keys_info);
+		info->data.handler(key_info, keys_info);
+		post_execute_mapping_handler(keys_info);
+		return 0;
+	}
+	return KEYS_UNKNOWN;
 }
 
 /* Pre-execution of a mapping handler callback. */
