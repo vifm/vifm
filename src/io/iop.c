@@ -29,6 +29,7 @@
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
+#include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
@@ -128,6 +129,51 @@ iop_rmdir(io_args_t *const args)
 #else
 	return RemoveDirectory(path) == 0;
 #endif
+}
+
+int
+iop_ln(io_args_t *const args)
+{
+	const char *const path = args->arg1.path;
+	const char *const target = args->arg2.target;
+
+	char *escaped_src, *escaped_dst;
+	char cmd[6 + PATH_MAX*2 + 1];
+	int result;
+#ifdef _WIN32
+	char buf[PATH_MAX + 2];
+#endif
+
+	escaped_src = escape_filename(path, 0);
+	escaped_dst = escape_filename(target, 0);
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_dst);
+		free(escaped_src);
+		return -1;
+	}
+
+#ifndef _WIN32
+	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
+	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
+	result = background_and_wait_for_errors(cmd, 1);
+#else
+	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+	{
+		free(escaped_dst);
+		free(escaped_src);
+		return -1;
+	}
+
+	*strrchr(buf, '\\') = '\0';
+	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
+			escaped_dst);
+	result = system(cmd);
+#endif
+
+	free(escaped_dst);
+	free(escaped_src);
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

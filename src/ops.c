@@ -400,43 +400,13 @@ op_subattr(void *data, const char *src, const char *dst)
 static int
 op_symlink(void *data, const char *src, const char *dst)
 {
-	char *escaped_src, *escaped_dst;
-	char cmd[6 + PATH_MAX*2 + 1];
-	int result;
-#ifdef _WIN32
-	char buf[PATH_MAX + 2];
-#endif
-
-	escaped_src = escape_filename(src, 0);
-	escaped_dst = escape_filename(dst, 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
+	io_args_t args =
 	{
-		free(escaped_dst);
-		free(escaped_src);
-		return -1;
-	}
-
-#ifndef _WIN32
-	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
-	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, 1);
-#else
-	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
-	{
-		free(escaped_dst);
-		free(escaped_src);
-		return -1;
-	}
-
-	*strrchr(buf, '\\') = '\0';
-	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
-			escaped_dst);
-	result = system(cmd);
-#endif
-
-	free(escaped_dst);
-	free(escaped_src);
-	return result;
+		.arg1.path = src,
+		.arg2.target = dst,
+		.arg3.overwrite = 1,
+	};
+	return iop_ln(&args);
 }
 
 static int
