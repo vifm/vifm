@@ -142,7 +142,7 @@ iop_ln(io_args_t *const args)
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
 #ifdef _WIN32
-	char buf[PATH_MAX + 2];
+	char base_dir[PATH_MAX + 2];
 #endif
 
 	escaped_src = escape_filename(path, 0);
@@ -159,15 +159,15 @@ iop_ln(io_args_t *const args)
 	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd, 1);
 #else
-	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
 		free(escaped_dst);
 		free(escaped_src);
 		return -1;
 	}
 
-	break_atr(buf, '\\');
-	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
+	break_atr(base_dir, '\\');
+	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_src,
 			escaped_dst);
 	result = system(cmd);
 #endif
