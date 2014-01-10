@@ -22,6 +22,7 @@
 #include <windows.h>
 #endif
 
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
@@ -165,7 +166,7 @@ iop_ln(io_args_t *const args)
 		return -1;
 	}
 
-	*strrchr(buf, '\\') = '\0';
+	break_atr(buf, '\\');
 	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
 			escaped_dst);
 	result = system(cmd);
