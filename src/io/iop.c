@@ -137,6 +137,7 @@ iop_ln(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;
+	const int overwrite = args->arg3.overwrite;
 
 	char *escaped_src, *escaped_dst;
 	char cmd[6 + PATH_MAX*2 + 1];
@@ -155,10 +156,12 @@ iop_ln(io_args_t *const args)
 	}
 
 #ifndef _WIN32
-	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
+	snprintf(cmd, sizeof(cmd), "ln -s %s %s %s",
+			(overwrite && is_symlink(target)) ? "-f" : "", escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd, 1);
 #else
+	(void)overwrite;
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
 		free(escaped_dst);
