@@ -38,8 +38,19 @@
 /* Supported types of tokens. */
 typedef enum
 {
-	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, EQ, NE, WHITESPACE, SYM,
-	END
+	BEGIN,      /* Beginning of a string, before anything is parsed. */
+	SQ,         /* Single quote ('). */
+	DQ,         /* Double quote ("). */
+	DOT,        /* Dot (.). */
+	DOLLAR,     /* Dollar sign ($). */
+	LPAREN,     /* Left parenthesis ((). */
+	RPAREN,     /* Right parenthesis ()). */
+	COMMA,      /* Comma, concatenation operator (,). */
+	EQ,         /* Equality operator (==). */
+	NE,         /* Inequality operator (!=). */
+	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
+	SYM,        /* Any other symbol that don't have meaning in current context. */
+	END         /* End of a string, after everything is parsed. */
 }
 TOKENS_TYPE;
 
