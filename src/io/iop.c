@@ -139,44 +139,45 @@ iop_ln(io_args_t *const args)
 	const char *const target = args->arg2.target;
 	const int overwrite = args->arg3.overwrite;
 
-	char *escaped_src, *escaped_dst;
+	char *escaped_path, *escaped_target;
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
 #ifdef _WIN32
 	char base_dir[PATH_MAX + 2];
 #endif
 
-	escaped_src = escape_filename(path, 0);
-	escaped_dst = escape_filename(target, 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
+	escaped_path = escape_filename(path, 0);
+	escaped_target = escape_filename(target, 0);
+	if(escaped_path == NULL || escaped_target == NULL)
 	{
-		free(escaped_dst);
-		free(escaped_src);
+		free(escaped_target);
+		free(escaped_path);
 		return -1;
 	}
 
 #ifndef _WIN32
 	snprintf(cmd, sizeof(cmd), "ln -s %s %s %s",
-			(overwrite && is_symlink(target)) ? "-f" : "", escaped_src, escaped_dst);
+			(overwrite && is_symlink(target)) ? "-f" : "", escaped_path,
+			escaped_target);
 	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd, 1);
 #else
 	(void)overwrite;
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
-		free(escaped_dst);
-		free(escaped_src);
+		free(escaped_target);
+		free(escaped_path);
 		return -1;
 	}
 
 	break_atr(base_dir, '\\');
-	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_src,
-			escaped_dst);
+	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_path,
+			escaped_target);
 	result = system(cmd);
 #endif
 
-	free(escaped_dst);
-	free(escaped_src);
+	free(escaped_target);
+	free(escaped_path);
 	return result;
 }
 
