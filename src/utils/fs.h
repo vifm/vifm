@@ -106,6 +106,8 @@ int is_on_fat_volume(const char *path);
 
 int drive_exists(char letter);
 
+int is_win_symlink(uint32_t attr, uint32_t tag);
+
 #endif
 
 #endif /* VIFM__UTILS__FS_H__ */

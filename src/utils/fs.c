@@ -600,6 +600,13 @@ drive_exists(char letter)
 	}
 }
 
+int
+is_win_symlink(uint32_t attr, uint32_t tag)
+{
+	return (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+	    && (tag == IO_REPARSE_TAG_SYMLINK);
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
