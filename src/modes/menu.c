@@ -25,6 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
+#include <stddef.h> /* NULL */
 #include <string.h>
 
 #include "../cfg/config.h"
@@ -439,7 +440,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	*mode = NORMAL_MODE;
 	saved_menu = menu;
-	if(execute_menu_cb(curr_view, menu) != 0)
+	if(menu->execute_handler != NULL && menu->execute_handler(curr_view, menu))
 	{
 		*mode = MENU_MODE;
 		menu_redraw();

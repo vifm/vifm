@@ -65,6 +65,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static int execute_menu_cb(FileView *view, menu_info *m);
 static void normalize_top(menu_info *m);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
@@ -276,7 +277,7 @@ init_menu_info(menu_info *m, int menu_type, char empty_msg[])
 	m->data = NULL;
 	m->key_handler = NULL;
 	m->extra_data = 0;
-	m->execute_handler = NULL;
+	m->execute_handler = execute_menu_cb;
 	m->empty_msg = empty_msg;
 }
 
@@ -537,7 +538,8 @@ goto_selected_file(FileView *view, menu_info *m)
 	free(free_this);
 }
 
-int
+/* Returns zero if menu mode should be leaved. */
+static int
 execute_menu_cb(FileView *view, menu_info *m)
 {
 	/* TODO: reimplement this using key_handler mechanism. */

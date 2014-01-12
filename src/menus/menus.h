@@ -88,6 +88,8 @@ typedef struct menu_info
 	 * key. */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* For filetype background and mime flags. */
+	/* Callback that is called when menu item is selected.  Should return non-zero
+	 * to stay in menu mode. */
 	int (*execute_handler)(FileView *view, struct menu_info *m);
 	/* Text displayed by display_menu() function in case menu is empty, it can be
 	 * NULL if this cannot happen and will be freed by reset_popup_menu(). */
@@ -119,8 +121,6 @@ void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
-/* Returns zero if menu mode should be leaved. */
-int execute_menu_cb(FileView *view, menu_info *m);
 /* Closes ef. */
 void print_errors(FILE *ef);
 /* Gets list of target files/directories in the current view.  On success
