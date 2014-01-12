@@ -60,6 +60,7 @@ TOKENS_TYPE;
 static var_t eval_statement(const char **in);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
+static var_t eval_signed_number(const char **in);
 static var_t eval_number(const char **in);
 static var_t eval_single_quoted_string(const char **in);
 static int eval_single_quoted_char(const char **in, char buffer[]);
@@ -252,28 +253,15 @@ eval_expression(const char **in)
 	}
 }
 
-/* term ::= number | sqstr | dqstr | envvar | funccall */
+/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall */
 static var_t
 eval_term(const char **in)
 {
 	switch(last_token.type)
 	{
 		case MINUS:
-			{
-				var_t number;
-				get_next(in);
-				skip_whitespace_tokens(in);
-				number = eval_term(in);
-				if(number.type == VTYPE_INT)
-				{
-					number.value.integer = -number.value.integer;
-				}
-				return number;
-			}
 		case PLUS:
-			get_next(in);
-			skip_whitespace_tokens(in);
-			return eval_term(in);
+			return eval_signed_number(in);
 		case DIGIT:
 			return eval_number(in);
 		case SQ:
@@ -298,6 +286,26 @@ eval_term(const char **in)
 			last_error = PE_INVALID_EXPRESSION;
 			return var_false();
 	}
+}
+
+/* signed_number ::= ( + | - ) { + | - } number */
+static var_t
+eval_signed_number(const char **in)
+{
+	const int sign = (last_token.type == MINUS) ? -1 : 1;
+	var_t operand;
+	int number;
+	var_val_t result_val;
+
+	get_next(in);
+	skip_whitespace_tokens(in);
+	operand = eval_term(in);
+
+	number = var_to_integer(operand);
+	var_free(operand);
+
+	result_val.integer = sign*number;
+	return var_new(VTYPE_INT, result_val);
 }
 
 /* number ::= num { num } */

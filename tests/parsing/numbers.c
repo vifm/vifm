@@ -67,6 +67,28 @@ test_leading_zeroes_ok(void)
 	ASSERT_OK("0123456", "123456");
 }
 
+static void
+test_single_signs_fail(void)
+{
+	ASSERT_FAIL("-", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("--", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("+", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("++", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("- +", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("+ -", PE_INVALID_EXPRESSION);
+}
+
+static void
+test_string_is_converted_for_signs(void)
+{
+	ASSERT_OK("-'a'", "0");
+	ASSERT_OK("+'a'", "0");
+	ASSERT_OK("-'1'", "-1");
+	ASSERT_OK("-'-1'", "1");
+	ASSERT_OK("-'--1'", "0");
+	ASSERT_OK("+'10'", "10");
+}
+
 void
 numbers_tests(void)
 {
@@ -81,6 +103,8 @@ numbers_tests(void)
 	run_test(test_multiple_zeroes_ok);
 	run_test(test_positive_number_ok);
 	run_test(test_leading_zeroes_ok);
+	run_test(test_single_signs_fail);
+	run_test(test_string_is_converted_for_signs);
 
 	test_fixture_end();
 }
