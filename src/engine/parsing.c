@@ -20,10 +20,11 @@
 
 #include <assert.h>
 #include <ctype.h> /* isalnum() isalpha() tolower() */
+#include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <math.h>
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* strtol() */
 #include <string.h> /* strcat() strcmp() */
 
 #include "../utils/str.h"
@@ -49,6 +50,7 @@ typedef enum
 	EQ,         /* Equality operator (==). */
 	NE,         /* Inequality operator (!=). */
 	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
+	DIGIT,      /* Digit ([0-9]). */
 	SYM,        /* Any other symbol that don't have meaning in current context. */
 	END         /* End of a string, after everything is parsed. */
 }
@@ -57,6 +59,7 @@ TOKENS_TYPE;
 static var_t eval_statement(const char **in);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
+static void eval_number(const char **in);
 static void eval_single_quoted_string(const char **in);
 static int eval_single_quoted_char(const char **in);
 static void eval_double_quoted_string(const char **in);
@@ -78,6 +81,8 @@ struct
 static int initialized;
 static getenv_func getenv_fu;
 static char *target_buffer;
+/* Type of expression in the target_buffer. */
+static VarType target_type = VTYPE_ERROR;
 static ParsingErrors last_error;
 static const char *last_position;
 static const char *last_parsed_char;
@@ -253,7 +258,7 @@ eval_expression(const char **in)
 	}
 }
 
-/* term ::= sqstr | dqstr | envvar | funccall */
+/* term ::= number | sqstr | dqstr | envvar | funccall */
 static var_t
 eval_term(const char **in)
 {
@@ -261,9 +266,13 @@ eval_term(const char **in)
 	char *old_target_buffer = target_buffer;
 	buffer[0] = '\0';
 	target_buffer = buffer;
+	target_type = VTYPE_ERROR;
 
 	switch(last_token.type)
 	{
+		case DIGIT:
+			eval_number(in);
+			break;
 		case SQ:
 			get_next(in);
 			eval_single_quoted_string(in);
@@ -294,13 +303,40 @@ eval_term(const char **in)
 
 	if(last_error == PE_NO_ERROR)
 	{
-		const var_val_t var_val = { .string = buffer };
-		return var_new(VTYPE_STRING, var_val);
+		if(target_type == VTYPE_INT)
+		{
+			var_val_t var_val = { };
+			const long number = strtol(buffer, NULL, 10);
+			/* Handle overflow and underflow correctly. */
+			var_val.integer = (number == LONG_MAX)
+			                ? INT_MAX
+			                : ((number == LONG_MIN) ? INT_MIN : number);
+			return var_new(VTYPE_INT, var_val);
+		}
+		else
+		{
+			const var_val_t var_val = { .string = buffer };
+			return var_new(VTYPE_STRING, var_val);
+		}
 	}
 	else
 	{
 		return var_false();
 	}
+}
+
+/* number ::= num { num } */
+static void
+eval_number(const char **in)
+{
+	do
+	{
+		strcatch(target_buffer, last_token.c);
+		get_next(in);
+	}
+	while(last_token.type == DIGIT);
+
+	target_type = VTYPE_INT;
 }
 
 /* sqstr ::= ''' sqchar { sqchar } ''' */
@@ -425,7 +461,6 @@ eval_funccall(const char **in)
 	char name[NAME_LENGTH_MAX];
 	call_info_t call_info;
 	var_t ret_val;
-	char *str_val;
 
 	if(!isalpha(last_token.c))
 	{
@@ -468,9 +503,11 @@ eval_funccall(const char **in)
 	ret_val = function_call(name, &call_info);
 	if(ret_val.type != VTYPE_ERROR)
 	{
-		str_val = var_to_string(ret_val);
+		char *const str_val = var_to_string(ret_val);
 		strcat(target_buffer, str_val);
 		free(str_val);
+
+		target_type = ret_val.type;
 	}
 	else
 	{
@@ -564,6 +601,10 @@ get_next(const char **in)
 			break;
 		case '\0':
 			tt = END;
+			break;
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+			tt = DIGIT;
 			break;
 		case '=':
 		case '!':
