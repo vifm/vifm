@@ -30,6 +30,7 @@
 #include "../utils/utils.h"
 #include "functions.h"
 #include "var.h"
+#include "variables.h"
 
 #define ENVVAR_NAME_LENGTH_MAX 1024
 #define NAME_LENGTH_MAX 256
@@ -504,7 +505,7 @@ eval_double_quoted_char(const char **in, char buffer[])
 static var_t
 eval_envvar(const char **in)
 {
-	if(last_token.type == SYM)
+	if(char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
 	{
 		var_val_t var_val;
 		char name[ENVVAR_NAME_LENGTH_MAX];
@@ -515,7 +516,7 @@ eval_envvar(const char **in)
 			strcatch(name, last_token.c);
 			get_next(in);
 		}
-		while(last_token.type == SYM || last_token.type == DIGIT);
+		while(char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
 
 		var_val.string = (char *)getenv_fu(name);
 		return var_new(VTYPE_STRING, var_val);
