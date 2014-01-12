@@ -28,6 +28,7 @@ void noremap_tests(void);
 void num_in_the_middle_tests(void);
 void selectors_tests(void);
 void mapping_state_tests(void);
+void count_tests(void);
 
 void
 all_tests(void)
@@ -54,6 +55,7 @@ all_tests(void)
 	num_in_the_middle_tests();
 	selectors_tests();
 	mapping_state_tests();
+	count_tests();
 }
 
 void
