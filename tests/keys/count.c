@@ -1,8 +1,11 @@
 #include "seatest.h"
 
 #include <limits.h> /* INT_MAX */
+#include <stdlib.h> /* free() */
+#include <wchar.h> /* wchar_t */
 
 #include "../../src/engine/keys.h"
+#include "../../src/utils/str.h"
 
 extern int last_command_count;
 
@@ -27,6 +30,19 @@ test_huge_number_get_intmax(void)
 	assert_int_equal(INT_MAX, last_command_count);
 }
 
+static void
+test_max_count_is_handled_correctly(void)
+{
+	char *const keys = format_str("%udd", INT_MAX);
+	wchar_t *const keysw = to_wide(keys);
+
+	assert_false(IS_KEYS_RET_CODE(execute_keys(keysw)));
+	assert_int_equal(INT_MAX, last_command_count);
+
+	free(keysw);
+	free(keys);
+}
+
 void
 count_tests(void)
 {
@@ -35,6 +51,7 @@ count_tests(void)
 	run_test(test_no_number_get_not_def);
 	run_test(test_normal_number_get_it);
 	run_test(test_huge_number_get_intmax);
+	run_test(test_max_count_is_handled_correctly);
 
 	test_fixture_end();
 }
