@@ -1,4 +1,4 @@
-.TH vifm 1 "Jan 05, 2014" "" "Vifm"
+.TH vifm 1 "Jan 12, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2819,12 +2819,16 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-vifm-expr1 expr2 == expr2          equal
+expr1      expr2 == expr2          equal
            expr2 != expr2          not equal
 
-vifm-expr2 expr3 . expr3 ..        string concatenation
+expr2      expr3 . expr3 ..        string concatenation
 
-vifm-expr3 "string"                string constant, \\ is special
+expr3      - expr3                 unary minus
+           + expr3                 unary plus
+
+expr4      number                  number constant
+           "string"                string constant, \\ is special
            'string'                string constant, ' is doubled
            $VAR                    environment variable
            function(expr1, ...)    function call
@@ -2846,8 +2850,8 @@ notequal  !=
 
 Examples:
 .EX
- 'a' == 'a'    evaluates to 1
- 'a' == 'b'    evaluates to 0
+ 'a' == 'a'          == 1
+ 'a' == 'b'          == 0
 .EE
 
 expr2
@@ -2858,14 +2862,50 @@ expr3 . expr3 ..     string concatenation
 
 Examples:
 .EX
- 'a' . 'b' = 'ab'
- 'aaa' . '' . 'c' = 'aaac'
+ 'a' . 'b'           == 'ab'
+ 'aaa' . '' . 'c'    == 'aaac'
 .EE
 
 expr3
 .br
 -----
 .br
+
+- expr3              unary minus
+.br
++ expr3              unary plus
+
+For '-' the sign of the number is changed.
+.br
+For '+' the number is unchanged.
+
+A String will be converted to a Number first.
+
+These operations can be repeated and mixed.  Examples:
+.EX
+  --9                == 9
+ ---9                == -9
+  -+9                == 9
+.EE
+
+expr4
+.br
+-----
+.br
+
+number               number constant
+.br
+-----
+.br
+
+Decimal number.  Examples:
+.EX
+ 0                   == 0
+ 0000                == 0
+ 01                  == 1
+ 123                 == 123
+ 10000               == 10000
+.EE
 
 string
 .br

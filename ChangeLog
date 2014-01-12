@@ -21,6 +21,9 @@
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.
 
+	Extended parser to support integer number constants and unary minus and
+	plus operators.
+
 	Treat semicolon (";") as a valid range separator for command-line
 	commands.
 
