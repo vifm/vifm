@@ -48,6 +48,10 @@ typedef enum
 	COMMA,      /* Comma, concatenation operator (,). */
 	EQ,         /* Equality operator (==). */
 	NE,         /* Inequality operator (!=). */
+	LT,         /* Less than operator (<). */
+	LE,         /* Less than or equal operator (<=). */
+	GE,         /* Greater than or equal operator (>=). */
+	GT,         /* Greater than operator (>). */
 	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
 	PLUS,       /* Plus sign (+). */
 	MINUS,      /* Minus sign (-). */
@@ -615,6 +619,28 @@ get_next(const char **in)
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 			tt = DIGIT;
+			break;
+		case '<':
+			if((*in)[1] == '=')
+			{
+				++*in;
+				tt = LE;
+			}
+			else
+			{
+				tt = LT;
+			}
+			break;
+		case '>':
+			if((*in)[1] == '=')
+			{
+				++*in;
+				tt = GE;
+			}
+			else
+			{
+				tt = GT;
+			}
 			break;
 		case '=':
 		case '!':
