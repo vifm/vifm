@@ -25,7 +25,6 @@
 
 /* Returns non-zero if status bar message should be saved. */
 int show_apropos_menu(FileView *view, const char args[]);
-void execute_apropos_cb(menu_info *m);
 
 #endif /* VIFM__MENUS__APROPOS_MENU_H__ */
 

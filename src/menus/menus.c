@@ -546,9 +546,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case APROPOS_MENU:
-			execute_apropos_cb(m);
-			return 1;
 		case BOOKMARK_MENU:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			return 0;
