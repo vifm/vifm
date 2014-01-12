@@ -140,6 +140,18 @@ test_function_call(void)
 	free(result);
 }
 
+static void
+test_broken_comparison_operator(void)
+{
+	const char *args = "'a' < = 'b'";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_arglist(args, &stop_ptr);
+	assert_true(result == NULL);
+	free(result);
+}
+
 void
 echo_tests(void)
 {
@@ -159,6 +171,7 @@ echo_tests(void)
 	run_test(test_statement);
 	run_test(test_statement_and_not_statement);
 	run_test(test_function_call);
+	run_test(test_broken_comparison_operator);
 
 	test_fixture_end();
 }
