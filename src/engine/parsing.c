@@ -59,13 +59,13 @@ TOKENS_TYPE;
 static var_t eval_statement(const char **in);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
-static void eval_number(const char **in);
-static void eval_single_quoted_string(const char **in);
-static int eval_single_quoted_char(const char **in);
-static void eval_double_quoted_string(const char **in);
-static int eval_double_quoted_char(const char **in);
-static void eval_envvar(const char **in);
-static void eval_funccall(const char **in);
+static var_t eval_number(const char **in);
+static var_t eval_single_quoted_string(const char **in);
+static int eval_single_quoted_char(const char **in, char buffer[]);
+static var_t eval_double_quoted_string(const char **in);
+static int eval_double_quoted_char(const char **in, char buffer[]);
+static var_t eval_envvar(const char **in);
+static var_t eval_funccall(const char **in);
 static void eval_arglist(const char **in, call_info_t *call_info);
 static void eval_arg(const char **in, call_info_t *call_info);
 static void skip_whitespace_tokens(const char **in);
@@ -80,9 +80,6 @@ struct
 
 static int initialized;
 static getenv_func getenv_fu;
-static char *target_buffer;
-/* Type of expression in the target_buffer. */
-static VarType target_type = VTYPE_ERROR;
 static ParsingErrors last_error;
 static const char *last_position;
 static const char *last_parsed_char;
@@ -213,9 +210,7 @@ eval_expression(const char **in)
 {
 	char res[CMD_LINE_LENGTH_MAX];
 	size_t res_len = 0U;
-	char *old_target_buffer = target_buffer;
 	res[0] = '\0';
-	target_buffer = res;
 
 	while(last_error == PE_NO_ERROR)
 	{
@@ -245,8 +240,6 @@ eval_expression(const char **in)
 		get_next(in);
 	}
 
-	target_buffer = old_target_buffer;
-
 	if(last_error == PE_NO_ERROR)
 	{
 		const var_val_t var_val = { .string = res };
@@ -262,103 +255,80 @@ eval_expression(const char **in)
 static var_t
 eval_term(const char **in)
 {
-	char buffer[CMD_LINE_LENGTH_MAX];
-	char *old_target_buffer = target_buffer;
-	buffer[0] = '\0';
-	target_buffer = buffer;
-	target_type = VTYPE_ERROR;
-
 	switch(last_token.type)
 	{
 		case DIGIT:
-			eval_number(in);
-			break;
+			return eval_number(in);
 		case SQ:
 			get_next(in);
-			eval_single_quoted_string(in);
-			break;
+			return eval_single_quoted_string(in);
 		case DQ:
 			get_next(in);
-			eval_double_quoted_string(in);
-			break;
+			return eval_double_quoted_string(in);
 		case DOLLAR:
 			get_next(in);
-			eval_envvar(in);
-			break;
+			return eval_envvar(in);
 
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
-				eval_funccall(in);
+				return eval_funccall(in);
 			}
-			break;
+			/* break is intensionally omitted. */
 
 		default:
 			--*in;
 			last_error = PE_INVALID_EXPRESSION;
-			break;
-	}
-
-	target_buffer = old_target_buffer;
-
-	if(last_error == PE_NO_ERROR)
-	{
-		if(target_type == VTYPE_INT)
-		{
-			var_val_t var_val = { };
-			const long number = strtol(buffer, NULL, 10);
-			/* Handle overflow and underflow correctly. */
-			var_val.integer = (number == LONG_MAX)
-			                ? INT_MAX
-			                : ((number == LONG_MIN) ? INT_MIN : number);
-			return var_new(VTYPE_INT, var_val);
-		}
-		else
-		{
-			const var_val_t var_val = { .string = buffer };
-			return var_new(VTYPE_STRING, var_val);
-		}
-	}
-	else
-	{
-		return var_false();
+			return var_false();
 	}
 }
 
 /* number ::= num { num } */
-static void
+static var_t
 eval_number(const char **in)
 {
+	char buffer[CMD_LINE_LENGTH_MAX];
+	buffer[0] = '\0';
+
 	do
 	{
-		strcatch(target_buffer, last_token.c);
+		strcatch(buffer, last_token.c);
 		get_next(in);
 	}
 	while(last_token.type == DIGIT);
 
-	target_type = VTYPE_INT;
+	var_val_t var_val = { };
+	const long number = strtol(buffer, NULL, 10);
+	/* Handle overflow and underflow correctly. */
+	var_val.integer = (number == LONG_MAX)
+									? INT_MAX
+									: ((number == LONG_MIN) ? INT_MIN : number);
+	return var_new(VTYPE_INT, var_val);
 }
 
 /* sqstr ::= ''' sqchar { sqchar } ''' */
-static void
+static var_t
 eval_single_quoted_string(const char **in)
 {
-	while(eval_single_quoted_char(in));
+	char buffer[CMD_LINE_LENGTH_MAX];
+	buffer[0] = '\0';
+	while(eval_single_quoted_char(in, buffer));
 
-	if(last_token.type == END)
+	if(last_token.type == SQ)
 	{
-		last_error = PE_MISSING_QUOTE;
-	}
-	else if(last_token.type == SQ)
-	{
+		const var_val_t var_val = { .string = buffer };
 		get_next(in);
+		return var_new(VTYPE_STRING, var_val);
 	}
+
+	last_error = PE_MISSING_QUOTE;
+	return var_false();
 }
 
 /* sqchar
  * Returns non-zero if there are more characters in the string. */
 static int
-eval_single_quoted_char(const char **in)
+eval_single_quoted_char(const char **in, char buffer[])
 {
 	int double_sq;
 	int sq_char;
@@ -366,36 +336,43 @@ eval_single_quoted_char(const char **in)
 	double_sq = (last_token.type == SQ && **in == '\'');
 	sq_char = last_token.type != SQ && last_token.type != END;
 	if(!sq_char && !double_sq)
+	{
 		return 0;
+	}
 
-	strcatch(target_buffer, last_token.c);
+	strcatch(buffer, last_token.c);
 	get_next(in);
 
 	if(double_sq)
+	{
 		get_next(in);
+	}
 	return 1;
 }
 
 /* dqstr ::= ''' dqchar { dqchar } ''' */
-static void
+static var_t
 eval_double_quoted_string(const char **in)
 {
-	while(eval_double_quoted_char(in));
+	char buffer[CMD_LINE_LENGTH_MAX];
+	buffer[0] = '\0';
+	while(eval_double_quoted_char(in, buffer));
 
-	if(last_token.type == END)
+	if(last_token.type == DQ)
 	{
-		last_error = PE_MISSING_QUOTE;
-	}
-	else if(last_token.type == DQ)
-	{
+		const var_val_t var_val = { .string = buffer };
 		get_next(in);
+		return var_new(VTYPE_STRING, var_val);
 	}
+
+	last_error = PE_MISSING_QUOTE;
+	return var_false();
 }
 
 /* dqchar
  * Returns non-zero if there are more characters in the string. */
 int
-eval_double_quoted_char(const char **in)
+eval_double_quoted_char(const char **in, char buffer[])
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -434,16 +411,17 @@ eval_double_quoted_char(const char **in)
 		last_token.c = table[(int)last_token.c];
 	}
 
-	strcatch(target_buffer, last_token.c);
+	strcatch(buffer, last_token.c);
 	get_next(in);
 
 	return dq_char;
 }
 
 /* envvar ::= '$' envvarname */
-static void
+static var_t
 eval_envvar(const char **in)
 {
+	var_val_t var_val = { };
 	char name[ENVVAR_NAME_LENGTH_MAX];
 	name[0] = '\0';
 	while(last_token.type == SYM)
@@ -451,11 +429,13 @@ eval_envvar(const char **in)
 		strcatch(name, last_token.c);
 		get_next(in);
 	}
-	strcat(target_buffer, getenv_fu(name));
+
+	var_val.string = (char *)getenv_fu(name);
+	return var_new(VTYPE_STRING, var_val);
 }
 
 /* funccall ::= varname '(' arglist ')' */
-static void
+static var_t
 eval_funccall(const char **in)
 {
 	char name[NAME_LENGTH_MAX];
@@ -465,7 +445,7 @@ eval_funccall(const char **in)
 	if(!isalpha(last_token.c))
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return;
+		return var_false();
 	}
 
 	name[0] = last_token.c;
@@ -480,7 +460,7 @@ eval_funccall(const char **in)
 	if(last_token.type != LPAREN)
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return;
+		return var_false();
 	}
 
 	get_next(in);
@@ -496,24 +476,17 @@ eval_funccall(const char **in)
 		{
 			*in = old_in;
 			function_call_info_free(&call_info);
-			return;
+			return var_false();
 		}
 	}
 
 	ret_val = function_call(name, &call_info);
-	if(ret_val.type != VTYPE_ERROR)
-	{
-		char *const str_val = var_to_string(ret_val);
-		strcat(target_buffer, str_val);
-		free(str_val);
-
-		target_type = ret_val.type;
-	}
-	else
+	if(ret_val.type == VTYPE_ERROR)
 	{
 		last_error = PE_INVALID_EXPRESSION;
+		var_free(ret_val);
+		ret_val = var_false();
 	}
-	var_free(ret_val);
 	function_call_info_free(&call_info);
 
 	skip_whitespace_tokens(in);
@@ -522,6 +495,8 @@ eval_funccall(const char **in)
 		last_error = PE_INVALID_EXPRESSION;
 	}
 	get_next(in);
+
+	return ret_val;
 }
 
 /* arglist ::= expr { ',' expr } */
