@@ -504,17 +504,27 @@ eval_double_quoted_char(const char **in, char buffer[])
 static var_t
 eval_envvar(const char **in)
 {
-	var_val_t var_val = { };
-	char name[ENVVAR_NAME_LENGTH_MAX];
-	name[0] = '\0';
-	while(last_token.type == SYM)
+	if(last_token.type == SYM)
 	{
-		strcatch(name, last_token.c);
-		get_next(in);
-	}
+		var_val_t var_val;
+		char name[ENVVAR_NAME_LENGTH_MAX];
+		name[0] = '\0';
 
-	var_val.string = (char *)getenv_fu(name);
-	return var_new(VTYPE_STRING, var_val);
+		do
+		{
+			strcatch(name, last_token.c);
+			get_next(in);
+		}
+		while(last_token.type == SYM || last_token.type == DIGIT);
+
+		var_val.string = (char *)getenv_fu(name);
+		return var_new(VTYPE_STRING, var_val);
+	}
+	else
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
 }
 
 /* funccall ::= varname '(' arglist ')' */
