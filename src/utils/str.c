@@ -20,10 +20,12 @@
 #include "str.h"
 
 #include <ctype.h> /* tolower() isspace() */
+#include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() mbstowcs() wcstombs() realloc() */
+#include <stdlib.h> /* free() malloc() mbstowcs() realloc() strtol()
+                       wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* vswprintf() wchar_t */
@@ -454,6 +456,16 @@ copy_substr(char dst[], size_t dst_len, const char src[], char terminator)
 			past_end[-1] = '\0';
 		}
 	}
+}
+
+int
+str_to_int(const char str[])
+{
+	const long number = strtol(str, NULL, 10);
+	/* Handle overflow and underflow correctly. */
+	return (number == LONG_MAX)
+	     ? INT_MAX
+	     : ((number == LONG_MIN) ? INT_MIN : number);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -20,11 +20,10 @@
 
 #include <assert.h>
 #include <ctype.h> /* isalnum() isalpha() tolower() */
-#include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <math.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* strtol() */
+#include <stdlib.h>
 #include <string.h> /* strcat() strcmp() */
 
 #include "../utils/str.h"
@@ -287,6 +286,8 @@ eval_term(const char **in)
 static var_t
 eval_number(const char **in)
 {
+	var_val_t var_val = { };
+
 	char buffer[CMD_LINE_LENGTH_MAX];
 	buffer[0] = '\0';
 
@@ -297,12 +298,7 @@ eval_number(const char **in)
 	}
 	while(last_token.type == DIGIT);
 
-	var_val_t var_val = { };
-	const long number = strtol(buffer, NULL, 10);
-	/* Handle overflow and underflow correctly. */
-	var_val.integer = (number == LONG_MAX)
-									? INT_MAX
-									: ((number == LONG_MIN) ? INT_MIN : number);
+	var_val.integer = str_to_int(buffer);
 	return var_new(VTYPE_INT, var_val);
 }
 
