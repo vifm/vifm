@@ -215,6 +215,7 @@ eval_expression(const char **in)
 	while(last_error == PE_NO_ERROR)
 	{
 		var_t term;
+		char *str_val;
 
 		skip_whitespace_tokens(in);
 		term = eval_term(in);
@@ -225,8 +226,9 @@ eval_expression(const char **in)
 			break;
 		}
 
-		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s",
-				term.value.string);
+		str_val = var_to_string(term);
+		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
+		free(str_val);
 
 		var_free(term);
 
