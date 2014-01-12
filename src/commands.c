@@ -1997,10 +1997,11 @@ eval_arglist(const char args[], const char **stop_ptr)
 
 	while(args[0] != '\0')
 	{
-		var_t result = var_false();
-		const ParsingErrors parsing_error = parse(args, &result);
 		char *free_this = NULL;
 		const char *tmp_result = NULL;
+
+		var_t result = var_false();
+		const ParsingErrors parsing_error = parse(args, &result);
 		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
 			result = get_parsing_result();
@@ -2027,6 +2028,8 @@ eval_arglist(const char args[], const char **stop_ptr)
 
 		var_free(result);
 		free(free_this);
+
+		args = skip_whitespace(args);
 	}
 	if(args[0] == '\0')
 	{

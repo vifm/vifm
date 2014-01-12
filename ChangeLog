@@ -24,6 +24,9 @@
 	Extended parser to support integer number constants and unary minus and
 	plus operators.
 
+	Extended parser to support <, <=, >= and > comparison operators for strings
+	and integers.
+
 	Treat semicolon (";") as a valid range separator for command-line
 	commands.
 

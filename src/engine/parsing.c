@@ -18,7 +18,7 @@
 
 #include "parsing.h"
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <math.h>
 #include <stddef.h> /* NULL size_t */
@@ -48,6 +48,10 @@ typedef enum
 	COMMA,      /* Comma, concatenation operator (,). */
 	EQ,         /* Equality operator (==). */
 	NE,         /* Inequality operator (!=). */
+	LT,         /* Less than operator (<). */
+	LE,         /* Less than or equal operator (<=). */
+	GE,         /* Greater than or equal operator (>=). */
+	GT,         /* Greater than operator (>). */
 	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
 	PLUS,       /* Plus sign (+). */
 	MINUS,      /* Minus sign (-). */
@@ -58,6 +62,8 @@ typedef enum
 TOKENS_TYPE;
 
 static var_t eval_statement(const char **in);
+static int is_comparison_operator(TOKENS_TYPE type);
+static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
 static var_t eval_signed_number(const char **in);
@@ -178,7 +184,7 @@ eval_statement(const char **in)
 	{
 		return lhs;
 	}
-	else if(last_token.type != EQ && last_token.type != NE)
+	else if(!is_comparison_operator(last_token.type))
 	{
 		last_error = PE_INVALID_EXPRESSION;
 		/* Return partial result. */
@@ -194,24 +200,74 @@ eval_statement(const char **in)
 		return var_false();
 	}
 
-	/* This is OK for now, but needs to be improved in the future. */
-	result.integer = strcmp(lhs.value.string, rhs.value.string) == 0;
-	if(op == NE)
-	{
-		result.integer = !result.integer;
-	}
+	result.integer = compare_variables(op, lhs, rhs);
 
 	var_free(lhs);
 	var_free(rhs);
 	return var_new(VTYPE_INT, result);
 }
 
+/* Checks whether given token corresponds to any of comparison operators.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_comparison_operator(TOKENS_TYPE type)
+{
+	return type == EQ || type == NE
+	    || type == LT || type == LE
+	    || type == GE || type == GT;
+}
+
+/* Compares lhs and rhs variables by comparison operator specified by a token.
+ * Returns non-zero for if comparison evaluates to true, otherwise non-zero is
+ * returned. */
+static int
+compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
+{
+	if(lhs.type == VTYPE_STRING && rhs.type == VTYPE_STRING)
+	{
+		const int result = strcmp(lhs.value.string, rhs.value.string);
+		switch(operation)
+		{
+			case EQ: return result == 0;
+			case NE: return result != 0;
+			case LT: return result < 0;
+			case LE: return result <= 0;
+			case GE: return result >= 0;
+			case GT: return result > 0;
+
+			default:
+				assert(0 && "Unhandled comparison operator");
+				return 0;
+		}
+	}
+	else
+	{
+		const int lhs_int = var_to_integer(lhs);
+		const int rhs_int = var_to_integer(rhs);
+		switch(operation)
+		{
+			case EQ: return lhs_int == rhs_int;
+			case NE: return lhs_int != rhs_int;
+			case LT: return lhs_int < rhs_int;
+			case LE: return lhs_int <= rhs_int;
+			case GE: return lhs_int >= rhs_int;
+			case GT: return lhs_int > rhs_int;
+
+			default:
+				assert(0 && "Unhandled comparison operator");
+				return 0;
+		}
+	}
+}
+
 /* expr ::= term { '.' term } */
 static var_t
 eval_expression(const char **in)
 {
+	var_t result = var_false();
 	char res[CMD_LINE_LENGTH_MAX];
 	size_t res_len = 0U;
+	int single_term = 1;
 	res[0] = '\0';
 
 	while(last_error == PE_NO_ERROR)
@@ -232,25 +288,30 @@ eval_expression(const char **in)
 		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
 		free(str_val);
 
-		var_free(term);
-
 		if(last_token.type != DOT)
 		{
+			if(single_term)
+			{
+				result = term;
+			}
 			break;
 		}
+		var_free(term);
 
+		single_term = 0;
 		get_next(in);
 	}
 
 	if(last_error == PE_NO_ERROR)
 	{
-		const var_val_t var_val = { .string = res };
-		return var_new(VTYPE_STRING, var_val);
+		if(!single_term)
+		{
+			const var_val_t var_val = { .string = res };
+			result = var_new(VTYPE_STRING, var_val);
+		}
 	}
-	else
-	{
-		return var_false();
-	}
+
+	return result;
 }
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | funccall */
@@ -608,6 +669,28 @@ get_next(const char **in)
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 			tt = DIGIT;
+			break;
+		case '<':
+			if((*in)[1] == '=')
+			{
+				++*in;
+				tt = LE;
+			}
+			else
+			{
+				tt = LT;
+			}
+			break;
+		case '>':
+			if((*in)[1] == '=')
+			{
+				++*in;
+				tt = GE;
+			}
+			else
+			{
+				tt = GT;
+			}
 			break;
 		case '=':
 		case '!':
