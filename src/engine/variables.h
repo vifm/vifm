@@ -21,6 +21,12 @@
 
 /* This module handles :let command */
 
+/* List of valid first characters in the name of an environment variable. */
+extern const char ENV_VAR_NAME_FIRST_CHAR[];
+
+/* List of valid non-first characters in the name of an environment variable. */
+extern const char ENV_VAR_NAME_CHARS[];
+
 /* Initializes variables module.  Should be called before any of other
  * functions.
  * handler can be NULL

@@ -43,7 +43,9 @@ typedef struct {
 	int removed;
 }envvar_t;
 
-static const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
+const char ENV_VAR_NAME_FIRST_CHAR[] = "abcdefghijklmnopqrstuvwxyz"
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 static void init_var(const char *env);
