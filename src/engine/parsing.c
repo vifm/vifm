@@ -18,7 +18,7 @@
 
 #include "parsing.h"
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <math.h>
 #include <stddef.h> /* NULL size_t */
@@ -62,6 +62,8 @@ typedef enum
 TOKENS_TYPE;
 
 static var_t eval_statement(const char **in);
+static int is_comparison_operator(TOKENS_TYPE type);
+static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
 static var_t eval_expression(const char **in);
 static var_t eval_term(const char **in);
 static var_t eval_signed_number(const char **in);
@@ -182,7 +184,7 @@ eval_statement(const char **in)
 	{
 		return lhs;
 	}
-	else if(last_token.type != EQ && last_token.type != NE)
+	else if(!is_comparison_operator(last_token.type))
 	{
 		last_error = PE_INVALID_EXPRESSION;
 		/* Return partial result. */
@@ -198,16 +200,64 @@ eval_statement(const char **in)
 		return var_false();
 	}
 
-	/* This is OK for now, but needs to be improved in the future. */
-	result.integer = strcmp(lhs.value.string, rhs.value.string) == 0;
-	if(op == NE)
-	{
-		result.integer = !result.integer;
-	}
+	result.integer = compare_variables(op, lhs, rhs);
 
 	var_free(lhs);
 	var_free(rhs);
 	return var_new(VTYPE_INT, result);
+}
+
+/* Checks whether given token corresponds to any of comparison operators.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_comparison_operator(TOKENS_TYPE type)
+{
+	return type == EQ || type == NE
+	    || type == LT || type == LE
+	    || type == GE || type == GT;
+}
+
+/* Compares lhs and rhs variables by comparison operator specified by a token.
+ * Returns non-zero for if comparison evaluates to true, otherwise non-zero is
+ * returned. */
+static int
+compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
+{
+	if(lhs.type == VTYPE_STRING && rhs.type == VTYPE_STRING)
+	{
+		const int result = strcmp(lhs.value.string, rhs.value.string);
+		switch(operation)
+		{
+			case EQ: return result == 0;
+			case NE: return result != 0;
+			case LT: return result < 0;
+			case LE: return result <= 0;
+			case GE: return result >= 0;
+			case GT: return result > 0;
+
+			default:
+				assert(0 && "Unhandled comparison operator");
+				return 0;
+		}
+	}
+	else
+	{
+		const int lhs_int = var_to_integer(lhs);
+		const int rhs_int = var_to_integer(rhs);
+		switch(operation)
+		{
+			case EQ: return lhs_int == rhs_int;
+			case NE: return lhs_int != rhs_int;
+			case LT: return lhs_int < rhs_int;
+			case LE: return lhs_int <= rhs_int;
+			case GE: return lhs_int >= rhs_int;
+			case GT: return lhs_int > rhs_int;
+
+			default:
+				assert(0 && "Unhandled comparison operator");
+				return 0;
+		}
+	}
 }
 
 /* expr ::= term { '.' term } */
