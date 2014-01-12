@@ -171,6 +171,11 @@ void copy_str(char dst[], size_t dst_len, const char src[]);
  * dst_len. */
 void copy_substr(char dst[], size_t dst_len, const char src[], char terminator);
 
+/* Converts string into integer handling underflow and overflow.  Returns
+ * converted number, which is INT_MIN/INT_MAX in case underflow/overflow is
+ * happened. */
+int str_to_int(const char str[]);
+
 #if defined(_WIN32) && !defined(strtok_r)
 #define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
 #endif

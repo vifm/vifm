@@ -33,8 +33,8 @@ typedef enum
 /* Union of possible variable contents. */
 typedef union
 {
-	char *string; /* String value for VT_STRING, should be copied to use it. */
-	int integer; /* VT_INT value. */
+	char *string; /* String value for VTYPE_STRING, should be copied to use it. */
+	int integer; /* VTYPE_INT value. */
 }var_val_t;
 
 /* Structure for script variable. */
@@ -60,6 +60,10 @@ var_t var_clone(var_t var);
 /* Converts variable to a string.  Returns new string, which should be freed by
  * the caller. */
 char * var_to_string(const var_t var);
+
+/* Converts variable to an integer.  Returns integer value, parsing of a string
+ * is performed to get integer value. */
+int var_to_integer(const var_t var);
 
 /* Converts variable to a boolean.  Returns non-zero if value is evaluated to
  * true. */

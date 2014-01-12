@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 05
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2395,7 +2395,11 @@ Expression syntax summary, from least to most significant:
 
 |vifm-expr2| expr3 . expr3 ..        string concatenation
 
-|vifm-expr3| "string"                string constant, backslash is special
+|vifm-expr3| - expr3                 unary minus
+             + expr3                 unary plus
+
+|vifm-expr4| number                  number constant
+             "string"                string constant, backslash is special
              'string'                string constant, ' is doubled
              $VAR                    environment variable
              function(expr1, ...)    function call
@@ -2413,8 +2417,8 @@ equal     ==                                   *vifm-expr-==*
 notequal  !=                                   *vifm-expr-!=*
 
 Examples: >
-  'a' == 'a'    evaluates to 1
-  'a' == 'b'    evaluates to 0
+  'a' == 'a'         == 1
+  'a' == 'b'         == 0
 <
 
 expr2                                          *vifm-expr2*
@@ -2422,13 +2426,40 @@ expr2                                          *vifm-expr2*
 expr3 . expr3 ..     string concatenation      *vifm-expr-.*
 
 Examples: >
-  'a' . 'b' = 'ab'
-  'aaa' . '' . 'c' = 'aaac'
+  'a' . 'b'          == 'ab'
+  'aaa' . '' . 'c'   == 'aaac'
 <
 
 expr3                                          *vifm-expr3*
 -----
 
+- expr3              unary minus               *vifm-expr-unary--*
++ expr3              unary plus                *vifm-expr-unary-+*
+
+For '-' the sign of the number is changed.
+For '+' the number is unchanged.
+
+A String will be converted to a Number first.
+
+These operations can be repeated and mixed.  Examples: >
+   --9               == 9
+  ---9               == -9
+   -+9               == 9
+<
+
+expr4                                          *vifm-expr4*
+-----
+
+number               number constant           *vifm-expr-number*
+------
+
+Decimal number.  Examples: >
+  0                  == 0
+  0000               == 0
+  01                 == 1
+  123                == 123
+  10000              == 10000
+<
 string                                         *vifm-expr-string*
 ------
 "string"             string constant           *vifm-expr-quote*
