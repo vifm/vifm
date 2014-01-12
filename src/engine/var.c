@@ -74,6 +74,22 @@ var_to_string(const var_t var)
 }
 
 int
+var_to_integer(const var_t var)
+{
+	switch(var.type)
+	{
+		case VTYPE_STRING:
+			return str_to_int(var.value.string);
+		case VTYPE_INT:
+			return var.value.integer;
+
+		default:
+			assert(0 && "Var -> Integer function: unhandled variable type");
+			return 0;
+	}
+}
+
+int
 var_to_boolean(const var_t var)
 {
 	switch(var.type)
