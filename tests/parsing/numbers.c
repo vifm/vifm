@@ -14,27 +14,51 @@ setup(void)
 }
 
 static void
-test_negative_number_fails(void)
+test_negative_number_ok(void)
 {
-	ASSERT_FAIL("-1", PE_INVALID_EXPRESSION);
+	ASSERT_OK("-1", "-1");
+}
+
+static void
+test_multiple_negations_ok(void)
+{
+	ASSERT_OK("--1", "1");
+	ASSERT_OK("---1", "-1");
+	ASSERT_OK("----1", "1");
+	ASSERT_OK("-----1", "-1");
+}
+
+static void
+test_spaces_betwen_signs_ok(void)
+{
+	ASSERT_OK("--- 1", "-1");
+	ASSERT_OK("- - + 1", "1");
+	ASSERT_OK(" ++ + 1", "1");
 }
 
 static void
 test_zero_ok(void)
 {
 	ASSERT_OK("0", "0");
+	ASSERT_OK("-0", "0");
+	ASSERT_OK("+0", "0");
 }
 
 static void
 test_multiple_zeroes_ok(void)
 {
 	ASSERT_OK("00000", "0");
+	ASSERT_OK("-00000", "0");
+	ASSERT_OK("+00000", "0");
 }
 
 static void
 test_positive_number_ok(void)
 {
 	ASSERT_OK("12345", "12345");
+	ASSERT_OK("+12", "12");
+	ASSERT_OK("++12", "12");
+	ASSERT_OK("+++12", "12");
 }
 
 static void
@@ -50,7 +74,9 @@ numbers_tests(void)
 
 	fixture_setup(&setup);
 
-	run_test(test_negative_number_fails);
+	run_test(test_negative_number_ok);
+	run_test(test_multiple_negations_ok);
+	run_test(test_spaces_betwen_signs_ok);
 	run_test(test_zero_ok);
 	run_test(test_multiple_zeroes_ok);
 	run_test(test_positive_number_ok);

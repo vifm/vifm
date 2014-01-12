@@ -49,6 +49,8 @@ typedef enum
 	EQ,         /* Equality operator (==). */
 	NE,         /* Inequality operator (!=). */
 	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
+	PLUS,       /* Plus sign (+). */
+	MINUS,      /* Minus sign (-). */
 	DIGIT,      /* Digit ([0-9]). */
 	SYM,        /* Any other symbol that don't have meaning in current context. */
 	END         /* End of a string, after everything is parsed. */
@@ -256,6 +258,22 @@ eval_term(const char **in)
 {
 	switch(last_token.type)
 	{
+		case MINUS:
+			{
+				var_t number;
+				get_next(in);
+				skip_whitespace_tokens(in);
+				number = eval_term(in);
+				if(number.type == VTYPE_INT)
+				{
+					number.value.integer = -number.value.integer;
+				}
+				return number;
+			}
+		case PLUS:
+			get_next(in);
+			skip_whitespace_tokens(in);
+			return eval_term(in);
 		case DIGIT:
 			return eval_number(in);
 		case SQ:
@@ -572,6 +590,12 @@ get_next(const char **in)
 			break;
 		case '\0':
 			tt = END;
+			break;
+		case '+':
+			tt = PLUS;
+			break;
+		case '-':
+			tt = MINUS;
 			break;
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
