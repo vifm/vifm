@@ -210,8 +210,10 @@ eval_statement(const char **in)
 static var_t
 eval_expression(const char **in)
 {
+	var_t result = var_false();
 	char res[CMD_LINE_LENGTH_MAX];
 	size_t res_len = 0U;
+	int single_term = 1;
 	res[0] = '\0';
 
 	while(last_error == PE_NO_ERROR)
@@ -232,25 +234,30 @@ eval_expression(const char **in)
 		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
 		free(str_val);
 
-		var_free(term);
-
 		if(last_token.type != DOT)
 		{
+			if(single_term)
+			{
+				result = term;
+			}
 			break;
 		}
+		var_free(term);
 
+		single_term = 0;
 		get_next(in);
 	}
 
 	if(last_error == PE_NO_ERROR)
 	{
-		const var_val_t var_val = { .string = res };
-		return var_new(VTYPE_STRING, var_val);
+		if(!single_term)
+		{
+			const var_val_t var_val = { .string = res };
+			result = var_new(VTYPE_STRING, var_val);
+		}
 	}
-	else
-	{
-		return var_false();
-	}
+
+	return result;
 }
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | funccall */
