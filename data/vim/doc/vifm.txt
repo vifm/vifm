@@ -2392,6 +2392,10 @@ Expression syntax summary, from least to most significant:
 
 |vifm-expr1| expr2 == expr2          equal
              expr2 != expr2          not equal
+             expr2 >  expr2          greater than
+             expr2 >= expr2          greater than or equal
+             expr2 <  expr2          smaller than
+             expr2 <= expr2          smaller than or equal
 
 |vifm-expr2| expr3 . expr3 ..        string concatenation
 
@@ -2413,12 +2417,23 @@ expr2 {cmp} expr2
 Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
 if it evaluates to true.
 
-equal     ==                                   *vifm-expr-==*
-notequal  !=                                   *vifm-expr-!=*
+equal                   ==                     *vifm-expr-==*
+not equal               !=                     *vifm-expr-!=*
+greater than            >                      *vifm-expr->*
+greater than or equal   >=                     *vifm-expr->=*
+smaller than            <                      *vifm-expr-<*
+smaller than or equal   <=                     *vifm-expr-<=*
 
 Examples: >
-  'a' == 'a'         == 1
-  'a' == 'b'         == 0
+  'a' ==  'a'         == 1
+  'a' >   'b'         == 1
+  'a' ==  'b'         == 0
+  '2' >   'b'         == 0
+   2  >   'b'         == 1
+   2  >   '1b'        == 1
+   2  >   '9b'        == 0
+  -1  == -'1'         == 1
+   0  ==  '--1'       == 1
 <
 
 expr2                                          *vifm-expr2*
