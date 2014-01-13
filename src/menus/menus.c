@@ -537,6 +537,21 @@ goto_selected_file(FileView *view, menu_info *m)
 	free(free_this);
 }
 
+void
+goto_selected_directory(FileView *view, menu_info *m)
+{
+	if(!cfg.auto_ch_pos)
+	{
+		clean_positions_in_history(curr_view);
+		curr_stats.ch_pos = 0;
+	}
+	navigate_to(view, m->items[m->pos]);
+	if(!cfg.auto_ch_pos)
+	{
+		curr_stats.ch_pos = 1;
+	}
+}
+
 /* Returns zero if menu mode should be leaved. */
 static int
 execute_menu_cb(FileView *view, menu_info *m)
@@ -545,20 +560,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case DIRHISTORY_MENU:
-		case TRASHES_MENU:
-			if(!cfg.auto_ch_pos)
-			{
-				clean_positions_in_history(curr_view);
-				curr_stats.ch_pos = 0;
-			}
-			navigate_to(view, m->items[m->pos]);
-			if(!cfg.auto_ch_pos)
-			{
-				curr_stats.ch_pos = 1;
-			}
-			return 0;
-
 		default:
 			return 0;
 	}

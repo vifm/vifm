@@ -123,6 +123,8 @@ void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
 /* Nativates to selected menu item.  Supports multiple menu types. */
 void goto_selected_file(FileView *view, menu_info *m);
+/* Nativates to selected menu item. */
+void goto_selected_directory(FileView *view, menu_info *m);
 /* Closes ef. */
 void print_errors(FILE *ef);
 /* Gets list of target files/directories in the current view.  On success

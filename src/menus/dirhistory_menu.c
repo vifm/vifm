@@ -30,6 +30,8 @@
 #include "../ui.h"
 #include "menus.h"
 
+static int execute_dirhistory_cb(FileView *view, menu_info *m);
+
 int
 show_history_menu(FileView *view)
 {
@@ -39,6 +41,7 @@ show_history_menu(FileView *view)
 	init_menu_info(&m, DIRHISTORY_MENU, strdup("History disabled or empty"));
 
 	m.title = strdup(" Directory History ");
+	m.execute_handler = &execute_dirhistory_cb;
 
 	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
 	{
@@ -74,6 +77,15 @@ show_history_menu(FileView *view)
 	m.pos = m.len - 1 - m.pos;
 
 	return display_menu(&m, view);
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_dirhistory_cb(FileView *view, menu_info *m)
+{
+	goto_selected_directory(view, m);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
