@@ -31,6 +31,8 @@
 #include "../ui.h"
 #include "menus.h"
 
+static int execute_jobs_cb(FileView *view, menu_info *m);
+
 int
 show_jobs_menu(FileView *view)
 {
@@ -42,6 +44,7 @@ show_jobs_menu(FileView *view)
 	static menu_info m;
 	init_menu_info(&m, JOBS_MENU, strdup("No jobs currently running"));
 	m.title = strdup(" Pid --- Command ");
+	m.execute_handler = &execute_jobs_cb;
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -85,10 +88,13 @@ show_jobs_menu(FileView *view)
 	return display_menu(&m, view);
 }
 
-void
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
 execute_jobs_cb(FileView *view, menu_info *m)
 {
 	/* TODO write code for job control */
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
