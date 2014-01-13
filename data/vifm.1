@@ -1,4 +1,4 @@
-.TH vifm 1 "Jan 12, 2014" "" "Vifm"
+.TH vifm 1 "Jan 13, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3085,14 +3085,18 @@ and :{range} are supported).
 
 .B Apropos menu
 
-l key won't close the menu allowing user to pick another man page, use :q to
-close the menu.
+Selecting menu item run man on a given topic.  Menu won't be closed
+automatically to allow view several pages one by one.
 
 .B Commands menu
+
+Selecting command executes it with empty arguments (%a).
 
 dd on a command to remove.
 
 .B Bookmarks menu
+
+Selecting bookmark navitages to it.
 
 dd on a bookmark to remove.
 

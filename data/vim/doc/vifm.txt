@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 12
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2614,16 +2614,20 @@ and :{range} are supported).
 
 Apropos menu~
 
-l key won't close the menu allowing user to pick another man page, use :q to
-close the menu.
+Selecting menu item run man on a given topic.  Menu won't be closed
+automatically to allow view several pages one by one.
 
 Commands menu~
 
-dd on a command to remove.
+Selecting command executes it with empty arguments (|vifm-%a|).
+
+Type dd on a command to remove.
 
 Bookmarks menu~
 
-dd on a bookmark to remove.
+Selecting bookmark navitages to it.
+
+Type dd on a bookmark to remove.
 
 Trash menu~
 
