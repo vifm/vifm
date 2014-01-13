@@ -558,9 +558,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 				curr_stats.ch_pos = 1;
 			}
 			return 0;
-		case GREP_MENU:
-			goto_selected_file(view, m);
-			return 1;
 
 		default:
 			return 0;
