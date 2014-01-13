@@ -52,7 +52,6 @@
 #include "../utils/utf8.h"
 #include "../background.h"
 #include "../bookmarks.h"
-#include "../commands.h"
 #include "../filelist.h"
 #include "../macros.h"
 #include "../running.h"
@@ -546,10 +545,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case COMMAND_MENU:
-			break_at(m->items[m->pos], ' ');
-			exec_command(m->items[m->pos], view, GET_COMMAND);
-			return 0;
 		case FILETYPE_MENU:
 			execute_filetype_cb(view, m);
 			return 0;
