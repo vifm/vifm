@@ -546,18 +546,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case CMDHISTORY_MENU:
-			save_command_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_COMMAND);
-			return 0;
-		case FSEARCHHISTORY_MENU:
-			save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
-			return 0;
-		case BSEARCHHISTORY_MENU:
-			save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
-			return 0;
 		case COLORSCHEME_MENU:
 			load_color_scheme(m->items[m->pos]);
 			return 0;

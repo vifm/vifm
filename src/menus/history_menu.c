@@ -25,11 +25,13 @@
 #include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/string_array.h"
+#include "../commands.h"
 #include "../ui.h"
 #include "menus.h"
 
 static int show_history(FileView *view, int type, hist_t *hist,
 		const char title[]);
+static int execute_history_cb(FileView *view, menu_info *m);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -75,6 +77,7 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 
 	init_menu_info(&m, type, strdup("History disabled or empty"));
 	m.title = strdup(title);
+	m.execute_handler = &execute_history_cb;
 
 	for(i = 0; i <= hist->pos; i++)
 	{
@@ -82,6 +85,28 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 	}
 
 	return display_menu(&m, view);
+}
+
+static int
+execute_history_cb(FileView *view, menu_info *m)
+{
+	switch(m->type)
+	{
+		case CMDHISTORY_MENU:
+			save_command_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_COMMAND);
+			break;
+		case FSEARCHHISTORY_MENU:
+			save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
+			break;
+		case BSEARCHHISTORY_MENU:
+			save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
+			break;
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
