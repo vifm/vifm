@@ -58,13 +58,11 @@
 #include "../search.h"
 #include "../status.h"
 #include "../ui.h"
-#include "all.h"
 
 static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
-static int execute_menu_cb(FileView *view, menu_info *m);
 static void normalize_top(menu_info *m);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
@@ -276,7 +274,7 @@ init_menu_info(menu_info *m, int menu_type, char empty_msg[])
 	m->data = NULL;
 	m->key_handler = NULL;
 	m->extra_data = 0;
-	m->execute_handler = execute_menu_cb;
+	m->execute_handler = NULL;
 	m->empty_msg = empty_msg;
 }
 
@@ -549,19 +547,6 @@ goto_selected_directory(FileView *view, menu_info *m)
 	if(!cfg.auto_ch_pos)
 	{
 		curr_stats.ch_pos = 1;
-	}
-}
-
-/* Returns zero if menu mode should be leaved. */
-static int
-execute_menu_cb(FileView *view, menu_info *m)
-{
-	/* TODO: reimplement this using key_handler mechanism. */
-
-	switch(m->type)
-	{
-		default:
-			return 0;
 	}
 }
 
