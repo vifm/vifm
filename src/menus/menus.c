@@ -546,9 +546,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case COLORSCHEME_MENU:
-			load_color_scheme(m->items[m->pos]);
-			return 0;
 		case COMMAND_MENU:
 			break_at(m->items[m->pos], ' ');
 			exec_command(m->items[m->pos], view, GET_COMMAND);

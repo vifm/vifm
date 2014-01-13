@@ -28,9 +28,11 @@
 #include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../ui.h"
 #include "menus.h"
 
 static int sorter(const void *first, const void *second);
+static int execute_colorscheme_cb(FileView *view, menu_info *m);
 
 int
 show_colorschemes_menu(FileView *view)
@@ -38,6 +40,7 @@ show_colorschemes_menu(FileView *view)
 	static menu_info m;
 	init_menu_info(&m, COLORSCHEME_MENU, strdup("No color schemes found"));
 	m.title = strdup(" Choose the default Color Scheme ");
+	m.execute_handler = &execute_colorscheme_cb;
 
 	m.items = list_color_schemes(&m.len);
 
@@ -61,6 +64,15 @@ sorter(const void *first, const void *second)
 	const char *stra = *(const char **)first;
 	const char *strb = *(const char **)second;
 	return stroscmp(stra, strb);
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_colorscheme_cb(FileView *view, menu_info *m)
+{
+	load_color_scheme(m->items[m->pos]);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
