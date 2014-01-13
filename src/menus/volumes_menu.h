@@ -25,7 +25,6 @@
 
 /* Returns non-zero if status bar message should be saved. */
 int show_volumes_menu(FileView *view);
-void execute_volumes_cb(FileView *view, menu_info *m);
 
 #endif /* VIFM__MENUS__VOLUMES_MENU_H__ */
 

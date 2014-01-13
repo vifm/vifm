@@ -566,11 +566,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case GREP_MENU:
 			goto_selected_file(view, m);
 			return 1;
-#ifdef _WIN32
-		case VOLUMES:
-			execute_volumes_cb(view, m);
-			return 0;
-#endif
 
 		default:
 			return 0;
