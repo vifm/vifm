@@ -545,9 +545,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case FILETYPE_MENU:
-			execute_filetype_cb(view, m);
-			return 0;
 		case DIRHISTORY_MENU:
 		case TRASHES_MENU:
 			if(!cfg.auto_ch_pos)
