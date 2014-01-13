@@ -546,9 +546,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 
 	switch(m->type)
 	{
-		case BOOKMARK_MENU:
-			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
-			return 0;
 		case CMDHISTORY_MENU:
 			save_command_history(m->items[m->pos]);
 			exec_commands(m->items[m->pos], view, GET_COMMAND);

@@ -31,7 +31,9 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../bookmarks.h"
+#include "../ui.h"
 
+static int execute_bookmark_cb(FileView *view, menu_info *m);
 static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
 
 int
@@ -42,6 +44,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 
 	static menu_info m;
 	init_menu_info(&m, BOOKMARK_MENU, strdup("No bookmarks set"));
+	m.execute_handler = &execute_bookmark_cb;
 	m.key_handler = bookmark_khandler;
 
 	m.len = init_active_bookmarks(marks);
@@ -97,6 +100,15 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	m.len = i;
 
 	return display_menu(&m, view);
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_bookmark_cb(FileView *view, menu_info *m)
+{
+	move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
+	return 0;
 }
 
 static int
