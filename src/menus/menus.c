@@ -558,9 +558,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 				curr_stats.ch_pos = 1;
 			}
 			return 0;
-		case DIRSTACK_MENU:
-			execute_dirstack_cb(view, m);
-			return 0;
 		case JOBS_MENU:
 			execute_jobs_cb(view, m);
 			return 0;
