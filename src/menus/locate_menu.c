@@ -31,6 +31,8 @@
 #include "../ui.h"
 #include "menus.h"
 
+static int execute_locate_cb(FileView *view, menu_info *m);
+
 int
 show_locate_menu(FileView *view, const char args[])
 {
@@ -45,6 +47,7 @@ show_locate_menu(FileView *view, const char args[])
 	init_menu_info(&m, LOCATE_MENU, strdup("No files found"));
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.title = format_str(" Locate %s ", m.args);
+	m.execute_handler = &execute_locate_cb;
 
 	status_bar_message("locate...");
 
@@ -53,6 +56,15 @@ show_locate_menu(FileView *view, const char args[])
 	free(cmd);
 
 	return save_msg;
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_locate_cb(FileView *view, menu_info *m)
+{
+	goto_selected_file(view, m);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

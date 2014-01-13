@@ -36,6 +36,8 @@
 #define DEFAULT_PREDICATE "-name"
 #endif
 
+static int execute_find_cb(FileView *view, menu_info *m);
+
 int
 show_find_menu(FileView *view, int with_path, const char args[])
 {
@@ -55,6 +57,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	init_menu_info(&m, FIND_MENU, strdup("No files found"));
 
 	m.title = format_str(" Find %s ", args);
+	m.execute_handler = &execute_find_cb;
 
 	if(with_path)
 	{
@@ -92,6 +95,15 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	free(cmd);
 
 	return save_msg;
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_find_cb(FileView *view, menu_info *m)
+{
+	goto_selected_file(view, m);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

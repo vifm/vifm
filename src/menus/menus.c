@@ -439,7 +439,7 @@ redraw_menu(menu_info *m)
 	wrefresh(menu_win);
 }
 
-static void
+void
 goto_selected_file(FileView *view, menu_info *m)
 {
 	char *dir;
@@ -557,11 +557,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 			{
 				curr_stats.ch_pos = 1;
 			}
-			return 0;
-		case LOCATE_MENU:
-		case FIND_MENU:
-		case USER_NAVIGATE_MENU:
-			goto_selected_file(view, m);
 			return 0;
 		case GREP_MENU:
 			goto_selected_file(view, m);
