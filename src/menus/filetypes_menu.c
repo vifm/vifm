@@ -36,6 +36,7 @@
 static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
+static int execute_filetype_cb(FileView *view, menu_info *m);
 
 int
 show_filetypes_menu(FileView *view, int background)
@@ -53,6 +54,7 @@ show_filetypes_menu(FileView *view, int background)
 			strdup("No programs set for this filetype"));
 
 	m.title = strdup(" Filetype associated commands ");
+	m.execute_handler = &execute_filetype_cb;
 	m.extra_data = (background ? 1 : 0);
 
 	max_len = 0;
@@ -122,7 +124,9 @@ form_filetype_data_entry(assoc_record_t prog)
 	return result;
 }
 
-void
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+int
 execute_filetype_cb(FileView *view, menu_info *m)
 {
 	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
@@ -141,6 +145,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 
 	clean_selected_files(view);
 	redraw_view(view);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

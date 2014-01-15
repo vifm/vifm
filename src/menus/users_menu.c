@@ -25,6 +25,8 @@
 #include "../ui.h"
 #include "menus.h"
 
+static int execute_users_cb(FileView *view, menu_info *m);
+
 int
 show_user_menu(FileView *view, const char command[], int navigate)
 {
@@ -33,8 +35,21 @@ show_user_menu(FileView *view, const char command[], int navigate)
 	init_menu_info(&m, menu_type, strdup("No results found"));
 
 	m.title = strdup(command);
+	m.execute_handler = &execute_users_cb;
 
 	return capture_output_to_menu(view, command, &m);
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_users_cb(FileView *view, menu_info *m)
+{
+	if(m->type == USER_NAVIGATE_MENU)
+	{
+		goto_selected_file(view, m);
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

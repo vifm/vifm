@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 12
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2612,18 +2612,30 @@ zL - scroll menu items half of screen width characters to the left.
 : - enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
 and :{range} are supported).
 
+
+Below is description of additional commands and reaction on selection in some
+menus and dialogs.
+
 Apropos menu~
 
-l key won't close the menu allowing user to pick another man page, use :q to
-close the menu.
+Selecting menu item run man on a given topic.  Menu won't be closed
+automatically to allow view several pages one by one.
+
+Colorscheme menu~
+
+Selecting name of a colorscheme applies it.
 
 Commands menu~
 
-dd on a command to remove.
+Selecting command executes it with empty arguments (|vifm-%a|).
+
+Type dd on a command to remove.
 
 Bookmarks menu~
 
-dd on a bookmark to remove.
+Selecting bookmark navitages to it.
+
+Type dd on a bookmark to remove.
 
 Trash menu~
 
@@ -2643,6 +2655,23 @@ Filetype menu~
 
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
+
+Find and locate menus and output menu with navigation~
+
+Selecting file name navigates previously active view to it.
+
+Grep menu~
+
+Selecting file opens it in editor set by |vifm-'vicmd'| at given line number.
+Menu won't be closed automatically to allow viewing more than one result.
+
+Command-line history menu~
+
+Selecting an item will execute it as command-line command or search query.
+
+Volumes menu~
+
+Selecting a drive navigates previously active pane to the root of that drive.
 
 Fileinfo dialog~
 

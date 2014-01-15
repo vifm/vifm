@@ -24,6 +24,8 @@
 #include "../trash.h"
 #include "../ui.h"
 
+static int execute_trashes_cb(FileView *view, menu_info *m);
+
 int
 show_trashes_menu(FileView *view)
 {
@@ -36,6 +38,7 @@ show_trashes_menu(FileView *view)
 			strdup("No non-empty trash directories found"));
 
 	m.title = strdup(" Non-empty trash directories ");
+	m.execute_handler = &execute_trashes_cb;
 
 	trashes = list_trashes(&ntrashes);
 
@@ -47,6 +50,15 @@ show_trashes_menu(FileView *view)
 	free_string_array(trashes, ntrashes);
 
 	return display_menu(&m, view);
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_trashes_cb(FileView *view, menu_info *m)
+{
+	goto_selected_directory(view, m);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

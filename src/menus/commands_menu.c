@@ -29,13 +29,15 @@
 #include "../modes/menu.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../commands.h"
 #include "../ui.h"
 #include "menus.h"
 
 /* Minimal length of command name column. */
 #define CMDNAME_COLUMN_MIN_WIDTH 10
 
-static int command_khandler(struct menu_info *m, wchar_t keys[]);
+static int execute_commands_cb(FileView *view, menu_info *m);
+static int commands_khandler(struct menu_info *m, wchar_t keys[]);
 
 int
 show_commands_menu(FileView *view)
@@ -45,8 +47,9 @@ show_commands_menu(FileView *view)
 	int cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_info m;
-	init_menu_info(&m, COMMAND_MENU, strdup("No commands set"));
-	m.key_handler = command_khandler;
+	init_menu_info(&m, COMMANDS_MENU, strdup("No commands set"));
+	m.execute_handler = &execute_commands_cb;
+	m.key_handler = commands_khandler;
 
 	m.title = strdup(" Command ------ Action ");
 
@@ -77,8 +80,18 @@ show_commands_menu(FileView *view)
 	return display_menu(&m, view);
 }
 
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
 static int
-command_khandler(struct menu_info *m, wchar_t keys[])
+execute_commands_cb(FileView *view, menu_info *m)
+{
+	break_at(m->items[m->pos], ' ');
+	exec_command(m->items[m->pos], view, GET_COMMAND);
+	return 0;
+}
+
+static int
+commands_khandler(struct menu_info *m, wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* remove element */
 	{

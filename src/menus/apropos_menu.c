@@ -30,7 +30,10 @@
 #include "../macros.h"
 #include "../running.h"
 #include "../status.h"
+#include "../ui.h"
 #include "menus.h"
+
+static int execute_apropos_cb(FileView *view, menu_info *m);
 
 int
 show_apropos_menu(FileView *view, const char args[])
@@ -46,6 +49,7 @@ show_apropos_menu(FileView *view, const char args[])
 	init_menu_info(&m, APROPOS_MENU, format_str("No matches for \'%s\'", args));
 	m.args = strdup(args);
 	m.title = format_str(" Apropos %s ", args);
+	m.execute_handler = &execute_apropos_cb;
 
 	status_bar_message("apropos...");
 
@@ -55,8 +59,10 @@ show_apropos_menu(FileView *view, const char args[])
 	return save_msg;
 }
 
-void
-execute_apropos_cb(menu_info *m)
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_apropos_cb(FileView *view, menu_info *m)
 {
 	char *line;
 	char *man_page;
@@ -68,7 +74,7 @@ execute_apropos_cb(menu_info *m)
 	if(free_this == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
+		return 1;
 	}
 
 	if((num_str = strchr(line, '(')))
@@ -82,7 +88,7 @@ execute_apropos_cb(menu_info *m)
 			if(z > 40)
 			{
 				free(free_this);
-				return;
+				return 1;
 			}
 		}
 
@@ -100,6 +106,7 @@ execute_apropos_cb(menu_info *m)
 		}
 	}
 	free(free_this);
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

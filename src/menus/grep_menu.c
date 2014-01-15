@@ -30,6 +30,8 @@
 #include "../ui.h"
 #include "menus.h"
 
+static int execute_grep_cb(FileView *view, menu_info *m);
+
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
@@ -49,6 +51,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	init_menu_info(&m, GREP_MENU, strdup("No matches found"));
 
 	m.title = format_str(" Grep %s ", args);
+	m.execute_handler = &execute_grep_cb;
 
 	targets = get_cmd_target();
 	macros[0].value = invert ? "-v" : "";
@@ -70,6 +73,15 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	free(cmd);
 
 	return save_msg;
+}
+
+/* Callback that is called when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
+static int
+execute_grep_cb(FileView *view, menu_info *m)
+{
+	goto_selected_file(view, m);
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

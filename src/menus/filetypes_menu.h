@@ -25,7 +25,6 @@
 
 /* Returns non-zero if status bar message should be saved. */
 int show_filetypes_menu(FileView *view, int background);
-void execute_filetype_cb(FileView *view, menu_info *m);
 
 #endif /* VIFM__MENUS__FILETYPES_MENU_H__ */
 
