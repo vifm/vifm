@@ -1,4 +1,4 @@
-.TH vifm 1 "Jan 13, 2014" "" "Vifm"
+.TH vifm 1 "Jan 15, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3083,10 +3083,18 @@ menu).
 : \- enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
 and :{range} are supported).
 
+
+Below is description of additional commands and reaction on selection in some
+menus and dialogs.
+
 .B Apropos menu
 
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
+
+.B Colorscheme menu
+
+Selecting name of a colorscheme applies it.
 
 .B Commands menu
 
@@ -3118,6 +3126,23 @@ top of the stack.
 
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
+
+.B Find and locate menus and output menu with navigation
+
+Selecting file name navigates previously active view to it.
+
+.B Grep menu
+
+Selecting file opens it in editor set by 'vicmd' at given line number.
+Menu won't be closed automatically to allow viewing more than one result.
+
+.B Command-line history menu
+
+Selecting an item will execute it as command-line command or search query.
+
+.B Volumes menu
+
+Selecting a drive navigates previously active pane to the root of that drive.
 
 .B Fileinfo dialog
 
