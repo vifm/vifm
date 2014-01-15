@@ -2936,6 +2936,12 @@ local_filter_update_view(FileView *view, int rel_pos)
 
 	if(pos >= 0)
 	{
+		if(pos == 0 && is_parent_dir(view->dir_entry[0].name) &&
+				view->list_rows > 0)
+		{
+			pos++;
+		}
+
 		view->list_pos = pos;
 		view->top_line = pos - rel_pos;
 	}

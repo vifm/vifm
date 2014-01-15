@@ -38,6 +38,9 @@
 
 	Improved documentation on bookmarks (documented special bookmarks).
 
+	Don't select parent directory automatically for local filter.  Thanks to
+	filterfalse and jtbm37.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
