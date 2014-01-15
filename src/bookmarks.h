@@ -47,10 +47,6 @@ struct
 	char *directory;
 }bookmarks[NUM_BOOKMARKS];
 
-/* Represents array of booleans each of which shows whether bookmark with
- * specified bookmark index is active.  Filled by init_active_bookmarks(). */
-int active_bookmarks[NUM_BOOKMARKS];
-
 int mark2index(const char mark);
 char index2mark(const int x);
 int is_bookmark(const int bmark_index);
@@ -63,7 +59,11 @@ int get_bookmark(FileView *view, char key);
 int move_to_bookmark(FileView *view, const char mark);
 int remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
-int init_active_bookmarks(const char *marks);
+
+/* Fills array of booleans (active_bookmarks) each of which shows whether
+ * specified bookmark index is active.  active_bookmarks should be an array of
+ * at least NUM_BOOKMARKS items.  Returns number of active bookmarks. */
+int init_active_bookmarks(const char marks[], int active_bookmarks[]);
 
 #endif /* VIFM__BOOKMARKS_H__ */
 

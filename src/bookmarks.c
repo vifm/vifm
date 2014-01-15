@@ -266,9 +266,8 @@ get_bookmark(FileView *view, char key)
 	}
 }
 
-/* Returns number of active bookmarks */
 int
-init_active_bookmarks(const char *marks)
+init_active_bookmarks(const char marks[], int active_bookmarks[])
 {
 	int i, x;
 

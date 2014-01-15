@@ -993,7 +993,8 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 static void
 write_bookmarks(FILE *const fp, char *marks[], int nmarks)
 {
-	const int len = init_active_bookmarks(valid_bookmarks);
+	int active_bookmarks[NUM_BOOKMARKS];
+	const int len = init_active_bookmarks(valid_bookmarks, active_bookmarks);
 	int i;
 
 	fputs("\n# Bookmarks:\n", fp);

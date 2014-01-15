@@ -36,6 +36,8 @@
 static int execute_bookmark_cb(FileView *view, menu_info *m);
 static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
 
+static int active_bookmarks[NUM_BOOKMARKS];
+
 int
 show_bookmarks_menu(FileView *view, const char marks[])
 {
@@ -47,7 +49,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	m.execute_handler = &execute_bookmark_cb;
 	m.key_handler = bookmark_khandler;
 
-	m.len = init_active_bookmarks(marks);
+	m.len = init_active_bookmarks(marks, active_bookmarks);
 	m.title = strdup(" Mark -- Directory -- File ");
 
 	max_len = 0;
