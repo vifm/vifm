@@ -151,8 +151,6 @@ silent_remove_bookmark(const int x)
 	free(bookmarks[x].file);
 	bookmarks[x].directory = NULL;
 	bookmarks[x].file = NULL;
-	/* decrease number of active bookmarks */
-	cfg.num_bookmarks--;
 	return 1;
 }
 
@@ -182,19 +180,15 @@ remove_all_bookmarks(void)
 }
 
 static void
-add_mark(const char mark, const char *directory, const char *file)
+add_mark(const char mark, const char directory[], const char file[])
 {
-	int x;
-
-	x = mark2index(mark);
+	const int bmark_index = mark2index(mark);
 
 	/* In case the mark is already being used.  Free pointers first! */
-	if(silent_remove_bookmark(x) == 0)
-		/* increase number of active bookmarks */
-		cfg.num_bookmarks++;
+	(void)silent_remove_bookmark(bmark_index);
 
-	bookmarks[x].directory = strdup(directory);
-	bookmarks[x].file = strdup(file);
+	bookmarks[bmark_index].directory = strdup(directory);
+	bookmarks[bmark_index].file = strdup(file);
 }
 
 int
