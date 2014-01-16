@@ -22,6 +22,7 @@
 #include <sys/types.h>
 
 #include <ctype.h> /* isalnum() */
+#include <stddef.h> /* NULL */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -32,7 +33,10 @@
 #include "status.h"
 #include "ui.h"
 
-const char valid_bookmarks[] = {
+static void free_bookmark(const int bmark_index);
+
+const char valid_bookmarks[] =
+{
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -136,34 +140,12 @@ is_spec_bookmark(const int x)
 	return char_is_one_of(spec_bookmarks, mark);
 }
 
-/*
- * low-level function without safety checks
- *
- * Returns 1 if bookmark existed
- */
-static int
-silent_remove_bookmark(const int x)
-{
-	if(bookmarks[x].directory == NULL && bookmarks[x].file == NULL)
-		return 0;
-
-	free(bookmarks[x].directory);
-	free(bookmarks[x].file);
-	bookmarks[x].directory = NULL;
-	bookmarks[x].file = NULL;
-	return 1;
-}
-
 int
 remove_bookmark(const int bmark_index)
 {
 	if(!is_bookmark_empty(bmark_index))
 	{
-		if(silent_remove_bookmark(bmark_index) == 0)
-		{
-			status_bar_message("Could not find mark");
-			return 1;
-		}
+		free_bookmark(bmark_index);
 	}
 	return 0;
 }
@@ -185,10 +167,21 @@ add_mark(const char mark, const char directory[], const char file[])
 	const int bmark_index = mark2index(mark);
 
 	/* In case the mark is already being used.  Free pointers first! */
-	(void)silent_remove_bookmark(bmark_index);
+	free_bookmark(bmark_index);
 
 	bookmarks[bmark_index].directory = strdup(directory);
 	bookmarks[bmark_index].file = strdup(file);
+}
+
+/* Frees memory allocated for bookmark with given index. */
+static void
+free_bookmark(const int bmark_index)
+{
+	free(bookmarks[bmark_index].directory);
+	bookmarks[bmark_index].directory = NULL;
+
+	free(bookmarks[bmark_index].file);
+	bookmarks[bmark_index].file = NULL;
 }
 
 int
