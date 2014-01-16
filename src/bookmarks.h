@@ -50,9 +50,13 @@ int is_valid_bookmark(const int bmark_index);
 int is_bookmark_empty(const char mark);
 
 int is_spec_bookmark(const int x);
-int add_bookmark(const char mark, const char *directory, const char *file);
-void set_specmark(const char mark, const char *directory, const char *file);
+
+int add_bookmark(const char mark, const char directory[], const char file[]);
+
+void set_specmark(const char mark, const char directory[], const char file[]);
+
 int get_bookmark(FileView *view, char key);
+
 /* Returns new value for save_msg flag. */
 int move_to_bookmark(FileView *view, const char mark);
 
