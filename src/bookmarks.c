@@ -66,11 +66,8 @@ index2mark(const int bmark_index)
 	return '\0';
 }
 
-/*
- * test if a bookmark already exists
- */
 int
-is_bookmark(const int bmark_index)
+is_valid_bookmark(const int bmark_index)
 {
 	if(bmark_index < 0 || bmark_index >= ARRAY_LEN(bookmarks))
 	{
@@ -173,7 +170,7 @@ move_to_bookmark(FileView *view, char mark)
 {
 	int bmark_index = mark2index(mark);
 
-	if(bmark_index != -1 && is_bookmark(bmark_index))
+	if(bmark_index != -1 && is_valid_bookmark(bmark_index))
 	{
 		if(change_directory(view, bookmarks[bmark_index].directory) >= 0)
 		{

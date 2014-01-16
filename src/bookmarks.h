@@ -37,7 +37,9 @@ bookmarks[NUM_BOOKMARKS];
  * index. */
 char index2mark(const int bmark_index);
 
-int is_bookmark(const int bmark_index);
+/* Checks if a bookmark specified by its index is valid (exists and points to an
+ * existing directory).  Returns non-zero if so, otherwise zero is returned. */
+int is_valid_bookmark(const int bmark_index);
 
 /* Checks whether given bookmark is empty.  Returns non-zero if so, otherwise
  * zero is returned. */

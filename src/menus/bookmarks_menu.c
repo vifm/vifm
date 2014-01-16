@@ -80,7 +80,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			strcpy(with_tilde + width, "...");
 		}
 		overhead = get_screen_overhead(with_tilde);
-		if(!is_bookmark(j))
+		if(!is_valid_bookmark(j))
 		{
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
