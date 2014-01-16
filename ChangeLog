@@ -41,6 +41,8 @@
 	Don't select parent directory automatically for local filter.  Thanks to
 	filterfalse and jtbm37.
 
+	Display error message when :delmarks! is followed by arguments.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

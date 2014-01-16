@@ -1788,8 +1788,16 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark)
 	{
-		remove_all_bookmarks();
-		return 0;
+		if(cmd_info->argc == 0)
+		{
+			remove_all_bookmarks();
+			return 0;
+		}
+		else
+		{
+			status_bar_error("No arguments are allowed if you use \"!\"");
+			return 1;
+		}
 	}
 
 	if(cmd_info->argc == 0)
