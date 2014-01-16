@@ -170,6 +170,17 @@ remove_bookmark(const int bmark_index)
 	return 0;
 }
 
+void
+remove_all_bookmarks(void)
+{
+	const char *p = valid_bookmarks;
+	while(*p != '\0')
+	{
+		const int bmark_index = mark2index(*p++);
+		(void)remove_bookmark(bmark_index);
+	}
+}
+
 static void
 add_mark(const char mark, const char *directory, const char *file)
 {

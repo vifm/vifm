@@ -1788,17 +1788,14 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark)
 	{
-		const char *p = valid_bookmarks;
-		while(*p != '\0')
-		{
-			const int bmark_index = mark2index(*p++);
-			(void)remove_bookmark(bmark_index);
-		}
+		remove_all_bookmarks();
 		return 0;
 	}
 
 	if(cmd_info->argc == 0)
+	{
 		return CMDS_ERR_TOO_FEW_ARGS;
+	}
 
 	for(i = 0; i < cmd_info->argc; i++)
 	{
@@ -3097,7 +3094,6 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	const char *p;
 	FileView *tmp_view;
 
 	curr_stats.restart_in_progress = 1;
@@ -3146,13 +3142,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* color schemes */
 	load_def_scheme();
 
-	/* bookmarks */
-	p = valid_bookmarks;
-	while(*p != '\0')
-	{
-		const int bmark_index = mark2index(*p++);
-		(void)remove_bookmark(bmark_index);
-	}
+	/* Remove all bookmarks. */
+	remove_all_bookmarks();
 
 	/* variables */
 	clear_variables();

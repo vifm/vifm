@@ -62,6 +62,9 @@ int move_to_bookmark(FileView *view, const char mark);
  * should be saved. */
 int remove_bookmark(const int bmark_index);
 
+/* Removes all bookmarks. */
+void remove_all_bookmarks(void);
+
 int check_mark_directory(FileView *view, char mark);
 
 /* Fills array of booleans (active_bookmarks) each of which shows whether
