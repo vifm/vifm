@@ -28,27 +28,19 @@ extern const char valid_bookmarks[];
 
 struct
 {
-	/*
-	 * 'mark' is unnecessary, we already reserve all possible bookmarks,
-	 * therfore we can use the mark as an index:
-	 *  0:  0   ( 0=48, ascii)
-	 *  9:  9   ( 9=57 )
-	 *  <: 10   ( <=60 )
-	 *  >: 11   ( >=62 )
-	 *  A: 12   ( A=65 )
-	 *  ...
-	 *  Z: 37
-	 *  a: 38   ( a=97 )
-	 *  ...
-	 *  z: 63
-	char mark;
-	*/
 	char *file;
 	char *directory;
-}bookmarks[NUM_BOOKMARKS];
+}
+bookmarks[NUM_BOOKMARKS];
 
+/* Transforms a mark to an index.  Returns the index or -1 for invalid name of a
+ * mark. */
 int mark2index(const char mark);
-char index2mark(const int x);
+
+/* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
+ * index. */
+char index2mark(const int bmark_index);
+
 int is_bookmark(const int bmark_index);
 int is_bookmark_empty(const int x);
 int is_spec_bookmark(const int x);

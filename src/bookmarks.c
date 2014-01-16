@@ -38,12 +38,13 @@ static void free_bookmark(const int bmark_index);
 const char valid_bookmarks[] =
 {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'\0'
 };
+ARRAY_GUARD(valid_bookmarks, NUM_BOOKMARKS + 1);
 
 /* List of special bookmarks that can't be set manually, hence require special
  * treating in some cases. */
@@ -53,50 +54,21 @@ static const char spec_bookmarks[] =
 	'\0'
 };
 
-/*
- * transform a mark to an index
- * (0=48->0, 9=57->9, <=60->10, >=60->11, A=65->12,...,Z=90->37, a=97 -> 38,
- * ..., z=122 -> 63)
- */
 int
 mark2index(const char mark)
 {
-	int im;
-
-	im = (int)mark;
-	if(im >= '0' && im <= '9')
-		return im - '0';
-	else if(im == '<')
-		return 10;
-	else if(im == '>')
-		return 11;
-	else if(im >= 'A' && im <= 'Z')
-		return im - 53;
-	else if(im >= 'a' && im <= 'z')
-		return im - 59;
-	else
-		return im - 48;
+	const char *pos = strchr(valid_bookmarks, mark);
+	return (pos == NULL) ? -1 : (pos - valid_bookmarks);
 }
 
-/*
- * transform an index to a mark
- */
 char
-index2mark(const int x)
+index2mark(const int bmark_index)
 {
-	char c;
-
-	if(x < 10)
-		c = '0' + x;
-	else if(x == 10)
-		c = '<';
-	else if(x == 11)
-		c = '>';
-	else if(x < 38)
-		c = 'A' + (x - 12);
-	else
-		c = 'a' + (x - 38);
-	return c;
+	if(bmark_index >= 0 && bmark_index < ARRAY_LEN(valid_bookmarks) - 1)
+	{
+		return valid_bookmarks[bmark_index];
+	}
+	return '\0';
 }
 
 /*
