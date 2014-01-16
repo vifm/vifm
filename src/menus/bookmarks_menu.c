@@ -20,7 +20,7 @@
 #include "bookmarks_menu.h"
 
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* memmove() strdup() strcpy() strlen() */
+#include <string.h> /* strdup() strcpy() strlen() */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
@@ -36,11 +36,10 @@
 static int execute_bookmark_cb(FileView *view, menu_info *m);
 static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
 
-static int active_bookmarks[NUM_BOOKMARKS];
-
 int
 show_bookmarks_menu(FileView *view, const char marks[])
 {
+	int active_bookmarks[NUM_BOOKMARKS];
 	int i;
 	int max_len;
 
@@ -109,7 +108,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 static int
 execute_bookmark_cb(FileView *view, menu_info *m)
 {
-	move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
+	move_to_bookmark(view, m->items[m->pos][0]);
 	return 0;
 }
 
@@ -119,9 +118,6 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		remove_bookmark(m->items[m->pos][0]);
-		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
-				sizeof(int)*(m->len - 1 - m->pos));
-
 		remove_current_item(m);
 		return 1;
 	}
