@@ -1791,11 +1791,8 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		const char *p = valid_bookmarks;
 		while(*p != '\0')
 		{
-			const int index = mark2index(*p++);
-			if(!is_bookmark_empty(index))
-			{
-				remove_bookmark(index);
-			}
+			const int bmark_index = mark2index(*p++);
+			(void)remove_bookmark(bmark_index);
 		}
 		return 0;
 	}
@@ -1818,8 +1815,8 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			int index = mark2index(cmd_info->argv[i][j]);
-			save_msg += remove_bookmark(index);
+			const int bmark_index = mark2index(cmd_info->argv[i][j]);
+			save_msg += remove_bookmark(bmark_index);
 		}
 	}
 	return save_msg;
@@ -3153,9 +3150,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	p = valid_bookmarks;
 	while(*p != '\0')
 	{
-		int index = mark2index(*p++);
-		if(!is_bookmark_empty(index))
-			remove_bookmark(index);
+		const int bmark_index = mark2index(*p++);
+		(void)remove_bookmark(bmark_index);
 	}
 
 	/* variables */

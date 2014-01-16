@@ -57,7 +57,11 @@ void set_specmark(const char mark, const char *directory, const char *file);
 int get_bookmark(FileView *view, char key);
 /* Returns new value for save_msg flag. */
 int move_to_bookmark(FileView *view, const char mark);
-int remove_bookmark(const int x);
+
+/* Removes bookmarks by its index.  Returns non-zero if status bar message
+ * should be saved. */
+int remove_bookmark(const int bmark_index);
+
 int check_mark_directory(FileView *view, char mark);
 
 /* Fills array of booleans (active_bookmarks) each of which shows whether

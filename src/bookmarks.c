@@ -157,12 +157,15 @@ silent_remove_bookmark(const int x)
 }
 
 int
-remove_bookmark(const int x)
+remove_bookmark(const int bmark_index)
 {
-	if(silent_remove_bookmark(x) == 0)
+	if(!is_bookmark_empty(bmark_index))
 	{
-		status_bar_message("Could not find mark");
-		return 1;
+		if(silent_remove_bookmark(bmark_index) == 0)
+		{
+			status_bar_message("Could not find mark");
+			return 1;
+		}
 	}
 	return 0;
 }
