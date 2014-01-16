@@ -37,6 +37,8 @@ static void free_bookmark(const int bmark_index);
 static int mark2index(const char mark);
 static int is_bmark_by_index_empty(const int bmark_index);
 
+bookmark_t bookmarks[NUM_BOOKMARKS];
+
 const char valid_bookmarks[] =
 {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',

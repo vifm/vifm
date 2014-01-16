@@ -24,14 +24,18 @@
 
 #define NUM_BOOKMARKS 64
 
-extern const char valid_bookmarks[];
-
-struct
+/* Structure that describes bookmark data. */
+typedef struct
 {
-	char *file;
-	char *directory;
+	char *file;      /* Name of bookmarked file. */
+	char *directory; /* Path to directory at which bookmark was made. */
 }
-bookmarks[NUM_BOOKMARKS];
+bookmark_t;
+
+/* Data of all bookmarks.  Contains at least NUM_BOOKMARKS items. */
+extern bookmark_t bookmarks[];
+
+extern const char valid_bookmarks[];
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
