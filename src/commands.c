@@ -1820,8 +1820,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			const int bmark_index = mark2index(cmd_info->argv[i][j]);
-			save_msg += remove_bookmark(bmark_index);
+			save_msg += remove_bookmark(cmd_info->argv[i][j]);
 		}
 	}
 	return save_msg;

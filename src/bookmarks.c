@@ -34,6 +34,7 @@
 #include "ui.h"
 
 static void free_bookmark(const int bmark_index);
+static int mark2index(const char mark);
 static int is_bmark_by_index_empty(const int bmark_index);
 
 const char valid_bookmarks[] =
@@ -54,13 +55,6 @@ static const char spec_bookmarks[] =
 	'<', '>', '\'',
 	'\0'
 };
-
-int
-mark2index(const char mark)
-{
-	const char *pos = strchr(valid_bookmarks, mark);
-	return (pos == NULL) ? -1 : (pos - valid_bookmarks);
-}
 
 char
 index2mark(const int bmark_index)
@@ -108,8 +102,9 @@ is_spec_bookmark(const int x)
 }
 
 int
-remove_bookmark(const int bmark_index)
+remove_bookmark(const int mark)
 {
+	const int bmark_index = mark2index(mark);
 	if(!is_bmark_by_index_empty(bmark_index))
 	{
 		free_bookmark(bmark_index);
@@ -214,6 +209,15 @@ check_mark_directory(FileView *view, char mark)
 		return find_file_pos_in_list(view, bookmarks[x].file);
 
 	return -1;
+}
+
+/* Transforms a mark to an index.  Returns the index or -1 for invalid name of a
+ * mark. */
+static int
+mark2index(const char mark)
+{
+	const char *pos = strchr(valid_bookmarks, mark);
+	return (pos == NULL) ? -1 : (pos - valid_bookmarks);
 }
 
 int

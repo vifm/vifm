@@ -33,10 +33,6 @@ struct
 }
 bookmarks[NUM_BOOKMARKS];
 
-/* Transforms a mark to an index.  Returns the index or -1 for invalid name of a
- * mark. */
-int mark2index(const char mark);
-
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
 char index2mark(const int bmark_index);
@@ -54,9 +50,9 @@ int get_bookmark(FileView *view, char key);
 /* Returns new value for save_msg flag. */
 int move_to_bookmark(FileView *view, const char mark);
 
-/* Removes bookmarks by its index.  Returns non-zero if status bar message
- * should be saved. */
-int remove_bookmark(const int bmark_index);
+/* Removes bookmarks by its name.  Returns non-zero if status bar message should
+ * be saved. */
+int remove_bookmark(const int mark);
 
 /* Removes all bookmarks. */
 void remove_all_bookmarks(void);
