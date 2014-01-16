@@ -42,7 +42,11 @@ int mark2index(const char mark);
 char index2mark(const int bmark_index);
 
 int is_bookmark(const int bmark_index);
-int is_bookmark_empty(const int x);
+
+/* Checks whether given bookmark is empty.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int is_bookmark_empty(const char mark);
+
 int is_spec_bookmark(const int x);
 int add_bookmark(const char mark, const char *directory, const char *file);
 void set_specmark(const char mark, const char *directory, const char *file);

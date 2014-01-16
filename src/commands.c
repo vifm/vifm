@@ -2746,8 +2746,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->qmark)
 	{
-		int index = mark2index(mark);
-		if(!is_bookmark_empty(index))
+		if(!is_bookmark_empty(mark))
 		{
 			status_bar_errorf("Mark isn't empty: %c", mark);
 			return 1;

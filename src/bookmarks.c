@@ -34,6 +34,7 @@
 #include "ui.h"
 
 static void free_bookmark(const int bmark_index);
+static int is_bmark_by_index_empty(const int bmark_index);
 
 const char valid_bookmarks[] =
 {
@@ -82,7 +83,7 @@ is_bookmark(const int bmark_index)
 		return 0;
 	}
 	/* the bookmark is valid if the file and the directory exists */
-	else if(is_bookmark_empty(bmark_index))
+	else if(is_bmark_by_index_empty(bmark_index))
 	{
 		return 0;
 	}
@@ -93,16 +94,10 @@ is_bookmark(const int bmark_index)
 }
 
 int
-is_bookmark_empty(const int bmark_index)
+is_bookmark_empty(const char mark)
 {
-	if(bmark_index < 0 || bmark_index >= ARRAY_LEN(bookmarks))
-	{
-		return 1;
-	}
-
-	/* Checking both is a bit paranoid, one should be enough. */
-	return bookmarks[bmark_index].directory == NULL ||
-			bookmarks[bmark_index].file == NULL;
+	const int bmark_index = mark2index(mark);
+	return is_bmark_by_index_empty(bmark_index);
 }
 
 int
@@ -115,7 +110,7 @@ is_spec_bookmark(const int x)
 int
 remove_bookmark(const int bmark_index)
 {
-	if(!is_bookmark_empty(bmark_index))
+	if(!is_bmark_by_index_empty(bmark_index))
 	{
 		free_bookmark(bmark_index);
 	}
@@ -196,7 +191,7 @@ move_to_bookmark(FileView *view, char mark)
 	{
 		if(!char_is_one_of(valid_bookmarks, mark))
 			status_bar_message("Invalid mark name");
-		else if(is_bookmark_empty(bmark_index))
+		else if(is_bmark_by_index_empty(bmark_index))
 			status_bar_message("Mark is not set");
 		else
 			status_bar_message("Mark is invalid");
@@ -247,13 +242,28 @@ init_active_bookmarks(const char marks[], int active_bookmarks[])
 	i = 0;
 	for(x = 0; x < NUM_BOOKMARKS; ++x)
 	{
-		if(is_bookmark_empty(x))
+		if(is_bmark_by_index_empty(x))
 			continue;
 		if(!char_is_one_of(marks, index2mark(x)))
 			continue;
 		active_bookmarks[i++] = x;
 	}
 	return i;
+}
+
+/* Checks whether bookmark specified by its index is empty.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+is_bmark_by_index_empty(const int bmark_index)
+{
+	if(bmark_index < 0 || bmark_index >= ARRAY_LEN(bookmarks))
+	{
+		return 1;
+	}
+
+	/* Checking both is a bit paranoid, one should be enough. */
+	return bookmarks[bmark_index].directory == NULL ||
+			bookmarks[bmark_index].file == NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
