@@ -1784,7 +1784,6 @@ static int
 delmarks_cmd(const cmd_info_t *cmd_info)
 {
 	int i;
-	int save_msg = 0;
 
 	if(cmd_info->emark)
 	{
@@ -1820,10 +1819,10 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			save_msg += remove_bookmark(cmd_info->argv[i][j]);
+			remove_bookmark(cmd_info->argv[i][j]);
 		}
 	}
-	return save_msg;
+	return 0;
 }
 
 static int

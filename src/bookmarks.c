@@ -101,7 +101,7 @@ is_spec_bookmark(const int x)
 	return char_is_one_of(spec_bookmarks, mark);
 }
 
-int
+void
 remove_bookmark(const int mark)
 {
 	const int bmark_index = mark2index(mark);
@@ -109,7 +109,6 @@ remove_bookmark(const int mark)
 	{
 		free_bookmark(bmark_index);
 	}
-	return 0;
 }
 
 void
@@ -119,7 +118,7 @@ remove_all_bookmarks(void)
 	while(*p != '\0')
 	{
 		const int bmark_index = mark2index(*p++);
-		(void)remove_bookmark(bmark_index);
+		remove_bookmark(bmark_index);
 	}
 }
 

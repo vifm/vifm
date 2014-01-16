@@ -50,9 +50,8 @@ int get_bookmark(FileView *view, char key);
 /* Returns new value for save_msg flag. */
 int move_to_bookmark(FileView *view, const char mark);
 
-/* Removes bookmarks by its name.  Returns non-zero if status bar message should
- * be saved. */
-int remove_bookmark(const int mark);
+/* Removes bookmarks by its name. */
+void remove_bookmark(const int mark);
 
 /* Removes all bookmarks. */
 void remove_all_bookmarks(void);
