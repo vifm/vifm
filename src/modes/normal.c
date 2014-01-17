@@ -1280,16 +1280,19 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
 	{
-		int pos = check_mark_directory(curr_view, key_info.multi);
-		if(pos < 0)
-			return;
-		pick_files(curr_view, pos, keys_info);
+		const int pos = check_mark_directory(curr_view, key_info.multi);
+		if(pos >= 0)
+		{
+			pick_files(curr_view, pos, keys_info);
+		}
 	}
 	else
 	{
-		curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
+		curr_stats.save_msg = goto_bookmark(curr_view, key_info.multi);
 		if(!cfg.auto_ch_pos)
+		{
 			move_to_list_pos(curr_view, 0);
+		}
 	}
 }
 

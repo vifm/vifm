@@ -192,20 +192,20 @@ mark2index(const char mark)
 }
 
 int
-get_bookmark(FileView *view, char key)
+goto_bookmark(FileView *view, char mark)
 {
-	switch(key)
+	switch(mark)
 	{
 		case '\'':
 			navigate_to(view, view->last_dir);
 			return 0;
-		case 27: /* ascii Escape */
-		case 3: /* ascii ctrl c */
+		case '\x03': /* Ctrl-C. */
+		case '\x1b': /* Escape. */
 			move_to_list_pos(view, view->list_pos);
 			return 0;
 
 		default:
-			return navigate_to_bookmark(view, key);
+			return navigate_to_bookmark(view, mark);
 	}
 }
 

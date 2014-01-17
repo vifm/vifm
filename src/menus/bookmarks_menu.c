@@ -108,7 +108,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 static int
 execute_bookmark_cb(FileView *view, menu_info *m)
 {
-	get_bookmark(view, m->items[m->pos][0]);
+	goto_bookmark(view, m->items[m->pos][0]);
 	return 0;
 }
 
