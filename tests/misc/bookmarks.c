@@ -6,7 +6,7 @@
 static void
 test_unexistant_bookmark(void)
 {
-	assert_int_equal(1, move_to_bookmark(&lwin, 'b'));
+	assert_int_equal(1, get_bookmark(&lwin, 'b'));
 }
 
 void

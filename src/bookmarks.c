@@ -35,6 +35,7 @@
 
 static void free_bookmark(const int bmark_index);
 static int mark2index(const char mark);
+static int move_to_bookmark(FileView *view, const char mark);
 static int is_bmark_by_index_empty(const int bmark_index);
 
 bookmark_t bookmarks[NUM_BOOKMARKS];
@@ -168,34 +169,6 @@ set_specmark(const char mark, const char *directory, const char *file)
 }
 
 int
-move_to_bookmark(FileView *view, char mark)
-{
-	int bmark_index = mark2index(mark);
-
-	if(bmark_index != -1 && is_valid_bookmark(bmark_index))
-	{
-		if(change_directory(view, bookmarks[bmark_index].directory) >= 0)
-		{
-			load_dir_list(view, 1);
-			(void)ensure_file_is_selected(view, bookmarks[bmark_index].file);
-		}
-	}
-	else
-	{
-		if(!char_is_one_of(valid_bookmarks, mark))
-			status_bar_message("Invalid mark name");
-		else if(is_bmark_by_index_empty(bmark_index))
-			status_bar_message("Mark is not set");
-		else
-			status_bar_message("Mark is invalid");
-
-		move_to_list_pos(view, view->list_pos);
-		return 1;
-	}
-	return 0;
-}
-
-int
 check_mark_directory(FileView *view, char mark)
 {
 	int x = mark2index(mark);
@@ -234,6 +207,36 @@ get_bookmark(FileView *view, char key)
 		default:
 			return move_to_bookmark(view, key);
 	}
+}
+
+/* Navigates the view to given mark if it's valid.  Returns new value for
+ * save_msg flag. */
+static int
+move_to_bookmark(FileView *view, char mark)
+{
+	int bmark_index = mark2index(mark);
+
+	if(bmark_index != -1 && is_valid_bookmark(bmark_index))
+	{
+		if(change_directory(view, bookmarks[bmark_index].directory) >= 0)
+		{
+			load_dir_list(view, 1);
+			(void)ensure_file_is_selected(view, bookmarks[bmark_index].file);
+		}
+	}
+	else
+	{
+		if(!char_is_one_of(valid_bookmarks, mark))
+			status_bar_message("Invalid mark name");
+		else if(is_bmark_by_index_empty(bmark_index))
+			status_bar_message("Mark is not set");
+		else
+			status_bar_message("Mark is invalid");
+
+		move_to_list_pos(view, view->list_pos);
+		return 1;
+	}
+	return 0;
 }
 
 int
