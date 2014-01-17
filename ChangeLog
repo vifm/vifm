@@ -71,6 +71,9 @@
 	only commands entirely entered by a mapping, not finished by one. Thanks
 	to Евгений Жаров (a.k.a. ezharov).
 
+	Fixed segmentation failure when invalid bookmark name is used with quote
+	command as a motion.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
