@@ -35,7 +35,7 @@
 
 static void free_bookmark(const int bmark_index);
 static int mark2index(const char mark);
-static int move_to_bookmark(FileView *view, const char mark);
+static int navigate_to_bookmark(FileView *view, const char mark);
 static int is_bmark_by_index_empty(const int bmark_index);
 
 bookmark_t bookmarks[NUM_BOOKMARKS];
@@ -205,14 +205,14 @@ get_bookmark(FileView *view, char key)
 			return 0;
 
 		default:
-			return move_to_bookmark(view, key);
+			return navigate_to_bookmark(view, key);
 	}
 }
 
 /* Navigates the view to given mark if it's valid.  Returns new value for
  * save_msg flag. */
 static int
-move_to_bookmark(FileView *view, char mark)
+navigate_to_bookmark(FileView *view, char mark)
 {
 	int bmark_index = mark2index(mark);
 
