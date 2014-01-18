@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: January 05, 2014
+" Last Change: January 18, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -19,7 +19,7 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
 		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] unl[et] ve[rsion]
-		\ vie[w] vifm windo winrun w[rite] wq x[it] y[ank]
+		\ vie[w] vifm vs[plit] windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
