@@ -74,6 +74,8 @@
 	Fixed segmentation failure when invalid bookmark name is used with quote
 	command as a motion.
 
+	Fixed processing of some forms of nested :if statements.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

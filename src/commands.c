@@ -105,6 +105,8 @@ enum
 	COM_SUBSTITUTE,
 	COM_TR,
 	COM_IF_STMT,
+	COM_ELSE_STMT,
+	COM_ENDIF_STMT,
 	COM_CMAP,
 	COM_CNOREMAP,
 	COM_COMMAND,
@@ -137,6 +139,7 @@ static void save_extcmd(const char command[], int type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
+static int cmd_should_be_processed(int cmd_id);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -314,11 +317,11 @@ static const cmd_add_t commands[] = {
 		.handler = echo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_ELSE_STMT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = else_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_ENDIF_STMT,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = endif_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = COM_EXE,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = exe_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -866,8 +869,7 @@ execute_command(FileView *view, const char command[], int menu)
 
 	id = get_cmd_id(command);
 
-	if(!int_stack_is_empty(&if_levels) && !int_stack_get_top(&if_levels) &&
-			id != COM_IF_STMT)
+	if(!cmd_should_be_processed(id))
 	{
 		return 0;
 	}
@@ -949,6 +951,44 @@ execute_command(FileView *view, const char command[], int menu)
 	if(!menu && get_mode() == NORMAL_MODE)
 		remove_selection(view);
 	return -1;
+}
+
+/* Decides whether next command with id cmd_id should be processed or not,
+ * taking state of conditional statements into account.  Returns non-zero if the
+ * command should be processed, otherwise zero is returned. */
+static int
+cmd_should_be_processed(int cmd_id)
+{
+	static int skipped_nested_if_stmts;
+
+	if(int_stack_is_empty(&if_levels) || int_stack_get_top(&if_levels))
+	{
+		return 1;
+	}
+
+	/* Get here only when in false branch of if statement. */
+
+	if(cmd_id == COM_IF_STMT)
+	{
+		skipped_nested_if_stmts++;
+		return 0;
+	}
+	else if(cmd_id == COM_ELSE_STMT || cmd_id == COM_ENDIF_STMT)
+	{
+		if(skipped_nested_if_stmts > 0)
+		{
+			if(cmd_id == COM_ENDIF_STMT)
+			{
+				skipped_nested_if_stmts--;
+			}
+			return 0;
+		}
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
