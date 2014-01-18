@@ -959,16 +959,35 @@ execute_command(FileView *view, const char command[], int menu)
 static int
 cmd_should_be_processed(int cmd_id)
 {
-	if(!int_stack_is_empty(&if_levels) && !int_stack_get_top(&if_levels) &&
-			cmd_id != COM_IF_STMT && cmd_id != COM_ELSE_STMT &&
-			cmd_id != COM_ENDIF_STMT)
-	{
-		return 0;
+	static int skipped_nested_if_stmts;
 
+	if(int_stack_is_empty(&if_levels) || int_stack_get_top(&if_levels))
+	{
+		return 1;
+	}
+
+	/* Get here only when in false branch of if statement. */
+
+	if(cmd_id == COM_IF_STMT)
+	{
+		skipped_nested_if_stmts++;
+		return 0;
+	}
+	else if(cmd_id == COM_ELSE_STMT || cmd_id == COM_ENDIF_STMT)
+	{
+		if(skipped_nested_if_stmts > 0)
+		{
+			if(cmd_id == COM_ENDIF_STMT)
+			{
+				skipped_nested_if_stmts--;
+			}
+			return 0;
+		}
+		return 1;
 	}
 	else
 	{
-		return 1;
+		return 0;
 	}
 }
 
