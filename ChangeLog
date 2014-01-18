@@ -41,6 +41,8 @@
 	Don't select parent directory automatically for local filter.  Thanks to
 	filterfalse and jtbm37.
 
+	Display error message when :delmarks! is followed by arguments.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
@@ -68,6 +70,9 @@
 	Fixed ignoring command-line commands that entered by a mapping: ignore
 	only commands entirely entered by a mapping, not finished by one. Thanks
 	to Евгений Жаров (a.k.a. ezharov).
+
+	Fixed segmentation failure when invalid bookmark name is used with quote
+	command as a motion.
 
 0.7.6-beta2 to 0.7.6
 

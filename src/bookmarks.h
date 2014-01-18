@@ -24,46 +24,52 @@
 
 #define NUM_BOOKMARKS 64
 
+/* Structure that describes bookmark data. */
+typedef struct
+{
+	char *file;      /* Name of bookmarked file. */
+	char *directory; /* Path to directory at which bookmark was made. */
+}
+bookmark_t;
+
+/* Data of all bookmarks.  Contains at least NUM_BOOKMARKS items. */
+extern bookmark_t bookmarks[];
+
 extern const char valid_bookmarks[];
 
-struct
-{
-	/*
-	 * 'mark' is unnecessary, we already reserve all possible bookmarks,
-	 * therfore we can use the mark as an index:
-	 *  0:  0   ( 0=48, ascii)
-	 *  9:  9   ( 9=57 )
-	 *  <: 10   ( <=60 )
-	 *  >: 11   ( >=62 )
-	 *  A: 12   ( A=65 )
-	 *  ...
-	 *  Z: 37
-	 *  a: 38   ( a=97 )
-	 *  ...
-	 *  z: 63
-	char mark;
-	*/
-	char *file;
-	char *directory;
-}bookmarks[NUM_BOOKMARKS];
+/* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
+ * index. */
+char index2mark(const int bmark_index);
 
-/* Represents array of booleans each of which shows whether bookmark with
- * specified bookmark index is active.  Filled by init_active_bookmarks(). */
-int active_bookmarks[NUM_BOOKMARKS];
+/* Checks if a bookmark specified by its index is valid (exists and points to an
+ * existing directory).  Returns non-zero if so, otherwise zero is returned. */
+int is_valid_bookmark(const int bmark_index);
 
-int mark2index(const char mark);
-char index2mark(const int x);
-int is_bookmark(const int bmark_index);
-int is_bookmark_empty(const int x);
+/* Checks whether given bookmark is empty.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int is_bookmark_empty(const char mark);
+
 int is_spec_bookmark(const int x);
-int add_bookmark(const char mark, const char *directory, const char *file);
-void set_specmark(const char mark, const char *directory, const char *file);
-int get_bookmark(FileView *view, char key);
-/* Returns new value for save_msg flag. */
-int move_to_bookmark(FileView *view, const char mark);
-int remove_bookmark(const int x);
+
+int add_bookmark(const char mark, const char directory[], const char file[]);
+
+void set_specmark(const char mark, const char directory[], const char file[]);
+
+/* Handles all kinds of bookmarks.  Returns new value for save_msg flag. */
+int goto_bookmark(FileView *view, char mark);
+
+/* Removes bookmarks by its name. */
+void remove_bookmark(const int mark);
+
+/* Removes all bookmarks. */
+void remove_all_bookmarks(void);
+
 int check_mark_directory(FileView *view, char mark);
-int init_active_bookmarks(const char *marks);
+
+/* Fills array of booleans (active_bookmarks) each of which shows whether
+ * specified bookmark index is active.  active_bookmarks should be an array of
+ * at least NUM_BOOKMARKS items.  Returns number of active bookmarks. */
+int init_active_bookmarks(const char marks[], int active_bookmarks[]);
 
 #endif /* VIFM__BOOKMARKS_H__ */
 

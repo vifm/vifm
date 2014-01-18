@@ -1784,24 +1784,25 @@ static int
 delmarks_cmd(const cmd_info_t *cmd_info)
 {
 	int i;
-	int save_msg = 0;
 
 	if(cmd_info->emark)
 	{
-		const char *p = valid_bookmarks;
-		while(*p != '\0')
+		if(cmd_info->argc == 0)
 		{
-			const int index = mark2index(*p++);
-			if(!is_bookmark_empty(index))
-			{
-				remove_bookmark(index);
-			}
+			remove_all_bookmarks();
+			return 0;
 		}
-		return 0;
+		else
+		{
+			status_bar_error("No arguments are allowed if you use \"!\"");
+			return 1;
+		}
 	}
 
 	if(cmd_info->argc == 0)
+	{
 		return CMDS_ERR_TOO_FEW_ARGS;
+	}
 
 	for(i = 0; i < cmd_info->argc; i++)
 	{
@@ -1818,11 +1819,10 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			int index = mark2index(cmd_info->argv[i][j]);
-			save_msg += remove_bookmark(index);
+			remove_bookmark(cmd_info->argv[i][j]);
 		}
 	}
-	return save_msg;
+	return 0;
 }
 
 static int
@@ -2744,8 +2744,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->qmark)
 	{
-		int index = mark2index(mark);
-		if(!is_bookmark_empty(index))
+		if(!is_bookmark_empty(mark))
 		{
 			status_bar_errorf("Mark isn't empty: %c", mark);
 			return 1;
@@ -3100,7 +3099,6 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	const char *p;
 	FileView *tmp_view;
 
 	curr_stats.restart_in_progress = 1;
@@ -3149,14 +3147,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* color schemes */
 	load_def_scheme();
 
-	/* bookmarks */
-	p = valid_bookmarks;
-	while(*p != '\0')
-	{
-		int index = mark2index(*p++);
-		if(!is_bookmark_empty(index))
-			remove_bookmark(index);
-	}
+	/* Remove all bookmarks. */
+	remove_all_bookmarks();
 
 	/* variables */
 	clear_variables();

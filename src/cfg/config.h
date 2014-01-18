@@ -59,7 +59,6 @@ typedef struct
 	int vi_cmd_bg;
 	char *vi_x_command;
 	int vi_x_cmd_bg;
-	int num_bookmarks; /* Number of active bookmarks (set at the moment) */
 	int use_trash;
 	int vim_filter;
 
