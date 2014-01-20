@@ -153,6 +153,7 @@ CLEANFILES = runtests
 distclean-local:
 	$(MAKE) -C ../tests clean
 
+version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
 
 update_compile_info:
