@@ -97,7 +97,7 @@ vifm_SOURCES = \
 	bookmarks.c bookmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	color_scheme.c colorscheme.h \
+	color_scheme.c color_scheme.h \
 	column_view.c column_view.h \
 	colors.h \
 	color_manager.c color_manager.h \
@@ -153,6 +153,7 @@ CLEANFILES = runtests
 distclean-local:
 	$(MAKE) -C ../tests clean
 
+version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
 
 update_compile_info:
