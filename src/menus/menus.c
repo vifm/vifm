@@ -640,6 +640,31 @@ normalize_top(menu_info *m)
 	m->top = MAX(0, MIN(m->len - (m->win_rows - 2), m->top));
 }
 
+static int
+check_on_ctrl_c(pid_t pid)
+{
+	wchar_t c;
+
+	wtimeout(status_bar, 0);
+
+	c = L'\0';
+	while(wget_wch(status_bar, (wint_t*)&c) != ERR)
+	{
+		if(c == L'\x03')
+		{
+			wchar_t drop_c;
+			while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
+			break;
+		}
+	}
+	if(c == L'\x03')
+	{
+		kill(pid, SIGINT);
+		return 1;
+	}
+	return 0;
+}
+
 int
 capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 {
@@ -647,6 +672,10 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	char *line = NULL;
 	int x;
 	pid_t pid;
+	fd_set ready;
+	int max_fd;
+	struct timeval ts = { };
+	int cancelled = 0;
 
 	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
 
@@ -657,14 +686,27 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		return 0;
 	}
 
-	wtimeout(status_bar, 0);
+	max_fd = fileno(file);
+	FD_ZERO(&ready);
+
+	show_progress("", 0);
+
+	do
+	{
+		if(check_on_ctrl_c(pid))
+		{
+			cancelled = 1;
+			break;
+		}
+		ts.tv_sec = 0;
+		ts.tv_usec = 100;
+		FD_SET(max_fd, &ready);
+	}
+	while(select(max_fd + 1, &ready, NULL, NULL, &ts) == 0);
 
 	x = 0;
-	show_progress("", 0);
-	while((line = read_line(file, line)) != NULL)
+	while(!cancelled && (line = read_line(file, line)) != NULL)
 	{
-		wchar_t c;
-
 		char *expanded_line;
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
@@ -674,20 +716,17 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 			m->items[x++] = expanded_line;
 		}
 
-		c = L'\0';
-		while(wget_wch(status_bar, (wint_t*)&c) != ERR)
+		do
 		{
-			if(c == L'\x03')
+			if(check_on_ctrl_c(pid))
 			{
-				wchar_t drop_c;
-				while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
-				break;
+				cancelled = 1;
 			}
+			ts.tv_sec = 0;
+			ts.tv_usec = 100;
+			FD_SET(max_fd, &ready);
 		}
-		if(c == L'\x03')
-		{
-			kill(pid, SIGINT);
-		}
+		while(!cancelled && select(max_fd + 1, &ready, NULL, NULL, &ts) == 0);
 	}
 	m->len = x;
 
