@@ -646,19 +646,25 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	FILE *file, *err;
 	char *line = NULL;
 	int x;
+	pid_t pid;
 
-	LOG_INFO_MSG("Capturing outpu of the command to a menu: %s", cmd);
+	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
 
-	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	pid = background_and_capture((char *)cmd, &file, &err);
+	if(pid == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
 	}
 
+	wtimeout(status_bar, 0);
+
 	x = 0;
 	show_progress("", 0);
 	while((line = read_line(file, line)) != NULL)
 	{
+		wchar_t c;
+
 		char *expanded_line;
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
@@ -666,6 +672,21 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		if(expanded_line != NULL)
 		{
 			m->items[x++] = expanded_line;
+		}
+
+		c = L'\0';
+		while(wget_wch(status_bar, (wint_t*)&c) != ERR)
+		{
+			if(c == L'\x03')
+			{
+				wchar_t drop_c;
+				while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
+				break;
+			}
+		}
+		if(c == L'\x03')
+		{
+			kill(pid, SIGINT);
 		}
 	}
 	m->len = x;

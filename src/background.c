@@ -355,7 +355,7 @@ background_and_wait_for_errors(char *cmd)
 }
 
 #ifndef _WIN32
-int
+pid_t
 background_and_capture(char *cmd, FILE **out, FILE **err)
 {
 	pid_t pid;
@@ -396,6 +396,8 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 			exit(-1);
 
+		signal(SIGINT, SIG_DFL);
+
 		args[0] = "/bin/sh";
 		args[1] = "-c";
 		args[2] = cmd;
@@ -410,7 +412,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	*out = fdopen(out_pipe[0], "r");
 	*err = fdopen(error_pipe[0], "r");
 
-	return 0;
+	return pid;
 }
 #else
 static int

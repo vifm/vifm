@@ -58,7 +58,7 @@ void init_background(void);
 int start_background_job(const char *cmd, int skip_errors);
 int background_and_wait_for_status(char *cmd);
 int background_and_wait_for_errors(char *cmd);
-int background_and_capture(char *cmd, FILE **out, FILE **err);
+pid_t background_and_capture(char *cmd, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 void update_jobs_list(void);
