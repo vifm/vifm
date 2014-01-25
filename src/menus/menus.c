@@ -32,6 +32,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memmove() memset() strdup() strchr() strlen()
@@ -64,6 +65,9 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static void wait_data_from(pid_t pid, FILE *f);
+static void process_cancel_request(pid_t pid);
+static int cancel_requested(void);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -640,8 +644,89 @@ normalize_top(menu_info *m)
 	m->top = MAX(0, MIN(m->len - (m->win_rows - 2), m->top));
 }
 
+int
+capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
+{
+	FILE *file, *err;
+	char *line = NULL;
+	int x;
+	pid_t pid;
+
+	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
+
+	pid = background_and_capture((char *)cmd, &file, &err);
+	if(pid == (pid_t)-1)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return 0;
+	}
+
+	show_progress("", 0);
+
+	wait_data_from(pid, file);
+
+	x = 0;
+	while((line = read_line(file, line)) != NULL)
+	{
+		char *expanded_line;
+		show_progress("Loading menu", 1000);
+		m->items = realloc(m->items, sizeof(char *)*(x + 1));
+		expanded_line = expand_tabulation_a(line, cfg.tab_stop);
+		if(expanded_line != NULL)
+		{
+			m->items[x++] = expanded_line;
+		}
+
+		wait_data_from(pid, file);
+	}
+	m->len = x;
+
+	fclose(file);
+	print_errors(err);
+
+	return display_menu(m, view);
+}
+
+/* Waits until non-blocking read operation is available for given file
+ * descriptor that is associated with a process.  Process operation cancellation
+ * requests from a user. */
+static void
+wait_data_from(pid_t pid, FILE *f)
+{
+	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
+	const int fd = fileno(f);
+	struct timeval ts;
+	fd_set read_ready;
+
+	FD_ZERO(&read_ready);
+
+	do
+	{
+		process_cancel_request(pid);
+		ts = ts_init;
+		FD_SET(fd, &read_ready);
+	}
+	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
+}
+
+/* Checks whether cancelling of current operation is requested and sends SIGINT
+ * to process specified by its process id to request cancellation. */
+static void
+process_cancel_request(pid_t pid)
+{
+	if(cancel_requested())
+	{
+		if(kill(pid, SIGINT) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
+		}
+	}
+}
+
+/* Checks whether cancelling of current operation is requested.  Returns
+ * non-zero if so, otherwise zero is returned. */
 static int
-check_on_ctrl_c(pid_t pid)
+cancel_requested(void)
 {
 	wchar_t c;
 
@@ -657,83 +742,7 @@ check_on_ctrl_c(pid_t pid)
 			break;
 		}
 	}
-	if(c == L'\x03')
-	{
-		kill(pid, SIGINT);
-		return 1;
-	}
-	return 0;
-}
-
-int
-capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
-{
-	FILE *file, *err;
-	char *line = NULL;
-	int x;
-	pid_t pid;
-	fd_set ready;
-	int max_fd;
-	struct timeval ts = { };
-	int cancelled = 0;
-
-	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
-
-	pid = background_and_capture((char *)cmd, &file, &err);
-	if(pid == (pid_t)-1)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return 0;
-	}
-
-	max_fd = fileno(file);
-	FD_ZERO(&ready);
-
-	show_progress("", 0);
-
-	do
-	{
-		if(check_on_ctrl_c(pid))
-		{
-			cancelled = 1;
-			break;
-		}
-		ts.tv_sec = 0;
-		ts.tv_usec = 100;
-		FD_SET(max_fd, &ready);
-	}
-	while(select(max_fd + 1, &ready, NULL, NULL, &ts) == 0);
-
-	x = 0;
-	while(!cancelled && (line = read_line(file, line)) != NULL)
-	{
-		char *expanded_line;
-		show_progress("Loading menu", 1000);
-		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		expanded_line = expand_tabulation_a(line, cfg.tab_stop);
-		if(expanded_line != NULL)
-		{
-			m->items[x++] = expanded_line;
-		}
-
-		do
-		{
-			if(check_on_ctrl_c(pid))
-			{
-				cancelled = 1;
-			}
-			ts.tv_sec = 0;
-			ts.tv_usec = 100;
-			FD_SET(max_fd, &ready);
-		}
-		while(!cancelled && select(max_fd + 1, &ready, NULL, NULL, &ts) == 0);
-	}
-	m->len = x;
-
-	fclose(file);
-	print_errors(err);
-
-	return display_menu(m, view);
+	return c == L'\x03';
 }
 
 /* Clones the line replacing all occurrences of horizontal tabulation character
