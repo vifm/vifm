@@ -333,6 +333,8 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
+		/* TODO: add polling just as in capture_output_to_menu(). */
+
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
 		{
@@ -365,7 +367,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	if(pipe(out_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(pipe(error_pipe) != 0)
@@ -373,7 +375,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if((pid = fork()) == -1)
@@ -382,7 +384,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		close(out_pipe[1]);
 		close(error_pipe[0]);
 		close(error_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(pid == 0)
@@ -415,16 +417,18 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	return pid;
 }
 #else
-static int
+/* Runs command in a background and redirects its stdout and stderr streams to
+ * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
+static pid_t
 background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
 	char *args[4];
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
-		return -1;
+		return (pid_t)-1;
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
-		return -1;
+		return (pid_t)-1;
 
 	args[0] = "cmd";
 	args[1] = "/C";
@@ -432,30 +436,30 @@ background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 	args[3] = NULL;
 
 	if(_spawnvp(P_NOWAIT, args[0], (const char **)args) == 0)
-		return -1;
+		return (pid_t)-1;
 
 	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
-		return -1;
+		return (pid_t)-1;
 	if((*err = _fdopen(err_pipe[0], "r")) == NULL)
 	{
 		fclose(*out);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	return 0;
 }
 
-int
+pid_t
 background_and_capture(char *cmd, FILE **out, FILE **err)
 {
 	int out_fd, out_pipe[2];
 	int err_fd, err_pipe[2];
-	int e;
+	pid_t pid;
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(_pipe(err_pipe, 512, O_NOINHERIT) != 0)
@@ -463,13 +467,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	e = background_and_capture_internal(cmd, out, err, out_pipe, err_pipe);
+	pid = background_and_capture_internal(cmd, out, err, out_pipe, err_pipe);
 
 	_close(out_pipe[1]);
 	_close(err_pipe[1]);
@@ -477,13 +481,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
 
-	if(e != 0)
+	if(pid == (pid_t)-1)
 	{
 		_close(out_pipe[0]);
 		_close(err_pipe[0]);
 	}
 
-	return e;
+	return pid;
 }
 #endif
 
