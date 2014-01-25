@@ -107,6 +107,12 @@ recover_after_shellout(void)
 	resize_term(cfg.lines, cfg.columns);
 }
 
+void
+wait_for_data_from(pid_t pid, FILE *f, int fd)
+{
+	/* Do nothing.  No need to wait for anything on this platform. */
+}
+
 int
 is_on_slow_fs(const char full_path[])
 {

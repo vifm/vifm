@@ -27,7 +27,7 @@
 
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <sys/types.h> /* pid_t */
 #include <unistd.h> /* access() */
 
 #include <assert.h> /* assert() */
@@ -51,6 +51,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "../bookmarks.h"
 #include "../filelist.h"
@@ -65,8 +66,6 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
-static void wait_data_from(pid_t pid, FILE *f);
-static void process_cancel_request(pid_t pid);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -662,7 +661,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 
 	show_progress("", 0);
 
-	wait_data_from(pid, file);
+	wait_for_data_from(pid, file, 0);
 
 	x = 0;
 	while((line = read_line(file, line)) != NULL)
@@ -676,7 +675,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 			m->items[x++] = expanded_line;
 		}
 
-		wait_data_from(pid, file);
+		wait_for_data_from(pid, file, 0);
 	}
 	m->len = x;
 
@@ -684,42 +683,6 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	print_errors(err);
 
 	return display_menu(m, view);
-}
-
-/* Waits until non-blocking read operation is available for given file
- * descriptor that is associated with a process.  Process operation cancellation
- * requests from a user. */
-static void
-wait_data_from(pid_t pid, FILE *f)
-{
-	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
-	const int fd = fileno(f);
-	struct timeval ts;
-	fd_set read_ready;
-
-	FD_ZERO(&read_ready);
-
-	do
-	{
-		process_cancel_request(pid);
-		ts = ts_init;
-		FD_SET(fd, &read_ready);
-	}
-	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
-}
-
-/* Checks whether cancelling of current operation is requested and sends SIGINT
- * to process specified by its process id to request cancellation. */
-static void
-process_cancel_request(pid_t pid)
-{
-	if(ui_cancel_requested())
-	{
-		if(kill(pid, SIGINT) != 0)
-		{
-			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
-		}
-	}
 }
 
 /* Clones the line replacing all occurrences of horizontal tabulation character

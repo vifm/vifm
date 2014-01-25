@@ -21,7 +21,7 @@
 #include "utils_int.h"
 
 #include <sys/stat.h> /* S_* */
-#include <sys/types.h> /* gid_t mode_t uid_t */
+#include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
@@ -65,6 +65,7 @@ typedef struct
 }
 get_mount_point_traverser_state;
 
+static void process_cancel_request(pid_t pid);
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
@@ -146,6 +147,40 @@ void
 recover_after_shellout(void)
 {
 	/* Do nothing.  No need to recover anything on this platform. */
+}
+
+void
+wait_for_data_from(pid_t pid, FILE *f, int fd)
+{
+	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
+	struct timeval ts;
+
+	fd_set read_ready;
+	FD_ZERO(&read_ready);
+
+	fd = (f != NULL) ? fileno(f) : fd;
+
+	do
+	{
+		process_cancel_request(pid);
+		ts = ts_init;
+		FD_SET(fd, &read_ready);
+	}
+	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
+}
+
+/* Checks whether cancelling of current operation is requested and sends SIGINT
+ * to process specified by its process id to request cancellation. */
+static void
+process_cancel_request(pid_t pid)
+{
+	if(ui_cancel_requested())
+	{
+		if(kill(pid, SIGINT) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
+		}
+	}
 }
 
 /* if err == 1 then use stderr and close stdin and stdout */
