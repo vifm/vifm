@@ -323,6 +323,7 @@ background_and_wait_for_errors(char *cmd)
 
 	if(pid == 0)
 	{
+		signal(SIGINT, SIG_DFL);
 		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
@@ -333,16 +334,21 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		/* TODO: add polling just as in capture_output_to_menu(). */
+		wait_for_data_from(pid, NULL, error_pipe[0]);
 
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
 		{
+			const int read_empty_line = nread == 1 && linebuf[0] == '\n';
 			result = -1;
 			linebuf[nread] = '\0';
-			if(nread == 1 && linebuf[0] == '\n')
-				continue;
-			strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
+
+			if(!read_empty_line)
+			{
+				strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
+			}
+
+			wait_for_data_from(pid, NULL, error_pipe[0]);
 		}
 		close(error_pipe[0]);
 
