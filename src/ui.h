@@ -293,6 +293,10 @@ void checked_wmove(WINDOW *win, int y, int x);
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
 
+/* Checks whether cancelling of current operation is requested.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int ui_cancel_requested(void);
+
 #endif /* VIFM__UI_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

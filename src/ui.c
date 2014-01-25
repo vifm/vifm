@@ -1827,5 +1827,25 @@ ui_view_win_changed(FileView *view)
 	wnoutrefresh(view->win);
 }
 
+int
+ui_cancel_requested(void)
+{
+	wchar_t c;
+
+	wtimeout(status_bar, 0);
+
+	c = L'\0';
+	while(wget_wch(status_bar, (wint_t*)&c) != ERR)
+	{
+		if(c == L'\x03')
+		{
+			wchar_t drop_c;
+			while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
+			break;
+		}
+	}
+	return c == L'\x03';
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -67,7 +67,6 @@ static int prompt_error_msg_internal(const char title[], const char message[],
 static void normalize_top(menu_info *m);
 static void wait_data_from(pid_t pid, FILE *f);
 static void process_cancel_request(pid_t pid);
-static int cancel_requested(void);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -714,35 +713,13 @@ wait_data_from(pid_t pid, FILE *f)
 static void
 process_cancel_request(pid_t pid)
 {
-	if(cancel_requested())
+	if(ui_cancel_requested())
 	{
 		if(kill(pid, SIGINT) != 0)
 		{
 			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
 		}
 	}
-}
-
-/* Checks whether cancelling of current operation is requested.  Returns
- * non-zero if so, otherwise zero is returned. */
-static int
-cancel_requested(void)
-{
-	wchar_t c;
-
-	wtimeout(status_bar, 0);
-
-	c = L'\0';
-	while(wget_wch(status_bar, (wint_t*)&c) != ERR)
-	{
-		if(c == L'\x03')
-		{
-			wchar_t drop_c;
-			while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
-			break;
-		}
-	}
-	return c == L'\x03';
 }
 
 /* Clones the line replacing all occurrences of horizontal tabulation character
