@@ -114,6 +114,12 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 }
 
 int
+set_sigchld(int block)
+{
+	return 0;
+}
+
+int
 is_on_slow_fs(const char full_path[])
 {
 	return 0;

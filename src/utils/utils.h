@@ -112,6 +112,10 @@ int traverse_mount_points(mptraverser client, void *arg);
  * with a process.  Process operation cancellation requests from a user. */
 void wait_for_data_from(pid_t pid, FILE *f, int fd);
 
+/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
+ * is returned. */
+int set_sigchld(int block);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

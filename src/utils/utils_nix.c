@@ -155,6 +155,17 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
 }
 
+int
+set_sigchld(int block)
+{
+	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
+	sigset_t sigchld_mask;
+
+	return sigemptyset(&sigchld_mask) == -1
+	    || sigaddset(&sigchld_mask, SIGCHLD) == -1
+	    || sigprocmask(action, &sigchld_mask, NULL) == -1;
+}
+
 /* Checks whether cancelling of current operation is requested and sends SIGINT
  * to process specified by its process id to request cancellation. */
 static void

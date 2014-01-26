@@ -48,7 +48,6 @@
 #include "commands_completion.h"
 #include "status.h"
 
-static int set_sigchld(int block);
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 
@@ -125,26 +124,6 @@ check_background_jobs(void)
 	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
 	 *        blocked. */
 	(void)set_sigchld(0);
-}
-
-/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
- * is returned. */
-static int
-set_sigchld(int block)
-{
-#ifndef _WIN32
-	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
-	sigset_t sigchld_mask;
-
-	if(sigemptyset(&sigchld_mask) == -1 ||
-	   sigaddset(&sigchld_mask, SIGCHLD) == -1 ||
-	   sigprocmask(action, &sigchld_mask, NULL) == -1)
-	{
-		return 1;
-	}
-#endif
-
-	return 0;
 }
 
 /* Checks status of the job.  Processes error stream or checks whether process
