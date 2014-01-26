@@ -84,7 +84,6 @@ run_in_shell_no_cls(char command[])
 	int result;
 	extern char **environ;
 	sig_handler sigtstp_handler;
-	sigset_t sigchld_mask;
 
 	if(command == NULL)
 		return 1;
@@ -94,15 +93,13 @@ run_in_shell_no_cls(char command[])
 	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because
 	 * it will possibly cause missing of SIGCHLD from a background process
 	 * (job). */
-	sigemptyset(&sigchld_mask);
-	sigaddset(&sigchld_mask, SIGCHLD);
-	sigprocmask(SIG_BLOCK, &sigchld_mask, NULL);
+	(void)set_sigchld(1);
 
 	pid = fork();
 	if(pid == -1)
 	{
 		signal(SIGTSTP, sigtstp_handler);
-		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+		(void)set_sigchld(0);
 		return -1;
 	}
 	if(pid == 0)
@@ -111,7 +108,7 @@ run_in_shell_no_cls(char command[])
 
 		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
-		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+		(void)set_sigchld(0);
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
@@ -124,7 +121,7 @@ run_in_shell_no_cls(char command[])
 	result = get_proc_exit_status(pid);
 
 	signal(SIGTSTP, sigtstp_handler);
-	sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+	(void)set_sigchld(0);
 
 	return result;
 }
