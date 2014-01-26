@@ -295,6 +295,9 @@ void ui_view_win_changed(FileView *view);
 
 /* Operation cancellation. */
 
+/* Resets state so that ui_cancellation_requested() returns zero. */
+void ui_cancellation_reset(void);
+
 /* Enables handling of cancellation requests through the UI. */
 void ui_cancellation_enable(void);
 

@@ -62,9 +62,10 @@
 /* State of cancellation request processing. */
 typedef enum
 {
-	CRS_DISABLED,  /* Cancellation is disabled. */
-	CRS_ENABLED,   /* Cancellation is enabled, but wasn't requested. */
-	CRS_REQUESTED, /* Cancellation is enabled and was requested. */
+	CRS_DISABLED,           /* Cancellation is disabled. */
+	CRS_DISABLED_REQUESTED, /* Cancellation is disabled and was requested. */
+	CRS_ENABLED,            /* Cancellation is enabled, but wasn't requested. */
+	CRS_ENABLED_REQUESTED,  /* Cancellation is enabled and was requested. */
 }
 cancellation_request_state;
 
@@ -90,6 +91,8 @@ static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void switch_panes_content(void);
+static int ui_cancellation_enabled(void);
+static int ui_cancellation_disabled(void);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -1841,9 +1844,17 @@ ui_view_win_changed(FileView *view)
 }
 
 void
+ui_cancellation_reset(void)
+{
+	assert(ui_cancellation_disabled() && "Can't reset while active.");
+
+	cancellation_state = CRS_DISABLED;
+}
+
+void
 ui_cancellation_enable(void)
 {
-	assert(cancellation_state == CRS_DISABLED && "Can't enable twice in a row.");
+	assert(ui_cancellation_disabled() && "Can't enable twice in a row.");
 
 	cancellation_state = CRS_ENABLED;
 
@@ -1855,29 +1866,48 @@ ui_cancellation_enable(void)
 void
 ui_cancellation_request(void)
 {
-	assert(cancellation_state != CRS_DISABLED && "Can't set when inactive.");
-
-	cancellation_state = CRS_REQUESTED;
+	if(ui_cancellation_enabled())
+	{
+		cancellation_state = CRS_ENABLED_REQUESTED;
+	}
 }
 
 int
 ui_cancellation_requested(void)
 {
-	assert(cancellation_state != CRS_DISABLED && "Can't query when inactive.");
-
-	return cancellation_state == CRS_REQUESTED;
+	return cancellation_state == CRS_ENABLED_REQUESTED
+	    || cancellation_state == CRS_DISABLED_REQUESTED;
 }
 
 void
 ui_cancellation_disable(void)
 {
-	assert(cancellation_state != CRS_DISABLED && "Can't disable what disabled.");
+	assert(ui_cancellation_enabled() && "Can't disable what disabled.");
 
 	/* Restore raw mode of terminal so that Ctrl-C is be handled as regular input
 	 * character rather than as SIGINT signal. */
 	raw();
 
-	cancellation_state = CRS_DISABLED;
+	cancellation_state = (cancellation_state == CRS_ENABLED_REQUESTED)
+	                   ? CRS_DISABLED_REQUESTED
+	                   : CRS_DISABLED;
+}
+
+/* Checks whether cancellation processing is enabled.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+ui_cancellation_enabled(void)
+{
+	return cancellation_state == CRS_ENABLED
+	    || cancellation_state == CRS_ENABLED_REQUESTED;
+}
+
+/* Checks whether cancellation processing is disabled.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+ui_cancellation_disabled(void)
+{
+	return !ui_cancellation_enabled();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
