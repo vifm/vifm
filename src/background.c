@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef _WIN32
-#include <sys/wait.h>
+#include <sys/wait.h> /* WEXITSTATUS() */
 #endif
 
 #include "cfg/config.h"
@@ -297,11 +297,17 @@ background_and_wait_for_errors(char *cmd)
 		return -1;
 	}
 
+	(void)set_sigchld(1);
+
 	if((pid = fork()) == -1)
+	{
+		(void)set_sigchld(0);
 		return -1;
+	}
 
 	if(pid == 0)
 	{
+		(void)set_sigchld(0);
 		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
@@ -335,8 +341,17 @@ background_and_wait_for_errors(char *cmd)
 		ui_cancellation_disable();
 
 		if(result != 0)
+		{
 			error_msg("Background Process Error", buf);
+		}
+		else
+		{
+			const int status = get_proc_exit_status(pid);
+			result = WEXITSTATUS(status);
+		}
 	}
+
+	(void)set_sigchld(0);
 
 	return result;
 #else
