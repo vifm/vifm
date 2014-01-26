@@ -293,9 +293,23 @@ void checked_wmove(WINDOW *win, int y, int x);
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
 
-/* Checks whether cancelling of current operation is requested.  Returns
- * non-zero if so, otherwise zero is returned. */
-int ui_cancel_requested(void);
+/* Operation cancellation. */
+
+/* Enables handling of cancellation requests through the UI. */
+void ui_cancellation_enable(void);
+
+/* External callback for notifying this unit about cancellation request.  Should
+ * be called between ui_cancellation_enable() and ui_cancellation_disable(). */
+void ui_cancellation_request(void);
+
+/* If cancellation is enabled, checks whether cancelling of current operation is
+ * requested.  Should be called between ui_cancellation_enable() and
+ * ui_cancellation_disable().  Returns non-zero if so, otherwise zero is
+ * returned. */
+int ui_cancellation_requested(void);
+
+/* Disables handling of cancellation requests through the UI. */
+void ui_cancellation_disable(void);
 
 #endif /* VIFM__UI_H__ */
 

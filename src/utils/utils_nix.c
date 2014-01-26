@@ -174,7 +174,7 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 static void
 process_cancel_request(pid_t pid)
 {
-	if(ui_cancel_requested())
+	if(ui_cancellation_requested())
 	{
 		if(kill(pid, SIGINT) != 0)
 		{

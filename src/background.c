@@ -323,7 +323,6 @@ background_and_wait_for_errors(char *cmd)
 
 	if(pid == 0)
 	{
-		signal(SIGINT, SIG_DFL);
 		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
@@ -333,6 +332,8 @@ background_and_wait_for_errors(char *cmd)
 		int nread = 0;
 
 		close(error_pipe[1]); /* Close write end of pipe. */
+
+		ui_cancellation_enable();
 
 		wait_for_data_from(pid, NULL, error_pipe[0]);
 
@@ -351,6 +352,8 @@ background_and_wait_for_errors(char *cmd)
 			wait_for_data_from(pid, NULL, error_pipe[0]);
 		}
 		close(error_pipe[0]);
+
+		ui_cancellation_disable();
 
 		if(result != 0)
 			error_msg("Background Process Error", buf);
@@ -403,8 +406,6 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 			exit(-1);
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 			exit(-1);
-
-		signal(SIGINT, SIG_DFL);
 
 		args[0] = "/bin/sh";
 		args[1] = "-c";

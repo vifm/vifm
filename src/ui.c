@@ -29,7 +29,7 @@
 #endif
 #include <unistd.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
@@ -59,9 +59,22 @@
 #include "signals.h"
 #include "status.h"
 
+/* State of cancellation request processing. */
+typedef enum
+{
+	CRS_DISABLED,  /* Cancellation is disabled. */
+	CRS_ENABLED,   /* Cancellation is enabled, but wasn't requested. */
+	CRS_REQUESTED, /* Cancellation is enabled and was requested. */
+}
+cancellation_request_state;
+
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
 static int multiline_status_bar;
+
+/* Whether cancellation was requested.  Used by ui_cancellation_* group of
+ * functions. */
+static cancellation_request_state cancellation_state;
 
 static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
@@ -1827,24 +1840,44 @@ ui_view_win_changed(FileView *view)
 	wnoutrefresh(view->win);
 }
 
-int
-ui_cancel_requested(void)
+void
+ui_cancellation_enable(void)
 {
-	wchar_t c;
+	assert(cancellation_state == CRS_DISABLED && "Can't enable twice in a row.");
 
-	wtimeout(status_bar, 0);
+	cancellation_state = CRS_ENABLED;
 
-	c = L'\0';
-	while(wget_wch(status_bar, (wint_t*)&c) != ERR)
-	{
-		if(c == L'\x03')
-		{
-			wchar_t drop_c;
-			while(wget_wch(status_bar, (wint_t*)&drop_c) != ERR);
-			break;
-		}
-	}
-	return c == L'\x03';
+	/* Temporary disable raw mode of terminal so that Ctrl-C is be handled as
+	 * SIGINT signal rather than as regular input character. */
+	noraw();
+}
+
+void
+ui_cancellation_request(void)
+{
+	assert(cancellation_state != CRS_DISABLED && "Can't set when inactive.");
+
+	cancellation_state = CRS_REQUESTED;
+}
+
+int
+ui_cancellation_requested(void)
+{
+	assert(cancellation_state != CRS_DISABLED && "Can't query when inactive.");
+
+	return cancellation_state == CRS_REQUESTED;
+}
+
+void
+ui_cancellation_disable(void)
+{
+	assert(cancellation_state != CRS_DISABLED && "Can't disable what disabled.");
+
+	/* Restore raw mode of terminal so that Ctrl-C is be handled as regular input
+	 * character rather than as SIGINT signal. */
+	raw();
+
+	cancellation_state = CRS_DISABLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
