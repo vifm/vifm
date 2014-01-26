@@ -120,26 +120,12 @@ run_in_shell_no_cls(char command[])
 		execve(cfg.shell, args, environ);
 		exit(127);
 	}
-	do
-	{
-		int status;
-		if(waitpid(pid, &status, 0) == -1)
-		{
-			if(errno != EINTR)
-			{
-				LOG_SERROR_MSG(errno, "waitpid()");
-				result = -1;
-				break;
-			}
-		}
-		else
-		{
-			result = status;
-			break;
-		}
-	}while(1);
+
+	result = get_proc_exit_status(pid);
+
 	signal(SIGTSTP, sigtstp_handler);
 	sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+
 	return result;
 }
 
@@ -181,6 +167,28 @@ process_cancel_request(pid_t pid)
 			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
 		}
 	}
+}
+
+int
+get_proc_exit_status(pid_t pid)
+{
+	do
+	{
+		int status;
+		if(waitpid(pid, &status, 0) == -1)
+		{
+			if(errno != EINTR)
+			{
+				LOG_SERROR_MSG(errno, "waitpid()");
+				return -1;
+			}
+		}
+		else
+		{
+			return status;
+		}
+	}
+	while(1);
 }
 
 /* if err == 1 then use stderr and close stdin and stdout */
