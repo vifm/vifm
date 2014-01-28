@@ -122,6 +122,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 
 /* returns new value for save_msg */
 int
@@ -447,14 +448,7 @@ delete_file_bg(FileView *view, int use_trash)
 
 	view->list_pos = i;
 
-	args->sel_list = view->selected_filelist;
-	args->sel_list_len = view->selected_files;
-
-	view->selected_filelist = NULL;
-	free_selected_file_array(view);
-	ui_view_reset_selection_and_reload(view);
-
-	strcpy(args->src, view->curr_dir);
+	general_prepare_for_bg_task(view, args);
 
 	if(args->from_trash)
 		snprintf(buf, sizeof(buf), "delete in %s: ",
@@ -2808,14 +2802,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	else
 		args->list = copy_string_array(list, nlines);
 
-	args->sel_list = view->selected_filelist;
-	args->sel_list_len = view->selected_files;
-
-	view->selected_filelist = NULL;
-	free_selected_file_array(view);
-	ui_view_reset_selection_and_reload(view);
-
-	strcpy(args->src, view->curr_dir);
+	general_prepare_for_bg_task(view, args);
 
 #ifndef _WIN32
 	args->job = add_background_job(-1, buf, -1);
@@ -2835,6 +2822,20 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	pthread_create(&id, NULL, cpmv_stub, args);
 	return 0;
+}
+
+/* Fills basic fields of the args structure. */
+static void
+general_prepare_for_bg_task(FileView *view, bg_args_t *args)
+{
+	args->sel_list = view->selected_filelist;
+	args->sel_list_len = view->selected_files;
+
+	view->selected_filelist = NULL;
+	free_selected_file_array(view);
+	ui_view_reset_selection_and_reload(view);
+
+	copy_str(args->src, sizeof(args->src), view->curr_dir);
 }
 
 static void
