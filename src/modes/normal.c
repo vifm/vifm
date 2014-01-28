@@ -606,6 +606,8 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 
 	curr_stats.confirmed = 0;
 
+	status_bar_message("Redoing...");
+
 	ret = redo_group();
 	if(ret == 0)
 	{
@@ -1805,6 +1807,8 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	int ret;
 
 	curr_stats.confirmed = 0;
+
+	status_bar_message("Undoing...");
 
 	ret = undo_group();
 	if(ret == 0)
