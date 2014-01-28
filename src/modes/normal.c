@@ -611,28 +611,12 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	ret = redo_group();
 	if(ret == 0)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_message("Redone one group");
 	}
 	else if(ret == -2)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_error("Redone one group with errors");
 	}
 	else if(ret == -1)
@@ -1813,28 +1797,12 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	ret = undo_group();
 	if(ret == 0)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_message("Undone one group");
 	}
 	else if(ret == -2)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_error("Undone one group with errors");
 	}
 	else if(ret == -1)

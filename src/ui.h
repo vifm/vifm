@@ -292,6 +292,8 @@ void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
 void checked_wmove(WINDOW *win, int y, int x);
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
+/* Reloads visible lists of files preserving current position of cursor. */
+void ui_views_reload_visible_filelists(void);
 
 /* Operation cancellation. */
 

@@ -1844,6 +1844,20 @@ ui_view_win_changed(FileView *view)
 }
 
 void
+ui_views_reload_visible_filelists(void)
+{
+	if(curr_stats.view)
+	{
+		load_saving_pos(curr_view, 1);
+	}
+	else
+	{
+		load_saving_pos(curr_view, 1);
+		load_saving_pos(other_view, 1);
+	}
+}
+
+void
 ui_cancellation_reset(void)
 {
 	assert(ui_cancellation_disabled() && "Can't reset while active.");
