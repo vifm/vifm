@@ -1844,6 +1844,13 @@ ui_view_win_changed(FileView *view)
 }
 
 void
+ui_view_reset_selection_and_reload(FileView *view)
+{
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+}
+
+void
 ui_views_reload_visible_filelists(void)
 {
 	if(curr_stats.view)

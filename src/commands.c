@@ -699,8 +699,7 @@ post(int id)
 {
 	if(id != COM_GOTO && curr_view->selected_files > 0 && !keep_view_selection)
 	{
-		clean_selected_files(curr_view);
-		load_saving_pos(curr_view, 1);
+		ui_view_reset_selection_and_reload(curr_view);
 	}
 }
 

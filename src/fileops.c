@@ -331,13 +331,12 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 	}
 	free_selected_file_array(view);
-	clean_selected_files(view);
 
 	update_unnamed_reg(reg);
 
 	cmd_group_end();
 
-	load_saving_pos(view, 1);
+	ui_view_reset_selection_and_reload(view);
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
@@ -453,8 +452,7 @@ delete_file_bg(FileView *view, int use_trash)
 
 	view->selected_filelist = NULL;
 	free_selected_file_array(view);
-	clean_selected_files(view);
-	load_saving_pos(view, 1);
+	ui_view_reset_selection_and_reload(view);
 
 	strcpy(args->src, view->curr_dir);
 
@@ -2815,8 +2813,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	view->selected_filelist = NULL;
 	free_selected_file_array(view);
-	clean_selected_files(view);
-	load_saving_pos(view, 1);
+	ui_view_reset_selection_and_reload(view);
 
 	strcpy(args->src, view->curr_dir);
 
