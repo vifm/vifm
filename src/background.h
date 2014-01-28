@@ -77,8 +77,10 @@ void inner_bg_next(void);
 void remove_inner_bg_job(void);
 
 #ifndef _WIN32
+#define NO_JOB_ID (-1)
 job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 #else
+#define NO_JOB_ID INVALID_HANDLE_VALUE
 job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 

@@ -459,11 +459,7 @@ delete_file_bg(FileView *view, int use_trash)
 
 	get_group_file_list(view->selected_filelist, view->selected_files, buf);
 
-#ifndef _WIN32
-	args->job = add_background_job(-1, buf, -1);
-#else
-	args->job = add_background_job(-1, buf, (HANDLE)-1);
-#endif
+	args->job = add_background_job(-1, buf, NO_JOB_ID);
 	if(args->job == NULL)
 	{
 		free_string_array(args->sel_list, args->sel_list_len);
@@ -2804,11 +2800,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	general_prepare_for_bg_task(view, args);
 
-#ifndef _WIN32
-	args->job = add_background_job(-1, buf, -1);
-#else
-	args->job = add_background_job(-1, buf, (HANDLE)-1);
-#endif
+	args->job = add_background_job(-1, buf, NO_JOB_ID);
 	if(args->job == NULL)
 	{
 		free_string_array(args->list, args->nlines);
