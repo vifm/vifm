@@ -1852,9 +1852,15 @@ ui_views_reload_visible_filelists(void)
 	}
 	else
 	{
-		load_saving_pos(curr_view, 1);
-		load_saving_pos(other_view, 1);
+		ui_views_reload_filelists();
 	}
+}
+
+void
+ui_views_reload_filelists(void)
+{
+	load_saving_pos(curr_view, 1);
+	load_saving_pos(other_view, 1);
 }
 
 void

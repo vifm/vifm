@@ -1798,8 +1798,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	free_string_array(sel, sel_len);
 
 	clean_selected_files(view);
-	load_saving_pos(view, 1);
-	load_saving_pos(other_view, 1);
+	ui_views_reload_filelists();
 	if(from_file)
 		free_string_array(list, nlines);
 	return 0;
@@ -2726,8 +2725,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	free_string_array(sel, sel_len);
 	free_selected_file_array(view);
 	clean_selected_files(view);
-	load_saving_pos(view, 1);
-  load_saving_pos(other_view, 1);
+	ui_views_reload_filelists();
 	if(from_file)
 		free_string_array(list, nlines);
 

@@ -1389,8 +1389,7 @@ cmd_al(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Change word (rename file without extension). */
@@ -1701,8 +1700,7 @@ put_files(key_info_t key_info, int move)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, move);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Create link with absolute path */
@@ -1712,8 +1710,7 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 1);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Runs external editor to get command-line command and then executes it. */

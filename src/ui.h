@@ -294,6 +294,8 @@ void checked_wmove(WINDOW *win, int y, int x);
 void ui_view_win_changed(FileView *view);
 /* Reloads visible lists of files preserving current position of cursor. */
 void ui_views_reload_visible_filelists(void);
+/* Reloads lists of files preserving current position of cursor. */
+void ui_views_reload_filelists(void);
 
 /* Operation cancellation. */
 
