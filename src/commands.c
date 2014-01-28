@@ -3231,9 +3231,11 @@ restore_cmd(const cmd_info_t *cmd_info)
 		i++;
 	curr_view->list_pos = i;
 
+	ui_cancellation_reset();
+
 	cmd_group_begin("restore: ");
 	cmd_group_end();
-	for(i = 0; i < curr_view->list_rows; i++)
+	for(i = 0; i < curr_view->list_rows && !ui_cancellation_requested(); i++)
 	{
 		if(curr_view->dir_entry[i].selected)
 		{

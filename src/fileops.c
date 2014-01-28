@@ -206,7 +206,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
 	int x, y;
-	int i;
+	int sel_len;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
@@ -220,24 +220,12 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	if(count > 0)
 	{
-		int j;
 		get_selected_files(view, count, indexes);
-		i = view->list_pos;
-		for(j = 0; j < count; j++)
-			if(indexes[j] == i && i < view->list_rows - 1)
-			{
-				i++;
-				j = -1;
-			}
 	}
 	else
 	{
 		get_all_selected_files(view);
-		i = view->list_pos;
-		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
-			i++;
 	}
-	view->list_pos = i;
 
 	if(cfg.use_trash && use_trash)
 	{
@@ -260,7 +248,11 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
 	}
-	for(x = 0; x < view->selected_files; x++)
+
+	ui_cancellation_reset();
+
+	sel_len = view->selected_files;
+	for(x = 0; x < sel_len && !ui_cancellation_requested(); x++)
 	{
 		const char *const fname = view->selected_filelist[x];
 		char full_buf[PATH_MAX];
@@ -276,7 +268,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		progress_msg("Deleting files", x + 1, view->selected_files);
+		progress_msg("Deleting files", x + 1, sel_len);
 		if(cfg.use_trash && use_trash)
 		{
 			if(!is_trash_directory(full_buf))
@@ -285,6 +277,11 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 				if(dest != NULL)
 				{
 					result = perform_operation(OP_MOVE, NULL, full_buf, dest);
+					/* For some reason "rm" sometimes returns 0 on cancellation. */
+					if(path_exists(full_buf))
+					{
+						result = -1;
+					}
 					if(result == 0)
 					{
 						add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
@@ -310,19 +307,27 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		else
 		{
 			result = perform_operation(OP_REMOVE, NULL, full_buf, NULL);
+			/* For some reason "rm" sometimes returns 0 on cancellation. */
+			if(path_exists(full_buf))
+			{
+				result = -1;
+			}
 			if(result == 0)
+			{
 				add_operation(OP_REMOVE, NULL, NULL, full_buf, "");
+			}
 		}
 
 		if(result == 0)
 		{
+			if(strcmp(view->dir_entry[view->list_pos].name, fname) == 0)
+			{
+				if(view->list_pos + 1 < view->list_rows)
+				{
+					view->list_pos++;
+				}
+			}
 			y++;
-		}
-		else if(!view->dir_entry[view->list_pos].selected)
-		{
-			const int pos = find_file_pos_in_list(view, fname);
-			if(pos >= 0)
-				view->list_pos = pos;
 		}
 	}
 	free_selected_file_array(view);
@@ -1146,6 +1151,9 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
+	int sel_len;
+
+	ui_cancellation_reset();
 
 	snprintf(buf, sizeof(buf), "ch%s in %s: ", ((u && g) || u) ? "own" : "grp",
 			replace_home_part(curr_view->curr_dir));
@@ -1153,7 +1161,9 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	get_group_file_list(curr_view->saved_selection, curr_view->nsaved_selection,
 			buf);
 	cmd_group_begin(buf);
-	for(i = 0; i < curr_view->nsaved_selection; i++)
+
+	sel_len = curr_view->nsaved_selection;
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char *filename = curr_view->saved_selection[i];
 		int pos = find_file_pos_in_list(curr_view, filename);
@@ -1360,6 +1370,11 @@ put_next(const char dest_name[], int override)
 
 	/* TODO: refactor this function (put_next()) */
 
+	if(ui_cancellation_requested())
+	{
+		return -1;
+	}
+
 	override = override || put_confirm.overwrite_all;
 
 	filename = put_confirm.reg->files[put_confirm.x];
@@ -1438,6 +1453,12 @@ put_next(const char dest_name[], int override)
 	{
 		char *msg, *p;
 		size_t len;
+
+		/* For some reason "mv" sometimes returns 0 on cancellation. */
+		if(!path_exists(dst_buf))
+		{
+			return -1;
+		}
 
 		cmd_group_continue();
 
@@ -1738,8 +1759,10 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		view->selected_files = 0;
 	}
 
+	ui_cancellation_reset();
+
 	cmd_group_begin(buf);
-	for(i = 0; i < sel_len; i++)
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		int j;
 		const char * clone_name;
@@ -1914,10 +1937,23 @@ put_files_from_register_i(FileView *view, int start)
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
 	}
+
+	ui_cancellation_reset();
+
 	while(put_confirm.x < put_confirm.reg->num_files)
 	{
-		if(put_next("", 0) != 0)
+		const int put_result = put_next("", 0);
+		if(put_result > 0)
+		{
+			/* In this case put_next() takes care of interacting with a user. */
 			return 0;
+		}
+		else if(put_result < 0)
+		{
+			status_bar_messagef("%d file%s inserted", put_confirm.y,
+					(put_confirm.y == 1) ? "" : "s");
+			return 1;
+		}
 		put_confirm.x++;
 	}
 
@@ -2649,9 +2685,11 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		erase_selection(view);
 	}
 
+	ui_cancellation_reset();
+
 	processed = 0;
 	cmd_group_begin(buf);
-	for(i = 0; i < sel_len; i++)
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char dst_full[PATH_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
@@ -2858,13 +2896,15 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 		}
 	}
 
+	ui_cancellation_reset();
+
 	snprintf(buf, sizeof(buf), "mkdir in %s: ",
 			replace_home_part(view->curr_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	n = 0;
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count && !ui_cancellation_requested(); i++)
 	{
 		char full[PATH_MAX];
 		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
