@@ -123,6 +123,7 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
+static const char * get_cancellation_suffix(void);
 
 /* returns new value for save_msg */
 int
@@ -339,7 +340,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	ui_view_reset_selection_and_reload(view);
 
-	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
+	status_bar_messagef("%d %s deleted%s", y, y == 1 ? "file" : "files",
+			get_cancellation_suffix());
 	return 1;
 }
 
@@ -1937,8 +1939,8 @@ put_files_from_register_i(FileView *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			status_bar_messagef("%d file%s inserted", put_confirm.y,
-					(put_confirm.y == 1) ? "" : "s");
+			status_bar_messagef("%d file%s inserted%s", put_confirm.y,
+					(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
 			return 1;
 		}
 		put_confirm.x++;
@@ -1946,8 +1948,8 @@ put_files_from_register_i(FileView *view, int start)
 
 	pack_register(put_confirm.reg->name);
 
-	status_bar_messagef("%d file%s inserted", put_confirm.y,
-			(put_confirm.y == 1) ? "" : "s");
+	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
+			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
 
 	load_saving_pos(put_confirm.view, 1);
 
@@ -2717,8 +2719,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	if(from_file)
 		free_string_array(list, nlines);
 
-	status_bar_messagef("%d file%s successfully processed", processed,
-			(processed == 1) ? "" : "s");
+	status_bar_messagef("%d file%s successfully processed%s", processed,
+			(processed == 1) ? "" : "s", get_cancellation_suffix());
 
 	return 1;
 }
@@ -2922,10 +2924,8 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 		go_to_first_file(view, names, count);
 	}
 
-	if(n == 1)
-		status_bar_message("1 directory created");
-	else
-		status_bar_messagef("%d directories created", n);
+	status_bar_messagef("%d director%s created", n, (n == 1) ? "y" : "ies",
+			get_cancellation_suffix());
 }
 
 int
@@ -2969,7 +2969,7 @@ make_files(FileView *view, char **names, int count)
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	n = 0;
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count && !ui_cancellation_requested(); i++)
 	{
 		char full[PATH_MAX];
 		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
@@ -2984,7 +2984,8 @@ make_files(FileView *view, char **names, int count)
 	if(n > 0)
 		go_to_first_file(view, names, count);
 
-	status_bar_messagef("%d file%s created", n, (n == 1) ? "" : "s");
+	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
+			get_cancellation_suffix());
 	return 1;
 }
 
@@ -3024,8 +3025,14 @@ restore_files(FileView *view)
 
 	load_saving_pos(view, 1);
 
-	status_bar_messagef("Restored %d of %d", m, n);
+	status_bar_messagef("Restored %d of %d%s", m, n, get_cancellation_suffix());
 	return 1;
+}
+
+static const char *
+get_cancellation_suffix(void)
+{
+	return ui_cancellation_requested() ? " (cancelled)" : "";
 }
 
 int
