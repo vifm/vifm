@@ -85,6 +85,8 @@ int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 /* Can modify strings in the names array. */
 void make_dirs(FileView *view, char **names, int count, int create_parent);
 int make_files(FileView *view, char **names, int count);
+/* Returns new value for save_msg flag. */
+int restore_files(FileView *view);
 
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);

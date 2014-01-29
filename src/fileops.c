@@ -2989,6 +2989,46 @@ make_files(FileView *view, char **names, int count)
 }
 
 int
+restore_files(FileView *view)
+{
+	int i;
+	int m = 0;
+	int n = view->selected_files;
+
+	i = view->list_pos;
+	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
+	{
+		i++;
+	}
+	view->list_pos = i;
+
+	ui_cancellation_reset();
+
+	cmd_group_begin("restore: ");
+	cmd_group_end();
+	for(i = 0; i < view->list_rows && !ui_cancellation_requested(); i++)
+	{
+		if(view->dir_entry[i].selected)
+		{
+			char full_path[PATH_MAX];
+			snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir,
+					view->dir_entry[i].name);
+			chosp(full_path);
+
+			if(restore_from_trash(full_path) == 0)
+			{
+				m++;
+			}
+		}
+	}
+
+	load_saving_pos(view, 1);
+
+	status_bar_messagef("Restored %d of %d", m, n);
+	return 1;
+}
+
+int
 check_if_dir_writable(DirRole dir_role, const char *path)
 {
 	if(is_dir_writable(path))
