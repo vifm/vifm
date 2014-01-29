@@ -1883,7 +1883,9 @@ ui_cancellation_enable(void)
 {
 	assert(ui_cancellation_disabled() && "Can't enable twice in a row.");
 
-	cancellation_state = CRS_ENABLED;
+	cancellation_state = (cancellation_state == CRS_DISABLED)
+	                   ? CRS_ENABLED
+	                   : CRS_ENABLED_REQUESTED;
 
 	/* Temporary disable raw mode of terminal so that Ctrl-C is be handled as
 	 * SIGINT signal rather than as regular input character. */
