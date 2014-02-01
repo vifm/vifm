@@ -31,6 +31,8 @@
 #define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
 #endif
 
+#include <unistd.h> /* _SC_ARG_MAX sysconf() */
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */

@@ -76,6 +76,9 @@
 
 	Fixed processing of some forms of nested :if statements.
 
+	Fixed segmentation fault for operating systems that have gigantic maximum
+	length of argument list.  Thanks to Jiri Wiesner.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

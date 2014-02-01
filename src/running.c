@@ -819,7 +819,16 @@ store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
 int
 shellout(const char *command, int pause, int allow_screen)
 {
-	char buf[cfg.max_args];
+	/* cfg.max_args can be an enormous huge number and we want to set an upper
+	 * bound for the length of command line buffer.  Picket upper bound based on
+	 * command-line formatting done by gen_shell_cmd() and still should left some
+	 * space unused just for safety reasons (to take possible future changes into
+	 * account).  4096 here stands for minimum value of _POSIX_ARG_MAX parameter,
+	 * which is not used directly for portability reasons. */
+	const size_t command_len = (command != NULL) ? strlen(command) : 0UL;
+	const size_t max_composed_cmd_len = (4096 + command_len)*4;
+	char buf[MIN(cfg.max_args, max_composed_cmd_len)];
+
 	int result;
 	int ec;
 
