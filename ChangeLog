@@ -79,6 +79,9 @@
 	Fixed segmentation fault for operating systems that have gigantic maximum
 	length of argument list.  Thanks to Jiri Wiesner.
 
+	Fixed situation when oldest elements of histories were not available even
+	though they were present in vifminfo file.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
