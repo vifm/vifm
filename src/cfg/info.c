@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
@@ -350,15 +351,19 @@ ensure_history_not_full(hist_t *hist, int *len)
 {
 	void *p;
 
-	if(hist->pos != *len)
+	if(hist->pos + 1 != *len)
 		return;
 
-	p = realloc(hist->items, sizeof(char*)*(*len + 1));
+	p = realloc(hist->items, sizeof(char *)*(*len + 1));
 	if(p == NULL)
 		return;
 
 	++*len;
 	hist->items = p;
+
+	/* Some other pieces of code rely on the fact that pointers to absent strings
+	 * are set to NULL. */
+	hist->items[*len - 1] = NULL;
 }
 
 static void
