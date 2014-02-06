@@ -377,6 +377,7 @@ const char *tags[] = {
 	"vifm-c_SHIFT-Tab",
 	"vifm-c_Tab",
 	"vifm-c_Up",
+	"vifm-cancellation",
 	"vifm-cg",
 	"vifm-cl",
 	"vifm-clientserver",

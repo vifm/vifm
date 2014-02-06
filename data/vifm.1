@@ -79,7 +79,8 @@ See Startup section below for the explanations on $VIFM.
 .\" ---------------------------------------------------------------------------
 .TP
 .BI "Ctrl-C or Escape"
-cancel most operations, clear all selected files.
+cancel most operations (see "Cancellation" section below), clear all selected
+files.
 .TP
 .BI Ctrl-L
 clear and redraw the screen.
@@ -2073,6 +2074,41 @@ You can see if command is still running in the :jobs menu.  Backgrounded
 commands have progress instead of process id at the line beginning.
 
 Background operations cannot be undone.
+.\" ---------------------------------------------------------------------------
+.SH Cancellation
+.\" ---------------------------------------------------------------------------
+There are two types of operations that can be cancelled:
+.IP \- 2
+file system operations;
+.IP \- 2
+calls of external applications.
+.LP
+Note that vifm never terminates applications, it sends SIGINT signal and lets
+the application quit normally.
+
+When one of set of operations is cancelled (e.g. copying of 5th file of 10
+files), further operations are cancelled too.  In this case undo history will
+contain only actually performed operations.
+
+Cancelled operations are indicated by "(cancelled)" suffix appended to
+information message on statusbar.
+
+File system operations
+
+Currently the following commands can be cancelled: :alink, :chmod, :chown,
+:clone, :copy, :delete, :mkdir, :move, :restore, :rlink, :touch.  File
+putting (on p/P key) can be cancelled as well.  It's not hard to see that these
+are mainly long-running operations.
+
+Cancelling commands when they are repeated for undo/redo operations is allowed
+for convenience, but is not recommended as further undo/redo operations might
+get blocked by side-effects of partially cancelled group of operations.
+
+These commands can't be cancelled: :empty, :rename, :substitute, :tr.
+
+External application calls
+
+Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 .\" ---------------------------------------------------------------------------
 .SH Globs
 .\" ---------------------------------------------------------------------------
