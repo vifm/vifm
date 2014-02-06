@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 15
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -101,8 +101,10 @@ See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 -------------------------------------------------------------------------------
 *vifm-general-keys*
 
-Ctrl-C or Escape - cancel most operations.
-Ctrl-C or Escape - clear all selected files.
+                                               *vifm-Escape* *vifm-CTRL-C*
+Ctrl-C or Escape - cancel most operations, clear all selected files.
+
+                                               *vifm-CTRL-L*
 Ctrl-L - clear and redraw the screen.
 
 --------------------------------------------------------------------------------
@@ -602,6 +604,7 @@ Enter - save selection and go back to normal mode.
                                                *vifm-v_gv*
 gv - restore previous visual selection.
 
+                                               *vifm-v_Escape* *vifm-v_CTRL-C*
                                                *vifm-v_v* *vifm-v_V*
 v, V - leave visual mode.
 
