@@ -3029,6 +3029,8 @@ restore_files(FileView *view)
 	return 1;
 }
 
+/* Provides different suffixes depending on whether cancellation was requested
+ * or not.  Returns pointer to a string literal. */
 static const char *
 get_cancellation_suffix(void)
 {
