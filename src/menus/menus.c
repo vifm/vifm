@@ -66,6 +66,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -687,7 +688,28 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	fclose(file);
 	print_errors(err);
 
+	if(ui_cancellation_requested())
+	{
+		append_to_string(&m->title, "(cancelled) ");
+		append_to_string(&m->empty_msg, " (cancelled)");
+	}
+
 	return display_menu(m, view);
+}
+
+/* Replaces *str with a copy of the with string extended by the suffix.  *str
+ * can be NULL in which case it's treated as empty string. equal to the with (then function does nothing).  Returns non-zero if memory allocation
+ * failed. */
+static void
+append_to_string(char **str, const char suffix[])
+{
+	const char *const non_null_str = (*str == NULL) ? "" : *str;
+	char *const appended_str = format_str("%s%s", non_null_str, suffix);
+	if(appended_str != NULL)
+	{
+		free(*str);
+		*str = appended_str;
+	}
 }
 
 /* Clones the line replacing all occurrences of horizontal tabulation character
