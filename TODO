@@ -188,3 +188,4 @@ Code improvements.
     Move utils/mntent.h and utils/fs_limits.h to compat/ directory.
     Add a function to count number of elements in a NULL terminated array of
         pointers.
+    Be consistent on menu titles (some of them have spaces, some don't).
