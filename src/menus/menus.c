@@ -661,6 +661,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 
 	show_progress("", 0);
 
+	ui_cancellation_reset();
 	ui_cancellation_enable();
 
 	wait_for_data_from(pid, file, 0);
