@@ -1,4 +1,4 @@
-.TH vifm 1 "Feb 06, 2014" "" "Vifm"
+.TH vifm 1 "Feb 09, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2306,6 +2306,11 @@ configure vifm to use it in the following way:
 As the syntax of this command is rather limited, one can't use :find
 command with selection of more than one item in this case.
 
+When using find port on Windows, another option is to setup 'findprg' like
+this:
+.EX
+    set findprg="find %s %a"
+.EE
 .TP
 .BI followlinks
 type: boolean

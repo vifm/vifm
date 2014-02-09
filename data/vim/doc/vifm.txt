@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 06
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2003,6 +2003,10 @@ configure vifm to use it in the following way: >
 As the syntax of this command is rather limited, one can't use |vifm-:find|
 command with selection of more than one item in this case.
 
+When using find port on Windows, another option is to setup 'findprg' like
+this: >
+    set findprg="find %s %a"
+<
                                                *vifm-'followlinks'*
 followlinks
 type: boolean
