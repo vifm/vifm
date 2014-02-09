@@ -132,6 +132,7 @@ ctrl_handler(DWORD dwCtrlType)
 	{
 		case CTRL_C_EVENT:
 		case CTRL_BREAK_EVENT:
+			ui_cancellation_request();
 			break;
 		case CTRL_CLOSE_EVENT:
 		case CTRL_LOGOFF_EVENT:
