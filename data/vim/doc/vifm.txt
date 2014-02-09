@@ -2005,7 +2005,8 @@ configure vifm to use it in the following way: >
     set findprg="where /R %s %A"
 <
 As the syntax of this command is rather limited, one can't use |vifm-:find|
-command with selection of more than one item in this case.
+command with selection of more than one item in this case.  The command looks
+for files only completely ignoring directories.
 
 When using find port on Windows, another option is to setup 'findprg' like
 this: >
