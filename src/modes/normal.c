@@ -605,32 +605,20 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	int ret;
 
 	curr_stats.confirmed = 0;
+	ui_cancellation_reset();
+
+	status_bar_message("Redoing...");
 
 	ret = redo_group();
+
 	if(ret == 0)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_message("Redone one group");
 	}
 	else if(ret == -2)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_error("Redone one group with errors");
 	}
 	else if(ret == -1)
@@ -648,6 +636,11 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	else if(ret == -6)
 	{
 		status_bar_message("Group redo skipped by user");
+	}
+	else if(ret == -7)
+	{
+		ui_views_reload_visible_filelists();
+		status_bar_message("Redoing was cancelled");
 	}
 	else if(ret == 1)
 	{
@@ -1403,8 +1396,7 @@ cmd_al(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Change word (rename file without extension). */
@@ -1715,8 +1707,7 @@ put_files(key_info_t key_info, int move)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, move);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Create link with absolute path */
@@ -1726,8 +1717,7 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 1);
-	load_saving_pos(&lwin, 1);
-	load_saving_pos(&rwin, 1);
+	ui_views_reload_filelists();
 }
 
 /* Runs external editor to get command-line command and then executes it. */
@@ -1805,32 +1795,20 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	int ret;
 
 	curr_stats.confirmed = 0;
+	ui_cancellation_reset();
+
+	status_bar_message("Undoing...");
 
 	ret = undo_group();
+
 	if(ret == 0)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_message("Undone one group");
 	}
 	else if(ret == -2)
 	{
-		if(curr_stats.view)
-		{
-			load_saving_pos(curr_view, 1);
-		}
-		else
-		{
-			load_saving_pos(&lwin, 1);
-			load_saving_pos(&rwin, 1);
-		}
+		ui_views_reload_visible_filelists();
 		status_bar_error("Undone one group with errors");
 	}
 	else if(ret == -1)
@@ -1852,6 +1830,11 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	else if(ret == -6)
 	{
 		status_bar_message("Group undo skipped by user");
+	}
+	else if(ret == -7)
+	{
+		ui_views_reload_visible_filelists();
+		status_bar_message("Undoing was cancelled");
 	}
 	else if(ret == 1)
 	{

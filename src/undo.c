@@ -193,6 +193,8 @@ static perform_func do_func;
 /* External function, which corrects operation availability and influence on
  * operation checks. */
 static op_available_func op_avail_func;
+/* External optional callback to abort execution of compound operations. */
+static undo_cancel_requested cancel_func;
 /* Number of undo levels, which are not groups but operations. */
 static const int *undo_levels;
 
@@ -208,6 +210,7 @@ static char *group_msg;
 
 static int command_count;
 
+static int no_function(void);
 static void init_cmd(cmd_t *cmd, OPS op, void *do_data, void *undo_data);
 static void init_entry(cmd_t *cmd, const char **e, int type);
 static void remove_cmd(cmd_t *cmd);
@@ -222,13 +225,21 @@ static char **fill_undolist_nondetail(char **list);
 
 void
 init_undo_list(perform_func exec_func, op_available_func op_avail,
-		const int* max_levels)
+		undo_cancel_requested cancel, const int* max_levels)
 {
 	assert(exec_func != NULL);
 
 	do_func = exec_func;
 	op_avail_func = op_avail;
+	cancel_func = (cancel != NULL) ? cancel : &no_function;
 	undo_levels = max_levels;
+}
+
+/* Always says no.  Returns zero. */
+static int
+no_function(void)
+{
+	return 0;
 }
 
 void
@@ -451,6 +462,7 @@ undo_group(void)
 {
 	int errors, disbalance, cant_undone;
 	int skip;
+	int cancelled;
 	assert(!group_opened);
 
 	if(current == &cmds)
@@ -477,6 +489,7 @@ undo_group(void)
 	current->group->balance--;
 
 	skip = 0;
+	cancelled = 0;
 	do
 	{
 		if(!skip)
@@ -496,12 +509,21 @@ undo_group(void)
 		}
 		current = current->prev;
 	}
-	while(current != &cmds && current->group == current->next->group);
+	while(!(cancelled = cancel_func()) && current != &cmds &&
+			current->group == current->next->group);
 
-	if(skip)
+	if(cancelled)
+	{
+		return -7;
+	}
+	else if(skip)
+	{
 		return -6;
-
-	return errors ? -2 : 0;
+	}
+	else
+	{
+		return errors ? -2 : 0;
+	}
 }
 
 static int
@@ -527,6 +549,7 @@ redo_group(void)
 {
 	int errors, disbalance;
 	int skip;
+	int cancelled;
 	assert(!group_opened);
 
 	if(current->next == NULL)
@@ -550,6 +573,7 @@ redo_group(void)
 	current->next->group->balance++;
 
 	skip = 0;
+	cancelled = 0;
 	do
 	{
 		current = current->next;
@@ -569,12 +593,21 @@ redo_group(void)
 			}
 		}
 	}
-	while(current->next != NULL && current->group == current->next->group);
+	while(!(cancelled = cancel_func()) && current->next != NULL &&
+			current->group == current->next->group);
 
-	if(skip)
+	if(cancelled)
+	{
+		return -7;
+	}
+	else if(skip)
+	{
 		return -6;
-
-	return errors ? -2 : 0;
+	}
+	else
+	{
+		return errors ? -2 : 0;
+	}
 }
 
 static int

@@ -29,7 +29,7 @@
 #endif
 #include <unistd.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
@@ -59,9 +59,23 @@
 #include "signals.h"
 #include "status.h"
 
+/* State of cancellation request processing. */
+typedef enum
+{
+	CRS_DISABLED,           /* Cancellation is disabled. */
+	CRS_DISABLED_REQUESTED, /* Cancellation is disabled and was requested. */
+	CRS_ENABLED,            /* Cancellation is enabled, but wasn't requested. */
+	CRS_ENABLED_REQUESTED,  /* Cancellation is enabled and was requested. */
+}
+cancellation_request_state;
+
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
 static int multiline_status_bar;
+
+/* Whether cancellation was requested.  Used by ui_cancellation_* group of
+ * functions. */
+static cancellation_request_state cancellation_state;
 
 static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
@@ -77,6 +91,8 @@ static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void switch_panes_content(void);
+static int ui_cancellation_enabled(void);
+static int ui_cancellation_disabled(void);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -1825,6 +1841,102 @@ void
 ui_view_win_changed(FileView *view)
 {
 	wnoutrefresh(view->win);
+}
+
+void
+ui_view_reset_selection_and_reload(FileView *view)
+{
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+}
+
+void
+ui_views_reload_visible_filelists(void)
+{
+	if(curr_stats.view)
+	{
+		load_saving_pos(curr_view, 1);
+	}
+	else
+	{
+		ui_views_reload_filelists();
+	}
+}
+
+void
+ui_views_reload_filelists(void)
+{
+	load_saving_pos(curr_view, 1);
+	load_saving_pos(other_view, 1);
+}
+
+void
+ui_cancellation_reset(void)
+{
+	assert(ui_cancellation_disabled() && "Can't reset while active.");
+
+	cancellation_state = CRS_DISABLED;
+}
+
+void
+ui_cancellation_enable(void)
+{
+	assert(ui_cancellation_disabled() && "Can't enable twice in a row.");
+
+	cancellation_state = (cancellation_state == CRS_DISABLED)
+	                   ? CRS_ENABLED
+	                   : CRS_ENABLED_REQUESTED;
+
+	/* Temporary disable raw mode of terminal so that Ctrl-C is be handled as
+	 * SIGINT signal rather than as regular input character. */
+	noraw();
+}
+
+void
+ui_cancellation_request(void)
+{
+	if(ui_cancellation_enabled())
+	{
+		cancellation_state = CRS_ENABLED_REQUESTED;
+	}
+}
+
+int
+ui_cancellation_requested(void)
+{
+	return cancellation_state == CRS_ENABLED_REQUESTED
+	    || cancellation_state == CRS_DISABLED_REQUESTED;
+}
+
+void
+ui_cancellation_disable(void)
+{
+	assert(ui_cancellation_enabled() && "Can't disable what disabled.");
+
+	/* Restore raw mode of terminal so that Ctrl-C is be handled as regular input
+	 * character rather than as SIGINT signal. */
+	raw();
+
+	cancellation_state = (cancellation_state == CRS_ENABLED_REQUESTED)
+	                   ? CRS_DISABLED_REQUESTED
+	                   : CRS_DISABLED;
+}
+
+/* Checks whether cancellation processing is enabled.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+ui_cancellation_enabled(void)
+{
+	return cancellation_state == CRS_ENABLED
+	    || cancellation_state == CRS_ENABLED_REQUESTED;
+}
+
+/* Checks whether cancellation processing is disabled.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+ui_cancellation_disabled(void)
+{
+	return !ui_cancellation_enabled();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

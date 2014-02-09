@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef _WIN32
-#include <sys/wait.h>
+#include <sys/wait.h> /* WEXITSTATUS() */
 #endif
 
 #include "cfg/config.h"
@@ -48,7 +48,6 @@
 #include "commands_completion.h"
 #include "status.h"
 
-static int set_sigchld(int block);
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 
@@ -125,26 +124,6 @@ check_background_jobs(void)
 	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
 	 *        blocked. */
 	(void)set_sigchld(0);
-}
-
-/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
- * is returned. */
-static int
-set_sigchld(int block)
-{
-#ifndef _WIN32
-	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
-	sigset_t sigchld_mask;
-
-	if(sigemptyset(&sigchld_mask) == -1 ||
-	   sigaddset(&sigchld_mask, SIGCHLD) == -1 ||
-	   sigprocmask(action, &sigchld_mask, NULL) == -1)
-	{
-		return 1;
-	}
-#endif
-
-	return 0;
 }
 
 /* Checks status of the job.  Processes error stream or checks whether process
@@ -318,11 +297,17 @@ background_and_wait_for_errors(char *cmd)
 		return -1;
 	}
 
+	(void)set_sigchld(1);
+
 	if((pid = fork()) == -1)
+	{
+		(void)set_sigchld(0);
 		return -1;
+	}
 
 	if(pid == 0)
 	{
+		(void)set_sigchld(0);
 		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
@@ -333,20 +318,40 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
+		ui_cancellation_enable();
+
+		wait_for_data_from(pid, NULL, error_pipe[0]);
+
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
 		{
+			const int read_empty_line = nread == 1 && linebuf[0] == '\n';
 			result = -1;
 			linebuf[nread] = '\0';
-			if(nread == 1 && linebuf[0] == '\n')
-				continue;
-			strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
+
+			if(!read_empty_line)
+			{
+				strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
+			}
+
+			wait_for_data_from(pid, NULL, error_pipe[0]);
 		}
 		close(error_pipe[0]);
 
+		ui_cancellation_disable();
+
 		if(result != 0)
+		{
 			error_msg("Background Process Error", buf);
+		}
+		else
+		{
+			const int status = get_proc_exit_status(pid);
+			result = WEXITSTATUS(status);
+		}
 	}
+
+	(void)set_sigchld(0);
 
 	return result;
 #else
@@ -355,7 +360,7 @@ background_and_wait_for_errors(char *cmd)
 }
 
 #ifndef _WIN32
-int
+pid_t
 background_and_capture(char *cmd, FILE **out, FILE **err)
 {
 	pid_t pid;
@@ -365,7 +370,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	if(pipe(out_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(pipe(error_pipe) != 0)
@@ -373,7 +378,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if((pid = fork()) == -1)
@@ -382,7 +387,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		close(out_pipe[1]);
 		close(error_pipe[0]);
 		close(error_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(pid == 0)
@@ -410,19 +415,21 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	*out = fdopen(out_pipe[0], "r");
 	*err = fdopen(error_pipe[0], "r");
 
-	return 0;
+	return pid;
 }
 #else
-static int
+/* Runs command in a background and redirects its stdout and stderr streams to
+ * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
+static pid_t
 background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
 	char *args[4];
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
-		return -1;
+		return (pid_t)-1;
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
-		return -1;
+		return (pid_t)-1;
 
 	args[0] = "cmd";
 	args[1] = "/C";
@@ -430,30 +437,30 @@ background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 	args[3] = NULL;
 
 	if(_spawnvp(P_NOWAIT, args[0], (const char **)args) == 0)
-		return -1;
+		return (pid_t)-1;
 
 	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
-		return -1;
+		return (pid_t)-1;
 	if((*err = _fdopen(err_pipe[0], "r")) == NULL)
 	{
 		fclose(*out);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	return 0;
 }
 
-int
+pid_t
 background_and_capture(char *cmd, FILE **out, FILE **err)
 {
 	int out_fd, out_pipe[2];
 	int err_fd, err_pipe[2];
-	int e;
+	pid_t pid;
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
-		return -1;
+		return (pid_t)-1;
 	}
 
 	if(_pipe(err_pipe, 512, O_NOINHERIT) != 0)
@@ -461,13 +468,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
-		return -1;
+		return (pid_t)-1;
 	}
 
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	e = background_and_capture_internal(cmd, out, err, out_pipe, err_pipe);
+	pid = background_and_capture_internal(cmd, out, err, out_pipe, err_pipe);
 
 	_close(out_pipe[1]);
 	_close(err_pipe[1]);
@@ -475,13 +482,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
 
-	if(e != 0)
+	if(pid == (pid_t)-1)
 	{
 		_close(out_pipe[0]);
 		_close(err_pipe[0]);
 	}
 
-	return e;
+	return pid;
 }
 #endif
 

@@ -22,11 +22,15 @@
 
 #include "macros.h"
 
-#include <sys/types.h> /* gid_t mode_t uid_t */
+#include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR "; "PAUSE_CMD
+
+/* Waits for a process to finish and queries for its exit status.  Returns exit
+ * status of the process specified by its identifier. */
+int get_proc_exit_status(pid_t pid);
 
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 

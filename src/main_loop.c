@@ -47,6 +47,8 @@
 #include "status.h"
 #include "ui.h"
 
+static void process_scheduled_redraw(void);
+
 static wchar_t buf[128];
 static int pos;
 
@@ -73,10 +75,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		if(is_redraw_scheduled())
-		{
-			modes_redraw();
-		}
+		process_scheduled_redraw();
 
 		if(!is_status_bar_multiline() && !is_in_menu_like_mode() &&
 				get_mode() != CMDLINE_MODE)
@@ -96,10 +95,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			if((result = wget_wch(win, c)) != ERR)
 				break;
 
-			if(is_redraw_scheduled())
-			{
-				modes_redraw();
-			}
+			process_scheduled_redraw();
 		}
 		if(result != ERR)
 			break;
@@ -253,10 +249,7 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		if(is_redraw_scheduled())
-		{
-			modes_redraw();
-		}
+		process_scheduled_redraw();
 
 		pos = 0;
 		buf[0] = L'\0';
@@ -274,6 +267,16 @@ main_loop(void)
 		 * it should be correct for modes_post() in case of preview modes. */
 		(void)vifm_chdir(curr_view->curr_dir);
 		modes_post();
+	}
+}
+
+/* Redraws TUI if it's scheduled. */
+static void
+process_scheduled_redraw(void)
+{
+	if(is_redraw_scheduled())
+	{
+		modes_redraw();
 	}
 }
 

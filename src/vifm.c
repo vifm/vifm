@@ -359,7 +359,8 @@ main(int argc, char *argv[])
 
 	colmgr_init(COLOR_PAIRS);
 	init_modes();
-	init_undo_list(&perform_operation, NULL, &cfg.undo_levels);
+	init_undo_list(&perform_operation, NULL, &ui_cancellation_requested,
+			&cfg.undo_levels);
 	load_local_options(curr_view);
 
 	curr_stats.load_stage = 1;

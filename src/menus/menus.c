@@ -27,11 +27,12 @@
 
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <sys/types.h> /* pid_t */
 #include <unistd.h> /* access() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memmove() memset() strdup() strchr() strlen()
@@ -50,6 +51,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "../bookmarks.h"
 #include "../filelist.h"
@@ -64,6 +66,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
@@ -646,17 +649,25 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	FILE *file, *err;
 	char *line = NULL;
 	int x;
+	pid_t pid;
 
-	LOG_INFO_MSG("Capturing outpu of the command to a menu: %s", cmd);
+	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
 
-	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	pid = background_and_capture((char *)cmd, &file, &err);
+	if(pid == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
 	}
 
-	x = 0;
 	show_progress("", 0);
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	wait_for_data_from(pid, file, 0);
+
+	x = 0;
 	while((line = read_line(file, line)) != NULL)
 	{
 		char *expanded_line;
@@ -667,13 +678,38 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		{
 			m->items[x++] = expanded_line;
 		}
+
+		wait_for_data_from(pid, file, 0);
 	}
 	m->len = x;
+
+	ui_cancellation_disable();
 
 	fclose(file);
 	print_errors(err);
 
+	if(ui_cancellation_requested())
+	{
+		append_to_string(&m->title, "(cancelled) ");
+		append_to_string(&m->empty_msg, " (cancelled)");
+	}
+
 	return display_menu(m, view);
+}
+
+/* Replaces *str with a copy of the with string extended by the suffix.  *str
+ * can be NULL in which case it's treated as empty string. equal to the with (then function does nothing).  Returns non-zero if memory allocation
+ * failed. */
+static void
+append_to_string(char **str, const char suffix[])
+{
+	const char *const non_null_str = (*str == NULL) ? "" : *str;
+	char *const appended_str = format_str("%s%s", non_null_str, suffix);
+	if(appended_str != NULL)
+	{
+		free(*str);
+		*str = appended_str;
+	}
 }
 
 /* Clones the line replacing all occurrences of horizontal tabulation character

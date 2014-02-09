@@ -292,6 +292,33 @@ void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
 void checked_wmove(WINDOW *win, int y, int x);
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
+/* Resets selection of the view and reloads it preserving cursor position. */
+void ui_view_reset_selection_and_reload(FileView *view);
+/* Reloads visible lists of files preserving current position of cursor. */
+void ui_views_reload_visible_filelists(void);
+/* Reloads lists of files preserving current position of cursor. */
+void ui_views_reload_filelists(void);
+
+/* Operation cancellation. */
+
+/* Resets state so that ui_cancellation_requested() returns zero. */
+void ui_cancellation_reset(void);
+
+/* Enables handling of cancellation requests through the UI. */
+void ui_cancellation_enable(void);
+
+/* External callback for notifying this unit about cancellation request.  Should
+ * be called between ui_cancellation_enable() and ui_cancellation_disable(). */
+void ui_cancellation_request(void);
+
+/* If cancellation is enabled, checks whether cancelling of current operation is
+ * requested.  Should be called between ui_cancellation_enable() and
+ * ui_cancellation_disable().  Returns non-zero if so, otherwise zero is
+ * returned. */
+int ui_cancellation_requested(void);
+
+/* Disables handling of cancellation requests through the UI. */
+void ui_cancellation_disable(void);
 
 #endif /* VIFM__UI_H__ */
 

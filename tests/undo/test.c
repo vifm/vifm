@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 #include "seatest.h"
 
@@ -27,7 +28,7 @@ op_avail(OPS op)
 void
 init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
 {
-	init_undo_list(exec_func, &op_avail, max_levels);
+	init_undo_list(exec_func, &op_avail, NULL, max_levels);
 }
 
 static void

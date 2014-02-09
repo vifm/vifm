@@ -699,8 +699,7 @@ post(int id)
 {
 	if(id != COM_GOTO && curr_view->selected_files > 0 && !keep_view_selection)
 	{
-		clean_selected_files(curr_view);
-		load_saving_pos(curr_view, 1);
+		ui_view_reset_selection_and_reload(curr_view);
 	}
 }
 
@@ -3221,37 +3220,7 @@ clean_view_history(FileView *const view)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: move this either to fileops.c or to trash.c */
-	int i;
-	int m = 0;
-	int n = curr_view->selected_files;
-
-	i = curr_view->list_pos;
-	while(i < curr_view->list_rows - 1 && curr_view->dir_entry[i].selected)
-		i++;
-	curr_view->list_pos = i;
-
-	cmd_group_begin("restore: ");
-	cmd_group_end();
-	for(i = 0; i < curr_view->list_rows; i++)
-	{
-		if(curr_view->dir_entry[i].selected)
-		{
-			char full_path[PATH_MAX];
-			snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
-					curr_view->dir_entry[i].name);
-			chosp(full_path);
-
-			if(restore_from_trash(full_path) == 0)
-			{
-				m++;
-			}
-		}
-	}
-
-	load_saving_pos(curr_view, 1);
-	status_bar_messagef("Restored %d of %d", m, n);
-	return 1;
+	return restore_files(curr_view) != 0;
 }
 
 /* Creates symbolic links with relative paths to files. */
@@ -3969,7 +3938,7 @@ output_to_statusbar(const char *cmd)
 	char *lines;
 	size_t len;
 
-	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	if(background_and_capture((char *)cmd, &file, &err) == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;

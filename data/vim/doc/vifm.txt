@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Jan 15
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -11,6 +11,7 @@
 |vifm-command-line-edit|  External editing of command line content.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
+|vifm-cancellation|       Cancellation of commands.
 |vifm-globs|              Description of how about globs work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
@@ -101,8 +102,11 @@ See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 -------------------------------------------------------------------------------
 *vifm-general-keys*
 
-Ctrl-C or Escape - cancel most operations.
-Ctrl-C or Escape - clear all selected files.
+                                               *vifm-Escape* *vifm-CTRL-C*
+Ctrl-C or Escape - cancel most operations (see |vifm-cancellation|), clear all
+    selected files.
+
+                                               *vifm-CTRL-L*
 Ctrl-L - clear and redraw the screen.
 
 --------------------------------------------------------------------------------
@@ -602,6 +606,7 @@ Enter - save selection and go back to normal mode.
                                                *vifm-v_gv*
 gv - restore previous visual selection.
 
+                                               *vifm-v_Escape* *vifm-v_CTRL-C*
                                                *vifm-v_v* *vifm-v_V*
 v, V - leave visual mode.
 
@@ -1792,6 +1797,47 @@ commands have progress instead of process id at the line beginning.
 Background operations cannot be undone.
 
 --------------------------------------------------------------------------------
+*vifm-cancellation*
+
+Note that cancellation works somewhat different on Windows platform due to
+different mechanism of break signal propagation.  One also might need to use
+Ctrl-Break shortcut instead of Ctrl-C.
+
+There are two types of operations that can be cancelled:
+ - file system operations;
+ - calls of external applications.
+
+Note that vifm never terminates applications, it sends SIGINT signal and lets
+the application quit normally.
+
+When one of set of operations is cancelled (e.g. copying of 5th file of 10
+files), further operations are cancelled too.  In this case undo history will
+contain only actually performed operations.
+
+Cancelled operations are indicated by "(cancelled)" suffix appended to
+information message on statusbar.
+
+File system operations~
+
+Currently the following commands can be cancelled: |vifm-:alink|, |vifm-:chmod|,
+|vifm-:chown|, |vifm-:clone|, |vifm-:copy|, |vifm-:delete|, |vifm-:mkdir|, |vifm-:move|,
+|vifm-:restore|, |vifm-:rlink|, |vifm-:touch|.  File putting (|vifm-p|, |vifm-P|) can
+be cancelled as well.  It's not hard to see that these are mainly
+long-running operations.
+
+Cancelling commands when they are repeated for undo/redo operations is allowed
+for convenience, but is not recommended as further undo/redo operations might
+get blocked by side-effects of partially cancelled group of operations.
+
+These commands can't be cancelled: |vifm-:empty|, |vifm-:rename|,
+|vifm-:substitute|, |vifm-:tr|.
+
+External application calls~
+
+Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
+|vifm-:grep|, |vifm-:locate|.
+
+--------------------------------------------------------------------------------
 *vifm-globs*
 
 |vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globs
@@ -1959,8 +2005,13 @@ configure vifm to use it in the following way: >
     set findprg="where /R %s %A"
 <
 As the syntax of this command is rather limited, one can't use |vifm-:find|
-command with selection of more than one item in this case.
+command with selection of more than one item in this case.  The command looks
+for files only completely ignoring directories.
 
+When using find port on Windows, another option is to setup 'findprg' like
+this: >
+    set findprg="find %s %a"
+<
                                                *vifm-'followlinks'*
 followlinks
 type: boolean

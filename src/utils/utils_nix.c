@@ -21,7 +21,7 @@
 #include "utils_int.h"
 
 #include <sys/stat.h> /* S_* */
-#include <sys/types.h> /* gid_t mode_t uid_t */
+#include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
@@ -65,6 +65,7 @@ typedef struct
 }
 get_mount_point_traverser_state;
 
+static void process_cancel_request(pid_t pid);
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
@@ -83,7 +84,6 @@ run_in_shell_no_cls(char command[])
 	int result;
 	extern char **environ;
 	sig_handler sigtstp_handler;
-	sigset_t sigchld_mask;
 
 	if(command == NULL)
 		return 1;
@@ -93,15 +93,13 @@ run_in_shell_no_cls(char command[])
 	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because
 	 * it will possibly cause missing of SIGCHLD from a background process
 	 * (job). */
-	sigemptyset(&sigchld_mask);
-	sigaddset(&sigchld_mask, SIGCHLD);
-	sigprocmask(SIG_BLOCK, &sigchld_mask, NULL);
+	(void)set_sigchld(1);
 
 	pid = fork();
 	if(pid == -1)
 	{
 		signal(SIGTSTP, sigtstp_handler);
-		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+		(void)set_sigchld(0);
 		return -1;
 	}
 	if(pid == 0)
@@ -110,7 +108,7 @@ run_in_shell_no_cls(char command[])
 
 		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
-		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
+		(void)set_sigchld(0);
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
@@ -119,6 +117,75 @@ run_in_shell_no_cls(char command[])
 		execve(cfg.shell, args, environ);
 		exit(127);
 	}
+
+	result = get_proc_exit_status(pid);
+
+	signal(SIGTSTP, sigtstp_handler);
+	(void)set_sigchld(0);
+
+	return result;
+}
+
+void
+recover_after_shellout(void)
+{
+	/* Do nothing.  No need to recover anything on this platform. */
+}
+
+void
+wait_for_data_from(pid_t pid, FILE *f, int fd)
+{
+	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
+	struct timeval ts;
+
+	fd_set read_ready;
+	FD_ZERO(&read_ready);
+
+	fd = (f != NULL) ? fileno(f) : fd;
+
+	do
+	{
+		process_cancel_request(pid);
+		ts = ts_init;
+		FD_SET(fd, &read_ready);
+	}
+	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
+
+	/* Inform other parts of the application that cancellation took place. */
+	if(errno == EINTR)
+	{
+		ui_cancellation_request();
+	}
+}
+
+int
+set_sigchld(int block)
+{
+	const int action = block ? SIG_BLOCK : SIG_UNBLOCK;
+	sigset_t sigchld_mask;
+
+	return sigemptyset(&sigchld_mask) == -1
+	    || sigaddset(&sigchld_mask, SIGCHLD) == -1
+	    || sigprocmask(action, &sigchld_mask, NULL) == -1;
+}
+
+/* Checks whether cancelling of current operation is requested and sends SIGINT
+ * to process specified by its process id to request cancellation. */
+static void
+process_cancel_request(pid_t pid)
+{
+	if(ui_cancellation_requested())
+	{
+		if(kill(pid, SIGINT) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Failed to send SIGINT to " PRINTF_PID_T, pid);
+		}
+	}
+}
+
+int
+get_proc_exit_status(pid_t pid)
+{
 	do
 	{
 		int status;
@@ -127,25 +194,15 @@ run_in_shell_no_cls(char command[])
 			if(errno != EINTR)
 			{
 				LOG_SERROR_MSG(errno, "waitpid()");
-				result = -1;
-				break;
+				return -1;
 			}
 		}
 		else
 		{
-			result = status;
-			break;
+			return status;
 		}
-	}while(1);
-	signal(SIGTSTP, sigtstp_handler);
-	sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
-	return result;
-}
-
-void
-recover_after_shellout(void)
-{
-	/* Do nothing.  No need to recover anything on this platform. */
+	}
+	while(1);
 }
 
 /* if err == 1 then use stderr and close stdin and stdout */

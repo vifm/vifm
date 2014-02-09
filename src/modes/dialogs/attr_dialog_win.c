@@ -32,6 +32,7 @@
 #include "../../utils/path.h"
 #include "../../filelist.h"
 #include "../../status.h"
+#include "../../ui.h"
 #include "../../undo.h"
 #include "../modes.h"
 
@@ -410,6 +411,8 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 {
 	int i;
 
+	ui_cancellation_reset();
+
 	i = 0;
 	while(i < view->list_rows && !view->dir_entry[i].selected)
 		i++;
@@ -445,8 +448,9 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 			}
 			i++;
 		}
+
 		cmd_group_begin(buf);
-		while(j < view->list_rows)
+		while(j < view->list_rows && !ui_cancellation_requested())
 		{
 			if(view->dir_entry[j].selected)
 			{

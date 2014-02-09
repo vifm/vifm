@@ -17,6 +17,10 @@
 	Added :trashes command-line command, which lists all non-empty trash
 	directories.  Thanks to Sergei Shilovsky.
 
+	Added cancellation handling for file system operations and invocations of
+	external applications (works best on *nix systems).  Thanks to Milan
+	Svoboda, a.k.a. tex.
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.

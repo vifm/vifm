@@ -195,8 +195,7 @@ leave_sort_mode(void)
 {
 	*mode = NORMAL_MODE;
 
-	clean_selected_files(view);
-	load_saving_pos(view, 1);
+	ui_view_reset_selection_and_reload(view);
 
 	update_all_windows();
 }

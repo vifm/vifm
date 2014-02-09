@@ -24,7 +24,7 @@
 #include <windef.h>
 #endif
 
-#include <sys/types.h>
+#include <sys/types.h> /* pid_t */
 
 #include <stdio.h>
 
@@ -57,8 +57,17 @@ void init_background(void);
 /* Returns zero on success, otherwise non-zero is returned. */
 int start_background_job(const char *cmd, int skip_errors);
 int background_and_wait_for_status(char *cmd);
-int background_and_wait_for_errors(char *cmd);
-int background_and_capture(char *cmd, FILE **out, FILE **err);
+
+/* Runs command in background and displays its errors to a user.  To determine
+ * an error uses both stderr stream and exit status.  Returns zero on success,
+ * otherwise non-zero is returned. */
+int background_and_wait_for_errors(char cmd[]);
+
+/* Runs command in a background and redirects its stdout and stderr streams to
+ * file streams which are set.  Returns id of background process ((pid_t)0 for
+ * non-*nix like systems) or (pid_t)-1 on error. */
+pid_t background_and_capture(char *cmd, FILE **out, FILE **err);
+
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 void update_jobs_list(void);
@@ -68,8 +77,10 @@ void inner_bg_next(void);
 void remove_inner_bg_job(void);
 
 #ifndef _WIN32
+#define NO_JOB_ID (-1)
 job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 #else
+#define NO_JOB_ID INVALID_HANDLE_VALUE
 job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 

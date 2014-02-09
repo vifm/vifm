@@ -26,6 +26,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
+#include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
 /* Regular expressions. */
@@ -105,6 +106,15 @@ int get_mount_point(const char path[], size_t buf_len, char buf[]);
 /* Calls client traverser for each mount point.  Returns non-zero on error,
  * otherwise zero is returned. */
 int traverse_mount_points(mptraverser client, void *arg);
+
+/* Waits until non-blocking read operation is available for given file
+ * descriptor (uses f if it's not NULL, otherwise fd is used) that is associated
+ * with a process.  Process operation cancellation requests from a user. */
+void wait_for_data_from(pid_t pid, FILE *f, int fd);
+
+/* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
+ * is returned. */
+int set_sigchld(int block);
 
 #ifdef _WIN32
 #include "utils_win.h"
