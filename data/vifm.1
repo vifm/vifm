@@ -2077,6 +2077,10 @@ Background operations cannot be undone.
 .\" ---------------------------------------------------------------------------
 .SH Cancellation
 .\" ---------------------------------------------------------------------------
+Note that cancellation works somewhat different on Windows platform due to
+different mechanism of break signal propagation.  One also might need to use
+Ctrl-Break shortcut instead of Ctrl-C.
+
 There are two types of operations that can be cancelled:
 .IP \- 2
 file system operations;
