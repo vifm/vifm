@@ -52,7 +52,7 @@
 static void get_sort_info(FileView *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
-static void ensure_history_not_full(hist_t *hist, int *len);
+static void ensure_history_not_full(hist_t *hist);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
 static void set_view_property(FileView *view, char type, const char value[]);
@@ -340,30 +340,20 @@ static void
 append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[])
 {
-	ensure_history_not_full(hist, &cfg.history_len);
+	ensure_history_not_full(hist);
 	saver(item);
 }
 
 /* Checks that history has at least one more empty slot or extends history by
  * one more element. */
 static void
-ensure_history_not_full(hist_t *hist, int *len)
+ensure_history_not_full(hist_t *hist)
 {
-	void *p;
-
-	if(hist->pos + 1 != *len)
-		return;
-
-	p = realloc(hist->items, sizeof(char *)*(*len + 1));
-	if(p == NULL)
-		return;
-
-	++*len;
-	hist->items = p;
-
-	/* Some other pieces of code rely on the fact that pointers to absent strings
-	 * are set to NULL. */
-	hist->items[*len - 1] = NULL;
+	if(hist->pos + 1 == cfg.history_len)
+	{
+		resize_history(MAX(0, cfg.history_len + 1));
+		assert(hist->pos + 1 != cfg.history_len && "Failed to resize history.");
+	}
 }
 
 static void
