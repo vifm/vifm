@@ -295,6 +295,10 @@ eval_expression(const char **in)
 			{
 				result = term;
 			}
+			else
+			{
+				var_free(term);
+			}
 			break;
 		}
 		var_free(term);
