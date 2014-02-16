@@ -51,7 +51,8 @@ int is_bookmark_empty(const char mark);
 
 int is_spec_bookmark(const int x);
 
-int add_bookmark(const char mark, const char directory[], const char file[]);
+int add_user_bookmark(const char mark, const char directory[],
+		const char file[]);
 
 void set_specmark(const char mark, const char directory[], const char file[]);
 

@@ -140,7 +140,7 @@ free_bookmark(bookmark_t *bookmark)
 }
 
 int
-add_bookmark(const char mark, const char *directory, const char *file)
+add_user_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(!char_is_one_of(valid_bookmarks, mark) ||
 			char_is_one_of(spec_bookmarks, mark))
