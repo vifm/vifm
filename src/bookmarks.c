@@ -35,6 +35,8 @@
 
 static void free_bookmark(bookmark_t *bookmark);
 static int is_user_bookmark(const char mark);
+static void add_mark(const char mark, const char directory[],
+		const char file[]);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
 static int is_bmark_valid(const bookmark_t *bookmark);
@@ -112,19 +114,6 @@ remove_all_bookmarks(void)
 	}
 }
 
-static void
-add_mark(const char mark, const char directory[], const char file[])
-{
-	bookmark_t *const bookmark = get_bookmark(mark);
-	if(bookmark != NULL)
-	{
-		free_bookmark(bookmark);
-
-		bookmark->directory = strdup(directory);
-		bookmark->file = strdup(file);
-	}
-}
-
 /* Frees memory allocated for bookmark with given index.  For convenience
  * bookmark can be NULL. */
 static void
@@ -168,6 +157,19 @@ set_specmark(const char mark, const char *directory, const char *file)
 	if(char_is_one_of(spec_bookmarks, mark))
 	{
 		add_mark(mark, directory, file);
+	}
+}
+
+static void
+add_mark(const char mark, const char directory[], const char file[])
+{
+	bookmark_t *const bookmark = get_bookmark(mark);
+	if(bookmark != NULL)
+	{
+		free_bookmark(bookmark);
+
+		bookmark->directory = strdup(directory);
+		bookmark->file = strdup(file);
 	}
 }
 
