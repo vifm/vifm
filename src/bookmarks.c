@@ -104,7 +104,7 @@ clear_bookmark(const int mark)
 }
 
 void
-remove_all_bookmarks(void)
+clear_all_bookmarks(void)
 {
 	bookmark_t *bookmark = &bookmarks[0];
 	const bookmark_t *const end = &bookmarks[ARRAY_LEN(bookmarks)];

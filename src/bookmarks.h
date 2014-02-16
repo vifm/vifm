@@ -75,8 +75,8 @@ int goto_bookmark(FileView *view, char mark);
 /* Clears a bookmark by its name. */
 void clear_bookmark(const int mark);
 
-/* Removes all bookmarks. */
-void remove_all_bookmarks(void);
+/* Clears all bookmarks. */
+void clear_all_bookmarks(void);
 
 int check_mark_directory(FileView *view, char mark);
 

@@ -1828,7 +1828,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 0)
 		{
-			remove_all_bookmarks();
+			clear_all_bookmarks();
 			return 0;
 		}
 		else
@@ -3190,8 +3190,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* color schemes */
 	load_def_scheme();
 
-	/* Remove all bookmarks. */
-	remove_all_bookmarks();
+	/* Clear all bookmarks. */
+	clear_all_bookmarks();
 
 	/* variables */
 	clear_variables();
