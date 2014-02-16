@@ -34,14 +34,14 @@
 #include "status.h"
 #include "ui.h"
 
-static void clear_mark(bookmark_t *bookmark);
+static void clear_mark(bookmark_t *bmark);
 static int is_user_bookmark(const char mark);
 static void set_mark(const char mark, const char directory[], const char file[],
 		time_t timestamp);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
-static int is_bmark_valid(const bookmark_t *bookmark);
-static int is_bmark_empty(const bookmark_t *bookmark);
+static int is_bmark_valid(const bookmark_t *bmark);
+static int is_bmark_empty(const bookmark_t *bmark);
 
 bookmark_t bookmarks[NUM_BOOKMARKS];
 
@@ -78,15 +78,15 @@ int
 is_valid_bookmark(const int bmark_index)
 {
 	const char mark = index2mark(bmark_index);
-	const bookmark_t *const bookmark = get_bookmark(mark);
-	return is_bmark_valid(bookmark);
+	const bookmark_t *const bmark = get_bookmark(mark);
+	return is_bmark_valid(bmark);
 }
 
 int
 is_bookmark_empty(const char mark)
 {
-	const bookmark_t *const bookmark = get_bookmark(mark);
-	return is_bmark_empty(bookmark);
+	const bookmark_t *const bmark = get_bookmark(mark);
+	return is_bmark_empty(bmark);
 }
 
 int
@@ -99,51 +99,51 @@ is_spec_bookmark(const int x)
 void
 clear_bookmark(const int mark)
 {
-	bookmark_t *const bookmark = get_bookmark(mark);
-	clear_mark(bookmark);
+	bookmark_t *const bmark = get_bookmark(mark);
+	clear_mark(bmark);
 }
 
 void
 clear_all_bookmarks(void)
 {
-	bookmark_t *bookmark = &bookmarks[0];
+	bookmark_t *bmark = &bookmarks[0];
 	const bookmark_t *const end = &bookmarks[ARRAY_LEN(bookmarks)];
-	while(bookmark != end)
+	while(bmark != end)
 	{
-		clear_mark(bookmark);
-		bookmark++;
+		clear_mark(bmark);
+		bmark++;
 	}
 }
 
 /* Frees memory allocated for bookmark with given index.  For convenience
- * bookmark can be NULL. */
+ * bmark can be NULL. */
 static void
-clear_mark(bookmark_t *bookmark)
+clear_mark(bookmark_t *bmark)
 {
-	if(bookmark != NULL && !is_bmark_empty(bookmark))
+	if(bmark != NULL && !is_bmark_empty(bmark))
 	{
-		free(bookmark->directory);
-		bookmark->directory = NULL;
+		free(bmark->directory);
+		bmark->directory = NULL;
 
-		free(bookmark->file);
-		bookmark->file = NULL;
+		free(bmark->file);
+		bmark->file = NULL;
 
-		bookmark->timestamp = time(NULL);
+		bmark->timestamp = time(NULL);
 	}
 }
 
 int
 is_bookmark_older(const char mark, const time_t than)
 {
-	const bookmark_t *const bookmark = get_bookmark(mark);
-	if(bookmark != NULL)
+	const bookmark_t *const bmark = get_bookmark(mark);
+	if(bmark != NULL)
 	{
 		static const time_t undef_time = (time_t)-1;
-		if(bookmark->timestamp == undef_time || than == undef_time)
+		if(bmark->timestamp == undef_time || than == undef_time)
 		{
-			return bookmark->timestamp == undef_time;
+			return bmark->timestamp == undef_time;
 		}
-		return bookmark->timestamp < than;
+		return bmark->timestamp < than;
 	}
 	return 1;
 }
@@ -197,27 +197,27 @@ static void
 set_mark(const char mark, const char directory[], const char file[],
 		time_t timestamp)
 {
-	bookmark_t *const bookmark = get_bookmark(mark);
-	if(bookmark != NULL)
+	bookmark_t *const bmark = get_bookmark(mark);
+	if(bmark != NULL)
 	{
-		clear_mark(bookmark);
+		clear_mark(bmark);
 
-		bookmark->directory = strdup(directory);
-		bookmark->file = strdup(file);
-		bookmark->timestamp = timestamp;
+		bmark->directory = strdup(directory);
+		bmark->file = strdup(file);
+		bmark->timestamp = timestamp;
 	}
 }
 
 int
 check_mark_directory(FileView *view, char mark)
 {
-	const bookmark_t *const bookmark = get_bookmark(mark);
+	const bookmark_t *const bmark = get_bookmark(mark);
 
-	if(!is_bmark_empty(bookmark))
+	if(!is_bmark_empty(bmark))
 	{
-		if(stroscmp(view->curr_dir, bookmark->directory) == 0)
+		if(stroscmp(view->curr_dir, bmark->directory) == 0)
 		{
-			return find_file_pos_in_list(view, bookmark->file);
+			return find_file_pos_in_list(view, bmark->file);
 		}
 	}
 
@@ -247,21 +247,21 @@ goto_bookmark(FileView *view, char mark)
 static int
 navigate_to_bookmark(FileView *view, char mark)
 {
-	const bookmark_t *const bookmark = get_bookmark(mark);
+	const bookmark_t *const bmark = get_bookmark(mark);
 
-	if(is_bmark_valid(bookmark))
+	if(is_bmark_valid(bmark))
 	{
-		if(change_directory(view, bookmark->directory) >= 0)
+		if(change_directory(view, bmark->directory) >= 0)
 		{
 			load_dir_list(view, 1);
-			(void)ensure_file_is_selected(view, bookmark->file);
+			(void)ensure_file_is_selected(view, bmark->file);
 		}
 	}
 	else
 	{
 		if(!char_is_one_of(valid_bookmarks, mark))
 			status_bar_message("Invalid mark name");
-		else if(is_bmark_empty(bookmark))
+		else if(is_bmark_empty(bmark))
 			status_bar_message("Mark is not set");
 		else
 			status_bar_message("Mark is invalid");
@@ -282,12 +282,12 @@ get_bookmark(const char mark)
 }
 
 /* Checks if a bookmark is valid (exists and points to an existing directory).
- * For convenience bookmark can be NULL.  Returns non-zero if so, otherwise zero
- * is returned. */
+ * For convenience bmark can be NULL.  Returns non-zero if so, otherwise zero is
+ * returned. */
 static int
-is_bmark_valid(const bookmark_t *bookmark)
+is_bmark_valid(const bookmark_t *bmark)
 {
-	return !is_bmark_empty(bookmark) && is_valid_dir(bookmark->directory);
+	return !is_bmark_empty(bmark) && is_valid_dir(bmark->directory);
 }
 
 int
@@ -307,15 +307,15 @@ init_active_bookmarks(const char marks[], int active_bookmarks[])
 	return i;
 }
 
-/* Checks whether bookmark specified is empty.  For convenience bookmark can be
+/* Checks whether bookmark specified is empty.  For convenience bmark can be
  * NULL.  Returns non-zero for non-empty or NULL bookmark, otherwise zero is
  * returned. */
 static int
-is_bmark_empty(const bookmark_t *bookmark)
+is_bmark_empty(const bookmark_t *bmark)
 {
-	return bookmark == NULL
-	    || bookmark->directory == NULL
-	    || bookmark->file == NULL;
+	return bmark == NULL
+	    || bmark->directory == NULL
+	    || bmark->file == NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
