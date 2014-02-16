@@ -219,6 +219,7 @@ is_bmark_points_to(const bookmark_t *bmark, const char directory[],
 		const char file[])
 {
 	return !is_bmark_empty(bmark)
+	    && bmark->timestamp != (time_t)-1
 	    && strcmp(bmark->directory, directory) == 0
 	    && strcmp(bmark->file, file) == 0;
 }
