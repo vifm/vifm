@@ -34,9 +34,9 @@
 #include "status.h"
 #include "ui.h"
 
-static void free_bookmark(bookmark_t *bookmark);
+static void clear_mark(bookmark_t *bookmark);
 static int is_user_bookmark(const char mark);
-static void add_mark(const char mark, const char directory[], const char file[],
+static void set_mark(const char mark, const char directory[], const char file[],
 		time_t timestamp);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
@@ -100,7 +100,7 @@ void
 clear_bookmark(const int mark)
 {
 	bookmark_t *const bookmark = get_bookmark(mark);
-	free_bookmark(bookmark);
+	clear_mark(bookmark);
 }
 
 void
@@ -110,7 +110,7 @@ clear_all_bookmarks(void)
 	const bookmark_t *const end = &bookmarks[ARRAY_LEN(bookmarks)];
 	while(bookmark != end)
 	{
-		free_bookmark(bookmark);
+		clear_mark(bookmark);
 		bookmark++;
 	}
 }
@@ -118,7 +118,7 @@ clear_all_bookmarks(void)
 /* Frees memory allocated for bookmark with given index.  For convenience
  * bookmark can be NULL. */
 static void
-free_bookmark(bookmark_t *bookmark)
+clear_mark(bookmark_t *bookmark)
 {
 	if(bookmark != NULL && !is_bmark_empty(bookmark))
 	{
@@ -157,7 +157,7 @@ set_user_bookmark(const char mark, const char directory[], const char file[])
 		return 1;
 	}
 
-	add_mark(mark, directory, file, time(NULL));
+	set_mark(mark, directory, file, time(NULL));
 	return 0;
 }
 
@@ -167,7 +167,7 @@ setup_user_bookmark(const char mark, const char directory[], const char file[],
 {
 	if(is_user_bookmark(mark))
 	{
-		add_mark(mark, directory, file, timestamp);
+		set_mark(mark, directory, file, timestamp);
 	}
 	else
 	{
@@ -189,18 +189,18 @@ set_spec_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(char_is_one_of(spec_bookmarks, mark))
 	{
-		add_mark(mark, directory, file, time(NULL));
+		set_mark(mark, directory, file, time(NULL));
 	}
 }
 
 static void
-add_mark(const char mark, const char directory[], const char file[],
+set_mark(const char mark, const char directory[], const char file[],
 		time_t timestamp)
 {
 	bookmark_t *const bookmark = get_bookmark(mark);
 	if(bookmark != NULL)
 	{
-		free_bookmark(bookmark);
+		clear_mark(bookmark);
 
 		bookmark->directory = strdup(directory);
 		bookmark->file = strdup(file);
