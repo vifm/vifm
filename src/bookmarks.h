@@ -54,6 +54,10 @@ int is_bookmark_empty(const char mark);
 
 int is_spec_bookmark(const int x);
 
+/* Checks whether given bookmark is older than given time.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int is_bookmark_older(const char mark, const time_t than);
+
 /* Adds user's bookmark interactively.  Returns non-zero if UI message was
  * printed, otherwise zero is returned. */
 int add_user_bookmark(const char mark, const char directory[],

@@ -133,6 +133,22 @@ free_bookmark(bookmark_t *bookmark)
 }
 
 int
+is_bookmark_older(const char mark, const time_t than)
+{
+	const bookmark_t *const bookmark = get_bookmark(mark);
+	if(bookmark != NULL)
+	{
+		static const time_t undef_time = (time_t)-1;
+		if(bookmark->timestamp == undef_time || than == undef_time)
+		{
+			return bookmark->timestamp == undef_time;
+		}
+		return bookmark->timestamp < than;
+	}
+	return 1;
+}
+
+int
 add_user_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(!is_user_bookmark(mark))
