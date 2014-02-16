@@ -72,8 +72,8 @@ void set_specmark(const char mark, const char directory[], const char file[]);
 /* Handles all kinds of bookmarks.  Returns new value for save_msg flag. */
 int goto_bookmark(FileView *view, char mark);
 
-/* Removes bookmarks by its name. */
-void remove_bookmark(const int mark);
+/* Clears a bookmark by its name. */
+void clear_bookmark(const int mark);
 
 /* Removes all bookmarks. */
 void remove_all_bookmarks(void);

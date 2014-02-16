@@ -97,7 +97,7 @@ is_spec_bookmark(const int x)
 }
 
 void
-remove_bookmark(const int mark)
+clear_bookmark(const int mark)
 {
 	bookmark_t *const bookmark = get_bookmark(mark);
 	free_bookmark(bookmark);
