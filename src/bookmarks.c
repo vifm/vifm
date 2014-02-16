@@ -37,7 +37,9 @@
 static void clear_mark(bookmark_t *bmark);
 static int is_user_bookmark(const char mark);
 static void set_mark(const char mark, const char directory[], const char file[],
-		time_t timestamp);
+		time_t timestamp, int force);
+static int is_bmark_points_to(const bookmark_t *bmark, const char directory[],
+		const char file[]);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
 static int is_bmark_valid(const bookmark_t *bmark);
@@ -157,7 +159,7 @@ set_user_bookmark(const char mark, const char directory[], const char file[])
 		return 1;
 	}
 
-	set_mark(mark, directory, file, time(NULL));
+	set_mark(mark, directory, file, time(NULL), 0);
 	return 0;
 }
 
@@ -167,7 +169,7 @@ setup_user_bookmark(const char mark, const char directory[], const char file[],
 {
 	if(is_user_bookmark(mark))
 	{
-		set_mark(mark, directory, file, timestamp);
+		set_mark(mark, directory, file, timestamp, 1);
 	}
 	else
 	{
@@ -189,16 +191,18 @@ set_spec_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(char_is_one_of(spec_bookmarks, mark))
 	{
-		set_mark(mark, directory, file, time(NULL));
+		set_mark(mark, directory, file, time(NULL), 1);
 	}
 }
 
+/* Sets values of the mark.  The force parameter controls whether bookmark is
+ * updated even when it already points to the specified directory-file pair. */
 static void
 set_mark(const char mark, const char directory[], const char file[],
-		time_t timestamp)
+		time_t timestamp, int force)
 {
 	bookmark_t *const bmark = get_bookmark(mark);
-	if(bmark != NULL)
+	if(bmark != NULL && (force || !is_bmark_points_to(bmark, directory, file)))
 	{
 		clear_mark(bmark);
 
@@ -206,6 +210,17 @@ set_mark(const char mark, const char directory[], const char file[],
 		bmark->file = strdup(file);
 		bmark->timestamp = timestamp;
 	}
+}
+
+/* Checks whether given bookmark points to specified directory-file pair.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_bmark_points_to(const bookmark_t *bmark, const char directory[],
+		const char file[])
+{
+	return !is_bmark_empty(bmark)
+	    && strcmp(bmark->directory, directory) == 0
+	    && strcmp(bmark->file, file) == 0;
 }
 
 int
