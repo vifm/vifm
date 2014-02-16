@@ -143,6 +143,20 @@ add_user_bookmark(const char mark, const char directory[], const char file[])
 	return 0;
 }
 
+void
+load_user_bookmark(const char mark, const char directory[], const char file[],
+		time_t timestamp)
+{
+	if(is_user_bookmark(mark))
+	{
+		add_mark(mark, directory, file, timestamp);
+	}
+	else
+	{
+		status_bar_errorf("Only user's bookmarks can be loaded, but got: %c", mark);
+	}
+}
+
 /* Checks whether given mark corresponds to bookmark that can be set by a user.
  * Returns non-zero if so, otherwise zero is returned. */
 static int

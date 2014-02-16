@@ -54,8 +54,14 @@ int is_bookmark_empty(const char mark);
 
 int is_spec_bookmark(const int x);
 
+/* Adds user's bookmark interactively.  Returns non-zero if UI message was
+ * printed, otherwise zero is returned. */
 int add_user_bookmark(const char mark, const char directory[],
 		const char file[]);
+
+/* Loads user's bookmark from configuration. */
+void load_user_bookmark(const char mark, const char directory[],
+		const char file[], time_t timestamp);
 
 void set_specmark(const char mark, const char directory[], const char file[]);
 
