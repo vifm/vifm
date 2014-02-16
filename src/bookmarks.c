@@ -34,6 +34,7 @@
 #include "ui.h"
 
 static void free_bookmark(bookmark_t *bookmark);
+static int is_user_bookmark(const char mark);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
 static int is_bmark_valid(const bookmark_t *bookmark);
@@ -142,8 +143,7 @@ free_bookmark(bookmark_t *bookmark)
 int
 add_user_bookmark(const char mark, const char directory[], const char file[])
 {
-	if(!char_is_one_of(valid_bookmarks, mark) ||
-			char_is_one_of(spec_bookmarks, mark))
+	if(!is_user_bookmark(mark))
 	{
 		status_bar_message("Invalid mark name");
 		return 1;
@@ -151,6 +151,15 @@ add_user_bookmark(const char mark, const char directory[], const char file[])
 
 	add_mark(mark, directory, file);
 	return 0;
+}
+
+/* Checks whether given mark corresponds to bookmark that can be set by a user.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_user_bookmark(const char mark)
+{
+	return char_is_one_of(valid_bookmarks, mark)
+	    && !char_is_one_of(spec_bookmarks, mark);
 }
 
 void
