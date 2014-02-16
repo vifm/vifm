@@ -165,7 +165,7 @@ read_info_file(int reread)
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
 					const int timestamp = read_optional_number(fp);
-					load_user_bookmark(line_val[0], line2, line3, timestamp);
+					setup_user_bookmark(line_val[0], line2, line3, timestamp);
 				}
 			}
 		}

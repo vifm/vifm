@@ -162,7 +162,7 @@ set_user_bookmark(const char mark, const char directory[], const char file[])
 }
 
 void
-load_user_bookmark(const char mark, const char directory[], const char file[],
+setup_user_bookmark(const char mark, const char directory[], const char file[],
 		time_t timestamp)
 {
 	if(is_user_bookmark(mark))

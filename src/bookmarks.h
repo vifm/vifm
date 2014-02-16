@@ -63,8 +63,8 @@ int is_bookmark_older(const char mark, const time_t than);
 int set_user_bookmark(const char mark, const char directory[],
 		const char file[]);
 
-/* Loads user's bookmark from configuration. */
-void load_user_bookmark(const char mark, const char directory[],
+/* Sets all properties of user's bookmark (e.g. from saved configuration). */
+void setup_user_bookmark(const char mark, const char directory[],
 		const char file[], time_t timestamp);
 
 void set_specmark(const char mark, const char directory[], const char file[]);
