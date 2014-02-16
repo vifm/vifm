@@ -756,7 +756,7 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	add_user_bookmark(key_info.multi, view->curr_dir,
+	set_user_bookmark(key_info.multi, view->curr_dir,
 			get_current_file_name(view));
 }
 

@@ -2795,7 +2795,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		const int pos = (cmd_info->end == NOT_DEF)
 		  ? curr_view->list_pos : cmd_info->end;
-		return add_user_bookmark(mark, curr_view->curr_dir,
+		return set_user_bookmark(mark, curr_view->curr_dir,
 				curr_view->dir_entry[pos].name);
 	}
 
@@ -2829,7 +2829,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		file = cmd_info->argv[2];
 	}
-	result = add_user_bookmark(mark, expanded_path, file);
+	result = set_user_bookmark(mark, expanded_path, file);
 	free(expanded_path);
 
 	return result;

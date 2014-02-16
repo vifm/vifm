@@ -58,9 +58,9 @@ int is_spec_bookmark(const int x);
  * so, otherwise zero is returned. */
 int is_bookmark_older(const char mark, const time_t than);
 
-/* Adds user's bookmark interactively.  Returns non-zero if UI message was
+/* Sets user's bookmark interactively.  Returns non-zero if UI message was
  * printed, otherwise zero is returned. */
-int add_user_bookmark(const char mark, const char directory[],
+int set_user_bookmark(const char mark, const char directory[],
 		const char file[]);
 
 /* Loads user's bookmark from configuration. */

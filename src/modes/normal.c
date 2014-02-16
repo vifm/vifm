@@ -1641,7 +1641,7 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = add_user_bookmark(key_info.multi, curr_view->curr_dir,
+	curr_stats.save_msg = set_user_bookmark(key_info.multi, curr_view->curr_dir,
 			get_current_file_name(curr_view));
 }
 

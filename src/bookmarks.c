@@ -149,7 +149,7 @@ is_bookmark_older(const char mark, const time_t than)
 }
 
 int
-add_user_bookmark(const char mark, const char directory[], const char file[])
+set_user_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(!is_user_bookmark(mark))
 	{
