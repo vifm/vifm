@@ -999,9 +999,12 @@ write_bookmarks(FILE *const fp, char *marks[], int nmarks)
 		const int index = active_bookmarks[i];
 		if(!is_spec_bookmark(index))
 		{
-			fprintf(fp, "'%c\n\t%s\n\t", index2mark(index),
-					bookmarks[index].directory);
-			fprintf(fp, "%s\n", bookmarks[index].file);
+			const bookmark_t *const bookmark = &bookmarks[index];
+
+			fprintf(fp, "'%c\n", index2mark(index));
+			fprintf(fp, "\t%s\n", bookmark->directory);
+			fprintf(fp, "\t%s\n", bookmark->file);
+			fprintf(fp, "%ld\n", bookmark->timestamp);
 		}
 	}
 	for(i = 0; i < nmarks; i += 3)
