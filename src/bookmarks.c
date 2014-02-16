@@ -120,13 +120,15 @@ remove_all_bookmarks(void)
 static void
 free_bookmark(bookmark_t *bookmark)
 {
-	if(bookmark != NULL)
+	if(bookmark != NULL && !is_bmark_empty(bookmark))
 	{
 		free(bookmark->directory);
 		bookmark->directory = NULL;
 
 		free(bookmark->file);
 		bookmark->file = NULL;
+
+		bookmark->timestamp = time(NULL);
 	}
 }
 

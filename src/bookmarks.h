@@ -31,7 +31,7 @@ typedef struct
 {
 	char *file;       /* Name of bookmarked file. */
 	char *directory;  /* Path to directory at which bookmark was made. */
-	time_t timestamp; /* Point in time when bookmark was set. */
+	time_t timestamp; /* Last bookmark update time (zero means "never"). */
 }
 bookmark_t;
 
