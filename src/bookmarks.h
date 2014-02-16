@@ -20,6 +20,8 @@
 #ifndef VIFM__BOOKMARKS_H__
 #define VIFM__BOOKMARKS_H__
 
+#include <time.h> /* time_t */
+
 #include "ui.h"
 
 #define NUM_BOOKMARKS 64
@@ -27,8 +29,9 @@
 /* Structure that describes bookmark data. */
 typedef struct
 {
-	char *file;      /* Name of bookmarked file. */
-	char *directory; /* Path to directory at which bookmark was made. */
+	char *file;       /* Name of bookmarked file. */
+	char *directory;  /* Path to directory at which bookmark was made. */
+	time_t timestamp; /* Point in time when bookmark was set. */
 }
 bookmark_t;
 

@@ -24,6 +24,7 @@
 #include <ctype.h> /* isalnum() */
 #include <stddef.h> /* NULL */
 #include <string.h> /* strdup() */
+#include <time.h> /* time_t time() */
 
 #include "cfg/config.h"
 #include "utils/fs.h"
@@ -35,8 +36,8 @@
 
 static void free_bookmark(bookmark_t *bookmark);
 static int is_user_bookmark(const char mark);
-static void add_mark(const char mark, const char directory[],
-		const char file[]);
+static void add_mark(const char mark, const char directory[], const char file[],
+		time_t timestamp);
 static int navigate_to_bookmark(FileView *view, const char mark);
 static bookmark_t * get_bookmark(const char mark);
 static int is_bmark_valid(const bookmark_t *bookmark);
@@ -138,7 +139,7 @@ add_user_bookmark(const char mark, const char directory[], const char file[])
 		return 1;
 	}
 
-	add_mark(mark, directory, file);
+	add_mark(mark, directory, file, time(NULL));
 	return 0;
 }
 
@@ -156,12 +157,13 @@ set_specmark(const char mark, const char *directory, const char *file)
 {
 	if(char_is_one_of(spec_bookmarks, mark))
 	{
-		add_mark(mark, directory, file);
+		add_mark(mark, directory, file, time(NULL));
 	}
 }
 
 static void
-add_mark(const char mark, const char directory[], const char file[])
+add_mark(const char mark, const char directory[], const char file[],
+		time_t timestamp)
 {
 	bookmark_t *const bookmark = get_bookmark(mark);
 	if(bookmark != NULL)
@@ -170,6 +172,7 @@ add_mark(const char mark, const char directory[], const char file[])
 
 		bookmark->directory = strdup(directory);
 		bookmark->file = strdup(file);
+		bookmark->timestamp = timestamp;
 	}
 }
 
