@@ -875,13 +875,13 @@ update_marks(FileView *view)
 	upwards_range = view->list_pos < start_pos;
 	if(upwards_range)
 	{
-		set_specmark('<', view->curr_dir, get_current_file_name(view));
-		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
+		set_spec_bookmark('<', view->curr_dir, get_current_file_name(view));
+		set_spec_bookmark('>', view->curr_dir, view->dir_entry[start_pos].name);
 	}
 	else
 	{
-		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
-		set_specmark('>', view->curr_dir, get_current_file_name(view));
+		set_spec_bookmark('<', view->curr_dir, view->dir_entry[start_pos].name);
+		set_spec_bookmark('>', view->curr_dir, get_current_file_name(view));
 	}
 }
 

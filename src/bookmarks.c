@@ -185,7 +185,7 @@ is_user_bookmark(const char mark)
 }
 
 void
-set_specmark(const char mark, const char *directory, const char *file)
+set_spec_bookmark(const char mark, const char directory[], const char file[])
 {
 	if(char_is_one_of(spec_bookmarks, mark))
 	{

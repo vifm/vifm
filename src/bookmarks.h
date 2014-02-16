@@ -67,7 +67,9 @@ int set_user_bookmark(const char mark, const char directory[],
 void setup_user_bookmark(const char mark, const char directory[],
 		const char file[], time_t timestamp);
 
-void set_specmark(const char mark, const char directory[], const char file[]);
+/* Sets special bookmark.  Does nothing for invalid mark value. */
+void set_spec_bookmark(const char mark, const char directory[],
+		const char file[]);
 
 /* Handles all kinds of bookmarks.  Returns new value for save_msg flag. */
 int goto_bookmark(FileView *view, char mark);
