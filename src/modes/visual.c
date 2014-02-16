@@ -870,19 +870,20 @@ leave_clearing_selection(int go_to_top, int save_msg)
 static void
 update_marks(FileView *view)
 {
+	char start_mark, end_mark;
+
 	if(start_pos >= view->list_rows)
+	{
 		start_pos = view->list_rows - 1;
+	}
+
 	upwards_range = view->list_pos < start_pos;
-	if(upwards_range)
-	{
-		set_spec_bookmark('<', view->curr_dir, get_current_file_name(view));
-		set_spec_bookmark('>', view->curr_dir, view->dir_entry[start_pos].name);
-	}
-	else
-	{
-		set_spec_bookmark('<', view->curr_dir, view->dir_entry[start_pos].name);
-		set_spec_bookmark('>', view->curr_dir, get_current_file_name(view));
-	}
+
+	start_mark = upwards_range ? '<' : '>';
+	end_mark = upwards_range ? '>' : '<';
+
+	set_spec_bookmark(start_mark, view->curr_dir, get_current_file_name(view));
+	set_spec_bookmark(end_mark, view->curr_dir, view->dir_entry[start_pos].name);
 }
 
 static void
