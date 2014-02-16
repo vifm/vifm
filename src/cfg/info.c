@@ -79,7 +79,7 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
-static int read_possible_pos(FILE *f);
+static int read_optional_number(FILE *f);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
 void
@@ -218,7 +218,7 @@ read_info_file(int reread)
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				const int pos = read_possible_pos(fp);
+				const int pos = read_optional_number(fp);
 				get_history(view, reread, line_val, line2, pos);
 			}
 		}
@@ -583,7 +583,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&lwin, line_val))
 						continue;
 
-					pos = read_possible_pos(fp);
+					pos = read_optional_number(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2 > nlhp)
 					{
@@ -605,7 +605,7 @@ update_info_file(const char filename[])
 					if(is_in_view_history(&rwin, line_val))
 						continue;
 
-					pos = read_possible_pos(fp);
+					pos = read_optional_number(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2 > nrhp)
 					{
@@ -1216,9 +1216,9 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 /* Ensures that the next character of the stream is a digit and reads a number.
  * Returns read number or -1 in case there is no digit. */
 static int
-read_possible_pos(FILE *f)
+read_optional_number(FILE *f)
 {
-	int pos = -1;
+	int num = -1;
 	const int c = getc(f);
 
 	if(c != EOF)
@@ -1226,13 +1226,13 @@ read_possible_pos(FILE *f)
 		ungetc(c, f);
 		if(isdigit(c))
 		{
-			const int nread = fscanf(f, "%d\n", &pos);
+			const int nread = fscanf(f, "%d\n", &num);
 			assert(nread == 1 && "Wrong number of read numbers.");
 			(void)nread;
 		}
 	}
 
-	return pos;
+	return num;
 }
 
 static size_t
