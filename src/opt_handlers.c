@@ -24,7 +24,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memcpy() memmove() memset() strstr() */
+#include <string.h> /* memcpy() memmove() strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -118,7 +118,6 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void lsview_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
-static void ensure_well_formed_sort_list(char sort[SORT_OPTION_COUNT]);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
 static void add_column(columns_t columns, column_info_t column_info);
@@ -488,7 +487,7 @@ load_sort_option(FileView *view)
 	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
 	size_t opt_val_len = 0U;
 
-	ensure_well_formed_sort_list(view->sort);
+	ui_view_ensure_well_formed_sort_list(view->sort);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
@@ -1043,42 +1042,12 @@ sort_handler(OPT_OP op, optval_t val)
 	{
 		curr_view->sort[i] = NO_SORT_OPTION;
 	}
-	ensure_well_formed_sort_list(curr_view->sort);
+	ui_view_ensure_well_formed_sort_list(curr_view->sort);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);
 	move_to_list_pos(curr_view, curr_view->list_pos);
 	load_sort_option(curr_view);
-}
-
-/* Ensures that list of sorting keys contains either "name" or "iname". */
-static void
-ensure_well_formed_sort_list(char sort[SORT_OPTION_COUNT])
-{
-	int found_name_key = 0;
-	int i = -1;
-	while(++i < SORT_OPTION_COUNT)
-	{
-		const int sort_key = abs(sort[i]);
-		if(sort_key > LAST_SORT_OPTION)
-		{
-			break;
-		}
-		else if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
-		{
-			found_name_key = 1;
-		}
-	}
-
-	if(!found_name_key && i < SORT_OPTION_COUNT)
-	{
-		sort[i++] = DEFAULT_SORT_KEY;
-	}
-
-	if(i < SORT_OPTION_COUNT)
-	{
-		memset(&sort[i], NO_SORT_OPTION, SORT_OPTION_COUNT - i);
-	}
 }
 
 static void
