@@ -56,20 +56,21 @@ static int indexes[] = {
 	0,               /* SORT_BY_EXTENSION */
 	1,               /* SORT_BY_NAME */
 #ifndef _WIN32
-	3,               /* SORT_BY_GROUP_ID */
-	4,               /* SORT_BY_GROUP_NAME */
-	5,               /* SORT_BY_MODE */
-	7,               /* SORT_BY_OWNER_ID */
-	8,               /* SORT_BY_OWNER_NAME */
+	4,               /* SORT_BY_GROUP_ID */
+	5,               /* SORT_BY_GROUP_NAME */
+	6,               /* SORT_BY_MODE */
+	8,               /* SORT_BY_OWNER_ID */
+	9,               /* SORT_BY_OWNER_NAME */
 #endif
-	9 + CORRECTION,  /* SORT_BY_SIZE */
-	10 + CORRECTION, /* SORT_BY_TIME_ACCESSED */
-	11 + CORRECTION, /* SORT_BY_TIME_CHANGED */
-	12 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
+	10 + CORRECTION, /* SORT_BY_SIZE */
+	11 + CORRECTION, /* SORT_BY_TIME_ACCESSED */
+	12 + CORRECTION, /* SORT_BY_TIME_CHANGED */
+	13 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
 	2,               /* SORT_BY_INAME */
 #ifndef _WIN32
-	6,               /* SORT_BY_PERMISSIONS */
+	7,               /* SORT_BY_PERMISSIONS */
 #endif
+	3,               /* SORT_BY_TYPE */
 };
 ARRAY_GUARD(indexes, 1 + SORT_OPTION_COUNT);
 
@@ -165,6 +166,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Type");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");

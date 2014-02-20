@@ -164,9 +164,7 @@ sort_dir_list(const void *one, const void *two)
 	else if(second->type == LINK)
 		second_is_dir = (second->name[strlen(second->name) - 1] == '/');
 
-	if(first_is_dir != second_is_dir)
-		return first_is_dir ? -1 : 1;
-	dirs = first_is_dir;
+	dirs = first_is_dir || second_is_dir;
 
 	if(is_parent_dir(first->name))
 		return -1;
@@ -185,6 +183,13 @@ sort_dir_list(const void *one, const void *two)
 			else
 				retval = compare_file_names(dirs, first->name, second->name,
 						sort_type == SORT_BY_INAME);
+			break;
+
+		case SORT_BY_TYPE:
+			if(first_is_dir != second_is_dir)
+			{
+				retval = first_is_dir ? -1 : 1;
+			}
 			break;
 
 		case SORT_BY_EXTENSION:
