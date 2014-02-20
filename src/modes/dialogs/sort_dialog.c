@@ -141,7 +141,7 @@ enter_sort_mode(FileView *active_view)
 	curs_set(FALSE);
 	update_all_windows();
 
-	top = 3;
+	top = 4;
 	bottom = top + SORT_OPTION_COUNT - 1;
 	curr = top + indexes[abs(view->sort[0])];
 	col = 6;
@@ -154,14 +154,14 @@ redraw_sort_dialog(void)
 {
 	int x, y, cy;
 
-	wresize(sort_win, SORT_OPTION_COUNT + 5, SORT_WIN_WIDTH);
+	wresize(sort_win, SORT_OPTION_COUNT + 6, SORT_WIN_WIDTH);
 
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
 
 	getmaxyx(sort_win, y, x);
 	mvwaddstr(sort_win, 0, (x - 6)/2, " Sort ");
-	mvwaddstr(sort_win, top - 1, 2, " Sort files by:");
+	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
 	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
