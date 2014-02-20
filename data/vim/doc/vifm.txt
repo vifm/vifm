@@ -2208,6 +2208,7 @@ key, etc.):
    [+-]ext   - sort by extension
    [+-]name  - sort by name (including extension)
    [+-]iname - sort by name (including extension, ignores case)
+   [+-]type  - sort by type (directory < file)
    [+-]gid   - sort by group id (*nix only)
    [+-]gname - sort by group name (*nix only)
    [+-]mode  - sort by mode (*nix only)
@@ -2220,8 +2221,13 @@ key, etc.):
    [+-]mtime - sort by time modified
 
 '+' means ascending sort for this key, and '-' means descending sort.
-In case name (iname on Windows) is skipped, it will be added at the end
-automatically.
+
+Value of the option is checked to include type key and default sorting
+key (name on *nix, iname on Windows).  Here is what happens if one of them is
+absent:
+ - type key is added as the first one;
+ - default key is added as the last one;
+all other keys are left untouched (at most they are moved).
 
 This option also changes view columns according to primary sorting key set,
 unless |vifm-'viewcolumns'| option is not empty.
