@@ -45,6 +45,7 @@ static int sort_descending;
 static int sort_type;
 
 static int sort_dir_list(const void *one, const void *two);
+static int is_directory_entry(const dir_entry_t *entry);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 static int vercmp(const char s[], const char t[]);
@@ -150,26 +151,19 @@ sort_dir_list(const void *one, const void *two)
 	char *pfirst, *psecond;
 	dir_entry_t *first = (dir_entry_t *) one;
 	dir_entry_t *second = (dir_entry_t *) two;
-	int first_is_dir = 0;
-	int second_is_dir = 0;
+	int first_is_dir;
+	int second_is_dir;
 	int dirs;
-
-	if(first->type == DIRECTORY)
-		first_is_dir = 1;
-	else if(first->type == LINK)
-		first_is_dir = (first->name[strlen(first->name) - 1] == '/');
-
-	if(second->type == DIRECTORY)
-		second_is_dir = 1;
-	else if(second->type == LINK)
-		second_is_dir = (second->name[strlen(second->name) - 1] == '/');
-
-	dirs = first_is_dir || second_is_dir;
 
 	if(is_parent_dir(first->name))
 		return -1;
 	else if(is_parent_dir(second->name))
 		return 1;
+
+	first_is_dir = is_directory_entry(first);
+	second_is_dir = is_directory_entry(second);
+
+	dirs = first_is_dir || second_is_dir;
 
 	retval = 0;
 	switch(sort_type)
@@ -264,6 +258,15 @@ sort_dir_list(const void *one, const void *two)
 		retval = -retval;
 
 	return retval;
+}
+
+/* Checks whether entry corresponds to a directory.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_directory_entry(const dir_entry_t *entry)
+{
+	return (entry->type == DIRECTORY)
+	    || (entry->type == LINK && ends_with_slash(entry->name));
 }
 
 /* Compares two filenames.  Returns positive value if s greater than t, zero if
