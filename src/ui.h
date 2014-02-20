@@ -295,7 +295,8 @@ void ui_view_reset_selection_and_reload(FileView *view);
 void ui_views_reload_visible_filelists(void);
 /* Reloads lists of files preserving current position of cursor. */
 void ui_views_reload_filelists(void);
-/* Ensures that list of sorting keys contains either "name" or "iname". */
+/* Ensures that list of sorting keys contains either "name" or "iname" as well
+ * as "type". */
 void ui_view_ensure_well_formed_sort_list(char sort[SORT_OPTION_COUNT]);
 
 /* Operation cancellation. */
