@@ -86,6 +86,9 @@
 	Fixed situation when oldest elements of histories were not available even
 	though they were present in vifminfo file.
 
+	Fixed number of selected files after ":invert s" command.  Thanks to
+	filterfalse.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

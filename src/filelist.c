@@ -1708,6 +1708,7 @@ invert_selection(FileView *view)
 			e->selected = !e->selected;
 		}
 	}
+	view->selected_files = view->list_rows - view->selected_files;
 }
 
 void
