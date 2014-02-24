@@ -1,4 +1,4 @@
-.TH vifm 1 "Feb 09, 2014" "" "Vifm"
+.TH vifm 1 "Feb 24, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2296,11 +2296,15 @@ is added implicitly.
 
 The macros can slightly change their meaning depending on :find command
 arguments.  When the first argument points to an existing directory, %s is
-assigned all arguments and %a/%a are left empty.  Otherwise, %s is assigned
+assigned all arguments and %a/%A are left empty.  Otherwise, %s is assigned
 a dot (".") meaning current directory or list of selected filenames, if any.
 %a/%A are assigned arguments when first argument starts with a dash ("\-"),
 otherwise %a gets an escaped version of arguments, prepended by "\-name"
 (on *nix) or "\-iname" (on Windows) predicate.
+
+%a and %A macros contain almost the same value, the difference is that %a can
+be escaped and %A is never escaped.  %A is to be used mainly on Windows, where
+shell escaping is a mess and can break command execution.
 
 Starting from Windows Server 2003 a where command is available, one can
 configure vifm to use it in the following way:
