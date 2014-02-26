@@ -1874,7 +1874,6 @@ void
 ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 {
 	int found_name_key = 0;
-	int found_type_key = 0;
 	int i = -1;
 	while(++i < SORT_OPTION_COUNT)
 	{
@@ -1887,17 +1886,6 @@ ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 		{
 			found_name_key = 1;
 		}
-		else if(sort_key == SORT_BY_TYPE)
-		{
-			found_type_key = 1;
-		}
-	}
-
-	if(!found_type_key && i < SORT_OPTION_COUNT)
-	{
-		memmove(&sort[1], &sort[0], SORT_OPTION_COUNT - 1);
-		sort[0] = SORT_BY_TYPE;
-		i++;
 	}
 
 	if(!found_name_key && i < SORT_OPTION_COUNT)
