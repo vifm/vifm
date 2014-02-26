@@ -75,6 +75,7 @@ enum
 #ifndef _WIN32
 	SORT_BY_PERMISSIONS,
 #endif
+	SORT_BY_TYPE,
 
 	/* Default sort key. */
 #ifndef _WIN32
@@ -83,11 +84,7 @@ enum
 	DEFAULT_SORT_KEY = SORT_BY_INAME,
 #endif
 	/* Value of the last sort option. */
-#ifndef _WIN32
-	LAST_SORT_OPTION = SORT_BY_PERMISSIONS,
-#else
-	LAST_SORT_OPTION = SORT_BY_INAME,
-#endif
+	LAST_SORT_OPTION = SORT_BY_TYPE,
 	/* Number of sort options. */
 	SORT_OPTION_COUNT = LAST_SORT_OPTION,
 	/* Special value to use for unset options. */
@@ -298,6 +295,11 @@ void ui_view_reset_selection_and_reload(FileView *view);
 void ui_views_reload_visible_filelists(void);
 /* Reloads lists of files preserving current position of cursor. */
 void ui_views_reload_filelists(void);
+/* Looks for the given key in sort option.  Returns non-zero when found,
+ * otherwise zero is returned. */
+int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);
+/* Ensures that list of sorting keys contains either "name" or "iname". */
+void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
 
 /* Operation cancellation. */
 

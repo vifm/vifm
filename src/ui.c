@@ -35,7 +35,7 @@
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h> /* strcpy() strlen() */
+#include <string.h> /* memset() strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1868,6 +1868,54 @@ ui_views_reload_filelists(void)
 {
 	load_saving_pos(curr_view, 1);
 	load_saving_pos(other_view, 1);
+}
+
+int
+ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key)
+{
+	int i = -1;
+	while(++i < SORT_OPTION_COUNT)
+	{
+		const int sort_key = abs(sort[i]);
+		if(sort_key > LAST_SORT_OPTION)
+		{
+			return 0;
+		}
+		else if(sort_key == key)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void
+ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
+{
+	int found_name_key = 0;
+	int i = -1;
+	while(++i < SORT_OPTION_COUNT)
+	{
+		const int sort_key = abs(sort[i]);
+		if(sort_key > LAST_SORT_OPTION)
+		{
+			break;
+		}
+		else if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
+		{
+			found_name_key = 1;
+		}
+	}
+
+	if(!found_name_key && i < SORT_OPTION_COUNT)
+	{
+		sort[i++] = DEFAULT_SORT_KEY;
+	}
+
+	if(i < SORT_OPTION_COUNT)
+	{
+		memset(&sort[i], NO_SORT_OPTION, SORT_OPTION_COUNT - i);
+	}
 }
 
 void

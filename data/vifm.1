@@ -1,4 +1,4 @@
-.TH vifm 1 "Feb 24, 2014" "" "Vifm"
+.TH vifm 1 "Feb 26, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2554,6 +2554,7 @@ etc.):
    [+\-]ext   \- sort by extension
    [+\-]name  \- sort by name (including extension)
    [+\-]iname \- sort by name (including extension, ignores case)
+   [+\-]type  \- sort by type (directory < file)
    [+\-]gid   \- sort by group id (*nix only)
    [+\-]gname \- sort by group name (*nix only)
    [+\-]mode  \- sort by mode (*nix only)
@@ -2569,6 +2570,32 @@ etc.):
 
 In case name (iname on Windoes) is skipped, it will be added at the end
 automatically.
+
+Value of the option is checked to include default sorting key (name on *nix,
+iname on Windows).  When it is absent, the key is appended to the value of the
+option.
+
+Type key is somewhat similar in this regard but it's added implicitly:
+when "type" is not specified, sorting behaves as if it was the first key in
+the list.  That's why if one wants sorting algorithm to mix directories and
+files, "type" should be appended to sorting option, for example like this:
+.EX
+ set sort+=type
+.EE
+or
+.EX
+ set sort=-size,type
+.EE
+
+Value of the option is checked to include type key and default sorting
+key (name on *nix, iname on Windows).  Here is what happens if one of them is
+missing:
+.IP \- 2
+type key is added at the beginning;
+.IP \- 2
+default key is added at the end;
+.LP
+all other keys are left untouched (at most they are moved).
 
 This option also changes view columns according to primary sorting key set,
 unless 'viewcolumns' option is not empty.

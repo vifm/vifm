@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 24
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2208,6 +2208,7 @@ key, etc.):
    [+-]ext   - sort by extension
    [+-]name  - sort by name (including extension)
    [+-]iname - sort by name (including extension, ignores case)
+   [+-]type  - sort by type (directory < file)
    [+-]gid   - sort by group id (*nix only)
    [+-]gname - sort by group name (*nix only)
    [+-]mode  - sort by mode (*nix only)
@@ -2220,8 +2221,18 @@ key, etc.):
    [+-]mtime - sort by time modified
 
 '+' means ascending sort for this key, and '-' means descending sort.
-In case name (iname on Windows) is skipped, it will be added at the end
-automatically.
+
+Value of the option is checked to include default sorting key (name on
+*nix, iname on Windows).  When it is absent, the key is appended to the
+value of the option.
+
+Type key is somewhat similar in this regard but it's not added implicitly:
+when "type" is not specified, sorting behaves as if it was the first key in
+the list.  That's why if one wants sorting algorithm to mix directories and
+files, "type" should be appended to sorting option, for example like this: >
+ set sort+=type
+or >
+ set sort=-size,type
 
 This option also changes view columns according to primary sorting key set,
 unless |vifm-'viewcolumns'| option is not empty.

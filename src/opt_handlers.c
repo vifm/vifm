@@ -24,7 +24,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memcpy() memset() strstr() */
+#include <string.h> /* memcpy() memmove() strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -157,6 +157,7 @@ static const char * sort_enum[] = {
 #ifndef _WIN32
 	"perms",
 #endif
+	"type",
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
@@ -192,6 +193,7 @@ static const char * sort_types[] = {
 #ifndef _WIN32
 	"perms", "+perms", "-perms",
 #endif
+	"type", "+type", "-type",
 };
 ARRAY_GUARD(sort_types, SORT_OPTION_COUNT*3);
 
@@ -479,25 +481,13 @@ load_sort_option(FileView *view)
 	 * comma (",") between items. */
 	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
 
+	int i;
+
 	optval_t val;
 	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
 	size_t opt_val_len = 0U;
-	int j, i;
 
-	/* Ensure that list of sorting keys contains either "name" or "iname". */
-	j = -1;
-	while(++j < SORT_OPTION_COUNT && abs(view->sort[j]) <= LAST_SORT_OPTION)
-	{
-		const int sort_option = abs(view->sort[j]);
-		if(sort_option == SORT_BY_NAME || sort_option == SORT_BY_INAME)
-		{
-			break;
-		}
-	}
-	if(j < SORT_OPTION_COUNT && abs(view->sort[j]) > LAST_SORT_OPTION)
-	{
-		view->sort[j++] = DEFAULT_SORT_KEY;
-	}
+	ui_view_sort_list_ensure_well_formed(view->sort);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
@@ -1008,7 +998,7 @@ static void
 sort_handler(OPT_OP op, optval_t val)
 {
 	char *p = val.str_val - 1;
-	int i, j;
+	int i;
 
 	i = 0;
 	do
@@ -1017,6 +1007,7 @@ sort_handler(OPT_OP op, optval_t val)
 		char *t;
 		int minus;
 		int pos;
+		int j;
 
 		t = p + 1;
 		p = strchr(t, ',');
@@ -1047,17 +1038,11 @@ sort_handler(OPT_OP op, optval_t val)
 	}
 	while(*p != '\0');
 
-	for(j = 0; j < i; j++)
+	if(i < SORT_OPTION_COUNT)
 	{
-		int sort_key = abs(curr_view->sort[j]);
-		if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
-			break;
+		curr_view->sort[i] = NO_SORT_OPTION;
 	}
-	if(j == i)
-	{
-		curr_view->sort[i++] = DEFAULT_SORT_KEY;
-	}
-	memset(&curr_view->sort[i], NO_SORT_OPTION, sizeof(curr_view->sort) - i);
+	ui_view_sort_list_ensure_well_formed(curr_view->sort);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);

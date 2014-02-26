@@ -21,12 +21,14 @@
 
 #include <curses.h>
 
-#include <fcntl.h> /* access */
 #include <sys/stat.h>
+#include <fcntl.h> /* access() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <string.h> /* strrchr */
+#include <math.h> /* abs() */
+#include <stdlib.h> /* qsort() */
+#include <string.h> /* strrchr() */
 
 #include "cfg/config.h"
 #include "utils/fs_limits.h"
@@ -44,7 +46,9 @@ static FileView* view;
 static int sort_descending;
 static int sort_type;
 
+static void sort_by_key(char key);
 static int sort_dir_list(const void *one, const void *two);
+static int is_directory_entry(const dir_entry_t *entry);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 static int vercmp(const char s[], const char t[]);
@@ -63,23 +67,37 @@ sort_view(FileView *v)
 	i = SORT_OPTION_COUNT;
 	while(--i >= 0)
 	{
-		int j;
+		const char sorting_key = view->sort[i];
 
-		if(abs(view->sort[i]) > LAST_SORT_OPTION)
+		if(abs(sorting_key) > LAST_SORT_OPTION)
 		{
 			continue;
 		}
 
-		sort_descending = (view->sort[i] < 0);
-		sort_type = abs(view->sort[i]);
-
-		for(j = 0; j < view->list_rows; j++)
-		{
-			view->dir_entry[j].list_num = j;
-		}
-
-		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
+		sort_by_key(sorting_key);
 	}
+
+	if(!ui_view_sort_list_contains(v->sort, SORT_BY_TYPE))
+	{
+		sort_by_key(SORT_BY_TYPE);
+	}
+}
+
+/* Sorts view by the key in a stable way. */
+static void
+sort_by_key(char key)
+{
+	int j;
+
+	sort_descending = (key < 0);
+	sort_type = abs(key);
+
+	for(j = 0; j < view->list_rows; j++)
+	{
+		view->dir_entry[j].list_num = j;
+	}
+
+	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 }
 
 /* Compares file names containing numbers correctly. */
@@ -148,30 +166,25 @@ sort_dir_list(const void *one, const void *two)
 {
 	int retval;
 	char *pfirst, *psecond;
-	dir_entry_t *first = (dir_entry_t *) one;
-	dir_entry_t *second = (dir_entry_t *) two;
-	int first_is_dir = 0;
-	int second_is_dir = 0;
+	dir_entry_t *const first = (dir_entry_t *)one;
+	dir_entry_t *const second = (dir_entry_t *)two;
+	int first_is_dir;
+	int second_is_dir;
 	int dirs;
 
-	if(first->type == DIRECTORY)
-		first_is_dir = 1;
-	else if(first->type == LINK)
-		first_is_dir = (first->name[strlen(first->name) - 1] == '/');
-
-	if(second->type == DIRECTORY)
-		second_is_dir = 1;
-	else if(second->type == LINK)
-		second_is_dir = (second->name[strlen(second->name) - 1] == '/');
-
-	if(first_is_dir != second_is_dir)
-		return first_is_dir ? -1 : 1;
-	dirs = first_is_dir;
-
 	if(is_parent_dir(first->name))
+	{
 		return -1;
+	}
 	else if(is_parent_dir(second->name))
+	{
 		return 1;
+	}
+
+	first_is_dir = is_directory_entry(first);
+	second_is_dir = is_directory_entry(second);
+
+	dirs = first_is_dir || second_is_dir;
 
 	retval = 0;
 	switch(sort_type)
@@ -185,6 +198,13 @@ sort_dir_list(const void *one, const void *two)
 			else
 				retval = compare_file_names(dirs, first->name, second->name,
 						sort_type == SORT_BY_INAME);
+			break;
+
+		case SORT_BY_TYPE:
+			if(first_is_dir != second_is_dir)
+			{
+				retval = first_is_dir ? -1 : 1;
+			}
 			break;
 
 		case SORT_BY_EXTENSION:
@@ -254,11 +274,24 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	if(retval == 0)
+	{
 		retval = first->list_num - second->list_num;
+	}
 	else if(sort_descending)
+	{
 		retval = -retval;
+	}
 
 	return retval;
+}
+
+/* Checks whether entry corresponds to a directory.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_directory_entry(const dir_entry_t *entry)
+{
+	return (entry->type == DIRECTORY)
+	    || (entry->type == LINK && ends_with_slash(entry->name));
 }
 
 /* Compares two filenames.  Returns positive value if s greater than t, zero if
