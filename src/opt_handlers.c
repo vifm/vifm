@@ -487,7 +487,7 @@ load_sort_option(FileView *view)
 	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
 	size_t opt_val_len = 0U;
 
-	ui_view_ensure_well_formed_sort_list(view->sort);
+	ui_view_sort_list_ensure_well_formed(view->sort);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
@@ -1042,7 +1042,7 @@ sort_handler(OPT_OP op, optval_t val)
 	{
 		curr_view->sort[i] = NO_SORT_OPTION;
 	}
-	ui_view_ensure_well_formed_sort_list(curr_view->sort);
+	ui_view_sort_list_ensure_well_formed(curr_view->sort);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);

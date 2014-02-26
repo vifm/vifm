@@ -433,7 +433,7 @@ reset_view(FileView *view)
 	view->local_filter.poshist_len = 0U;
 
 	memset(&view->sort[0], NO_SORT_OPTION, sizeof(view->sort));
-	ui_view_ensure_well_formed_sort_list(view->sort);
+	ui_view_sort_list_ensure_well_formed(view->sort);
 }
 
 /* Resets filter to empty state (either initializes or clears it). */

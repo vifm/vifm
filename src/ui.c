@@ -1871,7 +1871,7 @@ ui_views_reload_filelists(void)
 }
 
 void
-ui_view_ensure_well_formed_sort_list(char sort[SORT_OPTION_COUNT])
+ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 {
 	int found_name_key = 0;
 	int found_type_key = 0;
