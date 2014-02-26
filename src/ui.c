@@ -1870,6 +1870,25 @@ ui_views_reload_filelists(void)
 	load_saving_pos(other_view, 1);
 }
 
+int
+ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key)
+{
+	int i = -1;
+	while(++i < SORT_OPTION_COUNT)
+	{
+		const int sort_key = abs(sort[i]);
+		if(sort_key > LAST_SORT_OPTION)
+		{
+			return 0;
+		}
+		else if(sort_key == key)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 void
 ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 {

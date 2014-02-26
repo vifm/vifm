@@ -295,6 +295,9 @@ void ui_view_reset_selection_and_reload(FileView *view);
 void ui_views_reload_visible_filelists(void);
 /* Reloads lists of files preserving current position of cursor. */
 void ui_views_reload_filelists(void);
+/* Looks for the given key in sort option.  Returns non-zero when found,
+ * otherwise zero is returned. */
+int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);
 /* Ensures that list of sorting keys contains either "name" or "iname". */
 void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
 
