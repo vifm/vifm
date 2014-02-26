@@ -1828,7 +1828,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 0)
 		{
-			remove_all_bookmarks();
+			clear_all_bookmarks();
 			return 0;
 		}
 		else
@@ -1858,7 +1858,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			remove_bookmark(cmd_info->argv[i][j]);
+			clear_bookmark(cmd_info->argv[i][j]);
 		}
 	}
 	return 0;
@@ -2776,6 +2776,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
 	char *expanded_path;
+	const char *file;
 	char mark = cmd_info->argv[0][0];
 
 	if(cmd_info->argv[0][1] != '\0')
@@ -2792,12 +2793,10 @@ mark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		if(cmd_info->end == NOT_DEF)
-			return add_bookmark(mark, curr_view->curr_dir,
-					curr_view->dir_entry[curr_view->list_pos].name);
-		else
-			return add_bookmark(mark, curr_view->curr_dir,
-					curr_view->dir_entry[cmd_info->end].name);
+		const int pos = (cmd_info->end == NOT_DEF)
+		  ? curr_view->list_pos : cmd_info->end;
+		return set_user_bookmark(mark, curr_view->curr_dir,
+				curr_view->dir_entry[pos].name);
 	}
 
 	expanded_path = expand_tilde(strdup(cmd_info->argv[1]));
@@ -2813,21 +2812,26 @@ mark_cmd(const cmd_info_t *cmd_info)
 		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, expanded_path))
 		{
 			if(curr_stats.load_stage >= 3 && pane_in_dir(curr_view, expanded_path))
-				result = add_bookmark(cmd_info->argv[0][0], expanded_path,
-						curr_view->dir_entry[curr_view->list_pos].name);
+			{
+				file = curr_view->dir_entry[curr_view->list_pos].name;
+			}
 			else
-				result = add_bookmark(cmd_info->argv[0][0], expanded_path, "../");
+			{
+				file = "../";
+			}
 		}
 		else
-			result = add_bookmark(cmd_info->argv[0][0], expanded_path,
-					curr_view->dir_entry[cmd_info->end].name);
+		{
+			file = curr_view->dir_entry[cmd_info->end].name;
+		}
 	}
 	else
 	{
-		result = add_bookmark(cmd_info->argv[0][0], expanded_path,
-				cmd_info->argv[2]);
+		file = cmd_info->argv[2];
 	}
+	result = set_user_bookmark(mark, expanded_path, file);
 	free(expanded_path);
+
 	return result;
 }
 
@@ -3186,8 +3190,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* color schemes */
 	load_def_scheme();
 
-	/* Remove all bookmarks. */
-	remove_all_bookmarks();
+	/* Clear all bookmarks. */
+	clear_all_bookmarks();
 
 	/* variables */
 	clear_variables();

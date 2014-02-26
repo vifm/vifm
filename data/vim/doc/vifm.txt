@@ -2806,9 +2806,16 @@ The $VIFM/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
 |vifm-'vifminfo'| option.  Vifm always writes this file on exit unless
-|vifm-'vifminfo'| option is empty.  Bookmarks, commands, directory history,
-filetypes, fileviewers and registers in the file are merged with vifm
-configuration (which has bigger priority).
+|vifm-'vifminfo'| option is empty.  Bookmarks, commands, histories, filetypes,
+fileviewers and registers in the file are merged with vifm configuration.
+
+Generally, runtime configuration has bigger priority during merging, but there
+are some exceptions:
+ - directory stack stored in the file is not overwritten unless something is
+   changed in vifm session that performs merge;
+ - each bookmark is marked with a timestamp, so that newer value is not
+   overwritten by older one, thus no matter from where bookmark comes, the
+   newer one wins.
 
                                                *vifm-scripts*
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies

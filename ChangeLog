@@ -47,6 +47,10 @@
 
 	Display error message when :delmarks! is followed by arguments.
 
+	Made bookmarks merging smarter by storing timestamps.  Removing bookmarks
+	now works as expected.  Bookmarks overwriting by another instance
+	shouldn't happen anymore. Thanks to Michael Maddern, a.k.a. madders.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

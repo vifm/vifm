@@ -20,6 +20,8 @@
 #ifndef VIFM__BOOKMARKS_H__
 #define VIFM__BOOKMARKS_H__
 
+#include <time.h> /* time_t */
+
 #include "ui.h"
 
 #define NUM_BOOKMARKS 64
@@ -27,8 +29,9 @@
 /* Structure that describes bookmark data. */
 typedef struct
 {
-	char *file;      /* Name of bookmarked file. */
-	char *directory; /* Path to directory at which bookmark was made. */
+	char *file;       /* Name of bookmarked file. */
+	char *directory;  /* Path to directory at which bookmark was made. */
+	time_t timestamp; /* Last bookmark update time (-1 means "never"). */
 }
 bookmark_t;
 
@@ -51,18 +54,31 @@ int is_bookmark_empty(const char mark);
 
 int is_spec_bookmark(const int x);
 
-int add_bookmark(const char mark, const char directory[], const char file[]);
+/* Checks whether given bookmark is older than given time.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int is_bookmark_older(const char mark, const time_t than);
 
-void set_specmark(const char mark, const char directory[], const char file[]);
+/* Sets user's bookmark interactively.  Returns non-zero if UI message was
+ * printed, otherwise zero is returned. */
+int set_user_bookmark(const char mark, const char directory[],
+		const char file[]);
+
+/* Sets all properties of user's bookmark (e.g. from saved configuration). */
+void setup_user_bookmark(const char mark, const char directory[],
+		const char file[], time_t timestamp);
+
+/* Sets special bookmark.  Does nothing for invalid mark value. */
+void set_spec_bookmark(const char mark, const char directory[],
+		const char file[]);
 
 /* Handles all kinds of bookmarks.  Returns new value for save_msg flag. */
 int goto_bookmark(FileView *view, char mark);
 
-/* Removes bookmarks by its name. */
-void remove_bookmark(const int mark);
+/* Clears a bookmark by its name. */
+void clear_bookmark(const int mark);
 
-/* Removes all bookmarks. */
-void remove_all_bookmarks(void);
+/* Clears all bookmarks. */
+void clear_all_bookmarks(void);
 
 int check_mark_directory(FileView *view, char mark);
 

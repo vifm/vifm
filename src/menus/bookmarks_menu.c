@@ -117,7 +117,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
-		remove_bookmark(m->items[m->pos][0]);
+		clear_bookmark(m->items[m->pos][0]);
 		remove_current_item(m);
 		return 1;
 	}
