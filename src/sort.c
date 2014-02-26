@@ -21,12 +21,14 @@
 
 #include <curses.h>
 
-#include <fcntl.h> /* access */
 #include <sys/stat.h>
+#include <fcntl.h> /* access() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <string.h> /* strrchr */
+#include <math.h> /* abs() */
+#include <stdlib.h> /* qsort() */
+#include <string.h> /* strrchr() */
 
 #include "cfg/config.h"
 #include "utils/fs_limits.h"
@@ -44,6 +46,7 @@ static FileView* view;
 static int sort_descending;
 static int sort_type;
 
+static void sort_by_key(char key);
 static int sort_dir_list(const void *one, const void *two);
 static int is_directory_entry(const dir_entry_t *entry);
 TSTATIC int strnumcmp(const char s[], const char t[]);
@@ -64,23 +67,37 @@ sort_view(FileView *v)
 	i = SORT_OPTION_COUNT;
 	while(--i >= 0)
 	{
-		int j;
+		const char sorting_key = view->sort[i];
 
-		if(abs(view->sort[i]) > LAST_SORT_OPTION)
+		if(abs(sorting_key) > LAST_SORT_OPTION)
 		{
 			continue;
 		}
 
-		sort_descending = (view->sort[i] < 0);
-		sort_type = abs(view->sort[i]);
-
-		for(j = 0; j < view->list_rows; j++)
-		{
-			view->dir_entry[j].list_num = j;
-		}
-
-		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
+		sort_by_key(sorting_key);
 	}
+
+	if(!ui_view_sort_list_contains(v->sort, SORT_BY_TYPE))
+	{
+		sort_by_key(SORT_BY_TYPE);
+	}
+}
+
+/* Sorts view by the key in a stable way. */
+static void
+sort_by_key(char key)
+{
+	int j;
+
+	sort_descending = (key < 0);
+	sort_type = abs(key);
+
+	for(j = 0; j < view->list_rows; j++)
+	{
+		view->dir_entry[j].list_num = j;
+	}
+
+	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 }
 
 /* Compares file names containing numbers correctly. */
