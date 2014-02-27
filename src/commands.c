@@ -133,6 +133,7 @@ static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
 static int setup_extcmd_file(const char path[], const char beginning[],
 		int type);
 static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
+static hist_t * history_by_type(int type);
 static char * get_file_first_line(const char path[]);
 static void execute_extcmd(const char command[], int type);
 static void save_extcmd(const char command[], int type);
@@ -623,9 +624,7 @@ static void
 prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 {
 	const int is_cmd = (type == GET_COMMAND);
-	const int is_prompt = (type == GET_PROMPT_INPUT);
-	const hist_t *const hist = is_cmd ? &cfg.cmd_hist :
-		(is_prompt ? &cfg.prompt_hist : &cfg.search_hist);
+	const hist_t *const hist = history_by_type(type);
 	int i;
 
 	fprintf(fp, "%s\n", beginning);
@@ -633,6 +632,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	{
 		fprintf(fp, "%s\n", hist->items[i]);
 	}
+
 	if(is_cmd)
 	{
 		fputs("\" vim: set filetype=vifm-cmdedit syntax=vifm :\n", fp);
@@ -640,6 +640,24 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 	else
 	{
 		fputs("\" vim: set filetype=vifm-edit :\n", fp);
+	}
+}
+
+/* Picks history by command type.  Returns pointer to history. */
+static hist_t *
+history_by_type(int type)
+{
+	switch(type)
+	{
+		case GET_COMMAND:
+			return &cfg.cmd_hist;
+		case GET_PROMPT_INPUT:
+			return &cfg.prompt_hist;
+		case GET_FILTER_PATTERN:
+			return &cfg.filter_hist;
+
+		default:
+			return &cfg.search_hist;
 	}
 }
 
