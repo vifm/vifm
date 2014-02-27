@@ -459,6 +459,7 @@ void
 enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 {
 	const wchar_t *prompt;
+	complete_cmd_func complete_func;
 
 	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
@@ -486,7 +487,8 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 		prompt = L"E";
 	}
 
-	prepare_cmdline_mode(prompt, cmd, complete_cmd);
+	complete_func = (sub_mode == FILTER_SUBMODE) ? NULL : complete_cmd;
+	prepare_cmdline_mode(prompt, cmd, complete_func);
 }
 
 void
