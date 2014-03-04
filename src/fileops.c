@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-#include <dirent.h> /* DIR */
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
@@ -1357,6 +1357,7 @@ put_next(const char dest_name[], int override)
 	int from_trash;
 	int op;
 	int move;
+	int success;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -1439,7 +1440,61 @@ put_next(const char dest_name[], int override)
 	}
 
 	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
-	if(perform_operation(op, NULL, src_buf, dst_buf) == 0)
+
+	/* Merging directory on move requires special handling as it can't be done by
+	 * "mv" itself. */
+	if(move && put_confirm.merge)
+	{
+		DIR *dir;
+
+		success = 1;
+
+		cmd_group_continue();
+
+		if((dir = opendir(src_buf)) != NULL)
+		{
+			struct dirent *d;
+			while((d = readdir(dir)) != NULL)
+			{
+				if(!is_builtin_dir(d->d_name))
+				{
+					char src_path[PATH_MAX];
+					char dst_path[PATH_MAX];
+					snprintf(src_path, sizeof(src_path), "%s/%s", src_buf, d->d_name);
+					snprintf(dst_path, sizeof(dst_path), "%s/%s/%s",
+							put_confirm.view->curr_dir, dest_name, d->d_name);
+					if(perform_operation(OP_MOVEF, NULL, src_path, dst_path) != 0)
+					{
+						success = 0;
+						break;
+					}
+					add_operation(OP_MOVEF, NULL, NULL, src_path, dst_path);
+				}
+			}
+			closedir(dir);
+		}
+		else
+		{
+			success = 0;
+		}
+
+		if(success)
+		{
+			success = (perform_operation(OP_RMDIR, NULL, src_buf, NULL) == 0);
+			if(success)
+			{
+				add_operation(OP_RMDIR, NULL, NULL, src_buf, "");
+			}
+		}
+
+		cmd_group_end();
+	}
+	else
+	{
+		success = (perform_operation(op, NULL, src_buf, dst_buf) == 0);
+	}
+
+	if(success)
 	{
 		char *msg, *p;
 		size_t len;
@@ -1465,7 +1520,10 @@ put_next(const char dest_name[], int override)
 		replace_group_msg(msg);
 		free(msg);
 
-		add_operation(op, NULL, NULL, src_buf, dst_buf);
+		if(!(move && put_confirm.merge))
+		{
+			add_operation(op, NULL, NULL, src_buf, dst_buf);
+		}
 
 		cmd_group_end();
 		put_confirm.y++;

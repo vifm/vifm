@@ -101,6 +101,8 @@
 	Fixed q= which displayed history of search by mistake.  Thanks to
 	filterfalse.
 
+	Fixed merging directories on delete then paste.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
