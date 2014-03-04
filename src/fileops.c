@@ -2739,14 +2739,17 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char dst_full[PATH_MAX];
+		char dst_name[NAME_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		if(from_trash)
 		{
-			dst = get_real_name_from_trash_name(dst);
+			copy_str(dst_name, sizeof(dst_name), dst);
+			chosp(dst_name);
+			dst = get_real_name_from_trash_name(dst_name);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(path_exists(dst_full))
+		if(path_exists(dst_full) && !from_trash)
 		{
 			(void)perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
 		}
@@ -2791,14 +2794,17 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 	for(i = 0; i < sel_list_len; i++)
 	{
 		char dst_full[PATH_MAX];
+		char dst_name[NAME_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
 		if(from_trash)
 		{
-			dst = get_real_name_from_trash_name(dst);
+			copy_str(dst_name, sizeof(dst_name), dst);
+			chosp(dst_name);
+			dst = get_real_name_from_trash_name(dst_name);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(path_exists(dst_full))
+		if(path_exists(dst_full) && !from_trash)
 		{
 			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
 		}
