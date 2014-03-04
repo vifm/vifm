@@ -288,8 +288,10 @@ op_mv(void *data, const char src[], const char dst[], int overwrite)
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
 
-	if(lstat(dst, &st) == 0)
+	if(!overwrite && lstat(dst, &st) == 0)
+	{
 		return -1;
+	}
 
 	escaped_src = escape_filename(src, 0);
 	escaped_dst = escape_filename(dst, 0);

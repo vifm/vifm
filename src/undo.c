@@ -94,7 +94,7 @@ static OPS undo_op[] = {
 	OP_REMOVE,   /* OP_SYMLINK */
 	OP_REMOVESL, /* OP_SYMLINK2 */
 	OP_RMDIR,    /* OP_MKDIR */
-	OP_NONE,     /* OP_RMDIR */
+	OP_MKDIR,    /* OP_RMDIR */
 	OP_REMOVE,   /* OP_MKFILE */
 };
 ARRAY_GUARD(undo_op, OP_COUNT);
@@ -152,7 +152,7 @@ static enum
 	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKDIR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_RMDIR */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_RMDIR */
-		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE  */
+		OPER_1ST, OPER_NON, OPER_NON, OPER_1ST, }, /* undo OP_MKDIR */
 	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKFILE */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_REMOVE  */
 };
