@@ -522,7 +522,7 @@ eval_envvar(const char **in)
 		}
 		while(char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
 
-		var_val.string = (char *)getenv_fu(name);
+		var_val.const_string = getenv_fu(name);
 		return var_new(VTYPE_STRING, var_val);
 	}
 	else

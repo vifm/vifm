@@ -35,6 +35,8 @@ typedef union
 {
 	char *string; /* String value for VTYPE_STRING, should be copied to use it. */
 	int integer; /* VTYPE_INT value. */
+
+	const char *const_string; /* Convenience field handy to create variables. */
 }var_val_t;
 
 /* Structure for script variable. */
