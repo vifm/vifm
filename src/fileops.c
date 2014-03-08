@@ -118,6 +118,8 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
+static int mv_file(const char *src, const char *src_path, const char *dst,
+		const char *path, int tmpfile_num, int cancellable);
 static int cp_file(const char *src_dir, const char *dst_dir, const char *src,
 		const char *dst, int type, int cancellable);
 static int have_read_access(FileView *view);
@@ -476,44 +478,6 @@ delete_file_bg(FileView *view, int use_trash)
 
 	pthread_create(&id, NULL, delete_file_stub, args);
 	return 0;
-}
-
-static int
-mv_file(const char *src, const char *src_path, const char *dst,
-		const char *path, int tmpfile_num, int cancellable)
-{
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
-
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
-	chosp(full_dst);
-
-	/* compare case sensitive strings even on Windows to let user rename file
-	 * changing only case of some characters */
-	if(strcmp(full_src, full_dst) == 0)
-		return 0;
-
-	if(tmpfile_num <= 0)
-		op = OP_MOVE;
-	else if(tmpfile_num == 1)
-		op = OP_MOVETMP1;
-	else if(tmpfile_num == 2)
-		op = OP_MOVETMP2;
-	else if(tmpfile_num == 3)
-		op = OP_MOVETMP3;
-	else if(tmpfile_num == 4)
-		op = OP_MOVETMP4;
-	else
-		op = OP_NONE;
-
-	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
-			full_dst);
-	if(result == 0 && tmpfile_num >= 0)
-		add_operation(op, NULL, NULL, full_src, full_dst);
-	return result;
 }
 
 static void
@@ -2796,6 +2760,44 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		inner_bg_next();
 	}
 	return 0;
+}
+
+static int
+mv_file(const char *src, const char *src_path, const char *dst,
+		const char *path, int tmpfile_num, int cancellable)
+{
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	int op;
+	int result;
+
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
+	chosp(full_src);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
+	chosp(full_dst);
+
+	/* compare case sensitive strings even on Windows to let user rename file
+	 * changing only case of some characters */
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	if(tmpfile_num <= 0)
+		op = OP_MOVE;
+	else if(tmpfile_num == 1)
+		op = OP_MOVETMP1;
+	else if(tmpfile_num == 2)
+		op = OP_MOVETMP2;
+	else if(tmpfile_num == 3)
+		op = OP_MOVETMP3;
+	else if(tmpfile_num == 4)
+		op = OP_MOVETMP4;
+	else
+		op = OP_NONE;
+
+	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
+			full_dst);
+	if(result == 0 && tmpfile_num >= 0)
+		add_operation(op, NULL, NULL, full_src, full_dst);
+	return result;
 }
 
 /* type:
