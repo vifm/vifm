@@ -118,6 +118,8 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
+static int cp_file(const char *src_dir, const char *dst_dir, const char *src,
+		const char *dst, int type, int cancellable);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -2488,48 +2490,6 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	return 1;
 }
 
-/* type:
- *  <= 0 - copy
- *  1 - absolute symbolic links
- *  2 - relative symbolic links
- */
-static int
-cp_file(const char *src_dir, const char *dst_dir, const char *src,
-		const char *dst, int type, int cancellable)
-{
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
-
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
-	chosp(full_dst);
-
-	if(strcmp(full_src, full_dst) == 0)
-		return 0;
-
-	if(type <= 0)
-	{
-		op = OP_COPY;
-	}
-	else
-	{
-		op = OP_SYMLINK;
-		if(type == 2)
-		{
-			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
-					dst_dir));
-		}
-	}
-
-	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
-			full_dst);
-	if(result == 0 && type >= 0)
-		add_operation(op, NULL, NULL, full_src, full_dst);
-	return result;
-}
-
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		int force, char *buf, size_t buf_len, char *path, int *from_file,
@@ -2836,6 +2796,48 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		inner_bg_next();
 	}
 	return 0;
+}
+
+/* type:
+ *  <= 0 - copy
+ *  1 - absolute symbolic links
+ *  2 - relative symbolic links
+ */
+static int
+cp_file(const char *src_dir, const char *dst_dir, const char *src,
+		const char *dst, int type, int cancellable)
+{
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	int op;
+	int result;
+
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
+	chosp(full_src);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
+	chosp(full_dst);
+
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	if(type <= 0)
+	{
+		op = OP_COPY;
+	}
+	else
+	{
+		op = OP_SYMLINK;
+		if(type == 2)
+		{
+			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
+					dst_dir));
+		}
+	}
+
+	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
+			full_dst);
+	if(result == 0 && type >= 0)
+		add_operation(op, NULL, NULL, full_src, full_dst);
+	return result;
 }
 
 static void *
