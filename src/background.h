@@ -61,7 +61,7 @@ int background_and_wait_for_status(char *cmd);
 /* Runs command in background and displays its errors to a user.  To determine
  * an error uses both stderr stream and exit status.  Returns zero on success,
  * otherwise non-zero is returned. */
-int background_and_wait_for_errors(char cmd[]);
+int background_and_wait_for_errors(char cmd[], int cancellable);
 
 /* Runs command in a background and redirects its stdout and stderr streams to
  * file streams which are set.  Returns id of background process ((pid_t)0 for

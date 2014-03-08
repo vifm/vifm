@@ -118,6 +118,10 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
+static int mv_file(const char src[], const char src_path[], const char dst[],
+		const char path[], int tmpfile_num, int cancellable);
+static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
+		const char dst[], int type, int cancellable);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -402,13 +406,13 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 			{
 				char *const trash_name = gen_trash_name(curr_dir, fname);
 				const char *const dest = (trash_name != NULL) ? trash_name : fname;
-				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
+				(void)perform_operation(OP_MOVE, (void *)1, full_buf, dest);
 				free(trash_name);
 			}
 		}
 		else
 		{
-			(void)perform_operation(OP_REMOVE, NULL, full_buf, NULL);
+			(void)perform_operation(OP_REMOVE, (void *)1, full_buf, NULL);
 		}
 		inner_bg_next();
 	}
@@ -476,43 +480,6 @@ delete_file_bg(FileView *view, int use_trash)
 	return 0;
 }
 
-static int
-mv_file(const char *src, const char *src_path, const char *dst,
-		const char *path, int tmpfile_num)
-{
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
-
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
-	chosp(full_dst);
-
-	/* compare case sensitive strings even on Windows to let user rename file
-	 * changing only case of some characters */
-	if(strcmp(full_src, full_dst) == 0)
-		return 0;
-
-	if(tmpfile_num <= 0)
-		op = OP_MOVE;
-	else if(tmpfile_num == 1)
-		op = OP_MOVETMP1;
-	else if(tmpfile_num == 2)
-		op = OP_MOVETMP2;
-	else if(tmpfile_num == 3)
-		op = OP_MOVETMP3;
-	else if(tmpfile_num == 4)
-		op = OP_MOVETMP4;
-	else
-		op = OP_NONE;
-
-	result = perform_operation(op, NULL, full_src, full_dst);
-	if(result == 0 && tmpfile_num >= 0)
-		add_operation(op, NULL, NULL, full_src, full_dst);
-	return result;
-}
-
 static void
 rename_file_cb(const char *new_name)
 {
@@ -546,7 +513,8 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
+	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0,
+			1);
 	cmd_group_end();
 	if(mv_res != 0)
 	{
@@ -694,7 +662,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2) != 0)
+		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2, 1)
+				!= 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -714,7 +683,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		if(mv_file(files[i], view->curr_dir, list[i], view->curr_dir,
-				is_dup[i] ? 1 : 0) == 0)
+				is_dup[i] ? 1 : 0, 1) == 0)
 		{
 			int pos;
 
@@ -1036,7 +1005,8 @@ incdec_names(FileView *view, int k)
 	cmd_group_begin(buf);
 	for(i = 0; i < names_len && !err; i++)
 	{
-		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4) != 0)
+		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4, 1)
+				!= 0)
 		{
 			err = 1;
 			break;
@@ -1046,7 +1016,7 @@ incdec_names(FileView *view, int k)
 	for(i = 0; i < names_len && !err; i++)
 	{
 		if(mv_file(tmp_names[i], view->curr_dir, add_to_name(names[i], k),
-				view->curr_dir, 3) != 0)
+				view->curr_dir, 3, 1) != 0)
 		{
 			err = 1;
 			break;
@@ -2168,8 +2138,10 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 			(void)replace_string(&view->dir_entry[i].name, dest[j]);
 		}
 
-		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0) == 0)
+		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0, 1) == 0)
+		{
 			n++;
+		}
 	}
 	cmd_group_end();
 	free_string_array(dest, j + 1);
@@ -2453,8 +2425,10 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 			(void)replace_string(&view->dir_entry[pos].name, dest[i]);
 		}
 		if(mv_file(view->selected_filelist[i], view->curr_dir, dest[i],
-				view->curr_dir, 0) == 0)
+				view->curr_dir, 0, 1) == 0)
+		{
 			k++;
+		}
 	}
 	cmd_group_end();
 
@@ -2478,47 +2452,6 @@ is_copy_list_ok(const char *dst, int count, char **list)
 		}
 	}
 	return 1;
-}
-
-/* type:
- *  <= 0 - copy
- *  1 - absolute symbolic links
- *  2 - relative symbolic links
- */
-static int
-cp_file(const char *src_dir, const char *dst_dir, const char *src,
-		const char *dst, int type)
-{
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
-
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
-	chosp(full_dst);
-
-	if(strcmp(full_src, full_dst) == 0)
-		return 0;
-
-	if(type <= 0)
-	{
-		op = OP_COPY;
-	}
-	else
-	{
-		op = OP_SYMLINK;
-		if(type == 2)
-		{
-			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
-					dst_dir));
-		}
-	}
-
-	result = perform_operation(op, NULL, full_src, full_dst);
-	if(result == 0 && type >= 0)
-		add_operation(op, NULL, NULL, full_src, full_dst);
-	return result;
 }
 
 static int
@@ -2758,17 +2691,23 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		{
 			progress_msg("Moving files", i + 1, sel_len);
 
-			if(mv_file(sel[i], view->curr_dir, dst, path, 0) != 0)
+			if(mv_file(sel[i], view->curr_dir, dst, path, 0, 1) != 0)
+			{
 				view->list_pos = find_file_pos_in_list(view, sel[i]);
+			}
 			else
+			{
 				processed++;
+			}
 		}
 		else
 		{
 			if(type == 0)
 				progress_msg("Copying files", i + 1, sel_len);
-			if(cp_file(view->curr_dir, path, sel[i], dst, type) == 0)
+			if(cp_file(view->curr_dir, path, sel[i], dst, type, 1) == 0)
+			{
 				processed++;
+			}
 		}
 	}
 	cmd_group_end();
@@ -2806,17 +2745,101 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
 		if(path_exists(dst_full) && !from_trash)
 		{
-			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+			perform_operation(OP_REMOVESL, (void *)1, dst_full, NULL);
 		}
 
 		if(move)
-			(void)mv_file(sel_list[i], src, dst, path, -1);
+		{
+			(void)mv_file(sel_list[i], src, dst, path, -1, 0);
+		}
 		else
-			(void)cp_file(src, path, sel_list[i], dst, -1);
+		{
+			(void)cp_file(src, path, sel_list[i], dst, -1, 0);
+		}
 
 		inner_bg_next();
 	}
 	return 0;
+}
+
+static int
+mv_file(const char src[], const char src_path[], const char dst[],
+		const char path[], int tmpfile_num, int cancellable)
+{
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	int op;
+	int result;
+
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
+	chosp(full_src);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
+	chosp(full_dst);
+
+	/* compare case sensitive strings even on Windows to let user rename file
+	 * changing only case of some characters */
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	if(tmpfile_num <= 0)
+		op = OP_MOVE;
+	else if(tmpfile_num == 1)
+		op = OP_MOVETMP1;
+	else if(tmpfile_num == 2)
+		op = OP_MOVETMP2;
+	else if(tmpfile_num == 3)
+		op = OP_MOVETMP3;
+	else if(tmpfile_num == 4)
+		op = OP_MOVETMP4;
+	else
+		op = OP_NONE;
+
+	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
+			full_dst);
+	if(result == 0 && tmpfile_num >= 0)
+		add_operation(op, NULL, NULL, full_src, full_dst);
+	return result;
+}
+
+/* type:
+ *  <= 0 - copy
+ *  1 - absolute symbolic links
+ *  2 - relative symbolic links
+ */
+static int
+cp_file(const char src_dir[], const char dst_dir[], const char src[],
+		const char dst[], int type, int cancellable)
+{
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	int op;
+	int result;
+
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
+	chosp(full_src);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
+	chosp(full_dst);
+
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	if(type <= 0)
+	{
+		op = OP_COPY;
+	}
+	else
+	{
+		op = OP_SYMLINK;
+		if(type == 2)
+		{
+			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
+					dst_dir));
+		}
+	}
+
+	result = perform_operation(op, cancellable ? NULL : (void *)1, full_src,
+			full_dst);
+	if(result == 0 && type >= 0)
+		add_operation(op, NULL, NULL, full_src, full_dst);
+	return result;
 }
 
 static void *
