@@ -284,7 +284,7 @@ error_msg(const char *title, const char *text)
 #endif
 
 int
-background_and_wait_for_errors(char *cmd)
+background_and_wait_for_errors(char cmd[], int cancellable)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -318,7 +318,10 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		ui_cancellation_enable();
+		if(cancellable)
+		{
+			ui_cancellation_enable();
+		}
 
 		wait_for_data_from(pid, NULL, error_pipe[0]);
 
@@ -338,7 +341,10 @@ background_and_wait_for_errors(char *cmd)
 		}
 		close(error_pipe[0]);
 
-		ui_cancellation_disable();
+		if(cancellable)
+		{
+			ui_cancellation_disable();
+		}
 
 		if(result != 0)
 		{

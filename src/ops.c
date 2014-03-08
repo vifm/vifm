@@ -149,7 +149,7 @@ op_removesl(void *data, const char *src, const char *dst)
 
 	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
 	LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd, 1);
 
 	free(escaped);
 	return result;
@@ -228,7 +228,7 @@ op_cp(void *data, const char src[], const char dst[], int overwrite)
 			"cp %s -R " PRESERVE_FLAGS " %s %s",
 			overwrite ? "" : NO_CLOBBER, escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd, 1);
 
 	free(escaped_dst);
 	free(escaped_src);
@@ -308,7 +308,7 @@ op_mv(void *data, const char src[], const char dst[], int overwrite)
 	free(escaped_src);
 
 	LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
-	if((result = background_and_wait_for_errors(cmd)) != 0)
+	if((result = background_and_wait_for_errors(cmd, 1)) != 0)
 		return result;
 
 	if(is_under_trash(dst))
@@ -342,7 +342,7 @@ op_chown(void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chown command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 #else
 	return -1;
 #endif
@@ -361,7 +361,7 @@ op_chgrp(void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chgrp command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 #else
 	return -1;
 #endif
@@ -379,7 +379,7 @@ op_chmod(void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chmod command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 }
 
 static int
@@ -454,7 +454,7 @@ op_symlink(void *data, const char *src, const char *dst)
 #ifndef _WIN32
 	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd, 1);
 #else
 	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
 	{
@@ -486,7 +486,7 @@ op_mkdir(void *data, const char *src, const char *dst)
 			escaped);
 	free(escaped);
 	LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 #else
 	if(data == NULL)
 	{
@@ -533,7 +533,7 @@ op_rmdir(void *data, const char *src, const char *dst)
 	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
 	free(escaped);
 	LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 #else
 	return RemoveDirectory(src) == 0;
 #endif
@@ -550,7 +550,7 @@ op_mkfile(void *data, const char *src, const char *dst)
 	snprintf(cmd, sizeof(cmd), "touch %s", escaped);
 	free(escaped);
 	LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd, 1);
 #else
 	HANDLE hfile;
 
