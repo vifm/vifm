@@ -118,10 +118,10 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
-static int mv_file(const char *src, const char *src_path, const char *dst,
-		const char *path, int tmpfile_num, int cancellable);
-static int cp_file(const char *src_dir, const char *dst_dir, const char *src,
-		const char *dst, int type, int cancellable);
+static int mv_file(const char src[], const char src_path[], const char dst[],
+		const char path[], int tmpfile_num, int cancellable);
+static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
+		const char dst[], int type, int cancellable);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -2763,8 +2763,8 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 }
 
 static int
-mv_file(const char *src, const char *src_path, const char *dst,
-		const char *path, int tmpfile_num, int cancellable)
+mv_file(const char src[], const char src_path[], const char dst[],
+		const char path[], int tmpfile_num, int cancellable)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
@@ -2806,8 +2806,8 @@ mv_file(const char *src, const char *src_path, const char *dst,
  *  2 - relative symbolic links
  */
 static int
-cp_file(const char *src_dir, const char *dst_dir, const char *src,
-		const char *dst, int type, int cancellable)
+cp_file(const char src_dir[], const char dst_dir[], const char src[],
+		const char dst[], int type, int cancellable)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
