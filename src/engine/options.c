@@ -33,6 +33,11 @@
 
 const size_t OPTION_NAME_MAX = 64;
 
+#define LOWER_CHARS "abcdefghijklmnopqrstuvwxyz"
+const char OPT_NAME_FIRST_CHAR[] = LOWER_CHARS;
+const char OPT_NAME_CHARS[] = LOWER_CHARS;
+#undef LOWER_CHARS
+
 /* TODO: possibly add validators. */
 /* TODO: possibly add default handlers (just set new value) and types
  *       OPT_*_PTR. */
