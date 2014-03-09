@@ -44,6 +44,7 @@ typedef enum
 	DQ,         /* Double quote ("). */
 	DOT,        /* Dot (.). */
 	DOLLAR,     /* Dollar sign ($). */
+	AMPERSAND,  /* Ampersand sign (&). */
 	LPAREN,     /* Left parenthesis ((). */
 	RPAREN,     /* Right parenthesis ()). */
 	COMMA,      /* Comma, concatenation operator (,). */
@@ -658,6 +659,9 @@ get_next(const char **in)
 			break;
 		case '$':
 			tt = DOLLAR;
+			break;
+		case '&':
+			tt = AMPERSAND;
 			break;
 		case '(':
 			tt = LPAREN;
