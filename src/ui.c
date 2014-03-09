@@ -959,6 +959,8 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
+	update_geometry();
+
 	return 1;
 }
 
