@@ -81,7 +81,7 @@ static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
-static void complete_option_name(const char buf[], int bool_only);
+static void complete_option_name(const char buf[], int bool_only, int pseudo);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
 static int complete_char_value(const opt_t *opt, const char beginning[]);
@@ -979,7 +979,9 @@ complete_options(const char args[], const char **start)
 	}
 
 	if(!is_value_completion)
-		complete_option_name(buf, bool_only);
+	{
+		complete_option_name(buf, bool_only, 1);
+	}
 	else if(opt != NULL)
 	{
 		if(opt->val_count > 0)
@@ -1089,20 +1091,26 @@ skip_alphas(const char str[])
 	return (char *)str;
 }
 
-/* Completes name of an option. */
+/* Completes name of an option.  The pseudo parameter controls whether pseudo
+ * options should be enumerated (e.g. "all"). */
 static void
-complete_option_name(const char buf[], int bool_only)
+complete_option_name(const char buf[], int bool_only, int pseudo)
 {
-	size_t len;
+	const size_t len = strlen(buf);
 	int i;
 
-	len = strlen(buf);
-	if(strncmp(buf, "all", len) == 0)
+	if(pseudo && strncmp(buf, "all", len) == 0)
+	{
 		add_completion("all");
+	}
+
 	for(i = 0; i < options_count; i++)
 	{
 		if(bool_only && options[i].type != OPT_BOOL)
+		{
 			continue;
+		}
+
 		if(strncmp(buf, options[i].name, len) == 0)
 		{
 			if(options[i].full != NULL)
