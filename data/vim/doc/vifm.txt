@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Feb 26
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2471,6 +2471,7 @@ Expression syntax summary, from least to most significant:
 |vifm-expr4| number                  number constant
              "string"                string constant, backslash is special
              'string'                string constant, ' is doubled
+             &option                 option value
              $VAR                    environment variable
              function(expr1, ...)    function call
 
@@ -2563,7 +2564,7 @@ Examples: >
 
 literal-string                                 *vifm-literal-string*
 --------------
-'string'             string constant           *vifm-expr-'*
+'string'              string constant           *vifm-expr-'*
 
 Note that single quotes are used.
 
@@ -2574,6 +2575,19 @@ Examples: >
   'All\slashes\are\saved.'
   'This string contains doubled single quotes ''here'''
 <
+
+option                                         *vifm-expr-option*
+------
+&option               option value
+
+Examples: >
+
+  echo 'Terminal size: '.&columns.'x'.&lines
+  if &columns > 100
+<
+Any valid option name can be used here (note that "all" in ":set all" is a
+pseudo option).  See |vifm-set-options|.
+
 
 environment variable                           *vifm-expr-env*
 --------------------
