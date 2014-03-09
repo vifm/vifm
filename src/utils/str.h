@@ -165,7 +165,7 @@ int has_uppercase_letters(const char str[]);
  * character.  Does nothing for zero dst_len. */
 void copy_str(char dst[], size_t dst_len, const char src[]);
 
-/* Copies characters from the string pointed to by str and terminated by the
+/* Copies characters from the string pointed to by src and terminated by the
  * terminator to piece of memory of size dst_len pointed to by dst.  Ensures
  * that copied string ends with null character.  Does nothing for zero
  * dst_len. */
