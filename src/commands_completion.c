@@ -37,7 +37,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strdup() strlen() strncasecmp() strncmp() */
+#include <string.h> /* strdup() strlen() strncasecmp() strncmp() strrchr() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -98,16 +98,28 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 	const char *start;
 	const char *slash;
 	const char *dollar;
+	const char *ampersand;
 
 	arg = after_last(args, ' ');
 	start = arg;
-	dollar = strrchr(arg, '$');
 	slash = strrchr(args + arg_pos, '/');
+	dollar = strrchr(arg, '$');
+	ampersand = strrchr(arg, '&');
 
 	if(id == COM_SET)
 		complete_options(args, &start);
 	else if(command_accepts_expr(id))
-		complete_variables((dollar > arg) ? dollar : arg, &start);
+	{
+		if(ampersand > dollar)
+		{
+			start = ampersand + 1;
+			complete_real_option_names(ampersand + 1);
+		}
+		else
+		{
+			complete_variables((dollar > arg) ? dollar : arg, &start);
+		}
+	}
 	else if(id == COM_UNLET)
 		complete_variables(arg, &start);
 	else if(id == COM_HELP)
