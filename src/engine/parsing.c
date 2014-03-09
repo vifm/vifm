@@ -75,6 +75,8 @@ static int eval_single_quoted_char(const char **in, char buffer[]);
 static var_t eval_double_quoted_string(const char **in);
 static int eval_double_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
+static int read_sequence(const char **in, const char first[],
+		const char other[], size_t buf_len, char buf[]);
 static var_t eval_funccall(const char **in);
 static void eval_arglist(const char **in, call_info_t *call_info);
 static void eval_arg(const char **in, call_info_t *call_info);
@@ -510,27 +512,41 @@ eval_double_quoted_char(const char **in, char buffer[])
 static var_t
 eval_envvar(const char **in)
 {
-	if(char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
-	{
-		var_val_t var_val;
-		char name[ENVVAR_NAME_LENGTH_MAX];
-		name[0] = '\0';
+	var_val_t var_val;
 
-		do
-		{
-			strcatch(name, last_token.c);
-			get_next(in);
-		}
-		while(char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
-
-		var_val.const_string = getenv_fu(name);
-		return var_new(VTYPE_STRING, var_val);
-	}
-	else
+	char name[ENVVAR_NAME_LENGTH_MAX];
+	if(!read_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+		sizeof(name), name))
 	{
 		last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
+
+	var_val.const_string = getenv_fu(name);
+	return var_new(VTYPE_STRING, var_val);
+}
+
+/* sequence ::= first { other }
+ * Returns zero on failure, otherwise non-zero is returned. */
+static int
+read_sequence(const char **in, const char first[], const char other[],
+		size_t buf_len, char buf[])
+{
+	if(buf_len == 0UL || !char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
+	{
+		return 0;
+	}
+
+	buf[0] = '\0';
+
+	do
+	{
+		strcatch(buf, last_token.c);
+		get_next(in);
+	}
+	while(--buf_len > 0UL && char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
+
+	return 1;
 }
 
 /* funccall ::= varname '(' arglist ')' */
