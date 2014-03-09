@@ -58,6 +58,7 @@ enum
 	COM_ECHO,
 	COM_EXE,
 	COM_INVERT,
+	COM_IF_STMT,
 };
 
 /* Values of type argument for filename_completion() function. */
