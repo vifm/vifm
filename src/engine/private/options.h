@@ -23,6 +23,9 @@
 
 #include "../options.h"
 
+/* Maximum number of characters in option's name. */
+extern const size_t OPTION_NAME_MAX;
+
 /* Internal structure holding information about an option.  Options with short
  * form of name will get two such structures, the one for the short name will
  * have the full member set to the name member of other structure. */

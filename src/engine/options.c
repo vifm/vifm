@@ -31,7 +31,7 @@
 #include "completion.h"
 #include "text_buffer.h"
 
-#define OPTION_NAME_MAX 64
+const size_t OPTION_NAME_MAX = 64;
 
 /* TODO: possibly add validators. */
 /* TODO: possibly add default handlers (just set new value) and types
