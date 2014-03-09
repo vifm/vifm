@@ -85,6 +85,10 @@ char * get_ext_command(const char beginning[], size_t line_pos, int type);
  * non-zero if it should be stored, otherwise zero is returned. */
 int is_history_command(const char command[]);
 
+/* Checks whether command accepts exception as its argument(s).  Returns
+ * non-zero if so, otherwise zero is returned. */
+int command_accepts_expr(int cmd_id);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif

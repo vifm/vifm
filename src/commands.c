@@ -712,6 +712,14 @@ is_history_command(const char command[])
 	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;
 }
 
+int
+command_accepts_expr(int cmd_id)
+{
+	return cmd_id == COM_ECHO
+	    || cmd_id == COM_EXE
+	    || cmd_id == COM_LET;
+}
+
 static void
 post(int id)
 {
