@@ -1091,6 +1091,12 @@ skip_alphas(const char str[])
 	return (char *)str;
 }
 
+void
+complete_real_option_names(const char beginning[])
+{
+	complete_option_name(beginning, 0, 0);
+}
+
 /* Completes name of an option.  The pseudo parameter controls whether pseudo
  * options should be enumerated (e.g. "all"). */
 static void
