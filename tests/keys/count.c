@@ -5,9 +5,16 @@
 #include <wchar.h> /* wchar_t */
 
 #include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/utils/str.h"
 
 extern int last_command_count;
+
+static void
+add_custom_keys(void)
+{
+	add_user_keys(L"abc", L"", NORMAL_MODE, 0);
+}
 
 static void
 test_no_number_get_not_def(void)
@@ -43,15 +50,25 @@ test_max_count_is_handled_correctly(void)
 	free(keys);
 }
 
+static void
+test_nops_count_not_passed(void)
+{
+	assert_false(IS_KEYS_RET_CODE(execute_keys(L"10abcdd")));
+	assert_int_equal(NO_COUNT_GIVEN, last_command_count);
+}
+
 void
 count_tests(void)
 {
 	test_fixture_start();
 
+	fixture_setup(&add_custom_keys);
+
 	run_test(test_no_number_get_not_def);
 	run_test(test_normal_number_get_it);
 	run_test(test_huge_number_get_intmax);
 	run_test(test_max_count_is_handled_correctly);
+	run_test(test_nops_count_not_passed);
 
 	test_fixture_end();
 }
