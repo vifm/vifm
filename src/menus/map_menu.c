@@ -93,7 +93,9 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 
 	buf_len = 0;
 	for(i = 0; i < str_len; i += len)
+	{
 		buf_len += strlen(uchar2str(map_info + i, &len));
+	}
 
 	if(rhs[0] == L'\0')
 	{
@@ -101,15 +103,21 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	}
 
 	if(str_len > 0)
+	{
 		buf_len += 1 + wcslen(rhs)*4 + 1;
+	}
 	else
+	{
 		buf_len += 1 + 0 + 1;
+	}
 
 	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
 	m->items[m->len] = malloc(buf_len + MAP_WIDTH);
 	m->items[m->len][0] = '\0';
 	for(i = 0; i < str_len; i += len)
+	{
 		strcat(m->items[m->len], uchar2str(map_info + i, &len));
+	}
 
 	if(str_len == 0)
 	{
@@ -117,7 +125,9 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	}
 
 	for(i = strlen(m->items[m->len]); i < MAP_WIDTH; i++)
+	{
 		strcat(m->items[m->len], " ");
+	}
 
 	strcat(m->items[m->len], " ");
 
