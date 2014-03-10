@@ -412,6 +412,7 @@ const char *tags[] = {
 	"vifm-expr-env",
 	"vifm-expr-function",
 	"vifm-expr-number",
+	"vifm-expr-option",
 	"vifm-expr-quote",
 	"vifm-expr-string",
 	"vifm-expr-unary-+",

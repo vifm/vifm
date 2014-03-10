@@ -85,6 +85,7 @@ static WINDOW *rtop_line2;
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 static void update_attributes(void);
+static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
@@ -958,6 +959,8 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
+	update_geometry();
+
 	return 1;
 }
 
@@ -1107,33 +1110,11 @@ static void
 resize_all(void)
 {
 	static float prev_x = -1.f, prev_y = -1.f;
+
 	int screen_x, screen_y;
-#ifndef _WIN32
-	struct winsize ws;
 
-	ioctl(0, TIOCGWINSZ, &ws);
-	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
-
-	/* changed for pdcurses */
-	resize_term(ws.ws_row, ws.ws_col);
-#endif
-
-#ifdef _WIN32
+	update_geometry();
 	getmaxyx(stdscr, screen_y, screen_x);
-	resize_term(screen_y, screen_x);
-#endif
-
-	getmaxyx(stdscr, screen_y, screen_x);
-	cfg.lines = screen_y;
-	cfg.columns = screen_x;
-
-	if(curr_stats.initial_lines == INT_MIN)
-	{
-		curr_stats.initial_lines = screen_y;
-		curr_stats.initial_columns = screen_x;
-	}
-
-	load_geometry();
 
 	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 
@@ -1236,6 +1217,39 @@ resize_all(void)
 	mvwin(input_win, screen_y - 1, screen_x - FIELDS_WIDTH);
 
 	curs_set(FALSE);
+}
+
+/* Updates internal data structures to reflect actual terminal geometry. */
+static void
+update_geometry(void)
+{
+	int screen_x, screen_y;
+#ifndef _WIN32
+	struct winsize ws;
+
+	ioctl(0, TIOCGWINSZ, &ws);
+	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
+
+	/* changed for pdcurses */
+	resize_term(ws.ws_row, ws.ws_col);
+#endif
+
+#ifdef _WIN32
+	getmaxyx(stdscr, screen_y, screen_x);
+	resize_term(screen_y, screen_x);
+#endif
+
+	getmaxyx(stdscr, screen_y, screen_x);
+	cfg.lines = screen_y;
+	cfg.columns = screen_x;
+
+	if(curr_stats.initial_lines == INT_MIN)
+	{
+		curr_stats.initial_lines = screen_y;
+		curr_stats.initial_columns = screen_x;
+	}
+
+	load_geometry();
 }
 
 void

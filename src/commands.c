@@ -104,7 +104,6 @@ enum
 	COM_FILTER = NO_COMPLETION_BOUNDARY,
 	COM_SUBSTITUTE,
 	COM_TR,
-	COM_IF_STMT,
 	COM_ELSE_STMT,
 	COM_ENDIF_STMT,
 	COM_CMAP,
@@ -710,6 +709,15 @@ is_history_command(const char command[])
 {
 	/* Don't add :!! or :! to history list. */
 	return strcmp(command, "!!") != 0 && strcmp(command, "!") != 0;
+}
+
+int
+command_accepts_expr(int cmd_id)
+{
+	return cmd_id == COM_ECHO
+	    || cmd_id == COM_EXE
+	    || cmd_id == COM_IF_STMT
+	    || cmd_id == COM_LET;
 }
 
 static void

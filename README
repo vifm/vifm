@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 04 January, 2014
+Updated: 09 March, 2014
 Version: 0.7.6
 
 Brief Description
@@ -55,6 +55,7 @@ Package content
     |  |
     |  |-- engine/ - the core of vi[m]-like functionality
     |  |  |
+    |  |  |-- private/ - private headers of the engine
     |  |  |-- cmds.c - command line parsing core
     |  |  |-- completion.c - provides means to fill and get completion list
     |  |  |-- functions.c - provides support for builtin functions

@@ -28,6 +28,7 @@
 
 #include "../utils/str.h"
 #include "../utils/utils.h"
+#include "private/options.h"
 #include "functions.h"
 #include "var.h"
 #include "variables.h"
@@ -44,6 +45,7 @@ typedef enum
 	DQ,         /* Double quote ("). */
 	DOT,        /* Dot (.). */
 	DOLLAR,     /* Dollar sign ($). */
+	AMPERSAND,  /* Ampersand sign (&). */
 	LPAREN,     /* Left parenthesis ((). */
 	RPAREN,     /* Right parenthesis ()). */
 	COMMA,      /* Comma, concatenation operator (,). */
@@ -74,6 +76,9 @@ static int eval_single_quoted_char(const char **in, char buffer[]);
 static var_t eval_double_quoted_string(const char **in);
 static int eval_double_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
+static var_t eval_opt(const char **in);
+static int read_sequence(const char **in, const char first[],
+		const char other[], size_t buf_len, char buf[]);
 static var_t eval_funccall(const char **in);
 static void eval_arglist(const char **in, call_info_t *call_info);
 static void eval_arg(const char **in, call_info_t *call_info);
@@ -319,7 +324,7 @@ eval_expression(const char **in)
 	return result;
 }
 
-/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall */
+/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt */
 static var_t
 eval_term(const char **in)
 {
@@ -339,6 +344,9 @@ eval_term(const char **in)
 		case DOLLAR:
 			get_next(in);
 			return eval_envvar(in);
+		case AMPERSAND:
+			get_next(in);
+			return eval_opt(in);
 
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
@@ -509,27 +517,88 @@ eval_double_quoted_char(const char **in, char buffer[])
 static var_t
 eval_envvar(const char **in)
 {
-	if(char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
-	{
-		var_val_t var_val;
-		char name[ENVVAR_NAME_LENGTH_MAX];
-		name[0] = '\0';
+	var_val_t var_val;
 
-		do
-		{
-			strcatch(name, last_token.c);
-			get_next(in);
-		}
-		while(char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
-
-		var_val.string = (char *)getenv_fu(name);
-		return var_new(VTYPE_STRING, var_val);
-	}
-	else
+	char name[ENVVAR_NAME_LENGTH_MAX];
+	if(!read_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+		sizeof(name), name))
 	{
 		last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}
+
+	var_val.const_string = getenv_fu(name);
+	return var_new(VTYPE_STRING, var_val);
+}
+
+/* envvar ::= '&' optname */
+static var_t
+eval_opt(const char **in)
+{
+	var_val_t var_val;
+
+	char name[OPTION_NAME_MAX];
+	if(!read_sequence(in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
+		name))
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
+
+	const opt_t *const option = find_option(name);
+	if(option == NULL) {
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
+
+	switch(option->type)
+	{
+		case OPT_STR:
+		case OPT_STRLIST:
+		case OPT_CHARSET:
+			var_val.string = option->val.str_val;
+			return var_new(VTYPE_STRING, var_val);
+
+		case OPT_BOOL:
+			var_val.integer = option->val.bool_val;
+			return var_new(VTYPE_INT, var_val);
+
+		case OPT_INT:
+			var_val.integer = option->val.int_val;
+			return var_new(VTYPE_INT, var_val);
+
+		case OPT_ENUM:
+		case OPT_SET:
+			var_val.const_string = get_value(option);
+			return var_new(VTYPE_STRING, var_val);
+
+		default:
+			assert(0 && "Unexpected option type");
+			return var_false();
+	}
+}
+
+/* sequence ::= first { other }
+ * Returns zero on failure, otherwise non-zero is returned. */
+static int
+read_sequence(const char **in, const char first[], const char other[],
+		size_t buf_len, char buf[])
+{
+	if(buf_len == 0UL || !char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
+	{
+		return 0;
+	}
+
+	buf[0] = '\0';
+
+	do
+	{
+		strcatch(buf, last_token.c);
+		get_next(in);
+	}
+	while(--buf_len > 0UL && char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
+
+	return 1;
 }
 
 /* funccall ::= varname '(' arglist ')' */
@@ -658,6 +727,9 @@ get_next(const char **in)
 			break;
 		case '$':
 			tt = DOLLAR;
+			break;
+		case '&':
+			tt = AMPERSAND;
 			break;
 		case '(':
 			tt = LPAREN;

@@ -17,6 +17,7 @@
  */
 
 #include "options.h"
+#include "private/options.h"
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
@@ -30,7 +31,12 @@
 #include "completion.h"
 #include "text_buffer.h"
 
-#define OPTION_NAME_MAX 64
+const size_t OPTION_NAME_MAX = 64;
+
+#define LOWER_CHARS "abcdefghijklmnopqrstuvwxyz"
+const char OPT_NAME_FIRST_CHAR[] = LOWER_CHARS;
+const char OPT_NAME_CHARS[] = LOWER_CHARS;
+#undef LOWER_CHARS
 
 /* TODO: possibly add validators. */
 /* TODO: possibly add default handlers (just set new value) and types
@@ -44,22 +50,6 @@ typedef enum
 	SO_REMOVE, /* Remove item(s) from a set. */
 }SetOp;
 
-/* Internal structure holding information about an option.  Options with short
- * form of name will get two such structures, the one for the short name will
- * have the full member set to the name member of other structure. */
-typedef struct
-{
-	char *name;          /* Name of an option. */
-	OPT_TYPE type;       /* Option type. */
-	optval_t val;        /* Current value of an option. */
-	optval_t def;        /* Default value of an option. */
-	opt_handler handler; /* A pointer to option handler. */
-	int val_count;       /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
-	const char **vals;   /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
-
-	const char *full;    /* Points to full name of an option. */
-}opt_t;
-
 /* Type of function accepted by the for_each_char_of() function. */
 typedef void (*mod_t)(char buffer[], char value);
 
@@ -69,7 +59,6 @@ static void print_changed_options(void);
 static int process_option(const char arg[]);
 static void print_options(void);
 static opt_t * get_option(const char option[]);
-static opt_t * find_option(const char option[]);
 static int set_on(opt_t *opt);
 static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
@@ -90,10 +79,9 @@ static char * str_add(char old[], const char value[]);
 static int str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
-static const char * get_value(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
-static void complete_option_name(const char buf[], int bool_only);
+static void complete_option_name(const char buf[], int bool_only, int pseudo);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
 static int complete_char_value(const opt_t *opt, const char beginning[]);
@@ -404,9 +392,7 @@ get_option(const char option[])
 		return NULL;
 }
 
-/* Returns a pointer to a structure describing option of given name or NULL
- * when no such option exists. */
-static opt_t *
+opt_t *
 find_option(const char option[])
 {
 	int l = 0, u = options_count - 1;
@@ -888,9 +874,7 @@ set_print(const opt_t *opt)
 	return 0;
 }
 
-/* Converts option value to string representation.  Returns pointer to a
- * statically allocated buffer. */
-static const char *
+const char *
 get_value(const opt_t *opt)
 {
 	static char buf[1024];
@@ -995,7 +979,9 @@ complete_options(const char args[], const char **start)
 	}
 
 	if(!is_value_completion)
-		complete_option_name(buf, bool_only);
+	{
+		complete_option_name(buf, bool_only, 1);
+	}
 	else if(opt != NULL)
 	{
 		if(opt->val_count > 0)
@@ -1105,20 +1091,32 @@ skip_alphas(const char str[])
 	return (char *)str;
 }
 
-/* Completes name of an option. */
-static void
-complete_option_name(const char buf[], int bool_only)
+void
+complete_real_option_names(const char beginning[])
 {
-	size_t len;
+	complete_option_name(beginning, 0, 0);
+}
+
+/* Completes name of an option.  The pseudo parameter controls whether pseudo
+ * options should be enumerated (e.g. "all"). */
+static void
+complete_option_name(const char buf[], int bool_only, int pseudo)
+{
+	const size_t len = strlen(buf);
 	int i;
 
-	len = strlen(buf);
-	if(strncmp(buf, "all", len) == 0)
+	if(pseudo && strncmp(buf, "all", len) == 0)
+	{
 		add_completion("all");
+	}
+
 	for(i = 0; i < options_count; i++)
 	{
 		if(bool_only && options[i].type != OPT_BOOL)
+		{
 			continue;
+		}
+
 		if(strncmp(buf, options[i].name, len) == 0)
 		{
 			if(options[i].full != NULL)
