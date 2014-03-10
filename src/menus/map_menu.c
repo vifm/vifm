@@ -86,14 +86,22 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	enum { MAP_WIDTH = 10 };
 	size_t len;
 	int i, str_len, buf_len;
+	const wchar_t *rhs;
 
 	str_len = wcslen(map_info);
+	rhs = map_info + str_len + 1;
+
 	buf_len = 0;
 	for(i = 0; i < str_len; i += len)
 		buf_len += strlen(uchar2str(map_info + i, &len));
 
+	if(rhs[0] == L'\0')
+	{
+		rhs = L"<nop>";
+	}
+
 	if(str_len > 0)
-		buf_len += 1 + wcslen(map_info + str_len + 1)*4 + 1;
+		buf_len += 1 + wcslen(rhs)*4 + 1;
 	else
 		buf_len += 1 + 0 + 1;
 
@@ -103,21 +111,26 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	for(i = 0; i < str_len; i += len)
 		strcat(m->items[m->len], uchar2str(map_info + i, &len));
 
+	if(str_len == 0)
+	{
+		strcat(m->items[m->len], "<nop>");
+	}
+
 	for(i = strlen(m->items[m->len]); i < MAP_WIDTH; i++)
 		strcat(m->items[m->len], " ");
 
 	strcat(m->items[m->len], " ");
 
-	for(i = str_len + 1; map_info[i] != L'\0'; i += len)
+	for(i = 0; rhs[i] != L'\0'; i += len)
 	{
-		if(map_info[i] == L' ')
+		if(rhs[i] == L' ')
 		{
 			strcat(m->items[m->len], " ");
 			len = 1;
 		}
 		else
 		{
-			strcat(m->items[m->len], uchar2str(map_info + i, &len));
+			strcat(m->items[m->len], uchar2str(rhs + i, &len));
 		}
 	}
 }
