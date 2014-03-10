@@ -31,7 +31,7 @@
 #include <unistd.h> /* select() */
 
 #include <assert.h>
-#include <string.h> /* strncpy */
+#include <string.h> /* memmove() strncpy() */
 
 #include "cfg/config.h"
 #include "engine/keys.h"

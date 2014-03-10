@@ -74,6 +74,9 @@ static int execute_next_keys(key_chunk_t *curr, const wchar_t *keys,
 		int no_remap);
 static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
 		key_chunk_t *curr, const wchar_t *keys);
+static int execute_after_remapping(const wchar_t rhs[],
+		const wchar_t left_keys[], keys_info_t keys_info, key_info_t key_info,
+		key_chunk_t *curr);
 static void enter_chunk(key_chunk_t *chunk);
 static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
@@ -457,28 +460,11 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	else
 	{
 		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
-		keys_info_t ki;
-		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
-			ki = *keys_info;
-		else
-			init_keys_info(&ki, 1);
 
 		if(curr->enters == 0)
 		{
-			wchar_t buf[16 + wcslen(info->data.cmd) + 1 + wcslen(keys) + 1];
-
-			buf[0] = '\0';
-			if(key_info.reg != NO_REG_GIVEN)
-				vifm_swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
-			if(key_info.count != NO_COUNT_GIVEN)
-				vifm_swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
-						key_info.count);
-			wcscat(buf, info->data.cmd);
-			wcscat(buf, keys);
-
-			enter_chunk(curr);
-			result = execute_keys_inner(buf, &ki, curr->no_remap, NO_COUNT_GIVEN);
-			leave_chunk(curr);
+			result = execute_after_remapping(info->data.cmd, keys, *keys_info,
+					key_info, curr);
 		}
 		else if(def_handlers[*mode] != NULL)
 		{
@@ -506,6 +492,56 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 		}
 		return result;
 	}
+}
+
+/* Processes remapping of a key.  Returns error code. */
+static int
+execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
+		keys_info_t keys_info, key_info_t key_info, key_chunk_t *curr)
+{
+	int result;
+	if(rhs[0] == L'\0' && left_keys[0] == L'\0')
+	{
+		/* Nop command executed correctly. */
+		result = 0;
+	}
+	else if(rhs[0] == L'\0')
+	{
+		keys_info_t keys_info;
+		init_keys_info(&keys_info, 1);
+		enter_chunk(curr);
+		result = execute_keys_inner(left_keys, &keys_info, curr->no_remap,
+				NO_COUNT_GIVEN);
+		leave_chunk(curr);
+	}
+	else
+	{
+		wchar_t buf[16 + wcslen(rhs) + 1 + wcslen(left_keys) + 1];
+
+		buf[0] = '\0';
+		if(key_info.reg != NO_REG_GIVEN)
+		{
+			vifm_swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
+		}
+		if(key_info.count != NO_COUNT_GIVEN)
+		{
+			vifm_swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
+					key_info.count);
+		}
+		wcscat(buf, rhs);
+		wcscat(buf, left_keys);
+
+		if(curr->conf.followed != FOLLOWED_BY_SELECTOR)
+		{
+			init_keys_info(&keys_info, 1);
+		}
+
+		enter_chunk(curr);
+		result = execute_keys_inner(buf, &keys_info, curr->no_remap,
+				NO_COUNT_GIVEN);
+		leave_chunk(curr);
+	}
+	return result;
 }
 
 static void

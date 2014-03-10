@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: January 18, 2014
+" Last Change: March 10, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -233,7 +233,7 @@ syntax match vifmNumber contained /\d\+/
 
 " Ange-bracket notation
 syntax case ignore
-syntax match vifmNotation '<\(esc\|cr\|space\|del\|\(s-\)\?tab\|home\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
+syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\(s-\)\?tab\|home\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
 syntax case match
 
 " Whole line comments

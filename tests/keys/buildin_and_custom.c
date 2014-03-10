@@ -15,6 +15,8 @@ add_custom_keys(void)
 	add_user_keys(L"dp", L"k", NORMAL_MODE, 0);
 
 	add_user_keys(L"ZD", L"k", NORMAL_MODE, 0);
+
+	add_user_keys(L"abc", L"", NORMAL_MODE, 0);
 }
 
 static void
@@ -47,6 +49,10 @@ increase_counter_right(void)
 	counter = get_key_counter();
 	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"S")));
 	assert_int_equal(counter + 1, get_key_counter());
+
+	counter = get_key_counter();
+	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"abc")));
+	assert_int_equal(counter + 3, get_key_counter());
 }
 
 static void
