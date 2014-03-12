@@ -72,8 +72,9 @@ int is_under_trash(const char path[]);
  * non-zero if so, otherwise zero is returned. */
 int is_trash_directory(const char path[]);
 
-/* Gets pointer to real name part of the trash name.  Returns that pointer. */
-const char * get_real_name_from_trash_name(const char trash_name[]);
+/* Gets pointer to real name part of the trash path (which must be absolute).
+ * Returns that pointer. */
+const char * get_real_name_from_trash_name(const char trash_path[]);
 
 #endif /* VIFM__TRASH_H__ */
 

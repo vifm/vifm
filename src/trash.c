@@ -25,6 +25,7 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat */
 
+#include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -645,11 +646,13 @@ format_root_spec(const char spec[], const char mount_point[])
 }
 
 const char *
-get_real_name_from_trash_name(const char trash_name[])
+get_real_name_from_trash_name(const char trash_path[])
 {
-	const char *real_name = after_last(trash_name, '/');
+	const char *real_name = after_last(trash_path, '/');
 
-	if(get_resident_type(trash_name) == TRT_IN_TRASH)
+	assert(is_path_absolute(trash_path) && "Expected full path to a file.");
+
+	if(get_resident_type(trash_path) == TRT_IN_TRASH)
 	{
 		const size_t prefix_len = strspn(real_name, "0123456789");
 		if(real_name[prefix_len] == '_')
