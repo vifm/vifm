@@ -648,10 +648,14 @@ const char *
 get_real_name_from_trash_name(const char trash_name[])
 {
 	const char *real_name = after_last(trash_name, '/');
-	const size_t prefix_len = strspn(real_name, "0123456789");
-	if(real_name[prefix_len] == '_')
+
+	if(get_resident_type(trash_name) == TRT_IN_TRASH)
 	{
-		real_name += prefix_len + 1;
+		const size_t prefix_len = strspn(real_name, "0123456789");
+		if(real_name[prefix_len] == '_')
+		{
+			real_name += prefix_len + 1;
+		}
 	}
 
 	return real_name;
