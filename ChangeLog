@@ -107,6 +107,9 @@
 
 	Fixed merging directories on delete then paste.
 
+	Fixed wrong file name cropping on moving/copying files from trash.  Thanks
+	to kazufukurou.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
