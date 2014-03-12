@@ -50,7 +50,7 @@
 #define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
 
 /* Describes file location relative to one of registered trash directories.
- * Argument for is_under_trash_traverser().*/
+ * Argument for get_resident_type_traverser().*/
 typedef enum
 {
 	TRT_OUT_OF_TRASH,         /* Not in trash. */
@@ -92,8 +92,9 @@ static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
-static int is_under_trash_traverser(const char path[], const char trash_dir[],
-		void *arg);
+static TrashResidentType get_resident_type(const char path[]);
+static int get_resident_type_traverser(const char path[],
+		const char trash_dir[], void *arg);
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], void *arg);
 static void traverse_specs(const char base_dir[], traverser client, void *arg);
@@ -530,15 +531,23 @@ is_rooted_trash_dir(const char spec[])
 int
 is_under_trash(const char path[])
 {
-	TrashResidentType under_trash = TRT_OUT_OF_TRASH;
-	traverse_specs(path, &is_under_trash_traverser, &under_trash);
-	return under_trash != TRT_OUT_OF_TRASH;
+	return get_resident_type(path) != TRT_OUT_OF_TRASH;
+}
+
+/* Gets status of file relative to trash directories.  Returns the status. */
+static TrashResidentType
+get_resident_type(const char path[])
+{
+	TrashResidentType resident_type = TRT_OUT_OF_TRASH;
+	traverse_specs(path, &get_resident_type_traverser, &resident_type);
+	return resident_type;
 }
 
 /* traverse_specs client that check that the path is under one of trash
  * directories.  Accepts pointer to TrashResidentType as argument. */
 static int
-is_under_trash_traverser(const char path[], const char trash_dir[], void *arg)
+get_resident_type_traverser(const char path[], const char trash_dir[],
+		void *arg)
 {
 	if(path_starts_with(path, trash_dir))
 	{
