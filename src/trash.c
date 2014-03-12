@@ -25,6 +25,7 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat */
 
+#include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -48,6 +49,16 @@
 
 #define ROOTED_SPEC_PREFIX "%r/"
 #define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
+
+/* Describes file location relative to one of registered trash directories.
+ * Argument for get_resident_type_traverser().*/
+typedef enum
+{
+	TRT_OUT_OF_TRASH,         /* Not in trash. */
+	TRT_IN_TRASH,             /* Direct child of one of trash directories. */
+	TRT_IN_REMOVED_DIRECTORY, /* Child of one of removed directories. */
+}
+TrashResidentType;
 
 /* Client of the traverse_specs() function.  Should return non-zero to stop
  * traversal. */
@@ -82,8 +93,9 @@ static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
-static int is_under_trash_traverser(const char path[], const char trash_dir[],
-		void *arg);
+static TrashResidentType get_resident_type(const char path[]);
+static int get_resident_type_traverser(const char path[],
+		const char trash_dir[], void *arg);
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], void *arg);
 static void traverse_specs(const char base_dir[], traverser client, void *arg);
@@ -520,20 +532,36 @@ is_rooted_trash_dir(const char spec[])
 int
 is_under_trash(const char path[])
 {
-	int under_trash = 0;
-	traverse_specs(path, &is_under_trash_traverser, &under_trash);
-	return under_trash;
+	return get_resident_type(path) != TRT_OUT_OF_TRASH;
+}
+
+/* Gets status of file relative to trash directories.  Returns the status. */
+static TrashResidentType
+get_resident_type(const char path[])
+{
+	TrashResidentType resident_type = TRT_OUT_OF_TRASH;
+	traverse_specs(path, &get_resident_type_traverser, &resident_type);
+	return resident_type;
 }
 
 /* traverse_specs client that check that the path is under one of trash
- * directories. */
+ * directories.  Accepts pointer to TrashResidentType as argument. */
 static int
-is_under_trash_traverser(const char path[], const char trash_dir[], void *arg)
+get_resident_type_traverser(const char path[], const char trash_dir[],
+		void *arg)
 {
 	if(path_starts_with(path, trash_dir))
 	{
-		int *const result = arg;
-		*result = 1;
+		TrashResidentType *const result = arg;
+		char *const parent_dir = strdup(path);
+
+		remove_last_path_component(parent_dir);
+		*result = paths_are_equal(parent_dir, trash_dir)
+		        ? TRT_IN_TRASH
+		        : TRT_IN_REMOVED_DIRECTORY;
+
+		free(parent_dir);
+
 		return 1;
 	}
 	return 0;
@@ -618,13 +646,19 @@ format_root_spec(const char spec[], const char mount_point[])
 }
 
 const char *
-get_real_name_from_trash_name(const char trash_name[])
+get_real_name_from_trash_name(const char trash_path[])
 {
-	const char *real_name = after_last(trash_name, '/');
-	const size_t prefix_len = strspn(real_name, "0123456789");
-	if(real_name[prefix_len] == '_')
+	const char *real_name = after_last(trash_path, '/');
+
+	assert(is_path_absolute(trash_path) && "Expected full path to a file.");
+
+	if(get_resident_type(trash_path) == TRT_IN_TRASH)
 	{
-		real_name += prefix_len + 1;
+		const size_t prefix_len = strspn(real_name, "0123456789");
+		if(real_name[prefix_len] == '_')
+		{
+			real_name += prefix_len + 1;
+		}
 	}
 
 	return real_name;

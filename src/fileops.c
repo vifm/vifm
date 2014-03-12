@@ -1346,15 +1346,19 @@ put_next(const char dest_name[], int override)
 	from_trash = is_under_trash(filename);
 	move = from_trash || put_confirm.force_move;
 
-	if(dest_name[0] == '\0')
-		dest_name = find_slashr(filename) + 1;
-
 	copy_str(src_buf, sizeof(src_buf), filename);
 	chosp(src_buf);
 
-	if(from_trash)
+	if(dest_name[0] == '\0')
 	{
-		dest_name = get_real_name_from_trash_name(dest_name);
+		if(from_trash)
+		{
+			dest_name = get_real_name_from_trash_name(src_buf);
+		}
+		else
+		{
+			dest_name = find_slashr(src_buf) + 1;
+		}
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
@@ -2672,13 +2676,13 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char dst_full[PATH_MAX];
-		char dst_name[NAME_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		if(from_trash)
 		{
-			copy_str(dst_name, sizeof(dst_name), dst);
-			chosp(dst_name);
-			dst = get_real_name_from_trash_name(dst_name);
+			char src_full[PATH_MAX];
+			snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
+			chosp(src_full);
+			dst = get_real_name_from_trash_name(src_full);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
@@ -2733,13 +2737,13 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 	for(i = 0; i < sel_list_len; i++)
 	{
 		char dst_full[PATH_MAX];
-		char dst_name[NAME_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
 		if(from_trash)
 		{
-			copy_str(dst_name, sizeof(dst_name), dst);
-			chosp(dst_name);
-			dst = get_real_name_from_trash_name(dst_name);
+			char src_full[PATH_MAX];
+			snprintf(src_full, sizeof(src_full), "%s/%s", src, dst);
+			chosp(src_full);
+			dst = get_real_name_from_trash_name(src_full);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
