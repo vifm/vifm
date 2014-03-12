@@ -53,8 +53,9 @@
  * Argument for is_under_trash_traverser().*/
 typedef enum
 {
-	TRT_OUT_OF_TRASH, /* Not in trash. */
-	TRT_IN_TRASH,     /* Direct child of one of trash directories. */
+	TRT_OUT_OF_TRASH,         /* Not in trash. */
+	TRT_IN_TRASH,             /* Direct child of one of trash directories. */
+	TRT_IN_REMOVED_DIRECTORY, /* Child of one of removed directories. */
 }
 TrashResidentType;
 
@@ -542,7 +543,15 @@ is_under_trash_traverser(const char path[], const char trash_dir[], void *arg)
 	if(path_starts_with(path, trash_dir))
 	{
 		TrashResidentType *const result = arg;
-		*result = TRT_IN_TRASH;
+		char *const parent_dir = strdup(path);
+
+		remove_last_path_component(parent_dir);
+		*result = paths_are_equal(parent_dir, trash_dir)
+		        ? TRT_IN_TRASH
+		        : TRT_IN_REMOVED_DIRECTORY;
+
+		free(parent_dir);
+
 		return 1;
 	}
 	return 0;
