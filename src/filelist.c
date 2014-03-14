@@ -99,6 +99,10 @@ column_data_t;
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
+static int prepare_primary_col_color(FileView *view, int line_color,
+		int selected, int current);
+static int prepare_secondary_col_color(FileView *view, int selected,
+		int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
 static void format_ext(int id, const void *data, size_t buf_len, char *buf);
@@ -186,8 +190,7 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
-	int line_color;
-	col_attr_t col;
+	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
 	size_t trim_pos;
@@ -198,45 +201,18 @@ column_line_print(const void *data, int column_id, const char *buf,
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
 	checked_wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
-	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
-		line_color = get_line_color(view, i);
-		mix_colors(&col, &view->cs.color[line_color]);
-		if(entry->selected)
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		if(cdt->current)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
-		}
-		else if(entry->selected)
-		{
-			line_color = SELECTED_COLOR;
-		}
-		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
+				entry->selected, cdt->current);
 	}
 	else
 	{
-		line_color = WIN_COLOR;
-
-		if(entry->selected)
-		{
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-			line_color = SELECTED_COLOR;
-		}
-
-		if(cdt->current)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
-		}
-		else
-		{
-			init_pair(view->color_scheme + line_color, col.fg, col.bg);
-		}
+		line_attrs = prepare_secondary_col_color(view, entry->selected,
+				cdt->current);
 	}
-	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+
+	wattron(view->win, line_attrs);
 
 	strcpy(print_buf, buf);
 	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
@@ -244,7 +220,64 @@ column_line_print(const void *data, int column_id, const char *buf,
 	print_buf[trim_pos] = '\0';
 	wprint(view->win, print_buf);
 
-	wattroff(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+	wattroff(view->win, line_attrs);
+}
+
+/* Calculate color attributes for primary view column.  Returns attributes that
+ * can be used with wattron()/wattroff(). */
+static int
+prepare_primary_col_color(FileView *view, int line_color, int selected,
+		int current)
+{
+	col_attr_t col = view->cs.color[WIN_COLOR];
+
+	mix_colors(&col, &view->cs.color[line_color]);
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+	}
+
+	if(current)
+	{
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+		line_color = CURRENT_COLOR;
+	}
+	else if(selected)
+	{
+		line_color = SELECTED_COLOR;
+	}
+
+	init_pair(view->color_scheme + line_color, col.fg, col.bg);
+
+	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
+}
+
+/* Calculate color attributes for secondary view column.  Returns attributes
+ * that can be used with wattron()/wattroff(). */
+static int
+prepare_secondary_col_color(FileView *view, int selected, int current)
+{
+	col_attr_t col = view->cs.color[WIN_COLOR];
+	int line_color = WIN_COLOR;
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		line_color = SELECTED_COLOR;
+	}
+
+	if(current)
+	{
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+		line_color = CURRENT_COLOR;
+	}
+	else
+	{
+		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+	}
+
+	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
 }
 
 /* File name format callback for column_view unit. */
