@@ -202,8 +202,9 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	checked_wmove(view->win, cdt->current_line,
-			1 + view->real_num_width + cdt->column_offset + offset);
+
+	const int prefix_len = view->real_num_width + 1;
+	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
@@ -215,6 +216,24 @@ column_line_print(const void *data, int column_id, const char *buf,
 		line_attrs = prepare_secondary_col_color(view, entry->selected,
 				cdt->current);
 	}
+
+	if(offset == 0 && ui_view_displays_numbers(view))
+	{
+		char number[view->real_num_width + 1];
+
+		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
+				cdt->current);
+
+		snprintf(number, sizeof(number), "%*d", view->real_num_width, (int)i + 1);
+
+		checked_wmove(view->win, cdt->current_line,
+				final_offset - 1 - view->real_num_width);
+		wattron(view->win, line_attrs);
+		wprint(view->win, number);
+		wattroff(view->win, line_attrs);
+	}
+
+	checked_wmove(view->win, cdt->current_line, final_offset);
 
 	wattron(view->win, line_attrs);
 
