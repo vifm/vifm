@@ -902,6 +902,10 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
 	fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
 	fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
+	fprintf(fp, "=[%snumber\n", lwin.num ? "" : "no");
+	fprintf(fp, "=]%snumber\n", rwin.num ? "" : "no");
+	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width);
+	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width);
 
 	fprintf(fp, "%s", "=dotdirs=");
 	if(cfg.dot_dirs & DD_ROOT_PARENT)
