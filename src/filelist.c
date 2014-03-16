@@ -202,7 +202,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	checked_wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
+	checked_wmove(view->win, cdt->current_line,
+			1 + view->real_num_width + cdt->column_offset + offset);
 
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
@@ -1307,7 +1308,7 @@ put_inactive_mark(FileView *view)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	mvwaddstr(view->win, view->curr_line/col_count,
-			(view->curr_line%col_count)*col_width, "*");
+			view->real_num_width + (view->curr_line%col_count)*col_width, "*");
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
@@ -1316,7 +1317,7 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
-	*width = view->window_width - 1;
+	*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
 	*count = 1;
 
 	if(view->ls_view)
@@ -1338,7 +1339,7 @@ calculate_number_width(FileView *view)
 		const int digit_count = count_digits(view->list_rows);
 		const int min = view->num_width;
 		const int max = view->window_width - 1;
-		view->real_num_width = MIN(MAX(digit_count, min), max);
+		view->real_num_width = MIN(MAX(1 + digit_count, min), max);
 	}
 	else
 	{
