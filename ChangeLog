@@ -28,6 +28,9 @@
 
 	Added <nop> angle bracket notation.  Thanks to filterfalse.
 
+	Added 'number' option to display file numbers.  Thanks to filterfalse and
+	greye.
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.

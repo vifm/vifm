@@ -50,6 +50,8 @@ const char *tags[] = {
 	"vifm-'locateprg'",
 	"vifm-'ls'",
 	"vifm-'lsview'",
+	"vifm-'nu'",
+	"vifm-'number'",
 	"vifm-'ruf'",
 	"vifm-'rulerformat'",
 	"vifm-'runexec'",

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 10
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 16
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2125,6 +2125,14 @@ type: local
 When this option is set, directory view will be displayed in multiple
 columns with filenames similar to output of `ls -x` command.  See also
 |vifm-ls-view|.
+
+                                               *vifm-'number'* *vifm-'nu'*
+number nu
+type: boolean
+default: false
+type: local
+Print line number in front of each filename when |vifm-'lsview'| options is
+turned off.
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf
