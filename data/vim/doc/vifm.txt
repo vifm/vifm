@@ -2132,7 +2132,14 @@ type: boolean
 default: false
 type: local
 Print line number in front of each filename when |vifm-'lsview'| options is
-turned off.
+turned off.  Use |vifm-'numberwidth'| to control width of line number.
+
+                                               *vifm-'numberwidth'* *vifm-'nuw'*
+numberwidth nuw
+type: integer
+default: 4
+type: local
+Minimal number of characters for line number field.
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf

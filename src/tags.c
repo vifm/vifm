@@ -52,6 +52,8 @@ const char *tags[] = {
 	"vifm-'lsview'",
 	"vifm-'nu'",
 	"vifm-'number'",
+	"vifm-'numberwidth'",
+	"vifm-'nuw'",
 	"vifm-'ruf'",
 	"vifm-'rulerformat'",
 	"vifm-'runexec'",

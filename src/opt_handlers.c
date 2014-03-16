@@ -75,6 +75,7 @@ static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_number(optval_t *val);
+static void init_numberwidth(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -119,6 +120,7 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void lsview_handler(OPT_OP op, optval_t val);
 static void number_handler(OPT_OP op, optval_t val);
+static void numberwidth_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
@@ -329,6 +331,8 @@ static struct
 		{ .init = &init_lsview }                                                                               },
 	{ "number",      "nu",   OPT_BOOL,    0,                          NULL,            &number_handler,
 		{ .init = &init_number }                                                                               },
+	{ "numberwidth", "nuw",  OPT_INT,     0,                          NULL,            &numberwidth_handler,
+		{ .init = &init_numberwidth }                                                                          },
 	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,
 		{ .init = &init_sort }                                                                                 },
 	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,
@@ -424,6 +428,13 @@ init_number(optval_t *val)
 	val->bool_val = 1;
 }
 
+/* Default-initializes minimum width of file number field. */
+static void
+init_numberwidth(optval_t *val)
+{
+	val->int_val = 4;
+}
+
 static void
 init_sort(optval_t *val)
 {
@@ -486,6 +497,9 @@ load_local_options(FileView *view)
 
 	val.bool_val = view->num;
 	set_option("number", val);
+
+	val.int_val = view->num_width;
+	set_option("numberwidth", val);
 }
 
 void
@@ -1019,6 +1033,18 @@ number_handler(OPT_OP op, optval_t val)
 	numbers_are_displayed = ui_view_displays_numbers(curr_view);
 
 	if(numbers_were_displayed ^ numbers_are_displayed)
+	{
+		redraw_current_view();
+	}
+}
+
+/* Handles changes of minimum width of file number field. */
+static void
+numberwidth_handler(OPT_OP op, optval_t val)
+{
+	curr_view->num_width = val.int_val;
+
+	if(ui_view_displays_numbers(curr_view))
 	{
 		redraw_current_view();
 	}

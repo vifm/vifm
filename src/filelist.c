@@ -451,10 +451,6 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
-	view->num = 0;
-	view->num_width = 4;
-	view->real_num_width = 0;
-
 	reset_view(view);
 
 	init_view_history(view);
@@ -479,6 +475,10 @@ reset_view(FileView *view)
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
+
+	view->num = 0;
+	view->num_width = 4;
+	view->real_num_width = 0;
 
 	(void)replace_string(&view->prev_name_filter, "");
 	reset_filter(&view->name_filter);
