@@ -79,7 +79,7 @@ static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
 		const char * filename, CompletionType type);
-static void add_filename_completion(const char * filename, CompletionType type);
+static void add_filename_completion(const char filename[], CompletionType type);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 #ifdef _WIN32
@@ -729,8 +729,10 @@ filename_completion_internal(DIR * dir, const char * dirname,
 	}
 }
 
+/* Adds completion of a filename to the list of matches taking care of escaping
+ * (depends on the type parameter). */
 static void
-add_filename_completion(const char * filename, CompletionType type)
+add_filename_completion(const char filename[], CompletionType type)
 {
 #ifndef _WIN32
 	char *escaped = NULL;
