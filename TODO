@@ -189,3 +189,4 @@ Code improvements.
     Add a function to count number of elements in a NULL terminated array of
         pointers.
     Be consistent on menu titles (some of them have spaces, some don't).
+    put_competion() function that doesn't duplicate string parameter.
