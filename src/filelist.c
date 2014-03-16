@@ -56,6 +56,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -128,6 +129,8 @@ static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
+static void calculate_number_width(FileView *view);
+static int count_digits(int num);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
@@ -1311,6 +1314,8 @@ put_inactive_mark(FileView *view)
 static void
 calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
+	calculate_number_width(view);
+
 	*width = view->window_width - 1;
 	*count = 1;
 
@@ -1321,6 +1326,39 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 	}
 	view->column_count = *count;
 	view->window_cells = *count*(view->window_rows + 1);
+}
+
+/* Calculates real number of characters that should be allocated in view for
+ * numbers column. */
+static void
+calculate_number_width(FileView *view)
+{
+	if(ui_view_displays_numbers(view))
+	{
+		const int digit_count = count_digits(view->list_rows);
+		const int min = view->num_width;
+		const int max = view->window_width - 1;
+		view->real_num_width = MIN(MAX(digit_count, min), max);
+	}
+	else
+	{
+		view->real_num_width = 0;
+	}
+}
+
+/* Counts number of digits in a number assuming that zero takes on digit.
+ * Returns the count. */
+static int
+count_digits(int num)
+{
+	int count = 0;
+	do
+	{
+		count++;
+		num /= 10;
+	}
+	while(num != 0);
+	return count;
 }
 
 size_t
