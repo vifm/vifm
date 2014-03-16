@@ -211,6 +211,10 @@ typedef struct
 	size_t max_filename_len; /* max length of filename in current directory */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
+
+	int num; /* Whether line numbers are displayed. */
+	int num_width; /* Min number of characters reserved for number field. */
+	int real_num_width; /* Real character count reserved for number field. */
 }
 FileView;
 
@@ -300,6 +304,9 @@ void ui_views_reload_filelists(void);
 int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);
 /* Ensures that list of sorting keys contains either "name" or "iname". */
 void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
+/* Checks whether file numbers should be displayed for the view.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int ui_view_displays_numbers(const FileView *const view);
 
 /* Operation cancellation. */
 

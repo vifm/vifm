@@ -56,6 +56,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -99,6 +100,10 @@ column_data_t;
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
+static int prepare_primary_col_color(FileView *view, int line_color,
+		int selected, int current);
+static int prepare_secondary_col_color(FileView *view, int selected,
+		int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
 static void format_ext(int id, const void *data, size_t buf_len, char *buf);
@@ -124,6 +129,8 @@ static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
+static void calculate_number_width(FileView *view);
+static int count_digits(int num);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
@@ -186,8 +193,7 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
-	int line_color;
-	col_attr_t col;
+	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
 	size_t trim_pos;
@@ -196,47 +202,40 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	checked_wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
-	col = view->cs.color[WIN_COLOR];
+	const int prefix_len = view->real_num_width + 1;
+	const size_t final_offset = prefix_len + cdt->column_offset + offset;
+
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
-		line_color = get_line_color(view, i);
-		mix_colors(&col, &view->cs.color[line_color]);
-		if(entry->selected)
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		if(cdt->current)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
-		}
-		else if(entry->selected)
-		{
-			line_color = SELECTED_COLOR;
-		}
-		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
+				entry->selected, cdt->current);
 	}
 	else
 	{
-		line_color = WIN_COLOR;
-
-		if(entry->selected)
-		{
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-			line_color = SELECTED_COLOR;
-		}
-
-		if(cdt->current)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
-		}
-		else
-		{
-			init_pair(view->color_scheme + line_color, col.fg, col.bg);
-		}
+		line_attrs = prepare_secondary_col_color(view, entry->selected,
+				cdt->current);
 	}
-	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+
+	if(offset == 0 && ui_view_displays_numbers(view))
+	{
+		char number[view->real_num_width + 1];
+
+		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
+				cdt->current);
+
+		snprintf(number, sizeof(number), "%*d", view->real_num_width, (int)i + 1);
+
+		checked_wmove(view->win, cdt->current_line,
+				final_offset - 1 - view->real_num_width);
+		wattron(view->win, line_attrs);
+		wprint(view->win, number);
+		wattroff(view->win, line_attrs);
+	}
+
+	checked_wmove(view->win, cdt->current_line, final_offset);
+
+	wattron(view->win, line_attrs);
 
 	strcpy(print_buf, buf);
 	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
@@ -244,7 +243,64 @@ column_line_print(const void *data, int column_id, const char *buf,
 	print_buf[trim_pos] = '\0';
 	wprint(view->win, print_buf);
 
-	wattroff(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+	wattroff(view->win, line_attrs);
+}
+
+/* Calculate color attributes for primary view column.  Returns attributes that
+ * can be used with wattron()/wattroff(). */
+static int
+prepare_primary_col_color(FileView *view, int line_color, int selected,
+		int current)
+{
+	col_attr_t col = view->cs.color[WIN_COLOR];
+
+	mix_colors(&col, &view->cs.color[line_color]);
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+	}
+
+	if(current)
+	{
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+		line_color = CURRENT_COLOR;
+	}
+	else if(selected)
+	{
+		line_color = SELECTED_COLOR;
+	}
+
+	init_pair(view->color_scheme + line_color, col.fg, col.bg);
+
+	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
+}
+
+/* Calculate color attributes for secondary view column.  Returns attributes
+ * that can be used with wattron()/wattroff(). */
+static int
+prepare_secondary_col_color(FileView *view, int selected, int current)
+{
+	col_attr_t col = view->cs.color[WIN_COLOR];
+	int line_color = WIN_COLOR;
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		line_color = SELECTED_COLOR;
+	}
+
+	if(current)
+	{
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+		line_color = CURRENT_COLOR;
+	}
+	else
+	{
+		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+	}
+
+	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
 }
 
 /* File name format callback for column_view unit. */
@@ -419,6 +475,10 @@ reset_view(FileView *view)
 	view->ls_view = 0;
 	view->max_filename_len = 0;
 	view->column_count = 1;
+
+	view->num = 0;
+	view->num_width = 4;
+	view->real_num_width = 0;
 
 	(void)replace_string(&view->prev_name_filter, "");
 	reset_filter(&view->name_filter);
@@ -1267,14 +1327,16 @@ put_inactive_mark(FileView *view)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	mvwaddstr(view->win, view->curr_line/col_count,
-			(view->curr_line%col_count)*col_width, "*");
+			view->real_num_width + (view->curr_line%col_count)*col_width, "*");
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
 static void
 calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
-	*width = view->window_width - 1;
+	calculate_number_width(view);
+
+	*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
 	*count = 1;
 
 	if(view->ls_view)
@@ -1284,6 +1346,39 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 	}
 	view->column_count = *count;
 	view->window_cells = *count*(view->window_rows + 1);
+}
+
+/* Calculates real number of characters that should be allocated in view for
+ * numbers column. */
+static void
+calculate_number_width(FileView *view)
+{
+	if(ui_view_displays_numbers(view))
+	{
+		const int digit_count = count_digits(view->list_rows);
+		const int min = view->num_width;
+		const int max = view->window_width - 1;
+		view->real_num_width = MIN(MAX(1 + digit_count, min), max);
+	}
+	else
+	{
+		view->real_num_width = 0;
+	}
+}
+
+/* Counts number of digits in a number assuming that zero takes on digit.
+ * Returns the count. */
+static int
+count_digits(int num)
+{
+	int count = 0;
+	do
+	{
+		count++;
+		num /= 10;
+	}
+	while(num != 0);
+	return count;
 }
 
 size_t

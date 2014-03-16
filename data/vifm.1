@@ -1,4 +1,4 @@
-.TH vifm 1 "Mar 10, 2014" "" "Vifm"
+.TH vifm 1 "Mar 16, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2447,6 +2447,25 @@ type: local
 When this option is set, directory view will be displayed in multiple columns
 with filenames similar to output of `ls \-x` command.  See ls-like view section
 below for format description.
+.TP
+.BI "number nu"
+type: boolean
+.br
+default: false
+.br
+type: local
+.br
+Print line number in front of each filename when 'lsview' options is turned off.
+Use 'numberwidth' to control width of line number.
+.TP
+.BI "numberwidth nuw"
+type: integer
+.br
+default: 4
+.br
+type: local
+.br
+Minimal number of characters for line number field.
 .TP
 .BI "rulerformat ruf"
 type: string

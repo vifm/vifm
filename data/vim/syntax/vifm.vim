@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 10, 2014
+" Last Change: March 16, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -66,11 +66,11 @@ syntax case match
 syntax keyword vifmOption contained aproposprg autochpos classify columns co
 		\ confirm cf cpoptions cpo dotdirs fastrun findprg followlinks fusehome
 		\ gdefault grepprg history hi hlsearch hls iec ignorecase ic incsearch is
-		\ laststatus lines locateprg ls lsview rulerformat ruf runexec scrollbind
-		\ scb scrolloff so sort sortorder shell sh shortmess shm slowfs smartcase
-		\ scs sortnumbers statusline stl tabstop timefmt timeoutlen trash trashdir
-		\ ts undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu
-		\ wrap wrapscan ws
+		\ laststatus lines locateprg ls lsview number nu numberwidth nuw rulerformat
+		\ ruf runexec scrollbind scb scrolloff so sort sortorder shell sh shortmess
+		\ shm slowfs smartcase scs sortnumbers statusline stl tabstop timefmt
+		\ timeoutlen trash trashdir ts undolevels ul vicmd viewcolumns vifminfo
+		\ vimhelp vixcmd wildmenu wmnu wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
