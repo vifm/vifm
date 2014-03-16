@@ -1932,6 +1932,12 @@ ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 	}
 }
 
+int
+ui_view_displays_numbers(const FileView *const view)
+{
+	return view->num && !view->ls_view;
+}
+
 void
 ui_cancellation_reset(void)
 {

@@ -428,6 +428,10 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
+	view->num = 0;
+	view->num_width = 4;
+	view->real_num_width = 0;
+
 	reset_view(view);
 
 	init_view_history(view);
