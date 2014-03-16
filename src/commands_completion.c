@@ -733,12 +733,30 @@ static void
 add_filename_completion(const char * filename, CompletionType type)
 {
 #ifndef _WIN32
-	int woe = (type == CT_ALL_WOE || type == CT_FILE_WOE);
-	char * temp = woe ? strdup(filename) : escape_filename(filename, 1);
-	add_completion(temp);
-	free(temp);
+	char *escaped = NULL;
+#endif
+
+	const int woe = (type == CT_ALL_WOE || type == CT_FILE_WOE);
+	const char *completion;
+
+	if(woe)
+	{
+		completion = filename;
+	}
+	else
+	{
+#ifndef _WIN32
+		escaped = escape_filename(filename, 1);
+		completion = escaped;
 #else
-	add_completion(escape_for_cd(filename));
+		completion = escape_for_cd(filename);
+#endif
+	}
+
+	add_completion(completion);
+
+#ifndef _WIN32
+	free(escaped);
 #endif
 }
 
