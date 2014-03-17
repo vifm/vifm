@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 16, 2014
+" Last Change: March 17, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -75,15 +75,16 @@ syntax keyword vifmOption contained aproposprg autochpos classify columns co
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
 		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
-		\ nolaststatus nols nolsview noscrollbind noscb norunexec nosmartcase noscs
-		\ nosortnumbers notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
+		\ nolaststatus nols nolsview nonumber nonu noscrollbind noscb norunexec
+		\ nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu nowmnu nowrap
+		\ nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invincsearch
-		\ invis invlaststatus invls invlsview invscrollbind invscb invrunexec
-		\ invsmartcase invscs invsortnumbers invtrash invvimhelp invwildmenu invwmnu
-		\ invwrap invwrapscan invws
+		\ invis invlaststatus invls invlsview invnumber invnu invscrollbind invscb
+		\ invrunexec invsmartcase invscs invsortnumbers invtrash invvimhelp
+		\ invwildmenu invwmnu invwrap invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'
