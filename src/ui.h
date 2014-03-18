@@ -213,6 +213,7 @@ typedef struct
 	size_t window_cells; /* max number of files that can be displayed */
 
 	int num; /* Whether line numbers are displayed. */
+	int rel_num; /* Whether relative line numbers are displayed. */
 	int num_width; /* Min number of characters reserved for number field. */
 	int real_num_width; /* Real character count reserved for number field. */
 }

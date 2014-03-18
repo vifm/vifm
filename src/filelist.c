@@ -477,6 +477,7 @@ reset_view(FileView *view)
 	view->column_count = 1;
 
 	view->num = 0;
+	view->rel_num = 0;
 	view->num_width = 4;
 	view->real_num_width = 0;
 
