@@ -39,7 +39,8 @@
 #endif
 
 #include <assert.h> /* assert() */
-#include <errno.h>
+#include <errno.h> /* errno */
+#include <math.h> /* abs() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
@@ -198,12 +199,12 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t width_left;
 	size_t trim_pos;
 
-	const column_data_t *cdt = data;
-	size_t i = cdt->line;
+	const column_data_t *const cdt = data;
+	const size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
 
-	const int prefix_len = view->real_num_width + 1;
+	const size_t prefix_len = view->real_num_width + 1;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
@@ -220,11 +221,18 @@ column_line_print(const void *data, int column_id, const char *buf,
 	if(offset == 0 && ui_view_displays_numbers(view))
 	{
 		char number[view->real_num_width + 1];
+		int mixed;
+		const char *format;
+		int line_number;
 
 		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
 				cdt->current);
 
-		snprintf(number, sizeof(number), "%*d", view->real_num_width, (int)i + 1);
+		mixed = (i == view->list_pos) && view->num && view->rel_num;
+		format = mixed ? "%-*d" : "%*d";
+		line_number = (view->rel_num && !mixed) ? abs(i - view->list_pos) : (i + 1);
+
+		snprintf(number, sizeof(number), format, view->real_num_width, line_number);
 
 		checked_wmove(view->win, cdt->current_line,
 				final_offset - 1 - view->real_num_width);
@@ -1217,7 +1225,7 @@ move_curr_line(FileView *view)
 		redraw = 1;
 	}
 
-	redraw = consider_scroll_offset(view) ? 1 : redraw;
+	redraw = view->rel_num || (consider_scroll_offset(view) ? 1 : redraw);
 
 	return redraw;
 }
