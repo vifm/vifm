@@ -425,7 +425,7 @@ init_shortmess(optval_t *val)
 static void
 init_number(optval_t *val)
 {
-	val->bool_val = 1;
+	val->bool_val = 0;
 }
 
 /* Default-initializes minimum width of file number field. */
