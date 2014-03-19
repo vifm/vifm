@@ -76,6 +76,7 @@ static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_number(optval_t *val);
 static void init_numberwidth(optval_t *val);
+static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -121,6 +122,8 @@ static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void lsview_handler(OPT_OP op, optval_t val);
 static void number_handler(OPT_OP op, optval_t val);
 static void numberwidth_handler(OPT_OP op, optval_t val);
+static void relativenumber_handler(OPT_OP op, optval_t val);
+static void update_num_option(int *option, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
@@ -431,6 +434,10 @@ options[] =
 	  OPT_INT, 0, NULL, &numberwidth_handler,
 	  { .init = &init_numberwidth },
 	},
+	{ "relativenumber", "rnu",
+	  OPT_BOOL, 0, NULL, &relativenumber_handler,
+	  { .init = &init_relativenumber },
+	},
 	{ "sort", "",
 	  OPT_STRLIST, ARRAY_LEN(sort_types), sort_types, &sort_handler,
 	  { .init = &init_sort },
@@ -539,6 +546,13 @@ init_numberwidth(optval_t *val)
 	val->int_val = 4;
 }
 
+/* Default-initializes whether to display relative file numbers. */
+static void
+init_relativenumber(optval_t *val)
+{
+	val->bool_val = 0;
+}
+
 static void
 init_sort(optval_t *val)
 {
@@ -604,6 +618,9 @@ load_local_options(FileView *view)
 
 	val.int_val = view->num_width;
 	set_option("numberwidth", val);
+
+	val.int_val = view->rel_num;
+	set_option("relativenumber", val);
 }
 
 void
@@ -1130,16 +1147,7 @@ lsview_handler(OPT_OP op, optval_t val)
 static void
 number_handler(OPT_OP op, optval_t val)
 {
-	int numbers_were_displayed, numbers_are_displayed;
-
-	numbers_were_displayed = ui_view_displays_numbers(curr_view);
-	curr_view->num = val.bool_val;
-	numbers_are_displayed = ui_view_displays_numbers(curr_view);
-
-	if(numbers_were_displayed ^ numbers_are_displayed)
-	{
-		redraw_current_view();
-	}
+	update_num_option(&curr_view->num, val);
 }
 
 /* Handles changes of minimum width of file number field. */
@@ -1147,6 +1155,25 @@ static void
 numberwidth_handler(OPT_OP op, optval_t val)
 {
 	curr_view->num_width = val.int_val;
+
+	if(ui_view_displays_numbers(curr_view))
+	{
+		redraw_current_view();
+	}
+}
+
+/* Handles relative file numbers displaying toggle. */
+static void
+relativenumber_handler(OPT_OP op, optval_t val)
+{
+	update_num_option(&curr_view->rel_num, val);
+}
+
+/* Handles toggling of boolean number related option. */
+static void
+update_num_option(int *option, optval_t val)
+{
+	*option = val.bool_val;
 
 	if(ui_view_displays_numbers(curr_view))
 	{

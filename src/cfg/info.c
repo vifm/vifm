@@ -906,6 +906,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]%snumber\n", rwin.num ? "" : "no");
 	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width);
 	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width);
+	fprintf(fp, "=[%srelativenumber\n", lwin.rel_num ? "" : "no");
+	fprintf(fp, "=]%srelativenumber\n", rwin.rel_num ? "" : "no");
 
 	fprintf(fp, "%s", "=dotdirs=");
 	if(cfg.dot_dirs & DD_ROOT_PARENT)
