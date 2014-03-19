@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 16
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2131,8 +2131,9 @@ number nu
 type: boolean
 default: false
 type: local
-Print line number in front of each filename when |vifm-'lsview'| options is
+Print line number in front of each filename when |vifm-'lsview'| option is
 turned off.  Use |vifm-'numberwidth'| to control width of line number.
+Also see |vifm-'relativenumber'|.
 
                                                *vifm-'numberwidth'* *vifm-'nuw'*
 numberwidth nuw
@@ -2140,6 +2141,27 @@ type: integer
 default: 4
 type: local
 Minimal number of characters for line number field.
+
+                                               *vifm-'relativenumber'*
+                                               *vifm-'rnu'*
+relativenumber rnu
+type: boolean
+default: false
+type: local
+Print relative line number in front of each filename when |vifm-'lsview'|
+option is turned off.  Use |vifm-'numberwidth'| to control width of line
+number.  Various combinations of |vifm-'number'| and |vifm-'relativenumber'|
+lead to such results:
+
+                        nonumber               number
+
+    norelativenumber   | first                |   1 first
+                       | second               |   2 second
+                       | third                |   3 third
+
+      relativenumber   |   1 first            |   1 first
+                       |   0 second           |2    second
+                       |   1 third            |   1 third
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf
