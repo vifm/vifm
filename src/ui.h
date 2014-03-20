@@ -91,6 +91,16 @@ enum
 	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };
 
+/* Type of file numbering. */
+typedef enum
+{
+	NT_NONE = 0x00,            /* Displaying of file numbers is disabled. */
+	NT_SEQ  = 0x01,            /* Number are displayed as is (sequentially). */
+	NT_REL  = 0x02,            /* Relative numbers are used for all items. */
+	NT_MIX  = NT_SEQ | NT_REL, /* All numbers are relative except for current. */
+}
+NumberingType;
+
 typedef struct
 {
 	int rel_pos;
@@ -212,7 +222,7 @@ typedef struct
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 
-	int num; /* Whether line numbers are displayed. */
+	NumberingType num_type; /* Whether and how line numbers are displayed. */
 	int num_width; /* Min number of characters reserved for number field. */
 	int real_num_width; /* Real character count reserved for number field. */
 }

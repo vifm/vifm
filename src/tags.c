@@ -54,6 +54,8 @@ const char *tags[] = {
 	"vifm-'number'",
 	"vifm-'numberwidth'",
 	"vifm-'nuw'",
+	"vifm-'relativenumber'",
+	"vifm-'rnu'",
 	"vifm-'ruf'",
 	"vifm-'rulerformat'",
 	"vifm-'runexec'",

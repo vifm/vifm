@@ -1,4 +1,4 @@
-.TH vifm 1 "Mar 16, 2014" "" "Vifm"
+.TH vifm 1 "Mar 19, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2455,8 +2455,8 @@ default: false
 .br
 type: local
 .br
-Print line number in front of each filename when 'lsview' options is turned off.
-Use 'numberwidth' to control width of line number.
+Print line number in front of each filename when 'lsview' option is turned off.
+Use 'numberwidth' to control width of line number.  Also see 'relativenumber'.
 .TP
 .BI "numberwidth nuw"
 type: integer
@@ -2466,6 +2466,28 @@ default: 4
 type: local
 .br
 Minimal number of characters for line number field.
+.TP
+.BI "relativenumber rnu"
+type: boolean
+.br
+default: false
+.br
+type: local
+.br
+Print relative line number in front of each filename when 'lsview' option is
+turned off.  Use 'numberwidth' to control width of line number.  Various
+combinations of 'number' and 'relativenumber' lead to such results:
+
+                        nonumber               number
+
+    norelativenumber   | first                |   1 first
+                       | second               |   2 second
+                       | third                |   3 third
+
+      relativenumber   |   1 first            |   1 first
+                       |   0 second           |2    second
+                       |   1 third            |   1 third
+
 .TP
 .BI "rulerformat ruf"
 type: string

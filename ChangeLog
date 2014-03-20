@@ -28,8 +28,8 @@
 
 	Added <nop> angle bracket notation.  Thanks to filterfalse.
 
-	Added 'number' and 'numberwidth' options to control displaying of file
-	numbers.  Thanks to filterfalse and greye.
+	Added 'number', 'relativenumber' and 'numberwidth' options to control
+	displaying of file numbers.  Thanks to filterfalse and greye.
 
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
