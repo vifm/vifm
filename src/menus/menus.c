@@ -441,7 +441,7 @@ redraw_menu(menu_info *m)
 }
 
 void
-goto_selected_file(FileView *view, menu_info *m)
+goto_selected_file(FileView *view, menu_info *m, int try_open)
 {
 	char *dir;
 	char *file;
@@ -466,7 +466,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		copy_str(dir, bufs_len, "./");
 	}
 
-	if(m->type == GREP_MENU)
+	if(try_open)
 	{
 		p = strchr(m->items[m->pos], ':');
 		if(p != NULL)
@@ -481,7 +481,7 @@ goto_selected_file(FileView *view, menu_info *m)
 	}
 	strcat(dir, m->items[m->pos]);
 	chomp(file);
-	if(m->type == GREP_MENU && p != NULL)
+	if(try_open && p != NULL)
 	{
 		int n = 1;
 

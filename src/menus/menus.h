@@ -121,8 +121,8 @@ void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
-/* Nativates to selected menu item.  Supports multiple menu types. */
-void goto_selected_file(FileView *view, menu_info *m);
+/* Nativates to/open selected menu item.  Supports multiple menu types. */
+void goto_selected_file(FileView *view, menu_info *m, int try_open);
 /* Nativates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
 /* Closes ef. */

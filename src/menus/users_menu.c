@@ -47,7 +47,7 @@ execute_users_cb(FileView *view, menu_info *m)
 {
 	if(m->type == USER_NAVIGATE_MENU)
 	{
-		goto_selected_file(view, m);
+		goto_selected_file(view, m, 0);
 	}
 	return 0;
 }

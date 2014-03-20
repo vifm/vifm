@@ -80,7 +80,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 static int
 execute_grep_cb(FileView *view, menu_info *m)
 {
-	goto_selected_file(view, m);
+	goto_selected_file(view, m, 1);
 	return 1;
 }
 

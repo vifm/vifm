@@ -102,7 +102,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 static int
 execute_find_cb(FileView *view, menu_info *m)
 {
-	goto_selected_file(view, m);
+	goto_selected_file(view, m, 0);
 	return 0;
 }
 
