@@ -530,7 +530,7 @@ goto_selected_file(FileView *view, menu_info *m, int try_open)
 			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
 		}
 	}
-	else if(m->type == LOCATE_MENU || m->type == USER_NAVIGATE_MENU)
+	else
 	{
 		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
 	}
