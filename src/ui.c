@@ -1935,7 +1935,7 @@ ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
 int
 ui_view_displays_numbers(const FileView *const view)
 {
-	return (view->num || view->rel_num) && !view->ls_view;
+	return view->num_type != NT_NONE && !view->ls_view;
 }
 
 void

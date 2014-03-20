@@ -123,7 +123,7 @@ static void lsview_handler(OPT_OP op, optval_t val);
 static void number_handler(OPT_OP op, optval_t val);
 static void numberwidth_handler(OPT_OP op, optval_t val);
 static void relativenumber_handler(OPT_OP op, optval_t val);
-static void update_num_option(int *option, optval_t val);
+static void update_num_type(NumberingType num_type, int enable);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
@@ -613,13 +613,13 @@ load_local_options(FileView *view)
 	val.bool_val = view->ls_view;
 	set_option("lsview", val);
 
-	val.bool_val = view->num;
+	val.bool_val = view->num_type & NT_SEQ;
 	set_option("number", val);
 
 	val.int_val = view->num_width;
 	set_option("numberwidth", val);
 
-	val.int_val = view->rel_num;
+	val.int_val = view->num_type & NT_REL;
 	set_option("relativenumber", val);
 }
 
@@ -1147,7 +1147,7 @@ lsview_handler(OPT_OP op, optval_t val)
 static void
 number_handler(OPT_OP op, optval_t val)
 {
-	update_num_option(&curr_view->num, val);
+	update_num_type(NT_SEQ, val.bool_val);
 }
 
 /* Handles changes of minimum width of file number field. */
@@ -1166,16 +1166,21 @@ numberwidth_handler(OPT_OP op, optval_t val)
 static void
 relativenumber_handler(OPT_OP op, optval_t val)
 {
-	update_num_option(&curr_view->rel_num, val);
+	update_num_type(NT_REL, val.bool_val);
 }
 
-/* Handles toggling of boolean number related option. */
+/* Handles toggling of boolean number related option and updates current view if
+ * needed. */
 static void
-update_num_option(int *option, optval_t val)
+update_num_type(NumberingType num_type, int enable)
 {
-	*option = val.bool_val;
+	const int old_num_type = curr_view->num_type;
 
-	if(ui_view_displays_numbers(curr_view))
+	curr_view->num_type = enable
+	                    ? (old_num_type | num_type)
+	                    : (old_num_type & ~num_type);
+
+	if(curr_view->num_type != old_num_type)
 	{
 		redraw_current_view();
 	}

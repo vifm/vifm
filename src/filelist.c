@@ -224,13 +224,17 @@ column_line_print(const void *data, int column_id, const char *buf,
 		int mixed;
 		const char *format;
 		int line_number;
+		int is_current_line;
 
 		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
 				cdt->current);
 
-		mixed = (i == view->list_pos) && view->num && view->rel_num;
+		is_current_line = (i == view->list_pos);
+		mixed = is_current_line && view->num_type == NT_MIX;
 		format = mixed ? "%-*d" : "%*d";
-		line_number = (view->rel_num && !mixed) ? abs(i - view->list_pos) : (i + 1);
+		line_number = ((view->num_type & NT_REL) && !mixed)
+		            ? abs(i - view->list_pos)
+		            : (i + 1);
 
 		snprintf(number, sizeof(number), format, view->real_num_width, line_number);
 
@@ -484,8 +488,7 @@ reset_view(FileView *view)
 	view->max_filename_len = 0;
 	view->column_count = 1;
 
-	view->num = 0;
-	view->rel_num = 0;
+	view->num_type = NT_NONE;
 	view->num_width = 4;
 	view->real_num_width = 0;
 
@@ -1225,7 +1228,8 @@ move_curr_line(FileView *view)
 		redraw = 1;
 	}
 
-	redraw = view->rel_num || (consider_scroll_offset(view) ? 1 : redraw);
+	redraw = (view->num_type & NT_REL)
+	      || (consider_scroll_offset(view) ? 1 : redraw);
 
 	return redraw;
 }
