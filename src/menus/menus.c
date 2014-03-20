@@ -28,14 +28,14 @@
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
 #include <sys/types.h> /* pid_t */
-#include <unistd.h> /* access() */
+#include <unistd.h> /* access() R_OK */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* memmove() memset() strdup() strchr() strlen()
+#include <string.h> /* memmove() memset() strdup() strcat() strchr() strlen()
                        strrchr() */
 #include <stdarg.h>
 #include <signal.h>
@@ -441,14 +441,14 @@ redraw_menu(menu_info *m)
 }
 
 void
-goto_selected_file(FileView *view, menu_info *m, int try_open)
+goto_selected_file(FileView *view, const char spec[], int try_open)
 {
 	char *dir;
 	char *file;
 	char *free_this;
 	char *num = NULL;
 	char *p = NULL;
-	const size_t bufs_len = 2 + strlen(m->items[m->pos]) + 1 + 1;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	free_this = file = dir = malloc(bufs_len);
 	if(free_this == NULL)
@@ -457,7 +457,7 @@ goto_selected_file(FileView *view, menu_info *m, int try_open)
 		return;
 	}
 
-	if(is_path_absolute(m->items[m->pos]))
+	if(is_path_absolute(spec))
 	{
 		dir[0] = '\0';
 	}
@@ -468,7 +468,7 @@ goto_selected_file(FileView *view, menu_info *m, int try_open)
 
 	if(try_open)
 	{
-		p = strchr(m->items[m->pos], ':');
+		p = strchr(spec, ':');
 		if(p != NULL)
 		{
 			*p = '\0';
@@ -479,7 +479,7 @@ goto_selected_file(FileView *view, menu_info *m, int try_open)
 			num = NULL;
 		}
 	}
-	strcat(dir, m->items[m->pos]);
+	strcat(dir, spec);
 	chomp(file);
 	if(try_open && p != NULL)
 	{
