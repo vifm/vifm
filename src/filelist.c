@@ -1220,18 +1220,20 @@ move_curr_line(FileView *view)
 	else if(pos > last)
 	{
 		scroll_down(view, pos - last);
-		redraw = 1;
+		redraw++;
 	}
 	else if(pos < view->top_line)
 	{
 		scroll_up(view, view->top_line - pos);
-		redraw = 1;
+		redraw++;
 	}
 
-	redraw = (view->num_type & NT_REL)
-	      || (consider_scroll_offset(view) ? 1 : redraw);
+	if(consider_scroll_offset(view))
+	{
+		redraw++;
+	}
 
-	return redraw;
+	return redraw != 0 || (view->num_type & NT_REL);
 }
 
 /* Calculates top position basing on window and list size and trying to show as
