@@ -1,4 +1,4 @@
-.TH vifm 1 "Mar 19, 2014" "" "Vifm"
+.TH vifm 1 "Mar 23, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3257,9 +3257,12 @@ top of the stack.
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
-.B Find and locate menus and output menu with navigation
+.B Find, locate and user menu with navigation (%M macro)
 
-Selecting file name navigates previously active view to it.
+gf \- navigates previously active view to currently selected item leaving menu
+mode.  Pressing Enter key has the same effect.
+
+e \- opens selected path in the editor, stays in menu mode.
 
 .B Grep menu
 
