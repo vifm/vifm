@@ -64,6 +64,15 @@ enum
 #endif
 };
 
+/* Result of handling key sequence by menu-specific shortcut handler. */
+typedef enum
+{
+	KHR_REFRESH_WINDOW, /* Menu window refresh is needed. */
+	KHR_CLOSE_MENU,     /* Menu mode should be left. */
+	KHR_UNHANDLED,      /* Passed key wasn't handled. */
+}
+KHandlerResponse;
+
 typedef struct menu_info
 {
 	int top;
@@ -85,9 +94,9 @@ typedef struct menu_info
 	/* Contains additional data, associated with each of menu items, can be
 	 * NULL. */
 	char **data;
-	/* Should return value > 0 to request menu window refresh, < 0 on invalid key
-	 * and 0 to exit the menu. */
-	int (*key_handler)(struct menu_info *m, const wchar_t keys[]);
+	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
+	 * both taken actions and what should be done next. */
+	KHandlerResponse (*key_handler)(struct menu_info *m, const wchar_t keys[]);
 	int extra_data; /* For filetype background and mime flags. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
@@ -143,9 +152,9 @@ int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
 int display_menu(menu_info *m, FileView *view);
 
 /* Predefined key handler for processing keys on elements of file lists.
- * Returns value > 0 to request menu window refresh, < 0 on unsupported key and
- * 0 to exit the menu. */
-int filelist_khandler(menu_info *m, const wchar_t keys[]);
+ * Returns code that specifies both taken actions and what should be done
+ * next. */
+KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

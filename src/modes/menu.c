@@ -630,26 +630,30 @@ cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 static int
 pass_combination_to_khandler(const wchar_t keys[])
 {
-	int handled;
+	KHandlerResponse handler_response;
 
 	if(menu->key_handler == NULL)
 	{
 		return 0;
 	}
 
-	handled = menu->key_handler(menu, keys);
-	if(handled == 0)
-	{
-		leave_menu_mode();
-		return 1;
-	}
-	else if(handled > 0)
-	{
-		wrefresh(menu_win);
-		return 1;
-	}
+	handler_response = menu->key_handler(menu, keys);
 
-	return 0;
+	switch(handler_response)
+	{
+		case KHR_REFRESH_WINDOW:
+			wrefresh(menu_win);
+			return 1;
+		case KHR_CLOSE_MENU:
+			leave_menu_mode();
+			return 1;
+		case KHR_UNHANDLED:
+			return 0;
+
+		default:
+			assert(0 && "Unknown menu-specific keyboard handler response.");
+			return 0;
+	}
 }
 
 static void

@@ -938,20 +938,20 @@ get_cmd_target(void)
 		expand_macros("%f", NULL, NULL, 1) : strdup(".");
 }
 
-int
+KHandlerResponse
 filelist_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
 		goto_selected_file(curr_view, m->items[m->pos], 0);
-		return 0;
+		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
 		goto_selected_file(curr_view, m->items[m->pos], 1);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

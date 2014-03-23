@@ -37,7 +37,7 @@
 #define CMDNAME_COLUMN_MIN_WIDTH 10
 
 static int execute_commands_cb(FileView *view, menu_info *m);
-static int commands_khandler(menu_info *m, const wchar_t keys[]);
+static KHandlerResponse commands_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_commands_menu(FileView *view)
@@ -90,9 +90,9 @@ execute_commands_cb(FileView *view, menu_info *m)
 	return 0;
 }
 
-/* Processes key presses on menu items.  Returns value > 0 to request menu
- * window refresh, < 0 on unsupported key and 0 to exit the menu. */
-static int
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
 commands_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* remove element */
@@ -104,9 +104,9 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 		execute_cmdline_command(cmd_buf);
 
 		remove_current_item(m);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

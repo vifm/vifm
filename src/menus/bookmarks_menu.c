@@ -33,9 +33,10 @@
 #include "../utils/utf8.h"
 #include "../bookmarks.h"
 #include "../ui.h"
+#include "menus.h"
 
 static int execute_bookmark_cb(FileView *view, menu_info *m);
-static int bookmark_khandler(menu_info *m, const wchar_t keys[]);
+static KHandlerResponse bookmark_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_bookmarks_menu(FileView *view, const char marks[])
@@ -113,18 +114,18 @@ execute_bookmark_cb(FileView *view, menu_info *m)
 	return 0;
 }
 
-/* Processes key presses on menu items.  Returns value > 0 to request menu
- * window refresh, < 0 on unsupported key and 0 to exit the menu. */
-static int
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
 bookmark_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		clear_bookmark(m->items[m->pos][0]);
 		remove_current_item(m);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
