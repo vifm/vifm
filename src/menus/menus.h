@@ -21,6 +21,7 @@
 #define VIFM__MENUS__MENUS_H__
 
 #include <stdio.h> /* FILE */
+#include <wchar.h> /* wchar_t */
 
 #include "../ui.h"
 
@@ -140,6 +141,11 @@ int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
 int display_menu(menu_info *m, FileView *view);
+
+/* Predefined key handler for processing keys on elements of file lists.
+ * Returns value > 0 to request menu window refresh, < 0 on unsupported key and
+ * 0 to exit the menu. */
+int filelist_khandler(menu_info *m, wchar_t keys[]);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 
