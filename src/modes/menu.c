@@ -80,6 +80,7 @@ static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static int pass_combination_to_khandler(const wchar_t keys[]);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
@@ -136,6 +137,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
+	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -613,6 +615,13 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
+}
+
+/* Passes "gf" shortcut to menu as otherwise the shortcut is not available. */
+static void
+cmd_gf(key_info_t key_info, keys_info_t *keys_info)
+{
+	(void)pass_combination_to_khandler(L"gf");
 }
 
 /* Gives menu-specific keyboard routine to process the shortcut.  Returns zero
