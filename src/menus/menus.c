@@ -939,7 +939,7 @@ get_cmd_target(void)
 }
 
 int
-filelist_khandler(menu_info *m, wchar_t keys[])
+filelist_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{

@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <stddef.h> /* NULL */
 #include <string.h>
+#include <wchar.h> /* wchar_t */
 
 #include "../cfg/config.h"
 #include "../engine/cmds.h"
@@ -636,7 +637,7 @@ pass_combination_to_khandler(const wchar_t keys[])
 		return 0;
 	}
 
-	handled = menu->key_handler(menu, (wchar_t *)keys);
+	handled = menu->key_handler(menu, keys);
 	if(handled == 0)
 	{
 		leave_menu_mode();

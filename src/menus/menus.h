@@ -87,7 +87,7 @@ typedef struct menu_info
 	char **data;
 	/* Should return value > 0 to request menu window refresh, < 0 on invalid key
 	 * and 0 to exit the menu. */
-	int (*key_handler)(struct menu_info *m, wchar_t *keys);
+	int (*key_handler)(struct menu_info *m, const wchar_t keys[]);
 	int extra_data; /* For filetype background and mime flags. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
@@ -145,7 +145,7 @@ int display_menu(menu_info *m, FileView *view);
 /* Predefined key handler for processing keys on elements of file lists.
  * Returns value > 0 to request menu window refresh, < 0 on unsupported key and
  * 0 to exit the menu. */
-int filelist_khandler(menu_info *m, wchar_t keys[]);
+int filelist_khandler(menu_info *m, const wchar_t keys[]);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 
