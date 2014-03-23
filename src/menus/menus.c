@@ -35,8 +35,8 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* memmove() memset() strdup() strcat() strchr() strlen()
-                       strrchr() */
+#include <string.h> /* memmove() memset() strdup() strcat() strncat() strchr()
+                       strlen() strrchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -446,8 +446,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	char *dir;
 	char *file;
 	char *free_this;
-	char *num = NULL;
-	char *p = NULL;
+	int line_num = 1;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	free_this = file = dir = malloc(bufs_len);
@@ -468,32 +467,30 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	if(try_open)
 	{
-		p = strchr(spec, ':');
+		const char *const p = strchr(spec, ':');
 		if(p != NULL)
 		{
-			*p = '\0';
-			num = p + 1;
+			strncat(dir, spec, spec - spec);
+			line_num = atoi(p + 1);
 		}
 		else
 		{
-			num = NULL;
+			strcat(dir, spec);
 		}
 	}
-	strcat(dir, spec);
-	chomp(file);
-	if(try_open && p != NULL)
+	else
 	{
-		int n = 1;
+		strcat(dir, spec);
+	}
 
-		*p = ':';
+	chomp(file);
 
-		if(num != NULL)
-			n = atoi(num);
-
+	if(try_open)
+	{
 		if(access(file, R_OK) == 0)
 		{
 			curr_stats.auto_redraws = 1;
-			(void)view_file(file, n, -1, 1);
+			(void)view_file(file, line_num, -1, 1);
 			curr_stats.auto_redraws = 0;
 		}
 		free(free_this);
