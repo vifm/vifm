@@ -36,6 +36,10 @@ show_user_menu(FileView *view, const char command[], int navigate)
 
 	m.title = strdup(command);
 	m.execute_handler = &execute_users_cb;
+	if(navigate)
+	{
+		m.key_handler = &filelist_khandler;
+	}
 
 	return capture_output_to_menu(view, command, &m);
 }

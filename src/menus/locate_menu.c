@@ -48,6 +48,7 @@ show_locate_menu(FileView *view, const char args[])
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.title = format_str(" Locate %s ", m.args);
 	m.execute_handler = &execute_locate_cb;
+	m.key_handler = &filelist_khandler;
 
 	status_bar_message("locate...");
 
