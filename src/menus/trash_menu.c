@@ -50,7 +50,7 @@ show_trash_menu(FileView *view)
 }
 
 /* Processes key presses on menu items.  Returns value > 0 to request menu
- * window refresh and < 0 on unsupported key. */
+ * window refresh, < 0 on unsupported key and 0 to exit the menu. */
 static int
 trash_khandler(menu_info *m, wchar_t keys[])
 {

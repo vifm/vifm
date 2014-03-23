@@ -84,8 +84,8 @@ typedef struct menu_info
 	/* Contains additional data, associated with each of menu items, can be
 	 * NULL. */
 	char **data;
-	/* Should return value > 0 to request menu window refresh and < 0 on invalid
-	 * key. */
+	/* Should return value > 0 to request menu window refresh, < 0 on invalid key
+	 * and 0 to exit the menu. */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* For filetype background and mime flags. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
@@ -94,7 +94,8 @@ typedef struct menu_info
 	/* Text displayed by display_menu() function in case menu is empty, it can be
 	 * NULL if this cannot happen and will be freed by reset_popup_menu(). */
 	char *empty_msg;
-}menu_info;
+}
+menu_info;
 
 /* Fills fields of menu_info structure with some safe values.  empty_msg is
  * text displayed by display_menu() function in case menu is empty, it can be
