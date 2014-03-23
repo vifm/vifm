@@ -80,6 +80,7 @@ static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
+static int pass_combination_to_khandler(const wchar_t keys[]);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -250,15 +251,9 @@ init_menu_mode(int *key_mode)
 static int
 key_handler(wchar_t key)
 {
-	wchar_t buf[] = {key, L'\0'};
+	const wchar_t shortcut[] = {key, L'\0'};
 
-	if(menu->key_handler == NULL)
-		return 0;
-
-	if(menu->key_handler(menu, buf) > 0)
-		wrefresh(menu_win);
-
-	if(menu->len == 0)
+	if(pass_combination_to_khandler(shortcut) && menu->len == 0)
 	{
 		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
@@ -567,12 +562,8 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	int off;
 	if(menu->key_handler != NULL)
 	{
-		int ret = menu->key_handler(menu, L"L");
-		if(ret == 0)
-			return;
-		else if(ret > 0)
+		if(pass_combination_to_khandler(L"L"))
 		{
-			wrefresh(menu_win);
 			return;
 		}
 	}
@@ -617,17 +608,38 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->key_handler == NULL)
-		return;
-
-	if(menu->key_handler(menu, L"dd") > 0)
-		wrefresh(menu_win);
-
-	if(menu->len == 0)
+	if(pass_combination_to_khandler(L"dd") && menu->len == 0)
 	{
 		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
+}
+
+/* Gives menu-specific keyboard routine to process the shortcut.  Returns zero
+ * if the shortcut wasn't processed, otherwise non-zero is returned. */
+static int
+pass_combination_to_khandler(const wchar_t keys[])
+{
+	int handled;
+
+	if(menu->key_handler == NULL)
+	{
+		return 0;
+	}
+
+	handled = menu->key_handler(menu, (wchar_t *)keys);
+	if(handled == 0)
+	{
+		leave_menu_mode();
+		return 1;
+	}
+	else if(handled > 0)
+	{
+		wrefresh(menu_win);
+		return 1;
+	}
+
+	return 0;
 }
 
 static void
