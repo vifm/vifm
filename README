@@ -72,7 +72,7 @@ Package content
     |  |  |-- colorscheme_menu.c - handles :colorscheme menu
     |  |  |-- commands_menu.c - handles :command menu
     |  |  |-- dirhistory_menu.c - handles :history menu
-    |  |  |-- dirstask_menu.c - handles :dirs menu
+    |  |  |-- dirstack_menu.c - handles :dirs menu
     |  |  |-- filetypes_menu.c - handles :file menu
     |  |  |-- find_menu.c - handles :file menu
     |  |  |-- grep_menu.c - hanldes :grep menu
