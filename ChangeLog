@@ -31,6 +31,9 @@
 	Added 'number', 'relativenumber' and 'numberwidth' options to control
 	displaying of file numbers.  Thanks to filterfalse and greye.
 
+	Added "gf" (go to file) and "e" (open in editor) keys to :find, :locate
+	and user menu with navigation (%M macro).
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.

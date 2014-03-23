@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 19
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Mar 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2774,9 +2774,16 @@ Filetype menu~
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
-Find and locate menus and output menu with navigation~
+Find, locate and user menu with navigation (%M macro)~
 
-Selecting file name navigates previously active view to it.
+                                               *vifm-m_gf*
+
+Navigates previously active view to currently selected item leaving menu
+mode.  Pressing Enter key has the same effect.
+
+                                               *vifm-m_e*
+
+Opens selected path in the editor, stays in menu mode.
 
 Grep menu~
 

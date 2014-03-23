@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <stddef.h> /* NULL */
 #include <string.h>
+#include <wchar.h> /* wchar_t */
 
 #include "../cfg/config.h"
 #include "../engine/cmds.h"
@@ -80,6 +81,8 @@ static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
+static int pass_combination_to_khandler(const wchar_t keys[]);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -135,6 +138,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
+	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -250,15 +254,9 @@ init_menu_mode(int *key_mode)
 static int
 key_handler(wchar_t key)
 {
-	wchar_t buf[] = {key, L'\0'};
+	const wchar_t shortcut[] = {key, L'\0'};
 
-	if(menu->key_handler == NULL)
-		return 0;
-
-	if(menu->key_handler(menu, buf) > 0)
-		wrefresh(menu_win);
-
-	if(menu->len == 0)
+	if(pass_combination_to_khandler(shortcut) && menu->len == 0)
 	{
 		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
@@ -567,12 +565,8 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	int off;
 	if(menu->key_handler != NULL)
 	{
-		int ret = menu->key_handler(menu, L"L");
-		if(ret == 0)
-			return;
-		else if(ret > 0)
+		if(pass_combination_to_khandler(L"L"))
 		{
-			wrefresh(menu_win);
 			return;
 		}
 	}
@@ -617,16 +611,48 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->key_handler == NULL)
-		return;
-
-	if(menu->key_handler(menu, L"dd") > 0)
-		wrefresh(menu_win);
-
-	if(menu->len == 0)
+	if(pass_combination_to_khandler(L"dd") && menu->len == 0)
 	{
 		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
+	}
+}
+
+/* Passes "gf" shortcut to menu as otherwise the shortcut is not available. */
+static void
+cmd_gf(key_info_t key_info, keys_info_t *keys_info)
+{
+	(void)pass_combination_to_khandler(L"gf");
+}
+
+/* Gives menu-specific keyboard routine to process the shortcut.  Returns zero
+ * if the shortcut wasn't processed, otherwise non-zero is returned. */
+static int
+pass_combination_to_khandler(const wchar_t keys[])
+{
+	KHandlerResponse handler_response;
+
+	if(menu->key_handler == NULL)
+	{
+		return 0;
+	}
+
+	handler_response = menu->key_handler(menu, keys);
+
+	switch(handler_response)
+	{
+		case KHR_REFRESH_WINDOW:
+			wrefresh(menu_win);
+			return 1;
+		case KHR_CLOSE_MENU:
+			leave_menu_mode();
+			return 1;
+		case KHR_UNHANDLED:
+			return 0;
+
+		default:
+			assert(0 && "Unknown menu-specific keyboard handler response.");
+			return 0;
 	}
 }
 

@@ -25,7 +25,7 @@
 #include "colorscheme_menu.h"
 #include "commands_menu.h"
 #include "dirhistory_menu.h"
-#include "dirstask_menu.h"
+#include "dirstack_menu.h"
 #include "filetypes_menu.h"
 #include "find_menu.h"
 #include "grep_menu.h"

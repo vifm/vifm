@@ -21,6 +21,7 @@
 
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strcpy() strlen() */
+#include <wchar.h> /* wchar_t */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
@@ -32,9 +33,10 @@
 #include "../utils/utf8.h"
 #include "../bookmarks.h"
 #include "../ui.h"
+#include "menus.h"
 
 static int execute_bookmark_cb(FileView *view, menu_info *m);
-static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
+static KHandlerResponse bookmark_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_bookmarks_menu(FileView *view, const char marks[])
@@ -46,7 +48,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	static menu_info m;
 	init_menu_info(&m, BOOKMARK_MENU, strdup("No bookmarks set"));
 	m.execute_handler = &execute_bookmark_cb;
-	m.key_handler = bookmark_khandler;
+	m.key_handler = &bookmark_khandler;
 
 	m.len = init_active_bookmarks(marks, active_bookmarks);
 	m.title = strdup(" Mark -- Directory -- File ");
@@ -112,16 +114,18 @@ execute_bookmark_cb(FileView *view, menu_info *m)
 	return 0;
 }
 
-static int
-bookmark_khandler(struct menu_info *m, wchar_t *keys)
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+bookmark_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		clear_bookmark(m->items[m->pos][0]);
 		remove_current_item(m);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

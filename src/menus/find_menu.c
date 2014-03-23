@@ -58,6 +58,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	m.title = format_str(" Find %s ", args);
 	m.execute_handler = &execute_find_cb;
+	m.key_handler = &filelist_khandler;
 
 	if(with_path)
 	{
@@ -102,7 +103,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 static int
 execute_find_cb(FileView *view, menu_info *m)
 {
-	goto_selected_file(view, m);
+	goto_selected_file(view, m->items[m->pos], 0);
 	return 0;
 }
 

@@ -48,7 +48,7 @@ vifm_SOURCES = \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
 	menus/dirhistory_menu.c menus/dirhistory_menu.h \
-	menus/dirstask_menu.c menus/dirstask_menu.h \
+	menus/dirstack_menu.c menus/dirstack_menu.h \
 	menus/filetypes_menu.c menus/filetypes_menu.h \
 	menus/find_menu.c menus/find_menu.h \
 	menus/grep_menu.c menus/grep_menu.h \

@@ -23,7 +23,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strlen() */
-#include <wchar.h> /* wcscmp() */
+#include <wchar.h> /* wchar_t wcscmp() */
 
 #include "../engine/cmds.h"
 #include "../modes/menu.h"
@@ -37,7 +37,7 @@
 #define CMDNAME_COLUMN_MIN_WIDTH 10
 
 static int execute_commands_cb(FileView *view, menu_info *m);
-static int commands_khandler(struct menu_info *m, wchar_t keys[]);
+static KHandlerResponse commands_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_commands_menu(FileView *view)
@@ -49,7 +49,7 @@ show_commands_menu(FileView *view)
 	static menu_info m;
 	init_menu_info(&m, COMMANDS_MENU, strdup("No commands set"));
 	m.execute_handler = &execute_commands_cb;
-	m.key_handler = commands_khandler;
+	m.key_handler = &commands_khandler;
 
 	m.title = strdup(" Command ------ Action ");
 
@@ -90,8 +90,10 @@ execute_commands_cb(FileView *view, menu_info *m)
 	return 0;
 }
 
-static int
-commands_khandler(struct menu_info *m, wchar_t keys[])
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+commands_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* remove element */
 	{
@@ -102,9 +104,9 @@ commands_khandler(struct menu_info *m, wchar_t keys[])
 		execute_cmdline_command(cmd_buf);
 
 		remove_current_item(m);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

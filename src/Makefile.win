@@ -23,7 +23,7 @@ engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
 engine := $(addprefix engine/, $(engine))
 
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
-         dirhistory_menu.c dirstask_menu.c filetypes_menu.c find_menu.c \
+         dirhistory_menu.c dirstack_menu.c filetypes_menu.c find_menu.c \
          grep_menu.c history_menu.c jobs_menu.c locate_menu.c trash_menu.c \
          trashes_menu.c map_menu.c menus.c registers_menu.c undolist_menu.c \
          users_menu.c vifm_menu.c volumes_menu.c

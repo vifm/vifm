@@ -36,6 +36,10 @@ show_user_menu(FileView *view, const char command[], int navigate)
 
 	m.title = strdup(command);
 	m.execute_handler = &execute_users_cb;
+	if(navigate)
+	{
+		m.key_handler = &filelist_khandler;
+	}
 
 	return capture_output_to_menu(view, command, &m);
 }
@@ -47,7 +51,7 @@ execute_users_cb(FileView *view, menu_info *m)
 {
 	if(m->type == USER_NAVIGATE_MENU)
 	{
-		goto_selected_file(view, m);
+		goto_selected_file(view, m->items[m->pos], 0);
 	}
 	return 0;
 }

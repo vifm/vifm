@@ -21,6 +21,7 @@
 #define VIFM__MENUS__MENUS_H__
 
 #include <stdio.h> /* FILE */
+#include <wchar.h> /* wchar_t */
 
 #include "../ui.h"
 
@@ -63,6 +64,15 @@ enum
 #endif
 };
 
+/* Result of handling key sequence by menu-specific shortcut handler. */
+typedef enum
+{
+	KHR_REFRESH_WINDOW, /* Menu window refresh is needed. */
+	KHR_CLOSE_MENU,     /* Menu mode should be left. */
+	KHR_UNHANDLED,      /* Passed key wasn't handled. */
+}
+KHandlerResponse;
+
 typedef struct menu_info
 {
 	int top;
@@ -84,9 +94,9 @@ typedef struct menu_info
 	/* Contains additional data, associated with each of menu items, can be
 	 * NULL. */
 	char **data;
-	/* Should return value > 0 to request menu window refresh and < 0 on invalid
-	 * key. */
-	int (*key_handler)(struct menu_info *m, wchar_t *keys);
+	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
+	 * both taken actions and what should be done next. */
+	KHandlerResponse (*key_handler)(struct menu_info *m, const wchar_t keys[]);
 	int extra_data; /* For filetype background and mime flags. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
@@ -94,7 +104,8 @@ typedef struct menu_info
 	/* Text displayed by display_menu() function in case menu is empty, it can be
 	 * NULL if this cannot happen and will be freed by reset_popup_menu(). */
 	char *empty_msg;
-}menu_info;
+}
+menu_info;
 
 /* Fills fields of menu_info structure with some safe values.  empty_msg is
  * text displayed by display_menu() function in case menu is empty, it can be
@@ -121,9 +132,10 @@ void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
-/* Nativates to selected menu item.  Supports multiple menu types. */
-void goto_selected_file(FileView *view, menu_info *m);
-/* Nativates to selected menu item. */
+/* Navigates to/open path specification.  Specification can contain colon
+ * followed by a line number when try_open is not zero. */
+void goto_selected_file(FileView *view, const char spec[], int try_open);
+/* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
 /* Closes ef. */
 void print_errors(FILE *ef);
@@ -138,6 +150,11 @@ int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
 int display_menu(menu_info *m, FileView *view);
+
+/* Predefined key handler for processing keys on elements of file lists.
+ * Returns code that specifies both taken actions and what should be done
+ * next. */
+KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

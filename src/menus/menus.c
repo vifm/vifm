@@ -28,17 +28,18 @@
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
 #include <sys/types.h> /* pid_t */
-#include <unistd.h> /* access() */
+#include <unistd.h> /* access() R_OK */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* memmove() memset() strdup() strchr() strlen()
-                       strrchr() */
+#include <string.h> /* memmove() memset() strdup() strcat() strncat() strchr()
+                       strlen() strrchr() */
 #include <stdarg.h>
 #include <signal.h>
+#include <wchar.h> /* wchar_t wcscmp() */
 
 #include "../cfg/config.h"
 #include "../modes/cmdline.h"
@@ -441,14 +442,13 @@ redraw_menu(menu_info *m)
 }
 
 void
-goto_selected_file(FileView *view, menu_info *m)
+goto_selected_file(FileView *view, const char spec[], int try_open)
 {
 	char *dir;
 	char *file;
 	char *free_this;
-	char *num = NULL;
-	char *p = NULL;
-	const size_t bufs_len = 2 + strlen(m->items[m->pos]) + 1 + 1;
+	int line_num = 1;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	free_this = file = dir = malloc(bufs_len);
 	if(free_this == NULL)
@@ -457,7 +457,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		return;
 	}
 
-	if(is_path_absolute(m->items[m->pos]))
+	if(is_path_absolute(spec))
 	{
 		dir[0] = '\0';
 	}
@@ -466,34 +466,32 @@ goto_selected_file(FileView *view, menu_info *m)
 		copy_str(dir, bufs_len, "./");
 	}
 
-	if(m->type == GREP_MENU)
+	if(try_open)
 	{
-		p = strchr(m->items[m->pos], ':');
+		const char *const p = strchr(spec, ':');
 		if(p != NULL)
 		{
-			*p = '\0';
-			num = p + 1;
+			strncat(dir, spec, spec - spec);
+			line_num = atoi(p + 1);
 		}
 		else
 		{
-			num = NULL;
+			strcat(dir, spec);
 		}
 	}
-	strcat(dir, m->items[m->pos]);
-	chomp(file);
-	if(m->type == GREP_MENU && p != NULL)
+	else
 	{
-		int n = 1;
+		strcat(dir, spec);
+	}
 
-		*p = ':';
+	chomp(file);
 
-		if(num != NULL)
-			n = atoi(num);
-
+	if(try_open)
+	{
 		if(access(file, R_OK) == 0)
 		{
 			curr_stats.auto_redraws = 1;
-			(void)view_file(file, n, -1, 1);
+			(void)view_file(file, line_num, -1, 1);
 			curr_stats.auto_redraws = 0;
 		}
 		free(free_this);
@@ -530,7 +528,7 @@ goto_selected_file(FileView *view, menu_info *m)
 			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
 		}
 	}
-	else if(m->type == LOCATE_MENU || m->type == USER_NAVIGATE_MENU)
+	else
 	{
 		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
 	}
@@ -938,6 +936,22 @@ get_cmd_target(void)
 {
 	return (curr_view->selected_files > 0) ?
 		expand_macros("%f", NULL, NULL, 1) : strdup(".");
+}
+
+KHandlerResponse
+filelist_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"gf") == 0)
+	{
+		goto_selected_file(curr_view, m->items[m->pos], 0);
+		return KHR_CLOSE_MENU;
+	}
+	else if(wcscmp(keys, L"e") == 0)
+	{
+		goto_selected_file(curr_view, m->items[m->pos], 1);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

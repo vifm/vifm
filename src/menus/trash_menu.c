@@ -20,14 +20,16 @@
 
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
+#include <wchar.h> /* wchar_t */
 
 #include "../utils/string_array.h"
 #include "../status.h"
 #include "../trash.h"
 #include "../ui.h"
 #include "../undo.h"
+#include "menus.h"
 
-static int trash_khandler(menu_info *m, wchar_t keys[]);
+static KHandlerResponse trash_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_trash_menu(FileView *view)
@@ -36,7 +38,7 @@ show_trash_menu(FileView *view)
 
 	static menu_info m;
 	init_menu_info(&m, TRASH_MENU, strdup("No files in trash"));
-	m.key_handler = trash_khandler;
+	m.key_handler = &trash_khandler;
 
 	m.title = strdup(" Original paths of files in trash ");
 
@@ -49,10 +51,10 @@ show_trash_menu(FileView *view)
 	return display_menu(&m, view);
 }
 
-/* Processes key presses on menu items.  Returns value > 0 to request menu
- * window refresh and < 0 on unsupported key. */
-static int
-trash_khandler(menu_info *m, wchar_t keys[])
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+trash_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"r") == 0)
 	{
@@ -67,14 +69,14 @@ trash_khandler(menu_info *m, wchar_t keys[])
 			status_bar_errorf("Failed to restore %s", orig_path);
 			curr_stats.save_msg = 1;
 			free(trash_path);
-			return -1;
+			return KHR_UNHANDLED;
 		}
 		free(trash_path);
 
 		remove_current_item(m);
-		return 1;
+		return KHR_REFRESH_WINDOW;
 	}
-	return -1;
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
