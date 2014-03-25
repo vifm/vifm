@@ -1,4 +1,4 @@
-.TH vifm 1 "Mar 23, 2014" "" "Vifm"
+.TH vifm 1 "Mar 25, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2357,11 +2357,14 @@ Specifies format for an external command to be invoked by the :grep command.
 The format supports expanding of macros, specific for a particular *prg option,
 and %% sequence for inserting percent sign literally.  This option should
 include the %i macro to specify placement of "\-v" string when inversion of
-results is requested, the %a macro to specify placement of arguments passed to
+results is requested, %a or %A macro to specify placement of arguments passed to
 the :grep command and the %s macro to specify placement of list of files to
 search in.  If some of the macros are not used, they will be implicitly added
 after a space to the value of the 'grepprg' option in the following order: %i,
-%a, %s.
+%a, %s.  Note that when neither %a nor %A are specified, it's %a which is added
+implicitly.
+
+See 'findprg' option for description of difference between %a and %A.
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 .EX

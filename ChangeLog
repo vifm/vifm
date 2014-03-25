@@ -3,8 +3,8 @@
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or
 	view modes.  Thanks to filterfalse.
 
-	Added %A macro to 'findprg' option, which expands to unmodified list of
-	arguments.  Thanks to Robert Sarkozi.
+	Added %A macro to 'findprg' and 'grepprg' options, which is expanded to
+	unmodified list of arguments.  Thanks to Robert Sarkozi.
 
 	Added handling of paths with backward slashes for :find/:locate/:grep/%M
 	menus on Windows.  Thanks to Robert Sarkozi.
