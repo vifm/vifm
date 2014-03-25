@@ -43,8 +43,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	custom_macro_t macros[] =
 	{
 		{ .letter = 'i', .value = NULL, .uses_left = 1, .group = -1 },
-		{ .letter = 'a', .value = NULL, .uses_left = 1, .group = -1 },
+		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
+		{ .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
 	};
 
 	static menu_info m;
@@ -57,6 +58,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	macros[0].value = invert ? "-v" : "";
 	macros[1].value = args;
 	macros[2].value = targets;
+	macros[3].value = args;
 	if(args[0] != '-')
 	{
 		escaped_args = escape_filename(args, 0);
