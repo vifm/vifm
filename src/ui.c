@@ -1371,7 +1371,6 @@ change_window(void)
 			put_inactive_mark(other_view);
 			erase_current_line_bar(other_view);
 		}
-		update_view_title(other_view);
 	}
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))
@@ -1379,27 +1378,7 @@ change_window(void)
 		navigate_to(curr_view, curr_view->curr_dir);
 	}
 
-	update_view_title(curr_view);
-
-	wnoutrefresh(other_view->win);
-	wnoutrefresh(curr_view->win);
-
-	(void)change_directory(curr_view, curr_view->curr_dir);
-
-	if(curr_stats.number_of_windows == 1 && window_shows_dirlist(curr_view))
-	{
-		load_dir_list(curr_view, 1);
-	}
-
-	if(!curr_view->explore_mode)
-	{
-		redraw_current_view();
-	}
-	werase(status_bar);
-	wnoutrefresh(status_bar);
-
-	if(curr_stats.number_of_windows == 1)
-		update_all_windows();
+	curr_stats.need_update = UT_REDRAW;
 }
 
 /* Swaps curr_view and other_view pointers and updates things that are bound to
