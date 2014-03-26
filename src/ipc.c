@@ -18,6 +18,36 @@
 
 #include "ipc.h"
 
+#ifndef ENABLE_REMOTE_CMDS
+
+void
+ipc_pre_init(void)
+{
+}
+
+void
+ipc_init(recieve_callback callback_func)
+{
+}
+
+void
+ipc_check(void)
+{
+}
+
+void
+ipc_send(char *data[])
+{
+}
+
+int
+ipc_server(void)
+{
+	return 1;
+}
+
+#else
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -284,6 +314,8 @@ ipc_server(void)
 {
 	return (server);
 }
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

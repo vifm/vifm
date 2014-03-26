@@ -115,8 +115,10 @@ show_help_msg(void)
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
+#ifdef ENABLE_REMOTE_CMDS
 	puts("  vifm --remote");
 	puts("    passes all arguments that left in command line to active vifm server.\n");
+#endif
 	puts("  vifm -c <command> | +<command>");
 	puts("    run <command> on startup.\n");
 	puts("  vifm --version | -v");
@@ -175,6 +177,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			select = 1;
 		}
+#ifdef ENABLE_REMOTE_CMDS
 		else if(!strcmp(argv[x], "--remote"))
 		{
 			if(!ipc_server())
@@ -183,6 +186,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 				quit_on_invalid_arg();
 			}
 		}
+#endif
 		else if(!strcmp(argv[x], "-f"))
 		{
 			cfg.vim_filter = 1;
@@ -238,10 +242,12 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			show_help_msg();
 			quit_on_invalid_arg();
 		}
+#ifdef ENABLE_REMOTE_CMDS
 		else
 		{
 			show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
 		}
+#endif
 	}
 }
 
