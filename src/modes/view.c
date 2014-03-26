@@ -85,6 +85,7 @@ enum
 };
 
 static int try_ressurect_abandoned(const char full_path[], int explore);
+static void try_redraw_explore_view(const FileView *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -388,22 +389,27 @@ view_redraw(void)
 
 	colmgr_reset();
 
-	if(lwin.explore_mode)
-	{
-		vi = &view_info[VI_LWIN];
-		redraw();
-	}
-	if(rwin.explore_mode)
-	{
-		vi = &view_info[VI_RWIN];
-		redraw();
-	}
+	try_redraw_explore_view(&lwin, VI_LWIN);
+	try_redraw_explore_view(&rwin, VI_RWIN);
+
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
 		redraw();
 	}
 
 	vi = saved_vi;
+}
+
+/* Redraws view in explore mode if view is really in explore mode and is visible
+ * on the screen. */
+static void
+try_redraw_explore_view(const FileView *const view, int vi_index)
+{
+	if(view->explore_mode && ui_view_is_visible(view))
+	{
+		vi = &view_info[vi_index];
+		redraw();
+	}
 }
 
 void
