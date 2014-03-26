@@ -30,11 +30,13 @@ extern const char GIT_HASH[];
 int
 fill_version_info(char **list)
 {
-	const int LEN = 12;
+	const int LEN = 13;
 	int x = 0;
 
 	if(list == NULL)
+	{
 		return LEN;
+	}
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x++] = format_str("Git commit hash: %s", GIT_HASH);
@@ -89,6 +91,12 @@ fill_version_info(char **list)
 #ifndef _WIN32
 	list[x++] = strdup("With -n option for cp and mv");
 #endif /* _WIN32 */
+#endif
+
+#ifdef ENABLE_REMOTE_CMDS
+	list[x++] = strdup("With remote command execution");
+#else
+	list[x++] = strdup("Without remote command execution");
 #endif
 
 	assert(x <= LEN);

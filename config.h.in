@@ -9,6 +9,9 @@
 /* enables extended keys (arrows etc.) */
 #undef ENABLE_EXTENDED_KEYS
 
+/* executing commands remotely */
+#undef ENABLE_REMOTE_CMDS
+
 /* GNU toolchain is installed */
 #undef GNU_TOOLCHAIN
 

@@ -29,6 +29,7 @@
 
 #include <locale.h> /* setlocale */
 #include <stdio.h> /* fputs() puts() */
+#include <stdlib.h> /* exit() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -79,7 +80,7 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
-static void quit_on_invalid_arg(void);
+static void quit_on_arg_parsing(void);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void load_scheme(void);
@@ -115,8 +116,10 @@ show_help_msg(void)
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
+#ifdef ENABLE_REMOTE_CMDS
 	puts("  vifm --remote");
 	puts("    passes all arguments that left in command line to active vifm server.\n");
+#endif
 	puts("  vifm -c <command> | +<command>");
 	puts("    run <command> on startup.\n");
 	puts("  vifm --version | -v");
@@ -175,14 +178,16 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			select = 1;
 		}
+#ifdef ENABLE_REMOTE_CMDS
 		else if(!strcmp(argv[x], "--remote"))
 		{
 			if(!ipc_server())
 			{
 				ipc_send(argv + x + 1);
-				quit_on_invalid_arg();
+				quit_on_arg_parsing();
 			}
 		}
+#endif
 		else if(!strcmp(argv[x], "-f"))
 		{
 			cfg.vim_filter = 1;
@@ -193,12 +198,12 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
 			show_version_msg();
-			quit_on_invalid_arg();
+			quit_on_arg_parsing();
 		}
 		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
 		{
 			show_help_msg();
-			quit_on_invalid_arg();
+			quit_on_arg_parsing();
 		}
 		else if(!strcmp(argv[x], "--logging"))
 		{
@@ -209,7 +214,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			if(x == argc - 1)
 			{
 				puts("Argument missing after \"-c\"");
-				quit_on_invalid_arg();
+				quit_on_arg_parsing();
 			}
 			/* do nothing, it's handeled in exec_startup_commands() */
 			x++;
@@ -236,20 +241,26 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		else if(curr_stats.load_stage == 0)
 		{
 			show_help_msg();
-			quit_on_invalid_arg();
+			quit_on_arg_parsing();
 		}
+#ifdef ENABLE_REMOTE_CMDS
 		else
 		{
 			show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
 		}
+#endif
 	}
 }
 
+/* Quits during argument parsing when it's allowed (e.g. not for remote
+ * commands). */
 static void
-quit_on_invalid_arg(void)
+quit_on_arg_parsing(void)
 {
 	if(curr_stats.load_stage == 0)
+	{
 		exit(1);
+	}
 }
 
 static void

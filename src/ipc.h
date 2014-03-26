@@ -23,12 +23,16 @@ typedef void (*recieve_callback)(char *args[]);
 
 /* Initializes IPC unit basic state. */
 void ipc_pre_init(void);
+
 /* Initializes IPC unit state. The callback_func will be called by ipc_check. */
 void ipc_init(recieve_callback callback_func);
+
 /* Checks for incoming messages. Calls callback passed to ipc_init. */
 void ipc_check(void);
+
 /* Sends data to server.  The data array should end with NULL. */
 void ipc_send(char *data[]);
+
 /* Returns non-zero value if current instance is a server. */
 int ipc_server(void);
 
