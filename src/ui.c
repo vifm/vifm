@@ -1938,6 +1938,12 @@ ui_view_displays_numbers(const FileView *const view)
 	return view->num_type != NT_NONE && !view->ls_view;
 }
 
+int
+ui_view_is_visible(const FileView *const view)
+{
+	return curr_stats.number_of_windows == 2 || curr_view == view;
+}
+
 void
 ui_cancellation_reset(void)
 {

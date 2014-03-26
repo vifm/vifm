@@ -317,6 +317,9 @@ void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
 int ui_view_displays_numbers(const FileView *const view);
+/* Checks whether view is visible on the screen.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_visible(const FileView *const view);
 
 /* Operation cancellation. */
 
