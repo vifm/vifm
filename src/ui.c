@@ -1342,7 +1342,7 @@ reload_lists(void)
 
 	if(curr_stats.number_of_windows == 2)
 	{
-		update_view_title(other_view);
+		ui_view_title_update(other_view);
 		if(curr_stats.view)
 		{
 			quick_view_file(curr_view);
@@ -1875,12 +1875,12 @@ ui_views_reload_filelists(void)
 void
 ui_views_update_titles(void)
 {
-	update_view_title(&lwin);
-	update_view_title(&rwin);
+	ui_view_title_update(&lwin);
+	ui_view_title_update(&rwin);
 }
 
 void
-update_view_title(FileView *view)
+ui_view_title_update(FileView *view)
 {
 	char *buf;
 	size_t len;

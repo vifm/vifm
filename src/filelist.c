@@ -897,7 +897,7 @@ draw_dir_list(FileView *view)
 		top = 0;
 	}
 
-	update_view_title(view);
+	ui_view_title_update(view);
 
 	/* This is needed for reloading a list that has had files deleted */
 	while((view->list_rows - view->list_pos) <= 0)

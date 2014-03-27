@@ -154,7 +154,7 @@ quick_view_file(FileView *view)
 	}
 	refresh_view_win(other_view);
 
-	update_view_title(other_view);
+	ui_view_title_update(other_view);
 }
 
 /* Displays contents read from the fp in the other pane starting from the second

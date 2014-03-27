@@ -428,7 +428,7 @@ leave_view_mode(void)
 		quick_view_file(curr_view);
 	}
 
-	update_view_title(curr_view);
+	ui_view_title_update(curr_view);
 
 	reset_view_info(vi);
 
@@ -452,7 +452,7 @@ view_explore_mode_quit(FileView *view)
 	reset_view_info(&view_info[(view == &lwin) ? VI_LWIN : VI_RWIN]);
 
 	redraw_view(view);
-	update_view_title(view);
+	ui_view_title_update(view);
 }
 
 /* Frees and initializes anew view_into_t structure instance. */
@@ -501,7 +501,7 @@ free_view_info(view_info_t *vi)
 static void
 redraw(void)
 {
-	update_view_title(vi->view);
+	ui_view_title_update(vi->view);
 	calc_vlines();
 	draw();
 }
