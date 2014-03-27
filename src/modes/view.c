@@ -290,6 +290,7 @@ enter_view_mode(int explore)
 	/* Either make use of abandoned view or prune it. */
 	if(try_ressurect_abandoned(full_path, explore) == 0)
 	{
+		ui_views_update_titles();
 		return;
 	}
 
@@ -303,7 +304,6 @@ enter_view_mode(int explore)
 	vi->filename = strdup(full_path);
 
 	*mode = VIEW_MODE;
-	ui_views_update_titles();
 
 	if(explore)
 	{
@@ -314,6 +314,8 @@ enter_view_mode(int explore)
 	{
 		vi->view = other_view;
 	}
+
+	ui_views_update_titles();
 
 	view_redraw();
 }
@@ -802,6 +804,8 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	{
 		go_to_other_pane();
 	}
+
+	ui_views_update_titles();
 }
 
 /* Switches views. */
