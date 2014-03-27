@@ -69,6 +69,8 @@
 
 	Disabled command-line commands auto-completion in local filter prompt.
 
+	Allowed disabling quickview while its pane is hidden.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
@@ -120,6 +122,15 @@
 	to kazufukurou.
 
 	Fixed extra escaping on prompt filename completion on Windows.
+
+	Fixed drawing of hidden view in explore mode over active one.  Thanks to
+	filterfalse.
+
+	Fixed missing title of quickview pane after entering view mode (e.g. with
+	Ctrl-W W).
+
+	Fixed titles update when one of panes is in view mode (active and inactive
+	highlighting wasn't always right).
 
 0.7.6-beta2 to 0.7.6
 
