@@ -3551,7 +3551,7 @@ unlet_cmd(const cmd_info_t *cmd_info)
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1 && (!curr_stats.view || cmd_info->emark))
 	{
 		status_bar_error("Cannot view files in one window mode");
 		return 1;

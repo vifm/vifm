@@ -57,8 +57,11 @@ toggle_quick_view(void)
 	{
 		curr_stats.view = 0;
 
-		draw_dir_list(other_view);
-		refresh_view_win(other_view);
+		if(ui_view_is_visible(other_view))
+		{
+			draw_dir_list(other_view);
+			refresh_view_win(other_view);
+		}
 	}
 	else
 	{
