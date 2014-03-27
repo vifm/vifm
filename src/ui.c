@@ -48,6 +48,7 @@
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -58,6 +59,7 @@
 #include "quickview.h"
 #include "signals.h"
 #include "status.h"
+#include "term_title.h"
 
 /* State of cancellation request processing. */
 typedef enum
@@ -89,6 +91,7 @@ static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
+static void swap_view_roles(void);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void switch_panes_content(void);
@@ -1339,11 +1342,15 @@ reload_lists(void)
 
 	if(curr_stats.number_of_windows == 2)
 	{
-		update_view_title(other_view);
+		ui_view_title_update(other_view);
 		if(curr_stats.view)
+		{
 			quick_view_file(curr_view);
+		}
 		else if(!other_view->explore_mode)
+		{
 			reload_list(other_view);
+		}
 	}
 }
 
@@ -1358,20 +1365,10 @@ reload_list(FileView *view)
 				!(cfg.vifm_info&VIFMINFO_SAVEDIRS) || view->list_pos != 0);
 }
 
-static void
-switch_views(void)
-{
-	FileView *tmp = curr_view;
-	curr_view = other_view;
-	other_view = tmp;
-
-	load_local_options(curr_view);
-}
-
 void
 change_window(void)
 {
-	switch_views();
+	swap_view_roles();
 
 	if(curr_stats.number_of_windows != 1)
 	{
@@ -1380,7 +1377,6 @@ change_window(void)
 			put_inactive_mark(other_view);
 			erase_current_line_bar(other_view);
 		}
-		update_view_title(other_view);
 	}
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))
@@ -1388,27 +1384,19 @@ change_window(void)
 		navigate_to(curr_view, curr_view->curr_dir);
 	}
 
-	update_view_title(curr_view);
+	curr_stats.need_update = UT_REDRAW;
+}
 
-	wnoutrefresh(other_view->win);
-	wnoutrefresh(curr_view->win);
+/* Swaps curr_view and other_view pointers and updates things that are bound to
+ * current view, which is obviously changed after swapping. */
+static void
+swap_view_roles(void)
+{
+	FileView *tmp = curr_view;
+	curr_view = other_view;
+	other_view = tmp;
 
-	(void)change_directory(curr_view, curr_view->curr_dir);
-
-	if(curr_stats.number_of_windows == 1 && window_shows_dirlist(curr_view))
-	{
-		load_dir_list(curr_view, 1);
-	}
-
-	if(!curr_view->explore_mode)
-	{
-		redraw_current_view();
-	}
-	werase(status_bar);
-	wnoutrefresh(status_bar);
-
-	if(curr_stats.number_of_windows == 1)
-		update_all_windows();
+	load_local_options(curr_view);
 }
 
 void
@@ -1884,6 +1872,101 @@ ui_views_reload_filelists(void)
 	load_saving_pos(other_view, 1);
 }
 
+void
+ui_views_update_titles(void)
+{
+	ui_view_title_update(&lwin);
+	ui_view_title_update(&rwin);
+}
+
+void
+ui_view_title_update(FileView *view)
+{
+	char *buf;
+	size_t len;
+	int gen_view = get_mode() == VIEW_MODE && !curr_view->explore_mode;
+	FileView *selected = gen_view ? other_view : curr_view;
+
+	if(curr_stats.load_stage < 2)
+	{
+		return;
+	}
+
+	if(view == selected)
+	{
+		col_attr_t col;
+
+		col = cfg.cs.color[TOP_LINE_COLOR];
+		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
+		init_pair(DCOLOR_BASE + TOP_LINE_SEL_COLOR, col.fg, col.bg);
+
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+				(col.attr & A_REVERSE));
+		wattrset(view->title, col.attr & ~A_REVERSE);
+	}
+	else
+	{
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		werase(top_line);
+	}
+	werase(view->title);
+
+	if(curr_stats.load_stage < 2)
+		return;
+
+	buf = replace_home_part(view->curr_dir);
+	if(view == selected)
+	{
+		set_term_title(replace_home_part(view->curr_dir));
+	}
+
+	if(view->explore_mode)
+	{
+		if(!is_root_dir(buf))
+			strcat(buf, "/");
+		strcat(buf, get_current_file_name(view));
+	}
+	else if(curr_stats.view && view == other_view)
+	{
+		strcpy(buf, "File: ");
+		strcat(buf, get_current_file_name(curr_view));
+	}
+
+	len = get_screen_string_length(buf);
+	if(len > view->window_width + 1 && view == selected)
+	{ /* Truncate long directory names */
+		const char *ptr;
+
+		ptr = buf;
+		while(len > view->window_width - 2)
+		{
+			len--;
+			ptr += get_char_width(ptr);
+		}
+
+		wprintw(view->title, "...");
+		wprint(view->title, ptr);
+	}
+	else if(len > view->window_width + 1 && view != selected)
+	{
+		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
+		buf[len] = '\0';
+		wprint(view->title, buf);
+		wprintw(view->title, "...");
+	}
+	else
+	{
+		wprint(view->title, buf);
+	}
+
+	wnoutrefresh(view->title);
+}
+
 int
 ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key)
 {
@@ -1936,6 +2019,12 @@ int
 ui_view_displays_numbers(const FileView *const view)
 {
 	return view->num_type != NT_NONE && !view->ls_view;
+}
+
+int
+ui_view_is_visible(const FileView *const view)
+{
+	return curr_stats.number_of_windows == 2 || curr_view == view;
 }
 
 void

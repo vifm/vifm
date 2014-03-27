@@ -78,7 +78,6 @@
 #include "running.h"
 #include "sort.h"
 #include "status.h"
-#include "term_title.h"
 #include "types.h"
 #include "ui.h"
 
@@ -843,90 +842,6 @@ find_file_pos_in_list(const FileView *const view, const char file[])
 }
 
 void
-update_view_title(FileView *view)
-{
-	char *buf;
-	size_t len;
-	int gen_view = get_mode() == VIEW_MODE && !curr_view->explore_mode;
-	FileView *selected = gen_view ? other_view : curr_view;
-
-	if(gen_view && view == other_view)
-		return;
-
-	if(curr_stats.load_stage < 2)
-		return;
-
-	if(view == selected)
-	{
-		col_attr_t col;
-
-		col = cfg.cs.color[TOP_LINE_COLOR];
-		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
-		init_pair(DCOLOR_BASE + TOP_LINE_SEL_COLOR, col.fg, col.bg);
-
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
-				(col.attr & A_REVERSE));
-		wattrset(view->title, col.attr & ~A_REVERSE);
-	}
-	else
-	{
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-		werase(top_line);
-	}
-	werase(view->title);
-
-	if(curr_stats.load_stage < 2)
-		return;
-
-	buf = replace_home_part(view->curr_dir);
-	if(view == selected)
-	{
-		set_term_title(replace_home_part(view->curr_dir));
-	}
-
-	if(view->explore_mode)
-	{
-		if(!is_root_dir(buf))
-			strcat(buf, "/");
-		strcat(buf, get_current_file_name(view));
-	}
-
-	len = get_screen_string_length(buf);
-	if(len > view->window_width + 1 && view == selected)
-	{ /* Truncate long directory names */
-		const char *ptr;
-
-		ptr = buf;
-		while(len > view->window_width - 2)
-		{
-			len--;
-			ptr += get_char_width(ptr);
-		}
-
-		wprintw(view->title, "...");
-		wprint(view->title, ptr);
-	}
-	else if(len > view->window_width + 1 && view != selected)
-	{
-		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
-		buf[len] = '\0';
-		wprint(view->title, buf);
-		wprintw(view->title, "...");
-	}
-	else
-	{
-		wprint(view->title, buf);
-	}
-
-	wnoutrefresh(view->title);
-}
-
-void
 reset_view_sort(FileView *view)
 {
 	if(view->view_columns[0] == '\0')
@@ -967,16 +882,22 @@ draw_dir_list(FileView *view)
 	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 
 	if(top + view->window_rows > view->list_rows)
+	{
 		top = view->list_rows - view->window_rows;
+	}
 	if(top < 0)
+	{
 		top = 0;
+	}
 
-	update_view_title(view);
+	ui_view_title_update(view);
 
 	/* This is needed for reloading a list that has had files deleted */
 	while((view->list_rows - view->list_pos) <= 0)

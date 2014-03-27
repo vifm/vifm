@@ -309,6 +309,10 @@ void ui_view_reset_selection_and_reload(FileView *view);
 void ui_views_reload_visible_filelists(void);
 /* Reloads lists of files preserving current position of cursor. */
 void ui_views_reload_filelists(void);
+/* Updates title of the views. */
+void ui_views_update_titles(void);
+/* Updates title of the view. */
+void ui_view_title_update(FileView *view);
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
 int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);
@@ -317,6 +321,9 @@ void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
 int ui_view_displays_numbers(const FileView *const view);
+/* Checks whether view is visible on the screen.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_visible(const FileView *const view);
 
 /* Operation cancellation. */
 

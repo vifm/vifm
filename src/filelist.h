@@ -118,7 +118,6 @@ void redraw_current_view(void);
  * moment. */
 int window_shows_dirlist(const FileView *const view);
 void change_sort_type(FileView *view, char type, char descending);
-void update_view_title(FileView *view);
 /* Returns non-zero if redraw is needed */
 int move_curr_line(FileView *view);
 /* Returns number of columns in the view. */

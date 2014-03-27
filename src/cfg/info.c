@@ -174,8 +174,8 @@ read_info_file(int reread)
 			/* don't change active view on :restart command */
 			if(line_val[0] == 'r' && !reread)
 			{
-				update_view_title(&lwin);
-				update_view_title(&rwin);
+				ui_views_update_titles();
+
 				curr_view = &rwin;
 				other_view = &lwin;
 			}

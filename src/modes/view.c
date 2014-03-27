@@ -85,6 +85,7 @@ enum
 };
 
 static int try_ressurect_abandoned(const char full_path[], int explore);
+static void try_redraw_explore_view(const FileView *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -289,6 +290,7 @@ enter_view_mode(int explore)
 	/* Either make use of abandoned view or prune it. */
 	if(try_ressurect_abandoned(full_path, explore) == 0)
 	{
+		ui_views_update_titles();
 		return;
 	}
 
@@ -302,8 +304,6 @@ enter_view_mode(int explore)
 	vi->filename = strdup(full_path);
 
 	*mode = VIEW_MODE;
-	update_view_title(&lwin);
-	update_view_title(&rwin);
 
 	if(explore)
 	{
@@ -314,6 +314,8 @@ enter_view_mode(int explore)
 	{
 		vi->view = other_view;
 	}
+
+	ui_views_update_titles();
 
 	view_redraw();
 }
@@ -388,22 +390,27 @@ view_redraw(void)
 
 	colmgr_reset();
 
-	if(lwin.explore_mode)
-	{
-		vi = &view_info[VI_LWIN];
-		redraw();
-	}
-	if(rwin.explore_mode)
-	{
-		vi = &view_info[VI_RWIN];
-		redraw();
-	}
+	try_redraw_explore_view(&lwin, VI_LWIN);
+	try_redraw_explore_view(&rwin, VI_RWIN);
+
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
 		redraw();
 	}
 
 	vi = saved_vi;
+}
+
+/* Redraws view in explore mode if view is really in explore mode and is visible
+ * on the screen. */
+static void
+try_redraw_explore_view(const FileView *const view, int vi_index)
+{
+	if(view->explore_mode && ui_view_is_visible(view))
+	{
+		vi = &view_info[vi_index];
+		redraw();
+	}
 }
 
 void
@@ -421,7 +428,7 @@ leave_view_mode(void)
 		quick_view_file(curr_view);
 	}
 
-	update_view_title(curr_view);
+	ui_view_title_update(curr_view);
 
 	reset_view_info(vi);
 
@@ -445,7 +452,7 @@ view_explore_mode_quit(FileView *view)
 	reset_view_info(&view_info[(view == &lwin) ? VI_LWIN : VI_RWIN]);
 
 	redraw_view(view);
-	update_view_title(view);
+	ui_view_title_update(view);
 }
 
 /* Frees and initializes anew view_into_t structure instance. */
@@ -484,7 +491,9 @@ free_view_info(view_info_t *vi)
 	free_string_array(vi->lines, vi->nlines);
 	free(vi->widths);
 	if(vi->last_search_backward != -1)
+	{
 		regfree(&vi->re);
+	}
 	free(vi->filename);
 }
 
@@ -492,7 +501,7 @@ free_view_info(view_info_t *vi)
 static void
 redraw(void)
 {
-	update_view_title(vi->view);
+	ui_view_title_update(vi->view);
 	calc_vlines();
 	draw();
 }
@@ -795,6 +804,8 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	{
 		go_to_other_pane();
 	}
+
+	ui_views_update_titles();
 }
 
 /* Switches views. */
@@ -852,11 +863,12 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 
 	change_window();
 	if(!curr_view->explore_mode)
+	{
 		*mode = NORMAL_MODE;
+	}
 	pick_vi(curr_view->explore_mode);
 
-	update_view_title(&lwin);
-	update_view_title(&rwin);
+	ui_views_update_titles();
 }
 
 /* Updates value of the vi variable and points it to the correct element of the
