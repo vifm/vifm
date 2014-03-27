@@ -1342,9 +1342,13 @@ reload_lists(void)
 	{
 		update_view_title(other_view);
 		if(curr_stats.view)
+		{
 			quick_view_file(curr_view);
+		}
 		else if(!other_view->explore_mode)
+		{
 			reload_list(other_view);
+		}
 	}
 }
 
@@ -1864,6 +1868,13 @@ ui_views_reload_filelists(void)
 {
 	load_saving_pos(curr_view, 1);
 	load_saving_pos(other_view, 1);
+}
+
+void
+ui_views_update_titles(void)
+{
+	update_view_title(&lwin);
+	update_view_title(&rwin);
 }
 
 int
