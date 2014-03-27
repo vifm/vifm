@@ -383,7 +383,7 @@ escape_filename(const char *string, int quote_percent)
 }
 
 char *
-replace_home_part(const char *directory)
+replace_home_part(const char directory[])
 {
 	static char buf[PATH_MAX];
 	size_t len;

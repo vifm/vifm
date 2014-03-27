@@ -311,6 +311,7 @@ void ui_views_reload_visible_filelists(void);
 void ui_views_reload_filelists(void);
 /* Updates title of the views. */
 void ui_views_update_titles(void);
+void update_view_title(FileView *view);
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
 int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);

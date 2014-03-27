@@ -48,6 +48,7 @@
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -58,6 +59,7 @@
 #include "quickview.h"
 #include "signals.h"
 #include "status.h"
+#include "term_title.h"
 
 /* State of cancellation request processing. */
 typedef enum
@@ -1875,6 +1877,94 @@ ui_views_update_titles(void)
 {
 	update_view_title(&lwin);
 	update_view_title(&rwin);
+}
+
+void
+update_view_title(FileView *view)
+{
+	char *buf;
+	size_t len;
+	int gen_view = get_mode() == VIEW_MODE && !curr_view->explore_mode;
+	FileView *selected = gen_view ? other_view : curr_view;
+
+	if(curr_stats.load_stage < 2)
+	{
+		return;
+	}
+
+	if(view == selected)
+	{
+		col_attr_t col;
+
+		col = cfg.cs.color[TOP_LINE_COLOR];
+		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
+		init_pair(DCOLOR_BASE + TOP_LINE_SEL_COLOR, col.fg, col.bg);
+
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+				(col.attr & A_REVERSE));
+		wattrset(view->title, col.attr & ~A_REVERSE);
+	}
+	else
+	{
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		werase(top_line);
+	}
+	werase(view->title);
+
+	if(curr_stats.load_stage < 2)
+		return;
+
+	buf = replace_home_part(view->curr_dir);
+	if(view == selected)
+	{
+		set_term_title(replace_home_part(view->curr_dir));
+	}
+
+	if(view->explore_mode)
+	{
+		if(!is_root_dir(buf))
+			strcat(buf, "/");
+		strcat(buf, get_current_file_name(view));
+	}
+	else if(curr_stats.view && view == other_view)
+	{
+		strcpy(buf, "File: ");
+		strcat(buf, get_current_file_name(curr_view));
+	}
+
+	len = get_screen_string_length(buf);
+	if(len > view->window_width + 1 && view == selected)
+	{ /* Truncate long directory names */
+		const char *ptr;
+
+		ptr = buf;
+		while(len > view->window_width - 2)
+		{
+			len--;
+			ptr += get_char_width(ptr);
+		}
+
+		wprintw(view->title, "...");
+		wprint(view->title, ptr);
+	}
+	else if(len > view->window_width + 1 && view != selected)
+	{
+		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
+		buf[len] = '\0';
+		wprint(view->title, buf);
+		wprintw(view->title, "...");
+	}
+	else
+	{
+		wprint(view->title, buf);
+	}
+
+	wnoutrefresh(view->title);
 }
 
 int
