@@ -303,8 +303,7 @@ enter_view_mode(int explore)
 	vi->filename = strdup(full_path);
 
 	*mode = VIEW_MODE;
-	update_view_title(&lwin);
-	update_view_title(&rwin);
+	ui_views_update_titles();
 
 	if(explore)
 	{
@@ -490,7 +489,9 @@ free_view_info(view_info_t *vi)
 	free_string_array(vi->lines, vi->nlines);
 	free(vi->widths);
 	if(vi->last_search_backward != -1)
+	{
 		regfree(&vi->re);
+	}
 	free(vi->filename);
 }
 
@@ -858,11 +859,12 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 
 	change_window();
 	if(!curr_view->explore_mode)
+	{
 		*mode = NORMAL_MODE;
+	}
 	pick_vi(curr_view->explore_mode);
 
-	update_view_title(&lwin);
-	update_view_title(&rwin);
+	ui_views_update_titles();
 }
 
 /* Updates value of the vi variable and points it to the correct element of the

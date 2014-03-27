@@ -851,7 +851,9 @@ update_view_title(FileView *view)
 	FileView *selected = gen_view ? other_view : curr_view;
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	if(view == selected)
 	{
@@ -969,14 +971,20 @@ draw_dir_list(FileView *view)
 	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 
 	if(top + view->window_rows > view->list_rows)
+	{
 		top = view->list_rows - view->window_rows;
+	}
 	if(top < 0)
+	{
 		top = 0;
+	}
 
 	update_view_title(view);
 
