@@ -87,9 +87,6 @@ quick_view_file(FileView *view)
 	}
 
 	werase(other_view->win);
-	werase(other_view->title);
-	mvwaddstr(other_view->title, 0, 0, "File: ");
-	wprint(other_view->title, view->dir_entry[view->list_pos].name);
 
 	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
@@ -153,7 +150,8 @@ quick_view_file(FileView *view)
 			break;
 	}
 	refresh_view_win(other_view);
-	wrefresh(other_view->title);
+
+	update_view_title(other_view);
 }
 
 /* Displays contents read from the fp in the other pane starting from the second

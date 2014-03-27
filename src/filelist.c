@@ -850,9 +850,6 @@ update_view_title(FileView *view)
 	int gen_view = get_mode() == VIEW_MODE && !curr_view->explore_mode;
 	FileView *selected = gen_view ? other_view : curr_view;
 
-	if(gen_view && view == other_view)
-		return;
-
 	if(curr_stats.load_stage < 2)
 		return;
 
@@ -894,6 +891,11 @@ update_view_title(FileView *view)
 		if(!is_root_dir(buf))
 			strcat(buf, "/");
 		strcat(buf, get_current_file_name(view));
+	}
+	else if(curr_stats.view && view == other_view)
+	{
+		strcpy(buf, "File: ");
+		strcat(buf, get_current_file_name(curr_view));
 	}
 
 	len = get_screen_string_length(buf);
