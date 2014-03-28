@@ -1203,16 +1203,20 @@ static int
 is_in_arg(const char cmd[], const char pos[])
 {
 	cmd_info_t info;
-	int id;
+	const int cmd_id = get_cmd_info(cmd, &info);
 
-	id = get_cmd_info(cmd, &info);
-
-	if(id == COM_FILTER)
-		return (line_pos(cmd, pos, ' ', 1) == 0);
-	else if(id == COM_SUBSTITUTE || id == COM_TR)
-		return (line_pos(cmd, pos, info.sep, 1) == 0);
+	if(cmd_id == COM_FILTER)
+	{
+		return line_pos(cmd, pos, ' ', 1) == 0;
+	}
+	else if(cmd_id == COM_SUBSTITUTE || cmd_id == COM_TR)
+	{
+		return line_pos(cmd, pos, info.sep, 1) == 0;
+	}
 	else
-		return (line_pos(cmd, pos, ' ', 0) == 0);
+	{
+		return line_pos(cmd, pos, ' ', 0) == 0;
+	}
 }
 
 static int
