@@ -721,6 +721,17 @@ command_accepts_expr(int cmd_id)
 	    || cmd_id == COM_LET;
 }
 
+char *
+commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
+{
+	if(is_in_arg(cmd_line, cmd_line + pos))
+	{
+		return escape_filename(str, 0);
+	}
+	/* TODO: provide proper escaping for single and double quoted arguments. */
+	return NULL;
+}
+
 static void
 post(int id)
 {
