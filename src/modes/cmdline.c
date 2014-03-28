@@ -149,6 +149,7 @@ static void cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info);
 static void remove_previous_dot_completion(void);
 static wchar_t * next_dot_completion(void);
 static int insert_dot_completion(const wchar_t completion[]);
+static int insert_str(const wchar_t str[]);
 static void find_next_word(void);
 static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
@@ -1571,27 +1572,41 @@ next_dot_completion(void)
 static int
 insert_dot_completion(const wchar_t completion[])
 {
-	wchar_t *ptr;
-	size_t len = wcslen(completion);
+	if(insert_str(completion) == 0)
+	{
+		input_stat.dot_index = input_stat.index;
+		input_stat.dot_len = wcslen(completion);
+		return 0;
+	}
+	return 1;
+}
 
-	ptr = realloc(input_stat.line, (input_stat.len + len + 1)*sizeof(wchar_t));
+/* Inserts wide string into current cursor position.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+insert_str(const wchar_t str[])
+{
+	const size_t len = wcslen(str);
+	const size_t new_len = input_stat.len + len + 1;
+
+	wchar_t *const ptr = realloc(input_stat.line, new_len*sizeof(wchar_t));
 	if(ptr == NULL)
 	{
 		return 1;
 	}
-
-	input_stat.dot_index = input_stat.index;
-	input_stat.dot_len = len;
 
 	if(input_stat.line == NULL)
 	{
 		ptr[0] = L'\0';
 	}
 	input_stat.line = ptr;
-	wcsins(input_stat.line, completion, input_stat.index + 1);
+
+	wcsins(input_stat.line, str, input_stat.index + 1);
+
 	input_stat.index += len;
 	input_stat.curs_pos += len;
 	input_stat.len += len;
+
 	return 0;
 }
 
