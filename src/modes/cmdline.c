@@ -140,6 +140,9 @@ static void search_next(void);
 static void complete_next(const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
+static void paste_str(const char str[]);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
 static void find_prev_word(void);
@@ -214,6 +217,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
+	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1414,6 +1419,56 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	update_cmdline_text();
+}
+
+/* Inserts name of the current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
+{
+	stop_completion();
+	paste_str(get_current_file_name(curr_view));
+}
+
+/* Inserts name of the current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
+{
+	stop_completion();
+	paste_str(get_current_file_name(other_view));
+}
+
+/* Inserts string into current cursor position and updates command-line on the
+ * screen. */
+static void
+paste_str(const char str[])
+{
+	wchar_t *const wide_input = vifm_wcsdup(input_stat.line);
+	char *mb_input;
+	char *escaped = NULL;
+	wchar_t *wide;
+
+	wide_input[input_stat.index] = L'\0';
+	mb_input = to_multibyte(wide_input);
+
+	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+	if(escaped != NULL)
+	{
+		str = escaped;
+	}
+
+	wide = to_wide(str);
+
+	if(insert_str(wide) == 0)
+	{
+		update_cmdline_text();
+	}
+
+	free(wide);
+	free(escaped);
+	free(mb_input);
+	free(wide_input);
 }
 
 static void
