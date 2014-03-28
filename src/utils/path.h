@@ -78,7 +78,7 @@ char * find_slashr(const char *path);
 
 /* Removes extension part from the path and returns a pointer to the first
  * character of the extension part. */
-char * extract_extension(char *path);
+char * cut_extension(char path[]);
 
 /* Removes file name from path. */
 void exclude_file_name(char *path);

@@ -534,7 +534,7 @@ find_slashr(const char *path)
 }
 
 char *
-extract_extension(char *path)
+cut_extension(char path[])
 {
 	char *e;
 	char *ext;

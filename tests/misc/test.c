@@ -21,7 +21,7 @@ void bookmarks_tests(void);
 void leave_invalid_dir_tests(void);
 void remove_last_path_component_tests(void);
 void substitute_tests(void);
-void extract_extension_tests(void);
+void cut_extension_tests(void);
 void get_command_name_tests(void);
 void format_mount_command_tests(void);
 void trim_right_tests(void);
@@ -64,7 +64,7 @@ all_tests(void)
 	leave_invalid_dir_tests();
 	remove_last_path_component_tests();
 	substitute_tests();
-	extract_extension_tests();
+	cut_extension_tests();
 	get_command_name_tests();
 	format_mount_command_tests();
 	trim_right_tests();

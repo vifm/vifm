@@ -556,7 +556,7 @@ rename_current_file(FileView *view, int name_only)
 	if(name_only)
 	{
 		snprintf(rename_file_ext, sizeof(rename_file_ext), "%s",
-				extract_extension(filename));
+				cut_extension(filename));
 	}
 	else
 	{
@@ -1623,7 +1623,7 @@ gen_clone_name(const char normal_name[])
 	snprintf(result, sizeof(result), "%s", normal_name);
 	chosp(result);
 
-	snprintf(extension, sizeof(extension), "%s", extract_extension(result));
+	snprintf(extension, sizeof(extension), "%s", cut_extension(result));
 
 	len = strlen(result);
 	i = 1;
