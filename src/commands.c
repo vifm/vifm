@@ -1114,6 +1114,9 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	return 0;
 }
 
+/* Checks whether character at given position in the given command-line is
+ * inside quoted argument.  Returns non-zero if so, otherwise zero is
+ * returned. */
 static int
 is_in_arg(const char *cmd, const char *pos)
 {
