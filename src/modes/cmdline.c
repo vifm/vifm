@@ -142,6 +142,8 @@ static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void paste_str(const char str[]);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
@@ -219,6 +221,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
 	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
 	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
+	{L"\x18"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xd}}},
+	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1437,6 +1441,24 @@ cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 	paste_str(get_current_file_name(other_view));
+}
+
+/* Inserts name of the current directory of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
+{
+	stop_completion();
+	paste_str(curr_view->curr_dir);
+}
+
+/* Inserts name of the current directory of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
+{
+	stop_completion();
+	paste_str(other_view->curr_dir);
 }
 
 /* Inserts string into current cursor position and updates command-line on the
