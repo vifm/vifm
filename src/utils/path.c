@@ -25,7 +25,8 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
-                       strncat() strncpy() strchr() strcpy() strlen() */
+                       strncat() strncpy() strchr() strcpy() strlen()
+                       strrchr() */
 
 #ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
@@ -551,6 +552,26 @@ cut_extension(char path[])
 	*ext = '\0';
 
 	return ext + 1;
+}
+
+void
+split_ext(char path[], int *root_len, const char **ext_pos)
+{
+	const char *const slash = strrchr(path, '/');
+	char *const dot = strrchr(path, '.');
+	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
+			dot == slash + 1)
+	{
+		const size_t len = strlen(path);
+		*root_len = len;
+		*ext_pos = path + len;
+	}
+	else
+	{
+		*dot = '\0';
+		*root_len = dot - path;
+		*ext_pos = dot + 1;
+	}
 }
 
 void

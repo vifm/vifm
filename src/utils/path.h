@@ -80,6 +80,10 @@ char * find_slashr(const char *path);
  * character of the extension part. */
 char * cut_extension(char path[]);
 
+/* Splits path into root and extension parts.  Sets *root_len to length of the
+ * root part and *ext_pos to beginning of last extension. */
+void split_ext(char path[], int *root_len, const char **ext_pos);
+
 /* Removes file name from path. */
 void exclude_file_name(char *path);
 
