@@ -140,6 +140,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int cmd_should_be_processed(int cmd_id);
+static int is_in_arg(const char cmd[], const char pos[]);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -1114,25 +1115,6 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	return 0;
 }
 
-/* Checks whether character at given position in the given command-line is
- * inside quoted argument.  Returns non-zero if so, otherwise zero is
- * returned. */
-static int
-is_in_arg(const char *cmd, const char *pos)
-{
-	cmd_info_t info;
-	int id;
-
-	id = get_cmd_info(cmd, &info);
-
-	if(id == COM_FILTER)
-		return (line_pos(cmd, pos, ' ', 1) == 0);
-	else if(id == COM_SUBSTITUTE || id == COM_TR)
-		return (line_pos(cmd, pos, info.sep, 1) == 0);
-	else
-		return (line_pos(cmd, pos, ' ', 0) == 0);
-}
-
 int
 exec_commands(const char cmd[], FileView *view, int type)
 {
@@ -1212,6 +1194,25 @@ exec_commands(const char cmd[], FileView *view, int type)
 	}
 
 	return save_msg;
+}
+
+/* Checks whether character at given position in the given command-line is
+ * inside quoted argument.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+is_in_arg(const char cmd[], const char pos[])
+{
+	cmd_info_t info;
+	int id;
+
+	id = get_cmd_info(cmd, &info);
+
+	if(id == COM_FILTER)
+		return (line_pos(cmd, pos, ' ', 1) == 0);
+	else if(id == COM_SUBSTITUTE || id == COM_TR)
+		return (line_pos(cmd, pos, info.sep, 1) == 0);
+	else
+		return (line_pos(cmd, pos, ' ', 0) == 0);
 }
 
 static int
