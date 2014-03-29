@@ -145,6 +145,7 @@ static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void paste_str(const char str[]);
+static const wchar_t * get_nonnull_input(void);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
 static void find_prev_word(void);
@@ -773,8 +774,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	const int prompt_ee = sub_mode == PROMPT_SUBMODE && sub_mode_allows_ee;
 	if(type != -1 || prompt_ee)
 	{
-		char *const mbstr = (input_stat.line == NULL) ?
-			strdup("") : to_multibyte(input_stat.line);
+		char *const mbstr = to_multibyte(get_nonnull_input());
 		leave_cmdline_mode();
 
 		if(sub_mode == FILTER_SUBMODE)
@@ -1466,7 +1466,7 @@ cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
 static void
 paste_str(const char str[])
 {
-	wchar_t *const wide_input = vifm_wcsdup(input_stat.line);
+	wchar_t *const wide_input = vifm_wcsdup(get_nonnull_input());
 	char *mb_input;
 	char *escaped = NULL;
 	wchar_t *wide;
@@ -1491,6 +1491,14 @@ paste_str(const char str[])
 	free(escaped);
 	free(mb_input);
 	free(wide_input);
+}
+
+/* Gets current input in a safe form.  Returning empty string on NULL input,
+ * otherwise input line is returned. */
+static const wchar_t *
+get_nonnull_input(void)
+{
+	return (input_stat.line == NULL) ? L"" : input_stat.line;
 }
 
 static void
