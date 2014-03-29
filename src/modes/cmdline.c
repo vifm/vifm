@@ -147,6 +147,8 @@ static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
 static void paste_name_part(const char name[], int root);
 static void paste_str(const char str[]);
 static const wchar_t * get_nonnull_input(void);
@@ -230,6 +232,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
 	{L"\x18"L"e",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xe}}},
 	{L"\x18\x18"L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxe}}},
+	{L"\x18"L"r",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xr}}},
+	{L"\x18\x18"L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxr}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1477,6 +1481,22 @@ static void
 cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info)
 {
 	paste_name_part(get_current_file_name(other_view), 0);
+}
+
+/* Inserts name root of current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(curr_view), 1);
+}
+
+/* Inserts name root of current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(other_view), 1);
 }
 
 /* Inserts root/extension of the name file into current cursor position. */
