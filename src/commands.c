@@ -1213,21 +1213,31 @@ exec_commands(const char cmd[], FileView *view, int type)
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
+	char separator;
+	int regex_quoting;
+
 	cmd_info_t info;
 	const int cmd_id = get_cmd_info(cmd, &info);
 
-	if(cmd_id == COM_FILTER)
+	switch(cmd_id)
 	{
-		return line_pos(cmd, pos, ' ', 1) == 0;
+		case COM_FILTER:
+			separator = ' ';
+			regex_quoting = 1;
+			break;
+		case COM_SUBSTITUTE:
+		case COM_TR:
+			separator = info.sep;
+			regex_quoting = 1;
+			break;
+
+		default:
+			separator = ' ';
+			regex_quoting = 0;
+			break;
 	}
-	else if(cmd_id == COM_SUBSTITUTE || cmd_id == COM_TR)
-	{
-		return line_pos(cmd, pos, info.sep, 1) == 0;
-	}
-	else
-	{
-		return line_pos(cmd, pos, ' ', 0) == 0;
-	}
+
+	return line_pos(cmd, pos, separator, regex_quoting) == 0;
 }
 
 static int
