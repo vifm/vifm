@@ -151,6 +151,7 @@ static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
 static void paste_name_part(const char name[], int root);
 static void paste_str(const char str[]);
+static char * escape_cmd_for_pasting(const char str[]);
 static const wchar_t * get_nonnull_input(void);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
@@ -1518,17 +1519,12 @@ paste_name_part(const char name[], int root)
 static void
 paste_str(const char str[])
 {
-	wchar_t *const wide_input = vifm_wcsdup(get_nonnull_input());
-	char *mb_input;
 	char *escaped = NULL;
 	wchar_t *wide;
 
 	stop_completion();
 
-	wide_input[input_stat.index] = L'\0';
-	mb_input = to_multibyte(wide_input);
-
-	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+	escaped = (sub_mode == CMD_SUBMODE) ? escape_cmd_for_pasting(str) : NULL;
 	if(escaped != NULL)
 	{
 		str = escaped;
@@ -1543,8 +1539,26 @@ paste_str(const char str[])
 
 	free(wide);
 	free(escaped);
+}
+
+/* Escapes str for inserting into current position of command-line command when
+ * needed.  Returns escaped string or NULL when no escaping is needed. */
+static char *
+escape_cmd_for_pasting(const char str[])
+{
+	wchar_t *const wide_input = vifm_wcsdup(get_nonnull_input());
+	char *mb_input;
+	char *escaped;
+
+	wide_input[input_stat.index] = L'\0';
+	mb_input = to_multibyte(wide_input);
+
+	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+
 	free(mb_input);
 	free(wide_input);
+
+	return escaped;
 }
 
 /* Gets current input in a safe form.  Returning empty string on NULL input,
