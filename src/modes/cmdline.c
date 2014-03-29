@@ -1430,7 +1430,6 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 {
-	stop_completion();
 	paste_str(get_current_file_name(curr_view));
 }
 
@@ -1439,7 +1438,6 @@ cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 {
-	stop_completion();
 	paste_str(get_current_file_name(other_view));
 }
 
@@ -1448,7 +1446,6 @@ cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 {
-	stop_completion();
 	paste_str(curr_view->curr_dir);
 }
 
@@ -1457,7 +1454,6 @@ cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
 {
-	stop_completion();
 	paste_str(other_view->curr_dir);
 }
 
@@ -1470,6 +1466,8 @@ paste_str(const char str[])
 	char *mb_input;
 	char *escaped = NULL;
 	wchar_t *wide;
+
+	stop_completion();
 
 	wide_input[input_stat.index] = L'\0';
 	mb_input = to_multibyte(wide_input);
