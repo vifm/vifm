@@ -1519,8 +1519,13 @@ paste_name_part(const char name[], int root)
 static void
 paste_str(const char str[])
 {
-	char *escaped = NULL;
+	char *escaped;
 	wchar_t *wide;
+
+	if(prev_mode == MENU_MODE)
+	{
+		return;
+	}
 
 	stop_completion();
 
