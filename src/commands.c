@@ -140,7 +140,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int cmd_should_be_processed(int cmd_id);
-static int is_in_arg(const char cmd[], const char pos[]);
+static int is_out_of_arg(const char cmd[], const char pos[]);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -724,7 +724,7 @@ command_accepts_expr(int cmd_id)
 char *
 commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 {
-	if(is_in_arg(cmd_line, cmd_line + pos))
+	if(is_out_of_arg(cmd_line, cmd_line + pos))
 	{
 		return escape_filename(str, 0);
 	}
@@ -1158,7 +1158,7 @@ exec_commands(const char cmd[], FileView *view, int type)
 				*q++ = *p++;
 			}
 		}
-		else if((*p == '|' && is_in_arg(cmd, q)) || *p == '\0')
+		else if((*p == '|' && is_out_of_arg(cmd, q)) || *p == '\0')
 		{
 			int ret;
 
@@ -1208,10 +1208,10 @@ exec_commands(const char cmd[], FileView *view, int type)
 }
 
 /* Checks whether character at given position in the given command-line is
- * inside quoted argument.  Returns non-zero if so, otherwise zero is
+ * outside quoted argument.  Returns non-zero if so, otherwise zero is
  * returned. */
 static int
-is_in_arg(const char cmd[], const char pos[])
+is_out_of_arg(const char cmd[], const char pos[])
 {
 	cmd_info_t info;
 	const int cmd_id = get_cmd_info(cmd, &info);
