@@ -39,6 +39,7 @@ void expand_envvars_tests(void);
 void external_command_exists_tests(void);
 void read_file_lines_tests(void);
 void if_else_tests(void);
+void split_ext_tests(void);
 
 void
 all_tests(void)
@@ -82,6 +83,7 @@ all_tests(void)
 	external_command_exists_tests();
 	read_file_lines_tests();
 	if_else_tests();
+	split_ext_tests();
 }
 
 int
