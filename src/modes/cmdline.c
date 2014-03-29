@@ -27,7 +27,7 @@
 #include <ctype.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
-#include <string.h>
+#include <string.h> /* strdup() */
 #include <wchar.h> /* wcswidth() */
 #include <wctype.h>
 
@@ -38,6 +38,7 @@
 #include "../engine/options.h"
 #include "../menus/menus.h"
 #include "../utils/fs_limits.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utils.h"
@@ -144,6 +145,9 @@ static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
+static void paste_name_part(const char name[], int root);
 static void paste_str(const char str[]);
 static const wchar_t * get_nonnull_input(void);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
@@ -224,6 +228,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
 	{L"\x18"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xd}}},
 	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
+	{L"\x18"L"e",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xe}}},
+	{L"\x18\x18"L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxe}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1455,6 +1461,36 @@ static void
 cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
 {
 	paste_str(other_view->curr_dir);
+}
+
+/* Inserts extension of the current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(curr_view), 0);
+}
+
+/* Inserts extension of the current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(other_view), 0);
+}
+
+/* Inserts root/extension of the name file into current cursor position. */
+static void
+paste_name_part(const char name[], int root)
+{
+	int root_len;
+	const char *ext;
+	char *const name_copy = strdup(name);
+
+	split_ext(name_copy, &root_len, &ext);
+	paste_str(root ? name_copy : ext);
+
+	free(name_copy);
 }
 
 /* Inserts string into current cursor position and updates command-line on the
