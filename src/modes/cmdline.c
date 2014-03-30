@@ -150,7 +150,7 @@ static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
 static void paste_name_part(const char name[], int root);
-static void paste_str(const char str[]);
+static void paste_str(const char str[], int allow_escaping);
 static char * escape_cmd_for_pasting(const char str[]);
 static const wchar_t * get_nonnull_input(void);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
@@ -1441,7 +1441,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_current_file_name(curr_view));
+	paste_str(get_current_file_name(curr_view), 1);
 }
 
 /* Inserts name of the current file of inactive pane into current cursor
@@ -1449,7 +1449,7 @@ cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_current_file_name(other_view));
+	paste_str(get_current_file_name(other_view), 1);
 }
 
 /* Inserts name of the current directory of active pane into current cursor
@@ -1457,7 +1457,7 @@ cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(curr_view->curr_dir);
+	paste_str(curr_view->curr_dir, 1);
 }
 
 /* Inserts name of the current directory of inactive pane into current cursor
@@ -1465,7 +1465,7 @@ cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(other_view->curr_dir);
+	paste_str(other_view->curr_dir, 1);
 }
 
 /* Inserts extension of the current file of active pane into current cursor
@@ -1509,7 +1509,7 @@ paste_name_part(const char name[], int root)
 	char *const name_copy = strdup(name);
 
 	split_ext(name_copy, &root_len, &ext);
-	paste_str(root ? name_copy : ext);
+	paste_str(root ? name_copy : ext, 1);
 
 	free(name_copy);
 }
@@ -1517,7 +1517,7 @@ paste_name_part(const char name[], int root)
 /* Inserts string into current cursor position and updates command-line on the
  * screen. */
 static void
-paste_str(const char str[])
+paste_str(const char str[], int allow_escaping)
 {
 	char *escaped;
 	wchar_t *wide;
@@ -1529,7 +1529,9 @@ paste_str(const char str[])
 
 	stop_completion();
 
-	escaped = (sub_mode == CMD_SUBMODE) ? escape_cmd_for_pasting(str) : NULL;
+	escaped = (allow_escaping && sub_mode == CMD_SUBMODE)
+	        ? escape_cmd_for_pasting(str)
+	        : NULL;
 	if(escaped != NULL)
 	{
 		str = escaped;
