@@ -141,14 +141,17 @@ static void search_next(void);
 static void complete_next(const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xequals(key_info_t key_info, keys_info_t *keys_info);
 static void paste_name_part(const char name[], int root);
 static void paste_str(const char str[], int allow_escaping);
 static char * escape_cmd_for_pasting(const char str[]);
@@ -227,14 +230,17 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x18"L"a",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xa}}},
 	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
 	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
 	{L"\x18"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xd}}},
 	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
 	{L"\x18"L"e",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xe}}},
 	{L"\x18\x18"L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxe}}},
+	{L"\x18"L"m",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xm}}},
 	{L"\x18"L"r",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xr}}},
 	{L"\x18\x18"L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxr}}},
+	{L"\x18"L"=",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xequals}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1436,6 +1442,14 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 	update_cmdline_text();
 }
 
+/* Inserts value of automatic filter of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->auto_filter.raw, 0);
+}
+
 /* Inserts name of the current file of active pane into current cursor
  * position. */
 static void
@@ -1484,6 +1498,14 @@ cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info)
 	paste_name_part(get_current_file_name(other_view), 0);
 }
 
+/* Inserts value of manual filter of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->name_filter.raw, 0);
+}
+
 /* Inserts name root of current file of active pane into current cursor
  * position. */
 static void
@@ -1498,6 +1520,13 @@ static void
 cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info)
 {
 	paste_name_part(get_current_file_name(other_view), 1);
+}
+
+/* Inserts value of local filter of active pane into current cursor position. */
+static void
+cmd_ctrl_xequals(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->local_filter.filter.raw, 0);
 }
 
 /* Inserts root/extension of the name file into current cursor position. */
