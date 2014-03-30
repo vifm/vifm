@@ -170,14 +170,14 @@ typedef struct
 	int explore_mode; /* shows whether this view is used for file exploring */
 
 	/* Filter which is controlled by user. */
-	filter_t name_filter;
-	/* Stores previous raw value of the name_filter to make filter restoring
+	filter_t manual_filter;
+	/* Stores previous raw value of the manual_filter to make filter restoring
 	 * possible.  Not NULL. */
-	char *prev_name_filter;
+	char *prev_manual_filter;
 
 	/* Filter which is controlled automatically and never filled by user. */
 	filter_t auto_filter;
-	/* Stores previous raw value of the name_filter to make filter restoring
+	/* Stores previous raw value of the auto_filter to make filter restoring
 	 * possible.  Not NULL. */
 	char *prev_auto_filter;
 

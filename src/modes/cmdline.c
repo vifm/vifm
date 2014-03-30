@@ -1503,7 +1503,7 @@ cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(curr_view->name_filter.raw, 0);
+	paste_str(curr_view->manual_filter.raw, 0);
 }
 
 /* Inserts name root of current file of active pane into current cursor
