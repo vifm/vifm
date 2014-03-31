@@ -132,6 +132,10 @@
 	Fixed titles update when one of panes is in view mode (active and inactive
 	highlighting wasn't always right).
 
+	Fixed segmentation fault caused by uninitialized type field of filelist
+	entry (shared directory in virtual machine in this case).  Thanks to Milan
+	Svoboda, a.k.a. tex.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

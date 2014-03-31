@@ -2320,10 +2320,7 @@ fill_dir_list(FileView *view)
 		}
 		else
 		{
-			if(s.st_ino)
-			{
-				dir_entry->type = get_type_from_mode(s.st_mode);
-			}
+			dir_entry->type = get_type_from_mode(s.st_mode);
 			dir_entry->size = (uintmax_t)s.st_size;
 			dir_entry->mode = s.st_mode;
 			dir_entry->uid = s.st_uid;
