@@ -2309,7 +2309,7 @@ fill_dir_list(FileView *view)
 					dir_entry->name);
 			log_cwd();
 
-			dir_entry->type = type_from_dir_entry(d);
+			dir_entry->type = UNKNOWN;
 			dir_entry->size = 0;
 			dir_entry->mode = 0;
 			dir_entry->uid = -1;
@@ -2328,6 +2328,11 @@ fill_dir_list(FileView *view)
 			dir_entry->mtime = s.st_mtime;
 			dir_entry->atime = s.st_atime;
 			dir_entry->ctime = s.st_ctime;
+		}
+
+		if(dir_entry->type == UNKNOWN)
+		{
+			dir_entry->type = type_from_dir_entry(d);
 		}
 
 		if(dir_entry->type == LINK)
