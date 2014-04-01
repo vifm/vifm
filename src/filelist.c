@@ -2309,12 +2309,7 @@ fill_dir_list(FileView *view)
 					dir_entry->name);
 			log_cwd();
 
-			dir_entry->type = type_from_dir_entry(d);
-			if(dir_entry->type == DIRECTORY)
-			{
-				strcat(dir_entry->name, "/");
-				name_len++;
-			}
+			dir_entry->type = UNKNOWN;
 			dir_entry->size = 0;
 			dir_entry->mode = 0;
 			dir_entry->uid = -1;
@@ -2322,39 +2317,46 @@ fill_dir_list(FileView *view)
 			dir_entry->mtime = 0;
 			dir_entry->atime = 0;
 			dir_entry->ctime = 0;
-
-			name_len += get_filetype_decoration_width(dir_entry->type);
-			view->max_filename_len = MAX(view->max_filename_len, name_len);
-			continue;
 		}
-
-		dir_entry->size = (uintmax_t)s.st_size;
-		dir_entry->mode = s.st_mode;
-		dir_entry->uid = s.st_uid;
-		dir_entry->gid = s.st_gid;
-		dir_entry->mtime = s.st_mtime;
-		dir_entry->atime = s.st_atime;
-		dir_entry->ctime = s.st_ctime;
-
-		if(s.st_ino)
+		else
 		{
 			dir_entry->type = get_type_from_mode(s.st_mode);
-			if(dir_entry->type == LINK)
-			{
-				struct stat st;
-				if(check_link_is_dir(dir_entry->name))
-					strcat(dir_entry->name, "/");
-				if(stat(dir_entry->name, &st) == 0)
-					dir_entry->mode = st.st_mode;
-			}
-			else if(dir_entry->type == DIRECTORY)
-			{
-					strcat(dir_entry->name, "/");
-					name_len++;
-			}
-			name_len += get_filetype_decoration_width(dir_entry->type);
-			view->max_filename_len = MAX(view->max_filename_len, name_len);
+			dir_entry->size = (uintmax_t)s.st_size;
+			dir_entry->mode = s.st_mode;
+			dir_entry->uid = s.st_uid;
+			dir_entry->gid = s.st_gid;
+			dir_entry->mtime = s.st_mtime;
+			dir_entry->atime = s.st_atime;
+			dir_entry->ctime = s.st_ctime;
 		}
+
+		if(dir_entry->type == UNKNOWN)
+		{
+			dir_entry->type = type_from_dir_entry(d);
+		}
+
+		if(dir_entry->type == LINK)
+		{
+			struct stat st;
+
+			if(check_link_is_dir(dir_entry->name))
+			{
+				strcat(dir_entry->name, "/");
+			}
+
+			if(stat(dir_entry->name, &st) == 0)
+			{
+				dir_entry->mode = st.st_mode;
+			}
+		}
+		else if(dir_entry->type == DIRECTORY)
+		{
+			strcat(dir_entry->name, "/");
+			name_len++;
+		}
+
+		name_len += get_filetype_decoration_width(dir_entry->type);
+		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	closedir(dir);
 #else
