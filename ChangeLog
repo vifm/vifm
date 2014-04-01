@@ -37,6 +37,10 @@
 	Added --enable-remote-cmd switch to configure script disabled by default,
 	as current implementation of the feature is insecure.
 
+	Added Ctrl-X a/c/d/e/m/r/t/= keys to command-line mode that insert parts of
+	file names and values of filters (see related documentation).  Thanks to
+	ranousse and filterfalse.
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.

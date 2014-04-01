@@ -1,4 +1,4 @@
-.TH vifm 1 "Mar 25, 2014" "" "Vifm"
+.TH vifm 1 "Apr 01, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -843,8 +843,8 @@ and show preview pane again with previously stored state in it).
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------
-This keys apply to all submodes of the command line mode: command, prompt and
-search.
+These keys are available in all submodes of the command line mode: command,
+search, prompt and filtering.
 .LP
 Down, Up, Left, Right, Home, End and Delete are extended keys and they are not
 available if vifm is compiled with \-\-disable\-extended\-keys option.
@@ -925,6 +925,67 @@ command-line.
 .TP
 .BI Down
 recall older command-line from history, that begins as the current command-line.
+.\" ---------------------------------------------------------------------------
+.SH Pasting special values
+.\" ---------------------------------------------------------------------------
+The shortcuts listed below insert specified values into current cursor
+position.  Last key of every shortcut references value that it inserts:
+
+ \- c \- [c]urrent file
+ \- d \- [d]irectory path
+ \- e \- [e]xtension of a filename
+ \- r \- [r]oot part of a filename
+ \- t \- [t]ail part of directory path
+
+ \- a \- [a]utomatic filter
+ \- m \- [m]anual filter
+ \- = \- local filter, which is bound to "=" in normal mode
+
+Values related to filelist in current pane are available through Ctrl-X
+prefix, while values from the other pane have doubled Ctrl-X key as their
+prefix (doubled Ctrl-X is presumably easier to type than uppercase
+letters; it's still easy to remap the keys to correspond to names of
+similar macros).
+.TP
+.BI "Ctrl-X c"
+name of the current file of the active pane.
+.TP
+.BI "Ctrl-X Ctrl-X c"
+name of the current file of the inactive pane.
+.TP
+.BI "Ctrl-X d"
+path to the current directory of the active pane.
+.TP
+.BI "Ctrl-X Ctrl-X d"
+path to the current directory of the inactive pane.
+.TP
+.BI "Ctrl-X e"
+extension of the current file of the active pane.
+.TP
+.BI "Ctrl-X Ctrl-X e"
+extension of the current file of the inactive pane.
+.TP
+.BI "Ctrl-X r"
+name root of current file of the active pane.
+.TP
+.BI "Ctrl-X Ctrl-X r"
+name root of current file of the inactive pane.
+.TP
+.BI "Ctrl-X t"
+the last component of path to the current directory of the active pane.
+.TP
+.BI "Ctrl-X Ctrl-X t"
+the last component of path to the current directory of the inactive pane.
+
+.TP
+.BI "Ctrl-X a"
+value of automatic filter of the active pane.
+.TP
+.BI "Ctrl-X m"
+value of manual filter of the active pane.
+.TP
+.BI "Ctrl-X ="
+value of local filter of the active pane.
 .\" ---------------------------------------------------------------------------
 .SH Command line editing
 .\" ---------------------------------------------------------------------------
