@@ -9,7 +9,6 @@ Basic things that need to be done.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
     Mouse support.
-    Ctrl-R combinations in the command-line mode.
     Wrapping of lines in the menus.
     IPC among all running vifm instances (share settings among instances).
     Make status bar able to display error and info messages at the same time.
@@ -25,7 +24,6 @@ Basic things that need to be done.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
-    Cancel calls of external applications on Ctrl-C, e.g. after `:grep`.
     Process shell pause request for running in %s.
 
 Documentation.

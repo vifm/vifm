@@ -89,6 +89,11 @@ int is_history_command(const char command[]);
  * non-zero if so, otherwise zero is returned. */
 int command_accepts_expr(int cmd_id);
 
+/* Analyzes command line at given position and escapes str accordingly.  Returns
+ * escaped string or NULL when no escaping is needed. */
+char * commands_escape_for_insertion(const char cmd_line[], int pos,
+		const char str[]);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif

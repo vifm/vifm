@@ -6,7 +6,7 @@ static void
 test_no_extension(void)
 {
 	char buf[] = "file";
-	assert_string_equal("", extract_extension(buf));
+	assert_string_equal("", cut_extension(buf));
 	assert_string_equal("file", buf);
 }
 
@@ -19,11 +19,11 @@ test_unary_extensions(void)
 		"program-1.0.zip",
 		"tar.zip",
 	};
-	assert_string_equal("jpg", extract_extension(buf[0]));
+	assert_string_equal("jpg", cut_extension(buf[0]));
 	assert_string_equal("file", buf[0]);
-	assert_string_equal("zip", extract_extension(buf[1]));
+	assert_string_equal("zip", cut_extension(buf[1]));
 	assert_string_equal("program-1.0", buf[1]);
-	assert_string_equal("zip", extract_extension(buf[2]));
+	assert_string_equal("zip", cut_extension(buf[2]));
 	assert_string_equal("tar", buf[2]);
 }
 
@@ -35,14 +35,14 @@ test_binary_extensions(void)
 		"archive.tar.gz",
 		"photos.tar.bz2",
 	};
-	assert_string_equal("tar.gz", extract_extension(buf[0]));
+	assert_string_equal("tar.gz", cut_extension(buf[0]));
 	assert_string_equal("archive", buf[0]);
-	assert_string_equal("tar.bz2", extract_extension(buf[1]));
+	assert_string_equal("tar.bz2", cut_extension(buf[1]));
 	assert_string_equal("photos", buf[1]);
 }
 
 void
-extract_extension_tests(void)
+cut_extension_tests(void)
 {
 	test_fixture_start();
 
@@ -53,4 +53,5 @@ extract_extension_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

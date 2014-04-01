@@ -140,6 +140,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int cmd_should_be_processed(int cmd_id);
+static int is_out_of_arg(const char cmd[], const char pos[]);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -720,6 +721,17 @@ command_accepts_expr(int cmd_id)
 	    || cmd_id == COM_LET;
 }
 
+char *
+commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
+{
+	if(is_out_of_arg(cmd_line, cmd_line + pos))
+	{
+		return escape_filename(str, 0);
+	}
+	/* TODO: provide proper escaping for single and double quoted arguments. */
+	return NULL;
+}
+
 static void
 post(int id)
 {
@@ -1114,22 +1126,6 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	return 0;
 }
 
-static int
-is_in_arg(const char *cmd, const char *pos)
-{
-	cmd_info_t info;
-	int id;
-
-	id = get_cmd_info(cmd, &info);
-
-	if(id == COM_FILTER)
-		return (line_pos(cmd, pos, ' ', 1) == 0);
-	else if(id == COM_SUBSTITUTE || id == COM_TR)
-		return (line_pos(cmd, pos, info.sep, 1) == 0);
-	else
-		return (line_pos(cmd, pos, ' ', 0) == 0);
-}
-
 int
 exec_commands(const char cmd[], FileView *view, int type)
 {
@@ -1162,7 +1158,7 @@ exec_commands(const char cmd[], FileView *view, int type)
 				*q++ = *p++;
 			}
 		}
-		else if((*p == '|' && is_in_arg(cmd, q)) || *p == '\0')
+		else if((*p == '|' && is_out_of_arg(cmd, q)) || *p == '\0')
 		{
 			int ret;
 
@@ -1209,6 +1205,39 @@ exec_commands(const char cmd[], FileView *view, int type)
 	}
 
 	return save_msg;
+}
+
+/* Checks whether character at given position in the given command-line is
+ * outside quoted argument.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+is_out_of_arg(const char cmd[], const char pos[])
+{
+	char separator;
+	int regex_quoting;
+
+	cmd_info_t info;
+	const int cmd_id = get_cmd_info(cmd, &info);
+
+	switch(cmd_id)
+	{
+		case COM_FILTER:
+			separator = ' ';
+			regex_quoting = 1;
+			break;
+		case COM_SUBSTITUTE:
+		case COM_TR:
+			separator = info.sep;
+			regex_quoting = 1;
+			break;
+
+		default:
+			separator = ' ';
+			regex_quoting = 0;
+			break;
+	}
+
+	return line_pos(cmd, pos, separator, regex_quoting) == 0;
 }
 
 static int
@@ -2170,12 +2199,12 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		const char *const name_state = (curr_view->name_filter.raw[0] == '\0') ?
+		const char *const name_state = (curr_view->manual_filter.raw[0] == '\0') ?
 				" is empty" : ": ";
 		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
 				" is empty" : ": ";
 		status_bar_messagef("Name filter%s%s\nAuto filter%s%s", name_state,
-				curr_view->name_filter.raw, auto_state, curr_view->auto_filter.raw);
+				curr_view->manual_filter.raw, auto_state, curr_view->auto_filter.raw);
 		return 1;
 	}
 	if(cmd_info->argc == 0)
@@ -2230,7 +2259,7 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	}
 
 	view->invert = invert;
-	(void)filter_set(&view->name_filter, filter);
+	(void)filter_set(&view->manual_filter, filter);
 	(void)filter_clear(&view->auto_filter);
 	load_saving_pos(view, 1);
 	return 0;

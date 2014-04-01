@@ -491,8 +491,8 @@ reset_view(FileView *view)
 	view->num_width = 4;
 	view->real_num_width = 0;
 
-	(void)replace_string(&view->prev_name_filter, "");
-	reset_filter(&view->name_filter);
+	(void)replace_string(&view->prev_manual_filter, "");
+	reset_filter(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, "");
 	reset_filter(&view->auto_filter);
 
@@ -2510,12 +2510,12 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 0;
 	}
 
-	if(filter_is_empty(&view->name_filter))
+	if(filter_is_empty(&view->manual_filter))
 	{
 		return 1;
 	}
 
-	if(filter_matches(&view->name_filter, filename) > 0)
+	if(filter_matches(&view->manual_filter, filename) > 0)
 	{
 		return !view->invert;
 	}
@@ -2725,13 +2725,13 @@ rescue_from_empty_filelist(FileView * view)
 	 * in the / directory.  All other directories will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
-	if(is_path_absolute(view->curr_dir) && !filter_is_empty(&view->name_filter))
+	if(is_path_absolute(view->curr_dir) && !filter_is_empty(&view->manual_filter))
 	{
 		show_error_msgf("Filter error",
 				"The %s\"%s\" pattern did not match any files. It was reset.",
-				view->invert ? "" : "inverted ", view->name_filter.raw);
+				view->invert ? "" : "inverted ", view->manual_filter.raw);
 		filter_clear(&view->auto_filter);
-		filter_clear(&view->name_filter);
+		filter_clear(&view->manual_filter);
 		view->invert = 1;
 
 		load_dir_list(view, 1);
@@ -2850,8 +2850,8 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	(void)replace_string(&view->prev_name_filter, view->name_filter.raw);
-	filter_clear(&view->name_filter);
+	(void)replace_string(&view->prev_manual_filter, view->manual_filter.raw);
+	filter_clear(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
 	filter_clear(&view->auto_filter);
 
@@ -2863,7 +2863,7 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	(void)filter_set(&view->name_filter, view->prev_name_filter);
+	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);

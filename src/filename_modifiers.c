@@ -20,7 +20,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strchr() strlen() strrchr() */
+#include <string.h> /* memmove() strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
 #include "utils/fs_limits.h"
@@ -225,13 +225,12 @@ apply_t_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_r_mod(const char *path, char *buf, size_t buf_len)
 {
-	char *slash = strrchr(path, '/');
-	char *dot = strrchr(path, '.');
-	snprintf(buf, buf_len, "%s", path);
-	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
-			dot == slash + 1)
-		return 0;
-	buf[dot - path] = '\0';
+	int root_len;
+	const char *ext_pos;
+
+	copy_str(buf, buf_len, path);
+	split_ext(buf, &root_len, &ext_pos);
+
 	return 0;
 }
 
@@ -239,13 +238,13 @@ apply_r_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_e_mod(const char *path, char *buf, size_t buf_len)
 {
-	char *slash = strrchr(path, '/');
-	char *dot = strrchr(path, '.');
-	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
-			dot == slash + 1)
-		snprintf(buf, buf_len, "%s", "");
-	else
-		snprintf(buf, buf_len, "%s", dot + 1);
+	int root_len;
+	const char *ext_pos;
+
+	copy_str(buf, buf_len, path);
+	split_ext(buf, &root_len, &ext_pos);
+	memmove(buf, ext_pos, strlen(ext_pos) + 1);
+
 	return 0;
 }
 

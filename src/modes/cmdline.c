@@ -27,7 +27,7 @@
 #include <ctype.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
-#include <string.h>
+#include <string.h> /* strdup() */
 #include <wchar.h> /* wcswidth() */
 #include <wctype.h>
 
@@ -38,6 +38,7 @@
 #include "../engine/options.h"
 #include "../menus/menus.h"
 #include "../utils/fs_limits.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utils.h"
@@ -140,6 +141,23 @@ static void search_next(void);
 static void complete_next(const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xt(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xxt(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xequals(key_info_t key_info, keys_info_t *keys_info);
+static void paste_name_part(const char name[], int root);
+static void paste_str(const char str[], int allow_escaping);
+static char * escape_cmd_for_pasting(const char str[]);
+static const wchar_t * get_nonnull_input(void);
 static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
 static void find_prev_word(void);
@@ -149,6 +167,7 @@ static void cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info);
 static void remove_previous_dot_completion(void);
 static wchar_t * next_dot_completion(void);
 static int insert_dot_completion(const wchar_t completion[]);
+static int insert_str(const wchar_t str[]);
 static void find_next_word(void);
 static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
@@ -213,6 +232,19 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x18"L"a",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xa}}},
+	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
+	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
+	{L"\x18"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xd}}},
+	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
+	{L"\x18"L"e",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xe}}},
+	{L"\x18\x18"L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxe}}},
+	{L"\x18"L"m",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xm}}},
+	{L"\x18"L"r",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xr}}},
+	{L"\x18\x18"L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxr}}},
+	{L"\x18"L"t",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xt}}},
+	{L"\x18\x18"L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxt}}},
+	{L"\x18"L"=",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xequals}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -763,8 +795,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	const int prompt_ee = sub_mode == PROMPT_SUBMODE && sub_mode_allows_ee;
 	if(type != -1 || prompt_ee)
 	{
-		char *const mbstr = (input_stat.line == NULL) ?
-			strdup("") : to_multibyte(input_stat.line);
+		char *const mbstr = to_multibyte(get_nonnull_input());
 		leave_cmdline_mode();
 
 		if(sub_mode == FILTER_SUBMODE)
@@ -1415,6 +1446,185 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 	update_cmdline_text();
 }
 
+/* Inserts value of automatic filter of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->auto_filter.raw, 0);
+}
+
+/* Inserts name of the current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(get_current_file_name(curr_view), 1);
+}
+
+/* Inserts name of the current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(get_current_file_name(other_view), 1);
+}
+
+/* Inserts path to the current directory of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->curr_dir, 1);
+}
+
+/* Inserts path to the current directory of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(other_view->curr_dir, 1);
+}
+
+/* Inserts extension of the current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(curr_view), 0);
+}
+
+/* Inserts extension of the current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(other_view), 0);
+}
+
+/* Inserts value of manual filter of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->manual_filter.raw, 0);
+}
+
+/* Inserts name root of current file of active pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(curr_view), 1);
+}
+
+/* Inserts name root of current file of inactive pane into current cursor
+ * position. */
+static void
+cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_name_part(get_current_file_name(other_view), 1);
+}
+
+/* Inserts last component of path to the current directory of active pane into
+ * current cursor position. */
+static void
+cmd_ctrl_xt(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(get_last_path_component(curr_view->curr_dir), 1);
+}
+
+/* Inserts last component of path to the current directory of inactive pane into
+ * current cursor position. */
+static void
+cmd_ctrl_xxt(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(get_last_path_component(other_view->curr_dir), 1);
+}
+
+/* Inserts value of local filter of active pane into current cursor position. */
+static void
+cmd_ctrl_xequals(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(curr_view->local_filter.filter.raw, 0);
+}
+
+/* Inserts root/extension of the name file into current cursor position. */
+static void
+paste_name_part(const char name[], int root)
+{
+	int root_len;
+	const char *ext;
+	char *const name_copy = strdup(name);
+
+	split_ext(name_copy, &root_len, &ext);
+	paste_str(root ? name_copy : ext, 1);
+
+	free(name_copy);
+}
+
+/* Inserts string into current cursor position and updates command-line on the
+ * screen. */
+static void
+paste_str(const char str[], int allow_escaping)
+{
+	char *escaped;
+	wchar_t *wide;
+
+	if(prev_mode == MENU_MODE)
+	{
+		return;
+	}
+
+	stop_completion();
+
+	escaped = (allow_escaping && sub_mode == CMD_SUBMODE)
+	        ? escape_cmd_for_pasting(str)
+	        : NULL;
+	if(escaped != NULL)
+	{
+		str = escaped;
+	}
+
+	wide = to_wide(str);
+
+	if(insert_str(wide) == 0)
+	{
+		update_cmdline_text();
+	}
+
+	free(wide);
+	free(escaped);
+}
+
+/* Escapes str for inserting into current position of command-line command when
+ * needed.  Returns escaped string or NULL when no escaping is needed. */
+static char *
+escape_cmd_for_pasting(const char str[])
+{
+	wchar_t *const wide_input = vifm_wcsdup(get_nonnull_input());
+	char *mb_input;
+	char *escaped;
+
+	wide_input[input_stat.index] = L'\0';
+	mb_input = to_multibyte(wide_input);
+
+	escaped = commands_escape_for_insertion(mb_input, strlen(mb_input), str);
+
+	free(mb_input);
+	free(wide_input);
+
+	return escaped;
+}
+
+/* Gets current input in a safe form.  Returning empty string on NULL input,
+ * otherwise input line is returned. */
+static const wchar_t *
+get_nonnull_input(void)
+{
+	return (input_stat.line == NULL) ? L"" : input_stat.line;
+}
+
 static void
 cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1571,27 +1781,41 @@ next_dot_completion(void)
 static int
 insert_dot_completion(const wchar_t completion[])
 {
-	wchar_t *ptr;
-	size_t len = wcslen(completion);
+	if(insert_str(completion) == 0)
+	{
+		input_stat.dot_index = input_stat.index;
+		input_stat.dot_len = wcslen(completion);
+		return 0;
+	}
+	return 1;
+}
 
-	ptr = realloc(input_stat.line, (input_stat.len + len + 1)*sizeof(wchar_t));
+/* Inserts wide string into current cursor position.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+insert_str(const wchar_t str[])
+{
+	const size_t len = wcslen(str);
+	const size_t new_len = input_stat.len + len + 1;
+
+	wchar_t *const ptr = realloc(input_stat.line, new_len*sizeof(wchar_t));
 	if(ptr == NULL)
 	{
 		return 1;
 	}
-
-	input_stat.dot_index = input_stat.index;
-	input_stat.dot_len = len;
 
 	if(input_stat.line == NULL)
 	{
 		ptr[0] = L'\0';
 	}
 	input_stat.line = ptr;
-	wcsins(input_stat.line, completion, input_stat.index + 1);
+
+	wcsins(input_stat.line, str, input_stat.index + 1);
+
 	input_stat.index += len;
 	input_stat.curs_pos += len;
 	input_stat.len += len;
+
 	return 0;
 }
 

@@ -44,7 +44,7 @@ setup(void)
 	lwin.dir_entry[6].selected = 0;
 	lwin.selected_files = 6;
 
-	filter_init(&lwin.name_filter, CASE_SENSATIVE_FILTER);
+	filter_init(&lwin.manual_filter, CASE_SENSATIVE_FILTER);
 	filter_init(&lwin.auto_filter, CASE_SENSATIVE_FILTER);
 	lwin.invert = cfg.filter_inverted_by_default;
 
@@ -71,7 +71,7 @@ setup(void)
 	rwin.dir_entry[6].selected = 0;
 	rwin.selected_files = 0;
 
-	filter_init(&rwin.name_filter, CASE_SENSATIVE_FILTER);
+	filter_init(&rwin.manual_filter, CASE_SENSATIVE_FILTER);
 	filter_init(&rwin.auto_filter, CASE_SENSATIVE_FILTER);
 	rwin.invert = cfg.filter_inverted_by_default;
 
@@ -85,7 +85,7 @@ static void cleanup_view(FileView *view)
 	for(i = 0; i < view->list_rows; i++)
 		free(view->dir_entry[i].name);
 	free(view->dir_entry);
-	filter_dispose(&view->name_filter);
+	filter_dispose(&view->manual_filter);
 	filter_dispose(&view->auto_filter);
 }
 
@@ -137,7 +137,7 @@ test_filtering_dir_does_not_filter_file(void)
 static void
 test_filtering_files_does_not_filter_dirs(void)
 {
-	(void)filter_set(&rwin.name_filter, "^.*\\.d$");
+	(void)filter_set(&rwin.manual_filter, "^.*\\.d$");
 
 	assert_visible(rwin, rwin.dir_entry[0].name, 1);
 	assert_visible(rwin, rwin.dir_entry[1].name, 1);
@@ -150,7 +150,7 @@ test_filtering_files_does_not_filter_dirs(void)
 static void
 test_filtering_dirs_does_not_filter_files(void)
 {
-	(void)filter_set(&rwin.name_filter, "^.*\\.d/$");
+	(void)filter_set(&rwin.manual_filter, "^.*\\.d/$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
@@ -163,7 +163,7 @@ test_filtering_dirs_does_not_filter_files(void)
 static void
 test_filtering_files_and_dirs(void)
 {
-	(void)filter_set(&rwin.name_filter, "^.*\\.d/?$");
+	(void)filter_set(&rwin.manual_filter, "^.*\\.d/?$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
