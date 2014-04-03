@@ -438,7 +438,10 @@ has_uppercase_letters(const char str[])
 void
 copy_str(char dst[], size_t dst_len, const char src[])
 {
-	copy_substr(dst, dst_len, src, '\0');
+	if(dst != src)
+	{
+		copy_substr(dst, dst_len, src, '\0');
+	}
 }
 
 void
