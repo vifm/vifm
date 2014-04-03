@@ -30,7 +30,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strchr() strdup() strlen() strspn() */
+#include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -111,9 +111,18 @@ set_trash_dir(const char new_specs[])
 	char **dirs = NULL;
 	int ndirs = 0;
 
-	int error = 0;
-	char *const free_this = strdup(new_specs);
-	char *spec = free_this;
+	int error;
+	char *free_this;
+	char *spec;
+
+	if(strcmp(cfg.trash_dir, new_specs) == 0)
+	{
+		return 0;
+	}
+
+	error = 0;
+	free_this = strdup(new_specs);
+	spec = free_this;
 
 	for(;;)
 	{
