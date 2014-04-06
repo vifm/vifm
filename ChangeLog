@@ -77,6 +77,9 @@
 
 	Display value of local filter in the output of :filter? command.
 
+	Handle backspace in preview window as a terminal.  Thanks to Svenn Are
+	Bjerkem, a.k.a. svenn.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 

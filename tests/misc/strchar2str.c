@@ -88,7 +88,7 @@ test_escape_sequences_are_untouched_and_have_proper_width(void)
 static void
 test_ctrl_chars_are_converted_and_have_proper_width(void)
 {
-	const char* exceptions = "\t\r\n\033";
+	const char* exceptions = "\b\t\r\n\033";
 	char c;
 	for(c = '\x01'; c < ' '; c++)
 	{

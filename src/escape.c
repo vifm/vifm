@@ -299,6 +299,25 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 			{
 				print_char_esc(win, char_str, state);
 			}
+
+			if(*curr == '\b')
+			{
+				if(!dry_run)
+				{
+					int y, x;
+					getyx(win, y, x);
+					if(x > 0)
+					{
+						checked_wmove(win, y, x - 1);
+					}
+				}
+
+				if(pos > 0)
+				{
+					pos--;
+				}
+			}
+
 			curr += get_char_width_esc(curr);
 		}
 	}
@@ -510,6 +529,11 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	else if(str[0] == '\n')
 	{
 		buf[0] = '\0';
+		*screen_width = 0;
+	}
+	else if(str[0] == '\b')
+	{
+		strcpy(buf, "");
 		*screen_width = 0;
 	}
 	else if(str[0] == '\r')
