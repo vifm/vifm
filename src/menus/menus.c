@@ -444,15 +444,13 @@ redraw_menu(menu_info *m)
 void
 goto_selected_file(FileView *view, const char spec[], int try_open)
 {
-	char *dir;
-	char *file;
-	char *free_this;
+	char *path_buf;
 	int line_num = 1;
 	const char *colon;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
-	free_this = file = dir = malloc(bufs_len);
-	if(free_this == NULL)
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
@@ -460,74 +458,74 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	if(is_path_absolute(spec))
 	{
-		dir[0] = '\0';
+		path_buf[0] = '\0';
 	}
 	else
 	{
-		copy_str(dir, bufs_len, "./");
+		copy_str(path_buf, bufs_len, "./");
 	}
 
 	colon = strchr(spec, ':');
 	if(colon != NULL)
 	{
-		strncat(dir, spec, colon - spec);
+		strncat(path_buf, spec, colon - spec);
 		line_num = atoi(colon + 1);
 	}
 	else
 	{
-		strcat(dir, spec);
+		strcat(path_buf, spec);
 	}
 
-	chomp(file);
+	chomp(path_buf);
 
 	if(try_open)
 	{
-		if(access(file, R_OK) == 0)
+		if(access(path_buf, R_OK) == 0)
 		{
 			curr_stats.auto_redraws = 1;
-			(void)view_file(file, line_num, -1, 1);
+			(void)view_file(path_buf, line_num, -1, 1);
 			curr_stats.auto_redraws = 0;
 		}
-		free(free_this);
+		free(path_buf);
 		return;
 	}
 
-	if(access(file, R_OK) == 0)
+	if(access(path_buf, R_OK) == 0)
 	{
-		int isdir = 0;
-		char *last_slash;
+		char *path = path_buf;
+		const int isdir = is_dir(path);
+		char *const last_slash = find_slashr(path_buf);
 
-		if(is_dir(file))
-			isdir = 1;
-
-		if((last_slash = find_slashr(dir)) != NULL)
+		if(last_slash != NULL)
 		{
 			*last_slash = '\0';
-			file = last_slash + 1;
+			path = last_slash + 1;
 		}
 
-		if(change_directory(view, dir) >= 0)
+		if(change_directory(view, path_buf) >= 0)
 		{
 			status_bar_message("Finding the correct directory...");
 
 			wrefresh(status_bar);
 			load_dir_list(view, 0);
 			if(isdir)
-				strcat(file, "/");
+			{
+				strcat(path, "/");
+			}
 
-			(void)ensure_file_is_selected(view, file);
+			(void)ensure_file_is_selected(view, path);
 		}
 		else
 		{
-			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
+			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", path_buf);
 		}
 	}
 	else
 	{
-		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
+		show_error_msgf("Missing file", "File \"%s\" doesn't exist", path_buf);
 	}
 
-	free(free_this);
+	free(path_buf);
 }
 
 void
