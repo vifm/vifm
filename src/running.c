@@ -817,7 +817,7 @@ store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
  *  < 0 - pause on error
  */
 int
-shellout(const char *command, int pause, int allow_screen)
+shellout(const char *command, int pause, int use_term_multiplexer)
 {
 	/* cfg.max_args can be an enormous huge number and we want to set an upper
 	 * bound for the length of command line buffer.  Picket upper bound based on
@@ -835,7 +835,7 @@ shellout(const char *command, int pause, int allow_screen)
 	if(pause > 0 && command != NULL && ends_with(command, "&"))
 		pause = -1;
 
-	gen_shell_cmd(command, pause > 0, allow_screen, sizeof(buf), buf);
+	gen_shell_cmd(command, pause > 0, use_term_multiplexer, sizeof(buf), buf);
 
 	endwin();
 
