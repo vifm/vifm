@@ -75,6 +75,8 @@
 
 	Allowed disabling quickview while its pane is hidden.
 
+	Display value of local filter in the output of :filter? command.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
