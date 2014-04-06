@@ -28,7 +28,7 @@
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
 #include <sys/types.h> /* pid_t */
-#include <unistd.h> /* access() R_OK */
+#include <unistd.h> /* access() F_OK R_OK */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
@@ -66,6 +66,8 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static void open_selected_file(const char path[], int line_num);
+static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
@@ -444,14 +446,13 @@ redraw_menu(menu_info *m)
 void
 goto_selected_file(FileView *view, const char spec[], int try_open)
 {
-	char *dir;
-	char *file;
-	char *free_this;
+	char *path_buf;
 	int line_num = 1;
+	const char *colon;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
-	free_this = file = dir = malloc(bufs_len);
-	if(free_this == NULL)
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
@@ -459,81 +460,96 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	if(is_path_absolute(spec))
 	{
-		dir[0] = '\0';
+		path_buf[0] = '\0';
 	}
 	else
 	{
-		copy_str(dir, bufs_len, "./");
+		copy_str(path_buf, bufs_len, "./");
 	}
 
-	if(try_open)
+	colon = strchr(spec, ':');
+	if(colon != NULL)
 	{
-		const char *const p = strchr(spec, ':');
-		if(p != NULL)
+		strncat(path_buf, spec, colon - spec);
+		line_num = atoi(colon + 1);
+	}
+	else
+	{
+		strcat(path_buf, spec);
+	}
+
+	chomp(path_buf);
+
+	if(access(path_buf, F_OK) == 0)
+	{
+		if(try_open)
 		{
-			strncat(dir, spec, spec - spec);
-			line_num = atoi(p + 1);
+			open_selected_file(path_buf, line_num);
 		}
 		else
 		{
-			strcat(dir, spec);
+			navigate_to_selected_file(view, path_buf);
 		}
 	}
 	else
 	{
-		strcat(dir, spec);
+		show_error_msgf("Missing file", "File \"%s\" doesn't exist", path_buf);
 	}
 
-	chomp(file);
+	free(path_buf);
+}
 
-	if(try_open)
+/* Opens file specified by its path on the given line number. */
+static void
+open_selected_file(const char path[], int line_num)
+{
+	if(access(path, R_OK) == 0)
 	{
-		if(access(file, R_OK) == 0)
-		{
-			curr_stats.auto_redraws = 1;
-			(void)view_file(file, line_num, -1, 1);
-			curr_stats.auto_redraws = 0;
-		}
-		free(free_this);
-		return;
-	}
-
-	if(access(file, R_OK) == 0)
-	{
-		int isdir = 0;
-		char *last_slash;
-
-		if(is_dir(file))
-			isdir = 1;
-
-		if((last_slash = find_slashr(dir)) != NULL)
-		{
-			*last_slash = '\0';
-			file = last_slash + 1;
-		}
-
-		if(change_directory(view, dir) >= 0)
-		{
-			status_bar_message("Finding the correct directory...");
-
-			wrefresh(status_bar);
-			load_dir_list(view, 0);
-			if(isdir)
-				strcat(file, "/");
-
-			(void)ensure_file_is_selected(view, file);
-		}
-		else
-		{
-			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
-		}
+		(void)view_file(path, line_num, -1, 1);
 	}
 	else
 	{
-		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
+		show_error_msgf("Can't read file", "File \"%s\" is not readable", path);
+	}
+}
+
+/* Navigates the view to a given dir/file combination specified by the path. */
+static void
+navigate_to_selected_file(FileView *view, const char path[])
+{
+	char name[NAME_MAX];
+	char *dir = strdup(path);
+	char *const last_slash = find_slashr(dir);
+
+	if(last_slash == NULL)
+	{
+		copy_str(name, sizeof(name), dir);
+	}
+	else
+	{
+		*last_slash = '\0';
+		copy_str(name, sizeof(name), last_slash + 1);
 	}
 
-	free(free_this);
+	if(change_directory(view, dir) >= 0)
+	{
+		status_bar_message("Finding the correct directory...");
+		wrefresh(status_bar);
+
+		load_dir_list(view, 0);
+
+		if(is_dir(path))
+		{
+			strcat(name, "/");
+		}
+		(void)ensure_file_is_selected(view, name);
+	}
+	else
+	{
+		show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
+	}
+
+	free(dir);
 }
 
 void

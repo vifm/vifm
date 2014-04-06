@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Apr 01
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Apr 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1235,7 +1235,7 @@ The builtin commands are:
     See |vifm-filters|.
 :filter - reset filter (set it to empty string) and show all files.
 :filter! - same as :invert.
-:filter? - show current value of name and auto filters.
+:filter? - show current value of local, name and auto filters.
 
                                                *vifm-:find* *vifm-:fin*
 :[range]fin[d] pattern - will show results of find command in the menu.
@@ -2840,7 +2840,7 @@ Filetype menu~
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
-Find, locate and user menu with navigation (%M macro)~
+Grep, find, locate and user menu with navigation (%M macro)~
 
                                                *vifm-m_gf*
 
@@ -2855,6 +2855,8 @@ Grep menu~
 
 Selecting file opens it in editor set by |vifm-'vicmd'| at given line number.
 Menu won't be closed automatically to allow viewing more than one result.
+
+See above for "gf" and "e" keys description.
 
 Command-line history menu~
 

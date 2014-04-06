@@ -2199,12 +2199,16 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
+		const char *const local = curr_view->local_filter.filter.raw;
+		const char *const local_state = (local[0] == '\0') ? " is empty" : ": ";
 		const char *const name_state = (curr_view->manual_filter.raw[0] == '\0') ?
 				" is empty" : ": ";
 		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
 				" is empty" : ": ";
-		status_bar_messagef("Name filter%s%s\nAuto filter%s%s", name_state,
-				curr_view->manual_filter.raw, auto_state, curr_view->auto_filter.raw);
+		status_bar_messagef("Local filter%s%s\nName filter%s%s\nAuto filter%s%s",
+				local_state, local,
+				name_state, curr_view->manual_filter.raw,
+				auto_state, curr_view->auto_filter.raw);
 		return 1;
 	}
 	if(cmd_info->argc == 0)

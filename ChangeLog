@@ -31,8 +31,8 @@
 	Added 'number', 'relativenumber' and 'numberwidth' options to control
 	displaying of file numbers.  Thanks to filterfalse and greye.
 
-	Added "gf" (go to file) and "e" (open in editor) keys to :find, :locate
-	and user menu with navigation (%M macro).
+	Added "gf" (go to file) and "e" (open in editor) keys to :grep, :find,
+	:locate and user menu with navigation (%M macro).
 
 	Added --enable-remote-cmd switch to configure script disabled by default,
 	as current implementation of the feature is insecure.
@@ -74,6 +74,8 @@
 	Disabled command-line commands auto-completion in local filter prompt.
 
 	Allowed disabling quickview while its pane is hidden.
+
+	Display value of local filter in the output of :filter? command.
 
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
@@ -139,6 +141,8 @@
 	Fixed segmentation fault caused by uninitialized type field of filelist
 	entry (shared directory in virtual machine in this case).  Thanks to Milan
 	Svoboda, a.k.a. tex.
+
+	Fixed navigation to non-readable directories from a menu.
 
 0.7.6-beta2 to 0.7.6
 
