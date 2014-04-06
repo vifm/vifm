@@ -66,6 +66,8 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static void open_selected_file(const char path[], int line_num);
+static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
@@ -482,9 +484,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	{
 		if(access(path_buf, R_OK) == 0)
 		{
-			curr_stats.auto_redraws = 1;
-			(void)view_file(path_buf, line_num, -1, 1);
-			curr_stats.auto_redraws = 0;
+			open_selected_file(path_buf, line_num);
 		}
 		free(path_buf);
 		return;
@@ -492,33 +492,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	if(access(path_buf, R_OK) == 0)
 	{
-		char *path = path_buf;
-		const int isdir = is_dir(path);
-		char *const last_slash = find_slashr(path_buf);
-
-		if(last_slash != NULL)
-		{
-			*last_slash = '\0';
-			path = last_slash + 1;
-		}
-
-		if(change_directory(view, path_buf) >= 0)
-		{
-			status_bar_message("Finding the correct directory...");
-
-			wrefresh(status_bar);
-			load_dir_list(view, 0);
-			if(isdir)
-			{
-				strcat(path, "/");
-			}
-
-			(void)ensure_file_is_selected(view, path);
-		}
-		else
-		{
-			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", path_buf);
-		}
+		navigate_to_selected_file(view, path_buf);
 	}
 	else
 	{
@@ -526,6 +500,52 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	}
 
 	free(path_buf);
+}
+
+/* Opens file specified by its path on the given line number. */
+static void
+open_selected_file(const char path[], int line_num)
+{
+	(void)view_file(path, line_num, -1, 1);
+}
+
+/* Navigates the view to a given dir/file combination specified by the path. */
+static void
+navigate_to_selected_file(FileView *view, const char path[])
+{
+	char name[NAME_MAX];
+	char *dir = strdup(path);
+	char *const last_slash = find_slashr(dir);
+
+	if(last_slash == NULL)
+	{
+		copy_str(name, sizeof(name), dir);
+	}
+	else
+	{
+		*last_slash = '\0';
+		copy_str(name, sizeof(name), last_slash + 1);
+	}
+
+	if(change_directory(view, dir) >= 0)
+	{
+		status_bar_message("Finding the correct directory...");
+		wrefresh(status_bar);
+
+		load_dir_list(view, 0);
+
+		if(is_dir(path))
+		{
+			strcat(name, "/");
+		}
+		(void)ensure_file_is_selected(view, name);
+	}
+	else
+	{
+		show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
+	}
+
+	free(dir);
 }
 
 void
