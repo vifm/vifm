@@ -28,7 +28,7 @@
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
 #include <sys/types.h> /* pid_t */
-#include <unistd.h> /* access() R_OK */
+#include <unistd.h> /* access() F_OK R_OK */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
@@ -480,7 +480,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	chomp(path_buf);
 
-	if(access(path_buf, R_OK) == 0)
+	if(access(path_buf, F_OK) == 0)
 	{
 		if(try_open)
 		{
@@ -503,7 +503,14 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 static void
 open_selected_file(const char path[], int line_num)
 {
-	(void)view_file(path, line_num, -1, 1);
+	if(access(path, R_OK) == 0)
+	{
+		(void)view_file(path, line_num, -1, 1);
+	}
+	else
+	{
+		show_error_msgf("Can't read file", "File \"%s\" is not readable", path);
+	}
 }
 
 /* Navigates the view to a given dir/file combination specified by the path. */

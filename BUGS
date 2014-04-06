@@ -29,8 +29,6 @@ passed directory to a shell.
 
 :filetype checks doesn't expand ~ and environment variables.
 
-When directory is not readable, one cannot navigate to it from a menu.
-
 Fix syntax highlighting for: touch copy-init.cp; m e20-en.avi; mkdir mkdir.
 
 Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
