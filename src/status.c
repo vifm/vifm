@@ -91,7 +91,7 @@ load_def_values(status_t *stats)
 	stats->dirsize_cache = NULL_TREE;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
-	stats->auto_redraws = 0;
+	stats->skip_shellout_redraw = 0;
 	stats->cs_base = DCOLOR_BASE;
 	stats->cs = &cfg.cs;
 	strcpy(stats->color_scheme, "");

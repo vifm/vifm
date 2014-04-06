@@ -860,9 +860,11 @@ shellout(const char *command, int pause, int use_term_multiplexer)
 
 	recover_after_shellout();
 
-	/* always redraw to handle resizing of terminal */
-	if(!curr_stats.auto_redraws)
+	if(!curr_stats.skip_shellout_redraw)
+	{
+		/* Redraw to handle resizing of terminal that we could have missed. */
 		curr_stats.need_update = UT_FULL;
+	}
 
 	curs_set(FALSE);
 
