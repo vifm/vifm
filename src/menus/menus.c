@@ -448,6 +448,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	char *file;
 	char *free_this;
 	int line_num = 1;
+	const char *colon;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	free_this = file = dir = malloc(bufs_len);
@@ -466,18 +467,11 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 		copy_str(dir, bufs_len, "./");
 	}
 
-	if(try_open)
+	colon = strchr(spec, ':');
+	if(colon != NULL)
 	{
-		const char *const p = strchr(spec, ':');
-		if(p != NULL)
-		{
-			strncat(dir, spec, spec - spec);
-			line_num = atoi(p + 1);
-		}
-		else
-		{
-			strcat(dir, spec);
-		}
+		strncat(dir, spec, colon - spec);
+		line_num = atoi(colon + 1);
 	}
 	else
 	{
