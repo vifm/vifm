@@ -53,6 +53,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	m.title = format_str(" Grep %s ", args);
 	m.execute_handler = &execute_grep_cb;
+	m.key_handler = &filelist_khandler;
 
 	targets = get_cmd_target();
 	macros[0].value = invert ? "-v" : "";

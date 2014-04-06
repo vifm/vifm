@@ -31,8 +31,8 @@
 	Added 'number', 'relativenumber' and 'numberwidth' options to control
 	displaying of file numbers.  Thanks to filterfalse and greye.
 
-	Added "gf" (go to file) and "e" (open in editor) keys to :find, :locate
-	and user menu with navigation (%M macro).
+	Added "gf" (go to file) and "e" (open in editor) keys to :grep, :find,
+	:locate and user menu with navigation (%M macro).
 
 	Added --enable-remote-cmd switch to configure script disabled by default,
 	as current implementation of the feature is insecure.
