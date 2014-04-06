@@ -480,19 +480,16 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 
 	chomp(path_buf);
 
-	if(try_open)
+	if(access(path_buf, R_OK) == 0)
 	{
-		if(access(path_buf, R_OK) == 0)
+		if(try_open)
 		{
 			open_selected_file(path_buf, line_num);
 		}
-		free(path_buf);
-		return;
-	}
-
-	if(access(path_buf, R_OK) == 0)
-	{
-		navigate_to_selected_file(view, path_buf);
+		else
+		{
+			navigate_to_selected_file(view, path_buf);
+		}
 	}
 	else
 	{
