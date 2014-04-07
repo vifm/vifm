@@ -115,11 +115,6 @@ set_trash_dir(const char new_specs[])
 	char *free_this;
 	char *spec;
 
-	if(strcmp(cfg.trash_dir, new_specs) == 0)
-	{
-		return 0;
-	}
-
 	error = 0;
 	free_this = strdup(new_specs);
 	spec = free_this;
