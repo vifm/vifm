@@ -148,6 +148,12 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
+			case 'n': /* Forbid using of terminal multiplexer, even if active. */
+				if(flags != NULL)
+				{
+					*flags = MACRO_NO_TERM_MUX;
+				}
+				break;
 			case 'm': /* use menu */
 				if(flags != NULL)
 				{
