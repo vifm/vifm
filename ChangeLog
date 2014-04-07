@@ -44,6 +44,9 @@
 	Added %n macro which suppresses using of terminal multiplexer in a
 	command.
 
+	Added sample dark solarized color scheme (provided by Stéphane, a.k.a.
+	istib).
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.
