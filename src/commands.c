@@ -3965,7 +3965,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? 1 : -1, 1);
+			shellout(com_beginning, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -3980,7 +3980,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1, 1);
+		shellout(expanded_com, -1, flags != MACRO_NO_TERM_MUX);
 	}
 
 	if(external)
