@@ -41,6 +41,9 @@
 	file names and values of filters (see related documentation).  Thanks to
 	ranousse and filterfalse.
 
+	Added %n macro which suppresses using of terminal multiplexer in a
+	command.
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.
@@ -79,6 +82,9 @@
 
 	Handle backspace in preview window as a terminal.  Thanks to Svenn Are
 	Bjerkem, a.k.a. svenn.
+
+	Do not use terminal multiplexer for internal edit operations (editing of
+	file names or command-line).
 
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.

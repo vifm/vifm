@@ -32,6 +32,7 @@ typedef enum
 	MACRO_STATUSBAR_OUTPUT, /* redirect output to the status bar */
 	MACRO_SPLIT, /* run command in a new screen region */
 	MACRO_IGNORE, /* completely ignore command output */
+	MACRO_NO_TERM_MUX, /* Forbid using of terminal multiplexer, even if active. */
 }
 MacroFlags;
 

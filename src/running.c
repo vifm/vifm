@@ -458,11 +458,11 @@ multi_run_compat(FileView *view, const char *program)
 }
 
 int
-view_file(const char filename[], int line, int column, int do_fork)
+view_file(const char filename[], int line, int column, int allow_forking)
 {
 	char vicmd[PATH_MAX];
 	char command[PATH_MAX + 5] = "";
-	const char *fork_str = do_fork ? "" : "--nofork";
+	const char *fork_str = allow_forking ? "" : "--nofork";
 	char *escaped;
 	int bg;
 	int result;
@@ -488,7 +488,7 @@ view_file(const char filename[], int line, int column, int do_fork)
 
 	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
 	(void)trim_right(vicmd);
-	if(!do_fork)
+	if(!allow_forking)
 	{
 		char *p = strrchr(vicmd, ' ');
 		if(p != NULL && strstr(p, "remote"))
@@ -510,10 +510,14 @@ view_file(const char filename[], int line, int column, int do_fork)
 	free(escaped);
 #endif
 
-	if(bg && do_fork)
+	if(bg && allow_forking)
+	{
 		result = start_background_job(command, 0);
+	}
 	else
-		result = shellout(command, -1, 1);
+	{
+		result = shellout(command, -1, allow_forking);
+	}
 	curs_set(FALSE);
 
 	return result;
