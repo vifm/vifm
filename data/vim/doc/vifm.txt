@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Apr 06
+*vifm.txt*    For Vifm version 0.7.6  Last change: 2014 Apr 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1774,6 +1774,8 @@ The command macros may be used in user commands.
                                                                *vifm-%s*
   %s        execute command in split window of active terminal
             multiplexer (ignored if not running inside one).
+                                                               *vifm-%n*
+  %n        forbid using of terminal multiplexer to run the command.
                                                                *vifm-%i*
   %i        completely ignore command output.
 
