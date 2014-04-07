@@ -1518,19 +1518,21 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
+		const int use_term_mux = flags != MACRO_NO_TERM_MUX;
+
 		clean_selected_files(curr_view);
 		if(cfg.fast_run)
 		{
-			char *buf = fast_run_complete(com + i);
-			if(buf == NULL)
-				return 1;
-
-			(void)shellout(buf, cmd_info->emark ? 1 : -1, 1);
-			free(buf);
+			char *const buf = fast_run_complete(com + i);
+			if(buf != NULL)
+			{
+				(void)shellout(buf, cmd_info->emark ? 1 : -1, use_term_mux);
+				free(buf);
+			}
 		}
 		else
 		{
-			(void)shellout(com + i, cmd_info->emark ? 1 : -1, 1);
+			(void)shellout(com + i, cmd_info->emark ? 1 : -1, use_term_mux);
 		}
 	}
 
