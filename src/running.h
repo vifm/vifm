@@ -33,7 +33,7 @@ void run_using_prog(FileView *view, const char *program, int dont_execute,
 /* Negative line/column means ignore parameter.  First line/column number has
  * number one, while zero means don't change it.  Returns zero on success, on
  * error non-zero is returned. */
-int view_file(const char filename[], int line, int column, int do_fork);
+int view_file(const char filename[], int line, int column, int allow_forking);
 void handle_dir(FileView *view);
 void cd_updir(FileView *view);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
