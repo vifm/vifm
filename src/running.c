@@ -516,7 +516,7 @@ view_file(const char filename[], int line, int column, int allow_forking)
 	}
 	else
 	{
-		result = shellout(command, -1, 1);
+		result = shellout(command, -1, allow_forking);
 	}
 	curs_set(FALSE);
 
