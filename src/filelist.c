@@ -90,11 +90,12 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	FileView *view;
-	size_t line;
-	int current;
-	size_t current_line;
-	size_t column_offset;
+	FileView *view;  /* View on which cell is being drawn. */
+	size_t line_pos; /* File position in the file list (the view). */
+	int is_current;  /* Whether this file is selected with the cursor. */
+
+	size_t current_line;  /* Line of the cell. */
+	size_t column_offset; /* Offset in characters of the column. */
 }
 column_data_t;
 
@@ -125,6 +126,8 @@ static char * get_viewer_command(const char *viewer);
 static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
+static void draw_cell(const FileView *view, const column_data_t *cdt,
+		size_t col_width);
 static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
@@ -199,9 +202,9 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t trim_pos;
 
 	const column_data_t *const cdt = data;
-	const size_t i = cdt->line;
+	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[i];
 
 	const size_t prefix_len = view->real_num_width + 1;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
@@ -209,12 +212,12 @@ column_line_print(const void *data, int column_id, const char *buf,
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
 		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
-				entry->selected, cdt->current);
+				entry->selected, cdt->is_current);
 	}
 	else
 	{
 		line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->current);
+				cdt->is_current);
 	}
 
 	if(offset == 0 && ui_view_displays_numbers(view))
@@ -226,7 +229,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 		int is_current_line;
 
 		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->current);
+				cdt->is_current);
 
 		is_current_line = (i == view->list_pos);
 		mixed = is_current_line && view->num_type == NT_MIX;
@@ -319,7 +322,7 @@ static void
 format_name(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	format_entry_name(cdt->view, cdt->line, buf_len + 1, buf);
+	format_entry_name(cdt->view, cdt->line_pos, buf_len + 1, buf);
 }
 
 /* File size format callback for column_view unit. */
@@ -328,7 +331,7 @@ format_size(int id, const void *data, size_t buf_len, char *buf)
 {
 	char str[24] = "";
 	const column_data_t *cdt = data;
-	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line);
+	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line_pos);
 	friendly_size_notation(size, sizeof(str), str);
 	snprintf(buf, buf_len + 1, " %s", str);
 }
@@ -338,7 +341,7 @@ static void
 format_ext(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	const char *dot = strrchr(entry->name,  '.');
 	snprintf(buf, buf_len + 1, "%s", (dot == NULL) ? "" : (dot + 1));
 	chosp(buf);
@@ -351,7 +354,7 @@ static void
 format_group(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	if(id == SORT_BY_GROUP_NAME)
 	{
 		struct group *grp_buf;
@@ -370,7 +373,7 @@ static void
 format_owner(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	if(id == SORT_BY_OWNER_NAME)
 	{
 		struct passwd *pwd_buf;
@@ -389,7 +392,7 @@ static void
 format_mode(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
 }
 
@@ -402,7 +405,7 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 	struct tm *tm_ptr;
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 
 	switch(id)
 	{
@@ -439,7 +442,7 @@ format_perms(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 	get_perm_string(buf, buf_len, entry->mode);
 }
 #endif
@@ -876,7 +879,7 @@ draw_dir_list(FileView *view)
 {
 	int attr;
 	int x;
-	int y;
+	int cell;
 	size_t col_width;
 	size_t col_count;
 	int top = view->top_line;
@@ -917,16 +920,24 @@ draw_dir_list(FileView *view)
 	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
 	werase(view->win);
 
-	y = 0;
+	cell = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
-		checked_wmove(view->win, y, 1);
-		wclrtoeol(view->win);
-		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
-		columns_format_line(view->columns, &cdt, col_width);
-		y++;
-		if(y >= view->window_cells)
+		const column_data_t cdt =
+		{
+			.view = view,
+			.line_pos = x,
+			.is_current = 0,
+			.current_line = cell/col_count,
+			.column_offset = (cell%col_count)*col_width,
+		};
+
+		draw_cell(view, &cdt, col_width);
+
+		if(++cell >= view->window_cells)
+		{
 			break;
+		}
 	}
 
 	view->top_line = top;
@@ -1079,7 +1090,6 @@ erase_current_line_bar(FileView *view)
 	int old_pos = view->top_line + old_cursor;
 	size_t col_width;
 	size_t col_count;
-	size_t print_width;
 	column_data_t cdt = {view, old_pos, 0};
 
 	if(old_cursor < 0)
@@ -1095,19 +1105,28 @@ erase_current_line_bar(FileView *view)
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = calculate_print_width(view, old_pos, col_width);
 
 	cdt.current_line = old_cursor/col_count;
 	cdt.column_offset = (old_cursor%col_count)*col_width;
 
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, &cdt, col_width);
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
+	draw_cell(view, &cdt, col_width);
 
 	if(view == other_view)
 	{
 		put_inactive_mark(view);
 	}
+}
+
+/* Draws a full cell of the file list. */
+static void
+draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width)
+{
+	const size_t print_width = calculate_print_width(view, cdt->line_pos,
+			col_width);
+
+	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, cdt, col_width);
+	column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
 }
 
 int
@@ -1217,7 +1236,7 @@ move_to_list_pos(FileView *view, int pos)
 	calculate_table_conf(view, &col_count, &col_width);
 	print_width = calculate_print_width(view, view->list_pos, col_width);
 
-	cdt.line = pos;
+	cdt.line_pos = pos;
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
