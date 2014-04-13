@@ -91,8 +91,9 @@
 typedef struct
 {
 	FileView *view;
-	size_t line;
+	size_t line_pos;
 	int is_current;
+
 	size_t current_line;
 	size_t column_offset;
 }
@@ -201,9 +202,9 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t trim_pos;
 
 	const column_data_t *const cdt = data;
-	const size_t i = cdt->line;
+	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[i];
 
 	const size_t prefix_len = view->real_num_width + 1;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
@@ -321,7 +322,7 @@ static void
 format_name(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	format_entry_name(cdt->view, cdt->line, buf_len + 1, buf);
+	format_entry_name(cdt->view, cdt->line_pos, buf_len + 1, buf);
 }
 
 /* File size format callback for column_view unit. */
@@ -330,7 +331,7 @@ format_size(int id, const void *data, size_t buf_len, char *buf)
 {
 	char str[24] = "";
 	const column_data_t *cdt = data;
-	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line);
+	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line_pos);
 	friendly_size_notation(size, sizeof(str), str);
 	snprintf(buf, buf_len + 1, " %s", str);
 }
@@ -340,7 +341,7 @@ static void
 format_ext(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	const char *dot = strrchr(entry->name,  '.');
 	snprintf(buf, buf_len + 1, "%s", (dot == NULL) ? "" : (dot + 1));
 	chosp(buf);
@@ -353,7 +354,7 @@ static void
 format_group(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	if(id == SORT_BY_GROUP_NAME)
 	{
 		struct group *grp_buf;
@@ -372,7 +373,7 @@ static void
 format_owner(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	if(id == SORT_BY_OWNER_NAME)
 	{
 		struct passwd *pwd_buf;
@@ -391,7 +392,7 @@ static void
 format_mode(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
 }
 
@@ -404,7 +405,7 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 	struct tm *tm_ptr;
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 
 	switch(id)
 	{
@@ -441,7 +442,7 @@ format_perms(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 	get_perm_string(buf, buf_len, entry->mode);
 }
 #endif
@@ -925,7 +926,7 @@ draw_dir_list(FileView *view)
 		const column_data_t cdt =
 		{
 			.view = view,
-			.line = x,
+			.line_pos = x,
 			.is_current = 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
@@ -1120,7 +1121,8 @@ erase_current_line_bar(FileView *view)
 static void
 draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width)
 {
-	const size_t print_width = calculate_print_width(view, cdt->line, col_width);
+	const size_t print_width = calculate_print_width(view, cdt->line_pos,
+			col_width);
 
 	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, cdt, col_width);
@@ -1234,7 +1236,7 @@ move_to_list_pos(FileView *view, int pos)
 	calculate_table_conf(view, &col_count, &col_width);
 	print_width = calculate_print_width(view, view->list_pos, col_width);
 
-	cdt.line = pos;
+	cdt.line_pos = pos;
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
