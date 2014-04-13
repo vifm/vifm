@@ -878,7 +878,7 @@ draw_dir_list(FileView *view)
 {
 	int attr;
 	int x;
-	int y;
+	int cell;
 	size_t col_width;
 	size_t col_count;
 	int top = view->top_line;
@@ -919,14 +919,24 @@ draw_dir_list(FileView *view)
 	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
 	werase(view->win);
 
-	y = 0;
+	cell = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
-		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
+		const column_data_t cdt =
+		{
+			.view = view,
+			.line = x,
+			.current = 0,
+			.current_line = cell/col_count,
+			.column_offset = (cell%col_count)*col_width,
+		};
+
 		draw_cell(view, &cdt, col_width);
-		y++;
-		if(y >= view->window_cells)
+
+		if(++cell >= view->window_cells)
+		{
 			break;
+		}
 	}
 
 	view->top_line = top;
