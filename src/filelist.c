@@ -922,10 +922,8 @@ draw_dir_list(FileView *view)
 	y = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
-		checked_wmove(view->win, y, 1);
-		wclrtoeol(view->win);
 		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
-		columns_format_line(view->columns, &cdt, col_width);
+		draw_cell(view, &cdt, col_width);
 		y++;
 		if(y >= view->window_cells)
 			break;
