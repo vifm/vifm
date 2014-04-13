@@ -125,6 +125,8 @@ static char * get_viewer_command(const char *viewer);
 static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
+static void draw_cell(const FileView *view, const column_data_t *cdt,
+		size_t col_width);
 static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
@@ -1079,7 +1081,6 @@ erase_current_line_bar(FileView *view)
 	int old_pos = view->top_line + old_cursor;
 	size_t col_width;
 	size_t col_count;
-	size_t print_width;
 	column_data_t cdt = {view, old_pos, 0};
 
 	if(old_cursor < 0)
@@ -1095,19 +1096,27 @@ erase_current_line_bar(FileView *view)
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = calculate_print_width(view, old_pos, col_width);
 
 	cdt.current_line = old_cursor/col_count;
 	cdt.column_offset = (old_cursor%col_count)*col_width;
 
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, &cdt, col_width);
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
+	draw_cell(view, &cdt, col_width);
 
 	if(view == other_view)
 	{
 		put_inactive_mark(view);
 	}
+}
+
+/* Draws a full cell of the file list. */
+static void
+draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width)
+{
+	const size_t print_width = calculate_print_width(view, cdt->line, col_width);
+
+	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, cdt, col_width);
+	column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
 }
 
 int
