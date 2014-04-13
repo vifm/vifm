@@ -90,12 +90,12 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	FileView *view;
-	size_t line_pos;
-	int is_current;
+	FileView *view;  /* View on which cell is being drawn. */
+	size_t line_pos; /* File position in the file list (the view). */
+	int is_current;  /* Whether this file is selected with the cursor. */
 
-	size_t current_line;
-	size_t column_offset;
+	size_t current_line;  /* Line of the cell. */
+	size_t column_offset; /* Offset in characters of the column. */
 }
 column_data_t;
 
