@@ -92,7 +92,7 @@ typedef struct
 {
 	FileView *view;
 	size_t line;
-	int current;
+	int is_current;
 	size_t current_line;
 	size_t column_offset;
 }
@@ -211,12 +211,12 @@ column_line_print(const void *data, int column_id, const char *buf,
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
 		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
-				entry->selected, cdt->current);
+				entry->selected, cdt->is_current);
 	}
 	else
 	{
 		line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->current);
+				cdt->is_current);
 	}
 
 	if(offset == 0 && ui_view_displays_numbers(view))
@@ -228,7 +228,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 		int is_current_line;
 
 		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->current);
+				cdt->is_current);
 
 		is_current_line = (i == view->list_pos);
 		mixed = is_current_line && view->num_type == NT_MIX;
@@ -926,7 +926,7 @@ draw_dir_list(FileView *view)
 		{
 			.view = view,
 			.line = x,
-			.current = 0,
+			.is_current = 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
 		};
