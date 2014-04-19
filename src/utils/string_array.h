@@ -70,7 +70,7 @@ char ** read_stream_lines(FILE *f, int *nlines);
 
 /* Overwrites file specified by filepath with lines.  Returns zero on success,
  * otherwise non-zero is returned and errno contains error code. */
-int write_file_of_lines(const char filepath[], char *lines[], size_t nlines);
+int write_file_of_lines(const char filepath[], char *strs[], size_t nstrs);
 
 #endif /* VIFM__UTILS__STRING_ARRAY_H__ */
 
