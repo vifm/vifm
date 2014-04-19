@@ -256,12 +256,15 @@ read_nonseekable_stream(FILE *const fp, size_t *read)
 
 /* Reads content of the fp stream that supports seek operation (points to a
  * file) until end-of-file into null terminated string.  Returns string of
- * length *read to be freed by caller on success, otherwise NULL is returned. */
+ * length *read to be freed by caller on success, otherwise NULL is returned and
+ * *read is set to 0UL. */
 static char *
 read_seekable_stream(FILE *const fp, size_t *read)
 {
 	char *content;
 	const size_t len = get_remaining_stream_size(fp);
+
+	*read = 0UL;
 
 	if((content = malloc(len + 1U)) == NULL)
 	{
