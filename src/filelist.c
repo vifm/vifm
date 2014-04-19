@@ -2515,7 +2515,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	char name_with_slash[NAME_MAX + 1 + 1];
 	if(is_dir)
 	{
-		sprintf(name_with_slash, "%s%c", filename, is_dir ? '/' : '\0');
+		sprintf(name_with_slash, "%s/", filename);
 		filename = name_with_slash;
 	}
 
