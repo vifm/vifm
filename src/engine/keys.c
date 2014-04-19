@@ -714,7 +714,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 			parent->child = curr->next;
 		if(curr->next != NULL)
 			curr->next->prev = curr->prev;
-		free(curr);
+		free_chunk(curr);
 		curr = parent;
 	}
 	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
