@@ -307,7 +307,7 @@ format_mount_command(const char mount_point[], const char file_name[],
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
 			{
-				strcpy(buf_pos, escaped_mount_point);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_mount_point);
 				buf_pos += strlen(escaped_mount_point);
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))

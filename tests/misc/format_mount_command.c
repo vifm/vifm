@@ -74,6 +74,21 @@ test_too_long_param(void)
 	assert_string_equal(expected, buf);
 }
 
+static void
+test_too_long_dest(void)
+{
+	int clear;
+	char buf[10];
+	char format[] = "FUSE_MOUNT2|%DESTINATION_DIR";
+	char expected[] = "012345678";
+
+	clear = format_mount_command("0123456789abcdefghijklmnopqrstuvw", "y", "z",
+			format, sizeof(buf), buf);
+
+	assert_int_equal(0, clear);
+	assert_string_equal(expected, buf);
+}
+
 void
 format_mount_command_tests(void)
 {
@@ -84,6 +99,7 @@ format_mount_command_tests(void)
 	run_test(test_clear_macro_returns_non_zero);
 	run_test(test_options_before_macros);
 	run_test(test_too_long_param);
+	run_test(test_too_long_dest);
 
 	test_fixture_end();
 }
