@@ -489,7 +489,6 @@ undo_group(void)
 	current->group->balance--;
 
 	skip = 0;
-	cancelled = 0;
 	do
 	{
 		if(!skip)
@@ -573,7 +572,6 @@ redo_group(void)
 	current->next->group->balance++;
 
 	skip = 0;
-	cancelled = 0;
 	do
 	{
 		current = current->next;
