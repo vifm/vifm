@@ -422,16 +422,19 @@ has_uppercase_letters(const char str[])
 {
 	int has_uppercase = 0;
 	wchar_t *const wstring = to_wide(str);
-	const wchar_t *p = wstring - 1;
-	while(*++p != L'\0')
+	if(wstring != NULL)
 	{
-		if(iswupper(*p))
+		const wchar_t *p = wstring - 1;
+		while(*++p != L'\0')
 		{
-			has_uppercase = 1;
-			break;
+			if(iswupper(*p))
+			{
+				has_uppercase = 1;
+				break;
+			}
 		}
+		free(wstring);
 	}
-	free(wstring);
 	return has_uppercase;
 }
 
