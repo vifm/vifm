@@ -1689,8 +1689,8 @@ chown_cmd(const cmd_info_t *cmd_info)
 {
 	char *colon, *user, *group;
 	int u, g;
-	uid_t uid;
-	gid_t gid;
+	uid_t uid = (uid_t)-1;
+	gid_t gid = (gid_t)-1;
 
 	if(cmd_info->argc == 0)
 	{
