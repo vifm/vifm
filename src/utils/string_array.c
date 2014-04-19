@@ -173,7 +173,7 @@ read_file_of_lines(const char filepath[], int *nlines)
 	char **list = text_to_lines(text, text_len, nlines);
 	if(list == NULL)
 	{
-		list = malloc(1);
+		list = malloc(sizeof(*list));
 		*nlines = 0;
 	}
 	return list;
