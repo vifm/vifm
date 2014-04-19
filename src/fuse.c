@@ -302,7 +302,7 @@ format_mount_command(const char mount_point[], const char file_name[],
 			}
 			else if(!strcmp(cmd_buf, "%PARAM"))
 			{
-				strcpy(buf_pos, param);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), param);
 				buf_pos += strlen(param);
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
