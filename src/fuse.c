@@ -292,12 +292,10 @@ format_mount_command(const char mount_point[], const char file_name[],
 				prog_pos++;
 			}
 			*cmd_pos = '\0';
-			/* FIXME: possible buffer overflow */
-			if(buf_pos + strlen(escaped_path) >= buf + buf_size + 2)
-				continue;
-			else if(!strcmp(cmd_buf, "%SOURCE_FILE"))
+
+			if(!strcmp(cmd_buf, "%SOURCE_FILE"))
 			{
-				strcpy(buf_pos, escaped_path);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_path);
 				buf_pos += strlen(escaped_path);
 			}
 			else if(!strcmp(cmd_buf, "%PARAM"))
