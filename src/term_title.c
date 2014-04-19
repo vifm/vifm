@@ -173,6 +173,7 @@ restore_term_title()
 	{
 		char *const title = format_str("\033]2;%s\007", title_state.title);
 		putp(title);
+		fflush(stdout);
 		free(title);
 	}
 
@@ -238,6 +239,7 @@ set_terminal_title(const char *path)
 #else
 	char *const title = format_str("\033]2;%s - VIFM\007", path);
 	putp(title);
+	fflush(stdout);
 	free(title);
 #endif
 }
