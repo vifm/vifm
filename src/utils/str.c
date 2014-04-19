@@ -238,6 +238,14 @@ until_first(const char str[], char c)
 	return (char *)result;
 }
 
+char *
+after_first(const char str[], char c)
+{
+	const char *result = strchr(str, c);
+	result = (result == NULL) ? (str + strlen(str)) : (result + 1);
+	return (char *)result;
+}
+
 int
 replace_string(char **str, const char with[])
 {

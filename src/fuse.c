@@ -270,12 +270,9 @@ format_mount_command(const char mount_point[], const char file_name[],
 	escaped_mount_point = escape_filename(mount_point, 0);
 
 	buf_pos = buf;
-	prog_pos = format;
-	strcpy(buf_pos, "");
-	buf_pos += strlen(buf_pos);
-	while(*prog_pos != '\0' && *prog_pos != '|')
-		prog_pos++;
-	prog_pos++;
+	buf_pos[0] = '\0';
+
+	prog_pos = after_first(format, '|');
 	while(*prog_pos != '\0')
 	{
 		if(*prog_pos == '%')
