@@ -222,9 +222,11 @@ prompt_error_msg_internalv(const char title[], const char format[],
 	return prompt_error_msg_internal(title, buf, prompt_skip);
 }
 
-/* Internal function for displaying messages to a user.  When the prompt_skip
+/* Internal function for displaying error messages to a user.  Automatically
+ * skips whitespace in front of the message and does nothing for empty messages
+ * (due to skipping whitespace-only are counted as empty). When the prompt_skip
  * isn't zero, asks user about successive messages.  Returns non-zero if all
- * successive messages should be skipped. */
+ * successive messages should be skipped, otherwise zero is returned. */
 static int
 prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip)
@@ -236,6 +238,12 @@ prompt_error_msg_internal(const char title[], const char message[],
 		return 1;
 	if(curr_stats.load_stage < 2 && skip_until_started)
 		return 1;
+
+	message = skip_whitespace(message);
+	if(*message == '\0')
+	{
+		return 0;
+	}
 
 	curr_stats.errmsg_shown = 1;
 
