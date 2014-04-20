@@ -594,7 +594,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		else if(flags == MACRO_IGNORE)
 			output_to_nowhere(command);
 		else
-			shellout(command, pause ? 1 : -1, 1);
+			shellout(command, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
 
 		free(command);
 	}
