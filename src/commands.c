@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcat() strchr() strcmp() strcpy() strncpy() strlen() */
+#include <string.h> /* strcat() strchr() strcmp() strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1363,12 +1363,12 @@ exec_command(const char cmd[], FileView *view, int type)
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{
-		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		copy_str(view->regexp, sizeof(view->regexp), cmd);
 		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN);
 	}
 	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 	{
-		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		copy_str(view->regexp, sizeof(view->regexp), cmd);
 		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
 	}
 	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
