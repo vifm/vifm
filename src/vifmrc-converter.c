@@ -427,7 +427,7 @@ read_config_file(const char *config_file)
 			}
 			if(!strcmp(line, "COLOR_SCHEME"))
 			{
-				snprintf(color_scheme, sizeof(color_scheme), s1);
+				snprintf(color_scheme, sizeof(color_scheme), "%s", s1);
 				continue;
 			}
 			if(!strcmp(line, "TIME_STAMP_FORMAT"))
