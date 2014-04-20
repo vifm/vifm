@@ -124,23 +124,27 @@ static struct
 	int windows;   /* vnumber of windows */
 	int lwin_sort; /* lleft window sort */
 	int rwin_sort; /* rright window sort */
-}tui = {
+}
+tui =
+{
 	.windows = 2,
 	.lwin_sort = 2, /* by name */
 	.rwin_sort = 2, /* by name */
 };
 
-static char lwin_dir[PATH_MAX]; /* dleft window directory */
-static char rwin_dir[PATH_MAX]; /* Dright window directory */
+static char lwin_dir[PATH_MAX]; /* [d] left window directory */
+static char rwin_dir[PATH_MAX]; /* [D] right window directory */
 
 static struct
 {
-	char *lwin_filter; /* fleft window filter */
-	int lwin_inverted; /* ileft window filter inverted */
-	char *rwin_filter; /* Fright window filter */
-	int rwin_inverted; /* Iright window filter inverted */
-	int use_screen;    /* suse screen program */
-}state = {
+	char *lwin_filter; /* [f] left window filter */
+	int lwin_inverted; /* [i] left window filter inverted */
+	char *rwin_filter; /* [F] right window filter */
+	int rwin_inverted; /* [I] right window filter inverted */
+	int use_screen;    /* [s] use screen program */
+}
+state =
+{
 	.lwin_filter = NULL,
 	.lwin_inverted = 1,
 	.rwin_filter = NULL,
@@ -148,7 +152,8 @@ static struct
 	.use_screen = 0,
 };
 
-char *HI_GROUPS[] = {
+char *HI_GROUPS[] =
+{
 	[WIN_COLOR]          = "Win",
 	[DIRECTORY_COLOR]    = "Directory",
 	[LINK_COLOR]         = "Link",
@@ -1083,7 +1088,7 @@ read_color_scheme_file(const char *config_file)
 		return;
 	}
 
-	while(fgets(line, MAX_LEN, fp))
+	while(fgets(line, sizeof(line), fp))
 	{
 		int args;
 
