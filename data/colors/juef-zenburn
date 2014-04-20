@@ -1,0 +1,21 @@
+" vim: filetype=vifm :
+
+" Author: Svyatoslav Mishyn (a.k.a. juef)
+
+highlight Win cterm=none ctermfg=188 ctermbg=237
+highlight Directory cterm=none ctermfg=108 ctermbg=default
+highlight CmdLine cterm=none ctermfg=188 ctermbg=237
+highlight ErrorMsg cterm=bold ctermfg=115 ctermbg=default
+highlight TopLine cterm=none ctermfg=174 ctermbg=235
+highlight TopLineSel cterm=bold ctermfg=174 ctermbg=235
+highlight StatusLine cterm=bold ctermfg=144 ctermbg=235
+highlight Executable cterm=none ctermfg=172 ctermbg=default
+highlight Selected cterm=none ctermfg=116 ctermbg=238
+highlight Border cterm=none ctermfg=default ctermbg=235
+highlight CurrLine cterm=none ctermfg=223 ctermbg=235
+highlight WildMenu cterm=bold,reverse ctermfg=144 ctermbg=235
+highlight Link cterm=none ctermfg=142 ctermbg=default
+highlight BrokenLink cterm=none ctermfg=181 ctermbg=default
+highlight Device cterm=none ctermfg=174 ctermbg=default
+highlight Fifo cterm=none ctermfg=109 ctermbg=default
+highlight Socket cterm=none ctermfg=magenta ctermbg=default
