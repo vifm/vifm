@@ -1819,7 +1819,7 @@ format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
 			entry->name[name_len - 1] = '\0';
 		}
 	}
-	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
+	snprintf(buf, buf_len, "%s%s%s", prefix, entry->name, suffix);
 	/* FIXME: remove this hack for directories. */
 	if(type == DIRECTORY)
 	{
