@@ -1090,7 +1090,8 @@ static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	/* TODO: refactor this cmd_ctrl_m() function. */
-	char* p;
+	char *p;
+	const char *nonnull_input;
 
 	stop_completion();
 	werase(status_bar);
@@ -1103,6 +1104,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	p = input_stat.line ? to_multibyte(input_stat.line) : NULL;
+	nonnull_input = (p != NULL) ? p : "";
 
 	leave_cmdline_mode();
 
@@ -1114,13 +1116,17 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
-		char* s = (p != NULL) ? p : "";
-		while(*s == ' ' || *s == ':')
-			s++;
-		if(sub_mode == CMD_SUBMODE)
-			curr_stats.save_msg = exec_commands(s, curr_view, GET_COMMAND);
-		else
-			curr_stats.save_msg = exec_commands(s, curr_view, GET_MENU_COMMAND);
+		const CMD_LINE_SUBMODES cmd_type = (sub_mode == CMD_SUBMODE)
+		                                 ? GET_COMMAND
+		                                 : GET_MENU_COMMAND;
+
+		const char *real_start = nonnull_input;
+		while(*real_start == ' ' || *real_start == ':')
+		{
+			real_start++;
+		}
+
+		curr_stats.save_msg = exec_commands(real_start, curr_view, cmd_type);
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{
@@ -1134,7 +1140,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		}
 		else
 		{
-			local_filter_apply(curr_view, p);
+			local_filter_apply(curr_view, nonnull_input);
 			load_saving_pos(curr_view, 1);
 		}
 	}
