@@ -18,6 +18,7 @@
 
 #include "string_array.h"
 
+#include <assert.h> /* assert() */
 #include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fopen() fprintf() fread()
@@ -173,7 +174,7 @@ read_file_of_lines(const char filepath[], int *nlines)
 	char **list = text_to_lines(text, text_len, nlines);
 	if(list == NULL)
 	{
-		list = malloc(1);
+		list = malloc(sizeof(*list));
 		*nlines = 0;
 	}
 	return list;
@@ -256,12 +257,15 @@ read_nonseekable_stream(FILE *const fp, size_t *read)
 
 /* Reads content of the fp stream that supports seek operation (points to a
  * file) until end-of-file into null terminated string.  Returns string of
- * length *read to be freed by caller on success, otherwise NULL is returned. */
+ * length *read to be freed by caller on success, otherwise NULL is returned and
+ * *read is set to 0UL. */
 static char *
 read_seekable_stream(FILE *const fp, size_t *read)
 {
 	char *content;
 	const size_t len = get_remaining_stream_size(fp);
+
+	*read = 0UL;
 
 	if((content = malloc(len + 1U)) == NULL)
 	{
@@ -289,6 +293,7 @@ get_remaining_stream_size(FILE *const fp)
 {
 	size_t remaining_size;
 	const long pos = ftell(fp);
+	assert(pos >= 0 && "Stream expected to support seek operation.");
 
 	(void)fseek(fp, 0, SEEK_END);
 	remaining_size = ftell(fp) - pos;

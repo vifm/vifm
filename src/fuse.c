@@ -270,12 +270,9 @@ format_mount_command(const char mount_point[], const char file_name[],
 	escaped_mount_point = escape_filename(mount_point, 0);
 
 	buf_pos = buf;
-	prog_pos = format;
-	strcpy(buf_pos, "");
-	buf_pos += strlen(buf_pos);
-	while(*prog_pos != '\0' && *prog_pos != '|')
-		prog_pos++;
-	prog_pos++;
+	buf_pos[0] = '\0';
+
+	prog_pos = after_first(format, '|');
 	while(*prog_pos != '\0')
 	{
 		if(*prog_pos == '%')
@@ -292,22 +289,20 @@ format_mount_command(const char mount_point[], const char file_name[],
 				prog_pos++;
 			}
 			*cmd_pos = '\0';
-			/* FIXME: possible buffer overflow */
-			if(buf_pos + strlen(escaped_path) >= buf + buf_size + 2)
-				continue;
-			else if(!strcmp(cmd_buf, "%SOURCE_FILE"))
+
+			if(!strcmp(cmd_buf, "%SOURCE_FILE"))
 			{
-				strcpy(buf_pos, escaped_path);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_path);
 				buf_pos += strlen(escaped_path);
 			}
 			else if(!strcmp(cmd_buf, "%PARAM"))
 			{
-				strcpy(buf_pos, param);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), param);
 				buf_pos += strlen(param);
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
 			{
-				strcpy(buf_pos, escaped_mount_point);
+				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_mount_point);
 				buf_pos += strlen(escaped_mount_point);
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))

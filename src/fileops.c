@@ -112,10 +112,10 @@ TSTATIC const char * add_to_name(const char filename[], int k);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
 static int is_file_name_changed(const char old[], const char new[]);
-static void put_confirm_cb(const char *dest_name);
+static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
-static void put_decide_cb(const char *dest_name);
+static void put_decide_cb(const char dest_name[]);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
@@ -481,7 +481,7 @@ delete_file_bg(FileView *view, int use_trash)
 }
 
 static void
-rename_file_cb(const char *new_name)
+rename_file_cb(const char new_name[])
 {
 	char *filename = get_current_file_name(curr_view);
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
@@ -490,8 +490,10 @@ rename_file_cb(const char *new_name)
 	int mv_res;
 	char **filename_ptr;
 
-	if(new_name == NULL || new_name[0] == '\0')
+	if(is_null_or_empty(new_name))
+	{
 		return;
+	}
 
 	if(contains_slash(new_name))
 	{
@@ -1142,13 +1144,15 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 #endif
 
 static void
-change_owner_cb(const char *new_owner)
+change_owner_cb(const char new_owner[])
 {
 #ifndef _WIN32
 	uid_t uid;
 
-	if(new_owner == NULL || new_owner[0] == '\0')
+	if(is_null_or_empty(new_owner))
+	{
 		return;
+	}
 
 	if(get_uid(new_owner, &uid) != 0)
 	{
@@ -1187,13 +1191,15 @@ change_owner(void)
 }
 
 static void
-change_group_cb(const char *new_group)
+change_group_cb(const char new_group[])
 {
 #ifndef _WIN32
 	gid_t gid;
 
-	if(new_group == NULL || new_group[0] == '\0')
+	if(is_null_or_empty(new_group))
+	{
 		return;
+	}
 
 	if(get_gid(new_group, &gid) != 0)
 	{
@@ -1232,14 +1238,16 @@ change_group(void)
 }
 
 static void
-change_link_cb(const char *new_target)
+change_link_cb(const char new_target[])
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX)];
 	char linkto[PATH_MAX];
 	const char *filename;
 
-	if(new_target == NULL || new_target[0] == '\0')
+	if(is_null_or_empty(new_target))
+	{
 		return;
+	}
 
 	curr_stats.confirmed = 1;
 
@@ -1511,12 +1519,9 @@ put_next(const char dest_name[], int override)
 }
 
 static void
-put_confirm_cb(const char *dest_name)
+put_confirm_cb(const char dest_name[])
 {
-	if(dest_name == NULL || dest_name[0] == '\0')
-		return;
-
-	if(put_next(dest_name, 0) == 0)
+	if(!is_null_or_empty(dest_name) && put_next(dest_name, 0) == 0)
 	{
 		put_confirm.x++;
 		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
@@ -1524,9 +1529,9 @@ put_confirm_cb(const char *dest_name)
 }
 
 static void
-put_decide_cb(const char *choice)
+put_decide_cb(const char choice[])
 {
-	if(choice == NULL || choice[0] == '\0' || strcmp(choice, "r") == 0)
+	if(is_null_or_empty(choice) || strcmp(choice, "r") == 0)
 	{
 		prompt_dest_name(put_confirm.name);
 	}
@@ -2125,12 +2130,12 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	{
 		char buf[NAME_MAX];
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		j++;
 		if(strcmp(buf, dest[j]) == 0)
@@ -2193,12 +2198,12 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		regmatch_t matches[10];
 		struct stat st;
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
 		{
@@ -2291,12 +2296,12 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 		const char *dst;
 		struct stat st;
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		dst = substitute_tr(buf, pattern, sub);
 		if(strcmp(buf, dst) == 0)

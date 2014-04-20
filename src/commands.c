@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcat() strchr() strcmp() strcpy() strncpy() strlen() */
+#include <string.h> /* strcat() strchr() strcmp() strcpy() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -1340,9 +1340,9 @@ exec_command(const char cmd[], FileView *view, int type)
 		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
 		if(type == GET_COMMAND)
-			return execute_command(view, cmd, 0);
+			return execute_command(view, NULL, 0);
 		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
-			return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
+			return find_vwpattern(NULL, type == GET_VWBSEARCH_PATTERN);
 		if(type == GET_FILTER_PATTERN)
 		{
 			local_filter_apply(view, "");
@@ -1363,12 +1363,12 @@ exec_command(const char cmd[], FileView *view, int type)
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{
-		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		copy_str(view->regexp, sizeof(view->regexp), cmd);
 		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN);
 	}
 	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 	{
-		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		copy_str(view->regexp, sizeof(view->regexp), cmd);
 		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
 	}
 	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
@@ -1689,8 +1689,8 @@ chown_cmd(const cmd_info_t *cmd_info)
 {
 	char *colon, *user, *group;
 	int u, g;
-	uid_t uid;
-	gid_t gid;
+	uid_t uid = (uid_t)-1;
+	gid_t gid = (gid_t)-1;
 
 	if(cmd_info->argc == 0)
 	{

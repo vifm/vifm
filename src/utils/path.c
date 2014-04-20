@@ -25,8 +25,7 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
-                       strncat() strncpy() strchr() strcpy() strlen()
-                       strrchr() */
+                       strncat() strchr() strcpy() strlen() strrchr() */
 
 #ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
@@ -392,9 +391,14 @@ replace_home_part(const char directory[])
 	len = strlen(cfg.home_dir) - 1;
 	if(strnoscmp(directory, cfg.home_dir, len) == 0 &&
 			(directory[len] == '\0' || directory[len] == '/'))
+	{
 		strncat(strcpy(buf, "~"), directory + len, sizeof(buf) - strlen(buf) - 1);
+	}
 	else
-		strncpy(buf, directory, sizeof(buf));
+	{
+		copy_str(buf, sizeof(buf), directory);
+	}
+
 	if(!is_root_dir(buf))
 		chosp(buf);
 

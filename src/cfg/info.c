@@ -488,7 +488,6 @@ update_info_file(const char filename[])
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
 	char **dir_stack = NULL;
 	int ndir_stack = 0;
-	int i;
 	char *non_conflicting_bmarks;
 
 	if(cfg.vifm_info == 0)
@@ -560,6 +559,7 @@ update_info_file(const char filename[])
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
+					int i;
 					const char *p = line_val;
 					for(i = 0; i < ncmds_list; i += 2)
 					{

@@ -138,7 +138,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 			if(is_parent_dir(view->dir_entry[x].name))
 				continue;
 
-			strncpy(buf, view->dir_entry[x].name, sizeof(buf));
+			copy_str(buf, sizeof(buf), view->dir_entry[x].name);
 			chosp(buf);
 			if(regexec(&re, buf, 0, NULL, 0) != 0)
 				continue;

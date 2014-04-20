@@ -89,6 +89,8 @@
 	Do not use terminal multiplexer for internal edit operations (editing of
 	file names or command-line).
 
+	Skip empty and whitespace only error messages, they are of no use.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
@@ -158,6 +160,9 @@
 
 	Fixed selection borders UI glitch.  Thanks to Svyatoslav Mishyn, a.k.a.
 	juef.
+
+	Fixed issues discovered by cppcheck, Clang static analyzer and Coverity
+	scan tools.
 
 0.7.6-beta2 to 0.7.6
 
