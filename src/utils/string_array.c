@@ -18,6 +18,7 @@
 
 #include "string_array.h"
 
+#include <assert.h> /* assert() */
 #include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fopen() fprintf() fread()
@@ -292,6 +293,7 @@ get_remaining_stream_size(FILE *const fp)
 {
 	size_t remaining_size;
 	const long pos = ftell(fp);
+	assert(pos >= 0 && "Stream expected to support seek operation.");
 
 	(void)fseek(fp, 0, SEEK_END);
 	remaining_size = ftell(fp) - pos;
