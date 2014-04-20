@@ -158,35 +158,16 @@ job_check(job_t *const job)
 	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
 		char buf[256];
-		ssize_t nread;
-		char *error_buf = NULL;
 
-		nread = read(job->fd, buf, sizeof(buf) - 1);
+		const ssize_t nread = read(job->fd, buf, sizeof(buf) - 1);
 		if(nread == 0)
 		{
 			break;
 		}
-		else if(nread > 0)
+		else if(nread > 0 && !job->skip_errors)
 		{
-			error_buf = malloc((size_t)nread + 1);
-			if(error_buf == NULL)
-			{
-				show_error_msg("Memory Error", "Unable to allocate enough memory");
-			}
-			else
-			{
-				copy_str(error_buf, (size_t)nread + 1, buf);
-			}
-		}
-
-		if(error_buf != NULL)
-		{
-			if(!job->skip_errors)
-			{
-				job->skip_errors = prompt_error_msg("Background Process Error",
-						error_buf);
-			}
-			free(error_buf);
+			buf[nread] = '\0';
+			job->skip_errors = prompt_error_msg("Background Process Error", buf);
 		}
 	}
 #else
