@@ -1340,9 +1340,9 @@ exec_command(const char cmd[], FileView *view, int type)
 		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
 		if(type == GET_COMMAND)
-			return execute_command(view, cmd, 0);
+			return execute_command(view, NULL, 0);
 		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
-			return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
+			return find_vwpattern(NULL, type == GET_VWBSEARCH_PATTERN);
 		if(type == GET_FILTER_PATTERN)
 		{
 			local_filter_apply(view, "");
