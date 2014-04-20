@@ -2130,12 +2130,12 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	{
 		char buf[NAME_MAX];
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		j++;
 		if(strcmp(buf, dest[j]) == 0)
@@ -2198,12 +2198,12 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		regmatch_t matches[10];
 		struct stat st;
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
 		{
@@ -2296,12 +2296,12 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 		const char *dst;
 		struct stat st;
 
-		if(!view->dir_entry[i].selected)
+		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		{
 			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
+		}
 
-		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
 		chosp(buf);
 		dst = substitute_tr(buf, pattern, sub);
 		if(strcmp(buf, dst) == 0)
