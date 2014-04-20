@@ -42,7 +42,7 @@
 	ranousse and filterfalse.
 
 	Added %n macro which suppresses using of terminal multiplexer in a
-	command.
+	command (user-defined :command, :!command or :file[x]type action).
 
 	Added sample dark solarized color scheme (provided by Stéphane, a.k.a.
 	istib).
