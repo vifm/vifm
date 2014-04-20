@@ -48,6 +48,9 @@
 #include "commands_completion.h"
 #include "status.h"
 
+/* Size of error message reading buffer. */
+#define ERR_MSG_LEN 1025
+
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 
@@ -157,7 +160,7 @@ job_check(job_t *const job)
 
 	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
-		char err_msg[256];
+		char err_msg[ERR_MSG_LEN];
 
 		const ssize_t nread = read(job->fd, err_msg, sizeof(err_msg) - 1);
 		if(nread == 0)
