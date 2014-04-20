@@ -161,6 +161,9 @@
 	Fixed selection borders UI glitch.  Thanks to Svyatoslav Mishyn, a.k.a.
 	juef.
 
+	Fixed issues discovered by cppcheck, Clang static analyzer and Coverity
+	scan tools.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.
