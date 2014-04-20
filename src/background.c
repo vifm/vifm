@@ -148,8 +148,8 @@ job_check(job_t *const job)
 	{
 		if(!job->skip_errors)
 		{
-			job->skip_errors =
-				prompt_error_msg("Background Process Error", job->error);
+			job->skip_errors = prompt_error_msg("Background Process Error",
+					job->error);
 		}
 		free(job->error);
 		job->error = NULL;
@@ -157,17 +157,17 @@ job_check(job_t *const job)
 
 	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
-		char buf[256];
+		char err_msg[256];
 
-		const ssize_t nread = read(job->fd, buf, sizeof(buf) - 1);
+		const ssize_t nread = read(job->fd, err_msg, sizeof(err_msg) - 1);
 		if(nread == 0)
 		{
 			break;
 		}
 		else if(nread > 0 && !job->skip_errors)
 		{
-			buf[nread] = '\0';
-			job->skip_errors = prompt_error_msg("Background Process Error", buf);
+			err_msg[nread] = '\0';
+			job->skip_errors = prompt_error_msg("Background Process Error", err_msg);
 		}
 	}
 #else
