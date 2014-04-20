@@ -164,6 +164,9 @@
 	Fixed issues discovered by cppcheck, Clang static analyzer and Coverity
 	scan tools.
 
+	Fixed updating terminal title for some environments.  Thanks to
+	filterfalse.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

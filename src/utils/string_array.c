@@ -361,7 +361,7 @@ break_into_lines(char text[], size_t text_len, int *nlines)
 }
 
 int
-write_file_of_lines(const char filepath[], char *lines[], size_t nlines)
+write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 {
 	FILE *fp;
 	size_t i;
@@ -371,9 +371,9 @@ write_file_of_lines(const char filepath[], char *lines[], size_t nlines)
 		return 1;
 	}
 
-	for(i = 0U; i < nlines; i++)
+	for(i = 0U; i < nstrs; i++)
 	{
-		fprintf(fp, "%s\n", lines[i]);
+		fprintf(fp, "%s\n", strs[i]);
 	}
 
 	fclose(fp);

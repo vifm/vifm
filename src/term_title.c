@@ -20,6 +20,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <term.h>
 #endif
 
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -31,7 +33,7 @@
 #endif
 
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* atol() */
+#include <stdlib.h> /* atol() free() */
 
 #include "utils/env.h"
 #include "utils/macros.h"
@@ -168,7 +170,12 @@ restore_term_title()
 		SetConsoleTitleW(title_state.title);
 #else
 	if(title_state.title[0] != '\0')
-		printf("\033]2;%s\007", title_state.title);
+	{
+		char *const title = format_str("\033]2;%s\007", title_state.title);
+		putp(title);
+		fflush(stdout);
+		free(title);
+	}
 
 #if defined(HAVE_X11) && defined(DYN_X11)
 	unload_xlib();
@@ -230,7 +237,10 @@ set_terminal_title(const char *path)
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"%" WPRINTF_MBSTR L" - VIFM", path);
 	SetConsoleTitleW(buf);
 #else
-	printf("\033]2;%s - VIFM\007", path);
+	char *const title = format_str("\033]2;%s - VIFM\007", path);
+	putp(title);
+	fflush(stdout);
+	free(title);
 #endif
 }
 
