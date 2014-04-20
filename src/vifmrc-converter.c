@@ -87,7 +87,7 @@ static struct
 	.timefmt = " %m/%d %H:%M"
 };
 
-static char *color_scheme = "Default"; /* COLOR_SCHEME */
+static char color_scheme[MAX_LEN] = "Default"; /* COLOR_SCHEME */
 
 typedef struct
 {
@@ -130,8 +130,8 @@ static struct
 	.rwin_sort = 2, /* by name */
 };
 
-static char *lwin_dir; /* dleft window directory */
-static char *rwin_dir; /* Dright window directory */
+static char lwin_dir[PATH_MAX]; /* dleft window directory */
+static char rwin_dir[PATH_MAX]; /* Dright window directory */
 
 static struct
 {
@@ -397,12 +397,12 @@ read_config_file(const char *config_file)
 			}
 			if(!strcmp(line, "LWIN_PATH"))
 			{
-				lwin_dir = strdup(s1);
+				snprintf(lwin_dir, sizeof(lwin_dir), "%s", s1);
 				continue;
 			}
 			if(!strcmp(line, "RWIN_PATH"))
 			{
-				rwin_dir = strdup(s1);
+				snprintf(rwin_dir, sizeof(rwin_dir), "%s", s1);
 				continue;
 			}
 			if(!strcmp(line, "FOLLOW_LINKS"))
@@ -422,7 +422,7 @@ read_config_file(const char *config_file)
 			}
 			if(!strcmp(line, "COLOR_SCHEME"))
 			{
-				color_scheme = strdup(s1);
+				snprintf(color_scheme, sizeof(color_scheme), s1);
 				continue;
 			}
 			if(!strcmp(line, "TIME_STAMP_FORMAT"))
