@@ -47,6 +47,8 @@
 	Added sample dark solarized color scheme (provided by Stéphane, a.k.a.
 	istib).
 
+	Added zenburn color scheme (provided by Svyatoslav Mishyn, a.k.a. juef).
+
 	Extended 'trashdir' to handle list of path, some of which can specify
 	location of trash directories local to each mount point.  Thanks to
 	smpolymen and Sergei Shilovsky.
