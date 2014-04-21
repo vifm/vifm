@@ -76,7 +76,9 @@ run_in_shell_no_cls(char command[])
 
 	if(curr_stats.shell_type == ST_CMD)
 	{
-		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+		/* See "cmd /?" for an "explanation" why extra double quotes are
+		 * omitted. */
+		snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
 		return system(buf);
 	}
 	else
