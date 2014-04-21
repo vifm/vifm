@@ -43,9 +43,9 @@
 #define SCREEN_ENVVAR "STY"
 #define TMUX_ENVVAR "TMUX"
 
-static void load_def_values(status_t *stats);
+static void load_def_values(status_t *stats, config_t *config);
 static void set_gtk_available(status_t *stats);
-static void set_number_of_windows(status_t *stats);
+static void set_number_of_windows(status_t *stats, config_t *config);
 static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
 static void set_last_cmdline_command(const char cmd[]);
@@ -57,14 +57,14 @@ static int inside_screen;
 static int inside_tmux;
 
 int
-init_status(void)
+init_status(config_t *config)
 {
 	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
 	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
 
-	load_def_values(&curr_stats);
+	load_def_values(&curr_stats, config);
 	set_gtk_available(&curr_stats);
-	set_number_of_windows(&curr_stats);
+	set_number_of_windows(&curr_stats, config);
 	set_env_type(&curr_stats);
 
 	return reset_status();
@@ -73,7 +73,7 @@ init_status(void)
 /* Initializes most fields of the status structure, some are left to be
  * initialized by the reset_status() function. */
 static void
-load_def_values(status_t *stats)
+load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
 
@@ -93,7 +93,7 @@ load_def_values(status_t *stats)
 	stats->confirmed = 0;
 	stats->skip_shellout_redraw = 0;
 	stats->cs_base = DCOLOR_BASE;
-	stats->cs = &cfg.cs;
+	stats->cs = &config->cs;
 	strcpy(stats->color_scheme, "");
 
 	stats->msg_head = 0;
@@ -137,9 +137,9 @@ set_gtk_available(status_t *stats)
 }
 
 static void
-set_number_of_windows(status_t *stats)
+set_number_of_windows(status_t *stats, config_t *config)
 {
-	if(cfg.show_one_window)
+	if(config->show_one_window)
 		curr_stats.number_of_windows = 1;
 	else
 		curr_stats.number_of_windows = 2;

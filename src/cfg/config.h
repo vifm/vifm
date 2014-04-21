@@ -48,7 +48,7 @@ enum
 	DECORATION_SUFFIX, /* The symbol, which is appended to file name. */
 };
 
-typedef struct
+typedef struct config_t
 {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];

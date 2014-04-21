@@ -318,7 +318,7 @@ main(int argc, char *argv[])
 	init_builtin_functions();
 	update_path_env(1);
 
-	if(init_status() != 0)
+	if(init_status(&cfg) != 0)
 	{
 		puts("Error during session status initialization.");
 		return -1;

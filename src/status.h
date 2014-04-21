@@ -29,6 +29,8 @@
 
 #include "color_scheme.h"
 
+struct config_t;
+
 typedef enum
 {
 	HSPLIT,
@@ -143,7 +145,7 @@ status_t;
 extern status_t curr_stats;
 
 /* Returns non-zero on error. */
-int init_status(void);
+int init_status(struct config_t *config);
 
 /* Resets some part of runtime status information to its initial values.
  * Returns non-zero on error. */
