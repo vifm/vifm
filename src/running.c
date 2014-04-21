@@ -71,7 +71,7 @@ static void run_win_executable(char full_path[]);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
 static int selection_is_consistent(const FileView *const view);
-static void execute_file(char full_path[]);
+static void execute_file(const char full_path[]);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
@@ -297,15 +297,19 @@ selection_is_consistent(const FileView *const view)
 /* Executes file, specified by the full_path.  Changes type of slashes on
  * Windows. */
 static void
-execute_file(char full_path[])
+execute_file(const char full_path[])
 {
 #ifndef _WIN32
 	char *const escaped = escape_filename(full_path, 0);
 	shellout(escaped, 1, 1);
 	free(escaped);
 #else
-	to_back_slash(full_path);
-	run_win_executable(full_path);
+	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
+
+	to_back_slash(dquoted_full_path);
+	run_win_executable(dquoted_full_path);
+
+	free(dquoted_full_path);
 #endif
 }
 
