@@ -65,6 +65,14 @@
 /* Maximum supported by the implementation length of line in vifmrc file. */
 #define MAX_VIFMRC_LINE_LEN 4*1024
 
+/* Default value of shell command used if $SHELL environment variable isn't
+ * set. */
+#ifndef _WIN32
+#define DEFAULT_SHELL_CMD "sh"
+#else
+#define DEFAULT_SHELL_CMD "cmd"
+#endif
+
 config_t cfg;
 
 static void find_home_dir(void);
@@ -182,11 +190,7 @@ init_config(void)
 	strcat(cfg.log_file, "/startup-log");
 #endif
 
-#ifndef _WIN32
-	cfg.shell = strdup(env_get_def("SHELL", "sh"));
-#else
-	cfg.shell = strdup(env_get_def("SHELL", "cmd"));
-#endif
+	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
 #ifndef _WIN32
 	/* Maximum argument length to pass to the shell */
@@ -890,6 +894,12 @@ save_into_history(const char item[], hist_t *hist, int len)
 	{
 		hist_add(hist, item, len);
 	}
+}
+
+void
+cfg_set_shell(const char shell[])
+{
+	(void)replace_string(&cfg.shell, shell);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

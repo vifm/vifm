@@ -1076,7 +1076,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 static void
 shell_handler(OPT_OP op, optval_t val)
 {
-	(void)replace_string(&cfg.shell, val.str_val);
+	cfg_set_shell(val.str_val);
 }
 
 static void

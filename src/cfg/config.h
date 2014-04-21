@@ -160,6 +160,9 @@ void save_prompt_history(const char input[]);
 /* Saves input to local filter history. */
 void save_filter_history(const char pattern[]);
 
+/* Sets shell invocation command. */
+void cfg_set_shell(const char shell[]);
+
 #endif /* VIFM__CFG__CONFIG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
