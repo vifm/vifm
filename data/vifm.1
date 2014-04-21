@@ -1,4 +1,4 @@
-.TH vifm 1 "Apr 07, 2014" "" "Vifm"
+.TH vifm 1 "Apr 21, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1332,10 +1332,11 @@ given to each command to ease understanding of what command will do in the
 :file menu.  Vifm will try the rest of the programs for an association when
 the default isn't found.  When program entry doesn't contain any of vifm
 macros, name of current file is appended as if program entry ended with %c
-macro.  On Windows path to executables containing spaces can (and should be
-for correct work with such paths) be double quoted.  See "Globs" section
-below for pattern definition.  See also "Automatic FUSE mounts" section
-below.  Example for zip archives and several actions:
+macro on *nix and %"c on Windows.  On Windows path to executables containing
+spaces can (and should be for correct work with such paths) be double quoted.
+See "Globs" section below for pattern definition.  See also
+"Automatic FUSE mounts" section below.  Example for zip archives and several
+actions:
 
 .EE
  filetype *.zip,*.jar,*.war,*.ear

@@ -222,9 +222,8 @@ get_regexp_error(int err, regex_t *re)
 	return buf;
 }
 
-/* Returns pointer to a statically allocated buffer */
 const char *
-enclose_in_dquotes(const char *str)
+enclose_in_dquotes(const char str[])
 {
 	static char buf[PATH_MAX];
 	char *p;

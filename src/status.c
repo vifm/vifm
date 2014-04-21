@@ -32,8 +32,10 @@
 
 #include "cfg/config.h"
 #include "utils/env.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
@@ -43,9 +45,9 @@
 #define SCREEN_ENVVAR "STY"
 #define TMUX_ENVVAR "TMUX"
 
-static void load_def_values(status_t *stats);
+static void load_def_values(status_t *stats, config_t *config);
 static void set_gtk_available(status_t *stats);
-static void set_number_of_windows(status_t *stats);
+static void set_number_of_windows(status_t *stats, config_t *config);
 static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
 static void set_last_cmdline_command(const char cmd[]);
@@ -57,15 +59,16 @@ static int inside_screen;
 static int inside_tmux;
 
 int
-init_status(void)
+init_status(config_t *config)
 {
 	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
 	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
 
-	load_def_values(&curr_stats);
+	load_def_values(&curr_stats, config);
 	set_gtk_available(&curr_stats);
-	set_number_of_windows(&curr_stats);
+	set_number_of_windows(&curr_stats, config);
 	set_env_type(&curr_stats);
+	stats_update_shell_type(config->shell);
 
 	return reset_status();
 }
@@ -73,7 +76,7 @@ init_status(void)
 /* Initializes most fields of the status structure, some are left to be
  * initialized by the reset_status() function. */
 static void
-load_def_values(status_t *stats)
+load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
 
@@ -93,21 +96,13 @@ load_def_values(status_t *stats)
 	stats->confirmed = 0;
 	stats->skip_shellout_redraw = 0;
 	stats->cs_base = DCOLOR_BASE;
-	stats->cs = &cfg.cs;
+	stats->cs = &config->cs;
 	strcpy(stats->color_scheme, "");
-
-#ifdef HAVE_LIBGTK
-	stats->gtk_available = 0;
-#endif
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
 	stats->allow_sb_msg_truncation = 1;
-
-#ifdef _WIN32
-	stats->as_admin = 0;
-#endif
 
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
@@ -123,6 +118,16 @@ load_def_values(status_t *stats)
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
+
+	stats->shell_type = ST_NORMAL;
+
+#ifdef HAVE_LIBGTK
+	stats->gtk_available = 0;
+#endif
+
+#ifdef _WIN32
+	stats->as_admin = 0;
+#endif
 }
 
 static void
@@ -137,9 +142,9 @@ set_gtk_available(status_t *stats)
 }
 
 static void
-set_number_of_windows(status_t *stats)
+set_number_of_windows(status_t *stats, config_t *config)
 {
-	if(cfg.show_one_window)
+	if(config->show_one_window)
 		curr_stats.number_of_windows = 1;
 	else
 		curr_stats.number_of_windows = 2;
@@ -241,6 +246,27 @@ set_last_cmdline_command(const char cmd[])
 	}
 	assert(curr_stats.last_cmdline_command != NULL &&
 			"The field was not initialized properly");
+}
+
+void
+stats_update_shell_type(const char shell_cmd[])
+{
+#ifdef _WIN32
+	char shell[NAME_MAX];
+	const char *shell_name;
+
+	(void)extract_cmd_name(shell_cmd, 0, sizeof(shell), shell);
+	shell_name = get_last_path_component(shell);
+
+	if(stroscmp(shell_name, "cmd") == 0 || stroscmp(shell_name, "cmd.exe") == 0)
+	{
+		curr_stats.shell_type = ST_CMD;
+	}
+	else
+#endif
+	{
+		curr_stats.shell_type = ST_NORMAL;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

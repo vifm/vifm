@@ -68,7 +68,8 @@ int is_on_slow_fs(const char full_path[]);
  * Returns non-zero in case resulting string is a shortened variant of size. */
 int friendly_size_notation(uint64_t num, int str_size, char *str);
 
-const char * enclose_in_dquotes(const char *str);
+/* Returns pointer to a statically allocated buffer. */
+const char * enclose_in_dquotes(const char str[]);
 
 /* Changes current working directory of the process.  Does nothing if we already
  * at path.  Returns zero on success, otherwise -1 is returned. */

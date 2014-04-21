@@ -29,18 +29,22 @@
 
 #include "color_scheme.h"
 
+struct config_t;
+
 typedef enum
 {
 	HSPLIT,
 	VSPLIT,
-}SPLIT;
+}
+SPLIT;
 
 typedef enum
 {
 	SOURCING_NONE,
 	SOURCING_PROCESSING,
 	SOURCING_FINISHING,
-}SourcingState;
+}
+SourcingState;
 
 /* Type of execution environment. */
 typedef enum
@@ -48,7 +52,8 @@ typedef enum
 	ENVTYPE_LINUX_NATIVE, /* Running in linux native console. */
 	ENVTYPE_EMULATOR, /* Running in terminal emulator with no DISPLAY defined. */
 	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
-}EnvType;
+}
+EnvType;
 
 /* List of terminal multiplexers. */
 typedef enum
@@ -64,7 +69,17 @@ typedef enum
 	UT_NONE, /* no update needed */
 	UT_REDRAW, /* screen redraw requested */
 	UT_FULL, /* file lists reload followed by screen redraw requested */
-}UpdateType;
+}
+UpdateType;
+
+typedef enum
+{
+	/* Shell that is aware of command escaping and backslashes in paths. */
+	ST_NORMAL,
+	/* Dumb cmd.exe shell on Windows. */
+	ST_CMD,
+}
+ShellType;
 
 typedef struct
 {
@@ -99,18 +114,10 @@ typedef struct
 	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];
 
-#ifdef HAVE_LIBGTK
-	int gtk_available; /* for mimetype detection */
-#endif
-
 	int msg_head, msg_tail;
 	char *msgs[51];
 	int save_msg_in_list;
 	int allow_sb_msg_truncation; /* Whether truncation can be performed. */
-
-#ifdef _WIN32
-	int as_admin;
-#endif
 
 	int scroll_bind_off;
 	SPLIT split;
@@ -133,13 +140,23 @@ typedef struct
 
 	int initial_lines; /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
+
+	ShellType shell_type; /* Specifies type of shell. */
+
+#ifdef HAVE_LIBGTK
+	int gtk_available; /* for mimetype detection */
+#endif
+
+#ifdef _WIN32
+	int as_admin;
+#endif
 }
 status_t;
 
 extern status_t curr_stats;
 
 /* Returns non-zero on error. */
-int init_status(void);
+int init_status(struct config_t *config);
 
 /* Resets some part of runtime status information to its initial values.
  * Returns non-zero on error. */
@@ -158,6 +175,9 @@ void set_using_term_multiplexer(int use_term_multiplexer);
 
 /* Updates last_cmdline_command field of the status structure. */
 void update_last_cmdline_command(const char cmd[]);
+
+/* Updates curr_stats.shell_type field according to passed shell command. */
+void stats_update_shell_type(const char shell_cmd[]);
 
 #endif /* VIFM__STATUS_H__ */
 

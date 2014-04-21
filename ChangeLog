@@ -169,6 +169,15 @@
 	Fixed updating terminal title for some environments.  Thanks to
 	filterfalse.
 
+	Fixed extending filetypes that are missing macro on Windows when cmd.exe
+	shell is used.  Thanks to Daniel Polanco, a.k.a. dlpolanco.
+
+	Fixed work with filenames contining special symbols on Windows with cmd.exe
+	shell.  Thanks to Daniel Polanco, a.k.a. dlpolanco.
+
+	Fixed testing whether application uses GUI on Windows when path contains
+	spaces.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

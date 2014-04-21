@@ -48,7 +48,7 @@ enum
 	DECORATION_SUFFIX, /* The symbol, which is appended to file name. */
 };
 
-typedef struct
+typedef struct config_t
 {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
@@ -159,6 +159,9 @@ void save_search_history(const char pattern[]);
 void save_prompt_history(const char input[]);
 /* Saves input to local filter history. */
 void save_filter_history(const char pattern[]);
+
+/* Sets shell invocation command. */
+void cfg_set_shell(const char shell[]);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

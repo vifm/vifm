@@ -35,6 +35,7 @@
 
 #include "../cfg/config.h"
 #include "../commands_completion.h"
+#include "../status.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
@@ -58,7 +59,7 @@ static int get_stream_subsystem(FILE *fp);
 void
 pause_shell(void)
 {
-	if(stroscmp(cfg.shell, "cmd") == 0)
+	if(curr_stats.shell_type == ST_CMD)
 	{
 		run_in_shell_no_cls("pause");
 	}
@@ -73,9 +74,11 @@ run_in_shell_no_cls(char command[])
 {
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 
-	if(stroscmp(cfg.shell, "cmd") == 0)
+	if(curr_stats.shell_type == ST_CMD)
 	{
-		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+		/* See "cmd /?" for an "explanation" why extra double quotes are
+		 * omitted. */
+		snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
 		return system(buf);
 	}
 	else

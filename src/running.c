@@ -71,7 +71,7 @@ static void run_win_executable(char full_path[]);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
 static int selection_is_consistent(const FileView *const view);
-static void execute_file(char full_path[]);
+static void execute_file(const char full_path[]);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
@@ -297,15 +297,19 @@ selection_is_consistent(const FileView *const view)
 /* Executes file, specified by the full_path.  Changes type of slashes on
  * Windows. */
 static void
-execute_file(char full_path[])
+execute_file(const char full_path[])
 {
 #ifndef _WIN32
 	char *const escaped = escape_filename(full_path, 0);
 	shellout(escaped, 1, 1);
 	free(escaped);
 #else
-	to_back_slash(full_path);
-	run_win_executable(full_path);
+	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
+
+	to_back_slash(dquoted_full_path);
+	run_win_executable(dquoted_full_path);
+
+	free(dquoted_full_path);
 #endif
 }
 
@@ -601,11 +605,26 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	else
 	{
 		char buf[NAME_MAX + 1 + NAME_MAX + 1];
-		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0);
+		const char *name_macro;
+		char *file_name;
 
-		snprintf(buf, sizeof(buf), "%s %s", program, temp);
+#ifdef _WIN32
+		if(curr_stats.shell_type == ST_CMD)
+		{
+			name_macro = (view == curr_view) ? "%\"c" : "%\"C";
+		}
+		else
+#endif
+		{
+			name_macro = (view == curr_view) ? "%c" : "%C";
+		}
+
+		file_name = expand_macros(name_macro, NULL, NULL, 1);
+
+		snprintf(buf, sizeof(buf), "%s %s", program, file_name);
 		shellout(buf, pause ? 1 : -1, 1);
-		free(temp);
+
+		free(file_name);
 	}
 }
 
@@ -1009,12 +1028,20 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 {
 	if(pause)
 	{
+		const char *cmd_with_pause_fmt;
+
 #ifdef _WIN32
-		if(stroscmp(cfg.shell, "cmd") == 0)
-			snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
+		if(curr_stats.shell_type == ST_CMD)
+		{
+			cmd_with_pause_fmt = "%s" PAUSE_STR;
+		}
 		else
 #endif
-			snprintf(shell_cmd, shell_cmd_len, "%s; " PAUSE_CMD, cmd);
+		{
+			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
+		}
+
+		snprintf(shell_cmd, shell_cmd_len, cmd_with_pause_fmt, cmd);
 	}
 	else
 	{

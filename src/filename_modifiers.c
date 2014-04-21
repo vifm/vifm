@@ -27,6 +27,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "fileops.h"
+#include "status.h"
 #include "ui.h"
 
 static const char * apply_mod(const char *path, const char *parent,
@@ -68,10 +69,12 @@ apply_mods(const char path[], const char parent[], const char mod[],
 	}
 
 #ifdef _WIN32
-	/* this is needed to run something like explorer.exe, which isn't smart enough
-	 * to understand forward slashes */
-	if(napplied == 0 && for_shell && stroscmp(cfg.shell, "cmd") != 0)
+	/* This is needed to run something like explorer.exe, which isn't smart enough
+	 * to understand forward slashes. */
+	if(for_shell && curr_stats.shell_type != ST_CMD && napplied == 0)
+	{
 		to_back_slash(buf);
+	}
 #endif
 
 	return buf;
@@ -91,36 +94,38 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 #endif
 
 	*mod_len = 2;
-	if(strncmp(mod, ":p", 2) == 0)
+	if(starts_with_lit(mod, ":p"))
 		*mod_len += apply_p_mod(path_buf, parent, buf, sizeof(buf));
-	else if(strncmp(mod, ":~", 2) == 0)
+	else if(starts_with_lit(mod, ":~"))
 		*mod_len += apply_tilde_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":.", 2) == 0)
+	else if(starts_with_lit(mod, ":."))
 		*mod_len += apply_dot_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":h", 2) == 0)
+	else if(starts_with_lit(mod, ":h"))
 		*mod_len += apply_h_mod(path_buf, buf, sizeof(buf));
 #ifdef _WIN32
-	else if(strncmp(mod, ":u", 2) == 0)
+	else if(starts_with_lit(mod, ":u"))
 		*mod_len += apply_u_mod(path_buf, buf, sizeof(buf));
 #endif
-	else if(strncmp(mod, ":t", 2) == 0)
+	else if(starts_with_lit(mod, ":t"))
 		*mod_len += apply_t_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":r", 2) == 0)
+	else if(starts_with_lit(mod, ":r"))
 		*mod_len += apply_r_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":e", 2) == 0)
+	else if(starts_with_lit(mod, ":e"))
 		*mod_len += apply_e_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":s", 2) == 0 || strncmp(mod, ":gs", 3) == 0)
+	else if(starts_with_lit(mod, ":s") || starts_with_lit(mod, ":gs"))
 		*mod_len += apply_s_gs_mod(path_buf, mod, buf, sizeof(buf));
 	else
 		return NULL;
 
 #ifdef _WIN32
-	/* this is needed to run something like explorer.exe, which isn't smart enough
-	 * to understand forward slashes */
-	if(for_shell && strncmp(mod, ":s", 2) != 0 && strncmp(mod, ":gs", 3) != 0)
+	/* This is needed to run something like explorer.exe, which isn't smart enough
+	 * to understand forward slashes. */
+	if(for_shell && curr_stats.shell_type != ST_CMD)
 	{
-		if(stroscmp(cfg.shell, "cmd") != 0)
+		if(!starts_with_lit(mod, ":s") && !starts_with_lit(mod, ":gs"))
+		{
 			to_back_slash(buf);
+		}
 	}
 #endif
 
