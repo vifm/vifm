@@ -33,14 +33,16 @@ typedef enum
 {
 	HSPLIT,
 	VSPLIT,
-}SPLIT;
+}
+SPLIT;
 
 typedef enum
 {
 	SOURCING_NONE,
 	SOURCING_PROCESSING,
 	SOURCING_FINISHING,
-}SourcingState;
+}
+SourcingState;
 
 /* Type of execution environment. */
 typedef enum
@@ -48,7 +50,8 @@ typedef enum
 	ENVTYPE_LINUX_NATIVE, /* Running in linux native console. */
 	ENVTYPE_EMULATOR, /* Running in terminal emulator with no DISPLAY defined. */
 	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
-}EnvType;
+}
+EnvType;
 
 /* List of terminal multiplexers. */
 typedef enum
@@ -64,7 +67,8 @@ typedef enum
 	UT_NONE, /* no update needed */
 	UT_REDRAW, /* screen redraw requested */
 	UT_FULL, /* file lists reload followed by screen redraw requested */
-}UpdateType;
+}
+UpdateType;
 
 typedef struct
 {
