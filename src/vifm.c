@@ -567,36 +567,37 @@ static int
 run_converter(int vifm_like_mode)
 {
 #ifndef _WIN32
-	char buf[PATH_MAX];
-	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like_mode);
-	return shellout(buf, -1, 1);
+	char cmd[PATH_MAX];
+	snprintf(cmd, sizeof(cmd), "vifmrc-converter %d", vifm_like_mode);
+	return shellout(cmd, -1, 0);
 #else
-	TCHAR buf[PATH_MAX + 2];
-	TCHAR *last_path_component;
+	char cmd[2*PATH_MAX];
 	int returned_exit_code;
+	char *name_part;
 
-	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
+	if(GetModuleFileName(NULL, cmd, PATH_MAX) == 0)
+	{
 		return -1;
+	}
 
-	/* Remove last path component. */
-	last_path_component = _tcsrchr(buf, _T('\\')) + 1;
-	*last_path_component = _T('\0');
-
+	/* Override last path component. */
+	name_part = strrchr(cmd, '\\');
+	name_part = (name_part == NULL) ? cmd : (name_part + 1);
 	switch(vifm_like_mode)
 	{
 		case 2:
-			_tcscat(buf, _T("vifmrc-converter 2"));
+			strcpy(name_part, "vifmrc-converter 2");
 			break;
 		case 1:
-			_tcscat(buf, _T("vifmrc-converter 1"));
+			strcpy(name_part, "vifmrc-converter 1");
 			break;
 
 		default:
-			_tcscat(buf, _T("vifmrc-converter 0"));
+			strcpy(name_part, "vifmrc-converter 0");
 			break;
 	}
 
-	return win_exec_cmd(buf, &returned_exit_code);
+	return win_exec_cmd(cmd, &returned_exit_code);
 #endif
 }
 
