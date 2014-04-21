@@ -169,6 +169,9 @@
 	Fixed updating terminal title for some environments.  Thanks to
 	filterfalse.
 
+	Fixed extending filetypes that are missing macro on Windows when cmd shell
+	is used.  Thanks to Daniel Polanco, a.k.a. dlpolanco.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

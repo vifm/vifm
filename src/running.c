@@ -601,11 +601,26 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	else
 	{
 		char buf[NAME_MAX + 1 + NAME_MAX + 1];
-		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0);
+		const char *name_macro;
+		char *file_name;
 
-		snprintf(buf, sizeof(buf), "%s %s", program, temp);
+#ifdef _WIN32
+		if(curr_stats.shell_type == ST_CMD)
+		{
+			name_macro = (view == curr_view) ? "%\"c" : "%\"C";
+		}
+		else
+#endif
+		{
+			name_macro = (view == curr_view) ? "%c" : "%C";
+		}
+
+		file_name = expand_macros(name_macro, NULL, NULL, 1);
+
+		snprintf(buf, sizeof(buf), "%s %s", program, file_name);
 		shellout(buf, pause ? 1 : -1, 1);
-		free(temp);
+
+		free(file_name);
 	}
 }
 
