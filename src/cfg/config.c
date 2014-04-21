@@ -899,7 +899,10 @@ save_into_history(const char item[], hist_t *hist, int len)
 void
 cfg_set_shell(const char shell[])
 {
-	(void)replace_string(&cfg.shell, shell);
+	if(replace_string(&cfg.shell, shell) == 0)
+	{
+		stats_update_shell_type(cfg.shell);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

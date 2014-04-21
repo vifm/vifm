@@ -32,8 +32,10 @@
 
 #include "cfg/config.h"
 #include "utils/env.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
@@ -66,6 +68,7 @@ init_status(config_t *config)
 	set_gtk_available(&curr_stats);
 	set_number_of_windows(&curr_stats, config);
 	set_env_type(&curr_stats);
+	stats_update_shell_type(config->shell);
 
 	return reset_status();
 }
@@ -115,6 +118,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
+
+	stats->shell_type = ST_NORMAL;
 
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
@@ -241,6 +246,27 @@ set_last_cmdline_command(const char cmd[])
 	}
 	assert(curr_stats.last_cmdline_command != NULL &&
 			"The field was not initialized properly");
+}
+
+void
+stats_update_shell_type(const char shell_cmd[])
+{
+#ifdef _WIN32
+	char shell[NAME_MAX];
+	const char *shell_name;
+
+	(void)extract_cmd_name(shell_cmd, 0, sizeof(shell), shell);
+	shell_name = get_last_path_component(shell);
+
+	if(stroscmp(shell_name, "cmd") == 0 || stroscmp(shell_name, "cmd.exe") == 0)
+	{
+		curr_stats.shell_type = ST_CMD;
+	}
+	else
+#endif
+	{
+		curr_stats.shell_type = ST_NORMAL;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

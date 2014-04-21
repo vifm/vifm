@@ -72,6 +72,15 @@ typedef enum
 }
 UpdateType;
 
+typedef enum
+{
+	/* Shell that is aware of command escaping and backslashes in paths. */
+	ST_NORMAL,
+	/* Dumb cmd.exe shell on Windows. */
+	ST_CMD,
+}
+ShellType;
+
 typedef struct
 {
 	UpdateType need_update;
@@ -132,6 +141,8 @@ typedef struct
 	int initial_lines; /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
 
+	ShellType shell_type; /* Specifies type of shell. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
@@ -164,6 +175,9 @@ void set_using_term_multiplexer(int use_term_multiplexer);
 
 /* Updates last_cmdline_command field of the status structure. */
 void update_last_cmdline_command(const char cmd[]);
+
+/* Updates curr_stats.shell_type field according to passed shell command. */
+void stats_update_shell_type(const char shell_cmd[]);
 
 #endif /* VIFM__STATUS_H__ */
 
