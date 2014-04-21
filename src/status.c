@@ -96,18 +96,10 @@ load_def_values(status_t *stats)
 	stats->cs = &cfg.cs;
 	strcpy(stats->color_scheme, "");
 
-#ifdef HAVE_LIBGTK
-	stats->gtk_available = 0;
-#endif
-
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
 	stats->allow_sb_msg_truncation = 1;
-
-#ifdef _WIN32
-	stats->as_admin = 0;
-#endif
 
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
@@ -123,6 +115,14 @@ load_def_values(status_t *stats)
 
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
+
+#ifdef HAVE_LIBGTK
+	stats->gtk_available = 0;
+#endif
+
+#ifdef _WIN32
+	stats->as_admin = 0;
+#endif
 }
 
 static void

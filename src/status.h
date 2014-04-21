@@ -99,18 +99,10 @@ typedef struct
 	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];
 
-#ifdef HAVE_LIBGTK
-	int gtk_available; /* for mimetype detection */
-#endif
-
 	int msg_head, msg_tail;
 	char *msgs[51];
 	int save_msg_in_list;
 	int allow_sb_msg_truncation; /* Whether truncation can be performed. */
-
-#ifdef _WIN32
-	int as_admin;
-#endif
 
 	int scroll_bind_off;
 	SPLIT split;
@@ -133,6 +125,14 @@ typedef struct
 
 	int initial_lines; /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
+
+#ifdef HAVE_LIBGTK
+	int gtk_available; /* for mimetype detection */
+#endif
+
+#ifdef _WIN32
+	int as_admin;
+#endif
 }
 status_t;
 
