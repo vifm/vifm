@@ -36,6 +36,7 @@
 #include "utils/utils.h"
 #include "filename_modifiers.h"
 #include "registers.h"
+#include "status.h"
 
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
@@ -278,8 +279,10 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	}
 
 #ifdef _WIN32
-	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
+	if(for_shell && curr_stats.shell_type == ST_CMD)
+	{
 		to_back_slash(expanded + old_len);
+	}
 #endif
 
 	return expanded;
@@ -311,8 +314,10 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 #ifdef _WIN32
-	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
+	if(for_shell && curr_stats.shell_type == ST_CMD)
+	{
 		to_back_slash(result);
+	}
 #endif
 
 	return result;
@@ -350,8 +355,10 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 	}
 
 #ifdef _WIN32
-	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
+	if(for_shell && curr_stats.shell_type == ST_CMD)
+	{
 		to_back_slash(expanded);
+	}
 #endif
 
 	return expanded;

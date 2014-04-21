@@ -1009,12 +1009,20 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 {
 	if(pause)
 	{
+		const char *cmd_with_pause_fmt;
+
 #ifdef _WIN32
-		if(stroscmp(cfg.shell, "cmd") == 0)
-			snprintf(shell_cmd, shell_cmd_len, "%s" PAUSE_STR, cmd);
+		if(curr_stats.shell_type == ST_CMD)
+		{
+			cmd_with_pause_fmt = "%s" PAUSE_STR;
+		}
 		else
 #endif
-			snprintf(shell_cmd, shell_cmd_len, "%s; " PAUSE_CMD, cmd);
+		{
+			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
+		}
+
+		snprintf(shell_cmd, shell_cmd_len, cmd_with_pause_fmt, cmd);
 	}
 	else
 	{
