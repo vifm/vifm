@@ -178,6 +178,9 @@
 	Fixed testing whether application uses GUI on Windows when path contains
 	spaces.
 
+	Fixed crash on a sequence of :let/:unlet statements.  Thanks to
+	filterfalse.
+
 0.7.6-beta2 to 0.7.6
 
 	Removed check for stdscr from the configure.  Thanks to jtbm37.

@@ -45,7 +45,7 @@ void clear_variables(void);
 /* Processes :let command arguments
  * Returns non-zero on error
  */
-int let_variable(const char *cmd);
+int let_variables(const char *cmd);
 
 /* Processes :unlet command arguments
  * Returns non-zero on error
