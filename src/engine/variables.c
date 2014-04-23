@@ -328,6 +328,7 @@ get_record(const char *name)
 			return NULL;
 		vars = p;
 		p = &vars[nvars];
+		nvars++;
 	}
 
 	/* initialize new record */
@@ -341,7 +342,6 @@ get_record(const char *name)
 		free_record(p);
 		return NULL;
 	}
-	nvars++;
 	return p;
 }
 
