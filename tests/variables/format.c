@@ -7,105 +7,105 @@
 static void
 test_full_tree_args_ok(void)
 {
-	assert_true(let_variable("$VAR = 'VAL'") == 0);
-	assert_true(let_variable("$VAR .= 'VAL'") == 0);
+	assert_true(let_variables("$VAR = 'VAL'") == 0);
+	assert_true(let_variables("$VAR .= 'VAL'") == 0);
 }
 
 static void
 test_full_two_args_ok(void)
 {
-	assert_true(let_variable("$VAR ='VAL'") == 0);
-	assert_true(let_variable("$VAR .='VAL'") == 0);
-	assert_true(let_variable("$VAR= 'VAL'") == 0);
-	assert_true(let_variable("$VAR.= 'VAL'") == 0);
+	assert_true(let_variables("$VAR ='VAL'") == 0);
+	assert_true(let_variables("$VAR .='VAL'") == 0);
+	assert_true(let_variables("$VAR= 'VAL'") == 0);
+	assert_true(let_variables("$VAR.= 'VAL'") == 0);
 }
 
 static void
 test_full_one_arg_ok(void)
 {
-	assert_true(let_variable("$VAR='VAL'") == 0);
-	assert_true(let_variable("$VAR.='VAL'") == 0);
+	assert_true(let_variables("$VAR='VAL'") == 0);
+	assert_true(let_variables("$VAR.='VAL'") == 0);
 }
 
 static void
 test_no_quotes_fail(void)
 {
-	assert_false(let_variable("$VAR=VAL") == 0);
-	assert_false(let_variable("$VAR.=VAL") == 0);
+	assert_false(let_variables("$VAR=VAL") == 0);
+	assert_false(let_variables("$VAR.=VAL") == 0);
 }
 
 static void
 test_single_quotes_ok(void)
 {
-	assert_true(let_variable("$VAR='VAL'") == 0);
-	assert_true(let_variable("$VAR.='VAL'") == 0);
+	assert_true(let_variables("$VAR='VAL'") == 0);
+	assert_true(let_variables("$VAR.='VAL'") == 0);
 }
 
 static void
 test_double_quotes_ok(void)
 {
-	assert_true(let_variable("$VAR=\"VAL\"") == 0);
-	assert_true(let_variable("$VAR.=\"VAL\"") == 0);
+	assert_true(let_variables("$VAR=\"VAL\"") == 0);
+	assert_true(let_variables("$VAR.=\"VAL\"") == 0);
 }
 
 static void
 test_trailing_spaces_ok(void)
 {
-	assert_true(let_variable("$VAR = \"VAL\" ") == 0);
-	assert_true(let_variable("$VAR .= \"VAL\" ") == 0);
+	assert_true(let_variables("$VAR = \"VAL\" ") == 0);
+	assert_true(let_variables("$VAR .= \"VAL\" ") == 0);
 }
 
 static void
 test_too_many_arguments_fail(void)
 {
-	assert_false(let_variable("$VAR = \"VAL\" bbb") == 0);
-	assert_false(let_variable("$VAR .= \"VAL\" $aaa") == 0);
+	assert_false(let_variables("$VAR = \"VAL\" bbb") == 0);
+	assert_false(let_variables("$VAR .= \"VAL\" $aaa") == 0);
 }
 
 static void
 test_incomplete_two_args_fail(void)
 {
-	assert_false(let_variable("$VAR =") == 0);
-	assert_false(let_variable("$VAR .=") == 0);
-	assert_false(let_variable("= VAL") == 0);
-	assert_false(let_variable(".= VAL") == 0);
+	assert_false(let_variables("$VAR =") == 0);
+	assert_false(let_variables("$VAR .=") == 0);
+	assert_false(let_variables("= VAL") == 0);
+	assert_false(let_variables(".= VAL") == 0);
 }
 
 static void
 test_incomplete_one_arg_fail(void)
 {
-	assert_false(let_variable("$VAR") == 0);
-	assert_false(let_variable("=") == 0);
-	assert_false(let_variable(".=") == 0);
-	assert_false(let_variable("VAL") == 0);
+	assert_false(let_variables("$VAR") == 0);
+	assert_false(let_variables("=") == 0);
+	assert_false(let_variables(".=") == 0);
+	assert_false(let_variables("VAL") == 0);
 }
 
 static void
 test_no_dollar_sign_fail(void)
 {
-	assert_false(let_variable("VAR='VAL'") == 0);
-	assert_false(let_variable("VAR.='VAL'") == 0);
+	assert_false(let_variables("VAR='VAL'") == 0);
+	assert_false(let_variables("VAR.='VAL'") == 0);
 }
 
 static void
 test_env_variable_empty_name_fail(void)
 {
-	assert_false(let_variable("$='VAL'") == 0);
-	assert_false(let_variable("$.='VAL'") == 0);
+	assert_false(let_variables("$='VAL'") == 0);
+	assert_false(let_variables("$.='VAL'") == 0);
 }
 
 static void
 test_spaces_in_single_quotes_ok(void)
 {
-	assert_true(let_variable("$VAR='a b c'") == 0);
-	assert_true(let_variable("$VAR.='a b c'") == 0);
+	assert_true(let_variables("$VAR='a b c'") == 0);
+	assert_true(let_variables("$VAR.='a b c'") == 0);
 }
 
 static void
 test_spaces_in_double_quotes_ok(void)
 {
-	assert_true(let_variable("$VAR=\"a b c\"") == 0);
-	assert_true(let_variable("$VAR.=\"a b c\"") == 0);
+	assert_true(let_variables("$VAR=\"a b c\"") == 0);
+	assert_true(let_variables("$VAR.=\"a b c\"") == 0);
 }
 
 static void
@@ -136,13 +136,13 @@ test_unlet_without_dollar_sign_fail(void)
 static void
 test_let_alnum_and_underscore_ok(void)
 {
-	assert_true(let_variable("$1_aZzA_0 = 'VAL'") == 0);
+	assert_true(let_variables("$1_aZzA_0 = 'VAL'") == 0);
 }
 
 static void
 test_let_wrong_symbols_fail(void)
 {
-	assert_true(let_variable("$.|a = 'VAL'") != 0);
+	assert_true(let_variables("$.|a = 'VAL'") != 0);
 }
 
 void

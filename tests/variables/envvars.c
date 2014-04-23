@@ -18,7 +18,7 @@ static void
 test_env_variable_creation_success(void)
 {
 	assert_true(getenv(VAR_NAME) == NULL);
-	assert_int_equal(0, let_variable("$" VAR_NAME "='VAL'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME "='VAL'"));
 	assert_true(getenv(VAR_NAME) != NULL);
 	if(getenv(VAR_NAME) != NULL)
 	{
@@ -31,7 +31,7 @@ test_env_variable_changing(void)
 {
 	test_env_variable_creation_success();
 
-	assert_int_equal(0, let_variable("$" VAR_NAME "='VAL2'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME "='VAL2'"));
 	assert_true(getenv(VAR_NAME) != NULL);
 	if(getenv(VAR_NAME) != NULL)
 	{
@@ -43,7 +43,7 @@ static void
 test_env_variable_addition_to_empty(void)
 {
 	assert_true(getenv(VAR_NAME) == NULL);
-	assert_int_equal(0, let_variable("$" VAR_NAME ".='VAL2'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME ".='VAL2'"));
 	assert_true(getenv(VAR_NAME) != NULL);
 	if(getenv(VAR_NAME) != NULL)
 	{
@@ -56,7 +56,7 @@ test_env_variable_addition(void)
 {
 	test_env_variable_addition_to_empty();
 
-	assert_int_equal(0, let_variable("$" VAR_NAME ".='VAL2'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME ".='VAL2'"));
 	if(getenv(VAR_NAME) != NULL)
 	{
 		assert_string_equal("VAL2VAL2", getenv(VAR_NAME));

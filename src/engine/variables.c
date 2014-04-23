@@ -155,7 +155,7 @@ clear_variables(void)
 }
 
 int
-let_variable(const char *cmd)
+let_variables(const char *cmd)
 {
 	char name[VAR_NAME_MAX + 1];
 	char *p;

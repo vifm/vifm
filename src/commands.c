@@ -2760,7 +2760,7 @@ static int
 let_cmd(const cmd_info_t *cmd_info)
 {
 	text_buffer_clear();
-	if(let_variable(cmd_info->args) != 0)
+	if(let_variables(cmd_info->args) != 0)
 	{
 		status_bar_error(text_buffer_get());
 		return 1;

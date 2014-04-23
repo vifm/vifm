@@ -16,10 +16,10 @@ setup(void)
 static void
 test_envvar_table_updates_do_not_crash(void)
 {
-	assert_int_equal(0, let_variable("$" VAR_NAME_BASE "1='VAL'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME_BASE "1='VAL'"));
 	assert_int_equal(0, unlet_variables("$" VAR_NAME_BASE "1"));
-	assert_int_equal(0, let_variable("$" VAR_NAME_BASE "2='VAL'"));
-	assert_int_equal(0, let_variable("$" VAR_NAME_BASE "3='VAL'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME_BASE "2='VAL'"));
+	assert_int_equal(0, let_variables("$" VAR_NAME_BASE "3='VAL'"));
 }
 
 void
