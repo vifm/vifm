@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 19, 2014
+" Last Change: April 24, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -18,8 +18,8 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] jobs locate ls
 		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
-		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] unl[et] ve[rsion]
-		\ vie[w] vifm vs[plit] windo winrun w[rite] wq x[it] y[ank]
+		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
+		\ vifm vs[plit] windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
@@ -35,6 +35,7 @@ syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmHiCommand contained hi[ghlight]
 syntax keyword vifmInvertCommand contained invert
 syntax keyword vifmLetCommand contained let
+syntax keyword vifmUnletCommand contained unl[et]
 syntax keyword vifmSetCommand contained se[t]
 syntax keyword vifmSoCommand contained so[urce]
 syntax keyword vifmMarkCommand contained ma[rk]
@@ -217,6 +218,10 @@ syntax region vifmLet
 		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
+syntax region vifmUnlet
+		\ start='^\(\s\|:\)*\<unl\%[et]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ keepend
+		\ contains=vifmUnletCommand,vifmEnvVar,vifmComment
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax region vifmStringInExpr contained start=+=\@<="+hs=s+1 skip=+\\\\\|\\"+
@@ -256,6 +261,7 @@ highlight link vifmFtCommand Statement
 highlight link vifmExprCommand Statement
 highlight link vifmNormalCommand Statement
 highlight link vifmLetCommand Statement
+highlight link vifmUnletCommand Statement
 highlight link vifmSetCommand Statement
 highlight link vifmSoCommand Statement
 highlight link vifmBuiltinFunction Function

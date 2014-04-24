@@ -93,6 +93,8 @@
 
 	Skip empty and whitespace only error messages, they are of no use.
 
+	Highlight environment variables in :unlet command.  Thanks to filterfalse.
+
 	Fixed file descriptor leak on finishing background tasks.  Thanks to
 	anonymous from linux.org.ru.
 
