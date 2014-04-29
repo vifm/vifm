@@ -1,3 +1,128 @@
+April 30, 2014
+==============
+
+vifm v0.7.7 beta testing has started
+------------------------------------
+
+New version provides more customizations for several existing features
+and more convenient interaction with them.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - vifm has had support for navigation by file number for years, finally it
+   can display those numbers;
+ - support of trash directories got better with ability to have trash per
+   mount point and new trash menus;
+ - command-line mode now has Ctrl-X prefixed keys that insert parts of
+   filenames and filters (kind of Ctrl-R in Vim);
+ - bookmarks are now timestamped for more predictable management (mainly
+   deletion and overwriting);
+ - for security reasons remote commands are now disabled at configuration
+   stage by default;
+ - most of long-running operations (:find, :copy, etc.) now can be cancelled
+   by pressing Ctrl-C;
+ - menus with list of files got unified "gf" (for navigation) and "e" (for
+   editing) shortcuts;
+ - several fixes and %n macro for better integration with terminal
+   multiplexers;
+ - ability to sort list view with disabled grouping of directories;
+ - expression parser was extended in a couple of ways;
+ - added three more sample color schemes.
+
+Configuration:
+ - added --enable-remote-cmd switch to configure script disabled by default, as
+   current implementation of the feature is insecure.
+
+Menus and dialogs:
+ - added "gf" (go to file) and "e" (open in editor) keys to :grep, :find,
+   :locate and user menu with navigation (%M macro).
+
+Macros:
+ - added %A macro to 'findprg' and 'grepprg' options, which is expanded to
+   unmodified list of arguments (thanks to Robert Sarkozi);
+ - added %n macro which suppresses using of terminal multiplexer in a command
+   (user-defined :command, :!command or :file[x]type action).
+
+Key bindings:
+ - added Ctrl-W z key to normal and view modes, which closes preview pane or
+   view modes (thanks to filterfalse).
+
+:set command and options:
+ - added "type" key to the 'sort' option to allow controlling grouping of
+   directories (thanks to Daniel R., a.k.a. reicheltd);
+ - added 'number', 'relativenumber' and 'numberwidth' options to control
+   displaying of file numbers (thanks to filterfalse and greye);
+ - extended 'trashdir' to handle list of path, some of which can specify
+   location of trash directories local to each mount point (thanks to
+   smpolymen and Sergei Shilovsky).
+
+Command-line mode related changes:
+ - added Ctrl-X a/c/d/e/m/r/t/= keys to command-line mode that insert parts
+   of file names and values of filters (see related documentation) (thanks to
+   ranousse and filterfalse);
+ - added :lstrash command-line command, which displays list of files in trash
+   (thanks to Sergei Shilovsky);
+ - added :trashes command-line command, which lists all non-empty trash
+   directories (thanks to Sergei Shilovsky);
+ - treat semicolon (";") as a valid range separator for command-line commands;
+ - allow empty ranges for command without name (as in :4).
+
+Angle bracket notation:
+ - added <nop> angle bracket notation (thanks to filterfalse).
+
+Scripting:
+ - added &option syntax for expressions (returns value of an option);
+ - extended parser to support integer number constants and unary minus and
+   plus operators;
+ - extended parser to support <, <=, >= and > comparison operators for strings
+   and integers.
+
+Performance:
+ - optimized file name comparison on sorting.
+
+Documentation:
+ - documented special bookmarks.
+
+Color scheme related changes:
+ - added sample light color scheme (provided by Daniel R., a.k.a. reicheltd);
+ - added sample dark solarized color scheme (provided by Stéphane, a.k.a.
+   istib);
+ - added zenburn color scheme (provided by Svyatoslav Mishyn, a.k.a. juef).
+
+TUI (Text User Interface):
+ - handle backspace in preview window as terminal emulators do (thanks to Svenn
+   Are Bjerkem, a.k.a. svenn).
+
+Only on Windows:
+ - added handling of paths with backward slashes for :find/:locate/:grep/%M
+   menus on Windows (thanks to Robert Sarkozi);
+ - fixed extending filetypes that are missing macro on Windows when cmd.exe
+   shell is used (thanks to Daniel Polanco, a.k.a. dlpolanco);
+ - fixed work with filenames contining special symbols on Windows with cmd.exe
+   shell (thanks to Daniel Polanco, a.k.a. dlpolanco);
+ - fixed testing whether application uses GUI on Windows when path contains
+   spaces;
+ - fixed extra escaping on prompt filename completion on Windows.
+
+Other changes:
+ - added cancellation handling for file system operations and invocations of
+   external applications (works best on *nix systems) (thanks to Milan Svoboda,
+   a.k.a. tex);
+ - made bookmarks merging smarter by storing timestamps.  Removing bookmarks
+   now works as expected.  Bookmarks overwriting by another instance shouldn't
+   happen anymore.  (Thanks to Michael Maddern, a.k.a. madders.)
+
+Major fixes:
+ - fixed file descriptor leak on finishing background tasks (thanks to
+   anonymous from linux.org.ru);
+ - fixed several bugs that led to segmentation fault.
+
+See change log for full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 31, 2013
 ================
 
