@@ -28,15 +28,18 @@
 #define WPRINTF_WSTR L"ls"
 #define PRINTF_PID_T "%llu"
 #define PRINTF_SIZE_T "%llu"
+#define TIME_T "%lld"
 #elif defined(_WIN32)
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
 #define PRINTF_PID_T "%d"
 #define PRINTF_SIZE_T "%u"
+#define TIME_T "%ld"
 #else
 #define WPRINTF_MBSTR L"s"
 #define WPRINTF_WSTR L"ls"
 #define PRINTF_PID_T "%d"
+#define TIME_T "%ld"
 #if defined(_LP64)
 #define PRINTF_SIZE_T "%lu"
 #else
