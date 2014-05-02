@@ -100,8 +100,9 @@
 
 	Fixed displaying of search messages in menus.
 
-	Fixed check for whether temporary files with list of file names during
-	bulk rename operation.  Thanks to Daniel R., a.k.a. reicheltd.
+	Fixed check for whether temporary files with list of file names is
+	changed during bulk rename operation.  Thanks to Daniel R., a.k.a.
+	reicheltd.
 
 	Fixed reset of charset options (like 'cpoptions'), which could result in
 	segmentation faults.
