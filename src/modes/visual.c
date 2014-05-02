@@ -22,11 +22,14 @@
 #include <curses.h>
 
 #include <assert.h>
+#include <stddef.h> /* NULL size_t */
 #include <string.h>
 
 #include "../cfg/config.h"
+#include "../cfg/hist.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
+#include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../bookmarks.h"
 #include "../commands.h"
@@ -36,6 +39,7 @@
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
+#include "../ui.h"
 #include "dialogs/attr_dialog.h"
 #include "cmdline.h"
 #include "modes.h"

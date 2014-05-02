@@ -19,12 +19,10 @@
 
 #include "search.h"
 
-#include <sys/types.h>
-
-#include <curses.h>
 #include <regex.h>
 
 #include <assert.h> /* assert() */
+#include <stdio.h> /* snprintf() */
 #include <string.h>
 
 #include "cfg/config.h"

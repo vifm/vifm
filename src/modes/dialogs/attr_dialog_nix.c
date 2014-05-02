@@ -19,7 +19,11 @@
 
 #include "attr_dialog_nix.h"
 
+#include <curses.h>
+
 #include <fcntl.h>
+#include <sys/types.h> /* mode_t */
+#include <unistd.h> /* uid_t geteuid() */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
@@ -32,9 +36,8 @@
 #include "../../utils/fs_limits.h"
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
-#include "../../background.h"
 #include "../../filelist.h"
-#include "../../fileops.h"
+#include "../../ops.h"
 #include "../../status.h"
 #include "../../ui.h"
 #include "../../undo.h"

@@ -19,7 +19,6 @@
 
 #include "locate_menu.h"
 
-#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 

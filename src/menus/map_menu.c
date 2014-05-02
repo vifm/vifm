@@ -19,15 +19,16 @@
 
 #include "map_menu.h"
 
+#include <curses.h> /* KEY_* */
+
 #include <ctype.h> /* tolower() */
+#include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* strdup() strlen() strcat() */
 #include <wchar.h> /* wcsncmp() wcslen() */
 
-#include "../modes/menu.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/utils.h"
 #include "../ui.h"
 #include "menus.h"
 

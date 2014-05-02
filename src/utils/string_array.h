@@ -19,9 +19,8 @@
 #ifndef VIFM__UTILS__STRING_ARRAY_H__
 #define VIFM__UTILS__STRING_ARRAY_H__
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t wchar_t */
 #include <stdio.h> /* FILE */
-#include <wchar.h> /* wchar_t */
 
 /* Input pointers can be NULL.  Returns new length of the array. */
 int add_to_string_array(char ***array, int len, int count, ...);

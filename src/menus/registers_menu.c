@@ -21,8 +21,6 @@
 
 #include <string.h> /* strdup() */
 
-#include "../modes/menu.h"
-#include "../utils/string_array.h"
 #include "../registers.h"
 #include "../ui.h"
 #include "menus.h"

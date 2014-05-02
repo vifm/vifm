@@ -20,8 +20,8 @@
 #ifndef VIFM__MENUS__MENUS_H__
 #define VIFM__MENUS__MENUS_H__
 
+#include <stddef.h> /* wchar_t */
 #include <stdio.h> /* FILE */
-#include <wchar.h> /* wchar_t */
 
 #include "../utils/test_helpers.h"
 #include "../ui.h"

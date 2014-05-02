@@ -31,26 +31,23 @@
 
 #include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
-#include <sys/time.h> /* localtime */
 #ifndef _WIN32
-#include <sys/wait.h> /* WEXITSTATUS */
 #include <pwd.h>
 #include <grp.h>
 #endif
+#include <unistd.h> /* access() close() fork() pipe() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
-#include <math.h> /* abs() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* calloc() free() malloc() */
+#include <stdlib.h> /* abs() calloc() free() malloc() */
 #include <string.h> /* memset() strcat() strcmp() strcpy() strlen() */
-#include <time.h>
+#include <time.h> /* localtime() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
-#include "modes/file_info.h"
 #include "modes/modes.h"
 #include "utils/env.h"
 #include "utils/filter.h"
@@ -65,12 +62,8 @@
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
-#include "background.h"
 #include "color_scheme.h"
 #include "column_view.h"
-#include "fileops.h"
-#include "fileops.h"
-#include "filetype.h"
 #include "fuse.h"
 #include "macros.h"
 #include "opt_handlers.h"

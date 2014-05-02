@@ -19,10 +19,12 @@
 #ifndef VIFM__UTILS__TREE_H__
 #define VIFM__UTILS__TREE_H__
 
+#include <stddef.h> /* NULL */
 #include <stdint.h> /* uint64_t */
 
 #define NULL_TREE NULL
 
+struct root_t;
 typedef struct root_t *tree_t;
 typedef uint64_t tree_val_t;
 

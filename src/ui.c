@@ -19,8 +19,8 @@
 
 #include "ui.h"
 
-#include <sys/stat.h> /* stat */
-#include <dirent.h> /* DIR */
+#include <curses.h> /* mvwin() wbkgdset() werase() */
+
 #ifndef _WIN32
 #include <grp.h> /* getgrgid() */
 #include <pwd.h> /* getpwent() */
@@ -31,17 +31,17 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
+#include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* malloc() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcpy() strlen() */
 #include <time.h>
+#include <wchar.h> /* wcslen() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "menus/menus.h"
-#include "modes/file_info.h"
 #include "modes/modes.h"
 #include "modes/view.h"
 #include "utils/fs.h"
@@ -53,11 +53,11 @@
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
+#include "colors.h"
 #include "filelist.h"
 #include "main_loop.h"
 #include "opt_handlers.h"
 #include "quickview.h"
-#include "signals.h"
 #include "status.h"
 #include "term_title.h"
 

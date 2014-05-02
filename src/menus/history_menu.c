@@ -19,10 +19,10 @@
 
 #include "history_menu.h"
 
-#include <stdlib.h> /* malloc() realloc() */
-#include <string.h> /* strdup() strcpy() strlen() */
+#include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../cfg/hist.h"
 #include "../modes/menu.h"
 #include "../utils/string_array.h"
 #include "../commands.h"

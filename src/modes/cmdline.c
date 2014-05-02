@@ -24,7 +24,6 @@
 #include <limits.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
@@ -32,18 +31,19 @@
 #include <wctype.h>
 
 #include "../cfg/config.h"
+#include "../cfg/hist.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
 #include "../engine/keys.h"
-#include "../engine/options.h"
-#include "../menus/menus.h"
 #include "../utils/fs_limits.h"
+#include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../color_scheme.h"
+#include "../colors.h"
 #include "../commands.h"
 #include "../filelist.h"
 #include "../search.h"

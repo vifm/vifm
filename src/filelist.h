@@ -20,7 +20,11 @@
 #ifndef VIFM__FILELIST_H__
 #define VIFM__FILELIST_H__
 
-#include <stddef.h> /* size_t ssize_t */
+#include <sys/types.h> /* for ssize_t */
+
+#include <stddef.h> /* size_t */
+#include <stdint.h> /* uint64_t */
+#include <stdio.h> /* FILE */
 
 #include "utils/test_helpers.h"
 #include "ui.h"

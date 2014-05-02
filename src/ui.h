@@ -27,10 +27,9 @@
 #include <curses.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* off_t mode_t... */
-#include <inttypes.h> /* uintmax_t */
+#include <stdlib.h> /* mode_t */
 #include <sys/types.h>
-#include <unistd.h>
+#include <time.h> /* time_t timespec */
 
 #include "utils/filter.h"
 #include "utils/fs_limits.h"

@@ -20,6 +20,10 @@
 #ifndef VIFM__FILEOPS_H__
 #define VIFM__FILEOPS_H__
 
+#ifndef _WIN32
+#include <sys/types.h> /* gid_t uid_t */
+#endif
+
 #include <stdint.h> /* uint64_t */
 
 #include "utils/test_helpers.h"

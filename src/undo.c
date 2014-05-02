@@ -19,8 +19,6 @@
 #include "undo.h"
 
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
@@ -28,12 +26,11 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
-#include "cfg/config.h"
-#include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/utils.h"
 #include "ops.h"
 #include "registers.h"
 #include "trash.h"

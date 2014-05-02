@@ -30,14 +30,14 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <signal.h>
-#include <stddef.h> /* NULL size_t ssize_t */
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
-#include <time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h> /* ssize_t */
 #ifndef _WIN32
+#include <sys/select.h> /* FD_* select */
+#include <sys/time.h> /* timeval */
 #include <sys/wait.h> /* WEXITSTATUS() */
 #endif
 
@@ -46,7 +46,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
-#include "status.h"
+#include "ui.h"
 
 /* Size of error message reading buffer. */
 #define ERR_MSG_LEN 1025

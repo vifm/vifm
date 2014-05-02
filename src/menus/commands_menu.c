@@ -20,10 +20,11 @@
 #include "commands_menu.h"
 
 #include <assert.h> /* assert() */
+#include <stddef.h> /* size_t wchar_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strlen() */
-#include <wchar.h> /* wchar_t wcscmp() */
+#include <wchar.h> /* wcscmp() */
 
 #include "../engine/cmds.h"
 #include "../modes/menu.h"

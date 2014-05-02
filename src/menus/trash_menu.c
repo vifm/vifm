@@ -18,9 +18,10 @@
 
 #include "trash_menu.h"
 
+#include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
-#include <wchar.h> /* wchar_t */
+#include <wchar.h> /* wcscmp() */
 
 #include "../utils/string_array.h"
 #include "../status.h"

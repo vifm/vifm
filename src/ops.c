@@ -23,8 +23,11 @@
 #include <shellapi.h>
 #endif
 
+#include <sys/stat.h> /* gid_t uid_t lstat() stat() */
+
 #include <stddef.h> /* size_t */
-#include <string.h>
+#include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -36,7 +39,6 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "background.h"
-#include "fileops.h"
 #include "status.h"
 #include "trash.h"
 #include "undo.h"

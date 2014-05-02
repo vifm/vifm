@@ -18,7 +18,6 @@
 
 #include "tree.h"
 
-#include <stdint.h> /* uint64_t */
 #include <stdlib.h>
 #include <string.h>
 

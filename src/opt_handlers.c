@@ -18,12 +18,13 @@
 
 #include "opt_handlers.h"
 
+#include <curses.h> /* stdscr wnoutrefresh() */
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
-#include <math.h> /* abs() */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* abs() */
 #include <string.h> /* memcpy() memmove() strstr() */
 
 #include "cfg/config.h"
@@ -32,17 +33,16 @@
 #include "modes/view.h"
 #include "utils/log.h"
 #include "utils/macros.h"
-#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
-#include "color_scheme.h"
 #include "column_view.h"
 #include "filelist.h"
 #include "quickview.h"
 #include "sort.h"
 #include "status.h"
 #include "trash.h"
+#include "types.h"
 #include "ui.h"
 #include "viewcolumns_parser.h"
 

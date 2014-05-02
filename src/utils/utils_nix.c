@@ -20,8 +20,11 @@
 #include "utils_nix.h"
 #include "utils_int.h"
 
+#include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* S_* */
+#include <sys/time.h> /* timeval */
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
+#include <sys/wait.h> /* waitpid */
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
@@ -39,8 +42,10 @@
 #include <string.h> /* strchr() strlen() strncmp() */
 
 #include "../cfg/config.h"
+#include "../ui.h"
 #include "fs_limits.h"
 #include "log.h"
+#include "macros.h"
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
 #include "str.h"

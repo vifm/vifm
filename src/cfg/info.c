@@ -19,6 +19,8 @@
 
 #include "info.h"
 
+#include <unistd.h> /* R_OK access() */
+
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
@@ -32,6 +34,7 @@
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
+#include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -47,6 +50,7 @@
 #include "../trash.h"
 #include "../ui.h"
 #include "config.h"
+#include "hist.h"
 #include "info_chars.h"
 
 static void get_sort_info(FileView *view, const char line[]);

@@ -20,10 +20,6 @@
 #ifndef VIFM__STATUS_H__
 #define VIFM__STATUS_H__
 
-#include <sys/stat.h>
-
-#include <inttypes.h>
-
 #include "utils/tree.h"
 #include "utils/fs_limits.h"
 

@@ -21,8 +21,6 @@
 
 #include <regex.h>
 
-#include <curses.h>
-
 #include <pthread.h>
 
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
@@ -38,10 +36,10 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
-#include <signal.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
+#include <stdlib.h> /* free() malloc() strtol() */
 #include <string.h> /* memcmp() strcpy() strerror() */
 
 #include "cfg/config.h"
@@ -52,22 +50,22 @@
 #endif
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/tree.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "color_scheme.h"
-#include "commands.h"
 #include "commands_completion.h"
 #include "filelist.h"
-#include "filetype.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"
 #include "status.h"
 #include "trash.h"
+#include "types.h"
 #include "ui.h"
 #include "undo.h"
 

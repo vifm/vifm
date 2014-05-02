@@ -19,8 +19,6 @@
 #include "var.h"
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* size_t */
-#include <stdio.h> /* sprintf() */
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* strdup() */
 

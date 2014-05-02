@@ -23,24 +23,26 @@
 
 #include <pthread.h>
 
+#include <sys/types.h> /* ssize_t */
+
 #include <assert.h> /* assert() */
+#include <stddef.h> /* size_t wchar_t */
+#include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h>
 #include <wctype.h> /* wtoupper() */
+#include <wchar.h> /* wcscpy() */
 
 #include "../cfg/config.h"
+#include "../cfg/hist.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../utils/tree.h"
 #include "../utils/utf8.h"
-#include "../utils/utils.h"
-#include "../background.h"
 #include "../bookmarks.h"
-#include "../color_scheme.h"
 #include "../commands.h"
 #include "../filelist.h"
 #include "../fileops.h"
@@ -49,6 +51,7 @@
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
+#include "../types.h"
 #include "../ui.h"
 #include "../undo.h"
 #include "dialogs/attr_dialog.h"

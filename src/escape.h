@@ -23,6 +23,8 @@
 
 #include <curses.h>
 
+#include <stddef.h> /* size_t */
+
 #include "colors.h"
 #include "utils/test_helpers.h"
 

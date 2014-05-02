@@ -21,7 +21,8 @@
 #define VIFM__TYPES_H__
 
 #include <sys/types.h> /* mode_t */
-#include <dirent.h> /* struct dirent */
+
+struct dirent;
 
 typedef enum
 {

@@ -21,7 +21,6 @@
 #define VIFM__MENUS__JOBS_MENU_H__
 
 #include "../ui.h"
-#include "menus.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_jobs_menu(FileView *view);

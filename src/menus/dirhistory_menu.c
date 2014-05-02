@@ -19,11 +19,9 @@
 
 #include "dirhistory_menu.h"
 
-#include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
-#include "../modes/menu.h"
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"

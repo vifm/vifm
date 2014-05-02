@@ -28,6 +28,7 @@
 #include <magic.h>
 #endif
 
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* popen() */
 #include <string.h> /* strcpy() */
 

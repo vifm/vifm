@@ -20,8 +20,6 @@
 #ifndef VIFM__CFG__CONFIG_H__
 #define VIFM__CFG__CONFIG_H__
 
-#include <curses.h>
-
 #include <stddef.h> /* size_t */
 
 #include "../utils/fs_limits.h"

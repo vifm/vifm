@@ -24,10 +24,9 @@
 
 #include <sys/types.h> /* gid_t mode_t uid_t */
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
-#include <wchar.h> /* wchar_t */
 
 /* Regular expressions. */
 

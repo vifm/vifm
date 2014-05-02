@@ -28,10 +28,9 @@
 #include <signal.h>
 #include <stdio.h> /* fprintf */
 
-#include "cfg/config.h"
 #include "cfg/info.h"
 #include "utils/log.h"
-#include "utils/utils.h"
+#include "utils/macros.h"
 #include "fuse.h"
 #include "term_title.h"
 
@@ -39,24 +38,14 @@ static void _gnuc_noreturn shutdown_nicely(void);
 
 #ifndef _WIN32
 
-#include <sys/stat.h> /* stat */
-#include <sys/time.h> /* timeval */
-#include <sys/types.h> /* waitpid */
+#include <sys/types.h> /* pid_t */
 #include <sys/wait.h> /* waitpid */
-#include <unistd.h> /* alarm() */
 
-#include <errno.h>
-#include <time.h>
+#include <stdlib.h> /* exit() */
 
-#include "menus/menus.h"
-#include "modes/file_info.h"
 #include "utils/macros.h"
 #include "background.h"
-#include "filelist.h"
-#include "fileops.h"
-#include "filetype.h"
 #include "status.h"
-#include "term_title.h"
 #include "ui.h"
 
 /* Handle term resizing in X */

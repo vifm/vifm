@@ -20,8 +20,9 @@
 #ifndef VIFM__UTILS__FS_H__
 #define VIFM__UTILS__FS_H__
 
-#include <sys/types.h> /* size_t mode_t */
+#include <sys/types.h> /* mode_t */
 
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 
 /* Functions to deal with file system objects */

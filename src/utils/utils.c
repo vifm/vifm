@@ -27,12 +27,6 @@
 
 #include <regex.h>
 
-#include <curses.h>
-
-#ifndef _WIN32
-#include <sys/wait.h> /* waitpid() */
-#endif
-
 #include <unistd.h> /* chdir() */
 
 #include <ctype.h> /* isalnum() isalpha() */
@@ -40,6 +34,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strchr() strlen() strpbrk() */
+#include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
 #include "../fuse.h"

@@ -26,9 +26,7 @@
 #include <stdlib.h> /* free() malloc() realloc() */
 #include <string.h> /* strcspn() */
 
-#include "file_streams.h"
 #include "fs_limits.h"
-#include "str.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
 static char * read_nonseekable_stream(FILE *const fp, size_t *read);

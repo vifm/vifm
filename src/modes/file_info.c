@@ -19,31 +19,32 @@
 
 #include "file_info.h"
 
+#include <curses.h>
+
 #ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
 #endif
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <unistd.h>
 
 #include <assert.h> /* assert() */
-#include <signal.h>
+#include <inttypes.h> /* PRId64 */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h> /* strlen() */
 #include <time.h>
 
-#include "../cfg/config.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
+#include "../utils/macros.h"
+#include "../utils/tree.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
 #include "../file_magic.h"
 #include "../status.h"
+#include "../types.h"
 #include "../ui.h"
 #include "modes.h"
 

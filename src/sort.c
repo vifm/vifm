@@ -19,27 +19,20 @@
 
 #include "sort.h"
 
-#include <curses.h>
-
-#include <sys/stat.h>
-#include <fcntl.h> /* access() */
-
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <math.h> /* abs() */
-#include <stdlib.h> /* qsort() */
+#include <stdlib.h> /* abs() qsort() */
 #include <string.h> /* strrchr() */
 
 #include "cfg/config.h"
 #include "utils/fs_limits.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
-#include "filelist.h"
 #include "status.h"
+#include "types.h"
 #include "ui.h"
 
 static FileView* view;
