@@ -242,26 +242,20 @@ column_line_print(const void *data, int column_id, const char *buf,
 
 		checked_wmove(view->win, cdt->current_line,
 				final_offset - 1 - view->real_num_width);
-		wattron(view->win, line_attrs);
-		wprint(view->win, number);
-		wattroff(view->win, line_attrs);
+		wprinta(view->win, number, line_attrs);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
-
-	wattron(view->win, line_attrs);
 
 	strcpy(print_buf, buf);
 	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
-	wprint(view->win, print_buf);
-
-	wattroff(view->win, line_attrs);
+	wprinta(view->win, print_buf, line_attrs);
 }
 
 /* Calculate color attributes for primary view column.  Returns attributes that
- * can be used with wattron()/wattroff(). */
+ * can be used for drawing on a window. */
 static int
 prepare_primary_col_color(FileView *view, int line_color, int selected,
 		int current)
@@ -291,7 +285,7 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 }
 
 /* Calculate color attributes for secondary view column.  Returns attributes
- * that can be used with wattron()/wattroff(). */
+ * that can be used for drawing on a window. */
 static int
 prepare_secondary_col_color(FileView *view, int selected, int current)
 {

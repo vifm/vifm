@@ -272,7 +272,11 @@ void show_progress(const char *msg, int period);
 void redraw_lists(void);
 /* Returns new value for curr_stats.save_msg. */
 int load_color_scheme(const char name[]);
-void wprint(WINDOW *win, const char *str);
+/* Prints str in current window position. */
+void wprint(WINDOW *win, const char str[]);
+/* Prints str in current window position with specified line attributes, which
+ * set during print operation only. */
+void wprinta(WINDOW *win, const char str[], int line_attrs);
 /* Sets inner flag or signals about needed view update in some other way.
  * It doesn't perform any update, just request one to happen in the future. */
 void request_view_update(FileView *view);
