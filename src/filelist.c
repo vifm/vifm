@@ -87,6 +87,9 @@
 #define CASE_SENSATIVE_FILTER 1
 #endif
 
+/* Mark for a cursor position of inactive pane. */
+#define INACTIVE_CURSOR_MARK "*"
+
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
@@ -1272,11 +1275,20 @@ put_inactive_mark(FileView *view)
 {
 	size_t col_width;
 	size_t col_count;
+	int is_selected;
+	int line_attrs;
+	int line, column;
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	mvwaddstr(view->win, view->curr_line/col_count,
-			view->real_num_width + (view->curr_line%col_count)*col_width, "*");
+	is_selected = view->dir_entry[view->list_pos].selected;
+	line_attrs = prepare_secondary_col_color(view, is_selected, 0);
+
+	line = view->curr_line/col_count;
+	column = view->real_num_width + (view->curr_line%col_count)*col_width;
+	checked_wmove(view->win, line, column);
+
+	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
 }
 
 /* Calculates number of columns and maximum width of column in a view. */

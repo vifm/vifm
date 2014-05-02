@@ -1,3 +1,8 @@
+0.7.7-beta to current
+
+	Fixed drawing "*" mark for cursor in inactive pane.  Thanks to Svyatoslav
+	Mishyn, a.k.a. juef.
+
 0.7.6 to 0.7.7-beta
 
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or
