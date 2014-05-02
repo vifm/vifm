@@ -1626,7 +1626,7 @@ update_attributes(void)
 }
 
 void
-wprint(WINDOW *win, const char *str)
+wprint(WINDOW *win, const char str[])
 {
 #ifndef _WIN32
 	waddstr(win, str);
@@ -1641,6 +1641,14 @@ wprint(WINDOW *win, const char *str)
 	waddwstr(win, t);
 	free(t);
 #endif
+}
+
+void
+wprinta(WINDOW *win, const char str[], int line_attrs)
+{
+	wattron(win, line_attrs);
+	wprint(win, str);
+	wattroff(win, line_attrs);
 }
 
 void

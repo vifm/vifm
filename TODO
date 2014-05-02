@@ -87,7 +87,6 @@ Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
     Virtual File System - currently vifm can use fuse to mount most
         file systems.
-    Invert selection? (what :command or key?)
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.
     Add g/ and g? commands (search, but don't select files).
@@ -113,7 +112,6 @@ Possible things to add.
     Add search history for less-like mode.
     Update visible symbolic links in the other pane on updating current pane
         (to show broken links to the user).
-    Print an error message when navigation to a menu item failed.
     Highlight first line of command-editing buffer of vifm in different
         color, like gitcommit syntax file does.
 
@@ -136,7 +134,6 @@ Other (questionable) things.
     Maybe accept regular expressions as second argument of :colo command.
     Make :alink, :copy, ... accept globs (e.g. :co *.c).
     Option to trigger completion on slash in command-line.
-    Maybe expand macros for :touch amd :mkdir commands (for :touch %"d)
     Live preview of color schemes.
     "Blow directory" command to replace directory with its content.
     Add file selector based on file extensions.

@@ -1,3 +1,8 @@
+0.7.7-beta to current
+
+	Fixed drawing "*" mark for cursor in inactive pane.  Thanks to Svyatoslav
+	Mishyn, a.k.a. juef.
+
 0.7.6 to 0.7.7-beta
 
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or
@@ -100,8 +105,9 @@
 
 	Fixed displaying of search messages in menus.
 
-	Fixed check for whether temporary files with list of file names during
-	bulk rename operation.  Thanks to Daniel R., a.k.a. reicheltd.
+	Fixed check for whether temporary files with list of file names is
+	changed during bulk rename operation.  Thanks to Daniel R., a.k.a.
+	reicheltd.
 
 	Fixed reset of charset options (like 'cpoptions'), which could result in
 	segmentation faults.

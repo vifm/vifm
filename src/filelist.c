@@ -87,6 +87,9 @@
 #define CASE_SENSATIVE_FILTER 1
 #endif
 
+/* Mark for a cursor position of inactive pane. */
+#define INACTIVE_CURSOR_MARK "*"
+
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
@@ -242,26 +245,20 @@ column_line_print(const void *data, int column_id, const char *buf,
 
 		checked_wmove(view->win, cdt->current_line,
 				final_offset - 1 - view->real_num_width);
-		wattron(view->win, line_attrs);
-		wprint(view->win, number);
-		wattroff(view->win, line_attrs);
+		wprinta(view->win, number, line_attrs);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
-
-	wattron(view->win, line_attrs);
 
 	strcpy(print_buf, buf);
 	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
-	wprint(view->win, print_buf);
-
-	wattroff(view->win, line_attrs);
+	wprinta(view->win, print_buf, line_attrs);
 }
 
 /* Calculate color attributes for primary view column.  Returns attributes that
- * can be used with wattron()/wattroff(). */
+ * can be used for drawing on a window. */
 static int
 prepare_primary_col_color(FileView *view, int line_color, int selected,
 		int current)
@@ -291,7 +288,7 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 }
 
 /* Calculate color attributes for secondary view column.  Returns attributes
- * that can be used with wattron()/wattroff(). */
+ * that can be used for drawing on a window. */
 static int
 prepare_secondary_col_color(FileView *view, int selected, int current)
 {
@@ -1278,11 +1275,20 @@ put_inactive_mark(FileView *view)
 {
 	size_t col_width;
 	size_t col_count;
+	int is_selected;
+	int line_attrs;
+	int line, column;
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	mvwaddstr(view->win, view->curr_line/col_count,
-			view->real_num_width + (view->curr_line%col_count)*col_width, "*");
+	is_selected = view->dir_entry[view->list_pos].selected;
+	line_attrs = prepare_secondary_col_color(view, is_selected, 0);
+
+	line = view->curr_line/col_count;
+	column = view->real_num_width + (view->curr_line%col_count)*col_width;
+	checked_wmove(view->win, line, column);
+
+	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
