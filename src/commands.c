@@ -27,10 +27,8 @@
 
 #include <curses.h>
 
-#include <sys/types.h> /* passwd */
-#ifndef _WIN32
-#include <sys/wait.h>
-#endif
+#include <sys/stat.h> /* gid_t lstat() stat() uid_t */
+#include <unistd.h> /* R_OK access() unlink() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
@@ -40,12 +38,11 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
 #include <string.h> /* strcat() strchr() strcmp() strcpy() strlen() */
-#include <time.h>
 
 #include "cfg/config.h"
+#include "cfg/hist.h"
 #include "cfg/info.h"
 #include "engine/cmds.h"
-#include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/options.h"
 #include "engine/parsing.h"
@@ -57,19 +54,17 @@
 #include "modes/dialogs/attr_dialog.h"
 #include "modes/dialogs/change_dialog.h"
 #include "modes/dialogs/sort_dialog.h"
-#include "modes/cmdline.h"
-#include "modes/menu.h"
 #include "modes/modes.h"
 #include "modes/normal.h"
 #include "modes/view.h"
 #include "modes/visual.h"
 #include "utils/env.h"
 #include "utils/file_streams.h"
+#include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/int_stack.h"
 #include "utils/log.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -79,20 +74,20 @@
 #include "bookmarks.h"
 #include "bracket_notation.h"
 #include "color_scheme.h"
+#include "colors.h"
 #include "commands_completion.h"
 #include "dir_stack.h"
-#include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
 #include "fuse.h"
 #include "macros.h"
+#include "ops.h"
 #include "opt_handlers.h"
 #include "path_env.h"
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
-#include "status.h"
 #include "term_title.h"
 #include "trash.h"
 #include "ui.h"

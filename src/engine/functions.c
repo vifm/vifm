@@ -19,11 +19,9 @@
 #include "functions.h"
 
 #include <stddef.h> /* size_t */
-#include <stdlib.h> /* realloc() */
+#include <stdlib.h> /* realloc() free() */
 #include <string.h> /* memset() strcmp() */
 
-#include "../utils/string_array.h"
-#include "../ui.h"
 #include "text_buffer.h"
 #include "var.h"
 

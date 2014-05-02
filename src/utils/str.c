@@ -22,20 +22,18 @@
 #include <ctype.h> /* tolower() isspace() */
 #include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
-#include <stddef.h> /* NULL size_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() realloc() strtol()
                        wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
-#include <wchar.h> /* vswprintf() wchar_t */
+#include <wchar.h> /* vswprintf() */
 #include <wctype.h> /* towlower() iswupper() */
 
 #include "macros.h"
 #include "utf8.h"
 #include "utils.h"
-
-#include "macros.h"
 
 void
 chomp(char str[])

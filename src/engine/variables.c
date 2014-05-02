@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stddef.h> /* size_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() */
 #include <string.h>

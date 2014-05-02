@@ -24,10 +24,9 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h>
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL wchar_t */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h>
-#include <wchar.h> /* wchar_t */
 
 #include "../cfg/config.h"
 #include "../engine/cmds.h"
@@ -35,10 +34,8 @@
 #include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/utils.h"
-#include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
-#include "../fileops.h"
 #include "../status.h"
 #include "../ui.h"
 #include "cmdline.h"

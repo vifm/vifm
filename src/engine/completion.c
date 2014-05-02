@@ -19,6 +19,7 @@
 #include "completion.h"
 
 #include <assert.h> /* assert() */
+#include <stddef.h> /* size_t */
 #include <stdlib.h> /* qsort() */
 #include <string.h>
 

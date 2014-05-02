@@ -22,13 +22,13 @@
 
 #include <curses.h>
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <ctype.h>
 #include <errno.h> /* ENOENT */
 #include <locale.h> /* setlocale() */
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
 #include <string.h> /* strcpy() */
@@ -36,6 +36,7 @@
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "color_scheme.h"
+#include "colors.h"
 
 #define MAX_LEN 1024
 

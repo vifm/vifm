@@ -19,14 +19,13 @@
 
 #include "modes.h"
 
-#include <assert.h> /* assert() */
-#include <stdlib.h>
+#include <curses.h>
+
+#include <stddef.h> /* wchar_t */
 
 #include "../engine/keys.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
-#include "../background.h"
-#include "../filelist.h"
 #include "../main_loop.h"
 #include "../status.h"
 #include "../ui.h"

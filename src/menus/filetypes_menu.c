@@ -30,6 +30,7 @@
 #include "../filelist.h"
 #include "../filetype.h"
 #include "../running.h"
+#include "../types.h"
 #include "../ui.h"
 #include "menus.h"
 

@@ -21,9 +21,11 @@
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <limits.h> /* INT_MAX */
+#include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h>
 #include <string.h>
-#include <wctype.h> /* iswdigit */
+#include <wctype.h> /* iswdigit() */
+#include <wchar.h> /* wcscat() wcslen() */
 
 #include "../utils/macros.h"
 #include "../utils/str.h"

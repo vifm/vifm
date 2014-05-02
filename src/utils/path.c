@@ -23,6 +23,7 @@
 #include <ctype.h>
 #endif
 #include <stddef.h> /* size_t */
+#include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
                        strncat() strchr() strcpy() strlen() strrchr() */

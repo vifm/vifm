@@ -19,12 +19,10 @@
 
 #include "filetype.h"
 
-#include <curses.h>
-
 #include <ctype.h> /* isspace() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
-#include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs_limits.h"
 #include "utils/str.h"

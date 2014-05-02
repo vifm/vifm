@@ -19,24 +19,30 @@
 
 #include "quickview.h"
 
+#include <curses.h> /* mvwaddstr() werase() wattrset() */
+
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* FILE fclose() feof() fopen() */
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
+#include "color_manager.h"
+#include "color_scheme.h"
+#include "colors.h"
+#include "escape.h"
+#include "filelist.h"
+#include "filetype.h"
 #include "modes/modes.h"
 #include "modes/view.h"
+#include "status.h"
+#include "types.h"
+#include "ui.h"
 #include "utils/file_streams.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
-#include "color_manager.h"
-#include "escape.h"
-#include "filelist.h"
-#include "filetype.h"
-#include "status.h"
-#include "ui.h"
 
 /* Line at which quickview content should be displayed. */
 #define LINE 1

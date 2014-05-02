@@ -18,13 +18,16 @@
 
 #include "view.h"
 
+#include <curses.h>
+
 #include <regex.h>
 
-#include <curses.h>
+#include <unistd.h> /* R_OK access() */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
+#include <stdio.h>  /* fclose() fopen() snprintf() */
 #include <stdlib.h> /* malloc() free() */
 
 #include "../cfg/config.h"
@@ -39,14 +42,14 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../color_manager.h"
-#include "../commands.h"
+#include "../colors.h"
 #include "../escape.h"
 #include "../filelist.h"
-#include "../fileops.h"
 #include "../filetype.h"
 #include "../quickview.h"
 #include "../running.h"
 #include "../status.h"
+#include "../types.h"
 #include "../ui.h"
 #include "cmdline.h"
 #include "modes.h"

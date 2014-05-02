@@ -1,3 +1,5 @@
+#include <unistd.h> /* chdir() */
+
 #include <stdlib.h>
 #include <string.h>
 

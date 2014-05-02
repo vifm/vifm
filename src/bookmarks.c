@@ -19,19 +19,15 @@
 
 #include "bookmarks.h"
 
-#include <sys/types.h>
-
-#include <ctype.h> /* isalnum() */
 #include <stddef.h> /* NULL */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 #include <time.h> /* time_t time() */
 
-#include "cfg/config.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "filelist.h"
-#include "status.h"
 #include "ui.h"
 
 static void clear_mark(bookmark_t *bmark);

@@ -22,20 +22,14 @@
 #include <curses.h>
 
 #include <assert.h>
-#include <ctype.h>
 #include <string.h>
 
-#include "../../cfg/config.h"
 #include "../../engine/keys.h"
-#include "../../menus/menus.h"
-#include "../../bookmarks.h"
-#include "../../color_scheme.h"
-#include "../../commands.h"
-#include "../../filelist.h"
+#include "../../utils/macros.h"
+#include "../../colors.h"
 #include "../../fileops.h"
 #include "../../status.h"
 #include "../../ui.h"
-#include "../cmdline.h"
 #include "../modes.h"
 #include "attr_dialog.h"
 

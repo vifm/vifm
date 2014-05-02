@@ -21,26 +21,21 @@
 
 #include <curses.h>
 
-#include <sys/stat.h>
-#include <dirent.h> /* DIR */
-#include <unistd.h>
-
-#include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
-#include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
-#include "filelist.h"
 #include "status.h"
+#include "ui.h"
 
 char *HI_GROUPS[] = {
 	[WIN_COLOR]          = "Win",

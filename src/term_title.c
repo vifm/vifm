@@ -33,6 +33,7 @@
 #endif
 
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* stdout fflush() */
 #include <stdlib.h> /* atol() free() */
 
 #include "utils/env.h"

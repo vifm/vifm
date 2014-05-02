@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__CMDLINE_H__
 #define VIFM__MODES__CMDLINE_H__
 
-#include <wchar.h>
+#include <stddef.h> /* wchar_t */
 
 #ifdef TEST
 #include "../utils/fs_limits.h"

@@ -20,6 +20,8 @@
 #ifndef VIFM__MACROS_H__
 #define VIFM__MACROS_H__
 
+#include <stddef.h> /* size_t */
+
 #include "utils/test_helpers.h"
 #include "ui.h"
 

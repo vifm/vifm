@@ -54,6 +54,7 @@ typedef enum
 CropType;
 
 /* Type of columns handle. */
+struct columns_list_t;
 typedef struct columns_list_t *columns_t;
 
 /* A column callback function, which sould fill the buf with column text. */

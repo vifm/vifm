@@ -28,6 +28,7 @@
 
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR dirent */
+#include <unistd.h> /* X_OK access() */
 
 #ifndef _WIN32
 #include <grp.h> /* getgrent setgrent */
@@ -53,12 +54,14 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
+#include "colors.h"
 #include "commands.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "path_env.h"
 #include "tags.h"
+#include "ui.h"
 
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);

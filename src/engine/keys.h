@@ -19,7 +19,7 @@
 #ifndef VIFM__ENGINE__KEYS_H__
 #define VIFM__ENGINE__KEYS_H__
 
-#include <wchar.h>
+#include <stddef.h> /* size_t wchar_t */
 
 #include "../utils/test_helpers.h"
 

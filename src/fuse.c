@@ -19,9 +19,14 @@
 
 #include "fuse.h"
 
+#include <curses.h> /* werase() def_prog_mode() */
+
 #include <sys/stat.h> /* S_IRWXU */
+#include <unistd.h> /* rmdir() unlink() */
 
 #include <stddef.h> /* NULL */
+#include <stdio.h> /* snprintf() fclose() fopen() */
+#include <stdlib.h> /* WIFEXITED free() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
@@ -29,6 +34,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"

@@ -20,6 +20,7 @@
 
 #include <dirent.h> /* DIR opendir() readdir() closedir() DT_DIR */
 
+#include <stdio.h> /* snprintf() sprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strchr() strlen() */
 

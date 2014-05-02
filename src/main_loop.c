@@ -25,23 +25,21 @@
 #include <windows.h>
 #endif
 
-#include <sys/time.h> /* select() */
-#include <sys/types.h> /* select() */
-#include <signal.h>
 #include <unistd.h> /* select() */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
+#include <signal.h> /* signal() */
+#include <stddef.h> /* size_t wchar_t wint_t */
 #include <string.h> /* memmove() strncpy() */
+#include <wchar.h> /* wcslen() wcscmp() */
 
 #include "cfg/config.h"
 #include "engine/keys.h"
 #include "modes/modes.h"
-#include "modes/normal.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "color_scheme.h"
 #include "filelist.h"
 #include "ipc.h"
 #include "status.h"

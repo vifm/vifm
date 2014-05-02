@@ -1,5 +1,7 @@
 #include "seatest.h"
 
+#include <unistd.h> /* chdir() */
+
 #include "../../src/utils/macros.h"
 #include "../../src/fileops.h"
 #include "../../src/ui.h"

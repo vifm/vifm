@@ -20,7 +20,7 @@
 #ifndef VIFM__MENUS__MAP_MENU_H__
 #define VIFM__MENUS__MAP_MENU_H__
 
-#include <wchar.h> /* wchar_t */
+#include <stddef.h> /* wchar_t */
 
 #include "../ui.h"
 

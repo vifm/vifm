@@ -32,8 +32,6 @@
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* access() */
 
-#include <assert.h> /* assert() */
-#include <ctype.h> /* touuper() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() rename() */

@@ -23,6 +23,7 @@
 #include "../utils/string_array.h"
 #include "../trash.h"
 #include "../ui.h"
+#include "menus.h"
 
 static int execute_trashes_cb(FileView *view, menu_info *m);
 

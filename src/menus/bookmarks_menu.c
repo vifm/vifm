@@ -19,16 +19,16 @@
 
 #include "bookmarks_menu.h"
 
+#include <curses.h> /* getmaxx() */
+
+#include <stddef.h> /* size_t wchar_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strcpy() strlen() */
-#include <wchar.h> /* wchar_t */
+#include <wchar.h> /* wcscmp() */
 
-#include "../cfg/config.h"
-#include "../modes/menu.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
-#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../bookmarks.h"

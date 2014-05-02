@@ -20,16 +20,15 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isalnum() isalpha() tolower() */
-#include <math.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
 #include <string.h> /* strcat() strcmp() */
 
 #include "../utils/str.h"
-#include "../utils/utils.h"
 #include "private/options.h"
 #include "functions.h"
+#include "options.h"
 #include "var.h"
 #include "variables.h"
 

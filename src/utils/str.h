@@ -20,8 +20,7 @@
 #ifndef VIFM__UTILS__STR_H__
 #define VIFM__UTILS__STR_H__
 
-#include <stddef.h> /* size_t */
-#include <wchar.h> /* wchar_t */
+#include <stddef.h> /* size_t wchar_t */
 
 #if defined(_WIN64)
 #define WPRINTF_MBSTR L"s"

@@ -20,19 +20,17 @@
 #include "registers.h"
 
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h>
 
-#include "cfg/config.h"
-#include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
-#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/utils.h"
 #include "trash.h"
 
 /* Name of the "unnamed" (the default) register. */

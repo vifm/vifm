@@ -19,6 +19,8 @@
 
 #include "running.h"
 
+#include <curses.h> /* FALSE curs_set() endwin() */
+
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() */
@@ -30,10 +32,10 @@
 #define ERROR_ELEVATION_REQUIRED 740L
 #endif
 #endif
+#include <unistd.h> /* F_OK X_OK pid_t access() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
-#include <signal.h> /* sighandler_t, signal() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS malloc() free() */
@@ -59,6 +61,7 @@
 #include "fuse.h"
 #include "macros.h"
 #include "status.h"
+#include "types.h"
 #include "ui.h"
 
 static int is_runnable(const FileView *const view, const char full_path[],

@@ -21,7 +21,6 @@
 
 #include <signal.h> /* sig* */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strlen() strdup() */
 
 #include "../modes/menu.h"
