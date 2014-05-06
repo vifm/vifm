@@ -51,6 +51,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -66,6 +67,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+TSTATIC char * parse_spec(const char spec[], int *line_num);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
@@ -455,38 +457,14 @@ void
 goto_selected_file(FileView *view, const char spec[], int try_open)
 {
 	char *path_buf;
-	int line_num = 1;
-	const char *colon;
-	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+	int line_num;
 
-	path_buf = malloc(bufs_len);
+	path_buf = parse_spec(spec, &line_num);
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
-
-	if(is_path_absolute(spec))
-	{
-		path_buf[0] = '\0';
-	}
-	else
-	{
-		copy_str(path_buf, bufs_len, "./");
-	}
-
-	colon = strchr(spec, ':');
-	if(colon != NULL)
-	{
-		strncat(path_buf, spec, colon - spec);
-		line_num = atoi(colon + 1);
-	}
-	else
-	{
-		strcat(path_buf, spec);
-	}
-
-	chomp(path_buf);
 
 	if(access(path_buf, F_OK) == 0)
 	{
@@ -507,6 +485,60 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	free(path_buf);
 }
 
+/* Extracts path and line number from the spec (1 when absent from the spec).
+ * Returns path and sets *line_num to line number, otherwise NULL is
+ * returned. */
+TSTATIC char *
+parse_spec(const char spec[], int *line_num)
+{
+	char *path_buf;
+	const char *colon;
+	int colon_lookup_offset = 0;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
+	{
+		return NULL;
+	}
+
+	if(is_path_absolute(spec))
+	{
+		path_buf[0] = '\0';
+	}
+	else
+	{
+		copy_str(path_buf, bufs_len, "./");
+	}
+
+#ifdef _WIN32
+	if(is_path_absolute(spec))
+	{
+		colon_lookup_offset = 2;
+	}
+#endif
+
+	colon = strchr(spec + colon_lookup_offset, ':');
+	if(colon != NULL)
+	{
+		strncat(path_buf, spec, colon - spec);
+		*line_num = atoi(colon + 1);
+	}
+	else
+	{
+		strcat(path_buf, spec);
+		*line_num = 1;
+	}
+
+	chomp(path_buf);
+
+#ifdef _WIN32
+	to_forward_slash(path_buf);
+#endif
+
+	return path_buf;
+}
+
 /* Opens file specified by its path on the given line number. */
 static void
 open_selected_file(const char path[], int line_num)
@@ -525,6 +557,10 @@ open_selected_file(const char path[], int line_num)
 static void
 navigate_to_selected_file(FileView *view, const char path[])
 {
+	/* Check whether target path is directory while we don't change current
+	 * working directory by invoking change_directory() function below. */
+	const int dst_is_dir = is_dir(path);
+
 	char name[NAME_MAX];
 	char *dir = strdup(path);
 	char *const last_slash = find_slashr(dir);
@@ -546,7 +582,7 @@ navigate_to_selected_file(FileView *view, const char path[])
 
 		load_dir_list(view, 0);
 
-		if(is_dir(path))
+		if(dst_is_dir)
 		{
 			strcat(name, "/");
 		}
