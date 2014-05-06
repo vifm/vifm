@@ -66,6 +66,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static char * parse_spec(const char spec[], int *line_num);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
@@ -455,38 +456,14 @@ void
 goto_selected_file(FileView *view, const char spec[], int try_open)
 {
 	char *path_buf;
-	int line_num = 1;
-	const char *colon;
-	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+	int line_num;
 
-	path_buf = malloc(bufs_len);
+	path_buf = parse_spec(spec, &line_num);
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
-
-	if(is_path_absolute(spec))
-	{
-		path_buf[0] = '\0';
-	}
-	else
-	{
-		copy_str(path_buf, bufs_len, "./");
-	}
-
-	colon = strchr(spec, ':');
-	if(colon != NULL)
-	{
-		strncat(path_buf, spec, colon - spec);
-		line_num = atoi(colon + 1);
-	}
-	else
-	{
-		strcat(path_buf, spec);
-	}
-
-	chomp(path_buf);
 
 	if(access(path_buf, F_OK) == 0)
 	{
@@ -505,6 +482,47 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	}
 
 	free(path_buf);
+}
+
+/* Extracts path and line number from the spec.  Returns path and sets *line_num
+ * to line number, otherwise NULL is returned. */
+static char *
+parse_spec(const char spec[], int *line_num)
+{
+	char *path_buf;
+	const char *colon;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
+	{
+		return NULL;
+	}
+
+	if(is_path_absolute(spec))
+	{
+		path_buf[0] = '\0';
+	}
+	else
+	{
+		copy_str(path_buf, bufs_len, "./");
+	}
+
+	colon = strchr(spec, ':');
+	if(colon != NULL)
+	{
+		strncat(path_buf, spec, colon - spec);
+		*line_num = atoi(colon + 1);
+	}
+	else
+	{
+		strcat(path_buf, spec);
+		*line_num = 1;
+	}
+
+	chomp(path_buf);
+
+	return path_buf;
 }
 
 /* Opens file specified by its path on the given line number. */
