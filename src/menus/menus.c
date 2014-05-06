@@ -522,6 +522,10 @@ parse_spec(const char spec[], int *line_num)
 
 	chomp(path_buf);
 
+#ifdef _WIN32
+	to_forward_slash(path_buf);
+#endif
+
 	return path_buf;
 }
 

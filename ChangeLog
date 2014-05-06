@@ -5,6 +5,8 @@
 
 	Fixed selecting file on navigation from menus with filelists.
 
+	Fixed processing of backward slashes in menus with filelists on Windows.
+
 0.7.6 to 0.7.7-beta
 
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or
