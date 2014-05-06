@@ -7,6 +7,9 @@
 
 	Fixed processing of backward slashes in menus with filelists on Windows.
 
+	Fixed navigation to menu items with full paths on Windows.  Thanks to
+	Robert Sarkozi.
+
 0.7.6 to 0.7.7-beta
 
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or

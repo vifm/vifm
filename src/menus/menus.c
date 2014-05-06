@@ -493,6 +493,7 @@ parse_spec(const char spec[], int *line_num)
 {
 	char *path_buf;
 	const char *colon;
+	int colon_lookup_offset = 0;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	path_buf = malloc(bufs_len);
@@ -510,7 +511,14 @@ parse_spec(const char spec[], int *line_num)
 		copy_str(path_buf, bufs_len, "./");
 	}
 
-	colon = strchr(spec, ':');
+#ifdef _WIN32
+	if(is_path_absolute(spec))
+	{
+		colon_lookup_offset = 2;
+	}
+#endif
+
+	colon = strchr(spec + colon_lookup_offset, ':');
 	if(colon != NULL)
 	{
 		strncat(path_buf, spec, colon - spec);

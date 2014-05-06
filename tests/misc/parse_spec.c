@@ -81,6 +81,30 @@ test_relative_path_with_linenum(void)
 #ifdef _WIN32
 
 static void
+test_win_absolute_path_without_linenum(void)
+{
+	int line_num;
+	char *const path = parse_spec("c:/home/user", &line_num);
+
+	assert_string_equal("c:/home/user", path);
+	assert_int_equal(DEFAULT_LINENUM, line_num);
+
+	free(path);
+}
+
+static void
+test_win_absolute_path_with_linenum(void)
+{
+	int line_num;
+	char *const path = parse_spec("c:/home/user:1234", &line_num);
+
+	assert_string_equal("c:/home/user", path);
+	assert_int_equal(1234, line_num);
+
+	free(path);
+}
+
+static void
 test_win_relative_path_without_linenum(void)
 {
 	int line_num;
@@ -118,6 +142,8 @@ parse_spec_tests(void)
 	run_test(test_relative_path_without_linenum);
 	run_test(test_relative_path_with_linenum);
 #ifdef _WIN32
+	run_test(test_win_absolute_path_without_linenum);
+	run_test(test_win_absolute_path_with_linenum);
 	run_test(test_win_relative_path_without_linenum);
 	run_test(test_win_relative_path_with_linenum);
 #endif
