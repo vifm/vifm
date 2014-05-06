@@ -51,6 +51,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -66,7 +67,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
-static char * parse_spec(const char spec[], int *line_num);
+TSTATIC char * parse_spec(const char spec[], int *line_num);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
@@ -484,9 +485,10 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	free(path_buf);
 }
 
-/* Extracts path and line number from the spec.  Returns path and sets *line_num
- * to line number, otherwise NULL is returned. */
-static char *
+/* Extracts path and line number from the spec (1 when absent from the spec).
+ * Returns path and sets *line_num to line number, otherwise NULL is
+ * returned. */
+TSTATIC char *
 parse_spec(const char spec[], int *line_num)
 {
 	char *path_buf;

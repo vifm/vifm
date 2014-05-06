@@ -23,6 +23,7 @@
 #include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
+#include "../utils/test_helpers.h"
 #include "../ui.h"
 
 enum
@@ -155,6 +156,10 @@ int display_menu(menu_info *m, FileView *view);
  * Returns code that specifies both taken actions and what should be done
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
+
+TSTATIC_DEFS(
+	char * parse_spec(const char spec[], int *line_num);
+)
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 
