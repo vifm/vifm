@@ -1,5 +1,7 @@
 0.7.7 to current
 
+	Highlight environment variables in :source command.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

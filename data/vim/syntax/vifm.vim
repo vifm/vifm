@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: April 24, 2014
+" Last Change: May 11, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -127,10 +127,10 @@ syntax region vifmInvertCommandSt start='\(\s\|:\)*invert\>' end='$\||'
 syntax region vifmInvertCommandStN start='\(\s\|:\)*invert\>' end='$\||'
 		\ contained keepend oneline contains=vifmInvertCommand,vifmNotation
 syntax region vifmSoCommandSt start='\(\s\|:\)*so\%[urce]\>' end='$\||'
-		\ keepend oneline contains=vifmSoCommand,vifmStringInExpr
+		\ keepend oneline contains=vifmSoCommand,vifmEnvVar,vifmStringInExpr
 syntax region vifmSoCommandStN start='\(\s\|:\)*so\%[urce]\>' end='$\||'
 		\ contained keepend oneline
-		\ contains=vifmSoCommand,vifmNotation,vifmStringInExpr
+		\ contains=vifmSoCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
 syntax region vifmMarkCommandSt start='^\(\s\|:\)*ma\%[rk]\>' end='$' keepend
 		\ oneline contains=vifmMarkCommand
 syntax region vifmCdCommandSt start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
