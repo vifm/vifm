@@ -203,17 +203,40 @@ syntax region vifmHi
 syntax region vifmSet
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNS
+		\,vifmComment
 syntax region vifmSetN
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment
-		\,vifmNotation
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNSN
+		\,vifmComment,vifmNotation
 syntax region vifmSet2 contained
 		\ start='^\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmString,vifmNumber,vifmComment
-		\,vifmNotation
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNSN
+		\,vifmComment,vifmNotation
+
+" Highlight for =value part of :set arguments of form option=value
+
+" For single quoted string (check that it starts with =')
+syntax region vifmSetAssignSQS contained
+		\ start="='" skip=+\\\\\|\\'+ end=+'+ keepend
+		\ contains=vifmString
+" For double quoted string (check that it starts with =")
+syntax region vifmSetAssignDQS contained
+		\ start='="' skip=+\\\\\|\\"+ end=+"+ keepend
+		\ contains=vifmString
+" For not strings (check that it doesn't start with either =' or =")
+syntax region vifmSetAssignNS contained
+		\ start='=[^"'' ]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)\|^.*\S.*\\\s' end='^\s*\\\s\|[^\\]\s\|$'
+		\ extend
+		\ contains=vifmNumber,vifmComment
+" For not strings (check that it doesn't start with either =' or =")
+syntax region vifmSetAssignNSN contained
+		\ start='=[^"'' ]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)\|^.*\S.*\\\s' end='^\s*\\\s\|[^\\]\s\|$'
+		\ extend
+		\ contains=vifmNumber,vifmComment,vifmNotation
+
 syntax region vifmLet
 		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
