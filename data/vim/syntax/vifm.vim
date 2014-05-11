@@ -48,7 +48,7 @@ syntax keyword vifmNormalCommand contained norm[al]
 syntax match vifmBuiltinFunction '\(filetype\|expand\)\ze('
 
 " Operators
-syntax match vifmOperator "\(==\|!=\)" skipwhite
+syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\)" skipwhite
 
 " Highlight groups
 syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
