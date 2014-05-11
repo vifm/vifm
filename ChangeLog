@@ -7,6 +7,8 @@
 
 	Highlight numbers in expressions.
 
+	Highlight wrapped :! commands properly.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
