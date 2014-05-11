@@ -1,6 +1,7 @@
 CC = $(CROSS)gcc
 LD = $(CROSS)ld
 WINDRES = $(CROSS)windres
+STRIP = $(CROSS)strip
 
 CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
@@ -69,10 +70,19 @@ all: ../config.h ../data/vifm-help.txt $(vifm_EXECUTABLE) \
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
+ifeq ($(RELEASE),1)
+	$(STRIP) -S --strip-unneeded $@
+endif
 $(converter_EXECUTABLE): $(converter_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
+ifeq ($(RELEASE),1)
+	$(STRIP) -S --strip-unneeded $@
+endif
 $(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
+ifeq ($(RELEASE),1)
+	$(STRIP) -S --strip-unneeded $@
+endif
 
 vifm.res: vifm.rc ../data/graphics/vifm.ico
 	$(WINDRES) --use-temp-file -i ./vifm.rc -o vifm.res
