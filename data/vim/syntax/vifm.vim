@@ -155,7 +155,7 @@ syntax region vifmCMapSt
 syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$\||'
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
-		\,vifmOperator,vifmEnvVar
+		\,vifmOperator,vifmEnvVar,vifmNumber
 syntax region vifmNormalCommandSt start='\(\s\|:\)*norm\%[al]\>' end='$' keepend
 		\ oneline
 		\ contains=vifmNormalCommand

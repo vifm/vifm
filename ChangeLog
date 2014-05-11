@@ -5,6 +5,8 @@
 	Do not highlight option names in the right-hand side of assignments of
 	:set command.
 
+	Highlight numbers in expressions.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
