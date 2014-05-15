@@ -1352,6 +1352,50 @@ actions:
 same as :filetype, but vifm will ignore this command if it's not running in X.
 In X :filextype is equal to :filetype.  See "Globs" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
+
+For example, consider the following settings (the order might seem strange,
+but it's for the demonstration purpose):
+
+.EE
+ filetype *.html,*.htm
+         \ {View in lynx}
+         \ lynx
+ filextype *.html,*.htm
+         \ {Open with dwb}
+         \ dwb %f %i &,
+ filetype *.html,*.htm
+         \ {View in links}
+         \ links
+ filextype *.html,*.htm
+         \ {Open with firefox}
+         \ firefox %f &,
+         \ {Open with uzbl}
+         \ uzbl-browser %f %i &,
+.EX
+
+If you're using vifm inside a terminal emulator that is running in graphical
+environment (when X is used on *nix; always on Windows), vifm will attempt to
+run application in this order:
+
+1. lynx
+2. dwb
+3. links
+4. firefox
+5. uzbl
+
+If there is no graphical environment (checked presence of $DISPLAY
+environment variable on *nix; never happens on Windows), the list will look
+like:
+
+1. lynx
+2. links
+
+Just as if all :filextype commands were not there.
+
+The purpose of such differentiation is to allow comfortable use of vifm
+with same settings in desktop environment/through remote connection (SSH)/
+in native console.
+
 .TP
 .BI ":filev[iewer] pat1,pat2,... command"
 will associate given command as a viewer to each of the patterns.  Viewer is a
