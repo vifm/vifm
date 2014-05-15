@@ -1,5 +1,8 @@
 0.7.7-beta to current
 
+	Improved documentation on :file[x]type commands and time sorting keys.
+	Thanks to Stas Malavin.
+
 	Fixed drawing "*" mark for cursor in inactive pane.  Thanks to Svyatoslav
 	Mishyn, a.k.a. juef.
 

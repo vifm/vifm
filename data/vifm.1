@@ -1352,6 +1352,50 @@ actions:
 same as :filetype, but vifm will ignore this command if it's not running in X.
 In X :filextype is equal to :filetype.  See "Globs" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
+
+For example, consider the following settings (the order might seem strange,
+but it's for the demonstration purpose):
+
+.EE
+ filetype *.html,*.htm
+         \ {View in lynx}
+         \ lynx
+ filextype *.html,*.htm
+         \ {Open with dwb}
+         \ dwb %f %i &,
+ filetype *.html,*.htm
+         \ {View in links}
+         \ links
+ filextype *.html,*.htm
+         \ {Open with firefox}
+         \ firefox %f &,
+         \ {Open with uzbl}
+         \ uzbl-browser %f %i &,
+.EX
+
+If you're using vifm inside a terminal emulator that is running in graphical
+environment (when X is used on *nix; always on Windows), vifm will attempt to
+run application in this order:
+
+1. lynx
+2. dwb
+3. links
+4. firefox
+5. uzbl
+
+If there is no graphical environment (checked presence of $DISPLAY
+environment variable on *nix; never happens on Windows), the list will look
+like:
+
+1. lynx
+2. links
+
+Just as if all :filextype commands were not there.
+
+The purpose of such differentiation is to allow comfortable use of vifm
+with same settings in desktop environment/through remote connection (SSH)/
+in native console.
+
 .TP
 .BI ":filev[iewer] pat1,pat2,... command"
 will associate given command as a viewer to each of the patterns.  Viewer is a
@@ -2660,21 +2704,24 @@ type: local
 .br
 Sets list of sorting keys (first item is primary key, second is secondary key,
 etc.):
-   [+\-]ext   \- sort by extension
-   [+\-]name  \- sort by name (including extension)
-   [+\-]iname \- sort by name (including extension, ignores case)
-   [+\-]type  \- sort by type (directory < file)
-   [+\-]gid   \- sort by group id (*nix only)
-   [+\-]gname \- sort by group name (*nix only)
-   [+\-]mode  \- sort by mode (*nix only)
-   [+\-]perms \- sort by permissions string (*nix only)
-   [+\-]uid   \- sort by owner id (*nix only)
-   [+\-]uname \- sort by owner name (*nix only)
-   [+\-]size  \- sort by size
-   [+\-]atime \- sort by time accessed
-   [+\-]ctime \- sort by time changed
-   [+\-]mtime \- sort by time modified
+   [+\-]ext   \- extension
+   [+\-]name  \- name (including extension)
+   [+\-]iname \- name (including extension, ignores case)
+   [+\-]type  \- type (directory < file)
+   [+\-]gid   \- group id (*nix only)
+   [+\-]gname \- group name (*nix only)
+   [+\-]mode  \- mode (*nix only)
+   [+\-]perms \- permissions string (*nix only)
+   [+\-]uid   \- owner id (*nix only)
+   [+\-]uname \- owner name (*nix only)
+   [+\-]size  \- size
+   [+\-]atime \- time accessed (e.g. read, executed)
+   [+\-]ctime \- time changed (changes in metadata, e.g. mode)
+   [+\-]mtime \- time modified (when file contents is changed)
 .LP
+Note: look for st_atime, st_ctime and st_mtime in "man 2 stat" for more
+information on time keys.
+
 \'+' means ascending sort for this key, and '\-' means descending sort.
 
 In case name (iname on Windoes) is skipped, it will be added at the end
@@ -3622,7 +3669,7 @@ Cropping specifier
 
 It's from one to three dots after closing curly brace in column format.
 
-Specifies type of text truncation if it doesn't fix in the column. Currently
+Specifies type of text truncation if it doesn't fit in the column. Currently
 tree types are supported:
 .IP \- 2
 truncation \- text is truncated
