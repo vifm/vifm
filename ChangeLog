@@ -3,6 +3,8 @@
 	Improved documentation on :file[x]type commands and time sorting keys.
 	Thanks to Stas Malavin.
 
+	Updated zenburn color scheme (by Svyatoslav Mishyn, a.k.a. juef).
+
 	Fixed drawing "*" mark for cursor in inactive pane.  Thanks to Svyatoslav
 	Mishyn, a.k.a. juef.
 
