@@ -13,6 +13,9 @@
 	Fixed navigation to menu items with full paths on Windows.  Thanks to
 	Robert Sarkozi.
 
+	Fixed following overwrite all option on file operation conflict
+	resolution.  Thanks to Stas Malavin.
+
 0.7.6 to 0.7.7-beta
 
 	Added Ctrl-W z key to normal and view modes, which closes preview pane or

@@ -34,7 +34,7 @@ typedef enum
 /* Type of reaction on an error. */
 typedef enum
 {
-	ST_NONE,       /* Show message in the status bar. */
+	ST_NONE,       /* Ignore message. */
 	ST_STATUS_BAR, /* Show message in the status bar. */
 	ST_DIALOG,     /* Shows error dialog. */
 }

@@ -1372,34 +1372,37 @@ put_next(const char dest_name[], int override)
 			dest_name);
 	chosp(dst_buf);
 
-	if(path_exists(dst_buf) && !override)
+	if(path_exists(dst_buf))
 	{
-		struct stat dst_st;
-		put_confirm.allow_merge = lstat(dst_buf, &dst_st) == 0 &&
-				S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-		prompt_what_to_do(dest_name);
-		return 1;
-	}
-
-	if(override)
-	{
-		struct stat dst_st;
-		if(lstat(dst_buf, &dst_st) == 0 && (!put_confirm.merge ||
-				S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
+		if(override)
 		{
-			if(perform_operation(OP_REMOVESL, NULL, dst_buf, NULL) != 0)
+			struct stat dst_st;
+			if(lstat(dst_buf, &dst_st) == 0 && (!put_confirm.merge ||
+					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
-				return 0;
+				if(perform_operation(OP_REMOVESL, NULL, dst_buf, NULL) != 0)
+				{
+					return 0;
+				}
+
+				/* Schedule view update to reflect changes in UI. */
+				request_view_update(put_confirm.view);
+			}
+			else
+			{
+#ifndef _WIN32
+				remove_last_path_component(dst_buf);
+#endif
 			}
 		}
 		else
 		{
-#ifndef _WIN32
-			remove_last_path_component(dst_buf);
-#endif
+			struct stat dst_st;
+			put_confirm.allow_merge = lstat(dst_buf, &dst_st) == 0 &&
+					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
+			prompt_what_to_do(dest_name);
+			return 1;
 		}
-
-		request_view_update(put_confirm.view);
 	}
 
 	if(put_confirm.link)
