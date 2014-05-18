@@ -263,7 +263,11 @@ void status_bar_error(const char *message);
 void status_bar_errorf(const char *message, ...);
 int is_status_bar_multiline(void);
 void clean_status_bar(void);
+/* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
+ * updates things (including UI) that are bound to views. */
 void change_window(void);
+/* Swaps curr_view and other_view pointers. */
+void swap_view_roles(void);
 void update_all_windows(void);
 void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
