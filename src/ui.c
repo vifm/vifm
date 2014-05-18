@@ -1391,7 +1391,7 @@ change_window(void)
 void
 swap_view_roles(void)
 {
-	FileView *tmp = curr_view;
+	FileView *const tmp = curr_view;
 	curr_view = other_view;
 	other_view = tmp;
 }
