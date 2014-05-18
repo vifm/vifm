@@ -264,6 +264,9 @@ void status_bar_errorf(const char *message, ...);
 int is_status_bar_multiline(void);
 void clean_status_bar(void);
 void change_window(void);
+/* Swaps curr_view and other_view pointers and updates things that are bound to
+ * current view, which is obviously changed after swapping. */
+void swap_view_roles(void);
 void update_all_windows(void);
 void update_input_bar(const wchar_t *str);
 void clear_num_window(void);

@@ -91,7 +91,6 @@ static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
-static void swap_view_roles(void);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void switch_panes_content(void);
@@ -1387,9 +1386,7 @@ change_window(void)
 	curr_stats.need_update = UT_REDRAW;
 }
 
-/* Swaps curr_view and other_view pointers and updates things that are bound to
- * current view, which is obviously changed after swapping. */
-static void
+void
 swap_view_roles(void)
 {
 	FileView *tmp = curr_view;
