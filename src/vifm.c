@@ -344,7 +344,7 @@ main(int argc, char *argv[])
 	/* Force view switch when path is specified for invisible pane. */
 	if(lwin_path[0] != '\0' && rwin_path[0] == '\0' && curr_view != &lwin)
 	{
-		change_window();
+		swap_view_roles();
 	}
 
 	load_initial_directory(&lwin, dir);

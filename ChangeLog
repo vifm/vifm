@@ -5,6 +5,9 @@
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
+	Fixed segmentation fault on running vifm with single argument if restored
+	cursor is in the right pane.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
