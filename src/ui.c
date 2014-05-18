@@ -1369,6 +1369,8 @@ change_window(void)
 {
 	swap_view_roles();
 
+	load_local_options(curr_view);
+
 	if(curr_stats.number_of_windows != 1)
 	{
 		if(!other_view->explore_mode)
@@ -1392,8 +1394,6 @@ swap_view_roles(void)
 	FileView *tmp = curr_view;
 	curr_view = other_view;
 	other_view = tmp;
-
-	load_local_options(curr_view);
 }
 
 void
