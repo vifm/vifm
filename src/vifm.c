@@ -75,6 +75,8 @@
 static void quit_on_arg_parsing(void);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
+static int need_to_switch_active_pane(const char lwin_path[],
+		const char rwin_path[]);
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
@@ -341,8 +343,7 @@ main(int argc, char *argv[])
 	set_view_path(&lwin, lwin_path);
 	set_view_path(&rwin, rwin_path);
 
-	/* Force view switch when path is specified for invisible pane. */
-	if(lwin_path[0] != '\0' && rwin_path[0] == '\0' && curr_view != &lwin)
+	if(need_to_switch_active_pane(lwin_path, rwin_path))
 	{
 		swap_view_roles();
 	}
@@ -460,7 +461,7 @@ parse_recieved_arguments(char *args[])
 		remote_cd(&rwin, rwin_path, rwin_handle);
 	}
 
-	if(lwin_path[0] != '\0' && rwin_path[0] == '\0' && curr_view != &lwin)
+	if(need_to_switch_active_pane(lwin_path, rwin_path))
 	{
 		change_window();
 	}
@@ -488,6 +489,18 @@ remote_cd(FileView *view, const char *path, int handle)
 
 	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
+}
+
+/* Decides whether active view should be switched based on paths provided for
+ * panes on the command-line.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
+{
+	/* Forces view switch when path is specified for invisible pane. */
+	return lwin_path[0] != '\0'
+	    && rwin_path[0] == '\0'
+	    && curr_view != &lwin;
 }
 
 /* Loads color scheme.  Converts old format to the new one if needed.
