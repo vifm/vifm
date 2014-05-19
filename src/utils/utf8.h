@@ -23,7 +23,7 @@
 
 /* Returns real width of valid and complete utf-8 character. */
 size_t get_char_width(const char str[]);
-/* Returns count utf-8 characters excluding incomplete utf-8 characters. */
+/* Returns count of utf-8 characters excluding incomplete utf-8 characters. */
 size_t get_normal_utf8_string_length(const char str[]);
 /* Returns count of bytes of whole str or of the first max_screen_width utf-8
  * characters (so one character which take several positions on the screen are
