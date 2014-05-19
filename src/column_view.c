@@ -21,7 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
-#include <string.h> /* memmove() memset() strlen() */
+#include <string.h> /* memmove() memset() strcpy() strlen() */
 #include <wchar.h> /* wcswidth() */
 
 #include "utils/macros.h"
@@ -261,6 +261,10 @@ void
 columns_format_line(const columns_t cols, const void *data,
 		size_t max_line_width)
 {
+	char prev_col_buf[1024 + 1];
+	size_t prev_col_start = 0UL;
+	prev_col_buf[0] = '\0';
+
 	size_t i;
 	size_t prev_col_end = 0;
 
@@ -270,7 +274,7 @@ columns_format_line(const columns_t cols, const void *data,
 	{
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
-		char col_buffer[1024 + 1];
+		char col_buffer[sizeof(prev_col_buf)];
 		size_t cur_col_start;
 		const column_t *const col = &cols->list[i];
 
@@ -278,10 +282,28 @@ columns_format_line(const columns_t cols, const void *data,
 		decorate_output(col, col_buffer, max_line_width);
 		cur_col_start = calculate_start_pos(col, col_buffer);
 
-		fill_gap_pos(data, prev_col_end, cur_col_start);
+		/* Ensure that we are not trying to draw current column in the middle of a
+		 * character inside previous column. */
+		if(prev_col_end > cur_col_start)
+		{
+			const size_t break_point = get_real_string_width(prev_col_buf,
+					cur_col_start - prev_col_start);
+			prev_col_buf[break_point] = '\0';
+			fill_gap_pos(data, get_width_on_screen(prev_col_buf), cur_col_start);
+		}
+		else
+		{
+			fill_gap_pos(data, prev_col_end, cur_col_start);
+		}
+
 		print_func(data, col->info.column_id, col_buffer, cur_col_start);
 
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
+
+		/* Store information about the current column for usage on the next
+		 * iteration. */
+		strcpy(prev_col_buf, col_buffer);
+		prev_col_start = cur_col_start;
 	}
 
 	fill_gap_pos(data, prev_col_end, max_line_width);
