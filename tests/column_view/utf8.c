@@ -115,6 +115,23 @@ test_truncating_ok(void)
 }
 
 static void
+test_none_cropping_allows_for_correct_gaps(void)
+{
+	static column_info_t column_infos[2] =
+	{
+		{ .column_id = COL1_ID, .full_width = 10UL,    .text_width = 10UL,
+		  .align = AT_LEFT,     .sizing = ST_AUTO,     .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 4UL,     .text_width = 4UL,
+		  .align = AT_RIGHT,    .sizing = ST_AUTO,     .cropping = CT_NONE, },
+	};
+	static const char expected[] = "师从 яюэъыьщшчцхфутсрпонмлкйизжёедгв推";
+
+	perform_test(column_infos, 2, 38);
+
+	assert_string_equal(expected, print_buffer);
+}
+
+static void
 test_add_ellipsis_ok(void)
 {
 	static column_info_t column_infos[2] =
@@ -171,6 +188,7 @@ utf8_tests(void)
 		run_test(test_not_truncating_short_utf8_ok);
 		run_test(test_donot_add_ellipsis_short_utf8_ok);
 		run_test(test_truncating_ok);
+		run_test(test_none_cropping_allows_for_correct_gaps);
 		run_test(test_add_ellipsis_ok);
 		run_test(test_filling);
 	}
