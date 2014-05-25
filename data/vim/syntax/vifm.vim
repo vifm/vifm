@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: May 11, 2014
+" Last Change: May 25, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -94,7 +94,7 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommandSt
-" Contained statement without highlighting of angle-brace notation.
+" Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
@@ -102,7 +102,7 @@ syntax region vifmStatementCN start='\(\s\|:\)*'
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
 		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
 		\,vifmInvertCommand,vifmInvertCommandStN
-" Contained statement with highlighting of angle-brace notation.
+" Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
