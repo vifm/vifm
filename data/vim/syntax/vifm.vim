@@ -19,7 +19,10 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
 		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
-		\ vifm vs[plit] windo winrun w[rite] wq x[it] y[ank]
+		\ vifm vs[plit] w[rite] wq x[it] y[ank]
+
+" commands that might be prepended to a command without changing everything else
+syntax keyword vifmPrefixCommands contained windo winrun
 
 " Map commands
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
@@ -93,7 +96,7 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommandSt
+		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -101,7 +104,7 @@ syntax region vifmStatementCN start='\(\s\|:\)*'
 		\,vifmFtCommandStN,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
 		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
-		\,vifmInvertCommand,vifmInvertCommandStN
+		\,vifmInvertCommand,vifmInvertCommandStN,vifmPrefixCommands
 " Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -109,7 +112,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
-		\,vifmInvertCommandSt
+		\,vifmInvertCommandSt,vifmPrefixCommands
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -275,6 +278,7 @@ syntax match vifmEmpty /^\s*$/
 " Highlight
 highlight link vifmComment Comment
 highlight link vifmCommand Statement
+highlight link vifmPrefixCommands Statement
 highlight link vifmCdCommand Statement
 highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
