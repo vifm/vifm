@@ -20,6 +20,7 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
 		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
 		\ vifm vs[plit] w[rite] wq x[it] y[ank]
+		\ nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else
 syntax keyword vifmPrefixCommands contained windo winrun
@@ -165,10 +166,10 @@ syntax region vifmNormalCommandSt start='\(\s\|:\)*norm\%[al]\>' end='$' keepend
 syntax region vifmExecute start='!' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmNotation,vifmComment
-syntax region vifmMapArgs start='\S\+'
-		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+syntax region vifmMapArgs start='\ze\S\+'
+		\ end='\ze.' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ contains=vifmMapLhs,vifmMapRhs
+		\ nextgroup=vifmMapLhs
 syntax region vifmCMapArgs start='\S\+'
 		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
@@ -177,11 +178,12 @@ syntax region vifmMapLhs start='\S\+'
 		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
 		\ contains=vifmNotation,vifmComment
-		\ nextgroup=vifmColonSubcommandN
-syntax region vifmMapRhs start='\s'
+		\ nextgroup=vifmMapRhs
+syntax region vifmMapRhs start='.'
 		\ end='\ze<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
 		\ contains=vifmNotation,vifmComment,vifmColonSubcommandN
+		\ nextgroup=vifmMapRhs
 syntax region vifmMapCRhs start='\s'
 		\ end='<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
@@ -192,11 +194,11 @@ syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
 		\ contains=vifmStatementC
 " Contained sub command with highlighting of angle-brace notation.
 syntax region vifmColonSubcommandN start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
-		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
+		\ end='\ze<[cC][rR]>\|$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)' keepend
 		\ contained
 		\ contains=vifmStatementCN
 syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
-		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
+		\ end='\ze<[cC][rR]>\|$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)' keepend
 		\ contained
 		\ contains=vifmStatementCN
 syntax region vifmHi
@@ -204,6 +206,13 @@ syntax region vifmHi
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
 		\,vifmNumber,vifmComment
+
+" common highlight for :command arguments
+syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='|\|$'
+		\ contained
+		\ contains=vifmStringInExpr
+
 syntax region vifmSet
 		\ start='\(\s\|:\)*\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend

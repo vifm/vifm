@@ -9,6 +9,9 @@
 
 	Highlight wrapped :! commands properly.
 
+	Various syntax highlight improvements related to handling of command
+	arguments.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
