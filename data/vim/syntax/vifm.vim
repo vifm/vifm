@@ -179,11 +179,11 @@ syntax region vifmMapLhs start='\S\+'
 		\ contains=vifmNotation,vifmComment
 		\ nextgroup=vifmColonSubcommandN
 syntax region vifmMapRhs start='\s'
-		\ end='<cr>' skip='\(\s*\\\)\|\(\s*".*$\)'
+		\ end='\ze<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
 		\ contains=vifmNotation,vifmComment,vifmColonSubcommandN
 syntax region vifmMapCRhs start='\s'
-		\ end='<cr>' skip='\(\s*\\\)\|\(\s*".*$\)'
+		\ end='<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
 		\ contains=vifmNotation,vifmComment,vifmSubcommandN
 syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
