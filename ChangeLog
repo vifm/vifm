@@ -2,6 +2,16 @@
 
 	Highlight environment variables in :source command.
 
+	Do not highlight option names in the right-hand side of assignments of
+	:set command.
+
+	Highlight numbers and all operators (most were missing) in expressions.
+
+	Highlight wrapped :! commands properly.
+
+	Various syntax highlight improvements related to handling of command
+	arguments.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
