@@ -88,7 +88,6 @@ static int is_entry_exec(const struct dirent *d);
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
-static int complete_cmd_in_path(const char cmd[], size_t path_len, char path[]);
 
 int
 complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
@@ -940,32 +939,6 @@ get_cmd_path(const char cmd[], size_t path_len, char path[])
 	{
 		return complete_cmd_in_path(cmd, path_len, path);
 	}
-}
-
-/* Completes path to executable using all directories from PATH environment
- * variable.  Returns zero on success, otherwise non-zero is returned. */
-static int
-complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
-{
-	size_t i;
-	size_t paths_count;
-	char **paths;
-
-	paths = get_paths(&paths_count);
-	for(i = 0; i < paths_count; i++)
-	{
-		char tmp_path[PATH_MAX];
-		snprintf(tmp_path, sizeof(tmp_path), "%s/%s", paths[i], cmd);
-
-		/* Need to check for executable, not just a file, as this additionally
-		 * checks for path with different executable extensions on Windows. */
-		if(executable_exists(tmp_path))
-		{
-			copy_str(path, path_len, tmp_path);
-			return 0;
-		}
-	}
-	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
