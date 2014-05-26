@@ -47,7 +47,10 @@ typedef struct
 }var_t;
 
 
-/* Returns variable, which evaluates to false. */
+/* Gets variable, which evaluates to true.  Returns the variable. */
+var_t var_true(void);
+
+/* Gets variable, which evaluates to false.  Returns the variable. */
 var_t var_false(void);
 
 /* Returns variable, which signals about failed operation. */

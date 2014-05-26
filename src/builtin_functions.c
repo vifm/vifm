@@ -28,18 +28,21 @@
 #include "engine/functions.h"
 #include "engine/var.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "macros.h"
 #include "types.h"
 #include "ui.h"
 
+static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
 
 static const function_t functions[] =
 {
-	{ "expand",   1, &expand_builtin },
-	{ "filetype", 1, &filetype_builtin },
+	{ "executable", 1, &executable_builtin },
+	{ "expand",     1, &expand_builtin },
+	{ "filetype",   1, &filetype_builtin },
 };
 
 void
@@ -51,6 +54,24 @@ init_builtin_functions(void)
 		int result = function_register(&functions[i]);
 		assert(result == 0 && "Builtin function registration error");
 	}
+}
+
+/* Checks whether executable exists in directories listed in $PATH.  Checks for
+ * various executable extensions on Windows.  Returns boolean value describing
+ * result of the check. */
+static var_t
+executable_builtin(const call_info_t *call_info)
+{
+	var_t result;
+	char *str_val;
+
+	str_val = var_to_string(call_info->argv[0]);
+	result = (find_cmd_in_path(str_val, 0UL, NULL) == 0)
+	       ? var_true()
+	       : var_false();
+	free(str_val);
+
+	return result;
 }
 
 /* Returns string after expanding expression. */

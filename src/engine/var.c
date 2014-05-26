@@ -25,6 +25,13 @@
 #include "../utils/str.h"
 
 var_t
+var_true(void)
+{
+	static const var_t true_var = { VTYPE_INT, { .integer = 1 } };
+	return true_var;
+}
+
+var_t
 var_false(void)
 {
 	static const var_t false_var = { VTYPE_INT, { .integer = 0 } };
