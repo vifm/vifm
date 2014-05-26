@@ -61,7 +61,6 @@
 #include "filetype.h"
 #include "path_env.h"
 #include "tags.h"
-#include "ui.h"
 
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
@@ -90,7 +89,6 @@ static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
 static int complete_cmd_in_path(const char cmd[], size_t path_len, char path[]);
-static int executable_exists(const char path[]);
 
 int
 complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
@@ -968,19 +966,6 @@ complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
 		}
 	}
 	return 1;
-}
-
-/* Checks for executable by its path.  Mutates path by appending executable
- * prefixes on Windows.  Returns non-zero if path points to an executable,
- * otherwise zero is returned. */
-static int
-executable_exists(const char path[])
-{
-#ifndef _WIN32
-	return access(path, X_OK) == 0;
-#else
-	return win_executable_exists(path);
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

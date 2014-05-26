@@ -28,7 +28,7 @@
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <unistd.h> /* dup2() getpid() */
+#include <unistd.h> /* X_OK access() dup2() getpid() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -444,6 +444,12 @@ int
 S_ISEXE(mode_t mode)
 {
 	return ((S_IXUSR | S_IXGRP | S_IXOTH) & mode);
+}
+
+int
+executable_exists(const char path[])
+{
+	return access(path, X_OK) == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
