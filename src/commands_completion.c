@@ -937,7 +937,7 @@ get_cmd_path(const char cmd[], size_t path_len, char path[])
 	}
 	else
 	{
-		return complete_cmd_in_path(cmd, path_len, path);
+		return find_cmd_in_path(cmd, path_len, path);
 	}
 }
 

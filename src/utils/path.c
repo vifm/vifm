@@ -22,7 +22,7 @@
 #ifdef _WIN32
 #include <ctype.h>
 #endif
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
@@ -603,7 +603,7 @@ is_builtin_dir(const char name[])
 }
 
 int
-complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
+find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 {
 	size_t i;
 	size_t paths_count;
@@ -619,7 +619,10 @@ complete_cmd_in_path(const char cmd[], size_t path_len, char path[])
 		 * checks for path with different executable extensions on Windows. */
 		if(executable_exists(tmp_path))
 		{
-			copy_str(path, path_len, tmp_path);
+			if(path != NULL)
+			{
+				copy_str(path, path_len, tmp_path);
+			}
 			return 0;
 		}
 	}
