@@ -1,4 +1,4 @@
-.TH vifm 1 "Apr 21, 2014" "" "Vifm"
+.TH vifm 1 "May 28, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3250,11 +3250,26 @@ Examples:
 .\" ---------------------------------------------------------------------------
 .SH Functions
 .\" ---------------------------------------------------------------------------
-USAGE             RESULT        DESCRIPTION
+USAGE               RESULT        DESCRIPTION
 
-expand({expr})    String        Expand macros in {expr}.
+executable({expr})  Integer       Checks whether {expr} command available.
 .br
-filetype({fnum})  String        Returns file type from position.
+expand({expr})      String        Expands macros in {expr}.
+.br
+filetype({fnum})    String        Returns file type from position.
+
+executable({expr})
+.br
+Checks whether {expr} command exists in directories listed in $PATH.  Checks for
+various executable extensions on Windows.  Returns boolean value describing
+result of the check.
+Example:
+.EX
+  " use custom default viewer script if it's available
+  if executable('defviewer')
+      fileview * defviewer %c
+  endif
+.EE
 
 expand({expr})
 .br

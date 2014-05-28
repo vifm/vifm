@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 May 16
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 May 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2766,11 +2766,23 @@ Examples: >
 --------------------------------------------------------------------------------
 *vifm-functions*
 
-USAGE             RESULT        DESCRIPTION	~
+USAGE               RESULT        DESCRIPTION	~
 
-expand({expr})    String        Expand macros in {expr}.
-filetype({fnum})  String        Returns file type from position.
+executable({expr})  Integer       Checks whether {expr} command available.
+expand({expr})      String        Expands macros in {expr}.
+filetype({fnum})    String        Returns file type from position.
 
+executable({expr})                             *vifm-executable()*
+Checks whether {expr} command exists in directories listed in $PATH.  Checks
+for various executable extensions on Windows.  Returns boolean value
+describing result of the check.
+
+Example: >
+  " use custom default viewer script if it's available
+  if executable('defviewer')
+      fileview * defviewer %c
+  endif
+<
 expand({expr})                                 *vifm-expand()*
 Expands macros in {expr} just like it's done for command-line commands.
 Returns a string.  See |vifm-macros|.

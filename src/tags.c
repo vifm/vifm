@@ -420,6 +420,7 @@ const char *tags[] = {
 	"vifm-d",
 	"vifm-dd",
 	"vifm-e",
+	"vifm-executable()",
 	"vifm-expand()",
 	"vifm-expr-!=",
 	"vifm-expr-'",
