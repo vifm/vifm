@@ -116,6 +116,11 @@ void wait_for_data_from(pid_t pid, FILE *f, int fd);
  * is returned. */
 int set_sigchld(int block);
 
+/* Checks for executable by its path.  Mutates path by appending executable
+ * prefixes on Windows.  Returns non-zero if path points to an executable,
+ * otherwise zero is returned. */
+int executable_exists(const char path[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

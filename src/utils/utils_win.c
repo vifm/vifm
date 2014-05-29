@@ -299,32 +299,6 @@ strtoupper(char *s)
 }
 
 int
-win_executable_exists(const char path[])
-{
-	const char *p;
-	char path_buf[NAME_MAX];
-	size_t pos;
-
-	if(strchr(after_last(path, '/'), '.') != NULL)
-	{
-		return path_exists(path);
-	}
-
-	snprintf(path_buf, sizeof(path_buf), "%s", path);
-	pos = strlen(path_buf);
-
-	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
-	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
-	{
-		if(path_exists(path_buf))
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int
 is_win_executable(const char name[])
 {
 	const char *p;
@@ -417,6 +391,32 @@ traverse_mount_points(mptraverser client, void *arg)
 		}
 	}
 
+	return 0;
+}
+
+int
+executable_exists(const char path[])
+{
+	const char *p;
+	char path_buf[NAME_MAX];
+	size_t pos;
+
+	if(strchr(after_last(path, '/'), '.') != NULL)
+	{
+		return path_exists(path);
+	}
+
+	snprintf(path_buf, sizeof(path_buf), "%s", path);
+	pos = strlen(path_buf);
+
+	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
+	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
+	{
+		if(path_exists(path_buf))
+		{
+			return 1;
+		}
+	}
 	return 0;
 }
 

@@ -22,7 +22,7 @@
 #ifdef _WIN32
 #include <ctype.h>
 #endif
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
@@ -33,12 +33,14 @@
 #endif
 
 #include "../cfg/config.h"
+#include "../path_env.h"
 #ifdef _WIN32
 #include "env.h"
 #endif
 #include "fs.h"
 #include "fs_limits.h"
 #include "str.h"
+#include "utils.h"
 
 static int skip_dotdir_if_any(const char *path[], int fully);
 
@@ -598,6 +600,33 @@ is_builtin_dir(const char name[])
 {
 	return name[0] == '.'
 	    && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0'));
+}
+
+int
+find_cmd_in_path(const char cmd[], size_t path_len, char path[])
+{
+	size_t i;
+	size_t paths_count;
+	char **paths;
+
+	paths = get_paths(&paths_count);
+	for(i = 0; i < paths_count; i++)
+	{
+		char tmp_path[PATH_MAX];
+		snprintf(tmp_path, sizeof(tmp_path), "%s/%s", paths[i], cmd);
+
+		/* Need to check for executable, not just a file, as this additionally
+		 * checks for path with different executable extensions on Windows. */
+		if(executable_exists(tmp_path))
+		{
+			if(path != NULL)
+			{
+				copy_str(path, path_len, tmp_path);
+			}
+			return 0;
+		}
+	}
+	return 1;
 }
 
 #ifdef _WIN32

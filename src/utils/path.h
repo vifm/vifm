@@ -95,6 +95,12 @@ int is_parent_dir(const char path[]);
  * otherwise zero is returned. */
 int is_builtin_dir(const char name[]);
 
+/* Finds path to executable using all directories from PATH environment
+ * variable.  Uses executable extensions on Windows.  Puts discovered path to
+ * the path buffer if it's not NULL.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int find_cmd_in_path(const char cmd[], size_t path_len, char path[]);
+
 #ifdef _WIN32
 
 int is_unc_path(const char *path);

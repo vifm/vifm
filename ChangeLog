@@ -1,5 +1,8 @@
 0.7.7 to current
 
+	Added executable() builtin function that checks whether executable exists in
+	one of directories listed in $PATH.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
