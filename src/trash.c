@@ -244,7 +244,7 @@ empty_trash_dir(const char trash_dir[])
 	char *escaped;
 
 	escaped = escape_filename(trash_dir, 0);
-	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[!.]*'", escaped, escaped);
+	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[^.]*'", escaped, escaped);
 	free(escaped);
 
 	start_background_job(cmd, 0);
