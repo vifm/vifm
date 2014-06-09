@@ -59,7 +59,16 @@ if !exists('g:vifm_exec_args')
 endif
 
 if !exists('g:vifm_term')
-	let g:vifm_term = 'xterm -e'
+	if has('win32')
+		if filereadable('C:\Windows\system32\cmd.exe')
+			let g:vifm_term = 'C:\Windows\system32\cmd.exe /C'
+		else
+			" If don't find use the integrate shell it work too
+			let g:vifm_term = ''
+		endif
+	else
+		let g:vifm_term = 'xterm -e'
+	endif
 endif
 
 if has('win32')
@@ -87,11 +96,12 @@ if has('win32')
 endif
 
 if !exists('s:vifm_home')
-	if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
+	if exists('$HOME') && isdirectory($HOME .'/.vifm/')
 		let s:vifm_home = $HOME."/.vifm"
-	elseif exists('$APPDATA')
+	elseif exists('$APPDATA') && isdirectory($APPDATA.'/Vifm/')
 		let s:vifm_home = $APPDATA."/Vifm"
 	else
+		echohl WarningMsg | echo 'Impossible to find your vifm configuration directory. Launch vifm one time and try again.' | echohl None
 		finish
 	endif
 endif
