@@ -15,6 +15,9 @@
 	Various syntax highlight improvements related to handling of command
 	arguments.
 
+	Make Vim plugin use cmd.exe as default shell on Windows.  Thanks to
+	Jonathan Da Silva.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -25,6 +28,9 @@
 	cropping.  Thanks to anonymous from linux.org.ru.
 
 	Fixed trash emptying when csh-like shell is in use.  Thanks to lyuts.
+
+	Fixed "$APPDATA/Vifm" directory existence check for Vim plugin on Windows.
+	Thanks to Jonathan Da Silva.
 
 0.7.7-beta to 0.7.7
 
