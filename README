@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 16 May, 2014
+Updated: 9 June, 2014
 Version: 0.7.7
 
 Brief Description
@@ -30,6 +30,10 @@ Contacts
     SorceForge: http://sourceforge.net/projects/vifm/
     GitHub: https://github.com/ksteen/vifm (preferred)
     GitHub: https://github.com/xaizek/vifm (might be removed in the future)
+
+    Vim plugin repositories:
+    GitHub: https://github.com/xaizek/vifm.vim
+    GitHub: https://github.com/istib/vifm.vim
 
 Package content
 

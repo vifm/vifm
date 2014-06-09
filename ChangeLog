@@ -18,6 +18,8 @@
 	Make Vim plugin use cmd.exe as default shell on Windows.  Thanks to
 	Jonathan Da Silva.
 
+	Provided additional repository for Vim plugin (see the README for URL).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
