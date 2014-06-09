@@ -24,6 +24,8 @@
 	Fixed visual glitch for long wide character (CJK) file names with disabled
 	cropping.  Thanks to anonymous from linux.org.ru.
 
+	Fixed trash emptying when csh-like shell is in use.  Thanks to lyuts.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

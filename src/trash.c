@@ -244,6 +244,9 @@ empty_trash_dir(const char trash_dir[])
 	char *escaped;
 
 	escaped = escape_filename(trash_dir, 0);
+	/* Note usage of ^ inside character class of the command below, it's more
+	 * portable than !, which can be history-expanded as !. by csh-like
+	 * shells. */
 	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[^.]*'", escaped, escaped);
 	free(escaped);
 
