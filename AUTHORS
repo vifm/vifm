@@ -73,3 +73,5 @@ Gentoo ebuild by Oleg Gordienko (gordio).
 Seth VanHeulen (a.k.a. svanheulen) added integration with tmux.
 
 MadMaverick9 provided patches for various fixes.
+
+lyuts fixed trash emptying in csh-like shells.
