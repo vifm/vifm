@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 May 28
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 June 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1412,14 +1412,19 @@ of the hierarchy and transparency for all others.
     non-zero, otherwise they are ignored.  See
     also |vifm-commands-and-selection|.
 
+    Example: >
+      if $TERM == "screen.linux"
+          highlight CurrLine ctermfg=lightwhite ctermbg=lightblack
+      else
+          highlight CurrLine cterm=bold,reverse ctermfg=black ctermbg=white
+      endif
+<
                                                *vifm-:invert*
 :invert [f] - invert file name filter.
 :invert? [f] - show current filter state.
 :invert s - invert selection.  See also |vifm-commands-and-selection|.
 :invert o - invert sorting order of the primary sorting key.
 :invert? o - show sorting order of the primary sorting key.
-
-
 
                                                *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.

@@ -1,4 +1,4 @@
-.TH vifm 1 "May 28, 2014" "" "Vifm"
+.TH vifm 1 "June 10, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1578,6 +1578,15 @@ fi[lter]  or = show filter history (see description of the "=" normal mode comma
 starts conditional block.  Commands are executed until next matching :else of
 :endif command if {expr1} evaluates to non-zero, otherwise they are ignored.
 See also help on :else and :endif commands.
+
+Example:
+.EX
+  if $TERM == "screen.linux"
+      highlight CurrLine ctermfg=lightwhite ctermbg=lightblack
+  else
+      highlight CurrLine cterm=bold,reverse ctermfg=black ctermbg=white
+  endif
+.EE
 .TP
 .BI ":invert [f]"
 invert file name filter.
