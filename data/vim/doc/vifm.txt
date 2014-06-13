@@ -1366,11 +1366,12 @@ of arguments of :highlight command is important and it's better to put "cterm"
 in front of others to prevent it from overwriting attributes set by "ctermfg" or
 "ctermbg" arguments.
 
-Since there are two colors and only one bold attribute it affects both colors
-when "reverse" attribute is used when running vifm in terminal emulator.  While
-linux native console can handle boldness of foreground and background colors
-independently, which is for consistency with terminal emulators accessible from
-vifm only implicitly by using light versions of colors.
+There are two colors (foreground and background) and only one bold attribute.
+Thus single bold attribute affects both colors when "reverse" attribute is used
+in vifm run inside terminal emulator.  At the same time linux native console can
+handle boldness of foreground and background colors independently, but for
+consistency with terminal emulators this is available only implicitly by using
+light versions of colors.  This behaviour might be changed in the future.
 
 Although vifm supports 256 colors in a sense they are supported by UI drawing
 library, whether you will be able to use all of them highly depends on your
