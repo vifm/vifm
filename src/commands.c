@@ -2569,10 +2569,13 @@ get_group_str(int group, col_attr_t col)
 static int
 get_color(const char str[], int fg, int *attr)
 {
-	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES), str);
+	int col_pos = string_array_pos_case(XTERM256_COLOR_NAMES, ARRAY_LEN(XTERM256_COLOR_NAMES), str);
 	int light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
 			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
-	int col_num = isdigit(*str) ? atoi(str) : -1;
+	int col_num;
+
+	col_num = isdigit(*str) ? atoi(str) : -1;
+
 	if(strcmp(str, "-1") == 0 || strcasecmp(str, "default") == 0 ||
 			strcasecmp(str, "none") == 0)
 		return -1;
