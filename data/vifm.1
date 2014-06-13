@@ -1,4 +1,4 @@
-.TH vifm 1 "June 10, 2014" "" "Vifm"
+.TH vifm 1 "June 13, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1519,6 +1519,7 @@ Available colors:
  \- magenta and lightmagenta
  \- cyan    and lightcyan
  \- white   and lightwhite
+ \- 0-255 \- corresponding colors from 256-color palette
 
 Light versions of colors are regular colors with bold attribute set.  So order
 of arguments of :highlight command is important and it's better to put "cterm"
@@ -1530,6 +1531,15 @@ when "reverse" attribute is used when running vifm in terminal emulator.  While
 linux native console can handle boldness of foreground and background colors
 independently, which is for consistency with terminal emulators accessible from
 vifm only implicitly by using light versions of colors.
+
+Although vifm supports 256 colors in a sense they are supported by UI drawing
+library, whether you will be able to use all of them highly depends on your
+terminal.  To set up terminal properly, make sure that $TERM in the
+environment you run vifm is set to name of 256-color terminal (on *nixes it can
+also be set via X resources), e.g. xterm-256color.  One can find list of
+available terminal names by listing /usr/lib/terminfo/.  Number of colors
+supported by terminal with current settings can be checked via "tput colors"
+command.
 
 Here is the hierarchy of highlight groups, which you need to know for using
 transparency:

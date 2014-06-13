@@ -23,6 +23,9 @@
 
 	Provided additional repository for Vim plugin (see the README for URL).
 
+	Documented using of 256 colors in :highlight command.  Thanks to Michael
+	Vetter (a.k.a. jubalh).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
