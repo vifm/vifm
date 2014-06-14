@@ -56,7 +56,7 @@ show_jobs_menu(FileView *view)
 			char item_buf[strlen(p->cmd) + 24];
 			if(p->pid == -1)
 			{
-				if(p->total == BG_UNDEFINITE_TOTAL)
+				if(p->total == BG_UNDEFINED_TOTAL)
 				{
 					snprintf(item_buf, sizeof(item_buf), " N/A %s ", p->cmd);
 				}

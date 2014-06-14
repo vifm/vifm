@@ -28,7 +28,9 @@
 
 #include <stdio.h>
 
-#define BG_UNDEFINITE_TOTAL (-1)
+/* Special value of total amount of work in job_t structure to indicate
+ * undefined total number of countable operations. */
+#define BG_UNDEFINED_TOTAL (-1)
 
 typedef struct job_t
 {
