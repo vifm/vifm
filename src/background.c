@@ -722,6 +722,33 @@ background_task_bootstrap(void *arg)
 }
 
 int
+bg_has_active_jobs(void)
+{
+	const job_t *job;
+	int bg_count;
+
+	if(bg_jobs_freeze() != 0)
+	{
+		/* Failed to lock jobs list and using safe choice: pretend there are active
+		 * tasks. */
+		return 1;
+	}
+
+	bg_count = 0;
+	for(job = jobs; job != NULL; job = job->next)
+	{
+		if(job->running && job->pid == BG_INTERNAL_TASK_PID)
+		{
+			++bg_count;
+		}
+	}
+
+	bg_jobs_unfreeze();
+
+	return bg_count > 0;
+}
+
+int
 bg_jobs_freeze(void)
 {
 	/* SIGCHLD needs to be blocked anytime the jobs list is accessed from anywhere

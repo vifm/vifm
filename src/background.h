@@ -100,6 +100,10 @@ job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 int bg_execute(const char desc[], int total, bg_task_func task_func,
 		void *args);
 
+/* Checks whether there are any internal jobs (not external applications tracked
+ * by vifm) running in background. */
+int bg_has_active_jobs(void);
+
 /* Performs preparations necessary for safe access of the jobs list.  Effect of
  * calling this function must be reverted by calling bg_jobs_unfreeze().
  * Returns zero on success, otherwise non-zero is returned. */

@@ -1395,37 +1395,14 @@ commands_block_finished(void)
 void
 comm_quit(int write_info, int force)
 {
-	/* TODO: move this to some other unit */
-	if(!force)
+	/* TODO: move comm_quit() to some other unit */
+
+	if(!force && bg_has_active_jobs())
 	{
-		job_t *job;
-		int bg_count = 0;
-#ifndef _WIN32
-		sigset_t new_mask;
-
-		sigemptyset(&new_mask);
-		sigaddset(&new_mask, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &new_mask, NULL);
-#endif
-
-		job = jobs;
-		while(job != NULL)
+		if(!query_user_menu("Warning", "Some of backgrounded commands are still "
+					"working.  Quit?"))
 		{
-			if(job->running && job->pid == BG_INTERNAL_TASK_PID)
-				bg_count++;
-			job = job->next;
-		}
-
-#ifndef _WIN32
-		/* Unblock SIGCHLD signal */
-		sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
-#endif
-
-		if(bg_count > 0)
-		{
-			if(!query_user_menu("Warning",
-					"Some of backgrounded commands are still working.  Quit?"))
-				return;
+			return;
 		}
 	}
 
