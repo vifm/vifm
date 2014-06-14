@@ -1,4 +1,4 @@
-.TH vifm 1 "June 13, 2014" "" "Vifm"
+.TH vifm 1 "June 14, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1299,10 +1299,11 @@ executes commands until next matching :endif if they previously were not being
 executed.  See also help on :if and :endif commands.
 .TP
 .BI :empty
-will permanently remove 'rm \-fr' files from trash directory.  It will also
-remove all operations from undolist that have no sense after :empty and remove
-all records about files in trash directory from all registers.  See
-"Trash directory" section below.
+will permanently remove files from all existing non-empty trash directories.  It
+will also remove all operations from undolist that have no sense after :empty
+and remove all records about files located inside directories from all
+registers.  Removal is performed as background task with undetermined amount of
+work and can be checked via :jobs menu.  See "Trash directory" section below.
 .TP
 .BI :en[dif]
 ends conditional block.  See also help on :if and :else commands.
