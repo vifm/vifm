@@ -28,6 +28,8 @@
 
 #include <stdio.h>
 
+#define BG_UNDEFINITE_TOTAL (-1)
+
 typedef struct job_t
 {
 	pid_t pid;
