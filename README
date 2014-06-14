@@ -151,7 +151,7 @@ Package content
     |  |-- fuse.c - provides support of FUSE filesystems
     |  |-- globals.c - provides support of globals
     |  |-- ipc.c - handles communication across instances of vifm
-    |  |-- macros - code of macros expanding
+    |  |-- macros.c - code of macros expansion
     |  |-- main_loop.c - the main loop
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
@@ -171,7 +171,7 @@ Package content
     |  |-- undo.c - stores and handles the undo list
     |  |-- version.c - git hash and other version information
     |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option
-    |  |-- vifm.c - contains main() which does basic initialization
+    |  |-- vifm.c - contains main initialization/termination code
     |  |-- vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme
     |  |                        files
     |  `-- win_helper.c - needed for temporary rights evaluation on Windows

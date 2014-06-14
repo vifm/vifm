@@ -59,6 +59,7 @@
 #include "cmdline.h"
 #include "modes.h"
 #include "view.h"
+#include "vifm.h"
 #include "visual.h"
 
 typedef struct
@@ -1261,13 +1262,13 @@ cmd_V(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ZQ(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_quit(0, 0);
+	vifm_try_leave(0, 0);
 }
 
 static void
 cmd_ZZ(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_quit(1, 0);
+	vifm_try_leave(1, 0);
 }
 
 /* Goto mark. */

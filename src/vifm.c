@@ -27,9 +27,11 @@
 
 #include <unistd.h> /* getcwd, stat, sysconf */
 
+#include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
-#include <stdio.h> /* fputs() puts() */
-#include <stdlib.h> /* exit() */
+#include <stddef.h> /* NULL */
+#include <stdio.h> /* FILE fclose() fopen() fputs() puts() snprintf() */
+#include <stdlib.h> /* exit() system() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -51,6 +53,7 @@
 #include "commands_completion.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "fuse.h"
 #include "ipc.h"
 #include "main_loop.h"
 #include "ops.h"
@@ -61,6 +64,7 @@
 #include "running.h"
 #include "signals.h"
 #include "status.h"
+#include "term_title.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
@@ -604,6 +608,49 @@ run_converter(int vifm_like_mode)
 
 	return win_exec_cmd(cmd, &returned_exit_code);
 #endif
+}
+
+void
+vifm_try_leave(int write_info, int force)
+{
+	if(!force && bg_has_active_jobs())
+	{
+		if(!query_user_menu("Warning", "Some of backgrounded commands are still "
+					"working.  Quit?"))
+		{
+			return;
+		}
+	}
+
+	unmount_fuse();
+
+	if(write_info)
+		write_info_file();
+
+	if(cfg.vim_filter)
+	{
+		char buf[PATH_MAX];
+		FILE *fp;
+
+		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
+		fp = fopen(buf, "w");
+		if(fp != NULL)
+		{
+			fclose(fp);
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
+		}
+	}
+
+#ifdef _WIN32
+	system("cls");
+#endif
+
+	set_term_title(NULL);
+	endwin();
+	exit(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

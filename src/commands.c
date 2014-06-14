@@ -80,7 +80,6 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "fuse.h"
 #include "macros.h"
 #include "ops.h"
 #include "opt_handlers.h"
@@ -88,10 +87,10 @@
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
-#include "term_title.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
+#include "vifm.h"
 
 /* Commands without completion. */
 enum
@@ -1390,51 +1389,6 @@ commands_block_finished(void)
 		return 1;
 	}
 	return 0;
-}
-
-void
-comm_quit(int write_info, int force)
-{
-	/* TODO: move comm_quit() to some other unit */
-
-	if(!force && bg_has_active_jobs())
-	{
-		if(!query_user_menu("Warning", "Some of backgrounded commands are still "
-					"working.  Quit?"))
-		{
-			return;
-		}
-	}
-
-	unmount_fuse();
-
-	if(write_info)
-		write_info_file();
-
-	if(cfg.vim_filter)
-	{
-		char buf[PATH_MAX];
-		FILE *fp;
-
-		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
-		fp = fopen(buf, "w");
-		if(fp != NULL)
-		{
-			fclose(fp);
-		}
-		else
-		{
-			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
-		}
-	}
-
-#ifdef _WIN32
-	system("cls");
-#endif
-
-	set_term_title(NULL);
-	endwin();
-	exit(0);
 }
 
 /* Return value of all functions below which name ends with "_cmd" mean:
@@ -3787,14 +3741,14 @@ write_cmd(const cmd_info_t *cmd_info)
 static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
-	comm_quit(!cmd_info->emark, cmd_info->emark);
+	vifm_try_leave(!cmd_info->emark, cmd_info->emark);
 	return 0;
 }
 
 static int
 wq_cmd(const cmd_info_t *cmd_info)
 {
-	comm_quit(1, cmd_info->emark);
+	vifm_try_leave(1, cmd_info->emark);
 	return 0;
 }
 

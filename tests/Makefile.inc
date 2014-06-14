@@ -26,7 +26,7 @@ else
     SOURCES := $(filter-out ../../src/menus/volumes_menu.c, $(SOURCES))
     SOURCES := $(filter-out %_win.c, $(SOURCES))
 endif
-LOCAL_SOURCES += $(wildcard *.c)
+LOCAL_SOURCES += $(wildcard *.c) ../stubs.c
 
 OBJECTS := $(SOURCES:.c=.o)
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
@@ -61,6 +61,9 @@ else
 endif
 
 bin/%.o: %.c bin/.timestamp
+	gcc -c -o $@ $< $(CFLAGS)
+
+bin/stubs.o: ../stubs.c bin/.timestamp
 	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/.timestamp bin/.timestamp:
