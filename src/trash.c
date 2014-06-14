@@ -18,10 +18,6 @@
 
 #include "trash.h"
 
-#ifdef _WIN32
-#include <dirent.h> /* DIR */
-#endif
-
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat */
 
@@ -85,6 +81,7 @@ static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
+static void empty_trash_in_bg(job_t *job, void *arg);
 static void empty_trash_list(void);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
@@ -239,36 +236,29 @@ empty_trash_dirs(void)
 static void
 empty_trash_dir(const char trash_dir[])
 {
-#ifndef _WIN32
-	char cmd[25 + strlen(trash_dir)*2 + 1];
-	char *escaped;
+	char *const task_desc = format_str("Empty trash: %s", trash_dir);
 
-	escaped = escape_filename(trash_dir, 0);
-	/* Note usage of ^ inside character class of the command below, it's more
-	 * portable than !, which can be history-expanded as !. by csh-like
-	 * shells. */
-	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[^.]*'", escaped, escaped);
-	free(escaped);
+	char *const trash_dir_copy = strdup(trash_dir);
 
-	start_background_job(cmd, 0);
-#else
-	DIR *dir;
-	struct dirent *d;
-
-	dir = opendir(trash_dir);
-	if(dir == NULL)
-		return;
-	while((d = readdir(dir)) != NULL)
+	if(bg_execute(task_desc, BG_UNDEFINITE_TOTAL, &empty_trash_in_bg,
+			trash_dir_copy) != 0)
 	{
-		if(!is_builtin_dir(d->d_name))
-		{
-			char full[PATH_MAX];
-			snprintf(full, sizeof(full), "%s/%s", trash_dir, d->d_name);
-			perform_operation(OP_REMOVESL, NULL, full, NULL);
-		}
+		free(trash_dir_copy);
 	}
-	closedir(dir);
-#endif
+
+	free(task_desc);
+}
+
+/* Entry point for a background task that removes files in a single trash
+ * directory. */
+static void
+empty_trash_in_bg(job_t *job, void *arg)
+{
+	char *const trash_dir = arg;
+
+	remove_dir_content(trash_dir);
+
+	free(trash_dir);
 }
 
 static void

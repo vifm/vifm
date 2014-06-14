@@ -84,6 +84,9 @@ int is_regular_file(const char path[]);
  * error, otherwise zero is returned. */
 int rename_file(const char src[], const char dst[]);
 
+/* Removes directory content. */
+void remove_dir_content(const char path[]);
+
 #ifdef _WIN32
 
 char * realpath(const char *path, char *buf);

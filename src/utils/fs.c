@@ -35,19 +35,18 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() rename() */
-#include <stdlib.h> /* realpath() */
+#include <stdlib.h> /* free() realpath() */
 #include <string.h> /* strdup() strncmp() strncpy() */
 
 #include "fs_limits.h"
 #include "log.h"
 #include "path.h"
-#ifdef _WIN32
 #include "str.h"
-#endif
 #include "string_array.h"
 #include "utils.h"
 
 static int path_exists_internal(const char *path, const char *filename);
+static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 
 int
 is_dir(const char *path)
@@ -444,6 +443,47 @@ rename_file(const char src[], const char dst[])
 		LOG_SERROR_MSG(errno, "Rename operation failed: {%s => %s}", src, dst);
 	}
 	return error != 0;
+}
+
+void
+remove_dir_content(const char path[])
+{
+	DIR *dir;
+	struct dirent *d;
+
+	dir = opendir(path);
+	if(dir == NULL)
+	{
+		return;
+	}
+
+	while((d = readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			char *const full_path = format_str("%s/%s", path, d->d_name);
+			if(entry_is_dir(full_path, d))
+			{
+				remove_dir_content(full_path);
+			}
+			remove(full_path);
+			free(full_path);
+		}
+	}
+	closedir(dir);
+}
+
+/* Uses dentry or full path to check file type.  Returns non-zero for
+ * directories, otherwise zero is returned.  Symbolic links are _not_
+ * dereferenced. */
+static int
+entry_is_dir(const char full_path[], const struct dirent* dentry)
+{
+#ifndef _WIN32
+	return dentry->d_type == DT_DIR;
+#else
+	return is_dir(full_path);
+#endif
 }
 
 #ifdef _WIN32

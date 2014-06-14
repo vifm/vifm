@@ -66,11 +66,22 @@ show_jobs_menu(FileView *view)
 		{
 			char item_buf[strlen(p->cmd) + 24];
 			if(p->pid == -1)
-				snprintf(item_buf, sizeof(item_buf), " %d/%d %s ", p->done + 1,
-						p->total, p->cmd);
+			{
+				if(p->total == BG_UNDEFINITE_TOTAL)
+				{
+					snprintf(item_buf, sizeof(item_buf), " N/A %s ", p->cmd);
+				}
+				else
+				{
+					snprintf(item_buf, sizeof(item_buf), " %d/%d %s ", p->done + 1,
+							p->total, p->cmd);
+				}
+			}
 			else
+			{
 				snprintf(item_buf, sizeof(item_buf), " " PRINTF_PID_T " %s ", p->pid,
 						p->cmd);
+			}
 			i = add_to_string_array(&m.items, i, 1, item_buf);
 		}
 

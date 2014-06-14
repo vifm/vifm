@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 June 13
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 June 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1161,9 +1161,12 @@ The builtin commands are:
     |vifm-commands-and-selection|.
 
                                                *vifm-:empty*
-:empty - permanently remove files from |vifm-trash| directory.  It will also
-    remove all operations from undolist that have no sense after :empty and
-    remove all records about files in |vifm-trash| directory from all registers.
+:empty - permanently remove files from all existing non-empty trash
+    directories (see |vifm-trash|).  It will also remove all operations from
+    undolist that have no sense after :empty and remove all records about
+    files located inside directories from all registers.  Removal is
+    performed as background task with undetermined amount of work and can
+    be checked via |vifm-:jobs| menu.
 
                                                *vifm-:endif* *vifm-:en*
 :en[dif] - ends conditional block.  See also |vifm-:if| and |vifm-:else|.

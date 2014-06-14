@@ -26,6 +26,10 @@
 	Documented using of 256 colors in :highlight command.  Thanks to Michael
 	Vetter (a.k.a. jubalh).
 
+	Rewrote trash content removal with system calls in background thread to
+	omit unportable invocation of shells.  It's also visible in :jobs menu.
+	Thanks to lyuts and ckester.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

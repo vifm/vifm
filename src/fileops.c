@@ -472,7 +472,6 @@ delete_file_bg(FileView *view, int use_trash)
 	}
 
 	args->job->total = args->sel_list_len;
-	args->job->done = 0;
 
 	pthread_create(&id, NULL, delete_file_stub, args);
 	return 0;
@@ -1893,18 +1892,18 @@ static int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
-		struct stat s;
-		if(dentry->d_type != DT_UNKNOWN)
-		{
-			return dentry->d_type == DT_DIR;
-		}
-		if(lstat(full_path, &s) == 0 && s.st_ino != 0)
-		{
-			return (s.st_mode&S_IFMT) == S_IFDIR;
-		}
-		return 0;
+	struct stat s;
+	if(dentry->d_type != DT_UNKNOWN)
+	{
+		return dentry->d_type == DT_DIR;
+	}
+	if(lstat(full_path, &s) == 0 && s.st_ino != 0)
+	{
+		return (s.st_mode&S_IFMT) == S_IFDIR;
+	}
+	return 0;
 #else
-		return is_dir(full_path);
+	return is_dir(full_path);
 #endif
 }
 
@@ -2908,7 +2907,6 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	}
 
 	args->job->total = args->sel_list_len;
-	args->job->done = 0;
 
 	pthread_create(&id, NULL, cpmv_stub, args);
 	return 0;
