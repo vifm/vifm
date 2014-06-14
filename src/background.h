@@ -47,7 +47,11 @@ typedef struct job_t
 	HANDLE hprocess;
 #endif
 	struct job_t *next;
-}job_t;
+}
+job_t;
+
+/* Background task entry point function signature. */
+typedef void (*bg_task_func)(job_t *job, void *arg);
 
 extern struct job_t *jobs;
 
@@ -83,6 +87,10 @@ job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 #define NO_JOB_ID INVALID_HANDLE_VALUE
 job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
+
+/* Start new background task, executed in a separate thread.  Returns zero on
+ * success, otherwise non-zero is returned. */
+int bg_execute(const char desc[], int total, bg_task_func task_func, void *args);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

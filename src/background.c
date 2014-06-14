@@ -51,8 +51,19 @@
 /* Size of error message reading buffer. */
 #define ERR_MSG_LEN 1025
 
+/* Structure with passed to background_task_bootstrap() so it can perform
+ * correct initialization/cleanup. */
+typedef struct
+{
+	bg_task_func func; /* Function to execute in a background thread. */
+	void *args;        /* Argument to pass. */
+	job_t *job;        /* Job identifier that corresponds to the task. */
+}
+background_task_args;
+
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
+static void * background_task_bootstrap(void *arg);
 
 job_t *jobs;
 
@@ -661,6 +672,57 @@ remove_inner_bg_job(void)
 
 	job->running = 0;
 	job->exit_code = 0;
+}
+
+int
+bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
+{
+	pthread_t id;
+
+	background_task_args *const task_args = malloc(sizeof(*task_args));
+	if(task_args == NULL)
+	{
+		return 1;
+	}
+
+	task_args->func = task_func;
+	task_args->args = args;
+	task_args->job = add_background_job((pid_t)-1, desc, NO_JOB_ID);
+
+	if(task_args->job == NULL)
+	{
+		free(task_args);
+		return 2;
+	}
+
+	task_args->job->total = total;
+
+	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
+	{
+		free(task_args);
+		return 3;
+	}
+
+	return 0;
+}
+
+/* Pthreads entry point for a new background task.  Performs correct
+ * startup/exit with related updates of internal data structures.  Returns
+ * result for this thread. */
+static void *
+background_task_bootstrap(void *arg)
+{
+	background_task_args *const task_args = arg;
+
+	add_inner_bg_job(task_args->job);
+
+	task_args->func(task_args->job, task_args->args);
+
+	remove_inner_bg_job();
+
+	free(task_args);
+
+	return NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
