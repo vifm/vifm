@@ -203,12 +203,12 @@ job_free(job_t *const job)
 	}
 
 #ifndef _WIN32
-	if(job->fd != -1)
+	if(job->fd != NO_JOB_ID)
 	{
 		close(job->fd);
 	}
 #else
-	if(job->hprocess != INVALID_HANDLE_VALUE)
+	if(job->hprocess != NO_JOB_ID)
 	{
 		CloseHandle(job->hprocess);
 	}
