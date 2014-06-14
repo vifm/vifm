@@ -188,10 +188,11 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 #endif
 		else if(!strcmp(argv[x], "-f"))
 		{
-			cfg.vim_filter = 1;
+			curr_stats.file_picker_mode = 1;
 		}
 		else if(!strcmp(argv[x], "--no-configs"))
 		{
+			/* Do nothing. */
 		}
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
@@ -625,9 +626,11 @@ vifm_try_leave(int write_info, int force)
 	unmount_fuse();
 
 	if(write_info)
+	{
 		write_info_file();
+	}
 
-	if(cfg.vim_filter)
+	if(curr_stats.file_picker_mode)
 	{
 		char buf[PATH_MAX];
 		FILE *fp;

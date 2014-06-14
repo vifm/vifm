@@ -121,6 +121,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->shell_type = ST_NORMAL;
 
+	stats->file_picker_mode = 0;
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif

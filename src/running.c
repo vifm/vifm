@@ -119,7 +119,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	runnable = is_runnable(view, full_path, curr->type, force_follow);
 	executable = is_executable(full_path, curr, dont_execute, runnable);
 
-	if(cfg.vim_filter && (executable || runnable))
+	if(curr_stats.file_picker_mode && (executable || runnable))
 	{
 		use_vim_plugin(view, 0, NULL); /* No return. */
 	}
