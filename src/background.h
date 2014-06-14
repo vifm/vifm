@@ -28,7 +28,13 @@
 
 #include <stdio.h>
 
-#define BG_UNDEFINITE_TOTAL (-1)
+/* Special value of process id for internal tasks running in background
+ * threads. */
+#define BG_INTERNAL_TASK_PID ((pid_t)-1)
+
+/* Special value of total amount of work in job_t structure to indicate
+ * undefined total number of countable operations. */
+#define BG_UNDEFINED_TOTAL (-1)
 
 typedef struct job_t
 {
@@ -76,7 +82,6 @@ pid_t background_and_capture(char *cmd, FILE **out, FILE **err);
 
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
-void update_jobs_list(void);
 
 void add_inner_bg_job(job_t *job);
 void inner_bg_next(void);
@@ -92,7 +97,20 @@ job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
-int bg_execute(const char desc[], int total, bg_task_func task_func, void *args);
+int bg_execute(const char desc[], int total, bg_task_func task_func,
+		void *args);
+
+/* Checks whether there are any internal jobs (not external applications tracked
+ * by vifm) running in background. */
+int bg_has_active_jobs(void);
+
+/* Performs preparations necessary for safe access of the jobs list.  Effect of
+ * calling this function must be reverted by calling bg_jobs_unfreeze().
+ * Returns zero on success, otherwise non-zero is returned. */
+int bg_jobs_freeze(void);
+
+/* Undoes changes made by bg_jobs_freeze(). */
+void bg_jobs_unfreeze(void);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

@@ -139,6 +139,8 @@ typedef struct
 
 	ShellType shell_type; /* Specifies type of shell. */
 
+	int file_picker_mode; /* Whether vifm was started in file picking mode. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

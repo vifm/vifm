@@ -63,8 +63,6 @@ int commands_block_finished(void);
 
 char * find_last_command(char *cmd);
 
-void comm_quit(int write_info, int force);
-
 void exec_startup_commands(int argc, char **argv);
 
 /* Expands all environment variables in the str.  Allocates and returns memory

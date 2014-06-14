@@ -58,7 +58,6 @@ typedef struct config_t
 	char *vi_x_command;
 	int vi_x_cmd_bg;
 	int use_trash;
-	int vim_filter;
 
 	/* Whether support of terminal multiplexers is enabled. */
 	int use_term_multiplexer;

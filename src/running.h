@@ -20,7 +20,6 @@
 #ifndef VIFM__RUNNING_H__
 #define VIFM__RUNNING_H__
 
-#include "utils/macros.h"
 #include "utils/test_helpers.h"
 #include "ui.h"
 
@@ -36,7 +35,6 @@ void run_using_prog(FileView *view, const char *program, int dont_execute,
 int view_file(const char filename[], int line, int column, int allow_forking);
 void handle_dir(FileView *view);
 void cd_updir(FileView *view);
-void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 /* Returns zero on success, otherwise non-zero is returned. */
 int shellout(const char *command, int pause, int use_term_multiplexer);
 void output_to_nowhere(const char *cmd);

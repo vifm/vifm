@@ -43,7 +43,6 @@
 #include "cfg/hist.h"
 #include "cfg/info.h"
 #include "engine/cmds.h"
-#include "engine/keys.h"
 #include "engine/options.h"
 #include "engine/parsing.h"
 #include "engine/text_buffer.h"
@@ -80,7 +79,6 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "fuse.h"
 #include "macros.h"
 #include "ops.h"
 #include "opt_handlers.h"
@@ -88,10 +86,10 @@
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
-#include "term_title.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
+#include "vifm.h"
 
 /* Commands without completion. */
 enum
@@ -222,7 +220,6 @@ static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
-static void clean_view_history(FileView *const view);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int type);
@@ -848,10 +845,12 @@ init_commands(void)
 		return;
 	}
 
-	/* we get here when init_commands() is called first time */
+	/* We get here when init_commands() is called the first time. */
+
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
+	/* Initialize modules used by this one. */
 	init_bracket_notation();
 	init_variables();
 }
@@ -1392,74 +1391,6 @@ commands_block_finished(void)
 	return 0;
 }
 
-void
-comm_quit(int write_info, int force)
-{
-	/* TODO: move this to some other unit */
-	if(!force)
-	{
-		job_t *job;
-		int bg_count = 0;
-#ifndef _WIN32
-		sigset_t new_mask;
-
-		sigemptyset(&new_mask);
-		sigaddset(&new_mask, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &new_mask, NULL);
-#endif
-
-		job = jobs;
-		while(job != NULL)
-		{
-			if(job->running && job->pid == -1)
-				bg_count++;
-			job = job->next;
-		}
-
-#ifndef _WIN32
-		/* Unblock SIGCHLD signal */
-		sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
-#endif
-
-		if(bg_count > 0)
-		{
-			if(!query_user_menu("Warning",
-					"Some of backgrounded commands are still working.  Quit?"))
-				return;
-		}
-	}
-
-	unmount_fuse();
-
-	if(write_info)
-		write_info_file();
-
-	if(cfg.vim_filter)
-	{
-		char buf[PATH_MAX];
-		FILE *fp;
-
-		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
-		fp = fopen(buf, "w");
-		if(fp != NULL)
-		{
-			fclose(fp);
-		}
-		else
-		{
-			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
-		}
-	}
-
-#ifdef _WIN32
-	system("cls");
-#endif
-
-	set_term_title(NULL);
-	endwin();
-	exit(0);
-}
-
 /* Return value of all functions below which name ends with "_cmd" mean:
  *  <0 - one of CMDS_* errors from cmds.h
  *  =0 - nothing was outputted to the status bar, don't need to save its state
@@ -1942,8 +1873,11 @@ edit_cmd(const cmd_info_t *cmd_info)
 		int i;
 		int bg;
 
-		if(cfg.vim_filter)
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+		if(curr_stats.file_picker_mode)
+		{
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+		}
 
 		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd(&bg));
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
@@ -1958,12 +1892,16 @@ edit_cmd(const cmd_info_t *cmd_info)
 			shellout(buf, -1, 1);
 		return 0;
 	}
+
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
 		char buf[PATH_MAX];
-		if(cfg.vim_filter)
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+		if(curr_stats.file_picker_mode)
+		{
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+		}
 
 		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 				get_current_file_name(curr_view));
@@ -1988,8 +1926,11 @@ edit_cmd(const cmd_info_t *cmd_info)
 			}
 		}
 
-		if(cfg.vim_filter)
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+		if(curr_stats.file_picker_mode)
+		{
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+		}
 
 		if(edit_selection() != 0)
 		{
@@ -3198,83 +3139,8 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	FileView *tmp_view;
-
-	curr_stats.restart_in_progress = 1;
-
-	/* all user mappings in all modes */
-	clear_user_keys();
-
-	/* user defined commands */
-	execute_cmd("comclear");
-
-	/* Directory histories. */
-	clean_view_history(&lwin);
-	clean_view_history(&rwin);
-
-	/* All kinds of history. */
-	(void)hist_reset(&cfg.search_hist, cfg.history_len);
-	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
-	cfg.history_len = 0;
-
-	/* Options of current pane. */
-	reset_options_to_default();
-	/* Options of other pane. */
-	tmp_view = curr_view;
-	curr_view = other_view;
-	load_local_options(other_view);
-	reset_options_to_default();
-	curr_view = tmp_view;
-
-	/* file types and viewers */
-	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
-
-	/* session status */
-	(void)reset_status();
-
-	/* undo list */
-	reset_undo_list();
-
-	/* directory stack */
-	clean_stack();
-
-	/* registers */
-	clear_registers();
-
-	/* color schemes */
-	load_def_scheme();
-
-	/* Clear all bookmarks. */
-	clear_all_bookmarks();
-
-	/* variables */
-	clear_variables();
-	init_variables();
-	/* this update is needed as clear_variables() will reset $PATH */
-	update_path_env(1);
-
-	reset_views();
-	read_info_file(1);
-	save_view_history(&lwin, NULL, NULL, -1);
-	save_view_history(&rwin, NULL, NULL, -1);
-	load_color_scheme_colors();
-	source_config();
-	exec_startup_commands(0, NULL);
-
-	curr_stats.restart_in_progress = 0;
-
+	vifm_restart();
 	return 0;
-}
-
-/* Cleans directory history of the view. */
-static void
-clean_view_history(FileView *const view)
-{
-	free_history_items(view->history, view->history_num);
-	view->history_num = 0;
-	view->history_pos = 0;
 }
 
 static int
@@ -3810,14 +3676,14 @@ write_cmd(const cmd_info_t *cmd_info)
 static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
-	comm_quit(!cmd_info->emark, cmd_info->emark);
+	vifm_try_leave(!cmd_info->emark, cmd_info->emark);
 	return 0;
 }
 
 static int
 wq_cmd(const cmd_info_t *cmd_info)
 {
-	comm_quit(1, cmd_info->emark);
+	vifm_try_leave(1, cmd_info->emark);
 	return 0;
 }
 

@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__BRACKET_NOTATION_H__
-#define VIFM__BRACKET_NOTATION_H__
+#ifndef VIFM__VIFM_H__
+#define VIFM__VIFM_H__
 
-#include <stddef.h> /* wchar_t */
+#include "utils/macros.h"
+#include "ui.h"
 
-/* Initializes internal notation description structures. */
-void init_bracket_notation(void);
+/* Resets internal state and reloads configuration files. */
+void vifm_restart(void);
 
-/* Substitures all bracket notation entries in cmd.  Returns newly allocated
- * wide string, which should be freed by the caller. */
-wchar_t * substitute_specs(const char cmd[]);
+/* Tries to quit fully initialized vifm.  Might fail if background tasks are
+ * present and user chooses not to stop them. */
+void vifm_try_leave(int write_info, int force);
 
-#endif /* VIFM__BRACKET_NOTATION_H__ */
+/* Leaves vifm storing list of file names (taken from the view or the files) in
+ * a special file for use by an external application. */
+void _gnuc_noreturn vifm_return_file_list(const FileView *view, int nfiles,
+		char *files[]);
+
+#endif // VIFM__VIFM_H__
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

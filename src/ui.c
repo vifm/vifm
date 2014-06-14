@@ -2033,6 +2033,14 @@ ui_view_is_visible(const FileView *const view)
 }
 
 void
+ui_view_clear_history(FileView *const view)
+{
+	free_history_items(view->history, view->history_num);
+	view->history_num = 0;
+	view->history_pos = 0;
+}
+
+void
 ui_cancellation_reset(void)
 {
 	assert(ui_cancellation_disabled() && "Can't reset while active.");

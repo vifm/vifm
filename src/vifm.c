@@ -27,13 +27,20 @@
 
 #include <unistd.h> /* getcwd, stat, sysconf */
 
+#include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
-#include <stdio.h> /* fputs() puts() */
-#include <stdlib.h> /* exit() */
+#include <stddef.h> /* NULL */
+#include <stdio.h> /* FILE fclose() fopen() fprintf() fputs() puts()
+                      snprintf() */
+#include <stdlib.h> /* EXIT_SUCCESS exit() system() */
 #include <string.h>
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "engine/cmds.h"
+#include "engine/keys.h"
+#include "engine/options.h"
+#include "engine/variables.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/view.h"
@@ -44,13 +51,17 @@
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bookmarks.h"
+#include "bracket_notation.h"
 #include "builtin_functions.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "commands_completion.h"
+#include "dir_stack.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "fuse.h"
 #include "ipc.h"
 #include "main_loop.h"
 #include "ops.h"
@@ -61,6 +72,7 @@
 #include "running.h"
 #include "signals.h"
 #include "status.h"
+#include "term_title.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
@@ -80,6 +92,8 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void dump_filenames(const FileView *view, FILE *fp, int nfiles,
+		char *files[]);
 
 static void
 show_version_msg(void)
@@ -184,10 +198,11 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 #endif
 		else if(!strcmp(argv[x], "-f"))
 		{
-			cfg.vim_filter = 1;
+			curr_stats.file_picker_mode = 1;
 		}
 		else if(!strcmp(argv[x], "--no-configs"))
 		{
+			/* Do nothing. */
 		}
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
@@ -308,7 +323,9 @@ main(int argc, char *argv[])
 	set_config_paths();
 	reinit_logger();
 
+	/* Commands module also initializes bracket notation and variables. */
 	init_commands();
+
 	init_builtin_functions();
 	update_path_env(1);
 
@@ -604,6 +621,196 @@ run_converter(int vifm_like_mode)
 
 	return win_exec_cmd(cmd, &returned_exit_code);
 #endif
+}
+
+void
+vifm_restart(void)
+{
+	FileView *tmp_view;
+
+	curr_stats.restart_in_progress = 1;
+
+	/* All user mappings in all modes. */
+	clear_user_keys();
+
+	/* User defined commands. */
+	execute_cmd("comclear");
+
+	/* Directory histories. */
+	ui_view_clear_history(&lwin);
+	ui_view_clear_history(&rwin);
+
+	/* All kinds of history. */
+	(void)hist_reset(&cfg.search_hist, cfg.history_len);
+	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
+	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
+	cfg.history_len = 0;
+
+	/* Options of current pane. */
+	reset_options_to_default();
+	/* Options of other pane. */
+	tmp_view = curr_view;
+	curr_view = other_view;
+	load_local_options(other_view);
+	reset_options_to_default();
+	curr_view = tmp_view;
+
+	/* File types and viewers. */
+	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
+
+	/* Session status. */
+	(void)reset_status();
+
+	/* Undo list. */
+	reset_undo_list();
+
+	/* Directory stack. */
+	clean_stack();
+
+	/* Registers. */
+	clear_registers();
+
+	/* Color schemes. */
+	load_def_scheme();
+
+	/* Clear all bookmarks. */
+	clear_all_bookmarks();
+
+	/* Reset variables. */
+	clear_variables();
+	init_variables();
+	/* This update is needed as clear_variables() will reset $PATH. */
+	update_path_env(1);
+
+	reset_views();
+	read_info_file(1);
+	save_view_history(&lwin, NULL, NULL, -1);
+	save_view_history(&rwin, NULL, NULL, -1);
+	load_color_scheme_colors();
+	source_config();
+	exec_startup_commands(0, NULL);
+
+	curr_stats.restart_in_progress = 0;
+}
+
+void
+vifm_try_leave(int write_info, int force)
+{
+	if(!force && bg_has_active_jobs())
+	{
+		if(!query_user_menu("Warning", "Some of backgrounded commands are still "
+					"working.  Quit?"))
+		{
+			return;
+		}
+	}
+
+	unmount_fuse();
+
+	if(write_info)
+	{
+		write_info_file();
+	}
+
+	if(curr_stats.file_picker_mode)
+	{
+		char buf[PATH_MAX];
+		FILE *fp;
+
+		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
+		fp = fopen(buf, "w");
+		if(fp != NULL)
+		{
+			fclose(fp);
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
+		}
+	}
+
+#ifdef _WIN32
+	system("cls");
+#endif
+
+	set_term_title(NULL);
+	endwin();
+	exit(0);
+}
+
+void _gnuc_noreturn
+vifm_return_file_list(const FileView *view, int nfiles, char *files[])
+{
+	FILE *fp;
+	char filepath[PATH_MAX];
+	int exit_code = EXIT_SUCCESS;
+
+	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
+	fp = fopen(filepath, "w");
+	if(fp != NULL)
+	{
+		dump_filenames(view, fp, nfiles, files);
+		fclose(fp);
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	endwin();
+	exit(exit_code);
+}
+
+/* Writes list of full paths to files into the file pointed to by fp.  files and
+ * nfiles parameters can be used to supply list of file names in the currecnt
+ * directory of the view.  Otherwise current selection is used if current files
+ * is selected, if current file is not selected it's the only one that is
+ * stored. */
+static void
+dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
+{
+	if(nfiles == 0)
+	{
+		if(!view->dir_entry[view->list_pos].selected)
+		{
+			fprintf(fp, "%s", view->curr_dir);
+			if(view->curr_dir[strlen(view->curr_dir) - 1] != '/')
+			{
+				fprintf(fp, "%s", "/");
+			}
+			fprintf(fp, "%s\n", view->dir_entry[view->list_pos].name);
+		}
+		else
+		{
+			int i;
+			for(i = 0; i < view->list_rows; ++i)
+			{
+				if(view->dir_entry[i].selected)
+				{
+					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+				}
+			}
+		}
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < nfiles; ++i)
+		{
+			if(is_path_absolute(files[i]))
+			{
+				fprintf(fp, "%s\n", files[i]);
+			}
+			else
+			{
+				fprintf(fp, "%s/%s\n", view->curr_dir, files[i]);
+			}
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

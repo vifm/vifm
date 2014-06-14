@@ -19,7 +19,6 @@
 
 #include "jobs_menu.h"
 
-#include <signal.h> /* sig* */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strlen() strdup() */
 
@@ -36,26 +35,16 @@ int
 show_jobs_menu(FileView *view)
 {
 	job_t *p;
-#ifndef _WIN32
-	sigset_t new_mask;
-#endif
 	int i;
+
 	static menu_info m;
 	init_menu_info(&m, JOBS_MENU, strdup("No jobs currently running"));
 	m.title = strdup(" Pid --- Command ");
 	m.execute_handler = &execute_jobs_cb;
 
-	/*
-	 * SIGCHLD needs to be blocked anytime the finished_jobs list
-	 * is accessed from anywhere except the received_sigchld().
-	 */
-#ifndef _WIN32
-	sigemptyset(&new_mask);
-	sigaddset(&new_mask, SIGCHLD);
-	sigprocmask(SIG_BLOCK, &new_mask, NULL);
-#else
 	check_background_jobs();
-#endif
+
+	bg_jobs_freeze();
 
 	p = jobs;
 
@@ -65,9 +54,9 @@ show_jobs_menu(FileView *view)
 		if(p->running)
 		{
 			char item_buf[strlen(p->cmd) + 24];
-			if(p->pid == -1)
+			if(p->pid == BG_INTERNAL_TASK_PID)
 			{
-				if(p->total == BG_UNDEFINITE_TOTAL)
+				if(p->total == BG_UNDEFINED_TOTAL)
 				{
 					snprintf(item_buf, sizeof(item_buf), " N/A %s ", p->cmd);
 				}
@@ -88,10 +77,7 @@ show_jobs_menu(FileView *view)
 		p = p->next;
 	}
 
-#ifndef _WIN32
-	/* Unblock SIGCHLD signal. */
-	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
-#endif
+	bg_jobs_unfreeze();
 
 	m.len = i;
 

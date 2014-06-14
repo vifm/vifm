@@ -107,7 +107,6 @@ static void save_into_history(const char item[], hist_t *hist, int len);
 void
 init_config(void)
 {
-	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 

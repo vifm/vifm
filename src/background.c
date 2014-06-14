@@ -105,8 +105,7 @@ check_background_jobs(void)
 		return;
 	}
 
-	/* SIGCHLD needs to be blocked. */
-	if(set_sigchld(1) != 0)
+	if(bg_jobs_freeze() != 0)
 	{
 		return;
 	}
@@ -134,10 +133,7 @@ check_background_jobs(void)
 		}
 	}
 
-	/* Unblock SIGCHLD signal. */
-	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
-	 *        blocked. */
-	(void)set_sigchld(0);
+	bg_jobs_unfreeze();
 }
 
 /* Checks status of the job.  Processes error stream or checks whether process
@@ -207,12 +203,12 @@ job_free(job_t *const job)
 	}
 
 #ifndef _WIN32
-	if(job->fd != -1)
+	if(job->fd != NO_JOB_ID)
 	{
 		close(job->fd);
 	}
 #else
-	if(job->hprocess != INVALID_HANDLE_VALUE)
+	if(job->hprocess != NO_JOB_ID)
 	{
 		CloseHandle(job->hprocess);
 	}
@@ -687,7 +683,7 @@ bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
 
 	task_args->func = task_func;
 	task_args->args = args;
-	task_args->job = add_background_job((pid_t)-1, desc, NO_JOB_ID);
+	task_args->job = add_background_job(BG_INTERNAL_TASK_PID, desc, NO_JOB_ID);
 
 	if(task_args->job == NULL)
 	{
@@ -723,6 +719,50 @@ background_task_bootstrap(void *arg)
 	free(task_args);
 
 	return NULL;
+}
+
+int
+bg_has_active_jobs(void)
+{
+	const job_t *job;
+	int bg_count;
+
+	if(bg_jobs_freeze() != 0)
+	{
+		/* Failed to lock jobs list and using safe choice: pretend there are active
+		 * tasks. */
+		return 1;
+	}
+
+	bg_count = 0;
+	for(job = jobs; job != NULL; job = job->next)
+	{
+		if(job->running && job->pid == BG_INTERNAL_TASK_PID)
+		{
+			++bg_count;
+		}
+	}
+
+	bg_jobs_unfreeze();
+
+	return bg_count > 0;
+}
+
+int
+bg_jobs_freeze(void)
+{
+	/* SIGCHLD needs to be blocked anytime the jobs list is accessed from anywhere
+	 * except the received_sigchld(). */
+	return set_sigchld(1);
+}
+
+void
+bg_jobs_unfreeze(void)
+{
+	/* Unblock SIGCHLD signal. */
+	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
+	 *        blocked. */
+	(void)set_sigchld(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
