@@ -620,6 +620,10 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 	new->skip_errors = 0;
 	new->running = 1;
 	new->error = NULL;
+
+	new->total = 0;
+	new->done = 0;
+
 	jobs = new;
 	return new;
 }

@@ -472,7 +472,6 @@ delete_file_bg(FileView *view, int use_trash)
 	}
 
 	args->job->total = args->sel_list_len;
-	args->job->done = 0;
 
 	pthread_create(&id, NULL, delete_file_stub, args);
 	return 0;
@@ -2908,7 +2907,6 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	}
 
 	args->job->total = args->sel_list_len;
-	args->job->done = 0;
 
 	pthread_create(&id, NULL, cpmv_stub, args);
 	return 0;
