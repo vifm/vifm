@@ -91,7 +91,16 @@ job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
-int bg_execute(const char desc[], int total, bg_task_func task_func, void *args);
+int bg_execute(const char desc[], int total, bg_task_func task_func,
+		void *args);
+
+/* Performs preparations necessary for safe access of the jobs list.  Effect of
+ * calling this function must be reverted by calling bg_jobs_unfreeze().
+ * Returns zero on success, otherwise non-zero is returned. */
+int bg_jobs_freeze(void);
+
+/* Undoes changes made by bg_jobs_freeze(). */
+void bg_jobs_unfreeze(void);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

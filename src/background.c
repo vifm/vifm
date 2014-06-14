@@ -105,8 +105,7 @@ check_background_jobs(void)
 		return;
 	}
 
-	/* SIGCHLD needs to be blocked. */
-	if(set_sigchld(1) != 0)
+	if(bg_jobs_freeze() != 0)
 	{
 		return;
 	}
@@ -134,10 +133,7 @@ check_background_jobs(void)
 		}
 	}
 
-	/* Unblock SIGCHLD signal. */
-	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
-	 *        blocked. */
-	(void)set_sigchld(0);
+	bg_jobs_unfreeze();
 }
 
 /* Checks status of the job.  Processes error stream or checks whether process
@@ -723,6 +719,23 @@ background_task_bootstrap(void *arg)
 	free(task_args);
 
 	return NULL;
+}
+
+int
+bg_jobs_freeze(void)
+{
+	/* SIGCHLD needs to be blocked anytime the jobs list is accessed from anywhere
+	 * except the received_sigchld(). */
+	return set_sigchld(1);
+}
+
+void
+bg_jobs_unfreeze(void)
+{
+	/* Unblock SIGCHLD signal. */
+	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
+	 *        blocked. */
+	(void)set_sigchld(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
