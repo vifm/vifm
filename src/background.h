@@ -28,6 +28,10 @@
 
 #include <stdio.h>
 
+/* Special value of process id for internal tasks running in background
+ * threads. */
+#define BG_INTERNAL_TASK_PID ((pid_t)-1)
+
 /* Special value of total amount of work in job_t structure to indicate
  * undefined total number of countable operations. */
 #define BG_UNDEFINED_TOTAL (-1)

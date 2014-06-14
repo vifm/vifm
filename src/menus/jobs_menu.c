@@ -54,7 +54,7 @@ show_jobs_menu(FileView *view)
 		if(p->running)
 		{
 			char item_buf[strlen(p->cmd) + 24];
-			if(p->pid == -1)
+			if(p->pid == BG_INTERNAL_TASK_PID)
 			{
 				if(p->total == BG_UNDEFINED_TOTAL)
 				{

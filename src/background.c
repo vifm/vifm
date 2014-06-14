@@ -683,7 +683,7 @@ bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
 
 	task_args->func = task_func;
 	task_args->args = args;
-	task_args->job = add_background_job((pid_t)-1, desc, NO_JOB_ID);
+	task_args->job = add_background_job(BG_INTERNAL_TASK_PID, desc, NO_JOB_ID);
 
 	if(task_args->job == NULL)
 	{

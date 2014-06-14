@@ -1411,7 +1411,7 @@ comm_quit(int write_info, int force)
 		job = jobs;
 		while(job != NULL)
 		{
-			if(job->running && job->pid == -1)
+			if(job->running && job->pid == BG_INTERNAL_TASK_PID)
 				bg_count++;
 			job = job->next;
 		}
