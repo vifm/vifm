@@ -63,6 +63,7 @@
 #include "status.h"
 #include "types.h"
 #include "ui.h"
+#include "vifm.h"
 
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
@@ -81,8 +82,6 @@ static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
-static void store_for_external(const FileView *view, FILE *fp, int argc,
-		char *argv[]);
 static void gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
 		size_t shell_cmd_len, char shell_cmd[]);
 static void gen_term_multiplexer_cmd(const char cmd[], int pause,
@@ -121,7 +120,8 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 	if(curr_stats.file_picker_mode && (executable || runnable))
 	{
-		use_vim_plugin(view, 0, NULL); /* No return. */
+		/* The call below does not return. */
+		vifm_return_file_list(view, 0, NULL);
 	}
 
 	if(executable && !is_dir_entry(full_path, curr->type))
@@ -771,69 +771,6 @@ extract_last_path_component(const char path[], char buf[])
 {
 	const char *const last = get_last_path_component(path);
 	snprintf(buf, until_first(last, '/') - last + 1, "%s", last);
-}
-
-void _gnuc_noreturn
-use_vim_plugin(FileView *view, int argc, char **argv)
-{
-	FILE *fp;
-	char filepath[PATH_MAX];
-	int exit_code = EXIT_SUCCESS;
-
-	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
-	fp = fopen(filepath, "w");
-	if(fp != NULL)
-	{
-		store_for_external(view, fp, argc, argv);
-		fclose(fp);
-	}
-	else
-	{
-		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
-		exit_code = EXIT_FAILURE;
-	}
-
-	write_info_file();
-
-	endwin();
-	exit(exit_code);
-}
-
-/* Writes list of full paths to files into the file pointed to by fp.  argv and
- * argc parameters can be used to supply list of file names in the currecnt
- * directory of the view.  Otherwise current selection is used if current files
- * is selected, if current file is not selected it's the only one that is
- * stored. */
-static void
-store_for_external(const FileView *view, FILE *fp, int argc, char *argv[])
-{
-	if(argc == 0)
-	{
-		if(!view->dir_entry[view->list_pos].selected)
-		{
-			fprintf(fp, "%s", view->curr_dir);
-			if(view->curr_dir[strlen(view->curr_dir) - 1] != '/')
-				fprintf(fp, "%s", "/");
-			fprintf(fp, "%s\n", view->dir_entry[view->list_pos].name);
-		}
-		else
-		{
-			int i;
-
-			for(i = 0; i < view->list_rows; i++)
-				if(view->dir_entry[i].selected)
-					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
-		}
-	}
-	else
-	{
-		int i;
-		for(i = 0; i < argc; i++)
-			if(argv[i][0] == '/')
-				fprintf(fp, "%s\n", argv[i]);
-			else
-				fprintf(fp, "%s/%s\n", view->curr_dir, argv[i]);
-	}
 }
 
 /*

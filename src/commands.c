@@ -1875,7 +1875,8 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		if(curr_stats.file_picker_mode)
 		{
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd(&bg));
@@ -1891,13 +1892,15 @@ edit_cmd(const cmd_info_t *cmd_info)
 			shellout(buf, -1, 1);
 		return 0;
 	}
+
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
 		char buf[PATH_MAX];
 		if(curr_stats.file_picker_mode)
 		{
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
@@ -1925,7 +1928,8 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		if(curr_stats.file_picker_mode)
 		{
-			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+			/* The call below does not return. */
+			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		if(edit_selection() != 0)

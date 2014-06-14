@@ -1,5 +1,14 @@
+#include "../src/utils/macros.h"
+#include "../src/ui.h"
+
 void
 vifm_try_leave(int write_info, int force)
+{
+	/* Do nothing. */
+}
+
+void
+vifm_return_file_list(const FileView *view, int nfiles, char *files[])
 {
 	/* Do nothing. */
 }

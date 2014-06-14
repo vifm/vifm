@@ -30,8 +30,9 @@
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* FILE fclose() fopen() fputs() puts() snprintf() */
-#include <stdlib.h> /* exit() system() */
+#include <stdio.h> /* FILE fclose() fopen() fprintf() fputs() puts()
+                      snprintf() */
+#include <stdlib.h> /* EXIT_SUCCESS exit() system() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -84,6 +85,8 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void dump_filenames(const FileView *view, FILE *fp, int nfiles,
+		char *files[]);
 
 static void
 show_version_msg(void)
@@ -654,6 +657,80 @@ vifm_try_leave(int write_info, int force)
 	set_term_title(NULL);
 	endwin();
 	exit(0);
+}
+
+void _gnuc_noreturn
+vifm_return_file_list(const FileView *view, int nfiles, char *files[])
+{
+	FILE *fp;
+	char filepath[PATH_MAX];
+	int exit_code = EXIT_SUCCESS;
+
+	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
+	fp = fopen(filepath, "w");
+	if(fp != NULL)
+	{
+		dump_filenames(view, fp, nfiles, files);
+		fclose(fp);
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	endwin();
+	exit(exit_code);
+}
+
+/* Writes list of full paths to files into the file pointed to by fp.  files and
+ * nfiles parameters can be used to supply list of file names in the currecnt
+ * directory of the view.  Otherwise current selection is used if current files
+ * is selected, if current file is not selected it's the only one that is
+ * stored. */
+static void
+dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
+{
+	if(nfiles == 0)
+	{
+		if(!view->dir_entry[view->list_pos].selected)
+		{
+			fprintf(fp, "%s", view->curr_dir);
+			if(view->curr_dir[strlen(view->curr_dir) - 1] != '/')
+			{
+				fprintf(fp, "%s", "/");
+			}
+			fprintf(fp, "%s\n", view->dir_entry[view->list_pos].name);
+		}
+		else
+		{
+			int i;
+			for(i = 0; i < view->list_rows; ++i)
+			{
+				if(view->dir_entry[i].selected)
+				{
+					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+				}
+			}
+		}
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < nfiles; ++i)
+		{
+			if(is_path_absolute(files[i]))
+			{
+				fprintf(fp, "%s\n", files[i]);
+			}
+			else
+			{
+				fprintf(fp, "%s/%s\n", view->curr_dir, files[i]);
+			}
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

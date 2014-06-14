@@ -19,9 +19,17 @@
 #ifndef VIFM__VIFM_H__
 #define VIFM__VIFM_H__
 
+#include "utils/macros.h"
+#include "ui.h"
+
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
 void vifm_try_leave(int write_info, int force);
+
+/* Leaves vifm storing list of file names (taken from the view or the files) in
+ * a special file for use by an external application. */
+void _gnuc_noreturn vifm_return_file_list(const FileView *view, int nfiles,
+		char *files[]);
 
 #endif // VIFM__VIFM_H__
 
