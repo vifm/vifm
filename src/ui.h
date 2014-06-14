@@ -331,6 +331,8 @@ int ui_view_displays_numbers(const FileView *const view);
 /* Checks whether view is visible on the screen.  Returns non-zero if so,
  * otherwise zero is returned. */
 int ui_view_is_visible(const FileView *const view);
+/* Cleans directory history of the view. */
+void ui_view_clear_history(FileView *const view);
 
 /* Operation cancellation. */
 

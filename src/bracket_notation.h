@@ -23,6 +23,7 @@
 
 /* Initializes internal notation description structures. */
 void init_bracket_notation(void);
+
 /* Substitures all bracket notation entries in cmd.  Returns newly allocated
  * wide string, which should be freed by the caller. */
 wchar_t * substitute_specs(const char cmd[]);

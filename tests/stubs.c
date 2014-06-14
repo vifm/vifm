@@ -2,6 +2,12 @@
 #include "../src/ui.h"
 
 void
+vifm_restart(void)
+{
+	/* Do nothing. */
+}
+
+void
 vifm_try_leave(int write_info, int force)
 {
 	/* Do nothing. */

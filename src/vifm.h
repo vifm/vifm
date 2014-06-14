@@ -22,6 +22,9 @@
 #include "utils/macros.h"
 #include "ui.h"
 
+/* Resets internal state and reloads configuration files. */
+void vifm_restart(void);
+
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
 void vifm_try_leave(int write_info, int force);

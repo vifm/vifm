@@ -37,6 +37,10 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "engine/cmds.h"
+#include "engine/keys.h"
+#include "engine/options.h"
+#include "engine/variables.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/view.h"
@@ -47,11 +51,14 @@
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bookmarks.h"
+#include "bracket_notation.h"
 #include "builtin_functions.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "commands_completion.h"
+#include "dir_stack.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "fuse.h"
@@ -316,7 +323,9 @@ main(int argc, char *argv[])
 	set_config_paths();
 	reinit_logger();
 
+	/* Commands module also initializes bracket notation and variables. */
 	init_commands();
+
 	init_builtin_functions();
 	update_path_env(1);
 
@@ -612,6 +621,77 @@ run_converter(int vifm_like_mode)
 
 	return win_exec_cmd(cmd, &returned_exit_code);
 #endif
+}
+
+void
+vifm_restart(void)
+{
+	FileView *tmp_view;
+
+	curr_stats.restart_in_progress = 1;
+
+	/* All user mappings in all modes. */
+	clear_user_keys();
+
+	/* User defined commands. */
+	execute_cmd("comclear");
+
+	/* Directory histories. */
+	ui_view_clear_history(&lwin);
+	ui_view_clear_history(&rwin);
+
+	/* All kinds of history. */
+	(void)hist_reset(&cfg.search_hist, cfg.history_len);
+	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
+	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
+	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
+	cfg.history_len = 0;
+
+	/* Options of current pane. */
+	reset_options_to_default();
+	/* Options of other pane. */
+	tmp_view = curr_view;
+	curr_view = other_view;
+	load_local_options(other_view);
+	reset_options_to_default();
+	curr_view = tmp_view;
+
+	/* File types and viewers. */
+	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
+
+	/* Session status. */
+	(void)reset_status();
+
+	/* Undo list. */
+	reset_undo_list();
+
+	/* Directory stack. */
+	clean_stack();
+
+	/* Registers. */
+	clear_registers();
+
+	/* Color schemes. */
+	load_def_scheme();
+
+	/* Clear all bookmarks. */
+	clear_all_bookmarks();
+
+	/* Reset variables. */
+	clear_variables();
+	init_variables();
+	/* This update is needed as clear_variables() will reset $PATH. */
+	update_path_env(1);
+
+	reset_views();
+	read_info_file(1);
+	save_view_history(&lwin, NULL, NULL, -1);
+	save_view_history(&rwin, NULL, NULL, -1);
+	load_color_scheme_colors();
+	source_config();
+	exec_startup_commands(0, NULL);
+
+	curr_stats.restart_in_progress = 0;
 }
 
 void
