@@ -178,6 +178,8 @@ execute_cmd(const char cmd[])
 	cmd_t *cur;
 	const char *args;
 	int execution_code;
+	size_t last_arg_len;
+	char *last_arg;
 	int last_end;
 	cmds_conf_t *cc = cmds_conf;
 
@@ -217,15 +219,14 @@ execute_cmd(const char cmd[])
 	args = parse_tail(cur, cmd, &cmd_info);
 
 	cmd_info.raw_args = strdup(args);
-	if(cur->bg && ends_with(cmd_info.raw_args, " &"))
+
+	/* Set background flag and remove background mark from raw arguments, when
+	 * command supports backgrounding. */
+	last_arg = get_last_argument(cmd_info.raw_args, &last_arg_len);
+	if(cur->bg && *last_arg == '&' && *skip_whitespace(last_arg + 1) == '\0')
 	{
 		cmd_info.bg = 1;
-		cmd_info.raw_args[strlen(cmd_info.raw_args) - 2] = '\0';
-	}
-	else if(cur->bg && strcmp(cmd_info.raw_args, "&") == 0)
-	{
-		cmd_info.bg = 1;
-		cmd_info.raw_args[0] = '\0';
+		*last_arg = '\0';
 	}
 
 	if(cur->select)

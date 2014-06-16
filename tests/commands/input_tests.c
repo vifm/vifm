@@ -612,6 +612,22 @@ test_bg_and_no_args(void)
 }
 
 static void
+test_bg_followed_by_whitespace(void)
+{
+	assert_int_equal(0, execute_cmd("file & "));
+	assert_true(cmdi.bg);
+
+	assert_int_equal(0, execute_cmd("file &  "));
+	assert_true(cmdi.bg);
+
+	assert_int_equal(0, execute_cmd("file& "));
+	assert_true(cmdi.bg);
+
+	assert_int_equal(0, execute_cmd("file&  "));
+	assert_true(cmdi.bg);
+}
+
+static void
 test_short_forms(void)
 {
 	assert_int_equal(0, execute_cmd("e"));
@@ -707,6 +723,7 @@ input_tests(void)
 	run_test(test_only_one_mark);
 	run_test(test_args_trimming);
 	run_test(test_bg_and_no_args);
+	run_test(test_bg_followed_by_whitespace);
 	run_test(test_short_forms);
 	run_test(test_qmark_and_bg);
 	run_test(test_extra_long_command_name);

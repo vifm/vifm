@@ -30,6 +30,9 @@
 	omit unportable invocation of shells.  It's also visible in :jobs menu.
 	Thanks to lyuts and ckester.
 
+	Ignore trailing whitespace after background mark (" &") in command-line
+	mode.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
