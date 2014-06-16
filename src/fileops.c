@@ -97,8 +97,8 @@ typedef struct
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
-	job_t *job;
-}bg_args_t;
+}
+bg_args_t;
 
 static int prepare_register(int reg);
 static void delete_files_in_bg(job_t *job, void *arg);
