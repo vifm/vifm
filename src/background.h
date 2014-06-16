@@ -59,7 +59,7 @@ typedef struct job_t
 job_t;
 
 /* Background task entry point function signature. */
-typedef void (*bg_task_func)(job_t *job, void *arg);
+typedef void (*bg_task_func)(void *arg);
 
 extern struct job_t *jobs;
 
@@ -83,9 +83,7 @@ pid_t background_and_capture(char *cmd, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 
-void add_inner_bg_job(job_t *job);
 void inner_bg_next(void);
-void remove_inner_bg_job(void);
 
 #ifndef _WIN32
 #define NO_JOB_ID (-1)

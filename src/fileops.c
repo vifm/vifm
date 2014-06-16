@@ -97,11 +97,12 @@ typedef struct
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
-	job_t *job;
-}bg_args_t;
+}
+bg_args_t;
 
 static int prepare_register(int reg);
-static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
+static void delete_files_in_bg(void *arg);
+static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
@@ -124,6 +125,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
 
@@ -206,7 +208,7 @@ get_group_file_list(char **list, int count, char *buf)
 
 /* returns new value for save_msg */
 int
-delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
+delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
 	int x, y;
@@ -364,25 +366,8 @@ prepare_register(int reg)
 	return reg;
 }
 
-static void *
-delete_file_stub(void *arg)
-{
-	bg_args_t *args = (bg_args_t *)arg;
-
-	add_inner_bg_job(args->job);
-
-	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
-			args->from_trash);
-
-	remove_inner_bg_job();
-
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
-	return NULL;
-}
-
 static void
-delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
+delete_files_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -416,12 +401,10 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 	}
 }
 
-/* returns new value for save_msg */
 int
-delete_file_bg(FileView *view, int use_trash)
+delete_files_bg(FileView *view, int use_trash)
 {
-	pthread_t id;
-	char buf[COMMAND_GROUP_INFO_LEN];
+	char task_desc[COMMAND_GROUP_INFO_LEN];
 	int i;
 	bg_args_t *args;
 	
@@ -454,27 +437,33 @@ delete_file_bg(FileView *view, int use_trash)
 
 	general_prepare_for_bg_task(view, args);
 
-	if(args->from_trash)
-		snprintf(buf, sizeof(buf), "delete in %s: ",
-				replace_home_part(view->curr_dir));
-	else
-		snprintf(buf, sizeof(buf), "Delete in %s: ",
-				replace_home_part(view->curr_dir));
+	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
+			args->from_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
 
-	get_group_file_list(view->selected_filelist, view->selected_files, buf);
+	get_group_file_list(view->selected_filelist, view->selected_files, task_desc);
 
-	args->job = add_background_job(-1, buf, NO_JOB_ID);
-	if(args->job == NULL)
+	if(bg_execute(task_desc, args->sel_list_len, &delete_files_in_bg, args) != 0)
 	{
 		free_string_array(args->sel_list, args->sel_list_len);
 		free(args);
-		return 0;
+
+		show_error_msg("Can't perform deletion",
+				"Failed to initiate background operation");
 	}
-
-	args->job->total = args->sel_list_len;
-
-	pthread_create(&id, NULL, delete_file_stub, args);
 	return 0;
+}
+
+/* Entry point for a background task that deletes files. */
+static void
+delete_files_in_bg(void *arg)
+{
+	bg_args_t *const args = arg;
+
+	delete_files_bg_i(args->src, args->sel_list, args->sel_list_len,
+			args->from_trash);
+
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
 }
 
 static void
@@ -2850,31 +2839,11 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	return result;
 }
 
-static void *
-cpmv_stub(void *arg)
-{
-	bg_args_t *args = (bg_args_t *)arg;
-
-	add_inner_bg_job(args->job);
-
-	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
-			args->sel_list, args->sel_list_len, args->from_trash, args->src,
-			args->path);
-
-	remove_inner_bg_job();
-
-	free_string_array(args->list, args->nlines);
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
-	return NULL;
-}
-
 int
 cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 {
-	pthread_t id;
 	int i;
-	char buf[COMMAND_GROUP_INFO_LEN];
+	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args = malloc(sizeof(*args));
 	
 	args->list = NULL;
@@ -2882,34 +2851,41 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->move = move;
 	args->force = force;
 
-	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, buf, sizeof(buf),
-			args->path, &args->from_file, &args->from_trash);
+	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
+			sizeof(task_desc), args->path, &args->from_file, &args->from_trash);
 	if(i != 0)
 	{
 		free(args);
 		return i > 0;
 	}
 
-	if(args->from_file)
-		args->list = list;
-	else
-		args->list = copy_string_array(list, nlines);
+	args->list = args->from_file ? list : copy_string_array(list, nlines);
 
 	general_prepare_for_bg_task(view, args);
 
-	args->job = add_background_job(-1, buf, NO_JOB_ID);
-	if(args->job == NULL)
+	if(bg_execute(task_desc, args->sel_list_len, &cpmv_in_bg, args) != 0)
 	{
 		free_string_array(args->list, args->nlines);
 		free_string_array(args->sel_list, args->sel_list_len);
 		free(args);
-		return 0;
 	}
 
-	args->job->total = args->sel_list_len;
-
-	pthread_create(&id, NULL, cpmv_stub, args);
 	return 0;
+}
+
+/* Entry point for a background task that copies/moves files. */
+static void
+cpmv_in_bg(void *arg)
+{
+	bg_args_t *const args = arg;
+
+	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
+			args->sel_list, args->sel_list_len, args->from_trash, args->src,
+			args->path);
+
+	free_string_array(args->list, args->nlines);
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
 }
 
 /* Fills basic fields of the args structure. */

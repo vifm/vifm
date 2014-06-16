@@ -64,17 +64,20 @@ background_task_args;
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 static void * background_task_bootstrap(void *arg);
+static void set_current_job(job_t *job);
+static void make_current_job_key(void);
+static void finish_current_job(void);
 
 job_t *jobs;
 
-static pthread_key_t key;
-static pthread_once_t key_once = PTHREAD_ONCE_INIT;
+static pthread_key_t current_job;
+static pthread_once_t current_job_once = PTHREAD_ONCE_INIT;
 
 void
 init_background(void)
 {
 	/* Initialize state for the main thread. */
-	add_inner_bg_job(NULL);
+	set_current_job(NULL);
 }
 
 void
@@ -262,7 +265,7 @@ background_and_wait_for_status(char *cmd)
 static void
 error_msg(const char *title, const char *text)
 {
-	job_t *job = pthread_getspecific(key);
+	job_t *job = pthread_getspecific(current_job);
 	if(job == NULL)
 	{
 		show_error_msg(title, text);
@@ -635,39 +638,15 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 	return new;
 }
 
-static void
-make_key(void)
-{
-	(void)pthread_key_create(&key, NULL);
-}
-
-void
-add_inner_bg_job(job_t *job)
-{
-	pthread_once(&key_once, &make_key);
-	(void)pthread_setspecific(key, job);
-}
-
 void
 inner_bg_next(void)
 {
-	job_t *job = pthread_getspecific(key);
-	if(job == NULL)
-		return;
-
-	job->done++;
-	assert(job->done <= job->total);
-}
-
-void
-remove_inner_bg_job(void)
-{
-	job_t *job = pthread_getspecific(key);
-	if(job == NULL)
-		return;
-
-	job->running = 0;
-	job->exit_code = 0;
+	job_t *job = pthread_getspecific(current_job);
+	if(job != NULL)
+	{
+		++job->done;
+		assert(job->done <= job->total);
+	}
 }
 
 int
@@ -710,15 +689,43 @@ background_task_bootstrap(void *arg)
 {
 	background_task_args *const task_args = arg;
 
-	add_inner_bg_job(task_args->job);
+	set_current_job(task_args->job);
 
-	task_args->func(task_args->job, task_args->args);
+	task_args->func(task_args->args);
 
-	remove_inner_bg_job();
+	finish_current_job();
 
 	free(task_args);
 
 	return NULL;
+}
+
+/* Stores pointer to the job in a thread-local storage. */
+static void
+set_current_job(job_t *job)
+{
+	pthread_once(&current_job_once, &make_current_job_key);
+	(void)pthread_setspecific(current_job, job);
+}
+
+/* current_job initializer for pthread_once(). */
+static void
+make_current_job_key(void)
+{
+	(void)pthread_key_create(&current_job, NULL);
+}
+
+/* Marks current job stored in a thread-local storage as finished
+ * successfully. */
+static void
+finish_current_job(void)
+{
+	job_t *const job = pthread_getspecific(current_job);
+	if(job != NULL)
+	{
+		job->running = 0;
+		job->exit_code = 0;
+	}
 }
 
 int
