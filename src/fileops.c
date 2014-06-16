@@ -101,6 +101,7 @@ typedef struct
 }bg_args_t;
 
 static int prepare_register(int reg);
+static void delete_files_in_bg(job_t *job, void *arg);
 static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
@@ -364,23 +365,6 @@ prepare_register(int reg)
 	return reg;
 }
 
-static void *
-delete_file_stub(void *arg)
-{
-	bg_args_t *args = (bg_args_t *)arg;
-
-	add_inner_bg_job(args->job);
-
-	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
-			args->from_trash);
-
-	remove_inner_bg_job();
-
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
-	return NULL;
-}
-
 static void
 delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 {
@@ -420,8 +404,7 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 int
 delete_file_bg(FileView *view, int use_trash)
 {
-	pthread_t id;
-	char buf[COMMAND_GROUP_INFO_LEN];
+	char task_desc[COMMAND_GROUP_INFO_LEN];
 	int i;
 	bg_args_t *args;
 	
@@ -454,27 +437,33 @@ delete_file_bg(FileView *view, int use_trash)
 
 	general_prepare_for_bg_task(view, args);
 
-	if(args->from_trash)
-		snprintf(buf, sizeof(buf), "delete in %s: ",
-				replace_home_part(view->curr_dir));
-	else
-		snprintf(buf, sizeof(buf), "Delete in %s: ",
-				replace_home_part(view->curr_dir));
+	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
+			args->from_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
 
-	get_group_file_list(view->selected_filelist, view->selected_files, buf);
+	get_group_file_list(view->selected_filelist, view->selected_files, task_desc);
 
-	args->job = add_background_job(-1, buf, NO_JOB_ID);
-	if(args->job == NULL)
+	if(bg_execute(task_desc, args->sel_list_len, &delete_files_in_bg, args) != 0)
 	{
 		free_string_array(args->sel_list, args->sel_list_len);
 		free(args);
-		return 0;
+
+		show_error_msg("Can't perform deletion",
+				"Failed to initiate background operation");
 	}
-
-	args->job->total = args->sel_list_len;
-
-	pthread_create(&id, NULL, delete_file_stub, args);
 	return 0;
+}
+
+/* Entry point for a background task that deletes files. */
+static void
+delete_files_in_bg(job_t *job, void *arg)
+{
+	bg_args_t *const args = arg;
+
+	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
+			args->from_trash);
+
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
 }
 
 static void
