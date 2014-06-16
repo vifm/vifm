@@ -44,9 +44,10 @@ typedef enum
 }
 SignalType;
 
-int delete_file(FileView *view, int reg, int count, int *indexes,
+int delete_files(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
-int delete_file_bg(FileView *view, int use_trash);
+/* Returns new value for save_msg. */
+int delete_files_bg(FileView *view, int use_trash);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);

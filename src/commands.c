@@ -1795,9 +1795,9 @@ delete_cmd(const cmd_info_t *cmd_info)
 		return result;
 
 	if(cmd_info->bg)
-		result = delete_file_bg(curr_view, !cmd_info->emark) != 0;
+		result = delete_files_bg(curr_view, !cmd_info->emark) != 0;
 	else
-		result = delete_file(curr_view, reg, 0, NULL, !cmd_info->emark) != 0;
+		result = delete_files(curr_view, reg, 0, NULL, !cmd_info->emark) != 0;
 
 	return result;
 }

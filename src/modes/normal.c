@@ -1495,7 +1495,7 @@ delete(key_info_t key_info, int use_trash)
 	{
 		pick_files(curr_view, curr_view->list_pos, &keys_info);
 	}
-	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info.count,
+	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info.count,
 			keys_info.indexes, use_trash);
 
 	free_list_of_file_indexes(&keys_info);
@@ -1535,7 +1535,7 @@ delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 		return;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info->count,
+	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes, use_trash);
 
 	free_list_of_file_indexes(keys_info);

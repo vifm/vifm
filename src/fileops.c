@@ -102,7 +102,7 @@ typedef struct
 
 static int prepare_register(int reg);
 static void delete_files_in_bg(job_t *job, void *arg);
-static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
+static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
@@ -208,7 +208,7 @@ get_group_file_list(char **list, int count, char *buf)
 
 /* returns new value for save_msg */
 int
-delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
+delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
 	int x, y;
@@ -367,7 +367,7 @@ prepare_register(int reg)
 }
 
 static void
-delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
+delete_files_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -401,9 +401,8 @@ delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 	}
 }
 
-/* returns new value for save_msg */
 int
-delete_file_bg(FileView *view, int use_trash)
+delete_files_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	int i;
@@ -460,7 +459,7 @@ delete_files_in_bg(job_t *job, void *arg)
 {
 	bg_args_t *const args = arg;
 
-	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
+	delete_files_bg_i(args->src, args->sel_list, args->sel_list_len,
 			args->from_trash);
 
 	free_string_array(args->sel_list, args->sel_list_len);

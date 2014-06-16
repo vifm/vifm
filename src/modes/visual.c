@@ -585,7 +585,7 @@ delete(key_info_t key_info, int use_trash)
 		curr_stats.confirmed = 1;
 	}
 
-	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
+	save_msg = delete_files(view, key_info.reg, 0, NULL, use_trash);
 	leave_clearing_selection(1, save_msg);
 }
 
