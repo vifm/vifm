@@ -59,7 +59,7 @@ typedef struct job_t
 job_t;
 
 /* Background task entry point function signature. */
-typedef void (*bg_task_func)(job_t *job, void *arg);
+typedef void (*bg_task_func)(void *arg);
 
 extern struct job_t *jobs;
 

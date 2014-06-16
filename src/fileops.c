@@ -101,7 +101,7 @@ typedef struct
 bg_args_t;
 
 static int prepare_register(int reg);
-static void delete_files_in_bg(job_t *job, void *arg);
+static void delete_files_in_bg(void *arg);
 static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
@@ -125,7 +125,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
-static void cpmv_in_bg(job_t *job, void *arg);
+static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
 
@@ -455,7 +455,7 @@ delete_files_bg(FileView *view, int use_trash)
 
 /* Entry point for a background task that deletes files. */
 static void
-delete_files_in_bg(job_t *job, void *arg)
+delete_files_in_bg(void *arg)
 {
 	bg_args_t *const args = arg;
 
@@ -2875,7 +2875,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 /* Entry point for a background task that copies/moves files. */
 static void
-cpmv_in_bg(job_t *job, void *arg)
+cpmv_in_bg(void *arg)
 {
 	bg_args_t *const args = arg;
 
