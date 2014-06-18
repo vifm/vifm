@@ -894,11 +894,11 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		char *escaped;
 
 		escaped = escape_filename(shell_cmd, 0);
-		snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
+		snprintf(shell_cmd, shell_cmd_len, "%s  -c %s", escaped_sh, escaped);
 		free(escaped);
 
 		escaped = escape_filename(shell_cmd, 0);
-		snprintf(shell_cmd, shell_cmd_len, "tmux new-window %s %s",
+		snprintf(shell_cmd, shell_cmd_len, "tmux new-window %s  %s",
 				title_arg_buffer, escaped);
 		free(escaped);
 	}
@@ -911,7 +911,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
 		(void)vifm_system(shell_cmd);
 
-		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
+		snprintf(shell_cmd, shell_cmd_len, "screen %s  %s  -c %s", title_arg_buffer,
 				escaped_sh, escaped);
 
 		free(escaped_dir);
