@@ -936,7 +936,7 @@ gen_term_multiplexer_title_arg(const char cmd[], size_t title_arg_len,
 
 	if(visubcmd != NULL)
 	{
-		title = visubcmd + strlen(vicmd) + 1;
+		title = skip_whitespace(visubcmd + strlen(vicmd) + 1);
 	}
 	else
 	{
