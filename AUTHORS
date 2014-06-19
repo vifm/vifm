@@ -77,3 +77,6 @@ MadMaverick9 provided patches for various fixes.
 lyuts fixed trash emptying in csh-like shells.
 
 Patches for Vim plugin by Jonathan Da Silva.
+
+More human-friendly (xterm-like) names for 256 colors by Michael
+Vetter (a.k.a. jubalh).

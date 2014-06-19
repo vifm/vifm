@@ -37,8 +37,8 @@ typedef struct
 }col_scheme_t;
 
 extern char *HI_GROUPS[];
-extern char *COLOR_NAMES[8];
 extern char *LIGHT_COLOR_NAMES[8];
+extern char *XTERM256_COLOR_NAMES[256];
 
 /* directory should be NULL if you want to set default directory */
 void load_color_scheme_colors(void);
