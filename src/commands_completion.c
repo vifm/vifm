@@ -439,12 +439,12 @@ complete_highlight_arg(const char *str)
 				add_completion("default");
 			if(strncasecmp(equal, "none", len) == 0)
 				add_completion("none");
-			for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
+			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
 			{
-				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
-					add_completion(COLOR_NAMES[i]);
+				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
+					add_completion(XTERM256_COLOR_NAMES[i]);
 			}
-			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
+			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
 					add_completion(LIGHT_COLOR_NAMES[i]);
