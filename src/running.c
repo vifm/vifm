@@ -872,7 +872,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 {
 	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
 
-	char title_arg_buffer[128];
+	char title_arg_buffer[512];
 	char *escaped_sh;
 
 	if(curr_stats.term_multiplexer != TM_TMUX &&
