@@ -31,8 +31,6 @@
 #define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
 #endif
 
-#include <unistd.h> /* _SC_ARG_MAX sysconf() */
-
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
@@ -187,12 +185,6 @@ init_config(void)
 #endif
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
-
-#ifndef _WIN32
-	/* Maximum argument length to pass to the shell */
-	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
-#endif
-		cfg.max_args = 4096; /* POSIX MINIMUM */
 
 	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
 	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = '/';
