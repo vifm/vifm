@@ -49,7 +49,6 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
@@ -82,14 +81,12 @@ static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
-static void gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
-		size_t shell_cmd_len, char shell_cmd[]);
+static char * gen_shell_cmd(const char cmd[], int pause,
+		int use_term_multiplexer);
 static char * gen_term_multiplexer_cmd(const char cmd[], int pause);
 static char * gen_term_multiplexer_title_arg(const char cmd[]);
-static void gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
-		char shell_cmd[]);
-static void gen_term_multiplexer_run_cmd(size_t shell_cmd_len,
-		char shell_cmd[]);
+static char * gen_normal_cmd(const char cmd[], int pause);
+static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
@@ -781,40 +778,35 @@ extract_last_path_component(const char path[], char buf[])
 int
 shellout(const char *command, int pause, int use_term_multiplexer)
 {
-	/* cfg.max_args can be an enormous huge number and we want to set an upper
-	 * bound for the length of command line buffer.  Picket upper bound based on
-	 * command-line formatting done by gen_shell_cmd() and still should left some
-	 * space unused just for safety reasons (to take possible future changes into
-	 * account).  4096 here stands for minimum value of _POSIX_ARG_MAX parameter,
-	 * which is not used directly for portability reasons. */
-	const size_t command_len = (command != NULL) ? strlen(command) : 0UL;
-	const size_t max_composed_cmd_len = (4096 + command_len)*4;
-	char buf[MIN(cfg.max_args, max_composed_cmd_len)];
-
+	char *cmd;
 	int result;
 	int ec;
 
 	if(pause > 0 && command != NULL && ends_with(command, "&"))
+	{
 		pause = -1;
+	}
 
-	gen_shell_cmd(command, pause > 0, use_term_multiplexer, sizeof(buf), buf);
+	cmd = gen_shell_cmd(command, pause > 0, use_term_multiplexer);
 
 	endwin();
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", curr_view->curr_dir);
 
-	ec = vifm_system(buf);
+	ec = vifm_system(cmd);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
 
 	if(result != 0 && pause < 0)
 	{
-		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", buf,
+		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", cmd,
 				result, result, ec);
 		pause_shell();
 	}
+
+	free(cmd);
 
 	/* force views update */
 	request_view_update(&lwin);
@@ -834,35 +826,35 @@ shellout(const char *command, int pause, int use_term_multiplexer)
 }
 
 /* Composes shell command to run basing on parameters for execution.  NULL cmd
- * parameter opens shell. */
-static void
-gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
-		size_t shell_cmd_len, char shell_cmd[])
+ * parameter opens shell.  Returns a newly allocated string, which should be
+ * freed by the caller. */
+static char *
+gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer)
 {
-	shell_cmd[0] = '\0';
+	char *shell_cmd = NULL;
 
 	if(cmd != NULL)
 	{
 		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
 		{
-			char *const mux_cmd = gen_term_multiplexer_cmd(cmd, pause);
-			copy_str(shell_cmd, shell_cmd_len, mux_cmd);
-			free(mux_cmd);
+			shell_cmd = gen_term_multiplexer_cmd(cmd, pause);
 		}
 		else
 		{
-			gen_normal_cmd(cmd, pause, shell_cmd_len, shell_cmd);
+			shell_cmd = gen_normal_cmd(cmd, pause);
 		}
 	}
 	else if(use_term_multiplexer)
 	{
-		gen_term_multiplexer_run_cmd(shell_cmd_len, shell_cmd);
+		shell_cmd = gen_term_multiplexer_run_cmd();
 	}
 
-	if(shell_cmd[0] == '\0')
+	if(shell_cmd == NULL)
 	{
-		copy_str(shell_cmd, shell_cmd_len, cfg.shell);
+		shell_cmd = strdup(cfg.shell);
 	}
+
+	return shell_cmd;
 }
 
 /* Composes command to be run using terminal multiplexer.  Returns newly
@@ -965,10 +957,10 @@ gen_term_multiplexer_title_arg(const char cmd[])
 	return title_arg;
 }
 
-/* Composes command to be run without terminal multiplexer. */
-static void
-gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
-		char shell_cmd[])
+/* Composes command to be run without terminal multiplexer.  Returns a newly
+ * allocated string, which should be freed by the caller. */
+static char *
+gen_normal_cmd(const char cmd[], int pause)
 {
 	if(pause)
 	{
@@ -985,33 +977,37 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
 		}
 
-		snprintf(shell_cmd, shell_cmd_len, cmd_with_pause_fmt, cmd);
+		return format_str(cmd_with_pause_fmt, cmd);
 	}
 	else
 	{
-		copy_str(shell_cmd, shell_cmd_len, cmd);
+		return strdup(cmd);
 	}
 }
 
-/* Composes shell command to run active terminal multiplexer.  Doesn't change
- * buffer pointed to by shell_cmd on error. */
-static void
-gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
+/* Composes shell command to run active terminal multiplexer.  Returns a newly
+ * allocated string, which should be freed by the caller. */
+static char *
+gen_term_multiplexer_run_cmd(void)
 {
+	char *shell_cmd = NULL;
+
 	if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
 		set_pwd_in_screen(curr_view->curr_dir);
 
-		snprintf(shell_cmd, shell_cmd_len, "screen");
+		shell_cmd = strdup("screen");
 	}
 	else if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		copy_str(shell_cmd, shell_cmd_len, "tmux new-window");
+		shell_cmd = strdup("tmux new-window");
 	}
 	else
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
+
+	return shell_cmd;
 }
 
 /* Changes $PWD in running GNU/screen session to the specified path.  Needed for
