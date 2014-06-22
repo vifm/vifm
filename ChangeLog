@@ -50,6 +50,9 @@
 	Fixed "$APPDATA/Vifm" directory existence check for Vim plugin on Windows.
 	Thanks to Jonathan Da Silva.
 
+	Fixed running external commands with long titles inside terminal
+	multiplexers.  Invoked shell in current directory.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

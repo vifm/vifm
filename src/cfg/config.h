@@ -67,7 +67,6 @@ typedef struct config_t
 
 	int auto_execute;
 	int show_one_window;
-	long max_args;
 	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;

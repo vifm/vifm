@@ -74,7 +74,6 @@ setup(void)
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	cfg.max_args = 8192;
 	strcpy(cfg.home_dir, "/rwin/");
 
 	setup_registers();

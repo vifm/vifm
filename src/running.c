@@ -49,7 +49,6 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
@@ -82,16 +81,13 @@ static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
-static void gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
-		size_t shell_cmd_len, char shell_cmd[]);
-static void gen_term_multiplexer_cmd(const char cmd[], int pause,
-		size_t shell_cmd_len, char shell_cmd[]);
-static void gen_term_multiplexer_title_arg(const char cmd[],
-		size_t title_arg_len, char title_arg[]);
-static void gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
-		char shell_cmd[]);
-static void gen_term_multiplexer_run_cmd(size_t shell_cmd_len,
-		char shell_cmd[]);
+static char * gen_shell_cmd(const char cmd[], int pause,
+		int use_term_multiplexer);
+static char * gen_term_multiplexer_cmd(const char cmd[], int pause);
+static char * gen_term_multiplexer_title_arg(const char cmd[]);
+static char * gen_normal_cmd(const char cmd[], int pause);
+static char * gen_term_multiplexer_run_cmd(void);
+static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -782,40 +778,35 @@ extract_last_path_component(const char path[], char buf[])
 int
 shellout(const char *command, int pause, int use_term_multiplexer)
 {
-	/* cfg.max_args can be an enormous huge number and we want to set an upper
-	 * bound for the length of command line buffer.  Picket upper bound based on
-	 * command-line formatting done by gen_shell_cmd() and still should left some
-	 * space unused just for safety reasons (to take possible future changes into
-	 * account).  4096 here stands for minimum value of _POSIX_ARG_MAX parameter,
-	 * which is not used directly for portability reasons. */
-	const size_t command_len = (command != NULL) ? strlen(command) : 0UL;
-	const size_t max_composed_cmd_len = (4096 + command_len)*4;
-	char buf[MIN(cfg.max_args, max_composed_cmd_len)];
-
+	char *cmd;
 	int result;
 	int ec;
 
 	if(pause > 0 && command != NULL && ends_with(command, "&"))
+	{
 		pause = -1;
+	}
 
-	gen_shell_cmd(command, pause > 0, use_term_multiplexer, sizeof(buf), buf);
+	cmd = gen_shell_cmd(command, pause > 0, use_term_multiplexer);
 
 	endwin();
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", curr_view->curr_dir);
 
-	ec = vifm_system(buf);
+	ec = vifm_system(cmd);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
 
 	if(result != 0 && pause < 0)
 	{
-		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", buf,
+		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", cmd,
 				result, result, ec);
 		pause_shell();
 	}
+
+	free(cmd);
 
 	/* force views update */
 	request_view_update(&lwin);
@@ -835,108 +826,107 @@ shellout(const char *command, int pause, int use_term_multiplexer)
 }
 
 /* Composes shell command to run basing on parameters for execution.  NULL cmd
- * parameter opens shell. */
-static void
-gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
-		size_t shell_cmd_len, char shell_cmd[])
+ * parameter opens shell.  Returns a newly allocated string, which should be
+ * freed by the caller. */
+static char *
+gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer)
 {
-	shell_cmd[0] = '\0';
+	char *shell_cmd = NULL;
 
 	if(cmd != NULL)
 	{
 		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
 		{
-			gen_term_multiplexer_cmd(cmd, pause, shell_cmd_len, shell_cmd);
+			shell_cmd = gen_term_multiplexer_cmd(cmd, pause);
 		}
 		else
 		{
-			gen_normal_cmd(cmd, pause, shell_cmd_len, shell_cmd);
+			shell_cmd = gen_normal_cmd(cmd, pause);
 		}
 	}
 	else if(use_term_multiplexer)
 	{
-		gen_term_multiplexer_run_cmd(shell_cmd_len, shell_cmd);
+		shell_cmd = gen_term_multiplexer_run_cmd();
 	}
 
-	if(shell_cmd[0] == '\0')
+	if(shell_cmd == NULL)
 	{
-		copy_str(shell_cmd, shell_cmd_len, cfg.shell);
+		shell_cmd = strdup(cfg.shell);
 	}
+
+	return shell_cmd;
 }
 
-/* Composes command to be run using terminal multiplexer.  Doesn't change buffer
- * pointed to by shell_cmd on error. */
-static void
-gen_term_multiplexer_cmd(const char cmd[], int pause, size_t shell_cmd_len,
-		char shell_cmd[])
+/* Composes command to be run using terminal multiplexer.  Returns newly
+ * allocated string that should be freed by the caller. */
+static char *
+gen_term_multiplexer_cmd(const char cmd[], int pause)
 {
-	/* TODO: refactor this big function gen_term_multiplexer_cmd() */
-
-	char title_arg_buffer[128];
+	char *title_arg;
 	char *escaped_sh;
+	char *raw_shell_cmd;
+	char *escaped_shell_cmd;
+	char *shell_cmd = NULL;
 
 	if(curr_stats.term_multiplexer != TM_TMUX &&
 			curr_stats.term_multiplexer != TM_SCREEN)
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
-		return;
+		return NULL;
 	}
 
 	escaped_sh = escape_filename(cfg.shell, 0);
 
-	gen_term_multiplexer_title_arg(cmd, sizeof(title_arg_buffer),
-			title_arg_buffer);
+	title_arg = gen_term_multiplexer_title_arg(cmd);
 
-	snprintf(shell_cmd, shell_cmd_len, "%s%s", cmd, pause ? PAUSE_STR : "");
+	raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
+	escaped_shell_cmd = escape_filename(raw_shell_cmd, 0);
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		char *escaped;
+		char *const arg = format_str("%s -c %s", escaped_sh, escaped_shell_cmd);
+		char *const escaped_arg = escape_filename(arg, 0);
 
-		escaped = escape_filename(shell_cmd, 0);
-		snprintf(shell_cmd, shell_cmd_len, "%s -c %s", escaped_sh, escaped);
-		free(escaped);
+		shell_cmd = format_str("tmux new-window %s %s", title_arg, escaped_arg);
 
-		escaped = escape_filename(shell_cmd, 0);
-		snprintf(shell_cmd, shell_cmd_len, "tmux new-window %s %s",
-				title_arg_buffer, escaped);
-		free(escaped);
+		free(escaped_arg);
+		free(arg);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		char *const escaped = escape_filename(shell_cmd, 0);
-		char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
+		set_pwd_in_screen(curr_view->curr_dir);
 
-		/* Needed for symlink directories and sshfs mounts. */
-		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		(void)vifm_system(shell_cmd);
-
-		snprintf(shell_cmd, shell_cmd_len, "screen %s %s -c %s", title_arg_buffer,
-				escaped_sh, escaped);
-
-		free(escaped_dir);
-		free(escaped);
+		shell_cmd = format_str("screen %s %s -c %s", title_arg, escaped_sh,
+				escaped_shell_cmd);
+	}
+	else
+	{
+		assert(0 && "Unsupported terminal multiplexer type.");
 	}
 
+	free(escaped_shell_cmd);
+	free(raw_shell_cmd);
+	free(title_arg);
 	free(escaped_sh);
+
+	return shell_cmd;
 }
 
-/* Composes title for window of a terminal multiplexer. */
-static void
-gen_term_multiplexer_title_arg(const char cmd[], size_t title_arg_len,
-		char title_arg[])
+/* Composes title for window of a terminal multiplexer from a command.  Returns
+ * newly allocated string that should be freed by the caller. */
+static char *
+gen_term_multiplexer_title_arg(const char cmd[])
 {
 	int bg;
 	const char *const vicmd = get_vicmd(&bg);
 	const char *const visubcmd = strstr(cmd, vicmd);
 	char *command_name = NULL;
 	const char *title;
-
-	title_arg[0] = '\0';
+	char *title_arg;
 
 	if(visubcmd != NULL)
 	{
-		title = visubcmd + strlen(vicmd) + 1;
+		title = skip_whitespace(visubcmd + strlen(vicmd) + 1);
 	}
 	else
 	{
@@ -950,21 +940,27 @@ gen_term_multiplexer_title_arg(const char cmd[], size_t title_arg_len,
 		title = command_name;
 	}
 
-	if(!is_null_or_empty(title))
+	if(is_null_or_empty(title))
+	{
+		title_arg = strdup("");
+	}
+	else
 	{
 		const char opt_c = (curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n';
 		char *const escaped_title = escape_filename(title, 0);
-		snprintf(title_arg, title_arg_len, "-%c %s", opt_c, escaped_title);
+		title_arg = format_str("-%c %s", opt_c, escaped_title);
 		free(escaped_title);
 	}
 
 	free(command_name);
+
+	return title_arg;
 }
 
-/* Composes command to be run without terminal multiplexer. */
-static void
-gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
-		char shell_cmd[])
+/* Composes command to be run without terminal multiplexer.  Returns a newly
+ * allocated string, which should be freed by the caller. */
+static char *
+gen_normal_cmd(const char cmd[], int pause)
 {
 	if(pause)
 	{
@@ -981,38 +977,50 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
 		}
 
-		snprintf(shell_cmd, shell_cmd_len, cmd_with_pause_fmt, cmd);
+		return format_str(cmd_with_pause_fmt, cmd);
 	}
 	else
 	{
-		copy_str(shell_cmd, shell_cmd_len, cmd);
+		return strdup(cmd);
 	}
 }
 
-/* Composes shell command to run active terminal multiplexer.  Doesn't change
- * buffer pointed to by shell_cmd on error. */
-static void
-gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
+/* Composes shell command to run active terminal multiplexer.  Returns a newly
+ * allocated string, which should be freed by the caller. */
+static char *
+gen_term_multiplexer_run_cmd(void)
 {
-	char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
+	char *shell_cmd = NULL;
 
 	if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		/* Needed for symlink directories and sshfs mounts. */
-		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		(void)vifm_system(shell_cmd);
+		set_pwd_in_screen(curr_view->curr_dir);
 
-		snprintf(shell_cmd, shell_cmd_len, "screen");
+		shell_cmd = strdup("screen");
 	}
 	else if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		copy_str(shell_cmd, shell_cmd_len, "tmux new-window");
+		shell_cmd = strdup("tmux new-window");
 	}
 	else
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
 
+	return shell_cmd;
+}
+
+/* Changes $PWD in running GNU/screen session to the specified path.  Needed for
+ * symlink directories and sshfs mounts. */
+static void
+set_pwd_in_screen(const char path[])
+{
+	char *const escaped_dir = escape_filename(path, 0);
+	char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
+
+	(void)vifm_system(set_pwd);
+
+	free(set_pwd);
 	free(escaped_dir);
 }
 

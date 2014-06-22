@@ -238,9 +238,6 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 	}
 	while(x < cmd_len);
 
-	if(len > cfg.max_args/2)
-		show_error_msg("Argument is too long", " FIXME ");
-
 	return expanded;
 }
 
