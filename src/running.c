@@ -90,6 +90,7 @@ static void gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 		char shell_cmd[]);
 static void gen_term_multiplexer_run_cmd(size_t shell_cmd_len,
 		char shell_cmd[]);
+static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
@@ -901,14 +902,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		/* Needed for symlink directories and sshfs mounts. */
-		char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
-		char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
-
-		(void)vifm_system(set_pwd);
-
-		free(set_pwd);
-		free(escaped_dir);
+		set_pwd_in_screen(curr_view->curr_dir);
 
 		shell_cmd = format_str("screen %s %s -c %s", title_arg, escaped_sh,
 				escaped_shell_cmd);
@@ -1004,13 +998,9 @@ gen_normal_cmd(const char cmd[], int pause, size_t shell_cmd_len,
 static void
 gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
 {
-	char *const escaped_dir = escape_filename(curr_view->curr_dir, 0);
-
 	if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		/* Needed for symlink directories and sshfs mounts. */
-		snprintf(shell_cmd, shell_cmd_len, "screen -X setenv PWD %s", escaped_dir);
-		(void)vifm_system(shell_cmd);
+		set_pwd_in_screen(curr_view->curr_dir);
 
 		snprintf(shell_cmd, shell_cmd_len, "screen");
 	}
@@ -1022,7 +1012,19 @@ gen_term_multiplexer_run_cmd(size_t shell_cmd_len, char shell_cmd[])
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
+}
 
+/* Changes $PWD in running GNU/screen session to the specified path.  Needed for
+ * symlink directories and sshfs mounts. */
+static void
+set_pwd_in_screen(const char path[])
+{
+	char *const escaped_dir = escape_filename(path, 0);
+	char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
+
+	(void)vifm_system(set_pwd);
+
+	free(set_pwd);
 	free(escaped_dir);
 }
 
