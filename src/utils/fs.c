@@ -473,6 +473,18 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 #endif
 }
 
+int
+is_dirent_targets_dir(const char path[], const struct dirent *d)
+{
+	if(d->d_type == DT_UNKNOWN)
+	{
+		return is_dir(path);
+	}
+
+	return  d->d_type == DT_DIR
+	    || (d->d_type == DT_LNK && check_link_is_dir(path));
+}
+
 #ifdef _WIN32
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the

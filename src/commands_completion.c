@@ -82,7 +82,6 @@ static void filename_completion_in_dir(const char *path, const char *str,
 static void filename_completion_internal(DIR * dir, const char * dirname,
 		const char * filename, CompletionType type);
 static void add_filename_completion(const char filename[], CompletionType type);
-static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 #ifdef _WIN32
 static const char * escape_for_cd(const char *str);
@@ -696,14 +695,15 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		if(strnoscmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == CT_DIRONLY && !is_entry_dir(d))
+		if(type == CT_DIRONLY && !is_dirent_targets_dir(d->d_name, d))
 			continue;
 		else if(type == CT_EXECONLY && !is_entry_exec(d))
 			continue;
-		else if(type == CT_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d->d_name, d) &&
+				!is_entry_exec(d))
 			continue;
 
-		if(is_entry_dir(d) && type != CT_ALL_WOS)
+		if(is_dirent_targets_dir(d->d_name, d) && type != CT_ALL_WOS)
 		{
 			char buf[NAME_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
@@ -759,31 +759,6 @@ add_filename_completion(const char filename[], CompletionType type)
 
 #ifndef _WIN32
 	free(escaped);
-#endif
-}
-
-static int
-is_entry_dir(const struct dirent *d)
-{
-#ifdef _WIN32
-	struct stat st;
-	if(stat(d->d_name, &st) != 0)
-		return 0;
-	return S_ISDIR(st.st_mode);
-#else
-	if(d->d_type == DT_UNKNOWN)
-	{
-		struct stat st;
-		if(stat(d->d_name, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-		return 0;
-	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
-		return 0;
-	return 1;
 #endif
 }
 
