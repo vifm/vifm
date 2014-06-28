@@ -474,15 +474,15 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 }
 
 int
-is_dirent_targets_dir(const char path[], const struct dirent *d)
+is_dirent_targets_dir(const struct dirent *d)
 {
 	if(d->d_type == DT_UNKNOWN)
 	{
-		return is_dir(path);
+		return is_dir(d->d_name);
 	}
 
 	return  d->d_type == DT_DIR
-	    || (d->d_type == DT_LNK && check_link_is_dir(path));
+	    || (d->d_type == DT_LNK && check_link_is_dir(d->d_name));
 }
 
 #ifdef _WIN32

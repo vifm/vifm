@@ -695,15 +695,15 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		if(strnoscmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == CT_DIRONLY && !is_dirent_targets_dir(d->d_name, d))
+		if(type == CT_DIRONLY && !is_dirent_targets_dir(d))
 			continue;
 		else if(type == CT_EXECONLY && !is_dirent_targets_exec(d))
 			continue;
-		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d->d_name, d) &&
+		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d) &&
 				!is_dirent_targets_exec(d))
 			continue;
 
-		if(is_dirent_targets_dir(d->d_name, d) && type != CT_ALL_WOS)
+		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
 			char buf[NAME_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
