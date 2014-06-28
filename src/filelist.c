@@ -2280,7 +2280,7 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(!file_is_visible(view, d->d_name, d->d_type == DT_DIR))
+		else if(!file_is_visible(view, d->d_name, is_dirent_targets_dir(d)))
 		{
 			view->filtered++;
 			view->list_rows--;
