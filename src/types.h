@@ -38,19 +38,25 @@ typedef enum
 	FIFO,
 	UNKNOWN,
 	FILE_TYPE_COUNT
-}FileType;
+}
+FileType;
 
 /* Returns a pointer to a statically allocated file type string for given file
  * mode. */
 const char * get_mode_str(mode_t mode);
+
 /* Returns a pointer to a statically allocated file type string for given file
  * type. */
 const char * get_type_str(FileType type);
+
 /* Returns file type from file mode. */
 FileType get_type_from_mode(mode_t mode);
+
 #ifndef _WIN32
+
 /* Returns file type from dirent structure returned by call to readdir(). */
 FileType type_from_dir_entry(const struct dirent *d);
+
 #endif
 
 #endif /* VIFM__TYPES_H__ */
