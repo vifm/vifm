@@ -82,8 +82,7 @@ static void filename_completion_in_dir(const char *path, const char *str,
 static void filename_completion_internal(DIR * dir, const char * dirname,
 		const char * filename, CompletionType type);
 static void add_filename_completion(const char filename[], CompletionType type);
-static int is_entry_dir(const struct dirent *d);
-static int is_entry_exec(const struct dirent *d);
+static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
@@ -444,7 +443,7 @@ complete_highlight_arg(const char *str)
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
 					add_completion(XTERM256_COLOR_NAMES[i]);
 			}
-			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
+			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
 					add_completion(LIGHT_COLOR_NAMES[i]);
@@ -696,14 +695,15 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		if(strnoscmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == CT_DIRONLY && !is_entry_dir(d))
+		if(type == CT_DIRONLY && !is_dirent_targets_dir(d))
 			continue;
-		else if(type == CT_EXECONLY && !is_entry_exec(d))
+		else if(type == CT_EXECONLY && !is_dirent_targets_exec(d))
 			continue;
-		else if(type == CT_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d) &&
+				!is_dirent_targets_exec(d))
 			continue;
 
-		if(is_entry_dir(d) && type != CT_ALL_WOS)
+		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
 			char buf[NAME_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
@@ -762,42 +762,17 @@ add_filename_completion(const char filename[], CompletionType type)
 #endif
 }
 
+/* Uses dentry to check file type.  Returns non-zero for directories,
+ * otherwise zero is returned.  Symbolic links are dereferenced. */
 static int
-is_entry_dir(const struct dirent *d)
-{
-#ifdef _WIN32
-	struct stat st;
-	if(stat(d->d_name, &st) != 0)
-		return 0;
-	return S_ISDIR(st.st_mode);
-#else
-	if(d->d_type == DT_UNKNOWN)
-	{
-		struct stat st;
-		if(stat(d->d_name, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-		return 0;
-	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
-		return 0;
-	return 1;
-#endif
-}
-
-static int
-is_entry_exec(const struct dirent *d)
+is_dirent_targets_exec(const struct dirent *d)
 {
 #ifndef _WIN32
 	if(d->d_type == DT_DIR)
 		return 0;
 	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
 		return 0;
-	if(access(d->d_name, X_OK) != 0)
-		return 0;
-	return 1;
+	return access(d->d_name, X_OK) == 0;
 #else
 	return is_win_executable(d->d_name);
 #endif

@@ -87,6 +87,13 @@ int rename_file(const char src[], const char dst[]);
 /* Removes directory content. */
 void remove_dir_content(const char path[]);
 
+struct dirent;
+
+/* Uses dentry or path to check file type.  Assumes that file is located in
+ * current working directory.  Returns non-zero for directories, otherwise zero
+ * is returned.  Symbolic links are dereferenced. */
+int is_dirent_targets_dir(const struct dirent *d);
+
 #ifdef _WIN32
 
 char * realpath(const char *path, char *buf);

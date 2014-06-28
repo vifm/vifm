@@ -54,12 +54,12 @@
 #include "../types.h"
 #include "../ui.h"
 #include "../undo.h"
+#include "../vifm.h"
 #include "dialogs/attr_dialog.h"
 #include "file_info.h"
 #include "cmdline.h"
 #include "modes.h"
 #include "view.h"
-#include "vifm.h"
 #include "visual.h"
 
 typedef struct

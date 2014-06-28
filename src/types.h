@@ -22,35 +22,46 @@
 
 #include <sys/types.h> /* mode_t */
 
+/* Forward declaration of dirent structure to omit inclusion of <dirent.h>. */
 struct dirent;
 
+/* List of types of file system objects. */
 typedef enum
 {
-	LINK,
-	DIRECTORY,
-	CHARACTER_DEVICE,
-	BLOCK_DEVICE,
+	LINK,             /* Symbolic link. */
+	DIRECTORY,        /* Directory. */
+	CHARACTER_DEVICE, /* Character device file. */
+	BLOCK_DEVICE,     /* Block device file. */
 #ifndef _WIN32
-	SOCKET,
+	SOCKET,           /* Socket file. */
 #endif
-	EXECUTABLE,
-	REGULAR,
-	FIFO,
-	UNKNOWN,
-	FILE_TYPE_COUNT
-}FileType;
+	EXECUTABLE,       /* Executable file. */
+	REGULAR,          /* Regular (non-executable) file. */
+	FIFO,             /* Named pipe. */
+	UNKNOWN,          /* Unknown object (shouldn't occur in file list). */
+	FILE_TYPE_COUNT   /* Number of types. */
+}
+FileType;
 
-/* Returns a pointer to a statically allocated file type string for given file
- * mode. */
+/* Provides string representation for FileType enumeration item that corresponds
+ * to specified file mode.  Returns pointer to a statically allocated file type
+ * string. */
 const char * get_mode_str(mode_t mode);
-/* Returns a pointer to a statically allocated file type string for given file
- * type. */
+
+/* Provides string representation for FileType enumeration item.  Returns
+ * pointer to a statically allocated file type string. */
 const char * get_type_str(FileType type);
-/* Returns file type from file mode. */
+
+/* Converts file mode to type from FileType enumeration.  Returns item of the
+ * enumeration. */
 FileType get_type_from_mode(mode_t mode);
+
 #ifndef _WIN32
-/* Returns file type from dirent structure returned by call to readdir(). */
+
+/* Converts dirent structure returned by call to readdir() to type from FileType
+ * enumeration.  Returns item of the enumeration. */
 FileType type_from_dir_entry(const struct dirent *d);
+
 #endif
 
 #endif /* VIFM__TYPES_H__ */

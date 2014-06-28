@@ -27,7 +27,7 @@
 #include <winioctl.h>
 #endif
 
-#include <sys/stat.h> /* statbuf stat() lstat() mkdir() */
+#include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* access() */
@@ -48,6 +48,10 @@
 static int path_exists_internal(const char *path, const char *filename);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 
+#ifdef _WIN32
+static DWORD win_get_file_attrs(const char path[]);
+#endif
+
 int
 is_dir(const char *path)
 {
@@ -62,25 +66,7 @@ is_dir(const char *path)
 
 	return S_ISDIR(statbuf.st_mode);
 #else
-	DWORD attr;
-
-	if(is_path_absolute(path) && !is_unc_path(path))
-	{
-		char buf[] = {path[0], ':', '\\', '\0'};
-		UINT type = GetDriveTypeA(buf);
-		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
-			return 0;
-	}
-
-	attr = GetFileAttributesA(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
-		log_cwd();
-		return 0;
-	}
-
-	return (attr & FILE_ATTRIBUTE_DIRECTORY);
+	return win_get_file_attrs(path) & FILE_ATTRIBUTE_DIRECTORY;
 #endif
 }
 
@@ -482,11 +468,56 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 #ifndef _WIN32
 	return dentry->d_type == DT_DIR;
 #else
-	return is_dir(full_path);
+	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
+	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
+#endif
+}
+
+int
+is_dirent_targets_dir(const struct dirent *d)
+{
+#ifdef _WIN32
+		return is_dir(d->d_name);
+#else
+	if(d->d_type == DT_UNKNOWN)
+	{
+		return is_dir(d->d_name);
+	}
+
+	return  d->d_type == DT_DIR
+	    || (d->d_type == DT_LNK && check_link_is_dir(d->d_name));
 #endif
 }
 
 #ifdef _WIN32
+
+/* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
+ * attributes. */
+static DWORD
+win_get_file_attrs(const char path[])
+{
+	DWORD attr;
+
+	if(is_path_absolute(path) && !is_unc_path(path))
+	{
+		char buf[] = {path[0], ':', '\\', '\0'};
+		UINT type = GetDriveTypeA(buf);
+		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+		{
+			return 0;
+		}
+	}
+
+	attr = GetFileAttributesA(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
+		log_cwd();
+		return 0;
+	}
+
+	return attr;
+}
 
 char *
 realpath(const char *path, char *buf)
