@@ -469,13 +469,16 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 	return dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
-	return (win_get_file_attrs(path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
+	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
 #endif
 }
 
 int
 is_dirent_targets_dir(const struct dirent *d)
 {
+#ifdef _WIN32
+		return is_dir(d->d_name);
+#else
 	if(d->d_type == DT_UNKNOWN)
 	{
 		return is_dir(d->d_name);
@@ -483,6 +486,7 @@ is_dirent_targets_dir(const struct dirent *d)
 
 	return  d->d_type == DT_DIR
 	    || (d->d_type == DT_LNK && check_link_is_dir(d->d_name));
+#endif
 }
 
 #ifdef _WIN32
