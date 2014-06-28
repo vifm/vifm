@@ -82,7 +82,7 @@ static void filename_completion_in_dir(const char *path, const char *str,
 static void filename_completion_internal(DIR * dir, const char * dirname,
 		const char * filename, CompletionType type);
 static void add_filename_completion(const char filename[], CompletionType type);
-static int is_entry_exec(const struct dirent *d);
+static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
@@ -697,10 +697,10 @@ filename_completion_internal(DIR * dir, const char * dirname,
 
 		if(type == CT_DIRONLY && !is_dirent_targets_dir(d->d_name, d))
 			continue;
-		else if(type == CT_EXECONLY && !is_entry_exec(d))
+		else if(type == CT_EXECONLY && !is_dirent_targets_exec(d))
 			continue;
 		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d->d_name, d) &&
-				!is_entry_exec(d))
+				!is_dirent_targets_exec(d))
 			continue;
 
 		if(is_dirent_targets_dir(d->d_name, d) && type != CT_ALL_WOS)
@@ -762,17 +762,17 @@ add_filename_completion(const char filename[], CompletionType type)
 #endif
 }
 
+/* Uses dentry to check file type.  Returns non-zero for directories,
+ * otherwise zero is returned.  Symbolic links are dereferenced. */
 static int
-is_entry_exec(const struct dirent *d)
+is_dirent_targets_exec(const struct dirent *d)
 {
 #ifndef _WIN32
 	if(d->d_type == DT_DIR)
 		return 0;
 	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
 		return 0;
-	if(access(d->d_name, X_OK) != 0)
-		return 0;
-	return 1;
+	return access(d->d_name, X_OK) == 0;
 #else
 	return is_win_executable(d->d_name);
 #endif
