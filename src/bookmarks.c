@@ -26,6 +26,7 @@
 
 #include "utils/fs.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
 #include "ui.h"
@@ -227,7 +228,7 @@ check_mark_directory(FileView *view, char mark)
 
 	if(!is_bmark_empty(bmark))
 	{
-		if(stroscmp(view->curr_dir, bmark->directory) == 0)
+		if(paths_are_equal(view->curr_dir, bmark->directory))
 		{
 			return find_file_pos_in_list(view, bmark->file);
 		}
@@ -263,9 +264,17 @@ navigate_to_bookmark(FileView *view, char mark)
 
 	if(is_bmark_valid(bmark))
 	{
-		if(change_directory(view, bmark->directory) >= 0)
+		/* Do not change directory if we already there. */
+		if(!paths_are_equal(view->curr_dir, bmark->directory))
 		{
-			load_dir_list(view, 1);
+			if(change_directory(view, bmark->directory) >= 0)
+			{
+				load_dir_list(view, 1);
+			}
+		}
+
+		if(paths_are_equal(view->curr_dir, bmark->directory))
+		{
 			(void)ensure_file_is_selected(view, bmark->file);
 		}
 	}
