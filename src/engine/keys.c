@@ -255,6 +255,8 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 	return result;
 }
 
+/* Executes keys from the start of key sequence or at some offset in it.
+ * Returns error code. */
 static int
 execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		int prev_count)
@@ -284,6 +286,8 @@ execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	return result;
 }
 
+/* Dispatches keys passed in using a tree of shortcuts registered in the root.
+ * Returns error code. */
 static int
 execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap)
@@ -293,6 +297,8 @@ execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 	int has_duplicate;
 	int result;
 
+	/* The loop finds longest match of the input (keys) amoung registered
+	 * shortcuts. */
 	curr = root;
 	while(*keys != L'\0')
 	{
@@ -407,6 +413,8 @@ contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 			curr->conf.type != BUILTIN_WAIT_POINT);
 }
 
+/* Handles the rest of the keys after first one has been determined (in curr).
+ * Returns error code. */
 static int
 execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		keys_info_t *keys_info, int has_duplicate, int no_remap)
@@ -449,6 +457,8 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 	return run_cmd(*key_info, keys_info, curr, keys);
 }
 
+/* Performs action associated with the key (in curr), if any.  Returns error
+ * code. */
 static int
 run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 		const wchar_t keys[])
