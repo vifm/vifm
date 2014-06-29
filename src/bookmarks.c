@@ -264,9 +264,17 @@ navigate_to_bookmark(FileView *view, char mark)
 
 	if(is_bmark_valid(bmark))
 	{
-		if(change_directory(view, bmark->directory) >= 0)
+		/* Do not change directory if we already there. */
+		if(!paths_are_equal(view->curr_dir, bmark->directory))
 		{
-			load_dir_list(view, 1);
+			if(change_directory(view, bmark->directory) >= 0)
+			{
+				load_dir_list(view, 1);
+			}
+		}
+
+		if(paths_are_equal(view->curr_dir, bmark->directory))
+		{
 			(void)ensure_file_is_selected(view, bmark->file);
 		}
 	}
