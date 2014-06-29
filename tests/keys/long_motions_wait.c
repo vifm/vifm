@@ -4,7 +4,7 @@
 #include "../../src/modes/modes.h"
 
 static void
-multichar_motions(void)
+test_multichar_selector(void)
 {
 	assert_int_equal(KEYS_WAIT, execute_keys(L"d"));
 	assert_int_equal(KEYS_WAIT, execute_keys(L"di"));
@@ -16,9 +16,10 @@ long_motions_wait(void)
 {
 	test_fixture_start();
 
-	run_test(multichar_motions);
+	run_test(test_multichar_selector);
 
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

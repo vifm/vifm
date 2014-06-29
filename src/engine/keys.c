@@ -436,7 +436,8 @@ contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 }
 
 /* Handles the rest of the keys after first one has been determined (in curr).
- * Returns error code. */
+ * These can be: <nothing> (empty line), selector, multikey argument.  Returns
+ * error code. */
 static int
 execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		keys_info_t *keys_info, int has_duplicate, int no_remap)
@@ -466,10 +467,10 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 	{
 		int result;
 
-		if(keys[1] == L'\0' && conf->followed == FOLLOWED_BY_MULTIKEY)
+		if(conf->followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
-			return dispatch_key(*key_info, keys_info, curr, L"");
+			return dispatch_key(*key_info, keys_info, curr, keys + 1);
 		}
 
 		keys_info->selector = 1;
@@ -498,7 +499,18 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 	if(conf->type != USER_CMD && conf->type != BUILTIN_CMD)
 	{
-		return execute_mapping_handler(conf, key_info, keys_info);
+		const int result = execute_mapping_handler(conf, key_info, keys_info);
+		const int finish_dispatching = result != 0
+		                            || *keys == L'\0'
+		                            || conf->followed != FOLLOWED_BY_MULTIKEY;
+		if(finish_dispatching)
+		{
+			return result;
+		}
+
+		/* Process the rest of the input after a command followed by multikey. */
+		return execute_keys_general_wrapper(keys, keys_info->after_wait, 0,
+				curr->no_remap);
 	}
 	else
 	{

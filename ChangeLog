@@ -56,6 +56,9 @@
 	Fixed running external commands with long titles inside terminal
 	multiplexers.  Invoked shell in current directory.
 
+	Fixed processing of marks command followed by anything in right-hand side of
+	a mapping.  Thanks to filterfalse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
