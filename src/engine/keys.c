@@ -67,15 +67,15 @@ static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
 static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
 		int no_remap, int prev_count);
-static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+static int execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
 static int contains_chain(key_chunk_t *root, const wchar_t *begin,
 		const wchar_t *end);
-static int execute_next_keys(key_chunk_t *curr, const wchar_t *keys,
+static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
 		key_info_t *key_info, keys_info_t *keys_info, int has_duplicate,
 		int no_remap);
 static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
-		key_chunk_t *curr, const wchar_t *keys);
+		key_chunk_t *curr, const wchar_t keys[]);
 static int execute_after_remapping(const wchar_t rhs[],
 		const wchar_t left_keys[], keys_info_t keys_info, key_info_t key_info,
 		key_chunk_t *curr);
@@ -285,7 +285,7 @@ execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 }
 
 static int
-execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap)
 {
 	key_chunk_t *curr;
@@ -408,7 +408,7 @@ contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 }
 
 static int
-execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
+execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		keys_info_t *keys_info, int has_duplicate, int no_remap)
 {
 	if(*keys == L'\0')
@@ -451,7 +451,7 @@ execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
 
 static int
 run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
-		const wchar_t *keys)
+		const wchar_t keys[])
 {
 	key_conf_t *info = &curr->conf;
 
