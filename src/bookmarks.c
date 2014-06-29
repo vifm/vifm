@@ -26,6 +26,7 @@
 
 #include "utils/fs.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
 #include "ui.h"
@@ -227,7 +228,7 @@ check_mark_directory(FileView *view, char mark)
 
 	if(!is_bmark_empty(bmark))
 	{
-		if(stroscmp(view->curr_dir, bmark->directory) == 0)
+		if(paths_are_equal(view->curr_dir, bmark->directory))
 		{
 			return find_file_pos_in_list(view, bmark->file);
 		}
