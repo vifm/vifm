@@ -65,17 +65,17 @@ static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
 		int mapped, int no_remap);
 static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
-static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
+static int dispatch_keys(const wchar_t keys[], keys_info_t *keys_info,
 		int no_remap, int prev_count);
-static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+static int dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
 static int contains_chain(key_chunk_t *root, const wchar_t *begin,
 		const wchar_t *end);
-static int execute_next_keys(key_chunk_t *curr, const wchar_t *keys,
+static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
 		key_info_t *key_info, keys_info_t *keys_info, int has_duplicate,
 		int no_remap);
-static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
-		key_chunk_t *curr, const wchar_t *keys);
+static int dispatch_key(key_info_t key_info, keys_info_t *keys_info,
+		key_chunk_t *curr, const wchar_t keys[]);
 static int execute_after_remapping(const wchar_t rhs[],
 		const wchar_t left_keys[], keys_info_t keys_info, key_info_t key_info,
 		key_chunk_t *curr);
@@ -242,11 +242,13 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 	keys_info_t keys_info;
 
 	if(keys[0] == L'\0')
+	{
 		return KEYS_UNKNOWN;
+	}
 
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
-	result = execute_keys_inner(keys, &keys_info, no_remap, NO_COUNT_GIVEN);
+	result = dispatch_keys(keys, &keys_info, no_remap, NO_COUNT_GIVEN);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
 		result = def_handlers[*mode](keys[0]);
@@ -255,37 +257,53 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 	return result;
 }
 
+/* Executes keys from the start of key sequence or at some offset in it.
+ * Returns error code. */
 static int
-execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
+dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		int prev_count)
 {
 	key_info_t key_info;
-	key_chunk_t *root;
 	int result;
 
 	keys = get_reg(keys, &key_info.reg);
 	if(keys == NULL)
+	{
 		return KEYS_WAIT;
+	}
 	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
+	{
 		return 0;
+	}
+
 	keys = get_count(keys, &key_info.count);
 	key_info.count = combine_counts(key_info.count, prev_count);
 	key_info.multi = L'\0';
-	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
-		result = execute_keys_loop(keys, keys_info, root, key_info, no_remap);
+	{
+		key_chunk_t *const root = keys_info->selector
+		                        ? &selectors_root[*mode] : &user_cmds_root[*mode];
+		result = dispatch_keys_at_root(keys, keys_info, root, key_info, no_remap);
+	}
 	else
+	{
 		result = KEYS_UNKNOWN;
+	}
+
 	if(result == KEYS_UNKNOWN && !keys_info->selector)
-		result = execute_keys_loop(keys, keys_info, &builtin_cmds_root[*mode],
+	{
+		result = dispatch_keys_at_root(keys, keys_info, &builtin_cmds_root[*mode],
 				key_info, no_remap);
+	}
 
 	return result;
 }
 
+/* Dispatches keys passed in using a tree of shortcuts registered in the root.
+ * Returns error code. */
 static int
-execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap)
 {
 	key_chunk_t *curr;
@@ -293,18 +311,24 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 	int has_duplicate;
 	int result;
 
+	/* The loop finds longest match of the input (keys) amoung registered
+	 * shortcuts. */
 	curr = root;
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p;
-		int nim = 0;
+		int number_in_the_middle = 0;
+
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
 		{
 			if(p->conf.type == BUILTIN_NIM_KEYS)
-				nim = 1;
+			{
+				number_in_the_middle = 1;
+			}
 			p = p->next;
 		}
+
 		if(p == NULL || p->key != *keys)
 		{
 			if(curr == root)
@@ -313,17 +337,19 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 			while(p != NULL)
 			{
 				if(p->conf.type == BUILTIN_NIM_KEYS)
-					nim = 1;
+				{
+					number_in_the_middle = 1;
+				}
 				p = p->next;
 			}
 
 			if(curr->conf.followed != FOLLOWED_BY_NONE &&
-					(!nim || !is_at_count(keys)))
+					(!number_in_the_middle || !is_at_count(keys)))
 			{
 				break;
 			}
 
-			if(nim)
+			if(number_in_the_middle)
 			{
 				int count;
 				const wchar_t *new_keys = get_count(keys, &count);
@@ -336,7 +362,9 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 			}
 
 			if(curr->conf.type == BUILTIN_WAIT_POINT)
+			{
 				return KEYS_UNKNOWN;
+			}
 
 			has_duplicate = root == &user_cmds_root[*mode] &&
 					contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
@@ -407,91 +435,124 @@ contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 			curr->conf.type != BUILTIN_WAIT_POINT);
 }
 
+/* Handles the rest of the keys after first one has been determined (in curr).
+ * These can be: <nothing> (empty line), selector, multikey argument.  Returns
+ * error code. */
 static int
-execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
+execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		keys_info_t *keys_info, int has_duplicate, int no_remap)
 {
+	const key_conf_t *const conf = &curr->conf;
+
 	if(*keys == L'\0')
 	{
-		int wait_point = (curr->conf.type == BUILTIN_WAIT_POINT);
-		wait_point = wait_point || (curr->conf.type == USER_CMD &&
-				curr->conf.followed != FOLLOWED_BY_NONE);
+		int wait_point = (conf->type == BUILTIN_WAIT_POINT);
+		wait_point = wait_point || (conf->type == USER_CMD &&
+				conf->followed != FOLLOWED_BY_NONE);
+
 		if(wait_point)
 		{
-			int with_input = (mode_flags[*mode] & MF_USES_INPUT);
+			const int with_input = (mode_flags[*mode] & MF_USES_INPUT);
 			if(!keys_info->after_wait)
 			{
 				return (with_input || has_duplicate) ? KEYS_WAIT_SHORT : KEYS_WAIT;
 			}
 		}
-		else if(curr->conf.data.handler == NULL
-				|| curr->conf.followed != FOLLOWED_BY_NONE)
+		else if(conf->data.handler == NULL || conf->followed != FOLLOWED_BY_NONE)
 		{
 			return KEYS_UNKNOWN;
 		}
 	}
-	else if(curr->conf.type != USER_CMD)
+	else if(conf->type != USER_CMD)
 	{
 		int result;
-		if(keys[1] == L'\0' && curr->conf.followed == FOLLOWED_BY_MULTIKEY)
+
+		if(conf->followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
-			return run_cmd(*key_info, keys_info, curr, L"");
+			return dispatch_key(*key_info, keys_info, curr, keys + 1);
 		}
+
 		keys_info->selector = 1;
-		result = execute_keys_inner(keys, keys_info, no_remap, key_info->count);
+		result = dispatch_keys(keys, keys_info, no_remap, key_info->count);
 		keys_info->selector = 0;
+
 		if(IS_KEYS_RET_CODE(result))
+		{
 			return result;
+		}
+
 		/* We used this count in selector, so don't pass it to command. */
 		key_info->count = NO_COUNT_GIVEN;
 	}
-	return run_cmd(*key_info, keys_info, curr, keys);
+
+	return dispatch_key(*key_info, keys_info, curr, keys);
 }
 
+/* Performs action associated with the key (in curr), if any.  Returns error
+ * code. */
 static int
-run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
-		const wchar_t *keys)
+dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
+		const wchar_t keys[])
 {
-	key_conf_t *info = &curr->conf;
+	const key_conf_t *const conf = &curr->conf;
 
-	if(info->type != USER_CMD && info->type != BUILTIN_CMD)
+	if(conf->type != USER_CMD && conf->type != BUILTIN_CMD)
 	{
-		return execute_mapping_handler(info, key_info, keys_info);
+		const int result = execute_mapping_handler(conf, key_info, keys_info);
+		const int finish_dispatching = result != 0
+		                            || *keys == L'\0'
+		                            || conf->followed != FOLLOWED_BY_MULTIKEY;
+		if(finish_dispatching)
+		{
+			return result;
+		}
+
+		/* Process the rest of the input after a command followed by multikey. */
+		return execute_keys_general_wrapper(keys, keys_info->after_wait, 0,
+				curr->no_remap);
 	}
 	else
 	{
-		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
+		const default_handler def_handler = def_handlers[*mode];
+
+		int result = (def_handler == NULL) ? KEYS_UNKNOWN : 0;
 
 		if(curr->enters == 0)
 		{
-			result = execute_after_remapping(info->data.cmd, keys, *keys_info,
+			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
 		}
-		else if(def_handlers[*mode] != NULL)
+		else if(def_handler != NULL)
 		{
-			result = def_handlers[*mode](curr->key);
+			result = def_handler(curr->key);
 
 			if(result == 0)
+			{
 				result = execute_keys_general(keys, keys_info->after_wait, 0,
 						curr->no_remap);
+			}
 		}
-		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
+
+		if(result == KEYS_UNKNOWN && def_handler != NULL)
 		{
 			if(curr->enters == 0)
 			{
-				result = def_handlers[*mode](info->data.cmd[0]);
+				result = def_handler(conf->data.cmd[0]);
 				enter_chunk(curr);
-				execute_keys_general(info->data.cmd + 1, 0, 1, curr->no_remap);
+				execute_keys_general(conf->data.cmd + 1, 0, 1, curr->no_remap);
 				leave_chunk(curr);
 			}
 			else
 			{
 				int i;
-				for(i = 0; info->data.cmd[i] != '\0'; i++)
-					result = def_handlers[*mode](info->data.cmd[i]);
+				for(i = 0; conf->data.cmd[i] != '\0'; i++)
+				{
+					result = def_handler(conf->data.cmd[i]);
+				}
 			}
 		}
+
 		return result;
 	}
 }
@@ -512,7 +573,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 		keys_info_t keys_info;
 		init_keys_info(&keys_info, 1);
 		enter_chunk(curr);
-		result = execute_keys_inner(left_keys, &keys_info, curr->no_remap,
+		result = dispatch_keys(left_keys, &keys_info, curr->no_remap,
 				NO_COUNT_GIVEN);
 		leave_chunk(curr);
 	}
@@ -539,8 +600,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 		}
 
 		enter_chunk(curr);
-		result = execute_keys_inner(buf, &keys_info, curr->no_remap,
-				NO_COUNT_GIVEN);
+		result = dispatch_keys(buf, &keys_info, curr->no_remap, NO_COUNT_GIVEN);
 		leave_chunk(curr);
 	}
 	return result;
