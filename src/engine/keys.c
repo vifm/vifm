@@ -262,7 +262,6 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		int prev_count)
 {
 	key_info_t key_info;
-	key_chunk_t *root;
 	int result;
 
 	keys = get_reg(keys, &key_info.reg);
@@ -273,10 +272,13 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	keys = get_count(keys, &key_info.count);
 	key_info.count = combine_counts(key_info.count, prev_count);
 	key_info.multi = L'\0';
-	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
+	{
+		key_chunk_t *const root = keys_info->selector
+		                        ? &selectors_root[*mode] : &user_cmds_root[*mode];
 		result = dispatch_keys_at_root(keys, keys_info, root, key_info, no_remap);
+	}
 	else
 		result = KEYS_UNKNOWN;
 	if(result == KEYS_UNKNOWN && !keys_info->selector)
@@ -420,29 +422,31 @@ static int
 execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		keys_info_t *keys_info, int has_duplicate, int no_remap)
 {
+	const key_conf_t *const conf = &curr->conf;
+
 	if(*keys == L'\0')
 	{
-		int wait_point = (curr->conf.type == BUILTIN_WAIT_POINT);
-		wait_point = wait_point || (curr->conf.type == USER_CMD &&
-				curr->conf.followed != FOLLOWED_BY_NONE);
+		int wait_point = (conf->type == BUILTIN_WAIT_POINT);
+		wait_point = wait_point || (conf->type == USER_CMD &&
+				conf->followed != FOLLOWED_BY_NONE);
+
 		if(wait_point)
 		{
-			int with_input = (mode_flags[*mode] & MF_USES_INPUT);
+			const int with_input = (mode_flags[*mode] & MF_USES_INPUT);
 			if(!keys_info->after_wait)
 			{
 				return (with_input || has_duplicate) ? KEYS_WAIT_SHORT : KEYS_WAIT;
 			}
 		}
-		else if(curr->conf.data.handler == NULL
-				|| curr->conf.followed != FOLLOWED_BY_NONE)
+		else if(conf->data.handler == NULL || conf->followed != FOLLOWED_BY_NONE)
 		{
 			return KEYS_UNKNOWN;
 		}
 	}
-	else if(curr->conf.type != USER_CMD)
+	else if(conf->type != USER_CMD)
 	{
 		int result;
-		if(keys[1] == L'\0' && curr->conf.followed == FOLLOWED_BY_MULTIKEY)
+		if(keys[1] == L'\0' && conf->followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
 			return dispatch_key(*key_info, keys_info, curr, L"");
@@ -472,26 +476,28 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	}
 	else
 	{
-		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
+		const default_handler def_handler = def_handlers[*mode];
+
+		int result = (def_handler == NULL) ? KEYS_UNKNOWN : 0;
 
 		if(curr->enters == 0)
 		{
 			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
 		}
-		else if(def_handlers[*mode] != NULL)
+		else if(def_handler != NULL)
 		{
-			result = def_handlers[*mode](curr->key);
+			result = def_handler(curr->key);
 
 			if(result == 0)
 				result = execute_keys_general(keys, keys_info->after_wait, 0,
 						curr->no_remap);
 		}
-		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
+		if(result == KEYS_UNKNOWN && def_handler != NULL)
 		{
 			if(curr->enters == 0)
 			{
-				result = def_handlers[*mode](conf->data.cmd[0]);
+				result = def_handler(conf->data.cmd[0]);
 				enter_chunk(curr);
 				execute_keys_general(conf->data.cmd + 1, 0, 1, curr->no_remap);
 				leave_chunk(curr);
@@ -500,7 +506,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			{
 				int i;
 				for(i = 0; conf->data.cmd[i] != '\0'; i++)
-					result = def_handlers[*mode](conf->data.cmd[i]);
+					result = def_handler(conf->data.cmd[i]);
 			}
 		}
 		return result;
