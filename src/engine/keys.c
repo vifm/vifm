@@ -242,7 +242,9 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 	keys_info_t keys_info;
 
 	if(keys[0] == L'\0')
+	{
 		return KEYS_UNKNOWN;
+	}
 
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
@@ -266,9 +268,14 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 
 	keys = get_reg(keys, &key_info.reg);
 	if(keys == NULL)
+	{
 		return KEYS_WAIT;
+	}
 	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
+	{
 		return 0;
+	}
+
 	keys = get_count(keys, &key_info.count);
 	key_info.count = combine_counts(key_info.count, prev_count);
 	key_info.multi = L'\0';
@@ -280,10 +287,15 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		result = dispatch_keys_at_root(keys, keys_info, root, key_info, no_remap);
 	}
 	else
+	{
 		result = KEYS_UNKNOWN;
+	}
+
 	if(result == KEYS_UNKNOWN && !keys_info->selector)
+	{
 		result = dispatch_keys_at_root(keys, keys_info, &builtin_cmds_root[*mode],
 				key_info, no_remap);
+	}
 
 	return result;
 }
@@ -311,9 +323,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		while(p != NULL && p->key < *keys)
 		{
 			if(p->conf.type == BUILTIN_NIM_KEYS)
+			{
 				number_in_the_middle = 1;
+			}
 			p = p->next;
 		}
+
 		if(p == NULL || p->key != *keys)
 		{
 			if(curr == root)
@@ -322,7 +337,9 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 			while(p != NULL)
 			{
 				if(p->conf.type == BUILTIN_NIM_KEYS)
+				{
 					number_in_the_middle = 1;
+				}
 				p = p->next;
 			}
 
@@ -345,7 +362,9 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 			}
 
 			if(curr->conf.type == BUILTIN_WAIT_POINT)
+			{
 				return KEYS_UNKNOWN;
+			}
 
 			has_duplicate = root == &user_cmds_root[*mode] &&
 					contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
@@ -446,19 +465,26 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 	else if(conf->type != USER_CMD)
 	{
 		int result;
+
 		if(keys[1] == L'\0' && conf->followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
 			return dispatch_key(*key_info, keys_info, curr, L"");
 		}
+
 		keys_info->selector = 1;
 		result = dispatch_keys(keys, keys_info, no_remap, key_info->count);
 		keys_info->selector = 0;
+
 		if(IS_KEYS_RET_CODE(result))
+		{
 			return result;
+		}
+
 		/* We used this count in selector, so don't pass it to command. */
 		key_info->count = NO_COUNT_GIVEN;
 	}
+
 	return dispatch_key(*key_info, keys_info, curr, keys);
 }
 
@@ -490,9 +516,12 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			result = def_handler(curr->key);
 
 			if(result == 0)
+			{
 				result = execute_keys_general(keys, keys_info->after_wait, 0,
 						curr->no_remap);
+			}
 		}
+
 		if(result == KEYS_UNKNOWN && def_handler != NULL)
 		{
 			if(curr->enters == 0)
@@ -506,9 +535,12 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			{
 				int i;
 				for(i = 0; conf->data.cmd[i] != '\0'; i++)
+				{
 					result = def_handler(conf->data.cmd[i]);
+				}
 			}
 		}
+
 		return result;
 	}
 }
