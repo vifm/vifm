@@ -303,12 +303,13 @@ execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p;
-		int nim = 0;
+		int number_in_the_middle = 0;
+
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
 		{
 			if(p->conf.type == BUILTIN_NIM_KEYS)
-				nim = 1;
+				number_in_the_middle = 1;
 			p = p->next;
 		}
 		if(p == NULL || p->key != *keys)
@@ -319,17 +320,17 @@ execute_keys_loop(const wchar_t keys[], keys_info_t *keys_info,
 			while(p != NULL)
 			{
 				if(p->conf.type == BUILTIN_NIM_KEYS)
-					nim = 1;
+					number_in_the_middle = 1;
 				p = p->next;
 			}
 
 			if(curr->conf.followed != FOLLOWED_BY_NONE &&
-					(!nim || !is_at_count(keys)))
+					(!number_in_the_middle || !is_at_count(keys)))
 			{
 				break;
 			}
 
-			if(nim)
+			if(number_in_the_middle)
 			{
 				int count;
 				const wchar_t *new_keys = get_count(keys, &count);
@@ -463,11 +464,11 @@ static int
 run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 		const wchar_t keys[])
 {
-	key_conf_t *info = &curr->conf;
+	const key_conf_t *const conf = &curr->conf;
 
-	if(info->type != USER_CMD && info->type != BUILTIN_CMD)
+	if(conf->type != USER_CMD && conf->type != BUILTIN_CMD)
 	{
-		return execute_mapping_handler(info, key_info, keys_info);
+		return execute_mapping_handler(conf, key_info, keys_info);
 	}
 	else
 	{
@@ -475,7 +476,7 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 		if(curr->enters == 0)
 		{
-			result = execute_after_remapping(info->data.cmd, keys, *keys_info,
+			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
 		}
 		else if(def_handlers[*mode] != NULL)
@@ -490,16 +491,16 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 		{
 			if(curr->enters == 0)
 			{
-				result = def_handlers[*mode](info->data.cmd[0]);
+				result = def_handlers[*mode](conf->data.cmd[0]);
 				enter_chunk(curr);
-				execute_keys_general(info->data.cmd + 1, 0, 1, curr->no_remap);
+				execute_keys_general(conf->data.cmd + 1, 0, 1, curr->no_remap);
 				leave_chunk(curr);
 			}
 			else
 			{
 				int i;
-				for(i = 0; info->data.cmd[i] != '\0'; i++)
-					result = def_handlers[*mode](info->data.cmd[i]);
+				for(i = 0; conf->data.cmd[i] != '\0'; i++)
+					result = def_handlers[*mode](conf->data.cmd[i]);
 			}
 		}
 		return result;
