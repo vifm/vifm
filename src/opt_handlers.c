@@ -1214,7 +1214,11 @@ sort_handler(OPT_OP op, optval_t val)
 
 		if((pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum),
 				buf)) == -1)
+		{
+			text_buffer_addf("Skipped unknown 'sort' value: %s", buf);
+			error = 1;
 			continue;
+		}
 		pos++;
 
 		for(j = 0; j < i; j++)
