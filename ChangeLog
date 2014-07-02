@@ -42,6 +42,8 @@
 	Do not reset selection on navigating to a mark in current directory.
 	Thanks to filterfalse.
 
+	Display error on encountering unknown values assigned to 'sort' option.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
