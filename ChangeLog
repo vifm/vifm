@@ -70,6 +70,9 @@
 	Fixed segmentation fault during startup in a small terminal on OS X.
 	Thanks to Daniel Dettlaff (a.k.a. dmilith).
 
+	Fixed right aligned cropping for CJK (e.g. viewcolumns={name}..,{} could
+	print one more character position or fail due to assertion).
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

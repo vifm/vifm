@@ -286,10 +286,13 @@ columns_format_line(const columns_t cols, const void *data,
 		 * character inside previous column. */
 		if(prev_col_end > cur_col_start)
 		{
+			const size_t prev_col_max_width = (cur_col_start > prev_col_start)
+			                                ? (cur_col_start - prev_col_start)
+			                                : 0UL;
 			const size_t break_point = get_real_string_width(prev_col_buf,
-					cur_col_start - prev_col_start);
+					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
-			fill_gap_pos(data, get_width_on_screen(prev_col_buf), cur_col_start);
+			fill_gap_pos(data, prev_col_start + get_width_on_screen(prev_col_buf), cur_col_start);
 		}
 		else
 		{
@@ -329,9 +332,24 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 	}
 	else
 	{
+		int extra_spaces;
+
 		const size_t truncate_pos = get_real_string_width(buf, len - max_col_width);
-		const char *const new_beginning = buf + truncate_pos;
-		memmove(buf, new_beginning, strlen(new_beginning) + 1);
+		const char *new_beginning = buf + truncate_pos;
+
+		extra_spaces = 0;
+		while(get_width_on_screen(new_beginning) > max_col_width)
+		{
+			++extra_spaces;
+			new_beginning += get_char_width(new_beginning);
+		}
+
+		memmove(buf + extra_spaces, new_beginning, strlen(new_beginning) + 1);
+		if(extra_spaces != 0)
+		{
+			memset(buf, ' ', extra_spaces);
+		}
+
 		assert(get_width_on_screen(buf) == max_col_width && "Column isn't filled.");
 	}
 

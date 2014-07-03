@@ -169,6 +169,27 @@ test_filling(void)
 	assert_string_equal(expected, print_buffer);
 }
 
+static void
+test_right_filling(void)
+{
+	static column_info_t column_infos[1] =
+	{
+		{ .column_id = COL2_ID, .full_width = 0UL, .text_width = 0UL,
+		  .align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_ELLIPSIS, },
+	};
+	static const char expected[] = ".";
+
+	columns_t cols = columns_create();
+	columns_add_column(cols, column_infos[0]);
+
+	memset(print_buffer, '\0', 80);
+	columns_format_line(cols, NULL, 1);
+
+	columns_free(cols);
+
+	assert_string_equal(expected, print_buffer);
+}
+
 void
 utf8_tests(void)
 {
@@ -191,6 +212,7 @@ utf8_tests(void)
 		run_test(test_none_cropping_allows_for_correct_gaps);
 		run_test(test_add_ellipsis_ok);
 		run_test(test_filling);
+		run_test(test_right_filling);
 	}
 
 	test_fixture_end();
