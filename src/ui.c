@@ -942,6 +942,8 @@ only_layout(FileView *view, int screen_x, int screen_y)
 static void
 vertical_layout(int screen_x, int screen_y)
 {
+	const int border_height = screen_y - 3 + !cfg.last_status;
+
 	int splitter_pos;
 	int splitter_width;
 
@@ -959,12 +961,12 @@ vertical_layout(int screen_x, int screen_y)
 		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
-	wresize(lwin.win, screen_y - 3 + !cfg.last_status, splitter_pos - 1);
+	wresize(lwin.win, border_height, splitter_pos - 1);
 	mvwin(lwin.win, 1, 1);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(mborder, screen_y - 2, splitter_width);
+	wresize(mborder, border_height, splitter_width);
 	mvwin(mborder, 1, splitter_pos);
 
 	mvwin(ltop_line1, 0, 0);
@@ -979,7 +981,7 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.title, 0, splitter_pos + splitter_width);
 
-	wresize(rwin.win, screen_y - 3 + !cfg.last_status,
+	wresize(rwin.win, border_height,
 			screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.win, 1, splitter_pos + splitter_width);
 }
@@ -1040,6 +1042,7 @@ resize_all(void)
 	static float prev_x = -1.f, prev_y = -1.f;
 
 	int screen_x, screen_y;
+	int border_height;
 
 	update_geometry();
 	getmaxyx(stdscr, screen_y, screen_x);
@@ -1097,14 +1100,16 @@ resize_all(void)
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
 	mvwin(error_win, (screen_y - 10)/2, 1);
 
+	border_height = screen_y - 3 + !cfg.last_status;
+
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(lborder, screen_y - 2, 1);
+	wresize(lborder, border_height, 1);
 	mvwin(lborder, 1, 0);
 
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(rborder, screen_y - 2, 1);
+	wresize(rborder, border_height, 1);
 	mvwin(rborder, 1, screen_x - 1);
 
 	if(curr_stats.number_of_windows == 1)
