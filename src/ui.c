@@ -87,6 +87,7 @@ static WINDOW *rtop_line2;
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 static void update_attributes(void);
+static void create_windows(void);
 static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -790,7 +791,6 @@ int
 setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
-	int x, y;
 
 	initscr();
 	noecho();
@@ -814,145 +814,13 @@ setup_ncurses_interface(void)
 
 	load_def_scheme();
 
-	werase(stdscr);
+	create_windows();
 
-	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
-	wbkgdset(menu_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(menu_win, cfg.cs.color[WIN_COLOR].attr);
-	werase(menu_win);
+	cfg.tab_stop = TABSIZE;
 
-	sort_win = newwin(SORT_OPTION_COUNT + 5, SORT_WIN_WIDTH,
-			(screen_y - SORT_OPTION_COUNT)/2, (screen_x - SORT_WIN_WIDTH)/2);
-	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(sort_win, cfg.cs.color[WIN_COLOR].attr);
-	werase(sort_win);
-
-	change_win = newwin(20, 30, (screen_y - 20)/2, (screen_x -30)/2);
-	wbkgdset(change_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(change_win, cfg.cs.color[WIN_COLOR].attr);
-	werase(change_win);
-
-	error_win = newwin(10, screen_x -2, (screen_y -10)/2, 1);
-	wbkgdset(error_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(error_win, cfg.cs.color[WIN_COLOR].attr);
-	werase(error_win);
-
-	lborder = newwin(screen_y - 2, 1, 1, 0);
-	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
-			cfg.cs.color[BORDER_COLOR].attr);
-	werase(lborder);
-
-	if(curr_stats.number_of_windows == 1)
-		lwin.title = newwin(1, screen_x - 2, 0, 1);
-	else
-		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
-
-	wbkgdset(lwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
-			(cfg.cs.color[TOP_LINE_SEL_COLOR].attr & A_REVERSE));
-	wattrset(lwin.title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr & ~A_REVERSE);
-	werase(lwin.title);
-
-	if(curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
-	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
-
-	wbkgdset(lwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(lwin.win, cfg.cs.color[WIN_COLOR].attr);
-	werase(lwin.win);
-	getmaxyx(lwin.win, y, x);
-	lwin.window_rows = y - 1;
-	lwin.window_cells = y;
-	lwin.window_width = x - 1;
-
-	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
-			screen_x/2 - 1 + screen_x%2);
-	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
-			cfg.cs.color[BORDER_COLOR].attr);
-	werase(mborder);
-
-	ltop_line1 = newwin(1, 1, 0, 0);
-	wbkgdset(ltop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(ltop_line1);
-
-	ltop_line2 = newwin(1, 1, 0, 0);
-	wbkgdset(ltop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(ltop_line2);
-
-	top_line = newwin(1, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
-	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(top_line);
-
-	rtop_line1 = newwin(1, 1, 0, screen_x - 1);
-	wbkgdset(rtop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(rtop_line1);
-
-	rtop_line2 = newwin(1, 1, 0, screen_x - 1);
-	wbkgdset(rtop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(rtop_line2);
-
-	if(curr_stats.number_of_windows == 1)
-		rwin.title = newwin(1, screen_x - 2, 0, 1);
-	else
-		rwin.title = newwin(1, screen_x/2 - 2 + screen_x%2, 0, screen_x/2 + 1);
-	wbkgdset(rwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-			(COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) & A_REVERSE));
-	wattrset(rwin.title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(rwin.title);
-
-	if(curr_stats.number_of_windows == 1)
-		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
-	else
-		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
-				screen_x/2 + 1);
-
-	wbkgdset(rwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
-	wattrset(rwin.win, cfg.cs.color[WIN_COLOR].attr);
-	werase(rwin.win);
-	getmaxyx(rwin.win, y, x);
-	rwin.window_rows = y - 1;
-	rwin.window_cells = y;
-	rwin.window_width = x - 1;
-
-	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
-	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
-			cfg.cs.color[BORDER_COLOR].attr);
-	werase(rborder);
-
-	stat_win = newwin(1, screen_x, screen_y - 2, 0);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
-			cfg.cs.color[STATUS_LINE_COLOR].attr);
-	werase(stat_win);
-
-	status_bar = newwin(1, screen_x - FIELDS_WIDTH, screen_y - 1, 0);
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
-	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
-	werase(status_bar);
-
-	pos_win = newwin(1, POS_WIN_WIDTH, screen_y - 1, screen_x - POS_WIN_WIDTH);
-	wattrset(pos_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
-	werase(pos_win);
-
-	input_win = newwin(1, INPUT_WIN_WIDTH, screen_y - 1, screen_x - FIELDS_WIDTH);
-	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
-	werase(input_win);
-
-	cfg.tab_stop = TABSIZE;
 
 #if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
 #ifdef HAVE_SET_ESCDELAY_FUNC
@@ -964,6 +832,42 @@ setup_ncurses_interface(void)
 	update_geometry();
 
 	return 1;
+}
+
+/* Initializes all WINDOW variables by calling newwin() to create ncurses
+ * windows. */
+static void
+create_windows(void)
+{
+	menu_win = newwin(1, 1, 0, 0);
+	sort_win = newwin(1, 1, 0, 0);
+	change_win = newwin(1, 1, 0, 0);
+	error_win = newwin(1, 1, 0, 0);
+
+	lborder = newwin(1, 1, 0, 0);
+
+	lwin.title = newwin(1, 1, 0, 0);
+	lwin.win = newwin(1, 1, 0, 0);
+
+	mborder = newwin(1, 1, 0, 0);
+
+	ltop_line1 = newwin(1, 1, 0, 0);
+	ltop_line2 = newwin(1, 1, 0, 0);
+
+	top_line = newwin(1, 1, 0, 0);
+
+	rtop_line1 = newwin(1, 1, 0, 0);
+	rtop_line2 = newwin(1, 1, 0, 0);
+
+	rwin.title = newwin(1, 1, 0, 0);
+	rwin.win = newwin(1, 1, 0, 0);
+
+	rborder = newwin(1, 1, 0, 0);
+
+	stat_win = newwin(1, 1, 0, 0);
+	status_bar = newwin(1, 1, 0, 0);
+	pos_win = newwin(1, 1, 0, 0);
+	input_win = newwin(1, 1, 0, 0);
 }
 
 void
@@ -1016,6 +920,8 @@ only_layout(FileView *view, int screen_x, int screen_y)
 static void
 vertical_layout(int screen_x, int screen_y)
 {
+	const int border_height = screen_y - 3 + !cfg.last_status;
+
 	int splitter_pos;
 	int splitter_width;
 
@@ -1033,12 +939,14 @@ vertical_layout(int screen_x, int screen_y)
 		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
-	wresize(lwin.win, screen_y - 3 + !cfg.last_status, splitter_pos - 1);
+	mvwin(lwin.title, 0, 1);
+
+	wresize(lwin.win, border_height, splitter_pos - 1);
 	mvwin(lwin.win, 1, 1);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(mborder, screen_y - 2, splitter_width);
+	wresize(mborder, border_height, splitter_width);
 	mvwin(mborder, 1, splitter_pos);
 
 	mvwin(ltop_line1, 0, 0);
@@ -1053,7 +961,7 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.title, 0, splitter_pos + splitter_width);
 
-	wresize(rwin.win, screen_y - 3 + !cfg.last_status,
+	wresize(rwin.win, border_height,
 			screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.win, 1, splitter_pos + splitter_width);
 }
@@ -1114,6 +1022,7 @@ resize_all(void)
 	static float prev_x = -1.f, prev_y = -1.f;
 
 	int screen_x, screen_y;
+	int border_height;
 
 	update_geometry();
 	getmaxyx(stdscr, screen_y, screen_x);
@@ -1148,37 +1057,21 @@ resize_all(void)
 	prev_x = screen_x;
 	prev_y = screen_y;
 
-	werase(stdscr);
-	werase(mborder);
-	werase(ltop_line1);
-	werase(ltop_line2);
-	werase(top_line);
-	werase(rtop_line1);
-	werase(rtop_line2);
-	werase(lwin.title);
-	werase(lwin.win);
-	werase(rwin.title);
-	werase(rwin.win);
-	werase(stat_win);
-	werase(pos_win);
-	werase(input_win);
-	werase(rborder);
-	werase(lborder);
-	werase(status_bar);
-
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
 	mvwin(error_win, (screen_y - 10)/2, 1);
 
+	border_height = screen_y - 3 + !cfg.last_status;
+
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(lborder, screen_y - 2, 1);
+	wresize(lborder, border_height, 1);
 	mvwin(lborder, 1, 0);
 
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(rborder, screen_y - 2, 1);
+	wresize(rborder, border_height, 1);
 	mvwin(rborder, 1, screen_x - 1);
 
 	if(curr_stats.number_of_windows == 1)

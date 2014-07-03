@@ -64,6 +64,12 @@
 	Fixed processing of marks command followed by anything in right-hand side of
 	a mapping.  Thanks to filterfalse.
 
+	Fixed a minor UI glitch with drawing rightmost character position of the
+	stat window after startup.
+
+	Fixed segmentation fault during startup in a small terminal on OS X.
+	Thanks to Daniel Dettlaff (a.k.a. dmilith).
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
