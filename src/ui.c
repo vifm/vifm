@@ -1077,24 +1077,6 @@ resize_all(void)
 	prev_x = screen_x;
 	prev_y = screen_y;
 
-	werase(stdscr);
-	werase(mborder);
-	werase(ltop_line1);
-	werase(ltop_line2);
-	werase(top_line);
-	werase(rtop_line1);
-	werase(rtop_line2);
-	werase(lwin.title);
-	werase(lwin.win);
-	werase(rwin.title);
-	werase(rwin.win);
-	werase(stat_win);
-	werase(pos_win);
-	werase(input_win);
-	werase(rborder);
-	werase(lborder);
-	werase(status_bar);
-
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
