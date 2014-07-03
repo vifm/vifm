@@ -2,8 +2,10 @@
 
 #include "seatest.h"
 
-#include "test.h"
+#include "../../src/utils/macros.h"
 #include "../../src/column_view.h"
+
+#include "test.h"
 
 static const size_t MAX_WIDTH = 40;
 static char print_buffer[40 + 1];
@@ -34,11 +36,15 @@ column2_short_func(int id, const void *data, size_t buf_len, char *buf)
 }
 
 static void
-perform_test(column_info_t column_infos[2])
+perform_test(column_info_t column_infos[], int n)
 {
+	int i;
 	columns_t cols = columns_create();
-	columns_add_column(cols, column_infos[0]);
-	columns_add_column(cols, column_infos[1]);
+
+	for(i = 0; i < n; ++i)
+	{
+		columns_add_column(cols, column_infos[i]);
+	}
 
 	memset(print_buffer, ' ', MAX_WIDTH);
 	columns_format_line(cols, NULL, MAX_WIDTH);
@@ -74,7 +80,7 @@ test_none_align_left(void)
 	};
 	static const char expected[] = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -91,7 +97,7 @@ test_ellipsis_align_left(void)
 	};
 	static const char expected[] = "aaaaaaaaaaaa...bbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -108,7 +114,7 @@ test_truncating_align_left(void)
 	};
 	static const char expected[] = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -125,7 +131,7 @@ test_none_align_right(void)
 	};
 	static const char expected[] = "aaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -143,7 +149,27 @@ test_none_align_right_overlapping(void)
 	static const char expected[] = "aaaaaaaaaaaaaaazzzzzzzzzzzzzzz     xxxxx";
 
 	col2_next = column2_short_func;
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
+
+	assert_string_equal(expected, print_buffer);
+}
+
+static void
+test_no_overlapping(void)
+{
+	static column_info_t column_infos[3] =
+	{
+		{ .column_id = COL2_ID, .full_width = 0UL,     .text_width = 0UL,
+		  .align = AT_LEFT,     .sizing = ST_AUTO,     .cropping = CT_ELLIPSIS, },
+		{ .column_id = COL2_ID, .full_width = 8UL,     .text_width = 8UL,
+		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+		{ .column_id = COL2_ID, .full_width = 4UL,     .text_width = 4UL,
+		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_NONE, },
+	};
+	static const char expected[] = "xxxxx                          xxxxxxxxx";
+
+	col2_next = column2_short_func;
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -160,7 +186,7 @@ test_ellipsis_align_right(void)
 	};
 	static const char expected[] = "...zzzzzzzzzzzzbbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -177,7 +203,7 @@ test_truncating_align_right(void)
 	};
 	static const char expected[] = "aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbb";
 
-	perform_test(column_infos);
+	perform_test(column_infos, ARRAY_LEN(column_infos));
 
 	assert_string_equal(expected, print_buffer);
 }
@@ -218,6 +244,7 @@ cropping_tests(void)
 
 	run_test(test_none_align_right);
 	run_test(test_none_align_right_overlapping);
+	run_test(test_no_overlapping);
 	run_test(test_ellipsis_align_right);
 	run_test(test_truncating_align_right);
 

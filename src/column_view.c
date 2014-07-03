@@ -286,10 +286,13 @@ columns_format_line(const columns_t cols, const void *data,
 		 * character inside previous column. */
 		if(prev_col_end > cur_col_start)
 		{
+			const size_t prev_col_max_width = (cur_col_start > prev_col_start)
+			                                ? (cur_col_start - prev_col_start)
+			                                : 0UL;
 			const size_t break_point = get_real_string_width(prev_col_buf,
-					cur_col_start - prev_col_start);
+					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
-			fill_gap_pos(data, get_width_on_screen(prev_col_buf), cur_col_start);
+			fill_gap_pos(data, prev_col_start + get_width_on_screen(prev_col_buf), cur_col_start);
 		}
 		else
 		{
