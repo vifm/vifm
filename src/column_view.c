@@ -329,9 +329,24 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 	}
 	else
 	{
+		int extra_spaces;
+
 		const size_t truncate_pos = get_real_string_width(buf, len - max_col_width);
-		const char *const new_beginning = buf + truncate_pos;
-		memmove(buf, new_beginning, strlen(new_beginning) + 1);
+		const char *new_beginning = buf + truncate_pos;
+
+		extra_spaces = 0;
+		while(get_width_on_screen(new_beginning) > max_col_width)
+		{
+			++extra_spaces;
+			new_beginning += get_char_width(new_beginning);
+		}
+
+		memmove(buf + extra_spaces, new_beginning, strlen(new_beginning) + 1);
+		if(extra_spaces != 0)
+		{
+			memset(buf, ' ', extra_spaces);
+		}
+
 		assert(get_width_on_screen(buf) == max_col_width && "Column isn't filled.");
 	}
 
