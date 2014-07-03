@@ -893,7 +893,10 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	werase(error_win);
 
 	getmaxyx(stdscr, sy, sx);
-	getmaxyx(error_win, y, x);
+
+	y = sy - 3 + !cfg.last_status;
+	x = sx - 2;
+	wresize(error_win, y, x);
 
 	z = strlen(message);
 	if(z <= x - 2 && strchr(message, '\n') == NULL)
