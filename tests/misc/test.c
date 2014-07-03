@@ -41,6 +41,7 @@ void read_file_lines_tests(void);
 void if_else_tests(void);
 void split_ext_tests(void);
 void parse_spec_tests(void);
+void minmax_tests(void);
 
 void
 all_tests(void)
@@ -86,6 +87,7 @@ all_tests(void)
 	if_else_tests();
 	split_ext_tests();
 	parse_spec_tests();
+	minmax_tests();
 }
 
 int
