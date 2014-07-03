@@ -87,6 +87,7 @@ static WINDOW *rtop_line2;
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 static void update_attributes(void);
+static void create_windows(void);
 static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -813,12 +814,38 @@ setup_ncurses_interface(void)
 
 	load_def_scheme();
 
+	create_windows();
+
+	cfg.tab_stop = TABSIZE;
+
+#ifdef ENABLE_EXTENDED_KEYS
+	keypad(status_bar, TRUE);
+#endif /* ENABLE_EXTENDED_KEYS */
+
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
+#ifdef HAVE_SET_ESCDELAY_FUNC
+	/* Use ncurses specific function to disable delay after pressing escape key */
+	set_escdelay(0);
+#endif
+#endif
+
+	update_geometry();
+
+	return 1;
+}
+
+/* Initializes all WINDOW variables by calling newwin() to create ncurses
+ * windows. */
+static void
+create_windows(void)
+{
 	menu_win = newwin(1, 1, 0, 0);
 	sort_win = newwin(1, 1, 0, 0);
 	change_win = newwin(1, 1, 0, 0);
 	error_win = newwin(1, 1, 0, 0);
 
 	lborder = newwin(1, 1, 0, 0);
+
 	lwin.title = newwin(1, 1, 0, 0);
 	lwin.win = newwin(1, 1, 0, 0);
 
@@ -838,29 +865,9 @@ setup_ncurses_interface(void)
 	rborder = newwin(1, 1, 0, 0);
 
 	stat_win = newwin(1, 1, 0, 0);
-
 	status_bar = newwin(1, 1, 0, 0);
-
 	pos_win = newwin(1, 1, 0, 0);
-
 	input_win = newwin(1, 1, 0, 0);
-
-	cfg.tab_stop = TABSIZE;
-
-#ifdef ENABLE_EXTENDED_KEYS
-	keypad(status_bar, TRUE);
-#endif /* ENABLE_EXTENDED_KEYS */
-
-#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
-#ifdef HAVE_SET_ESCDELAY_FUNC
-	/* Use ncurses specific function to disable delay after pressing escape key */
-	set_escdelay(0);
-#endif
-#endif
-
-	update_geometry();
-
-	return 1;
 }
 
 void
