@@ -790,7 +790,6 @@ int
 setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
-	int x, y;
 
 	initscr();
 	noecho();
@@ -814,71 +813,43 @@ setup_ncurses_interface(void)
 
 	load_def_scheme();
 
-	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
-	sort_win = newwin(SORT_OPTION_COUNT + 5, SORT_WIN_WIDTH,
-			(screen_y - SORT_OPTION_COUNT)/2, (screen_x - SORT_WIN_WIDTH)/2);
-	change_win = newwin(20, 30, (screen_y - 20)/2, (screen_x -30)/2);
-	error_win = newwin(10, screen_x -2, (screen_y -10)/2, 1);
-	lborder = newwin(screen_y - 2, 1, 1, 0);
+	menu_win = newwin(1, 1, 0, 0);
+	sort_win = newwin(1, 1, 0, 0);
+	change_win = newwin(1, 1, 0, 0);
+	error_win = newwin(1, 1, 0, 0);
 
-	if(curr_stats.number_of_windows == 1)
-		lwin.title = newwin(1, screen_x - 2, 0, 1);
-	else
-		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
+	lborder = newwin(1, 1, 0, 0);
+	lwin.title = newwin(1, 1, 0, 0);
+	lwin.win = newwin(1, 1, 0, 0);
 
-	if(curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
-	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
-
-	getmaxyx(lwin.win, y, x);
-	lwin.window_rows = y - 1;
-	lwin.window_cells = y;
-	lwin.window_width = x - 1;
-
-	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
-			screen_x/2 - 1 + screen_x%2);
+	mborder = newwin(1, 1, 0, 0);
 
 	ltop_line1 = newwin(1, 1, 0, 0);
-
 	ltop_line2 = newwin(1, 1, 0, 0);
 
-	top_line = newwin(1, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
+	top_line = newwin(1, 1, 0, 0);
 
-	rtop_line1 = newwin(1, 1, 0, screen_x - 1);
+	rtop_line1 = newwin(1, 1, 0, 0);
+	rtop_line2 = newwin(1, 1, 0, 0);
 
-	rtop_line2 = newwin(1, 1, 0, screen_x - 1);
+	rwin.title = newwin(1, 1, 0, 0);
+	rwin.win = newwin(1, 1, 0, 0);
 
-	if(curr_stats.number_of_windows == 1)
-		rwin.title = newwin(1, screen_x - 2, 0, 1);
-	else
-		rwin.title = newwin(1, screen_x/2 - 2 + screen_x%2, 0, screen_x/2 + 1);
+	rborder = newwin(1, 1, 0, 0);
 
-	if(curr_stats.number_of_windows == 1)
-		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
-	else
-		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
-				screen_x/2 + 1);
+	stat_win = newwin(1, 1, 0, 0);
 
-	getmaxyx(rwin.win, y, x);
-	rwin.window_rows = y - 1;
-	rwin.window_cells = y;
-	rwin.window_width = x - 1;
+	status_bar = newwin(1, 1, 0, 0);
 
-	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
+	pos_win = newwin(1, 1, 0, 0);
 
-	stat_win = newwin(1, screen_x, screen_y - 2, 0);
+	input_win = newwin(1, 1, 0, 0);
 
-	status_bar = newwin(1, screen_x - FIELDS_WIDTH, screen_y - 1, 0);
+	cfg.tab_stop = TABSIZE;
+
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
-
-	pos_win = newwin(1, POS_WIN_WIDTH, screen_y - 1, screen_x - POS_WIN_WIDTH);
-
-	input_win = newwin(1, INPUT_WIN_WIDTH, screen_y - 1, screen_x - FIELDS_WIDTH);
-
-	cfg.tab_stop = TABSIZE;
 
 #if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
 #ifdef HAVE_SET_ESCDELAY_FUNC
@@ -961,6 +932,8 @@ vertical_layout(int screen_x, int screen_y)
 		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
+	mvwin(lwin.title, 0, 1);
+
 	wresize(lwin.win, border_height, splitter_pos - 1);
 	mvwin(lwin.win, 1, 1);
 
