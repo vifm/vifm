@@ -1326,6 +1326,8 @@ The builtin commands are:
     style (cterm), foreground (ctermfg) or/and background (ctermbg)
     parameters of highlight group of the current default color scheme.
 
+All style values as well as color names are case insensitive.
+
 Available style values (some of them can be combined):
  - bold
  - underline
