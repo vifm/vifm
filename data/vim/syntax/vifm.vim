@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: May 28, 2014
+" Last Change: July 04, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -64,7 +64,45 @@ syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white default lightblack lightred lightgreen lightyellow lightblue
-		\ lightmagenta lightcyan lightwhite
+		\ lightmagenta lightcyan lightwhite Grey0 NavyBlue DarkBlue Blue3 Blue3_2
+		\ Blue1 DarkGreen DeepSkyBlue4 DeepSkyBlue4_2 DeepSkyBlue4_3 DodgerBlue3
+		\ DodgerBlue2 Green4 SpringGreen4 Turquoise4 DeepSkyBlue3 DeepSkyBlue3_2
+		\ DodgerBlue1 Green3 SpringGreen3 DarkCyan LightSeaGreen DeepSkyBlue2
+		\ DeepSkyBlue1 Green3_2 SpringGreen3_2 SpringGreen2 Cyan3 DarkTurquoise
+		\ Turquoise2 Green1 SpringGreen2_2 SpringGreen1 MediumSpringGreen Cyan2
+		\ Cyan1 DarkRed DeepPink4 Purple4 Purple4_2 Purple3 BlueViolet Orange4
+		\ Grey37 MediumPurple4 SlateBlue3 SlateBlue3_2 RoyalBlue1 Chartreuse4
+		\ DarkSeaGreen4 PaleTurquoise4 SteelBlue SteelBlue3 CornflowerBlue
+		\ Chartreuse3 DarkSeaGreen4_2 CadetBlue CadetBlue_2 SkyBlue3 SteelBlue1
+		\ Chartreuse3_2 PaleGreen3 SeaGreen3 Aquamarine3 MediumTurquoise
+		\ SteelBlue1_2 Chartreuse2 SeaGreen2 SeaGreen1 SeaGreen1_2 Aquamarine1
+		\ DarkSlateGray2 DarkRed_2 DeepPink4_2 DarkMagenta DarkMagenta_2 DarkViolet
+		\ Purple Orange4_2 LightPink4 Plum4 MediumPurple3 MediumPurple3_2 SlateBlue1
+		\ Yellow4 Wheat4 Grey53 LightSlateGrey MediumPurple LightSlateBlue Yellow4_2
+		\ DarkOliveGreen3 DarkSeaGreen LightSkyBlue3 LightSkyBlue3_2 SkyBlue2
+		\ Chartreuse2_2 DarkOliveGreen3_2 PaleGreen3_2 DarkSeaGreen3 DarkSlateGray3
+		\ SkyBlue1 Chartreuse1 LightGreen_2 LightGreen_3 PaleGreen1 Aquamarine1_2
+		\ DarkSlateGray1 Red3 DeepPink4_3 MediumVioletRed Magenta3 DarkViolet_2
+		\ Purple_2 DarkOrange3 IndianRed HotPink3 MediumOrchid3 MediumOrchid
+		\ MediumPurple2 DarkGoldenrod LightSalmon3 RosyBrown Grey63 MediumPurple2_2
+		\ MediumPurple1 Gold3 DarkKhaki NavajoWhite3 Grey69 LightSteelBlue3
+		\ LightSteelBlue Yellow3 DarkOliveGreen3_3 DarkSeaGreen3_2 DarkSeaGreen2
+		\ LightCyan3 LightSkyBlue1 GreenYellow DarkOliveGreen2 PaleGreen1_2
+		\ DarkSeaGreen2_2 DarkSeaGreen1 PaleTurquoise1 Red3_2 DeepPink3 DeepPink3_2
+		\ Magenta3_2 Magenta3_3 Magenta2 DarkOrange3_2 IndianRed_2 HotPink3_2
+		\ HotPink2 Orchid MediumOrchid1 Orange3 LightSalmon3_2 LightPink3 Pink3
+		\ Plum3 Violet Gold3_2 LightGoldenrod3 Tan MistyRose3 Thistle3 Plum2
+		\ Yellow3_2 Khaki3 LightGoldenrod2 LightYellow3 Grey84 LightSteelBlue1
+		\ Yellow2 DarkOliveGreen1 DarkOliveGreen1_2 DarkSeaGreen1_2 Honeydew2
+		\ LightCyan1 Red1 DeepPink2 DeepPink1 DeepPink1_2 Magenta2_2 Magenta1
+		\ OrangeRed1 IndianRed1 IndianRed1_2 HotPink HotPink_2 MediumOrchid1_2
+		\ DarkOrange Salmon1 LightCoral PaleVioletRed1 Orchid2 Orchid1 Orange1
+		\ SandyBrown LightSalmon1 LightPink1 Pink1 Plum1 Gold1 LightGoldenrod2_2
+		\ LightGoldenrod2_3 NavajoWhite1 MistyRose1 Thistle1 Yellow1 LightGoldenrod1
+		\ Khaki1 Wheat1 Cornsilk1 Grey100 Grey3 Grey7 Grey11 Grey15 Grey19 Grey23
+		\ Grey27 Grey30 Grey35 Grey39 Grey42 Grey46 Grey50 Grey54 Grey58 Grey62
+		\ Grey66 Grey70 Grey74 Grey78 Grey82 Grey85 Grey89 Grey93
+
 syntax case match
 
 " Options
