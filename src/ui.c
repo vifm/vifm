@@ -88,6 +88,7 @@ static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 static void update_attributes(void);
 static void create_windows(void);
+static void set_static_windows_attrs(void);
 static void update_geometry(void);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -816,6 +817,8 @@ setup_ncurses_interface(void)
 
 	create_windows();
 
+	set_static_windows_attrs();
+
 	cfg.tab_stop = TABSIZE;
 
 #ifdef ENABLE_EXTENDED_KEYS
@@ -868,6 +871,21 @@ create_windows(void)
 	status_bar = newwin(1, 1, 0, 0);
 	pos_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
+}
+
+/* Set attributes for elements of status bar.  This is the only place where it's
+ * done as they are not customizable separately. */
+static void
+set_static_windows_attrs(void)
+{
+	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+
+	wattrset(pos_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+
+	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 }
 
 void
