@@ -171,7 +171,8 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
-static int set_view_filter(FileView *view, const char filter[], int invert);
+static int set_view_filter(FileView *view, const char filter[], int invert,
+		int case_sensitive);
 static const char * get_filter_value(const char filter[]);
 static const char * try_compile_regex(const char regex[], int cflags);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
@@ -2158,14 +2159,16 @@ filter_cmd(const cmd_info_t *cmd_info)
 		else
 		{
 			const int invert_filter = get_filter_inversion_state(cmd_info);
-			set_view_filter(curr_view, NULL, invert_filter);
+			set_view_filter(curr_view, NULL, invert_filter,
+					FILTER_DEF_CASE_SENSITIVITY);
 		}
 		return 0;
 	}
 	else
 	{
 		const int invert_filter = get_filter_inversion_state(cmd_info);
-		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter) != 0;
+		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter,
+				FILTER_DEF_CASE_SENSITIVITY) != 0;
 	}
 }
 
@@ -2187,7 +2190,8 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
  * search pattern.  Returns non-zero if message on the statusbar should be
  * saved, otherwise zero is returned. */
 static int
-set_view_filter(FileView *view, const char filter[], int invert)
+set_view_filter(FileView *view, const char filter[], int invert,
+		int case_sensitive)
 {
 	const char *error_msg;
 
@@ -2201,7 +2205,7 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	}
 
 	view->invert = invert;
-	(void)filter_set(&view->manual_filter, filter);
+	(void)filter_change(&view->manual_filter, filter, case_sensitive);
 	(void)filter_clear(&view->auto_filter);
 	load_saving_pos(view, 1);
 	return 0;
@@ -3811,7 +3815,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		const char *filter_val = strchr(expanded_com, ' ') + 1;
 		const int invert_filter = cfg.filter_inverted_by_default;
-		(void)set_view_filter(curr_view, filter_val, invert_filter);
+		(void)set_view_filter(curr_view, filter_val, invert_filter,
+				FILTER_DEF_CASE_SENSITIVITY);
 
 		external = 0;
 	}
