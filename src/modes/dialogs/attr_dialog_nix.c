@@ -22,6 +22,7 @@
 #include <curses.h>
 
 #include <fcntl.h>
+#include <sys/stat.h> /* S_* */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* uid_t geteuid() */
 
