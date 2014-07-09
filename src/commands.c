@@ -330,7 +330,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
-		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "finish",           .abbr = "fini",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2150,25 +2150,50 @@ filter_cmd(const cmd_info_t *cmd_info)
 				auto_state, curr_view->auto_filter.raw);
 		return 1;
 	}
+
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
 		{
 			toggle_filter_inversion(curr_view);
+			return 0;
 		}
 		else
 		{
 			const int invert_filter = get_filter_inversion_state(cmd_info);
-			set_view_filter(curr_view, NULL, invert_filter,
-					FILTER_DEF_CASE_SENSITIVITY);
+			return set_view_filter(curr_view, NULL, invert_filter,
+					FILTER_DEF_CASE_SENSITIVITY) != 0;
 		}
-		return 0;
 	}
 	else
 	{
-		const int invert_filter = get_filter_inversion_state(cmd_info);
+		int invert_filter;
+		int case_sensitive = FILTER_DEF_CASE_SENSITIVITY;
+
+		if(cmd_info->argc == 2)
+		{
+			/* TODO: maybe extract into a function to generalize code with
+			 * substitute_cmd(). */
+			const char *flags = cmd_info->argv[1];
+			while(*flags != '\0')
+			{
+				switch(*flags)
+				{
+					case 'i': case_sensitive = 0; break;
+					case 'I': case_sensitive = 1; break;
+
+					default:
+						return CMDS_ERR_TRAILING_CHARS;
+				}
+
+				++flags;
+			}
+		}
+
+		invert_filter = get_filter_inversion_state(cmd_info);
+
 		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter,
-				FILTER_DEF_CASE_SENSITIVITY) != 0;
+				case_sensitive) != 0;
 	}
 }
 
@@ -3280,6 +3305,8 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 3)
 	{
+		/* TODO: maybe extract into a function to generalize code with
+		 * filter_cmd(). */
 		const char *flags = cmd_info->argv[2];
 		while(*flags != '\0')
 		{

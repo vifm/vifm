@@ -1,4 +1,4 @@
-.TH vifm 1 "July 04, 2014" "" "Vifm"
+.TH vifm 1 "July 09, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1410,16 +1410,26 @@ name of current file is appended as if command ended with %c macro.  See
 .EX
 .TP
 .BI ":filter[!] regular_expression_pattern"
-.BI ":filter[!] /regular_expression_pattern/"
+.BI ":filter[!] /regular_expression_pattern/[flags]"
 will filter all the files out of the directory listing that match the regular
 expression.  Using second variant you can use the bar ('|') symbol without
 escaping.  Empty regular expression (specified by //, "" or '') means using of
 the last search pattern.  Use '!' to control state of filter inversion after
 updating filter value (also see 'cpoptions' description).  Filter is matched
 case sensitively on *nix and case insensitively on Windows.
-.br
-:filter /\.o$ would filter all files ending in .o from the filelist.
-.br
+
+Supported flags:
+ \- "i" makes filter case insensitive;
+ \- "I" makes filter case sensitive.
+
+Flags might be repeated multiple times, later ones win (e.g. "iiiI" is
+equivalent to "I" and "IiIi" is the same as "i").
+
+.EX
+" filter all files ending in .o from the filelist.
+:filter /\.o$/
+.EE
+
 Note: vifm uses extended regular expressions.
 .TP
 .BI ":filter"
