@@ -3276,17 +3276,21 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 3)
 	{
-		int i;
-		for(i = 0; cmd_info->argv[2][i] != '\0'; i++)
+		const char *flags = cmd_info->argv[2];
+		while(*flags != '\0')
 		{
-			if(cmd_info->argv[2][i] == 'i')
-				ic = 1;
-			else if(cmd_info->argv[2][i] == 'I')
-				ic = -1;
-			else if(cmd_info->argv[2][i] == 'g')
-				glob = !glob;
-			else
-				return CMDS_ERR_TRAILING_CHARS;
+			switch(*flags)
+			{
+				case 'i': ic =  1; break;
+				case 'I': ic = -1; break;
+
+				case 'g': glob = !glob; break;
+
+				default:
+					return CMDS_ERR_TRAILING_CHARS;
+			};
+
+			++flags;
 		}
 	}
 
