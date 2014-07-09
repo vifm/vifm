@@ -9,6 +9,12 @@
 	Added more human-friendly (xterm-like) names for 256 colors.  Thanks to
 	Michael Vetter (a.k.a. jubalh).
 
+	Added i and I flags to :filter command to control filter case sensitivity.
+	Thanks to filterfalse.
+
+	Added marks to the output of :filter? command to designate whether
+	non-empty filter is case sensitive.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

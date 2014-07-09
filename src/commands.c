@@ -171,7 +171,10 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
-static int set_view_filter(FileView *view, const char filter[], int invert);
+static void display_filters_info(const FileView *view);
+static char * get_filter_info(const char name[], const filter_t *filter);
+static int set_view_filter(FileView *view, const char filter[], int invert,
+		int case_sensitive);
 static const char * get_filter_value(const char filter[]);
 static const char * try_compile_regex(const char regex[], int cflags);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
@@ -329,7 +332,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
-		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "finish",           .abbr = "fini",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2137,36 +2140,94 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		const char *const local = curr_view->local_filter.filter.raw;
-		const char *const local_state = (local[0] == '\0') ? " is empty" : ": ";
-		const char *const name_state = (curr_view->manual_filter.raw[0] == '\0') ?
-				" is empty" : ": ";
-		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
-				" is empty" : ": ";
-		status_bar_messagef("Local filter%s%s\nName filter%s%s\nAuto filter%s%s",
-				local_state, local,
-				name_state, curr_view->manual_filter.raw,
-				auto_state, curr_view->auto_filter.raw);
+		display_filters_info(curr_view);
 		return 1;
 	}
+
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
 		{
 			toggle_filter_inversion(curr_view);
+			return 0;
 		}
 		else
 		{
 			const int invert_filter = get_filter_inversion_state(cmd_info);
-			set_view_filter(curr_view, NULL, invert_filter);
+			return set_view_filter(curr_view, NULL, invert_filter,
+					FILTER_DEF_CASE_SENSITIVITY) != 0;
 		}
-		return 0;
 	}
 	else
 	{
-		const int invert_filter = get_filter_inversion_state(cmd_info);
-		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter) != 0;
+		int invert_filter;
+		int case_sensitive = FILTER_DEF_CASE_SENSITIVITY;
+
+		if(cmd_info->argc == 2)
+		{
+			/* TODO: maybe extract into a function to generalize code with
+			 * substitute_cmd(). */
+			const char *flags = cmd_info->argv[1];
+			while(*flags != '\0')
+			{
+				switch(*flags)
+				{
+					case 'i': case_sensitive = 0; break;
+					case 'I': case_sensitive = 1; break;
+
+					default:
+						return CMDS_ERR_TRAILING_CHARS;
+				}
+
+				++flags;
+			}
+		}
+
+		invert_filter = get_filter_inversion_state(cmd_info);
+
+		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter,
+				case_sensitive) != 0;
 	}
+}
+
+/* Displays state of all filters on the status bar. */
+static void
+display_filters_info(const FileView *view)
+{
+	char *const localf = get_filter_info("Local", &view->local_filter.filter);
+	char *const manualf = get_filter_info("Name", &view->manual_filter);
+	char *const autof = get_filter_info("Auto", &view->auto_filter);
+
+	status_bar_messagef("%s\n%s\n%s", localf, manualf, autof);
+
+	free(localf);
+	free(manualf);
+	free(autof);
+}
+
+/* Composes a description string for given filter.  Returns NULL on out of
+ * memory error, otherwise a newly allocated string, which should be freed by
+ * the caller, is returned. */
+static char *
+get_filter_info(const char name[], const filter_t *filter)
+{
+	const int is_empty = (filter->raw[0] == '\0');
+
+	const char *state_str;
+	const char *flags_str;
+
+	if(is_empty)
+	{
+		state_str = " is empty";
+		flags_str = "";
+	}
+	else
+	{
+		state_str = ": ";
+		flags_str = (filter->cflags & REG_ICASE) ? " (i)" : " (I)";
+	}
+
+	return format_str("%s filter%s%s%s", name, flags_str, state_str, filter->raw);
 }
 
 /* Returns value for filter inversion basing on current configuration and
@@ -2187,7 +2248,8 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
  * search pattern.  Returns non-zero if message on the statusbar should be
  * saved, otherwise zero is returned. */
 static int
-set_view_filter(FileView *view, const char filter[], int invert)
+set_view_filter(FileView *view, const char filter[], int invert,
+		int case_sensitive)
 {
 	const char *error_msg;
 
@@ -2201,7 +2263,7 @@ set_view_filter(FileView *view, const char filter[], int invert)
 	}
 
 	view->invert = invert;
-	(void)filter_set(&view->manual_filter, filter);
+	(void)filter_change(&view->manual_filter, filter, case_sensitive);
 	(void)filter_clear(&view->auto_filter);
 	load_saving_pos(view, 1);
 	return 0;
@@ -3276,17 +3338,23 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 3)
 	{
-		int i;
-		for(i = 0; cmd_info->argv[2][i] != '\0'; i++)
+		/* TODO: maybe extract into a function to generalize code with
+		 * filter_cmd(). */
+		const char *flags = cmd_info->argv[2];
+		while(*flags != '\0')
 		{
-			if(cmd_info->argv[2][i] == 'i')
-				ic = 1;
-			else if(cmd_info->argv[2][i] == 'I')
-				ic = -1;
-			else if(cmd_info->argv[2][i] == 'g')
-				glob = !glob;
-			else
-				return CMDS_ERR_TRAILING_CHARS;
+			switch(*flags)
+			{
+				case 'i': ic =  1; break;
+				case 'I': ic = -1; break;
+
+				case 'g': glob = !glob; break;
+
+				default:
+					return CMDS_ERR_TRAILING_CHARS;
+			};
+
+			++flags;
 		}
 	}
 
@@ -3807,7 +3875,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		const char *filter_val = strchr(expanded_com, ' ') + 1;
 		const int invert_filter = cfg.filter_inverted_by_default;
-		(void)set_view_filter(curr_view, filter_val, invert_filter);
+		(void)set_view_filter(curr_view, filter_val, invert_filter,
+				FILTER_DEF_CASE_SENSITIVITY);
 
 		external = 0;
 	}

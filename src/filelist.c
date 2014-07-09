@@ -74,12 +74,6 @@
 #include "types.h"
 #include "ui.h"
 
-#ifdef _WIN32
-#define CASE_SENSATIVE_FILTER 0
-#else
-#define CASE_SENSATIVE_FILTER 1
-#endif
-
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
 
@@ -506,7 +500,7 @@ reset_filter(filter_t *filter)
 {
 	if(filter->raw == NULL)
 	{
-		filter_init(filter, CASE_SENSATIVE_FILTER);
+		filter_init(filter, FILTER_DEF_CASE_SENSITIVITY);
 	}
 	else
 	{

@@ -29,6 +29,13 @@
 #include "utils/test_helpers.h"
 #include "ui.h"
 
+/* Default value of case sensitivity for filters. */
+#ifdef _WIN32
+#define FILTER_DEF_CASE_SENSITIVITY 0
+#else
+#define FILTER_DEF_CASE_SENSITIVITY 1
+#endif
+
 /* Initialization/termination functions. */
 
 /* Prepares views for the first time. */
