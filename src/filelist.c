@@ -74,12 +74,6 @@
 #include "types.h"
 #include "ui.h"
 
-#ifdef _WIN32
-#define FILTER_DEF_CASE_SENSITIVITY 0
-#else
-#define FILTER_DEF_CASE_SENSITIVITY 1
-#endif
-
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
 
