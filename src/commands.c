@@ -171,6 +171,8 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
+static void display_filters_info(const FileView *view);
+static char * get_filter_info(const char name[], const filter_t *filter);
 static int set_view_filter(FileView *view, const char filter[], int invert,
 		int case_sensitive);
 static const char * get_filter_value(const char filter[]);
@@ -2138,16 +2140,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		const char *const local = curr_view->local_filter.filter.raw;
-		const char *const local_state = (local[0] == '\0') ? " is empty" : ": ";
-		const char *const name_state = (curr_view->manual_filter.raw[0] == '\0') ?
-				" is empty" : ": ";
-		const char *const auto_state = (curr_view->auto_filter.raw[0] == '\0') ?
-				" is empty" : ": ";
-		status_bar_messagef("Local filter%s%s\nName filter%s%s\nAuto filter%s%s",
-				local_state, local,
-				name_state, curr_view->manual_filter.raw,
-				auto_state, curr_view->auto_filter.raw);
+		display_filters_info(curr_view);
 		return 1;
 	}
 
@@ -2195,6 +2188,46 @@ filter_cmd(const cmd_info_t *cmd_info)
 		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter,
 				case_sensitive) != 0;
 	}
+}
+
+/* Displays state of all filters on the status bar. */
+static void
+display_filters_info(const FileView *view)
+{
+	char *const localf = get_filter_info("Local", &view->local_filter.filter);
+	char *const manualf = get_filter_info("Name", &view->manual_filter);
+	char *const autof = get_filter_info("Auto", &view->auto_filter);
+
+	status_bar_messagef("%s\n%s\n%s", localf, manualf, autof);
+
+	free(localf);
+	free(manualf);
+	free(autof);
+}
+
+/* Composes a description string for given filter.  Returns NULL on out of
+ * memory error, otherwise a newly allocated string, which should be freed by
+ * the caller, is returned. */
+static char *
+get_filter_info(const char name[], const filter_t *filter)
+{
+	const int is_empty = (filter->raw[0] == '\0');
+
+	const char *state_str;
+	const char *flags_str;
+
+	if(is_empty)
+	{
+		state_str = " is empty";
+		flags_str = "";
+	}
+	else
+	{
+		state_str = ": ";
+		flags_str = (filter->cflags & REG_ICASE) ? " (i)" : " (I)";
+	}
+
+	return format_str("%s filter%s%s%s", name, flags_str, state_str, filter->raw);
 }
 
 /* Returns value for filter inversion basing on current configuration and
