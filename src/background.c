@@ -34,7 +34,7 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h> /* ssize_t */
+#include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
 #include <sys/select.h> /* FD_* select */
 #include <sys/time.h> /* timeval */
@@ -225,7 +225,7 @@ int
 background_and_wait_for_status(char *cmd)
 {
 #ifndef _WIN32
-	int pid;
+	pid_t pid;
 	int status;
 	extern char **environ;
 
@@ -233,9 +233,12 @@ background_and_wait_for_status(char *cmd)
 		return 1;
 
 	pid = fork();
-	if(pid == -1)
+	if(pid == (pid_t)-1)
+	{
 		return -1;
-	if(pid == 0)
+	}
+
+	if(pid == (pid_t)0)
 	{
 		char *args[4];
 
