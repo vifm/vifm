@@ -34,11 +34,11 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h> /* ssize_t */
+#include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
 #include <sys/select.h> /* FD_* select */
 #include <sys/time.h> /* timeval */
-#include <sys/wait.h> /* WEXITSTATUS() */
+#include <sys/wait.h> /* WEXITSTATUS() waitpid() */
 #endif
 
 #include "cfg/config.h"
@@ -220,23 +220,34 @@ job_free(job_t *const job)
 	free(job);
 }
 
-/* Used for FUSE mounting and unmounting only */
+/* Used for FUSE mounting and unmounting only. */
 int
-background_and_wait_for_status(char *cmd)
+background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 {
 #ifndef _WIN32
-	int pid;
+	pid_t pid;
 	int status;
-	extern char **environ;
 
-	if(cmd == 0)
+	if(cancellable)
+	{
+		*cancelled = 0;
+	}
+
+	if(cmd == NULL)
+	{
 		return 1;
+	}
 
 	pid = fork();
-	if(pid == -1)
-		return -1;
-	if(pid == 0)
+	if(pid == (pid_t)-1)
 	{
+		return -1;
+	}
+
+	if(pid == (pid_t)0)
+	{
+		extern char **environ;
+
 		char *args[4];
 
 		args[0] = cfg.shell;
@@ -246,16 +257,33 @@ background_and_wait_for_status(char *cmd)
 		(void)execve(cfg.shell, args, environ);
 		exit(127);
 	}
-	do
+
+	if(cancellable)
 	{
-		if(waitpid(pid, &status, 0) == -1)
+		ui_cancellation_enable();
+	}
+
+	while(waitpid(pid, &status, 0) == -1)
+	{
+		if(errno != EINTR)
 		{
-			if(errno != EINTR)
-				return -1;
+			status = -1;
+			break;
 		}
-		else
-			return status;
-	}while(1);
+		process_cancel_request(pid);
+	}
+
+	if(cancellable)
+	{
+		if(ui_cancellation_requested())
+		{
+			*cancelled = 1;
+		}
+		ui_cancellation_disable();
+	}
+
+	return status;
+
 #else
 	return -1;
 #endif
