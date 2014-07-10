@@ -227,7 +227,6 @@ background_and_wait_for_status(char *cmd)
 #ifndef _WIN32
 	pid_t pid;
 	int status;
-	extern char **environ;
 
 	if(cmd == 0)
 		return 1;
@@ -240,6 +239,8 @@ background_and_wait_for_status(char *cmd)
 
 	if(pid == (pid_t)0)
 	{
+		extern char **environ;
+
 		char *args[4];
 
 		args[0] = cfg.shell;
