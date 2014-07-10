@@ -15,6 +15,9 @@
 	Added filter flags to output of :filter? command and formatted output as a
 	table.
 
+	Added cancellation (handling of Ctrl-C) for FUSE mounting (but not
+	unmounting).
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

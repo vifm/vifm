@@ -183,3 +183,4 @@ Code improvements.
         pointers.
     Be consistent on menu titles (some of them have spaces, some don't).
     put_competion() function that doesn't duplicate string parameter.
+    Maybe move cancellation out of ui.c.

@@ -2039,6 +2039,7 @@ Ctrl-Break shortcut instead of Ctrl-C.
 
 There are two types of operations that can be cancelled:
  - file system operations;
+ - mounting with FUSE (but not unmounting as it can cause loss of data);
  - calls of external applications.
 
 Note that vifm never terminates applications, it sends SIGINT signal and lets
@@ -2065,6 +2066,11 @@ get blocked by side-effects of partially cancelled group of operations.
 
 These commands can't be cancelled: |vifm-:empty|, |vifm-:rename|,
 |vifm-:substitute|, |vifm-:tr|.
+
+Mounting with FUSE~
+
+It's not considered to be an error, so only notification on the status bar is
+shown.
 
 External application calls~
 

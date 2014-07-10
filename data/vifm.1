@@ -2326,6 +2326,8 @@ There are two types of operations that can be cancelled:
 .IP \- 2
 file system operations;
 .IP \- 2
+mounting with FUSE (but not unmounting as it can cause loss of data);
+.IP \- 2
 calls of external applications.
 .LP
 Note that vifm never terminates applications, it sends SIGINT signal and lets
@@ -2350,6 +2352,11 @@ for convenience, but is not recommended as further undo/redo operations might
 get blocked by side-effects of partially cancelled group of operations.
 
 These commands can't be cancelled: :empty, :rename, :substitute, :tr.
+
+Mounting with FUSE
+
+It's not considered to be an error, so only notification on the status bar is
+shown.
 
 External application calls
 
