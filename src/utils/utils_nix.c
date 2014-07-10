@@ -70,7 +70,6 @@ typedef struct
 }
 get_mount_point_traverser_state;
 
-static void process_cancel_request(pid_t pid);
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static int begins_with_list_item(const char pattern[], const char list[]);
 
@@ -174,9 +173,7 @@ set_sigchld(int block)
 	    || sigprocmask(action, &sigchld_mask, NULL) == -1;
 }
 
-/* Checks whether cancelling of current operation is requested and sends SIGINT
- * to process specified by its process id to request cancellation. */
-static void
+void
 process_cancel_request(pid_t pid)
 {
 	if(ui_cancellation_requested())
