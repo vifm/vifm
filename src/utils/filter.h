@@ -49,7 +49,7 @@ void filter_dispose(filter_t *filter);
 
 /* Checks whether filter is empty.  Returns non-zero if it is, otherwise zero is
  * returned. */
-int filter_is_empty(filter_t *filter);
+int filter_is_empty(const filter_t *filter);
 
 /* Resets filter's state to the empty state. */
 void filter_clear(filter_t *filter);

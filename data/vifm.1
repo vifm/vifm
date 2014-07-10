@@ -1,4 +1,4 @@
-.TH vifm 1 "July 09, 2014" "" "Vifm"
+.TH vifm 1 "July 10, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1238,8 +1238,14 @@ numbers or special symbols (except '?' and '!').
 .BI ":com[mand] name /pattern"
 will set search pattern.
 .TP
-.BI ":com[mand] name filter pattern"
-will set file name filter.
+.BI ":com[mand] name filter{:filter args}"
+will set file name filter (see :filter command description).  For example:
+.EX
+ " display only audio files
+ :command onlyaudio filter/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
+ " display everything except audio files
+ :command noaudio filter!/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
+.EE
 .TP
 .BI ":com[mand] cmd :commands"
 will set kind of alias for internal command (like in a shell).  Will pass range
@@ -1339,7 +1345,7 @@ See "Globs" section below for pattern definition.  See also
 "Automatic FUSE mounts" section below.  Example for zip archives and several
 actions:
 
-.EE
+.EX
  filetype *.zip,*.jar,*.war,*.ear
         \\ {Mount with fuse-zip}
         \\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
@@ -1347,7 +1353,7 @@ actions:
         \\ zip -sf %c | less,
         \\ {Extract here}
         \\ tar -xf %c,
-.EX
+.EE
 .TP
 .BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
 same as :filetype, but vifm will ignore this command if it's not running in X.
@@ -1357,7 +1363,7 @@ definition.  See also "Automatic FUSE mounts" section below.
 For example, consider the following settings (the order might seem strange,
 but it's for the demonstration purpose):
 
-.EE
+.EX
  filetype *.html,*.htm
          \ {View in lynx}
          \ lynx
@@ -1372,7 +1378,7 @@ but it's for the demonstration purpose):
          \ firefox %f &,
          \ {Open with uzbl}
          \ uzbl-browser %f %i &,
-.EX
+.EE
 
 If you're using vifm inside a terminal emulator that is running in graphical
 environment (when X is used on *nix; always on Windows), vifm will attempt to
@@ -1405,9 +1411,9 @@ running :view command.  When the command doesn't contain any of vifm macros,
 name of current file is appended as if command ended with %c macro.  See
 "Globs" section below for pattern definition.  Example for zip archives:
 
-.EE
- fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
 .EX
+ fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+.EE
 .TP
 .BI ":filter[!] regular_expression_pattern"
 .BI ":filter[!] /regular_expression_pattern/[flags]"
@@ -1439,7 +1445,7 @@ reset filter (set it to empty string) and show all files.
 same as :invert.
 .TP
 .BI :filter?
-show current value of local, name and auto filters.
+show information on local, name and auto filters.
 .TP
 .BI ":[range]fin[d] pattern"
 will show results of find command in the menu.  Searches among selected files if

@@ -12,8 +12,8 @@
 	Added i and I flags to :filter command to control filter case sensitivity.
 	Thanks to filterfalse.
 
-	Added marks to the output of :filter? command to designate whether
-	non-empty filter is case sensitive.
+	Added filter flags to output of :filter? command and formatted output as a
+	table.
 
 	Highlight environment variables in :source command.
 
@@ -49,6 +49,9 @@
 	Thanks to filterfalse.
 
 	Display error on encountering unknown values assigned to 'sort' option.
+
+	Allowed use of :filter syntax in user-defined filter commands (e.g.
+	"command conf filter/.*\.cfg$/").
 
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.

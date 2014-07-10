@@ -68,7 +68,7 @@ filter_dispose(filter_t *filter)
 }
 
 int
-filter_is_empty(filter_t *filter)
+filter_is_empty(const filter_t *filter)
 {
 	return filter->raw[0] == '\0' && !filter->is_regex_valid;
 }
