@@ -222,7 +222,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	clean_status_bar();
 
 	/* check child status */
-	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
+	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{
 		FILE *ef = fopen(errors_file, "r");
 		print_errors(ef);
@@ -444,8 +444,8 @@ try_unmount_fuse(FileView *view)
 	status_bar_message("FUSE unmounting selected file, please stand by..");
 	status = background_and_wait_for_status(buf);
 	clean_status_bar();
-	/* check child status */
-	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
+	/* Check child status. */
+	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{
 		werase(status_bar);
 		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
