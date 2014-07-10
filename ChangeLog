@@ -50,6 +50,9 @@
 
 	Display error on encountering unknown values assigned to 'sort' option.
 
+	Allowed use of :filter syntax in user-defined filter commands (e.g.
+	"command conf filter/.*\.cfg$/").
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

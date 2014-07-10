@@ -3871,13 +3871,10 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		run_in_split(curr_view, expanded_com);
 	}
-	else if(starts_with_lit(expanded_com, "filter "))
+	else if(starts_with_lit(expanded_com, "filter") &&
+			char_is_one_of(" !/", expanded_com[6]))
 	{
-		const char *filter_val = strchr(expanded_com, ' ') + 1;
-		const int invert_filter = cfg.filter_inverted_by_default;
-		(void)set_view_filter(curr_view, filter_val, invert_filter,
-				FILTER_DEF_CASE_SENSITIVITY);
-
+		save_msg = exec_command(expanded_com, curr_view, GET_COMMAND);
 		external = 0;
 	}
 	else if(expanded_com[0] == '!')
