@@ -1293,7 +1293,7 @@ The builtin commands are:
 
 :filter - reset filter (set it to empty string) and show all files.
 :filter! - same as :invert.
-:filter? - show current value of local, name and auto filters.
+:filter? - show information on local, name and auto filters.
 
                                                *vifm-:find* *vifm-:fin*
 :[range]fin[d] pattern - will show results of find command in the menu.

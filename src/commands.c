@@ -2198,7 +2198,7 @@ display_filters_info(const FileView *view)
 	char *const manualf = get_filter_info("Name", &view->manual_filter);
 	char *const autof = get_filter_info("Auto", &view->auto_filter);
 
-	status_bar_messagef("%s\n%s\n%s", localf, manualf, autof);
+	status_bar_messagef("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf, autof);
 
 	free(localf);
 	free(manualf);
@@ -2211,23 +2211,18 @@ display_filters_info(const FileView *view)
 static char *
 get_filter_info(const char name[], const filter_t *filter)
 {
-	const int is_empty = (filter->raw[0] == '\0');
-
-	const char *state_str;
 	const char *flags_str;
 
-	if(is_empty)
+	if(filter_is_empty(filter))
 	{
-		state_str = " is empty";
 		flags_str = "";
 	}
 	else
 	{
-		state_str = ": ";
-		flags_str = (filter->cflags & REG_ICASE) ? " (i)" : " (I)";
+		flags_str = (filter->cflags & REG_ICASE) ? "i" : "I";
 	}
 
-	return format_str("%s filter%s%s%s", name, flags_str, state_str, filter->raw);
+	return format_str("%-6s    %-5s    %s", name, flags_str, filter->raw);
 }
 
 /* Returns value for filter inversion basing on current configuration and

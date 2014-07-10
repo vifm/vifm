@@ -12,8 +12,8 @@
 	Added i and I flags to :filter command to control filter case sensitivity.
 	Thanks to filterfalse.
 
-	Added marks to the output of :filter? command to designate whether
-	non-empty filter is case sensitive.
+	Added filter flags to output of :filter? command and formatted output as a
+	table.
 
 	Highlight environment variables in :source command.
 
