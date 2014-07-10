@@ -498,7 +498,7 @@ test_custom_separator_and_emark(void)
 }
 
 static void
-test_regexp_flag(void)
+test_regexp_flag_strips_slashes(void)
 {
 	assert_int_equal(0, execute_cmd("e /te|xt/"));
 	assert_int_equal(1, cmdi.argc);
@@ -506,6 +506,30 @@ test_regexp_flag(void)
 
 	assert_int_equal(0, execute_cmd("filter /te|xt/"));
 	assert_int_equal(1, cmdi.argc);
+	assert_string_equal("te|xt", arg);
+}
+
+static void
+test_regexp_flag_slashes_and_spaces(void)
+{
+	assert_int_equal(0, execute_cmd("filter /te|xt/i"));
+	assert_int_equal(2, cmdi.argc);
+	assert_string_equal("te|xt", arg);
+
+	assert_int_equal(0, execute_cmd("filter/te|xt/i"));
+	assert_int_equal(2, cmdi.argc);
+	assert_string_equal("te|xt", arg);
+}
+
+static void
+test_regexp_flag_bang_slashes_and_spaces(void)
+{
+	assert_int_equal(0, execute_cmd("filter! /te|xt/i"));
+	assert_int_equal(2, cmdi.argc);
+	assert_string_equal("te|xt", arg);
+
+	assert_int_equal(0, execute_cmd("filter!/te|xt/i"));
+	assert_int_equal(2, cmdi.argc);
 	assert_string_equal("te|xt", arg);
 }
 
@@ -715,7 +739,9 @@ input_tests(void)
 	run_test(test_custom_separator);
 	run_test(test_custom_separator_and_arg_format);
 	run_test(test_custom_separator_and_emark);
-	run_test(test_regexp_flag);
+	run_test(test_regexp_flag_strips_slashes);
+	run_test(test_regexp_flag_slashes_and_spaces);
+	run_test(test_regexp_flag_bang_slashes_and_spaces);
 	run_test(test_backgrounding);
 	run_test(test_no_args_after_qmark_1);
 	run_test(test_args_after_qmark_2);
