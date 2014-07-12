@@ -28,6 +28,9 @@
 #endif
 #include "colors.h"
 
+/* Pseudo name of the default built-in color scheme. */
+#define DEF_CS_NAME "<built-in default>"
+
 typedef struct
 {
 	char name[NAME_MAX];

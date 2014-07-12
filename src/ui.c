@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stddef.h> /* wchar_t */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcpy() strlen() */
 #include <time.h>
@@ -1560,12 +1560,6 @@ wprinta(WINDOW *win, const char str[], int line_attrs)
 }
 
 void
-request_view_update(FileView *view)
-{
-	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
-}
-
-void
 resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
@@ -1949,6 +1943,56 @@ ui_view_clear_history(FileView *const view)
 	free_history_items(view->history, view->history_num);
 	view->history_num = 0;
 	view->history_pos = 0;
+}
+
+void
+ui_view_schedule_redraw(FileView *view)
+{
+	++view->postponed_redraw;
+}
+
+void
+ui_view_schedule_reload(FileView *view)
+{
+	++view->postponed_reload;
+}
+
+void
+ui_view_schedule_full_reload(FileView *view)
+{
+	view->postponed_reload = -abs(view->postponed_reload) - 1;
+}
+
+int
+ui_view_is_redraw_scheduled(const FileView *view)
+{
+	return view->postponed_redraw != 0;
+}
+
+int
+ui_view_is_reload_scheduled(const FileView *view)
+{
+	return view->postponed_reload != 0;
+}
+
+int
+ui_view_is_full_reload_scheduled(const FileView *view)
+{
+	return view->postponed_reload < 0;
+}
+
+void
+ui_view_redrawn(FileView *view)
+{
+	view->postponed_redraw = 0;
+}
+
+void
+ui_view_reloaded(FileView *view)
+{
+	ui_view_redrawn(view);
+
+	view->postponed_reload = 0;
 }
 
 void

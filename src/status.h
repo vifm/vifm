@@ -158,7 +158,7 @@ int init_status(struct config_t *config);
 
 /* Resets some part of runtime status information to its initial values.
  * Returns non-zero on error. */
-int reset_status(void);
+int reset_status(const struct config_t *config);
 
 /* Sets internal flag to schedule postponed redraw operation. */
 void schedule_redraw(void);

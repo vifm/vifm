@@ -45,7 +45,10 @@
 #include "status.h"
 #include "ui.h"
 
-static void process_scheduled_redraw(void);
+static void process_scheduled_updates(void);
+static void process_scheduled_updates_of_view(FileView *view);
+static int should_check_views_for_changes(void);
+static void check_view_for_changes(FileView *view);
 
 static wchar_t buf[128];
 static int pos;
@@ -73,14 +76,12 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		process_scheduled_redraw();
+		process_scheduled_updates();
 
-		if(!is_status_bar_multiline() && !is_in_menu_like_mode() &&
-				get_mode() != CMDLINE_MODE)
+		if(should_check_views_for_changes())
 		{
-			check_if_filelists_have_changed(curr_view);
-			if(curr_stats.number_of_windows != 1 && !curr_stats.view)
-				check_if_filelists_have_changed(other_view);
+			check_view_for_changes(curr_view);
+			check_view_for_changes(other_view);
 		}
 
 		check_background_jobs();
@@ -91,12 +92,16 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			wtimeout(win, MIN(T, timeout)/IPC_F);
 
 			if((result = wget_wch(win, c)) != ERR)
+			{
 				break;
+			}
 
-			process_scheduled_redraw();
+			process_scheduled_updates();
 		}
 		if(result != ERR)
+		{
 			break;
+		}
 
 		timeout -= T;
 	}
@@ -247,7 +252,7 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		process_scheduled_redraw();
+		process_scheduled_updates();
 
 		pos = 0;
 		buf[0] = L'\0';
@@ -268,13 +273,56 @@ main_loop(void)
 	}
 }
 
-/* Redraws TUI if it's scheduled. */
+/* Updates TUI or it's elements if something is scheduled. */
 static void
-process_scheduled_redraw(void)
+process_scheduled_updates(void)
 {
 	if(is_redraw_scheduled())
 	{
 		modes_redraw();
+	}
+
+	process_scheduled_updates_of_view(curr_view);
+	process_scheduled_updates_of_view(other_view);
+}
+
+/* Performs postponed updates for the view, if any. */
+static void
+process_scheduled_updates_of_view(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		/* Order of calls matters as reloading resets redraw request. */
+
+		if(ui_view_is_reload_scheduled(view))
+		{
+			load_saving_pos(view, !ui_view_is_full_reload_scheduled(view));
+		}
+
+		if(ui_view_is_redraw_scheduled(view))
+		{
+			redraw_view_imm(view);
+		}
+	}
+}
+
+/* Checks whether views should be checked against external changes.  Returns
+ * non-zero is so, otherwise zero is returned. */
+static int
+should_check_views_for_changes(void)
+{
+	return !is_status_bar_multiline()
+	    && !is_in_menu_like_mode()
+	    && get_mode() != CMDLINE_MODE;
+}
+
+/* Updates view in case directory it displays was changed externally. */
+static void
+check_view_for_changes(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		check_if_filelists_have_changed(view);
 	}
 }
 

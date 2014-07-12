@@ -191,9 +191,12 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
-			const int i = atoi(line_val);
-			cfg.show_one_window = (i == 1);
-			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
+			if(!reread)
+			{
+				const int i = atoi(line_val);
+				cfg.show_one_window = (i == 1);
+				curr_stats.number_of_windows = (i == 1) ? 1 : 2;
+			}
 		}
 		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{

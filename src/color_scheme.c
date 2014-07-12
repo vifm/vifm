@@ -512,7 +512,7 @@ static void
 init_color_scheme(col_scheme_t *cs)
 {
 	int i;
-	snprintf(cs->name, sizeof(cs->name), "%s", "built-in default");
+	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
 	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
 	cs->defaulted = 0;
 
@@ -591,7 +591,18 @@ load_color_pairs(int base, const col_scheme_t *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)
-		init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
+	{
+		/* XXX: This is an ugly hack to avoid flickering of top line of the current
+		 * view.  We need colors attributes recalculated correctly before applying
+		 * them, otherwise color changes twice on the screen.  Need to generalize
+		 * this by updating all color pairs that we can, or that depend on group,
+		 * whose properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in
+		 * ui.c and will be initialized on redraw. */
+		if(i != TOP_LINE_SEL_COLOR)
+		{
+			init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
+		}
+	}
 }
 
 void

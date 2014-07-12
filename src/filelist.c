@@ -478,6 +478,9 @@ reset_view(FileView *view)
 	view->num_width = 4;
 	view->real_num_width = 0;
 
+	view->postponed_redraw = 0;
+	view->postponed_reload = 0;
+
 	(void)replace_string(&view->prev_manual_filter, "");
 	reset_filter(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, "");
@@ -938,6 +941,7 @@ draw_dir_list(FileView *view)
 	}
 
 	ui_view_win_changed(view);
+	ui_view_redrawn(view);
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -2562,6 +2566,7 @@ load_dir_list(FileView *view, int reload)
 	}
 
 	draw_dir_list(view);
+	ui_view_reloaded(view);
 
 	if(view == curr_view)
 	{
@@ -2850,7 +2855,7 @@ void
 set_dot_files_visible(FileView *view, int visible)
 {
 	view->hide_dot = !visible;
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 }
 
 void
@@ -2869,7 +2874,7 @@ remove_filename_filter(FileView *view)
 
 	view->prev_invert = view->invert;
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
-	load_saving_pos(view, 0);
+	ui_view_schedule_full_reload(view);
 }
 
 void
@@ -2878,7 +2883,7 @@ restore_filename_filter(FileView *view)
 	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
-	load_saving_pos(view, 0);
+	ui_view_schedule_full_reload(view);
 }
 
 void
@@ -3191,13 +3196,23 @@ redraw_view(FileView *view)
 {
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
 	{
-		if(window_shows_dirlist(view))
+		redraw_view_imm(view);
+	}
+}
+
+void
+redraw_view_imm(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		draw_dir_list(view);
+		if(view == curr_view)
 		{
-			draw_dir_list(view);
-			if(view == curr_view)
-			{
-				move_to_list_pos(view, view->list_pos);
-			}
+			move_to_list_pos(view, view->list_pos);
+		}
+		else
+		{
+			put_inactive_mark(view);
 		}
 	}
 }
@@ -3234,7 +3249,9 @@ void
 check_if_filelists_have_changed(FileView *view)
 {
 	if(is_on_slow_fs(view->curr_dir))
+	{
 		return;
+	}
 
 #ifndef _WIN32
 	struct stat s;
@@ -3363,7 +3380,7 @@ change_sort_type(FileView *view, char type, char descending)
 
 	load_sort_option(view);
 
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 }
 
 int

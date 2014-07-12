@@ -48,6 +48,7 @@
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -647,6 +648,10 @@ vifm_restart(void)
 	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
 	cfg.history_len = 0;
 
+	/* Session status.  Must be reset _before_ options, because options take some
+	 * of values from status. */
+	(void)reset_status(&cfg);
+
 	/* Options of current pane. */
 	reset_options_to_default();
 	/* Options of other pane. */
@@ -659,9 +664,6 @@ vifm_restart(void)
 	/* File types and viewers. */
 	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 
-	/* Session status. */
-	(void)reset_status();
-
 	/* Undo list. */
 	reset_undo_list();
 
@@ -670,9 +672,6 @@ vifm_restart(void)
 
 	/* Registers. */
 	clear_registers();
-
-	/* Color schemes. */
-	load_def_scheme();
 
 	/* Clear all bookmarks. */
 	clear_all_bookmarks();
@@ -687,11 +686,28 @@ vifm_restart(void)
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
+
+	/* Color schemes. */
+	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
+			color_scheme_exists(curr_stats.color_scheme))
+	{
+		if(load_color_scheme(curr_stats.color_scheme) != 0)
+		{
+			load_def_scheme();
+		}
+	}
+	else
+	{
+		load_def_scheme();
+	}
 	load_color_scheme_colors();
+
 	source_config();
 	exec_startup_commands(0, NULL);
 
 	curr_stats.restart_in_progress = 0;
+
+	update_screen(UT_REDRAW);
 }
 
 void

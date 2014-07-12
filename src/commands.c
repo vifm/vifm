@@ -2260,7 +2260,7 @@ set_view_filter(FileView *view, const char filter[], int invert,
 	view->invert = invert;
 	(void)filter_change(&view->manual_filter, filter, case_sensitive);
 	(void)filter_clear(&view->auto_filter);
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 	return 0;
 }
 
@@ -2541,9 +2541,21 @@ highlight_cmd(const cmd_info_t *cmd_info)
 			return 1;
 		}
 	}
-	init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
-			curr_stats.cs->color[pos].bg);
-	curr_stats.need_update = UT_FULL;
+
+	/* XXX: This is an ugly hack to avoid flickering of top line of the current
+	 * view.  We need colors attributes recalculated correctly before applying
+	 * them, otherwise color changes twice on the screen.  Need to generalize this
+	 * by updating all color pairs that we can, or that depend on group, whose
+	 * properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in ui.c and
+	 * will be initialized on redraw. */
+	if(pos != TOP_LINE_SEL_COLOR)
+	{
+		init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
+				curr_stats.cs->color[pos].bg);
+	}
+
+	curr_stats.need_update = UT_REDRAW;
+
 	return 0;
 }
 

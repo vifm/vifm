@@ -56,6 +56,9 @@
 	Allowed use of :filter syntax in user-defined filter commands (e.g.
 	"command conf filter/.*\.cfg$/").
 
+	Do not reset color scheme to default one on :restart if another existing
+	one is stored in vifminfo file.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -87,6 +90,10 @@
 
 	Fixed unexpectedly broken compilation on FreeBSD.  Thanks to Daniel
 	Dettlaff (a.k.a. dmilith).
+
+	Fixed view update after :restart in some cases.  Thanks to filterfalse.
+
+	Fixed UI glitches and most of flickering of the TUI on :restart.
 
 0.7.7-beta to 0.7.7
 

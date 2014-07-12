@@ -70,7 +70,7 @@ init_status(config_t *config)
 	set_env_type(&curr_stats);
 	stats_update_shell_type(config->shell);
 
-	return reset_status();
+	return reset_status(config);
 }
 
 /* Initializes most fields of the status structure, some are left to be
@@ -174,9 +174,12 @@ set_env_type(status_t *stats)
 }
 
 int
-reset_status(void)
+reset_status(const config_t *config)
 {
 	set_last_cmdline_command("");
+
+	curr_stats.initial_lines = config->lines;
+	curr_stats.initial_columns = config->columns;
 
 	return reset_dircache(&curr_stats);
 }

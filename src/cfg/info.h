@@ -20,7 +20,11 @@
 #ifndef VIFM__CFG__INFO_H__
 #define VIFM__CFG__INFO_H__
 
+/* Reads vifminfo file populating internal structures with information it
+ * contains.  Reread should be set to non-zero value when vifminfo is read not
+ * during startup process. */
 void read_info_file(int reread);
+
 /* Writes vifminfo file updating it with state of the current instance. */
 void write_info_file(void);
 
