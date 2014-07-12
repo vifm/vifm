@@ -647,6 +647,10 @@ vifm_restart(void)
 	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
 	cfg.history_len = 0;
 
+	/* Session status.  Must be reset _before_ options, because options take some
+	 * of values from status. */
+	(void)reset_status(&cfg);
+
 	/* Options of current pane. */
 	reset_options_to_default();
 	/* Options of other pane. */
@@ -658,9 +662,6 @@ vifm_restart(void)
 
 	/* File types and viewers. */
 	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
-
-	/* Session status. */
-	(void)reset_status(&cfg);
 
 	/* Undo list. */
 	reset_undo_list();

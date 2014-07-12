@@ -178,6 +178,9 @@ reset_status(const config_t *config)
 {
 	set_last_cmdline_command("");
 
+	curr_stats.initial_lines = config->lines;
+	curr_stats.initial_columns = config->columns;
+
 	return reset_dircache(&curr_stats);
 }
 
