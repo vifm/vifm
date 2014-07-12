@@ -2543,16 +2543,18 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	}
 
 	/* XXX: This is an ugly hack to avoid flickering of top line of the current
-	 * view.  We need attributes colors recalculated correctly before applying
+	 * view.  We need colors attributes recalculated correctly before applying
 	 * them, otherwise color changes twice on the screen.  Need to generalize this
 	 * by updating all color pairs that we can, or that depend on group, whose
-	 * properties are changed. */
-	ui_view_title_update(curr_view);
+	 * properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in ui.c and
+	 * will be initialized on redraw. */
+	if(pos != TOP_LINE_SEL_COLOR)
+	{
+		init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
+				curr_stats.cs->color[pos].bg);
+	}
 
-	init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
-			curr_stats.cs->color[pos].bg);
-
-	curr_stats.need_update = UT_FULL;
+	curr_stats.need_update = UT_REDRAW;
 
 	return 0;
 }
