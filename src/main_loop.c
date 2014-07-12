@@ -45,7 +45,9 @@
 #include "status.h"
 #include "ui.h"
 
-static void process_scheduled_redraw(void);
+static void process_scheduled_redraws(void);
+static int should_process_reloads_of_views(void);
+static void process_reloads_of_views(void);
 
 static wchar_t buf[128];
 static int pos;
@@ -73,14 +75,11 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		process_scheduled_redraw();
+		process_scheduled_redraws();
 
-		if(!is_status_bar_multiline() && !is_in_menu_like_mode() &&
-				get_mode() != CMDLINE_MODE)
+		if(should_process_reloads_of_views())
 		{
-			check_if_filelists_have_changed(curr_view);
-			if(curr_stats.number_of_windows != 1 && !curr_stats.view)
-				check_if_filelists_have_changed(other_view);
+			process_reloads_of_views();
 		}
 
 		check_background_jobs();
@@ -91,12 +90,16 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			wtimeout(win, MIN(T, timeout)/IPC_F);
 
 			if((result = wget_wch(win, c)) != ERR)
+			{
 				break;
+			}
 
-			process_scheduled_redraw();
+			process_scheduled_redraws();
 		}
 		if(result != ERR)
+		{
 			break;
+		}
 
 		timeout -= T;
 	}
@@ -247,7 +250,7 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		process_scheduled_redraw();
+		process_scheduled_redraws();
 
 		pos = 0;
 		buf[0] = L'\0';
@@ -268,13 +271,34 @@ main_loop(void)
 	}
 }
 
-/* Redraws TUI if it's scheduled. */
+/* Redraws TUI or it's elements if something is scheduled. */
 static void
-process_scheduled_redraw(void)
+process_scheduled_redraws(void)
 {
 	if(is_redraw_scheduled())
 	{
 		modes_redraw();
+	}
+}
+
+/* Checks whether views can be reloaded in current state of the application.
+ * Returns non-zero is so, otherwise zero is returned. */
+static int
+should_process_reloads_of_views(void)
+{
+	return !is_status_bar_multiline()
+	    && !is_in_menu_like_mode()
+	    && get_mode() != CMDLINE_MODE;
+}
+
+/* Processes reloads of views. */
+static void
+process_reloads_of_views(void)
+{
+	check_if_filelists_have_changed(curr_view);
+	if(curr_stats.number_of_windows != 1 && !curr_stats.view)
+	{
+		check_if_filelists_have_changed(other_view);
 	}
 }
 
