@@ -90,8 +90,7 @@
 
 	Fixed view update after :restart in some cases.  Thanks to filterfalse.
 
-	Fixed UI glitch with borders on :restart and make somewhat reduced
-	flickering of the TUI.
+	Fixed UI glitches and most of flickering of the TUI on :restart.
 
 0.7.7-beta to 0.7.7
 
