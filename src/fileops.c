@@ -474,7 +474,6 @@ rename_file_cb(const char new_name[])
 	char new[NAME_MAX + 1];
 	size_t len;
 	int mv_res;
-	char **filename_ptr;
 
 	if(is_null_or_empty(new_name))
 	{
@@ -509,9 +508,6 @@ rename_file_cb(const char new_name[])
 		show_error_msg("Rename Error", "Rename operation failed");
 		return;
 	}
-
-	filename_ptr = &curr_view->dir_entry[curr_view->list_pos].name;
-	(void)replace_string(filename_ptr, new);
 
 	load_saving_pos(curr_view, 1);
 }
