@@ -512,7 +512,7 @@ static void
 init_color_scheme(col_scheme_t *cs)
 {
 	int i;
-	snprintf(cs->name, sizeof(cs->name), "%s", "built-in default");
+	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
 	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
 	cs->defaulted = 0;
 
