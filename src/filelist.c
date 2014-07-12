@@ -3196,13 +3196,23 @@ redraw_view(FileView *view)
 {
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
 	{
-		if(window_shows_dirlist(view))
+		redraw_view_imm(view);
+	}
+}
+
+void
+redraw_view_imm(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		draw_dir_list(view);
+		if(view == curr_view)
 		{
-			draw_dir_list(view);
-			if(view == curr_view)
-			{
-				move_to_list_pos(view, view->list_pos);
-			}
+			move_to_list_pos(view, view->list_pos);
+		}
+		else
+		{
+			put_inactive_mark(view);
 		}
 	}
 }

@@ -122,6 +122,8 @@ void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_view(FileView *view);
+/* Updates view immediately on the screen (redraws file list and cursor). */
+void redraw_view_imm(FileView *view);
 /* Updates current view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_current_view(void);
