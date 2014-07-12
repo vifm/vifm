@@ -2855,7 +2855,7 @@ void
 set_dot_files_visible(FileView *view, int visible)
 {
 	view->hide_dot = !visible;
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 }
 
 void
@@ -2874,7 +2874,7 @@ remove_filename_filter(FileView *view)
 
 	view->prev_invert = view->invert;
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
-	load_saving_pos(view, 0);
+	ui_view_schedule_full_reload(view);
 }
 
 void
@@ -2883,7 +2883,7 @@ restore_filename_filter(FileView *view)
 	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
-	load_saving_pos(view, 0);
+	ui_view_schedule_full_reload(view);
 }
 
 void
@@ -3380,7 +3380,7 @@ change_sort_type(FileView *view, char type, char descending)
 
 	load_sort_option(view);
 
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 }
 
 int

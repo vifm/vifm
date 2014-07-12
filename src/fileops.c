@@ -509,7 +509,7 @@ rename_file_cb(const char new_name[])
 		return;
 	}
 
-	load_saving_pos(curr_view, 1);
+	ui_view_schedule_reload(curr_view);
 }
 
 static int
@@ -1025,7 +1025,7 @@ incdec_names(FileView *view, int k)
 	clean_selected_files(view);
 	if(renames > 0)
 	{
-		load_saving_pos(view, 0);
+		ui_view_schedule_full_reload(view);
 	}
 
 	if(err > 0)
@@ -1972,7 +1972,7 @@ put_files_from_register_i(FileView *view, int start)
 	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
 
-	load_saving_pos(put_confirm.view, 1);
+	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
 }
@@ -2902,7 +2902,9 @@ static void
 go_to_first_file(FileView *view, char **names, int count)
 {
 	int i;
+
 	load_saving_pos(view, 1);
+
 	for(i = 0; i < view->list_rows; i++)
 	{
 		char name[PATH_MAX];
@@ -3089,7 +3091,7 @@ restore_files(FileView *view)
 		}
 	}
 
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 
 	status_bar_messagef("Restored %d of %d%s", m, n, get_cancellation_suffix());
 	return 1;

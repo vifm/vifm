@@ -88,6 +88,8 @@
 	Fixed unexpectedly broken compilation on FreeBSD.  Thanks to Daniel
 	Dettlaff (a.k.a. dmilith).
 
+	Fixed view update after :restart in some cases.  Thanks to filterfalse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

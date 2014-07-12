@@ -2260,7 +2260,7 @@ set_view_filter(FileView *view, const char filter[], int invert,
 	view->invert = invert;
 	(void)filter_change(&view->manual_filter, filter, case_sensitive);
 	(void)filter_clear(&view->auto_filter);
-	load_saving_pos(view, 1);
+	ui_view_schedule_reload(view);
 	return 0;
 }
 

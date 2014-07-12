@@ -1141,7 +1141,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		else
 		{
 			local_filter_apply(curr_view, nonnull_input);
-			load_saving_pos(curr_view, 1);
+			ui_view_schedule_reload(curr_view);
 		}
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
