@@ -224,6 +224,9 @@ typedef struct
 	NumberingType num_type; /* Whether and how line numbers are displayed. */
 	int num_width; /* Min number of characters reserved for number field. */
 	int real_num_width; /* Real character count reserved for number field. */
+
+	int postponed_redraw; /* Number of scheduled redraw requests. */
+	int postponed_reload; /* Number of scheduled reload requests. */
 }
 FileView;
 
@@ -331,9 +334,30 @@ int ui_view_is_visible(const FileView *const view);
 /* Cleans directory history of the view. */
 void ui_view_clear_history(FileView *const view);
 
-/* Sets inner flag or signals about needed view update in some other way.
- * It doesn't perform any update, just request one to happen in the future. */
-void ui_view_schedule_update(FileView *view);
+/* View update scheduling. */
+
+/* Schedules redraw of the view for the future.  Doesn't perform any actual
+ * update. */
+void ui_view_schedule_redraw(FileView *view);
+
+/* Schedules reload of the view for the future.  Doesn't perform any actual
+ * work. */
+void ui_view_schedule_reload(FileView *view);
+
+/* Checks whether redraw of the view is scheduled.  Return non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_redraw_scheduled(const FileView *view);
+
+/* Checks whether reload of the view is scheduled.  Return non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_reload_scheduled(const FileView *view);
+
+/* Clears previously scheduled redraw request of the view, if any. */
+void ui_view_redrawn(FileView *view);
+
+/* Clears previously scheduled reload request of the view, if any.  Also clears
+ * redraw request. */
+void ui_view_reloaded(FileView *view);
 
 /* Operation cancellation. */
 

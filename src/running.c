@@ -809,8 +809,8 @@ shellout(const char *command, int pause, int use_term_multiplexer)
 	free(cmd);
 
 	/* Force views update. */
-	ui_view_schedule_update(&lwin);
-	ui_view_schedule_update(&rwin);
+	ui_view_schedule_reload(&lwin);
+	ui_view_schedule_reload(&rwin);
 
 	recover_after_shellout();
 

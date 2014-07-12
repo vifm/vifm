@@ -46,8 +46,9 @@
 #include "ui.h"
 
 static void process_scheduled_updates(void);
+static void process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
-static void check_views_for_changes(void);
+static void check_view_for_changes(FileView *view);
 
 static wchar_t buf[128];
 static int pos;
@@ -79,7 +80,8 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 
 		if(should_check_views_for_changes())
 		{
-			check_views_for_changes();
+			check_view_for_changes(curr_view);
+			check_view_for_changes(other_view);
 		}
 
 		check_background_jobs();
@@ -279,9 +281,32 @@ process_scheduled_updates(void)
 	{
 		modes_redraw();
 	}
+
+	process_scheduled_updates_of_view(curr_view);
+	process_scheduled_updates_of_view(other_view);
 }
 
-/* Checks whether views should be checked agains external changes.  Returns
+/* Performs postponed updates for the view, if any. */
+static void
+process_scheduled_updates_of_view(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		/* Order of calls matters as reloading resets redraw request. */
+
+		if(ui_view_is_reload_scheduled(view))
+		{
+			load_saving_pos(view, 1);
+		}
+
+		if(ui_view_is_redraw_scheduled(view))
+		{
+			draw_dir_list(view);
+		}
+	}
+}
+
+/* Checks whether views should be checked against external changes.  Returns
  * non-zero is so, otherwise zero is returned. */
 static int
 should_check_views_for_changes(void)
@@ -291,14 +316,13 @@ should_check_views_for_changes(void)
 	    && get_mode() != CMDLINE_MODE;
 }
 
-/* Updates views in case directory they display were changed externally. */
+/* Updates view in case directory it displays was changed externally. */
 static void
-check_views_for_changes(void)
+check_view_for_changes(FileView *view)
 {
-	check_if_filelists_have_changed(curr_view);
-	if(curr_stats.number_of_windows != 1 && !curr_stats.view)
+	if(window_shows_dirlist(view))
 	{
-		check_if_filelists_have_changed(other_view);
+		check_if_filelists_have_changed(view);
 	}
 }
 

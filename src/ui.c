@@ -1946,9 +1946,41 @@ ui_view_clear_history(FileView *const view)
 }
 
 void
-ui_view_schedule_update(FileView *view)
+ui_view_schedule_redraw(FileView *view)
 {
-	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
+	++view->postponed_redraw;
+}
+
+void
+ui_view_schedule_reload(FileView *view)
+{
+	++view->postponed_reload;
+}
+
+int
+ui_view_is_redraw_scheduled(const FileView *view)
+{
+	return view->postponed_redraw != 0;
+}
+
+int
+ui_view_is_reload_scheduled(const FileView *view)
+{
+	return view->postponed_reload != 0;
+}
+
+void
+ui_view_redrawn(FileView *view)
+{
+	view->postponed_redraw = 0;
+}
+
+void
+ui_view_reloaded(FileView *view)
+{
+	ui_view_redrawn(view);
+
+	view->postponed_reload = 0;
 }
 
 void

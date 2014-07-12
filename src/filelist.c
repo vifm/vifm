@@ -478,6 +478,9 @@ reset_view(FileView *view)
 	view->num_width = 4;
 	view->real_num_width = 0;
 
+	view->postponed_redraw = 0;
+	view->postponed_reload = 0;
+
 	(void)replace_string(&view->prev_manual_filter, "");
 	reset_filter(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, "");
@@ -938,6 +941,7 @@ draw_dir_list(FileView *view)
 	}
 
 	ui_view_win_changed(view);
+	ui_view_redrawn(view);
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -2562,6 +2566,7 @@ load_dir_list(FileView *view, int reload)
 	}
 
 	draw_dir_list(view);
+	ui_view_reloaded(view);
 
 	if(view == curr_view)
 	{
@@ -3234,7 +3239,9 @@ void
 check_if_filelists_have_changed(FileView *view)
 {
 	if(is_on_slow_fs(view->curr_dir))
+	{
 		return;
+	}
 
 #ifndef _WIN32
 	struct stat s;
