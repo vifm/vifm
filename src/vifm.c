@@ -692,6 +692,8 @@ vifm_restart(void)
 	exec_startup_commands(0, NULL);
 
 	curr_stats.restart_in_progress = 0;
+
+	curr_stats.need_update = UT_FULL;
 }
 
 void
