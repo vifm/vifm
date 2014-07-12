@@ -296,12 +296,12 @@ process_scheduled_updates_of_view(FileView *view)
 
 		if(ui_view_is_reload_scheduled(view))
 		{
-			load_saving_pos(view, 1);
+			load_saving_pos(view, !ui_view_is_full_reload_scheduled(view));
 		}
 
 		if(ui_view_is_redraw_scheduled(view))
 		{
-			draw_dir_list(view);
+			redraw_view_imm(view);
 		}
 	}
 }
