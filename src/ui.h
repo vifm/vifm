@@ -226,7 +226,8 @@ typedef struct
 	int real_num_width; /* Real character count reserved for number field. */
 
 	int postponed_redraw; /* Number of scheduled redraw requests. */
-	int postponed_reload; /* Number of scheduled reload requests. */
+	int postponed_reload; /* Number of scheduled reload requests, negative if
+	                         there was at least one full reload request. */
 }
 FileView;
 
@@ -344,6 +345,10 @@ void ui_view_schedule_redraw(FileView *view);
  * work. */
 void ui_view_schedule_reload(FileView *view);
 
+/* Schedules full reload of the view for the future.  Doesn't perform any actual
+ * work. */
+void ui_view_schedule_full_reload(FileView *view);
+
 /* Checks whether redraw of the view is scheduled.  Return non-zero if so,
  * otherwise zero is returned. */
 int ui_view_is_redraw_scheduled(const FileView *view);
@@ -351,6 +356,10 @@ int ui_view_is_redraw_scheduled(const FileView *view);
 /* Checks whether reload of the view is scheduled.  Return non-zero if so,
  * otherwise zero is returned. */
 int ui_view_is_reload_scheduled(const FileView *view);
+
+/* Checks whether full reload of the view is scheduled.  Return non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_is_full_reload_scheduled(const FileView *view);
 
 /* Clears previously scheduled redraw request of the view, if any. */
 void ui_view_redrawn(FileView *view);

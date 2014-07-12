@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stddef.h> /* wchar_t */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcpy() strlen() */
 #include <time.h>
@@ -1957,6 +1957,12 @@ ui_view_schedule_reload(FileView *view)
 	++view->postponed_reload;
 }
 
+void
+ui_view_schedule_full_reload(FileView *view)
+{
+	view->postponed_reload = -abs(view->postponed_reload) - 1;
+}
+
 int
 ui_view_is_redraw_scheduled(const FileView *view)
 {
@@ -1967,6 +1973,12 @@ int
 ui_view_is_reload_scheduled(const FileView *view)
 {
 	return view->postponed_reload != 0;
+}
+
+int
+ui_view_is_full_reload_scheduled(const FileView *view)
+{
+	return view->postponed_reload < 0;
 }
 
 void
