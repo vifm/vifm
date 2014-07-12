@@ -1560,12 +1560,6 @@ wprinta(WINDOW *win, const char str[], int line_attrs)
 }
 
 void
-request_view_update(FileView *view)
-{
-	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
-}
-
-void
 resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
@@ -1949,6 +1943,12 @@ ui_view_clear_history(FileView *const view)
 	free_history_items(view->history, view->history_num);
 	view->history_num = 0;
 	view->history_pos = 0;
+}
+
+void
+ui_view_schedule_update(FileView *view)
+{
+	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
 }
 
 void

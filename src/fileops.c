@@ -1372,7 +1372,7 @@ put_next(const char dest_name[], int override)
 				}
 
 				/* Schedule view update to reflect changes in UI. */
-				request_view_update(put_confirm.view);
+				ui_view_schedule_update(put_confirm.view);
 			}
 			else
 			{

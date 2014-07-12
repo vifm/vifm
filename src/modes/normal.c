@@ -1076,9 +1076,13 @@ dir_size_stub(void *arg)
 
 	remove_last_path_component(dir_size->path);
 	if(path_starts_with(lwin.curr_dir, dir_size->path))
-		request_view_update(&lwin);
+	{
+		ui_view_schedule_update(&lwin);
+	}
 	if(path_starts_with(rwin.curr_dir, dir_size->path))
-		request_view_update(&rwin);
+	{
+		ui_view_schedule_update(&rwin);
+	}
 
 	free(dir_size->path);
 	free(dir_size);
@@ -2124,7 +2128,7 @@ pick_files(FileView *view, int end, keys_info_t *keys_info)
 
 	if(end < view->list_pos)
 	{
-		request_view_update(view);
+		ui_view_schedule_update(view);
 		view->list_pos = end;
 	}
 }

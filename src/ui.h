@@ -280,9 +280,6 @@ void wprint(WINDOW *win, const char str[]);
 /* Prints str in current window position with specified line attributes, which
  * set during print operation only. */
 void wprinta(WINDOW *win, const char str[], int line_attrs);
-/* Sets inner flag or signals about needed view update in some other way.
- * It doesn't perform any update, just request one to happen in the future. */
-void request_view_update(FileView *view);
 /* Performs resizing of some of TUI elements for menu like modes. */
 void resize_for_menu_like(void);
 /* Performs real pane redraw in the TUI and maybe some related operations. */
@@ -333,6 +330,10 @@ int ui_view_displays_numbers(const FileView *const view);
 int ui_view_is_visible(const FileView *const view);
 /* Cleans directory history of the view. */
 void ui_view_clear_history(FileView *const view);
+
+/* Sets inner flag or signals about needed view update in some other way.
+ * It doesn't perform any update, just request one to happen in the future. */
+void ui_view_schedule_update(FileView *view);
 
 /* Operation cancellation. */
 
