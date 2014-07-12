@@ -48,6 +48,7 @@
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -672,9 +673,6 @@ vifm_restart(void)
 	/* Registers. */
 	clear_registers();
 
-	/* Color schemes. */
-	load_def_scheme();
-
 	/* Clear all bookmarks. */
 	clear_all_bookmarks();
 
@@ -688,7 +686,22 @@ vifm_restart(void)
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
+
+	/* Color schemes. */
+	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
+			color_scheme_exists(curr_stats.color_scheme))
+	{
+		if(load_color_scheme(curr_stats.color_scheme) != 0)
+		{
+			load_def_scheme();
+		}
+	}
+	else
+	{
+		load_def_scheme();
+	}
 	load_color_scheme_colors();
+
 	source_config();
 	exec_startup_commands(0, NULL);
 

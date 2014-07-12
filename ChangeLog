@@ -56,6 +56,9 @@
 	Allowed use of :filter syntax in user-defined filter commands (e.g.
 	"command conf filter/.*\.cfg$/").
 
+	Do not reset color scheme to default one on :restart if another existing
+	one is stored in vifminfo file.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
