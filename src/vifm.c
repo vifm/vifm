@@ -660,7 +660,7 @@ vifm_restart(void)
 	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 
 	/* Session status. */
-	(void)reset_status();
+	(void)reset_status(&cfg);
 
 	/* Undo list. */
 	reset_undo_list();
