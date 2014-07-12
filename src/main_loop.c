@@ -45,9 +45,9 @@
 #include "status.h"
 #include "ui.h"
 
-static void process_scheduled_redraws(void);
-static int should_process_reloads_of_views(void);
-static void process_reloads_of_views(void);
+static void process_scheduled_updates(void);
+static int should_check_views_for_changes(void);
+static void check_views_for_changes(void);
 
 static wchar_t buf[128];
 static int pos;
@@ -75,11 +75,11 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		process_scheduled_redraws();
+		process_scheduled_updates();
 
-		if(should_process_reloads_of_views())
+		if(should_check_views_for_changes())
 		{
-			process_reloads_of_views();
+			check_views_for_changes();
 		}
 
 		check_background_jobs();
@@ -94,7 +94,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 				break;
 			}
 
-			process_scheduled_redraws();
+			process_scheduled_updates();
 		}
 		if(result != ERR)
 		{
@@ -250,7 +250,7 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		process_scheduled_redraws();
+		process_scheduled_updates();
 
 		pos = 0;
 		buf[0] = L'\0';
@@ -271,9 +271,9 @@ main_loop(void)
 	}
 }
 
-/* Redraws TUI or it's elements if something is scheduled. */
+/* Updates TUI or it's elements if something is scheduled. */
 static void
-process_scheduled_redraws(void)
+process_scheduled_updates(void)
 {
 	if(is_redraw_scheduled())
 	{
@@ -281,19 +281,19 @@ process_scheduled_redraws(void)
 	}
 }
 
-/* Checks whether views can be reloaded in current state of the application.
- * Returns non-zero is so, otherwise zero is returned. */
+/* Checks whether views should be checked agains external changes.  Returns
+ * non-zero is so, otherwise zero is returned. */
 static int
-should_process_reloads_of_views(void)
+should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
 	    && get_mode() != CMDLINE_MODE;
 }
 
-/* Processes reloads of views. */
+/* Updates views in case directory they display were changed externally. */
 static void
-process_reloads_of_views(void)
+check_views_for_changes(void)
 {
 	check_if_filelists_have_changed(curr_view);
 	if(curr_stats.number_of_windows != 1 && !curr_stats.view)
