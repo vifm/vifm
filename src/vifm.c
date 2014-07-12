@@ -694,7 +694,7 @@ vifm_restart(void)
 
 	curr_stats.restart_in_progress = 0;
 
-	curr_stats.need_update = UT_FULL;
+	update_screen(UT_REDRAW);
 }
 
 void
