@@ -87,6 +87,7 @@ static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
+static void restore_previous_selection(void);
 static void select_first_one(void);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
@@ -239,8 +240,7 @@ enter_visual_mode(int restore_selection)
 
 	if(restore_selection)
 	{
-		key_info_t ki;
-		cmd_gv(ki, NULL);
+		restore_previous_selection();
 	}
 	else
 	{
@@ -686,8 +686,17 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 	leave_clearing_selection(1, save_msg);
 }
 
+/* Restores selection of previous visual mode usage. */
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
+{
+	restore_previous_selection();
+}
+
+/* Restores selection of previous visual mode usage, if it was in current
+ * directory of the view. */
+static void
+restore_previous_selection(void)
 {
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
