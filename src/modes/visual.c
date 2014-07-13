@@ -46,6 +46,8 @@
 #include "modes.h"
 #include "normal.h"
 
+static void backup_selection_flags(FileView *view);
+static void restore_selection_flags(FileView *view);
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -111,6 +113,8 @@ static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
+static void apply_selection(int pos);
+static void revert_selection(int pos);
 static int is_parent_dir_at(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
@@ -240,6 +244,7 @@ enter_visual_mode(int restore_selection)
 	}
 	else
 	{
+		backup_selection_flags(view);
 		select_first_one();
 	}
 
@@ -263,7 +268,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 			view->dir_entry[i].search_match = 0;
 		view->matches = 0;
 
-		erase_selection(view);
+		restore_selection_flags(view);
 
 		redraw_view(view);
 	}
@@ -271,6 +276,37 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
 		*mode = NORMAL_MODE;
+}
+
+/* Stores current values of selected flags of all items in the directory for
+ * future use. */
+static void
+backup_selection_flags(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].was_selected = view->dir_entry[i].selected;
+	}
+}
+
+/* Restore previous state of selected flags stored by
+ * backup_selection_flags(). */
+static void
+restore_selection_flags(FileView *view)
+{
+	int i;
+
+	view->selected_files = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		entry->selected = entry->was_selected;
+		if(entry->selected)
+		{
+			++view->selected_files;
+		}
+	}
 }
 
 static void
@@ -679,14 +715,13 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	update();
 }
 
-/* Performs correct selection of first item. */
+/* Performs correct selection of item under the cursor. */
 static void
 select_first_one(void)
 {
 	if(!is_parent_dir_at(view->list_pos))
 	{
-		view->selected_files = 1;
-		view->dir_entry[view->list_pos].selected = 1;
+		apply_selection(view->list_pos);
 	}
 }
 
@@ -935,7 +970,7 @@ select_up_one(FileView *view, int start_pos)
 	{
 		if(is_parent_dir_at(start_pos))
 		{
-			view->selected_files = 0;
+			--view->selected_files;
 		}
 		view->list_pos = 0;
 	}
@@ -943,25 +978,21 @@ select_up_one(FileView *view, int start_pos)
 	{
 		if(start_pos == 0)
 		{
-			view->dir_entry[1].selected = 0;
-			view->selected_files = 0;
+			revert_selection(1);
 		}
 	}
 	else if(view->list_pos < start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files++;
+		apply_selection(view->list_pos);
 	}
 	else if(view->list_pos == start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->dir_entry[view->list_pos + 1].selected = 0;
-		view->selected_files = 1;
+		apply_selection(view->list_pos);
+		revert_selection(view->list_pos + 1);
 	}
 	else
 	{
-		view->dir_entry[view->list_pos + 1].selected = 0;
-		view->selected_files--;
+		revert_selection(view->list_pos + 1);
 	}
 }
 
@@ -986,20 +1017,41 @@ select_down_one(FileView *view, int start_pos)
 	}
 	else if(view->list_pos > start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files++;
+		apply_selection(view->list_pos);
 	}
 	else if(view->list_pos == start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->dir_entry[view->list_pos - 1].selected = 0;
-		view->selected_files = 1;
+		apply_selection(view->list_pos);
+		revert_selection(view->list_pos - 1);
 	}
 	else
 	{
-		view->dir_entry[view->list_pos - 1].selected = 0;
-		view->selected_files--;
+		revert_selection(view->list_pos - 1);
 	}
+}
+
+/* Applies selection effect to item at specified position. */
+static void
+apply_selection(int pos)
+{
+	dir_entry_t *const entry = &view->dir_entry[pos];
+	if(!entry->selected)
+	{
+		++view->selected_files;
+		entry->selected = 1;
+	}
+}
+
+/* Reverts selection effect to item at specified position. */
+static void
+revert_selection(int pos)
+{
+	dir_entry_t *const entry = &view->dir_entry[pos];
+	if(entry->selected && !entry->was_selected)
+	{
+		--view->selected_files;
+	}
+	entry->selected = entry->was_selected;
 }
 
 /* Checks whether file at specified position in file list referes to parent
