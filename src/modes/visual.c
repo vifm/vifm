@@ -224,28 +224,32 @@ init_visual_mode(int *key_mode)
 }
 
 void
-enter_visual_mode(int restore_selection)
+enter_visual_mode(VisualSubmodes sub_mode)
 {
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
-	if(restore_selection && (ub < 0 || lb < 0))
+	if(sub_mode == VS_RESTORE && (ub < 0 || lb < 0))
+	{
 		return;
+	}
 
 	view = curr_view;
 	start_pos = view->list_pos;
 	*mode = VISUAL_MODE;
 
-	clean_selected_files(view);
-
-	if(restore_selection)
+	switch(sub_mode)
 	{
-		restore_previous_selection();
-	}
-	else
-	{
-		backup_selection_flags(view);
-		select_first_one();
+		case VS_NORMAL:
+			clean_selected_files(view);
+			backup_selection_flags(view);
+			select_first_one();
+			break;
+		case VS_RESTORE:
+			clean_selected_files(view);
+			backup_selection_flags(view);
+			restore_previous_selection();
+			break;
 	}
 
 	redraw_view(view);

@@ -1201,7 +1201,7 @@ do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(1);
+	enter_visual_mode(VS_RESTORE);
 }
 
 /* Go to the first file in window. */
@@ -1260,7 +1260,7 @@ cmd_P(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_V(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(0);
+	enter_visual_mode(VS_NORMAL);
 }
 
 static void
