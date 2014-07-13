@@ -30,6 +30,7 @@
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../bookmarks.h"
 #include "../commands.h"
@@ -1006,8 +1007,8 @@ select_down_one(FileView *view, int start_pos)
 static int
 is_parent_dir_at(int pos)
 {
-	/* Don't allow the ../ dir to be selected */
-	return stroscmp(view->dir_entry[pos].name, "../") == 0;
+	/* Don't allow the ../ dir to be selected. */
+	return is_parent_dir(view->dir_entry[pos].name);
 }
 
 static void
