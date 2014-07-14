@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <string.h>
 
@@ -49,7 +49,10 @@
 /* Types of selection amending. */
 typedef enum
 {
-	AT_NONE,   /* Selection amending is not active. */
+	AT_NONE,   /* Selection amending is not active, almost same as AT_APPEND. */
+	AT_APPEND, /* Amend selection by selecting elements in scope. */
+	AT_REMOVE, /* Amend selection by deselecting elements in scope. */
+	AT_INVERT, /* Amend selection by inverting selection of elements in scope. */
 	AT_COUNT   /* Number of selection amending types. */
 }
 AmendType;
@@ -63,6 +66,7 @@ static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static void page_scroll(int base, int direction);
+static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -149,6 +153,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
 	{L"\x05", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x07", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
@@ -262,6 +267,11 @@ enter_visual_mode(VisualSubmodes sub_mode)
 			clean_selected_files(view);
 			backup_selection_flags(view);
 			restore_previous_selection();
+			break;
+		case VS_AMEND:
+			amend_type = AT_APPEND;
+			backup_selection_flags(view);
+			select_first_one();
 			break;
 	}
 
@@ -400,6 +410,28 @@ page_scroll(int base, int direction)
 	new_pos = base + direction*offset;
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);
+}
+
+/* Switches amend submodes by round robin scheme. */
+static void
+cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type != AT_NONE)
+	{
+		int cursor_pos;
+
+		restore_selection_flags(view);
+
+		amend_type = 1 + amend_type%(AT_COUNT - 1);
+
+		cursor_pos = view->list_pos;
+		view->list_pos = start_pos;
+
+		select_first_one();
+		move_pos(cursor_pos);
+
+		update();
+	}
 }
 
 static void
@@ -1056,10 +1088,38 @@ static void
 apply_selection(int pos)
 {
 	dir_entry_t *const entry = &view->dir_entry[pos];
-	if(!entry->selected)
+	switch(amend_type)
 	{
-		++view->selected_files;
-		entry->selected = 1;
+		case AT_NONE:
+		case AT_APPEND:
+			if(!entry->selected)
+			{
+				++view->selected_files;
+				entry->selected = 1;
+			}
+			break;
+		case AT_REMOVE:
+			if(entry->selected)
+			{
+				--view->selected_files;
+				entry->selected = 0;
+			}
+			break;
+		case AT_INVERT:
+			if(entry->selected && entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			else if(!entry->selected && !entry->was_selected)
+			{
+				++view->selected_files;
+			}
+			entry->selected = !entry->was_selected;
+			break;
+
+		default:
+			assert(0 && "Unexpected amending type.");
+			break;
 	}
 }
 
@@ -1068,11 +1128,39 @@ static void
 revert_selection(int pos)
 {
 	dir_entry_t *const entry = &view->dir_entry[pos];
-	if(entry->selected && !entry->was_selected)
+	switch(amend_type)
 	{
-		--view->selected_files;
+		case AT_NONE:
+		case AT_APPEND:
+			if(entry->selected && !entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			entry->selected = entry->was_selected;
+			break;
+		case AT_REMOVE:
+			if(!entry->selected && entry->was_selected)
+			{
+				++view->selected_files;
+				entry->selected = 1;
+			}
+			break;
+		case AT_INVERT:
+			if(entry->selected && !entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			else if(!entry->selected && entry->was_selected)
+			{
+				++view->selected_files;
+			}
+			entry->selected = entry->was_selected;
+			break;
+
+		default:
+			assert(0 && "Unexpected amending type.");
+			break;
 	}
-	entry->selected = entry->was_selected;
 }
 
 /* Checks whether file at specified position in file list referes to parent
@@ -1180,6 +1268,9 @@ describe_visual_mode(void)
 {
 	static const char *descriptions[] = {
 		[AT_NONE]   = "VISUAL",
+		[AT_APPEND] = "VISUAL (append)",
+		[AT_REMOVE] = "VISUAL (remove)",
+		[AT_INVERT] = "VISUAL (invert)",
 	};
 	ARRAY_GUARD(descriptions, AT_COUNT);
 

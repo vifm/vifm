@@ -27,6 +27,7 @@ typedef enum
 {
 	VS_NORMAL,  /* With initial clearing of selection. */
 	VS_RESTORE, /* With restoring of previous selection if available. */
+	VS_AMEND,   /* Amending existing selection. */
 }
 VisualSubmodes;
 
