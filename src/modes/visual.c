@@ -1175,5 +1175,16 @@ move_pos(int pos)
 	return 1;
 }
 
+const char *
+describe_visual_mode(void)
+{
+	static const char *descriptions[] = {
+		[AT_NONE]   = "VISUAL",
+	};
+	ARRAY_GUARD(descriptions, AT_COUNT);
+
+	return descriptions[amend_type];
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

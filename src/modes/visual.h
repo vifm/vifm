@@ -38,10 +38,14 @@ void enter_visual_mode(VisualSubmodes sub_mode);
 void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
 
 /* Should be used to ask visual mode to redraw file list correctly.
- * Intented to be used after setting list position from side. */
+ * Intended to be used after setting list position from side. */
 void update_visual_mode(void);
 
 int find_vpattern(FileView *view, const char *pattern, int backward);
+
+/* Formats concise description of current visual mode state.  Returns pointer
+ * to a statically allocated buffer. */
+const char * describe_visual_mode(void);
 
 #endif /* VIFM__MODES__VISUAL_H__ */
 
