@@ -117,6 +117,7 @@ static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
+static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
 static void leave_clearing_selection(int go_to_top, int save_msg);
 static void update_marks(FileView *view);
@@ -417,19 +418,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(amend_type != AT_NONE)
 	{
-		int cursor_pos;
-
-		restore_selection_flags(view);
-
-		amend_type = 1 + amend_type%(AT_COUNT - 1);
-
-		cursor_pos = view->list_pos;
-		view->list_pos = start_pos;
-
-		select_first_one();
-		move_pos(cursor_pos);
-
-		update();
+		change_amend_type(1 + amend_type%(AT_COUNT - 1));
 	}
 }
 
@@ -936,6 +925,29 @@ activate_search(int count, int back, int external)
 		const int type = back ? VSEARCH_BACKWARD_SUBMODE : VSEARCH_FORWARD_SUBMODE;
 		enter_cmdline_mode(type, L"", NULL);
 	}
+}
+
+/* Changes amend type and smartly reselects files. */
+static void
+change_amend_type(AmendType new_amend_type)
+{
+	const int cursor_pos = view->list_pos;
+	amend_type = new_amend_type;
+	view->list_pos = start_pos;
+
+	if(new_amend_type == AT_NONE)
+	{
+		clean_selected_files(view);
+	}
+	else
+	{
+		restore_selection_flags(view);
+	}
+
+	select_first_one();
+	move_pos(cursor_pos);
+
+	update();
 }
 
 static void
