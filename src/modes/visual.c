@@ -46,6 +46,14 @@
 #include "modes.h"
 #include "normal.h"
 
+/* Types of selection amending. */
+typedef enum
+{
+	AT_NONE,   /* Selection amending is not active. */
+	AT_COUNT   /* Number of selection amending types. */
+}
+AmendType;
+
 static void backup_selection_flags(FileView *view);
 static void restore_selection_flags(FileView *view);
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
@@ -130,6 +138,9 @@ static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 static int upwards_range;
 static int search_repeat;
+
+/* Currently active amending submode. */
+static AmendType amend_type;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
@@ -241,11 +252,13 @@ enter_visual_mode(VisualSubmodes sub_mode)
 	switch(sub_mode)
 	{
 		case VS_NORMAL:
+			amend_type = AT_NONE;
 			clean_selected_files(view);
 			backup_selection_flags(view);
 			select_first_one();
 			break;
 		case VS_RESTORE:
+			amend_type = AT_NONE;
 			clean_selected_files(view);
 			backup_selection_flags(view);
 			restore_previous_selection();
