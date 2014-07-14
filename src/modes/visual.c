@@ -357,8 +357,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	update_marks(view);
-	leave_visual_mode(0, 0, 1);
+	leave_clearing_selection(0, 0);
 }
 
 static void
