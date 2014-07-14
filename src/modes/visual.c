@@ -92,6 +92,7 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
+static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
@@ -117,6 +118,7 @@ static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
+static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
 static void leave_clearing_selection(int go_to_top, int save_msg);
@@ -184,8 +186,9 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"O", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"U", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
-	{L"V", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"V", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"Y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{L"av", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_av}}},
 	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
@@ -210,7 +213,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"q/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_slash}}},
 	{L"q?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_question}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
-	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
@@ -637,6 +640,21 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	activate_search(key_info.count, 1, 0);
 }
 
+/* Leaves visual mode if not in normal amending mode, otherwise switches to
+ * normal mode. */
+static void
+cmd_av(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type != AT_NONE)
+	{
+		leave_clearing_selection(0, 0);
+	}
+	else
+	{
+		change_amend_type(AT_APPEND);
+	}
+}
+
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -924,6 +942,21 @@ activate_search(int count, int back, int external)
 	{
 		const int type = back ? VSEARCH_BACKWARD_SUBMODE : VSEARCH_FORWARD_SUBMODE;
 		enter_cmdline_mode(type, L"", NULL);
+	}
+}
+
+/* Leaves visual mode if in normal amending mode, otherwise switches to amending
+ * selection mode. */
+static void
+cmd_v(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type == AT_NONE)
+	{
+		leave_clearing_selection(0, 0);
+	}
+	else
+	{
+		change_amend_type(AT_NONE);
 	}
 }
 
