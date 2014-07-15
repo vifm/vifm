@@ -1954,7 +1954,10 @@ ui_view_schedule_redraw(FileView *view)
 void
 ui_view_schedule_reload(FileView *view)
 {
-	++view->postponed_reload;
+	if(view->postponed_reload >= 0)
+	{
+		++view->postponed_reload;
+	}
 }
 
 void
