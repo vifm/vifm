@@ -121,6 +121,8 @@ static void search(key_info_t key_info, int backward);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
+static void accept_and_leave(int save_msg);
+static void reject_and_leave(void);
 static void leave_clearing_selection(int go_to_top, int save_msg);
 static void update_marks(FileView *view);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
@@ -346,7 +348,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -361,7 +363,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_clearing_selection(0, 0);
+	reject_and_leave();
 }
 
 static void
@@ -463,7 +465,7 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, -key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -483,7 +485,7 @@ cmd_C(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -647,7 +649,7 @@ cmd_av(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(amend_type != AT_NONE)
 	{
-		leave_clearing_selection(0, 0);
+		reject_and_leave();
 	}
 	else
 	{
@@ -678,7 +680,7 @@ delete(key_info_t key_info, int use_trash)
 	}
 
 	save_msg = delete_files(view, key_info.reg, 0, NULL, use_trash);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -730,7 +732,7 @@ cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 1, 0, NULL);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -738,7 +740,7 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 0, 0, NULL);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
 /* Restores selection of previous visual mode usage. */
@@ -803,7 +805,7 @@ static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	handle_file(view, 1, 0);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -952,7 +954,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(amend_type == AT_NONE)
 	{
-		leave_clearing_selection(0, 0);
+		reject_and_leave();
 	}
 	else
 	{
@@ -997,7 +999,22 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 
 	free_selected_file_array(view);
 
-	leave_clearing_selection(1, 1);
+	accept_and_leave(1);
+}
+
+/* Accepts selected region and leaves visual mode. */
+static void
+accept_and_leave(int save_msg)
+{
+	leave_clearing_selection(1, save_msg);
+}
+
+/* Rejects selected region and leaves visual mode.  Previous selection is not
+ * touched. */
+static void
+reject_and_leave(void)
+{
+	leave_clearing_selection(0, 0);
 }
 
 /* Correctly leaves visual mode updating marks, clearing selection and going to
@@ -1032,7 +1049,7 @@ static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
 	filter_selected_files(view);
-	leave_clearing_selection(1, 0);
+	accept_and_leave(0);
 }
 
 static void
