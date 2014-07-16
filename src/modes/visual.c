@@ -50,9 +50,9 @@
 typedef enum
 {
 	AT_NONE,   /* Selection amending is not active, almost same as AT_APPEND. */
-	AT_APPEND, /* Amend selection by selecting elements in scope. */
-	AT_REMOVE, /* Amend selection by deselecting elements in scope. */
-	AT_INVERT, /* Amend selection by inverting selection of elements in scope. */
+	AT_APPEND, /* Amend selection by selecting elements in region. */
+	AT_REMOVE, /* Amend selection by deselecting elements in region. */
+	AT_INVERT, /* Amend selection by inverting selection of elements in region. */
 	AT_COUNT   /* Number of selection amending types. */
 }
 AmendType;
@@ -640,8 +640,8 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	activate_search(key_info.count, 1, 0);
 }
 
-/* Leaves visual mode if not in normal amending mode, otherwise switches to
- * normal mode. */
+/* Leaves visual mode if in amending mode, otherwise switches to amending
+ * selection mode. */
 static void
 cmd_av(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -945,8 +945,8 @@ activate_search(int count, int back, int external)
 	}
 }
 
-/* Leaves visual mode if in normal amending mode, otherwise switches to amending
- * selection mode. */
+/* Leave visual mode if not in amending mode, otherwise switch to normal visual
+ * selection. */
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
