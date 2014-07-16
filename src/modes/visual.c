@@ -1002,10 +1002,16 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 	accept_and_leave(1);
 }
 
-/* Accepts selected region and leaves visual mode. */
+/* Accepts selected region and leaves visual mode.  This means forgetting
+ * selection that existed before. */
 static void
 accept_and_leave(int save_msg)
 {
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].was_selected = 0;
+	}
 	leave_clearing_selection(1, save_msg);
 }
 
