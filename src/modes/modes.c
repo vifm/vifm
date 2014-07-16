@@ -316,7 +316,7 @@ print_selected_msg(void)
 {
 	if(mode == VISUAL_MODE)
 	{
-		status_bar_message("-- VISUAL -- ");
+		status_bar_messagef("-- %s -- ", describe_visual_mode());
 		update_vmode_input();
 	}
 	else

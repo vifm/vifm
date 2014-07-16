@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <string.h>
 
@@ -30,6 +30,7 @@
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../bookmarks.h"
 #include "../commands.h"
@@ -45,6 +46,19 @@
 #include "modes.h"
 #include "normal.h"
 
+/* Types of selection amending. */
+typedef enum
+{
+	AT_NONE,   /* Selection amending is not active, almost same as AT_APPEND. */
+	AT_APPEND, /* Amend selection by selecting elements in region. */
+	AT_REMOVE, /* Amend selection by deselecting elements in region. */
+	AT_INVERT, /* Amend selection by inverting selection of elements in region. */
+	AT_COUNT   /* Number of selection amending types. */
+}
+AmendType;
+
+static void backup_selection_flags(FileView *view);
+static void restore_selection_flags(FileView *view);
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -52,6 +66,7 @@ static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static void page_scroll(int base, int direction);
+static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -77,6 +92,7 @@ static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
+static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
@@ -84,6 +100,7 @@ static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
+static void restore_previous_selection(void);
 static void select_first_one(void);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
@@ -101,7 +118,11 @@ static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
+static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
+static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
+static void accept_and_leave(int save_msg);
+static void reject_and_leave(void);
 static void leave_clearing_selection(int go_to_top, int save_msg);
 static void update_marks(FileView *view);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
@@ -110,7 +131,9 @@ static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
-static int is_parent_dir(int pos);
+static void apply_selection(int pos);
+static void revert_selection(int pos);
+static int is_parent_dir_at(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
 static void goto_pos_force_update(int pos);
@@ -125,6 +148,9 @@ static int last_fast_search_backward = -1;
 static int upwards_range;
 static int search_repeat;
 
+/* Currently active amending submode. */
+static AmendType amend_type;
+
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -132,6 +158,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
 	{L"\x05", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x07", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
@@ -161,8 +188,9 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"O", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"U", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
-	{L"V", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"V", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"Y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{L"av", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_av}}},
 	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
@@ -187,7 +215,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"q/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_slash}}},
 	{L"q?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_question}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
-	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
@@ -218,28 +246,39 @@ init_visual_mode(int *key_mode)
 }
 
 void
-enter_visual_mode(int restore_selection)
+enter_visual_mode(VisualSubmodes sub_mode)
 {
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
-	if(restore_selection && (ub < 0 || lb < 0))
+	if(sub_mode == VS_RESTORE && (ub < 0 || lb < 0))
+	{
 		return;
+	}
 
 	view = curr_view;
 	start_pos = view->list_pos;
 	*mode = VISUAL_MODE;
 
-	clean_selected_files(view);
-
-	if(restore_selection)
+	switch(sub_mode)
 	{
-		key_info_t ki;
-		cmd_gv(ki, NULL);
-	}
-	else
-	{
-		select_first_one();
+		case VS_NORMAL:
+			amend_type = AT_NONE;
+			clean_selected_files(view);
+			backup_selection_flags(view);
+			select_first_one();
+			break;
+		case VS_RESTORE:
+			amend_type = AT_NONE;
+			clean_selected_files(view);
+			backup_selection_flags(view);
+			restore_previous_selection();
+			break;
+		case VS_AMEND:
+			amend_type = AT_APPEND;
+			backup_selection_flags(view);
+			select_first_one();
+			break;
 	}
 
 	redraw_view(view);
@@ -262,7 +301,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 			view->dir_entry[i].search_match = 0;
 		view->matches = 0;
 
-		erase_selection(view);
+		restore_selection_flags(view);
 
 		redraw_view(view);
 	}
@@ -272,13 +311,44 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 		*mode = NORMAL_MODE;
 }
 
+/* Stores current values of selected flags of all items in the directory for
+ * future use. */
+static void
+backup_selection_flags(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].was_selected = view->dir_entry[i].selected;
+	}
+}
+
+/* Restore previous state of selected flags stored by
+ * backup_selection_flags(). */
+static void
+restore_selection_flags(FileView *view)
+{
+	int i;
+
+	view->selected_files = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		entry->selected = entry->was_selected;
+		if(entry->selected)
+		{
+			++view->selected_files;
+		}
+	}
+}
+
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -293,8 +363,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	update_marks(view);
-	leave_visual_mode(0, 0, 1);
+	reject_and_leave();
 }
 
 static void
@@ -348,6 +417,16 @@ page_scroll(int base, int direction)
 	goto_pos(new_pos);
 }
 
+/* Switches amend submodes by round robin scheme. */
+static void
+cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type != AT_NONE)
+	{
+		change_amend_type(1 + amend_type%(AT_COUNT - 1));
+	}
+}
+
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -386,7 +465,7 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, -key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -406,7 +485,7 @@ cmd_C(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -563,6 +642,21 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	activate_search(key_info.count, 1, 0);
 }
 
+/* Leaves visual mode if in amending mode, otherwise switches to amending
+ * selection mode. */
+static void
+cmd_av(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type != AT_NONE)
+	{
+		reject_and_leave();
+	}
+	else
+	{
+		change_amend_type(AT_APPEND);
+	}
+}
+
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -586,7 +680,7 @@ delete(key_info_t key_info, int use_trash)
 	}
 
 	save_msg = delete_files(view, key_info.reg, 0, NULL, use_trash);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -638,7 +732,7 @@ cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 1, 0, NULL);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -646,11 +740,20 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 0, 0, NULL);
-	leave_clearing_selection(1, save_msg);
+	accept_and_leave(save_msg);
 }
 
+/* Restores selection of previous visual mode usage. */
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
+{
+	restore_previous_selection();
+}
+
+/* Restores selection of previous visual mode usage, if it was in current
+ * directory of the view. */
+static void
+restore_previous_selection(void)
 {
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
@@ -678,14 +781,13 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	update();
 }
 
-/* Performs correct selection of first item. */
+/* Performs correct selection of item under the cursor. */
 static void
 select_first_one(void)
 {
-	if(!is_parent_dir(view->list_pos))
+	if(!is_parent_dir_at(view->list_pos))
 	{
-		view->selected_files = 1;
-		view->dir_entry[view->list_pos].selected = 1;
+		apply_selection(view->list_pos);
 	}
 }
 
@@ -703,7 +805,7 @@ static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	handle_file(view, 1, 0);
-	leave_clearing_selection(1, curr_stats.save_msg);
+	accept_and_leave(curr_stats.save_msg);
 }
 
 static void
@@ -845,6 +947,44 @@ activate_search(int count, int back, int external)
 	}
 }
 
+/* Leave visual mode if not in amending mode, otherwise switch to normal visual
+ * selection. */
+static void
+cmd_v(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(amend_type == AT_NONE)
+	{
+		reject_and_leave();
+	}
+	else
+	{
+		change_amend_type(AT_NONE);
+	}
+}
+
+/* Changes amend type and smartly reselects files. */
+static void
+change_amend_type(AmendType new_amend_type)
+{
+	const int cursor_pos = view->list_pos;
+	amend_type = new_amend_type;
+	view->list_pos = start_pos;
+
+	if(new_amend_type == AT_NONE)
+	{
+		clean_selected_files(view);
+	}
+	else
+	{
+		restore_selection_flags(view);
+	}
+
+	select_first_one();
+	move_pos(cursor_pos);
+
+	update();
+}
+
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -859,7 +999,28 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 
 	free_selected_file_array(view);
 
-	leave_clearing_selection(1, 1);
+	accept_and_leave(1);
+}
+
+/* Accepts selected region and leaves visual mode.  This means forgetting
+ * selection that existed before. */
+static void
+accept_and_leave(int save_msg)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].was_selected = 0;
+	}
+	leave_clearing_selection(1, save_msg);
+}
+
+/* Rejects selected region and leaves visual mode.  Previous selection is not
+ * touched. */
+static void
+reject_and_leave(void)
+{
+	leave_clearing_selection(0, 0);
 }
 
 /* Correctly leaves visual mode updating marks, clearing selection and going to
@@ -894,7 +1055,7 @@ static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
 	filter_selected_files(view);
-	leave_clearing_selection(1, 0);
+	accept_and_leave(0);
 }
 
 static void
@@ -932,33 +1093,31 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if(is_parent_dir(start_pos))
-			view->selected_files = 0;
+		if(is_parent_dir_at(start_pos))
+		{
+			--view->selected_files;
+		}
 		view->list_pos = 0;
 	}
-	else if(view->list_pos == 0 && is_parent_dir(0))
+	else if(view->list_pos == 0 && is_parent_dir_at(0))
 	{
 		if(start_pos == 0)
 		{
-			view->dir_entry[1].selected = 0;
-			view->selected_files = 0;
+			revert_selection(1);
 		}
 	}
 	else if(view->list_pos < start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files++;
+		apply_selection(view->list_pos);
 	}
 	else if(view->list_pos == start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->dir_entry[view->list_pos + 1].selected = 0;
-		view->selected_files = 1;
+		apply_selection(view->list_pos);
+		revert_selection(view->list_pos + 1);
 	}
 	else
 	{
-		view->dir_entry[view->list_pos + 1].selected = 0;
-		view->selected_files--;
+		revert_selection(view->list_pos + 1);
 	}
 }
 
@@ -972,39 +1131,112 @@ select_down_one(FileView *view, int start_pos)
 	{
 		view->list_pos = view->list_rows - 1;
 	}
-	else if(view->list_pos == 0)
-	{
-		if(start_pos == 0)
-			view->selected_files = 0;
-	}
-	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir(0))
+	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir_at(0))
 	{
 		/* do nothing */
 	}
 	else if(view->list_pos > start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files++;
+		apply_selection(view->list_pos);
 	}
 	else if(view->list_pos == start_pos)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->dir_entry[view->list_pos - 1].selected = 0;
-		view->selected_files = 1;
+		apply_selection(view->list_pos);
+		revert_selection(view->list_pos - 1);
 	}
 	else
 	{
-		view->dir_entry[view->list_pos - 1].selected = 0;
-		view->selected_files--;
+		revert_selection(view->list_pos - 1);
 	}
 }
 
-/* Checks whether current file is a link to parent directory. */
-static int
-is_parent_dir(int pos)
+/* Applies selection effect to item at specified position. */
+static void
+apply_selection(int pos)
 {
-	/* Don't allow the ../ dir to be selected */
-	return stroscmp(view->dir_entry[pos].name, "../") == 0;
+	dir_entry_t *const entry = &view->dir_entry[pos];
+	switch(amend_type)
+	{
+		case AT_NONE:
+		case AT_APPEND:
+			if(!entry->selected)
+			{
+				++view->selected_files;
+				entry->selected = 1;
+			}
+			break;
+		case AT_REMOVE:
+			if(entry->selected)
+			{
+				--view->selected_files;
+				entry->selected = 0;
+			}
+			break;
+		case AT_INVERT:
+			if(entry->selected && entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			else if(!entry->selected && !entry->was_selected)
+			{
+				++view->selected_files;
+			}
+			entry->selected = !entry->was_selected;
+			break;
+
+		default:
+			assert(0 && "Unexpected amending type.");
+			break;
+	}
+}
+
+/* Reverts selection effect to item at specified position. */
+static void
+revert_selection(int pos)
+{
+	dir_entry_t *const entry = &view->dir_entry[pos];
+	switch(amend_type)
+	{
+		case AT_NONE:
+		case AT_APPEND:
+			if(entry->selected && !entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			entry->selected = entry->was_selected;
+			break;
+		case AT_REMOVE:
+			if(!entry->selected && entry->was_selected)
+			{
+				++view->selected_files;
+				entry->selected = 1;
+			}
+			break;
+		case AT_INVERT:
+			if(entry->selected && !entry->was_selected)
+			{
+				--view->selected_files;
+			}
+			else if(!entry->selected && entry->was_selected)
+			{
+				++view->selected_files;
+			}
+			entry->selected = entry->was_selected;
+			break;
+
+		default:
+			assert(0 && "Unexpected amending type.");
+			break;
+	}
+}
+
+/* Checks whether file at specified position in file list referes to parent
+ * directory. */
+static int
+is_parent_dir_at(int pos)
+{
+	/* Don't allow the ../ dir to be selected. */
+	return is_parent_dir(view->dir_entry[pos].name);
 }
 
 static void
@@ -1096,6 +1328,20 @@ move_pos(int pos)
 		select_up_one(view, start_pos);
 
 	return 1;
+}
+
+const char *
+describe_visual_mode(void)
+{
+	static const char *descriptions[] = {
+		[AT_NONE]   = "VISUAL",
+		[AT_APPEND] = "VISUAL (append)",
+		[AT_REMOVE] = "VISUAL (remove)",
+		[AT_INVERT] = "VISUAL (invert)",
+	};
+	ARRAY_GUARD(descriptions, AT_COUNT);
+
+	return descriptions[amend_type];
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

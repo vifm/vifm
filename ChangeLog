@@ -18,6 +18,17 @@
 	Added cancellation (handling of Ctrl-C) for FUSE mounting (but not
 	unmounting).
 
+	Added multiblock "selection" (in quotes because it's also block
+	deselection and inversion of selection for completeness).  Thanks to
+	ranousse, Michelle Bonk (a.k.a. unixtechie).
+
+	Added av normal mode shortcut that activates selection amending mode.
+
+	Added/updated av/v/V visual mode keys to switch type of current visual mode.
+
+	Added Ctrl-G key to visual selection amending mode, which switches kind of
+	amending (append/remove/invert).
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

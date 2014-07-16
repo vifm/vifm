@@ -2196,6 +2196,7 @@ fill_with_shared(FileView *view)
 
 					/* All files start as unselected and unmatched */
 					dir_entry->selected = 0;
+					dir_entry->was_selected = 0;
 					dir_entry->search_match = 0;
 
 					dir_entry->size = 0;
@@ -2316,6 +2317,7 @@ fill_dir_list(FileView *view)
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
+		dir_entry->was_selected = 0;
 		dir_entry->search_match = 0;
 
 		/* Load the inode info */
@@ -2448,6 +2450,7 @@ fill_dir_list(FileView *view)
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
+		dir_entry->was_selected = 0;
 		dir_entry->search_match = 0;
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
@@ -2791,6 +2794,7 @@ add_parent_dir(FileView *view)
 
 	/* All files start as unselected and unmatched */
 	dir_entry->selected = 0;
+	dir_entry->was_selected = 0;
 	dir_entry->search_match = 0;
 
 	dir_entry->type = DIRECTORY;

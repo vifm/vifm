@@ -134,6 +134,7 @@ static void cmd_V(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ZQ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ZZ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_al(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cW(key_info_t key_info, keys_info_t *keys_info);
 #ifndef _WIN32
 static void cmd_cg(key_info_t key_info, keys_info_t *keys_info);
@@ -306,6 +307,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZQ}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
 	{L"al", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_al}}},
+	{L"av", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_av}}},
 	{L"cW", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
 #ifndef _WIN32
 	{L"cg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
@@ -1201,7 +1203,7 @@ do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(1);
+	enter_visual_mode(VS_RESTORE);
 }
 
 /* Go to the first file in window. */
@@ -1260,7 +1262,7 @@ cmd_P(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_V(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(0);
+	enter_visual_mode(VS_NORMAL);
 }
 
 static void
@@ -1405,6 +1407,13 @@ cmd_al(key_info_t key_info, keys_info_t *keys_info)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
 	ui_views_reload_filelists();
+}
+
+/* Enters selection amending submode of visual mode. */
+static void
+cmd_av(key_info_t key_info, keys_info_t *keys_info)
+{
+	enter_visual_mode(VS_AMEND);
 }
 
 /* Change word (rename file without extension). */

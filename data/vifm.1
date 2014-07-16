@@ -1,4 +1,4 @@
-.TH vifm 1 "July 10, 2014" "" "Vifm"
+.TH vifm 1 "July 16, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -436,6 +436,9 @@ only for MS-Windows
 .br
 same as l key, but tries to run program with administrative privileges.
 .TP
+.BI av
+go to visual mode into selection amending state preserving current selection.
+.TP
 .BI gv
 go to visual mode restoring last selection.
 .TP
@@ -527,11 +530,8 @@ undo last change.
 .BI Ctrl-R
 redo last change.
 .TP
-.BI v
-enter visual mode.
-.TP
-.BI V
-enter visual mode.
+.BI "v, V"
+enter visual mode, clears current selection.
 .TP
 .BI [count]Ctrl-A
 increment first number in file name by count (1 by default).
@@ -661,17 +661,58 @@ When you pass a count to whole command and its selector they are multiplied. So:
 .\" ---------------------------------------------------------------------------
 .SH Visual Mode
 .\" ---------------------------------------------------------------------------
-In visual mode work almost all normal mode keys, but they do not accept
-selectors.
+Visual mode has to generic operating submodes:
+.IP \- 2
+plain selection as it is in Vim;
+.IP \- 2
+selection editing submode.
+.LP
+
+Both modes select files in range from cursor position at which visual mode was
+entered to current cursor position (let's call it "selection region").  Each of
+two borders can be adjusted by swapping them via "o" or "O" keys and updating
+cursor position with regular cursor motion keys.  Obviously, once initial cursor
+position is altered this way, real start position becomes unavailable.
+
+Plain Vim-like visual mode starts with cleared selection, which is not restored
+on rejecting selection ("Escape", "Ctrl-C", "v", "V").  Contrary to it,
+selection editing doesn't clear previously selected files and restores them
+after reject.  Accepting selection by performing an operation on selected
+items (e.g. yanking them via "y") moves cursor to the top of current selection
+region (not to the top most selected file of the view).
+
+In turn, selection editing supports three types of editing (look at statusbar
+to know which one is currently active):
+.IP \- 2
+append \- amend selection by selecting elements in selection region;
+.IP \- 2
+remove \- amend selection by deselecting elements in selection region;
+.IP \- 2
+invert \- amend selection by inverting selection of elements in selection \
+region.
+.LP
+No matter how you activate selection editing it starts in "append".  One can
+switch type of operation (in the order given above) via "Ctrl-G" key.
+
+Almost all normal mode keys work in visual mode, but instead of accepting
+selectors they operate on selected items.
 .TP
 .BI Enter
-save selection and go back to normal mode.
+save selection and go back to normal mode not moving cursor.
+.TP
+.BI av
+leave visual mode if in amending mode (restores previous selection), otherwise
+switch to amending selection mode.
 .TP
 .BI gv
 restore previous visual selection.
 .TP
 .BI "v, V, Ctrl-C or Escape"
-leave visual mode.
+leave visual mode if not in amending mode, otherwise switch to normal visual
+selection.
+.TP
+.BI Ctrl-G
+switche type of amending by round robin scheme: append \-> remove \-> invert.
 .TP
 .BI :
 enter command line mode.  When you leave it selection will be cleared.
@@ -3197,7 +3238,7 @@ expr1      expr2 == expr2          equal
 
 expr2      expr3 . expr3 ..        string concatenation
 
-expr3      - expr3                 unary minus
+expr3      \- expr3                 unary minus
            + expr3                 unary plus
 
 expr4      number                  number constant

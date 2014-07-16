@@ -123,10 +123,15 @@ typedef struct
 	time_t ctime;
 	char date[16];
 	FileType type;
+
 	int selected;
+	int was_selected; /* Temporary field to store previous selection state. */
+
 	int search_match;
-	int list_num; /* to be used by sorting comparer to perform stable sort */
-}dir_entry_t;
+
+	int list_num; /* Used by sorting comparer to perform stable sort. */
+}
+dir_entry_t;
 
 typedef struct
 {

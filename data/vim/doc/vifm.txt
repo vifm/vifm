@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 10
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 16
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -399,6 +399,10 @@ gr - same as l key, but tries to run program with administrative
     privileges.
 
 
+                                               *vifm-av*
+av - go to visual mode into selection amending state preserving current
+    selection.
+
                                                *vifm-gv*
 gv - go to visual mode restoring last selection.
 
@@ -488,7 +492,8 @@ t - select or unselect (tag) the current file  *vifm-t*
 u - undo last command.                         *vifm-u*
 Ctrl-R - redo last command.                    *vifm-CTRL-R*
 
-v, V - start visual selection of files.        *vifm-v* *vifm-V*
+                                               *vifm-v* *vifm-V*
+v, V - start visual selection of files, clears current selection.
 
 
                                                *vifm-CTRL-A*
@@ -499,7 +504,7 @@ v, V - start visual selection of files.        *vifm-v* *vifm-V*
 
 
 ZQ - same as :quit!                            *vifm-ZQ*
-ZZ - same as :quit                             *vifm-ZZ*
+ZZ - same as |vifm-:quit|                        *vifm-ZZ*
 
 
                                                *vifm-.*
@@ -597,18 +602,56 @@ multiplied. So:
 --------------------------------------------------------------------------------
 *vifm-visual*
 
-In visual mode work almost all normal mode keys, but they do not accept
-selectors.
+Visual mode has to generic operating submodes:
+ - plain selection as it is in Vim;
+ - selection editing submode.
+
+Both modes select files in range from cursor position at which visual mode was
+entered to current cursor position (let's call it "selection region").  Each of
+two borders can be adjusted by swapping them via |vifm-v_o| or |vifm-v_O| keys
+and updating cursor position with regular cursor motion keys.  Obviously, once
+initial cursor position is altered this way, real start position becomes
+unavailable.
+
+Plain Vim-like visual mode starts with cleared selection, which is not restored
+on rejecting selection (|vifm-v_Escape|, |vifm-v_CTRL-C|, |vifm-v_v|,
+|vifm-v_V|).  Contrary to it, selection editing doesn't clear previously
+selected files and restores them after reject.  Accepting selection by
+performing an operation on selected items (e.g. yanking them via |vifm-y|)
+moves cursor to the top of current selection region (not to the top most
+selected file of the view).
+
+In turn, selection editing supports three types of editing (look at statusbar
+to know which one is currently active):
+ - append - amend selection by selecting elements in selection region;
+ - remove - amend selection by deselecting elements in selection region;
+ - invert - amend selection by inverting selection of elements in selection
+            region.
+No matter how you activate selection editing it starts in "append" activated.
+One can switch type of operation (in the order given above) via
+|vifm-v_CTRL-G| key.
+
+Almost all normal mode keys work in visual mode, but instead of accepting
+selectors they operate on selected items.
 
                                                *vifm-v_Enter*
-Enter - save selection and go back to normal mode.
+Enter - save selection and go back to normal mode not moving cursor.
+
+                                               *vifm-v_av*
+av - leave visual mode if in amending mode (restores previous selection),
+    otherwise switch to amending selection mode.
 
                                                *vifm-v_gv*
 gv - restore previous visual selection.
 
                                                *vifm-v_Escape* *vifm-v_CTRL-C*
                                                *vifm-v_v* *vifm-v_V*
-v, V - leave visual mode.
+v, V - leave visual mode if not in amending mode, otherwise switch to normal
+    visual selection.
+
+                                               *vifm-v_CTRL-G*
+Ctrl-G - switch type of amending by round robin scheme: append -> remove ->
+    invert.
 
                                                *vifm-v_:*
 : - enter command line mode.  When you leave it selection will be cleared.
