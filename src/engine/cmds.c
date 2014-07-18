@@ -1202,12 +1202,14 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	return params;
 }
 
-/* Checks whether character is command separator.  Returns non-zero if c is
- * counted to be a separator, otherwise zero is returned. */
+/* Checks whether character is command separator.  Special case is space as a
+ * separator, which means that any whitespace can be used as separators.
+ * Returns non-zero if c is counted to be a separator, otherwise zero is
+ * returned. */
 static int
 is_separator(char c, char sep)
 {
-	return c == sep;
+	return (sep == ' ') ? isspace(c) : (c == sep);
 }
 
 TSTATIC void

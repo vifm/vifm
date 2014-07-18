@@ -179,10 +179,16 @@ teardown(void)
 }
 
 static void
-test_trimming(void)
+test_leading_whitespace_trimming(void)
 {
 	assert_int_equal(0, execute_cmd("q"));
 	assert_int_equal(0, execute_cmd(" q"));
+	assert_int_equal(0, execute_cmd("   q"));
+	assert_int_equal(0, execute_cmd("\tq"));
+	assert_int_equal(0, execute_cmd("\t\tq"));
+	assert_int_equal(0, execute_cmd("\t\t q"));
+	assert_int_equal(0, execute_cmd(" \t \tq"));
+	assert_int_equal(0, execute_cmd("\t \tq"));
 }
 
 static void
@@ -602,25 +608,25 @@ test_only_one_mark(void)
 }
 
 static void
-test_args_trimming(void)
+test_args_whitespace_trimming(void)
 {
 	assert_int_equal(0, execute_cmd("call hi"));
 	assert_int_equal(1, cmdi.argc);
 	assert_string_equal("hi", arg);
 
-	assert_int_equal(0, execute_cmd("call 'hi'"));
+	assert_int_equal(0, execute_cmd("call\t'hi'"));
 	assert_int_equal(1, cmdi.argc);
 	assert_string_equal("'hi'", arg);
 
-	assert_int_equal(0, execute_cmd("call hi "));
+	assert_int_equal(0, execute_cmd("call\t hi "));
 	assert_int_equal(1, cmdi.argc);
 	assert_string_equal("hi", arg);
 
-	assert_int_equal(0, execute_cmd("call hi "));
+	assert_int_equal(0, execute_cmd("call hi \t"));
 	assert_int_equal(1, cmdi.argc);
 	assert_string_equal("hi", arg);
 
-	assert_int_equal(0, execute_cmd("call hi\\  "));
+	assert_int_equal(0, execute_cmd("call\t \thi\\  "));
 	assert_int_equal(1, cmdi.argc);
 	assert_string_equal("hi\\ ", arg);
 }
@@ -721,7 +727,7 @@ input_tests(void)
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
-	run_test(test_trimming);
+	run_test(test_leading_whitespace_trimming);
 	run_test(test_range_acceptance);
 	run_test(test_single_quote_doubling);
 	run_test(test_range);
@@ -747,7 +753,7 @@ input_tests(void)
 	run_test(test_args_after_qmark_2);
 	run_test(test_no_space_before_e_and_q_marks);
 	run_test(test_only_one_mark);
-	run_test(test_args_trimming);
+	run_test(test_args_whitespace_trimming);
 	run_test(test_bg_and_no_args);
 	run_test(test_bg_followed_by_whitespace);
 	run_test(test_short_forms);
