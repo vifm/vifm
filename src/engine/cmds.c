@@ -19,7 +19,7 @@
 #include "cmds.h"
 
 #include <assert.h> /* assert() */
-#include <ctype.h>
+#include <ctype.h> /* isalpha() isdigit() isspace() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h> /* calloc() malloc() free() realloc() */
@@ -104,6 +104,7 @@ static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
+static int is_separator(char c, char sep);
 TSTATIC void unescape(char s[], int regexp);
 static void replace_double_squotes(char s[]);
 static void replace_esc(char s[]);
@@ -445,14 +446,21 @@ parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
 		cmd_info->qmark = 1;
 		cmd++;
 	}
+
 	if(*cmd != '\0' && !isspace(*cmd))
 	{
 		if(cur->cust_sep)
-			cmd_info->sep = *cmd;
+		{
+			cmd_info->sep = isspace(*cmd) ? ' ' : *cmd;
+		}
 		return cmd;
 	}
-	while(*cmd == cmd_info->sep)
-		cmd++;
+
+	while(is_separator(*cmd, cmd_info->sep))
+	{
+		++cmd;
+	}
+
 	return cmd;
 }
 
@@ -1060,8 +1068,9 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 
 	args_beg = args;
 	if(sep == ' ')
-		while(args[0] == sep)
-			args++;
+	{
+		args = skip_whitespace(args);
+	}
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
 	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
@@ -1085,12 +1094,12 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					st = i + 1;
 					state = R_QUOTING;
 				}
-				else if(cmdstr[i] != sep)
+				else if(!is_separator(cmdstr[i], sep))
 				{
 					st = i;
 					state = NO_QUOTING;
 				}
-				else if(sep != ' ' && i > 0 && cmdstr[i - 1] == sep)
+				else if(sep != ' ' && i > 0 && is_separator(cmdstr[i - 1], sep))
 				{
 					st = i--;
 					state = NO_QUOTING;
@@ -1101,7 +1110,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case NO_QUOTING:
-				if(cmdstr[i] == '\0' || cmdstr[i] == sep)
+				if(cmdstr[i] == '\0' || is_separator(cmdstr[i], sep))
 				{
 					state = ARG;
 				}
@@ -1191,6 +1200,14 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	}
 
 	return params;
+}
+
+/* Checks whether character is command separator.  Returns non-zero if c is
+ * counted to be a separator, otherwise zero is returned. */
+static int
+is_separator(char c, char sep)
+{
+	return c == sep;
 }
 
 TSTATIC void
