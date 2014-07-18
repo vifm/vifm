@@ -70,6 +70,9 @@
 	Do not reset color scheme to default one on :restart if another existing
 	one is stored in vifminfo file.
 
+	Allowed tabulation to be used as arguments separators in command-line
+	commands.  Thanks to y2kbugger.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
