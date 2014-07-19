@@ -1458,12 +1458,18 @@ load_color_scheme(const char name[])
 	prev_cs = cfg.cs;
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
-	cfg.cs.defaulted = 0;
+	cfg.cs.state = CSS_LOADING;
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
 	if(source_file(full) != 0)
 	{
-		show_error_msgf("Color Scheme", "Can't load colorscheme: \"%s\"", name);
+		cfg.cs = prev_cs;
+		load_color_scheme_colors();
+		update_screen(UT_FULL);
+
+		show_error_msgf("Color Scheme Sourcing",
+				"Errors loading colors cheme: \"%s\"", name);
+		cfg.cs.state = CSS_NORMAL;
 		return 0;
 	}
 	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
@@ -1471,14 +1477,17 @@ load_color_scheme(const char name[])
 
 	update_attributes();
 
-	if(curr_stats.load_stage >= 2 && cfg.cs.defaulted)
+	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
 	{
 		cfg.cs = prev_cs;
 		load_color_scheme_colors();
-		update_screen(UT_REDRAW);
+		update_screen(UT_FULL);
+
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
-		return 1;
+		return 0;
 	}
+
+	cfg.cs.state = CSS_NORMAL;
 	return 0;
 }
 

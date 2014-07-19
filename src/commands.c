@@ -2504,7 +2504,10 @@ highlight_cmd(const cmd_info_t *cmd_info)
 			if((col = get_color(equal + 1, 0, &curr_stats.cs->color[pos].attr)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
-				curr_stats.cs->defaulted = -1;
+				if(curr_stats.cs->state == CSS_LOADING)
+				{
+					curr_stats.cs->state = CSS_BROKEN;
+				}
 				return 1;
 			}
 			curr_stats.cs->color[pos].bg = col;
@@ -2515,7 +2518,10 @@ highlight_cmd(const cmd_info_t *cmd_info)
 			if((col = get_color(equal + 1, 1, &curr_stats.cs->color[pos].attr)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
-				curr_stats.cs->defaulted = -1;
+				if(curr_stats.cs->state == CSS_LOADING)
+				{
+					curr_stats.cs->state = CSS_BROKEN;
+				}
 				return 1;
 			}
 			curr_stats.cs->color[pos].fg = col;
@@ -3324,7 +3330,7 @@ source_cmd(const cmd_info_t *cmd_info)
 	}
 	if(source_file(path) != 0)
 	{
-		status_bar_errorf("Can't source file: %s", cmd_info->argv[0]);
+		status_bar_errorf("Error sourcing file: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
 	free(path);

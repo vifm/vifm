@@ -359,17 +359,17 @@ static tree_t dirs = NULL_TREE;
 void
 check_color_scheme(col_scheme_t *cs)
 {
-	int i;
-
-	if(cs->defaulted >= 0)
-		return;
-
-	cs->defaulted = 1;
-	for(i = 0; i < ARRAY_LEN(default_colors); i++)
+	if(cs->state == CSS_BROKEN)
 	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-		cs->color[i].attr = default_colors[i][2];
+		int i;
+		for(i = 0; i < ARRAY_LEN(default_colors); i++)
+		{
+			cs->color[i].fg = default_colors[i][0];
+			cs->color[i].bg = default_colors[i][1];
+			cs->color[i].attr = default_colors[i][2];
+		}
+
+		cs->state = CSS_DEFAULTED;
 	}
 }
 
@@ -514,7 +514,7 @@ init_color_scheme(col_scheme_t *cs)
 	int i;
 	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
 	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
-	cs->defaulted = 0;
+	cs->state = CSS_NORMAL;
 
 	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
@@ -548,7 +548,9 @@ check_directory_for_color_scheme(int left, const char *dir)
 	}u;
 
 	if(dirs == NULL_TREE)
+	{
 		return DCOLOR_BASE;
+	}
 
 	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
