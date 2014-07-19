@@ -70,7 +70,7 @@ sorter(const void *first, const void *second)
 static int
 execute_colorscheme_cb(FileView *view, menu_info *m)
 {
-	load_color_scheme(m->items[m->pos]);
+	load_primary_color_scheme(m->items[m->pos]);
 	return 0;
 }
 

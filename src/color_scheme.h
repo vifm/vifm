@@ -54,9 +54,11 @@ extern char *HI_GROUPS[];
 extern char *LIGHT_COLOR_NAMES[8];
 extern char *XTERM256_COLOR_NAMES[256];
 
-/* Returns new value for curr_stats.save_msg. */
-int load_color_scheme(const char name[]);
-/* directory should be NULL if you want to set default directory */
+/* Loads primary color scheme specified by the name.  Returns new value for
+ * curr_stats.save_msg. */
+int load_primary_color_scheme(const char name[]);
+/* Loads configured color scheme color pairs, so they actually visible on a
+ * screen. */
 void load_color_scheme_colors(void);
 void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);

@@ -1742,12 +1742,14 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			int ret = load_color_scheme(cmd_info->argv[0]);
+			const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
+
 			lwin.cs = cfg.cs;
 			rwin.cs = cfg.cs;
 			redraw_lists();
 			update_all_windows();
-			return ret;
+
+			return cs_load_result;
 		}
 	}
 	else

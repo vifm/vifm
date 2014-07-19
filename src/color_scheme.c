@@ -483,7 +483,7 @@ color_to_str(int color, size_t buf_len, char str_buf[])
 }
 
 int
-load_color_scheme(const char name[])
+load_primary_color_scheme(const char name[])
 {
 	col_scheme_t prev_cs;
 	char full[PATH_MAX];
