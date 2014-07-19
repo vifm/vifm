@@ -23,7 +23,7 @@
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
-|vifm-colors-chemes|      Details on using color schemes in vifm.
+|vifm-color-schemes|      Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
 |vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
@@ -3367,7 +3367,7 @@ tree types are supported:
 <  results in that long file names can partially be written on the ext column.
 
 --------------------------------------------------------------------------------
-*vifm-colors-chemes*
+*vifm-color-schemes*
 
 The color schemes in vifm can be applied in two different ways:
    - as the primary color scheme
