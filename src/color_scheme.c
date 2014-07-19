@@ -352,6 +352,7 @@ static const int default_colors[][3] = {
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
 static void init_color_scheme(col_scheme_t *cs);
+static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void load_color_pairs(int base, const col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
@@ -502,10 +503,7 @@ load_primary_color_scheme(const char name[])
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
 	if(source_file(full) != 0)
 	{
-		cfg.cs = prev_cs;
-		load_color_scheme_colors();
-		update_screen(UT_FULL);
-
+		restore_primary_color_scheme(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
 				"Errors loading colors cheme: \"%s\"", name);
 		cfg.cs.state = CSS_NORMAL;
@@ -518,10 +516,7 @@ load_primary_color_scheme(const char name[])
 
 	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
 	{
-		cfg.cs = prev_cs;
-		load_color_scheme_colors();
-		update_screen(UT_FULL);
-
+		restore_primary_color_scheme(&prev_cs);
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 0;
 	}
@@ -530,6 +525,14 @@ load_primary_color_scheme(const char name[])
 	return 0;
 }
 
+/* Restore previous state of primary color scheme. */
+static void
+restore_primary_color_scheme(const col_scheme_t *cs)
+{
+	cfg.cs = *cs;
+	load_color_scheme_colors();
+	update_screen(UT_FULL);
+}
 
 void
 load_color_scheme_colors(void)
