@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 16
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1126,7 +1126,9 @@ The builtin commands are:
     set border color (except view titles) and colors in the menus and
     dialogs.
 :colo[rscheme] color_scheme_name - changes default color scheme to
-    color_scheme_name.
+    color_scheme_name.  In case of errors (e.g. some colors are not
+    supported by terminal) either nothing is changed or colorscheme is reset
+    to builtin colors to ensure that TUI is left in a usable state.
 :colo[rscheme] color_scheme_name directory - associates directory with the
     color scheme.  The directory argument can be both absolute or relative
     path when :colorscheme command is executed from command line, but
@@ -3042,7 +3044,8 @@ automatically to allow view several pages one by one.
 
 Colorscheme menu~
 
-Selecting name of a colorscheme applies it.
+Selecting name of a colorscheme applies it the same way as if ":colorscheme
+<name>" was executed on the command-line.
 
 Commands menu~
 

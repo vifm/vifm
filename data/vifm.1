@@ -1,4 +1,4 @@
-.TH vifm 1 "July 16, 2014" "" "Vifm"
+.TH vifm 1 "July 19, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1246,7 +1246,10 @@ file fits current path.  It's also used to set border color (except view titles)
 and colors in the menus and dialogs.
 .TP
 .BI ":colo[rscheme] color_scheme_name"
-changes default color scheme to color_scheme_name.
+changes default color scheme to color_scheme_name.  In case of errors (e.g.
+some colors are not supported by terminal) either nothing is changed or
+colorscheme is reset to builtin colors to ensure that TUI is left in a usable
+state.
 .TP
 .BI ":colo[rscheme] color_scheme_name directory"
 associates directory with the color scheme.  The directory argument can be
@@ -3534,7 +3537,8 @@ automatically to allow view several pages one by one.
 
 .B Colorscheme menu
 
-Selecting name of a colorscheme applies it.
+Selecting name of a colorscheme applies it the same way as if
+":colorscheme <name>" was executed on the command-line.
 
 .B Commands menu
 
