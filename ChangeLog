@@ -73,6 +73,9 @@
 	Allowed tabulation to be used as arguments separators in command-line
 	commands.  Thanks to y2kbugger.
 
+	Renamed "default color scheme" to "primary color scheme" in documentation
+	to avoid confusion.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

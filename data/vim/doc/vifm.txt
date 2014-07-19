@@ -1121,11 +1121,11 @@ The builtin commands are:
                                                *vifm-:colorscheme* *vifm-:colo*
 :colo[rscheme]? - prints current color scheme name in the status bar.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
-    can choose default color scheme here.  It will be used for view if no
+    can choose primary color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to
     set border color (except view titles) and colors in the menus and
     dialogs.
-:colo[rscheme] color_scheme_name - changes default color scheme to
+:colo[rscheme] color_scheme_name - changes primary color scheme to
     color_scheme_name.  In case of errors (e.g. some colors are not
     supported by terminal) either nothing is changed or colorscheme is reset
     to builtin colors to ensure that TUI is left in a usable state.
@@ -1379,10 +1379,10 @@ The builtin commands are:
 :hi[ghlight] - will show information about all highlight groups in the
     current directory.
 :hi[ghlight] group-name - will show information on given highlight
-    group of the default color scheme.
+    group of the primary color scheme.
 :hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color - sets
     style (cterm), foreground (ctermfg) or/and background (ctermbg)
-    parameters of highlight group of the current default color scheme.
+    parameters of highlight group of the current primary color scheme.
 
 All style values as well as color names are case insensitive.
 
@@ -2705,7 +2705,7 @@ Controls what will be saved in the $VIFM/vifminfo file.
    dhistory  - directory history
    state     - file name and dot filters and terminal multiplexers integration
                state
-   cs        - default color scheme
+   cs        - primary color scheme
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history
    shistory  - search history (/ and ? commands)
@@ -3370,19 +3370,19 @@ tree types are supported:
 *vifm-colorschemes*
 
 The color schemes in vifm can be applied in two different ways:
-   - as the default (or main) color scheme
+   - as the primary color scheme
    - as local to a panel color scheme
 
 Both types are set using |vifm-:colorscheme| command, but of different forms:
-   - :colorscheme color_scheme_name - for the default color scheme
+   - :colorscheme color_scheme_name - for the primary color scheme
    - :colorscheme color_scheme_name directory - for local color schemes
 
 Look of different parts of the TUI (Text User Interface) is determined in
 this way:
    - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu
-     are always determined by the default color scheme
+     are always determined by the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
-     Executable, Fifo and Win are determined by default color scheme and a set
+     Executable, Fifo and Win are determined by primary color scheme and a set
      of local colorschemes, which can be empty
 
 There might be a set of local color schemes because they are structured
