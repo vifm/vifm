@@ -31,19 +31,34 @@
 /* Pseudo name of the default built-in color scheme. */
 #define DEF_CS_NAME "<built-in default>"
 
+/* State of a color scheme. */
+typedef enum
+{
+	CSS_NORMAL,    /* Color scheme is ready to be used. */
+	CSS_DEFAULTED, /* Color scheme was defaulted to have builtin values. */
+	CSS_LOADING,   /* Color scheme is being constructed at the moment. */
+	CSS_BROKEN,    /* Color scheme is broken and should be defaulted. */
+}
+ColorSchemeState;
+
 typedef struct
 {
-	char name[NAME_MAX];
-	char dir[PATH_MAX];
-	int defaulted;
-	col_attr_t color[MAXNUM_COLOR];
-}col_scheme_t;
+	char name[NAME_MAX];            /* Name of the color scheme. */
+	char dir[PATH_MAX];             /* Associated root dir of the color scheme. */
+	ColorSchemeState state;         /* Current state. */
+	col_attr_t color[MAXNUM_COLOR]; /* Colors with their attributes. */
+}
+col_scheme_t;
 
 extern char *HI_GROUPS[];
 extern char *LIGHT_COLOR_NAMES[8];
 extern char *XTERM256_COLOR_NAMES[256];
 
-/* directory should be NULL if you want to set default directory */
+/* Loads primary color scheme specified by the name.  Returns new value for
+ * curr_stats.save_msg. */
+int load_primary_color_scheme(const char name[]);
+/* Loads configured color scheme color pairs, so they actually visible on a
+ * screen. */
 void load_color_scheme_colors(void);
 void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);

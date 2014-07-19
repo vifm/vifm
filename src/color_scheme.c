@@ -28,6 +28,7 @@
 
 #include "cfg/config.h"
 #include "engine/completion.h"
+#include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
@@ -351,6 +352,7 @@ static const int default_colors[][3] = {
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
 static void init_color_scheme(col_scheme_t *cs);
+static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void load_color_pairs(int base, const col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
@@ -359,17 +361,17 @@ static tree_t dirs = NULL_TREE;
 void
 check_color_scheme(col_scheme_t *cs)
 {
-	int i;
-
-	if(cs->defaulted >= 0)
-		return;
-
-	cs->defaulted = 1;
-	for(i = 0; i < ARRAY_LEN(default_colors); i++)
+	if(cs->state == CSS_BROKEN)
 	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-		cs->color[i].attr = default_colors[i][2];
+		int i;
+		for(i = 0; i < ARRAY_LEN(default_colors); i++)
+		{
+			cs->color[i].fg = default_colors[i][0];
+			cs->color[i].bg = default_colors[i][1];
+			cs->color[i].attr = default_colors[i][2];
+		}
+
+		cs->state = CSS_DEFAULTED;
 	}
 }
 
@@ -481,6 +483,57 @@ color_to_str(int color, size_t buf_len, char str_buf[])
 	}
 }
 
+int
+load_primary_color_scheme(const char name[])
+{
+	col_scheme_t prev_cs;
+	char full[PATH_MAX];
+
+	if(!color_scheme_exists(name))
+	{
+		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
+		return 0;
+	}
+
+	prev_cs = cfg.cs;
+	curr_stats.cs_base = DCOLOR_BASE;
+	curr_stats.cs = &cfg.cs;
+	cfg.cs.state = CSS_LOADING;
+
+	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
+	if(source_file(full) != 0)
+	{
+		restore_primary_color_scheme(&prev_cs);
+		show_error_msgf("Color Scheme Sourcing",
+				"Errors loading colors cheme: \"%s\"", name);
+		cfg.cs.state = CSS_NORMAL;
+		return 0;
+	}
+	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+	check_color_scheme(&cfg.cs);
+
+	update_attributes();
+
+	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
+	{
+		restore_primary_color_scheme(&prev_cs);
+		show_error_msg("Color Scheme Error", "Not supported by the terminal");
+		return 0;
+	}
+
+	cfg.cs.state = CSS_NORMAL;
+	return 0;
+}
+
+/* Restore previous state of primary color scheme. */
+static void
+restore_primary_color_scheme(const col_scheme_t *cs)
+{
+	cfg.cs = *cs;
+	load_color_scheme_colors();
+	update_screen(UT_FULL);
+}
+
 void
 load_color_scheme_colors(void)
 {
@@ -514,7 +567,7 @@ init_color_scheme(col_scheme_t *cs)
 	int i;
 	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
 	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
-	cs->defaulted = 0;
+	cs->state = CSS_NORMAL;
 
 	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
@@ -548,7 +601,9 @@ check_directory_for_color_scheme(int left, const char *dir)
 	}u;
 
 	if(dirs == NULL_TREE)
+	{
 		return DCOLOR_BASE;
+	}
 
 	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;

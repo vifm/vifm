@@ -1163,15 +1163,15 @@ static void
 init_color_scheme(col_scheme_t *cs)
 {
 	int i;
-	strcpy(cs->dir, "/");
-	cs->defaulted = 0;
-
 	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
 	}
+
+	strcpy(cs->dir, "/");
+	cs->state = CSS_NORMAL;
 }
 
 static void

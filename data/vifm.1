@@ -1,4 +1,4 @@
-.TH vifm 1 "July 16, 2014" "" "Vifm"
+.TH vifm 1 "July 19, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1240,13 +1240,16 @@ from the argument list.  "!" forces overwrite.  Macros are expanded.
 prints current color scheme name in the status bar.
 .TP
 .BI :colo[rscheme]
-gives a menu with a list of available color schemes.  You can choose default
-color scheme here.  It will be used for view if no DIRECTORY in colorscheme
-file fits current path.  It's also used to set border color (except view titles)
+gives a menu with a list of available color schemes.  You can choose primary
+color scheme here.  It will be used for view if no path was configured for a
+specific color scheme.  It's also used to set border color (except view titles)
 and colors in the menus and dialogs.
 .TP
 .BI ":colo[rscheme] color_scheme_name"
-changes default color scheme to color_scheme_name.
+changes primary color scheme to color_scheme_name.  In case of errors (e.g.
+some colors are not supported by terminal) either nothing is changed or
+colo rscheme is reset to builtin colors to ensure that TUI is left in a usable
+state.
 .TP
 .BI ":colo[rscheme] color_scheme_name directory"
 associates directory with the color scheme.  The directory argument can be
@@ -1535,11 +1538,11 @@ on vifm (tab completion works).  This form of the command doesn't work when
 will show information about all highlight groups in the current directory.
 .TP
 .BI ":hi[ghlight] group\-name"
-will show information on given highlight group of the default color scheme.
+will show information on given highlight group of the primary color scheme.
 .TP
 .BI ":hi[ghlight] group\-name cterm=style | ctermfg=color | ctermbg=color"
 sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
-of highlight groups of the current default color scheme.
+of highlight groups of the current primary color scheme.
 .LP
 All style values as well as color names are case insensitive.
 .LP
@@ -1792,10 +1795,10 @@ customized by altering value of the 'locateprg' option.
 repeats last :locate command.
 .TP
 .BI ":[range]ma[rk][?] x [/full/path] [filename]"
-Set mark x (a\-zA\-Z0\-9) at /full/path and filename.  By default current directory
-is being used.  If no filename was given and /full/path is current directory
-then last file in [range] is used.  Using of macros is allowed.  Question mark
-will stop command from overwriting existing marks.
+Set mark x (a\-zA\-Z0\-9) at /full/path and filename.  By default current
+directory is being used.  If no filename was given and /full/path is current
+directory then last file in [range] is used.  Using of macros is allowed.
+Question mark will stop command from overwriting existing marks.
 .TP
 .BI :marks
 create a popup menu of bookmarks.
@@ -3119,7 +3122,7 @@ Controls what will be saved in the $VIFM/vifminfo file.
    dhistory  \- directory history
    state     \- file name and dot filters and terminal multiplexers integration
                 state
-   cs        \- default color scheme
+   cs        \- primary color scheme
    savedirs  \- save last visited directory (needs dhistory)
    chistory  \- command line history
    shistory  \- search history (/ and ? commands)
@@ -3532,9 +3535,10 @@ menus and dialogs.
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
 
-.B Colorscheme menu
+.B Color scheme menu
 
-Selecting name of a colorscheme applies it.
+Selecting name of a color scheme applies it the same way as if
+":colorscheme <name>" was executed on the command-line.
 
 .B Commands menu
 
@@ -3889,13 +3893,13 @@ results in that long file names can partially be written on the ext column.
 .\" ---------------------------------------------------------------------------
 The color schemes in vifm can be applied in two different ways:
 .IP \- 2
-as the default (or main) color scheme
+as the primary color scheme
 .IP \- 2
 as local to a panel color scheme
 .LP
 Both types are set using |vifm\-:colorscheme| command, but of different forms:
 .IP \- 2
-:colorscheme color_scheme_name \- for the default color scheme
+:colorscheme color_scheme_name \- for the primary color scheme
 .IP \- 2
 :colorscheme color_scheme_name directory \- for local color schemes
 .LP
@@ -3903,11 +3907,11 @@ Look of different parts of the TUI (Text User Interface) is determined in \
 this way:
 .IP \- 2
 Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu are \
-always determined by the default color scheme
+always determined by the primary color scheme
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
-Fifo and Win are determined by default color scheme and a set of local \
-colorschemes, which can be empty
+Fifo and Win are determined by primary color scheme and a set of local \
+color schemes, which can be empty
 .LP
 There might be a set of local color schemes because they are structured
 hierarchically according to file system structure. For example, having the

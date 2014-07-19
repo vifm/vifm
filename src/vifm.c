@@ -537,7 +537,7 @@ load_scheme(void)
 	}
 	if(color_scheme_exists(curr_stats.color_scheme))
 	{
-		load_color_scheme(curr_stats.color_scheme);
+		load_primary_color_scheme(curr_stats.color_scheme);
 	}
 	load_color_scheme_colors();
 }
@@ -691,7 +691,7 @@ vifm_restart(void)
 	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
 			color_scheme_exists(curr_stats.color_scheme))
 	{
-		if(load_color_scheme(curr_stats.color_scheme) != 0)
+		if(load_primary_color_scheme(curr_stats.color_scheme) != 0)
 		{
 			load_def_scheme();
 		}

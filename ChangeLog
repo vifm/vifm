@@ -73,6 +73,9 @@
 	Allowed tabulation to be used as arguments separators in command-line
 	commands.  Thanks to y2kbugger.
 
+	Renamed "default color scheme" to "primary color scheme" in documentation
+	to avoid confusion.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -108,6 +111,10 @@
 	Fixed view update after :restart in some cases.  Thanks to filterfalse.
 
 	Fixed UI glitches and most of flickering of the TUI on :restart.
+
+	Fixed check for wrong color number in :highlight.  Thanks to y2kbugger.
+
+	Fixed :highlight command recovery.  Thanks to y2kbugger.
 
 0.7.7-beta to 0.7.7
 

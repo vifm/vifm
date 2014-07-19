@@ -539,6 +539,7 @@ source_file_internal(FILE *fp, const char filename[])
 	char line[MAX_VIFMRC_LINE_LEN + 1];
 	char *next_line = NULL;
 	int line_num;
+	int encoutered_errors = 0;
 
 	if(fgets(line, sizeof(line), fp) == NULL)
 	{
@@ -567,6 +568,7 @@ source_file_internal(FILE *fp, const char filename[])
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
 			show_sourcing_error(filename, line_num);
+			encoutered_errors = 1;
 		}
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
@@ -588,9 +590,10 @@ source_file_internal(FILE *fp, const char filename[])
 	if(commands_block_finished() != 0)
 	{
 		show_sourcing_error(filename, line_num);
+		encoutered_errors = 1;
 	}
 
-	return 0;
+	return encoutered_errors;
 }
 
 /* Displays sourcing error message to a user. */

@@ -31,13 +31,14 @@
 #include <unistd.h> /* R_OK access() unlink() */
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* isspace() */
+#include <ctype.h> /* isdigit() isspace() */
 #include <errno.h> /* errno */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS system() realloc() free() */
-#include <string.h> /* strcat() strchr() strcmp() strcpy() strlen() */
+#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() system() */
+#include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy()
+                       strlen() */
 
 #include "cfg/config.h"
 #include "cfg/hist.h"
@@ -183,8 +184,11 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
-static const char *get_group_str(int group, col_attr_t col);
-static int get_color(const char str[], int fg, int *attr);
+static const char * get_all_highlights(void);
+static const char * get_group_str(int group, col_attr_t col);
+static int parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info);
+static int try_parse_color_name_value(const char str[], int fg, int pos);
+static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int if_cmd(const cmd_info_t *cmd_info);
@@ -1742,12 +1746,14 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			int ret = load_color_scheme(cmd_info->argv[0]);
+			const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
+
 			lwin.cs = cfg.cs;
 			rwin.cs = cfg.cs;
 			redraw_lists();
 			update_all_windows();
-			return ret;
+
+			return cs_load_result;
 		}
 	}
 	else
@@ -2451,26 +2457,18 @@ help_cmd(const cmd_info_t *cmd_info)
 static int
 highlight_cmd(const cmd_info_t *cmd_info)
 {
-	int i;
-	int pos;
+	int result;
+	int group_id;
 
 	if(cmd_info->argc == 0)
 	{
-		char msg[256*(MAXNUM_COLOR - 2)];
-		size_t msg_len = 0U;
-		msg[0] = '\0';
-		for(i = 0; i < MAXNUM_COLOR - 2; i++)
-		{
-			msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
-					get_group_str(i, curr_view->cs.color[i]),
-					(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
-		}
-		status_bar_message(msg);
+		status_bar_message(get_all_highlights());
 		return 1;
 	}
 
-	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]);
-	if(pos < 0)
+	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2,
+			cmd_info->argv[0]);
+	if(group_id < 0)
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
 		return 1;
@@ -2478,69 +2476,11 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		status_bar_message(get_group_str(pos, curr_stats.cs->color[pos]));
+		status_bar_message(get_group_str(group_id, curr_stats.cs->color[group_id]));
 		return 1;
 	}
 
-	for(i = 1; i < cmd_info->argc; i++)
-	{
-		char *equal;
-		char arg_name[16];
-		if((equal = strchr(cmd_info->argv[i], '=')) == NULL)
-		{
-			status_bar_errorf("Missing equal sign in \"%s\"", cmd_info->argv[i]);
-			return 1;
-		}
-		else if(equal[1] == '\0')
-		{
-			status_bar_errorf("Missing argument: %s", cmd_info->argv[i]);
-			return 1;
-		}
-		snprintf(arg_name, MIN(sizeof(arg_name), equal - cmd_info->argv[i] + 1),
-				"%s", cmd_info->argv[i]);
-		if(strcmp(arg_name, "ctermbg") == 0)
-		{
-			int col;
-			if((col = get_color(equal + 1, 0, &curr_stats.cs->color[pos].attr)) < -1)
-			{
-				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
-				curr_stats.cs->defaulted = -1;
-				return 1;
-			}
-			curr_stats.cs->color[pos].bg = col;
-		}
-		else if(strcmp(arg_name, "ctermfg") == 0)
-		{
-			int col;
-			if((col = get_color(equal + 1, 1, &curr_stats.cs->color[pos].attr)) < -1)
-			{
-				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
-				curr_stats.cs->defaulted = -1;
-				return 1;
-			}
-			curr_stats.cs->color[pos].fg = col;
-		}
-		else if(strcmp(arg_name, "cterm") == 0)
-		{
-			int attrs;
-			if((attrs = get_attrs(equal + 1)) == -1)
-			{
-				status_bar_errorf("Illegal argument: %s", equal + 1);
-				return 1;
-			}
-			curr_stats.cs->color[pos].attr = attrs;
-			if(curr_stats.env_type == ENVTYPE_LINUX_NATIVE &&
-					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
-			{
-				curr_stats.cs->color[pos].attr |= A_BLINK;
-			}
-		}
-		else
-		{
-			status_bar_errorf("Illegal argument: %s", cmd_info->argv[i]);
-			return 1;
-		}
-	}
+	result = parse_and_apply_highlight(group_id, cmd_info);
 
 	/* XXX: This is an ugly hack to avoid flickering of top line of the current
 	 * view.  We need colors attributes recalculated correctly before applying
@@ -2548,18 +2488,44 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	 * by updating all color pairs that we can, or that depend on group, whose
 	 * properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in ui.c and
 	 * will be initialized on redraw. */
-	if(pos != TOP_LINE_SEL_COLOR)
+	if(group_id != TOP_LINE_SEL_COLOR)
 	{
-		init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
-				curr_stats.cs->color[pos].bg);
+		init_pair(curr_stats.cs_base + group_id, curr_stats.cs->color[group_id].fg,
+				curr_stats.cs->color[group_id].bg);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	/* Other highlight commands might have finished successfully, so update TUI.
+	 * Request full update instead of redraw to force recalculation of mixed
+	 * colors like cursor line, which otherwise are not updated. */
+	curr_stats.need_update = UT_FULL;
 
-	return 0;
+	return result;
 }
 
-/* Composes string representation of highlight group definition. */
+/* Composes string representation of all highlight group definitions.  Returns
+ * pointer to statically allocated buffer. */
+static const char *
+get_all_highlights(void)
+{
+	static char msg[256*(MAXNUM_COLOR - 2)];
+
+	size_t msg_len = 0U;
+	int i;
+
+	msg[0] = '\0';
+
+	for(i = 0; i < MAXNUM_COLOR - 2; i++)
+	{
+		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
+				get_group_str(i, curr_view->cs.color[i]),
+				(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
+	}
+
+	return msg;
+}
+
+/* Composes string representation of highlight group definition.  Returns
+ * pointer to statically allocated buffer. */
 static const char *
 get_group_str(int group, col_attr_t col)
 {
@@ -2576,30 +2542,130 @@ get_group_str(int group, col_attr_t col)
 	return buf;
 }
 
+/* Parses arguments of :highlight command.  Returns non-zero in case something
+ * was output to the status bar, otherwise zero is returned. */
 static int
-get_color(const char str[], int fg, int *attr)
+parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 {
-	int col_pos = string_array_pos_case(XTERM256_COLOR_NAMES, ARRAY_LEN(XTERM256_COLOR_NAMES), str);
-	int light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
-			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
-	int col_num;
+	int i;
 
-	col_num = isdigit(*str) ? atoi(str) : -1;
+	for(i = 1; i < cmd_info->argc; ++i)
+	{
+		const char *const arg = cmd_info->argv[i];
+		const char *const equal = strchr(arg, '=');
+		char arg_name[16];
+
+		if(equal == NULL)
+		{
+			status_bar_errorf("Missing equal sign in \"%s\"", arg);
+			return 1;
+		}
+		if(equal[1] == '\0')
+		{
+			status_bar_errorf("Missing argument: %s", arg);
+			return 1;
+		}
+
+		snprintf(arg_name, MIN(sizeof(arg_name), equal - arg + 1), "%s", arg);
+
+		if(strcmp(arg_name, "ctermbg") == 0)
+		{
+			if(try_parse_color_name_value(equal + 1, 0, group_id) != 0)
+			{
+				return 1;
+			}
+		}
+		else if(strcmp(arg_name, "ctermfg") == 0)
+		{
+			if(try_parse_color_name_value(equal + 1, 1, group_id) != 0)
+			{
+				return 1;
+			}
+		}
+		else if(strcmp(arg_name, "cterm") == 0)
+		{
+			int attrs;
+			if((attrs = get_attrs(equal + 1)) == -1)
+			{
+				status_bar_errorf("Illegal argument: %s", equal + 1);
+				return 1;
+			}
+			curr_stats.cs->color[group_id].attr = attrs;
+			if(curr_stats.env_type == ENVTYPE_LINUX_NATIVE &&
+					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
+			{
+				curr_stats.cs->color[group_id].attr |= A_BLINK;
+			}
+		}
+		else
+		{
+			status_bar_errorf("Illegal argument: %s", arg);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/* Tries to parse color name value into a number.  Returns non-zero if status
+ * bar message should be preserved, otherwise zero is returned. */
+static int
+try_parse_color_name_value(const char str[], int fg, int pos)
+{
+	col_scheme_t *const cs = curr_stats.cs;
+	col_attr_t *const color = &cs->color[pos];
+	const int col_num = parse_color_name_value(str, fg, &color->attr);
+
+	if(col_num < -1)
+	{
+		status_bar_errorf("Color name or number not recognized: %s", str);
+		if(cs->state == CSS_LOADING)
+		{
+			cs->state = CSS_BROKEN;
+		}
+
+		return 1;
+	}
+
+	if(fg)
+	{
+		color->fg = col_num;
+	}
+	else
+	{
+		color->bg = col_num;
+	}
+
+	return 0;
+}
+
+/* Parses color string into color number and alters *attr in some cases.
+ * Returns value less than -1 to indicate error as -1 is valid return value. */
+static int
+parse_color_name_value(const char str[], int fg, int *attr)
+{
+	int col_pos;
+	int light_col_pos;
+	int col_num;
 
 	if(strcmp(str, "-1") == 0 || strcasecmp(str, "default") == 0 ||
 			strcasecmp(str, "none") == 0)
+	{
 		return -1;
-	if(col_pos < 0 && light_col_pos < 0 && (col_num < 0 ||
-			(curr_stats.load_stage >= 2 && col_num > COLORS)))
-		return -2;
+	}
 
+	light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
+			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
 	if(light_col_pos >= 0)
 	{
 		*attr |= (!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE) ?
 				A_BLINK : A_BOLD;
 		return light_col_pos;
 	}
-	else if(col_pos >= 0)
+
+	col_pos = string_array_pos_case(XTERM256_COLOR_NAMES,
+			ARRAY_LEN(XTERM256_COLOR_NAMES), str);
+	if(col_pos >= 0)
 	{
 		if(!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE)
 		{
@@ -2607,10 +2673,15 @@ get_color(const char str[], int fg, int *attr)
 		}
 		return col_pos;
 	}
-	else
+
+	col_num = isdigit(*str) ? atoi(str) : -1;
+	if(col_num >= 0 && (curr_stats.load_stage < 2 || col_num < COLORS))
 	{
 		return col_num;
 	}
+
+	/* Fail if all possible parsing ways failed. */
+	return -2;
 }
 
 static int
@@ -3322,7 +3393,7 @@ source_cmd(const cmd_info_t *cmd_info)
 	}
 	if(source_file(path) != 0)
 	{
-		status_bar_errorf("Can't source file: %s", cmd_info->argv[0]);
+		status_bar_errorf("Error sourcing file: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
 	free(path);
