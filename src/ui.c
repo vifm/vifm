@@ -86,7 +86,6 @@ static WINDOW *rtop_line2;
 
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
-static void update_attributes(void);
 static void create_windows(void);
 static void set_static_windows_attrs(void);
 static void update_geometry(void);
@@ -1443,55 +1442,7 @@ redraw_lists(void)
 	}
 }
 
-int
-load_color_scheme(const char name[])
-{
-	col_scheme_t prev_cs;
-	char full[PATH_MAX];
-
-	if(!color_scheme_exists(name))
-	{
-		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
-		return 0;
-	}
-
-	prev_cs = cfg.cs;
-	curr_stats.cs_base = DCOLOR_BASE;
-	curr_stats.cs = &cfg.cs;
-	cfg.cs.state = CSS_LOADING;
-
-	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
-	if(source_file(full) != 0)
-	{
-		cfg.cs = prev_cs;
-		load_color_scheme_colors();
-		update_screen(UT_FULL);
-
-		show_error_msgf("Color Scheme Sourcing",
-				"Errors loading colors cheme: \"%s\"", name);
-		cfg.cs.state = CSS_NORMAL;
-		return 0;
-	}
-	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
-	check_color_scheme(&cfg.cs);
-
-	update_attributes();
-
-	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
-	{
-		cfg.cs = prev_cs;
-		load_color_scheme_colors();
-		update_screen(UT_FULL);
-
-		show_error_msg("Color Scheme Error", "Not supported by the terminal");
-		return 0;
-	}
-
-	cfg.cs.state = CSS_NORMAL;
-	return 0;
-}
-
-static void
+void
 update_attributes(void)
 {
 	int attr;

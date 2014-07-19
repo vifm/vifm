@@ -54,6 +54,8 @@ extern char *HI_GROUPS[];
 extern char *LIGHT_COLOR_NAMES[8];
 extern char *XTERM256_COLOR_NAMES[256];
 
+/* Returns new value for curr_stats.save_msg. */
+int load_color_scheme(const char name[]);
 /* directory should be NULL if you want to set default directory */
 void load_color_scheme_colors(void);
 void load_def_scheme(void);

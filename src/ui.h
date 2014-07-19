@@ -282,8 +282,8 @@ void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
-/* Returns new value for curr_stats.save_msg. */
-int load_color_scheme(const char name[]);
+/* Forced immediate update of attributes for most of windows. */
+void update_attributes(void);
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
 /* Prints str in current window position with specified line attributes, which
