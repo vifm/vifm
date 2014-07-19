@@ -109,6 +109,8 @@
 
 	Fixed UI glitches and most of flickering of the TUI on :restart.
 
+	Fixed check for wrong color number in :highlight.  Thanks to y2kbugger.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

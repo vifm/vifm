@@ -2592,7 +2592,7 @@ get_color(const char str[], int fg, int *attr)
 			strcasecmp(str, "none") == 0)
 		return -1;
 	if(col_pos < 0 && light_col_pos < 0 && (col_num < 0 ||
-			(curr_stats.load_stage >= 2 && col_num > COLORS)))
+			(curr_stats.load_stage >= 2 && col_num >= COLORS)))
 		return -2;
 
 	if(light_col_pos >= 0)
