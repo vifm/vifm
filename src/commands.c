@@ -2554,7 +2554,9 @@ highlight_cmd(const cmd_info_t *cmd_info)
 				curr_stats.cs->color[pos].bg);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	/* Request full update instead of redraw to force recalculation of mixed
+	 * colors like cursor line, which otherwise are not updated. */
+	curr_stats.need_update = UT_FULL;
 
 	return 0;
 }
