@@ -23,7 +23,7 @@
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
-|vifm-colorschemes|       Details on using color schemes in vifm.
+|vifm-colors-chemes|      Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
 |vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
@@ -1122,12 +1122,12 @@ The builtin commands are:
 :colo[rscheme]? - prints current color scheme name in the status bar.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose primary color scheme here.  It will be used for view if no
-    DIRECTORY in colorscheme file fits current path.  It's also used to
+    DIRECTORY in color scheme file fits current path.  It's also used to
     set border color (except view titles) and colors in the menus and
     dialogs.
 :colo[rscheme] color_scheme_name - changes primary color scheme to
     color_scheme_name.  In case of errors (e.g. some colors are not
-    supported by terminal) either nothing is changed or colorscheme is reset
+    supported by terminal) either nothing is changed or color scheme is reset
     to builtin colors to ensure that TUI is left in a usable state.
 :colo[rscheme] color_scheme_name directory - associates directory with the
     color scheme.  The directory argument can be both absolute or relative
@@ -3042,9 +3042,9 @@ Apropos menu~
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
 
-Colorscheme menu~
+Color scheme menu~
 
-Selecting name of a colorscheme applies it the same way as if ":colorscheme
+Selecting name of a color scheme applies it the same way as if ":colorscheme
 <name>" was executed on the command-line.
 
 Commands menu~
@@ -3367,7 +3367,7 @@ tree types are supported:
 <  results in that long file names can partially be written on the ext column.
 
 --------------------------------------------------------------------------------
-*vifm-colorschemes*
+*vifm-colors-chemes*
 
 The color schemes in vifm can be applied in two different ways:
    - as the primary color scheme
@@ -3383,7 +3383,7 @@ this way:
      are always determined by the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
      Executable, Fifo and Win are determined by primary color scheme and a set
-     of local colorschemes, which can be empty
+     of local color schemes, which can be empty
 
 There might be a set of local color schemes because they are structured
 hierarchically according to file system structure. For example, having the

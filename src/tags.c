@@ -404,7 +404,7 @@ const char *tags[] = {
 	"vifm-clientserver",
 	"vifm-co",
 	"vifm-colors",
-	"vifm-colorschemes",
+	"vifm-colors-chemes",
 	"vifm-column-view",
 	"vifm-command-line",
 	"vifm-command-line-edit",
