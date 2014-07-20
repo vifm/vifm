@@ -351,7 +351,6 @@ static const int default_colors[][3] = {
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
-static void init_color_scheme(col_scheme_t *cs);
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void load_color_pairs(int base, const col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
@@ -550,10 +549,10 @@ load_def_scheme(void)
 	tree_free(dirs);
 	dirs = NULL_TREE;
 
-	init_color_scheme(&cfg.cs);
-	init_color_scheme(&lwin.cs);
+	reset_color_scheme(&cfg.cs);
+	reset_color_scheme(&lwin.cs);
 	lwin.color_scheme = LCOLOR_BASE;
-	init_color_scheme(&rwin.cs);
+	reset_color_scheme(&rwin.cs);
 	rwin.color_scheme = RCOLOR_BASE;
 
 	load_color_pairs(DCOLOR_BASE, &cfg.cs);
@@ -561,8 +560,8 @@ load_def_scheme(void)
 	load_color_pairs(RCOLOR_BASE, &rwin.cs);
 }
 
-static void
-init_color_scheme(col_scheme_t *cs)
+void
+reset_color_scheme(col_scheme_t *cs)
 {
 	int i;
 	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
