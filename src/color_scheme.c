@@ -352,6 +352,8 @@ static const int default_colors[][3] = {
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
+static void reset_to_default_color_scheme(col_scheme_t *cs);
+static void reset_color_scheme_colors(col_scheme_t *cs);
 static void load_color_pairs(int base, const col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
@@ -549,10 +551,10 @@ load_def_scheme(void)
 	tree_free(dirs);
 	dirs = NULL_TREE;
 
-	reset_color_scheme(&cfg.cs);
-	reset_color_scheme(&lwin.cs);
+	reset_to_default_color_scheme(&cfg.cs);
+	reset_to_default_color_scheme(&lwin.cs);
 	lwin.color_scheme = LCOLOR_BASE;
-	reset_color_scheme(&rwin.cs);
+	reset_to_default_color_scheme(&rwin.cs);
 	rwin.color_scheme = RCOLOR_BASE;
 
 	load_color_pairs(DCOLOR_BASE, &cfg.cs);
@@ -560,13 +562,31 @@ load_def_scheme(void)
 	load_color_pairs(RCOLOR_BASE, &rwin.cs);
 }
 
-void
-reset_color_scheme(col_scheme_t *cs)
+/* Completely resets the cs to builtin default color scheme.  Changes: colors,
+ * name, state. */
+static void
+reset_to_default_color_scheme(col_scheme_t *cs)
 {
-	int i;
+	reset_color_scheme_colors(cs);
+
 	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
 	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
+
 	cs->state = CSS_NORMAL;
+}
+
+void
+reset_color_scheme(int color_base, col_scheme_t *cs)
+{
+	reset_color_scheme_colors(cs);
+	load_color_pairs(color_base, cs);
+}
+
+/* Resets color scheme to default builtin values. */
+static void
+reset_color_scheme_colors(col_scheme_t *cs)
+{
+	int i;
 
 	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
@@ -574,6 +594,7 @@ reset_color_scheme(col_scheme_t *cs)
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
 	}
+
 	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; i++)
 	{
 		cs->color[i].fg = -1;

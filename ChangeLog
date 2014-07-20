@@ -29,6 +29,10 @@
 	Added Ctrl-G key to visual selection amending mode, which switches kind of
 	amending (append/remove/invert).
 
+	Added ":highlight clear" to reset to builtin colors.  This balances
+	change in resetting color scheme to default one.  Useful for building color
+	schemes that are partially based on the builtin one.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
