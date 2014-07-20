@@ -2466,6 +2466,16 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clean"))
+	{
+		reset_color_scheme(curr_stats.cs_base, curr_stats.cs);
+
+		/* Request full update instead of redraw to force recalculation of mixed
+		 * colors like cursor line, which otherwise are not updated. */
+		curr_stats.need_update = UT_FULL;
+		return 0;
+	}
+
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2,
 			cmd_info->argv[0]);
 	if(group_id < 0)
