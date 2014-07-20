@@ -33,6 +33,9 @@
 	change in resetting color scheme to default one.  Useful for building color
 	schemes that are partially based on the builtin one.
 
+	Added full command names to the manual page to ease searching them.
+	Thanks to y2kbugger.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
