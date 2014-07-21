@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 20
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 21
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2230,7 +2230,7 @@ undo/redo operation).
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
 type: charset
-default: "fst"
+default: "fstx"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
                                                *vifm-cpo-f*
@@ -2243,7 +2243,12 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
     selection, otherwise they operate on current file only;
                                                *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
-    pane, otherwise <c-i> goes forward in the view history.
+    pane, otherwise <c-i> goes forward in the view history;
+                                               *vifm-cpo-x*
+x - when included, vifm will rely on external applications to perform
+    file-system operations, otherwise system calls are used instead (much
+    faster).  The feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The flag
+    will be eventually removed.  Mostly *nix-like systems are affected.
 
                                                *vifm-'dotdirs'*
 dotdirs

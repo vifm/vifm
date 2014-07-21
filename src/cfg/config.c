@@ -155,6 +155,7 @@ init_config(void)
 	cfg.inc_search = 0;
 	cfg.selection_is_primary = 1;
 	cfg.tab_switches_pane = 1;
+	cfg.use_system_calls = 0;
 	cfg.last_status = 1;
 	cfg.tab_stop = 8;
 	cfg.ruler_format = strdup("%=%l/%S ");

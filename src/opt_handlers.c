@@ -168,7 +168,7 @@ static const char * sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
-static const char cpoptions_list[] = "fst";
+static const char cpoptions_list[] = "fstx";
 static const char * cpoptions_vals = cpoptions_list;
 #define cpoptions_count ARRAY_LEN(cpoptions_list)
 
@@ -500,9 +500,12 @@ static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s%s",
+	/* TODO: move these flags to curr_stats structure. */
+	snprintf(buf, sizeof(buf), "%s%s%s%s",
 			cfg.filter_inverted_by_default ? "f" : "",
-			cfg.selection_is_primary ? "s" : "", cfg.tab_switches_pane ? "t" : "");
+			cfg.selection_is_primary       ? "s" : "",
+			cfg.tab_switches_pane          ? "t" : "",
+			cfg.use_system_calls           ? "" : "x");
 	val->str_val = buf;
 }
 
@@ -841,26 +844,36 @@ confirm_handler(OPT_OP op, optval_t val)
 static void
 cpoptions_handler(OPT_OP op, optval_t val)
 {
-	char *p;
+	const char *p;
 
+	/* Define new kind of behaviour. */
 	cfg.filter_inverted_by_default = 0;
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
+	cfg.use_system_calls = 1;
 
+	/* Reset behaviour to compatibility mode for each flag listed in the value. */
 	p = val.str_val;
 	while(*p != '\0')
 	{
-		if(*p == 'f')
+		switch(*p)
 		{
-			cfg.filter_inverted_by_default = 1;
-		}
-		else if(*p == 's')
-		{
-			cfg.selection_is_primary = 1;
-		}
-		else if(*p == 't')
-		{
-			cfg.tab_switches_pane = 1;
+			case 'f':
+				cfg.filter_inverted_by_default = 1;
+				break;
+			case 's':
+				cfg.selection_is_primary = 1;
+				break;
+			case 't':
+				cfg.tab_switches_pane = 1;
+				break;
+			case 'x':
+				cfg.use_system_calls = 0;
+				break;
+
+			default:
+				assert(0 && "Unhandled cpoptions flag.");
+				break;
 		}
 		p++;
 	}

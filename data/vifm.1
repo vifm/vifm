@@ -1,4 +1,4 @@
-.TH vifm 1 "July 20, 2014" "" "Vifm"
+.TH vifm 1 "July 21, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2708,7 +2708,7 @@ operation).
 .BI "cpoptions cpo"
 type: charset
 .br
-default: "fst"
+default: "fstx"
 .br
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
@@ -2721,7 +2721,12 @@ s \- when included, yy, dd and DD normal mode commands act on selection, \
 otherwise they operate on current file only;
 .br
 t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
-pane, otherwise <tab> and <c-i> go forward in the view history.
+pane, otherwise <tab> and <c-i> go forward in the view history;
+.br
+x \- when included, vifm will rely on external applications to perform \
+file-system operations, otherwise system calls are used instead (much faster). \
+The feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The flag will be \
+eventually removed.  Mostly *nix-like systems are affected.
 .TP
 .BI dotdirs
 type: set
