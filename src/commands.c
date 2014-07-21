@@ -273,7 +273,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
-		.handler = emark_cmd,       .qmark = 0,      .expand = 5, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
+		.handler = emark_cmd,       .qmark = 0,      .expand = 5, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "alink",            .abbr = NULL,    .emark = 1,  .id = COM_ALINK,       .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1419,6 +1419,12 @@ emark_cmd(const cmd_info_t *cmd_info)
 	char *com = (char *)cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
 	MacroFlags flags;
+
+	if(cmd_info->argc == 0)
+	{
+		return exec_commands(curr_stats.last_cmdline_command, curr_view,
+				GET_COMMAND) != 0;
+	}
 
 	i = skip_whitespace(com) - com;
 
