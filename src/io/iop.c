@@ -22,6 +22,8 @@
 #include <windows.h>
 #endif
 
+#include <sys/stat.h> /* mkdir() */
+#include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() */
 
 #include <errno.h> /* EEXIST errno */
@@ -68,46 +70,52 @@ iop_mkdir(io_args_t *const args)
 	const int create_parent = args->arg3.process_parents;
 
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(path, 0);
-	snprintf(cmd, sizeof(cmd), "mkdir %s %s", create_parent ? "-p" : "", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	const int path_prefix_len = 0;
 #else
+	const int path_prefix_len = 2;
+#endif
+
 	if(create_parent)
 	{
-		char *p;
-		char t;
+		char *sep_pos;
+		char sep;
+		char *const path_copy = strdup(path);
 
-		p = strchr(path + 2, '/');
+		sep_pos = until_first(path_copy + path_prefix_len, '/');
 		do
 		{
-			t = *p;
-			*p = '\0';
+			sep = *sep_pos;
+			*sep_pos = '\0';
 
-			if(!is_dir(path))
+			if(!is_dir(path_copy))
 			{
-				if(!CreateDirectory(path, NULL))
+#ifndef _WIN32
+				if(mkdir(path_copy, 0755) != 0)
+#else
+				if(!CreateDirectory(path_copy, NULL))
+#endif
 				{
-					*p = t;
+					free(path_copy);
 					return -1;
 				}
 			}
 
-			*p = t;
-			p = until_first(p + 1, '/');
+			*sep_pos = sep;
+			sep_pos = until_first(sep_pos + 1, '/');
 		}
-		while(t != '\0');
+		while(sep != '\0');
+
+		free(path_copy);
 		return 0;
 	}
 	else
 	{
+#ifndef _WIN32
+		return mkdir(path, 0755);
+#else
 		return CreateDirectory(path, NULL) == 0;
-	}
 #endif
+	}
 }
 
 int
