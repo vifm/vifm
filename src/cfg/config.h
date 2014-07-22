@@ -106,6 +106,7 @@ typedef struct config_t
 	int inc_search;
 	int selection_is_primary; /* For yy, dd and DD: act on selection not file. */
 	int tab_switches_pane; /* Whether <tab> is switch pane or history forward. */
+	int use_system_calls; /* Prefer performing operations with system calls. */
 	int last_status;
 	int tab_stop;
 	char *ruler_format;

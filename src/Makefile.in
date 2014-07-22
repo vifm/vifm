@@ -75,7 +75,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	engine/keys.$(OBJEXT) engine/options.$(OBJEXT) \
 	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
 	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
+	io/iop.$(OBJEXT) io/ior.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -301,6 +302,11 @@ vifm_SOURCES = \
 	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
+	io/ioc.h \
+	io/ioe.h \
+	io/iop.c io/iop.h \
+	io/ior.c io/ior.h \
+	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bookmarks_menu.c menus/bookmarks_menu.h \
@@ -511,6 +517,14 @@ engine/var.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/variables.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
+io/$(am__dirstamp):
+	@$(MKDIR_P) io
+	@: > io/$(am__dirstamp)
+io/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) io/$(DEPDIR)
+	@: > io/$(DEPDIR)/$(am__dirstamp)
+io/iop.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
+io/ior.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
 	@$(MKDIR_P) menus
 	@: > menus/$(am__dirstamp)
@@ -680,6 +694,8 @@ mostlyclean-compile:
 	-rm -f engine/text_buffer.$(OBJEXT)
 	-rm -f engine/var.$(OBJEXT)
 	-rm -f engine/variables.$(OBJEXT)
+	-rm -f io/iop.$(OBJEXT)
+	-rm -f io/ior.$(OBJEXT)
 	-rm -f menus/apropos_menu.$(OBJEXT)
 	-rm -f menus/bookmarks_menu.$(OBJEXT)
 	-rm -f menus/colorscheme_menu.$(OBJEXT)
@@ -783,6 +799,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/var.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/iop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ior.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bookmarks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/colorscheme_menu.Po@am__quote@
@@ -1179,6 +1197,8 @@ distclean-generic:
 	-rm -f cfg/$(am__dirstamp)
 	-rm -f engine/$(DEPDIR)/$(am__dirstamp)
 	-rm -f engine/$(am__dirstamp)
+	-rm -f io/$(DEPDIR)/$(am__dirstamp)
+	-rm -f io/$(am__dirstamp)
 	-rm -f menus/$(DEPDIR)/$(am__dirstamp)
 	-rm -f menus/$(am__dirstamp)
 	-rm -f modes/$(DEPDIR)/$(am__dirstamp)
@@ -1196,7 +1216,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -1243,7 +1263,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

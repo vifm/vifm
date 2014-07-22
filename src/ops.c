@@ -30,6 +30,8 @@
 #include <stdlib.h> /* free() */
 
 #include "cfg/config.h"
+#include "io/iop.h"
+#include "io/ior.h"
 #include "menus/menus.h"
 #ifdef _WIN32
 #include "utils/fs.h"
@@ -141,54 +143,33 @@ static int
 op_removesl(void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
-	char *escaped;
-	char cmd[16 + PATH_MAX];
-	int result;
-	const int cancellable = data == NULL;
-
-	escaped = escape_filename(src, 0);
-	if(escaped == NULL)
-		return -1;
-
-	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
-	LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, cancellable);
-
-	free(escaped);
-	return result;
-#else
-	if(is_dir(src))
+	if(!cfg.use_system_calls)
 	{
-		char buf[PATH_MAX];
-		int err;
-		int i;
-		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
-		for(i = 0; buf[i] != '\0'; i++)
-			if(buf[i] == '/')
-				buf[i] = '\\';
-		SHFILEOPSTRUCTA fo = {
-			.hwnd = NULL,
-			.wFunc = FO_DELETE,
-			.pFrom = buf,
-			.pTo = NULL,
-			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
-		};
-		err = SHFileOperation(&fo);
-		log_msg("Error: %d", err);
-		return err;
-	}
-	else
-	{
-		int ok;
-		DWORD attributes = GetFileAttributesA(src);
-		if(attributes & FILE_ATTRIBUTE_READONLY)
-			SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
-		ok = DeleteFile(src);
-		if(!ok)
-			LOG_WERROR(GetLastError());
-		return !ok;
+		char *escaped;
+		char cmd[16 + PATH_MAX];
+		int result;
+		const int cancellable = data == NULL;
+
+		escaped = escape_filename(src, 0);
+		if(escaped == NULL)
+			return -1;
+
+		snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
+		LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
+		result = background_and_wait_for_errors(cmd, cancellable);
+
+		free(escaped);
+		return result;
 	}
 #endif
+
+	io_args_t args =
+	{
+		.arg1.path = src,
+
+		.cancellable = data == NULL,
+	};
+	return ior_rm(&args);
 }
 
 /* OP_COPY operation handler.  Copies file/directory without overwriting
@@ -440,132 +421,113 @@ op_subattr(void *data, const char *src, const char *dst)
 static int
 op_symlink(void *data, const char *src, const char *dst)
 {
-	char *escaped_src, *escaped_dst;
-	char cmd[6 + PATH_MAX*2 + 1];
-	int result;
-#ifdef _WIN32
-	char buf[PATH_MAX + 2];
-#endif
-
-	escaped_src = escape_filename(src, 0);
-	escaped_dst = escape_filename(dst, 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
-	{
-		free(escaped_dst);
-		free(escaped_src);
-		return -1;
-	}
-
 #ifndef _WIN32
-	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
-	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, 1);
-#else
-	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+	if(!cfg.use_system_calls)
 	{
+		char *escaped_src, *escaped_dst;
+		char cmd[6 + PATH_MAX*2 + 1];
+		int result;
+
+		escaped_src = escape_filename(src, 0);
+		escaped_dst = escape_filename(dst, 0);
+		if(escaped_src == NULL || escaped_dst == NULL)
+		{
+			free(escaped_dst);
+			free(escaped_src);
+			return -1;
+		}
+
+		snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
+		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
+		result = background_and_wait_for_errors(cmd, 1);
+
 		free(escaped_dst);
 		free(escaped_src);
-		return -1;
+		return result;
 	}
-
-	*strrchr(buf, '\\') = '\0';
-	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
-			escaped_dst);
-	result = system(cmd);
 #endif
 
-	free(escaped_dst);
-	free(escaped_src);
-	return result;
+	io_args_t args =
+	{
+		.arg1.path = src,
+		.arg2.target = dst,
+		.arg3.overwrite = 1,
+	};
+	return iop_ln(&args);
 }
 
 static int
 op_mkdir(void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
-			escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	if(data == NULL)
+	if(!cfg.use_system_calls)
 	{
-		return CreateDirectory(src, NULL) == 0;
-	}
-	else
-	{
-		char *p;
-		char t;
+		char cmd[128 + PATH_MAX];
+		char *escaped;
 
-		p = strchr(src + 2, '/');
-		do
-		{
-			t = *p;
-			*p = '\0';
-
-			if(!is_dir(src))
-			{
-				if(!CreateDirectory(src, NULL))
-				{
-					*p = t;
-					return -1;
-				}
-			}
-
-			*p = t;
-			if((p = strchr(p + 1, '/')) == NULL)
-				p = (char *)src + strlen(src);
-		}
-		while(t != '\0');
-		return 0;
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
+				escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
 	}
 #endif
+
+	io_args_t args =
+	{
+		.arg1.path = src,
+		.arg3.process_parents = data != NULL,
+	};
+	return iop_mkdir(&args);
 }
 
 static int
 op_rmdir(void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
+	if(!cfg.use_system_calls)
+	{
+		char cmd[128 + PATH_MAX];
+		char *escaped;
 
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	return RemoveDirectory(src) == 0;
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
+	}
 #endif
+
+	io_args_t args =
+	{
+		.arg1.path = src,
+	};
+	return iop_rmdir(&args);
 }
 
 static int
 op_mkfile(void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
+	if(!cfg.use_system_calls)
+	{
+		char cmd[128 + PATH_MAX];
+		char *escaped;
 
-	escaped = escape_filename(src, 0);
-	snprintf(cmd, sizeof(cmd), "touch %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
-#else
-	HANDLE hfile;
-
-	hfile = CreateFileA(src, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	CloseHandle(hfile);
-	return 0;
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "touch %s", escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
+	}
 #endif
+
+	io_args_t args =
+	{
+		.arg1.path = src,
+	};
+	return iop_mkfile(&args);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

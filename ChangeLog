@@ -36,6 +36,15 @@
 	Added full command names to the manual page to ease searching them.
 	Thanks to y2kbugger.
 
+	Added 'syscalls' boolean option to 'cpoptions' option.  It makes vifm
+	prefer to perform file-system operations with external applications on
+	rather then with system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The
+	option will be eventually removed.  Mostly *nix-like systems are affected.
+
+	Added implementation for directory and file removal, file, directory and
+	symbolic link creation with system calls.  Available only if 'syscalls' is
+	set.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

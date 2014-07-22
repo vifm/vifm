@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 20
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 22
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2614,6 +2614,15 @@ On Windows file properties include next flags (upper case means flag is on):
 Example: >
  set statusline="  %t%= %A %10u:%-7g %15s %20d "
 <
+                                               *vifm-'syscalls'*
+syscalls
+type: boolean
+default: false
+When enabled, vifm will rely on external applications to perform file-system
+operations, otherwise system calls are used instead (much faster).  The
+feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
+eventually removed.  Mostly *nix-like systems are affected.
+
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
 type: integer

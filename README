@@ -69,6 +69,11 @@ Package content
     |  |  |-- var.c - all needed to work with variables
     |  |  `-- variables.c - handles :let and :unlet commands
     |  |
+    |  |-- io/ - file system operations implementation
+    |  |  |
+    |  |  |-- iop.c - implementation of i/o primitive
+    |  |  `-- ior.c - implementation of recursive i/o operations
+    |  |
     |  |-- menus/ - implementation of all menus
     |  |  |
     |  |  |-- apropos_menu.c - handles :apropos menu

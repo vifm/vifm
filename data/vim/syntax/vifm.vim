@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: July 04, 2014
+" Last Change: July 22, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -112,22 +112,24 @@ syntax keyword vifmOption contained aproposprg autochpos classify columns co
 		\ laststatus lines locateprg ls lsview number nu numberwidth nuw
 		\ relativenumber rnu rulerformat ruf runexec scrollbind scb scrolloff so
 		\ sort sortorder shell sh shortmess shm slowfs smartcase scs sortnumbers
-		\ statusline stl tabstop timefmt timeoutlen trash trashdir ts undolevels ul
-		\ vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wrap wrapscan ws
+		\ statusline stl syscalls tabstop timefmt timeoutlen trash trashdir ts
+		\ undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wrap
+		\ wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
 		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
 		\ nolaststatus nols nolsview nonumber nonu norelativenumber nornu
-		\ noscrollbind noscb norunexec nosmartcase noscs nosortnumbers notrash
-		\ novimhelp nowildmenu nowmnu nowrap nowrapscan nows
+		\ noscrollbind noscb norunexec nosmartcase noscs nosortnumbers nosyscalls
+		\ notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invincsearch
 		\ invis invlaststatus invls invlsview invnumber invnu invrelativenumber
 		\ invrnu invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
-		\ invtrash invvimhelp invwildmenu invwmnu invwrap invwrapscan invws
+		\ invsyscalls invtrash invvimhelp invwildmenu invwmnu invwrap invwrapscan
+		\invws
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'

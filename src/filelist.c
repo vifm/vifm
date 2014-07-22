@@ -2219,15 +2219,6 @@ fill_with_shared(FileView *view)
 	free(wserver);
 }
 
-static int
-is_win_symlink(DWORD attr, DWORD tag)
-{
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-		return 0;
-
-	return (tag == IO_REPARSE_TAG_SYMLINK);
-}
-
 static time_t
 win_to_unix_time(FILETIME ft)
 {

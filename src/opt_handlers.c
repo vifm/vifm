@@ -131,6 +131,7 @@ static void add_column(columns_t columns, column_info_t column_info);
 static int map_name(const char *name);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
+static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
@@ -367,6 +368,10 @@ options[] =
 	  OPT_STR, 0, NULL, &statusline_handler,
 	  { .ref.str_val = &cfg.status_line },
 	},
+	{ "syscalls", "",
+	  OPT_BOOL, 0, NULL, &syscalls_handler,
+	  { .ref.bool_val = &cfg.use_system_calls },
+	},
 	{ "tabstop", "ts",
 	  OPT_INT, 0, NULL, &tabstop_handler,
 	  { .ref.int_val = &cfg.tab_stop },
@@ -500,9 +505,11 @@ static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
+	/* TODO: move these flags to curr_stats structure. */
 	snprintf(buf, sizeof(buf), "%s%s%s",
 			cfg.filter_inverted_by_default ? "f" : "",
-			cfg.selection_is_primary ? "s" : "", cfg.tab_switches_pane ? "t" : "");
+			cfg.selection_is_primary       ? "s" : "",
+			cfg.tab_switches_pane          ? "t" : "");
 	val->str_val = buf;
 }
 
@@ -841,26 +848,32 @@ confirm_handler(OPT_OP op, optval_t val)
 static void
 cpoptions_handler(OPT_OP op, optval_t val)
 {
-	char *p;
+	const char *p;
 
+	/* Define new kind of behaviour. */
 	cfg.filter_inverted_by_default = 0;
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
 
+	/* Reset behaviour to compatibility mode for each flag listed in the value. */
 	p = val.str_val;
 	while(*p != '\0')
 	{
-		if(*p == 'f')
+		switch(*p)
 		{
-			cfg.filter_inverted_by_default = 1;
-		}
-		else if(*p == 's')
-		{
-			cfg.selection_is_primary = 1;
-		}
-		else if(*p == 't')
-		{
-			cfg.tab_switches_pane = 1;
+			case 'f':
+				cfg.filter_inverted_by_default = 1;
+				break;
+			case 's':
+				cfg.selection_is_primary = 1;
+				break;
+			case 't':
+				cfg.tab_switches_pane = 1;
+				break;
+
+			default:
+				assert(0 && "Unhandled cpoptions flag.");
+				break;
 		}
 		p++;
 	}
@@ -1331,6 +1344,15 @@ static void
 statusline_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.status_line, val.str_val);
+}
+
+/* Makes vifm prefer to perform file-system operations with external
+ * applications on rather then with system calls.  The option will be eventually
+ * removed.  Mostly *nix-like systems are affected. */
+static void
+syscalls_handler(OPT_OP op, optval_t val)
+{
+	cfg.use_system_calls = val.bool_val;
 }
 
 static void

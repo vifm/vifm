@@ -148,6 +148,48 @@ path_exists_internal(const char *path, const char *filename)
 }
 
 int
+is_symlink(const char path[])
+{
+#ifndef _WIN32
+	struct stat st;
+	return lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
+#else
+	char filename[PATH_MAX];
+	DWORD attr;
+	HANDLE hfind;
+	WIN32_FIND_DATAA ffd;
+
+	attr = GetFileAttributes(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
+		return 0;
+	}
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	{
+		return 0;
+	}
+
+	copy_str(filename, sizeof(filename), path);
+	chosp(filename);
+	hfind = FindFirstFileA(filename, &ffd);
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return 0;
+	}
+
+	if(!FindClose(hfind))
+	{
+		LOG_WERROR(GetLastError());
+	}
+
+	return ffd.dwReserved0 == IO_REPARSE_TAG_SYMLINK;
+#endif
+}
+
+int
 check_link_is_dir(const char *filename)
 {
 	char linkto[PATH_MAX + NAME_MAX];
@@ -158,6 +200,7 @@ check_link_is_dir(const char *filename)
 	filename_copy = strdup(filename);
 	chosp(filename_copy);
 
+	/* TODO: Maybe get_link_target[_abs] should be used instead of realpath(). */
 	p = realpath(filename, linkto);
 	saved_errno = errno;
 
@@ -221,41 +264,19 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 #else
 	char filename[PATH_MAX];
 	DWORD attr;
-	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
 	HANDLE hfile;
 	char rdb[2048];
 	char *t;
 	REPARSE_DATA_BUFFER *sbuf;
 	WCHAR *path;
 
-	attr = GetFileAttributes(link);
-	if(attr == INVALID_FILE_ATTRIBUTES)
+	if(!is_symlink(link))
 	{
-		LOG_WERROR(GetLastError());
 		return -1;
 	}
 
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-		return -1;
-
-	snprintf(filename, sizeof(filename), "%s", link);
+	copy_str(filename, sizeof(filename), link);
 	chosp(filename);
-	hfind = FindFirstFileA(filename, &ffd);
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		LOG_WERROR(GetLastError());
-		return -1;
-	}
-
-	if(!FindClose(hfind))
-	{
-		LOG_WERROR(GetLastError());
-	}
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_SYMLINK)
-		return -1;
-
 	hfile = CreateFileA(filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
 			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
 			NULL);
@@ -452,7 +473,7 @@ remove_dir_content(const char path[])
 			{
 				remove_dir_content(full_path);
 			}
-			remove(full_path);
+			(void)remove(full_path);
 			free(full_path);
 		}
 	}
@@ -598,6 +619,13 @@ drive_exists(char letter)
 		default:
 			return 0;
 	}
+}
+
+int
+is_win_symlink(uint32_t attr, uint32_t tag)
+{
+	return (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+	    && (tag == IO_REPARSE_TAG_SYMLINK);
 }
 
 #endif

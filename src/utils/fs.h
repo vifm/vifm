@@ -23,7 +23,7 @@
 #include <sys/types.h> /* mode_t */
 
 #include <stddef.h> /* size_t */
-#include <stdint.h> /* uint64_t */
+#include <stdint.h> /* uint32_t uint64_t */
 
 /* Functions to deal with file system objects */
 
@@ -44,6 +44,10 @@ int path_exists(const char path[]);
 
 /* Checks whether path/file exists. */
 int path_exists_at(const char *path, const char *filename);
+
+/* Checks whether given path points to a symbolic link.  Returns non-zero if
+ * it's so, otherwise zero is returned. */
+int is_symlink(const char path[]);
 
 int check_link_is_dir(const char *filename);
 
@@ -105,6 +109,8 @@ int readlink(const char *path, char *buf, size_t len);
 int is_on_fat_volume(const char *path);
 
 int drive_exists(char letter);
+
+int is_win_symlink(uint32_t attr, uint32_t tag);
 
 #endif
 
