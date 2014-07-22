@@ -26,7 +26,7 @@
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* remove() snprintf() */
+#include <stdio.h> /* FILE fclose() fopen() remove() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -45,14 +45,8 @@ iop_mkfile(io_args_t *const args)
 	const char *const path = args->arg1.path;
 
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(path, 0);
-	snprintf(cmd, sizeof(cmd), "touch %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	FILE *const f = fopen(path, "wb");
+	return (f == NULL) ? -1 : fclose(f);
 #else
 	HANDLE file;
 
