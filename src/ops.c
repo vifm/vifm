@@ -142,6 +142,27 @@ op_remove(void *data, const char *src, const char *dst)
 static int
 op_removesl(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
+	if(!cfg.use_system_calls)
+	{
+		char *escaped;
+		char cmd[16 + PATH_MAX];
+		int result;
+		const int cancellable = data == NULL;
+
+		escaped = escape_filename(src, 0);
+		if(escaped == NULL)
+			return -1;
+
+		snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
+		LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
+		result = background_and_wait_for_errors(cmd, cancellable);
+
+		free(escaped);
+		return result;
+	}
+#endif
+
 	io_args_t args =
 	{
 		.arg1.path = src,
@@ -400,6 +421,32 @@ op_subattr(void *data, const char *src, const char *dst)
 static int
 op_symlink(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
+	if(!cfg.use_system_calls)
+	{
+		char *escaped_src, *escaped_dst;
+		char cmd[6 + PATH_MAX*2 + 1];
+		int result;
+
+		escaped_src = escape_filename(src, 0);
+		escaped_dst = escape_filename(dst, 0);
+		if(escaped_src == NULL || escaped_dst == NULL)
+		{
+			free(escaped_dst);
+			free(escaped_src);
+			return -1;
+		}
+
+		snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
+		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
+		result = background_and_wait_for_errors(cmd, 1);
+
+		free(escaped_dst);
+		free(escaped_src);
+		return result;
+	}
+#endif
+
 	io_args_t args =
 	{
 		.arg1.path = src,
@@ -412,6 +459,21 @@ op_symlink(void *data, const char *src, const char *dst)
 static int
 op_mkdir(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
+	if(!cfg.use_system_calls)
+	{
+		char cmd[128 + PATH_MAX];
+		char *escaped;
+
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
+				escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
+	}
+#endif
+
 	io_args_t args =
 	{
 		.arg1.path = src,
@@ -423,6 +485,20 @@ op_mkdir(void *data, const char *src, const char *dst)
 static int
 op_rmdir(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
+	if(!cfg.use_system_calls)
+	{
+		char cmd[128 + PATH_MAX];
+		char *escaped;
+
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
+	}
+#endif
+
 	io_args_t args =
 	{
 		.arg1.path = src,
@@ -433,6 +509,20 @@ op_rmdir(void *data, const char *src, const char *dst)
 static int
 op_mkfile(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
+	if(!cfg.use_system_calls)
+	{
+		char cmd[128 + PATH_MAX];
+		char *escaped;
+
+		escaped = escape_filename(src, 0);
+		snprintf(cmd, sizeof(cmd), "touch %s", escaped);
+		free(escaped);
+		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, 1);
+	}
+#endif
+
 	io_args_t args =
 	{
 		.arg1.path = src,
