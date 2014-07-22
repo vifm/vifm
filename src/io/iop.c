@@ -22,8 +22,11 @@
 #include <windows.h>
 #endif
 
+#include <unistd.h> /* symlink() */
+
+#include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -139,13 +142,25 @@ iop_ln(io_args_t *const args)
 	const char *const target = args->arg2.target;
 	const int overwrite = args->arg3.overwrite;
 
-	char *escaped_path, *escaped_target;
-	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
+
 #ifdef _WIN32
+	char cmd[6 + PATH_MAX*2 + 1];
+	char *escaped_path, *escaped_target;
 	char base_dir[PATH_MAX + 2];
 #endif
 
+#ifndef _WIN32
+	result = symlink(path, target);
+	if(result != 0 && errno == EEXIST && overwrite && is_symlink(target))
+	{
+		result = remove(target);
+		if(result == 0)
+		{
+			result = symlink(path, target);
+		}
+	}
+#else
 	escaped_path = escape_filename(path, 0);
 	escaped_target = escape_filename(target, 0);
 	if(escaped_path == NULL || escaped_target == NULL)
@@ -155,13 +170,6 @@ iop_ln(io_args_t *const args)
 		return -1;
 	}
 
-#ifndef _WIN32
-	snprintf(cmd, sizeof(cmd), "ln -s %s %s %s",
-			(overwrite && is_symlink(target)) ? "-f" : "", escaped_path,
-			escaped_target);
-	LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, 1);
-#else
 	(void)overwrite;
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
@@ -174,10 +182,11 @@ iop_ln(io_args_t *const args)
 	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_path,
 			escaped_target);
 	result = system(cmd);
-#endif
 
 	free(escaped_target);
 	free(escaped_path);
+#endif
+
 	return result;
 }
 
