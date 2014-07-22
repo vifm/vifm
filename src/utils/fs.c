@@ -473,7 +473,7 @@ remove_dir_content(const char path[])
 			{
 				remove_dir_content(full_path);
 			}
-			remove(full_path);
+			(void)remove(full_path);
 			free(full_path);
 		}
 	}

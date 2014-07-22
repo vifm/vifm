@@ -24,7 +24,7 @@
 #endif
 
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* removee() snprintf() */
 #include <stdlib.h> /* free() */
 
 #include "../utils/fs.h"
@@ -33,31 +33,23 @@
 #include "../utils/path.h"
 #include "../background.h"
 #include "ioc.h"
+#include "iop.h"
 
 int
 ior_rm(io_args_t *const args)
 {
-	const char *const src = args->arg1.src;
+	const char *const path = args->arg1.path;
 
 #ifndef _WIN32
-	char *escaped;
-	char cmd[16 + PATH_MAX];
-	int result;
-
-	escaped = escape_filename(src, 0);
-	if(escaped == NULL)
+	if(!is_dir(path))
 	{
-		return -1;
+		return remove(path);
 	}
-	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
-	free(escaped);
 
-	LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, args->cancellable);
-
-	return result;
+	remove_dir_content(path);
+	return iop_rmdir(args);
 #else
-	if(is_dir(src))
+	if(is_dir(path))
 	{
 		char buf[PATH_MAX];
 		int err;
@@ -71,7 +63,7 @@ ior_rm(io_args_t *const args)
 		};
 
 		/* The string should be terminated with two null characters. */
-		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
+		snprintf(buf, sizeof(buf), "%s%c", path, '\0');
 		to_back_slash(buf);
 		err = SHFileOperation(&fo);
 		log_msg("Error: %d", err);
@@ -80,12 +72,12 @@ ior_rm(io_args_t *const args)
 	else
 	{
 		int ok;
-		DWORD attributes = GetFileAttributesA(src);
+		DWORD attributes = GetFileAttributesA(path);
 		if(attributes & FILE_ATTRIBUTE_READONLY)
 		{
-			SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
+			SetFileAttributesA(path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
-		ok = DeleteFile(src);
+		ok = DeleteFile(path);
 		if(!ok)
 		{
 			LOG_WERROR(GetLastError());
