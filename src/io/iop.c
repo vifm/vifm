@@ -22,7 +22,7 @@
 #include <windows.h>
 #endif
 
-#include <unistd.h> /* symlink() */
+#include <unistd.h> /* rmdir() symlink() */
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL */
@@ -122,14 +122,7 @@ iop_rmdir(io_args_t *const args)
 	const char *const path = args->arg1.path;
 
 #ifndef _WIN32
-	char cmd[128 + PATH_MAX];
-	char *escaped;
-
-	escaped = escape_filename(path, 0);
-	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
-	free(escaped);
-	LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	return rmdir(path);
 #else
 	return RemoveDirectory(path) == 0;
 #endif

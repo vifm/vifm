@@ -41,8 +41,8 @@
 	rather then with system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The
 	option will be eventually removed.  Mostly *nix-like systems are affected.
 
-	Added implementation for symbolic link creation with system calls.
-	Available only if 'syscalls' is set.
+	Added implementation for empty directory removal and symbolic link creation
+	with system calls.  Available only if 'syscalls' is set.
 
 	Highlight environment variables in :source command.
 
