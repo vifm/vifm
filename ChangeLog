@@ -36,10 +36,10 @@
 	Added full command names to the manual page to ease searching them.
 	Thanks to y2kbugger.
 
-	Added "x" flag to 'cpoptions' option.  It makes vifm prefer to perform
-	file-system operations with external applications on rather then with
-	system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The flag will be
-	eventually removed.  Mostly *nix-like systems are affected.
+	Added 'syscalls' boolean option to 'cpoptions' option.  It makes vifm
+	prefer to perform file-system operations with external applications on
+	rather then with system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The
+	option will be eventually removed.  Mostly *nix-like systems are affected.
 
 	Highlight environment variables in :source command.
 

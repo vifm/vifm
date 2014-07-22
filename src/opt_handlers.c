@@ -131,6 +131,7 @@ static void add_column(columns_t columns, column_info_t column_info);
 static int map_name(const char *name);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
+static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
@@ -168,7 +169,7 @@ static const char * sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
-static const char cpoptions_list[] = "fstx";
+static const char cpoptions_list[] = "fst";
 static const char * cpoptions_vals = cpoptions_list;
 #define cpoptions_count ARRAY_LEN(cpoptions_list)
 
@@ -367,6 +368,10 @@ options[] =
 	  OPT_STR, 0, NULL, &statusline_handler,
 	  { .ref.str_val = &cfg.status_line },
 	},
+	{ "syscalls", "",
+	  OPT_BOOL, 0, NULL, &syscalls_handler,
+	  { .ref.bool_val = &cfg.use_system_calls },
+	},
 	{ "tabstop", "ts",
 	  OPT_INT, 0, NULL, &tabstop_handler,
 	  { .ref.int_val = &cfg.tab_stop },
@@ -501,11 +506,10 @@ init_cpoptions(optval_t *val)
 {
 	static char buf[32];
 	/* TODO: move these flags to curr_stats structure. */
-	snprintf(buf, sizeof(buf), "%s%s%s%s",
+	snprintf(buf, sizeof(buf), "%s%s%s",
 			cfg.filter_inverted_by_default ? "f" : "",
 			cfg.selection_is_primary       ? "s" : "",
-			cfg.tab_switches_pane          ? "t" : "",
-			cfg.use_system_calls           ? "" : "x");
+			cfg.tab_switches_pane          ? "t" : "");
 	val->str_val = buf;
 }
 
@@ -850,7 +854,6 @@ cpoptions_handler(OPT_OP op, optval_t val)
 	cfg.filter_inverted_by_default = 0;
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
-	cfg.use_system_calls = 1;
 
 	/* Reset behaviour to compatibility mode for each flag listed in the value. */
 	p = val.str_val;
@@ -866,9 +869,6 @@ cpoptions_handler(OPT_OP op, optval_t val)
 				break;
 			case 't':
 				cfg.tab_switches_pane = 1;
-				break;
-			case 'x':
-				cfg.use_system_calls = 0;
 				break;
 
 			default:
@@ -1344,6 +1344,15 @@ static void
 statusline_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.status_line, val.str_val);
+}
+
+/* Makes vifm prefer to perform file-system operations with external
+ * applications on rather then with system calls.  The option will be eventually
+ * removed.  Mostly *nix-like systems are affected. */
+static void
+syscalls_handler(OPT_OP op, optval_t val)
+{
+	cfg.use_system_calls = val.bool_val;
 }
 
 static void

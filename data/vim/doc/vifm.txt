@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 21
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 22
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2230,7 +2230,7 @@ undo/redo operation).
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
 type: charset
-default: "fstx"
+default: "fst"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
                                                *vifm-cpo-f*
@@ -2243,12 +2243,7 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
     selection, otherwise they operate on current file only;
                                                *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
-    pane, otherwise <c-i> goes forward in the view history;
-                                               *vifm-cpo-x*
-x - when included, vifm will rely on external applications to perform
-    file-system operations, otherwise system calls are used instead (much
-    faster).  The feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The flag
-    will be eventually removed.  Mostly *nix-like systems are affected.
+    pane, otherwise <c-i> goes forward in the view history.
 
                                                *vifm-'dotdirs'*
 dotdirs
@@ -2619,6 +2614,15 @@ On Windows file properties include next flags (upper case means flag is on):
 Example: >
  set statusline="  %t%= %A %10u:%-7g %15s %20d "
 <
+                                               *vifm-'syscalls'*
+syscalls
+type: boolean
+default: false
+When enabled, vifm will rely on external applications to perform file-system
+operations, otherwise system calls are used instead (much faster).  The
+feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
+eventually removed.  Mostly *nix-like systems are affected.
+
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
 type: integer
