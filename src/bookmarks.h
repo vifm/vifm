@@ -35,10 +35,11 @@ typedef struct
 }
 bookmark_t;
 
-/* Data of all bookmarks.  Contains at least NUM_BOOKMARKS items. */
-extern bookmark_t bookmarks[];
-
 extern const char valid_bookmarks[];
+
+/* Gets bookmark by its index.  Returns pointer to a statically allocated
+ * bookmark_t structure or NULL for wrong index. */
+const bookmark_t * get_bookmark(const int bmark_index);
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */

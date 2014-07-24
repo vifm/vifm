@@ -57,9 +57,8 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	i = 0;
 	while(i < m.len)
 	{
-		size_t len;
-
-		len = get_screen_string_length(bookmarks[active_bookmarks[i]].directory);
+		const bookmark_t *const bmark = get_bookmark(active_bookmarks[i]);
+		const size_t len = get_screen_string_length(bmark->directory);
 		if(len > max_len)
 			max_len = len;
 		i++;
@@ -73,9 +72,12 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		char *with_tilde;
 		int overhead;
 		int j;
+		const bookmark_t *bmark;
 
 		j = active_bookmarks[i];
-		with_tilde = replace_home_part(bookmarks[j].directory);
+		bmark = get_bookmark(active_bookmarks[i]);
+
+		with_tilde = replace_home_part(bmark->directory);
 		if(get_screen_string_length(with_tilde) > max_len - 3)
 		{
 			size_t width = get_normal_utf8_string_widthn(with_tilde, max_len - 6);
@@ -87,7 +89,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
 		}
-		else if(is_parent_dir(bookmarks[j].file))
+		else if(is_parent_dir(bmark->file))
 		{
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");
@@ -95,7 +97,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		else
 		{
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, with_tilde, bookmarks[j].file);
+					max_len + overhead, with_tilde, bmark->file);
 		}
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);
