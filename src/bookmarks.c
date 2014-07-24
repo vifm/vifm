@@ -32,7 +32,7 @@
 #include "ui.h"
 
 static int is_valid_index(const int bmark_index);
-static bookmark_t * get_bmark(const int bmark_index);
+static void clear_bmarks(bookmark_t bmarks[], int count);
 static void clear_mark(bookmark_t *bmark);
 static int is_user_bookmark(const char mark);
 static void set_mark(const char mark, const char directory[], const char file[],
@@ -40,7 +40,8 @@ static void set_mark(const char mark, const char directory[], const char file[],
 static int is_bmark_points_to(const bookmark_t *bmark, const char directory[],
 		const char file[]);
 static int navigate_to_bookmark(FileView *view, const char mark);
-static bookmark_t * get_bmark_by_name(const char mark);
+TSTATIC bookmark_t * get_bmark_by_name(const char mark);
+static bookmark_t * get_bmark(const int bmark_index);
 static int is_bmark_valid(const bookmark_t *bmark);
 static int is_bmark_empty(const bookmark_t *bmark);
 
@@ -48,7 +49,8 @@ static int is_bmark_empty(const bookmark_t *bmark);
 static bookmark_t regular_bookmarks[NUM_REGULAR_BOOKMARKS];
 
 /* Data of special bookmarks. */
-static bookmark_t special_bookmarks[NUM_SPECIAL_BOOKMARKS];
+static bookmark_t lspecial_bookmarks[NUM_SPECIAL_BOOKMARKS];
+static bookmark_t rspecial_bookmarks[NUM_SPECIAL_BOOKMARKS];
 
 const char valid_bookmarks[] =
 {
@@ -127,26 +129,19 @@ clear_bookmark(const int mark)
 void
 clear_all_bookmarks(void)
 {
-	bookmark_t *bmark;
-	int i = 0;
-	while((bmark = get_bmark(i++)) != NULL)
-	{
-		clear_mark(bmark);
-	}
+	clear_bmarks(regular_bookmarks, ARRAY_LEN(regular_bookmarks));
+	clear_bmarks(lspecial_bookmarks, ARRAY_LEN(lspecial_bookmarks));
+	clear_bmarks(rspecial_bookmarks, ARRAY_LEN(rspecial_bookmarks));
 }
 
-/* Gets bookmark by its index.  Returns pointer to a statically allocated
- * bookmark_t structure or NULL for wrong index. */
-static bookmark_t *
-get_bmark(const int bmark_index)
+static void
+clear_bmarks(bookmark_t bmarks[], int count)
 {
-	if(!is_valid_index(bmark_index))
+	int i;
+	for(i = 0; i < count; ++i)
 	{
-		return NULL;
+		clear_mark(&bmarks[i]);
 	}
-	return (bmark_index < NUM_REGULAR_BOOKMARKS)
-	      ? &regular_bookmarks[bmark_index]
-	      : &special_bookmarks[bmark_index - NUM_REGULAR_BOOKMARKS];
 }
 
 /* Frees memory allocated for bookmark with given index.  For convenience
@@ -330,11 +325,34 @@ navigate_to_bookmark(FileView *view, char mark)
 
 /* Gets bookmark data structure by name of a bookmark.  Returns pointer to
  * bookmark's data structure or NULL. */
-static bookmark_t *
+TSTATIC bookmark_t *
 get_bmark_by_name(const char mark)
 {
 	const char *const pos = strchr(valid_bookmarks, mark);
 	return (pos == NULL) ? NULL : get_bmark(pos - valid_bookmarks);
+}
+
+/* Gets bookmark by its index.  Returns pointer to a statically allocated
+ * bookmark_t structure or NULL for wrong index. */
+static bookmark_t *
+get_bmark(const int bmark_index)
+{
+	int spec_bmark_index;
+
+	if(!is_valid_index(bmark_index))
+	{
+		return NULL;
+	}
+
+	if(bmark_index < NUM_REGULAR_BOOKMARKS)
+	{
+		return &regular_bookmarks[bmark_index];
+	}
+
+	spec_bmark_index = bmark_index - NUM_REGULAR_BOOKMARKS;
+	return (curr_view == &lwin)
+	     ? &lspecial_bookmarks[spec_bmark_index]
+	     : &rspecial_bookmarks[spec_bmark_index];
 }
 
 /* Checks if a bookmark is valid (exists and points to an existing directory).

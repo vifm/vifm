@@ -22,6 +22,7 @@
 
 #include <time.h> /* time_t */
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 #define NUM_REGULAR_BOOKMARKS 61
@@ -89,6 +90,10 @@ int check_mark_directory(FileView *view, char mark);
  * specified bookmark index is active.  active_bookmarks should be an array of
  * at least NUM_BOOKMARKS items.  Returns number of active bookmarks. */
 int init_active_bookmarks(const char marks[], int active_bookmarks[]);
+
+TSTATIC_DEFS(
+	bookmark_t * get_bmark_by_name(const char mark);
+)
 
 #endif /* VIFM__BOOKMARKS_H__ */
 
