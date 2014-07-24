@@ -1033,7 +1033,7 @@ write_bookmarks(FILE *const fp, const char non_conflicting_bmarks[],
 		const char mark = index2mark(index);
 		if(!is_spec_bookmark(index) && char_is_one_of(non_conflicting_bmarks, mark))
 		{
-			const bookmark_t *const bookmark = &bookmarks[index];
+			const bookmark_t *const bookmark = get_bookmark(index);
 
 			fprintf(fp, "'%c\n", mark);
 			fprintf(fp, "\t%s\n", bookmark->directory);

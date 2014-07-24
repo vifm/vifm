@@ -92,6 +92,9 @@
 	Renamed "default color scheme" to "primary color scheme" in documentation
 	to avoid confusion.
 
+	Separate visual selection marks ('<' and '>'), which allows to restore it
+	via "gv" in both panes.  Thanks to filterfalse.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

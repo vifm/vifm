@@ -22,9 +22,12 @@
 
 #include <time.h> /* time_t */
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
-#define NUM_BOOKMARKS 64
+#define NUM_REGULAR_BOOKMARKS 61
+#define NUM_SPECIAL_BOOKMARKS 3
+#define NUM_BOOKMARKS (NUM_REGULAR_BOOKMARKS + NUM_SPECIAL_BOOKMARKS)
 
 /* Structure that describes bookmark data. */
 typedef struct
@@ -35,10 +38,11 @@ typedef struct
 }
 bookmark_t;
 
-/* Data of all bookmarks.  Contains at least NUM_BOOKMARKS items. */
-extern bookmark_t bookmarks[];
-
 extern const char valid_bookmarks[];
+
+/* Gets bookmark by its index.  Returns pointer to a statically allocated
+ * bookmark_t structure or NULL for wrong index. */
+const bookmark_t * get_bookmark(const int bmark_index);
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
@@ -86,6 +90,10 @@ int check_mark_directory(FileView *view, char mark);
  * specified bookmark index is active.  active_bookmarks should be an array of
  * at least NUM_BOOKMARKS items.  Returns number of active bookmarks. */
 int init_active_bookmarks(const char marks[], int active_bookmarks[]);
+
+TSTATIC_DEFS(
+	bookmark_t * get_bmark_by_name(const char mark);
+)
 
 #endif /* VIFM__BOOKMARKS_H__ */
 

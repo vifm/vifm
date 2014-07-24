@@ -248,8 +248,8 @@ init_visual_mode(int *key_mode)
 void
 enter_visual_mode(VisualSubmodes sub_mode)
 {
-	int ub = check_mark_directory(view, '<');
-	int lb = check_mark_directory(view, '>');
+	const int ub = check_mark_directory(curr_view, '<');
+	const int lb = check_mark_directory(curr_view, '>');
 
 	if(sub_mode == VS_RESTORE && (ub < 0 || lb < 0))
 	{
