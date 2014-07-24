@@ -32,6 +32,7 @@
 #include "ui.h"
 
 static int is_valid_index(const int bmark_index);
+static bookmark_t * get_bmark(const int bmark_index);
 static void clear_mark(bookmark_t *bmark);
 static int is_user_bookmark(const char mark);
 static void set_mark(const char mark, const char directory[], const char file[],
@@ -43,16 +44,20 @@ static bookmark_t * get_bmark_by_name(const char mark);
 static int is_bmark_valid(const bookmark_t *bmark);
 static int is_bmark_empty(const bookmark_t *bmark);
 
-/* Data of all bookmarks.  Contains at least NUM_BOOKMARKS items. */
-static bookmark_t bookmarks[NUM_BOOKMARKS];
+/* Data of regular bookmarks. */
+static bookmark_t regular_bookmarks[NUM_REGULAR_BOOKMARKS];
+
+/* Data of special bookmarks. */
+static bookmark_t special_bookmarks[NUM_SPECIAL_BOOKMARKS];
 
 const char valid_bookmarks[] =
 {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'<', '>',
 	'\0'
 };
 ARRAY_GUARD(valid_bookmarks, NUM_BOOKMARKS + 1);
@@ -64,11 +69,12 @@ static const char spec_bookmarks[] =
 	'<', '>', '\'',
 	'\0'
 };
+ARRAY_GUARD(spec_bookmarks, NUM_SPECIAL_BOOKMARKS + 1);
 
 const bookmark_t *
 get_bookmark(const int bmark_index)
 {
-	return is_valid_index(bmark_index) ? &bookmarks[bmark_index] : NULL;
+	return get_bmark(bmark_index);
 }
 
 char
@@ -81,8 +87,8 @@ index2mark(const int bmark_index)
 	return '\0';
 }
 
-/* Checks whether index is valid for bookmarks array.  Returns non-zero if so,
- * otherwise zero is returned. */
+/* Checks whether bookmark index is valid.  Returns non-zero if so, otherwise
+ * zero is returned. */
 static int
 is_valid_index(const int bmark_index)
 {
@@ -121,13 +127,26 @@ clear_bookmark(const int mark)
 void
 clear_all_bookmarks(void)
 {
-	bookmark_t *bmark = &bookmarks[0];
-	const bookmark_t *const end = &bookmarks[ARRAY_LEN(bookmarks)];
-	while(bmark != end)
+	bookmark_t *bmark;
+	int i = 0;
+	while((bmark = get_bmark(i++)) != NULL)
 	{
 		clear_mark(bmark);
-		bmark++;
 	}
+}
+
+/* Gets bookmark by its index.  Returns pointer to a statically allocated
+ * bookmark_t structure or NULL for wrong index. */
+static bookmark_t *
+get_bmark(const int bmark_index)
+{
+	if(!is_valid_index(bmark_index))
+	{
+		return NULL;
+	}
+	return (bmark_index < NUM_REGULAR_BOOKMARKS)
+	      ? &regular_bookmarks[bmark_index]
+	      : &special_bookmarks[bmark_index - NUM_REGULAR_BOOKMARKS];
 }
 
 /* Frees memory allocated for bookmark with given index.  For convenience
@@ -314,8 +333,8 @@ navigate_to_bookmark(FileView *view, char mark)
 static bookmark_t *
 get_bmark_by_name(const char mark)
 {
-	const char *pos = strchr(valid_bookmarks, mark);
-	return (pos == NULL) ? NULL : &bookmarks[pos - valid_bookmarks];
+	const char *const pos = strchr(valid_bookmarks, mark);
+	return (pos == NULL) ? NULL : get_bmark(pos - valid_bookmarks);
 }
 
 /* Checks if a bookmark is valid (exists and points to an existing directory).
@@ -337,7 +356,7 @@ init_active_bookmarks(const char marks[], int active_bookmarks[])
 	{
 		if(!char_is_one_of(marks, index2mark(x)))
 			continue;
-		if(is_bmark_empty(&bookmarks[x]))
+		if(is_bmark_empty(get_bookmark(x)))
 			continue;
 		active_bookmarks[i++] = x;
 	}

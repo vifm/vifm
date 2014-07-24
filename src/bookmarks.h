@@ -24,7 +24,9 @@
 
 #include "ui.h"
 
-#define NUM_BOOKMARKS 64
+#define NUM_REGULAR_BOOKMARKS 61
+#define NUM_SPECIAL_BOOKMARKS 3
+#define NUM_BOOKMARKS (NUM_REGULAR_BOOKMARKS + NUM_SPECIAL_BOOKMARKS)
 
 /* Structure that describes bookmark data. */
 typedef struct
