@@ -1375,7 +1375,7 @@ void
 clean_positions_in_history(FileView *view)
 {
 	int i;
-	for(i = 0; i <= view->history_pos; i++)
+	for(i = 0; i <= view->history_pos && i < view->history_num; i++)
 		view->history[i].file[0] = '\0';
 }
 
@@ -1441,7 +1441,7 @@ int
 is_in_view_history(FileView *view, const char *path)
 {
 	int i;
-	if(view->history == NULL)
+	if(view->history == NULL || view->history_num <= 0)
 		return 0;
 	for(i = view->history_pos; i >= 0; i--)
 	{

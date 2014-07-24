@@ -137,6 +137,9 @@
 
 	Fixed :!! command, seems to be not working for a while.
 
+	Fixed segmentation fault on no view history and ":set autochpos" in
+	vifmrc.  Thanks to ranousse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
