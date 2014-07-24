@@ -1077,7 +1077,7 @@ write_view_history(FILE *fp, FileView *view, const char str[], char mark,
 	{
 		fprintf(fp, "%c%s\n\t%s\n%d\n", mark, prev[i], prev[i + 1], pos[i/2]);
 	}
-	for(i = 0; i <= view->history_pos; i++)
+	for(i = 0; i <= view->history_pos && i < view->history_pos; i++)
 	{
 		fprintf(fp, "%c%s\n\t%s\n%d\n", mark, view->history[i].dir,
 				view->history[i].file, view->history[i].rel_pos);
