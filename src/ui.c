@@ -1325,13 +1325,14 @@ update_all_windows(void)
 	}
 
 	update_window_lazy(lborder);
+	update_window_lazy(rborder);
+
 	if(cfg.last_status)
 	{
 		update_window_lazy(stat_win);
 	}
 	update_window_lazy(pos_win);
 	update_window_lazy(input_win);
-	update_window_lazy(rborder);
 	update_window_lazy(status_bar);
 
 	update_window_lazy(ltop_line1);

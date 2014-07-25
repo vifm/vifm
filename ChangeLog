@@ -142,6 +142,9 @@
 
 	Fixed small visual multiline status bar update issue.  Thanks to ranousse.
 
+	Fixed non-updated single character of status line for multiline status
+	bar.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
