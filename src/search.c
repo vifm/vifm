@@ -220,17 +220,33 @@ print_search_msg(const FileView *view, int backward)
 void
 print_search_fail_msg(const FileView *view, int backward)
 {
-	if(!cfg.wrap_scan)
+	const char *const regexp = view->regexp;
+
+	int cflags;
+	regex_t re;
+	int err;
+
+	cflags = get_regexp_cflags(regexp);
+	err = regcomp(&re, regexp, cflags);
+	regfree(&re);
+
+	if(err != 0)
 	{
-		if(backward)
-			status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
-		else
-			status_bar_errorf("Search hit BOTTOM without match for: %s",
-					view->regexp);
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		return;
+	}
+
+	if(cfg.wrap_scan)
+	{
+		status_bar_errorf("No matching files for: %s", regexp);
+	}
+	else if(backward)
+	{
+		status_bar_errorf("Search hit TOP without match for: %s", regexp);
 	}
 	else
 	{
-		status_bar_errorf("No matching files for: %s", view->regexp);
+		status_bar_errorf("Search hit BOTTOM without match for: %s", regexp);
 	}
 }
 
