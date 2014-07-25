@@ -684,11 +684,8 @@ status_bar_message_i(const char *message, int error)
 	}
 
 	wattrset(status_bar, 0);
-	update_window_lazy(status_bar);
-	if(!is_in_menu_like_mode() && cfg.last_status)
-	{
-		update_window_lazy(stat_win);
-	}
+
+	update_all_windows();
 	doupdate();
 }
 

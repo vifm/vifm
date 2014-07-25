@@ -140,6 +140,8 @@
 	Fixed segmentation fault on no view history and ":set autochpos" in
 	vifmrc.  Thanks to ranousse.
 
+	Fixed small visual multiline status bar update issue.  Thanks to ranousse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
