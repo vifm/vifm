@@ -1306,42 +1306,57 @@ swap_view_roles(void)
 void
 update_all_windows(void)
 {
+	int in_menu;
+
 	if(curr_stats.load_stage < 2)
+	{
 		return;
-
-	/* In One window view */
-	if(curr_stats.number_of_windows == 1)
-	{
-		update_view(curr_view);
-	}
-	/* Two Pane View */
-	else
-	{
-		update_window_lazy(mborder);
-		update_window_lazy(top_line);
-
-		update_view(&lwin);
-		update_view(&rwin);
 	}
 
-	update_window_lazy(lborder);
-	update_window_lazy(rborder);
+  in_menu = is_in_menu_like_mode();
 
-	if(cfg.last_status)
+	if(!in_menu)
 	{
-		update_window_lazy(stat_win);
+		if(curr_stats.number_of_windows == 1)
+		{
+			/* In one window view. */
+			update_view(curr_view);
+		}
+		else
+		{
+			/* Two pane View. */
+			update_window_lazy(mborder);
+			update_window_lazy(top_line);
+
+			update_view(&lwin);
+			update_view(&rwin);
+		}
+
+		update_window_lazy(lborder);
+		update_window_lazy(rborder);
+
+		if(cfg.last_status)
+		{
+			update_window_lazy(stat_win);
+		}
 	}
+
 	update_window_lazy(pos_win);
 	update_window_lazy(input_win);
 	update_window_lazy(status_bar);
 
-	update_window_lazy(ltop_line1);
-	update_window_lazy(ltop_line2);
-	update_window_lazy(rtop_line1);
-	update_window_lazy(rtop_line2);
+	if(!in_menu)
+	{
+		update_window_lazy(ltop_line1);
+		update_window_lazy(ltop_line2);
+		update_window_lazy(rtop_line1);
+		update_window_lazy(rtop_line2);
+	}
 
 	if(!curr_stats.errmsg_shown && curr_stats.load_stage >= 2)
+	{
 		doupdate();
+	}
 }
 
 /* Updates all parts of file view. */
