@@ -145,6 +145,9 @@
 	Fixed non-updated single character of status line for multiline status
 	bar.
 
+	Fixed processing file names with sharp sign for some shells.  Thanks to
+	Flaviu Tamas (a.k.a. flaviut).
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
