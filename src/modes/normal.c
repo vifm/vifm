@@ -215,6 +215,8 @@ static void selector_s(key_info_t key_info, keys_info_t *keys_info);
 static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
+
+/* Number of search repeats (e.g. counter passed to n or N key. */
 static int search_repeat;
 
 static keys_add_info_t builtin_cmds[] = {
@@ -2228,6 +2230,11 @@ find_npattern(FileView *view, const char *pattern, int backward)
 	{
 		found += goto_search_match(view, backward) != 0;
 	}
+
+	/* Reset number of repeats so that future calls are not affected by the
+	 * previous ones. */
+	search_repeat = 1;
+
 	return found;
 }
 
