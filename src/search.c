@@ -233,7 +233,8 @@ print_search_fail_msg(const FileView *view, int backward)
 
 	if(err != 0)
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		status_bar_errorf("Regexp (%s) error: %s", regexp,
+				get_regexp_error(err, &re));
 		return;
 	}
 

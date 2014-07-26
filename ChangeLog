@@ -98,6 +98,9 @@
 	Reset search results on toggling 'hlsearch' to apply new option value on
 	the next search query (/, ?, n, N).
 
+	Include regular expression in search error message that says that it's
+	wrong.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
