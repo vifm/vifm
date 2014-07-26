@@ -242,14 +242,16 @@ print_search_fail_msg(const FileView *view, int backward)
 
 	cflags = get_regexp_cflags(regexp);
 	err = regcomp(&re, regexp, cflags);
-	regfree(&re);
 
 	if(err != 0)
 	{
 		status_bar_errorf("Regexp (%s) error: %s", regexp,
 				get_regexp_error(err, &re));
+		regfree(&re);
 		return;
 	}
+
+	regfree(&re);
 
 	if(cfg.wrap_scan)
 	{
