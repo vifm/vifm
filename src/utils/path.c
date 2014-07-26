@@ -348,6 +348,8 @@ escape_filename(const char *string, int quote_percent)
 				if(quote_percent)
 					*dup++ = '%';
 				break;
+
+			/* Escape the following characters anywhere in the line. */
 			case '\'':
 			case '\\':
 			case '\r':
@@ -371,10 +373,12 @@ escape_filename(const char *string, int quote_percent)
 			case '*':
 			case '(':
 			case ')':
+			case '#':
 				*dup++ = '\\';
 				break;
+
+			/* Escape the following characters only at the beginning of the line. */
 			case '~':
-			case '#':
 				if(dup == ret)
 					*dup++ = '\\';
 				break;
