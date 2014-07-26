@@ -101,6 +101,9 @@
 	Include regular expression in search error message that says that it's
 	wrong.
 
+	Avoid displaying useless search messages (those that user can't see, but
+	that are shown in :messages).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

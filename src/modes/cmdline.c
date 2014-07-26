@@ -53,6 +53,7 @@
 #include "dialogs/sort_dialog.h"
 #include "menu.h"
 #include "modes.h"
+#include "normal.h"
 #include "visual.h"
 
 #ifndef TEST
@@ -413,10 +414,10 @@ input_line_changed(void)
 		switch(sub_mode)
 		{
 			case SEARCH_FORWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_FSEARCH_PATTERN);
+				(void)find_npattern(curr_view, mbinput, 0, 0);
 				break;
 			case SEARCH_BACKWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_BSEARCH_PATTERN);
+				(void)find_npattern(curr_view, mbinput, 1, 0);
 				break;
 			case VSEARCH_FORWARD_SUBMODE:
 				exec_command(mbinput, curr_view, GET_VFSEARCH_PATTERN);

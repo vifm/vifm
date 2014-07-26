@@ -1337,9 +1337,9 @@ exec_command(const char cmd[], FileView *view, int type)
 	if(cmd == NULL)
 	{
 		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
-			return find_npattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
+			return find_npattern(view, view->regexp, type == GET_BSEARCH_PATTERN, 1);
 		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
-			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
+			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN, 1);
 		if(type == GET_COMMAND)
 			return execute_command(view, NULL, 0);
 		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
@@ -1364,11 +1364,11 @@ exec_command(const char cmd[], FileView *view, int type)
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{
-		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN);
+		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
 	}
 	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 	{
-		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
+		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN, 1);
 	}
 	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
 	{

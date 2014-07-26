@@ -102,7 +102,7 @@ find_and_goto_match(FileView *view, int start, int backward)
 
 int
 find_pattern(FileView *view, const char pattern[], int backward, int move,
-		int *const found)
+		int *const found, int interactive)
 {
 	int cflags;
 	int nmatches = 0;
@@ -158,7 +158,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		if(interactive)
+		{
+			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		}
 		regfree(&re);
 		return 1;
 	}
@@ -180,7 +183,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 
 		if(!cfg.hl_search)
 		{
-			print_result(view, was_found, backward);
+			if(interactive)
+			{
+				print_result(view, was_found, backward);
+			}
 			return 1;
 		}
 		return 0;
@@ -188,7 +194,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	else
 	{
 		move_to_list_pos(view, view->list_pos);
-		print_search_fail_msg(view, backward);
+		if(interactive)
+		{
+			print_search_fail_msg(view, backward);
+		}
 		return 1;
 	}
 }

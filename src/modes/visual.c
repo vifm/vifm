@@ -117,7 +117,7 @@ static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
 static void activate_search(int count, int back, int external);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
-static void search(key_info_t key_info, int backward);
+static void search(key_info_t key_info, int backward, int interactive);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void change_amend_type(AmendType new_amend_type);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
@@ -537,7 +537,7 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, !curr_stats.last_search_backward);
+	search(key_info, !curr_stats.last_search_backward, 0);
 }
 
 static void
@@ -864,11 +864,11 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	search(key_info, curr_stats.last_search_backward);
+	search(key_info, curr_stats.last_search_backward, 0);
 }
 
 static void
-search(key_info_t key_info, int backward)
+search(key_info_t key_info, int backward, int interactive)
 {
 	int found;
 
@@ -881,7 +881,7 @@ search(key_info_t key_info, int backward)
 	{
 		const char *pattern = (view->regexp[0] == '\0') ?
 				cfg.search_hist.items[0] : view->regexp;
-		curr_stats.save_msg = find_vpattern(view, pattern, backward);
+		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
 		return;
 	}
 
@@ -1257,7 +1257,8 @@ update_visual_mode(void)
 }
 
 int
-find_vpattern(FileView *view, const char *pattern, int backward)
+find_vpattern(FileView *view, const char *pattern, int backward,
+		int interactive)
 {
 	int i;
 	int result;
@@ -1265,7 +1266,7 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	int found;
 
 	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, backward, 0, &found);
+	result = find_pattern(view, pattern, backward, 0, &found, interactive);
 	cfg.hl_search = hls;
 	for(i = 0; i < search_repeat; i++)
 		find_update(view, backward);
