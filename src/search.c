@@ -110,11 +110,12 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	int err;
 
 	if(move && cfg.hl_search)
+	{
 		clean_selected_files(view);
+	}
 
 	reset_search_results(view);
-
-	*found = 0;
+	copy_str(view->regexp, sizeof(view->regexp), pattern);
 
 	if(pattern[0] == '\0')
 	{
@@ -122,14 +123,12 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		return 0;
 	}
 
+	*found = 0;
+
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
 		int x;
-
-		if(pattern != view->regexp)
-			snprintf(view->regexp, sizeof(view->regexp), "%s", pattern);
-
 		for(x = 0; x < view->list_rows; x++)
 		{
 			char buf[NAME_MAX];
