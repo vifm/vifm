@@ -42,7 +42,8 @@ void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
  * Intended to be used after setting list position from side. */
 void update_visual_mode(void);
 
-int find_vpattern(FileView *view, const char *pattern, int backward);
+int find_vpattern(FileView *view, const char *pattern, int backward,
+		int interactive);
 
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */

@@ -215,6 +215,8 @@ static void selector_s(key_info_t key_info, keys_info_t *keys_info);
 static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
+
+/* Number of search repeats (e.g. counter passed to n or N key. */
 static int search_repeat;
 
 static keys_add_info_t builtin_cmds[] = {
@@ -1686,11 +1688,8 @@ search(key_info_t key_info, int backward)
 	{
 		const char *pattern = (curr_view->regexp[0] == '\0') ?
 				cfg.search_hist.items[0] : curr_view->regexp;
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found);
-		if(!found)
-		{
-			return;
-		}
+		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found,
+				0);
 		key_info.count--;
 	}
 
@@ -2219,15 +2218,27 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-find_npattern(FileView *view, const char *pattern, int backward)
+find_npattern(FileView *view, const char pattern[], int backward,
+		int interactive)
 {
 	int i;
 	int found;
-	(void)find_pattern(view, pattern, backward, 1, &found);
+	int msg;
+
+	msg = find_pattern(view, pattern, backward, 1, &found, interactive);
+	/* Take wrong regular expression message into account, otherwise we can't
+	 * distinguish "no files matched" situation from "wrong regexp". */
+	found += msg;
+
 	for(i = 0; i < search_repeat - 1; i++)
 	{
 		found += goto_search_match(view, backward) != 0;
 	}
+
+	/* Reset number of repeats so that future calls are not affected by the
+	 * previous ones. */
+	search_repeat = 1;
+
 	return found;
 }
 

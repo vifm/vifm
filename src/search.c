@@ -102,20 +102,20 @@ find_and_goto_match(FileView *view, int start, int backward)
 
 int
 find_pattern(FileView *view, const char pattern[], int backward, int move,
-		int *const found)
+		int *const found, int interactive)
 {
 	int cflags;
 	int nmatches = 0;
 	regex_t re;
-	int x;
 	int err;
 
 	if(move && cfg.hl_search)
+	{
 		clean_selected_files(view);
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].search_match = 0;
+	}
 
-	*found = 0;
+	reset_search_results(view);
+	copy_str(view->regexp, sizeof(view->regexp), pattern);
 
 	if(pattern[0] == '\0')
 	{
@@ -123,37 +123,45 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		return 0;
 	}
 
+	*found = 0;
+
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
-		if(pattern != view->regexp)
-			snprintf(view->regexp, sizeof(view->regexp), "%s", pattern);
-
-		for(x = 0; x < view->list_rows; x++)
+		int i;
+		for(i = 0; i < view->list_rows; ++i)
 		{
-			char buf[NAME_MAX];
+			char filename[NAME_MAX];
+			dir_entry_t *const entry = &view->dir_entry[i];
 
-			if(is_parent_dir(view->dir_entry[x].name))
+			if(is_parent_dir(entry->name))
+			{
 				continue;
+			}
 
-			copy_str(buf, sizeof(buf), view->dir_entry[x].name);
-			chosp(buf);
-			if(regexec(&re, buf, 0, NULL, 0) != 0)
+			copy_str(filename, sizeof(filename), entry->name);
+			chosp(filename);
+			if(regexec(&re, filename, 0, NULL, 0) != 0)
+			{
 				continue;
+			}
 
-			view->dir_entry[x].search_match = 1;
+			entry->search_match = 1;
 			if(cfg.hl_search)
 			{
-				view->dir_entry[x].selected = 1;
-				view->selected_files++;
+				entry->selected = 1;
+				++view->selected_files;
 			}
-			nmatches++;
+			++nmatches;
 		}
 		regfree(&re);
 	}
 	else
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		if(interactive)
+		{
+			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		}
 		regfree(&re);
 		return 1;
 	}
@@ -175,7 +183,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 
 		if(!cfg.hl_search)
 		{
-			print_result(view, was_found, backward);
+			if(interactive)
+			{
+				print_result(view, was_found, backward);
+			}
 			return 1;
 		}
 		return 0;
@@ -183,7 +194,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	else
 	{
 		move_to_list_pos(view, view->list_pos);
-		print_search_fail_msg(view, backward);
+		if(interactive)
+		{
+			print_search_fail_msg(view, backward);
+		}
 		return 1;
 	}
 }
@@ -220,18 +234,48 @@ print_search_msg(const FileView *view, int backward)
 void
 print_search_fail_msg(const FileView *view, int backward)
 {
-	if(!cfg.wrap_scan)
+	const char *const regexp = view->regexp;
+
+	int cflags;
+	regex_t re;
+	int err;
+
+	cflags = get_regexp_cflags(regexp);
+	err = regcomp(&re, regexp, cflags);
+
+	if(err != 0)
 	{
-		if(backward)
-			status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
-		else
-			status_bar_errorf("Search hit BOTTOM without match for: %s",
-					view->regexp);
+		status_bar_errorf("Regexp (%s) error: %s", regexp,
+				get_regexp_error(err, &re));
+		regfree(&re);
+		return;
+	}
+
+	regfree(&re);
+
+	if(cfg.wrap_scan)
+	{
+		status_bar_errorf("No matching files for: %s", regexp);
+	}
+	else if(backward)
+	{
+		status_bar_errorf("Search hit TOP without match for: %s", regexp);
 	}
 	else
 	{
-		status_bar_errorf("No matching files for: %s", view->regexp);
+		status_bar_errorf("Search hit BOTTOM without match for: %s", regexp);
 	}
+}
+
+void
+reset_search_results(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].search_match = 0;
+	}
+	view->matches = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

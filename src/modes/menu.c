@@ -894,6 +894,7 @@ search_menu(menu_info *m, int start_pos)
 		m->matches = malloc(sizeof(int)*m->len);
 
 	memset(m->matches, 0, sizeof(int)*m->len);
+	m->matching_entries = 0;
 
 	if(m->regexp[0] == '\0')
 		return 0;
@@ -902,7 +903,6 @@ search_menu(menu_info *m, int start_pos)
 	if((err = regcomp(&re, m->regexp, cflags)) == 0)
 	{
 		int x;
-		m->matching_entries = 0;
 		for(x = 0; x < m->len; x++)
 		{
 			if(regexec(&re, m->items[x], 0, NULL, 0) != 0)
@@ -983,7 +983,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 static int
 search_menu_backwards(menu_info *m, int start_pos)
 {
-	/* FIXME: code duplicatio with search_menu_forwards. */
+	/* FIXME: code duplication with search_menu_forwards. */
 
 	int match_up = -1;
 	int match_down = -1;
@@ -1043,7 +1043,7 @@ execute_cmdline_command(const char cmd[])
 {
 	if(exec_command(cmd, curr_view, GET_COMMAND) < 0)
 	{
-		status_bar_error("An error occuried while trying to execute command");
+		status_bar_error("An error occurred while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
 }
@@ -1051,6 +1051,23 @@ execute_cmdline_command(const char cmd[])
 void
 menu_print_search_msg(const menu_info *m)
 {
+	int cflags;
+	regex_t re;
+	int err;
+
+	cflags = get_regexp_cflags(m->regexp);
+	err = regcomp(&re, m->regexp, cflags);
+
+	if(err != 0)
+	{
+		status_bar_errorf("Regexp (%s) error: %s", m->regexp,
+				get_regexp_error(err, &re));
+		regfree(&re);
+		return;
+	}
+
+	regfree(&re);
+
 	if(m->matching_entries > 0)
 	{
 		status_bar_messagef("%d %s", m->matching_entries,

@@ -95,6 +95,15 @@
 	Separate visual selection marks ('<' and '>'), which allows to restore it
 	via "gv" in both panes.  Thanks to filterfalse.
 
+	Reset search results on toggling 'hlsearch' to apply new option value on
+	the next search query (/, ?, n, N).
+
+	Include regular expression in search error message that says that it's
+	wrong.
+
+	Avoid displaying useless search messages (those that user can't see, but
+	that are shown in :messages).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -147,6 +156,8 @@
 
 	Fixed processing file names with sharp sign for some shells.  Thanks to
 	Flaviu Tamas (a.k.a. flaviut).
+
+	Fixed message about wrong search pattern regular expression.
 
 0.7.7-beta to 0.7.7
 
