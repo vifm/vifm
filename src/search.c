@@ -128,26 +128,31 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
-		int x;
-		for(x = 0; x < view->list_rows; x++)
+		int i;
+		for(i = 0; i < view->list_rows; ++i)
 		{
-			char buf[NAME_MAX];
+			char filename[NAME_MAX];
+			dir_entry_t *const entry = &view->dir_entry[i];
 
-			if(is_parent_dir(view->dir_entry[x].name))
+			if(is_parent_dir(entry->name))
+			{
 				continue;
+			}
 
-			copy_str(buf, sizeof(buf), view->dir_entry[x].name);
-			chosp(buf);
-			if(regexec(&re, buf, 0, NULL, 0) != 0)
+			copy_str(filename, sizeof(filename), entry->name);
+			chosp(filename);
+			if(regexec(&re, filename, 0, NULL, 0) != 0)
+			{
 				continue;
+			}
 
-			view->dir_entry[x].search_match = 1;
+			entry->search_match = 1;
 			if(cfg.hl_search)
 			{
-				view->dir_entry[x].selected = 1;
-				view->selected_files++;
+				entry->selected = 1;
+				++view->selected_files;
 			}
-			nmatches++;
+			++nmatches;
 		}
 		regfree(&re);
 	}
