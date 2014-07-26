@@ -39,6 +39,7 @@
 #include "column_view.h"
 #include "filelist.h"
 #include "quickview.h"
+#include "search.h"
 #include "sort.h"
 #include "status.h"
 #include "trash.h"
@@ -940,6 +941,11 @@ static void
 hlsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.hl_search = val.bool_val;
+
+	/* Reset remembered search results, so that n/N trigger search repetition and
+	 * selection/unselection of elements. */
+	reset_search_results(curr_view);
+	reset_search_results(other_view);
 }
 
 static void

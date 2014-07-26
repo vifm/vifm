@@ -95,6 +95,9 @@
 	Separate visual selection marks ('<' and '>'), which allows to restore it
 	via "gv" in both panes.  Thanks to filterfalse.
 
+	Reset search results on toggling 'hlsearch' to apply new option value on
+	the next search query (/, ?, n, N).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
