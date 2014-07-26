@@ -44,6 +44,9 @@ void print_search_msg(const FileView *view, int backward);
 /* Prints error message about failed search to the user. */
 void print_search_fail_msg(const FileView *view, int backward);
 
+/* Resets information about last search match. */
+void reset_search_results(FileView *view);
+
 #endif /* VIFM__SEARCH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

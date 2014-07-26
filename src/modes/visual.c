@@ -296,13 +296,8 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 
 	if(clean_selection)
 	{
-		int i;
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].search_match = 0;
-		view->matches = 0;
-
+		reset_search_results(view);
 		restore_selection_flags(view);
-
 		redraw_view(view);
 	}
 

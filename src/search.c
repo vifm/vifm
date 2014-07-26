@@ -107,13 +107,12 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	int cflags;
 	int nmatches = 0;
 	regex_t re;
-	int x;
 	int err;
 
 	if(move && cfg.hl_search)
 		clean_selected_files(view);
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].search_match = 0;
+
+	reset_search_results(view);
 
 	*found = 0;
 
@@ -126,6 +125,8 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
+		int x;
+
 		if(pattern != view->regexp)
 			snprintf(view->regexp, sizeof(view->regexp), "%s", pattern);
 
@@ -248,6 +249,17 @@ print_search_fail_msg(const FileView *view, int backward)
 	{
 		status_bar_errorf("Search hit BOTTOM without match for: %s", regexp);
 	}
+}
+
+void
+reset_search_results(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].search_match = 0;
+	}
+	view->matches = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
