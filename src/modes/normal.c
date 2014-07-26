@@ -2225,7 +2225,13 @@ find_npattern(FileView *view, const char *pattern, int backward)
 {
 	int i;
 	int found;
-	(void)find_pattern(view, pattern, backward, 1, &found);
+	int msg;
+
+	msg = find_pattern(view, pattern, backward, 1, &found);
+	/* Take wrong regular expression message into account, otherwise we can't
+	 * distinguish "no files matched" situation from "wrong regexp". */
+	found += msg;
+
 	for(i = 0; i < search_repeat - 1; i++)
 	{
 		found += goto_search_match(view, backward) != 0;
