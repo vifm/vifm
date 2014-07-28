@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 22
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3536,7 +3536,8 @@ commands.
 --------------------------------------------------------------------------------
 *vifm-see-also*
 
-Website: http://vifm.sourceforge.net/
+Website: http://vifm.info/
+Wiki: http://wiki.vifm.info/
 
 Esperanto translation of the documentation by Sebastian Cyprych:
 http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
