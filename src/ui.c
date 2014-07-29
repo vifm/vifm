@@ -1682,16 +1682,12 @@ only(void)
 void
 format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
 {
+	const FileType type = ui_view_entry_target_type(view, pos);
 	dir_entry_t *const entry = &view->dir_entry[pos];
-	char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
-	const FileType type = (entry->type == LINK && check_link_is_dir(full_path)) ?
-		DIRECTORY : entry->type;
 
 	const char prefix[2] = { cfg.decorations[type][DECORATION_PREFIX] };
 	const char suffix[2] = { cfg.decorations[type][DECORATION_SUFFIX] };
 	size_t name_len = 1;
-
-	free(full_path);
 
 	/* FIXME: remove this hack for directories. */
 	if(type == DIRECTORY)
@@ -1922,6 +1918,23 @@ int
 ui_view_displays_columns(const FileView *const view)
 {
 	return !view->ls_view;
+}
+
+FileType
+ui_view_entry_target_type(const FileView *const view, size_t pos)
+{
+	const dir_entry_t *const entry = &view->dir_entry[pos];
+	if(entry->type == LINK)
+	{
+		char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
+		const FileType type = check_link_is_dir(full_path) ? DIRECTORY : LINK;
+		free(full_path);
+		return type;
+	}
+	else
+	{
+		return entry->type;
+	}
 }
 
 void
