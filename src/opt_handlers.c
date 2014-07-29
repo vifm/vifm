@@ -1285,7 +1285,8 @@ sortorder_handler(OPT_OP op, optval_t val)
 static void
 viewcolumns_handler(OPT_OP op, optval_t val)
 {
-	load_view_columns_option(curr_view, val.str_val);
+	const int update_columns_ui = ui_view_displays_columns(curr_view);
+	set_view_columns_option(curr_view, val.str_val, update_columns_ui);
 }
 
 void
