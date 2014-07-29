@@ -165,6 +165,8 @@
 	Fixed some small issues and UI glitches related to 'lsview' and
 	'viewcolumns' options.
 
+	Fixed operations with directories that have very long names.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

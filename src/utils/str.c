@@ -444,29 +444,32 @@ has_uppercase_letters(const char str[])
 	return has_uppercase;
 }
 
-void
+size_t
 copy_str(char dst[], size_t dst_len, const char src[])
 {
-	if(dst != src)
-	{
-		copy_substr(dst, dst_len, src, '\0');
-	}
+	return (dst == src) ? 0U : copy_substr(dst, dst_len, src, '\0');
 }
 
-void
+size_t
 copy_substr(char dst[], size_t dst_len, const char src[], char terminator)
 {
-	if(dst_len != 0U)
+	char *past_end;
+
+	if(dst_len == 0U)
 	{
-		char *past_end;
-		if((past_end = memccpy(dst, src, terminator, dst_len)) == NULL)
-		{
-			dst[dst_len - 1] = '\0';
-		}
-		else
-		{
-			past_end[-1] = '\0';
-		}
+		return 0U;
+	}
+
+	past_end = memccpy(dst, src, terminator, dst_len);
+	if(past_end == NULL)
+	{
+		dst[dst_len - 1] = '\0';
+		return dst_len;
+	}
+	else
+	{
+		past_end[-1] = '\0';
+		return past_end - dst;
 	}
 }
 

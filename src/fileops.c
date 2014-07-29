@@ -471,7 +471,7 @@ rename_file_cb(const char new_name[])
 {
 	char *filename = get_current_file_name(curr_view);
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
-	char new[NAME_MAX + 1];
+	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];
 	size_t len;
 	int mv_res;
 	char **filename_ptr;
@@ -529,12 +529,13 @@ complete_filename_only(const char *str)
 void
 rename_current_file(FileView *view, int name_only)
 {
-	char filename[NAME_MAX + 1];
+	const char *const old = get_current_file_name(view);
+	char filename[strlen(old) + 1];
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return;
 
-	snprintf(filename, sizeof(filename), "%s", get_current_file_name(view));
+	snprintf(filename, sizeof(filename), "%s", old);
 	if(is_parent_dir(filename))
 	{
 		show_error_msg("Rename error",

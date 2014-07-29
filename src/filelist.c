@@ -2507,7 +2507,13 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	char name_with_slash[NAME_MAX + 1 + 1];
 	if(is_dir)
 	{
-		sprintf(name_with_slash, "%s/", filename);
+		/* FIXME: some very long file names won't be matched against some
+		 * regexps. */
+		const size_t nchars = copy_str(name_with_slash, sizeof(name_with_slash) - 1,
+				filename);
+		name_with_slash[nchars - 1] = '/';
+		name_with_slash[nchars] = '\0';
+
 		filename = name_with_slash;
 	}
 
