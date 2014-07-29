@@ -43,14 +43,20 @@ enum
 const char * cursorline_enum[3];
 
 void init_option_handlers(void);
+
 void load_local_options(FileView *view);
+
 int process_set_args(const char *args);
+
 void load_sort_option(FileView *view);
+
 /* Updates view columns value as if 'viewcolumns' option has been changed.
  * Doesn't change actual value of the option. */
 void load_view_columns_option(FileView *view, const char value[]);
+
 /* Updates geometry related options. */
 void load_geometry(void);
+
 /* Returns pointer to a statically allocated string containing string
  * representation of the 'classify' option value. */
 const char * classify_to_str(void);
