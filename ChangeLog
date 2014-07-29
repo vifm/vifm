@@ -162,6 +162,9 @@
 	Fixed Ctrl-C detection, false positives occurred on resizing
 	terminal (both come as signals into program).
 
+	Fixed some small issues and UI glitches related to 'lsview' and
+	'viewcolumns' options.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

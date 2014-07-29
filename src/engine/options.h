@@ -33,7 +33,8 @@ typedef enum
 	OPT_SET,     /* A set (multiple or none values at a time). */
 	OPT_CHARSET, /* A set of single characters (multiple or none values at a
 	                time). */
-}OPT_TYPE;
+}
+OPT_TYPE;
 
 /* Operation on an option. */
 typedef enum
@@ -43,7 +44,8 @@ typedef enum
 	OP_SET,      /* Value set. */
 	OP_MODIFIED, /* Value added/removed (for OPT_INT,  OPT_SET and OPT_STR). */
 	OP_RESET,    /* Value reseted to default. */
-}OPT_OP;
+}
+OPT_OP;
 
 typedef union
 {
@@ -52,7 +54,8 @@ typedef union
 	char *str_val; /* Value of OPT_STR or OPT_STRLIST types. */
 	int enum_item; /* Value of OPT_ENUM type. */
 	int set_items; /* Value of OPT_SET type. */
-}optval_t;
+}
+optval_t;
 
 /* Function type for option handler. */
 typedef void (*opt_handler)(OPT_OP op, optval_t val);
@@ -60,17 +63,24 @@ typedef void (*opt_handler)(OPT_OP op, optval_t val);
 /* Initializes option module.  opts_changed_flag will be set to true after at
  * least one option will change it value using set_options(...) function. */
 void init_options(int *opts_changed_flag);
+
 /* Resets an option to its default value. */
 void reset_option_to_default(const char name[]);
+
 /* Resets all options to their default values. */
 void reset_options_to_default(void);
+
 /* Removes all options. */
 void clear_options(void);
+
 /* Adds an option. */
 void add_option(const char name[], const char abbr[], OPT_TYPE type,
 		int val_count, const char *vals[], opt_handler handler, optval_t def);
-/* Sets option value without calling its change handler. */
+
+/* Sets option value without calling its change handler.  Asserts for correct
+ * option name. */
 void set_option(const char name[], optval_t val);
+
 /* Processes :set command arguments.  Returns non-zero on error. */
 int set_options(const char args[]);
 

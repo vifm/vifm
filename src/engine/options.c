@@ -214,8 +214,7 @@ void
 set_option(const char name[], optval_t val)
 {
 	opt_t *opt = find_option(name);
-	if(opt == NULL)
-		return;
+	assert(opt != NULL && "Wrong option name.");
 
 	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
