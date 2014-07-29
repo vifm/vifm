@@ -153,13 +153,7 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 		ts = ts_init;
 		FD_SET(fd, &read_ready);
 	}
-	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0);
-
-	/* Inform other parts of the application that cancellation took place. */
-	if(errno == EINTR)
-	{
-		ui_cancellation_request();
-	}
+	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0 || errno == EINTR);
 }
 
 int
