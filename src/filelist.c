@@ -1801,7 +1801,7 @@ check_dir_changed(FileView *view)
 		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
 			log_msg("ha%s", "d");
 	}
- 
+
 	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
 	{
 		FindNextChangeNotification(view->dir_watcher);
@@ -1912,7 +1912,7 @@ handle_mount_points(const char *path)
 		return path;
 	}
 	CloseHandle(hfile);
-	
+
 	rdbp = (REPARSE_DATA_BUFFER *)rdb;
 	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
 	if(strncmp(t, "\\??\\", 4) == 0)
@@ -2142,7 +2142,7 @@ fill_with_shared(FileView *view)
 {
 	NET_API_STATUS res;
 	wchar_t *wserver;
-	
+
 	wserver = to_wide(view->curr_dir + 2);
 	if(wserver == NULL)
 	{

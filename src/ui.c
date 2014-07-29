@@ -1226,7 +1226,7 @@ update_screen(UpdateType update_kind)
 	}
 
 	update_input_buf();
-	
+
 	curr_stats.need_update = UT_NONE;
 }
 
