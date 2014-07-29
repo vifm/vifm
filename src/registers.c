@@ -180,7 +180,7 @@ list_registers_content(const char registers[])
 		registers_t *reg;
 		char buf[56];
 		int y;
-			
+
 		if((reg = find_register(*registers++)) == NULL)
 			continue;
 

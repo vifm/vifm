@@ -96,7 +96,7 @@ typedef struct
 	int too_small_term;
 
 	tree_t dirsize_cache; /* ga command results */
-	
+
 	int last_search_backward;
 
 	int ch_pos; /* for :cd, :pushd and 'letter */

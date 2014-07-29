@@ -407,7 +407,7 @@ delete_files_bg(FileView *view, int use_trash)
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	int i;
 	bg_args_t *args;
-	
+
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
@@ -1650,7 +1650,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 {
 	char full[PATH_MAX];
 	char clone_name[PATH_MAX];
-	
+
 	if(stroscmp(filename, "./") == 0)
 		return;
 	if(is_parent_dir(filename))
@@ -2848,7 +2848,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	int i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args = malloc(sizeof(*args));
-	
+
 	args->list = NULL;
 	args->nlines = nlines;
 	args->move = move;

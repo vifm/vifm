@@ -413,7 +413,7 @@ restore_from_trash(const char trash_name[])
 	}
 	if(i >= nentries)
 		return -1;
-	
+
 	copy_str(buf, sizeof(buf), trash_list[i].path);
 	copy_str(full, sizeof(full), trash_list[i].trash_name);
 	if(perform_operation(OP_MOVE, NULL, full, trash_list[i].path) == 0)
