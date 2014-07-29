@@ -128,6 +128,8 @@ static void update_num_type(NumberingType num_type, int enable);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
+static void set_view_columns_option(FileView *view, const char value[],
+		int update_ui);
 static void add_column(columns_t columns, column_info_t column_info);
 static int map_name(const char *name);
 static void resort_view(FileView * view);
@@ -1289,17 +1291,34 @@ viewcolumns_handler(OPT_OP op, optval_t val)
 void
 load_view_columns_option(FileView *view, const char value[])
 {
-	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
+	set_view_columns_option(view, value, 1);
+}
 
-	columns_clear(curr_view->columns);
-	if(parse_columns(view->columns, add_column, map_name, new_value) != 0)
+/* Updates view columns value as if 'viewcolumns' option has been changed.
+ * Doesn't change actual value of the option, which is important for setting
+ * sorting order via sort dialog. */
+static void
+set_view_columns_option(FileView *view, const char value[], int update_ui)
+{
+	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
+	const columns_t columns = update_ui ? view->columns : NULL;
+
+	if(update_ui)
+	{
+		columns_clear(columns);
+	}
+
+	if(parse_columns(columns, add_column, map_name, new_value) != 0)
 	{
 		optval_t val;
 
 		text_buffer_add("Invalid format of 'viewcolumns' option");
 		error = 1;
-		(void)parse_columns(view->columns, add_column, map_name,
-				view->view_columns);
+
+		if(update_ui)
+		{
+			(void)parse_columns(columns, add_column, map_name, view->view_columns);
+		}
 
 		val.str_val = view->view_columns;
 		set_option("viewcolumns", val);
@@ -1307,10 +1326,13 @@ load_view_columns_option(FileView *view, const char value[])
 	else
 	{
 		/* Set value specified by user.  Can't use DEFAULT_VIEW_COLUMNS here,
-		 * because empty value of view->view->columns signals about disabled
+		 * as we need empty value of view->view_columns to signal about disabled
 		 * columns customization. */
 		(void)replace_string(&view->view_columns, value);
-		redraw_current_view();
+		if(update_ui)
+		{
+			redraw_view(view);
+		}
 	}
 }
 
@@ -1318,7 +1340,11 @@ load_view_columns_option(FileView *view, const char value[])
 static void
 add_column(columns_t columns, column_info_t column_info)
 {
-	columns_add_column(columns, column_info);
+	/* Handle dry run mode, when we don't actually update column view. */
+	if(columns != NULL)
+	{
+		columns_add_column(columns, column_info);
+	}
 }
 
 /* Maps column name to column id.  Returns column id. */
