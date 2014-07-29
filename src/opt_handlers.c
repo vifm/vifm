@@ -1139,12 +1139,13 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	redraw_lists();
 }
 
+/* Handles switch that controls columns vs. list like view. */
 static void
 lsview_handler(OPT_OP op, optval_t val)
 {
 	curr_view->ls_view = val.bool_val;
 
-	if(val.bool_val)
+	if(curr_view->ls_view)
 	{
 		column_info_t column_info =
 		{
@@ -1315,7 +1316,7 @@ add_column(columns_t columns, column_info_t column_info)
 	columns_add_column(columns, column_info);
 }
 
-/* Maps column name to column id. Returns column id. */
+/* Maps column name to column id.  Returns column id. */
 static int
 map_name(const char *name)
 {
