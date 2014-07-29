@@ -69,7 +69,8 @@ void clear_options(void);
 /* Adds an option. */
 void add_option(const char name[], const char abbr[], OPT_TYPE type,
 		int val_count, const char *vals[], opt_handler handler, optval_t def);
-/* Sets option value without calling its change handler. */
+/* Sets option value without calling its change handler.  Asserts for correct
+ * option name. */
 void set_option(const char name[], optval_t val);
 /* Processes :set command arguments.  Returns non-zero on error. */
 int set_options(const char args[]);
