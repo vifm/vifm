@@ -1918,6 +1918,12 @@ ui_view_clear_history(FileView *const view)
 	view->history_pos = 0;
 }
 
+int
+ui_view_displays_columns(const FileView *const view)
+{
+	return !view->ls_view;
+}
+
 void
 ui_view_schedule_redraw(FileView *view)
 {

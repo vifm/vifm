@@ -339,6 +339,9 @@ int ui_view_displays_numbers(const FileView *const view);
 int ui_view_is_visible(const FileView *const view);
 /* Cleans directory history of the view. */
 void ui_view_clear_history(FileView *const view);
+/* Checks whether view displays column view.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int ui_view_displays_columns(const FileView *const view);
 
 /* View update scheduling. */
 
