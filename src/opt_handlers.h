@@ -51,7 +51,8 @@ int process_set_args(const char *args);
 void load_sort_option(FileView *view);
 
 /* Updates view columns value as if 'viewcolumns' option has been changed.
- * Doesn't change actual value of the option. */
+ * Doesn't change actual value of the option, which is important for setting
+ * sorting order via sort dialog. */
 void load_view_columns_option(FileView *view, const char value[]);
 
 /* Updates geometry related options. */
