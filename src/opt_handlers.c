@@ -1294,10 +1294,15 @@ load_view_columns_option(FileView *view, const char value[])
 	columns_clear(curr_view->columns);
 	if(parse_columns(view->columns, add_column, map_name, new_value) != 0)
 	{
+		optval_t val;
+
 		text_buffer_add("Invalid format of 'viewcolumns' option");
 		error = 1;
 		(void)parse_columns(view->columns, add_column, map_name,
 				view->view_columns);
+
+		val.str_val = view->view_columns;
+		set_option("viewcolumns", val);
 	}
 	else
 	{
