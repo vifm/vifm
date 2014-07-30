@@ -10,17 +10,17 @@ test_pipe(void)
 	buf = "filter /a|b/";
 	assert_int_equal(0, line_pos(buf, buf, ' ', 1));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1));
-	assert_int_equal(2, line_pos(buf, buf + 9, ' ', 1));
+	assert_int_equal(5, line_pos(buf, buf + 9, ' ', 1));
 
 	buf = "filter 'a|b'";
 	assert_int_equal(0, line_pos(buf, buf, ' ', 1));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1));
-	assert_int_equal(2, line_pos(buf, buf + 9, ' ', 1));
+	assert_int_equal(3, line_pos(buf, buf + 9, ' ', 1));
 
 	buf = "filter \"a|b\"";
 	assert_int_equal(0, line_pos(buf, buf, ' ', 1));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1));
-	assert_int_equal(2, line_pos(buf, buf + 9, ' ', 1));
+	assert_int_equal(4, line_pos(buf, buf + 9, ' ', 1));
 }
 
 static void
@@ -41,12 +41,12 @@ test_set_command(void)
 	buf = "set fusehome=\"a|b\"";
 	assert_int_equal(0, line_pos(buf, buf, ' ', 0));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 0));
-	assert_int_equal(2, line_pos(buf, buf + 16, ' ', 0));
+	assert_int_equal(4, line_pos(buf, buf + 16, ' ', 0));
 
 	buf = "set fusehome='a|b'";
 	assert_int_equal(0, line_pos(buf, buf, ' ', 0));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 0));
-	assert_int_equal(2, line_pos(buf, buf + 16, ' ', 0));
+	assert_int_equal(3, line_pos(buf, buf + 16, ' ', 0));
 }
 
 static void

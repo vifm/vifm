@@ -135,6 +135,8 @@ TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int cmd_should_be_processed(int cmd_id);
 static int is_out_of_arg(const char cmd[], const char pos[]);
+TSTATIC int line_pos(const char begin[], const char end[], char sep,
+		int rquoting);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -1029,12 +1031,13 @@ cmd_should_be_processed(int cmd_id)
 	}
 }
 
-/*
- * Return value:
- *  - 0 not in arg
- *  - 1 skip next char
- *  - 2 in arg
- */
+/* Determines current position in the command line.  Returns:
+ *  - 0 if not inside an argument
+ *  - 1 if next character should be skipped (XXX: what does it mean?)
+ *  - 2 if inside escaped argument
+ *  - 3 if inside single quoted argument
+ *  - 4 if inside double quoted argument
+ *  - 5 if inside regexp quoted argument */
 TSTATIC int
 line_pos(const char begin[], const char end[], char sep, int rquoting)
 {
@@ -1119,7 +1122,17 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	}
 	else if(state != BEGIN)
 	{
-		return 2; /* error: no closing quote */
+		/* "Error": no closing quote. */
+		switch(state)
+		{
+			case S_QUOTING: return 3;
+			case D_QUOTING: return 4;
+			case R_QUOTING: return 5;
+
+			default:
+				assert(0 && "Unexpected state.");
+				break;
+		}
 	}
 	else if(sep != ' ' && count > 0 && *end != sep)
 		return 2;
