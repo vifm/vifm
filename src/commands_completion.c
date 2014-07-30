@@ -81,10 +81,8 @@ static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
 		const char * filename, CompletionType type);
-static void add_filename_completion(const char filename[], CompletionType type);
 static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
-static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
 
@@ -725,59 +723,19 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		{
 			char buf[NAME_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
-			add_filename_completion(buf, type);
+			add_completion(buf);
 		}
 		else
 		{
-			add_filename_completion(d->d_name, type);
+			add_completion(d->d_name);
 		}
 	}
 
 	completion_group_end();
 	if(type != CT_EXECONLY)
 	{
-		if(get_completion_count() == 0)
-		{
-			add_completion(filename);
-		}
-		else
-		{
-			add_filename_completion(filename, type);
-		}
+		add_completion(filename);
 	}
-}
-
-/* Adds completion of a filename to the list of matches taking care of escaping
- * (depends on the type parameter). */
-static void
-add_filename_completion(const char filename[], CompletionType type)
-{
-#ifndef _WIN32
-	char *escaped = NULL;
-#endif
-
-	const int woe = (type == CT_ALL_WOE || type == CT_FILE_WOE);
-	const char *completion;
-
-	if(woe)
-	{
-		completion = filename;
-	}
-	else
-	{
-#ifndef _WIN32
-		escaped = escape_filename(filename, 1);
-		completion = escaped;
-#else
-		completion = escape_for_cd(filename);
-#endif
-	}
-
-	add_completion(completion);
-
-#ifndef _WIN32
-	free(escaped);
-#endif
 }
 
 /* Uses dentry to check file type.  Returns non-zero for directories,
@@ -832,28 +790,6 @@ complete_group_name(const char *str)
 }
 
 #else
-
-/* Returns pointer to a statically allocated buffer */
-static const char *
-escape_for_cd(const char *str)
-{
-	static char buf[PATH_MAX*2];
-	char *p;
-
-	p = buf;
-	while(*str != '\0')
-	{
-		if(char_is_one_of("\\ $", *str))
-			*p++ = '\\';
-		else if(*str == '%')
-			*p++ = '%';
-		*p++ = *str;
-
-		str++;
-	}
-	*p = '\0';
-	return buf;
-}
 
 static void
 complete_with_shared(const char *server, const char *file)
