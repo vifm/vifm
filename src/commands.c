@@ -1032,12 +1032,12 @@ cmd_should_be_processed(int cmd_id)
 }
 
 /* Determines current position in the command line.  Returns:
- *  - 0 if not inside an argument
- *  - 1 if next character should be skipped (XXX: what does it mean?)
- *  - 2 if inside escaped argument
- *  - 3 if inside single quoted argument
- *  - 4 if inside double quoted argument
- *  - 5 if inside regexp quoted argument */
+ *  - 0, if not inside an argument;
+ *  - 1, if next character should be skipped (XXX: what does it mean?);
+ *  - 2, if inside escaped argument;
+ *  - 3, if inside single quoted argument;
+ *  - 4, if inside double quoted argument;
+ *  - 5, if inside regexp quoted argument. */
 TSTATIC int
 line_pos(const char begin[], const char end[], char sep, int rquoting)
 {
@@ -1227,6 +1227,12 @@ exec_commands(const char cmd[], FileView *view, int type)
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
+	return get_cmdline_location(cmd, pos) == CLL_OUT_OF_ARG;
+}
+
+CmdLineLocation
+get_cmdline_location(const char cmd[], const char pos[])
+{
 	char separator;
 	int regex_quoting;
 
@@ -1251,7 +1257,19 @@ is_out_of_arg(const char cmd[], const char pos[])
 			break;
 	}
 
-	return line_pos(cmd, pos, separator, regex_quoting) == 0;
+	switch(line_pos(cmd, pos, separator, regex_quoting))
+	{
+		case 0: return CLL_OUT_OF_ARG;
+		case 1: /* Fall through. */
+		case 2: return CLL_NO_QUOTING;
+		case 3: return CLL_S_QUOTING;
+		case 4: return CLL_D_QUOTING;
+		case 5: return CLL_R_QUOTING;
+
+		default:
+			assert(0 && "Unexpected return code.");
+			return CLL_NO_QUOTING;
+	}
 }
 
 static int
