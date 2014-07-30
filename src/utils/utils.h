@@ -99,6 +99,9 @@ char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
  * on error default value of 1 is returned. */
 int vifm_wcwidth(wchar_t c);
 
+/* Expands escape sequences from double quoted string (e.g. "\n") in place. */
+void expand_dquotes_escaping(char s[]);
+
 /* Fills buf of the length buf_len with path to mount point of the path.
  * Returns non-zero on error, otherwise zero is returned. */
 int get_mount_point(const char path[], size_t buf_len, char buf[]);
