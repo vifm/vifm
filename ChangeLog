@@ -104,6 +104,9 @@
 	Avoid displaying useless search messages (those that user can't see, but
 	that are shown in :messages).
 
+	Implement "(" and ")" keys for "perms" and "type" sorting keys.  Thanks to
+	filterfalse.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

@@ -155,23 +155,23 @@ void
 init_filelists(void)
 {
 	columns_set_line_print_func(column_line_print);
-	columns_add_column_desc(SORT_BY_NAME, format_name);
-	columns_add_column_desc(SORT_BY_INAME, format_name);
-	columns_add_column_desc(SORT_BY_SIZE, format_size);
+	columns_add_column_desc(SK_BY_NAME, format_name);
+	columns_add_column_desc(SK_BY_INAME, format_name);
+	columns_add_column_desc(SK_BY_SIZE, format_size);
 
-	columns_add_column_desc(SORT_BY_EXTENSION, format_ext);
+	columns_add_column_desc(SK_BY_EXTENSION, format_ext);
 #ifndef _WIN32
-	columns_add_column_desc(SORT_BY_GROUP_ID, format_group);
-	columns_add_column_desc(SORT_BY_GROUP_NAME, format_group);
-	columns_add_column_desc(SORT_BY_MODE, format_mode);
-	columns_add_column_desc(SORT_BY_OWNER_ID, format_owner);
-	columns_add_column_desc(SORT_BY_OWNER_NAME, format_owner);
+	columns_add_column_desc(SK_BY_GROUP_ID, format_group);
+	columns_add_column_desc(SK_BY_GROUP_NAME, format_group);
+	columns_add_column_desc(SK_BY_MODE, format_mode);
+	columns_add_column_desc(SK_BY_OWNER_ID, format_owner);
+	columns_add_column_desc(SK_BY_OWNER_NAME, format_owner);
 #endif
-	columns_add_column_desc(SORT_BY_TIME_ACCESSED, format_time);
-	columns_add_column_desc(SORT_BY_TIME_CHANGED, format_time);
-	columns_add_column_desc(SORT_BY_TIME_MODIFIED, format_time);
+	columns_add_column_desc(SK_BY_TIME_ACCESSED, format_time);
+	columns_add_column_desc(SK_BY_TIME_CHANGED, format_time);
+	columns_add_column_desc(SK_BY_TIME_MODIFIED, format_time);
 #ifndef _WIN32
-	columns_add_column_desc(SORT_BY_PERMISSIONS, format_perms);
+	columns_add_column_desc(SK_BY_PERMISSIONS, format_perms);
 #endif
 
 	init_view(&rwin);
@@ -199,7 +199,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	const size_t prefix_len = view->real_num_width + 1;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
-	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
+	if(column_id == SK_BY_NAME || column_id == SK_BY_INAME)
 	{
 		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
 				entry->selected, cdt->is_current);
@@ -339,7 +339,7 @@ format_group(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	if(id == SORT_BY_GROUP_NAME)
+	if(id == SK_BY_GROUP_NAME)
 	{
 		struct group *grp_buf;
 		if((grp_buf = getgrgid(entry->gid)) != NULL)
@@ -358,7 +358,7 @@ format_owner(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	if(id == SORT_BY_OWNER_NAME)
+	if(id == SK_BY_OWNER_NAME)
 	{
 		struct passwd *pwd_buf;
 		if((pwd_buf = getpwuid(entry->uid)) != NULL)
@@ -393,13 +393,13 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 
 	switch(id)
 	{
-		case SORT_BY_TIME_MODIFIED:
+		case SK_BY_TIME_MODIFIED:
 			tm_ptr = localtime(&entry->mtime);
 			break;
-		case SORT_BY_TIME_ACCESSED:
+		case SK_BY_TIME_ACCESSED:
 			tm_ptr = localtime(&entry->atime);
 			break;
-		case SORT_BY_TIME_CHANGED:
+		case SK_BY_TIME_CHANGED:
 			tm_ptr = localtime(&entry->ctime);
 			break;
 
@@ -493,7 +493,7 @@ reset_view(FileView *view)
 	view->local_filter.poshist = NULL;
 	view->local_filter.poshist_len = 0U;
 
-	memset(&view->sort[0], NO_SORT_OPTION, sizeof(view->sort));
+	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
 	ui_view_sort_list_ensure_well_formed(view->sort);
 }
 
@@ -838,8 +838,8 @@ reset_view_sort(FileView *view)
 	{
 		column_info_t column_info =
 		{
-			.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
+			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_NONE,
 		};
 
 		columns_clear(view->columns);
@@ -3376,7 +3376,7 @@ void
 change_sort_type(FileView *view, char type, char descending)
 {
 	view->sort[0] = descending ? -type : type;
-	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
+	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
 
 	reset_view_sort(view);
 
@@ -3545,6 +3545,13 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	}
 
 	return (size == 0) ? entry->size : size;
+}
+
+int
+is_directory_entry(const dir_entry_t *entry)
+{
+	return (entry->type == DIRECTORY)
+	    || (entry->type == LINK && ends_with_slash(entry->name));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

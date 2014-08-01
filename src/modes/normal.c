@@ -42,6 +42,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
@@ -2010,64 +2011,79 @@ cmd_paren(int lb, int ub, int inc)
 	const char *ext = get_last_ext(pentry->name);
 	size_t char_width = get_char_width(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
+	const SortingKey sorting_key = abs(curr_view->sort[0]);
+	const int is_dir = is_directory_entry(pentry);
 #ifndef _WIN32
 	const char *mode_str = get_mode_str(pentry->mode);
+	char perms[16];
+	get_perm_string(perms, sizeof(perms), pentry->mode);
 #endif
-	int sort_key = abs(curr_view->sort[0]);
 	while(pos > lb && pos < ub)
 	{
 		dir_entry_t *nentry;
 		pos += inc;
 		nentry = &curr_view->dir_entry[pos];
-		switch(sort_key)
+		switch(sorting_key)
 		{
-			case SORT_BY_EXTENSION:
+			case SK_BY_EXTENSION:
 				if(strcmp(get_last_ext(nentry->name), ext) != 0)
 					return pos;
 				break;
-			case SORT_BY_NAME:
+			case SK_BY_NAME:
 				if(strncmp(pentry->name, nentry->name, char_width) != 0)
 					return pos;
 				break;
-			case SORT_BY_INAME:
+			case SK_BY_INAME:
 				if(towupper(get_first_wchar(nentry->name)) != ch)
 					return pos;
 				break;
 #ifndef _WIN32
-		case SORT_BY_GROUP_NAME:
-		case SORT_BY_GROUP_ID:
+		case SK_BY_GROUP_NAME:
+		case SK_BY_GROUP_ID:
 				if(nentry->gid != pentry->gid)
 					return pos;
 				break;
-		case SORT_BY_OWNER_NAME:
-		case SORT_BY_OWNER_ID:
+		case SK_BY_OWNER_NAME:
+		case SK_BY_OWNER_ID:
 				if(nentry->uid != pentry->uid)
 					return pos;
 				break;
-		case SORT_BY_MODE:
+		case SK_BY_MODE:
 				if(get_mode_str(nentry->mode) != mode_str)
 					return pos;
 				break;
+		case SK_BY_PERMISSIONS:
+				{
+					char nperms[16];
+					get_perm_string(nperms, sizeof(nperms), nentry->mode);
+					if(strcmp(nperms, perms) != 0)
+					{
+						return pos;
+					}
+					break;
+				}
 #endif
-		case SORT_BY_SIZE:
+		case SK_BY_SIZE:
 				if(nentry->size != pentry->size)
 					return pos;
 				break;
-		case SORT_BY_TIME_ACCESSED:
+		case SK_BY_TIME_ACCESSED:
 				if(nentry->atime != pentry->atime)
 					return pos;
 				break;
-		case SORT_BY_TIME_CHANGED:
+		case SK_BY_TIME_CHANGED:
 				if(nentry->ctime != pentry->ctime)
 					return pos;
 				break;
-		case SORT_BY_TIME_MODIFIED:
+		case SK_BY_TIME_MODIFIED:
 				if(nentry->mtime != pentry->mtime)
 					return pos;
 				break;
-
-		default:
-				assert(0);
+		case SK_BY_TYPE:
+				if(is_dir != is_directory_entry(nentry))
+				{
+					return pos;
+				}
 				break;
 		}
 	}

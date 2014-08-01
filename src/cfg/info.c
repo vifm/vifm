@@ -25,7 +25,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* abs() free() realloc() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -324,14 +324,14 @@ static void
 get_sort_info(FileView *view, const char line[])
 {
 	int j = 0;
-	while(*line != '\0' && j < SORT_OPTION_COUNT)
+	while(*line != '\0' && j < SK_COUNT)
 	{
 		char *endptr;
 		const int sort_opt = strtol(line, &endptr, 10);
 		if(endptr != line)
 		{
 			line = endptr;
-			view->sort[j++] = MIN(LAST_SORT_OPTION, MAX(-LAST_SORT_OPTION, sort_opt));
+			view->sort[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
 		}
 		else
 		{
@@ -339,7 +339,7 @@ get_sort_info(FileView *view, const char line[])
 		}
 		line = skip_char(line, ',');
 	}
-	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
+	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
 
 	reset_view_sort(view);
 }
@@ -1245,11 +1245,10 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 {
 	int i = -1;
 	fputc(leading_char, fp);
-	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
+	while(++i < SK_COUNT && abs(view->sort[i]) <= SK_LAST)
 	{
-		int last_option = i >= SORT_OPTION_COUNT - 1;
-		last_option = last_option || abs(view->sort[i + 1]) > LAST_SORT_OPTION;
-		fprintf(fp, "%d%s", view->sort[i], last_option ? "" : ",");
+		int is_last_option = i >= SK_COUNT - 1 || abs(view->sort[i + 1]) > SK_LAST;
+		fprintf(fp, "%d%s", view->sort[i], is_last_option ? "" : ",");
 	}
 	fputc('\n', fp);
 }

@@ -1847,13 +1847,13 @@ ui_view_title_update(FileView *view)
 }
 
 int
-ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key)
+ui_view_sort_list_contains(const char sort[SK_COUNT], char key)
 {
 	int i = -1;
-	while(++i < SORT_OPTION_COUNT)
+	while(++i < SK_COUNT)
 	{
 		const int sort_key = abs(sort[i]);
-		if(sort_key > LAST_SORT_OPTION)
+		if(sort_key > SK_LAST)
 		{
 			return 0;
 		}
@@ -1866,31 +1866,31 @@ ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key)
 }
 
 void
-ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT])
+ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT])
 {
 	int found_name_key = 0;
 	int i = -1;
-	while(++i < SORT_OPTION_COUNT)
+	while(++i < SK_COUNT)
 	{
 		const int sort_key = abs(sort[i]);
-		if(sort_key > LAST_SORT_OPTION)
+		if(sort_key > SK_LAST)
 		{
 			break;
 		}
-		else if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
+		else if(sort_key == SK_BY_NAME || sort_key == SK_BY_INAME)
 		{
 			found_name_key = 1;
 		}
 	}
 
-	if(!found_name_key && i < SORT_OPTION_COUNT)
+	if(!found_name_key && i < SK_COUNT)
 	{
-		sort[i++] = DEFAULT_SORT_KEY;
+		sort[i++] = SK_DEFAULT;
 	}
 
-	if(i < SORT_OPTION_COUNT)
+	if(i < SK_COUNT)
 	{
-		memset(&sort[i], NO_SORT_OPTION, SORT_OPTION_COUNT - i);
+		memset(&sort[i], SK_NONE, SK_COUNT - i);
 	}
 }
 
