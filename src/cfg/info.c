@@ -25,7 +25,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* abs() free() realloc() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -1247,9 +1247,8 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(view->sort[i]) <= SK_LAST)
 	{
-		int last_option = i >= SK_COUNT - 1;
-		last_option = last_option || abs(view->sort[i + 1]) > SK_LAST;
-		fprintf(fp, "%d%s", view->sort[i], last_option ? "" : ",");
+		int is_last_option = i >= SK_COUNT - 1 || abs(view->sort[i + 1]) > SK_LAST;
+		fprintf(fp, "%d%s", view->sort[i], is_last_option ? "" : ",");
 	}
 	fputc('\n', fp);
 }
