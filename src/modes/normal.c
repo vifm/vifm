@@ -2011,7 +2011,7 @@ cmd_paren(int lb, int ub, int inc)
 	const char *ext = get_last_ext(pentry->name);
 	size_t char_width = get_char_width(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
-	const int sorting_key = abs(curr_view->sort[0]);
+	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
 #ifndef _WIN32
 	const char *mode_str = get_mode_str(pentry->mode);
@@ -2084,10 +2084,6 @@ cmd_paren(int lb, int ub, int inc)
 				{
 					return pos;
 				}
-				break;
-
-		default:
-				assert(0);
 				break;
 		}
 	}
