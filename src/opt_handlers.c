@@ -25,7 +25,8 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() */
-#include <string.h> /* memcpy() memmove() strstr() */
+#include <string.h> /* memcpy() memmove() strchr() strlen() strncat()
+                       strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -1219,7 +1220,7 @@ sort_handler(OPT_OP op, optval_t val)
 	i = 0;
 	do
 	{
-		char buf[32];
+		char key[32];
 		char *t;
 		int minus;
 		int pos;
@@ -1234,13 +1235,16 @@ sort_handler(OPT_OP op, optval_t val)
 		if(*t == '-' || *t == '+')
 			t++;
 
-		snprintf(buf, MIN(p - t + 1, sizeof(buf)), "%s", t);
+		snprintf(key, MIN(p - t + 1, sizeof(key)), "%s", t);
 
-		if((pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum),
-				buf)) == -1)
+		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), key);
+		if(pos == -1)
 		{
-			text_buffer_addf("Skipped unknown 'sort' value: %s", buf);
-			error = 1;
+			if(key[0] != '\0')
+			{
+				text_buffer_addf("Skipped unknown 'sort' value: %s", key);
+				error = 1;
+			}
 			continue;
 		}
 		pos++;
