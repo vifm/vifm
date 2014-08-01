@@ -42,6 +42,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
@@ -2010,10 +2011,13 @@ cmd_paren(int lb, int ub, int inc)
 	const char *ext = get_last_ext(pentry->name);
 	size_t char_width = get_char_width(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
+	const int sorting_key = abs(curr_view->sort[0]);
+	const int is_dir = is_directory_entry(pentry);
 #ifndef _WIN32
 	const char *mode_str = get_mode_str(pentry->mode);
+	char perms[16];
+	get_perm_string(perms, sizeof(perms), pentry->mode);
 #endif
-	const int sorting_key = abs(curr_view->sort[0]);
 	while(pos > lb && pos < ub)
 	{
 		dir_entry_t *nentry;
@@ -2048,6 +2052,16 @@ cmd_paren(int lb, int ub, int inc)
 				if(get_mode_str(nentry->mode) != mode_str)
 					return pos;
 				break;
+		case SK_BY_PERMISSIONS:
+				{
+					char nperms[16];
+					get_perm_string(nperms, sizeof(nperms), nentry->mode);
+					if(strcmp(nperms, perms) != 0)
+					{
+						return pos;
+					}
+					break;
+				}
 #endif
 		case SK_BY_SIZE:
 				if(nentry->size != pentry->size)
@@ -2064,6 +2078,12 @@ cmd_paren(int lb, int ub, int inc)
 		case SK_BY_TIME_MODIFIED:
 				if(nentry->mtime != pentry->mtime)
 					return pos;
+				break;
+		case SK_BY_TYPE:
+				if(is_dir != is_directory_entry(nentry))
+				{
+					return pos;
+				}
 				break;
 
 		default:
