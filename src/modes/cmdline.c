@@ -187,6 +187,8 @@ static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 TSTATIC int line_completion(line_stats_t *stat);
 static char * escaped_arg_hook(const char match[]);
+static char * squoted_arg_hook(const char match[]);
+static char * dquoted_arg_hook(const char match[]);
 static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
@@ -2158,7 +2160,17 @@ line_completion(line_stats_t *stat)
 					compl_set_add_hook(&escaped_arg_hook);
 					break;
 
-				default:
+				case CLL_S_QUOTING:
+					compl_set_add_hook(&squoted_arg_hook);
+					break;
+
+				case CLL_D_QUOTING:
+					compl_set_add_hook(&dquoted_arg_hook);
+					expand_dquotes_escaping(line_mb_cmd);
+					break;
+
+				case CLL_R_QUOTING:
+					assert(0 && "Unexpected completion inside regexp argument.");
 					break;
 			}
 		}
@@ -2193,6 +2205,22 @@ escaped_arg_hook(const char match[])
 #else
 	return strdup(escape_for_cd(match));
 #endif
+}
+
+/* Processes completion match for insertion into command-line as a value in
+ * single quotes.  Returns newly allocated string. */
+static char *
+squoted_arg_hook(const char match[])
+{
+	return escape_for_squotes(match);
+}
+
+/* Processes completion match for insertion into command-line as a value in
+ * double quotes.  Returns newly allocated string. */
+static char *
+dquoted_arg_hook(const char match[])
+{
+	return escape_for_dquotes(match);
 }
 
 static void
