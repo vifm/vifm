@@ -3547,5 +3547,12 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	return (size == 0) ? entry->size : size;
 }
 
+int
+is_directory_entry(const dir_entry_t *entry)
+{
+	return (entry->type == DIRECTORY)
+	    || (entry->type == LINK && ends_with_slash(entry->name));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

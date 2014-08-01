@@ -31,6 +31,7 @@
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
+#include "filelist.h"
 #include "status.h"
 #include "types.h"
 #include "ui.h"
@@ -41,7 +42,6 @@ static int sort_type;
 
 static void sort_by_key(char key);
 static int sort_dir_list(const void *one, const void *two);
-static int is_directory_entry(const dir_entry_t *entry);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 static int vercmp(const char s[], const char t[]);
@@ -276,15 +276,6 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	return retval;
-}
-
-/* Checks whether entry corresponds to a directory.  Returns non-zero if so,
- * otherwise zero is returned. */
-static int
-is_directory_entry(const dir_entry_t *entry)
-{
-	return (entry->type == DIRECTORY)
-	    || (entry->type == LINK && ends_with_slash(entry->name));
 }
 
 /* Compares two filenames.  Returns positive value if s greater than t, zero if

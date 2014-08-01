@@ -231,6 +231,9 @@ int view_needs_cd(const FileView *view, const char path[]);
 void set_view_path(FileView *view, const char path[]);
 /* Returns possible cached or calculated value of file size. */
 uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
+/* Checks whether entry corresponds to a directory.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int is_directory_entry(const dir_entry_t *entry);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);
