@@ -170,7 +170,7 @@ static const char * sort_enum[] = {
 #endif
 	"type",
 };
-ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
+ARRAY_GUARD(sort_enum, SK_COUNT);
 
 static const char cpoptions_list[] = "fst";
 static const char * cpoptions_vals = cpoptions_list;
@@ -206,7 +206,7 @@ static const char * sort_types[] = {
 #endif
 	"type", "+type", "-type",
 };
-ARRAY_GUARD(sort_types, SORT_OPTION_COUNT*3);
+ARRAY_GUARD(sort_types, SK_COUNT*3);
 
 static const char * sortorder_enum[] = {
 	"ascending",
@@ -638,19 +638,21 @@ load_sort_option(FileView *view)
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
 	 * comma (",") between items. */
-	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
+	enum { MAX_SORT_KEY_LEN = 16 };
 
 	int i;
 
 	optval_t val;
-	char opt_val[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
+	char opt_val[MAX_SORT_KEY_LEN*SK_COUNT];
 	size_t opt_val_len = 0U;
+
+	opt_val[0] = '\0';
 
 	ui_view_sort_list_ensure_well_formed(view->sort);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
-	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
+	while(++i < SK_COUNT && abs(view->sort[i]) <= SK_LAST)
 	{
 		const int sort_option = view->sort[i];
 		const char *const comma = (opt_val_len == 0U) ? "" : ",";
@@ -1151,8 +1153,8 @@ lsview_handler(OPT_OP op, optval_t val)
 	{
 		column_info_t column_info =
 		{
-			.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
 		};
 
 		columns_clear(curr_view->columns);
@@ -1256,9 +1258,9 @@ sort_handler(OPT_OP op, optval_t val)
 	}
 	while(*p != '\0');
 
-	if(i < SORT_OPTION_COUNT)
+	if(i < SK_COUNT)
 	{
-		curr_view->sort[i] = NO_SORT_OPTION;
+		curr_view->sort[i] = SK_NONE;
 	}
 	ui_view_sort_list_ensure_well_formed(curr_view->sort);
 

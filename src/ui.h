@@ -53,28 +53,28 @@
 #define FIELDS_WIDTH (INPUT_WIN_WIDTH + POS_WIN_WIDTH)
 
 /* New values should be added at the end of enumeration to do not brake sort
- * settings stored in vifminfo files.  Also LAST_SORT_OPTION and
- * SORT_OPTION_COUNT should be updated accordingly. */
+ * settings stored in vifminfo files.  Also SK_LAST and SK_COUNT should be
+ * updated accordingly. */
 typedef enum
 {
-	SORT_BY_EXTENSION = 1,
-	SORT_BY_NAME,
+	SK_BY_EXTENSION = 1,
+	SK_BY_NAME,
 #ifndef _WIN32
-	SORT_BY_GROUP_ID,
-	SORT_BY_GROUP_NAME,
-	SORT_BY_MODE,
-	SORT_BY_OWNER_ID,
-	SORT_BY_OWNER_NAME,
+	SK_BY_GROUP_ID,
+	SK_BY_GROUP_NAME,
+	SK_BY_MODE,
+	SK_BY_OWNER_ID,
+	SK_BY_OWNER_NAME,
 #endif
-	SORT_BY_SIZE,
-	SORT_BY_TIME_ACCESSED,
-	SORT_BY_TIME_CHANGED,
-	SORT_BY_TIME_MODIFIED,
-	SORT_BY_INAME,
+	SK_BY_SIZE,
+	SK_BY_TIME_ACCESSED,
+	SK_BY_TIME_CHANGED,
+	SK_BY_TIME_MODIFIED,
+	SK_BY_INAME,
 #ifndef _WIN32
-	SORT_BY_PERMISSIONS,
+	SK_BY_PERMISSIONS,
 #endif
-	SORT_BY_TYPE,
+	SK_BY_TYPE,
 }
 SortingKey;
 
@@ -82,19 +82,19 @@ enum
 {
 	/* Default sort key. */
 #ifndef _WIN32
-	DEFAULT_SORT_KEY = SORT_BY_NAME,
+	SK_DEFAULT = SK_BY_NAME,
 #else
-	DEFAULT_SORT_KEY = SORT_BY_INAME,
+	SK_DEFAULT = SK_BY_INAME,
 #endif
 
 	/* Value of the last sort option. */
-	LAST_SORT_OPTION = SORT_BY_TYPE,
+	SK_LAST = SK_BY_TYPE,
 
 	/* Number of sort options. */
-	SORT_OPTION_COUNT = LAST_SORT_OPTION,
+	SK_COUNT = SK_LAST,
 
 	/* Special value to use for unset options. */
-	NO_SORT_OPTION = LAST_SORT_OPTION + 1
+	SK_NONE = SK_LAST + 1
 };
 
 /* Type of file numbering. */
@@ -216,7 +216,7 @@ typedef struct
 	}
 	local_filter;
 
-	char sort[SORT_OPTION_COUNT];
+	char sort[SK_COUNT];
 
 	int history_num;
 	int history_pos;
@@ -335,9 +335,9 @@ void ui_views_update_titles(void);
 void ui_view_title_update(FileView *view);
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
-int ui_view_sort_list_contains(const char sort[SORT_OPTION_COUNT], char key);
+int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
 /* Ensures that list of sorting keys contains either "name" or "iname". */
-void ui_view_sort_list_ensure_well_formed(char sort[SORT_OPTION_COUNT]);
+void ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT]);
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
 int ui_view_displays_numbers(const FileView *const view);

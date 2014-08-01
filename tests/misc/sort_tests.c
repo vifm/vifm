@@ -40,8 +40,8 @@ teardown(void)
 static void
 test_special_chars_ignore_case_sort(void)
 {
-	lwin.sort[0] = SORT_BY_INAME;
-	memset(&lwin.sort[1], NO_SORT_OPTION, sizeof(lwin.sort) - 1);
+	lwin.sort[0] = SK_BY_INAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
 	sort_view(&lwin);
 

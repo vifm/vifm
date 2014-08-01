@@ -57,12 +57,12 @@ sort_view(FileView *v)
 	int i;
 
 	view = v;
-	i = SORT_OPTION_COUNT;
+	i = SK_COUNT;
 	while(--i >= 0)
 	{
 		const char sorting_key = view->sort[i];
 
-		if(abs(sorting_key) > LAST_SORT_OPTION)
+		if(abs(sorting_key) > SK_LAST)
 		{
 			continue;
 		}
@@ -70,9 +70,9 @@ sort_view(FileView *v)
 		sort_by_key(sorting_key);
 	}
 
-	if(!ui_view_sort_list_contains(v->sort, SORT_BY_TYPE))
+	if(!ui_view_sort_list_contains(v->sort, SK_BY_TYPE))
 	{
-		sort_by_key(SORT_BY_TYPE);
+		sort_by_key(SK_BY_TYPE);
 	}
 }
 
@@ -182,25 +182,25 @@ sort_dir_list(const void *one, const void *two)
 	retval = 0;
 	switch(sort_type)
 	{
-		case SORT_BY_NAME:
-		case SORT_BY_INAME:
+		case SK_BY_NAME:
+		case SK_BY_INAME:
 			if(first->name[0] == '.' && second->name[0] != '.')
 				retval = -1;
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
 				retval = compare_file_names(dirs, first->name, second->name,
-						sort_type == SORT_BY_INAME);
+						sort_type == SK_BY_INAME);
 			break;
 
-		case SORT_BY_TYPE:
+		case SK_BY_TYPE:
 			if(first_is_dir != second_is_dir)
 			{
 				retval = first_is_dir ? -1 : 1;
 			}
 			break;
 
-		case SORT_BY_EXTENSION:
+		case SK_BY_EXTENSION:
 			pfirst  = strrchr(first->name,  '.');
 			psecond = strrchr(second->name, '.');
 
@@ -212,7 +212,7 @@ sort_dir_list(const void *one, const void *two)
 				retval = compare_file_names(dirs, first->name, second->name, 0);
 			break;
 
-		case SORT_BY_SIZE:
+		case SK_BY_SIZE:
 			{
 				if(first_is_dir)
 					tree_get_data(curr_stats.dirsize_cache, first->name, &first->size);
@@ -225,33 +225,33 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 
-		case SORT_BY_TIME_MODIFIED:
+		case SK_BY_TIME_MODIFIED:
 			retval = first->mtime - second->mtime;
 			break;
 
-		case SORT_BY_TIME_ACCESSED:
+		case SK_BY_TIME_ACCESSED:
 			retval = first->atime - second->atime;
 			break;
 
-		case SORT_BY_TIME_CHANGED:
+		case SK_BY_TIME_CHANGED:
 			retval = first->ctime - second->ctime;
 			break;
 #ifndef _WIN32
-		case SORT_BY_MODE:
+		case SK_BY_MODE:
 			retval = first->mode - second->mode;
 			break;
 
-		case SORT_BY_OWNER_NAME: /* FIXME */
-		case SORT_BY_OWNER_ID:
+		case SK_BY_OWNER_NAME: /* FIXME */
+		case SK_BY_OWNER_ID:
 			retval = first->uid - second->uid;
 			break;
 
-		case SORT_BY_GROUP_NAME: /* FIXME */
-		case SORT_BY_GROUP_ID:
+		case SK_BY_GROUP_NAME: /* FIXME */
+		case SK_BY_GROUP_ID:
 			retval = first->gid - second->gid;
 			break;
 
-		case SORT_BY_PERMISSIONS:
+		case SK_BY_PERMISSIONS:
 			{
 				char first_perm[11], second_perm[11];
 				get_perm_string(first_perm, sizeof(first_perm), first->mode);
@@ -329,23 +329,23 @@ get_secondary_key(int primary_key)
 	switch(primary_key)
 	{
 #ifndef _WIN32
-		case SORT_BY_OWNER_NAME:
-		case SORT_BY_OWNER_ID:
-		case SORT_BY_GROUP_NAME:
-		case SORT_BY_GROUP_ID:
-		case SORT_BY_MODE:
-		case SORT_BY_PERMISSIONS:
+		case SK_BY_OWNER_NAME:
+		case SK_BY_OWNER_ID:
+		case SK_BY_GROUP_NAME:
+		case SK_BY_GROUP_ID:
+		case SK_BY_MODE:
+		case SK_BY_PERMISSIONS:
 #endif
-		case SORT_BY_TIME_MODIFIED:
-		case SORT_BY_TIME_ACCESSED:
-		case SORT_BY_TIME_CHANGED:
+		case SK_BY_TIME_MODIFIED:
+		case SK_BY_TIME_ACCESSED:
+		case SK_BY_TIME_CHANGED:
 			return primary_key;
-		case SORT_BY_NAME:
-		case SORT_BY_INAME:
-		case SORT_BY_EXTENSION:
-		case SORT_BY_SIZE:
+		case SK_BY_NAME:
+		case SK_BY_INAME:
+		case SK_BY_EXTENSION:
+		case SK_BY_SIZE:
 		default:
-			return SORT_BY_SIZE;
+			return SK_BY_SIZE;
 	}
 }
 
