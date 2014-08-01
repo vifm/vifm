@@ -55,7 +55,7 @@
 /* New values should be added at the end of enumeration to do not brake sort
  * settings stored in vifminfo files.  Also LAST_SORT_OPTION and
  * SORT_OPTION_COUNT should be updated accordingly. */
-enum
+typedef enum
 {
 	SORT_BY_EXTENSION = 1,
 	SORT_BY_NAME,
@@ -75,17 +75,24 @@ enum
 	SORT_BY_PERMISSIONS,
 #endif
 	SORT_BY_TYPE,
+}
+SortingKey;
 
+enum
+{
 	/* Default sort key. */
 #ifndef _WIN32
 	DEFAULT_SORT_KEY = SORT_BY_NAME,
 #else
 	DEFAULT_SORT_KEY = SORT_BY_INAME,
 #endif
+
 	/* Value of the last sort option. */
 	LAST_SORT_OPTION = SORT_BY_TYPE,
+
 	/* Number of sort options. */
 	SORT_OPTION_COUNT = LAST_SORT_OPTION,
+
 	/* Special value to use for unset options. */
 	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };

@@ -2013,13 +2013,13 @@ cmd_paren(int lb, int ub, int inc)
 #ifndef _WIN32
 	const char *mode_str = get_mode_str(pentry->mode);
 #endif
-	int sort_key = abs(curr_view->sort[0]);
+	const int sorting_key = abs(curr_view->sort[0]);
 	while(pos > lb && pos < ub)
 	{
 		dir_entry_t *nentry;
 		pos += inc;
 		nentry = &curr_view->dir_entry[pos];
-		switch(sort_key)
+		switch(sorting_key)
 		{
 			case SORT_BY_EXTENSION:
 				if(strcmp(get_last_ext(nentry->name), ext) != 0)
