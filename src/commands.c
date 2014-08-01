@@ -725,12 +725,24 @@ command_accepts_expr(int cmd_id)
 char *
 commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 {
-	if(is_out_of_arg(cmd_line, cmd_line + pos))
+	const CmdLineLocation ipt = get_cmdline_location(cmd_line, cmd_line + pos);
+	switch(ipt)
 	{
-		return escape_filename(str, 0);
+		case CLL_R_QUOTING:
+			/* XXX: Use of filename escape, while special one might be needed. */
+		case CLL_OUT_OF_ARG:
+		case CLL_NO_QUOTING:
+			return escape_filename(str, 0);
+
+		case CLL_S_QUOTING:
+			return escape_for_squotes(str);
+
+		case CLL_D_QUOTING:
+			return escape_for_dquotes(str);
+
+		default:
+			return NULL;
 	}
-	/* TODO: provide proper escaping for single and double quoted arguments. */
-	return NULL;
 }
 
 static void
