@@ -99,6 +99,14 @@ char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
  * on error default value of 1 is returned. */
 int vifm_wcwidth(wchar_t c);
 
+/* Escapes string for insertion into single quoted string.  Returns newly
+ * allocated string. */
+char * escape_for_squotes(const char string[]);
+
+/* Escapes string for insertion into double quoted string.  Returns newly
+ * allocated string. */
+char * escape_for_dquotes(const char string[]);
+
 /* Expands escape sequences from double quoted string (e.g. "\n") in place. */
 void expand_dquotes_escaping(char s[]);
 

@@ -32,7 +32,7 @@
 #include <ctype.h> /* isalnum() isalpha() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strdup() strchr() strlen() strpbrk() */
 #include <wchar.h> /* wcwidth() */
 
@@ -334,6 +334,64 @@ vifm_wcwidth(wchar_t wc)
 	{
 		return width;
 	}
+}
+
+char *
+escape_for_squotes(const char string[])
+{
+	size_t len;
+	char *escaped, *out;
+
+	len = strlen(string);
+
+	escaped = malloc(len*2 + 1);
+	out = escaped;
+
+	while(*string != '\0')
+	{
+		if(*string == '\'')
+		{
+			*out++ = '\'';
+		}
+
+		*out++ = *string++;
+	}
+	*out = '\0';
+	return escaped;
+}
+
+char *
+escape_for_dquotes(const char string[])
+{
+	size_t len;
+	char *escaped, *out;
+
+	len = strlen(string);
+
+	escaped = malloc(len*2 + 1);
+	out = escaped;
+
+	while(*string != '\0')
+	{
+		switch(*string)
+		{
+			case '\a': *out++ = '\\'; *out++ = 'a'; break;
+			case '\b': *out++ = '\\'; *out++ = 'b'; break;
+			case '\f': *out++ = '\\'; *out++ = 'f'; break;
+			case '\n': *out++ = '\\'; *out++ = 'n'; break;
+			case '\r': *out++ = '\\'; *out++ = 'r'; break;
+			case '\t': *out++ = '\\'; *out++ = 't'; break;
+			case '\v': *out++ = '\\'; *out++ = 'v'; break;
+			case '"':  *out++ = '\\'; *out++ = '"'; break;
+
+			default:
+				*out++ = *string;
+				break;
+		}
+		++string;
+	}
+	*out = '\0';
+	return escaped;
 }
 
 void
