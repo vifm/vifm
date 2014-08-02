@@ -735,10 +735,10 @@ commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 			return escape_filename(str, 0);
 
 		case CLL_S_QUOTING:
-			return escape_for_squotes(str);
+			return escape_for_squotes(str, 0);
 
 		case CLL_D_QUOTING:
-			return escape_for_dquotes(str);
+			return escape_for_dquotes(str, 0);
 
 		default:
 			return NULL;

@@ -2212,7 +2212,7 @@ escaped_arg_hook(const char match[])
 static char *
 squoted_arg_hook(const char match[])
 {
-	return escape_for_squotes(match);
+	return escape_for_squotes(match, 1);
 }
 
 /* Processes completion match for insertion into command-line as a value in
@@ -2220,7 +2220,7 @@ squoted_arg_hook(const char match[])
 static char *
 dquoted_arg_hook(const char match[])
 {
-	return escape_for_dquotes(match);
+	return escape_for_dquotes(match, 1);
 }
 
 static void

@@ -337,8 +337,10 @@ vifm_wcwidth(wchar_t wc)
 }
 
 char *
-escape_for_squotes(const char string[])
+escape_for_squotes(const char string[], size_t offset)
 {
+	/* TODO: maybe combine code with escape_for_dquotes(). */
+
 	size_t len;
 	char *escaped, *out;
 
@@ -346,6 +348,12 @@ escape_for_squotes(const char string[])
 
 	escaped = malloc(len*2 + 1);
 	out = escaped;
+
+	/* Copy prefix not escaping it. */
+	offset = MIN(len, offset);
+	strncpy(out, string, offset);
+	out += offset;
+	string += offset;
 
 	while(*string != '\0')
 	{
@@ -361,8 +369,10 @@ escape_for_squotes(const char string[])
 }
 
 char *
-escape_for_dquotes(const char string[])
+escape_for_dquotes(const char string[], size_t offset)
 {
+	/* TODO: maybe combine code with escape_for_squotes(). */
+
 	size_t len;
 	char *escaped, *out;
 
@@ -370,6 +380,12 @@ escape_for_dquotes(const char string[])
 
 	escaped = malloc(len*2 + 1);
 	out = escaped;
+
+	/* Copy prefix not escaping it. */
+	offset = MIN(len, offset);
+	strncpy(out, string, offset);
+	out += offset;
+	string += offset;
 
 	while(*string != '\0')
 	{
