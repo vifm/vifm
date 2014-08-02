@@ -92,7 +92,7 @@ static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
 static int complete_cmd_args(cmd_t *cur, const char args[],
-		cmd_info_t *cmd_info);
+		cmd_info_t *cmd_info, void *arg);
 static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
@@ -519,7 +519,7 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 }
 
 int
-complete_cmd(const char cmd[])
+complete_cmd(const char cmd[], void *arg)
 {
 	cmd_info_t cmd_info;
 	const char *begin, *cmd_name_pos;
@@ -549,7 +549,7 @@ complete_cmd(const char cmd[])
 		else
 		{
 			prefix_len += args - cmd;
-			prefix_len += complete_cmd_args(cur, args, &cmd_info);
+			prefix_len += complete_cmd_args(cur, args, &cmd_info, arg);
 		}
 	}
 
@@ -704,7 +704,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 
 /* Returns offset at which completion was done. */
 static int
-complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
+complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
+		void *arg)
 {
 	const char *tmp_args = args;
 	int result = 0;
@@ -733,7 +734,8 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
 		int last_arg = 0;
 
 		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL, NULL);
-		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg);
+		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg,
+				arg);
 		free_string_array(argv, argc);
 	}
 	return result;

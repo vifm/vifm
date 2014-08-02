@@ -87,7 +87,8 @@ static void complete_with_shared(const char *server, const char *file);
 #endif
 
 int
-complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
+complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
+		void *extra_arg)
 {
 	/* TODO: Refactor this function complete_args() */
 

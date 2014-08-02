@@ -44,8 +44,11 @@ typedef enum
 }
 CMD_LINE_SUBMODES;
 
-typedef void (*prompt_cb)(const char *renponse);
-typedef int (*complete_cmd_func)(const char *cmd);
+typedef void (*prompt_cb)(const char renponse[]);
+
+/* Custom prompt line completion function.  arg is user supplied value, which is
+ * passed through. */
+typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 
 void init_cmdline_mode(int *key_mode);
 

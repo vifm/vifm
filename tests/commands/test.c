@@ -11,7 +11,7 @@
 cmd_info_t user_cmd_info;
 
 static int complete_args(int id, const char *args, int argc, char **argv,
-		int arg_pos);
+		int arg_pos, void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char *str, int for_shell, int *usr1,
@@ -57,7 +57,8 @@ all_tests(void)
 }
 
 static int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
+complete_args(int id, const char *args, int argc, char **argv, int arg_pos,
+		void *extra_arg)
 {
 	const char *arg;
 

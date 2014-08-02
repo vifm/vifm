@@ -1,5 +1,6 @@
 #include <unistd.h> /* chdir() */
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
 
@@ -62,7 +63,7 @@ leave_spaces_at_begin(void)
 	char *buf;
 
 	reset_completion();
-	assert_int_equal(1, complete_cmd(" qui"));
+	assert_int_equal(1, complete_cmd(" qui", NULL));
 	buf = next_completion();
 	assert_string_equal("quit", buf);
 	free(buf);
@@ -77,19 +78,19 @@ only_user(void)
 	char *buf;
 
 	reset_completion();
-	assert_int_equal(8, complete_cmd("command "));
+	assert_int_equal(8, complete_cmd("command ", NULL));
 	buf = next_completion();
 	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
-	assert_int_equal(9, complete_cmd(" command "));
+	assert_int_equal(9, complete_cmd(" command ", NULL));
 	buf = next_completion();
 	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
-	assert_int_equal(10, complete_cmd("  command "));
+	assert_int_equal(10, complete_cmd("  command ", NULL));
 	buf = next_completion();
 	assert_string_equal("bar", buf);
 	free(buf);

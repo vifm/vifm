@@ -1,3 +1,4 @@
+#include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,7 +28,7 @@ test_empty_line_completion(void)
 	char *buf;
 
 	reset_completion();
-	assert_int_equal(0, complete_cmd(""));
+	assert_int_equal(0, complete_cmd("", NULL));
 
 	buf = next_completion();
 	assert_string_equal("!", buf);
@@ -44,7 +45,7 @@ test_set(void)
 	char *buf;
 
 	reset_completion();
-	assert_int_equal(0, complete_cmd("se"));
+	assert_int_equal(0, complete_cmd("se", NULL));
 
 	buf = next_completion();
 	assert_string_equal("set", buf);

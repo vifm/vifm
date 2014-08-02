@@ -2175,7 +2175,7 @@ line_completion(line_stats_t *stat)
 			}
 		}
 
-		offset = stat->complete(line_mb_cmd);
+		offset = stat->complete(line_mb_cmd, NULL);
 
 		compl_set_add_hook(NULL);
 	}
