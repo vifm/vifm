@@ -107,6 +107,9 @@ char * escape_for_squotes(const char string[], size_t offset);
  * quoted string, prefix is not escaped.  Returns newly allocated string. */
 char * escape_for_dquotes(const char string[], size_t offset);
 
+/* Expands double ' sequences from single quoted string in place. */
+void expand_squotes_escaping(char s[]);
+
 /* Expands escape sequences from double quoted string (e.g. "\n") in place. */
 void expand_dquotes_escaping(char s[]);
 

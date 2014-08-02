@@ -106,7 +106,6 @@ TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
 static int is_separator(char c, char sep);
 TSTATIC void unescape(char s[], int regexp);
-static void replace_double_squotes(char s[]);
 
 void
 init_cmds(int udf, cmds_conf_t *conf)
@@ -1174,7 +1173,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			if(prev_state == NO_QUOTING)
 				unescape(last_arg, (sep == ' ') ? 0 : 1);
 			else if(prev_state == S_QUOTING)
-				replace_double_squotes(last_arg);
+				expand_squotes_escaping(last_arg);
 			else if(prev_state == D_QUOTING)
 				expand_dquotes_escaping(last_arg);
 			else if(prev_state == R_QUOTING)
@@ -1228,30 +1227,6 @@ unescape(char s[], int regexp)
 		}
 	}
 	*p = '\0';
-}
-
-/* Replaces all '' with ' in place. */
-static void
-replace_double_squotes(char s[])
-{
-	char *p;
-	int sq_found;
-
-	p = s++;
-	sq_found = *p == '\'';
-	while(*p != '\0')
-	{
-		if(*s == '\'' && sq_found)
-		{
-			sq_found = 0;
-		}
-		else
-		{
-			*++p = *s;
-			sq_found = *s == '\'';
-		}
-		s++;
-	}
 }
 
 char **

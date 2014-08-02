@@ -411,6 +411,29 @@ escape_for_dquotes(const char string[], size_t offset)
 }
 
 void
+expand_squotes_escaping(char s[])
+{
+	char *p;
+	int sq_found;
+
+	p = s++;
+	sq_found = *p == '\'';
+	while(*p != '\0')
+	{
+		if(*s == '\'' && sq_found)
+		{
+			sq_found = 0;
+		}
+		else
+		{
+			*++p = *s;
+			sq_found = *s == '\'';
+		}
+		s++;
+	}
+}
+
+void
 expand_dquotes_escaping(char s[])
 {
 	static const char table[] =
