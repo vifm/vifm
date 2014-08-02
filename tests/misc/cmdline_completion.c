@@ -1,3 +1,5 @@
+#include <unistd.h> /* chdir() */
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,11 +42,15 @@ setup(void)
 
 	init_options(&option_changed);
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, def);
+
+	assert_int_equal(0, chdir("test-data/existing-files"));
 }
 
 static void
 teardown(void)
 {
+	assert_int_equal(0, chdir("../.."));
+
 	free(stats.line);
 	reset_cmds();
 	clear_options();
@@ -97,6 +103,66 @@ test_set_completion(void)
 	assert_true(wcscmp(stats.line, L"set all") == 0);
 }
 
+static void
+test_no_sdquoted_completion_does_nothing(void)
+{
+	free(stats.line);
+	stats.line = wcsdup(L"command '");
+	stats.len = wcslen(stats.line);
+	stats.index = stats.len;
+
+	reset_completion();
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"command '"));
+}
+
+static void
+prepare_for_line_completion(const wchar_t str[])
+{
+	free(stats.line);
+	stats.line = wcsdup(str);
+	stats.len = wcslen(stats.line);
+	stats.index = stats.len;
+
+	reset_completion();
+}
+
+static void
+test_squoted_completion(void)
+{
+	prepare_for_line_completion(L"touch '");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch 'a"));
+}
+
+static void
+test_squoted_completion_escaping(void)
+{
+	assert_int_equal(0, chdir("../quotes-in-names"));
+
+	prepare_for_line_completion(L"touch 's-quote");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch 's-quote-''-in-name"));
+}
+
+static void
+test_dquoted_completion(void)
+{
+	prepare_for_line_completion(L"touch 'b");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch 'b"));
+}
+
+static void
+test_dquoted_completion_escaping(void)
+{
+	assert_int_equal(0, chdir("../quotes-in-names"));
+
+	prepare_for_line_completion(L"touch \"d-quote");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
+}
+
 void
 test_cmdline_completion(void)
 {
@@ -108,6 +174,11 @@ test_cmdline_completion(void)
 	run_test(leave_spaces_at_begin);
 	run_test(only_user);
 	run_test(test_set_completion);
+	run_test(test_no_sdquoted_completion_does_nothing);
+	run_test(test_squoted_completion);
+	run_test(test_squoted_completion_escaping);
+	run_test(test_dquoted_completion);
+	run_test(test_dquoted_completion_escaping);
 
 	test_fixture_end();
 }

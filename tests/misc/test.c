@@ -43,6 +43,7 @@ void split_ext_tests(void);
 void parse_spec_tests(void);
 void minmax_tests(void);
 void ui_view_schedule_tests(void);
+void string_escape_tests(void);
 
 void
 all_tests(void)
@@ -90,6 +91,7 @@ all_tests(void)
 	parse_spec_tests();
 	minmax_tests();
 	ui_view_schedule_tests();
+	string_escape_tests();
 }
 
 int
