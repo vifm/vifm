@@ -66,7 +66,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos,
 	add_completion("followlinks");
 	add_completion("fastrun");
 	completion_group_end();
-	add_completion("f");
+	add_last_match("f");
 
 	arg = strrchr(args, ' ');
 	if(arg == NULL)

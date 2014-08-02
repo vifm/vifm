@@ -705,7 +705,7 @@ complete_colorschemes(const char name[])
 	free_string_array(schemes, schemes_len);
 
 	completion_group_end();
-	add_completion(name);
+	add_last_match(name);
 }
 
 const char *

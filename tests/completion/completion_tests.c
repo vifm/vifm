@@ -13,7 +13,7 @@ test_general(void)
 	assert_int_equal(0, add_completion("acd"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	buf = next_completion();
 	assert_string_equal("abc", buf);
@@ -41,7 +41,7 @@ test_sorting(void)
 	assert_int_equal(0, add_completion("abc"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	buf = next_completion();
 	assert_string_equal("abc", buf);
@@ -88,7 +88,7 @@ test_one_unambiguous_completion(void)
 	assert_int_equal(0, add_completion("abcd"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	buf = next_completion();
 	assert_string_equal("abcd", buf);
@@ -106,7 +106,7 @@ test_rewind_one_unambiguous_completion(void)
 	assert_int_equal(0, add_completion("abcd"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	buf = next_completion();
 	assert_string_equal("abcd", buf);
@@ -134,7 +134,7 @@ test_rewind(void)
 	assert_int_equal(0, add_completion("abc"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	buf = next_completion();
 	assert_string_equal("abc", buf);
@@ -180,7 +180,7 @@ test_order(void)
 	assert_int_equal(0, add_completion("az"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("a"));
+	assert_int_equal(0, add_last_match("a"));
 
 	set_completion_order(1);
 
@@ -207,7 +207,7 @@ test_umbiguous_begin(void)
 	assert_int_equal(0, add_completion("sortnumbers"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("sort"));
+	assert_int_equal(0, add_last_match("sort"));
 
 	buf = next_completion();
 	assert_string_equal("sort", buf);
@@ -240,7 +240,7 @@ test_two_matches(void)
 	assert_int_equal(0, add_completion("mount"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("mount"));
+	assert_int_equal(0, add_last_match("mount"));
 
 	buf = next_completion();
 	assert_string_equal("mountpoint", buf);
@@ -269,7 +269,7 @@ test_removes_duplicates(void)
 	assert_int_equal(0, add_completion("mount"));
 	completion_group_end();
 
-	assert_int_equal(0, add_completion("m"));
+	assert_int_equal(0, add_last_match("m"));
 
 	buf = next_completion();
 	assert_string_equal("mou", buf);

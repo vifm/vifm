@@ -998,11 +998,11 @@ complete_options(const char args[], const char **start)
 	completion_group_end();
 	if(opt != NULL && opt->type == OPT_CHARSET)
 	{
-		add_completion("");
+		add_last_match("");
 	}
 	else
 	{
-		add_completion(is_value_completion ? p : buf);
+		add_last_match(is_value_completion ? p : buf);
 	}
 }
 
