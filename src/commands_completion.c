@@ -177,12 +177,12 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 			arg_num = argc - 1;
 			arg = argv[arg_num];
 		}
-		else if(args[arg_pos] == '"' && !ends_with(args, "\""))
+		else if(args[arg_pos] == '"' && !ends_with(args + 1, "\""))
 		{
 			arg = args + arg_pos + 1;
 			start = (slash == NULL) ? arg : (slash + 1);
 		}
-		else if(args[arg_pos] == '\'' && !ends_with(args, "'"))
+		else if(args[arg_pos] == '\'' && !ends_with(args + 1, "'"))
 		{
 			arg = args + arg_pos + 1;
 			start = (slash == NULL) ? arg : (slash + 1);
