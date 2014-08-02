@@ -75,6 +75,14 @@ typedef enum
 }
 CompletionType;
 
+typedef enum
+{
+	CPP_NONE,
+	CPP_SQUOTES_UNESCAPE,
+	CPP_DQUOTES_UNESCAPE,
+}
+CompletionPreProcessing;
+
 /* argv isn't array of pointers to constant strings to omit type conversion. */
 int complete_args(int id, const char args[], int argc, char *argv[],
 		int arg_pos, void *extra_arg);

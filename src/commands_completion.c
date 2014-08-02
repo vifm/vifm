@@ -158,6 +158,7 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 	}
 	else
 	{
+		char *free_me = NULL;
 		size_t arg_num = argc;
 		start = slash;
 		if(start == NULL)
@@ -178,7 +179,8 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			arg_num = argc - 1;
 			arg = argv[arg_num];
 		}
-		else if(args[arg_pos] == '"' && !ends_with(args + 1, "\""))
+
+		if(args[arg_pos] == '"' && !ends_with(args + 1, "\""))
 		{
 			arg = args + arg_pos + 1;
 			start = (slash == NULL) ? arg : (slash + 1);
@@ -188,6 +190,23 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			arg = args + arg_pos + 1;
 			start = (slash == NULL) ? arg : (slash + 1);
 		}
+
+		switch((CompletionPreProcessing)extra_arg)
+		{
+			case CPP_NONE:
+				/* Do nothing. */
+				break;
+			case CPP_SQUOTES_UNESCAPE:
+				free_me = strdup(arg);
+				expand_squotes_escaping(free_me);
+				arg = free_me;
+				break;
+			case CPP_DQUOTES_UNESCAPE:
+				free_me = strdup(arg);
+				expand_dquotes_escaping(free_me);
+				arg = free_me;
+				break;
+		};
 
 		if(id == COM_COLORSCHEME)
 		{
@@ -232,6 +251,8 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 		{
 			filename_completion(arg, CT_ALL);
 		}
+
+		free(free_me);
 	}
 
 	return start - args;

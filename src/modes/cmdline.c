@@ -45,6 +45,7 @@
 #include "../color_scheme.h"
 #include "../colors.h"
 #include "../commands.h"
+#include "../commands_completion.h"
 #include "../filelist.h"
 #include "../search.h"
 #include "../status.h"
@@ -2126,6 +2127,7 @@ line_completion(line_stats_t *stat)
 		int i;
 		void *p;
 		wchar_t t;
+		CompletionPreProcessing compl_func_arg;
 
 		/* only complete the part before the cursor
 		 * so just copy that part to line_mb */
@@ -2150,6 +2152,7 @@ line_completion(line_stats_t *stat)
 
 		reset_completion();
 
+		compl_func_arg = CPP_NONE;
 		if(sub_mode == CMD_SUBMODE)
 		{
 			const CmdLineLocation ipt = get_cmdline_location(line_mb, line_mb + i);
@@ -2162,11 +2165,12 @@ line_completion(line_stats_t *stat)
 
 				case CLL_S_QUOTING:
 					compl_set_add_hook(&squoted_arg_hook);
+					compl_func_arg = CPP_SQUOTES_UNESCAPE;
 					break;
 
 				case CLL_D_QUOTING:
 					compl_set_add_hook(&dquoted_arg_hook);
-					expand_dquotes_escaping(line_mb_cmd);
+					compl_func_arg = CPP_DQUOTES_UNESCAPE;
 					break;
 
 				case CLL_R_QUOTING:
@@ -2175,7 +2179,7 @@ line_completion(line_stats_t *stat)
 			}
 		}
 
-		offset = stat->complete(line_mb_cmd, NULL);
+		offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
 
 		compl_set_add_hook(NULL);
 	}
