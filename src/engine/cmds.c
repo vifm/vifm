@@ -1075,7 +1075,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	len = strlen(cmdstr);
 	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
 	{
-		int prev_state = state;
+		const int prev_state = state;
 		switch(state)
 		{
 			case BEGIN:
@@ -1172,14 +1172,13 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			last_arg = params[*count - 1];
 
 			cmdstr[i] = c;
-			if(prev_state == NO_QUOTING)
-				unescape(last_arg, (sep == ' ') ? 0 : 1);
-			else if(prev_state == S_QUOTING)
-				expand_squotes_escaping(last_arg);
-			else if(prev_state == D_QUOTING)
-				expand_dquotes_escaping(last_arg);
-			else if(prev_state == R_QUOTING)
-				unescape(last_arg, 1);
+			switch(prev_state)
+			{
+				case NO_QUOTING: unescape(last_arg, sep != ' ');    break;
+				case  S_QUOTING: expand_squotes_escaping(last_arg); break;
+				case  D_QUOTING: expand_dquotes_escaping(last_arg); break;
+				case  R_QUOTING: unescape(last_arg, 1);             break;
+			}
 			state = BEGIN;
 		}
 	}
