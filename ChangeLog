@@ -107,6 +107,10 @@
 	Implement "(" and ")" keys for "perms" and "type" sorting keys.  Thanks to
 	filterfalse.
 
+	Smart paths completion that allows completion of quoted arguments (both '
+	and " types of quotes) and considers argument type context by performing
+	escaping when needed.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
