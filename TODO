@@ -185,3 +185,4 @@ Code improvements.
     put_competion() function that doesn't duplicate string parameter.
     Maybe move cancellation out of ui.c.
     Separate filelist data from view data (extract into separate structure).
+    Create separate utilities for engine/ part to make them self-consistent.

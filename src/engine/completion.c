@@ -21,7 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* qsort() */
-#include <string.h>
+#include <string.h> /* strdup() */
 
 #include "../utils/macros.h"
 #include "../utils/str.h"
@@ -39,6 +39,7 @@ static int count;
 static int curr = -1;
 static int group_begin;
 static int order;
+static compl_add_hook_f add_hook = &strdup;
 
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
@@ -68,8 +69,10 @@ add_completion(const char *completion)
 		return -1;
 	lines = p;
 
-	if((lines[count] = strdup(completion)) == NULL)
+	if((lines[count] = add_hook(completion)) == NULL)
+	{
 		return -1;
+	}
 
 	count++;
 	state = FILLING_LIST;
@@ -213,6 +216,12 @@ rewind_completion(void)
 		curr = 1;
 	else if(count > 2)
 		curr = count - 2;
+}
+
+void
+compl_set_add_hook(compl_add_hook_f hook)
+{
+	add_hook = (hook == NULL) ? &strdup : hook;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

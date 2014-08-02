@@ -135,6 +135,8 @@ TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int cmd_should_be_processed(int cmd_id);
 static int is_out_of_arg(const char cmd[], const char pos[]);
+TSTATIC int line_pos(const char begin[], const char end[], char sep,
+		int rquoting);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
 
@@ -723,12 +725,24 @@ command_accepts_expr(int cmd_id)
 char *
 commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 {
-	if(is_out_of_arg(cmd_line, cmd_line + pos))
+	const CmdLineLocation ipt = get_cmdline_location(cmd_line, cmd_line + pos);
+	switch(ipt)
 	{
-		return escape_filename(str, 0);
+		case CLL_R_QUOTING:
+			/* XXX: Use of filename escape, while special one might be needed. */
+		case CLL_OUT_OF_ARG:
+		case CLL_NO_QUOTING:
+			return escape_filename(str, 0);
+
+		case CLL_S_QUOTING:
+			return escape_for_squotes(str, 0);
+
+		case CLL_D_QUOTING:
+			return escape_for_dquotes(str, 0);
+
+		default:
+			return NULL;
 	}
-	/* TODO: provide proper escaping for single and double quoted arguments. */
-	return NULL;
 }
 
 static void
@@ -1029,12 +1043,13 @@ cmd_should_be_processed(int cmd_id)
 	}
 }
 
-/*
- * Return value:
- *  - 0 not in arg
- *  - 1 skip next char
- *  - 2 in arg
- */
+/* Determines current position in the command line.  Returns:
+ *  - 0, if not inside an argument;
+ *  - 1, if next character should be skipped (XXX: what does it mean?);
+ *  - 2, if inside escaped argument;
+ *  - 3, if inside single quoted argument;
+ *  - 4, if inside double quoted argument;
+ *  - 5, if inside regexp quoted argument. */
 TSTATIC int
 line_pos(const char begin[], const char end[], char sep, int rquoting)
 {
@@ -1119,7 +1134,17 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	}
 	else if(state != BEGIN)
 	{
-		return 2; /* error: no closing quote */
+		/* "Error": no closing quote. */
+		switch(state)
+		{
+			case S_QUOTING: return 3;
+			case D_QUOTING: return 4;
+			case R_QUOTING: return 5;
+
+			default:
+				assert(0 && "Unexpected state.");
+				break;
+		}
 	}
 	else if(sep != ' ' && count > 0 && *end != sep)
 		return 2;
@@ -1214,6 +1239,12 @@ exec_commands(const char cmd[], FileView *view, int type)
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
+	return get_cmdline_location(cmd, pos) == CLL_OUT_OF_ARG;
+}
+
+CmdLineLocation
+get_cmdline_location(const char cmd[], const char pos[])
+{
 	char separator;
 	int regex_quoting;
 
@@ -1238,7 +1269,19 @@ is_out_of_arg(const char cmd[], const char pos[])
 			break;
 	}
 
-	return line_pos(cmd, pos, separator, regex_quoting) == 0;
+	switch(line_pos(cmd, pos, separator, regex_quoting))
+	{
+		case 0: return CLL_OUT_OF_ARG;
+		case 1: /* Fall through. */
+		case 2: return CLL_NO_QUOTING;
+		case 3: return CLL_S_QUOTING;
+		case 4: return CLL_D_QUOTING;
+		case 5: return CLL_R_QUOTING;
+
+		default:
+			assert(0 && "Unexpected return code.");
+			return CLL_NO_QUOTING;
+	}
 }
 
 static int

@@ -41,6 +41,17 @@ enum
 	GET_PROMPT_INPUT,
 };
 
+/* Type of location on the command-line string. */
+typedef enum
+{
+	CLL_OUT_OF_ARG, /* Not inside an argument. */
+	CLL_NO_QUOTING, /* Inside escaped argument. */
+	CLL_S_QUOTING,  /* Inside single quoted argument. */
+	CLL_D_QUOTING,  /* Inside double quoted argument. */
+	CLL_R_QUOTING,  /* Inside regexp quoted argument. */
+}
+CmdLineLocation;
+
 void init_commands(void);
 
 /* Executes one or more commands separated by a bar.  Returns zero on success if
@@ -91,6 +102,10 @@ int command_accepts_expr(int cmd_id);
  * escaped string or NULL when no escaping is needed. */
 char * commands_escape_for_insertion(const char cmd_line[], int pos,
 		const char str[]);
+
+/* Analyzes position on the command-line.  pos should point to some position of
+ * cmd.  Returns where current position in the command line is. */
+CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
 
 #ifdef TEST
 #include "engine/cmds.h"

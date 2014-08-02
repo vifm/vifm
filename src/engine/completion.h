@@ -19,6 +19,10 @@
 #ifndef VIFM__ENGINE__COMPLETION_H__
 #define VIFM__ENGINE__COMPLETION_H__
 
+/* Match addition hook function signature.  Must return newly allocated
+ * string. */
+typedef char * (*compl_add_hook_f)(const char match[]);
+
 /* Returns zero on success. */
 int add_completion(const char *completion);
 
@@ -43,6 +47,9 @@ int get_completion_pos(void);
 
 /* Go to the last item (probably to user input). */
 void rewind_completion(void);
+
+/* Sets match addition hook.  NULL value resets hook. */
+void compl_set_add_hook(compl_add_hook_f hook);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
 

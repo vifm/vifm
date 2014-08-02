@@ -25,7 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcswidth() */
 #include <wctype.h>
@@ -45,6 +45,7 @@
 #include "../color_scheme.h"
 #include "../colors.h"
 #include "../commands.h"
+#include "../commands_completion.h"
 #include "../filelist.h"
 #include "../search.h"
 #include "../status.h"
@@ -186,6 +187,9 @@ static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 TSTATIC int line_completion(line_stats_t *stat);
+static char * escaped_arg_hook(const char match[]);
+static char * squoted_arg_hook(const char match[]);
+static char * dquoted_arg_hook(const char match[]);
 static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
@@ -2123,6 +2127,7 @@ line_completion(line_stats_t *stat)
 		int i;
 		void *p;
 		wchar_t t;
+		CompletionPreProcessing compl_func_arg;
 
 		/* only complete the part before the cursor
 		 * so just copy that part to line_mb */
@@ -2131,21 +2136,52 @@ line_completion(line_stats_t *stat)
 
 		i = wcstombs(NULL, stat->line, 0) + 1;
 
-		if((p = realloc(line_mb, i * sizeof(char))) == NULL)
+		p = realloc(line_mb, i);
+		if(p == NULL)
 		{
 			free(line_mb);
 			line_mb = NULL;
 			return -1;
 		}
+		line_mb = p;
 
-		line_mb = (char *)p;
 		wcstombs(line_mb, stat->line, i);
 		line_mb_cmd = find_last_command(line_mb);
 
 		stat->line[stat->index] = t;
 
 		reset_completion();
-		offset = stat->complete(line_mb_cmd);
+
+		compl_func_arg = CPP_NONE;
+		if(sub_mode == CMD_SUBMODE)
+		{
+			const CmdLineLocation ipt = get_cmdline_location(line_mb, line_mb + i);
+			switch(ipt)
+			{
+				case CLL_OUT_OF_ARG:
+				case CLL_NO_QUOTING:
+					compl_set_add_hook(&escaped_arg_hook);
+					break;
+
+				case CLL_S_QUOTING:
+					compl_set_add_hook(&squoted_arg_hook);
+					compl_func_arg = CPP_SQUOTES_UNESCAPE;
+					break;
+
+				case CLL_D_QUOTING:
+					compl_set_add_hook(&dquoted_arg_hook);
+					compl_func_arg = CPP_DQUOTES_UNESCAPE;
+					break;
+
+				case CLL_R_QUOTING:
+					assert(0 && "Unexpected completion inside regexp argument.");
+					break;
+			}
+		}
+
+		offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
+
+		compl_set_add_hook(NULL);
 	}
 
 	set_completion_order(input_stat.reverse_completion);
@@ -2161,6 +2197,34 @@ line_completion(line_stats_t *stat)
 		stat->complete_continue = 1;
 
 	return result;
+}
+
+/* Processes completion match for insertion into command-line as escaped value.
+ * Returns newly allocated string. */
+static char *
+escaped_arg_hook(const char match[])
+{
+#ifndef _WIN32
+	return escape_filename(match, 1);
+#else
+	return strdup(escape_for_cd(match));
+#endif
+}
+
+/* Processes completion match for insertion into command-line as a value in
+ * single quotes.  Returns newly allocated string. */
+static char *
+squoted_arg_hook(const char match[])
+{
+	return escape_for_squotes(match, 1);
+}
+
+/* Processes completion match for insertion into command-line as a value in
+ * double quotes.  Returns newly allocated string. */
+static char *
+dquoted_arg_hook(const char match[])
+{
+	return escape_for_dquotes(match, 1);
 }
 
 static void

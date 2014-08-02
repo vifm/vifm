@@ -365,6 +365,27 @@ attr_str_long(DWORD attr)
 	return buf;
 }
 
+const char *
+escape_for_cd(const char str[])
+{
+	static char buf[PATH_MAX*2];
+	char *p;
+
+	p = buf;
+	while(*str != '\0')
+	{
+		if(char_is_one_of("\\ $", *str))
+			*p++ = '\\';
+		else if(*str == '%')
+			*p++ = '%';
+		*p++ = *str;
+
+		str++;
+	}
+	*p = '\0';
+	return buf;
+}
+
 int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {

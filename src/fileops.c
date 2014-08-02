@@ -110,7 +110,17 @@ TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 TSTATIC const char * add_to_name(const char filename[], int k);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
+#ifndef _WIN32
+static int complete_owner(const char str[], void *arg);
+#endif
 static int is_file_name_changed(const char old[], const char new[]);
+static void change_owner_cb(const char new_owner[]);
+#ifndef _WIN32
+static int complete_group(const char str[], void *arg);
+#endif
+#ifndef _WIN32
+static int complete_filename(const char str[], void *arg);
+#endif
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
@@ -520,7 +530,7 @@ rename_file_cb(const char new_name[])
 }
 
 static int
-complete_filename_only(const char *str)
+complete_filename_only(const char str[], void *arg)
 {
 	filename_completion(str, CT_FILE_WOE);
 	return 0;
@@ -1133,6 +1143,31 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 }
 #endif
 
+void
+change_owner(void)
+{
+	if(curr_view->selected_filelist == 0)
+	{
+		curr_view->dir_entry[curr_view->list_pos].selected = 1;
+		curr_view->selected_files = 1;
+	}
+	clean_selected_files(curr_view);
+#ifndef _WIN32
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner, 0);
+#else
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL, 0);
+#endif
+}
+
+#ifndef _WIN32
+static int
+complete_owner(const char str[], void *arg)
+{
+	complete_user_name(str);
+	return 0;
+}
+#endif
+
 static void
 change_owner_cb(const char new_owner[])
 {
@@ -1152,31 +1187,6 @@ change_owner_cb(const char new_owner[])
 	}
 
 	chown_files(1, 0, uid, 0);
-#endif
-}
-
-#ifndef _WIN32
-static int
-complete_owner(const char *str)
-{
-	complete_user_name(str);
-	return 0;
-}
-#endif
-
-void
-change_owner(void)
-{
-	if(curr_view->selected_filelist == 0)
-	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files = 1;
-	}
-	clean_selected_files(curr_view);
-#ifndef _WIN32
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner, 0);
-#else
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL, 0);
 #endif
 }
 
@@ -1202,15 +1212,6 @@ change_group_cb(const char new_group[])
 #endif
 }
 
-#ifndef _WIN32
-static int
-complete_group(const char *str)
-{
-	complete_group_name(str);
-	return 0;
-}
-#endif
-
 void
 change_group(void)
 {
@@ -1226,6 +1227,15 @@ change_group(void)
 	enter_prompt_mode(L"New group: ", "", change_group_cb, NULL, 0);
 #endif
 }
+
+#ifndef _WIN32
+static int
+complete_group(const char str[], void *arg)
+{
+	complete_group_name(str);
+	return 0;
+}
+#endif
 
 static void
 change_link_cb(const char new_target[])
@@ -1263,14 +1273,6 @@ change_link_cb(const char new_target[])
 	cmd_group_end();
 }
 
-static int
-complete_filename(const char *str)
-{
-	const char *name_begin = after_last(str, '/');
-	filename_completion(str, CT_ALL_WOE);
-	return name_begin - str;
-}
-
 int
 change_link(FileView *view)
 {
@@ -1302,6 +1304,14 @@ change_link(FileView *view)
 	enter_prompt_mode(L"Link target: ", linkto, change_link_cb,
 			&complete_filename, 0);
 	return 0;
+}
+
+static int
+complete_filename(const char str[], void *arg)
+{
+	const char *name_begin = after_last(str, '/');
+	filename_completion(str, CT_ALL_WOE);
+	return name_begin - str;
 }
 
 static void

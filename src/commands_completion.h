@@ -75,9 +75,17 @@ typedef enum
 }
 CompletionType;
 
+typedef enum
+{
+	CPP_NONE,
+	CPP_SQUOTES_UNESCAPE,
+	CPP_DQUOTES_UNESCAPE,
+}
+CompletionPreProcessing;
+
 /* argv isn't array of pointers to constant strings to omit type conversion. */
 int complete_args(int id, const char args[], int argc, char *argv[],
-		int arg_pos);
+		int arg_pos, void *extra_arg);
 
 /* Completes name of an executable after extracting it from the cmd.  Returns
  * NULL and sets statusbar error message when command is ambiguous, otherwise

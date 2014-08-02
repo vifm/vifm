@@ -55,12 +55,15 @@ int is_win_executable(const char name[]);
 int is_vista_and_above(void);
 
 /* Converts Windows attributes to a string.
- * Returns pointer to a statically allocated buffer */
+ * Returns pointer to a statically allocated buffer. */
 const char * attr_str(DWORD attr);
 
 /* Converts Windows attributes to a long string containing all attribute values.
- * Returns pointer to a statically allocated buffer */
+ * Returns pointer to a statically allocated buffer. */
 const char * attr_str_long(DWORD attr);
+
+/* Returns pointer to a statically allocated buffer. */
+const char * escape_for_cd(const char str[]);
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 

@@ -92,7 +92,7 @@ static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
 static int complete_cmd_args(cmd_t *cur, const char args[],
-		cmd_info_t *cmd_info);
+		cmd_info_t *cmd_info, void *arg);
 static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
@@ -106,8 +106,6 @@ TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
 static int is_separator(char c, char sep);
 TSTATIC void unescape(char s[], int regexp);
-static void replace_double_squotes(char s[]);
-static void replace_esc(char s[]);
 
 void
 init_cmds(int udf, cmds_conf_t *conf)
@@ -521,7 +519,7 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 }
 
 int
-complete_cmd(const char cmd[])
+complete_cmd(const char cmd[], void *arg)
 {
 	cmd_info_t cmd_info;
 	const char *begin, *cmd_name_pos;
@@ -551,7 +549,7 @@ complete_cmd(const char cmd[])
 		else
 		{
 			prefix_len += args - cmd;
-			prefix_len += complete_cmd_args(cur, args, &cmd_info);
+			prefix_len += complete_cmd_args(cur, args, &cmd_info, arg);
 		}
 	}
 
@@ -706,7 +704,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 
 /* Returns offset at which completion was done. */
 static int
-complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
+complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
+		void *arg)
 {
 	const char *tmp_args = args;
 	int result = 0;
@@ -735,7 +734,8 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
 		int last_arg = 0;
 
 		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL, NULL);
-		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg);
+		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg,
+				arg);
 		free_string_array(argv, argc);
 	}
 	return result;
@@ -1075,7 +1075,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	len = strlen(cmdstr);
 	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
 	{
-		int prev_state = state;
+		const int prev_state = state;
 		switch(state)
 		{
 			case BEGIN:
@@ -1172,14 +1172,13 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			last_arg = params[*count - 1];
 
 			cmdstr[i] = c;
-			if(prev_state == NO_QUOTING)
-				unescape(last_arg, (sep == ' ') ? 0 : 1);
-			else if(prev_state == S_QUOTING)
-				replace_double_squotes(last_arg);
-			else if(prev_state == D_QUOTING)
-				replace_esc(last_arg);
-			else if(prev_state == R_QUOTING)
-				unescape(last_arg, 1);
+			switch(prev_state)
+			{
+				case NO_QUOTING: unescape(last_arg, sep != ' ');    break;
+				case  S_QUOTING: expand_squotes_escaping(last_arg); break;
+				case  D_QUOTING: expand_dquotes_escaping(last_arg); break;
+				case  R_QUOTING: unescape(last_arg, 1);             break;
+			}
 			state = BEGIN;
 		}
 	}
@@ -1227,74 +1226,6 @@ unescape(char s[], int regexp)
 		{
 			s++;
 		}
-	}
-	*p = '\0';
-}
-
-/* Replaces all '' with ' in place. */
-static void
-replace_double_squotes(char s[])
-{
-	char *p;
-	int sq_found;
-
-	p = s++;
-	sq_found = *p == '\'';
-	while(*p != '\0')
-	{
-		if(*s == '\'' && sq_found)
-		{
-			sq_found = 0;
-		}
-		else
-		{
-			*++p = *s;
-			sq_found = *s == '\'';
-		}
-		s++;
-	}
-}
-
-static void
-replace_esc(char s[])
-{
-	static const char table[] =
-						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
-	/* 00 */	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
-	/* 10 */	"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
-	/* 20 */	"\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f"
-	/* 30 */	"\x00\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f"
-	/* 40 */	"\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f"
-	/* 50 */	"\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f"
-	/* 60 */	"\x60\x07\x0b\x63\x64\x65\x0c\x67\x68\x69\x6a\x6b\x6c\x6d\x0a\x6f"
-	/* 70 */	"\x70\x71\x0d\x73\x09\x75\x0b\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
-	/* 80 */	"\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
-	/* 90 */	"\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
-	/* a0 */	"\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
-	/* b0 */	"\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
-	/* c0 */	"\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf"
-	/* d0 */	"\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf"
-	/* e0 */	"\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
-	/* f0 */	"\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
-
-	char *str = s;
-	char *p;
-
-	p = s;
-	while(*s != '\0')
-	{
-		if(*s != '\\')
-		{
-			*p++ = *s++;
-			continue;
-		}
-		s++;
-		if(*s == '\0')
-		{
-			LOG_ERROR_MSG("Escaped eol in \"%s\"", str);
-			break;
-		}
-		*p++ = table[(int)*s++];
 	}
 	*p = '\0';
 }

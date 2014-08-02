@@ -97,8 +97,11 @@ typedef struct
 	int current;
 	int end;
 
+	/* Argument completion function.  arg is user supplied value, which is passed
+	 * through. */
 	int (*complete_args)(int id, const char args[], int argc, char *argv[],
-			int arg_pos);
+			int arg_pos, void *arg);
+
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	/* should allocate memory */
@@ -126,7 +129,7 @@ int get_cmd_id(const char cmd[]);
 int get_cmd_info(const char cmd[], cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted. */
-int complete_cmd(const char cmd[]);
+int complete_cmd(const char cmd[], void *arg);
 
 void add_builtin_commands(const cmd_add_t *cmds, int count);
 
