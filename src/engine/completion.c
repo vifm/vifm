@@ -39,8 +39,10 @@ static int count;
 static int curr = -1;
 static int group_begin;
 static int order;
-static compl_add_hook_f add_hook = &strdup;
+static compl_add_hook_f add_hook;
 
+static char * pre_process_match(const char str[], int with_hook);
+static int add_completion_item(const char completion[], int with_hook);
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
 static size_t remove_duplicates(char **arr, size_t count);
@@ -61,6 +63,18 @@ reset_completion(void)
 int
 add_completion(const char *completion)
 {
+	return add_completion_item(completion, 1);
+}
+
+int
+add_last_match(const char origin[])
+{
+	return add_completion_item(origin, 0);
+}
+
+static int
+add_completion_item(const char completion[], int with_hook)
+{
 	char **p;
 	assert(state != COMPLETING);
 
@@ -69,7 +83,8 @@ add_completion(const char *completion)
 		return -1;
 	lines = p;
 
-	if((lines[count] = add_hook(completion)) == NULL)
+	lines[count] = pre_process_match(completion, with_hook);
+	if(lines[count] == NULL)
 	{
 		return -1;
 	}
@@ -77,6 +92,12 @@ add_completion(const char *completion)
 	count++;
 	state = FILLING_LIST;
 	return 0;
+}
+
+static char *
+pre_process_match(const char str[], int with_hook)
+{
+	return (!with_hook || add_hook == NULL) ? strdup(str) : add_hook(str);
 }
 
 void
@@ -221,7 +242,7 @@ rewind_completion(void)
 void
 compl_set_add_hook(compl_add_hook_f hook)
 {
-	add_hook = (hook == NULL) ? &strdup : hook;
+	add_hook = hook;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
