@@ -164,6 +164,30 @@ test_dquoted_completion_escaping(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
 }
 
+static void
+test_last_match_is_properly_escaped(void)
+{
+	char *match;
+
+	assert_int_equal(0, chdir("../quotes-in-names"));
+
+	prepare_for_line_completion(L"touch \"d-quote-\\\"-in");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in-name-2", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in-name-3", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in", match);
+	free(match);
+}
+
 void
 test_cmdline_completion(void)
 {
@@ -180,6 +204,7 @@ test_cmdline_completion(void)
 	run_test(test_squoted_completion_escaping);
 	run_test(test_dquoted_completion);
 	run_test(test_dquoted_completion_escaping);
+	run_test(test_last_match_is_properly_escaped);
 
 	test_fixture_end();
 }
