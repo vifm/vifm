@@ -217,7 +217,7 @@ vle_compl_set_order(int reversed)
 }
 
 const char **
-get_completion_list(void)
+vle_compl_get_list(void)
 {
 	return (const char **)lines;
 }

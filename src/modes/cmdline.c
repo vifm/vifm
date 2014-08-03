@@ -986,7 +986,7 @@ draw_wild_menu(int op)
 {
 	static int last_pos;
 
-	const char ** list = get_completion_list();
+	const char ** list = vle_compl_get_list();
 	int pos = get_completion_pos();
 	int count = vle_compl_get_count() - 1;
 	int i;
