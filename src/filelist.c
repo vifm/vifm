@@ -148,6 +148,8 @@ static int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
+static void find_dir_in_cdpath(const char base_dir[], const char dst[],
+		char buf[], size_t buf_size);
 
 const size_t COLUMN_GAP = 2;
 
@@ -3478,7 +3480,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 		else if(strcmp(arg, "-") == 0)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
-			snprintf(dir, sizeof(dir), "%s/%s", base_dir, arg);
+			find_dir_in_cdpath(base_dir, arg, dir, sizeof(dir));
 		updir = is_parent_dir(arg);
 		free(arg);
 	}
@@ -3511,6 +3513,15 @@ cd(FileView *view, const char *base_dir, const char *path)
 		refresh_view_win(other_view);
 	}
 	return 0;
+}
+
+/* Searches for an existing directory in cdpath and fills the buf with final
+ * absolute path. */
+static void
+find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
+		size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/%s", base_dir, dst);
 }
 
 int
