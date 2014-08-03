@@ -697,7 +697,7 @@ complete_colorschemes(const char name[])
 		{
 			if(strnoscmp(name, schemes[i], len) == 0)
 			{
-				add_completion(schemes[i]);
+				vle_compl_add_match(schemes[i]);
 			}
 		}
 	}

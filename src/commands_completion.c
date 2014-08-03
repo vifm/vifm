@@ -294,7 +294,7 @@ complete_help(const char *str)
 	for(i = 0; tags[i] != NULL; i++)
 	{
 		if(strstr(tags[i], str) != NULL)
-			add_completion(tags[i]);
+			vle_compl_add_match(tags[i]);
 	}
 	completion_group_end();
 	add_last_match(str);
@@ -344,7 +344,7 @@ complete_from_string_list(const char str[], const char *list[], size_t list_len)
 	{
 		if(strncmp(str, list[i], len) == 0)
 		{
-			add_completion(list[i]);
+			vle_compl_add_match(list[i]);
 		}
 	}
 	completion_group_end();
@@ -403,7 +403,7 @@ complete_progs(const char *str, assoc_records_t records)
 		if(strnoscmp(command, str, len) == 0)
 		{
 			char *escaped = escape_chars(command, "|");
-			add_completion(escaped);
+			vle_compl_add_match(escaped);
 			free(escaped);
 		}
 	}
@@ -417,7 +417,7 @@ complete_highlight_groups(const char *str)
 	for(i = 0; i < MAXNUM_COLOR - 2; i++)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
-			add_completion(HI_GROUPS[i]);
+			vle_compl_add_match(HI_GROUPS[i]);
 	}
 	completion_group_end();
 	add_last_match(str);
@@ -441,7 +441,7 @@ complete_highlight_arg(const char *str)
 		for(i = 0; i < ARRAY_LEN(args); i++)
 		{
 			if(strncmp(str, args[i], len) == 0)
-				add_completion(args[i]);
+				vle_compl_add_match(args[i]);
 		}
 	}
 	else
@@ -467,24 +467,24 @@ complete_highlight_arg(const char *str)
 			for(i = 0; i < ARRAY_LEN(STYLES); i++)
 			{
 				if(strncasecmp(equal, STYLES[i], len) == 0)
-					add_completion(STYLES[i]);
+					vle_compl_add_match(STYLES[i]);
 			}
 		}
 		else
 		{
 			if(strncasecmp(equal, "default", len) == 0)
-				add_completion("default");
+				vle_compl_add_match("default");
 			if(strncasecmp(equal, "none", len) == 0)
-				add_completion("none");
+				vle_compl_add_match("none");
 			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
-					add_completion(XTERM256_COLOR_NAMES[i]);
+					vle_compl_add_match(XTERM256_COLOR_NAMES[i]);
 			}
 			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
-					add_completion(LIGHT_COLOR_NAMES[i]);
+					vle_compl_add_match(LIGHT_COLOR_NAMES[i]);
 			}
 		}
 	}
@@ -511,7 +511,7 @@ complete_envvar(const char str[])
 			if(equal != NULL)
 			{
 				*equal = '\0';
-				add_completion(*p);
+				vle_compl_add_match(*p);
 				*equal = '=';
 			}
 		}
@@ -532,7 +532,7 @@ complete_winrun(const char *str)
 	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
 	{
 		if(strncmp(str, VARIANTS[i], len) == 0)
-			add_completion(VARIANTS[i]);
+			vle_compl_add_match(VARIANTS[i]);
 	}
 	completion_group_end();
 	add_last_match(str);
@@ -641,7 +641,7 @@ filename_completion(const char *str, CompletionType type)
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
 		char *s = expand_tilde(strdup(str));
-		add_completion(s);
+		vle_compl_add_match(s);
 		free(s);
 		return;
 	}
@@ -702,7 +702,7 @@ filename_completion(const char *str, CompletionType type)
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
-		add_completion(filename);
+		vle_compl_add_match(filename);
 	}
 	else
 	{
@@ -745,11 +745,11 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		{
 			char buf[strlen(d->d_name) + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
-			add_completion(buf);
+			vle_compl_add_match(buf);
 		}
 		else
 		{
-			add_completion(d->d_name);
+			vle_compl_add_match(d->d_name);
 		}
 	}
 
@@ -789,7 +789,7 @@ complete_user_name(const char *str)
 	while((pw = getpwent()) != NULL)
 	{
 		if(strncmp(pw->pw_name, str, len) == 0)
-			add_completion(pw->pw_name);
+			vle_compl_add_match(pw->pw_name);
 	}
 	completion_group_end();
 	add_last_match(str);
@@ -805,7 +805,7 @@ complete_group_name(const char *str)
 	while((gr = getgrent()) != NULL)
 	{
 		if(strncmp(gr->gr_name, str, len) == 0)
-			add_completion(gr->gr_name);
+			vle_compl_add_match(gr->gr_name);
 	}
 	completion_group_end();
 	add_last_match(str);
@@ -848,7 +848,7 @@ complete_with_shared(const char *server, const char *file)
 				if(strnoscmp(buf, file, len) == 0)
 				{
 					char *escaped = escape_filename(buf, 1);
-					add_completion(escaped);
+					vle_compl_add_match(escaped);
 					free(escaped);
 				}
 				p++;

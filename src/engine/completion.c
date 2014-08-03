@@ -61,7 +61,7 @@ reset_completion(void)
 }
 
 int
-add_completion(const char *completion)
+vle_compl_add_match(const char *completion)
 {
 	return add_completion_item(completion, 1);
 }

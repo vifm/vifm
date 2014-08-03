@@ -932,7 +932,7 @@ complete_options(const char args[], const char **start)
 		args = extract_option(args, buf, 0);
 		if(args == NULL)
 		{
-			add_completion(buf);
+			vle_compl_add_match(buf);
 			return;
 		}
 	}
@@ -990,7 +990,7 @@ complete_options(const char args[], const char **start)
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
 			char *escaped = escape_chars(get_value(opt), " |");
-			add_completion(escaped);
+			vle_compl_add_match(escaped);
 			free(escaped);
 		}
 	}
@@ -1106,7 +1106,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 
 	if(pseudo && strncmp(buf, "all", len) == 0)
 	{
-		add_completion("all");
+		vle_compl_add_match("all");
 	}
 
 	for(i = 0; i < options_count; i++)
@@ -1120,11 +1120,11 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 		{
 			if(options[i].full != NULL)
 			{
-				add_completion(options[i].full);
+				vle_compl_add_match(options[i].full);
 			}
 			else
 			{
-				add_completion(options[i].name);
+				vle_compl_add_match(options[i].name);
 			}
 		}
 	}
@@ -1157,7 +1157,7 @@ complete_list_value(const opt_t *opt, const char beginning[])
 	for(i = 0; i < opt->val_count; i++)
 	{
 		if(strncmp(beginning, opt->vals[i], len) == 0)
-			add_completion(opt->vals[i]);
+			vle_compl_add_match(opt->vals[i]);
 	}
 
 	return 0;
@@ -1176,7 +1176,7 @@ complete_char_value(const opt_t *opt, const char beginning[])
 		if(strchr(beginning, vals[i]) == NULL)
 		{
 			const char char_str[] = { vals[i], '\0' };
-			add_completion(char_str);
+			vle_compl_add_match(char_str);
 		}
 	}
 

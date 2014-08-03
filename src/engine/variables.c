@@ -460,7 +460,7 @@ complete_variables(const char *cmd, const char **start)
 	if(*cmd != '$')
 	{
 		*start = cmd;
-		add_completion(cmd);
+		vle_compl_add_match(cmd);
 		return;
 	}
 	cmd++;
@@ -475,7 +475,7 @@ complete_variables(const char *cmd, const char **start)
 		if(vars[i].removed)
 			continue;
 		if(strnoscmp(vars[i].name, cmd, len) == 0)
-			add_completion(vars[i].name);
+			vle_compl_add_match(vars[i].name);
 	}
 	completion_group_end();
 	add_last_match(cmd);

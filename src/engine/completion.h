@@ -24,10 +24,10 @@
 typedef char * (*compl_add_hook_f)(const char match[]);
 
 /* Returns zero on success, otherwise non-zero is returned. */
-int add_completion(const char *completion);
+int vle_compl_add_match(const char *completion);
 
 /* Adds original input to the completion, should be called after all matches are
- * registered with add_completion().  Returns zero on success, otherwise
+ * registered with vle_compl_add_match().  Returns zero on success, otherwise
  * non-zero is returned. */
 int add_last_match(const char origin[]);
 
