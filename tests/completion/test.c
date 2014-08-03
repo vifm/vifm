@@ -11,7 +11,7 @@ void add_hook_tests(void);
 static void
 teardown(void)
 {
-	reset_completion();
+	vle_compl_reset();
 }
 
 static void

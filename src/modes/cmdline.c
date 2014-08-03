@@ -2150,7 +2150,7 @@ line_completion(line_stats_t *stat)
 
 		stat->line[stat->index] = t;
 
-		reset_completion();
+		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
 		if(sub_mode == CMD_SUBMODE)
@@ -2280,7 +2280,7 @@ stop_history_completion(void)
 		return;
 
 	input_stat.complete_continue = 0;
-	reset_completion();
+	vle_compl_reset();
 	if(cfg.wild_menu &&
 			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
 	{

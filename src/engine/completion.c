@@ -48,7 +48,7 @@ static int sorter(const void *first, const void *second);
 static size_t remove_duplicates(char **arr, size_t count);
 
 void
-reset_completion(void)
+vle_compl_reset(void)
 {
 	free_string_array(lines, count);
 	lines = NULL;

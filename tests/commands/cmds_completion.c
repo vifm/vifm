@@ -69,7 +69,7 @@ test_skip_goto(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("", NULL));
 	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
@@ -90,7 +90,7 @@ test_skip_abbreviations(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("d", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -108,7 +108,7 @@ test_dont_remove_range(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(2, complete_cmd("% del", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -117,7 +117,7 @@ test_dont_remove_range(void)
 	assert_string_equal("delcommand", completion);
 	free(completion);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(1, complete_cmd("3del", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -132,7 +132,7 @@ test_dont_remove_cmd(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(7, complete_cmd("% dele ", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -150,7 +150,7 @@ test_skip_complete_args(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(17, complete_cmd("% dele fast slow ", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -170,7 +170,7 @@ test_com_completion(void)
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(4, complete_cmd("com u", NULL));
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
@@ -187,7 +187,7 @@ test_delc_completion(void)
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(5, complete_cmd("delc u", NULL));
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
@@ -202,7 +202,7 @@ test_windo_completion(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("win", NULL));
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
@@ -217,7 +217,7 @@ test_windo_windo_completion(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(12, complete_cmd("windo windo ", NULL));
 	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
@@ -232,7 +232,7 @@ test_windo_args_completion(void)
 {
 	char *completion;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(6, complete_cmd("windo del", NULL));
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
@@ -248,7 +248,7 @@ test_windo_args_completion(void)
 static void
 test_no_completion_for_negative_ids(void)
 {
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(4, complete_cmd("yank ", NULL));
 	assert_int_equal(0, get_completion_count());
 }
@@ -262,7 +262,7 @@ test_udf_completion(void)
 	execute_cmd("command baz b");
 	execute_cmd("command foo c");
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(5, complete_cmd("comm b", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
@@ -274,7 +274,7 @@ test_udf_completion(void)
 	assert_string_equal("b", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(5, complete_cmd("comm f", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("foo", buf);
@@ -283,7 +283,7 @@ test_udf_completion(void)
 	assert_string_equal("foo", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(5, complete_cmd("comm b", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("bar", buf);

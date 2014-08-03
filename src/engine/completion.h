@@ -37,7 +37,7 @@ void vle_compl_finish_group(void);
  * de-duplication of resulting single group. */
 void vle_compl_unite_groups(void);
 
-void reset_completion(void);
+void vle_compl_reset(void);
 
 /* Returns copy of the string or NULL. */
 char * vle_compl_next(void);

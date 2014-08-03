@@ -27,7 +27,7 @@ test_empty_line_completion(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("", NULL));
 
 	buf = vle_compl_next();
@@ -44,7 +44,7 @@ test_set(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("se", NULL));
 
 	buf = vle_compl_next();

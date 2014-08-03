@@ -62,7 +62,7 @@ leave_spaces_at_begin(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(1, complete_cmd(" qui", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("quit", buf);
@@ -77,19 +77,19 @@ only_user(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(8, complete_cmd("command ", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(9, complete_cmd(" command ", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(10, complete_cmd("  command ", NULL));
 	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
@@ -99,7 +99,7 @@ only_user(void)
 static void
 test_set_completion(void)
 {
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set all") == 0);
 }
@@ -112,7 +112,7 @@ test_no_sdquoted_completion_does_nothing(void)
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, line_completion(&stats));
 	assert_int_equal(0, wcscmp(stats.line, L"command '"));
 }
@@ -125,7 +125,7 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
 
-	reset_completion();
+	vle_compl_reset();
 }
 
 static void

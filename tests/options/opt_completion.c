@@ -11,13 +11,13 @@ test_space_at_the_end(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome=a\\ b\\ ", &start);
 	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome=a\\ b ", &start);
 
 	completed = vle_compl_next();
@@ -39,7 +39,7 @@ test_one_choice_opt(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fuse", &start);
 
 	completed = vle_compl_next();
@@ -62,7 +62,7 @@ test_one_choice_val(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options(buf, &start);
 	assert_true(start == buf + 5);
 
@@ -85,7 +85,7 @@ test_invalid_input(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fast ?f", &start);
 	completed = vle_compl_next();
 	assert_string_equal("fast ?f", completed);
@@ -98,7 +98,7 @@ test_skip_abbreviations(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("", &start);
 
 	completed = vle_compl_next();
@@ -144,7 +144,7 @@ test_expand_abbreviations(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fr", &start);
 
 	completed = vle_compl_next();
@@ -163,7 +163,7 @@ test_after_eq_value_completion(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options(buf, &start);
 	assert_true(start == buf + 9);
 
@@ -183,7 +183,7 @@ test_after_meq_value_completion(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options(buf, &start);
 	assert_true(start == buf + 10);
 
@@ -203,7 +203,7 @@ test_after_peq_value_completion(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options(buf, &start);
 	assert_true(start == buf + 10);
 
@@ -223,7 +223,7 @@ test_set_values_completion(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options(buf, &start);
 	assert_true(start == buf + 13);
 
@@ -246,13 +246,13 @@ test_colon(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome:a\\ b\\ ", &start);
 	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome:a\\ b ", &start);
 
 	completed = vle_compl_next();
@@ -274,7 +274,7 @@ test_umbiguous_beginning(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("sort", &start);
 
 	completed = vle_compl_next();
@@ -292,7 +292,7 @@ test_matching_short_full(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("so", &start);
 
 	completed = vle_compl_next();
@@ -317,7 +317,7 @@ test_after_equal_sign_completion_ok(void)
 	optval_t val = { .str_val = "/home/tmp" };
 	set_option("fusehome", val);
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome=", &start);
 
 	completed = vle_compl_next();
@@ -334,7 +334,7 @@ test_after_equal_sign_completion_spaces_ok(void)
 	optval_t val = { .str_val = "/home directory/tmp" };
 	set_option("fusehome", val);
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome=", &start);
 
 	completed = vle_compl_next();
@@ -351,7 +351,7 @@ test_after_fake_equal_sign_completion_fail(void)
 	optval_t val = { .str_val = "/home/tmp" };
 	set_option("fusehome", val);
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("fusehome=a=", &start);
 
 	completed = vle_compl_next();
@@ -365,7 +365,7 @@ test_all_completion_ok(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("all=", &start);
 
 	completed = vle_compl_next();
@@ -379,7 +379,7 @@ test_charset_completion_skips_entered_elements(void)
 	const char *start;
 	char *completed;
 
-	reset_completion();
+	vle_compl_reset();
 	complete_options("cpo=a", &start);
 
 	completed = vle_compl_next();

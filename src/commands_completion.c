@@ -553,7 +553,7 @@ fast_run_complete(const char cmd[])
 		return strdup(cmd);
 	}
 
-	reset_completion();
+	vle_compl_reset();
 	complete_command_name(command);
 	vle_compl_unite_groups();
 	completed = vle_compl_next();
