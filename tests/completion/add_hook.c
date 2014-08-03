@@ -68,6 +68,32 @@ test_set_add_hook_resets_hook(void)
 	free(match);
 }
 
+static void
+test_last_match_is_not_pre_processed(void)
+{
+	char *match;
+
+	compl_set_add_hook(&add_dquotes);
+	assert_int_equal(0, add_completion("a b"));
+	assert_int_equal(0, add_completion("a b c"));
+	completion_group_end();
+	assert_int_equal(0, add_last_match("a"));
+
+	assert_int_equal(3, get_completion_count());
+
+	match = next_completion();
+	assert_string_equal("\"a b c\"", match);
+	free(match);
+
+	match = next_completion();
+	assert_string_equal("\"a b\"", match);
+	free(match);
+
+	match = next_completion();
+	assert_string_equal("a", match);
+	free(match);
+}
+
 void
 add_hook_tests(void)
 {
@@ -75,6 +101,7 @@ add_hook_tests(void)
 
 	run_test(test_set_add_hook_sets_hook);
 	run_test(test_set_add_hook_resets_hook);
+	run_test(test_last_match_is_not_pre_processed);
 
 	test_fixture_end();
 }
