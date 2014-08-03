@@ -44,7 +44,7 @@ char * vle_compl_next(void);
 
 int vle_compl_get_count(void);
 
-void set_completion_order(int reversed);
+void vle_compl_set_order(int reversed);
 
 const char ** get_completion_list(void);
 

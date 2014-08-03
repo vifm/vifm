@@ -211,7 +211,7 @@ vle_compl_get_count(void)
 }
 
 void
-set_completion_order(int reversed)
+vle_compl_set_order(int reversed)
 {
 	order = reversed;
 }

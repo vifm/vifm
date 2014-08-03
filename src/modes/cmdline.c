@@ -2184,7 +2184,7 @@ line_completion(line_stats_t *stat)
 		compl_set_add_hook(NULL);
 	}
 
-	set_completion_order(input_stat.reverse_completion);
+	vle_compl_set_order(input_stat.reverse_completion);
 
 	if(vle_compl_get_count() == 0)
 		return 0;

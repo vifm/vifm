@@ -182,7 +182,7 @@ test_order(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	set_completion_order(1);
+	vle_compl_set_order(1);
 
 	buf = vle_compl_next();
 	assert_string_equal("az", buf);
