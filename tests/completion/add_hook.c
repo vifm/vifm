@@ -69,7 +69,7 @@ test_set_add_hook_resets_hook(void)
 }
 
 static void
-test_last_match_is_not_pre_processed(void)
+test_last_match_is_pre_processed(void)
 {
 	char *match;
 
@@ -90,7 +90,7 @@ test_last_match_is_not_pre_processed(void)
 	free(match);
 
 	match = vle_compl_next();
-	assert_string_equal("a", match);
+	assert_string_equal("\"a\"", match);
 	free(match);
 }
 
@@ -101,7 +101,7 @@ add_hook_tests(void)
 
 	run_test(test_set_add_hook_sets_hook);
 	run_test(test_set_add_hook_resets_hook);
-	run_test(test_last_match_is_not_pre_processed);
+	run_test(test_last_match_is_pre_processed);
 
 	test_fixture_end();
 }

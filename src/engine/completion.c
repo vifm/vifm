@@ -41,8 +41,7 @@ static int group_begin;
 static int order;
 static vle_compl_add_hook_f add_hook;
 
-static char * pre_process_match(const char str[], int with_hook);
-static int add_completion_item(const char completion[], int with_hook);
+static char * pre_process_match(const char str[]);
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
 static size_t remove_duplicates(char **arr, size_t count);
@@ -63,18 +62,6 @@ vle_compl_reset(void)
 int
 vle_compl_add_match(const char *completion)
 {
-	return add_completion_item(completion, 1);
-}
-
-int
-vle_compl_add_last_match(const char origin[])
-{
-	return add_completion_item(origin, 0);
-}
-
-static int
-add_completion_item(const char completion[], int with_hook)
-{
 	char **p;
 	assert(state != COMPLETING);
 
@@ -83,7 +70,7 @@ add_completion_item(const char completion[], int with_hook)
 		return -1;
 	lines = p;
 
-	lines[count] = pre_process_match(completion, with_hook);
+	lines[count] = pre_process_match(completion);
 	if(lines[count] == NULL)
 	{
 		return -1;
@@ -94,10 +81,16 @@ add_completion_item(const char completion[], int with_hook)
 	return 0;
 }
 
-static char *
-pre_process_match(const char str[], int with_hook)
+int
+vle_compl_add_last_match(const char origin[])
 {
-	return (!with_hook || add_hook == NULL) ? strdup(str) : add_hook(str);
+	return vle_compl_add_match(origin);
+}
+
+static char *
+pre_process_match(const char str[])
+{
+	return (add_hook == NULL) ? strdup(str) : add_hook(str);
 }
 
 void
