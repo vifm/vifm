@@ -39,7 +39,7 @@ static int count;
 static int curr = -1;
 static int group_begin;
 static int order;
-static compl_add_hook_f add_hook;
+static vle_compl_add_hook_f add_hook;
 
 static char * pre_process_match(const char str[], int with_hook);
 static int add_completion_item(const char completion[], int with_hook);
@@ -240,7 +240,7 @@ vle_compl_rewind(void)
 }
 
 void
-vle_compl_set_add_hook(compl_add_hook_f hook)
+vle_compl_set_add_hook(vle_compl_add_hook_f hook)
 {
 	add_hook = hook;
 }

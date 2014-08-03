@@ -21,7 +21,7 @@
 
 /* Match addition hook function signature.  Must return newly allocated
  * string. */
-typedef char * (*compl_add_hook_f)(const char match[]);
+typedef char * (*vle_compl_add_hook_f)(const char match[]);
 
 /* Returns zero on success, otherwise non-zero is returned. */
 int vle_compl_add_match(const char *completion);
@@ -54,7 +54,7 @@ int vle_compl_get_pos(void);
 void vle_compl_rewind(void);
 
 /* Sets match addition hook.  NULL value resets hook. */
-void vle_compl_set_add_hook(compl_add_hook_f hook);
+void vle_compl_set_add_hook(vle_compl_add_hook_f hook);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
 
