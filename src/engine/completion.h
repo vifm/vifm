@@ -54,7 +54,7 @@ int vle_compl_get_pos(void);
 void vle_compl_rewind(void);
 
 /* Sets match addition hook.  NULL value resets hook. */
-void compl_set_add_hook(compl_add_hook_f hook);
+void vle_compl_set_add_hook(compl_add_hook_f hook);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
 

@@ -240,7 +240,7 @@ vle_compl_rewind(void)
 }
 
 void
-compl_set_add_hook(compl_add_hook_f hook)
+vle_compl_set_add_hook(compl_add_hook_f hook)
 {
 	add_hook = hook;
 }
