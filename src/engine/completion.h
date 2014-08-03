@@ -35,7 +35,7 @@ void vle_compl_finish_group(void);
 
 /* Squashes all existing completion groups into one.  Performs resorting and
  * de-duplication of resulting single group. */
-void completion_groups_unite(void);
+void vle_compl_unite_groups(void);
 
 void reset_completion(void);
 

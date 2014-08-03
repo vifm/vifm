@@ -555,7 +555,7 @@ fast_run_complete(const char cmd[])
 
 	reset_completion();
 	complete_command_name(command);
-	completion_groups_unite();
+	vle_compl_unite_groups();
 	completed = next_completion();
 
 	if(get_completion_count() > 2)

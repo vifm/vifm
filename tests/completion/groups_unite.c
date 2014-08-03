@@ -19,7 +19,7 @@ test_unite_removes_duplicates(void)
 
 	assert_int_equal(4, get_completion_count());
 
-	completion_groups_unite();
+	vle_compl_unite_groups();
 
 	assert_int_equal(3, get_completion_count());
 
@@ -50,7 +50,7 @@ test_unite_sorts(void)
 
 	assert_int_equal(3, get_completion_count());
 
-	completion_groups_unite();
+	vle_compl_unite_groups();
 
 	assert_int_equal(3, get_completion_count());
 

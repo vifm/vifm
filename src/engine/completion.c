@@ -108,7 +108,7 @@ vle_compl_finish_group(void)
 }
 
 void
-completion_groups_unite(void)
+vle_compl_unite_groups(void)
 {
 	group_unique_sort(0, count);
 }
