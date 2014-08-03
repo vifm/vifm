@@ -51,7 +51,7 @@ const char ** vle_compl_get_list(void);
 int vle_compl_get_pos(void);
 
 /* Go to the last item (probably to user input). */
-void rewind_completion(void);
+void vle_compl_rewind(void);
 
 /* Sets match addition hook.  NULL value resets hook. */
 void compl_set_add_hook(compl_add_hook_f hook);

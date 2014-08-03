@@ -1641,7 +1641,7 @@ cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
 		return;
-	rewind_completion();
+	vle_compl_rewind();
 
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);

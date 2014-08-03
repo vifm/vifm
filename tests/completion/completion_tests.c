@@ -115,7 +115,7 @@ test_rewind_one_unambiguous_completion(void)
 	assert_string_equal("abcd", buf);
 	free(buf);
 
-	rewind_completion();
+	vle_compl_rewind();
 
 	buf = vle_compl_next();
 	assert_string_equal("a", buf);
@@ -140,7 +140,7 @@ test_rewind(void)
 	assert_string_equal("abc", buf);
 	free(buf);
 
-	rewind_completion();
+	vle_compl_rewind();
 	free(vle_compl_next());
 
 	buf = vle_compl_next();
@@ -151,7 +151,7 @@ test_rewind(void)
 	assert_string_equal("acd", buf);
 	free(buf);
 
-	rewind_completion();
+	vle_compl_rewind();
 	free(vle_compl_next());
 
 	buf = vle_compl_next();

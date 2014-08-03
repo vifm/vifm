@@ -229,7 +229,7 @@ vle_compl_get_pos(void)
 }
 
 void
-rewind_completion(void)
+vle_compl_rewind(void)
 {
 	assert(state == COMPLETING);
 
