@@ -180,28 +180,23 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			arg = argv[arg_num];
 		}
 
-		if(args[arg_pos] == '"' && !ends_with(args + 1, "\""))
-		{
-			arg = args + arg_pos + 1;
-			start = (slash == NULL) ? arg : (slash + 1);
-		}
-		else if(args[arg_pos] == '\'' && !ends_with(args + 1, "'"))
-		{
-			arg = args + arg_pos + 1;
-			start = (slash == NULL) ? arg : (slash + 1);
-		}
-
 		switch((CompletionPreProcessing)extra_arg)
 		{
 			case CPP_NONE:
 				/* Do nothing. */
 				break;
 			case CPP_SQUOTES_UNESCAPE:
+				arg = args + arg_pos + 1;
+				start = (slash == NULL) ? arg : (slash + 1);
+
 				free_me = strdup(arg);
 				expand_squotes_escaping(free_me);
 				arg = free_me;
 				break;
 			case CPP_DQUOTES_UNESCAPE:
+				arg = args + arg_pos + 1;
+				start = (slash == NULL) ? arg : (slash + 1);
+
 				free_me = strdup(arg);
 				expand_dquotes_escaping(free_me);
 				arg = free_me;
