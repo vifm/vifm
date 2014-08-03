@@ -29,7 +29,7 @@ int vle_compl_add_match(const char *completion);
 /* Adds original input to the completion, should be called after all matches are
  * registered with vle_compl_add_match().  Returns zero on success, otherwise
  * non-zero is returned. */
-int add_last_match(const char origin[]);
+int vle_compl_add_last_match(const char origin[]);
 
 void completion_group_end(void);
 

@@ -765,7 +765,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 		cur = cur->next;
 	}
 
-	add_last_match(cmd_name);
+	vle_compl_add_last_match(cmd_name);
 }
 
 void

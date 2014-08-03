@@ -77,7 +77,7 @@ test_last_match_is_not_pre_processed(void)
 	assert_int_equal(0, vle_compl_add_match("a b"));
 	assert_int_equal(0, vle_compl_add_match("a b c"));
 	completion_group_end();
-	assert_int_equal(0, add_last_match("a"));
+	assert_int_equal(0, vle_compl_add_last_match("a"));
 
 	assert_int_equal(3, get_completion_count());
 

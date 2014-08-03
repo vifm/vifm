@@ -478,7 +478,7 @@ complete_variables(const char *cmd, const char **start)
 			vle_compl_add_match(vars[i].name);
 	}
 	completion_group_end();
-	add_last_match(cmd);
+	vle_compl_add_last_match(cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

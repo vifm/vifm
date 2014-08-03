@@ -67,7 +67,7 @@ vle_compl_add_match(const char *completion)
 }
 
 int
-add_last_match(const char origin[])
+vle_compl_add_last_match(const char origin[])
 {
 	return add_completion_item(origin, 0);
 }

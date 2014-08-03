@@ -297,7 +297,7 @@ complete_help(const char *str)
 			vle_compl_add_match(tags[i]);
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -348,7 +348,7 @@ complete_from_string_list(const char str[], const char *list[], size_t list_len)
 		}
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 static int
@@ -367,7 +367,7 @@ complete_chown(const char *str)
 		return colon - str + 1;
 	}
 #else
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 	return 0;
 #endif
 }
@@ -384,7 +384,7 @@ complete_filetype(const char *str)
 	complete_progs(str, get_magic_handlers(filename));
 
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -420,7 +420,7 @@ complete_highlight_groups(const char *str)
 			vle_compl_add_match(HI_GROUPS[i]);
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 static int
@@ -489,7 +489,7 @@ complete_highlight_arg(const char *str)
 		}
 	}
 	completion_group_end();
-	add_last_match((equal == NULL) ? str : equal);
+	vle_compl_add_last_match((equal == NULL) ? str : equal);
 	return result;
 }
 
@@ -519,7 +519,7 @@ complete_envvar(const char str[])
 	}
 
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -535,7 +535,7 @@ complete_winrun(const char *str)
 			vle_compl_add_match(VARIANTS[i]);
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 char *
@@ -607,7 +607,7 @@ complete_command_name(const char beginning[])
 			filename_completion(beginning, CT_EXECONLY);
 		}
 	}
-	add_last_match(beginning);
+	vle_compl_add_last_match(beginning);
 }
 
 static void
@@ -756,7 +756,7 @@ filename_completion_internal(DIR * dir, const char * dirname,
 	completion_group_end();
 	if(type != CT_EXECONLY)
 	{
-		add_last_match(filename);
+		vle_compl_add_last_match(filename);
 	}
 }
 
@@ -792,7 +792,7 @@ complete_user_name(const char *str)
 			vle_compl_add_match(pw->pw_name);
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 void
@@ -808,7 +808,7 @@ complete_group_name(const char *str)
 			vle_compl_add_match(gr->gr_name);
 	}
 	completion_group_end();
-	add_last_match(str);
+	vle_compl_add_last_match(str);
 }
 
 #else
