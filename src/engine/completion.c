@@ -205,7 +205,7 @@ remove_duplicates(char **arr, size_t count)
 }
 
 int
-get_completion_count(void)
+vle_compl_get_count(void)
 {
 	return count;
 }

@@ -42,7 +42,7 @@ void vle_compl_reset(void);
 /* Returns copy of the string or NULL. */
 char * vle_compl_next(void);
 
-int get_completion_count(void);
+int vle_compl_get_count(void);
 
 void set_completion_order(int reversed);
 

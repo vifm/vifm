@@ -558,9 +558,9 @@ fast_run_complete(const char cmd[])
 	vle_compl_unite_groups();
 	completed = vle_compl_next();
 
-	if(get_completion_count() > 2)
+	if(vle_compl_get_count() > 2)
 	{
-		int c = get_completion_count() - 1;
+		int c = vle_compl_get_count() - 1;
 		while(c-- > 0)
 		{
 			if(stroscmp(command, completed) == 0)

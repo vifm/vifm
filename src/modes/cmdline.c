@@ -930,7 +930,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 0;
 
-	if(input_stat.complete_continue && get_completion_count() == 2)
+	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
@@ -945,7 +945,7 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 1;
 
-	if(input_stat.complete_continue && get_completion_count() == 2)
+	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
@@ -988,7 +988,7 @@ draw_wild_menu(int op)
 
 	const char ** list = get_completion_list();
 	int pos = get_completion_pos();
-	int count = get_completion_count() - 1;
+	int count = vle_compl_get_count() - 1;
 	int i;
 	int len = getmaxx(stdscr);
 
@@ -2186,14 +2186,14 @@ line_completion(line_stats_t *stat)
 
 	set_completion_order(input_stat.reverse_completion);
 
-	if(get_completion_count() == 0)
+	if(vle_compl_get_count() == 0)
 		return 0;
 
 	completion = vle_compl_next();
 	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
 	free(completion);
 
-	if(get_completion_count() >= 2)
+	if(vle_compl_get_count() >= 2)
 		stat->complete_continue = 1;
 
 	return result;

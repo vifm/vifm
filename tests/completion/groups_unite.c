@@ -17,11 +17,11 @@ test_unite_removes_duplicates(void)
 	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("e"));
 
-	assert_int_equal(4, get_completion_count());
+	assert_int_equal(4, vle_compl_get_count());
 
 	vle_compl_unite_groups();
 
-	assert_int_equal(3, get_completion_count());
+	assert_int_equal(3, vle_compl_get_count());
 
 	buf = vle_compl_next();
 	assert_string_equal("e", buf);
@@ -48,11 +48,11 @@ test_unite_sorts(void)
 	assert_int_equal(0, vle_compl_add_match("eca"));
 	vle_compl_finish_group();
 
-	assert_int_equal(3, get_completion_count());
+	assert_int_equal(3, vle_compl_get_count());
 
 	vle_compl_unite_groups();
 
-	assert_int_equal(3, get_completion_count());
+	assert_int_equal(3, vle_compl_get_count());
 
 	buf = vle_compl_next();
 	assert_string_equal("eca", buf);
