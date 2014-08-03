@@ -31,7 +31,7 @@ int vle_compl_add_match(const char *completion);
  * non-zero is returned. */
 int vle_compl_add_last_match(const char origin[]);
 
-void completion_group_end(void);
+void vle_compl_finish_group(void);
 
 /* Squashes all existing completion groups into one.  Performs resorting and
  * de-duplication of resulting single group. */

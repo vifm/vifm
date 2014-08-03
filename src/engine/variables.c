@@ -477,7 +477,7 @@ complete_variables(const char *cmd, const char **start)
 		if(strnoscmp(vars[i].name, cmd, len) == 0)
 			vle_compl_add_match(vars[i].name);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(cmd);
 }
 

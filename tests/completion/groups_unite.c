@@ -10,11 +10,11 @@ test_unite_removes_duplicates(void)
 	char *buf;
 
 	assert_int_equal(0, vle_compl_add_match("echo"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("ec"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("echo"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("e"));
 
 	assert_int_equal(4, get_completion_count());
@@ -42,11 +42,11 @@ test_unite_sorts(void)
 	char *buf;
 
 	assert_int_equal(0, vle_compl_add_match("ecz"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("ecj"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_match("eca"));
-	completion_group_end();
+	vle_compl_finish_group();
 
 	assert_int_equal(3, get_completion_count());
 

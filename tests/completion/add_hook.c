@@ -22,7 +22,7 @@ test_set_add_hook_sets_hook(void)
 	assert_int_equal(0, vle_compl_add_match("a b c"));
 	assert_int_equal(0, vle_compl_add_match("a b"));
 	assert_int_equal(0, vle_compl_add_match("a"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(3, get_completion_count());
 
 	match = next_completion();
@@ -52,7 +52,7 @@ test_set_add_hook_resets_hook(void)
 	compl_set_add_hook(NULL);
 	assert_int_equal(0, vle_compl_add_match("a b c"));
 
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(3, get_completion_count());
 
 	match = next_completion();
@@ -76,7 +76,7 @@ test_last_match_is_not_pre_processed(void)
 	compl_set_add_hook(&add_dquotes);
 	assert_int_equal(0, vle_compl_add_match("a b"));
 	assert_int_equal(0, vle_compl_add_match("a b c"));
-	completion_group_end();
+	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
 	assert_int_equal(3, get_completion_count());

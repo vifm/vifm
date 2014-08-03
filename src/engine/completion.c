@@ -101,7 +101,7 @@ pre_process_match(const char str[], int with_hook)
 }
 
 void
-completion_group_end(void)
+vle_compl_finish_group(void)
 {
 	const size_t n_group_items = count - group_begin;
 	group_unique_sort(group_begin, n_group_items);

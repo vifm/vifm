@@ -296,7 +296,7 @@ complete_help(const char *str)
 		if(strstr(tags[i], str) != NULL)
 			vle_compl_add_match(tags[i]);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -347,7 +347,7 @@ complete_from_string_list(const char str[], const char *list[], size_t list_len)
 			vle_compl_add_match(list[i]);
 		}
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -383,7 +383,7 @@ complete_filetype(const char *str)
 
 	complete_progs(str, get_magic_handlers(filename));
 
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -419,7 +419,7 @@ complete_highlight_groups(const char *str)
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
 			vle_compl_add_match(HI_GROUPS[i]);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -488,7 +488,7 @@ complete_highlight_arg(const char *str)
 			}
 		}
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match((equal == NULL) ? str : equal);
 	return result;
 }
@@ -518,7 +518,7 @@ complete_envvar(const char str[])
 		p++;
 	}
 
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -534,7 +534,7 @@ complete_winrun(const char *str)
 		if(strncmp(str, VARIANTS[i], len) == 0)
 			vle_compl_add_match(VARIANTS[i]);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -753,7 +753,7 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		}
 	}
 
-	completion_group_end();
+	vle_compl_finish_group();
 	if(type != CT_EXECONLY)
 	{
 		vle_compl_add_last_match(filename);
@@ -791,7 +791,7 @@ complete_user_name(const char *str)
 		if(strncmp(pw->pw_name, str, len) == 0)
 			vle_compl_add_match(pw->pw_name);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 
@@ -807,7 +807,7 @@ complete_group_name(const char *str)
 		if(strncmp(gr->gr_name, str, len) == 0)
 			vle_compl_add_match(gr->gr_name);
 	}
-	completion_group_end();
+	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }
 

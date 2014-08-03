@@ -995,7 +995,7 @@ complete_options(const char args[], const char **start)
 		}
 	}
 
-	completion_group_end();
+	vle_compl_finish_group();
 	if(opt != NULL && opt->type == OPT_CHARSET)
 	{
 		vle_compl_add_last_match("");
