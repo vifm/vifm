@@ -150,7 +150,7 @@ sorter(const void *first, const void *second)
 }
 
 char *
-next_completion(void)
+vle_compl_next(void)
 {
 	assert(state != NOT_STARTED);
 	state = COMPLETING;

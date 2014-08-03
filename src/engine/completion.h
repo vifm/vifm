@@ -40,7 +40,7 @@ void vle_compl_unite_groups(void);
 void reset_completion(void);
 
 /* Returns copy of the string or NULL. */
-char * next_completion(void);
+char * vle_compl_next(void);
 
 int get_completion_count(void);
 

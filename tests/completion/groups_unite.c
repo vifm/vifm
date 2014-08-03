@@ -23,15 +23,15 @@ test_unite_removes_duplicates(void)
 
 	assert_int_equal(3, get_completion_count());
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("e", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("ec", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("echo", buf);
 	free(buf);
 }
@@ -54,15 +54,15 @@ test_unite_sorts(void)
 
 	assert_int_equal(3, get_completion_count());
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("eca", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("ecj", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("ecz", buf);
 	free(buf);
 }

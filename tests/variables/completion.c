@@ -14,7 +14,7 @@ test_vars_empty_completion(void)
 
 	complete_variables(buf, &start);
 	assert_true(&buf[0] == start);
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("", completed);
 	free(completed);
 }
@@ -28,7 +28,7 @@ test_vars_completion(void)
 
 	complete_variables(buf, &start);
 	assert_true(&buf[0] == start);
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("abc", completed);
 	free(completed);
 }
@@ -43,19 +43,19 @@ test_envvars_completion(void)
 	complete_variables(buf, &start);
 	assert_true(&buf[1] == start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_A", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_B", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_C", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_", completed);
 	free(completed);
 }
@@ -72,15 +72,15 @@ test_do_not_complete_removed_variables(void)
 	complete_variables(buf, &start);
 	assert_true(&buf[1] == start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_A", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_C", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("VAR_", completed);
 	free(completed);
 }

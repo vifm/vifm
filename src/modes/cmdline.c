@@ -2189,7 +2189,7 @@ line_completion(line_stats_t *stat)
 	if(get_completion_count() == 0)
 		return 0;
 
-	completion = next_completion();
+	completion = vle_compl_next();
 	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
 	free(completion);
 

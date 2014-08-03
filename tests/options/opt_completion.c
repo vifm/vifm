@@ -13,22 +13,22 @@ test_space_at_the_end(void)
 
 	reset_completion();
 	complete_options("fusehome=a\\ b\\ ", &start);
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
 	reset_completion();
 	complete_options("fusehome=a\\ b ", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("all", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("cpoptions", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -42,15 +42,15 @@ test_one_choice_opt(void)
 	reset_completion();
 	complete_options("fuse", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 }
@@ -66,15 +66,15 @@ test_one_choice_val(void)
 	complete_options(buf, &start);
 	assert_true(start == buf + 5);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("name", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("name", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("name", completed);
 	free(completed);
 }
@@ -87,7 +87,7 @@ test_invalid_input(void)
 
 	reset_completion();
 	complete_options("fast ?f", &start);
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fast ?f", completed);
 	free(completed);
 }
@@ -101,39 +101,39 @@ test_skip_abbreviations(void)
 	reset_completion();
 	complete_options("", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("all", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("cpoptions", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sort", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sortorder", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("tabstop", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("vifminfo", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("", completed);
 	free(completed);
 }
@@ -147,11 +147,11 @@ test_expand_abbreviations(void)
 	reset_completion();
 	complete_options("fr", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -167,11 +167,11 @@ test_after_eq_value_completion(void)
 	complete_options(buf, &start);
 	assert_true(start == buf + 9);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 }
@@ -187,11 +187,11 @@ test_after_meq_value_completion(void)
 	complete_options(buf, &start);
 	assert_true(start == buf + 10);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 }
@@ -207,11 +207,11 @@ test_after_peq_value_completion(void)
 	complete_options(buf, &start);
 	assert_true(start == buf + 10);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("options", completed);
 	free(completed);
 }
@@ -227,15 +227,15 @@ test_set_values_completion(void)
 	complete_options(buf, &start);
 	assert_true(start == buf + 13);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("commands", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("cs", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("c", completed);
 	free(completed);
 }
@@ -248,22 +248,22 @@ test_colon(void)
 
 	reset_completion();
 	complete_options("fusehome:a\\ b\\ ", &start);
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
 	reset_completion();
 	complete_options("fusehome:a\\ b ", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("all", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("cpoptions", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -277,11 +277,11 @@ test_umbiguous_beginning(void)
 	reset_completion();
 	complete_options("sort", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sort", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sortorder", completed);
 	free(completed);
 }
@@ -295,15 +295,15 @@ test_matching_short_full(void)
 	reset_completion();
 	complete_options("so", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sort", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("sortorder", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("so", completed);
 	free(completed);
 }
@@ -320,7 +320,7 @@ test_after_equal_sign_completion_ok(void)
 	reset_completion();
 	complete_options("fusehome=", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("/home/tmp", completed);
 	free(completed);
 }
@@ -337,7 +337,7 @@ test_after_equal_sign_completion_spaces_ok(void)
 	reset_completion();
 	complete_options("fusehome=", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("/home\\ directory/tmp", completed);
 	free(completed);
 }
@@ -354,7 +354,7 @@ test_after_fake_equal_sign_completion_fail(void)
 	reset_completion();
 	complete_options("fusehome=a=", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("a=", completed);
 	free(completed);
 }
@@ -368,7 +368,7 @@ test_all_completion_ok(void)
 	reset_completion();
 	complete_options("all=", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("", completed);
 	free(completed);
 }
@@ -382,19 +382,19 @@ test_charset_completion_skips_entered_elements(void)
 	reset_completion();
 	complete_options("cpo=a", &start);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("b", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("c", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("", completed);
 	free(completed);
 
-	completed = next_completion();
+	completed = vle_compl_next();
 	assert_string_equal("b", completed);
 	free(completed);
 }

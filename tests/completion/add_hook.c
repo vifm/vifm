@@ -25,15 +25,15 @@ test_set_add_hook_sets_hook(void)
 	vle_compl_finish_group();
 	assert_int_equal(3, get_completion_count());
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b c\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a\"", match);
 	free(match);
 
@@ -55,15 +55,15 @@ test_set_add_hook_resets_hook(void)
 	vle_compl_finish_group();
 	assert_int_equal(3, get_completion_count());
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"x y\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("a b c", match);
 	free(match);
 }
@@ -81,15 +81,15 @@ test_last_match_is_not_pre_processed(void)
 
 	assert_int_equal(3, get_completion_count());
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b c\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("a", match);
 	free(match);
 }

@@ -556,7 +556,7 @@ fast_run_complete(const char cmd[])
 	reset_completion();
 	complete_command_name(command);
 	vle_compl_unite_groups();
-	completed = next_completion();
+	completed = vle_compl_next();
 
 	if(get_completion_count() > 2)
 	{
@@ -571,7 +571,7 @@ fast_run_complete(const char cmd[])
 			else
 			{
 				free(completed);
-				completed = next_completion();
+				completed = vle_compl_next();
 			}
 		}
 
@@ -583,7 +583,7 @@ fast_run_complete(const char cmd[])
 	else
 	{
 		free(completed);
-		completed = next_completion();
+		completed = vle_compl_next();
 		result = format_str("%s %s", completed, args);
 	}
 	free(completed);

@@ -74,13 +74,13 @@ test_skip_goto(void)
 	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("comclear", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("command", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delcommand", completion);
 	free(completion);
 }
@@ -95,10 +95,10 @@ test_skip_abbreviations(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delcommand", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delete", completion);
 	free(completion);
 }
@@ -113,7 +113,7 @@ test_dont_remove_range(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delcommand", completion);
 	free(completion);
 
@@ -122,7 +122,7 @@ test_dont_remove_range(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delcommand", completion);
 	free(completion);
 }
@@ -137,10 +137,10 @@ test_dont_remove_cmd(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("fastrun", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("followlinks", completion);
 	free(completion);
 }
@@ -155,10 +155,10 @@ test_skip_complete_args(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("fastrun", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("followlinks", completion);
 	free(completion);
 }
@@ -175,7 +175,7 @@ test_com_completion(void)
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("udf", completion);
 	free(completion);
 }
@@ -192,7 +192,7 @@ test_delc_completion(void)
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("udf", completion);
 	free(completion);
 }
@@ -207,7 +207,7 @@ test_windo_completion(void)
 	assert_int_equal(2, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("windo", completion);
 	free(completion);
 }
@@ -222,7 +222,7 @@ test_windo_windo_completion(void)
 	assert_int_equal(7, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("comclear", completion);
 	free(completion);
 }
@@ -237,10 +237,10 @@ test_windo_args_completion(void)
 	assert_int_equal(3, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delcommand", completion);
 	free(completion);
-	completion = next_completion();
+	completion = vle_compl_next();
 	assert_string_equal("delete", completion);
 	free(completion);
 }
@@ -264,31 +264,31 @@ test_udf_completion(void)
 
 	reset_completion();
 	assert_int_equal(5, complete_cmd("comm b", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("baz", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("b", buf);
 	free(buf);
 
 	reset_completion();
 	assert_int_equal(5, complete_cmd("comm f", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("foo", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("foo", buf);
 	free(buf);
 
 	reset_completion();
 	assert_int_equal(5, complete_cmd("comm b", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("baz", buf);
 	free(buf);
 }

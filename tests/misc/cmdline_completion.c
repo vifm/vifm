@@ -64,10 +64,10 @@ leave_spaces_at_begin(void)
 
 	reset_completion();
 	assert_int_equal(1, complete_cmd(" qui", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("quit", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("quit", buf);
 	free(buf);
 }
@@ -79,19 +79,19 @@ only_user(void)
 
 	reset_completion();
 	assert_int_equal(8, complete_cmd("command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
 	assert_int_equal(9, complete_cmd(" command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
 	assert_int_equal(10, complete_cmd("  command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 }

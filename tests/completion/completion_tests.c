@@ -15,19 +15,19 @@ test_general(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
 }
@@ -43,16 +43,16 @@ test_sorting(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
 }
@@ -66,16 +66,16 @@ test_one_element_completion(void)
 
 	assert_int_equal(0, vle_compl_add_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
 }
@@ -90,10 +90,10 @@ test_one_unambiguous_completion(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abcd", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abcd", buf);
 	free(buf);
 }
@@ -108,19 +108,19 @@ test_rewind_one_unambiguous_completion(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abcd", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abcd", buf);
 	free(buf);
 
 	rewind_completion();
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abcd", buf);
 	free(buf);
 }
@@ -136,37 +136,37 @@ test_rewind(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
 
 	rewind_completion();
-	free(next_completion());
+	free(vle_compl_next());
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
 
 	rewind_completion();
-	free(next_completion());
+	free(vle_compl_next());
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("acd", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("abc", buf);
 	free(buf);
 }
@@ -184,15 +184,15 @@ test_order(void)
 
 	set_completion_order(1);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("az", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("aa", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("a", buf);
 	free(buf);
 }
@@ -209,23 +209,23 @@ test_umbiguous_begin(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("sort"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("sort", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("sortnumbers", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("sortorder", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("sort", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("sort", buf);
 	free(buf);
 }
@@ -242,19 +242,19 @@ test_two_matches(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("mount"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mountpoint", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mount", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mount", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mountpoint", buf);
 	free(buf);
 }
@@ -271,19 +271,19 @@ test_removes_duplicates(void)
 
 	assert_int_equal(0, vle_compl_add_last_match("m"));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mou", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mount", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("m", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("mou", buf);
 	free(buf);
 }
