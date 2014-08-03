@@ -4,7 +4,7 @@
 /* This should be a macro to see what test has failed. */
 #define ASSERT_NEXT_MATCH(str) \
 	{ \
-		char *buf = next_completion(); \
+		char *buf = vle_compl_next(); \
 		assert_string_equal((str), buf); \
 		free(buf); \
 	}

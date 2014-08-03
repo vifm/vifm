@@ -62,12 +62,12 @@ leave_spaces_at_begin(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(1, complete_cmd(" qui", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("quit", buf);
 	free(buf);
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("quit", buf);
 	free(buf);
 }
@@ -77,21 +77,21 @@ only_user(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(8, complete_cmd("command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(9, complete_cmd(" command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(10, complete_cmd("  command ", NULL));
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("bar", buf);
 	free(buf);
 }
@@ -99,7 +99,7 @@ only_user(void)
 static void
 test_set_completion(void)
 {
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set all") == 0);
 }
@@ -112,7 +112,7 @@ test_no_sdquoted_completion_does_nothing(void)
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, line_completion(&stats));
 	assert_int_equal(0, wcscmp(stats.line, L"command '"));
 }
@@ -125,7 +125,7 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
 
-	reset_completion();
+	vle_compl_reset();
 }
 
 static void
@@ -164,6 +164,30 @@ test_dquoted_completion_escaping(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
 }
 
+static void
+test_last_match_is_properly_escaped(void)
+{
+	char *match;
+
+	assert_int_equal(0, chdir("../quotes-in-names"));
+
+	prepare_for_line_completion(L"touch \"d-quote-\\\"-in");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in-name-2", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in-name-3", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("d-quote-\\\"-in", match);
+	free(match);
+}
+
 void
 test_cmdline_completion(void)
 {
@@ -180,6 +204,7 @@ test_cmdline_completion(void)
 	run_test(test_squoted_completion_escaping);
 	run_test(test_dquoted_completion);
 	run_test(test_dquoted_completion_escaping);
+	run_test(test_last_match_is_properly_escaped);
 
 	test_fixture_end();
 }

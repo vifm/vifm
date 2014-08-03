@@ -697,15 +697,15 @@ complete_colorschemes(const char name[])
 		{
 			if(strnoscmp(name, schemes[i], len) == 0)
 			{
-				add_completion(schemes[i]);
+				vle_compl_add_match(schemes[i]);
 			}
 		}
 	}
 
 	free_string_array(schemes, schemes_len);
 
-	completion_group_end();
-	add_completion(name);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(name);
 }
 
 const char *

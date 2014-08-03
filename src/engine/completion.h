@@ -21,35 +21,40 @@
 
 /* Match addition hook function signature.  Must return newly allocated
  * string. */
-typedef char * (*compl_add_hook_f)(const char match[]);
+typedef char * (*vle_compl_add_hook_f)(const char match[]);
 
-/* Returns zero on success. */
-int add_completion(const char *completion);
+/* Returns zero on success, otherwise non-zero is returned. */
+int vle_compl_add_match(const char *completion);
 
-void completion_group_end(void);
+/* Adds original input to the completion, should be called after all matches are
+ * registered with vle_compl_add_match().  Returns zero on success, otherwise
+ * non-zero is returned. */
+int vle_compl_add_last_match(const char origin[]);
+
+void vle_compl_finish_group(void);
 
 /* Squashes all existing completion groups into one.  Performs resorting and
  * de-duplication of resulting single group. */
-void completion_groups_unite(void);
+void vle_compl_unite_groups(void);
 
-void reset_completion(void);
+void vle_compl_reset(void);
 
 /* Returns copy of the string or NULL. */
-char * next_completion(void);
+char * vle_compl_next(void);
 
-int get_completion_count(void);
+int vle_compl_get_count(void);
 
-void set_completion_order(int reversed);
+void vle_compl_set_order(int reversed);
 
-const char ** get_completion_list(void);
+const char ** vle_compl_get_list(void);
 
-int get_completion_pos(void);
+int vle_compl_get_pos(void);
 
 /* Go to the last item (probably to user input). */
-void rewind_completion(void);
+void vle_compl_rewind(void);
 
 /* Sets match addition hook.  NULL value resets hook. */
-void compl_set_add_hook(compl_add_hook_f hook);
+void vle_compl_set_add_hook(vle_compl_add_hook_f hook);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
 

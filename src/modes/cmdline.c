@@ -930,7 +930,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 0;
 
-	if(input_stat.complete_continue && get_completion_count() == 2)
+	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
@@ -945,7 +945,7 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 1;
 
-	if(input_stat.complete_continue && get_completion_count() == 2)
+	if(input_stat.complete_continue && vle_compl_get_count() == 2)
 		input_stat.complete_continue = 0;
 
 	do_completion();
@@ -986,9 +986,9 @@ draw_wild_menu(int op)
 {
 	static int last_pos;
 
-	const char ** list = get_completion_list();
-	int pos = get_completion_pos();
-	int count = get_completion_count() - 1;
+	const char ** list = vle_compl_get_list();
+	int pos = vle_compl_get_pos();
+	int count = vle_compl_get_count() - 1;
 	int i;
 	int len = getmaxx(stdscr);
 
@@ -1641,7 +1641,7 @@ cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
 		return;
-	rewind_completion();
+	vle_compl_rewind();
 
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
@@ -2150,7 +2150,7 @@ line_completion(line_stats_t *stat)
 
 		stat->line[stat->index] = t;
 
-		reset_completion();
+		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
 		if(sub_mode == CMD_SUBMODE)
@@ -2160,16 +2160,16 @@ line_completion(line_stats_t *stat)
 			{
 				case CLL_OUT_OF_ARG:
 				case CLL_NO_QUOTING:
-					compl_set_add_hook(&escaped_arg_hook);
+					vle_compl_set_add_hook(&escaped_arg_hook);
 					break;
 
 				case CLL_S_QUOTING:
-					compl_set_add_hook(&squoted_arg_hook);
+					vle_compl_set_add_hook(&squoted_arg_hook);
 					compl_func_arg = CPP_SQUOTES_UNESCAPE;
 					break;
 
 				case CLL_D_QUOTING:
-					compl_set_add_hook(&dquoted_arg_hook);
+					vle_compl_set_add_hook(&dquoted_arg_hook);
 					compl_func_arg = CPP_DQUOTES_UNESCAPE;
 					break;
 
@@ -2181,19 +2181,19 @@ line_completion(line_stats_t *stat)
 
 		offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
 
-		compl_set_add_hook(NULL);
+		vle_compl_set_add_hook(NULL);
 	}
 
-	set_completion_order(input_stat.reverse_completion);
+	vle_compl_set_order(input_stat.reverse_completion);
 
-	if(get_completion_count() == 0)
+	if(vle_compl_get_count() == 0)
 		return 0;
 
-	completion = next_completion();
+	completion = vle_compl_next();
 	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
 	free(completion);
 
-	if(get_completion_count() >= 2)
+	if(vle_compl_get_count() >= 2)
 		stat->complete_continue = 1;
 
 	return result;
@@ -2280,7 +2280,7 @@ stop_history_completion(void)
 		return;
 
 	input_stat.complete_continue = 0;
-	reset_completion();
+	vle_compl_reset();
 	if(cfg.wild_menu &&
 			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
 	{

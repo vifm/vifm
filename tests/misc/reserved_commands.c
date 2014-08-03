@@ -14,7 +14,7 @@ vim_like_completion(void)
 {
 	init_commands();
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("e", NULL));
 	ASSERT_NEXT_MATCH("echo");
 	ASSERT_NEXT_MATCH("edit");
@@ -25,12 +25,12 @@ vim_like_completion(void)
 	ASSERT_NEXT_MATCH("exit");
 	ASSERT_NEXT_MATCH("e");
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("vm", NULL));
 	ASSERT_NEXT_MATCH("vmap");
 	ASSERT_NEXT_MATCH("vmap");
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("j", NULL));
 	ASSERT_NEXT_MATCH("jobs");
 	ASSERT_NEXT_MATCH("jobs");

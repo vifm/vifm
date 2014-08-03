@@ -17,27 +17,27 @@ test_set_add_hook_sets_hook(void)
 {
 	char *match;
 
-	compl_set_add_hook(&add_dquotes);
+	vle_compl_set_add_hook(&add_dquotes);
 
-	assert_int_equal(0, add_completion("a b c"));
-	assert_int_equal(0, add_completion("a b"));
-	assert_int_equal(0, add_completion("a"));
-	completion_group_end();
-	assert_int_equal(3, get_completion_count());
+	assert_int_equal(0, vle_compl_add_match("a b c"));
+	assert_int_equal(0, vle_compl_add_match("a b"));
+	assert_int_equal(0, vle_compl_add_match("a"));
+	vle_compl_finish_group();
+	assert_int_equal(3, vle_compl_get_count());
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b c\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a\"", match);
 	free(match);
 
-	compl_set_add_hook(NULL);
+	vle_compl_set_add_hook(NULL);
 }
 
 static void
@@ -45,26 +45,52 @@ test_set_add_hook_resets_hook(void)
 {
 	char *match;
 
-	compl_set_add_hook(&add_dquotes);
-	assert_int_equal(0, add_completion("a b"));
-	assert_int_equal(0, add_completion("x y"));
+	vle_compl_set_add_hook(&add_dquotes);
+	assert_int_equal(0, vle_compl_add_match("a b"));
+	assert_int_equal(0, vle_compl_add_match("x y"));
 
-	compl_set_add_hook(NULL);
-	assert_int_equal(0, add_completion("a b c"));
+	vle_compl_set_add_hook(NULL);
+	assert_int_equal(0, vle_compl_add_match("a b c"));
 
-	completion_group_end();
-	assert_int_equal(3, get_completion_count());
+	vle_compl_finish_group();
+	assert_int_equal(3, vle_compl_get_count());
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"a b\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("\"x y\"", match);
 	free(match);
 
-	match = next_completion();
+	match = vle_compl_next();
 	assert_string_equal("a b c", match);
+	free(match);
+}
+
+static void
+test_last_match_is_pre_processed(void)
+{
+	char *match;
+
+	vle_compl_set_add_hook(&add_dquotes);
+	assert_int_equal(0, vle_compl_add_match("a b"));
+	assert_int_equal(0, vle_compl_add_match("a b c"));
+	vle_compl_finish_group();
+	assert_int_equal(0, vle_compl_add_last_match("a"));
+
+	assert_int_equal(3, vle_compl_get_count());
+
+	match = vle_compl_next();
+	assert_string_equal("\"a b c\"", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("\"a b\"", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("\"a\"", match);
 	free(match);
 }
 
@@ -75,6 +101,7 @@ add_hook_tests(void)
 
 	run_test(test_set_add_hook_sets_hook);
 	run_test(test_set_add_hook_resets_hook);
+	run_test(test_last_match_is_pre_processed);
 
 	test_fixture_end();
 }

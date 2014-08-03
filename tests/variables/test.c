@@ -37,7 +37,7 @@ static void
 teardown(void)
 {
 	clear_variables();
-	reset_completion();
+	vle_compl_reset();
 }
 
 int

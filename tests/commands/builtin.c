@@ -27,14 +27,14 @@ test_empty_line_completion(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("", NULL));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("!", buf);
 	free(buf);
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("alink", buf);
 	free(buf);
 }
@@ -44,10 +44,10 @@ test_set(void)
 {
 	char *buf;
 
-	reset_completion();
+	vle_compl_reset();
 	assert_int_equal(0, complete_cmd("se", NULL));
 
-	buf = next_completion();
+	buf = vle_compl_next();
 	assert_string_equal("set", buf);
 	free(buf);
 }

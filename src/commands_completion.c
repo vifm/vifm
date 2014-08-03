@@ -180,28 +180,23 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			arg = argv[arg_num];
 		}
 
-		if(args[arg_pos] == '"' && !ends_with(args + 1, "\""))
-		{
-			arg = args + arg_pos + 1;
-			start = (slash == NULL) ? arg : (slash + 1);
-		}
-		else if(args[arg_pos] == '\'' && !ends_with(args + 1, "'"))
-		{
-			arg = args + arg_pos + 1;
-			start = (slash == NULL) ? arg : (slash + 1);
-		}
-
 		switch((CompletionPreProcessing)extra_arg)
 		{
 			case CPP_NONE:
 				/* Do nothing. */
 				break;
 			case CPP_SQUOTES_UNESCAPE:
+				arg = args + arg_pos + 1;
+				start = (slash == NULL) ? arg : (slash + 1);
+
 				free_me = strdup(arg);
 				expand_squotes_escaping(free_me);
 				arg = free_me;
 				break;
 			case CPP_DQUOTES_UNESCAPE:
+				arg = args + arg_pos + 1;
+				start = (slash == NULL) ? arg : (slash + 1);
+
 				free_me = strdup(arg);
 				expand_dquotes_escaping(free_me);
 				arg = free_me;
@@ -294,10 +289,10 @@ complete_help(const char *str)
 	for(i = 0; tags[i] != NULL; i++)
 	{
 		if(strstr(tags[i], str) != NULL)
-			add_completion(tags[i]);
+			vle_compl_add_match(tags[i]);
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -344,11 +339,11 @@ complete_from_string_list(const char str[], const char *list[], size_t list_len)
 	{
 		if(strncmp(str, list[i], len) == 0)
 		{
-			add_completion(list[i]);
+			vle_compl_add_match(list[i]);
 		}
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 static int
@@ -367,7 +362,7 @@ complete_chown(const char *str)
 		return colon - str + 1;
 	}
 #else
-	add_completion(str);
+	vle_compl_add_last_match(str);
 	return 0;
 #endif
 }
@@ -383,8 +378,8 @@ complete_filetype(const char *str)
 
 	complete_progs(str, get_magic_handlers(filename));
 
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -403,7 +398,7 @@ complete_progs(const char *str, assoc_records_t records)
 		if(strnoscmp(command, str, len) == 0)
 		{
 			char *escaped = escape_chars(command, "|");
-			add_completion(escaped);
+			vle_compl_add_match(escaped);
 			free(escaped);
 		}
 	}
@@ -417,10 +412,10 @@ complete_highlight_groups(const char *str)
 	for(i = 0; i < MAXNUM_COLOR - 2; i++)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
-			add_completion(HI_GROUPS[i]);
+			vle_compl_add_match(HI_GROUPS[i]);
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 static int
@@ -441,7 +436,7 @@ complete_highlight_arg(const char *str)
 		for(i = 0; i < ARRAY_LEN(args); i++)
 		{
 			if(strncmp(str, args[i], len) == 0)
-				add_completion(args[i]);
+				vle_compl_add_match(args[i]);
 		}
 	}
 	else
@@ -467,29 +462,29 @@ complete_highlight_arg(const char *str)
 			for(i = 0; i < ARRAY_LEN(STYLES); i++)
 			{
 				if(strncasecmp(equal, STYLES[i], len) == 0)
-					add_completion(STYLES[i]);
+					vle_compl_add_match(STYLES[i]);
 			}
 		}
 		else
 		{
 			if(strncasecmp(equal, "default", len) == 0)
-				add_completion("default");
+				vle_compl_add_match("default");
 			if(strncasecmp(equal, "none", len) == 0)
-				add_completion("none");
+				vle_compl_add_match("none");
 			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
-					add_completion(XTERM256_COLOR_NAMES[i]);
+					vle_compl_add_match(XTERM256_COLOR_NAMES[i]);
 			}
 			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
-					add_completion(LIGHT_COLOR_NAMES[i]);
+					vle_compl_add_match(LIGHT_COLOR_NAMES[i]);
 			}
 		}
 	}
-	completion_group_end();
-	add_completion((equal == NULL) ? str : equal);
+	vle_compl_finish_group();
+	vle_compl_add_last_match((equal == NULL) ? str : equal);
 	return result;
 }
 
@@ -511,15 +506,15 @@ complete_envvar(const char str[])
 			if(equal != NULL)
 			{
 				*equal = '\0';
-				add_completion(*p);
+				vle_compl_add_match(*p);
 				*equal = '=';
 			}
 		}
 		p++;
 	}
 
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 static void
@@ -532,10 +527,10 @@ complete_winrun(const char *str)
 	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
 	{
 		if(strncmp(str, VARIANTS[i], len) == 0)
-			add_completion(VARIANTS[i]);
+			vle_compl_add_match(VARIANTS[i]);
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 char *
@@ -553,14 +548,14 @@ fast_run_complete(const char cmd[])
 		return strdup(cmd);
 	}
 
-	reset_completion();
+	vle_compl_reset();
 	complete_command_name(command);
-	completion_groups_unite();
-	completed = next_completion();
+	vle_compl_unite_groups();
+	completed = vle_compl_next();
 
-	if(get_completion_count() > 2)
+	if(vle_compl_get_count() > 2)
 	{
-		int c = get_completion_count() - 1;
+		int c = vle_compl_get_count() - 1;
 		while(c-- > 0)
 		{
 			if(stroscmp(command, completed) == 0)
@@ -571,7 +566,7 @@ fast_run_complete(const char cmd[])
 			else
 			{
 				free(completed);
-				completed = next_completion();
+				completed = vle_compl_next();
 			}
 		}
 
@@ -583,7 +578,7 @@ fast_run_complete(const char cmd[])
 	else
 	{
 		free(completed);
-		completed = next_completion();
+		completed = vle_compl_next();
 		result = format_str("%s %s", completed, args);
 	}
 	free(completed);
@@ -607,7 +602,7 @@ complete_command_name(const char beginning[])
 			filename_completion(beginning, CT_EXECONLY);
 		}
 	}
-	add_completion(beginning);
+	vle_compl_add_last_match(beginning);
 }
 
 static void
@@ -641,7 +636,7 @@ filename_completion(const char *str, CompletionType type)
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
 		char *s = expand_tilde(strdup(str));
-		add_completion(s);
+		vle_compl_add_match(s);
 		free(s);
 		return;
 	}
@@ -702,7 +697,7 @@ filename_completion(const char *str, CompletionType type)
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
-		add_completion(filename);
+		vle_compl_add_match(filename);
 	}
 	else
 	{
@@ -743,20 +738,20 @@ filename_completion_internal(DIR * dir, const char * dirname,
 
 		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
-			char buf[NAME_MAX + 1];
+			char buf[strlen(d->d_name) + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
-			add_completion(buf);
+			vle_compl_add_match(buf);
 		}
 		else
 		{
-			add_completion(d->d_name);
+			vle_compl_add_match(d->d_name);
 		}
 	}
 
-	completion_group_end();
+	vle_compl_finish_group();
 	if(type != CT_EXECONLY)
 	{
-		add_completion(filename);
+		vle_compl_add_last_match(filename);
 	}
 }
 
@@ -789,10 +784,10 @@ complete_user_name(const char *str)
 	while((pw = getpwent()) != NULL)
 	{
 		if(strncmp(pw->pw_name, str, len) == 0)
-			add_completion(pw->pw_name);
+			vle_compl_add_match(pw->pw_name);
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 void
@@ -805,10 +800,10 @@ complete_group_name(const char *str)
 	while((gr = getgrent()) != NULL)
 	{
 		if(strncmp(gr->gr_name, str, len) == 0)
-			add_completion(gr->gr_name);
+			vle_compl_add_match(gr->gr_name);
 	}
-	completion_group_end();
-	add_completion(str);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 #else
@@ -848,7 +843,7 @@ complete_with_shared(const char *server, const char *file)
 				if(strnoscmp(buf, file, len) == 0)
 				{
 					char *escaped = escape_filename(buf, 1);
-					add_completion(escaped);
+					vle_compl_add_match(escaped);
 					free(escaped);
 				}
 				p++;
