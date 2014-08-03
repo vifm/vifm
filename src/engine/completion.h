@@ -48,7 +48,7 @@ void vle_compl_set_order(int reversed);
 
 const char ** vle_compl_get_list(void);
 
-int get_completion_pos(void);
+int vle_compl_get_pos(void);
 
 /* Go to the last item (probably to user input). */
 void rewind_completion(void);

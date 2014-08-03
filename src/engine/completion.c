@@ -223,7 +223,7 @@ vle_compl_get_list(void)
 }
 
 int
-get_completion_pos(void)
+vle_compl_get_pos(void)
 {
 	return curr;
 }

@@ -987,7 +987,7 @@ draw_wild_menu(int op)
 	static int last_pos;
 
 	const char ** list = vle_compl_get_list();
-	int pos = get_completion_pos();
+	int pos = vle_compl_get_pos();
 	int count = vle_compl_get_count() - 1;
 	int i;
 	int len = getmaxx(stdscr);
