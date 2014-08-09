@@ -175,7 +175,11 @@ update_compile_info:
 
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
-		groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		if [ "x$$(whereis col)" != "x" ]; then \
+			groff -Tutf8 -man ../data/vifm.1 | col -b | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		else \
+			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		fi \
 	fi
 
 tags.c: ../data/vim/doc/vifm.txt
