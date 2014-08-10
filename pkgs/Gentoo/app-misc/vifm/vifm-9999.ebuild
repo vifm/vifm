@@ -4,7 +4,7 @@
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/ksteen/vifm.git"
+EGIT_REPO_URI="git://github.com/vifm/vifm.git"
 if [[ ${PV} == "9999" ]]; then
 	KEYWORDS=""
 	GIT_ECLASS="git-2"
