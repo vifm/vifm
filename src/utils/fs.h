@@ -27,8 +27,9 @@
 
 /* Functions to deal with file system objects */
 
-/* Checks if path is an existing directory. */
-int is_dir(const char *path);
+/* Checks if path is an existing directory.  Automatically deferences symbolic
+ * links. */
+int is_dir(const char path[]);
 
 /* Checks whether directory is empty.  Returns non-zero if it isn't, in case of
  * error or when directory is empty zero is returned. */

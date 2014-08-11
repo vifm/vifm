@@ -3521,6 +3521,36 @@ static void
 find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 		size_t buf_size)
 {
+	char *exptr;
+	char *ex_copy;
+	char *free_this;
+
+	if(is_builtin_dir(dst) || starts_with_lit(dst, "./") ||
+			starts_with_lit(dst, "../"))
+	{
+		snprintf(buf, buf_size, "%s/%s", base_dir, dst);
+		return;
+	}
+
+	ex_copy = strdup(cfg.cd_path);
+	free_this = ex_copy;
+
+	while((exptr = strchr(ex_copy, ',')) != NULL)
+	{
+		*exptr = '\0';
+
+		snprintf(buf, buf_size, "%s/%s", ex_copy, dst);
+
+		if(is_dir(buf))
+		{
+			free(free_this);
+			return;
+		}
+
+		ex_copy = exptr + 1;
+	}
+	free(free_this);
+
 	snprintf(buf, buf_size, "%s/%s", base_dir, dst);
 }
 

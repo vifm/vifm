@@ -122,7 +122,11 @@ typedef struct config_t
 	char *find_prg; /* find tool calling pattern. */
 	char *grep_prg; /* grep tool calling pattern. */
 	char *locate_prg; /* locate tool calling pattern. */
-}config_t;
+
+	/* Coma separated list of places to look for relative path to directories. */
+	char *cd_path;
+}
+config_t;
 
 extern config_t cfg;
 
