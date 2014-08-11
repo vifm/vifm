@@ -55,7 +55,7 @@ char * replace_home_part(const char directory[]);
 
 /* Expands tilde in from of the path.  Can free the path.  Returns the path or
  * newly allocated string without tilde. */
-char * expand_tilde(char path[]);
+char * replace_tilde(char path[]);
 
 /* Find beginning of the last component in the path ignoring trailing
  * slashes. */

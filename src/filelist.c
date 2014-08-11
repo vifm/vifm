@@ -3457,7 +3457,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 
 	if(path != NULL)
 	{
-		char *arg = expand_tilde(strdup(path));
+		char *arg = replace_tilde(strdup(path));
 #ifndef _WIN32
 		if(is_path_absolute(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
@@ -3539,7 +3539,7 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 	{
 		*exptr = '\0';
 
-		snprintf(buf, buf_size, "%s/%s", expand_tilde(strdup(ex_copy)), dst);
+		snprintf(buf, buf_size, "%s/%s", replace_tilde(strdup(ex_copy)), dst);
 
 		if(is_dir(buf))
 		{

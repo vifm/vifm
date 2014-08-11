@@ -80,8 +80,8 @@ char *
 expand_path(const char path[])
 {
 	char *const expanded_envvars = expand_envvars(path, 0);
-	/* expand_tilde() frees memory pointed to by expand_envvars. */
-	return expand_tilde(expanded_envvars);
+	/* replace_tilde() frees memory pointed to by expand_envvars. */
+	return replace_tilde(expanded_envvars);
 }
 
 char *

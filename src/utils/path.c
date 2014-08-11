@@ -413,7 +413,7 @@ replace_home_part(const char directory[])
 }
 
 char *
-expand_tilde(char path[])
+replace_tilde(char path[])
 {
 #ifndef _WIN32
 	char name[NAME_MAX];
