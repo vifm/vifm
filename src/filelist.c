@@ -3539,7 +3539,7 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 	{
 		*exptr = '\0';
 
-		snprintf(buf, buf_size, "%s/%s", ex_copy, dst);
+		snprintf(buf, buf_size, "%s/%s", expand_tilde(strdup(ex_copy)), dst);
 
 		if(is_dir(buf))
 		{
