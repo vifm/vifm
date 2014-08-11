@@ -37,7 +37,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() system() */
-#include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy()
+#include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() */
 
 #include "cfg/config.h"
@@ -1759,7 +1759,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 2)
 		{
-			char *directory = replace_tilde(strdup(cmd_info->argv[1]));
+			char *directory = expand_tilde(cmd_info->argv[1]);
 			if(!is_path_absolute(directory))
 			{
 				if(curr_stats.load_stage < 3)
@@ -2996,7 +2996,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 				curr_view->dir_entry[pos].name);
 	}
 
-	expanded_path = replace_tilde(strdup(cmd_info->argv[1]));
+	expanded_path = expand_tilde(cmd_info->argv[1]);
 	if(!is_path_absolute(expanded_path))
 	{
 		free(expanded_path);
@@ -3437,7 +3437,7 @@ static int
 source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
-	char *path = replace_tilde(strdup(cmd_info->argv[0]));
+	char *path = expand_tilde(cmd_info->argv[0]);
 	if(!path_exists(path))
 	{
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);

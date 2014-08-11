@@ -25,8 +25,9 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
-                       strncat() strchr() strcpy() strlen() strrchr() */
+#include <string.h> /* strcat() strcmp() strcasecmp() strdup() strncmp()
+                       strncasecmp() strncat() strchr() strcpy() strlen()
+                       strrchr() */
 
 #ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
@@ -410,6 +411,12 @@ replace_home_part(const char directory[])
 		chosp(buf);
 
 	return buf;
+}
+
+char *
+expand_tilde(const char path[])
+{
+	return replace_tilde(strdup(path));
 }
 
 char *

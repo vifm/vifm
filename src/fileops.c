@@ -1704,7 +1704,7 @@ is_dir_path(FileView *view, const char *path, char *buf)
 
 	if(path[0] == '/' || path[0] == '~')
 	{
-		char *expanded_path = replace_tilde(strdup(path));
+		char *expanded_path = expand_tilde(path);
 		strcpy(buf, expanded_path);
 		free(expanded_path);
 	}
