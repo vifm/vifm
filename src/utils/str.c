@@ -483,5 +483,18 @@ str_to_int(const char str[])
 	     : ((number == LONG_MIN) ? INT_MIN : number);
 }
 
+void
+replace_char(char str[], char from, char to)
+{
+	while(*str != '\0')
+	{
+		if(*str == from)
+		{
+			*str = to;
+		}
+		++str;
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
