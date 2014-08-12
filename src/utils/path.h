@@ -111,9 +111,9 @@ int find_cmd_in_path(const char cmd[], size_t path_len, char path[]);
 
 int is_unc_path(const char *path);
 
-void to_forward_slash(char *path);
+void to_forward_slash(char path[]);
 
-void to_back_slash(char *path);
+void to_back_slash(char path[]);
 
 #endif
 

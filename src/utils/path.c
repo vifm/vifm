@@ -665,31 +665,21 @@ find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 #ifdef _WIN32
 
 int
-is_unc_path(const char *path)
+is_unc_path(const char path[])
 {
 	return (path[0] == '/' && path[1] == '/' && path[2] != '/');
 }
 
 void
-to_forward_slash(char *path)
+to_forward_slash(char path[])
 {
-	int i;
-	for(i = 0; path[i] != '\0'; i++)
-	{
-		if(path[i] == '\\')
-			path[i] = '/';
-	}
+	replace_char(path, '\\', '/');
 }
 
 void
-to_back_slash(char *path)
+to_back_slash(char path[])
 {
-	int i;
-	for(i = 0; path[i] != '\0'; i++)
-	{
-		if(path[i] == '/')
-			path[i] = '\\';
-	}
+	replace_char(path, '/', '\\');
 }
 
 #endif
