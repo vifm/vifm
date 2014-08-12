@@ -53,12 +53,12 @@ char * escape_filename(const char *string, int quote_percent);
  * statically allocated buffer of size PATH_MAX. */
 char * replace_home_part(const char directory[]);
 
-/* Expands tilde in front of the path.  Returns newly allocated string without
- * tilde. */
+/* Expands tilde in the front of the path.  Returns newly allocated string
+ * without tilde. */
 char * expand_tilde(const char path[]);
 
-/* Expands tilde in front of the path.  Can free the path.  Returns the path or
- * newly allocated string without tilde. */
+/* Expands tilde in the front of the path.  Can free the path.  Returns the path
+ * or newly allocated string without tilde. */
 char * replace_tilde(char path[]);
 
 /* Find beginning of the last component in the path ignoring trailing
