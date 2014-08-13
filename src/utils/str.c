@@ -496,5 +496,36 @@ replace_char(char str[], char from, char to)
 	}
 }
 
+char *
+split_and_get(char str[], char sep, char **state)
+{
+	char *end;
+
+	if(*state != NULL)
+	{
+		if(**state == '\0')
+		{
+			return NULL;
+		}
+		str += strlen(str) + 1;
+	}
+
+	end = strchr(str, sep);
+	while(end != NULL)
+	{
+		if(end != str)
+		{
+			*end = '\0';
+			break;
+		}
+
+		str = end + 1;
+		end = strchr(str, sep);
+	}
+
+	*state = (end == NULL) ? (str + strlen(str)) : (end + 1);
+	return (*str == '\0') ? NULL : str;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
