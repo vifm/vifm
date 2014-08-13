@@ -3521,9 +3521,8 @@ static void
 find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 		size_t buf_size)
 {
-	char *exptr;
-	char *ex_copy;
 	char *free_this;
+	char *part, *state;
 
 	if(is_builtin_dir(dst) || starts_with_lit(dst, "./") ||
 			starts_with_lit(dst, "../"))
@@ -3532,22 +3531,19 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 		return;
 	}
 
-	ex_copy = strdup(cfg.cd_path);
-	free_this = ex_copy;
+	part = strdup(cfg.cd_path);
+	free_this = part;
 
-	while((exptr = strchr(ex_copy, ',')) != NULL)
+	state = NULL;
+	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		*exptr = '\0';
-
-		snprintf(buf, buf_size, "%s/%s", expand_tilde(ex_copy), dst);
+		snprintf(buf, buf_size, "%s/%s", expand_tilde(part), dst);
 
 		if(is_dir(buf))
 		{
 			free(free_this);
 			return;
 		}
-
-		ex_copy = exptr + 1;
 	}
 	free(free_this);
 
