@@ -45,6 +45,8 @@
 	symbolic link creation with system calls.  Available only if 'syscalls' is
 	set.
 
+	Added 'cdpath' option.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn).
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

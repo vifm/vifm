@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 July 28
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 August 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2199,6 +2199,21 @@ and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
 l key in the ":history ." and ":trashes" menus is treated like :cd command.
 This option also affects bookmarks so that navigating to a bookmark doesn't
 restore cursor position.
+
+                                               *vifm-'cdpath'* *vifm-'cd'*
+cdpath cd
+type: string list
+default: value of $CDPATH with commas instead of colons
+Specifies directories to check on changing directory with relative path that
+doesn't start with "./" or "../".  When non-empty current directory is
+examined after directories listed in this option are processed.
+
+This option doesn't affect completion of |vifm-:cd| command.
+
+Example: >
+ set cdpath=~
+This way ":cd bin" will switch to ~/bin even if directory named "bin/" exists
+in current directory, while ":cd ./bin" will ignore value of 'cdpath'.
 
                                                *vifm-'classify'*
 classify

@@ -86,6 +86,7 @@ static void load_options_defaults(void);
 static void add_options(void);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
+static void cdpath_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
 static int str_to_classify(const char str[],
 		char decorations[FILE_TYPE_COUNT][2]);
@@ -253,6 +254,10 @@ options[] =
 	{ "autochpos", "",
 	  OPT_BOOL, 0, NULL, &autochpos_handler,
 	  { .ref.bool_val = &cfg.auto_ch_pos },
+	},
+	{ "cdpath", "cd",
+	  OPT_STRLIST, 0, NULL, &cdpath_handler,
+	  { .ref.str_val = &cfg.cd_path },
 	},
 	{ "classify", "",
 	  OPT_STRLIST, 0, NULL, &classify_handler,
@@ -714,6 +719,13 @@ autochpos_handler(OPT_OP op, optval_t val)
 		clean_positions_in_history(curr_view);
 		clean_positions_in_history(other_view);
 	}
+}
+
+/* Specifies directories to check on cding by relative path. */
+static void
+cdpath_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.cd_path, val.str_val);
 }
 
 static void
