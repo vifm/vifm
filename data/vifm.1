@@ -1,4 +1,4 @@
-.TH vifm 1 "August 14, 2014" "" "Vifm"
+.TH vifm 1 "August 15, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4267,6 +4267,24 @@ commands.
 
   g[lobal]
   v[global]
+.\" ---------------------------------------------------------------------------
+.SH ENVIRONMENT VARIABLES
+.\" ---------------------------------------------------------------------------
+.TP
+.BI VIFM
+Points to main configuration directory (usually ~/.vifm/).
+.TP
+.BI MYVIFMRC
+Points to main configuration file (usually ~/.vifm/vifmrc).
+.LP
+These environment variables are valid inside vifm and also can be used to
+configure it by setting some of them before running vifm.
+.LP
+When $MYVIFMRC isn't set, it's made as $VIFM/vifmrc (exception
+for Windows: vifmrc in the same directory as vifm.exe has higher priority than
+$VIFM/vifmrc).
+.LP
+See Startup section above for more details.
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO
 .\" ---------------------------------------------------------------------------

@@ -113,6 +113,9 @@
 	and " types of quotes) and considers argument type context by performing
 	escaping when needed.
 
+	Documented environment variables used by vifm separately as usually done
+	in documentation for other applications.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
