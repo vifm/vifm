@@ -424,6 +424,7 @@ const char *tags[] = {
 	"vifm-d",
 	"vifm-dd",
 	"vifm-e",
+	"vifm-env-vars",
 	"vifm-executable()",
 	"vifm-expand()",
 	"vifm-expr-!=",

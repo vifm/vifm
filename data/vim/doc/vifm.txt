@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 August 14
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 August 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -29,6 +29,7 @@
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
+|vifm-env-vars|           Environment variables that affect vifm.
 |vifm-see-also|           Other resources about vifm.
 
 Tag name structure:
@@ -3547,6 +3548,24 @@ commands.
 
   g[lobal]
   v[global]
+
+--------------------------------------------------------------------------------
+*vifm-env-vars*
+
+|vifm-$VIFM|
+Points to main configuration directory (usually ~/.vifm/).
+
+|vifm-$MYVIFMRC|
+Points to main configuration file (usually ~/.vifm/vifmrc).
+
+These environment variables are valid inside vifm and also can be used to
+configure it by setting some of them before running vifm.
+
+When $MYVIFMRC isn't set, it's made as $VIFM/vifmrc (exception for Windows:
+vifmrc in the same directory as vifm.exe has higher priority than
+$VIFM/vifmrc).
+
+See |vifm-startup| section above for more details.
 
 --------------------------------------------------------------------------------
 *vifm-see-also*
