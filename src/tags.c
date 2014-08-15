@@ -23,6 +23,8 @@ const char *tags[] = {
 	"vifm-'",
 	"vifm-'aproposprg'",
 	"vifm-'autochpos'",
+	"vifm-'cd'",
+	"vifm-'cdpath'",
 	"vifm-'cf'",
 	"vifm-'classify'",
 	"vifm-'co'",

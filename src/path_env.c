@@ -208,7 +208,7 @@ split_path_list(void)
 
 		p = q;
 
-		s = expand_tilde(s);
+		s = replace_tilde(s);
 
 		/* No need to check "." path for existence. */
 		if(strcmp(s, ".") != 0)

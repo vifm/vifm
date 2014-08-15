@@ -635,13 +635,13 @@ filename_completion(const char *str, CompletionType type)
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		char *s = expand_tilde(strdup(str));
+		char *s = expand_tilde(str);
 		vle_compl_add_match(s);
 		free(s);
 		return;
 	}
 
-	dirname = expand_tilde(strdup(str));
+	dirname = expand_tilde(str);
 	filename = strdup(dirname);
 
 	temp = cmds_expand_envvars(dirname);

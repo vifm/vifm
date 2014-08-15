@@ -53,7 +53,13 @@ char * escape_filename(const char *string, int quote_percent);
  * statically allocated buffer of size PATH_MAX. */
 char * replace_home_part(const char directory[]);
 
-char * expand_tilde(char path[]);
+/* Expands tilde in the front of the path.  Returns newly allocated string
+ * without tilde. */
+char * expand_tilde(const char path[]);
+
+/* Expands tilde in the front of the path.  Can free the path.  Returns the path
+ * or newly allocated string without tilde. */
+char * replace_tilde(char path[]);
 
 /* Find beginning of the last component in the path ignoring trailing
  * slashes. */
@@ -105,9 +111,9 @@ int find_cmd_in_path(const char cmd[], size_t path_len, char path[]);
 
 int is_unc_path(const char *path);
 
-void to_forward_slash(char *path);
+void to_forward_slash(char path[]);
 
-void to_back_slash(char *path);
+void to_back_slash(char path[]);
 
 #endif
 

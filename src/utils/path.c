@@ -25,8 +25,9 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
-                       strncat() strchr() strcpy() strlen() strrchr() */
+#include <string.h> /* strcat() strcmp() strcasecmp() strdup() strncmp()
+                       strncasecmp() strncat() strchr() strcpy() strlen()
+                       strrchr() */
 
 #ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
@@ -43,6 +44,7 @@
 #include "utils.h"
 
 static int skip_dotdir_if_any(const char *path[], int fully);
+static char * try_replace_tilde(const char path[]);
 
 /* like chomp() but removes trailing slash */
 void
@@ -413,22 +415,48 @@ replace_home_part(const char directory[])
 }
 
 char *
-expand_tilde(char path[])
+expand_tilde(const char path[])
+{
+	char *const expanded_path = try_replace_tilde(path);
+	if(expanded_path == path)
+	{
+		return strdup(path);
+	}
+	return expanded_path;
+}
+
+char *
+replace_tilde(char path[])
+{
+	char *const expanded_path = try_replace_tilde(path);
+	if(expanded_path != path)
+	{
+		free(path);
+	}
+	return expanded_path;
+}
+
+/* Tries to expands tilde in the front of the path.  Returns the path or newly
+ * allocated string without tilde. */
+static char *
+try_replace_tilde(const char path[])
 {
 #ifndef _WIN32
 	char name[NAME_MAX];
-	char *p, *result;
+	const char *p;
+	char *result;
 	struct passwd *pw;
 #endif
 
 	if(path[0] != '~')
-		return path;
+	{
+		return (char *)path;
+	}
 
 	if(path[1] == '\0' || path[1] == '/')
 	{
 		char *const result = format_str("%s%s", cfg.home_dir,
 				(path[1] == '/') ? (path + 2) : "");
-		free(path);
 		return result;
 	}
 
@@ -445,15 +473,16 @@ expand_tilde(char path[])
 	}
 
 	if((pw = getpwnam(name)) == NULL)
-		return path;
+	{
+		return (char *)path;
+	}
 
 	chosp(pw->pw_dir);
 	result = format_str("%s/%s", pw->pw_dir, p);
-	free(path);
 
 	return result;
 #else
-	return path;
+	return (char *)path;
 #endif
 }
 
@@ -636,31 +665,21 @@ find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 #ifdef _WIN32
 
 int
-is_unc_path(const char *path)
+is_unc_path(const char path[])
 {
 	return (path[0] == '/' && path[1] == '/' && path[2] != '/');
 }
 
 void
-to_forward_slash(char *path)
+to_forward_slash(char path[])
 {
-	int i;
-	for(i = 0; path[i] != '\0'; i++)
-	{
-		if(path[i] == '\\')
-			path[i] = '/';
-	}
+	replace_char(path, '\\', '/');
 }
 
 void
-to_back_slash(char *path)
+to_back_slash(char path[])
 {
-	int i;
-	for(i = 0; path[i] != '\0'; i++)
-	{
-		if(path[i] == '/')
-			path[i] = '\\';
-	}
+	replace_char(path, '/', '\\');
 }
 
 #endif

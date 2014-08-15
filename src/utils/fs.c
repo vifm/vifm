@@ -53,7 +53,7 @@ static DWORD win_get_file_attrs(const char path[]);
 #endif
 
 int
-is_dir(const char *path)
+is_dir(const char path[])
 {
 #ifndef _WIN32
 	struct stat statbuf;

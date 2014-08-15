@@ -68,6 +68,9 @@
 #define DEFAULT_SHELL_CMD "cmd"
 #endif
 
+/* Default value of the cd path list. */
+#define DEFAULT_CD_PATH ""
+
 config_t cfg;
 
 static void find_home_dir(void);
@@ -175,6 +178,9 @@ init_config(void)
 			"-type d \\( ! -readable -o ! -executable \\) -prune");
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
+
+	cfg.cd_path = strdup(env_get_def("CDPATH", DEFAULT_CD_PATH));
+	replace_char(cfg.cd_path, ':', ',');
 
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");

@@ -1,4 +1,4 @@
-.TH vifm 1 "July 28, 2014" "" "Vifm"
+.TH vifm 1 "August 14, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2681,6 +2681,24 @@ type: int
 default: terminal width on startup
 .br
 Terminal width in characters.
+.TP
+.BI "cdpath cd"
+type: string list
+.br
+default: value of $CDPATH with commas instead of colons
+.br
+Specifies locations to check on changing directory with relative path that
+doesn't start with "./" or "../".  When non-empty, current directory is
+examined after directories listed in the option.
+
+This option doesn't affect completion of :cd command.
+
+Example:
+.EX
+    set cdpath=~
+.EE
+This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
+in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
 .TP
 .BI classify
 type: string list

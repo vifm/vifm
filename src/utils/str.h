@@ -189,6 +189,21 @@ size_t copy_substr(char dst[], size_t dst_len, const char src[],
  * happened. */
 int str_to_int(const char str[]);
 
+/* Replaces all occurrences of the from non-nul character in the str to the to
+ * character. */
+void replace_char(char str[], char from, char to);
+
+/*
+ * Splits string on a separator multiple times returning next part.  *state must
+ * be NULL for the first call.  Usage example:
+ *   char *part = input, *state = NULL;
+ *   while((part = split_and_get(part, ':', &state)) != NULL)
+ *   {
+ *     process <part>;
+ *   }
+ */
+char * split_and_get(char str[], char sep, char **state);
+
 #if defined(_WIN32) && !defined(strtok_r)
 #define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
 #endif
