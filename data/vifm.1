@@ -2687,9 +2687,9 @@ type: string list
 .br
 default: value of $CDPATH with commas instead of colons
 .br
-Specifies directories to check on changing directory with relative path that
-doesn't start with "./" or "../".  When non-empty current directory is
-examined after directories listed in this option are processed.
+Specifies locations to check on changing directory with relative path that
+doesn't start with "./" or "../".  When non-empty, current directory is
+examined after directories listed in the option.
 
 This option doesn't affect completion of :cd command.
 
@@ -2697,8 +2697,8 @@ Example:
 .EX
     set cdpath=~
 .EE
-This way ":cd bin" will switch to ~/bin even if directory named "bin/" exists
-in current directory, while ":cd ./bin" will ignore value of 'cdpath'.
+This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
+in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
 .TP
 .BI classify
 type: string list

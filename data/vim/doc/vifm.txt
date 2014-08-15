@@ -2204,16 +2204,16 @@ restore cursor position.
 cdpath cd
 type: string list
 default: value of $CDPATH with commas instead of colons
-Specifies directories to check on changing directory with relative path that
-doesn't start with "./" or "../".  When non-empty current directory is
-examined after directories listed in this option are processed.
+Specifies locations to check on changing directory with relative path that
+doesn't start with "./" or "../".  When non-empty, current directory is
+examined after directories listed in the option.
 
 This option doesn't affect completion of |vifm-:cd| command.
 
 Example: >
  set cdpath=~
-This way ":cd bin" will switch to ~/bin even if directory named "bin/" exists
-in current directory, while ":cd ./bin" will ignore value of 'cdpath'.
+This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
+in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
 
                                                *vifm-'classify'*
 classify
