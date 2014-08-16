@@ -377,7 +377,7 @@ expand_status_line_macros(FileView *view, const char *format)
 					}
 					/* Make exception for VISUAL_MODE, since it can contain empty
 					 * selection when cursor is on ../ directory. */
-					else if(vle_mode_get() != VISUAL_MODE)
+					else if(!vle_mode_is(VISUAL_MODE))
 					{
 						size = get_file_size_by_entry(view, view->list_pos);
 					}
@@ -596,7 +596,7 @@ status_bar_message_i(const char *message, int error)
 		save_status_bar_msg(msg);
 	}
 
-	if(msg == NULL || vle_mode_get() == CMDLINE_MODE)
+	if(msg == NULL || vle_mode_is(CMDLINE_MODE))
 	{
 		return;
 	}
@@ -1205,7 +1205,7 @@ update_screen(UpdateType update_kind)
 			clean_status_bar();
 		}
 
-		if(vle_mode_get() == VIEW_MODE)
+		if(vle_mode_is(VIEW_MODE))
 		{
 			view_draw_pos();
 		}
@@ -1220,7 +1220,7 @@ update_screen(UpdateType update_kind)
 		status_bar_message("");
 	}
 
-	if(vle_mode_get() == VIEW_MODE ||
+	if(vle_mode_is(VIEW_MODE) ||
 			(curr_stats.number_of_windows == 2 && other_view->explore_mode))
 	{
 		view_redraw();
@@ -1624,7 +1624,7 @@ switch_panes_content(void)
 	WINDOW* tmp;
 	int t;
 
-	if(vle_mode_get() != VIEW_MODE)
+	if(!vle_mode_is(VIEW_MODE))
 	{
 		view_switch_views();
 	}
@@ -1776,7 +1776,7 @@ ui_view_title_update(FileView *view)
 {
 	char *buf;
 	size_t len;
-	const int gen_view = vle_mode_get() == VIEW_MODE && !curr_view->explore_mode;
+	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
 	FileView *selected = gen_view ? other_view : curr_view;
 
 	if(curr_stats.load_stage < 2)

@@ -83,15 +83,19 @@ quick_view_file(FileView *view)
 	char buf[PATH_MAX];
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
-	if(vle_mode_get() == VIEW_MODE)
+	if(vle_mode_is(VIEW_MODE))
 	{
 		return;
 	}
 
 	if(curr_stats.number_of_windows == 1)
+	{
 		return;
+	}
 
 	if(draw_abandoned_view_mode())
 	{

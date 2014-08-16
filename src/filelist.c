@@ -2598,7 +2598,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(!reload && is_dir_big(view->curr_dir))
 	{
-		if(vle_mode_get() != CMDLINE_MODE)
+		if(!vle_mode_is(CMDLINE_MODE))
 		{
 			status_bar_message("Reading directory...");
 		}
@@ -2647,7 +2647,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	sort_dir_list(!reload, view);
 
-	if(!reload && vle_mode_get() != CMDLINE_MODE)
+	if(!reload && !vle_mode_is(CMDLINE_MODE))
 	{
 		clean_status_bar();
 	}
@@ -2723,14 +2723,14 @@ resort_dir_list(int msg, FileView *view)
 static void
 sort_dir_list(int msg, FileView *view)
 {
-	if(msg && view->list_rows > 2048 && vle_mode_get() != CMDLINE_MODE)
+	if(msg && view->list_rows > 2048 && !vle_mode_is(CMDLINE_MODE))
 	{
 		status_bar_message("Sorting directory...");
 	}
 
 	sort_view(view);
 
-	if(msg && vle_mode_get() != CMDLINE_MODE)
+	if(msg && !vle_mode_is(CMDLINE_MODE))
 	{
 		clean_status_bar();
 	}
@@ -3361,17 +3361,31 @@ int
 window_shows_dirlist(const FileView *const view)
 {
 	if(curr_stats.number_of_windows == 1 && view == other_view)
+	{
 		return 0;
+	}
 
 	if(view->explore_mode)
+	{
 		return 0;
-	if(view == other_view && vle_mode_get() == VIEW_MODE)
+	}
+
+	if(view == other_view && vle_mode_is(VIEW_MODE))
+	{
 		return 0;
+	}
+
 	if(view == other_view && curr_stats.view)
+	{
 		return 0;
-	if(vle_mode_get() != NORMAL_MODE && vle_mode_get() != VISUAL_MODE &&
-			vle_mode_get() != VIEW_MODE && vle_mode_get() != CMDLINE_MODE)
+	}
+
+	if(!vle_mode_is(NORMAL_MODE) && !vle_mode_is(VISUAL_MODE) &&
+			!vle_mode_is(VIEW_MODE) && !vle_mode_is(CMDLINE_MODE))
+	{
 		return 0;
+	}
+
 	return 1;
 }
 

@@ -101,25 +101,25 @@ init_modes(void)
 void
 modes_pre(void)
 {
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		touchwin(status_bar);
 		wrefresh(status_bar);
 		return;
 	}
-	else if(vle_mode_get() == SORT_MODE)
+	else if(vle_mode_is(SORT_MODE))
 	{
 		return;
 	}
-	else if(vle_mode_get() == CHANGE_MODE)
+	else if(vle_mode_is(CHANGE_MODE))
 	{
 		return;
 	}
-	else if(vle_mode_get() == ATTR_MODE)
+	else if(vle_mode_is(ATTR_MODE))
 	{
 		return;
 	}
-	else if(vle_mode_get() == VIEW_MODE)
+	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_pre();
 		return;
@@ -140,15 +140,23 @@ modes_pre(void)
 void
 modes_post(void)
 {
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
+	{
 		return;
-	else if(vle_mode_get() == SORT_MODE)
+	}
+	else if(vle_mode_is(SORT_MODE))
+	{
 		return;
-	else if(vle_mode_get() == CHANGE_MODE)
+	}
+	else if(vle_mode_is(CHANGE_MODE))
+	{
 		return;
-	else if(vle_mode_get() == ATTR_MODE)
+	}
+	else if(vle_mode_is(ATTR_MODE))
+	{
 		return;
-	else if(vle_mode_get() == VIEW_MODE)
+	}
+	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_post();
 		return;
@@ -164,7 +172,7 @@ modes_post(void)
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
 
-	if(vle_mode_get() != FILE_INFO_MODE && curr_view->list_rows > 0)
+	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
 	{
 		if(!is_status_bar_multiline())
 		{
@@ -181,15 +189,19 @@ modes_statusbar_update(void)
 {
 	if(curr_stats.save_msg)
 	{
-		if(vle_mode_get() == VISUAL_MODE)
+		if(vle_mode_is(VISUAL_MODE))
 		{
 			update_vmode_input();
 		}
 	}
-	else if(curr_view->selected_files || vle_mode_get() == VISUAL_MODE)
+	else if(curr_view->selected_files || vle_mode_is(VISUAL_MODE))
+	{
 		print_selected_msg();
+	}
 	else
+	{
 		clean_status_bar();
+	}
 }
 
 void
@@ -209,29 +221,37 @@ modes_redraw(void)
 	{
 		update_screen(UT_REDRAW);
 		if(--in_here > 0)
+		{
 			modes_redraw();
+		}
 		return;
 	}
 
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		redraw_cmdline();
 		if(--in_here > 0)
+		{
 			modes_redraw();
+		}
 		return;
 	}
-	else if(vle_mode_get() == MENU_MODE)
+	else if(vle_mode_is(MENU_MODE))
 	{
 		menu_redraw();
 		if(--in_here > 0)
+		{
 			modes_redraw();
+		}
 		return;
 	}
-	else if(vle_mode_get() == FILE_INFO_MODE)
+	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
 		if(--in_here > 0)
+		{
 			modes_redraw();
+		}
 		return;
 	}
 
@@ -240,33 +260,43 @@ modes_redraw(void)
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
 
-	if(vle_mode_get() == SORT_MODE)
+	if(vle_mode_is(SORT_MODE))
+	{
 		redraw_sort_dialog();
-	else if(vle_mode_get() == CHANGE_MODE)
+	}
+	else if(vle_mode_is(CHANGE_MODE))
+	{
 		redraw_change_dialog();
-	else if(vle_mode_get() == ATTR_MODE)
+	}
+	else if(vle_mode_is(ATTR_MODE))
+	{
 		redraw_attr_dialog();
-	else if(vle_mode_get() == VIEW_MODE)
+	}
+	else if(vle_mode_is(VIEW_MODE))
+	{
 		view_redraw();
+	}
 
 	if(--in_here > 0)
+	{
 		modes_redraw();
+	}
 }
 
 void
 modes_update(void)
 {
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		redraw_cmdline();
 		return;
 	}
-	else if(vle_mode_get() == MENU_MODE)
+	else if(vle_mode_is(MENU_MODE))
 	{
 		menu_redraw();
 		return;
 	}
-	else if(vle_mode_get() == FILE_INFO_MODE)
+	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
 		return;
@@ -275,41 +305,53 @@ modes_update(void)
 	touchwin(stdscr);
 	update_all_windows();
 
-	if(vle_mode_get() == SORT_MODE)
+	if(vle_mode_is(SORT_MODE))
+	{
 		redraw_sort_dialog();
-	else if(vle_mode_get() == CHANGE_MODE)
+	}
+	else if(vle_mode_is(CHANGE_MODE))
+	{
 		redraw_change_dialog();
-	else if(vle_mode_get() == ATTR_MODE)
+	}
+	else if(vle_mode_is(ATTR_MODE))
+	{
 		redraw_attr_dialog();
+	}
 }
 
 void
 modupd_input_bar(wchar_t *str)
 {
-	if(vle_mode_get() == VISUAL_MODE)
+	if(vle_mode_is(VISUAL_MODE))
+	{
 		clear_input_bar();
+	}
 
 	if(uses_input_bar[vle_mode_get()])
+	{
 		update_input_bar(str);
+	}
 }
 
 void
 clear_input_bar(void)
 {
-	if(uses_input_bar[vle_mode_get()] && vle_mode_get() != VISUAL_MODE)
+	if(uses_input_bar[vle_mode_get()] && !vle_mode_is(VISUAL_MODE))
+	{
 		clear_num_window();
+	}
 }
 
 int
 is_in_menu_like_mode(void)
 {
-	return vle_mode_get() == MENU_MODE || vle_mode_get() == FILE_INFO_MODE;
+	return vle_mode_is(MENU_MODE) || vle_mode_is(FILE_INFO_MODE);
 }
 
 void
 print_selected_msg(void)
 {
-	if(vle_mode_get() == VISUAL_MODE)
+	if(vle_mode_is(VISUAL_MODE))
 	{
 		status_bar_messagef("-- %s -- ", describe_visual_mode());
 		update_vmode_input();

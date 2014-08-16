@@ -730,12 +730,12 @@ leave_cmdline_mode(void)
 	free(input_stat.line_buf);
 	clean_status_bar();
 
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		vle_mode_set(prev_mode);
 	}
 
-	if(vle_mode_get() != MENU_MODE)
+	if(!vle_mode_is(MENU_MODE))
 	{
 		update_pos_window(curr_view);
 	}

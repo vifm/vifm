@@ -442,7 +442,7 @@ leave_view_mode(void)
 void
 view_explore_mode_quit(FileView *view)
 {
-	assert(vle_mode_get() != VIEW_MODE && "Unexpected mode.");
+	assert(!vle_mode_is(VIEW_MODE) && "Unexpected mode.");
 	if(!view->explore_mode)
 	{
 		return;

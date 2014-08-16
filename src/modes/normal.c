@@ -818,7 +818,7 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 static FileView *
 get_view(void)
 {
-	if(vle_mode_get() == VIEW_MODE)
+	if(vle_mode_is(VIEW_MODE))
 	{
 		return curr_view->explore_mode ? curr_view : other_view;
 	}

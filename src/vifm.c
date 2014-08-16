@@ -459,7 +459,7 @@ parse_recieved_arguments(char *args[])
 			&rwin_handle);
 	exec_startup_commands(argc, args);
 
-	if(vle_mode_get() != NORMAL_MODE && vle_mode_get() != VIEW_MODE)
+	if(!vle_mode_is(NORMAL_MODE) && !vle_mode_is(VIEW_MODE))
 	{
 		return;
 	}
@@ -499,7 +499,7 @@ remote_cd(FileView *view, const char *path, int handle)
 		leave_view_mode();
 	}
 
-	if(view == other_view && vle_mode_get() == VIEW_MODE)
+	if(view == other_view && vle_mode_is(VIEW_MODE))
 	{
 		leave_view_mode();
 	}

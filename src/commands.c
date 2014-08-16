@@ -1002,7 +1002,7 @@ execute_command(FileView *view, const char command[], int menu)
 			break;
 	}
 
-	if(!menu && vle_mode_get() == NORMAL_MODE)
+	if(!menu && vle_mode_is(NORMAL_MODE))
 	{
 		remove_selection(view);
 	}
@@ -3226,7 +3226,7 @@ normal_cmd(const cmd_info_t *cmd_info)
 	}
 
 	/* Force leaving command-line mode if the wide contains unfinished ":". */
-	if(vle_mode_get() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		(void)execute_keys_timed_out(L"\x03");
 	}

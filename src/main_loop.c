@@ -238,15 +238,25 @@ main_loop(void)
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
+				{
 					modupd_input_bar(buf);
+				}
+
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
+				{
 					timeout = 1;
+				}
+
 				if(counter > 0)
+				{
 					clear_input_bar();
+				}
 
 				if(!curr_stats.save_msg && curr_view->selected_files &&
-						vle_mode_get() != CMDLINE_MODE)
+						!vle_mode_is(CMDLINE_MODE))
+				{
 					print_selected_msg();
+				}
 				continue;
 			}
 		}
@@ -314,7 +324,7 @@ should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
-	    && vle_mode_get() != CMDLINE_MODE;
+	    && !vle_mode_is(CMDLINE_MODE);
 }
 
 /* Updates view in case directory it displays was changed externally. */
