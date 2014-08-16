@@ -24,7 +24,7 @@
 
 #include <sys/stat.h> /* mkdir() */
 #include <sys/types.h> /* mode_t */
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL */
@@ -116,6 +116,17 @@ iop_mkdir(io_args_t *const args)
 		return CreateDirectory(path, NULL) == 0;
 #endif
 	}
+}
+
+int
+iop_rmfile(io_args_t *const args)
+{
+	const char *const path = args->arg1.path;
+#ifndef _WIN32
+	return unlink(path);
+#else
+	return !DeleteFile(path);
+#endif
 }
 
 int
