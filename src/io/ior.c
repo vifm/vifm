@@ -48,6 +48,9 @@ ior_rm(io_args_t *const args)
 		return unlink(path);
 	}
 
+	/* XXX: update function and check its result?  If it actually make sense, as
+	 * result of iop_rmdir() will reflect whether remove_dir_content() was
+	 * successful or not. */
 	remove_dir_content(path);
 	return iop_rmdir(args);
 #else
