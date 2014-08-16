@@ -212,53 +212,45 @@ modes_redraw(void)
 	static int in_here;
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	if(in_here++ > 0)
+	{
+		/* TODO: is this still needed?  Update scheduling might have solved issues
+		 * caused by asynchronous execution of this function in the past. */
 		return;
+	}
 
 	if(curr_stats.too_small_term)
 	{
 		update_screen(UT_REDRAW);
-		if(--in_here > 0)
-		{
-			modes_redraw();
-		}
-		return;
+		goto finish;
 	}
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
 		redraw_cmdline();
-		if(--in_here > 0)
-		{
-			modes_redraw();
-		}
-		return;
+		goto finish;
 	}
 	else if(vle_mode_is(MENU_MODE))
 	{
 		menu_redraw();
-		if(--in_here > 0)
-		{
-			modes_redraw();
-		}
-		return;
+		goto finish;
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
-		if(--in_here > 0)
-		{
-			modes_redraw();
-		}
-		return;
+		goto finish;
 	}
 
 	update_screen(UT_REDRAW);
 
 	if(curr_stats.save_msg)
+	{
 		status_bar_message(NULL);
+	}
 
 	if(vle_mode_is(SORT_MODE))
 	{
@@ -277,6 +269,7 @@ modes_redraw(void)
 		view_redraw();
 	}
 
+finish:
 	if(--in_here > 0)
 	{
 		modes_redraw();
