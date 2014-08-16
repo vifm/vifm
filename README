@@ -63,6 +63,7 @@ Package content
     |  |  |-- completion.c - provides means to fill and get completion list
     |  |  |-- functions.c - provides support for builtin functions
     |  |  |-- keys.c - analyzes users input
+    |  |  |-- mode.c - generic mode related routines
     |  |  |-- options.c - :set command
     |  |  |-- parsing.c - parses expressions
     |  |  |-- var.c - all needed to work with variables
