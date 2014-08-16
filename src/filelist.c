@@ -3380,8 +3380,7 @@ window_shows_dirlist(const FileView *const view)
 		return 0;
 	}
 
-	if(!vle_mode_is(NORMAL_MODE) && !vle_mode_is(VISUAL_MODE) &&
-			!vle_mode_is(VIEW_MODE) && !vle_mode_is(CMDLINE_MODE))
+	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE, VIEW_MODE, CMDLINE_MODE))
 	{
 		return 0;
 	}

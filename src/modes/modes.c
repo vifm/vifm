@@ -107,15 +107,7 @@ modes_pre(void)
 		wrefresh(status_bar);
 		return;
 	}
-	else if(vle_mode_is(SORT_MODE))
-	{
-		return;
-	}
-	else if(vle_mode_is(CHANGE_MODE))
-	{
-		return;
-	}
-	else if(vle_mode_is(ATTR_MODE))
+	else if(ANY(vle_mode_is, SORT_MODE, CHANGE_MODE, ATTR_MODE))
 	{
 		return;
 	}
@@ -140,19 +132,7 @@ modes_pre(void)
 void
 modes_post(void)
 {
-	if(vle_mode_is(CMDLINE_MODE))
-	{
-		return;
-	}
-	else if(vle_mode_is(SORT_MODE))
-	{
-		return;
-	}
-	else if(vle_mode_is(CHANGE_MODE))
-	{
-		return;
-	}
-	else if(vle_mode_is(ATTR_MODE))
+	if(ANY(vle_mode_is, CMDLINE_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE))
 	{
 		return;
 	}
@@ -170,7 +150,9 @@ modes_post(void)
 	update_screen(curr_stats.need_update);
 
 	if(curr_stats.save_msg)
+	{
 		status_bar_message(NULL);
+	}
 
 	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
 	{
@@ -338,7 +320,7 @@ clear_input_bar(void)
 int
 is_in_menu_like_mode(void)
 {
-	return vle_mode_is(MENU_MODE) || vle_mode_is(FILE_INFO_MODE);
+	return ANY(vle_mode_is, MENU_MODE, FILE_INFO_MODE);
 }
 
 void

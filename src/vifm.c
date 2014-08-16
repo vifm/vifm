@@ -48,6 +48,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -459,7 +460,7 @@ parse_recieved_arguments(char *args[])
 			&rwin_handle);
 	exec_startup_commands(argc, args);
 
-	if(!vle_mode_is(NORMAL_MODE) && !vle_mode_is(VIEW_MODE))
+	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
 		return;
 	}
