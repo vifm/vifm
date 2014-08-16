@@ -304,7 +304,7 @@ enter_view_mode(int explore)
 
 	vi->filename = strdup(full_path);
 
-	vle_mode_set(VIEW_MODE);
+	vle_mode_set(VIEW_MODE, VMT_SECONDARY);
 
 	if(explore)
 	{
@@ -343,7 +343,7 @@ try_ressurect_abandoned(const char full_path[], int explore)
 	}
 	else
 	{
-		vle_mode_set(VIEW_MODE);
+		vle_mode_set(VIEW_MODE, VMT_SECONDARY);
 		return 0;
 	}
 }
@@ -353,7 +353,7 @@ try_activate_view_mode(void)
 {
 	if(curr_view->explore_mode)
 	{
-		vle_mode_set(VIEW_MODE);
+		vle_mode_set(VIEW_MODE, VMT_SECONDARY);
 		pick_vi(curr_view->explore_mode);
 	}
 }
@@ -417,7 +417,7 @@ try_redraw_explore_view(const FileView *const view, int vi_index)
 void
 leave_view_mode(void)
 {
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	if(curr_view->explore_mode)
 	{
@@ -800,7 +800,7 @@ static void
 cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->abandoned = 1;
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	if(curr_view->explore_mode)
 	{
 		go_to_other_pane();
@@ -814,7 +814,7 @@ static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->abandoned = 1;
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	switch_panes();
 	if(curr_stats.view)
 	{
@@ -865,7 +865,7 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 	change_window();
 	if(!curr_view->explore_mode)
 	{
-		vle_mode_set(NORMAL_MODE);
+		vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	}
 	pick_vi(curr_view->explore_mode);
 

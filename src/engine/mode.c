@@ -19,6 +19,7 @@
 #include "mode.h"
 
 static vle_mode_t current_mode;
+static vle_mode_t primary_mode;
 
 const vle_mode_t
 vle_mode_get(void)
@@ -32,10 +33,20 @@ vle_mode_is(vle_mode_t mode)
 	return current_mode == mode;
 }
 
+const vle_mode_t
+vle_mode_get_primary(void)
+{
+	return primary_mode;
+}
+
 void
-vle_mode_set(vle_mode_t mode)
+vle_mode_set(vle_mode_t mode, VleModeType type)
 {
 	current_mode = mode;
+	if(type == VMT_PRIMARY)
+	{
+		primary_mode = mode;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

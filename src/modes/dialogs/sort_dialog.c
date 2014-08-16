@@ -128,7 +128,7 @@ enter_sort_mode(FileView *active_view)
 
 	view = active_view;
 	descending = (view->sort[0] < 0);
-	vle_mode_set(SORT_MODE);
+	vle_mode_set(SORT_MODE, VMT_SECONDARY);
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(FALSE);
@@ -188,7 +188,7 @@ redraw_sort_dialog(void)
 static void
 leave_sort_mode(void)
 {
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	ui_view_reset_selection_and_reload(view);
 

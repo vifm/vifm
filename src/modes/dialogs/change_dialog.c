@@ -91,7 +91,7 @@ enter_change_mode(FileView *active_view)
 		return;
 
 	view = active_view;
-	vle_mode_set(CHANGE_MODE);
+	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(FALSE);
@@ -140,7 +140,7 @@ redraw_change_dialog(void)
 static void
 leave_change_mode(int clean_selection)
 {
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	if(clean_selection)
 	{

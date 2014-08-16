@@ -576,7 +576,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 {
 	line_width = getmaxx(stdscr);
 	prev_mode = vle_mode_get();
-	vle_mode_set(CMDLINE_MODE);
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 
 	input_stat.line = NULL;
 	input_stat.initial_line = NULL;
@@ -732,7 +732,7 @@ leave_cmdline_mode(void)
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		vle_mode_set(prev_mode);
+		vle_mode_set(prev_mode, VMT_PRIMARY);
 	}
 
 	if(!vle_mode_is(MENU_MODE))

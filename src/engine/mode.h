@@ -19,6 +19,30 @@
 #ifndef VIFM__ENGINE__MODE_H__
 #define VIFM__ENGINE__MODE_H__
 
+/* The concept:
+ *
+ * 1. Two kinds of modes: primary and secondary; defined by their interoperation
+ *    in UI;
+ *
+ * 2. While secondary mode is active primary is still visible, although it does
+ *    not get any input from a user.
+ *
+ * 3. Secondary mode is also the current one.  There might be two generic
+ *    situations:
+ *
+ *    - no secondary mode, when vle_mode_get() == vle_mode_get_primary();
+ *    - secondary mode present, which makes "current" and "primary" modes be
+ *      different.
+ */
+
+/* Type of mode. */
+typedef enum
+{
+	VMT_PRIMARY,   /* Host (main) mode (e.g. normal, visual). */
+	VMT_SECONDARY, /* Temporary (auxiliary) mode (e.g. command-line, dialog). */
+}
+VleModeType;
+
 /* Mode identifier.  It's of integer type. */
 typedef int vle_mode_t;
 
@@ -29,8 +53,11 @@ const vle_mode_t vle_mode_get(void);
  * otherwise zero is returned. */
 int vle_mode_is(vle_mode_t mode);
 
-/* Sets current mode. */
-void vle_mode_set(vle_mode_t mode);
+/* Gets identifier of currently active primary mode.  Returns the id. */
+const vle_mode_t vle_mode_get_primary(void);
+
+/* Sets current mode of the specified type. */
+void vle_mode_set(vle_mode_t mode, VleModeType type);
 
 #endif // VIFM__ENGINE__MODE_H__
 

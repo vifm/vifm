@@ -69,7 +69,7 @@ my_suite_setup(void)
 	};
 
 	init_keys(MODES_COUNT, mode_flags);
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	init_builtin_keys();
 }
 

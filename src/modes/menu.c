@@ -273,7 +273,7 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 
 	view = active_view;
 	menu = m;
-	vle_mode_set(MENU_MODE);
+	vle_mode_set(MENU_MODE, VMT_PRIMARY);
 	curr_stats.need_update = UT_FULL;
 	was_redraw = 0;
 
@@ -322,11 +322,16 @@ leave_menu_mode(void)
 	clean_selected_files(view);
 	redraw_view(view);
 
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+
 	if(was_redraw)
+	{
 		update_screen(UT_FULL);
+	}
 	else
+	{
 		update_all_windows();
+	}
 }
 
 static void
@@ -432,11 +437,11 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	static menu_info *saved_menu;
 
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	saved_menu = menu;
 	if(menu->execute_handler != NULL && menu->execute_handler(curr_view, menu))
 	{
-		vle_mode_set(MENU_MODE);
+		vle_mode_set(MENU_MODE, VMT_PRIMARY);
 		menu_redraw();
 		return;
 	}

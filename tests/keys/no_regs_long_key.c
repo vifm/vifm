@@ -21,7 +21,7 @@ setup(void)
 
 	clear_keys();
 	init_keys(MODES_COUNT, mode_flags);
-	vle_mode_set(CMDLINE_MODE);
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	set_def_handler(CMDLINE_MODE, def_handler);
 	add_user_keys(L"asdf", L"ddd", CMDLINE_MODE, 0);
 }

@@ -256,7 +256,7 @@ enter_visual_mode(VisualSubmodes sub_mode)
 
 	view = curr_view;
 	start_pos = view->list_pos;
-	vle_mode_set(VISUAL_MODE);
+	vle_mode_set(VISUAL_MODE, VMT_PRIMARY);
 
 	switch(sub_mode)
 	{
@@ -302,7 +302,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 	curr_stats.save_msg = save_msg;
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		vle_mode_set(NORMAL_MODE);
+		vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	}
 }
 
@@ -435,7 +435,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	update_marks(view);
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		vle_mode_set(NORMAL_MODE);
+		vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	}
 }
 
@@ -697,7 +697,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
 	int ub;
 
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	update_marks(view);
 	ub = check_mark_directory(view, '<');
 	if(ub != -1)

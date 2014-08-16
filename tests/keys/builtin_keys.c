@@ -162,7 +162,7 @@ init_builtin_keys(void)
 static void
 keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	vle_mode_set(CMDLINE_MODE);
+	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	key_is_mapped = keys_info->mapped;
 	is_in_maping_state = is_inside_mapping();
 }
@@ -288,7 +288,8 @@ keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	vle_mode_set(vle_mode_is(NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE);
+	vle_mode_set(vle_mode_is(NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE,
+			VMT_PRIMARY);
 	printf("v visual mode toggle\n");
 }
 

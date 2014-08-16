@@ -84,7 +84,7 @@ init_file_info_mode(void)
 void
 enter_file_info_mode(FileView *v)
 {
-	vle_mode_set(FILE_INFO_MODE);
+	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
 	setup_menu();
 	redraw_file_info_dialog();
@@ -95,12 +95,16 @@ enter_file_info_mode(FileView *v)
 static void
 leave_file_info_mode(void)
 {
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	if(was_redraw)
+	{
 		update_screen(UT_FULL);
+	}
 	else
+	{
 		update_all_windows();
+	}
 }
 
 void

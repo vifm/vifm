@@ -156,7 +156,7 @@ enter_attr_mode(FileView *active_view)
 		return;
 
 	view = active_view;
-	vle_mode_set(ATTR_MODE);
+	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
@@ -343,7 +343,7 @@ redraw_attr_dialog(void)
 static void
 leave_attr_mode(void)
 {
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);

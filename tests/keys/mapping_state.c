@@ -27,7 +27,7 @@ static void
 teardown(void)
 {
 	set_def_handler(CMDLINE_MODE, NULL);
-	vle_mode_set(NORMAL_MODE);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 }
 
 static void
