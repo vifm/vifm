@@ -28,6 +28,7 @@
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -140,7 +141,6 @@ static void goto_pos_force_update(int pos);
 static void goto_pos(int pos);
 static int move_pos(int pos);
 
-static int *mode;
 static FileView *view;
 static int start_pos;
 static int last_fast_search_char;
@@ -233,16 +233,14 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_visual_mode(int *key_mode)
+init_visual_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VISUAL_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 void
@@ -258,7 +256,7 @@ enter_visual_mode(VisualSubmodes sub_mode)
 
 	view = curr_view;
 	start_pos = view->list_pos;
-	*mode = VISUAL_MODE;
+	vle_mode_set(VISUAL_MODE);
 
 	switch(sub_mode)
 	{
@@ -302,8 +300,10 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 	}
 
 	curr_stats.save_msg = save_msg;
-	if(*mode == VISUAL_MODE)
-		*mode = NORMAL_MODE;
+	if(get_mode() == VISUAL_MODE)
+	{
+		vle_mode_set(NORMAL_MODE);
+	}
 }
 
 /* Stores current values of selected flags of all items in the directory for
@@ -433,8 +433,10 @@ static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	if(*mode == VISUAL_MODE)
-		*mode = NORMAL_MODE;
+	if(get_mode() == VISUAL_MODE)
+	{
+		vle_mode_set(NORMAL_MODE);
+	}
 }
 
 static void
@@ -695,7 +697,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
 	int ub;
 
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE);
 	update_marks(view);
 	ub = check_mark_directory(view, '<');
 	if(ub != -1)

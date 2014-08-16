@@ -22,7 +22,7 @@
 
 #include "../../ui.h"
 
-void init_change_dialog_mode(int *key_mode);
+void init_change_dialog_mode(void);
 void enter_change_mode(FileView *active_view);
 void redraw_change_dialog(void);
 

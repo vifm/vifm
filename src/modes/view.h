@@ -21,7 +21,7 @@
 
 #include "../ui.h"
 
-void init_view_mode(int *key_mode);
+void init_view_mode(void);
 
 void enter_view_mode(int explore);
 

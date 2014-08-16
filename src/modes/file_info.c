@@ -35,6 +35,7 @@
 #include <time.h>
 
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -54,7 +55,6 @@ static int show_mime_type(FileView *view, int curr_y);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
-static int *mode;
 static FileView *view;
 static int was_redraw;
 
@@ -71,22 +71,20 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_file_info_mode(int *key_mode)
+init_file_info_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), FILE_INFO_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 void
 enter_file_info_mode(FileView *v)
 {
-	*mode = FILE_INFO_MODE;
+	vle_mode_set(FILE_INFO_MODE);
 	view = v;
 	setup_menu();
 	redraw_file_info_dialog();
@@ -97,7 +95,7 @@ enter_file_info_mode(FileView *v)
 static void
 leave_file_info_mode(void)
 {
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE);
 
 	if(was_redraw)
 		update_screen(UT_FULL);

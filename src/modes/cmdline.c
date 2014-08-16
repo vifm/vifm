@@ -35,6 +35,7 @@
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -97,7 +98,6 @@ line_stats_t;
 
 #endif
 
-static int *mode;
 static int prev_mode;
 static CMD_LINE_SUBMODES sub_mode;
 static line_stats_t input_stat;
@@ -265,17 +265,16 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_cmdline_mode(int *key_mode)
+init_cmdline_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
 	set_def_handler(CMDLINE_MODE, def_handler);
 
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 static int
@@ -576,8 +575,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete)
 {
 	line_width = getmaxx(stdscr);
-	prev_mode = *mode;
-	*mode = CMDLINE_MODE;
+	prev_mode = get_mode();
+	vle_mode_set(CMDLINE_MODE);
 
 	input_stat.line = NULL;
 	input_stat.initial_line = NULL;
@@ -731,11 +730,15 @@ leave_cmdline_mode(void)
 	free(input_stat.line_buf);
 	clean_status_bar();
 
-	if(*mode == CMDLINE_MODE)
-		*mode = prev_mode;
+	if(get_mode() == CMDLINE_MODE)
+	{
+		vle_mode_set(prev_mode);
+	}
 
-	if(*mode != MENU_MODE)
+	if(get_mode() != MENU_MODE)
+	{
 		update_pos_window(curr_view);
+	}
 
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
 	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);

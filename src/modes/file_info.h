@@ -22,7 +22,7 @@
 
 #include "../ui.h"
 
-void init_file_info_mode(int *key_mode);
+void init_file_info_mode(void);
 void enter_file_info_mode(FileView *view);
 void redraw_file_info_dialog(void);
 

@@ -31,6 +31,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
+#include "mode.h"
 
 typedef struct key_chunk_t
 {
@@ -49,7 +50,6 @@ static key_chunk_t *builtin_cmds_root;
 static key_chunk_t *selectors_root;
 static key_chunk_t *user_cmds_root;
 static int max_modes;
-static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 static size_t counter;
@@ -97,14 +97,12 @@ static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 
 void
-init_keys(int modes_count, int *key_mode, int *key_mode_flags)
+init_keys(int modes_count, int *key_mode_flags)
 {
-	assert(key_mode != NULL);
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
 
 	max_modes = modes_count;
-	mode = key_mode;
 	mode_flags = key_mode_flags;
 
 	builtin_cmds_root = calloc(modes_count, sizeof(*builtin_cmds_root));
@@ -249,9 +247,9 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
 	result = dispatch_keys(keys, &keys_info, no_remap, NO_COUNT_GIVEN);
-	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
+	if(result == KEYS_UNKNOWN && def_handlers[vle_mode_get()] != NULL)
 	{
-		result = def_handlers[*mode](keys[0]);
+		result = def_handlers[vle_mode_get()](keys[0]);
 		execute_keys_general(keys + 1, 0, mapped, no_remap);
 	}
 	return result;
@@ -283,7 +281,8 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	if(!no_remap)
 	{
 		key_chunk_t *const root = keys_info->selector
-		                        ? &selectors_root[*mode] : &user_cmds_root[*mode];
+		                        ? &selectors_root[vle_mode_get()]
+		                        : &user_cmds_root[vle_mode_get()];
 		result = dispatch_keys_at_root(keys, keys_info, root, key_info, no_remap);
 	}
 	else
@@ -293,8 +292,8 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 
 	if(result == KEYS_UNKNOWN && !keys_info->selector)
 	{
-		result = dispatch_keys_at_root(keys, keys_info, &builtin_cmds_root[*mode],
-				key_info, no_remap);
+		result = dispatch_keys_at_root(keys, keys_info,
+				&builtin_cmds_root[vle_mode_get()], key_info, no_remap);
 	}
 
 	return result;
@@ -366,8 +365,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 				return KEYS_UNKNOWN;
 			}
 
-			has_duplicate = root == &user_cmds_root[*mode] &&
-					contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
+			has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
+					contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
 			result = execute_next_keys(curr, curr->conf.type == USER_CMD ? keys : L"",
 					&key_info, keys_info, has_duplicate, no_remap);
 			if(curr->conf.type == USER_CMD)
@@ -393,8 +392,8 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		return KEYS_WAIT_SHORT;
 	}
 
-	has_duplicate = root == &user_cmds_root[*mode] &&
-			contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
+	has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
+			contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
 	result = execute_next_keys(curr, keys, &key_info, keys_info, has_duplicate,
 			no_remap);
 	if(!IS_KEYS_RET_CODE(result))
@@ -452,7 +451,7 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 
 		if(wait_point)
 		{
-			const int with_input = (mode_flags[*mode] & MF_USES_INPUT);
+			const int with_input = (mode_flags[vle_mode_get()] & MF_USES_INPUT);
 			if(!keys_info->after_wait)
 			{
 				return (with_input || has_duplicate) ? KEYS_WAIT_SHORT : KEYS_WAIT;
@@ -514,7 +513,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	}
 	else
 	{
-		const default_handler def_handler = def_handlers[*mode];
+		const default_handler def_handler = def_handlers[vle_mode_get()];
 
 		int result = (def_handler == NULL) ? KEYS_UNKNOWN : 0;
 
@@ -640,7 +639,7 @@ static const wchar_t *
 get_reg(const wchar_t *keys, int *reg)
 {
 	*reg = NO_REG_GIVEN;
-	if((mode_flags[*mode] & MF_USES_REGS) == 0)
+	if((mode_flags[vle_mode_get()] & MF_USES_REGS) == 0)
 	{
 		return keys;
 	}
@@ -687,7 +686,7 @@ get_count(const wchar_t keys[], int *count)
 static int
 is_at_count(const wchar_t keys[])
 {
-	if((mode_flags[*mode] & MF_USES_COUNT) != 0)
+	if((mode_flags[vle_mode_get()] & MF_USES_COUNT) != 0)
 	{
 		if(keys[0] != L'0' && iswdigit(keys[0]))
 		{

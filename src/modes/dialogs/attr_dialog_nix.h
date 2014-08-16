@@ -22,7 +22,7 @@
 
 #include "../../ui.h"
 
-void init_attr_dialog_mode(int *key_mode);
+void init_attr_dialog_mode(void);
 void enter_attr_mode(FileView *active_view);
 void redraw_attr_dialog(void);
 void files_chmod(FileView *view, const char *mode, int recurse_dirs);
