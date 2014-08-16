@@ -26,6 +26,12 @@ vle_mode_get(void)
 	return current_mode;
 }
 
+int
+vle_mode_is(vle_mode_t mode)
+{
+	return current_mode == mode;
+}
+
 void
 vle_mode_set(vle_mode_t mode)
 {
