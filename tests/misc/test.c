@@ -45,6 +45,7 @@ void minmax_tests(void);
 void ui_view_schedule_tests(void);
 void string_escape_tests(void);
 void split_and_get_tests(void);
+void functional_tests(void);
 
 void
 all_tests(void)
@@ -94,6 +95,7 @@ all_tests(void)
 	ui_view_schedule_tests();
 	string_escape_tests();
 	split_and_get_tests();
+	functional_tests();
 }
 
 int
