@@ -23,6 +23,8 @@
 #include <shellapi.h>
 #endif
 
+#include <unistd.h> /* unlink() */
+
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* removee() snprintf() */
 #include <stdlib.h> /* free() */
@@ -43,7 +45,7 @@ ior_rm(io_args_t *const args)
 #ifndef _WIN32
 	if(!is_dir(path))
 	{
-		return remove(path);
+		return unlink(path);
 	}
 
 	remove_dir_content(path);
