@@ -32,6 +32,7 @@
 #include <string.h> /* strncat() strlen() */
 
 #include "../../engine/keys.h"
+#include "../../engine/mode.h"
 #include "../../menus/menus.h"
 #include "../../utils/fs.h"
 #include "../../utils/fs_limits.h"
@@ -65,7 +66,6 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
 static void dec_curr(void);
 
-static int *mode;
 static FileView *view;
 static int top, bottom;
 static int curr;
@@ -107,16 +107,14 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_attr_dialog_mode(int *key_mode)
+init_attr_dialog_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), ATTR_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 void
@@ -171,7 +169,7 @@ enter_attr_mode(FileView *active_view)
 		i++;
 	}
 
-	*mode = ATTR_MODE;
+	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
@@ -375,7 +373,7 @@ get_selection_size(int first_file_index)
 static void
 leave_attr_mode(void)
 {
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	curs_set(FALSE);
 	curr_stats.use_input_bar = 1;
 

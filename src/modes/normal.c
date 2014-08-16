@@ -36,6 +36,7 @@
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
@@ -213,7 +214,6 @@ static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
 static void selector_s(key_info_t key_info, keys_info_t *keys_info);
 
-static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 
@@ -425,18 +425,17 @@ static keys_add_info_t selectors[] = {
 };
 
 void
-init_normal_mode(int *key_mode)
+init_normal_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE);
 	assert(ret_code == 0);
+
 	ret_code = add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 static void
@@ -819,10 +818,14 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 static FileView *
 get_view(void)
 {
-	if(get_mode() == VIEW_MODE)
+	if(vle_mode_is(VIEW_MODE))
+	{
 		return curr_view->explore_mode ? curr_view : other_view;
+	}
 	else
+	{
 		return curr_view;
+	}
 }
 
 static void

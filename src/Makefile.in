@@ -72,11 +72,11 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	cfg/info.$(OBJEXT) engine/cmds.$(OBJEXT) \
 	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/options.$(OBJEXT) \
-	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
-	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	io/iop.$(OBJEXT) io/ior.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bookmarks_menu.$(OBJEXT) \
+	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
+	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
+	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
+	engine/variables.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -296,6 +296,7 @@ vifm_SOURCES = \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
 	engine/keys.c engine/keys.h \
+	engine/mode.c engine/mode.h \
 	engine/options.c engine/options.h engine/private/options.h \
 	engine/parsing.c engine/parsing.h \
 	engine/text_buffer.c engine/text_buffer.h \
@@ -507,6 +508,8 @@ engine/functions.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/keys.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
+engine/mode.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
 engine/options.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/parsing.$(OBJEXT): engine/$(am__dirstamp) \
@@ -689,6 +692,7 @@ mostlyclean-compile:
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/functions.$(OBJEXT)
 	-rm -f engine/keys.$(OBJEXT)
+	-rm -f engine/mode.$(OBJEXT)
 	-rm -f engine/options.$(OBJEXT)
 	-rm -f engine/parsing.$(OBJEXT)
 	-rm -f engine/text_buffer.$(OBJEXT)
@@ -794,6 +798,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/keys.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/mode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/parsing.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@

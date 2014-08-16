@@ -1,9 +1,8 @@
 #include "seatest.h"
 
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
-
-extern int mode;
 
 static int counter;
 
@@ -31,7 +30,7 @@ static void
 teardown(void)
 {
 	set_def_handler(CMDLINE_MODE, NULL);
-	mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 }
 
 static void

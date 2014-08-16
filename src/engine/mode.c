@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +16,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
-#define VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
+#include "mode.h"
 
-#include "../../ui.h"
+static vle_mode_t current_mode;
+static vle_mode_t primary_mode;
 
-/* Initializes change dialog mode. */
-void init_change_dialog_mode(void);
+const vle_mode_t
+vle_mode_get(void)
+{
+	return current_mode;
+}
 
-void enter_change_mode(FileView *active_view);
+int
+vle_mode_is(vle_mode_t mode)
+{
+	return current_mode == mode;
+}
 
-void redraw_change_dialog(void);
+const vle_mode_t
+vle_mode_get_primary(void)
+{
+	return primary_mode;
+}
 
-#endif /* VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__ */
+void
+vle_mode_set(vle_mode_t mode, VleModeType type)
+{
+	current_mode = mode;
+	if(type == VMT_PRIMARY)
+	{
+		primary_mode = mode;
+	}
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

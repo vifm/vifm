@@ -19,7 +19,7 @@ DIRS := ./ cfg/ engine/ menus/ modes/ modes/dialogs/ utils/
 cfg := config.c hist.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
-engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
+engine := cmds.c functions.c completion.c keys.c mode.c options.c parsing.c \
           text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 

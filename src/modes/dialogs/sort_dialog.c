@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "../../engine/keys.h"
+#include "../../engine/mode.h"
 #include "../../utils/macros.h"
 #include "../../colors.h"
 #include "../../filelist.h"
@@ -33,7 +34,6 @@
 #include "../../ui.h"
 #include "../modes.h"
 
-static int *mode;
 static FileView *view;
 static int top, bottom, curr, col;
 static int descending;
@@ -110,16 +110,14 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_sort_dialog_mode(int *key_mode)
+init_sort_dialog_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 void
@@ -130,7 +128,7 @@ enter_sort_mode(FileView *active_view)
 
 	view = active_view;
 	descending = (view->sort[0] < 0);
-	*mode = SORT_MODE;
+	vle_mode_set(SORT_MODE, VMT_SECONDARY);
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(FALSE);
@@ -190,7 +188,7 @@ redraw_sort_dialog(void)
 static void
 leave_sort_mode(void)
 {
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	ui_view_reset_selection_and_reload(view);
 

@@ -118,7 +118,7 @@ typedef int (*default_handler)(wchar_t key);
 /*
  * Assumed that key_mode_flags is an array of at least modes_count items
  */
-void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
+void init_keys(int modes_count, int *key_mode_flags);
 
 /*
  * Frees all allocated memory

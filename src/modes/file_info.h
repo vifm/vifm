@@ -22,8 +22,11 @@
 
 #include "../ui.h"
 
-void init_file_info_mode(int *key_mode);
+/* Initializes file information dialog mode. */
+void init_file_info_mode(void);
+
 void enter_file_info_mode(FileView *view);
+
 void redraw_file_info_dialog(void);
 
 #endif /* VIFM__MODES__FILE_INFO_H__ */

@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "../../engine/keys.h"
+#include "../../engine/mode.h"
 #include "../../utils/macros.h"
 #include "../../colors.h"
 #include "../../fileops.h"
@@ -44,7 +45,6 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
-static int *mode;
 static FileView *view;
 static int top, bottom, step, curr, col;
 
@@ -74,16 +74,14 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_change_dialog_mode(int *key_mode)
+init_change_dialog_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CHANGE_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 }
 
 void
@@ -93,7 +91,7 @@ enter_change_mode(FileView *active_view)
 		return;
 
 	view = active_view;
-	*mode = CHANGE_MODE;
+	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(FALSE);
@@ -142,7 +140,7 @@ redraw_change_dialog(void)
 static void
 leave_change_mode(int clean_selection)
 {
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
 	if(clean_selection)
 	{

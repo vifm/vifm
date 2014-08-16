@@ -31,7 +31,8 @@ typedef enum
 }
 VisualSubmodes;
 
-void init_visual_mode(int *key_mode);
+/* Initiailizes visual mode. */
+void init_visual_mode(void);
 
 /* Starts visual mode in a given submode. */
 void enter_visual_mode(VisualSubmodes sub_mode);

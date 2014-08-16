@@ -24,6 +24,7 @@
 #include <stddef.h> /* wchar_t */
 
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../main_loop.h"
@@ -38,8 +39,6 @@
 #include "normal.h"
 #include "view.h"
 #include "visual.h"
-
-static int mode = NORMAL_MODE;
 
 static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, /* NORMAL_MODE */
@@ -67,7 +66,7 @@ static char uses_input_bar[] = {
 };
 ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
-typedef void (*mode_init_func)(int *mode);
+typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
 	&init_normal_mode,        /* NORMAL_MODE */
 	&init_cmdline_mode,       /* CMDLINE_MODE */
@@ -91,34 +90,28 @@ init_modes(void)
 
 	int i;
 
-	init_keys(MODES_COUNT, &mode, (int*)&mode_flags);
+	init_keys(MODES_COUNT, (int*)&mode_flags);
 
-	for(i = 0; i < MODES_COUNT; i++)
-		mode_init_funcs[i](&mode);
+	for(i = 0; i < MODES_COUNT; ++i)
+	{
+		mode_init_funcs[i]();
+	}
 }
 
 void
 modes_pre(void)
 {
-	if(mode == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		touchwin(status_bar);
 		wrefresh(status_bar);
 		return;
 	}
-	else if(mode == SORT_MODE)
+	else if(ANY(vle_mode_is, SORT_MODE, CHANGE_MODE, ATTR_MODE))
 	{
 		return;
 	}
-	else if(mode == CHANGE_MODE)
-	{
-		return;
-	}
-	else if(mode == ATTR_MODE)
-	{
-		return;
-	}
-	else if(mode == VIEW_MODE)
+	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_pre();
 		return;
@@ -139,15 +132,11 @@ modes_pre(void)
 void
 modes_post(void)
 {
-	if(mode == CMDLINE_MODE)
+	if(ANY(vle_mode_is, CMDLINE_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE))
+	{
 		return;
-	else if(mode == SORT_MODE)
-		return;
-	else if(mode == CHANGE_MODE)
-		return;
-	else if(mode == ATTR_MODE)
-		return;
-	else if(mode == VIEW_MODE)
+	}
+	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_post();
 		return;
@@ -161,9 +150,11 @@ modes_post(void)
 	update_screen(curr_stats.need_update);
 
 	if(curr_stats.save_msg)
+	{
 		status_bar_message(NULL);
+	}
 
-	if(mode != FILE_INFO_MODE && curr_view->list_rows > 0)
+	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
 	{
 		if(!is_status_bar_multiline())
 		{
@@ -180,15 +171,19 @@ modes_statusbar_update(void)
 {
 	if(curr_stats.save_msg)
 	{
-		if(mode == VISUAL_MODE)
+		if(vle_mode_is(VISUAL_MODE))
 		{
 			update_vmode_input();
 		}
 	}
-	else if(curr_view->selected_files || mode == VISUAL_MODE)
+	else if(curr_view->selected_files || vle_mode_is(VISUAL_MODE))
+	{
 		print_selected_msg();
+	}
 	else
+	{
 		clean_status_bar();
+	}
 }
 
 void
@@ -199,73 +194,84 @@ modes_redraw(void)
 	static int in_here;
 
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	if(in_here++ > 0)
+	{
+		/* TODO: is this still needed?  Update scheduling might have solved issues
+		 * caused by asynchronous execution of this function in the past. */
 		return;
+	}
 
 	if(curr_stats.too_small_term)
 	{
 		update_screen(UT_REDRAW);
-		if(--in_here > 0)
-			modes_redraw();
-		return;
+		goto finish;
 	}
 
-	if(mode == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		redraw_cmdline();
-		if(--in_here > 0)
-			modes_redraw();
-		return;
+		goto finish;
 	}
-	else if(mode == MENU_MODE)
+	else if(vle_mode_is(MENU_MODE))
 	{
 		menu_redraw();
-		if(--in_here > 0)
-			modes_redraw();
-		return;
+		goto finish;
 	}
-	else if(mode == FILE_INFO_MODE)
+	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
-		if(--in_here > 0)
-			modes_redraw();
-		return;
+		goto finish;
 	}
 
 	update_screen(UT_REDRAW);
 
 	if(curr_stats.save_msg)
+	{
 		status_bar_message(NULL);
+	}
 
-	if(mode == SORT_MODE)
+	if(vle_mode_is(SORT_MODE))
+	{
 		redraw_sort_dialog();
-	else if(mode == CHANGE_MODE)
+	}
+	else if(vle_mode_is(CHANGE_MODE))
+	{
 		redraw_change_dialog();
-	else if(mode == ATTR_MODE)
+	}
+	else if(vle_mode_is(ATTR_MODE))
+	{
 		redraw_attr_dialog();
-	else if(mode == VIEW_MODE)
+	}
+	else if(vle_mode_is(VIEW_MODE))
+	{
 		view_redraw();
+	}
 
+finish:
 	if(--in_here > 0)
+	{
 		modes_redraw();
+	}
 }
 
 void
 modes_update(void)
 {
-	if(mode == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		redraw_cmdline();
 		return;
 	}
-	else if(mode == MENU_MODE)
+	else if(vle_mode_is(MENU_MODE))
 	{
 		menu_redraw();
 		return;
 	}
-	else if(mode == FILE_INFO_MODE)
+	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
 		return;
@@ -274,47 +280,53 @@ modes_update(void)
 	touchwin(stdscr);
 	update_all_windows();
 
-	if(mode == SORT_MODE)
+	if(vle_mode_is(SORT_MODE))
+	{
 		redraw_sort_dialog();
-	else if(mode == CHANGE_MODE)
+	}
+	else if(vle_mode_is(CHANGE_MODE))
+	{
 		redraw_change_dialog();
-	else if(mode == ATTR_MODE)
+	}
+	else if(vle_mode_is(ATTR_MODE))
+	{
 		redraw_attr_dialog();
+	}
 }
 
 void
 modupd_input_bar(wchar_t *str)
 {
-	if(mode == VISUAL_MODE)
+	if(vle_mode_is(VISUAL_MODE))
+	{
 		clear_input_bar();
+	}
 
-	if(uses_input_bar[mode])
+	if(uses_input_bar[vle_mode_get()])
+	{
 		update_input_bar(str);
+	}
 }
 
 void
 clear_input_bar(void)
 {
-	if(uses_input_bar[mode] && mode != VISUAL_MODE)
+	if(uses_input_bar[vle_mode_get()] && !vle_mode_is(VISUAL_MODE))
+	{
 		clear_num_window();
-}
-
-int
-get_mode(void)
-{
-	return mode;
+	}
 }
 
 int
 is_in_menu_like_mode(void)
 {
-	return mode == MENU_MODE || mode == FILE_INFO_MODE;
+	return ANY(vle_mode_is, MENU_MODE, FILE_INFO_MODE);
 }
 
 void
 print_selected_msg(void)
 {
-	if(mode == VISUAL_MODE)
+	if(vle_mode_is(VISUAL_MODE))
 	{
 		status_bar_messagef("-- %s -- ", describe_visual_mode());
 		update_vmode_input();

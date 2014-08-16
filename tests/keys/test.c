@@ -1,10 +1,9 @@
 #include "seatest.h"
 
 #include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 #include "builtin_keys.h"
-
-int mode = NORMAL_MODE;
 
 void builtin_and_custom(void);
 void diff_motions(void);
@@ -69,8 +68,9 @@ my_suite_setup(void)
 		MF_USES_COUNT
 	};
 
-	init_keys(MODES_COUNT, &mode, mode_flags);
-	init_builtin_keys(&mode);
+	init_keys(MODES_COUNT, mode_flags);
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+	init_builtin_keys();
 }
 
 void

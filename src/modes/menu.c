@@ -31,6 +31,7 @@
 #include "../cfg/config.h"
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/utils.h"
@@ -101,7 +102,6 @@ static int search_menu(menu_info *m, int start_pos);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
 
-static int *mode;
 static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
@@ -232,16 +232,14 @@ skip_at_beginning(int id, const char *args)
 }
 
 void
-init_menu_mode(int *key_mode)
+init_menu_mode(void)
 {
 	int ret_code;
 
-	assert(key_mode != NULL);
-
-	mode = key_mode;
-
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
 	assert(ret_code == 0);
+
+	(void)ret_code;
 
 	set_def_handler(MENU_MODE, key_handler);
 
@@ -275,7 +273,7 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 
 	view = active_view;
 	menu = m;
-	*mode = MENU_MODE;
+	vle_mode_set(MENU_MODE, VMT_PRIMARY);
 	curr_stats.need_update = UT_FULL;
 	was_redraw = 0;
 
@@ -324,11 +322,16 @@ leave_menu_mode(void)
 	clean_selected_files(view);
 	redraw_view(view);
 
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+
 	if(was_redraw)
+	{
 		update_screen(UT_FULL);
+	}
 	else
+	{
 		update_all_windows();
+	}
 }
 
 static void
@@ -434,16 +437,16 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	static menu_info *saved_menu;
 
-	*mode = NORMAL_MODE;
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	saved_menu = menu;
 	if(menu->execute_handler != NULL && menu->execute_handler(curr_view, menu))
 	{
-		*mode = MENU_MODE;
+		vle_mode_set(MENU_MODE, VMT_PRIMARY);
 		menu_redraw();
 		return;
 	}
 
-	if(*mode != MENU_MODE)
+	if(!vle_mode_is(MENU_MODE))
 	{
 		reset_popup_menu(saved_menu);
 	}

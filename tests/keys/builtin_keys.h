@@ -1,7 +1,7 @@
 #ifndef VIFM_TESTS__KEYS__BUILTIN_KEYS_H__
 #define VIFM_TESTS__KEYS__BUILTIN_KEYS_H__
 
-void init_builtin_keys(int *key_mode);
+void init_builtin_keys(void);
 
 #endif /* VIFM_TESTS__KEYS__BUILTIN_KEYS_H__ */
 

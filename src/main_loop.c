@@ -35,6 +35,7 @@
 
 #include "cfg/config.h"
 #include "engine/keys.h"
+#include "engine/mode.h"
 #include "modes/modes.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -237,15 +238,25 @@ main_loop(void)
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
+				{
 					modupd_input_bar(buf);
+				}
+
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
+				{
 					timeout = 1;
+				}
+
 				if(counter > 0)
+				{
 					clear_input_bar();
+				}
 
 				if(!curr_stats.save_msg && curr_view->selected_files &&
-						get_mode() != CMDLINE_MODE)
+						!vle_mode_is(CMDLINE_MODE))
+				{
 					print_selected_msg();
+				}
 				continue;
 			}
 		}
@@ -282,8 +293,11 @@ process_scheduled_updates(void)
 		modes_redraw();
 	}
 
-	process_scheduled_updates_of_view(curr_view);
-	process_scheduled_updates_of_view(other_view);
+	if(vle_mode_get_primary() != MENU_MODE)
+	{
+		process_scheduled_updates_of_view(curr_view);
+		process_scheduled_updates_of_view(other_view);
+	}
 }
 
 /* Performs postponed updates for the view, if any. */
@@ -313,7 +327,7 @@ should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
-	    && get_mode() != CMDLINE_MODE;
+	    && !vle_mode_is(CMDLINE_MODE);
 }
 
 /* Updates view in case directory it displays was changed externally. */

@@ -44,6 +44,7 @@
 #include "cfg/hist.h"
 #include "cfg/info.h"
 #include "engine/cmds.h"
+#include "engine/mode.h"
 #include "engine/options.h"
 #include "engine/parsing.h"
 #include "engine/text_buffer.h"
@@ -1000,8 +1001,12 @@ execute_command(FileView *view, const char command[], int menu)
 			status_bar_error("Unknown error");
 			break;
 	}
-	if(!menu && get_mode() == NORMAL_MODE)
+
+	if(!menu && vle_mode_is(NORMAL_MODE))
+	{
 		remove_selection(view);
+	}
+
 	return -1;
 }
 
@@ -3221,7 +3226,7 @@ normal_cmd(const cmd_info_t *cmd_info)
 	}
 
 	/* Force leaving command-line mode if the wide contains unfinished ":". */
-	if(get_mode() == CMDLINE_MODE)
+	if(vle_mode_is(CMDLINE_MODE))
 	{
 		(void)execute_keys_timed_out(L"\x03");
 	}
