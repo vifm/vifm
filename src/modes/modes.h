@@ -37,16 +37,22 @@ enum
 };
 
 void init_modes(void);
+
 void modes_pre(void);
+
 void modes_post(void);
+
 void modes_redraw(void);
+
 void modes_update(void);
+
 void modupd_input_bar(wchar_t *str);
+
 void clear_input_bar(void);
-/* returns current mode id */
-int get_mode(void);
+
 /* Returns non-zero if current mode is a menu like one. */
 int is_in_menu_like_mode(void);
+
 void print_selected_msg(void);
 
 #endif /* VIFM__MODES__MODES_H__ */

@@ -26,6 +26,7 @@
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
+#include "engine/mode.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
@@ -84,8 +85,10 @@ quick_view_file(FileView *view)
 	if(curr_stats.load_stage < 2)
 		return;
 
-	if(get_mode() == VIEW_MODE)
+	if(vle_mode_get() == VIEW_MODE)
+	{
 		return;
+	}
 
 	if(curr_stats.number_of_windows == 1)
 		return;

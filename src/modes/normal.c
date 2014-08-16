@@ -36,6 +36,7 @@
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
 #include "../engine/keys.h"
+#include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
@@ -817,10 +818,14 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 static FileView *
 get_view(void)
 {
-	if(get_mode() == VIEW_MODE)
+	if(vle_mode_get() == VIEW_MODE)
+	{
 		return curr_view->explore_mode ? curr_view : other_view;
+	}
 	else
+	{
 		return curr_view;
+	}
 }
 
 static void

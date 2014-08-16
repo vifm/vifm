@@ -288,7 +288,7 @@ keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	vle_mode_set((get_mode() == NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE);
+	vle_mode_set((vle_mode_get() == NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE);
 	printf("v visual mode toggle\n");
 }
 

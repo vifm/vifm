@@ -35,6 +35,7 @@
 
 #include "cfg/config.h"
 #include "engine/keys.h"
+#include "engine/mode.h"
 #include "modes/modes.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -244,7 +245,7 @@ main_loop(void)
 					clear_input_bar();
 
 				if(!curr_stats.save_msg && curr_view->selected_files &&
-						get_mode() != CMDLINE_MODE)
+						vle_mode_get() != CMDLINE_MODE)
 					print_selected_msg();
 				continue;
 			}
@@ -313,7 +314,7 @@ should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
-	    && get_mode() != CMDLINE_MODE;
+	    && vle_mode_get() != CMDLINE_MODE;
 }
 
 /* Updates view in case directory it displays was changed externally. */

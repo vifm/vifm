@@ -39,6 +39,7 @@
 #include "cfg/info.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
+#include "engine/mode.h"
 #include "engine/options.h"
 #include "engine/variables.h"
 #include "menus/menus.h"
@@ -458,7 +459,7 @@ parse_recieved_arguments(char *args[])
 			&rwin_handle);
 	exec_startup_commands(argc, args);
 
-	if(get_mode() != NORMAL_MODE && get_mode() != VIEW_MODE)
+	if(vle_mode_get() != NORMAL_MODE && vle_mode_get() != VIEW_MODE)
 	{
 		return;
 	}
@@ -494,13 +495,19 @@ remote_cd(FileView *view, const char *path, int handle)
 	char buf[PATH_MAX];
 
 	if(view->explore_mode)
+	{
 		leave_view_mode();
+	}
 
-	if(view == other_view && get_mode() == VIEW_MODE)
+	if(view == other_view && vle_mode_get() == VIEW_MODE)
+	{
 		leave_view_mode();
+	}
 
 	if(curr_stats.view)
+	{
 		toggle_quick_view();
+	}
 
 	snprintf(buf, sizeof(buf), "%s", path);
 	exclude_file_name(buf);

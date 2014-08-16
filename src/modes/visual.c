@@ -300,7 +300,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 	}
 
 	curr_stats.save_msg = save_msg;
-	if(get_mode() == VISUAL_MODE)
+	if(vle_mode_get() == VISUAL_MODE)
 	{
 		vle_mode_set(NORMAL_MODE);
 	}
@@ -433,7 +433,7 @@ static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	if(get_mode() == VISUAL_MODE)
+	if(vle_mode_get() == VISUAL_MODE)
 	{
 		vle_mode_set(NORMAL_MODE);
 	}

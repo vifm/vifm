@@ -441,7 +441,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(get_mode() != MENU_MODE)
+	if(vle_mode_get() != MENU_MODE)
 	{
 		reset_popup_menu(saved_menu);
 	}

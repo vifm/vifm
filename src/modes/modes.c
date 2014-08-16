@@ -301,12 +301,6 @@ clear_input_bar(void)
 }
 
 int
-get_mode(void)
-{
-	return vle_mode_get();
-}
-
-int
 is_in_menu_like_mode(void)
 {
 	return vle_mode_get() == MENU_MODE || vle_mode_get() == FILE_INFO_MODE;
