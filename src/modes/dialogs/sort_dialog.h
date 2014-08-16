@@ -22,8 +22,11 @@
 
 #include "../../ui.h"
 
+/* Initializes sort dialog mode. */
 void init_sort_dialog_mode(void);
+
 void enter_sort_mode(FileView *active_view);
+
 void redraw_sort_dialog(void);
 
 #endif /* VIFM__MODES__DIALOGS__SORT_DIALOG_H__ */

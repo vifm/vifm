@@ -22,8 +22,11 @@
 
 #include "../../ui.h"
 
+/* Initializes change dialog mode. */
 void init_change_dialog_mode(void);
+
 void enter_change_mode(FileView *active_view);
+
 void redraw_change_dialog(void);
 
 #endif /* VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__ */

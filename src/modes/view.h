@@ -21,6 +21,7 @@
 
 #include "../ui.h"
 
+/* Initializes view mode. */
 void init_view_mode(void);
 
 void enter_view_mode(int explore);

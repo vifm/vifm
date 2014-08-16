@@ -23,6 +23,7 @@
 #include "../menus/menus.h"
 #include "../ui.h"
 
+/* Initiailizes menu mode. */
 void init_menu_mode(void);
 
 void enter_menu_mode(menu_info *m, FileView *active_view);

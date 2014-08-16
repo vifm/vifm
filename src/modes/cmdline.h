@@ -50,6 +50,7 @@ typedef void (*prompt_cb)(const char renponse[]);
  * passed through. */
 typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 
+/* Initializes command-line mode. */
 void init_cmdline_mode(void);
 
 void enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd,
