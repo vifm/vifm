@@ -293,8 +293,11 @@ process_scheduled_updates(void)
 		modes_redraw();
 	}
 
-	process_scheduled_updates_of_view(curr_view);
-	process_scheduled_updates_of_view(other_view);
+	if(vle_mode_get_primary() != MENU_MODE)
+	{
+		process_scheduled_updates_of_view(curr_view);
+		process_scheduled_updates_of_view(other_view);
+	}
 }
 
 /* Performs postponed updates for the view, if any. */
