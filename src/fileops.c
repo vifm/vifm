@@ -125,7 +125,7 @@ static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char dest_name[]);
-static int entry_is_dir(const char full_path[], const struct dirent* dentry);
+static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable);
@@ -1869,7 +1869,7 @@ calc_dirsize(const char *path, int force_update)
 		}
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-		if(entry_is_dir(buf, dentry))
+		if(is_dir_entry(buf, dentry))
 		{
 			uint64_t dir_size = 0;
 			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
@@ -1892,7 +1892,7 @@ calc_dirsize(const char *path, int force_update)
 /* Uses dentry to check file type and fallbacks to lstat() if dentry contains
  * unknown type. */
 static int
-entry_is_dir(const char full_path[], const struct dirent* dentry)
+is_dir_entry(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
 	struct stat s;
