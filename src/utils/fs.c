@@ -46,7 +46,6 @@
 #include "utils.h"
 
 static int path_exists_internal(const char *path, const char *filename);
-static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 
 #ifdef _WIN32
 static DWORD win_get_file_attrs(const char path[]);
@@ -480,10 +479,7 @@ remove_dir_content(const char path[])
 	closedir(dir);
 }
 
-/* Uses dentry or full path to check file type.  Returns non-zero for
- * directories, otherwise zero is returned.  Symbolic links are _not_
- * dereferenced. */
-static int
+int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
