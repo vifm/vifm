@@ -498,7 +498,7 @@ int
 is_dirent_targets_dir(const struct dirent *d)
 {
 #ifdef _WIN32
-		return is_dir(d->d_name);
+	return is_dir(d->d_name);
 #else
 	if(d->d_type == DT_UNKNOWN)
 	{
