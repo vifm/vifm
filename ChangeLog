@@ -182,6 +182,9 @@
 	Fixed stripping special sequences from vifm-help.txt on OS X.  Thanks to
 	Stephen L. Holtz (a.k.a. stephenholtz).
 
+	Fixed ga and gA commands for files bigger than 4 GiB on 32-bit operating
+	systems.  Thanks to filterfalse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

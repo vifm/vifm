@@ -371,7 +371,7 @@ get_file_size(const char *path)
 	struct stat st;
 	if(lstat(path, &st) == 0)
 	{
-		return (size_t)st.st_size;
+		return (uint64_t)st.st_size;
 	}
 	return 0;
 #else
