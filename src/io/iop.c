@@ -27,8 +27,9 @@
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <errno.h> /* EEXIST errno */
-#include <stddef.h> /* NULL */
-#include <stdio.h> /* FILE fclose() fopen() remove() snprintf() */
+#include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* FILE fclose() fopen() fread() fwrite() rename()
+                      snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -39,7 +40,11 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "../ui.h"
 #include "ioc.h"
+
+/* Amount of data to transfer at once. */
+#define BLOCK_SIZE 8192
 
 int
 iop_mkfile(io_args_t *const args)
@@ -138,6 +143,93 @@ iop_rmdir(io_args_t *const args)
 	return rmdir(path);
 #else
 	return RemoveDirectory(path) == 0;
+#endif
+}
+
+int
+iop_cp(io_args_t *const args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+	const int overwrite = args->arg3.overwrite;
+	const int cancellable = args->cancellable;
+
+#ifndef _WIN32
+	char block[BLOCK_SIZE];
+	FILE *in, *out;
+	size_t nread;
+	int error;
+
+	if(is_dir(src))
+	{
+		return 1;
+	}
+
+	in = fopen(src, "rb");
+	if(in == NULL)
+	{
+		return 1;
+	}
+
+	if(overwrite)
+	{
+		const int ec = unlink(dst);
+		if(ec != 0 && errno != ENOENT)
+		{
+			fclose(in);
+			return ec;
+		}
+
+		/* XXX: possible improvement would be to generate temporary file name in the
+		 * destination directory, write to it and then overwrite destination file,
+		 * but this approach has disadvantage of requiring more free space on
+		 * destination file system. */
+	}
+	else if(path_exists(dst))
+	{
+		return 1;
+	}
+
+	out = fopen(dst, "wb");
+	if(out == NULL)
+	{
+		fclose(in);
+		return 1;
+	}
+
+	if(cancellable)
+	{
+		ui_cancellation_enable();
+	}
+
+	error = 0;
+	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
+	{
+		if(cancellable && ui_cancellation_requested())
+		{
+			error = 1;
+			break;
+		}
+
+		if(fwrite(&block, 1, nread, out) != nread)
+		{
+			error = 1;
+			break;
+		}
+	}
+
+	if(cancellable)
+	{
+		ui_cancellation_disable();
+	}
+
+	fclose(in);
+	fclose(out);
+	return error;
+#else
+	(void)overwrite;
+	(void)cancellable;
+	return CopyFileA(src, dst, 0) == 0;
 #endif
 }
 
