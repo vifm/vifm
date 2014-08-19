@@ -43,10 +43,6 @@ int iop_rmdir(io_args_t *const args);
 /* Copies file.  Expects path in arg1 and overwrite in arg3. */
 int iop_cp(io_args_t *const args);
 
-/* Moves/renames file/directory.  Expects src in arg1, dst in arg2 and overwrite
- * in arg3. */
-int iop_mv(io_args_t *const args);
-
 /* Change owner of file/directory.  Expects path in arg1 and uid in arg3. */
 int iop_chown(io_args_t *const args);
 

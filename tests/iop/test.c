@@ -14,7 +14,6 @@ void cp_tests(void);
 void ln_tests(void);
 void mkdir_tests(void);
 void mkfile_tests(void);
-void mv_tests(void);
 void rmdir_tests(void);
 void rmfile_tests(void);
 
@@ -44,7 +43,6 @@ all_tests(void)
 	ln_tests();
 	mkdir_tests();
 	mkfile_tests();
-	mv_tests();
 	rmdir_tests();
 	rmfile_tests();
 }
