@@ -36,6 +36,45 @@ test_dir_is_not_copied(void)
 }
 
 static void
+test_empty_file_is_copied(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = "empty",
+		};
+		assert_int_equal(0, iop_mkfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "empty",
+			.arg2.dst = "empty-copy",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_true(files_are_identical("empty", "empty-copy"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "empty",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "empty-copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
+static void
 test_file_is_not_overwritten_if_not_asked(void)
 {
 	{
@@ -122,38 +161,62 @@ test_file_is_overwritten_if_asked(void)
 }
 
 static void
-test_empty_file_is_copied(void)
+file_is_copied(const char original[])
 {
+	{
+		io_args_t args =
+		{
+			.arg1.src = original,
+			.arg2.dst = "copy",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_true(files_are_identical("copy", original));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
 }
 
 static void
 test_block_size_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/block-size-file");
 }
 
 static void
 test_block_size_minus_one_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/block-size-minus-one-file");
 }
 
 static void
 test_block_size_plus_one_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/block-size-plus-one-file");
 }
 
 static void
 test_double_block_size_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/double-block-size-file");
 }
 
 static void
 test_double_block_size_minus_one_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/double-block-size-minus-one-file");
 }
 
 static void
 test_double_block_size_plus_one_file_is_copied(void)
 {
+	file_is_copied("../various-sizes/double-block-size-plus-one-file");
 }
 
 void
@@ -162,9 +225,9 @@ cp_tests(void)
 	test_fixture_start();
 
 	run_test(test_dir_is_not_copied);
+	run_test(test_empty_file_is_copied);
 	run_test(test_file_is_not_overwritten_if_not_asked);
 	run_test(test_file_is_overwritten_if_asked);
-	run_test(test_empty_file_is_copied);
 	run_test(test_block_size_file_is_copied);
 	run_test(test_block_size_minus_one_file_is_copied);
 	run_test(test_block_size_plus_one_file_is_copied);
