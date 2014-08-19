@@ -141,6 +141,7 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 {
 	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
 	struct timeval ts;
+	int select_result;
 
 	fd_set read_ready;
 	FD_ZERO(&read_ready);
@@ -152,8 +153,9 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 		process_cancel_request(pid);
 		ts = ts_init;
 		FD_SET(fd, &read_ready);
+		select_result = select(fd + 1, &read_ready, NULL, NULL, &ts);
 	}
-	while(select(fd + 1, &read_ready, NULL, NULL, &ts) == 0 || errno == EINTR);
+	while(select_result == 0 || (select_result == -1 && errno == EINTR));
 }
 
 int
