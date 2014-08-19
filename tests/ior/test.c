@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include <unistd.h> /* chdir() */
+
 #include "../../src/cfg/config.h"
 
 void chgrp_tests(void);
@@ -16,11 +18,15 @@ static void
 setup(void)
 {
 	cfg.shell = strdup("/bin/bash");
+
+	assert_int_equal(0, chdir("test-data/sandbox"));
 }
 
 static void
 teardown(void)
 {
+	assert_int_equal(0, chdir("../.."));
+
 	free(cfg.shell);
 }
 
