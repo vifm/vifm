@@ -23,19 +23,43 @@
 #include <shellapi.h>
 #endif
 
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* unlink() */
 
+#include <assert.h> /* assert() */
+#include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* removee() snprintf() */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strlen() */
 
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../background.h"
 #include "ioc.h"
 #include "iop.h"
+
+/* Reason why file system traverse visitor is called. */
+typedef enum
+{
+	VA_DIR_ENTER, /* After opening a directory. */
+	VA_FILE,      /* For a file. */
+	VA_DIR_LEAVE, /* After closing a directory. */
+}
+VisitAction;
+
+/* Generic handler for file system traversing algorithm.  Must return 0 on
+ * success, otherwise directory traverse will be stopped. */
+typedef int (*subtree_visitor)(const char full_path[], VisitAction action,
+		void *param);
+
+static int cp_visitor(const char full_path[], VisitAction action, void *param);
+static int traverse(const char path[], subtree_visitor visitor, void *param);
+static int traverse_subtree(const char path[], subtree_visitor visitor,
+		void *param);
 
 int
 ior_rm(io_args_t *const args)
@@ -90,6 +114,151 @@ ior_rm(io_args_t *const args)
 		return !ok;
 	}
 #endif
+}
+
+int
+ior_cp(io_args_t *const args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+	const int overwrite = args->arg3.overwrite;
+	const int cancellable = args->cancellable;
+
+	if(overwrite)
+	{
+		io_args_t args =
+		{
+			.arg1.path = dst,
+
+			.cancellable = cancellable,
+		};
+		const int result = ior_rm(&args);
+		if(result != 0)
+		{
+			return result;
+		}
+	}
+
+	return traverse(src, &cp_visitor, args);
+}
+
+/* Implementation of traverse() visitor for subtree copying.  Returns 0 on
+ * success, otherwise non-zero is returned. */
+static int
+cp_visitor(const char full_path[], VisitAction action, void *param)
+{
+	const io_args_t *const cp_args = param;
+	io_args_t args;
+	const char *dst_full_path;
+	char *free_me = NULL;
+	int result;
+	const char *rel_part;
+
+	if(action == VA_DIR_LEAVE)
+	{
+		return 0;
+	}
+
+	/* TODO: come up with something better than this. */
+	rel_part = full_path + strlen(cp_args->arg1.src);
+	dst_full_path = (rel_part[0] == '\0')
+	              ? cp_args->arg2.dst
+	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
+
+	args.arg3.overwrite = cp_args->arg3.overwrite;
+	args.cancellable = cp_args->cancellable;
+
+	switch(action)
+	{
+		case VA_DIR_ENTER:
+			args.arg1.path = dst_full_path;
+
+			result = iop_mkdir(&args);
+			break;
+		case VA_FILE:
+			args.arg1.src = full_path;
+			args.arg2.dst = dst_full_path;
+
+			result = iop_cp(&args);
+			break;
+
+		default:
+			assert(0 && "Unexpected visitor action.");
+			result = 1;
+			break;
+	}
+
+	free(free_me);
+
+	return result;
+}
+
+/* A generic recursive file system traversing entry point.  Returns zero on
+ * success, otherwise non-zero is returned. */
+static int
+traverse(const char path[], subtree_visitor visitor, void *param)
+{
+	if(is_dir(path))
+	{
+		return traverse_subtree(path, visitor, param);
+	}
+	else
+	{
+		return visitor(path, VA_FILE, param);
+	}
+}
+
+/* A generic subtree traversing.  Returns zero on success, otherwise non-zero is
+ * returned. */
+static int
+traverse_subtree(const char path[], subtree_visitor visitor, void *param)
+{
+	DIR *dir;
+	struct dirent *d;
+	int result;
+
+	dir = opendir(path);
+	if(dir == NULL)
+	{
+		return 1;
+	}
+
+	result = visitor(path, VA_DIR_ENTER, param);
+	if(result != 0)
+	{
+		(void)closedir(dir);
+		return result;
+	}
+
+	while((d = readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			char *const full_path = format_str("%s/%s", path, d->d_name);
+			if(entry_is_dir(full_path, d))
+			{
+				result = traverse_subtree(full_path, visitor, param);
+			}
+			else
+			{
+				result = visitor(full_path, VA_FILE, param);
+			}
+			free(full_path);
+
+			if(result != 0)
+			{
+				break;
+			}
+		}
+	}
+	(void)closedir(dir);
+
+	if(result == 0)
+	{
+		result = visitor(path, VA_DIR_LEAVE, param);
+	}
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
