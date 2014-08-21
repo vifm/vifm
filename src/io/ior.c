@@ -121,7 +121,7 @@ ior_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int overwrite = args->arg3.overwrite;
+	const int overwrite = args->arg3.crs == IO_CRS_REPLACE_ALL;
 	const int cancellable = args->cancellable;
 
 	if(overwrite)
@@ -165,15 +165,19 @@ cp_visitor(const char full_path[], VisitAction action, void *param)
 	              ? cp_args->arg2.dst
 	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
 
-	args.arg3.overwrite = cp_args->arg3.overwrite;
+	args.arg3.crs = cp_args->arg3.crs;
 	args.cancellable = cp_args->cancellable;
 
+	result = 0;
 	switch(action)
 	{
 		case VA_DIR_ENTER:
-			args.arg1.path = dst_full_path;
+			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
+			{
+				args.arg1.path = dst_full_path;
 
-			result = iop_mkdir(&args);
+				result = iop_mkdir(&args);
+			}
 			break;
 		case VA_FILE:
 			args.arg1.src = full_path;

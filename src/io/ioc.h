@@ -25,6 +25,21 @@
 
 /* ioc - I/O common - Input/Output common */
 
+/* Conflict resolution strategy.  Defines what to do if destination path already
+ * exists. */
+typedef enum
+{
+	/* Abort operation if destination already exists. */
+	IO_CRS_FAIL,
+
+	/* Replace all existing items and remove excess ones. */
+	IO_CRS_REPLACE_ALL,
+
+	/* Overwrite files existing at destination. */
+	IO_CRS_REPLACE_FILES,
+}
+IoCrs;
+
 typedef struct
 {
 	io_err_cb errors_cb;
@@ -52,7 +67,10 @@ typedef struct
 	{
 		/* Whether operation should consider parent elements of path. */
 		int process_parents;
-		int overwrite;
+
+		/* Conflict resolution strategy. */
+		IoCrs crs;
+
 		mode_t mode;
 #ifndef _WIN32
 		uid_t uid;

@@ -99,7 +99,7 @@ test_file_is_not_overwritten_if_not_asked(void)
 		{
 			.arg1.src = "../read/two-lines",
 			.arg2.dst = "empty-copy",
-			.arg3.overwrite = 0,
+			.arg3.crs = IO_CRS_FAIL,
 		};
 		assert_false(iop_cp(&args) == 0);
 	}
@@ -132,7 +132,7 @@ test_file_is_overwritten_if_asked(void)
 		{
 			.arg1.src = "../read/two-lines",
 			.arg2.dst = "two-lines",
-			.arg3.overwrite = 0,
+			.arg3.crs = IO_CRS_FAIL,
 		};
 		assert_int_equal(0, iop_cp(&args));
 	}
@@ -144,7 +144,7 @@ test_file_is_overwritten_if_asked(void)
 		{
 			.arg1.src = "../read/binary-data",
 			.arg2.dst = "two-lines",
-			.arg3.overwrite = 1,
+			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
 		assert_int_equal(0, iop_cp(&args));
 	}

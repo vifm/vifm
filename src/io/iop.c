@@ -151,7 +151,7 @@ iop_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int overwrite = args->arg3.overwrite;
+	const int overwrite = args->arg3.crs != IO_CRS_FAIL;
 	const int cancellable = args->cancellable;
 
 #ifndef _WIN32
@@ -238,7 +238,7 @@ iop_ln(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;
-	const int overwrite = args->arg3.overwrite;
+	const int overwrite = args->arg3.crs != IO_CRS_FAIL;
 
 	int result;
 

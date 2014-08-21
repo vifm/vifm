@@ -451,7 +451,7 @@ op_symlink(void *data, const char *src, const char *dst)
 	{
 		.arg1.path = src,
 		.arg2.target = dst,
-		.arg3.overwrite = 1,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
 	};
 	return iop_ln(&args);
 }

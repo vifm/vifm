@@ -258,7 +258,7 @@ test_overwrites_file_when_asked(void)
 		{
 			.arg1.src = "../read/two-lines",
 			.arg2.dst = "a-file",
-			.arg3.overwrite = 1,
+			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
 		assert_int_equal(0, ior_cp(&args));
 	}
@@ -283,7 +283,7 @@ test_overwrites_dir_when_asked(void)
 		{
 			.arg1.src = "../read",
 			.arg2.dst = "dir",
-			.arg3.overwrite = 1,
+			.arg3.crs = IO_CRS_REPLACE_ALL,
 		};
 		assert_int_equal(0, ior_cp(&args));
 	}
@@ -305,6 +305,66 @@ test_overwrites_dir_when_asked(void)
 	}
 }
 
+static void
+test_directories_can_be_merged(void)
+{
+	make_dir("first", 0700);
+	assert_int_equal(0, access("first", F_OK));
+
+	assert_int_equal(0, chdir("first"));
+	{
+		FILE *const f = fopen("first-file", "w");
+		fclose(f);
+		assert_int_equal(0, access("first-file", F_OK));
+	}
+	assert_int_equal(0, chdir(".."));
+
+	make_dir("second", 0700);
+	assert_int_equal(0, access("second", F_OK));
+
+	assert_int_equal(0, chdir("second"));
+	{
+		FILE *const f = fopen("second-file", "w");
+		fclose(f);
+		assert_int_equal(0, access("second-file", F_OK));
+	}
+	assert_int_equal(0, chdir(".."));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "first",
+			.arg2.dst = "second",
+			.arg3.crs = IO_CRS_REPLACE_FILES,
+		};
+		assert_int_equal(0, ior_cp(&args));
+	}
+
+	assert_int_equal(0, access("second/second-file", F_OK));
+	assert_int_equal(0, access("second/first-file", F_OK));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "first",
+		};
+		assert_int_equal(0, ior_rm(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "second",
+		};
+		assert_int_equal(0, ior_rm(&args));
+	}
+}
+
+static void
+test_fails_to_move_directory_inside_itself(void)
+{
+}
+
 void
 cp_tests(void)
 {
@@ -319,6 +379,8 @@ cp_tests(void)
 	run_test(test_fails_to_overwrite_dir_by_default);
 	run_test(test_overwrites_file_when_asked);
 	run_test(test_overwrites_dir_when_asked);
+	run_test(test_directories_can_be_merged);
+	run_test(test_fails_to_move_directory_inside_itself);
 
 	test_fixture_end();
 }
