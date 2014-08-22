@@ -506,6 +506,29 @@ is_dirent_targets_dir(const struct dirent *d)
 #endif
 }
 
+int
+is_in_subtree(const char path[], const char root[])
+{
+	char path_copy[PATH_MAX];
+	char path_real[PATH_MAX];
+	char root_real[PATH_MAX];
+
+	copy_str(path_copy, sizeof(path_copy), path);
+	remove_last_path_component(path_copy);
+
+	if(realpath(path_copy, path_real) != path_real)
+	{
+		return 0;
+	}
+
+	if(realpath(root, root_real) != root_real)
+	{
+		return 0;
+	}
+
+	return path_starts_with(path_real, root_real);
+}
+
 #ifdef _WIN32
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
