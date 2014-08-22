@@ -361,8 +361,27 @@ test_directories_can_be_merged(void)
 }
 
 static void
-test_fails_to_move_directory_inside_itself(void)
+test_fails_to_copy_directory_inside_itself(void)
 {
+	make_dir("empty-dir", 0700);
+	assert_int_equal(0, access("empty-dir", F_OK));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "empty-dir",
+			.arg2.dst = "empty-dir/empty-dir-copy",
+		};
+		assert_false(ior_cp(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "empty-dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
 }
 
 void
@@ -380,7 +399,7 @@ cp_tests(void)
 	run_test(test_overwrites_file_when_asked);
 	run_test(test_overwrites_dir_when_asked);
 	run_test(test_directories_can_be_merged);
-	run_test(test_fails_to_move_directory_inside_itself);
+	run_test(test_fails_to_copy_directory_inside_itself);
 
 	test_fixture_end();
 }

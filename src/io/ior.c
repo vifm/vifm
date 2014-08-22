@@ -124,6 +124,11 @@ ior_cp(io_args_t *const args)
 	const int overwrite = args->arg3.crs == IO_CRS_REPLACE_ALL;
 	const int cancellable = args->cancellable;
 
+	if(is_in_subtree(dst, src))
+	{
+		return 1;
+	}
+
 	if(overwrite)
 	{
 		io_args_t args =
