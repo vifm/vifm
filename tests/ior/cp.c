@@ -5,6 +5,7 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+#include "utils.h"
 
 static void
 test_file_is_copied(void)
@@ -30,8 +31,7 @@ test_file_is_copied(void)
 static void
 test_empty_directory_is_copied(void)
 {
-	make_dir("empty-dir", 0700);
-	assert_int_equal(0, access("empty-dir", F_OK));
+	create_empty_dir("empty-dir");
 
 	{
 		io_args_t args =
@@ -62,16 +62,7 @@ test_empty_directory_is_copied(void)
 static void
 test_non_empty_directory_is_copied(void)
 {
-	make_dir("non-empty-dir", 0700);
-	assert_int_equal(0, access("non-empty-dir", F_OK));
-
-	assert_int_equal(0, chdir("non-empty-dir"));
-	{
-		FILE *const f = fopen("a-file", "w");
-		fclose(f);
-		assert_int_equal(0, access("a-file", F_OK));
-	}
-	assert_int_equal(0, chdir(".."));
+	create_non_empty_dir("non-empty-dir", "a-file");
 
 	{
 		io_args_t args =
@@ -104,15 +95,7 @@ test_non_empty_directory_is_copied(void)
 static void
 test_empty_nested_directory_is_copied(void)
 {
-	make_dir("non-empty-dir", 0700);
-	assert_int_equal(0, access("non-empty-dir", F_OK));
-
-	assert_int_equal(0, chdir("non-empty-dir"));
-	{
-		make_dir("empty-nested-dir", 0700);
-		assert_int_equal(0, access("empty-nested-dir", F_OK));
-	}
-	assert_int_equal(0, chdir(".."));
+	create_empty_nested_dir("non-empty-dir", "empty-nested-dir");
 
 	{
 		io_args_t args =
@@ -146,23 +129,7 @@ test_empty_nested_directory_is_copied(void)
 static void
 test_non_empty_nested_directory_is_copied(void)
 {
-	make_dir("non-empty-dir", 0700);
-	assert_int_equal(0, access("non-empty-dir", F_OK));
-
-	assert_int_equal(0, chdir("non-empty-dir"));
-	{
-		make_dir("nested-dir", 0700);
-		assert_int_equal(0, access("nested-dir", F_OK));
-
-		assert_int_equal(0, chdir("nested-dir"));
-		{
-			FILE *const f = fopen("a-file", "w");
-			fclose(f);
-			assert_int_equal(0, access("a-file", F_OK));
-		}
-		assert_int_equal(0, chdir(".."));
-	}
-	assert_int_equal(0, chdir(".."));
+	create_non_empty_nested_dir("non-empty-dir", "nested-dir", "a-file");
 
 	{
 		io_args_t args =
@@ -173,8 +140,7 @@ test_non_empty_nested_directory_is_copied(void)
 		assert_int_equal(0, ior_cp(&args));
 	}
 
-	assert_int_equal(0,
-			access("non-empty-dir-copy/nested-dir/a-file", F_OK));
+	assert_int_equal(0, access("non-empty-dir-copy/nested-dir/a-file", F_OK));
 
 	{
 		io_args_t args =
@@ -196,11 +162,7 @@ test_non_empty_nested_directory_is_copied(void)
 static void
 test_fails_to_overwrite_file_by_default(void)
 {
-	{
-		FILE *const f = fopen("a-file", "w");
-		fclose(f);
-		assert_int_equal(0, access("a-file", F_OK));
-	}
+	create_empty_file("a-file");
 
 	{
 		io_args_t args =
@@ -223,8 +185,7 @@ test_fails_to_overwrite_file_by_default(void)
 static void
 test_fails_to_overwrite_dir_by_default(void)
 {
-	make_dir("empty-dir", 0700);
-	assert_int_equal(0, access("empty-dir", F_OK));
+	create_empty_dir("empty-dir");
 
 	{
 		io_args_t args =
@@ -247,11 +208,7 @@ test_fails_to_overwrite_dir_by_default(void)
 static void
 test_overwrites_file_when_asked(void)
 {
-	{
-		FILE *const f = fopen("a-file", "w");
-		fclose(f);
-		assert_int_equal(0, access("a-file", F_OK));
-	}
+	create_empty_file("a-file");
 
 	{
 		io_args_t args =
@@ -275,8 +232,7 @@ test_overwrites_file_when_asked(void)
 static void
 test_overwrites_dir_when_asked(void)
 {
-	make_dir("dir", 0700);
-	assert_int_equal(0, access("dir", F_OK));
+	create_empty_dir("dir");
 
 	{
 		io_args_t args =
@@ -308,26 +264,16 @@ test_overwrites_dir_when_asked(void)
 static void
 test_directories_can_be_merged(void)
 {
-	make_dir("first", 0700);
-	assert_int_equal(0, access("first", F_OK));
+	create_empty_dir("first");
 
 	assert_int_equal(0, chdir("first"));
-	{
-		FILE *const f = fopen("first-file", "w");
-		fclose(f);
-		assert_int_equal(0, access("first-file", F_OK));
-	}
+	create_empty_file("first-file");
 	assert_int_equal(0, chdir(".."));
 
-	make_dir("second", 0700);
-	assert_int_equal(0, access("second", F_OK));
+	create_empty_dir("second");
 
 	assert_int_equal(0, chdir("second"));
-	{
-		FILE *const f = fopen("second-file", "w");
-		fclose(f);
-		assert_int_equal(0, access("second-file", F_OK));
-	}
+	create_empty_file("second-file");
 	assert_int_equal(0, chdir(".."));
 
 	{
@@ -363,8 +309,7 @@ test_directories_can_be_merged(void)
 static void
 test_fails_to_copy_directory_inside_itself(void)
 {
-	make_dir("empty-dir", 0700);
-	assert_int_equal(0, access("empty-dir", F_OK));
+	create_empty_dir("empty-dir");
 
 	{
 		io_args_t args =
