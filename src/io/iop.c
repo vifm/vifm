@@ -75,15 +75,15 @@ iop_mkdir(io_args_t *const args)
 	const int create_parent = args->arg3.process_parents;
 
 #ifndef _WIN32
-	const int path_prefix_len = 0;
+	enum { PATH_PREFIX_LEN = 0 };
 #else
-	const int path_prefix_len = 2;
+	enum { PATH_PREFIX_LEN = 2 };
 #endif
 
 	if(create_parent)
 	{
 		char *const partial_path = strdup(path);
-		char *part = partial_path + path_prefix_len, *state = NULL;
+		char *part = partial_path + PATH_PREFIX_LEN, *state = NULL;
 
 		while((part = split_and_get(part, '/', &state)) != NULL)
 		{
