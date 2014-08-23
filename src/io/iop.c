@@ -92,7 +92,7 @@ iop_mkdir(io_args_t *const args)
 			sep = *sep_pos;
 			*sep_pos = '\0';
 
-			if(!is_dir(path_copy))
+			if(*path_copy != '\0' && !is_dir(path_copy))
 			{
 #ifndef _WIN32
 				if(mkdir(path_copy, 0755) != 0)

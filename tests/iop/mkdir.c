@@ -1,10 +1,11 @@
 #include "seatest.h"
 
-#include <unistd.h> /* F_OK access() */
+#include <unistd.h> /* F_OK access() getcwd() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/fs_limits.h"
 
 static void create_directory(const char path[], const char root[],
 		int create_parents);
@@ -22,6 +23,17 @@ static void
 test_child_dir_and_parent_are_created(void)
 {
 	create_directory(NESTED_DIR_NAME, DIR_NAME, 1);
+}
+
+static void
+test_create_by_absolute_path(void)
+{
+	char cwd[PATH_MAX];
+	char full_path[PATH_MAX];
+
+	getcwd(cwd, sizeof(cwd));
+	snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);
+	create_directory(full_path, DIR_NAME, 1);
 }
 
 static void
@@ -74,6 +86,7 @@ mkdir_tests(void)
 
 	run_test(test_single_dir_is_created);
 	run_test(test_child_dir_and_parent_are_created);
+	run_test(test_create_by_absolute_path);
 	run_test(test_child_dir_is_not_created);
 
 	test_fixture_end();
