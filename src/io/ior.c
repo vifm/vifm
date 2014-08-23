@@ -57,6 +57,9 @@ typedef int (*subtree_visitor)(const char full_path[], VisitAction action,
 		void *param);
 
 static int cp_visitor(const char full_path[], VisitAction action, void *param);
+static int mv_visitor(const char full_path[], VisitAction action, void *param);
+static int cp_mv_visitor(const char full_path[], VisitAction action,
+		void *param, int cp);
 static int traverse(const char path[], subtree_visitor visitor, void *param);
 static int traverse_subtree(const char path[], subtree_visitor visitor,
 		void *param);
@@ -152,6 +155,78 @@ ior_cp(io_args_t *const args)
 static int
 cp_visitor(const char full_path[], VisitAction action, void *param)
 {
+	return cp_mv_visitor(full_path, action, param, 1);
+}
+
+int
+ior_mv(io_args_t *const args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+	const IoCrs crs = args->arg3.crs;
+	const int cancellable = args->cancellable;
+
+	if(path_exists(dst) && crs == IO_CRS_FAIL)
+	{
+		return 1;
+	}
+
+	if(rename(src, dst) == 0)
+	{
+		return 0;
+	}
+
+	switch(errno)
+	{
+		case EXDEV:
+			{
+				const int result = ior_cp(args);
+				return (result == 0) ? ior_rm(args) : result;
+			}
+		case EISDIR:
+		case ENOTEMPTY:
+		case EEXIST:
+			if(crs == IO_CRS_REPLACE_ALL)
+			{
+				io_args_t args =
+				{
+					.arg1.path = dst,
+
+					.cancellable = cancellable,
+				};
+
+				const int error = ior_rm(&args);
+				if(error != 0)
+				{
+					return error;
+				}
+
+				return rename(src, dst);
+			}
+			else if(crs == IO_CRS_REPLACE_FILES)
+			{
+				return traverse(src, &mv_visitor, args);
+			}
+			/* Break is intentionally omitted. */
+
+		default:
+			return errno;
+	}
+}
+
+/* Implementation of traverse() visitor for subtree moving.  Returns 0 on
+ * success, otherwise non-zero is returned. */
+static int
+mv_visitor(const char full_path[], VisitAction action, void *param)
+{
+	return cp_mv_visitor(full_path, action, param, 0);
+}
+
+/* Generic implementation of traverse() visitor for subtree copying/moving.
+ * Returns 0 on success, otherwise non-zero is returned. */
+static int
+cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
+{
 	const io_args_t *const cp_args = param;
 	io_args_t args;
 	const char *dst_full_path;
@@ -188,7 +263,7 @@ cp_visitor(const char full_path[], VisitAction action, void *param)
 			args.arg1.src = full_path;
 			args.arg2.dst = dst_full_path;
 
-			result = iop_cp(&args);
+			result = cp ? iop_cp(&args) : ior_mv(&args);
 			break;
 
 		default:
