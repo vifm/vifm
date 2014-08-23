@@ -329,6 +329,49 @@ test_fails_to_copy_directory_inside_itself(void)
 	}
 }
 
+static void
+test_symlink_is_symlink_after_copy(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = "../read/two-lines",
+			.arg2.target = "sym-link",
+		};
+		assert_int_equal(0, iop_ln(&args));
+	}
+
+	assert_true(is_symlink("sym-link"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "sym-link",
+			.arg2.dst = "sym-link-copy",
+		};
+		assert_int_equal(0, ior_cp(&args));
+	}
+
+	assert_true(is_symlink("sym-link"));
+	assert_true(is_symlink("sym-link-copy"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "sym-link",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "sym-link-copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
 void
 cp_tests(void)
 {
@@ -345,6 +388,7 @@ cp_tests(void)
 	run_test(test_overwrites_dir_when_asked);
 	run_test(test_directories_can_be_merged);
 	run_test(test_fails_to_copy_directory_inside_itself);
+	run_test(test_symlink_is_symlink_after_copy);
 
 	test_fixture_end();
 }
