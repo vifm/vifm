@@ -145,12 +145,8 @@ iop_cp(io_args_t *const args)
 	size_t nread;
 	int error;
 
-	if(is_dir(src))
-	{
-		return 1;
-	}
-
-	/* Create symbolic link rather than copying file it points to. */
+	/* Create symbolic link rather than copying file it points to.  This check
+	 * should go before directory check as is_dir() resolves symbolic links. */
 	if(is_symlink(src))
 	{
 		io_args_t args =
@@ -162,6 +158,11 @@ iop_cp(io_args_t *const args)
 			.cancellable = cancellable,
 		};
 		return iop_ln(&args);
+	}
+
+	if(is_dir(src))
+	{
+		return 1;
 	}
 
 	in = fopen(src, "rb");
@@ -231,6 +232,12 @@ iop_cp(io_args_t *const args)
 	return CopyFileA(src, dst, 0) == 0;
 #endif
 }
+
+int iop_chown(io_args_t *const args);
+
+int iop_chgrp(io_args_t *const args);
+
+int iop_chmod(io_args_t *const args);
 
 int
 iop_ln(io_args_t *const args)

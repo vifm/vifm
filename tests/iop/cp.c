@@ -221,7 +221,7 @@ test_double_block_size_plus_one_file_is_copied(void)
 }
 
 static void
-test_symlink_copy_is_symlink(void)
+test_file_symlink_copy_is_symlink(void)
 {
 	{
 		io_args_t args =
@@ -263,6 +263,63 @@ test_symlink_copy_is_symlink(void)
 	}
 }
 
+static void
+test_dir_symlink_copy_is_symlink(void)
+{
+	make_dir("dir", 0700);
+	assert_true(is_dir("dir"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+			.arg2.target = "dir-sym-link",
+		};
+		assert_int_equal(0, iop_ln(&args));
+	}
+
+	assert_true(is_symlink("dir-sym-link"));
+	assert_true(is_dir("dir-sym-link"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "dir-sym-link",
+			.arg2.dst = "dir-sym-link-copy",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_true(is_symlink("dir-sym-link"));
+	assert_true(is_dir("dir-sym-link"));
+	assert_true(is_symlink("dir-sym-link-copy"));
+	assert_true(is_dir("dir-sym-link-copy"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir-sym-link",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir-sym-link-copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
 void
 cp_tests(void)
 {
@@ -278,7 +335,8 @@ cp_tests(void)
 	run_test(test_double_block_size_file_is_copied);
 	run_test(test_double_block_size_minus_one_file_is_copied);
 	run_test(test_double_block_size_plus_one_file_is_copied);
-	run_test(test_symlink_copy_is_symlink);
+	run_test(test_file_symlink_copy_is_symlink);
+	run_test(test_dir_symlink_copy_is_symlink);
 
 	test_fixture_end();
 }
