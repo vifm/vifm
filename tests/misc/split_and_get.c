@@ -72,6 +72,21 @@ test_usage_idiom(void)
 	}
 }
 
+static void
+test_separators_are_restored(void)
+{
+	char input[] = "/x/yy/zzz/abc";
+	char *part = input, *state = NULL;
+
+	assert_string_equal("/x", (part = split_and_get(part, '/', &state), input));
+	assert_string_equal("/x/yy", (part = split_and_get(part, '/', &state), input));
+	assert_string_equal("/x/yy/zzz", (part = split_and_get(part, '/', &state), input));
+	assert_string_equal("/x/yy/zzz/abc",
+			(part = split_and_get(part, '/', &state), input));
+	assert_string_equal("/x/yy/zzz/abc",
+			(part = split_and_get(part, '/', &state), input));
+}
+
 void
 split_and_get_tests(void)
 {
@@ -83,6 +98,7 @@ split_and_get_tests(void)
 	run_test(test_single_item_returned);
 	run_test(test_many_items);
 	run_test(test_usage_idiom);
+	run_test(test_separators_are_restored);
 
 	test_fixture_end();
 }
