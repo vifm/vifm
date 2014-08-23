@@ -194,55 +194,68 @@ op_copyf(void *data, const char src[], const char dst[])
 static int
 op_cp(void *data, const char src[], const char dst[], int overwrite)
 {
-#ifndef _WIN32
-	char *escaped_src, *escaped_dst;
-	char cmd[6 + PATH_MAX*2 + 1];
-	int result;
-	const int cancellable = data == NULL;
-
-	escaped_src = escape_filename(src, 0);
-	escaped_dst = escape_filename(dst, 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
+	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
+		char *escaped_src, *escaped_dst;
+		char cmd[6 + PATH_MAX*2 + 1];
+		int result;
+		const int cancellable = data == NULL;
+
+		escaped_src = escape_filename(src, 0);
+		escaped_dst = escape_filename(dst, 0);
+		if(escaped_src == NULL || escaped_dst == NULL)
+		{
+			free(escaped_dst);
+			free(escaped_src);
+			return -1;
+		}
+
+		snprintf(cmd, sizeof(cmd),
+				"cp %s -R " PRESERVE_FLAGS " %s %s",
+				overwrite ? "" : NO_CLOBBER, escaped_src, escaped_dst);
+		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
+		result = background_and_wait_for_errors(cmd, cancellable);
+
 		free(escaped_dst);
 		free(escaped_src);
-		return -1;
-	}
-
-	snprintf(cmd, sizeof(cmd),
-			"cp %s -R " PRESERVE_FLAGS " %s %s",
-			overwrite ? "" : NO_CLOBBER, escaped_src, escaped_dst);
-	LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
-	result = background_and_wait_for_errors(cmd, cancellable);
-
-	free(escaped_dst);
-	free(escaped_src);
-	return result;
+		return result;
 #else
-	int ret;
+		int ret;
 
-	if(is_dir(src))
-	{
-		char cmd[6 + PATH_MAX*2 + 1];
-		snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" ", src, dst);
-		to_back_slash(cmd);
-
-		if(is_vista_and_above())
-			strcat(cmd, "/B ");
-		if(overwrite)
+		if(is_dir(src))
 		{
-			strcat(cmd, "/Y ");
+			char cmd[6 + PATH_MAX*2 + 1];
+			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" ", src, dst);
+			to_back_slash(cmd);
+
+			if(is_vista_and_above())
+				strcat(cmd, "/B ");
+			if(overwrite)
+			{
+				strcat(cmd, "/Y ");
+			}
+			strcat(cmd, "/E /I /H /R > NUL");
+			ret = system(cmd);
 		}
-		strcat(cmd, "/E /I /H /R > NUL");
-		ret = system(cmd);
-	}
-	else
-	{
-		ret = (CopyFileA(src, dst, 0) == 0);
+		else
+		{
+			ret = (CopyFileA(src, dst, 0) == 0);
+		}
+
+		return ret;
+#endif
 	}
 
-	return ret;
-#endif
+	io_args_t args =
+	{
+		.arg1.src = src,
+		.arg2.dst = dst,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+
+		.cancellable = data == NULL,
+	};
+	return ior_cp(&args);
 }
 
 /* OP_MOVE operation handler.  Moves file/directory without overwriting
@@ -268,51 +281,54 @@ static int
 op_mv(void *data, const char src[], const char dst[], int overwrite)
 {
 #ifndef _WIN32
-	struct stat st;
-	char *escaped_src, *escaped_dst;
-	char cmd[6 + PATH_MAX*2 + 1];
-	int result;
-	const int cancellable = data == NULL;
-
-	if(!overwrite && lstat(dst, &st) == 0)
+	if(!cfg.use_system_calls)
 	{
-		return -1;
-	}
+		struct stat st;
+		char *escaped_src, *escaped_dst;
+		char cmd[6 + PATH_MAX*2 + 1];
+		int result;
+		const int cancellable = data == NULL;
 
-	escaped_src = escape_filename(src, 0);
-	escaped_dst = escape_filename(dst, 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
-	{
+		if(!overwrite && lstat(dst, &st) == 0)
+		{
+			return -1;
+		}
+
+		escaped_src = escape_filename(src, 0);
+		escaped_dst = escape_filename(dst, 0);
+		if(escaped_src == NULL || escaped_dst == NULL)
+		{
+			free(escaped_dst);
+			free(escaped_src);
+			return -1;
+		}
+
+		snprintf(cmd, sizeof(cmd), "mv %s %s %s", overwrite ? "" : NO_CLOBBER,
+				escaped_src, escaped_dst);
 		free(escaped_dst);
 		free(escaped_src);
-		return -1;
+
+		LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
+		if((result = background_and_wait_for_errors(cmd, cancellable)) != 0)
+			return result;
+
+		if(is_under_trash(dst))
+			add_to_trash(src, dst);
+		else if(is_under_trash(src))
+			remove_from_trash(src);
+		return 0;
 	}
-
-	snprintf(cmd, sizeof(cmd), "mv %s %s %s", overwrite ? "" : NO_CLOBBER,
-			escaped_src, escaped_dst);
-	free(escaped_dst);
-	free(escaped_src);
-
-	LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
-	if((result = background_and_wait_for_errors(cmd, cancellable)) != 0)
-		return result;
-
-	if(is_under_trash(dst))
-		add_to_trash(src, dst);
-	else if(is_under_trash(src))
-		remove_from_trash(src);
-	return 0;
-#else
-	BOOL ret = MoveFile(src, dst);
-	if(!ret && GetLastError() == 5)
-	{
-		int r = op_cp(data, src, dst, overwrite);
-		if(r != 0)
-			return r;
-		return op_removesl(data, src, NULL);
-	}
-	return ret == 0;
 #endif
+
+	io_args_t args =
+	{
+		.arg1.src = src,
+		.arg2.dst = dst,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+
+		.cancellable = data == NULL,
+	};
+	return ior_mv(&args);
 }
 
 static int
