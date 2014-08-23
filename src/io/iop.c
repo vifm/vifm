@@ -82,35 +82,28 @@ iop_mkdir(io_args_t *const args)
 
 	if(create_parent)
 	{
-		char *sep_pos;
-		char sep;
-		char *const path_copy = strdup(path);
+		char *const partial_path = strdup(path);
+		char *part = partial_path + path_prefix_len, *state = NULL;
 
-		sep_pos = until_first(path_copy + path_prefix_len, '/');
-		do
+		while((part = split_and_get(part, '/', &state)) != NULL)
 		{
-			sep = *sep_pos;
-			*sep_pos = '\0';
-
-			if(*path_copy != '\0' && !is_dir(path_copy))
+			if(is_dir(partial_path))
 			{
-#ifndef _WIN32
-				if(mkdir(path_copy, 0755) != 0)
-#else
-				if(!CreateDirectory(path_copy, NULL))
-#endif
-				{
-					free(path_copy);
-					return -1;
-				}
+				continue;
 			}
 
-			*sep_pos = sep;
-			sep_pos = until_first(sep_pos + 1, '/');
+#ifndef _WIN32
+			if(mkdir(partial_path, 0755) != 0)
+#else
+			if(!CreateDirectory(partial_path, NULL))
+#endif
+			{
+				free(partial_path);
+				return -1;
+			}
 		}
-		while(sep != '\0');
 
-		free(path_copy);
+		free(partial_path);
 		return 0;
 	}
 	else
