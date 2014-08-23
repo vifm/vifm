@@ -136,7 +136,7 @@ iop_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int overwrite = args->arg3.crs != IO_CRS_FAIL;
+	const int crs = args->arg3.crs;
 	const int cancellable = args->cancellable;
 
 #ifndef _WIN32
@@ -150,13 +150,27 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
+	/* Create symbolic link rather than copying file it points to. */
+	if(is_symlink(src))
+	{
+		io_args_t args =
+		{
+			.arg1.path = src,
+			.arg2.target = dst,
+			.arg3.crs = crs,
+
+			.cancellable = cancellable,
+		};
+		return iop_ln(&args);
+	}
+
 	in = fopen(src, "rb");
 	if(in == NULL)
 	{
 		return 1;
 	}
 
-	if(overwrite)
+	if(crs != IO_CRS_FAIL)
 	{
 		const int ec = unlink(dst);
 		if(ec != 0 && errno != ENOENT)
@@ -212,7 +226,7 @@ iop_cp(io_args_t *const args)
 	fclose(out);
 	return error;
 #else
-	(void)overwrite;
+	(void)crs;
 	(void)cancellable;
 	return CopyFileA(src, dst, 0) == 0;
 #endif

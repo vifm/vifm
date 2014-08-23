@@ -3,6 +3,7 @@
 #include <stdio.h> /* EOF FILE fclose() fopen() fread() */
 
 #include "../../src/io/iop.h"
+#include "../../src/utils/fs.h"
 
 static int
 files_are_identical(const char a[], const char b[])
@@ -219,6 +220,49 @@ test_double_block_size_plus_one_file_is_copied(void)
 	file_is_copied("../various-sizes/double-block-size-plus-one-file");
 }
 
+static void
+test_symlink_copy_is_symlink(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = "../read/two-lines",
+			.arg2.target = "sym-link",
+		};
+		assert_int_equal(0, iop_ln(&args));
+	}
+
+	assert_true(is_symlink("sym-link"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "sym-link",
+			.arg2.dst = "sym-link-copy",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_true(is_symlink("sym-link"));
+	assert_true(is_symlink("sym-link-copy"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "sym-link",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "sym-link-copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
 void
 cp_tests(void)
 {
@@ -234,6 +278,7 @@ cp_tests(void)
 	run_test(test_double_block_size_file_is_copied);
 	run_test(test_double_block_size_minus_one_file_is_copied);
 	run_test(test_double_block_size_plus_one_file_is_copied);
+	run_test(test_symlink_copy_is_symlink);
 
 	test_fixture_end();
 }
