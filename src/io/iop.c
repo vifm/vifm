@@ -92,11 +92,7 @@ iop_mkdir(io_args_t *const args)
 				continue;
 			}
 
-#ifndef _WIN32
-			if(mkdir(partial_path, 0755) != 0)
-#else
-			if(!CreateDirectory(partial_path, NULL))
-#endif
+			if(make_dir(partial_path, 0755) != 0)
 			{
 				free(partial_path);
 				return -1;
@@ -108,11 +104,7 @@ iop_mkdir(io_args_t *const args)
 	}
 	else
 	{
-#ifndef _WIN32
-		return mkdir(path, 0755);
-#else
-		return CreateDirectory(path, NULL) == 0;
-#endif
+		return make_dir(path, 0755);
 	}
 }
 
