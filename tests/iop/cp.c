@@ -4,6 +4,7 @@
 
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/fs_limits.h"
 
 static int
 files_are_identical(const char a[], const char b[])
@@ -223,6 +224,9 @@ test_double_block_size_plus_one_file_is_copied(void)
 static void
 test_file_symlink_copy_is_symlink(void)
 {
+	char old_target[PATH_MAX];
+	char new_target[PATH_MAX];
+
 	{
 		io_args_t args =
 		{
@@ -245,6 +249,13 @@ test_file_symlink_copy_is_symlink(void)
 
 	assert_true(is_symlink("sym-link"));
 	assert_true(is_symlink("sym-link-copy"));
+
+	assert_int_equal(0,
+			get_link_target("sym-link", old_target, sizeof(old_target)));
+	assert_int_equal(0,
+			get_link_target("sym-link-copy", new_target, sizeof(new_target)));
+
+	assert_string_equal(new_target, old_target);
 
 	{
 		io_args_t args =

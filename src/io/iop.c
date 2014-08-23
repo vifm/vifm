@@ -149,14 +149,22 @@ iop_cp(io_args_t *const args)
 	 * should go before directory check as is_dir() resolves symbolic links. */
 	if(is_symlink(src))
 	{
+		char link_target[PATH_MAX];
+
 		io_args_t args =
 		{
-			.arg1.path = src,
+			.arg1.path = link_target,
 			.arg2.target = dst,
 			.arg3.crs = crs,
 
 			.cancellable = cancellable,
 		};
+
+		if(get_link_target(src, link_target, sizeof(link_target)) != 0)
+		{
+			return 1;
+		}
+
 		return iop_ln(&args);
 	}
 
