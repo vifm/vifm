@@ -228,7 +228,6 @@ static int
 cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 {
 	const io_args_t *const cp_args = param;
-	io_args_t args;
 	const char *dst_full_path;
 	char *free_me = NULL;
 	int result;
@@ -245,26 +244,36 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	              ? cp_args->arg2.dst
 	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
 
-	args.arg3.crs = cp_args->arg3.crs;
-	args.cancellable = cp_args->cancellable;
-
 	result = 0;
 	switch(action)
 	{
 		case VA_DIR_ENTER:
 			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
 			{
-				args.arg1.path = dst_full_path;
+				io_args_t args =
+				{
+					.arg1.path = dst_full_path,
+
+					.cancellable = cp_args->cancellable,
+				};
 
 				result = iop_mkdir(&args);
 			}
 			break;
 		case VA_FILE:
-			args.arg1.src = full_path;
-			args.arg2.dst = dst_full_path;
+			{
+				io_args_t args =
+				{
+					.arg1.src = full_path,
+					.arg2.dst = dst_full_path,
+					.arg3.crs = cp_args->arg3.crs,
 
-			result = cp ? iop_cp(&args) : ior_mv(&args);
-			break;
+					.cancellable = cp_args->cancellable,
+				};
+
+				result = cp ? iop_cp(&args) : ior_mv(&args);
+				break;
+			}
 
 		default:
 			assert(0 && "Unexpected visitor action.");
