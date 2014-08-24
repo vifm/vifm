@@ -2,6 +2,10 @@
 
 #include <stdio.h> /* EOF FILE fclose() fopen() fread() */
 
+#include <sys/types.h> /* stat */
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* lstat() */
+
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fs_limits.h"
@@ -331,6 +335,59 @@ test_dir_symlink_copy_is_symlink(void)
 	}
 }
 
+#ifndef WIN32
+
+static void
+test_file_permissions_are_preserved(void)
+{
+	struct stat src;
+	struct stat dst;
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "file",
+		};
+		assert_int_equal(0, iop_mkfile(&args));
+	}
+
+	assert_int_equal(0, lstat("file", &src));
+	assert_false((src.st_mode & 0777) == 0600);
+
+	assert_int_equal(0, chmod("file", 0600));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "file",
+			.arg2.dst = "file-copy",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_int_equal(0, lstat("file", &src));
+	assert_int_equal(0, lstat("file-copy", &dst));
+	assert_int_equal(src.st_mode & 0777, dst.st_mode & 0777);
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "file",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "file-copy",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
+#endif
+
 void
 cp_tests(void)
 {
@@ -348,6 +405,9 @@ cp_tests(void)
 	run_test(test_double_block_size_plus_one_file_is_copied);
 	run_test(test_file_symlink_copy_is_symlink);
 	run_test(test_dir_symlink_copy_is_symlink);
+#ifndef WIN32
+	run_test(test_file_permissions_are_preserved);
+#endif
 
 	test_fixture_end();
 }

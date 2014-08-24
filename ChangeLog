@@ -42,8 +42,9 @@
 	option will be eventually removed.  Mostly *nix-like systems are affected.
 
 	Added implementation for directory and file removal, copying, moving, file,
-	directory and symbolic link creation with system calls.  Available only if
-	'syscalls' is set.
+	directory and symbolic link creation with system calls.  Advanced stuff
+	like ACL is not supported at least not at the moment.  Available only if
+	'syscalls' option is set.
 
 	Added 'cdpath' option.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn).
 

@@ -22,7 +22,7 @@
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* chmod() mkdir() */
+#include <sys/stat.h> /* stat chmod() mkdir() */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
@@ -150,6 +150,7 @@ iop_cp(io_args_t *const args)
 	FILE *in, *out;
 	size_t nread;
 	int error;
+	struct stat src_st;
 
 	/* Create symbolic link rather than copying file it points to.  This check
 	 * should go before directory check as is_dir() resolves symbolic links. */
@@ -216,6 +217,8 @@ iop_cp(io_args_t *const args)
 		ui_cancellation_enable();
 	}
 
+	/* TODO: use sendfile() if platform supports it. */
+
 	error = 0;
 	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 	{
@@ -239,6 +242,12 @@ iop_cp(io_args_t *const args)
 
 	fclose(in);
 	fclose(out);
+
+	if(error == 0 && lstat(src, &src_st) == 0)
+	{
+		error = chmod(dst, src_st.st_mode & 07777);
+	}
+
 	return error;
 #else
 	(void)crs;
