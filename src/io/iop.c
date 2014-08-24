@@ -22,7 +22,7 @@
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* mkdir() */
+#include <sys/stat.h> /* chmod() mkdir() */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
@@ -93,7 +93,8 @@ iop_mkdir(io_args_t *const args)
 				continue;
 			}
 
-			if(make_dir(partial_path, mode) != 0)
+			/* Create intermediate directories with 0755 permissions. */
+			if(make_dir(partial_path, 0755) != 0)
 			{
 				free(partial_path);
 				return -1;
@@ -101,7 +102,11 @@ iop_mkdir(io_args_t *const args)
 		}
 
 		free(partial_path);
+#ifndef _WIN32
+		return chmod(path, mode);
+#else
 		return 0;
+#endif
 	}
 	else
 	{

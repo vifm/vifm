@@ -10,8 +10,8 @@
 static void create_directory(const char path[], const char root[],
 		int create_parents);
 
-static const char *const DIR_NAME = "dir-to-create";
-static const char *const NESTED_DIR_NAME = "dir-to-create/dir-to-create";
+#define DIR_NAME "dir-to-create"
+#define NESTED_DIR_NAME "dir-to-create/dir-to-create"
 
 static void
 test_single_dir_is_created(void)
@@ -113,6 +113,64 @@ test_permissions_are_taken_into_account(void)
 	}
 }
 
+static void
+test_permissions_are_taken_into_account_for_the_most_nested_only(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+			.arg2.process_parents = 1,
+			.arg3.mode = 0000,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME "/dir",
+			.arg2.process_parents = 0,
+			.arg3.mode = 0755,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME "/dir",
+			.arg2.process_parents = 0,
+			.arg3.mode = 0755,
+		};
+		assert_false(iop_mkdir(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME "/dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
 #endif
 
 void
@@ -126,6 +184,7 @@ mkdir_tests(void)
 	run_test(test_child_dir_is_not_created);
 #ifndef WIN32
 	run_test(test_permissions_are_taken_into_account);
+	run_test(test_permissions_are_taken_into_account_for_the_most_nested_only);
 #endif
 
 	test_fixture_end();
