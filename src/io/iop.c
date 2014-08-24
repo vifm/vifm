@@ -72,7 +72,7 @@ int
 iop_mkdir(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
-	const int create_parent = args->arg3.process_parents;
+	const int create_parent = args->arg2.process_parents;
 
 #ifndef _WIN32
 	enum { PATH_PREFIX_LEN = 0 };

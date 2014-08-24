@@ -45,7 +45,7 @@ create_directory(const char path[], const char root[], int create_parents)
 		io_args_t args =
 		{
 			.arg1.path = path,
-			.arg3.process_parents = create_parents,
+			.arg2.process_parents = create_parents,
 		};
 		assert_int_equal(0, iop_mkdir(&args));
 	}
@@ -71,7 +71,7 @@ test_child_dir_is_not_created(void)
 		io_args_t args =
 		{
 			.arg1.path = NESTED_DIR_NAME,
-			.arg3.process_parents = 0,
+			.arg2.process_parents = 0,
 		};
 		assert_false(iop_mkdir(&args) == 0);
 	}

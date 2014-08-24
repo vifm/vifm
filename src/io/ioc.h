@@ -60,14 +60,14 @@ typedef struct
 	{
 		const char *dst;
 		const char *target;
+
+		/* Whether operation should consider parent elements of path. */
+		int process_parents;
 	}
 	arg2;
 
 	union
 	{
-		/* Whether operation should consider parent elements of path. */
-		int process_parents;
-
 		/* Conflict resolution strategy. */
 		IoCrs crs;
 

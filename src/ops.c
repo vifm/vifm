@@ -493,7 +493,7 @@ op_mkdir(void *data, const char *src, const char *dst)
 	io_args_t args =
 	{
 		.arg1.path = src,
-		.arg3.process_parents = data != NULL,
+		.arg2.process_parents = data != NULL,
 	};
 	return iop_mkdir(&args);
 }
