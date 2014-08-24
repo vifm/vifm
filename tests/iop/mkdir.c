@@ -46,6 +46,7 @@ create_directory(const char path[], const char root[], int create_parents)
 		{
 			.arg1.path = path,
 			.arg2.process_parents = create_parents,
+			.arg3.mode = 0700,
 		};
 		assert_int_equal(0, iop_mkdir(&args));
 	}
@@ -79,6 +80,41 @@ test_child_dir_is_not_created(void)
 	assert_int_equal(-1, access(NESTED_DIR_NAME, F_OK));
 }
 
+#ifndef WIN32
+
+static void
+test_permissions_are_taken_into_account(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+			.arg2.process_parents = 0,
+			.arg3.mode = 0000,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+			.arg2.process_parents = 0,
+		};
+		assert_false(iop_mkdir(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
+#endif
+
 void
 mkdir_tests(void)
 {
@@ -88,6 +124,9 @@ mkdir_tests(void)
 	run_test(test_child_dir_and_parent_are_created);
 	run_test(test_create_by_absolute_path);
 	run_test(test_child_dir_is_not_created);
+#ifndef WIN32
+	run_test(test_permissions_are_taken_into_account);
+#endif
 
 	test_fixture_end();
 }

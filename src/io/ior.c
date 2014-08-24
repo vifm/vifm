@@ -23,8 +23,9 @@
 #include <shellapi.h>
 #endif
 
+#include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
-#include <unistd.h> /* unlink() */
+#include <unistd.h> /* lstat() unlink() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
@@ -250,14 +251,24 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 		case VA_DIR_ENTER:
 			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
 			{
-				io_args_t args =
+				struct stat src_st;
+
+				if(lstat(full_path, &src_st) == 0)
 				{
-					.arg1.path = dst_full_path,
+					io_args_t args =
+					{
+						.arg1.path = dst_full_path,
+						.arg3.mode = src_st.st_mode & 07777,
 
-					.cancellable = cp_args->cancellable,
-				};
+						.cancellable = cp_args->cancellable,
+					};
 
-				result = iop_mkdir(&args);
+					result = iop_mkdir(&args);
+				}
+				else
+				{
+					result = 1;
+				}
 			}
 			break;
 		case VA_FILE:

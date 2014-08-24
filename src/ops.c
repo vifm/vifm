@@ -494,6 +494,7 @@ op_mkdir(void *data, const char *src, const char *dst)
 	{
 		.arg1.path = src,
 		.arg2.process_parents = data != NULL,
+		.arg3.mode = 0755,
 	};
 	return iop_mkdir(&args);
 }

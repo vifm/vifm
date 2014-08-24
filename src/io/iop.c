@@ -73,6 +73,7 @@ iop_mkdir(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const int create_parent = args->arg2.process_parents;
+	const mode_t mode = args->arg3.mode;
 
 #ifndef _WIN32
 	enum { PATH_PREFIX_LEN = 0 };
@@ -92,7 +93,7 @@ iop_mkdir(io_args_t *const args)
 				continue;
 			}
 
-			if(make_dir(partial_path, 0755) != 0)
+			if(make_dir(partial_path, mode) != 0)
 			{
 				free(partial_path);
 				return -1;
@@ -104,7 +105,7 @@ iop_mkdir(io_args_t *const args)
 	}
 	else
 	{
-		return make_dir(path, 0755);
+		return make_dir(path, mode);
 	}
 }
 

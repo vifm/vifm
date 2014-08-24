@@ -1,6 +1,8 @@
 #include "seatest.h"
 
-#include <unistd.h> /* F_OK access() */
+#include <sys/types.h> /* stat */
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* F_OK access() lstat() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
@@ -372,6 +374,55 @@ test_symlink_is_symlink_after_copy(void)
 	}
 }
 
+#ifndef WIN32
+
+static void
+test_dir_permissions_are_preserved(void)
+{
+	struct stat src;
+	struct stat dst;
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+			.arg3.mode = 0711,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "dir",
+			.arg2.dst = "dir-copy",
+		};
+		assert_int_equal(0, ior_cp(&args));
+	}
+
+	assert_int_equal(0, lstat("dir", &src));
+	assert_int_equal(0, lstat("dir-copy", &dst));
+	assert_int_equal(src.st_mode & 0777, dst.st_mode & 0777);
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir-copy",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
+#endif
+
 void
 cp_tests(void)
 {
@@ -389,6 +440,9 @@ cp_tests(void)
 	run_test(test_directories_can_be_merged);
 	run_test(test_fails_to_copy_directory_inside_itself);
 	run_test(test_symlink_is_symlink_after_copy);
+#ifndef WIN32
+	run_test(test_dir_permissions_are_preserved);
+#endif
 
 	test_fixture_end();
 }
