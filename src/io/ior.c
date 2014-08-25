@@ -57,6 +57,7 @@ typedef enum
 {
 	VR_OK,             /* Everything is OK, continue traversal. */
 	VR_ERROR,          /* Unrecoverable error, abort traversal. */
+	VR_SKIP_DIR_LEAVE, /* Valid only for VA_DIR_ENTER.  Prevents VA_DIR_LEAVE. */
 }
 VisitResult;
 
@@ -244,18 +245,12 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	VisitResult result;
 	const char *rel_part;
 
-	if(action == VA_DIR_LEAVE)
-	{
-		return VR_OK;
-	}
-
 	/* TODO: come up with something better than this. */
 	rel_part = full_path + strlen(cp_args->arg1.src);
 	dst_full_path = (rel_part[0] == '\0')
 	              ? cp_args->arg2.dst
 	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
 
-	result = VR_OK;
 	switch(action)
 	{
 		case VA_DIR_ENTER:
@@ -273,12 +268,16 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 						.cancellable = cp_args->cancellable,
 					};
 
-					result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
+					result = (iop_mkdir(&args) == 0) ? VR_SKIP_DIR_LEAVE : VR_ERROR;
 				}
 				else
 				{
 					result = VR_ERROR;
 				}
+			}
+			else
+			{
+				result = VR_SKIP_DIR_LEAVE;
 			}
 			break;
 		case VA_FILE:
@@ -369,7 +368,7 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 	}
 	(void)closedir(dir);
 
-	if(result == 0)
+	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE)
 	{
 		result = visitor(path, VA_DIR_LEAVE, param);
 	}
