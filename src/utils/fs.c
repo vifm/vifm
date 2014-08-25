@@ -483,7 +483,9 @@ int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
-	return dentry->d_type == DT_DIR;
+	return (dentry->d_type == DT_UNKNOWN)
+	     ? is_dir(full_path)
+	     : dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
 	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
