@@ -52,14 +52,24 @@ typedef enum
 }
 VisitAction;
 
+/* Result of calling file system traverse visitor. */
+typedef enum
+{
+	VR_OK,             /* Everything is OK, continue traversal. */
+	VR_ERROR,          /* Unrecoverable error, abort traversal. */
+}
+VisitResult;
+
 /* Generic handler for file system traversing algorithm.  Must return 0 on
  * success, otherwise directory traverse will be stopped. */
-typedef int (*subtree_visitor)(const char full_path[], VisitAction action,
-		void *param);
+typedef VisitResult (*subtree_visitor)(const char full_path[],
+		VisitAction action, void *param);
 
-static int cp_visitor(const char full_path[], VisitAction action, void *param);
-static int mv_visitor(const char full_path[], VisitAction action, void *param);
-static int cp_mv_visitor(const char full_path[], VisitAction action,
+static VisitResult cp_visitor(const char full_path[], VisitAction action,
+		void *param);
+static VisitResult mv_visitor(const char full_path[], VisitAction action,
+		void *param);
+static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
 		void *param, int cp);
 static int traverse(const char path[], subtree_visitor visitor, void *param);
 static int traverse_subtree(const char path[], subtree_visitor visitor,
@@ -153,7 +163,7 @@ ior_cp(io_args_t *const args)
 
 /* Implementation of traverse() visitor for subtree copying.  Returns 0 on
  * success, otherwise non-zero is returned. */
-static int
+static VisitResult
 cp_visitor(const char full_path[], VisitAction action, void *param)
 {
 	return cp_mv_visitor(full_path, action, param, 1);
@@ -217,7 +227,7 @@ ior_mv(io_args_t *const args)
 
 /* Implementation of traverse() visitor for subtree moving.  Returns 0 on
  * success, otherwise non-zero is returned. */
-static int
+static VisitResult
 mv_visitor(const char full_path[], VisitAction action, void *param)
 {
 	return cp_mv_visitor(full_path, action, param, 0);
@@ -225,18 +235,18 @@ mv_visitor(const char full_path[], VisitAction action, void *param)
 
 /* Generic implementation of traverse() visitor for subtree copying/moving.
  * Returns 0 on success, otherwise non-zero is returned. */
-static int
+static VisitResult
 cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 {
 	const io_args_t *const cp_args = param;
 	const char *dst_full_path;
 	char *free_me = NULL;
-	int result;
+	VisitResult result;
 	const char *rel_part;
 
 	if(action == VA_DIR_LEAVE)
 	{
-		return 0;
+		return VR_OK;
 	}
 
 	/* TODO: come up with something better than this. */
@@ -245,7 +255,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	              ? cp_args->arg2.dst
 	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
 
-	result = 0;
+	result = VR_OK;
 	switch(action)
 	{
 		case VA_DIR_ENTER:
@@ -263,11 +273,11 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 						.cancellable = cp_args->cancellable,
 					};
 
-					result = iop_mkdir(&args);
+					result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
 				}
 				else
 				{
-					result = 1;
+					result = VR_ERROR;
 				}
 			}
 			break;
@@ -282,13 +292,13 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.cancellable = cp_args->cancellable,
 				};
 
-				result = cp ? iop_cp(&args) : ior_mv(&args);
+				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;
 				break;
 			}
 
 		default:
 			assert(0 && "Unexpected visitor action.");
-			result = 1;
+			result = VR_ERROR;
 			break;
 	}
 
@@ -320,6 +330,7 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 	DIR *dir;
 	struct dirent *d;
 	int result;
+	VisitResult enter_result;
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -327,13 +338,14 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		return 1;
 	}
 
-	result = visitor(path, VA_DIR_ENTER, param);
-	if(result != 0)
+	enter_result = visitor(path, VA_DIR_ENTER, param);
+	if(enter_result == VR_ERROR)
 	{
 		(void)closedir(dir);
-		return result;
+		return 1;
 	}
 
+	result = 0;
 	while((d = readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(d->d_name))
