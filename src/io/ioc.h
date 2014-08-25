@@ -81,7 +81,7 @@ typedef struct
 
 	int cancellable;
 
-	io_result_t result;
+	io_result_t result; /* TODO: use this. */
 }
 io_args_t;
 

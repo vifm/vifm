@@ -1,7 +1,7 @@
 #include "seatest.h"
 
+#include <sys/stat.h> /* stat chmod() */
 #include <sys/types.h> /* stat */
-#include <sys/stat.h> /* stat */
 #include <unistd.h> /* F_OK access() lstat() */
 
 #include "../../src/io/iop.h"
@@ -421,6 +421,57 @@ test_dir_permissions_are_preserved(void)
 	}
 }
 
+static void
+test_permissions_are_set_in_correct_order(void)
+{
+	struct stat src;
+	struct stat dst;
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir/nested-dir",
+			.arg2.process_parents = 1,
+			.arg3.mode = 0600,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	assert_int_equal(0, chmod("dir", 0500));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "dir",
+			.arg2.dst = "dir-copy",
+		};
+		assert_int_equal(0, ior_cp(&args));
+	}
+
+	assert_int_equal(0, lstat("dir", &src));
+	assert_int_equal(0, lstat("dir-copy", &dst));
+	assert_int_equal(src.st_mode & 0777, dst.st_mode & 0777);
+
+	assert_int_equal(0, chmod("dir", 0700));
+	assert_int_equal(0, chmod("dir-copy", 0700));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+		};
+		assert_int_equal(0, ior_rm(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir-copy",
+		};
+		assert_int_equal(0, ior_rm(&args));
+	}
+}
+
 #endif
 
 void
@@ -442,6 +493,7 @@ cp_tests(void)
 	run_test(test_symlink_is_symlink_after_copy);
 #ifndef WIN32
 	run_test(test_dir_permissions_are_preserved);
+	run_test(test_permissions_are_set_in_correct_order);
 #endif
 
 	test_fixture_end();

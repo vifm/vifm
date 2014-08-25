@@ -23,11 +23,10 @@
 #include <shellapi.h>
 #endif
 
-#include <sys/stat.h> /* stat */
+#include <sys/stat.h> /* stat chmod() */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* lstat() unlink() */
 
-#include <assert.h> /* assert() */
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* removee() snprintf() */
@@ -256,24 +255,17 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 		case VA_DIR_ENTER:
 			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
 			{
-				struct stat src_st;
-
-				if(lstat(full_path, &src_st) == 0)
+				io_args_t args =
 				{
-					io_args_t args =
-					{
-						.arg1.path = dst_full_path,
-						.arg3.mode = src_st.st_mode & 07777,
+					.arg1.path = dst_full_path,
 
-						.cancellable = cp_args->cancellable,
-					};
+					/* Temporary fake rights so we can add files to the directory. */
+					.arg3.mode = 0700,
 
-					result = (iop_mkdir(&args) == 0) ? VR_SKIP_DIR_LEAVE : VR_ERROR;
-				}
-				else
-				{
-					result = VR_ERROR;
-				}
+					.cancellable = cp_args->cancellable,
+				};
+
+				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
 			}
 			else
 			{
@@ -294,11 +286,28 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;
 				break;
 			}
+		case VA_DIR_LEAVE:
+			{
+#ifndef _WIN32
+				{
+					struct stat st;
 
-		default:
-			assert(0 && "Unexpected visitor action.");
-			result = VR_ERROR;
-			break;
+					if(lstat(full_path, &st) == 0)
+					{
+						result = (chmod(dst_full_path, st.st_mode & 07777) == 0)
+						       ? VR_OK
+						       : VR_ERROR;
+					}
+					else
+					{
+						result = VR_ERROR;
+					}
+				}
+#else
+				result = VR_OK;
+#endif
+				break;
+			}
 	}
 
 	free(free_me);
