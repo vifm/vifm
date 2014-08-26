@@ -71,6 +71,7 @@ Package content
     |  |
     |  |-- io/ - file system operations implementation
     |  |  |
+    |  |  |-- private/ - private headers of i/o
     |  |  |-- iop.c - implementation of i/o primitive
     |  |  `-- ior.c - implementation of recursive i/o operations
     |  |
