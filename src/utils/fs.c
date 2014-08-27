@@ -46,7 +46,6 @@
 #include "utils.h"
 
 static int path_exists_internal(const char *path, const char *filename);
-static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 
 #ifdef _WIN32
 static DWORD win_get_file_attrs(const char path[]);
@@ -480,14 +479,13 @@ remove_dir_content(const char path[])
 	closedir(dir);
 }
 
-/* Uses dentry or full path to check file type.  Returns non-zero for
- * directories, otherwise zero is returned.  Symbolic links are _not_
- * dereferenced. */
-static int
+int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
-	return dentry->d_type == DT_DIR;
+	return (dentry->d_type == DT_UNKNOWN)
+	     ? is_dir(full_path)
+	     : dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
 	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
@@ -498,7 +496,7 @@ int
 is_dirent_targets_dir(const struct dirent *d)
 {
 #ifdef _WIN32
-		return is_dir(d->d_name);
+	return is_dir(d->d_name);
 #else
 	if(d->d_type == DT_UNKNOWN)
 	{
@@ -508,6 +506,29 @@ is_dirent_targets_dir(const struct dirent *d)
 	return  d->d_type == DT_DIR
 	    || (d->d_type == DT_LNK && check_link_is_dir(d->d_name));
 #endif
+}
+
+int
+is_in_subtree(const char path[], const char root[])
+{
+	char path_copy[PATH_MAX];
+	char path_real[PATH_MAX];
+	char root_real[PATH_MAX];
+
+	copy_str(path_copy, sizeof(path_copy), path);
+	remove_last_path_component(path_copy);
+
+	if(realpath(path_copy, path_real) != path_real)
+	{
+		return 0;
+	}
+
+	if(realpath(root, root_real) != root_real)
+	{
+		return 0;
+	}
+
+	return path_starts_with(path_real, root_real);
 }
 
 #ifdef _WIN32

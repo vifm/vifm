@@ -11,18 +11,6 @@ static const char *const FILE_NAME = "file-to-remove";
 static const char *const DIRECTORY_NAME = "directory-to-remove";
 
 static void
-setup(void)
-{
-	assert_int_equal(0, chdir("test-data/sandbox"));
-}
-
-static void
-teardown(void)
-{
-	assert_int_equal(0, chdir("../.."));
-}
-
-static void
 test_file_is_removed(void)
 {
 	{
@@ -88,9 +76,6 @@ void
 rm_tests(void)
 {
 	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
 
 	run_test(test_file_is_removed);
 	run_test(test_empty_directory_is_removed);

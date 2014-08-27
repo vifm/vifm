@@ -507,7 +507,9 @@ split_and_get(char str[], char sep, char **state)
 		{
 			return NULL;
 		}
-		str += strlen(str) + 1;
+
+		str += strlen(str);
+		*str++ = sep;
 	}
 
 	end = strchr(str, sep);

@@ -201,6 +201,13 @@ void replace_char(char str[], char from, char to);
  *   {
  *     process <part>;
  *   }
+ * Each next step undoes string change made on the previous one, so it could
+ * also be (parts of <input> will be added from left to right):
+ *   char *part = input, *state = NULL;
+ *   while((part = split_and_get(part, ':', &state)) != NULL)
+ *   {
+ *     process <input>;
+ *   }
  */
 char * split_and_get(char str[], char sep, char **state);
 

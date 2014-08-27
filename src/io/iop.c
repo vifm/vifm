@@ -22,13 +22,14 @@
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* mkdir() */
+#include <sys/stat.h> /* stat chmod() mkdir() */
 #include <sys/types.h> /* mode_t */
-#include <unistd.h> /* rmdir() symlink() */
+#include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <errno.h> /* EEXIST errno */
-#include <stddef.h> /* NULL */
-#include <stdio.h> /* FILE fclose() fopen() remove() snprintf() */
+#include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* FILE fclose() fopen() fread() fwrite() rename()
+                      snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -39,7 +40,11 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "../ui.h"
 #include "ioc.h"
+
+/* Amount of data to transfer at once. */
+#define BLOCK_SIZE 8192
 
 int
 iop_mkfile(io_args_t *const args)
@@ -67,55 +72,57 @@ int
 iop_mkdir(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
-	const int create_parent = args->arg3.process_parents;
+	const int create_parent = args->arg2.process_parents;
+	const mode_t mode = args->arg3.mode;
 
 #ifndef _WIN32
-	const int path_prefix_len = 0;
+	enum { PATH_PREFIX_LEN = 0 };
 #else
-	const int path_prefix_len = 2;
+	enum { PATH_PREFIX_LEN = 2 };
 #endif
 
 	if(create_parent)
 	{
-		char *sep_pos;
-		char sep;
-		char *const path_copy = strdup(path);
+		char *const partial_path = strdup(path);
+		char *part = partial_path + PATH_PREFIX_LEN, *state = NULL;
 
-		sep_pos = until_first(path_copy + path_prefix_len, '/');
-		do
+		while((part = split_and_get(part, '/', &state)) != NULL)
 		{
-			sep = *sep_pos;
-			*sep_pos = '\0';
-
-			if(!is_dir(path_copy))
+			if(is_dir(partial_path))
 			{
-#ifndef _WIN32
-				if(mkdir(path_copy, 0755) != 0)
-#else
-				if(!CreateDirectory(path_copy, NULL))
-#endif
-				{
-					free(path_copy);
-					return -1;
-				}
+				continue;
 			}
 
-			*sep_pos = sep;
-			sep_pos = until_first(sep_pos + 1, '/');
+			/* Create intermediate directories with 0755 permissions. */
+			if(make_dir(partial_path, 0755) != 0)
+			{
+				free(partial_path);
+				return -1;
+			}
 		}
-		while(sep != '\0');
 
-		free(path_copy);
+		free(partial_path);
+#ifndef _WIN32
+		return chmod(path, mode);
+#else
 		return 0;
+#endif
 	}
 	else
 	{
-#ifndef _WIN32
-		return mkdir(path, 0755);
-#else
-		return CreateDirectory(path, NULL) == 0;
-#endif
+		return make_dir(path, mode);
 	}
+}
+
+int
+iop_rmfile(io_args_t *const args)
+{
+	const char *const path = args->arg1.path;
+#ifndef _WIN32
+	return unlink(path);
+#else
+	return !DeleteFile(path);
+#endif
 }
 
 int
@@ -131,11 +138,136 @@ iop_rmdir(io_args_t *const args)
 }
 
 int
+iop_cp(io_args_t *const args)
+{
+	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
+	const int crs = args->arg3.crs;
+	const int cancellable = args->cancellable;
+
+#ifndef _WIN32
+	char block[BLOCK_SIZE];
+	FILE *in, *out;
+	size_t nread;
+	int error;
+	struct stat src_st;
+
+	/* Create symbolic link rather than copying file it points to.  This check
+	 * should go before directory check as is_dir() resolves symbolic links. */
+	if(is_symlink(src))
+	{
+		char link_target[PATH_MAX];
+
+		io_args_t args =
+		{
+			.arg1.path = link_target,
+			.arg2.target = dst,
+			.arg3.crs = crs,
+
+			.cancellable = cancellable,
+		};
+
+		if(get_link_target(src, link_target, sizeof(link_target)) != 0)
+		{
+			return 1;
+		}
+
+		return iop_ln(&args);
+	}
+
+	if(is_dir(src))
+	{
+		return 1;
+	}
+
+	in = fopen(src, "rb");
+	if(in == NULL)
+	{
+		return 1;
+	}
+
+	if(crs != IO_CRS_FAIL)
+	{
+		const int ec = unlink(dst);
+		if(ec != 0 && errno != ENOENT)
+		{
+			fclose(in);
+			return ec;
+		}
+
+		/* XXX: possible improvement would be to generate temporary file name in the
+		 * destination directory, write to it and then overwrite destination file,
+		 * but this approach has disadvantage of requiring more free space on
+		 * destination file system. */
+	}
+	else if(path_exists(dst))
+	{
+		return 1;
+	}
+
+	out = fopen(dst, "wb");
+	if(out == NULL)
+	{
+		fclose(in);
+		return 1;
+	}
+
+	if(cancellable)
+	{
+		ui_cancellation_enable();
+	}
+
+	/* TODO: use sendfile() if platform supports it. */
+
+	error = 0;
+	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
+	{
+		if(cancellable && ui_cancellation_requested())
+		{
+			error = 1;
+			break;
+		}
+
+		if(fwrite(&block, 1, nread, out) != nread)
+		{
+			error = 1;
+			break;
+		}
+	}
+
+	if(cancellable)
+	{
+		ui_cancellation_disable();
+	}
+
+	fclose(in);
+	fclose(out);
+
+	if(error == 0 && lstat(src, &src_st) == 0)
+	{
+		error = chmod(dst, src_st.st_mode & 07777);
+	}
+
+	return error;
+#else
+	(void)crs;
+	(void)cancellable;
+	return CopyFileA(src, dst, 0) == 0;
+#endif
+}
+
+int iop_chown(io_args_t *const args);
+
+int iop_chgrp(io_args_t *const args);
+
+int iop_chmod(io_args_t *const args);
+
+int
 iop_ln(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;
-	const int overwrite = args->arg3.overwrite;
+	const int overwrite = args->arg3.crs != IO_CRS_FAIL;
 
 	int result;
 

@@ -1,16 +1,17 @@
 #include "seatest.h"
 
-#include <unistd.h> /* F_OK access() */
+#include <unistd.h> /* F_OK access() getcwd() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/fs_limits.h"
 
 static void create_directory(const char path[], const char root[],
 		int create_parents);
 
-static const char *const DIR_NAME = "dir-to-create";
-static const char *const NESTED_DIR_NAME = "dir-to-create/dir-to-create";
+#define DIR_NAME "dir-to-create"
+#define NESTED_DIR_NAME "dir-to-create/dir-to-create"
 
 static void
 test_single_dir_is_created(void)
@@ -25,6 +26,17 @@ test_child_dir_and_parent_are_created(void)
 }
 
 static void
+test_create_by_absolute_path(void)
+{
+	char cwd[PATH_MAX];
+	char full_path[PATH_MAX];
+
+	getcwd(cwd, sizeof(cwd));
+	snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);
+	create_directory(full_path, DIR_NAME, 1);
+}
+
+static void
 create_directory(const char path[], const char root[], int create_parents)
 {
 	assert_int_equal(-1, access(path, F_OK));
@@ -33,7 +45,8 @@ create_directory(const char path[], const char root[], int create_parents)
 		io_args_t args =
 		{
 			.arg1.path = path,
-			.arg3.process_parents = create_parents,
+			.arg2.process_parents = create_parents,
+			.arg3.mode = 0700,
 		};
 		assert_int_equal(0, iop_mkdir(&args));
 	}
@@ -59,13 +72,106 @@ test_child_dir_is_not_created(void)
 		io_args_t args =
 		{
 			.arg1.path = NESTED_DIR_NAME,
-			.arg3.process_parents = 0,
+			.arg2.process_parents = 0,
 		};
 		assert_false(iop_mkdir(&args) == 0);
 	}
 
 	assert_int_equal(-1, access(NESTED_DIR_NAME, F_OK));
 }
+
+#ifndef WIN32
+
+static void
+test_permissions_are_taken_into_account(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+			.arg2.process_parents = 0,
+			.arg3.mode = 0000,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+			.arg2.process_parents = 0,
+		};
+		assert_false(iop_mkdir(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
+static void
+test_permissions_are_taken_into_account_for_the_most_nested_only(void)
+{
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+			.arg2.process_parents = 1,
+			.arg3.mode = 0000,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME "/dir",
+			.arg2.process_parents = 0,
+			.arg3.mode = 0755,
+		};
+		assert_int_equal(0, iop_mkdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME "/dir",
+			.arg2.process_parents = 0,
+			.arg3.mode = 0755,
+		};
+		assert_false(iop_mkdir(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = NESTED_DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME "/dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = DIR_NAME,
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+}
+
+#endif
 
 void
 mkdir_tests(void)
@@ -74,7 +180,12 @@ mkdir_tests(void)
 
 	run_test(test_single_dir_is_created);
 	run_test(test_child_dir_and_parent_are_created);
+	run_test(test_create_by_absolute_path);
 	run_test(test_child_dir_is_not_created);
+#ifndef WIN32
+	run_test(test_permissions_are_taken_into_account);
+	run_test(test_permissions_are_taken_into_account_for_the_most_nested_only);
+#endif
 
 	test_fixture_end();
 }

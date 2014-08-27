@@ -47,7 +47,6 @@ test_nonexistent_symlink_is_created(void)
 	{
 		.arg1.path = ORIG_FILE_NAME,
 		.arg2.target = LINK_NAME,
-		.arg3.overwrite = 0,
 	};
 	assert_int_equal(0, iop_ln(&args));
 
@@ -77,7 +76,6 @@ test_existent_file_is_not_overwritten_if_not_requested(void)
 	{
 		.arg1.path = ORIG_FILE_NAME,
 		.arg2.target = LINK_NAME,
-		.arg3.overwrite = 0,
 	};
 	assert_false(iop_ln(&args) == 0);
 
@@ -95,7 +93,6 @@ test_existent_symlink_is_changed(void)
 	{
 		.arg1.path = ORIG_FILE_NAME,
 		.arg2.target = LINK_NAME,
-		.arg3.overwrite = 0,
 	};
 	assert_int_equal(0, iop_ln(&args));
 
@@ -104,7 +101,7 @@ test_existent_symlink_is_changed(void)
 	create_file(NEW_ORIG_FILE_NAME);
 
 	args.arg1.path = NEW_ORIG_FILE_NAME;
-	args.arg3.overwrite = 1;
+	args.arg3.crs = IO_CRS_REPLACE_FILES;
 	assert_int_equal(0, iop_ln(&args));
 
 	assert_int_equal(0, remove(LINK_NAME));
@@ -123,7 +120,7 @@ test_existent_non_symlink_is_not_overwritten(void)
 	{
 		.arg1.path = ORIG_FILE_NAME,
 		.arg2.target = LINK_NAME,
-		.arg3.overwrite = 1,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
 	};
 	assert_int_equal(-1, iop_ln(&args));
 

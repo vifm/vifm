@@ -94,10 +94,19 @@ void remove_dir_content(const char path[]);
 
 struct dirent;
 
+/* Uses dentry or full path to check file type.  Returns non-zero for
+ * directories, otherwise zero is returned.  Symbolic links are _not_
+ * dereferenced. */
+int entry_is_dir(const char full_path[], const struct dirent* dentry);
+
 /* Uses dentry or path to check file type.  Assumes that file is located in
  * current working directory.  Returns non-zero for directories, otherwise zero
  * is returned.  Symbolic links are dereferenced. */
 int is_dirent_targets_dir(const struct dirent *d);
+
+/* Checks that entity pointed to by the path is located under the root
+ * directory.  Returns non-zero if so, otherwise zero is returned. */
+int is_in_subtree(const char path[], const char root[]);
 
 #ifdef _WIN32
 
