@@ -65,6 +65,8 @@ VisitResult;
 typedef VisitResult (*subtree_visitor)(const char full_path[],
 		VisitAction action, void *param);
 
+static VisitResult rm_visitor(const char full_path[], VisitAction action,
+		void *param);
 static VisitResult cp_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult mv_visitor(const char full_path[], VisitAction action,
@@ -81,16 +83,7 @@ ior_rm(io_args_t *const args)
 	const char *const path = args->arg1.path;
 
 #ifndef _WIN32
-	if(!is_dir(path))
-	{
-		return unlink(path);
-	}
-
-	/* XXX: update function and check its result?  If it actually make sense, as
-	 * result of iop_rmdir() will reflect whether remove_dir_content() was
-	 * successful or not. */
-	remove_dir_content(path);
-	return iop_rmdir(args);
+	return traverse(path, &rm_visitor, args);
 #else
 	if(is_dir(path))
 	{
@@ -128,6 +121,49 @@ ior_rm(io_args_t *const args)
 		return !ok;
 	}
 #endif
+}
+
+/* Implementation of traverse() visitor for subtree removal.  Returns 0 on
+ * success, otherwise non-zero is returned. */
+static VisitResult
+rm_visitor(const char full_path[], VisitAction action, void *param)
+{
+	const io_args_t *const rm_args = param;
+	VisitResult result;
+
+	switch(action)
+	{
+		case VA_DIR_ENTER:
+			/* Do nothing, directories are removed on leaving them. */
+			result = VR_OK;
+			break;
+		case VA_FILE:
+			{
+				io_args_t args =
+				{
+					.arg1.path = full_path,
+
+					.cancellable = rm_args->cancellable,
+				};
+
+				result = iop_rmfile(&args);
+				break;
+			}
+		case VA_DIR_LEAVE:
+			{
+				io_args_t args =
+				{
+					.arg1.path = full_path,
+
+					.cancellable = rm_args->cancellable,
+				};
+
+				result = iop_rmdir(&args);
+				break;
+			}
+	}
+
+	return result;
 }
 
 int
