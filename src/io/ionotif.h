@@ -19,8 +19,7 @@
 #ifndef VIFM__IO__IONOTIF_H__
 #define VIFM__IO__IONOTIF_H__
 
-#include <stddef.h> /* size_t */
-#include <stdint.h> /* uint64_t */
+#include "ioeta.h"
 
 /* ionotif - client code callbacks management */
 
@@ -35,7 +34,7 @@ IoPs;
 typedef struct
 {
 	IoPs stage;
-	eta_estimate_t *estimate;
+	ioeta_estim_t *estim;
 }
 io_progress_t;
 

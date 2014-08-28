@@ -40,15 +40,14 @@ typedef struct
 	/* Number of already processed bytes. */
 	uint64_t current_byte;
 
-	/* Relative path to currently processed file relative to its source
-	 * directory. */
+	/* Relative ath to currently processed file. */
 	char *item;
 }
-eta_estimate_t;
+ioeta_estim_t;
 
-eta_estimate_t * ioeta_alloc(void);
+ioeta_estim_t * ioeta_alloc(void);
 
-void ioeta_free(eta_estimate_t *estimate);
+void ioeta_free(ioeta_estim_t *estim);
 
 #endif /* VIFM__IO__IOETA_H__ */
 

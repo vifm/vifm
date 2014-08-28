@@ -19,12 +19,12 @@
 #ifndef VIFM__IO__PRIVATE__IONOTIF_H__
 #define VIFM__IO__PRIVATE__IONOTIF_H__
 
-#include <stddef.h> /* size_t */
-#include <stdint.h> /* uint64_t */
+#include "../ioeta.h"
+#include "../ionotif.h"
 
-/* ionotif - client code callbacks management */
+/* ionotif - private functions of client code callbacks management */
 
-void ionotif_notify(IoPs stage, eta_estimate_t *estimate);
+void ionotif_notify(IoPs stage, ioeta_estim_t *estim);
 
 #endif /* VIFM__IO__PRIVATE__IONOTIF_H__ */
 

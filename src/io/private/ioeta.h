@@ -19,20 +19,19 @@
 #ifndef VIFM__IO__PRIVATE__IOETA_H__
 #define VIFM__IO__PRIVATE__IOETA_H__
 
-#include <stddef.h> /* size_t */
-#include <stdint.h> /* uint64_t */
+#include "../ioeta.h"
 
 /* ioeta - private functions of Input/Output estimation */
 
-void ioeta_add_file(eta_estimate_t *estimate, const char path[]);
+void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
 
-void ioeta_add_dir(eta_estimate_t *estimate, const char path[]);
+void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 
-/* update_estimate(e, 0, 100); -- One hundred bytes of current item processed. */
-/* update_estimate(e, 1, 50); -- Last fifteen bytes of current item processed. */
-/* Might calculate speed, time, etc. */
-/* Calls progress_changed() handler. */
-void ioeta_update_estimate(eta_estimate_t *estimate, int finished, int bytes);
+/* ioeta_update_estim(e, 0, 100); -- 100 bytes of current item processed.
+ * ioeta_update_estim(e, 1, 50); -- Last 50 bytes of current item processed.
+ * Might calculate speed, time, etc.
+ * Calls progress changed notification handler. */
+void ioeta_update_estim(ioeta_estim_t *estim, int finished, int bytes);
 
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
 
