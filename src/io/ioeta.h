@@ -40,7 +40,7 @@ typedef struct
 	/* Number of already processed bytes. */
 	uint64_t current_byte;
 
-	/* Relative ath to currently processed file. */
+	/* Relative path to currently processed file. */
 	char *item;
 }
 ioeta_estim_t;

@@ -16,27 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__IO__PRIVATE__IOETA_H__
-#define VIFM__IO__PRIVATE__IOETA_H__
+#include "ioeta.h"
 
-#include "../ioeta.h"
+#include <stddef.h> /* NULL size_t */
+#include <stdint.h> /* uint64_t */
+#include <stdlib.h> /* calloc() free() */
 
-/* ioeta - private functions of Input/Output estimation */
+ioeta_estim_t *
+ioeta_alloc(void)
+{
+	return calloc(1U, sizeof(ioeta_estim_t));
+}
 
-void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
-
-void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
-
-/* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.
- * ioeta_update_estim(e, "", 1, 50); -- Last 50 bytes of current item processed.
- * Might calculate speed, time, etc.  The path can be NULL to indicate that file
- * name didn't change.  Calls progress changed notification handler. */
-void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
-		int bytes);
-
-void ioeta_calculate(ioeta_estim_t *estim, const char path[]);
-
-#endif /* VIFM__IO__PRIVATE__IOETA_H__ */
+void
+ioeta_free(ioeta_estim_t *estim)
+{
+	if(estim != NULL)
+	{
+		free(estim->item);
+		free(estim);
+	}
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

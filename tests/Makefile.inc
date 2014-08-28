@@ -1,6 +1,6 @@
 SOURCES := ../../src/*.c ../../src/cfg/*.c ../../src/engine/*.c ../../src/io/*.c
-SOURCES += ../../src/modes/dialogs/*.c ../../src/menus/*.c ../../src/modes/*.c
-SOURCES += ../../src/utils/*.c
+SOURCES += ../../src/io/private/*.c ../../src/modes/dialogs/*.c
+SOURCES += ../../src/menus/*.c ../../src/modes/*.c ../../src/utils/*.c
 
 SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))

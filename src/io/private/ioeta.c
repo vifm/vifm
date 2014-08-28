@@ -16,27 +16,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__IO__PRIVATE__IOETA_H__
-#define VIFM__IO__PRIVATE__IOETA_H__
+#include "ioeta.h"
 
+#include "../../utils/fs.h"
+#include "../../utils/str.h"
 #include "../ioeta.h"
 
-/* ioeta - private functions of Input/Output estimation */
+void
+ioeta_add_file(ioeta_estim_t *estim, const char path[])
+{
+	++estim->total_items;
+	estim->total_bytes += get_file_size(path);
+}
 
-void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
+void
+ioeta_add_dir(ioeta_estim_t *estim, const char path[])
+{
+	++estim->total_items;
+}
 
-void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
+void
+ioeta_update(ioeta_estim_t *estim, const char path[], int finished, int bytes)
+{
+	if(finished)
+	{
+		++estim->current_item;
+		if(estim->current_item > estim->total_items)
+		{
+			/* XXX: do something about it. */
+		}
+	}
 
-/* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.
- * ioeta_update_estim(e, "", 1, 50); -- Last 50 bytes of current item processed.
- * Might calculate speed, time, etc.  The path can be NULL to indicate that file
- * name didn't change.  Calls progress changed notification handler. */
-void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
-		int bytes);
+	estim->current_byte += bytes;
 
-void ioeta_calculate(ioeta_estim_t *estim, const char path[]);
-
-#endif /* VIFM__IO__PRIVATE__IOETA_H__ */
+	if(path != NULL)
+	{
+		replace_string(&estim->item, path);
+	}
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

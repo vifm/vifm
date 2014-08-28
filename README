@@ -71,7 +71,9 @@ Package content
     |  |
     |  |-- io/ - file system operations implementation
     |  |  |
-    |  |  |-- private/ - private headers of i/o
+    |  |  |-- private/ - private part of i/o
+    |  |  |-- private/ioeta.c - private part of i/o estimations
+    |  |  |-- ioeta.c - i/o estimations management
     |  |  |-- iop.c - implementation of i/o primitive
     |  |  `-- ior.c - implementation of recursive i/o operations
     |  |

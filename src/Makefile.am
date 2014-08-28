@@ -45,8 +45,10 @@ vifm_SOURCES = \
 	\
 	io/ioc.h \
 	io/ioe.h \
+	io/ioeta.c io/ioeta.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioeta.c io/private/ioeta.h \
 	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
