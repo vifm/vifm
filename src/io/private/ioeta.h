@@ -23,8 +23,10 @@
 
 /* ioeta - private functions of Input/Output estimation */
 
+/* Adds file to estimation. */
 void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
 
+/* Adds directory to estimation. */
 void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 
 /* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.
@@ -34,6 +36,8 @@ void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		int bytes);
 
+/* Calculates estimates for a subtree rooted at path.  Adds them up to values
+ * already present in the estim. */
 void ioeta_calculate(ioeta_estim_t *estim, const char path[]);
 
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
