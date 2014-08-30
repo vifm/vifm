@@ -24,7 +24,6 @@
 #endif
 
 #include <sys/stat.h> /* stat chmod() */
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* lstat() unlink() */
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
@@ -39,31 +38,9 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "private/traverser.h"
 #include "ioc.h"
 #include "iop.h"
-
-/* Reason why file system traverse visitor is called. */
-typedef enum
-{
-	VA_DIR_ENTER, /* After opening a directory. */
-	VA_FILE,      /* For a file. */
-	VA_DIR_LEAVE, /* After closing a directory. */
-}
-VisitAction;
-
-/* Result of calling file system traverse visitor. */
-typedef enum
-{
-	VR_OK,             /* Everything is OK, continue traversal. */
-	VR_ERROR,          /* Unrecoverable error, abort traversal. */
-	VR_SKIP_DIR_LEAVE, /* Valid only for VA_DIR_ENTER.  Prevents VA_DIR_LEAVE. */
-}
-VisitResult;
-
-/* Generic handler for file system traversing algorithm.  Must return 0 on
- * success, otherwise directory traverse will be stopped. */
-typedef VisitResult (*subtree_visitor)(const char full_path[],
-		VisitAction action, void *param);
 
 static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
@@ -73,9 +50,6 @@ static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
 		void *param, int cp);
-static int traverse(const char path[], subtree_visitor visitor, void *param);
-static int traverse_subtree(const char path[], subtree_visitor visitor,
-		void *param);
 
 int
 ior_rm(io_args_t *const args)
@@ -347,76 +321,6 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	}
 
 	free(free_me);
-
-	return result;
-}
-
-/* A generic recursive file system traversing entry point.  Returns zero on
- * success, otherwise non-zero is returned. */
-static int
-traverse(const char path[], subtree_visitor visitor, void *param)
-{
-	if(is_dir(path))
-	{
-		return traverse_subtree(path, visitor, param);
-	}
-	else
-	{
-		return visitor(path, VA_FILE, param);
-	}
-}
-
-/* A generic subtree traversing.  Returns zero on success, otherwise non-zero is
- * returned. */
-static int
-traverse_subtree(const char path[], subtree_visitor visitor, void *param)
-{
-	DIR *dir;
-	struct dirent *d;
-	int result;
-	VisitResult enter_result;
-
-	dir = opendir(path);
-	if(dir == NULL)
-	{
-		return 1;
-	}
-
-	enter_result = visitor(path, VA_DIR_ENTER, param);
-	if(enter_result == VR_ERROR)
-	{
-		(void)closedir(dir);
-		return 1;
-	}
-
-	result = 0;
-	while((d = readdir(dir)) != NULL)
-	{
-		if(!is_builtin_dir(d->d_name))
-		{
-			char *const full_path = format_str("%s/%s", path, d->d_name);
-			if(entry_is_dir(full_path, d))
-			{
-				result = traverse_subtree(full_path, visitor, param);
-			}
-			else
-			{
-				result = visitor(full_path, VA_FILE, param);
-			}
-			free(full_path);
-
-			if(result != 0)
-			{
-				break;
-			}
-		}
-	}
-	(void)closedir(dir);
-
-	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE)
-	{
-		result = visitor(path, VA_DIR_LEAVE, param);
-	}
 
 	return result;
 }

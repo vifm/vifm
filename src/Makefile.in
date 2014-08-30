@@ -77,7 +77,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
 	engine/variables.$(OBJEXT) io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) \
 	io/ior.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -310,6 +311,7 @@ vifm_SOURCES = \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
 	io/private/ioeta.c io/private/ioeta.h \
+	io/private/traverser.c io/private/traverser.h \
 	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
@@ -540,6 +542,8 @@ io/private/$(DEPDIR)/$(am__dirstamp):
 	@: > io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/ioeta.$(OBJEXT): io/private/$(am__dirstamp) \
 	io/private/$(DEPDIR)/$(am__dirstamp)
+io/private/traverser.$(OBJEXT): io/private/$(am__dirstamp) \
+	io/private/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
 	@$(MKDIR_P) menus
 	@: > menus/$(am__dirstamp)
@@ -714,6 +718,7 @@ mostlyclean-compile:
 	-rm -f io/iop.$(OBJEXT)
 	-rm -f io/ior.$(OBJEXT)
 	-rm -f io/private/ioeta.$(OBJEXT)
+	-rm -f io/private/traverser.$(OBJEXT)
 	-rm -f menus/apropos_menu.$(OBJEXT)
 	-rm -f menus/bookmarks_menu.$(OBJEXT)
 	-rm -f menus/colorscheme_menu.$(OBJEXT)
@@ -822,6 +827,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/iop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ior.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bookmarks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/colorscheme_menu.Po@am__quote@
