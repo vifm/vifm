@@ -41,6 +41,7 @@
 #include "../utils/str.h"
 #include "../background.h"
 #include "../ui.h"
+#include "private/ioeta.h"
 #include "ioc.h"
 
 /* Amount of data to transfer at once. */
@@ -118,11 +119,20 @@ int
 iop_rmfile(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
+
+	int result;
+
+	ioeta_update(args->estim, path, 0, 0);
+
 #ifndef _WIN32
-	return unlink(path);
+	result = unlink(path);
 #else
-	return !DeleteFile(path);
+	result = !DeleteFile(path);
 #endif
+
+	ioeta_update(args->estim, path, 1, 0);
+
+	return result;
 }
 
 int
@@ -130,11 +140,19 @@ iop_rmdir(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 
+	int result;
+
+	ioeta_update(args->estim, path, 0, 0);
+
 #ifndef _WIN32
-	return rmdir(path);
+	result = rmdir(path);
 #else
-	return RemoveDirectory(path) == 0;
+	result = RemoveDirectory(path) == 0;
 #endif
+
+	ioeta_update(args->estim, path, 1, 0);
+
+	return result;
 }
 
 int
@@ -151,6 +169,8 @@ iop_cp(io_args_t *const args)
 	size_t nread;
 	int error;
 	struct stat src_st;
+
+	ioeta_update(args->estim, src, 0, 0);
 
 	/* Create symbolic link rather than copying file it points to.  This check
 	 * should go before directory check as is_dir() resolves symbolic links. */
@@ -233,6 +253,8 @@ iop_cp(io_args_t *const args)
 			error = 1;
 			break;
 		}
+
+		ioeta_update(args->estim, src, 0, nread);
 	}
 
 	if(cancellable)
@@ -247,6 +269,8 @@ iop_cp(io_args_t *const args)
 	{
 		error = chmod(dst, src_st.st_mode & 07777);
 	}
+
+	ioeta_update(args->estim, src, 1, 0);
 
 	return error;
 #else

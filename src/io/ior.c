@@ -38,6 +38,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "private/ioeta.h"
 #include "private/traverser.h"
 #include "ioc.h"
 #include "iop.h"
@@ -118,6 +119,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
+					.estim = rm_args->estim,
 				};
 
 				result = iop_rmfile(&args);
@@ -130,6 +132,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
+					.estim = rm_args->estim,
 				};
 
 				result = iop_rmdir(&args);
@@ -194,6 +197,7 @@ ior_mv(io_args_t *const args)
 
 	if(rename(src, dst) == 0)
 	{
+		ioeta_update(args->estim, src, 1, 0);
 		return 0;
 	}
 
@@ -273,6 +277,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.mode = 0700,
 
 					.cancellable = cp_args->cancellable,
+					.estim = cp_args->estim,
 				};
 
 				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
@@ -291,6 +296,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.crs = cp_args->arg3.crs,
 
 					.cancellable = cp_args->cancellable,
+					.estim = cp_args->estim,
 				};
 
 				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;

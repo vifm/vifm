@@ -42,7 +42,8 @@ io_progress_t;
 /* Estimations change callback prototype. */
 typedef void (*ionotif_progress_changed)(const io_progress_t *const progress);
 
-/* Registers callback invoked when estimations are changed. */
+/* Registers callback invoked when estimations are changed.  The handle can be
+ * NULL to disable notifications. */
 void ionotif_register(ionotif_progress_changed handler);
 
 #endif /* VIFM__IO__IONOTIF_H__ */

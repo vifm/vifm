@@ -1,6 +1,6 @@
 dirs := colmgr commands column_view completion env escape filetype filter
 dirs += keys misc options parsing undo variables viewcolumns_parser
-dirs += ioeta iop ior
+dirs += ioeta ionotif iop ior
 # generate names for build sub-targets (one for each directory)
 dirs_b := $(addsuffix _b, $(dirs))
 # generate names for clean sub-targets (one for each directory)
