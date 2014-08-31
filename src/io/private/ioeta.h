@@ -31,8 +31,9 @@ void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 
 /* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.
  * ioeta_update_estim(e, "", 1, 50); -- Last 50 bytes of current item processed.
- * Might calculate speed, time, etc.  The path can be NULL to indicate that file
- * name didn't change.  Calls progress changed notification handler. */
+ * Might calculate speed, time, etc.  When estim is NULL, the function just
+ * returns.  The path can be NULL to indicate that file name didn't change.
+ * Calls progress changed notification handler. */
 void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		int bytes);
 

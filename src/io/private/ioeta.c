@@ -19,6 +19,7 @@
 #include "ioeta.h"
 
 #include <assert.h> /* assert() */
+#include <stddef.h> /* NULL */
 
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
@@ -49,6 +50,11 @@ ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 void
 ioeta_update(ioeta_estim_t *estim, const char path[], int finished, int bytes)
 {
+	if(estim == NULL)
+	{
+		return;
+	}
+
 	estim->current_byte += bytes;
 	if(estim->current_byte > estim->total_bytes)
 	{
