@@ -37,10 +37,6 @@ void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		int bytes);
 
-/* Calculates estimates for a subtree rooted at path.  Adds them up to values
- * already present in the estim. */
-void ioeta_calculate(ioeta_estim_t *estim, const char path[]);
-
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

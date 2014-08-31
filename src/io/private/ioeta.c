@@ -18,17 +18,12 @@
 
 #include "ioeta.h"
 
-#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
 #include "../ioeta.h"
 #include "ionotif.h"
-#include "traverser.h"
-
-static VisitResult eta_visitor(const char full_path[], VisitAction action,
-		void *param);
 
 void
 ioeta_add_file(ioeta_estim_t *estim, const char path[])
@@ -78,35 +73,6 @@ ioeta_update(ioeta_estim_t *estim, const char path[], int finished, int bytes)
 	}
 
 	ionotif_notify(IO_PS_IN_PROGRESS, estim);
-}
-
-void
-ioeta_calculate(ioeta_estim_t *estim, const char path[])
-{
-	(void)traverse(path, &eta_visitor, estim);
-}
-
-/* Implementation of traverse() visitor for subtree copying.  Returns 0 on
- * success, otherwise non-zero is returned. */
-static VisitResult
-eta_visitor(const char full_path[], VisitAction action, void *param)
-{
-	ioeta_estim_t *const estim = param;
-
-	switch(action)
-	{
-		case VA_DIR_ENTER:
-			ioeta_add_dir(estim, full_path);
-			return VR_SKIP_DIR_LEAVE;
-		case VA_FILE:
-			ioeta_add_file(estim, full_path);
-			return VR_OK;
-		case VA_DIR_LEAVE:
-			assert(0 && "Can't get here because of VR_SKIP_DIR_LEAVE.");
-			return VR_OK;
-	}
-
-	return VR_OK;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

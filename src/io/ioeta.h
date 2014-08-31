@@ -24,6 +24,8 @@
 
 /* ioeta - Input/Output estimation */
 
+/* TODO: add per file progress. */
+
 typedef struct
 {
 	/* Total number of items to process (T). */
@@ -48,6 +50,10 @@ ioeta_estim_t;
 ioeta_estim_t * ioeta_alloc(void);
 
 void ioeta_free(ioeta_estim_t *estim);
+
+/* Calculates estimates for a subtree rooted at path.  Adds them up to values
+ * already present in the estim. */
+void ioeta_calculate(ioeta_estim_t *estim, const char path[]);
 
 #endif /* VIFM__IO__IOETA_H__ */
 
