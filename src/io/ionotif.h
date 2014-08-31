@@ -23,23 +23,26 @@
 
 /* ionotif - client code callbacks management */
 
+/* Possible progress stage. */
 typedef enum
 {
-	IO_PS_ESTIMATING,
-	IO_PS_IN_PROGRESS,
-	IO_PS_FINISHED,
+	IO_PS_ESTIMATING,  /* Estimating amount of time needed by operation. */
+	IO_PS_IN_PROGRESS, /* Performing operation. */
 }
 IoPs;
 
+/* Packed information on operation progress. */
 typedef struct
 {
-	IoPs stage;
-	ioeta_estim_t *estim;
+	IoPs stage;           /* Operation stage. */
+	ioeta_estim_t *estim; /* Estimation object. */
 }
 io_progress_t;
 
+/* Estimations change callback prototype. */
 typedef void (*ionotif_progress_changed)(const io_progress_t *const progress);
 
+/* Registers callback invoked when estimations are changed. */
 void ionotif_register(ionotif_progress_changed handler);
 
 #endif /* VIFM__IO__IONOTIF_H__ */

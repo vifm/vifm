@@ -23,6 +23,7 @@
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
 #include "../ioeta.h"
+#include "ionotif.h"
 #include "traverser.h"
 
 static VisitResult eta_visitor(const char full_path[], VisitAction action,
@@ -33,32 +34,44 @@ ioeta_add_file(ioeta_estim_t *estim, const char path[])
 {
 	++estim->total_items;
 	estim->total_bytes += get_file_size(path);
+
+	ionotif_notify(IO_PS_ESTIMATING, estim);
 }
 
 void
 ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 {
 	++estim->total_items;
+
+	ionotif_notify(IO_PS_ESTIMATING, estim);
 }
 
 void
 ioeta_update(ioeta_estim_t *estim, const char path[], int finished, int bytes)
 {
+	estim->current_byte += bytes;
+	if(estim->current_byte > estim->total_bytes)
+	{
+		/* Estimation are out of date, update them. */
+		estim->total_bytes = estim->current_byte;
+	}
+
 	if(finished)
 	{
 		++estim->current_item;
 		if(estim->current_item > estim->total_items)
 		{
-			/* XXX: do something about it. */
+			/* Estimation are out of date, update them. */
+			estim->total_items = estim->current_item;
 		}
 	}
-
-	estim->current_byte += bytes;
 
 	if(path != NULL)
 	{
 		replace_string(&estim->item, path);
 	}
+
+	ionotif_notify(IO_PS_IN_PROGRESS, estim);
 }
 
 void

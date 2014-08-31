@@ -23,7 +23,8 @@ engine := cmds.c functions.c completion.c keys.c mode.c options.c parsing.c \
           text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
-engine := private/ioeta.c private/traverser.c ioeta.c iop.c ior.c
+engine := private/ioeta.c private/ionotif.c private/traverser.c
+engine += ioeta.c iop.c ior.c
 engine := $(addprefix io/, $(engine))
 
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \

@@ -73,6 +73,7 @@ Package content
     |  |  |
     |  |  |-- private/ - private part of i/o
     |  |  |-- private/ioeta.c - private part of i/o estimations
+    |  |  |-- private/ionotif.c - private part of i/o notifications
     |  |  |-- private/traverser.c - file system traversing routine
     |  |  |-- ioeta.c - i/o estimations management
     |  |  |-- iop.c - implementation of i/o primitive

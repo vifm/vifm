@@ -16,19 +16,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__IO__PRIVATE__IONOTIF_H__
-#define VIFM__IO__PRIVATE__IONOTIF_H__
+#include "ionotif.h"
+
+#include <stddef.h> /* NULL */
 
 #include "../ioeta.h"
 #include "../ionotif.h"
 
-/* ionotif - private functions of client code callbacks management */
+static ionotif_progress_changed progress_changed;
 
-/* Invokes progress changed callback previously registered by
- * ionotif_register(). */
-void ionotif_notify(IoPs stage, ioeta_estim_t *estim);
+void
+ionotif_register(ionotif_progress_changed handler)
+{
+	progress_changed = handler;
+}
 
-#endif /* VIFM__IO__PRIVATE__IONOTIF_H__ */
+void
+ionotif_notify(IoPs stage, ioeta_estim_t *estim)
+{
+	if(progress_changed != NULL)
+	{
+		const io_progress_t progress_info = { .stage = stage, .estim = estim };
+		progress_changed(&progress_info);
+	}
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

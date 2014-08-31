@@ -49,6 +49,7 @@ vifm_SOURCES = \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
 	io/private/ioeta.c io/private/ioeta.h \
+	io/private/ionotif.c io/private/ionotif.h \
 	io/private/traverser.c io/private/traverser.h \
 	\
 	menus/all.h \
