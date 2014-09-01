@@ -25,11 +25,13 @@
 
 #include <sys/stat.h> /* gid_t uid_t lstat() stat() */
 
-#include <stddef.h> /* size_t */
+#include <assert.h> /* assert() */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* calloc() free() */
 
 #include "cfg/config.h"
+#include "io/ioeta.h"
 #include "io/iop.h"
 #include "io/ior.h"
 #include "menus/menus.h"
@@ -111,6 +113,43 @@ static op_func op_funcs[] = {
 	op_mkfile,   /* OP_MKFILE */
 };
 ARRAY_GUARD(op_funcs, OP_COUNT);
+
+ops_t *
+ops_alloc(OPS main_op)
+{
+	ops_t *const ops = calloc(1, sizeof(*ops));
+	ops->main_op = main_op;
+	return ops;
+}
+
+void
+ops_enqueue(ops_t *ops, const char path[])
+{
+	++ops->total;
+
+	if(ops->estim != NULL)
+	{
+		ioeta_calculate(ops->estim, path);
+	}
+}
+
+void
+ops_advance(ops_t *ops, int succeeded)
+{
+	++ops->current;
+	assert(ops->current <= ops->total && "Current and total are out of sync.");
+
+	if(succeeded)
+	{
+		++ops->succeeded;
+	}
+}
+
+void
+ops_free(ops_t *ops)
+{
+	free(ops);
+}
 
 int
 perform_operation(OPS op, void *data, const char *src, const char *dst)

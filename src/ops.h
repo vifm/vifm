@@ -19,6 +19,8 @@
 #ifndef VIFM__OPS_H__
 #define VIFM__OPS_H__
 
+#include "io/ioeta.h"
+
 typedef enum
 {
 	OP_NONE,
@@ -48,7 +50,32 @@ typedef enum
 	OP_RMDIR,
 	OP_MKFILE,
 	OP_COUNT
-}OPS;
+}
+OPS;
+
+/* Description of file operation on a set of files.  Collects information and
+ * helps to keep track of progress. */
+typedef struct
+{
+	OPS main_op;          /* Primary operation performed on items. */
+	int total;            /* Total number of items to be processed. */
+	int current;          /* Number of current item. */
+	int succeeded;        /* Number of successfully processed items. */
+	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items. */
+}
+ops_t;
+
+/* Allocates and initializes new ioeta_estim_t. */
+ops_t * ops_alloc(OPS main_op);
+
+/* Puts new item to the ops. */
+void ops_enqueue(ops_t *ops, const char path[]);
+
+/* Advances ops to the next item. */
+void ops_advance(ops_t *ops, int succeeded);
+
+/* Frees ops_t.  The ops can be NULL. */
+void ops_free(ops_t *ops);
 
 int perform_operation(OPS op, void *data, const char *src, const char *dst);
 

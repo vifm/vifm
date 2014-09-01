@@ -47,8 +47,10 @@ typedef struct
 }
 ioeta_estim_t;
 
+/* Allocates and initializes new ioeta_estim_t. */
 ioeta_estim_t * ioeta_alloc(void);
 
+/* Frees ioeta_estim_t.  The estim can be NULL. */
 void ioeta_free(ioeta_estim_t *estim);
 
 /* Calculates estimates for a subtree rooted at path.  Adds them up to values
