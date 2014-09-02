@@ -2713,13 +2713,14 @@ int
 cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force)
 {
-	int i, processed;
+	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
 	char **sel;
 	int sel_len;
+	ops_t *ops;
 
 	if(!move && type != 0 && !symlinks_available())
 	{
@@ -2749,14 +2750,29 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		erase_selection(view);
 	}
 
+	ops = ops_alloc(move ? OP_MOVE : OP_COPY);
+	ops->estim = ioeta_alloc(ops);
+
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
+	{
+		char src_full[PATH_MAX];
+		const char *dst = (nlines > 0) ? list[i] : sel[i];
+
+		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
+		chosp(src_full);
+
+		ops_enqueue(ops, src_full);
+	}
+
 	ui_cancellation_reset();
 
-	processed = 0;
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char dst_full[PATH_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
+		int success;
+
 		if(from_trash)
 		{
 			char src_full[PATH_MAX];
@@ -2773,26 +2789,29 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		if(move)
 		{
-			progress_msg("Moving files", i + 1, sel_len);
+			if(!cfg.use_system_calls)
+			{
+				progress_msg("Moving files", i + 1, sel_len);
+			}
 
-			if(mv_file(sel[i], view->curr_dir, dst, path, 0, 1, NULL) != 0)
+			success = mv_file(sel[i], view->curr_dir, dst, path, 0, 1, ops) == 0;
+
+			if(!success)
 			{
 				view->list_pos = find_file_pos_in_list(view, sel[i]);
-			}
-			else
-			{
-				processed++;
 			}
 		}
 		else
 		{
-			if(type == 0)
-				progress_msg("Copying files", i + 1, sel_len);
-			if(cp_file(view->curr_dir, path, sel[i], dst, type, 1, NULL) == 0)
+			if(type == 0 && !cfg.use_system_calls)
 			{
-				processed++;
+				progress_msg("Copying files", i + 1, sel_len);
 			}
+
+			success = cp_file(view->curr_dir, path, sel[i], dst, type, 1, ops) == 0;
 		}
+
+		ops_advance(ops, success);
 	}
 	cmd_group_end();
 
@@ -2805,8 +2824,10 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		free_string_array(list, nlines);
 	}
 
-	status_bar_messagef("%d file%s successfully processed%s", processed,
-			(processed == 1) ? "" : "s", get_cancellation_suffix());
+	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
+			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
+
+	ops_free(ops);
 
 	return 1;
 }
