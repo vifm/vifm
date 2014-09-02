@@ -29,7 +29,11 @@ void
 ioeta_add_file(ioeta_estim_t *estim, const char path[])
 {
 	++estim->total_items;
-	estim->total_bytes += get_file_size(path);
+
+	if(!is_symlink(path))
+	{
+		estim->total_bytes += get_file_size(path);
+	}
 
 	ionotif_notify(IO_PS_ESTIMATING, estim);
 }
