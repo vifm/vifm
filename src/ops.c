@@ -59,30 +59,33 @@
 #define PRESERVE_FLAGS "-p"
 #endif
 
-static int op_none(void *data, const char *src, const char *dst);
-static int op_remove(void *data, const char *src, const char *dst);
-static int op_removesl(void *data, const char *src, const char *dst);
-static int op_copy(void *data, const char src[], const char dst[]);
-static int op_copyf(void *data, const char src[], const char dst[]);
-static int op_cp(void *data, const char src[], const char dst[], int overwrite);
-static int op_move(void *data, const char src[], const char dst[]);
-static int op_movef(void *data, const char src[], const char dst[]);
-static int op_mv(void *data, const char src[], const char dst[], int overwrite);
-static int op_chown(void *data, const char *src, const char *dst);
-static int op_chgrp(void *data, const char *src, const char *dst);
+static int op_none(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_remove(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_removesl(ops_t *ops, void *data, const char *src,
+		const char *dst);
+static int op_copy(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_copyf(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_cp(ops_t *ops, void *data, const char src[], const char dst[],
+		int overwrite);
+static int op_move(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_movef(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_mv(ops_t *ops, void *data, const char src[], const char dst[],
+		int overwrite);
+static int op_chown(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_chgrp(ops_t *ops, void *data, const char *src, const char *dst);
 #ifndef _WIN32
-static int op_chmod(void *data, const char *src, const char *dst);
-static int op_chmodr(void *data, const char *src, const char *dst);
+static int op_chmod(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_chmodr(ops_t *ops, void *data, const char *src, const char *dst);
 #else
-static int op_addattr(void *data, const char *src, const char *dst);
-static int op_subattr(void *data, const char *src, const char *dst);
+static int op_addattr(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_subattr(ops_t *ops, void *data, const char *src, const char *dst);
 #endif
-static int op_symlink(void *data, const char *src, const char *dst);
-static int op_mkdir(void *data, const char *src, const char *dst);
-static int op_rmdir(void *data, const char *src, const char *dst);
-static int op_mkfile(void *data, const char *src, const char *dst);
+static int op_symlink(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_mkdir(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
+static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 
-typedef int (*op_func)(void *data, const char *src, const char *dst);
+typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
 
 static op_func op_funcs[] = {
 	op_none,     /* OP_NONE */
@@ -198,17 +201,17 @@ int
 perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 		const char dst[])
 {
-	return op_funcs[op](data, src, dst);
+	return op_funcs[op](ops, data, src, dst);
 }
 
 static int
-op_none(void *data, const char *src, const char *dst)
+op_none(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	return 0;
 }
 
 static int
-op_remove(void *data, const char *src, const char *dst)
+op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
@@ -219,11 +222,11 @@ op_remove(void *data, const char *src, const char *dst)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
 
-	return op_removesl(data, src, dst);
+	return op_removesl(ops, data, src, dst);
 }
 
 static int
-op_removesl(void *data, const char *src, const char *dst)
+op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
@@ -259,23 +262,23 @@ op_removesl(void *data, const char *src, const char *dst)
  * destination files (when it's supported by the system).  Returns non-zero on
  * error, otherwise zero is returned. */
 static int
-op_copy(void *data, const char src[], const char dst[])
+op_copy(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_cp(data, src, dst, 0);
+	return op_cp(ops, data, src, dst, 0);
 }
 
 /* OP_COPYF operation handler.  Copies file/directory overwriting destination
  * files.  Returns non-zero on error, otherwise zero is returned. */
 static int
-op_copyf(void *data, const char src[], const char dst[])
+op_copyf(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_cp(data, src, dst, 1);
+	return op_cp(ops, data, src, dst, 1);
 }
 
 /* Copies file/directory overwriting destination files if requested.  Returns
  * non-zero on error, otherwise zero is returned. */
 static int
-op_cp(void *data, const char src[], const char dst[], int overwrite)
+op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 {
 	if(!cfg.use_system_calls)
 	{
@@ -345,23 +348,23 @@ op_cp(void *data, const char src[], const char dst[], int overwrite)
  * destination files (when it's supported by the system).  Returns non-zero on
  * error, otherwise zero is returned. */
 static int
-op_move(void *data, const char src[], const char dst[])
+op_move(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_mv(data, src, dst, 0);
+	return op_mv(ops, data, src, dst, 0);
 }
 
 /* OP_MOVEF operation handler.  Moves file/directory overwriting destination
  * files.  Returns non-zero on error, otherwise zero is returned. */
 static int
-op_movef(void *data, const char src[], const char dst[])
+op_movef(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_mv(data, src, dst, 1);
+	return op_mv(ops, data, src, dst, 1);
 }
 
 /* Moves file/directory overwriting destination files if requested.  Returns
  * non-zero on error, otherwise zero is returned. */
 static int
-op_mv(void *data, const char src[], const char dst[], int overwrite)
+op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
@@ -415,7 +418,7 @@ op_mv(void *data, const char src[], const char dst[], int overwrite)
 }
 
 static int
-op_chown(void *data, const char *src, const char *dst)
+op_chown(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
@@ -434,7 +437,7 @@ op_chown(void *data, const char *src, const char *dst)
 }
 
 static int
-op_chgrp(void *data, const char *src, const char *dst)
+op_chgrp(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
@@ -454,7 +457,7 @@ op_chgrp(void *data, const char *src, const char *dst)
 
 #ifndef _WIN32
 static int
-op_chmod(void *data, const char *src, const char *dst)
+op_chmod(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	char cmd[128 + PATH_MAX];
 	char *escaped;
@@ -468,7 +471,7 @@ op_chmod(void *data, const char *src, const char *dst)
 }
 
 static int
-op_chmodr(void *data, const char *src, const char *dst)
+op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	char cmd[128 + PATH_MAX];
 	char *escaped;
@@ -481,7 +484,7 @@ op_chmodr(void *data, const char *src, const char *dst)
 }
 #else
 static int
-op_addattr(void *data, const char *src, const char *dst)
+op_addattr(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	const DWORD add_mask = (size_t)data;
 	const DWORD attrs = GetFileAttributesA(src);
@@ -499,7 +502,7 @@ op_addattr(void *data, const char *src, const char *dst)
 }
 
 static int
-op_subattr(void *data, const char *src, const char *dst)
+op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	const DWORD sub_mask = (size_t)data;
 	const DWORD attrs = GetFileAttributesA(src);
@@ -518,7 +521,7 @@ op_subattr(void *data, const char *src, const char *dst)
 #endif
 
 static int
-op_symlink(void *data, const char *src, const char *dst)
+op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
@@ -556,7 +559,7 @@ op_symlink(void *data, const char *src, const char *dst)
 }
 
 static int
-op_mkdir(void *data, const char *src, const char *dst)
+op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
@@ -583,7 +586,7 @@ op_mkdir(void *data, const char *src, const char *dst)
 }
 
 static int
-op_rmdir(void *data, const char *src, const char *dst)
+op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
@@ -607,7 +610,7 @@ op_rmdir(void *data, const char *src, const char *dst)
 }
 
 static int
-op_mkfile(void *data, const char *src, const char *dst)
+op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 {
 #ifndef _WIN32
 	if(!cfg.use_system_calls)
