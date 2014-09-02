@@ -128,9 +128,9 @@ static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
-		const char path[], int tmpfile_num, int cancellable);
+		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], int type, int cancellable);
+		const char dst[], int type, int cancellable, ops_t *ops);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -512,7 +512,7 @@ rename_file_cb(const char new_name[])
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
 	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0,
-			1);
+			1, NULL);
 	cmd_group_end();
 	if(mv_res != 0)
 	{
@@ -663,8 +663,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2, 1)
-				!= 0)
+		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2, 1,
+				NULL) != 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -684,7 +684,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		if(mv_file(files[i], view->curr_dir, list[i], view->curr_dir,
-				is_dup[i] ? 1 : 0, 1) == 0)
+				is_dup[i] ? 1 : 0, 1, NULL) == 0)
 		{
 			int pos;
 
@@ -1006,8 +1006,8 @@ incdec_names(FileView *view, int k)
 	cmd_group_begin(buf);
 	for(i = 0; i < names_len && !err; i++)
 	{
-		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4, 1)
-				!= 0)
+		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4, 1,
+				NULL) != 0)
 		{
 			err = 1;
 			break;
@@ -1017,7 +1017,7 @@ incdec_names(FileView *view, int k)
 	for(i = 0; i < names_len && !err; i++)
 	{
 		if(mv_file(tmp_names[i], view->curr_dir, add_to_name(names[i], k),
-				view->curr_dir, 3, 1) != 0)
+				view->curr_dir, 3, 1, NULL) != 0)
 		{
 			err = 1;
 			break;
@@ -2155,7 +2155,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 			(void)replace_string(&view->dir_entry[i].name, dest[j]);
 		}
 
-		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0, 1) == 0)
+		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0, 1, NULL) == 0)
 		{
 			n++;
 		}
@@ -2442,7 +2442,7 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 			(void)replace_string(&view->dir_entry[pos].name, dest[i]);
 		}
 		if(mv_file(view->selected_filelist[i], view->curr_dir, dest[i],
-				view->curr_dir, 0, 1) == 0)
+				view->curr_dir, 0, 1, NULL) == 0)
 		{
 			k++;
 		}
@@ -2708,7 +2708,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		{
 			progress_msg("Moving files", i + 1, sel_len);
 
-			if(mv_file(sel[i], view->curr_dir, dst, path, 0, 1) != 0)
+			if(mv_file(sel[i], view->curr_dir, dst, path, 0, 1, NULL) != 0)
 			{
 				view->list_pos = find_file_pos_in_list(view, sel[i]);
 			}
@@ -2721,7 +2721,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		{
 			if(type == 0)
 				progress_msg("Copying files", i + 1, sel_len);
-			if(cp_file(view->curr_dir, path, sel[i], dst, type, 1) == 0)
+			if(cp_file(view->curr_dir, path, sel[i], dst, type, 1, NULL) == 0)
 			{
 				processed++;
 			}
@@ -2734,7 +2734,9 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	clean_selected_files(view);
 	ui_views_reload_filelists();
 	if(from_file)
+	{
 		free_string_array(list, nlines);
+	}
 
 	status_bar_messagef("%d file%s successfully processed%s", processed,
 			(processed == 1) ? "" : "s", get_cancellation_suffix());
@@ -2767,11 +2769,11 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 
 		if(move)
 		{
-			(void)mv_file(sel_list[i], src, dst, path, -1, 0);
+			(void)mv_file(sel_list[i], src, dst, path, -1, 0, NULL);
 		}
 		else
 		{
-			(void)cp_file(src, path, sel_list[i], dst, -1, 0);
+			(void)cp_file(src, path, sel_list[i], dst, -1, 0, NULL);
 		}
 
 		inner_bg_next();
@@ -2781,7 +2783,7 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 
 static int
 mv_file(const char src[], const char src_path[], const char dst[],
-		const char path[], int tmpfile_num, int cancellable)
+		const char path[], int tmpfile_num, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
@@ -2810,7 +2812,7 @@ mv_file(const char src[], const char src_path[], const char dst[],
 	else
 		op = OP_NONE;
 
-	result = perform_operation(op, NULL, cancellable ? NULL : (void *)1, full_src,
+	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
 			full_dst);
 	if(result == 0 && tmpfile_num >= 0)
 		add_operation(op, NULL, NULL, full_src, full_dst);
@@ -2824,7 +2826,7 @@ mv_file(const char src[], const char src_path[], const char dst[],
  */
 static int
 cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], int type, int cancellable)
+		const char dst[], int type, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
@@ -2852,7 +2854,7 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		}
 	}
 
-	result = perform_operation(op, NULL, cancellable ? NULL : (void *)1, full_src,
+	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
 			full_dst);
 	if(result == 0 && type >= 0)
 		add_operation(op, NULL, NULL, full_src, full_dst);
