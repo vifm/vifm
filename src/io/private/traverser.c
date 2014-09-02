@@ -33,7 +33,15 @@ static int traverse_subtree(const char path[], subtree_visitor visitor,
 int
 traverse(const char path[], subtree_visitor visitor, void *param)
 {
-	if(is_dir(path))
+	/* Duplication with traverse_subtree(), but this way traverse_subtree() can
+	 * use information from dirent structure to save some operations. */
+
+	if(is_symlink(path))
+	{
+		/* Tread symbolic links to directories as files as well. */
+		return visitor(path, VA_FILE, param);
+	}
+	else if(is_dir(path))
 	{
 		return traverse_subtree(path, visitor, param);
 	}
@@ -72,7 +80,12 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		if(!is_builtin_dir(d->d_name))
 		{
 			char *const full_path = format_str("%s/%s", path, d->d_name);
-			if(entry_is_dir(full_path, d))
+			if(d->d_type == DT_LNK || is_symlink(full_path))
+			{
+				/* Tread symbolic links to directories as files as well. */
+				result = visitor(full_path, VA_FILE, param);
+			}
+			else if(entry_is_dir(full_path, d))
 			{
 				result = traverse_subtree(full_path, visitor, param);
 			}
