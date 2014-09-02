@@ -29,6 +29,45 @@ test_file_is_removed(void)
 }
 
 static void
+test_symlink_is_removed_but_not_its_target(void)
+{
+	FILE *const f = fopen(FILE_NAME, "w");
+	fclose(f);
+	assert_int_equal(0, access(FILE_NAME, F_OK));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = FILE_NAME,
+			.arg2.target = "link",
+		};
+		assert_int_equal(0, iop_ln(&args));
+	}
+
+	assert_int_equal(0, access("link", F_OK));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "link",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	assert_int_equal(-1, access("link", F_OK));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = FILE_NAME,
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+
+	assert_int_equal(-1, access(FILE_NAME, F_OK));
+}
+
+static void
 test_directory_is_not_removed(void)
 {
 	make_dir(DIRECTORY_NAME, 0700);
@@ -53,6 +92,7 @@ rmfile_tests(void)
 	test_fixture_start();
 
 	run_test(test_file_is_removed);
+	run_test(test_symlink_is_removed_but_not_its_target);
 	run_test(test_directory_is_not_removed);
 
 	test_fixture_end();
