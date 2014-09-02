@@ -61,7 +61,8 @@ typedef struct
 	int total;            /* Total number of items to be processed. */
 	int current;          /* Number of current item. */
 	int succeeded;        /* Number of successfully processed items. */
-	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items. */
+	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items and
+	                         also frees it on ops_free(). */
 }
 ops_t;
 

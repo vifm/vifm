@@ -148,6 +148,12 @@ ops_advance(ops_t *ops, int succeeded)
 void
 ops_free(ops_t *ops)
 {
+	if(ops == NULL)
+	{
+		return;
+	}
+
+	ioeta_free(ops->estim);
 	free(ops);
 }
 
