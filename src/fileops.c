@@ -43,6 +43,8 @@
 #include <string.h> /* memcmp() strcpy() strerror() */
 
 #include "cfg/config.h"
+#include "io/ioeta.h"
+#include "io/ionotif.h"
 #include "menus/menus.h"
 #include "modes/cmdline.h"
 #ifdef _WIN32
@@ -100,6 +102,7 @@ typedef struct
 }
 bg_args_t;
 
+static void io_progress_changed(const io_progress_t *const progress);
 static int prepare_register(int reg);
 static void delete_files_in_bg(void *arg);
 static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
@@ -138,6 +141,70 @@ static int edit_file(const char filepath[], int force_changed);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
+
+void
+init_fileops(void)
+{
+	ionotif_register(&io_progress_changed);
+}
+
+/* I/O operation update callback. */
+static void
+io_progress_changed(const io_progress_t *const state)
+{
+	static int prev_progress = -1;
+
+	const ioeta_estim_t *const estim = state->estim;
+	ops_t *const ops = estim->param;
+
+	char current_size_str[16];
+	char total_size_str[16];
+	int progress;
+	const char *prefix;
+	char *msg;
+
+	if(estim->total_bytes == 0)
+	{
+		progress = 0;
+	}
+	else
+	{
+		progress = (estim->current_byte*1000)/estim->total_bytes;
+	}
+
+	if(progress == prev_progress)
+	{
+		return;
+	}
+	prev_progress = progress;
+
+	switch(state->stage)
+	{
+		case IO_PS_ESTIMATING:
+			prefix = "estimating... ";
+			break;
+		case IO_PS_IN_PROGRESS:
+			prefix = "";
+			break;
+	}
+
+	(void)friendly_size_notation(estim->current_byte, sizeof(current_size_str),
+			current_size_str);
+	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
+			total_size_str);
+
+	msg = format_str("%s:%s%s %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+			prefix[0] == '\0' ? "" : " ", prefix,
+			estim->current_item, estim->total_items,
+			current_size_str, total_size_str, progress/10, estim->item);
+
+	checked_wmove(status_bar, 0, 0);
+	wprintw(status_bar, "%s", msg);
+	wnoutrefresh(status_bar);
+	doupdate();
+
+	free(msg);
+}
 
 /* returns new value for save_msg */
 int

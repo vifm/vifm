@@ -363,6 +363,8 @@ main(int argc, char *argv[])
 
 	init_background();
 
+	init_fileops();
+
 	set_view_path(&lwin, lwin_path);
 	set_view_path(&rwin, rwin_path);
 

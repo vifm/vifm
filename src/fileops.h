@@ -45,6 +45,9 @@ typedef enum
 }
 SignalType;
 
+/* Initializes file operations. */
+void init_fileops(void);
+
 int delete_files(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 
