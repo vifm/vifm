@@ -69,6 +69,9 @@ ops_t;
 /* Allocates and initializes new ioeta_estim_t. */
 ops_t * ops_alloc(OPS main_op);
 
+/* Describes main operation with one generic word.  Returns the description. */
+const char * ops_describe(ops_t *ops);
+
 /* Puts new item to the ops. */
 void ops_enqueue(ops_t *ops, const char path[]);
 
