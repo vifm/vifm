@@ -195,7 +195,8 @@ ops_free(ops_t *ops)
 }
 
 int
-perform_operation(OPS op, void *data, const char *src, const char *dst)
+perform_operation(OPS op, ops_t *ops, void *data, const char src[],
+		const char dst[])
 {
 	return op_funcs[op](data, src, dst);
 }

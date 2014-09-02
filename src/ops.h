@@ -81,7 +81,10 @@ void ops_advance(ops_t *ops, int succeeded);
 /* Frees ops_t.  The ops can be NULL. */
 void ops_free(ops_t *ops);
 
-int perform_operation(OPS op, void *data, const char *src, const char *dst);
+/* Performs single operations, possibly part of the ops (which can be NULL).
+ * Returns non-zero on error, otherwise zero is returned. */
+int perform_operation(OPS op, ops_t *ops, void *data, const char src[],
+		const char dst[]);
 
 #endif /* VIFM__OPS_H__ */
 

@@ -63,6 +63,7 @@
 #include "commands_completion.h"
 #include "dir_stack.h"
 #include "filelist.h"
+#include "fileops.h"
 #include "filetype.h"
 #include "fuse.h"
 #include "ipc.h"
@@ -88,6 +89,8 @@
 #endif
 
 static void quit_on_arg_parsing(void);
+static int undo_perform_func(OPS op, void *data, const char src[],
+		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -383,7 +386,7 @@ main(int argc, char *argv[])
 
 	colmgr_init(COLOR_PAIRS);
 	init_modes();
-	init_undo_list(&perform_operation, NULL, &ui_cancellation_requested,
+	init_undo_list(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
 	load_local_options(curr_view);
 
@@ -441,6 +444,13 @@ main(int argc, char *argv[])
 	main_loop();
 
 	return 0;
+}
+
+/* perform_operation() interface adaptor for the undo unit. */
+static int
+undo_perform_func(OPS op, void *data, const char src[], const char dst[])
+{
+	return perform_operation(op, NULL, data, src, dst);
 }
 
 static void

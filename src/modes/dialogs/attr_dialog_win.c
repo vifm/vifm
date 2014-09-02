@@ -487,7 +487,7 @@ file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 	if(add != 0)
 	{
 		const size_t wadd = add;
-		if(perform_operation(OP_ADDATTR, (void *)wadd, path, NULL) == 0)
+		if(perform_operation(OP_ADDATTR, NULL, (void *)wadd, path, NULL) == 0)
 		{
 			add_operation(OP_ADDATTR, (void *)wadd, (void *)(~attrs & wadd), path,
 					"");
@@ -496,7 +496,7 @@ file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 	if(sub != 0)
 	{
 		const size_t wsub = sub;
-		if(perform_operation(OP_SUBATTR, (void *)wsub, path, NULL) == 0)
+		if(perform_operation(OP_SUBATTR, NULL, (void *)wsub, path, NULL) == 0)
 		{
 			add_operation(OP_SUBATTR, (void *)wsub, (void *)(~attrs & wsub), path,
 					"");

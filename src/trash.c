@@ -416,7 +416,7 @@ restore_from_trash(const char trash_name[])
 
 	copy_str(buf, sizeof(buf), trash_list[i].path);
 	copy_str(full, sizeof(full), trash_list[i].trash_name);
-	if(perform_operation(OP_MOVE, NULL, full, trash_list[i].path) == 0)
+	if(perform_operation(OP_MOVE, NULL, NULL, full, trash_list[i].path) == 0)
 	{
 		char *msg, *p;
 		size_t len;
