@@ -1,12 +1,14 @@
 #include "seatest.h"
 
+#include <stddef.h> /* NULL */
+
 #include "../../src/io/private/ioeta.h"
 #include "../../src/io/ioeta.h"
 
 static void
 test_empty_files_are_ok(void)
 {
-	ioeta_estim_t *const estim = ioeta_alloc();
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
 	ioeta_calculate(estim, "test-data/existing-files");
 
@@ -21,7 +23,7 @@ test_empty_files_are_ok(void)
 static void
 test_non_empty_files_are_ok(void)
 {
-	ioeta_estim_t *const estim = ioeta_alloc();
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
 	ioeta_calculate(estim, "test-data/various-sizes");
 

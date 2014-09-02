@@ -44,11 +44,14 @@ typedef struct
 
 	/* Relative path to currently processed file. */
 	char *item;
+
+	/* Custom parameter for notification callbacks. */
+	void *param;
 }
 ioeta_estim_t;
 
 /* Allocates and initializes new ioeta_estim_t. */
-ioeta_estim_t * ioeta_alloc(void);
+ioeta_estim_t * ioeta_alloc(void *param);
 
 /* Frees ioeta_estim_t.  The estim can be NULL. */
 void ioeta_free(ioeta_estim_t *estim);

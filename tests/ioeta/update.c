@@ -10,7 +10,7 @@ static ioeta_estim_t *estim;
 static void
 setup(void)
 {
-	estim = ioeta_alloc();
+	estim = ioeta_alloc(NULL);
 }
 
 static void

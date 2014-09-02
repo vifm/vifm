@@ -1,7 +1,9 @@
 #include "seatest.h"
 
-#include "../../src/io/ionotif.h"
+#include <stddef.h> /* NULL */
+
 #include "../../src/io/ioeta.h"
+#include "../../src/io/ionotif.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 
@@ -27,7 +29,7 @@ progress_changed(const io_progress_t *const progress)
 static void
 setup(void)
 {
-	estim = ioeta_alloc();
+	estim = ioeta_alloc(NULL);
 
 	invoked_eta = 0;
 	invoked_progress = 0;

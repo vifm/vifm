@@ -13,7 +13,7 @@ test_free_of_null_is_ok(void)
 static void
 test_alloc_initializes_all_fields(void)
 {
-	ioeta_estim_t *const estim = ioeta_alloc();
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
 	assert_int_equal(0, estim->total_items);
 	assert_int_equal(0, estim->current_item);
