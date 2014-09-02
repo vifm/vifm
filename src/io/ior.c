@@ -149,7 +149,6 @@ ior_cp(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const int overwrite = args->arg3.crs == IO_CRS_REPLACE_ALL;
-	const int cancellable = args->cancellable;
 
 	if(is_in_subtree(dst, src))
 	{
@@ -158,13 +157,14 @@ ior_cp(io_args_t *const args)
 
 	if(overwrite)
 	{
-		io_args_t args =
+		io_args_t rm_args =
 		{
 			.arg1.path = dst,
 
-			.cancellable = cancellable,
+			.cancellable = args->cancellable,
+			.estim = args->estim,
 		};
-		const int result = ior_rm(&args);
+		const int result = ior_rm(&rm_args);
 		if(result != 0)
 		{
 			return result;
@@ -188,7 +188,6 @@ ior_mv(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
-	const int cancellable = args->cancellable;
 
 	if(path_exists(dst) && crs == IO_CRS_FAIL)
 	{
@@ -213,14 +212,15 @@ ior_mv(io_args_t *const args)
 		case EEXIST:
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
-				io_args_t args =
+				io_args_t rm_args =
 				{
 					.arg1.path = dst,
 
-					.cancellable = cancellable,
+					.cancellable = args->cancellable,
+					.estim = args->estim,
 				};
 
-				const int error = ior_rm(&args);
+				const int error = ior_rm(&rm_args);
 				if(error != 0)
 				{
 					return error;
