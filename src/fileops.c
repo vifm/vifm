@@ -290,8 +290,9 @@ int
 delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
-	int x, y;
+	int x;
 	int sel_len;
+	ops_t *ops;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
@@ -327,16 +328,30 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 	get_group_file_list(view->selected_filelist, view->selected_files, buf);
 	cmd_group_begin(buf);
 
-	y = 0;
 	if(vifm_chdir(curr_view->curr_dir) != 0)
 	{
 		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
 	}
 
+	ops = ops_alloc(OP_REMOVE);
+	ops->estim = ioeta_alloc(ops);
+
 	ui_cancellation_reset();
 
 	sel_len = view->selected_files;
+
+	for(x = 0; x < sel_len && !ui_cancellation_requested(); ++x)
+	{
+		char full_buf[PATH_MAX];
+		const char *const fname = view->selected_filelist[x];
+
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
+		chosp(full_buf);
+
+		ops_enqueue(ops, full_buf);
+	}
+
 	for(x = 0; x < sel_len && !ui_cancellation_requested(); x++)
 	{
 		const char *const fname = view->selected_filelist[x];
@@ -353,7 +368,10 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		progress_msg("Deleting files", x + 1, sel_len);
+		if(!cfg.use_system_calls)
+		{
+			progress_msg("Deleting files", x + 1, sel_len);
+		}
 		if(cfg.use_trash && use_trash)
 		{
 			if(!is_trash_directory(full_buf))
@@ -361,7 +379,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 				char *const dest = gen_trash_name(view->curr_dir, fname);
 				if(dest != NULL)
 				{
-					result = perform_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+					result = perform_operation(OP_MOVE, ops, NULL, full_buf, dest);
 					/* For some reason "rm" sometimes returns 0 on cancellation. */
 					if(path_exists(full_buf))
 					{
@@ -391,7 +409,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 		else
 		{
-			result = perform_operation(OP_REMOVE, NULL, NULL, full_buf, NULL);
+			result = perform_operation(OP_REMOVE, ops, NULL, full_buf, NULL);
 			/* For some reason "rm" sometimes returns 0 on cancellation. */
 			if(path_exists(full_buf))
 			{
@@ -403,17 +421,15 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 			}
 		}
 
-		if(result == 0)
+		if(result == 0 && strcmp(view->dir_entry[view->list_pos].name, fname) == 0)
 		{
-			if(strcmp(view->dir_entry[view->list_pos].name, fname) == 0)
+			if(view->list_pos + 1 < view->list_rows)
 			{
-				if(view->list_pos + 1 < view->list_rows)
-				{
-					view->list_pos++;
-				}
+				view->list_pos++;
 			}
-			y++;
 		}
+
+		ops_advance(ops, result == 0);
 	}
 	free_selected_file_array(view);
 
@@ -423,8 +439,11 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	ui_view_reset_selection_and_reload(view);
 
-	status_bar_messagef("%d %s deleted%s", y, y == 1 ? "file" : "files",
-			get_cancellation_suffix());
+	status_bar_messagef("%d %s deleted%s", ops->succeeded,
+			(ops->succeeded == 1) ? "file" : "files", get_cancellation_suffix());
+
+	ops_free(ops);
+
 	return 1;
 }
 
