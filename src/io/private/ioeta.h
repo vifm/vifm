@@ -19,6 +19,8 @@
 #ifndef VIFM__IO__PRIVATE__IOETA_H__
 #define VIFM__IO__PRIVATE__IOETA_H__
 
+#include <stdint.h> /* uint64_t */
+
 #include "../ioeta.h"
 
 /* ioeta - private functions of Input/Output estimation */
@@ -35,7 +37,7 @@ void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
  * returns.  The path can be NULL to indicate that file name didn't change.
  * Calls progress changed notification handler. */
 void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
-		int bytes);
+		uint64_t bytes);
 
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
 

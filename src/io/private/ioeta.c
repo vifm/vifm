@@ -19,6 +19,7 @@
 #include "ioeta.h"
 
 #include <stddef.h> /* NULL */
+#include <stdint.h> /* uint64_t */
 
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
@@ -47,7 +48,8 @@ ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 }
 
 void
-ioeta_update(ioeta_estim_t *estim, const char path[], int finished, int bytes)
+ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
+		uint64_t bytes)
 {
 	if(estim == NULL)
 	{
