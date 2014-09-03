@@ -120,9 +120,12 @@ iop_rmfile(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 
+	uint64_t size;
 	int result;
 
 	ioeta_update(args->estim, path, 0, 0);
+
+	size = get_file_size(path);
 
 #ifndef _WIN32
 	result = unlink(path);
@@ -130,7 +133,7 @@ iop_rmfile(io_args_t *const args)
 	result = !DeleteFile(path);
 #endif
 
-	ioeta_update(args->estim, path, 1, 0);
+	ioeta_update(args->estim, path, 1, size);
 
 	return result;
 }
