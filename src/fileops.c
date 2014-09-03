@@ -201,6 +201,7 @@ io_progress_changed(const io_progress_t *const state)
 			current_size_str, total_size_str, progress/10, estim->item);
 
 	checked_wmove(status_bar, 0, 0);
+	werase(status_bar);
 	wprintw(status_bar, "%s", msg);
 	wnoutrefresh(status_bar);
 	doupdate();
