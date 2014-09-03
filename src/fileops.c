@@ -128,7 +128,7 @@ static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void clone_file(FileView* view, const char filename[], const char path[],
-		const char clone[]);
+		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
@@ -1776,6 +1776,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	int from_file;
 	char **sel;
 	int sel_len;
+	ops_t *ops;
 
 	if(!have_read_access(view))
 		return 0;
@@ -1832,7 +1833,16 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		view->selected_files = 0;
 	}
 
+	ops = ops_alloc(OP_COPY);
+	ops->estim = ioeta_alloc(ops);
+
 	ui_cancellation_reset();
+
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
+	{
+		const char *const src_path = (nlines > 0) ? list[i] : sel[i];
+		ops_enqueue(ops, src_path);
+	}
 
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
@@ -1848,13 +1858,19 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 			clone_name = path_exists_at(path, sel[i]) ? gen_clone_name(sel[i]) :
 				sel[i];
 		}
-		progress_msg("Cloning files", i + 1, sel_len);
+
+		if(!cfg.use_system_calls)
+		{
+			progress_msg("Cloning files", i + 1, sel_len);
+		}
 
 		for(j = 0; j < copies; j++)
 		{
 			if(path_exists_at(path, clone_name))
+			{
 				clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
-			clone_file(view, sel[i], path, clone_name);
+			}
+			clone_file(view, sel[i], path, clone_name, ops);
 		}
 
 		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
@@ -1865,6 +1881,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 			if(ends_with_slash(sel[i]))
 				strcat(view->dir_entry[view->list_pos].name, "/");
 		}
+
+		ops_advance(ops, 1);
 	}
 	cmd_group_end();
 	free_selected_file_array(view);
@@ -1873,7 +1891,12 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	clean_selected_files(view);
 	ui_views_reload_filelists();
 	if(from_file)
+	{
 		free_string_array(list, nlines);
+	}
+
+	ops_free(ops);
+
 	return 0;
 }
 
@@ -1881,7 +1904,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
  * path under name in the clone. */
 static void
 clone_file(FileView* view, const char filename[], const char path[],
-		const char clone[])
+		const char clone[], ops_t *ops)
 {
 	char full[PATH_MAX];
 	char clone_name[PATH_MAX];
@@ -1904,7 +1927,7 @@ clone_file(FileView* view, const char filename[], const char path[],
 	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
 	chosp(full);
 
-	if(perform_operation(OP_COPY, NULL, NULL, full, clone_name) == 0)
+	if(perform_operation(OP_COPY, ops, NULL, full, clone_name) == 0)
 	{
 		add_operation(OP_COPY, NULL, NULL, full, clone_name);
 	}
