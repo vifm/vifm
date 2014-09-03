@@ -154,6 +154,8 @@ init_fileops(void)
 static void
 io_progress_changed(const io_progress_t *const state)
 {
+	enum { PRECISION = 10 };
+
 	static int prev_progress = -1;
 
 	const ioeta_estim_t *const estim = state->estim;
@@ -162,16 +164,19 @@ io_progress_changed(const io_progress_t *const state)
 	char current_size_str[16];
 	char total_size_str[16];
 	int progress;
-	const char *prefix;
 	char *msg;
 
-	if(estim->total_bytes == 0)
+	if(state->stage == IO_PS_ESTIMATING)
+	{
+		progress = estim->total_items/PRECISION;
+	}
+	else if(estim->total_bytes == 0)
 	{
 		progress = 0;
 	}
 	else
 	{
-		progress = (estim->current_byte*1000)/estim->total_bytes;
+		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
 	}
 
 	if(progress == prev_progress)
@@ -180,25 +185,24 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	prev_progress = progress;
 
-	switch(state->stage)
-	{
-		case IO_PS_ESTIMATING:
-			prefix = "estimating... ";
-			break;
-		case IO_PS_IN_PROGRESS:
-			prefix = "";
-			break;
-	}
-
-	(void)friendly_size_notation(estim->current_byte, sizeof(current_size_str),
-			current_size_str);
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
-	msg = format_str("%s:%s%s %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
-			prefix[0] == '\0' ? "" : " ", prefix,
-			estim->current_item, estim->total_items,
-			current_size_str, total_size_str, progress/10, estim->item);
+	switch(state->stage)
+	{
+		case IO_PS_ESTIMATING:
+			msg = format_str("%s: estimating... %d; %s %s", ops_describe(ops),
+					estim->total_items, total_size_str, estim->item);
+			break;
+		case IO_PS_IN_PROGRESS:
+			(void)friendly_size_notation(estim->current_byte,
+					sizeof(current_size_str), current_size_str);
+
+			msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+					estim->current_item, estim->total_items,
+					current_size_str, total_size_str, progress/PRECISION, estim->item);
+			break;
+	}
 
 	checked_wmove(status_bar, 0, 0);
 	werase(status_bar);
