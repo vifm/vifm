@@ -38,6 +38,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "../ui.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
 #include "ioc.h"
@@ -105,6 +106,11 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 {
 	const io_args_t *const rm_args = param;
 	VisitResult result;
+
+	if(rm_args->cancellable && ui_cancellation_requested())
+	{
+		return VR_CANCELLED;
+	}
 
 	switch(action)
 	{
@@ -257,6 +263,11 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	char *free_me = NULL;
 	VisitResult result;
 	const char *rel_part;
+
+	if(cp_args->cancellable && ui_cancellation_requested())
+	{
+		return VR_CANCELLED;
+	}
 
 	/* TODO: come up with something better than this. */
 	rel_part = full_path + strlen(cp_args->arg1.src);

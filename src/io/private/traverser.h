@@ -34,6 +34,7 @@ typedef enum
 	VR_OK,             /* Everything is OK, continue traversal. */
 	VR_ERROR,          /* Unrecoverable error, abort traversal. */
 	VR_SKIP_DIR_LEAVE, /* Valid only for VA_DIR_ENTER.  Prevents VA_DIR_LEAVE. */
+	VR_CANCELLED,      /* Operation was cancelled by user. */
 }
 VisitResult;
 

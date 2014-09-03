@@ -23,6 +23,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() free() */
 
+#include "../ui.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
 
@@ -59,6 +60,11 @@ static VisitResult
 eta_visitor(const char full_path[], VisitAction action, void *param)
 {
 	ioeta_estim_t *const estim = param;
+
+	if(ui_cancellation_requested())
+	{
+		return VR_CANCELLED;
+	}
 
 	switch(action)
 	{

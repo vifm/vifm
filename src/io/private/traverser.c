@@ -103,7 +103,8 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 	}
 	(void)closedir(dir);
 
-	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE)
+	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE &&
+			enter_result != VR_CANCELLED)
 	{
 		result = visitor(path, VA_DIR_LEAVE, param);
 	}
