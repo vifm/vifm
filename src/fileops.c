@@ -127,6 +127,8 @@ static int complete_filename(const char str[], void *arg);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
+static void clone_file(FileView* view, const char filename[], const char path[],
+		const char clone[]);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
@@ -1724,37 +1726,6 @@ gen_clone_name(const char normal_name[])
 	return result;
 }
 
-static void
-clone_file(FileView* view, const char *filename, const char *path,
-		const char *clone)
-{
-	char full[PATH_MAX];
-	char clone_name[PATH_MAX];
-
-	if(stroscmp(filename, "./") == 0)
-		return;
-	if(is_parent_dir(filename))
-		return;
-
-	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
-	chosp(clone_name);
-	if(path_exists(clone_name))
-	{
-		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)
-		{
-			return;
-		}
-	}
-
-	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
-	chosp(full);
-
-	if(perform_operation(OP_COPY, NULL, NULL, full, clone_name) == 0)
-	{
-		add_operation(OP_COPY, NULL, NULL, full, clone_name);
-	}
-}
-
 static int
 is_clone_list_ok(int count, char **list)
 {
@@ -1904,6 +1875,39 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	if(from_file)
 		free_string_array(list, nlines);
 	return 0;
+}
+
+/* Clones single file/directory named filaneme to directory specified by the
+ * path under name in the clone. */
+static void
+clone_file(FileView* view, const char filename[], const char path[],
+		const char clone[])
+{
+	char full[PATH_MAX];
+	char clone_name[PATH_MAX];
+
+	if(stroscmp(filename, "./") == 0)
+		return;
+	if(is_parent_dir(filename))
+		return;
+
+	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
+	chosp(clone_name);
+	if(path_exists(clone_name))
+	{
+		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)
+		{
+			return;
+		}
+	}
+
+	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
+	chosp(full);
+
+	if(perform_operation(OP_COPY, NULL, NULL, full, clone_name) == 0)
+	{
+		add_operation(OP_COPY, NULL, NULL, full, clone_name);
+	}
 }
 
 static void
