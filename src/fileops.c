@@ -2780,6 +2780,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	ops = ops_alloc(move ? OP_MOVE : OP_COPY);
 	ops->estim = ioeta_alloc(ops);
 
+	ui_cancellation_reset();
+
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char src_full[PATH_MAX];
@@ -2790,8 +2792,6 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		ops_enqueue(ops, src_full);
 	}
-
-	ui_cancellation_reset();
 
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
