@@ -302,9 +302,13 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 	ops_t *ops;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
-	if(cfg.use_trash && use_trash && is_under_trash(view->curr_dir))
+	use_trash = use_trash && cfg.use_trash;
+
+	if(use_trash && is_under_trash(view->curr_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
@@ -320,17 +324,13 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		get_all_selected_files(view);
 	}
 
-	if(cfg.use_trash && use_trash)
+	if(use_trash)
 	{
 		reg = prepare_register(reg);
 	}
 
-	if(cfg.use_trash && use_trash)
-		snprintf(buf, sizeof(buf), "delete in %s: ",
-				replace_home_part(view->curr_dir));
-	else
-		snprintf(buf, sizeof(buf), "Delete in %s: ",
-				replace_home_part(view->curr_dir));
+	snprintf(buf, sizeof(buf), "%celete in %s: ", use_trash ? 'd' : 'D',
+			replace_home_part(view->curr_dir));
 
 	get_group_file_list(view->selected_filelist, view->selected_files, buf);
 	cmd_group_begin(buf);
@@ -341,8 +341,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 1;
 	}
 
-	ops = ops_alloc(OP_REMOVE,
-			(cfg.use_trash && use_trash) ? "deleting" : "Deleting");
+	ops = ops_alloc(OP_REMOVE, use_trash ? "deleting" : "Deleting");
 	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();
@@ -380,7 +379,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			progress_msg("Deleting files", x + 1, sel_len);
 		}
-		if(cfg.use_trash && use_trash)
+		if(use_trash)
 		{
 			if(!is_trash_directory(full_buf))
 			{
