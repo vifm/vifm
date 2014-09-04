@@ -40,7 +40,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() malloc() strtol() */
-#include <string.h> /* memcmp() strcpy() strerror() */
+#include <string.h> /* memcmp() memset() strcpy() strerror() */
 
 #include "cfg/config.h"
 #include "io/ioeta.h"
@@ -131,6 +131,7 @@ static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
+static void reset_put_confirm();
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
@@ -1700,15 +1701,11 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
+	reset_put_confirm();
 	put_confirm.reg = reg;
 	put_confirm.force_move = force_move;
-	put_confirm.x = 0;
-	put_confirm.y = 0;
 	put_confirm.view = view;
-	put_confirm.overwrite_all = 0;
-	put_confirm.link = 0;
-	put_confirm.merge = 0;
-	put_confirm.allow_merge = 0;
+
 	return put_files_from_register_i(view, 1);
 }
 
@@ -2051,16 +2048,19 @@ put_links(FileView *view, int reg_name, int relative)
 		return 1;
 	}
 
+	reset_put_confirm();
 	put_confirm.reg = reg;
-	put_confirm.force_move = 0;
-	put_confirm.x = 0;
-	put_confirm.y = 0;
 	put_confirm.view = view;
-	put_confirm.overwrite_all = 0;
 	put_confirm.link = relative ? 2 : 1;
-	put_confirm.merge = 0;
-	put_confirm.allow_merge = 0;
+
 	return put_files_from_register_i(view, 1);
+}
+
+/* Resets state of global put_confirm variable in this module. */
+static void
+reset_put_confirm()
+{
+	memset(&put_confirm, 0, sizeof(put_confirm));
 }
 
 /* Returns new value for save_msg flag. */
