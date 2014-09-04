@@ -265,11 +265,14 @@ yank_selected_files(FileView *view, int reg)
 static void
 progress_msg(const char *text, int ready, int total)
 {
-	char msg[strlen(text) + 32];
+	if(!cfg.use_system_calls)
+	{
+		char msg[strlen(text) + 32];
 
-	sprintf(msg, "%s %d/%d", text, ready, total);
-	show_progress(msg, 1);
-	curr_stats.save_msg = 2;
+		sprintf(msg, "%s %d/%d", text, ready, total);
+		show_progress(msg, 1);
+		curr_stats.save_msg = 2;
+	}
 }
 
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
@@ -375,10 +378,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		if(!cfg.use_system_calls)
-		{
-			progress_msg("Deleting files", x + 1, sel_len);
-		}
+		progress_msg("Deleting files", x + 1, sel_len);
 		if(use_trash)
 		{
 			if(!is_trash_directory(full_buf))
@@ -1520,11 +1520,7 @@ put_next(const char dest_name[], int override)
 		op = put_confirm.merge ? OP_COPYF : OP_COPY;
 	}
 
-	if(!cfg.use_system_calls)
-	{
-		progress_msg("Putting files", put_confirm.x + 1,
-				put_confirm.reg->num_files);
-	}
+	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * "mv" itself. */
@@ -1906,10 +1902,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 				sel[i];
 		}
 
-		if(!cfg.use_system_calls)
-		{
-			progress_msg("Cloning files", i + 1, sel_len);
-		}
+		progress_msg("Cloning files", i + 1, sel_len);
 
 		for(j = 0; j < copies; j++)
 		{
@@ -2880,10 +2873,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		if(move)
 		{
-			if(!cfg.use_system_calls)
-			{
-				progress_msg("Moving files", i + 1, sel_len);
-			}
+			progress_msg("Moving files", i + 1, sel_len);
 
 			success = mv_file(sel[i], view->curr_dir, dst, path, 0, 1, ops) == 0;
 
@@ -2894,7 +2884,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		}
 		else
 		{
-			if(type == 0 && !cfg.use_system_calls)
+			if(type == 0)
 			{
 				progress_msg("Copying files", i + 1, sel_len);
 			}
