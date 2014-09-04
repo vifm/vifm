@@ -124,7 +124,9 @@ int prompt_error_msg(const char title[], const char message[]);
 /* Same as show_error_msgf(...), but asks about future errors.  Returns non-zero
  * when user asks to skip error messages that left. */
 int prompt_error_msgf(const char title[], const char format[], ...);
-int query_user_menu(char *title, char *message);
+/* Asks user to confirm some action by answering "Yes" or "No".  Returns
+ * non-zero when user answers yes, otherwise zero is returned. */
+int query_user_menu(const char title[], const char message[]);
 /* Redraws currently visible error message on the screen. */
 void redraw_error_msg_window(void);
 /* Removes current menu item and redraws the menu. */

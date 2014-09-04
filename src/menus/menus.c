@@ -825,7 +825,7 @@ display_menu(menu_info *m, FileView *view)
 }
 
 int
-query_user_menu(char *title, char *message)
+query_user_menu(const char title[], const char message[])
 {
 	int key;
 	char *dup = strdup(message);
