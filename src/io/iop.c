@@ -235,11 +235,6 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	if(cancellable)
-	{
-		ui_cancellation_enable();
-	}
-
 	/* TODO: use sendfile() if platform supports it. */
 
 	error = 0;
@@ -258,11 +253,6 @@ iop_cp(io_args_t *const args)
 		}
 
 		ioeta_update(args->estim, src, 0, nread);
-	}
-
-	if(cancellable)
-	{
-		ui_cancellation_disable();
 	}
 
 	fclose(in);

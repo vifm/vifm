@@ -84,6 +84,8 @@ static int op_symlink(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
+static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
+		io_args_t *const args);
 static ioeta_estim_t * get_estim(ops_t *ops);
 
 typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
@@ -257,7 +259,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		.cancellable = data == NULL,
 		.estim = get_estim(ops),
 	};
-	return ior_rm(&args);
+	return exec_io_op(ops, &ior_rm, &args);
 }
 
 /* OP_COPY operation handler.  Copies file/directory without overwriting
@@ -344,7 +346,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		.cancellable = data == NULL,
 		.estim = get_estim(ops),
 	};
-	return ior_cp(&args);
+	return exec_io_op(ops, &ior_cp, &args);
 }
 
 /* OP_MOVE operation handler.  Moves file/directory without overwriting
@@ -418,7 +420,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		.cancellable = data == NULL,
 		.estim = get_estim(ops),
 	};
-	return ior_mv(&args);
+	return exec_io_op(ops, &ior_mv, &args);
 }
 
 static int
@@ -561,7 +563,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 
 		.estim = get_estim(ops),
 	};
-	return iop_ln(&args);
+	return exec_io_op(ops, &iop_ln, &args);
 }
 
 static int
@@ -590,7 +592,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 
 		.estim = get_estim(ops),
 	};
-	return iop_mkdir(&args);
+	return exec_io_op(ops, &iop_mkdir, &args);
 }
 
 static int
@@ -616,7 +618,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 
 		.estim = get_estim(ops),
 	};
-	return iop_rmdir(&args);
+	return exec_io_op(ops, &iop_rmdir, &args);
 }
 
 static int
@@ -642,7 +644,31 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 
 		.estim = get_estim(ops),
 	};
-	return iop_mkfile(&args);
+	return exec_io_op(ops, &iop_mkfile, &args);
+}
+
+/* Executes i/o operation with some predefined pre/post actions.  Returns exit
+ * code of i/o operation. */
+static int
+exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
+{
+	int result;
+
+	args->estim = get_estim(ops);
+
+	if(args->cancellable)
+	{
+		ui_cancellation_enable();
+	}
+
+	result = func(args);
+
+	if(args->cancellable)
+	{
+		ui_cancellation_disable();
+	}
+
+	return result;
 }
 
 /* Extracts estimation from ops.  Returns estimation or NULL (including case
