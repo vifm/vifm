@@ -366,7 +366,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		progress_msg("Deleting files", i + 1, sel_len);
+		progress_msg("Deleting files", i, sel_len);
 		if(use_trash)
 		{
 			if(!is_trash_directory(full_buf))
@@ -1508,7 +1508,7 @@ put_next(const char dest_name[], int override)
 		op = put_confirm.merge ? OP_COPYF : OP_COPY;
 	}
 
-	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
+	progress_msg("Putting files", put_confirm.x, put_confirm.reg->num_files);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * "mv" itself. */
@@ -1890,7 +1890,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 				sel[i];
 		}
 
-		progress_msg("Cloning files", i + 1, sel_len);
+		progress_msg("Cloning files", i, sel_len);
 
 		for(j = 0; j < copies; j++)
 		{
@@ -2861,7 +2861,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		if(move)
 		{
-			progress_msg("Moving files", i + 1, sel_len);
+			progress_msg("Moving files", i, sel_len);
 
 			success = mv_file(sel[i], view->curr_dir, dst, path, 0, 1, ops) == 0;
 
@@ -2874,7 +2874,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		{
 			if(type == 0)
 			{
-				progress_msg("Copying files", i + 1, sel_len);
+				progress_msg("Copying files", i, sel_len);
 			}
 
 			success = cp_file(view->curr_dir, path, sel[i], dst, type, 1, ops) == 0;
@@ -2901,7 +2901,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	return 1;
 }
 
-/* Displays simple operation progress message. */
+/* Displays simple operation progress message.  The ready is zero based. */
 static void
 progress_msg(const char text[], int ready, int total)
 {
@@ -2909,7 +2909,7 @@ progress_msg(const char text[], int ready, int total)
 	{
 		char msg[strlen(text) + 32];
 
-		sprintf(msg, "%s %d/%d", text, ready, total);
+		sprintf(msg, "%s %d/%d", text, ready + 1, total);
 		show_progress(msg, 1);
 		curr_stats.save_msg = 2;
 	}
