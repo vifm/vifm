@@ -112,36 +112,53 @@ menu_info;
  * text displayed by display_menu() function in case menu is empty, it can be
  * NULL if this cannot happen and will be freed by reset_popup_menu(). */
 void init_menu_info(menu_info *m, int menu_type, char empty_msg[]);
+
 void reset_popup_menu(menu_info *m);
+
 void setup_menu(void);
+
 /* Shows error message to a user. */
 void show_error_msg(const char title[], const char message[]);
+
 /* Same as show_error_msg(...), but with format. */
 void show_error_msgf(const char title[], const char format[], ...);
+
 /* Same as show_error_msg(...), but asks about future errors.  Returns non-zero
  * when user asks to skip error messages that left. */
 int prompt_error_msg(const char title[], const char message[]);
+
 /* Same as show_error_msgf(...), but asks about future errors.  Returns non-zero
  * when user asks to skip error messages that left. */
 int prompt_error_msgf(const char title[], const char format[], ...);
+
 /* Asks user to confirm some action by answering "Yes" or "No".  Returns
  * non-zero when user answers yes, otherwise zero is returned. */
 int query_user_menu(const char title[], const char message[]);
+
 /* Redraws currently visible error message on the screen. */
 void redraw_error_msg_window(void);
+
 /* Removes current menu item and redraws the menu. */
 void remove_current_item(menu_info *m);
+
 void clean_menu_position(menu_info *m);
+
 void move_to_menu_pos(int pos, menu_info *m);
+
 void redraw_menu(menu_info *m);
+
 void draw_menu(menu_info *m);
+
 /* Navigates to/open path specification.  Specification can contain colon
  * followed by a line number when try_open is not zero. */
 void goto_selected_file(FileView *view, const char spec[], int try_open);
+
 /* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
+
 /* Closes ef. */
 void print_errors(FILE *ef);
+
 /* Gets list of target files/directories in the current view.  On success
  * returns newly allocated string, which should be freed by the caller,
  * otherwise NULL is returned. */
@@ -150,6 +167,7 @@ char * get_cmd_target(void);
 /* Runs external command and puts its output to the m menu.  Returns non-zero if
  * status bar message should be saved. */
 int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
+
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
 int display_menu(menu_info *m, FileView *view);
