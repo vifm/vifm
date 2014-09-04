@@ -142,6 +142,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
@@ -260,19 +261,6 @@ yank_selected_files(FileView *view, int reg)
 		append_to_register(reg, buf);
 	}
 	update_unnamed_reg(reg);
-}
-
-static void
-progress_msg(const char *text, int ready, int total)
-{
-	if(!cfg.use_system_calls)
-	{
-		char msg[strlen(text) + 32];
-
-		sprintf(msg, "%s %d/%d", text, ready, total);
-		show_progress(msg, 1);
-		curr_stats.save_msg = 2;
-	}
 }
 
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
@@ -2911,6 +2899,20 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	ops_free(ops);
 
 	return 1;
+}
+
+/* Displays simple operation progress message. */
+static void
+progress_msg(const char text[], int ready, int total)
+{
+	if(!cfg.use_system_calls)
+	{
+		char msg[strlen(text) + 32];
+
+		sprintf(msg, "%s %d/%d", text, ready, total);
+		show_progress(msg, 1);
+		curr_stats.save_msg = 2;
+	}
 }
 
 static int
