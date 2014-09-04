@@ -201,7 +201,7 @@ io_progress_changed(const io_progress_t *const state)
 					sizeof(current_size_str), current_size_str);
 
 			msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
-					estim->current_item, estim->total_items,
+					estim->current_item + 1, estim->total_items,
 					current_size_str, total_size_str, progress/PRECISION, estim->item);
 			break;
 	}
