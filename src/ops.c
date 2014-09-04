@@ -86,7 +86,6 @@ static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 		io_args_t *const args);
-static ioeta_estim_t * get_estim(ops_t *ops);
 
 typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
 
@@ -257,7 +256,6 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg1.path = src,
 
 		.cancellable = data == NULL,
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &ior_rm, &args);
 }
@@ -344,7 +342,6 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		.arg3.crs = IO_CRS_REPLACE_FILES,
 
 		.cancellable = data == NULL,
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &ior_cp, &args);
 }
@@ -418,7 +415,6 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		.arg3.crs = IO_CRS_REPLACE_FILES,
 
 		.cancellable = data == NULL,
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &ior_mv, &args);
 }
@@ -560,8 +556,6 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg1.path = src,
 		.arg2.target = dst,
 		.arg3.crs = IO_CRS_REPLACE_FILES,
-
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &iop_ln, &args);
 }
@@ -589,8 +583,6 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg1.path = src,
 		.arg2.process_parents = data != NULL,
 		.arg3.mode = 0755,
-
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &iop_mkdir, &args);
 }
@@ -615,8 +607,6 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 	io_args_t args =
 	{
 		.arg1.path = src,
-
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &iop_rmdir, &args);
 }
@@ -641,8 +631,6 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 	io_args_t args =
 	{
 		.arg1.path = src,
-
-		.estim = get_estim(ops),
 	};
 	return exec_io_op(ops, &iop_mkfile, &args);
 }
@@ -654,7 +642,7 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 {
 	int result;
 
-	args->estim = get_estim(ops);
+	args->estim = (ops == NULL) ? NULL : ops->estim;
 
 	if(args->cancellable)
 	{
@@ -669,14 +657,6 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	}
 
 	return result;
-}
-
-/* Extracts estimation from ops.  Returns estimation or NULL (including case
- * when ops is NULL). */
-static ioeta_estim_t *
-get_estim(ops_t *ops)
-{
-	return (ops == NULL) ? NULL : ops->estim;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
