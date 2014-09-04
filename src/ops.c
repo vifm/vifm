@@ -169,10 +169,19 @@ ops_enqueue(ops_t *ops, const char path[])
 {
 	++ops->total;
 
-	if(ops->estim != NULL)
+	if(ops->estim == NULL)
 	{
-		ioeta_calculate(ops->estim, path);
+		return;
 	}
+
+	/* No need for recursive traversal if we're going to create symbolic links. */
+	if(ops->main_op == OP_SYMLINK || ops->main_op == OP_SYMLINK2)
+	{
+		++ops->estim->total_items;
+		return;
+	}
+
+	ioeta_calculate(ops->estim, path);
 }
 
 void

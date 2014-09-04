@@ -1702,7 +1702,9 @@ put_files_from_register(FileView *view, int name, int force_move)
 	int i;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	reg = find_register(tolower(name));
 
@@ -2052,9 +2054,12 @@ int
 put_links(FileView *view, int reg_name, int relative)
 {
 	registers_t *reg;
+	int i;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	reg = find_register(reg_name);
 
@@ -2068,6 +2073,11 @@ put_links(FileView *view, int reg_name, int relative)
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 	put_confirm.link = relative ? 2 : 1;
+
+	for(i = 0; i < reg->num_files; ++i)
+	{
+		ops_enqueue(put_confirm.ops, reg->files[i]);
+	}
 
 	return put_files_from_register_i(view, 1);
 }
