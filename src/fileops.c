@@ -84,6 +84,7 @@ static struct
 	int allow_merge;
 	int merge;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
+	ops_t *ops;
 }
 put_confirm;
 
@@ -131,7 +132,7 @@ static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static void reset_put_confirm();
+static void reset_put_confirm(OPS main_op);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
@@ -1519,7 +1520,11 @@ put_next(const char dest_name[], int override)
 		op = put_confirm.merge ? OP_COPYF : OP_COPY;
 	}
 
-	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
+	if(!cfg.use_system_calls)
+	{
+		progress_msg("Putting files", put_confirm.x + 1,
+				put_confirm.reg->num_files);
+	}
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * "mv" itself. */
@@ -1543,12 +1548,13 @@ put_next(const char dest_name[], int override)
 					snprintf(src_path, sizeof(src_path), "%s/%s", src_buf, d->d_name);
 					snprintf(dst_path, sizeof(dst_path), "%s/%s/%s",
 							put_confirm.view->curr_dir, dest_name, d->d_name);
-					if(perform_operation(OP_MOVEF, NULL, NULL, src_path, dst_path) != 0)
+					if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
+								dst_path) != 0)
 					{
 						success = 0;
 						break;
 					}
-					add_operation(OP_MOVEF, NULL, NULL, src_path, dst_path);
+					add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
 				}
 			}
 			closedir(dir);
@@ -1560,7 +1566,8 @@ put_next(const char dest_name[], int override)
 
 		if(success)
 		{
-			success = (perform_operation(OP_RMDIR, NULL, NULL, src_buf, NULL) == 0);
+			success = (perform_operation(OP_RMDIR, put_confirm.ops, NULL, src_buf,
+						NULL) == 0);
 			if(success)
 			{
 				add_operation(OP_RMDIR, NULL, NULL, src_buf, "");
@@ -1571,8 +1578,11 @@ put_next(const char dest_name[], int override)
 	}
 	else
 	{
-		success = (perform_operation(op, NULL, NULL, src_buf, dst_buf) == 0);
+		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
+					dst_buf) == 0);
 	}
+
+	ops_advance(put_confirm.ops, success);
 
 	if(success)
 	{
@@ -1689,6 +1699,7 @@ int
 put_files_from_register(FileView *view, int name, int force_move)
 {
 	registers_t *reg;
+	int i;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
@@ -1701,10 +1712,15 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
-	reset_put_confirm();
+	reset_put_confirm(force_move ? OP_MOVE : OP_COPY);
 	put_confirm.reg = reg;
 	put_confirm.force_move = force_move;
 	put_confirm.view = view;
+
+	for(i = 0; i < reg->num_files; ++i)
+	{
+		ops_enqueue(put_confirm.ops, reg->files[i]);
+	}
 
 	return put_files_from_register_i(view, 1);
 }
@@ -2048,7 +2064,7 @@ put_links(FileView *view, int reg_name, int relative)
 		return 1;
 	}
 
-	reset_put_confirm();
+	reset_put_confirm(OP_SYMLINK);
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 	put_confirm.link = relative ? 2 : 1;
@@ -2058,9 +2074,14 @@ put_links(FileView *view, int reg_name, int relative)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm()
+reset_put_confirm(OPS main_op)
 {
+	ops_free(put_confirm.ops);
+
 	memset(&put_confirm, 0, sizeof(put_confirm));
+
+	put_confirm.ops = ops_alloc(main_op);
+	put_confirm.ops->estim = ioeta_alloc(put_confirm.ops);
 }
 
 /* Returns new value for save_msg flag. */
