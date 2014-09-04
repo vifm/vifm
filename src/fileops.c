@@ -288,7 +288,7 @@ int
 delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
-	int x;
+	int i;
 	int sel_len;
 	ops_t *ops;
 
@@ -339,10 +339,10 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	sel_len = view->selected_files;
 
-	for(x = 0; x < sel_len && !ui_cancellation_requested(); ++x)
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
 		char full_buf[PATH_MAX];
-		const char *const fname = view->selected_filelist[x];
+		const char *const fname = view->selected_filelist[i];
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
@@ -350,9 +350,9 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		ops_enqueue(ops, full_buf);
 	}
 
-	for(x = 0; x < sel_len && !ui_cancellation_requested(); x++)
+	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
-		const char *const fname = view->selected_filelist[x];
+		const char *const fname = view->selected_filelist[i];
 		char full_buf[PATH_MAX];
 		int result;
 
@@ -366,7 +366,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		progress_msg("Deleting files", x + 1, sel_len);
+		progress_msg("Deleting files", i + 1, sel_len);
 		if(use_trash)
 		{
 			if(!is_trash_directory(full_buf))
