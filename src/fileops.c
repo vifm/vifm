@@ -132,7 +132,7 @@ static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static void reset_put_confirm(OPS main_op);
+static void reset_put_confirm(OPS main_op, const char descr[]);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
@@ -341,7 +341,8 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 1;
 	}
 
-	ops = ops_alloc(OP_REMOVE);
+	ops = ops_alloc(OP_REMOVE,
+			(cfg.use_trash && use_trash) ? "deleting" : "Deleting");
 	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();
@@ -1714,7 +1715,15 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
-	reset_put_confirm(force_move ? OP_MOVE : OP_COPY);
+	if(force_move)
+	{
+		reset_put_confirm(OP_MOVE, "Putting");
+	}
+	else
+	{
+		reset_put_confirm(OP_COPY, "putting");
+	}
+
 	put_confirm.reg = reg;
 	put_confirm.force_move = force_move;
 	put_confirm.view = view;
@@ -1872,7 +1881,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		view->selected_files = 0;
 	}
 
-	ops = ops_alloc(OP_COPY);
+	ops = ops_alloc(OP_COPY, "Cloning");
 	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();
@@ -2069,7 +2078,7 @@ put_links(FileView *view, int reg_name, int relative)
 		return 1;
 	}
 
-	reset_put_confirm(OP_SYMLINK);
+	reset_put_confirm(OP_SYMLINK, "Symlinking");
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 	put_confirm.link = relative ? 2 : 1;
@@ -2084,13 +2093,13 @@ put_links(FileView *view, int reg_name, int relative)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op)
+reset_put_confirm(OPS main_op, const char descr[])
 {
 	ops_free(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = ops_alloc(main_op);
+	put_confirm.ops = ops_alloc(main_op, descr);
 	put_confirm.ops->estim = ioeta_alloc(put_confirm.ops);
 }
 
@@ -2832,7 +2841,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		erase_selection(view);
 	}
 
-	ops = ops_alloc(move ? OP_MOVE : OP_COPY);
+	ops = ops_alloc(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
+
 	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();

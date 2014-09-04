@@ -119,49 +119,19 @@ static op_func op_funcs[] = {
 };
 ARRAY_GUARD(op_funcs, OP_COUNT);
 
-/* Operation descriptions for ops_describe(). */
-static const char * op_descr[] = {
-	"None",     /* OP_NONE */
-	"Usr",      /* OP_USR */
-	"Deleting", /* OP_REMOVE */
-	"Deleting", /* OP_REMOVESL */
-	"Copying",  /* OP_COPY */
-	"Copying",  /* OP_COPYF */
-	"Moving",   /* OP_MOVE */
-	"Moving",   /* OP_MOVEF */
-	"Moving",   /* OP_MOVETMP1 */
-	"Moving",   /* OP_MOVETMP2 */
-	"Moving",   /* OP_MOVETMP3 */
-	"Moving",   /* OP_MOVETMP4 */
-	"Chown",    /* OP_CHOWN */
-	"Chgrp",    /* OP_CHGRP */
-#ifndef _WIN32
-	"Chmod",    /* OP_CHMOD */
-	"Chmod",    /* OP_CHMODR */
-#else
-	"Attr",     /* OP_ADDATTR */
-	"Attr",     /* OP_SUBATTR */
-#endif
-	"Symlink",  /* OP_SYMLINK */
-	"Symlink",  /* OP_SYMLINK2 */
-	"Mkdir",    /* OP_MKDIR */
-	"Rmdir",    /* OP_RMDIR */
-	"Mkfile",   /* OP_MKFILE */
-};
-ARRAY_GUARD(op_descr, OP_COUNT);
-
 ops_t *
-ops_alloc(OPS main_op)
+ops_alloc(OPS main_op, const char descr[])
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
 	ops->main_op = main_op;
+	ops->descr = descr;
 	return ops;
 }
 
 const char *
-ops_describe(ops_t *ops)
+ops_describe(const ops_t *ops)
 {
-	return op_descr[ops->main_op];
+	return ops->descr;
 }
 
 void

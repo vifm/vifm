@@ -63,14 +63,15 @@ typedef struct
 	int succeeded;        /* Number of successfully processed items. */
 	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items and
 	                         also frees it on ops_free(). */
+	const char *descr;    /* Description of operations. */
 }
 ops_t;
 
 /* Allocates and initializes new ioeta_estim_t. */
-ops_t * ops_alloc(OPS main_op);
+ops_t * ops_alloc(OPS main_op, const char descr[]);
 
 /* Describes main operation with one generic word.  Returns the description. */
-const char * ops_describe(ops_t *ops);
+const char * ops_describe(const ops_t *ops);
 
 /* Puts new item to the ops. */
 void ops_enqueue(ops_t *ops, const char path[]);
