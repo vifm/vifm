@@ -122,9 +122,7 @@ static void change_owner_cb(const char new_owner[]);
 #ifndef _WIN32
 static int complete_group(const char str[], void *arg);
 #endif
-#ifndef _WIN32
 static int complete_filename(const char str[], void *arg);
-#endif
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
