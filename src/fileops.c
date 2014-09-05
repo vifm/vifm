@@ -165,7 +165,7 @@ io_progress_changed(const io_progress_t *const state)
 	char current_size_str[16];
 	char total_size_str[16];
 	int progress;
-	char *msg;
+	char *msg = NULL;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{

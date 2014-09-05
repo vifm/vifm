@@ -66,7 +66,7 @@ static VisitResult
 rm_visitor(const char full_path[], VisitAction action, void *param)
 {
 	const io_args_t *const rm_args = param;
-	VisitResult result;
+	VisitResult result = VR_OK;
 
 	if(rm_args->cancellable && ui_cancellation_requested())
 	{
@@ -222,7 +222,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	const io_args_t *const cp_args = param;
 	const char *dst_full_path;
 	char *free_me = NULL;
-	VisitResult result;
+	VisitResult result = VR_OK;
 	const char *rel_part;
 
 	if(cp_args->cancellable && ui_cancellation_requested())
