@@ -130,6 +130,13 @@ iop_rmfile(io_args_t *const args)
 #ifndef _WIN32
 	result = unlink(path);
 #else
+	{
+		const DWORD attributes = GetFileAttributesA(path);
+		if(attributes & FILE_ATTRIBUTE_READONLY)
+		{
+			SetFileAttributesA(path, attributes & ~FILE_ATTRIBUTE_READONLY);
+		}
+	}
 	result = !DeleteFile(path);
 #endif
 

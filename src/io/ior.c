@@ -57,46 +57,7 @@ int
 ior_rm(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
-
-#ifndef _WIN32
 	return traverse(path, &rm_visitor, args);
-#else
-	if(is_dir(path))
-	{
-		char buf[PATH_MAX];
-		int err;
-		SHFILEOPSTRUCTA fo =
-		{
-			.hwnd = NULL,
-			.wFunc = FO_DELETE,
-			.pFrom = buf,
-			.pTo = NULL,
-			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
-		};
-
-		/* The string should be terminated with two null characters. */
-		snprintf(buf, sizeof(buf), "%s%c", path, '\0');
-		to_back_slash(buf);
-		err = SHFileOperation(&fo);
-		log_msg("Error: %d", err);
-		return err;
-	}
-	else
-	{
-		int ok;
-		DWORD attributes = GetFileAttributesA(path);
-		if(attributes & FILE_ATTRIBUTE_READONLY)
-		{
-			SetFileAttributesA(path, attributes & ~FILE_ATTRIBUTE_READONLY);
-		}
-		ok = DeleteFile(path);
-		if(!ok)
-		{
-			LOG_WERROR(GetLastError());
-		}
-		return !ok;
-	}
-#endif
 }
 
 /* Implementation of traverse() visitor for subtree removal.  Returns 0 on
@@ -105,7 +66,7 @@ static VisitResult
 rm_visitor(const char full_path[], VisitAction action, void *param)
 {
 	const io_args_t *const rm_args = param;
-	VisitResult result;
+	VisitResult result = VR_OK;
 
 	if(rm_args->cancellable && ui_cancellation_requested())
 	{
@@ -261,7 +222,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	const io_args_t *const cp_args = param;
 	const char *dst_full_path;
 	char *free_me = NULL;
-	VisitResult result;
+	VisitResult result = VR_OK;
 	const char *rel_part;
 
 	if(cp_args->cancellable && ui_cancellation_requested())

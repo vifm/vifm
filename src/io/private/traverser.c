@@ -80,7 +80,7 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 		if(!is_builtin_dir(d->d_name))
 		{
 			char *const full_path = format_str("%s/%s", path, d->d_name);
-			if(d->d_type == DT_LNK || is_symlink(full_path))
+			if(entry_is_link(full_path, d))
 			{
 				/* Tread symbolic links to directories as files as well. */
 				result = visitor(full_path, VA_FILE, param);

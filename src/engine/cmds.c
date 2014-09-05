@@ -30,6 +30,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
+#include "../utils/utils.h"
 #include "completion.h"
 
 #define MAX_CMD_RECURSION 16

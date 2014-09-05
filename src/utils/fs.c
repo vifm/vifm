@@ -47,7 +47,9 @@
 
 static int path_exists_internal(const char *path, const char *filename);
 
-#ifdef _WIN32
+#ifndef _WIN32
+static int is_directory(const char path[], int dereference_links);
+#else
 static DWORD win_get_file_attrs(const char path[]);
 #endif
 
@@ -55,15 +57,7 @@ int
 is_dir(const char path[])
 {
 #ifndef _WIN32
-	struct stat statbuf;
-	if(stat(path, &statbuf) != 0)
-	{
-		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
-		log_cwd();
-		return 0;
-	}
-
-	return S_ISDIR(statbuf.st_mode);
+	return is_directory(path, 1);
 #else
 	return win_get_file_attrs(path) & FILE_ATTRIBUTE_DIRECTORY;
 #endif
@@ -480,11 +474,23 @@ remove_dir_content(const char path[])
 }
 
 int
+entry_is_link(const char path[], const struct dirent* dentry)
+{
+#ifndef _WIN32
+	if(dentry->d_type == DT_LNK)
+	{
+		return 1;
+	}
+#endif
+	return is_symlink(path);
+}
+
+int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
 	return (dentry->d_type == DT_UNKNOWN)
-	     ? is_dir(full_path)
+	     ? is_directory(full_path, 0)
 	     : dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
@@ -543,7 +549,25 @@ are_on_the_same_fs(const char s[], const char t[])
 	return s_stat.st_dev == t_stat.st_dev;
 }
 
-#ifdef _WIN32
+#ifndef _WIN32
+
+/* Checks if path (dereferencer or not symbolic link) is an existing directory.
+ * Automatically deferences symbolic links. */
+static int
+is_directory(const char path[], int dereference_links)
+{
+	struct stat statbuf;
+	if((dereference_links ? &stat : &lstat)(path, &statbuf) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
+		log_cwd();
+		return 0;
+	}
+
+	return S_ISDIR(statbuf.st_mode);
+}
+
+#else
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
  * attributes. */
