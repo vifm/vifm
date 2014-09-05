@@ -27,14 +27,9 @@
 #include "ionotif.h"
 
 void
-ioeta_add_file(ioeta_estim_t *estim, const char path[])
+ioeta_add_item(ioeta_estim_t *estim, const char path[])
 {
 	++estim->total_items;
-
-	if(!is_symlink(path))
-	{
-		estim->total_bytes += get_file_size(path);
-	}
 
 	replace_string(&estim->item, path);
 
@@ -42,13 +37,20 @@ ioeta_add_file(ioeta_estim_t *estim, const char path[])
 }
 
 void
+ioeta_add_file(ioeta_estim_t *estim, const char path[])
+{
+	if(!is_symlink(path))
+	{
+		estim->total_bytes += get_file_size(path);
+	}
+
+	ioeta_add_item(estim, path);
+}
+
+void
 ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 {
-	++estim->total_items;
-
-	replace_string(&estim->item, path);
-
-	ionotif_notify(IO_PS_ESTIMATING, estim);
+	ioeta_add_item(estim, path);
 }
 
 void

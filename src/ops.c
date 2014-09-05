@@ -151,7 +151,7 @@ ops_enqueue(ops_t *ops, const char path[])
 		return;
 	}
 
-	ioeta_calculate(ops->estim, path);
+	ioeta_calculate(ops->estim, path, 0);
 }
 
 void

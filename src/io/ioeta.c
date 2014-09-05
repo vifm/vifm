@@ -49,9 +49,16 @@ ioeta_free(ioeta_estim_t *estim)
 }
 
 void
-ioeta_calculate(ioeta_estim_t *estim, const char path[])
+ioeta_calculate(ioeta_estim_t *estim, const char path[], int shallow)
 {
-	(void)traverse(path, &eta_visitor, estim);
+	if(shallow)
+	{
+		ioeta_add_item(estim, path);
+	}
+	else
+	{
+		(void)traverse(path, &eta_visitor, estim);
+	}
 }
 
 /* Implementation of traverse() visitor for subtree copying.  Returns 0 on

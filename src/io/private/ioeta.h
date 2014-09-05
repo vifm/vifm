@@ -25,10 +25,13 @@
 
 /* ioeta - private functions of Input/Output estimation */
 
-/* Adds file to estimation. */
+/* Adds zero-size item to the estimation. */
+void ioeta_add_item(ioeta_estim_t *estim, const char path[]);
+
+/* Adds file to the estimation. */
 void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
 
-/* Adds directory to estimation. */
+/* Adds directory to the estimation. */
 void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 
 /* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.

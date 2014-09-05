@@ -21,6 +21,14 @@ teardown(void)
 }
 
 static void
+test_add_item_increments_number_of_items(void)
+{
+	const int prev = estim->total_items;
+	ioeta_add_item(estim, "path");
+	assert_int_equal(prev + 1, estim->total_items);
+}
+
+static void
 test_add_file_increments_number_of_items(void)
 {
 	const int prev = estim->total_items;
@@ -104,6 +112,7 @@ update_tests(void)
 	fixture_setup(&setup);
 	fixture_teardown(&teardown);
 
+	run_test(test_add_item_increments_number_of_items);
 	run_test(test_add_file_increments_number_of_items);
 	run_test(test_add_dir_increments_number_of_bytes);
 	run_test(test_add_dir_increments_number_of_items);

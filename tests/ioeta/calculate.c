@@ -11,7 +11,7 @@ test_empty_files_are_ok(void)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
-	ioeta_calculate(estim, "test-data/existing-files");
+	ioeta_calculate(estim, "test-data/existing-files", 0);
 
 	assert_int_equal(4, estim->total_items);
 	assert_int_equal(0, estim->current_item);
@@ -35,7 +35,7 @@ test_symlink_calculated_as_zero_bytes(void)
 		assert_int_equal(0, iop_ln(&args));
 	}
 
-	ioeta_calculate(estim, "link");
+	ioeta_calculate(estim, "link", 0);
 
 	assert_int_equal(1, estim->total_items);
 	assert_int_equal(0, estim->current_item);
@@ -58,11 +58,26 @@ test_non_empty_files_are_ok(void)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
-	ioeta_calculate(estim, "test-data/various-sizes");
+	ioeta_calculate(estim, "test-data/various-sizes", 0);
 
 	assert_int_equal(8, estim->total_items);
 	assert_int_equal(0, estim->current_item);
 	assert_int_equal(73728, estim->total_bytes);
+	assert_int_equal(0, estim->current_byte);
+
+	ioeta_free(estim);
+}
+
+static void
+test_shallow_estimation_does_not_recur(void)
+{
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+
+	ioeta_calculate(estim, "test-data/various-sizes", 1);
+
+	assert_int_equal(1, estim->total_items);
+	assert_int_equal(0, estim->current_item);
+	assert_int_equal(0, estim->total_bytes);
 	assert_int_equal(0, estim->current_byte);
 
 	ioeta_free(estim);
@@ -76,6 +91,7 @@ calculate_tests(void)
 	run_test(test_empty_files_are_ok);
 	run_test(test_symlink_calculated_as_zero_bytes);
 	run_test(test_non_empty_files_are_ok);
+	run_test(test_shallow_estimation_does_not_recur);
 
 	test_fixture_end();
 }

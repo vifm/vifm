@@ -48,7 +48,7 @@ teardown(void)
 static void
 test_cp_file_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "../read/binary-data");
+	ioeta_calculate(estim, "../read/binary-data", 0);
 
 	{
 		io_args_t args =
@@ -68,7 +68,7 @@ test_cp_file_invokes_ionotif(void)
 static void
 test_mv_file_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "copy-of-binary-data");
+	ioeta_calculate(estim, "copy-of-binary-data", 0);
 
 	{
 		io_args_t args =
@@ -88,7 +88,7 @@ test_mv_file_invokes_ionotif(void)
 static void
 test_rm_file_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "copy-of-binary-data");
+	ioeta_calculate(estim, "copy-of-binary-data", 0);
 
 	{
 		io_args_t args =
@@ -107,7 +107,7 @@ test_rm_file_invokes_ionotif(void)
 static void
 test_cp_dir_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "../read");
+	ioeta_calculate(estim, "../read", 0);
 
 	{
 		io_args_t args =
@@ -127,7 +127,7 @@ test_cp_dir_invokes_ionotif(void)
 static void
 test_mv_dir_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "moved-read");
+	ioeta_calculate(estim, "moved-read", 0);
 
 	{
 		io_args_t args =
@@ -147,7 +147,7 @@ test_mv_dir_invokes_ionotif(void)
 static void
 test_rm_dir_invokes_ionotif(void)
 {
-	ioeta_calculate(estim, "moved-read");
+	ioeta_calculate(estim, "moved-read", 0);
 
 	{
 		io_args_t args =
