@@ -35,9 +35,7 @@
 #include "io/iop.h"
 #include "io/ior.h"
 #include "menus/menus.h"
-#ifdef _WIN32
 #include "utils/fs.h"
-#endif
 #include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -135,7 +133,7 @@ ops_describe(const ops_t *ops)
 }
 
 void
-ops_enqueue(ops_t *ops, const char path[])
+ops_enqueue(ops_t *ops, const char src[], const char dst[])
 {
 	++ops->total;
 
@@ -144,14 +142,41 @@ ops_enqueue(ops_t *ops, const char path[])
 		return;
 	}
 
-	/* No need for recursive traversal if we're going to create symbolic links. */
-	if(ops->main_op == OP_SYMLINK || ops->main_op == OP_SYMLINK2)
+	/* Check once and cache result, it should be the same for each invocation. */
+	if(ops->estim->total_items == 0)
 	{
-		++ops->estim->total_items;
-		return;
+		switch(ops->main_op)
+		{
+			case OP_MOVE:
+			case OP_MOVEF:
+			case OP_MOVETMP1:
+			case OP_MOVETMP2:
+			case OP_MOVETMP3:
+			case OP_MOVETMP4:
+				if(dst != NULL && are_on_the_same_fs(src, dst))
+				{
+					/* Moving files/directories inside file system is cheap operation on
+					 * top level items, no need to recur below. */
+					ops->shallow_eta = 1;
+				}
+				break;
+
+			case OP_SYMLINK:
+			case OP_SYMLINK2:
+				/* No need for recursive traversal if we're going to create symbolic
+				 * links. */
+				ops->shallow_eta = 1;
+				break;
+
+			default:
+				/* No optimizations for other operations. */
+				break;
+		}
 	}
 
-	ioeta_calculate(ops->estim, path, 0);
+	ui_cancellation_enable();
+	ioeta_calculate(ops->estim, src, ops->shallow_eta);
+	ui_cancellation_disable();
 }
 
 void

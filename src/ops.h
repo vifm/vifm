@@ -64,6 +64,7 @@ typedef struct
 	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items and
 	                         also frees it on ops_free(). */
 	const char *descr;    /* Description of operations. */
+	int shallow_eta;      /* Count only top level items, without recursion. */
 }
 ops_t;
 
@@ -73,8 +74,9 @@ ops_t * ops_alloc(OPS main_op, const char descr[]);
 /* Describes main operation with one generic word.  Returns the description. */
 const char * ops_describe(const ops_t *ops);
 
-/* Puts new item to the ops. */
-void ops_enqueue(ops_t *ops, const char path[]);
+/* Puts new item to the ops.  Destination argument is a hint to optimize
+ * estimating performance, it can be NULL. */
+void ops_enqueue(ops_t *ops, const char src[], const char dst[]);
 
 /* Advances ops to the next item. */
 void ops_advance(ops_t *ops, int succeeded);

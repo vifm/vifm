@@ -36,7 +36,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() malloc() strtol() */
@@ -291,6 +291,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 	int i;
 	int sel_len;
 	ops_t *ops;
+	char *dst_hint;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
@@ -339,6 +340,8 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	sel_len = view->selected_files;
 
+	dst_hint = use_trash ? pick_trash_dir(view->curr_dir) : NULL;
+
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
 		char full_buf[PATH_MAX];
@@ -347,8 +350,10 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
 		chosp(full_buf);
 
-		ops_enqueue(ops, full_buf);
+		ops_enqueue(ops, full_buf, dst_hint);
 	}
+
+	free(dst_hint);
 
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
@@ -1713,7 +1718,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 
 	for(i = 0; i < reg->num_files; ++i)
 	{
-		ops_enqueue(put_confirm.ops, reg->files[i]);
+		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
 	}
 
 	return put_files_from_register_i(view, 1);
@@ -1872,7 +1877,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
 		const char *const src_path = (nlines > 0) ? list[i] : sel[i];
-		ops_enqueue(ops, src_path);
+		ops_enqueue(ops, src_path, path);
 	}
 
 	cmd_group_begin(buf);
@@ -2065,7 +2070,7 @@ put_links(FileView *view, int reg_name, int relative)
 
 	for(i = 0; i < reg->num_files; ++i)
 	{
-		ops_enqueue(put_confirm.ops, reg->files[i]);
+		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
 	}
 
 	return put_files_from_register_i(view, 1);
@@ -2835,7 +2840,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
 		chosp(src_full);
 
-		ops_enqueue(ops, src_full);
+		ops_enqueue(ops, src_full, path);
 	}
 
 	cmd_group_begin(buf);
