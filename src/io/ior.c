@@ -24,7 +24,6 @@
 #endif
 
 #include <sys/stat.h> /* stat chmod() */
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* lstat() unlink() */
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
@@ -39,31 +38,11 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "../ui.h"
+#include "private/ioeta.h"
+#include "private/traverser.h"
 #include "ioc.h"
 #include "iop.h"
-
-/* Reason why file system traverse visitor is called. */
-typedef enum
-{
-	VA_DIR_ENTER, /* After opening a directory. */
-	VA_FILE,      /* For a file. */
-	VA_DIR_LEAVE, /* After closing a directory. */
-}
-VisitAction;
-
-/* Result of calling file system traverse visitor. */
-typedef enum
-{
-	VR_OK,             /* Everything is OK, continue traversal. */
-	VR_ERROR,          /* Unrecoverable error, abort traversal. */
-	VR_SKIP_DIR_LEAVE, /* Valid only for VA_DIR_ENTER.  Prevents VA_DIR_LEAVE. */
-}
-VisitResult;
-
-/* Generic handler for file system traversing algorithm.  Must return 0 on
- * success, otherwise directory traverse will be stopped. */
-typedef VisitResult (*subtree_visitor)(const char full_path[],
-		VisitAction action, void *param);
 
 static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
@@ -73,9 +52,6 @@ static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
 		void *param, int cp);
-static int traverse(const char path[], subtree_visitor visitor, void *param);
-static int traverse_subtree(const char path[], subtree_visitor visitor,
-		void *param);
 
 int
 ior_rm(io_args_t *const args)
@@ -131,6 +107,11 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 	const io_args_t *const rm_args = param;
 	VisitResult result;
 
+	if(rm_args->cancellable && ui_cancellation_requested())
+	{
+		return VR_CANCELLED;
+	}
+
 	switch(action)
 	{
 		case VA_DIR_ENTER:
@@ -144,6 +125,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
+					.estim = rm_args->estim,
 				};
 
 				result = iop_rmfile(&args);
@@ -156,6 +138,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
+					.estim = rm_args->estim,
 				};
 
 				result = iop_rmdir(&args);
@@ -172,7 +155,6 @@ ior_cp(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const int overwrite = args->arg3.crs == IO_CRS_REPLACE_ALL;
-	const int cancellable = args->cancellable;
 
 	if(is_in_subtree(dst, src))
 	{
@@ -181,13 +163,14 @@ ior_cp(io_args_t *const args)
 
 	if(overwrite)
 	{
-		io_args_t args =
+		io_args_t rm_args =
 		{
 			.arg1.path = dst,
 
-			.cancellable = cancellable,
+			.cancellable = args->cancellable,
+			.estim = args->estim,
 		};
-		const int result = ior_rm(&args);
+		const int result = ior_rm(&rm_args);
 		if(result != 0)
 		{
 			return result;
@@ -211,7 +194,6 @@ ior_mv(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
-	const int cancellable = args->cancellable;
 
 	if(path_exists(dst) && crs == IO_CRS_FAIL)
 	{
@@ -220,6 +202,7 @@ ior_mv(io_args_t *const args)
 
 	if(rename(src, dst) == 0)
 	{
+		ioeta_update(args->estim, src, 1, 0);
 		return 0;
 	}
 
@@ -235,14 +218,15 @@ ior_mv(io_args_t *const args)
 		case EEXIST:
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
-				io_args_t args =
+				io_args_t rm_args =
 				{
 					.arg1.path = dst,
 
-					.cancellable = cancellable,
+					.cancellable = args->cancellable,
+					.estim = args->estim,
 				};
 
-				const int error = ior_rm(&args);
+				const int error = ior_rm(&rm_args);
 				if(error != 0)
 				{
 					return error;
@@ -280,6 +264,11 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	VisitResult result;
 	const char *rel_part;
 
+	if(cp_args->cancellable && ui_cancellation_requested())
+	{
+		return VR_CANCELLED;
+	}
+
 	/* TODO: come up with something better than this. */
 	rel_part = full_path + strlen(cp_args->arg1.src);
 	dst_full_path = (rel_part[0] == '\0')
@@ -299,6 +288,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.mode = 0700,
 
 					.cancellable = cp_args->cancellable,
+					.estim = cp_args->estim,
 				};
 
 				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
@@ -317,6 +307,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.crs = cp_args->arg3.crs,
 
 					.cancellable = cp_args->cancellable,
+					.estim = cp_args->estim,
 				};
 
 				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;
@@ -347,76 +338,6 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	}
 
 	free(free_me);
-
-	return result;
-}
-
-/* A generic recursive file system traversing entry point.  Returns zero on
- * success, otherwise non-zero is returned. */
-static int
-traverse(const char path[], subtree_visitor visitor, void *param)
-{
-	if(is_dir(path))
-	{
-		return traverse_subtree(path, visitor, param);
-	}
-	else
-	{
-		return visitor(path, VA_FILE, param);
-	}
-}
-
-/* A generic subtree traversing.  Returns zero on success, otherwise non-zero is
- * returned. */
-static int
-traverse_subtree(const char path[], subtree_visitor visitor, void *param)
-{
-	DIR *dir;
-	struct dirent *d;
-	int result;
-	VisitResult enter_result;
-
-	dir = opendir(path);
-	if(dir == NULL)
-	{
-		return 1;
-	}
-
-	enter_result = visitor(path, VA_DIR_ENTER, param);
-	if(enter_result == VR_ERROR)
-	{
-		(void)closedir(dir);
-		return 1;
-	}
-
-	result = 0;
-	while((d = readdir(dir)) != NULL)
-	{
-		if(!is_builtin_dir(d->d_name))
-		{
-			char *const full_path = format_str("%s/%s", path, d->d_name);
-			if(entry_is_dir(full_path, d))
-			{
-				result = traverse_subtree(full_path, visitor, param);
-			}
-			else
-			{
-				result = visitor(full_path, VA_FILE, param);
-			}
-			free(full_path);
-
-			if(result != 0)
-			{
-				break;
-			}
-		}
-	}
-	(void)closedir(dir);
-
-	if(result == 0 && enter_result != VR_SKIP_DIR_LEAVE)
-	{
-		result = visitor(path, VA_DIR_LEAVE, param);
-	}
 
 	return result;
 }

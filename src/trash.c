@@ -86,7 +86,6 @@ static void empty_trash_list(void);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
-static char * pick_trash_dir(const char base_dir[]);
 static int pick_trash_dir_traverser(const char base_dir[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
@@ -416,7 +415,7 @@ restore_from_trash(const char trash_name[])
 
 	copy_str(buf, sizeof(buf), trash_list[i].path);
 	copy_str(full, sizeof(full), trash_list[i].trash_name);
-	if(perform_operation(OP_MOVE, NULL, full, trash_list[i].path) == 0)
+	if(perform_operation(OP_MOVE, NULL, NULL, full, trash_list[i].path) == 0)
 	{
 		char *msg, *p;
 		size_t len;
@@ -491,10 +490,7 @@ gen_trash_name(const char base_dir[], const char name[])
 	return strdup(buf);
 }
 
-/* Picks trash directory basing on original directory of a file that is being
- * trashed.  Returns absolute path to picked trash directory on success,
- * otherwise NULL is returned. */
-static char *
+char *
 pick_trash_dir(const char base_dir[])
 {
 	char *trash_dir = NULL;

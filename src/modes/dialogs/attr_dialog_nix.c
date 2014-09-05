@@ -544,8 +544,10 @@ file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 {
 	int op = recurse_dirs ? OP_CHMODR : OP_CHMOD;
 
-	if(perform_operation(op, (void *)mode, path, NULL) == 0)
+	if(perform_operation(op, NULL, (void *)mode, path, NULL) == 0)
+	{
 		add_operation(op, strdup(mode), strdup(inv_mode), path, "");
+	}
 }
 
 static void

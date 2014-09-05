@@ -48,6 +48,9 @@
 
 	Added 'cdpath' option.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn).
 
+	Added progress for file system operations.  Available only if 'syscalls'
+	option is set.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

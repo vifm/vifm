@@ -108,6 +108,10 @@ int is_dirent_targets_dir(const struct dirent *d);
  * directory.  Returns non-zero if so, otherwise zero is returned. */
 int is_in_subtree(const char path[], const char root[]);
 
+/* Checks whether to paths belong to the same file system.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int are_on_the_same_fs(const char s[], const char t[]);
+
 #ifdef _WIN32
 
 char * realpath(const char *path, char *buf);

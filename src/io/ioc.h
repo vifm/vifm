@@ -22,6 +22,7 @@
 #include <sys/types.h> /* gid_t mode_t uid_t */
 
 #include "ioe.h"
+#include "ioeta.h"
 
 /* ioc - I/O common - Input/Output common */
 
@@ -80,6 +81,9 @@ typedef struct
 	arg3;
 
 	int cancellable;
+
+	/* Set to NULL to do not use estimates. */
+	ioeta_estim_t *estim;
 
 	io_result_t result; /* TODO: use this. */
 }
