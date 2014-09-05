@@ -531,6 +531,18 @@ is_in_subtree(const char path[], const char root[])
 	return path_starts_with(path_real, root_real);
 }
 
+int
+are_on_the_same_fs(const char s[], const char t[])
+{
+	struct stat s_stat, t_stat;
+	if(lstat(s, &s_stat) != 0 || lstat(t, &t_stat) != 0)
+	{
+		return 0;
+	}
+
+	return s_stat.st_dev == t_stat.st_dev;
+}
+
 #ifdef _WIN32
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
