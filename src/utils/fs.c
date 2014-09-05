@@ -474,6 +474,18 @@ remove_dir_content(const char path[])
 }
 
 int
+entry_is_link(const char path[], const struct dirent* dentry)
+{
+#ifndef _WIN32
+	if(dentry->d_type == DT_LNK)
+	{
+		return 1;
+	}
+#endif
+	return is_symlink(path);
+}
+
+int
 entry_is_dir(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
