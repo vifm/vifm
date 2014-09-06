@@ -91,7 +91,7 @@ static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
-static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info,
+static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
 		char last_sep);
 static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info, void *arg);
@@ -581,7 +581,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 	{
 		cmd_info->begin = cmd_info->end;
 
-		cmd = parse_limit(cmd, cmd_info, last_sep);
+		cmd = parse_range_elem(cmd, cmd_info, last_sep);
 		if(cmd == NULL)
 		{
 			return NULL;
@@ -612,7 +612,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
  * "<el>;<el>,<el>").  Returns advanced value of cmd when parsing is successful,
  * otherwise NULL is returned. */
 static const char *
-parse_limit(const char cmd[], cmd_info_t *cmd_info, char last_sep)
+parse_range_elem(const char cmd[], cmd_info_t *cmd_info, char last_sep)
 {
 	if(cmd[0] == '%')
 	{
