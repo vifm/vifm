@@ -177,6 +177,17 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		progress = 0;
 	}
+	else if(prev_progress >= 100*PRECISION &&
+			estim->current_byte == estim->total_bytes)
+	{
+		/* Special handling for unknown total size. */
+		++prev_progress;
+		if(prev_progress%PRECISION != 0)
+		{
+			return;
+		}
+		progress = -1;
+	}
 	else
 	{
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
@@ -186,7 +197,10 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		return;
 	}
-	prev_progress = progress;
+	else if(progress >= 0)
+	{
+		prev_progress = progress;
+	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -201,9 +215,19 @@ io_progress_changed(const io_progress_t *const state)
 			(void)friendly_size_notation(estim->current_byte,
 					sizeof(current_size_str), current_size_str);
 
-			msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
-					estim->current_item + 1, estim->total_items,
-					current_size_str, total_size_str, progress/PRECISION, estim->item);
+			if(progress < 0)
+			{
+				/* Simplified message for unknown total size. */
+				msg = format_str("%s: %d of %d; %s %s", ops_describe(ops),
+						estim->current_item + 1, estim->total_items,
+						total_size_str, estim->item);
+			}
+			else
+			{
+				msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+						estim->current_item + 1, estim->total_items,
+						current_size_str, total_size_str, progress/PRECISION, estim->item);
+			}
 			break;
 	}
 
