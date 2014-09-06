@@ -10,7 +10,7 @@ dirs_c := $(addsuffix _c, $(dirs))
 
 tests: bin $(dirs_b)
 ifneq ($(OS),Windows_NT)
-	@for test in `find bin/ -executable -type f`; do\
+	@for test in `find bin/ -perm +111 -type f`; do\
 		echo '==================================================';\
 		echo Test Suite: $$test;\
 		echo '==================================================';\
