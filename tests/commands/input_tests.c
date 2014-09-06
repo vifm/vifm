@@ -339,6 +339,22 @@ test_range_plus_minus(void)
 }
 
 static void
+test_range_comma_vs_semicolon_bases(void)
+{
+	cmds_conf.begin = 0;
+	cmds_conf.current = 0;
+	cmds_conf.end = 3;
+
+	assert_int_equal(0, execute_cmd("2,+2"));
+	assert_int_equal(1, cmdi.begin);
+	assert_int_equal(2, cmdi.end);
+
+	assert_int_equal(0, execute_cmd("2;+2"));
+	assert_int_equal(1, cmdi.begin);
+	assert_int_equal(3, cmdi.end);
+}
+
+static void
 test_range_and_spaces(void)
 {
 	cmds_conf.begin = 10;
@@ -733,6 +749,7 @@ input_tests(void)
 	run_test(test_range);
 	run_test(test_semicolon_range);
 	run_test(test_range_plus_minus);
+	run_test(test_range_comma_vs_semicolon_bases);
 	run_test(test_range_and_spaces);
 	run_test(test_empty_range_empty_command_called);
 	run_test(test_bang_acceptance);

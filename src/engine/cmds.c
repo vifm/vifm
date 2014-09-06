@@ -82,7 +82,8 @@ static const char *RANGE_SEPARATORS = ",;";
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
-static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info);
+static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info,
+		char last_sep);
 static const char * correct_limit(const char cmd[], cmd_info_t *cmd_info);
 static int udf_is_ambiguous(const char name[]);
 static const char * parse_tail(cmd_t *cur, const char cmd[],
@@ -311,7 +312,7 @@ execute_cmd(const char cmd[])
 }
 
 static const char *
-parse_limit(const char cmd[], cmd_info_t *cmd_info)
+parse_limit(const char cmd[], cmd_info_t *cmd_info, char last_sep)
 {
 	if(cmd[0] == '%')
 	{
@@ -359,7 +360,12 @@ parse_limit(const char cmd[], cmd_info_t *cmd_info)
 	}
 	else if(*cmd == '+' || *cmd == '-')
 	{
-		cmd_info->end = cmds_conf->current;
+		/* Do nothing after semicolon, because in this case +/- are adjusting not
+		 * base current cursor position, but base end of the range. */
+		if(last_sep != ';')
+		{
+			cmd_info->end = cmds_conf->current;
+		}
 	}
 	else
 	{
@@ -624,16 +630,19 @@ find_cmd(const char name[])
 static const char *
 parse_range(const char cmd[], cmd_info_t *cmd_info)
 {
+	char last_sep;
+
 	cmd = skip_whitespace(cmd);
 
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
 		return cmd;
 
+	last_sep = '\0';
 	while(*cmd != '\0')
 	{
 		cmd_info->begin = cmd_info->end;
 
-		if((cmd = parse_limit(cmd, cmd_info)) == NULL)
+		if((cmd = parse_limit(cmd, cmd_info, last_sep)) == NULL)
 		{
 			return NULL;
 		}
@@ -650,6 +659,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 			break;
 		}
 
+		last_sep = *cmd;
 		cmd++;
 
 		cmd = skip_whitespace(cmd);
