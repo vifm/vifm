@@ -120,6 +120,10 @@
 	Documented environment variables used by vifm separately as usually done
 	in documentation for other applications.
 
+	Made +/- operands after semicolon in command-line range adjust base range
+	end position rather than base cursor position as Vim does.  Thanks to
+	filterfalse.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

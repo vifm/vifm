@@ -82,16 +82,17 @@ static const char *RANGE_SEPARATORS = ",;";
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
-static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info);
 static const char * correct_limit(const char cmd[], cmd_info_t *cmd_info);
 static int udf_is_ambiguous(const char name[]);
 static const char * parse_tail(cmd_t *cur, const char cmd[],
 		cmd_info_t *cmd_info);
-static const char *get_cmd_name(const char cmd[], char buf[], size_t buf_len);
+static const char * get_cmd_name(const char cmd[], char buf[], size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
+static const char * parse_range_elem(const char cmd[], cmd_info_t *cmd_info,
+		char last_sep);
 static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info, void *arg);
 static void complete_cmd_name(const char cmd_name[], int user_only);
@@ -308,65 +309,6 @@ execute_cmd(const char cmd[])
 	free_string_array(cmd_info.argv, cmd_info.argc);
 
 	return execution_code;
-}
-
-static const char *
-parse_limit(const char cmd[], cmd_info_t *cmd_info)
-{
-	if(cmd[0] == '%')
-	{
-		cmd_info->begin = cmds_conf->begin;
-		cmd_info->end = cmds_conf->end;
-		cmd++;
-	}
-	else if(cmd[0] == '$')
-	{
-		cmd_info->end = cmds_conf->end;
-		cmd++;
-	}
-	else if(cmd[0] == '.')
-	{
-		cmd_info->end = cmds_conf->current;
-		cmd++;
-	}
-	else if(char_is_one_of(RANGE_SEPARATORS, *cmd))
-	{
-		cmd_info->end = cmds_conf->current;
-	}
-	else if(isalpha(*cmd))
-	{
-		cmd_info->end = cmds_conf->current;
-	}
-	else if(isdigit(*cmd))
-	{
-		char *p;
-		cmd_info->end = strtol(cmd, &p, 10) - 1;
-		if(cmd_info->end < cmds_conf->begin)
-			cmd_info->end = cmds_conf->begin;
-		cmd = p;
-	}
-	else if(*cmd == '\'')
-	{
-		char mark;
-		cmd++;
-		mark = *cmd++;
-		cmd_info->end = cmds_conf->resolve_mark(mark);
-		if(cmd_info->end < 0)
-		{
-			cmd_info->end = INVALID_MARK;
-			return NULL;
-		}
-	}
-	else if(*cmd == '+' || *cmd == '-')
-	{
-		cmd_info->end = cmds_conf->current;
-	}
-	else
-	{
-		return NULL;
-	}
-
-	return cmd;
 }
 
 static const char *
@@ -620,20 +562,27 @@ find_cmd(const char name[])
 	return cmd;
 }
 
-/* Returns NULL on invalid range. */
+/* Parses whole command range (e.g. "<val>;+<val>,,-<val>").  Returns advanced
+ * value of cmd when parsing is successful, otherwise NULL is returned. */
 static const char *
 parse_range(const char cmd[], cmd_info_t *cmd_info)
 {
+	char last_sep;
+
 	cmd = skip_whitespace(cmd);
 
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
+	{
 		return cmd;
+	}
 
+	last_sep = '\0';
 	while(*cmd != '\0')
 	{
 		cmd_info->begin = cmd_info->end;
 
-		if((cmd = parse_limit(cmd, cmd_info)) == NULL)
+		cmd = parse_range_elem(cmd, cmd_info, last_sep);
+		if(cmd == NULL)
 		{
 			return NULL;
 		}
@@ -650,9 +599,77 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 			break;
 		}
 
+		last_sep = *cmd;
 		cmd++;
 
 		cmd = skip_whitespace(cmd);
+	}
+
+	return cmd;
+}
+
+/* Parses single element of a command range (e.g. any of <el> in
+ * "<el>;<el>,<el>").  Returns advanced value of cmd when parsing is successful,
+ * otherwise NULL is returned. */
+static const char *
+parse_range_elem(const char cmd[], cmd_info_t *cmd_info, char last_sep)
+{
+	if(cmd[0] == '%')
+	{
+		cmd_info->begin = cmds_conf->begin;
+		cmd_info->end = cmds_conf->end;
+		cmd++;
+	}
+	else if(cmd[0] == '$')
+	{
+		cmd_info->end = cmds_conf->end;
+		cmd++;
+	}
+	else if(cmd[0] == '.')
+	{
+		cmd_info->end = cmds_conf->current;
+		cmd++;
+	}
+	else if(char_is_one_of(RANGE_SEPARATORS, *cmd))
+	{
+		cmd_info->end = cmds_conf->current;
+	}
+	else if(isalpha(*cmd))
+	{
+		cmd_info->end = cmds_conf->current;
+	}
+	else if(isdigit(*cmd))
+	{
+		char *p;
+		cmd_info->end = strtol(cmd, &p, 10) - 1;
+		if(cmd_info->end < cmds_conf->begin)
+			cmd_info->end = cmds_conf->begin;
+		cmd = p;
+	}
+	else if(*cmd == '\'')
+	{
+		char mark;
+		cmd++;
+		mark = *cmd++;
+		cmd_info->end = cmds_conf->resolve_mark(mark);
+		if(cmd_info->end < 0)
+		{
+			cmd_info->end = INVALID_MARK;
+			return NULL;
+		}
+	}
+	else if(*cmd == '+' || *cmd == '-')
+	{
+		/* Do nothing after semicolon, because in this case +/- are adjusting not
+		 * base current cursor position, but base end of the range. */
+		if(last_sep != ';')
+		{
+			cmd_info->end = cmds_conf->current;
+		}
+	}
+	else
+	{
+		return NULL;
 	}
 
 	return cmd;
