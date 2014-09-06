@@ -310,17 +310,17 @@ format_mount_command(const char mount_point[], const char file_name[],
 			if(!strcmp(cmd_buf, "%SOURCE_FILE"))
 			{
 				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_path);
-				buf_pos += strlen(escaped_path);
+				buf_pos += strlen(buf_pos);
 			}
 			else if(!strcmp(cmd_buf, "%PARAM"))
 			{
 				copy_str(buf_pos, buf_size - (buf_pos - buf), param);
-				buf_pos += strlen(param);
+				buf_pos += strlen(buf_pos);
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
 			{
 				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_mount_point);
-				buf_pos += strlen(escaped_mount_point);
+				buf_pos += strlen(buf_pos);
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))
 			{

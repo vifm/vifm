@@ -595,7 +595,7 @@ read_sequence(const char **in, const char first[], const char other[],
 		strcatch(buf, last_token.c);
 		get_next(in);
 	}
-	while(--buf_len > 0UL && char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
+	while(--buf_len > 1UL && char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
 
 	return 1;
 }
