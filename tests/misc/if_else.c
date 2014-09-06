@@ -25,7 +25,7 @@ static void
 setup(void)
 {
 	init_commands();
-	lwin.list_rows = 0;
+	lwin.selected_files = 0;
 	remove_tmp_vars();
 }
 
