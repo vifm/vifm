@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* isdigit() */
+#include <ctype.h> /* isdigit() tolower() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
@@ -130,6 +130,8 @@ static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
+static int initiate_put_files_from_register(FileView *view, OPS op,
+		const char descr[], int reg_name, int force_move, int link);
 static void reset_put_confirm(OPS main_op, const char descr[]);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
@@ -175,6 +177,17 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		progress = 0;
 	}
+	else if(prev_progress >= 100*PRECISION &&
+			estim->current_byte == estim->total_bytes)
+	{
+		/* Special handling for unknown total size. */
+		++prev_progress;
+		if(prev_progress%PRECISION != 0)
+		{
+			return;
+		}
+		progress = -1;
+	}
 	else
 	{
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
@@ -184,7 +197,10 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		return;
 	}
-	prev_progress = progress;
+	else if(progress >= 0)
+	{
+		prev_progress = progress;
+	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -199,9 +215,19 @@ io_progress_changed(const io_progress_t *const state)
 			(void)friendly_size_notation(estim->current_byte,
 					sizeof(current_size_str), current_size_str);
 
-			msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
-					estim->current_item + 1, estim->total_items,
-					current_size_str, total_size_str, progress/PRECISION, estim->item);
+			if(progress < 0)
+			{
+				/* Simplified message for unknown total size. */
+				msg = format_str("%s: %d of %d; %s %s", ops_describe(ops),
+						estim->current_item + 1, estim->total_items,
+						total_size_str, estim->item);
+			}
+			else
+			{
+				msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+						estim->current_item + 1, estim->total_items,
+						current_size_str, total_size_str, progress/PRECISION, estim->item);
+			}
 			break;
 	}
 
@@ -1683,43 +1709,18 @@ prompt_what_to_do(const char src_name[])
 
 /* Returns new value for save_msg flag. */
 int
-put_files_from_register(FileView *view, int name, int force_move)
+put_files_from_register(FileView *view, int reg_name, int force_move)
 {
-	registers_t *reg;
-	int i;
-
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
-	{
-		return 0;
-	}
-
-	reg = find_register(tolower(name));
-
-	if(reg == NULL || reg->num_files < 1)
-	{
-		status_bar_error("Register is empty");
-		return 1;
-	}
-
 	if(force_move)
 	{
-		reset_put_confirm(OP_MOVE, "Putting");
+		return initiate_put_files_from_register(view, OP_MOVE, "Putting", reg_name,
+				force_move, 0);
 	}
 	else
 	{
-		reset_put_confirm(OP_COPY, "putting");
+		return initiate_put_files_from_register(view, OP_COPY, "putting", reg_name,
+				force_move, 0);
 	}
-
-	put_confirm.reg = reg;
-	put_confirm.force_move = force_move;
-	put_confirm.view = view;
-
-	for(i = 0; i < reg->num_files; ++i)
-	{
-		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
-	}
-
-	return put_files_from_register_i(view, 1);
 }
 
 TSTATIC const char *
@@ -1874,8 +1875,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
-		const char *const src_path = (nlines > 0) ? list[i] : sel[i];
-		ops_enqueue(ops, src_path, path);
+		ops_enqueue(ops, sel[i], path);
 	}
 
 	cmd_group_begin(buf);
@@ -2041,9 +2041,18 @@ is_dir_entry(const char full_path[], const struct dirent* dentry)
 #endif
 }
 
-/* Returns new value for save_msg flag. */
 int
 put_links(FileView *view, int reg_name, int relative)
+{
+	return initiate_put_files_from_register(view, OP_SYMLINK, "Symlinking",
+		reg_name, 0, relative ? 2 : 1);
+}
+
+/* Performs preparations necessary for putting files/links.  Returns new value
+ * for save_msg flag. */
+static int
+initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
+		int reg_name, int force_move, int link)
 {
 	registers_t *reg;
 	int i;
@@ -2053,7 +2062,7 @@ put_links(FileView *view, int reg_name, int relative)
 		return 0;
 	}
 
-	reg = find_register(reg_name);
+	reg = find_register(tolower(reg_name));
 
 	if(reg == NULL || reg->num_files < 1)
 	{
@@ -2061,10 +2070,12 @@ put_links(FileView *view, int reg_name, int relative)
 		return 1;
 	}
 
-	reset_put_confirm(OP_SYMLINK, "Symlinking");
+	reset_put_confirm(op, descr);
+
+	put_confirm.force_move = force_move;
+	put_confirm.link = link;
 	put_confirm.reg = reg;
 	put_confirm.view = view;
-	put_confirm.link = relative ? 2 : 1;
 
 	for(i = 0; i < reg->num_files; ++i)
 	{
@@ -2833,9 +2844,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char src_full[PATH_MAX];
-		const char *dst = (nlines > 0) ? list[i] : sel[i];
-
-		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
+		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, sel[i]);
 		chosp(src_full);
 
 		ops_enqueue(ops, src_full, path);
@@ -2848,7 +2857,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		int success;
 
-		if(from_trash)
+		if(from_trash && nlines <= 0)
 		{
 			char src_full[PATH_MAX];
 			snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);

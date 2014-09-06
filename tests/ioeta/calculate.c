@@ -6,6 +6,22 @@
 #include "../../src/io/ioeta.h"
 #include "../../src/io/iop.h"
 
+
+static void
+test_non_existent_path_yields_zero_size(void)
+{
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+
+	ioeta_calculate(estim, "does-not-exist:;", 0);
+
+	assert_int_equal(1, estim->total_items);
+	assert_int_equal(0, estim->current_item);
+	assert_int_equal(0, estim->total_bytes);
+	assert_int_equal(0, estim->current_byte);
+
+	ioeta_free(estim);
+}
+
 static void
 test_empty_files_are_ok(void)
 {
@@ -88,6 +104,7 @@ calculate_tests(void)
 {
 	test_fixture_start();
 
+	run_test(test_non_existent_path_yields_zero_size);
 	run_test(test_empty_files_are_ok);
 	run_test(test_symlink_calculated_as_zero_bytes);
 	run_test(test_non_empty_files_are_ok);

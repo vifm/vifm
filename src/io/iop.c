@@ -45,7 +45,7 @@
 #include "ioc.h"
 
 /* Amount of data to transfer at once. */
-#define BLOCK_SIZE 8192
+#define BLOCK_SIZE 32*1024
 
 int
 iop_mkfile(io_args_t *const args)
