@@ -311,6 +311,9 @@ execute_cmd(const char cmd[])
 	return execution_code;
 }
 
+/* Parses single element of a command range (e.g. any of <el> in
+ * "<el>;<el>,<el>").  Returns advanced value of cmd when parsing is successful,
+ * otherwise NULL is returned. */
 static const char *
 parse_limit(const char cmd[], cmd_info_t *cmd_info, char last_sep)
 {
@@ -626,7 +629,8 @@ find_cmd(const char name[])
 	return cmd;
 }
 
-/* Returns NULL on invalid range. */
+/* Parses whole command range (e.g. "<val>;+<val>,,-<val>").  Returns advanced
+ * value of cmd when parsing is successful, otherwise NULL is returned. */
 static const char *
 parse_range(const char cmd[], cmd_info_t *cmd_info)
 {
@@ -635,14 +639,17 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 	cmd = skip_whitespace(cmd);
 
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
+	{
 		return cmd;
+	}
 
 	last_sep = '\0';
 	while(*cmd != '\0')
 	{
 		cmd_info->begin = cmd_info->end;
 
-		if((cmd = parse_limit(cmd, cmd_info, last_sep)) == NULL)
+		cmd = parse_limit(cmd, cmd_info, last_sep);
+		if(cmd == NULL)
 		{
 			return NULL;
 		}

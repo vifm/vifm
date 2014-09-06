@@ -46,7 +46,8 @@ enum
 
 enum
 {
-	/* Commands with ids in range [NO_COMPLETION_BOUNDARY; 0) not completed. */
+	/* Commands with ids in range [NO_COMPLETION_BOUNDARY; 0) are not
+	 * completed. */
 	NO_COMPLETION_BOUNDARY = -127,
 	USER_CMD_ID = -128,
 	COMCLEAR_CMD_ID = -129,
@@ -55,9 +56,11 @@ enum
 	NOT_DEF = -8192,
 };
 
+/* Detailed information resulted from command parsing, which is passed to
+ * command handler (cmd_handler). */
 typedef struct
 {
-	int begin, end; /* range */
+	int begin, end; /* Parsed range of the command. */
 	int emark, qmark, bg;
 	char sep;
 	int usr1, usr2;
@@ -67,7 +70,8 @@ typedef struct
 	char **argv;
 
 	const char *cmd; /* for user defined commands */
-}cmd_info_t;
+}
+cmd_info_t;
 
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
@@ -87,15 +91,16 @@ typedef struct
 	int select; /* select files in range */
 	int bg; /* background */
 	int quote; /* whether need to take care of single and double quotes in args */
-}cmd_add_t;
+}
+cmd_add_t;
 
 typedef struct
 {
 	void *inner; /* should be NULL on first call of init_cmds() */
 
-	int begin;
-	int current;
-	int end;
+	int begin;   /* The lowest valid number of the range. */
+	int current; /* Current position between [begin; end]. */
+	int end;     /* The highest valid number of the range. */
 
 	/* Argument completion function.  arg is user supplied value, which is passed
 	 * through. */
@@ -112,7 +117,8 @@ typedef struct
 	void (*select_range)(int id, const cmd_info_t *cmd_info);
 	/* should return < 0 to do nothing, x to skip command name and x chars */
 	int (*skip_at_beginning)(int id, const char args[]);
-}cmds_conf_t;
+}
+cmds_conf_t;
 
 /* cmds_conf_t should be filled before calling this function */
 void init_cmds(int udf, cmds_conf_t *cmds_conf);
