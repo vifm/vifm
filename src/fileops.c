@@ -2845,7 +2845,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		int success;
 
-		if(from_trash)
+		if(from_trash && nlines <= 0)
 		{
 			char src_full[PATH_MAX];
 			snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
