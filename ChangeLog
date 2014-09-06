@@ -189,6 +189,9 @@
 	Fixed ga and gA commands for files bigger than 4 GiB on 32-bit operating
 	systems.  Thanks to filterfalse.
 
+	Fixed some buffer overrun bugs discovered on OS X and make tests more
+	BSD-utils friendly.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
