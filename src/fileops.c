@@ -1874,8 +1874,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
 	{
-		const char *const src_path = (nlines > 0) ? list[i] : sel[i];
-		ops_enqueue(ops, src_path, path);
+		ops_enqueue(ops, sel[i], path);
 	}
 
 	cmd_group_begin(buf);
@@ -2833,9 +2832,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
 		char src_full[PATH_MAX];
-		const char *dst = (nlines > 0) ? list[i] : sel[i];
-
-		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
+		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, sel[i]);
 		chosp(src_full);
 
 		ops_enqueue(ops, src_full, path);
