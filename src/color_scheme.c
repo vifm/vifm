@@ -71,14 +71,14 @@ char *LIGHT_COLOR_NAMES[8] = {
 };
 
 char *XTERM256_COLOR_NAMES[256] = {
-	[0]  = "black",
-	[1]  = "red",
-	[2]  = "green",
-	[3]  = "yellow",
-	[4]  = "blue",
-	[5]  = "magenta",
-	[6]  = "cyan",
-	[7]  = "white",
+	[COLOR_BLACK]   = "black",
+	[COLOR_RED]     = "red",
+	[COLOR_GREEN]   = "green",
+	[COLOR_YELLOW]  = "yellow",
+	[COLOR_BLUE]    = "blue",
+	[COLOR_MAGENTA] = "magenta",
+	[COLOR_CYAN]    = "cyan",
+	[COLOR_WHITE]   = "white",
 	[8]  = "lightblack",
 	[9]  = "lightred",
 	[10] = "lightgreen",
