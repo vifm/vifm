@@ -19,6 +19,8 @@
 #include "iop.h"
 
 #ifdef _WIN32
+#define REQUIRED_WINVER 0x0600
+#include "../utils/windefs.h"
 #include <windows.h>
 #endif
 
@@ -46,6 +48,13 @@
 
 /* Amount of data to transfer at once. */
 #define BLOCK_SIZE 32*1024
+
+#ifdef _WIN32
+static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
+		LARGE_INTEGER transferred, LARGE_INTEGER stream_size,
+		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
+		HANDLE src_file, HANDLE dst_file, LPVOID param);
+#endif
 
 int
 iop_mkfile(io_args_t *const args)
@@ -274,11 +283,51 @@ iop_cp(io_args_t *const args)
 
 	return error;
 #else
-	(void)crs;
+	DWORD flags;
+	int error;
 	(void)cancellable;
-	return CopyFileA(src, dst, 0) == 0;
+
+	flags = COPY_FILE_COPY_SYMLINK;
+	if(crs == IO_CRS_FAIL)
+	{
+		flags |= COPY_FILE_FAIL_IF_EXISTS;
+	}
+
+	error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
+
+	ioeta_update(args->estim, src, 1, 0);
+
+	return error;
 #endif
 }
+
+#ifdef _WIN32
+
+static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
+		LARGE_INTEGER transferred, LARGE_INTEGER stream_size,
+		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
+		HANDLE src_file, HANDLE dst_file, LPVOID param)
+{
+	static LONGLONG last_size;
+
+	io_args_t *const args = param;
+
+	const char *const src = args->arg1.src;
+	ioeta_estim_t *const estim = args->estim;
+
+	if(transferred.QuadPart < last_size)
+	{
+		last_size = 0;
+	}
+
+	ioeta_update(estim, src, 0, transferred.QuadPart - last_size);
+
+	last_size = transferred.QuadPart;
+
+	return PROGRESS_CONTINUE;
+}
+
+#endif
 
 int iop_chown(io_args_t *const args);
 
