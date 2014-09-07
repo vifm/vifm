@@ -40,7 +40,7 @@ int iop_rmfile(io_args_t *const args);
  * empty. */
 int iop_rmdir(io_args_t *const args);
 
-/* Copies file.  Expects path in arg1 and overwrite in arg3. */
+/* Copies file.  Expects path in arg1 and crs in arg3. */
 int iop_cp(io_args_t *const args);
 
 /* Change owner of file/directory.  Expects path in arg1 and uid in arg3. */
@@ -54,8 +54,8 @@ int iop_chgrp(io_args_t *const args);
 int iop_chmod(io_args_t *const args);
 
 /* Create symbolic link or change its target.  Expects path in arg1, target in
- * arg2 and overwrite in arg3.  Fails to overwrite if path exists and not a
- * symbolic link. */
+ * arg2 and crs in arg3.  Fails to overwrite if path exists and not a symbolic
+ * link. */
 int iop_ln(io_args_t *const args);
 
 #endif /* VIFM__IO__IOP_H__ */
