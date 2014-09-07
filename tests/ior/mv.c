@@ -319,6 +319,8 @@ test_fails_to_move_directory_inside_itself(void)
 	}
 }
 
+#ifndef _WIN32
+
 static void
 test_symlink_is_symlink_after_move(void)
 {
@@ -354,6 +356,8 @@ test_symlink_is_symlink_after_move(void)
 	}
 }
 
+#endif
+
 void
 mv_tests(void)
 {
@@ -370,7 +374,11 @@ mv_tests(void)
 	run_test(test_overwrites_dir_when_asked);
 	run_test(test_directories_can_be_merged);
 	run_test(test_fails_to_move_directory_inside_itself);
+
+#ifndef _WIN32
+	/* Creating symbolic links on Windows requires administrator rights. */
 	run_test(test_symlink_is_symlink_after_move);
+#endif
 
 	test_fixture_end();
 }

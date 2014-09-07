@@ -39,25 +39,6 @@ teardown(void)
 }
 
 static void
-test_nonexistent_symlink_is_created(void)
-{
-	assert_int_equal(-1, access(LINK_NAME, F_OK));
-
-	io_args_t args =
-	{
-		.arg1.path = ORIG_FILE_NAME,
-		.arg2.target = LINK_NAME,
-	};
-	assert_int_equal(0, iop_ln(&args));
-
-	assert_int_equal(0, access(LINK_NAME, F_OK));
-
-	assert_int_equal(0, remove(LINK_NAME));
-
-	assert_int_equal(-1, access(LINK_NAME, F_OK));
-}
-
-static void
 test_existent_file_is_not_overwritten_if_not_requested(void)
 {
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
@@ -78,6 +59,44 @@ test_existent_file_is_not_overwritten_if_not_requested(void)
 		.arg2.target = LINK_NAME,
 	};
 	assert_false(iop_ln(&args) == 0);
+
+	assert_int_equal(0, remove(LINK_NAME));
+
+	assert_int_equal(-1, access(LINK_NAME, F_OK));
+}
+
+static void
+test_existent_non_symlink_is_not_overwritten(void)
+{
+	create_file(LINK_NAME);
+
+	io_args_t args =
+	{
+		.arg1.path = ORIG_FILE_NAME,
+		.arg2.target = LINK_NAME,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+	};
+	assert_int_equal(-1, iop_ln(&args));
+
+	assert_int_equal(0, remove(LINK_NAME));
+	assert_int_equal(-1, access(LINK_NAME, F_OK));
+}
+
+#ifndef _WIN32
+
+static void
+test_nonexistent_symlink_is_created(void)
+{
+	assert_int_equal(-1, access(LINK_NAME, F_OK));
+
+	io_args_t args =
+	{
+		.arg1.path = ORIG_FILE_NAME,
+		.arg2.target = LINK_NAME,
+	};
+	assert_int_equal(0, iop_ln(&args));
+
+	assert_int_equal(0, access(LINK_NAME, F_OK));
 
 	assert_int_equal(0, remove(LINK_NAME));
 
@@ -111,22 +130,7 @@ test_existent_symlink_is_changed(void)
 	assert_int_equal(-1, access(NEW_ORIG_FILE_NAME, F_OK));
 }
 
-static void
-test_existent_non_symlink_is_not_overwritten(void)
-{
-	create_file(LINK_NAME);
-
-	io_args_t args =
-	{
-		.arg1.path = ORIG_FILE_NAME,
-		.arg2.target = LINK_NAME,
-		.arg3.crs = IO_CRS_REPLACE_FILES,
-	};
-	assert_int_equal(-1, iop_ln(&args));
-
-	assert_int_equal(0, remove(LINK_NAME));
-	assert_int_equal(-1, access(LINK_NAME, F_OK));
-}
+#endif
 
 void
 ln_tests(void)
@@ -136,10 +140,14 @@ ln_tests(void)
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
-	run_test(test_nonexistent_symlink_is_created);
 	run_test(test_existent_file_is_not_overwritten_if_not_requested);
-	run_test(test_existent_symlink_is_changed);
 	run_test(test_existent_non_symlink_is_not_overwritten);
+
+#ifndef _WIN32
+	/* Creating symbolic links on Windows requires administrator rights. */
+	run_test(test_nonexistent_symlink_is_created);
+	run_test(test_existent_symlink_is_changed);
+#endif
 
 	test_fixture_end();
 }
