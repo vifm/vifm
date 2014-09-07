@@ -38,6 +38,38 @@ test_empty_files_are_ok(void)
 }
 
 static void
+test_non_empty_files_are_ok(void)
+{
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+
+	ioeta_calculate(estim, "test-data/various-sizes", 0);
+
+	assert_int_equal(8, estim->total_items);
+	assert_int_equal(0, estim->current_item);
+	assert_int_equal(73728, estim->total_bytes);
+	assert_int_equal(0, estim->current_byte);
+
+	ioeta_free(estim);
+}
+
+static void
+test_shallow_estimation_does_not_recur(void)
+{
+	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+
+	ioeta_calculate(estim, "test-data/various-sizes", 1);
+
+	assert_int_equal(1, estim->total_items);
+	assert_int_equal(0, estim->current_item);
+	assert_int_equal(0, estim->total_bytes);
+	assert_int_equal(0, estim->current_byte);
+
+	ioeta_free(estim);
+}
+
+#ifndef _WIN32
+
+static void
 test_symlink_calculated_as_zero_bytes(void)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
@@ -69,35 +101,7 @@ test_symlink_calculated_as_zero_bytes(void)
 	ioeta_free(estim);
 }
 
-static void
-test_non_empty_files_are_ok(void)
-{
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
-
-	ioeta_calculate(estim, "test-data/various-sizes", 0);
-
-	assert_int_equal(8, estim->total_items);
-	assert_int_equal(0, estim->current_item);
-	assert_int_equal(73728, estim->total_bytes);
-	assert_int_equal(0, estim->current_byte);
-
-	ioeta_free(estim);
-}
-
-static void
-test_shallow_estimation_does_not_recur(void)
-{
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
-
-	ioeta_calculate(estim, "test-data/various-sizes", 1);
-
-	assert_int_equal(1, estim->total_items);
-	assert_int_equal(0, estim->current_item);
-	assert_int_equal(0, estim->total_bytes);
-	assert_int_equal(0, estim->current_byte);
-
-	ioeta_free(estim);
-}
+#endif
 
 void
 calculate_tests(void)
@@ -106,9 +110,13 @@ calculate_tests(void)
 
 	run_test(test_non_existent_path_yields_zero_size);
 	run_test(test_empty_files_are_ok);
-	run_test(test_symlink_calculated_as_zero_bytes);
 	run_test(test_non_empty_files_are_ok);
 	run_test(test_shallow_estimation_does_not_recur);
+
+#ifndef _WIN32
+	/* Creating symbolic links on Windows requires administrator rights. */
+	run_test(test_symlink_calculated_as_zero_bytes);
+#endif
 
 	test_fixture_end();
 }
