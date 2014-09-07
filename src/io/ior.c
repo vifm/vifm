@@ -156,7 +156,7 @@ ior_mv(io_args_t *const args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 
-	if(path_exists(dst) && crs == IO_CRS_FAIL)
+	if(crs == IO_CRS_FAIL && path_exists(dst))
 	{
 		return 1;
 	}
@@ -197,6 +197,26 @@ ior_mv(io_args_t *const args)
 			}
 			else if(crs == IO_CRS_REPLACE_FILES)
 			{
+#ifdef _WIN32
+				/* rename() on Windows doesn't replace files. */
+				if(!is_dir(dst) || (is_symlink(dst) && check_link_is_dir(dst)))
+				{
+					io_args_t rm_args =
+					{
+						.arg1.path = dst,
+
+						.cancellable = args->cancellable,
+						.estim = args->estim,
+					};
+
+					const int error = iop_rmfile(&rm_args);
+					if(error != 0)
+					{
+						return error;
+					}
+				}
+#endif
+
 				return traverse(src, &mv_visitor, args);
 			}
 			/* Break is intentionally omitted. */
