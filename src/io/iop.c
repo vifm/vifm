@@ -312,6 +312,16 @@ iop_ln(io_args_t *const args)
 		}
 	}
 #else
+	if(!overwrite && path_exists(target))
+	{
+		return -1;
+	}
+
+	if(overwrite && !is_symlink(target))
+	{
+		return -1;
+	}
+
 	escaped_path = escape_filename(path, 0);
 	escaped_target = escape_filename(target, 0);
 	if(escaped_path == NULL || escaped_target == NULL)
@@ -321,7 +331,6 @@ iop_ln(io_args_t *const args)
 		return -1;
 	}
 
-	(void)overwrite;
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
 		free(escaped_target);
