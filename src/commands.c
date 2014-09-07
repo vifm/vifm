@@ -2518,7 +2518,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clean"))
+	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clean") == 0)
 	{
 		reset_color_scheme(curr_stats.cs_base, curr_stats.cs);
 
