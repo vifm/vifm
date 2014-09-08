@@ -241,6 +241,8 @@ test_file_permissions_are_preserved(void)
 		assert_int_equal(0, iop_mkfile(&args));
 	}
 
+	assert_int_equal(0, chmod("file", 0200));
+
 	assert_int_equal(0, lstat("file", &src));
 	assert_false((src.st_mode & 0777) == 0600);
 
