@@ -29,6 +29,7 @@
 #include "engine/var.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/utils.h"
 #include "macros.h"
 #include "types.h"
 #include "ui.h"
@@ -56,22 +57,29 @@ init_builtin_functions(void)
 	}
 }
 
-/* Checks whether executable exists in directories listed in $PATH.  Checks for
- * various executable extensions on Windows.  Returns boolean value describing
- * result of the check. */
+/* Checks whether executable exists at absolute path orin directories listed in
+ * $PATH when path isn't absolute.  Checks for various executable extensions on
+ * Windows.  Returns boolean value describing result of the check. */
 static var_t
 executable_builtin(const call_info_t *call_info)
 {
-	var_t result;
+	int exists;
 	char *str_val;
 
 	str_val = var_to_string(call_info->argv[0]);
-	result = (find_cmd_in_path(str_val, 0UL, NULL) == 0)
-	       ? var_true()
-	       : var_false();
+
+	if(is_path_absolute(str_val))
+	{
+		exists = executable_exists(str_val);
+	}
+	else
+	{
+		exists = (find_cmd_in_path(str_val, 0UL, NULL) == 0);
+	}
+
 	free(str_val);
 
-	return result;
+	return exists ? var_true() : var_false();
 }
 
 /* Returns string after expanding expression. */
