@@ -284,12 +284,16 @@ complete_help(const char *str)
 	int i;
 
 	if(!cfg.use_vim_help)
+	{
 		return;
+	}
 
 	for(i = 0; tags[i] != NULL; i++)
 	{
 		if(strstr(tags[i], str) != NULL)
+		{
 			vle_compl_add_match(tags[i]);
+		}
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -397,7 +401,7 @@ complete_progs(const char *str, assoc_records_t records)
 
 		if(strnoscmp(command, str, len) == 0)
 		{
-			char *escaped = escape_chars(command, "|");
+			char *const escaped = escape_chars(command, "|");
 			vle_compl_add_match(escaped);
 			free(escaped);
 		}
@@ -408,11 +412,13 @@ static void
 complete_highlight_groups(const char *str)
 {
 	int i;
-	size_t len = strlen(str);
+	const size_t len = strlen(str);
 	for(i = 0; i < MAXNUM_COLOR - 2; i++)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
+		{
 			vle_compl_add_match(HI_GROUPS[i]);
+		}
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -422,7 +428,6 @@ static int
 complete_highlight_arg(const char *str)
 {
 	/* TODO: Refactor this function complete_highlight_arg() */
-	int i;
 	char *equal = strchr(str, '=');
 	int result = (equal == NULL) ? 0 : (equal - str + 1);
 	size_t len = strlen((equal == NULL) ? str : ++equal);
@@ -433,10 +438,15 @@ complete_highlight_arg(const char *str)
 			"ctermfg",
 			"ctermbg",
 		};
+
+		int i;
+
 		for(i = 0; i < ARRAY_LEN(args); i++)
 		{
 			if(strncmp(str, args[i], len) == 0)
+			{
 				vle_compl_add_match(args[i]);
+			}
 		}
 	}
 	else
@@ -451,6 +461,9 @@ complete_highlight_arg(const char *str)
 				"standout",
 				"none",
 			};
+
+			int i;
+
 			char *comma = strrchr(equal, ',');
 			if(comma != NULL)
 			{
@@ -462,24 +475,37 @@ complete_highlight_arg(const char *str)
 			for(i = 0; i < ARRAY_LEN(STYLES); i++)
 			{
 				if(strncasecmp(equal, STYLES[i], len) == 0)
+				{
 					vle_compl_add_match(STYLES[i]);
+				}
 			}
 		}
 		else
 		{
+			int i;
+
 			if(strncasecmp(equal, "default", len) == 0)
+			{
 				vle_compl_add_match("default");
+			}
 			if(strncasecmp(equal, "none", len) == 0)
+			{
 				vle_compl_add_match("none");
+			}
+
 			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
+				{
 					vle_compl_add_match(XTERM256_COLOR_NAMES[i]);
+				}
 			}
 			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
+				{
 					vle_compl_add_match(LIGHT_COLOR_NAMES[i]);
+				}
 			}
 		}
 	}
@@ -521,13 +547,15 @@ static void
 complete_winrun(const char *str)
 {
 	static const char *VARIANTS[] = { "^", "$", "%", ".", "," };
-	size_t len = strlen(str);
+	const size_t len = strlen(str);
 	int i;
 
 	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
 	{
 		if(strncmp(str, VARIANTS[i], len) == 0)
+		{
 			vle_compl_add_match(VARIANTS[i]);
+		}
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -602,7 +630,7 @@ complete_command_name(const char beginning[])
 			filename_completion(beginning, CT_EXECONLY);
 		}
 	}
-	vle_compl_add_last_match(beginning);
+	vle_compl_add_last_path_match(beginning);
 }
 
 static void
@@ -635,9 +663,9 @@ filename_completion(const char *str, CompletionType type)
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		char *s = expand_tilde(str);
-		vle_compl_add_match(s);
-		free(s);
+		char *const tilde_expanded = expand_tilde(str);
+		vle_compl_add_path_match(tilde_expanded);
+		free(tilde_expanded);
 		return;
 	}
 
@@ -697,7 +725,7 @@ filename_completion(const char *str, CompletionType type)
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
-		vle_compl_add_match(filename);
+		vle_compl_add_path_match(filename);
 	}
 	else
 	{
@@ -738,20 +766,20 @@ filename_completion_internal(DIR * dir, const char * dirname,
 
 		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
-			char buf[strlen(d->d_name) + 1];
-			snprintf(buf, sizeof(buf), "%s/", d->d_name);
-			vle_compl_add_match(buf);
+			char with_slash[strlen(d->d_name) + 1];
+			snprintf(with_slash, sizeof(with_slash), "%s/", d->d_name);
+			vle_compl_add_path_match(with_slash);
 		}
 		else
 		{
-			vle_compl_add_match(d->d_name);
+			vle_compl_add_path_match(d->d_name);
 		}
 	}
 
 	vle_compl_finish_group();
 	if(type != CT_EXECONLY)
 	{
-		vle_compl_add_last_match(filename);
+		vle_compl_add_last_path_match(filename);
 	}
 }
 
@@ -784,7 +812,9 @@ complete_user_name(const char *str)
 	while((pw = getpwent()) != NULL)
 	{
 		if(strncmp(pw->pw_name, str, len) == 0)
+		{
 			vle_compl_add_match(pw->pw_name);
+		}
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -800,7 +830,9 @@ complete_group_name(const char *str)
 	while((gr = getgrent()) != NULL)
 	{
 		if(strncmp(gr->gr_name, str, len) == 0)
+		{
 			vle_compl_add_match(gr->gr_name);
+		}
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -842,7 +874,7 @@ complete_with_shared(const char *server, const char *file)
 				strcat(buf, "/");
 				if(strnoscmp(buf, file, len) == 0)
 				{
-					char *escaped = escape_filename(buf, 1);
+					char *const escaped = escape_filename(buf, 1);
 					vle_compl_add_match(escaped);
 					free(escaped);
 				}

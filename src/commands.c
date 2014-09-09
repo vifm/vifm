@@ -1133,9 +1133,14 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	if(state == NO_QUOTING)
 	{
 		if(sep == ' ')
-			return 0;
+		{
+			/* First element is not an argument. */
+			return (count > 0) ? 2 : 0;
+		}
 		else if(count > 0 && count < 3)
+		{
 			return 2;
+		}
 	}
 	else if(state != BEGIN)
 	{

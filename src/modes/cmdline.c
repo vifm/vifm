@@ -2162,17 +2162,20 @@ line_completion(line_stats_t *stat)
 			switch(ipt)
 			{
 				case CLL_OUT_OF_ARG:
+					/* Do nothing. */
+					break;
+
 				case CLL_NO_QUOTING:
-					vle_compl_set_add_hook(&escaped_arg_hook);
+					vle_compl_set_add_path_hook(&escaped_arg_hook);
 					break;
 
 				case CLL_S_QUOTING:
-					vle_compl_set_add_hook(&squoted_arg_hook);
+					vle_compl_set_add_path_hook(&squoted_arg_hook);
 					compl_func_arg = CPP_SQUOTES_UNESCAPE;
 					break;
 
 				case CLL_D_QUOTING:
-					vle_compl_set_add_hook(&dquoted_arg_hook);
+					vle_compl_set_add_path_hook(&dquoted_arg_hook);
 					compl_func_arg = CPP_DQUOTES_UNESCAPE;
 					break;
 
@@ -2184,7 +2187,7 @@ line_completion(line_stats_t *stat)
 
 		offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
 
-		vle_compl_set_add_hook(NULL);
+		vle_compl_set_add_path_hook(NULL);
 	}
 
 	vle_compl_set_order(input_stat.reverse_completion);
