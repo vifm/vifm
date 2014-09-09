@@ -6,6 +6,7 @@
 
 #include "seatest.h"
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 #include "../../src/engine/options.h"
@@ -188,6 +189,56 @@ test_last_match_is_properly_escaped(void)
 	free(match);
 }
 
+static void
+test_emark_cmd_escaping(void)
+{
+	char *match;
+
+	prepare_for_line_completion(L"");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"!"));
+
+	match = vle_compl_next();
+	assert_string_equal("alink", match);
+	free(match);
+}
+
+static void
+test_winrun_cmd_escaping(void)
+{
+	char *match;
+
+	prepare_for_line_completion(L"winrun ");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"winrun $"));
+
+	match = vle_compl_next();
+	assert_string_equal("%", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal(",", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal(".", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("^", match);
+	free(match);
+}
+
+void
+test_help_cmd_escaping(void)
+{
+	cfg.use_vim_help = 1;
+
+	prepare_for_line_completion(L"help vifm-");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"help vifm-!!"));
+}
+
 void
 test_cmdline_completion(void)
 {
@@ -205,6 +256,9 @@ test_cmdline_completion(void)
 	run_test(test_dquoted_completion);
 	run_test(test_dquoted_completion_escaping);
 	run_test(test_last_match_is_properly_escaped);
+	run_test(test_emark_cmd_escaping);
+	run_test(test_winrun_cmd_escaping);
+	run_test(test_help_cmd_escaping);
 
 	test_fixture_end();
 }
