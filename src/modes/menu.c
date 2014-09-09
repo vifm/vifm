@@ -1059,6 +1059,12 @@ menu_print_search_msg(const menu_info *m)
 	regex_t re;
 	int err;
 
+	/* Can be NULL after regex compilation failure. */
+	if(m->regexp == NULL)
+	{
+		return;
+	}
+
 	cflags = get_regexp_cflags(m->regexp);
 	err = regcomp(&re, m->regexp, cflags);
 
