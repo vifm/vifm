@@ -630,7 +630,7 @@ complete_command_name(const char beginning[])
 			filename_completion(beginning, CT_EXECONLY);
 		}
 	}
-	vle_compl_add_last_match(beginning);
+	vle_compl_add_last_path_match(beginning);
 }
 
 static void
@@ -664,7 +664,7 @@ filename_completion(const char *str, CompletionType type)
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
 		char *const tilde_expanded = expand_tilde(str);
-		vle_compl_add_match(tilde_expanded);
+		vle_compl_add_path_match(tilde_expanded);
 		free(tilde_expanded);
 		return;
 	}
@@ -725,7 +725,7 @@ filename_completion(const char *str, CompletionType type)
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
-		vle_compl_add_match(filename);
+		vle_compl_add_path_match(filename);
 	}
 	else
 	{
@@ -768,18 +768,18 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		{
 			char with_slash[strlen(d->d_name) + 1];
 			snprintf(with_slash, sizeof(with_slash), "%s/", d->d_name);
-			vle_compl_add_match(with_slash);
+			vle_compl_add_path_match(with_slash);
 		}
 		else
 		{
-			vle_compl_add_match(d->d_name);
+			vle_compl_add_path_match(d->d_name);
 		}
 	}
 
 	vle_compl_finish_group();
 	if(type != CT_EXECONLY)
 	{
-		vle_compl_add_last_match(filename);
+		vle_compl_add_last_path_match(filename);
 	}
 }
 

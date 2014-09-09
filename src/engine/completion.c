@@ -19,7 +19,7 @@
 #include "completion.h"
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* qsort() */
 #include <string.h> /* strdup() */
 
@@ -32,16 +32,19 @@ static enum
 	NOT_STARTED,
 	FILLING_LIST,
 	COMPLETING
-}state = NOT_STARTED;
+}
+state = NOT_STARTED;
 
 static char **lines;
 static int count;
 static int curr = -1;
 static int group_begin;
 static int order;
-static vle_compl_add_hook_f add_hook;
 
-static char * pre_process_match(const char str[]);
+/* Function called . */
+static vle_compl_add_path_hook_f add_path_hook = &strdup;
+
+static int add_match(char match[]);
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
 static size_t remove_duplicates(char **arr, size_t count);
@@ -60,7 +63,20 @@ vle_compl_reset(void)
 }
 
 int
-vle_compl_add_match(const char *completion)
+vle_compl_add_match(const char match[])
+{
+	return add_match(strdup(match));
+}
+
+int
+vle_compl_add_path_match(const char path[])
+{
+	char *const match = add_path_hook(path);
+	return add_match(match);
+}
+
+static int
+add_match(char match[])
 {
 	char **p;
 	assert(state != COMPLETING);
@@ -70,7 +86,7 @@ vle_compl_add_match(const char *completion)
 		return -1;
 	lines = p;
 
-	lines[count] = pre_process_match(completion);
+	lines[count] = match;
 	if(lines[count] == NULL)
 	{
 		return -1;
@@ -87,10 +103,10 @@ vle_compl_add_last_match(const char origin[])
 	return vle_compl_add_match(origin);
 }
 
-static char *
-pre_process_match(const char str[])
+int
+vle_compl_add_last_path_match(const char origin[])
 {
-	return (add_hook == NULL) ? strdup(str) : add_hook(str);
+	return vle_compl_add_path_match(origin);
 }
 
 void
@@ -233,9 +249,9 @@ vle_compl_rewind(void)
 }
 
 void
-vle_compl_set_add_hook(vle_compl_add_hook_f hook)
+vle_compl_set_add_path_hook(vle_compl_add_path_hook_f hook)
 {
-	add_hook = hook;
+	add_path_hook = (hook == NULL) ? &strdup : hook;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

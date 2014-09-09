@@ -21,15 +21,25 @@
 
 /* Match addition hook function signature.  Must return newly allocated
  * string. */
-typedef char * (*vle_compl_add_hook_f)(const char match[]);
+typedef char * (*vle_compl_add_path_hook_f)(const char match[]);
 
-/* Returns zero on success, otherwise non-zero is returned. */
-int vle_compl_add_match(const char *completion);
+/* Adds raw match as completion match.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int vle_compl_add_match(const char match[]);
+
+/* Adds path as completion match.  Path is preprocessed with path add hook.
+ * Returns zero on success, otherwise non-zero is returned. */
+int vle_compl_add_path_match(const char path[]);
 
 /* Adds original input to the completion, should be called after all matches are
  * registered with vle_compl_add_match().  Returns zero on success, otherwise
  * non-zero is returned. */
 int vle_compl_add_last_match(const char origin[]);
+
+/* Adds original path path input to the completion, should be called after all
+ * matches are registered with vle_compl_add_path_match().  Returns zero on
+ * success, otherwise non-zero is returned. */
+int vle_compl_add_last_path_match(const char origin[]);
 
 void vle_compl_finish_group(void);
 
@@ -54,7 +64,7 @@ int vle_compl_get_pos(void);
 void vle_compl_rewind(void);
 
 /* Sets match addition hook.  NULL value resets hook. */
-void vle_compl_set_add_hook(vle_compl_add_hook_f hook);
+void vle_compl_set_add_path_hook(vle_compl_add_path_hook_f hook);
 
 #endif /* VIFM__ENGINE__COMPLETION_H__ */
 
