@@ -766,7 +766,7 @@ filename_completion_internal(DIR * dir, const char * dirname,
 
 		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
-			char with_slash[strlen(d->d_name) + 1];
+			char with_slash[strlen(d->d_name) + 1 + 1];
 			snprintf(with_slash, sizeof(with_slash), "%s/", d->d_name);
 			vle_compl_add_path_match(with_slash);
 		}
