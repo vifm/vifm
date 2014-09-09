@@ -229,7 +229,7 @@ test_winrun_cmd_escaping(void)
 	free(match);
 }
 
-void
+static void
 test_help_cmd_escaping(void)
 {
 	cfg.use_vim_help = 1;
@@ -237,6 +237,32 @@ test_help_cmd_escaping(void)
 	prepare_for_line_completion(L"help vifm-");
 	assert_int_equal(0, line_completion(&stats));
 	assert_int_equal(0, wcscmp(stats.line, L"help vifm-!!"));
+}
+
+static void
+test_dirs_are_completed_with_trailing_slash(void)
+{
+	char *match;
+
+	assert_int_equal(0, chdir("../"));
+
+	prepare_for_line_completion(L"cd r");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"cd read/"));
+
+	match = vle_compl_next();
+	assert_string_equal("rename/", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("r", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("read/", match);
+	free(match);
+
+	assert_int_equal(0, chdir("read/"));
 }
 
 void
@@ -259,6 +285,7 @@ test_cmdline_completion(void)
 	run_test(test_emark_cmd_escaping);
 	run_test(test_winrun_cmd_escaping);
 	run_test(test_help_cmd_escaping);
+	run_test(test_dirs_are_completed_with_trailing_slash);
 
 	test_fixture_end();
 }
