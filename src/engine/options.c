@@ -48,7 +48,8 @@ typedef enum
 	SO_SET, /* Set value of the option. */
 	SO_ADD, /* Add item(s) to a set. */
 	SO_REMOVE, /* Remove item(s) from a set. */
-}SetOp;
+}
+SetOp;
 
 /* Type of function accepted by the for_each_char_of() function. */
 typedef void (*mod_t)(char buffer[], char value);
@@ -82,6 +83,7 @@ static int set_print(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo);
+static const char * get_opt_full_name(opt_t *const opt);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
 static int complete_char_value(const opt_t *opt, const char beginning[]);
@@ -989,7 +991,7 @@ complete_options(const char args[], const char **start)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			char *escaped = escape_chars(get_value(opt), " |");
+			char *const escaped = escape_chars(get_value(opt), " |");
 			vle_compl_add_match(escaped);
 			free(escaped);
 		}
@@ -1111,23 +1113,25 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 
 	for(i = 0; i < options_count; i++)
 	{
-		if(bool_only && options[i].type != OPT_BOOL)
+		opt_t *const opt = &options[i];
+
+		if(bool_only && opt->type != OPT_BOOL)
 		{
 			continue;
 		}
 
-		if(strncmp(buf, options[i].name, len) == 0)
+		if(strncmp(buf, opt->name, len) == 0)
 		{
-			if(options[i].full != NULL)
-			{
-				vle_compl_add_match(options[i].full);
-			}
-			else
-			{
-				vle_compl_add_match(options[i].name);
-			}
+			vle_compl_add_match(get_opt_full_name(opt));
 		}
 	}
+}
+
+/* Gets full name of the option.  Returns pointer to the name. */
+static const char *
+get_opt_full_name(opt_t *const opt)
+{
+	return (opt->full == NULL) ? opt->name : opt->full;
 }
 
 /* Completes value of the given option.  Returns offset for the beginning. */
