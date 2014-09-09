@@ -240,6 +240,12 @@ print_search_fail_msg(const FileView *view, int backward)
 	regex_t re;
 	int err;
 
+	if(regexp[0] == '\0')
+	{
+		status_bar_message("");
+		return;
+	}
+
 	cflags = get_regexp_cflags(regexp);
 	err = regcomp(&re, regexp, cflags);
 
