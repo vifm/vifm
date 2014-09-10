@@ -851,7 +851,7 @@ load_menu_pos(void)
 }
 
 int
-search_menu_list(const char *pattern, menu_info *m)
+search_menu_list(const char pattern[], menu_info *m)
 {
 	int save = 0;
 	int i;
