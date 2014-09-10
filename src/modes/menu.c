@@ -851,7 +851,7 @@ load_menu_pos(void)
 }
 
 int
-search_menu_list(const char *pattern, menu_info *m)
+search_menu_list(const char pattern[], menu_info *m)
 {
 	int save = 0;
 	int i;
@@ -979,9 +979,8 @@ search_menu_forwards(menu_info *m, int start_pos)
 		{
 			menu_print_search_msg(m);
 		}
-		return 1;
 	}
-	return 0;
+	return 1;
 }
 
 static int
@@ -1058,6 +1057,12 @@ menu_print_search_msg(const menu_info *m)
 	int cflags;
 	regex_t re;
 	int err;
+
+	/* Can be NULL after regex compilation failure. */
+	if(m->regexp == NULL)
+	{
+		return;
+	}
 
 	cflags = get_regexp_cflags(m->regexp);
 	err = regcomp(&re, m->regexp, cflags);

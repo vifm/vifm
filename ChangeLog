@@ -124,6 +124,12 @@
 	end position rather than base cursor position as Vim does.  Thanks to
 	filterfalse.
 
+	Documented connection between local filter and 'incsearch'.  Thanks to
+	filterfalse.
+
+	Repeat search with last used search pattern on empty pattern of the search
+	mode.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -195,6 +201,9 @@
 
 	Fixed some buffer overrun bugs discovered on OS X and make tests more
 	BSD-utils friendly.
+
+	Fixed segmentation fault on Alt-. command in command-line mode (since
+	0.7.7).
 
 0.7.7-beta to 0.7.7
 

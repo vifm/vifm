@@ -1,4 +1,4 @@
-.TH vifm 1 "September 08, 2014" "" "Vifm"
+.TH vifm 1 "September 10, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -285,10 +285,23 @@ There are also several special marks that can't be set manually:
 .\" ---------------------------------------------------------------------------
 .TP
 .BI "/regular expression pattern[Return]"
-will highlight all files matching the pattern and go to the next match.
+search for files matching regular expression in forward direction and advance
+cursor to next match.
+.TP
+.BI "/[Return]"
+perform forward search with top item of search pattern history.
 .TP
 .BI "?regular expression pattern[Return]"
-will highlight all files matching the pattern and go to the previous match.
+search for files matching regular expression in backward direction and advance
+cursor to previous match.
+.TP
+.BI "?[Return]"
+perform backward search with top item of search pattern history.
+.TP
+Matches are automatically selected if 'hlsearch' is set.  Enabling 'incsearch' \
+makes search interactive.  'ignorecase' and 'smartcase' options affect case \
+sensitivity of search queries.
+
 .TP
 .BI [count]n
 find the next match of / or ?.
@@ -300,6 +313,7 @@ If 'hlsearch' option is set, hitting n/N to perform search and go to the first \
 matching item resets current selection in normal mode.  It is not the case if \
 search was already performed on files in the directory, thus selection is not \
 reset after clearing selection with escape key and hitting n/N key again.
+
 .TP
 .BI [count]f[character]
 search forward for file with [character] as first character in name.  Search
@@ -378,8 +392,9 @@ Filter the files matching the filename filter.
 Remove all filters.
 .TP
 .BI "=regular expression pattern[Return]"
-filter out files that don't match regular expression.  This kind of filter is
-automatically reset when directory is changed.
+filter out files that don't match regular expression.  Whether view is updated
+as regular expression is changed depends on the value of the 'incsearch' option.
+This kind of filter is automatically reset when directory is changed.
 .\" ---------------------------------------------------------------------------
 .SH Other Normal Mode Keys
 .\" ---------------------------------------------------------------------------
@@ -2894,8 +2909,9 @@ type: boolean
 .br
 default: false
 .br
-When this option is set, search will be performed starting from initial cursor
-position each time search pattern is changed.
+When this option is set, search and view update for local filter is be
+performed starting from initial cursor position each time search pattern is
+changed.
 .TP
 .BI "laststatus ls"
 type: boolean
