@@ -979,9 +979,8 @@ search_menu_forwards(menu_info *m, int start_pos)
 		{
 			menu_print_search_msg(m);
 		}
-		return 1;
 	}
-	return 0;
+	return 1;
 }
 
 static int
