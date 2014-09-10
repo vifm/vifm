@@ -246,12 +246,19 @@ There are also several special marks that can't be set manually:
 Searching~
 
                                                *vifm-/*
-/regular expression - select files matching regular expression. Forward
-    search.
+/regular expression - search for files matching regular expression in forward
+    direction and advance cursor to next match.
+/ - perform forward search with top item of search pattern history.
 
                                                *vifm-?*
-?regular expression - select files matching regular expression. Backward
-    search.
+?regular expression - search for files matching regular expression in backward
+    direction and advance cursor to previous match.
+? - perform backward search with top item of search pattern history.
+
+Matches are automatically selected if |vifm-'hlsearch'| is set.  Enabling
+|vifm-'incsearch'| makes search interactive.  |vifm-'ignorecase'| and
+|vifm-'smartcase'| options affect case sensitivity of search queries.
+
 
                                                *vifm-n* *vifm-N*
 [count]n - go to the next file matching last search pattern.  Takes last

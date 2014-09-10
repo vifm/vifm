@@ -1153,8 +1153,12 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			ui_view_schedule_reload(curr_view);
 		}
 	}
-	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
+	else if(!cfg.inc_search || prev_mode == VIEW_MODE || nonnull_input[0] == '\0')
 	{
+		const char *const pattern = (nonnull_input[0] == '\0')
+		                          ? cfg.search_hist.items[0]
+		                          : nonnull_input;
+
 		switch(sub_mode)
 		{
 			case SEARCH_FORWARD_SUBMODE:
@@ -1165,13 +1169,13 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			case VIEW_SEARCH_BACKWARD_SUBMODE:
 				{
 					const int command_type = search_submode_to_command_type(sub_mode);
-					curr_stats.save_msg = exec_command(p, curr_view, command_type);
+					curr_stats.save_msg = exec_command(pattern, curr_view, command_type);
 					break;
 				}
 			case MENU_SEARCH_FORWARD_SUBMODE:
 			case MENU_SEARCH_BACKWARD_SUBMODE:
 				curr_stats.need_update = UT_FULL;
-				curr_stats.save_msg = search_menu_list(p, sub_mode_ptr);
+				curr_stats.save_msg = search_menu_list(pattern, sub_mode_ptr);
 				break;
 
 			default:

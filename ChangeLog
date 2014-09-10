@@ -127,6 +127,9 @@
 	Documented connection between local filter and 'incsearch'.  Thanks to
 	filterfalse.
 
+	Repeat search with last used search pattern on empty pattern of the search
+	mode.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
