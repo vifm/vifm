@@ -133,6 +133,7 @@ static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
+static int search_submode_to_command_type(int sub_mode);
 static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
 static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
@@ -1157,23 +1158,16 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		switch(sub_mode)
 		{
 			case SEARCH_FORWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
-				break;
 			case SEARCH_BACKWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
-				break;
 			case VSEARCH_FORWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
-				break;
 			case VSEARCH_BACKWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
-				break;
 			case VIEW_SEARCH_FORWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_VWFSEARCH_PATTERN);
-				break;
 			case VIEW_SEARCH_BACKWARD_SUBMODE:
-				curr_stats.save_msg = exec_command(p, curr_view, GET_VWBSEARCH_PATTERN);
-				break;
+				{
+					const int command_type = search_submode_to_command_type(sub_mode);
+					curr_stats.save_msg = exec_command(p, curr_view, command_type);
+					break;
+				}
 			case MENU_SEARCH_FORWARD_SUBMODE:
 			case MENU_SEARCH_BACKWARD_SUBMODE:
 				curr_stats.need_update = UT_FULL;
@@ -1245,6 +1239,32 @@ finish_prompt_submode(const char input[])
 	modes_pre();
 
 	cb(input);
+}
+
+/* Converts search command-line sub-mode to type of command for the commands.c
+ * unit.  Returns -1 when there is no appropriate command type. */
+static int
+search_submode_to_command_type(int sub_mode)
+{
+	switch(sub_mode)
+	{
+		case SEARCH_FORWARD_SUBMODE:
+			return GET_FSEARCH_PATTERN;
+		case SEARCH_BACKWARD_SUBMODE:
+			return GET_BSEARCH_PATTERN;
+		case VSEARCH_FORWARD_SUBMODE:
+			return GET_VFSEARCH_PATTERN;
+		case VSEARCH_BACKWARD_SUBMODE:
+			return GET_VBSEARCH_PATTERN;
+		case VIEW_SEARCH_FORWARD_SUBMODE:
+			return GET_VWFSEARCH_PATTERN;
+		case VIEW_SEARCH_BACKWARD_SUBMODE:
+			return GET_VWBSEARCH_PATTERN;
+
+		default:
+			assert(0 && "Unknown search command-line submode.");
+			return -1;
+	}
 }
 
 /* Checks whether specified mode is one of forward searching modes.  Returns
