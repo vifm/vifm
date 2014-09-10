@@ -1171,7 +1171,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			case MENU_SEARCH_FORWARD_SUBMODE:
 			case MENU_SEARCH_BACKWARD_SUBMODE:
 				curr_stats.need_update = UT_FULL;
-				search_menu_list(p, sub_mode_ptr);
+				curr_stats.save_msg = search_menu_list(p, sub_mode_ptr);
 				break;
 
 			default:
