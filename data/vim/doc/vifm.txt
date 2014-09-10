@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 08
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -323,7 +323,9 @@ zR - remove all filters.
 
                                                *vifm-=*
 =regular expression - filter out files that don't match regular expression.
-    This kind of filter is automatically reset when directory is changed.
+    Whether view is updated as regular expression is changed depends on the
+    value of the |vifm-'incsearch'| option.  This kind of filter is
+    automatically reset when directory is changed.
 
 Each file list has its own copy of each filter.
 
@@ -2396,8 +2398,9 @@ characters after f and F commands.  It doesn't affect file filtering.
 incsearch is
 type: boolean
 default: false
-When this option is set, search will be performed starting from initial
-cursor position each time search pattern is changed.
+When this option is set, search and view update for local filter is be
+performed starting from initial cursor position each time search pattern is
+changed.
 
                                                *vifm-'laststatus'* *vifm-'ls'*
 laststatus ls
