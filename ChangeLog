@@ -199,6 +199,9 @@
 	Fixed some buffer overrun bugs discovered on OS X and make tests more
 	BSD-utils friendly.
 
+	Fixed segmentation fault on Alt-. command in command-line mode (since
+	0.7.7).
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.

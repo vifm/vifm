@@ -1795,9 +1795,10 @@ next_dot_completion(void)
 static int
 insert_dot_completion(const wchar_t completion[])
 {
+	const int dot_index = input_stat.index;
 	if(insert_str(completion) == 0)
 	{
-		input_stat.dot_index = input_stat.index;
+		input_stat.dot_index = dot_index;
 		input_stat.dot_len = wcslen(completion);
 		return 0;
 	}
