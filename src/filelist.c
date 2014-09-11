@@ -114,6 +114,8 @@ static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static void capture_selection(FileView *view);
+static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
 static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
@@ -723,14 +725,37 @@ free_file_capture(FileView *view)
 void
 capture_target_files(FileView *view)
 {
+	capture_file_or_selection(view, 0);
+}
+
+/* Collects currently selected files in view->selected_filelist array.  Use
+ * free_file_capture() to clean up memory allocated by this function. */
+static void
+capture_selection(FileView *view)
+{
+	capture_file_or_selection(view, 1);
+}
+
+/* Collects currently selected files (or current file only if no selection
+ * present and skip_if_no_selection is zero) in view->selected_filelist array.
+ * Use free_file_capture() to clean up memory allocated by this function. */
+static void
+capture_file_or_selection(FileView *view, int skip_if_no_selection)
+{
 	int x;
 	int y;
 
 	recount_selected_files(view);
 
-	/* No selected files so just use the current file. */
 	if(view->selected_files == 0)
 	{
+		if(skip_if_no_selection)
+		{
+			free_file_capture(view);
+			return;
+		}
+
+		/* No selected files so just use the current file. */
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
 		view->user_selection = 0;
@@ -1724,7 +1749,7 @@ save_selection(FileView *view)
 		save_selected_filelist = view->selected_filelist;
 		view->selected_filelist = NULL;
 
-		capture_target_files(view);
+		capture_selection(view);
 		view->nsaved_selection = view->selected_files;
 		view->saved_selection = view->selected_filelist;
 
@@ -2621,14 +2646,16 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 	{
-		capture_target_files(view);
+		capture_selection(view);
 	}
 
 	if(view->dir_entry != NULL)
 	{
-		int x;
-		for(x = 0; x < old_list; x++)
-			free(view->dir_entry[x].name);
+		int i;
+		for(i = 0; i < old_list; ++i)
+		{
+			free(view->dir_entry[i].name);
+		}
 
 		free(view->dir_entry);
 		view->dir_entry = NULL;
