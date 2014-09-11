@@ -812,9 +812,12 @@ void
 count_selected(FileView *view)
 {
 	int i;
+
 	view->selected_files = 0;
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
+	{
 		view->selected_files += (view->dir_entry[i].selected != 0);
+	}
 }
 
 int
@@ -2666,10 +2669,14 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
-	if(reload && view->selected_files)
+	if(reload && view->selected_files != 0)
+	{
 		reset_selected_files(view, need_free);
-	else if(view->selected_files)
+	}
+	else if(view->selected_files != 0)
+	{
 		view->selected_files = 0;
+	}
 
 	return 0;
 }
