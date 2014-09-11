@@ -174,11 +174,6 @@ setup(void)
 }
 
 static void
-teardown(void)
-{
-}
-
-static void
 test_leading_whitespace_trimming(void)
 {
 	assert_int_equal(0, execute_cmd("q"));
@@ -741,7 +736,6 @@ input_tests(void)
 	test_fixture_start();
 
 	fixture_setup(setup);
-	fixture_teardown(teardown);
 
 	run_test(test_leading_whitespace_trimming);
 	run_test(test_range_acceptance);
