@@ -720,9 +720,6 @@ free_selected_file_array(FileView *view)
 	}
 }
 
-/* If you use this function using the free_selected_file_array()
- * will clean up the allocated memory
- */
 void
 get_all_selected_files(FileView *view)
 {
@@ -731,7 +728,7 @@ get_all_selected_files(FileView *view)
 
 	count_selected(view);
 
-	/* No selected files so just use the current file */
+	/* No selected files so just use the current file. */
 	if(view->selected_files == 0)
 	{
 		view->dir_entry[view->list_pos].selected = 1;
