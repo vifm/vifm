@@ -3104,6 +3104,10 @@ local_filter_accept(FileView *view)
 	local_filter_finish(view);
 
 	save_filter_history(view->local_filter.filter.raw);
+
+	/* Some of previously selected files could be filtered out, update number of
+	 * selected files. */
+	recount_selected_files(view);
 }
 
 void
