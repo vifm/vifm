@@ -45,6 +45,20 @@ builtin_cmd(const cmd_info_t* cmd_info)
 }
 
 static void
+test_repeat_of_no_command_prints_message(void)
+{
+	called = 0;
+	(void)exec_commands("builtin", &lwin, GET_COMMAND);
+	assert_int_equal(1, called);
+
+	assert_string_equal(NULL, curr_stats.last_cmdline_command);
+
+	called = 0;
+	assert_int_equal(1, exec_commands("!!", &lwin, GET_COMMAND));
+	assert_int_equal(0, called);
+}
+
+static void
 test_double_emark_repeats_last_command(void)
 {
 	called = 0;
@@ -70,6 +84,7 @@ cmdline_emark_tests(void)
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
+	run_test(test_repeat_of_no_command_prints_message);
 	run_test(test_double_emark_repeats_last_command);
 
 	test_fixture_end();

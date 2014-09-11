@@ -1473,6 +1473,11 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
+		if(curr_stats.last_cmdline_command == NULL)
+		{
+			status_bar_message("No previous command-line command");
+			return 1;
+		}
 		return exec_commands(curr_stats.last_cmdline_command, curr_view,
 				GET_COMMAND) != 0;
 	}
