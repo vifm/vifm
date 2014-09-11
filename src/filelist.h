@@ -178,7 +178,7 @@ void toggle_filter_inversion(FileView *view);
 
 /* Sets regular expression of the local filter for the view.  First call of this
  * function initiates filter set process, which should be ended by call to
- * local_filter_apply() or local_filter_cancel(). */
+ * local_filter_accept() or local_filter_cancel(). */
 void local_filter_set(FileView *view, const char filter[]);
 /* Updates cursor position and top line of the view according to interactive
  * local filter in progress. */
