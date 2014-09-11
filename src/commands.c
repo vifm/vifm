@@ -1473,8 +1473,17 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		return exec_commands(curr_stats.last_cmdline_command, curr_view,
-				GET_COMMAND) != 0;
+		if(cmd_info->emark)
+		{
+			const char *const last_cmd = curr_stats.last_cmdline_command;
+			if(last_cmd == NULL)
+			{
+				status_bar_message("No previous command-line command");
+				return 1;
+			}
+			return exec_commands(last_cmd, curr_view, GET_COMMAND) != 0;
+		}
+		return CMDS_ERR_TOO_FEW_ARGS;
 	}
 
 	i = skip_whitespace(com) - com;
