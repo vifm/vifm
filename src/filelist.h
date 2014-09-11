@@ -166,7 +166,9 @@ void capture_target_files(FileView *view);
  * array.  Use free_file_capture() to clean up memory allocated by this
  * function. */
 void capture_files_at(FileView *view, int count, const int indexes[]);
-void count_selected(FileView *view);
+/* Counts number of selected files and writes saves the number in
+ * view->selected_files. */
+void recount_selected_files(FileView *view);
 /* Frees memory from list of captured files. */
 void free_file_capture(FileView *view);
 int ensure_file_is_selected(FileView *view, const char name[]);

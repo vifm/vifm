@@ -258,7 +258,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	yank_selected_files(view, reg);
 	yanked = view->selected_files;
 	free_file_capture(view);
-	count_selected(view);
+	recount_selected_files(view);
 
 	if(count == 0)
 	{

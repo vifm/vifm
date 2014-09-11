@@ -726,7 +726,7 @@ capture_target_files(FileView *view)
 	int x;
 	int y;
 
-	count_selected(view);
+	recount_selected_files(view);
 
 	/* No selected files so just use the current file. */
 	if(view->selected_files == 0)
@@ -742,7 +742,7 @@ capture_target_files(FileView *view)
 		/* Setting this because free_file_capture() doesn't do it. */
 		view->selected_files = 0;
 	}
-	count_selected(view);
+	recount_selected_files(view);
 	view->selected_filelist = calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
@@ -808,7 +808,7 @@ capture_files_at(FileView *view, int count, const int indexes[])
 }
 
 void
-count_selected(FileView *view)
+recount_selected_files(FileView *view)
 {
 	int i;
 
