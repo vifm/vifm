@@ -114,6 +114,8 @@ static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static void capture_selection(FileView *view);
+static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
 static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
@@ -711,7 +713,7 @@ get_current_file_name(FileView *view)
 }
 
 void
-free_selected_file_array(FileView *view)
+free_file_capture(FileView *view)
 {
 	if(view->selected_filelist != NULL)
 	{
@@ -720,20 +722,40 @@ free_selected_file_array(FileView *view)
 	}
 }
 
-/* If you use this function using the free_selected_file_array()
- * will clean up the allocated memory
- */
 void
-get_all_selected_files(FileView *view)
+capture_target_files(FileView *view)
+{
+	capture_file_or_selection(view, 0);
+}
+
+/* Collects currently selected files in view->selected_filelist array.  Use
+ * free_file_capture() to clean up memory allocated by this function. */
+static void
+capture_selection(FileView *view)
+{
+	capture_file_or_selection(view, 1);
+}
+
+/* Collects currently selected files (or current file only if no selection
+ * present and skip_if_no_selection is zero) in view->selected_filelist array.
+ * Use free_file_capture() to clean up memory allocated by this function. */
+static void
+capture_file_or_selection(FileView *view, int skip_if_no_selection)
 {
 	int x;
 	int y;
 
-	count_selected(view);
+	recount_selected_files(view);
 
-	/* No selected files so just use the current file */
 	if(view->selected_files == 0)
 	{
+		if(skip_if_no_selection)
+		{
+			free_file_capture(view);
+			return;
+		}
+
+		/* No selected files so just use the current file. */
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
 		view->user_selection = 0;
@@ -741,11 +763,11 @@ get_all_selected_files(FileView *view)
 
 	if(view->selected_filelist != NULL)
 	{
-		free_selected_file_array(view);
-		/* setting this because free_selected_file_array doesn't do it */
+		free_file_capture(view);
+		/* Setting this because free_file_capture() doesn't do it. */
 		view->selected_files = 0;
 	}
-	count_selected(view);
+	recount_selected_files(view);
 	view->selected_filelist = calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
@@ -775,17 +797,16 @@ get_all_selected_files(FileView *view)
 	view->selected_files = y;
 }
 
-/* If you use this function using the free_selected_file_array()
- * will clean up the allocated memory
- */
 void
-get_selected_files(FileView *view, int count, const int *indexes)
+capture_files_at(FileView *view, int count, const int indexes[])
 {
 	int x;
 	int y = 0;
 
 	if(view->selected_filelist != NULL)
-		free_selected_file_array(view);
+	{
+		free_file_capture(view);
+	}
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
@@ -812,12 +833,15 @@ get_selected_files(FileView *view, int count, const int *indexes)
 }
 
 void
-count_selected(FileView *view)
+recount_selected_files(FileView *view)
 {
 	int i;
+
 	view->selected_files = 0;
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
+	{
 		view->selected_files += (view->dir_entry[i].selected != 0);
+	}
 }
 
 int
@@ -1725,7 +1749,7 @@ save_selection(FileView *view)
 		save_selected_filelist = view->selected_filelist;
 		view->selected_filelist = NULL;
 
-		get_all_selected_files(view);
+		capture_selection(view);
 		view->nsaved_selection = view->selected_files;
 		view->saved_selection = view->selected_filelist;
 
@@ -1736,14 +1760,16 @@ save_selection(FileView *view)
 void
 erase_selection(FileView *view)
 {
-	int x;
+	int i;
 
 	/* This is needed, since otherwise we loose number of items in the array,
 	 * which can cause access violation of memory leaks. */
-	free_selected_file_array(view);
+	free_file_capture(view);
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].selected = 0;
+	}
 	view->selected_files = 0;
 }
 
@@ -2121,22 +2147,24 @@ free_saved_selection(FileView *view)
 static void
 reset_selected_files(FileView *view, int need_free)
 {
-	int x;
-	for(x = 0; x < view->selected_files; x++)
+	int i;
+	for(i = 0; i < view->selected_files; ++i)
 	{
-		if(view->selected_filelist[x] != NULL)
+		if(view->selected_filelist[i] != NULL)
 		{
-			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+			const int pos = find_file_pos_in_list(view, view->selected_filelist[i]);
 			if(pos >= 0 && pos < view->list_rows)
+			{
 				view->dir_entry[pos].selected = 1;
+			}
 		}
 	}
 
 	if(need_free)
 	{
-		x = view->selected_files;
-		free_selected_file_array(view);
-		view->selected_files = x;
+		i = view->selected_files;
+		free_file_capture(view);
+		view->selected_files = i;
 	}
 }
 
@@ -2618,14 +2646,16 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 	{
-		get_all_selected_files(view);
+		capture_selection(view);
 	}
 
 	if(view->dir_entry != NULL)
 	{
-		int x;
-		for(x = 0; x < old_list; x++)
-			free(view->dir_entry[x].name);
+		int i;
+		for(i = 0; i < old_list; ++i)
+		{
+			free(view->dir_entry[i].name);
+		}
 
 		free(view->dir_entry);
 		view->dir_entry = NULL;
@@ -2669,10 +2699,14 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
-	if(reload && view->selected_files)
+	if(reload && view->selected_files != 0)
+	{
 		reset_selected_files(view, need_free);
-	else if(view->selected_files)
+	}
+	else if(view->selected_files != 0)
+	{
 		view->selected_files = 0;
+	}
 
 	return 0;
 }
@@ -3070,6 +3104,10 @@ local_filter_accept(FileView *view)
 	local_filter_finish(view);
 
 	save_filter_history(view->local_filter.filter.raw);
+
+	/* Some of previously selected files could be filtered out, update number of
+	 * selected files. */
+	recount_selected_files(view);
 }
 
 void

@@ -158,10 +158,19 @@ void clean_selected_files(FileView *view);
 void erase_selection(FileView *view);
 /* Inverts selection of files in the view. */
 void invert_selection(FileView *view);
-void get_all_selected_files(FileView *view);
-void get_selected_files(FileView *view, int count, const int *indexes);
-void count_selected(FileView *view);
-void free_selected_file_array(FileView *view);
+/* Collects currently selected files (or current file only if no selection
+ * present) in view->selected_filelist array.  Use free_file_capture() to clean
+ * up memory allocated by this function. */
+void capture_target_files(FileView *view);
+/* Collects count items located at specified indices in view->selected_filelist
+ * array.  Use free_file_capture() to clean up memory allocated by this
+ * function. */
+void capture_files_at(FileView *view, int count, const int indexes[]);
+/* Counts number of selected files and writes saves the number in
+ * view->selected_files. */
+void recount_selected_files(FileView *view);
+/* Frees memory from list of captured files. */
+void free_file_capture(FileView *view);
 int ensure_file_is_selected(FileView *view, const char name[]);
 
 /* Filters related functions. */
@@ -178,7 +187,7 @@ void toggle_filter_inversion(FileView *view);
 
 /* Sets regular expression of the local filter for the view.  First call of this
  * function initiates filter set process, which should be ended by call to
- * local_filter_apply() or local_filter_cancel(). */
+ * local_filter_accept() or local_filter_cancel(). */
 void local_filter_set(FileView *view, const char filter[]);
 /* Updates cursor position and top line of the view according to interactive
  * local filter in progress. */

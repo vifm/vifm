@@ -245,15 +245,20 @@ int
 yank_files(FileView *view, int reg, int count, int *indexes)
 {
 	int yanked;
+
 	if(count > 0)
-		get_selected_files(view, count, indexes);
+	{
+		capture_files_at(view, count, indexes);
+	}
 	else
-		get_all_selected_files(view);
+	{
+		capture_target_files(view);
+	}
 
 	yank_selected_files(view, reg);
 	yanked = view->selected_files;
-	free_selected_file_array(view);
-	count_selected(view);
+	free_file_capture(view);
+	recount_selected_files(view);
 
 	if(count == 0)
 	{
@@ -333,11 +338,11 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	if(count > 0)
 	{
-		get_selected_files(view, count, indexes);
+		capture_files_at(view, count, indexes);
 	}
 	else
 	{
-		get_all_selected_files(view);
+		capture_target_files(view);
 	}
 
 	if(use_trash)
@@ -455,7 +460,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		ops_advance(ops, result == 0);
 	}
-	free_selected_file_array(view);
+	free_file_capture(view);
 
 	update_unnamed_reg(reg);
 
@@ -549,7 +554,7 @@ delete_files_bg(FileView *view, int use_trash)
 	args->move = 0;
 	args->force = 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	i = view->list_pos;
 	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
@@ -1076,7 +1081,7 @@ incdec_names(FileView *view, int k)
 	int err = 0;
 	int renames = 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 	names_len = view->selected_files;
 	names = copy_string_array(view->selected_filelist, names_len);
 
@@ -1828,7 +1833,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
 		return 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	from_file = nlines < 0;
 	if(from_file)
@@ -1836,7 +1841,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		list = edit_list(view->selected_files, view->selected_filelist, &nlines, 0);
 		if(list == NULL)
 		{
-			free_selected_file_array(view);
+			free_file_capture(view);
 			return 0;
 		}
 	}
@@ -1862,10 +1867,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	sel = copy_string_array(view->selected_filelist, sel_len);
 	if(!view->user_selection)
 	{
-		free_selected_file_array(view);
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].selected = 0;
-		view->selected_files = 0;
+		erase_selection(view);
 	}
 
 	ops = ops_alloc(OP_COPY, "Cloning");
@@ -1916,7 +1918,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		ops_advance(ops, 1);
 	}
 	cmd_group_end();
-	free_selected_file_array(view);
+	free_file_capture(view);
 	free_string_array(sel, sel_len);
 
 	clean_selected_files(view);
@@ -2530,12 +2532,18 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	if(count > 0)
-		get_selected_files(view, count, indexes);
+	{
+		capture_files_at(view, count, indexes);
+	}
 	else
-		get_all_selected_files(view);
+	{
+		capture_target_files(view);
+	}
 
 	if(view->selected_files == 0)
 	{
@@ -2560,7 +2568,7 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 		if(is_in_string_array(dest, n - 1, buf))
 		{
 			free_string_array(dest, n);
-			free_selected_file_array(view);
+			free_file_capture(view);
 			view->selected_files = 0;
 			status_bar_errorf("Name \"%s\" duplicates", buf);
 			return 1;
@@ -2570,7 +2578,7 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 		if(lstat(buf, &st) == 0)
 		{
 			free_string_array(dest, n);
-			free_selected_file_array(view);
+			free_file_capture(view);
 			view->selected_files = 0;
 			status_bar_errorf("File \"%s\" already exists", buf);
 			return 1;
@@ -2601,7 +2609,7 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 	}
 	cmd_group_end();
 
-	free_selected_file_array(view);
+	free_file_capture(view);
 	view->selected_files = 0;
 	free_string_array(dest, n);
 	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
@@ -2648,7 +2656,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	if(!check_if_dir_writable(DR_DESTINATION, path))
 		return -1;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	*from_file = *nlines < 0;
 	if(*from_file)
@@ -2897,7 +2905,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	cmd_group_end();
 
 	free_string_array(sel, sel_len);
-	free_selected_file_array(view);
+	free_file_capture(view);
 	clean_selected_files(view);
 	ui_views_reload_filelists();
 	if(from_file)
@@ -3097,11 +3105,12 @@ cpmv_in_bg(void *arg)
 static void
 general_prepare_for_bg_task(FileView *view, bg_args_t *args)
 {
+	/* Steal captured file list from the view. */
 	args->sel_list = view->selected_filelist;
 	args->sel_list_len = view->selected_files;
-
 	view->selected_filelist = NULL;
-	free_selected_file_array(view);
+
+	free_file_capture(view);
 	ui_view_reset_selection_and_reload(view);
 
 	copy_str(args->src, sizeof(args->src), view->curr_dir);

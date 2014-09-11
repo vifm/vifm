@@ -205,6 +205,9 @@
 	Fixed segmentation fault on Alt-. command in command-line mode (since
 	0.7.7).
 
+	Fixed wrong single file selection after applying local filter (also wrong
+	number of selected files on status bar).  Thanks to filterfalse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
