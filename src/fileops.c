@@ -245,10 +245,15 @@ int
 yank_files(FileView *view, int reg, int count, int *indexes)
 {
 	int yanked;
+
 	if(count > 0)
+	{
 		get_selected_files(view, count, indexes);
+	}
 	else
-		get_all_selected_files(view);
+	{
+		capture_target_files(view);
+	}
 
 	yank_selected_files(view, reg);
 	yanked = view->selected_files;
@@ -337,7 +342,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	else
 	{
-		get_all_selected_files(view);
+		capture_target_files(view);
 	}
 
 	if(use_trash)
@@ -549,7 +554,7 @@ delete_files_bg(FileView *view, int use_trash)
 	args->move = 0;
 	args->force = 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	i = view->list_pos;
 	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
@@ -1076,7 +1081,7 @@ incdec_names(FileView *view, int k)
 	int err = 0;
 	int renames = 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 	names_len = view->selected_files;
 	names = copy_string_array(view->selected_filelist, names_len);
 
@@ -1828,7 +1833,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
 		return 0;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	from_file = nlines < 0;
 	if(from_file)
@@ -2530,12 +2535,18 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	if(count > 0)
+	{
 		get_selected_files(view, count, indexes);
+	}
 	else
-		get_all_selected_files(view);
+	{
+		capture_target_files(view);
+	}
 
 	if(view->selected_files == 0)
 	{
@@ -2648,7 +2659,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	if(!check_if_dir_writable(DR_DESTINATION, path))
 		return -1;
 
-	get_all_selected_files(view);
+	capture_target_files(view);
 
 	*from_file = *nlines < 0;
 	if(*from_file)

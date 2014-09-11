@@ -986,8 +986,11 @@ static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
+	{
 		key_info.reg = DEFAULT_REG_NAME;
-	get_all_selected_files(view);
+	}
+
+	capture_target_files(view);
 	yank_selected_files(view, key_info.reg);
 
 	status_bar_messagef("%d file%s yanked", view->selected_files,

@@ -721,7 +721,7 @@ free_selected_file_array(FileView *view)
 }
 
 void
-get_all_selected_files(FileView *view)
+capture_target_files(FileView *view)
 {
 	int x;
 	int y;
@@ -1725,7 +1725,7 @@ save_selection(FileView *view)
 		save_selected_filelist = view->selected_filelist;
 		view->selected_filelist = NULL;
 
-		get_all_selected_files(view);
+		capture_target_files(view);
 		view->nsaved_selection = view->selected_files;
 		view->saved_selection = view->selected_filelist;
 
@@ -2618,7 +2618,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 	{
-		get_all_selected_files(view);
+		capture_target_files(view);
 	}
 
 	if(view->dir_entry != NULL)

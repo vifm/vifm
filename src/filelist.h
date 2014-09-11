@@ -161,7 +161,7 @@ void invert_selection(FileView *view);
 /* Collects currently selected item (or current item only if no selection
  * present) in view->selected_filelist array.  Use free_selected_file_array() to
  * clean up memory allocated by this function.  */
-void get_all_selected_files(FileView *view);
+void capture_target_files(FileView *view);
 void get_selected_files(FileView *view, int count, const int *indexes);
 void count_selected(FileView *view);
 void free_selected_file_array(FileView *view);
