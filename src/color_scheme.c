@@ -38,6 +38,8 @@
 #include "status.h"
 #include "ui.h"
 
+#define COLORSCHEME_EXTENSION ".vifm"
+
 char *HI_GROUPS[] = {
 	[WIN_COLOR]          = "Win",
 	[DIRECTORY_COLOR]    = "Directory",
@@ -381,7 +383,7 @@ list_color_schemes(int *len)
 {
 	char colors_dir[PATH_MAX];
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return list_regular_files(colors_dir, len);
+	return list_regular_files(colors_dir, COLORSCHEME_EXTENSION, len);
 }
 
 int
