@@ -76,6 +76,20 @@ test_double_emark_repeats_last_command(void)
 	curr_stats.last_cmdline_command = NULL;
 }
 
+static void
+test_single_emark_without_args_fails(void)
+{
+	free(curr_stats.last_cmdline_command);
+	curr_stats.last_cmdline_command = strdup("builtin");
+
+	called = 0;
+	assert_false(exec_commands("!", &lwin, GET_COMMAND) == 0);
+	assert_int_equal(0, called);
+
+	free(curr_stats.last_cmdline_command);
+	curr_stats.last_cmdline_command = NULL;
+}
+
 void
 cmdline_emark_tests(void)
 {
@@ -86,6 +100,7 @@ cmdline_emark_tests(void)
 
 	run_test(test_repeat_of_no_command_prints_message);
 	run_test(test_double_emark_repeats_last_command);
+	run_test(test_single_emark_without_args_fails);
 
 	test_fixture_end();
 }
