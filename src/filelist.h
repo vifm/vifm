@@ -160,9 +160,12 @@ void erase_selection(FileView *view);
 void invert_selection(FileView *view);
 /* Collects currently selected item (or current item only if no selection
  * present) in view->selected_filelist array.  Use free_selected_file_array() to
- * clean up memory allocated by this function.  */
+ * clean up memory allocated by this function. */
 void capture_target_files(FileView *view);
-void get_selected_files(FileView *view, int count, const int *indexes);
+/* Collects count items located at specified indices in view->selected_filelist
+ * array.  Use free_selected_file_array() to clean up memory allocated by this
+ * function. */
+void capture_files_at(FileView *view, int count, const int indexes[]);
 void count_selected(FileView *view);
 void free_selected_file_array(FileView *view);
 int ensure_file_is_selected(FileView *view, const char name[]);

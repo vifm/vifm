@@ -248,7 +248,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 
 	if(count > 0)
 	{
-		get_selected_files(view, count, indexes);
+		capture_files_at(view, count, indexes);
 	}
 	else
 	{
@@ -338,7 +338,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	if(count > 0)
 	{
-		get_selected_files(view, count, indexes);
+		capture_files_at(view, count, indexes);
 	}
 	else
 	{
@@ -2541,7 +2541,7 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 
 	if(count > 0)
 	{
-		get_selected_files(view, count, indexes);
+		capture_files_at(view, count, indexes);
 	}
 	else
 	{

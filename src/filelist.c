@@ -772,17 +772,16 @@ capture_target_files(FileView *view)
 	view->selected_files = y;
 }
 
-/* If you use this function using the free_selected_file_array()
- * will clean up the allocated memory
- */
 void
-get_selected_files(FileView *view, int count, const int *indexes)
+capture_files_at(FileView *view, int count, const int indexes[])
 {
 	int x;
 	int y = 0;
 
 	if(view->selected_filelist != NULL)
+	{
 		free_selected_file_array(view);
+	}
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
