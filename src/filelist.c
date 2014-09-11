@@ -711,7 +711,7 @@ get_current_file_name(FileView *view)
 }
 
 void
-free_selected_file_array(FileView *view)
+free_file_capture(FileView *view)
 {
 	if(view->selected_filelist != NULL)
 	{
@@ -738,8 +738,8 @@ capture_target_files(FileView *view)
 
 	if(view->selected_filelist != NULL)
 	{
-		free_selected_file_array(view);
-		/* setting this because free_selected_file_array doesn't do it */
+		free_file_capture(view);
+		/* Setting this because free_file_capture() doesn't do it. */
 		view->selected_files = 0;
 	}
 	count_selected(view);
@@ -780,7 +780,7 @@ capture_files_at(FileView *view, int count, const int indexes[])
 
 	if(view->selected_filelist != NULL)
 	{
-		free_selected_file_array(view);
+		free_file_capture(view);
 	}
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
@@ -1735,14 +1735,16 @@ save_selection(FileView *view)
 void
 erase_selection(FileView *view)
 {
-	int x;
+	int i;
 
 	/* This is needed, since otherwise we loose number of items in the array,
 	 * which can cause access violation of memory leaks. */
-	free_selected_file_array(view);
+	free_file_capture(view);
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].selected = 0;
+	}
 	view->selected_files = 0;
 }
 
@@ -2120,22 +2122,24 @@ free_saved_selection(FileView *view)
 static void
 reset_selected_files(FileView *view, int need_free)
 {
-	int x;
-	for(x = 0; x < view->selected_files; x++)
+	int i;
+	for(i = 0; i < view->selected_files; ++i)
 	{
-		if(view->selected_filelist[x] != NULL)
+		if(view->selected_filelist[i] != NULL)
 		{
-			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+			const int pos = find_file_pos_in_list(view, view->selected_filelist[i]);
 			if(pos >= 0 && pos < view->list_rows)
+			{
 				view->dir_entry[pos].selected = 1;
+			}
 		}
 	}
 
 	if(need_free)
 	{
-		x = view->selected_files;
-		free_selected_file_array(view);
-		view->selected_files = x;
+		i = view->selected_files;
+		free_file_capture(view);
+		view->selected_files = i;
 	}
 }
 

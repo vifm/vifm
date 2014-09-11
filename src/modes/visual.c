@@ -997,7 +997,7 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 			(view->selected_files == 1) ? "" : "s");
 	curr_stats.save_msg = 1;
 
-	free_selected_file_array(view);
+	free_file_capture(view);
 
 	accept_and_leave(1);
 }
