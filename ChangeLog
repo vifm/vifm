@@ -134,6 +134,9 @@
 	:history command to speed up future operations (this clean up is very cheap
 	on composing menu).
 
+	Optimized speed of checking existence of a directory (important on
+	displaying directory history).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

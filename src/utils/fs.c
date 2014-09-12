@@ -30,13 +30,13 @@
 #include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
-#include <unistd.h> /* access() */
+#include <unistd.h> /* F_OK access() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() rename() */
 #include <stdlib.h> /* free() realpath() */
-#include <string.h> /* strdup() strncmp() strncpy() */
+#include <string.h> /* strdup() strlen() strncmp() strncpy() */
 
 #include "fs_limits.h"
 #include "log.h"
@@ -45,6 +45,7 @@
 #include "string_array.h"
 #include "utils.h"
 
+static int is_dir_fast(const char path[]);
 static int path_exists_internal(const char *path, const char *filename);
 
 #ifndef _WIN32
@@ -56,11 +57,42 @@ static DWORD win_get_file_attrs(const char path[]);
 int
 is_dir(const char path[])
 {
+	if(is_dir_fast(path))
+	{
+		return 1;
+	}
+
 #ifndef _WIN32
 	return is_directory(path, 1);
 #else
 	return win_get_file_attrs(path) & FILE_ATTRIBUTE_DIRECTORY;
 #endif
+}
+
+/* Checks if path is an existing directory faster than is_dir() does this at the
+ * cost of less accurate results (fails on non-sufficient rights).
+ * Automatically deferences symbolic links.  Returns non-zero if path points to
+ * a directory, otherwise zero is returned. */
+static int
+is_dir_fast(const char path[])
+{
+	/* Optimization idea: is_dir() ends up using stat() call, which in turn has
+	 * to:
+	 *  1) resolve path to an inode number;
+	 *  2) find and load inode for the directory.
+	 * Checking "path/." for existence is a "hack" to omit 2).
+	 * Negative answer of this method doesn't guarantee directory absence, but
+	 * positive answer provides correct answer faster than is_dir() would. */
+
+	const size_t len = strlen(path);
+	char path_to_selfref[len + 1 + 1 + 1];
+
+	strcpy(path_to_selfref, path);
+	path_to_selfref[len] = '/';
+	path_to_selfref[len + 1] = '.';
+	path_to_selfref[len + 2] = '\0';
+
+	return access(path_to_selfref, F_OK) == 0;
 }
 
 int
