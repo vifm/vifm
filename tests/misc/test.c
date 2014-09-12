@@ -47,6 +47,7 @@ void string_escape_tests(void);
 void split_and_get_tests(void);
 void functional_tests(void);
 void cmdline_emark_tests(void);
+void is_dir_tests(void);
 
 void
 all_tests(void)
@@ -98,6 +99,7 @@ all_tests(void)
 	split_and_get_tests();
 	functional_tests();
 	cmdline_emark_tests();
+	is_dir_tests();
 }
 
 int
