@@ -574,10 +574,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		if(curr_view->history_pos < curr_view->history_num - 1)
-		{
-			goto_history_pos(curr_view, curr_view->history_pos + 1);
-		}
+		navigate_forward_in_history(curr_view);
 	}
 }
 
@@ -601,10 +598,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->history_pos != 0)
-	{
-		goto_history_pos(curr_view, curr_view->history_pos - 1);
-	}
+	navigate_backward_in_history(curr_view);
 }
 
 static void

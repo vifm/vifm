@@ -206,7 +206,12 @@ void local_filter_restore(FileView *view);
 
 /* Directory history related functions. */
 
-void goto_history_pos(FileView *view, int pos);
+/* Changes current directory of the view to next location backward in
+ * history, if available. */
+void navigate_backward_in_history(FileView *view);
+/* Changes current directory of the view to next location forward in history, if
+ * available. */
+void navigate_forward_in_history(FileView *view);
 void save_view_history(FileView *view, const char *path, const char *file,
 		int pos);
 int is_in_view_history(FileView *view, const char *path);

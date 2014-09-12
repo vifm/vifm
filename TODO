@@ -185,3 +185,4 @@ Code improvements.
     Maybe move cancellation out of ui.c.
     Separate filelist data from view data (extract into separate structure).
     Create separate utilities for engine/ part to make them self-consistent.
+    Maybe extract history related code out of filelist.c to separate file..
