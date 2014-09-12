@@ -4058,6 +4058,13 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		external = 0;
 		keep_view_selection = 1;
 	}
+	else if(expanded_com[0] == '=')
+	{
+		exec_command(expanded_com + 1, curr_view, GET_FILTER_PATTERN);
+		ui_view_schedule_reload(curr_view);
+		external = 0;
+		keep_view_selection = 1;
+	}
 	else if(bg)
 	{
 		start_background_job(expanded_com, 0);
