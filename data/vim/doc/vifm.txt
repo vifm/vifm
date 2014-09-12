@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 10
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -381,12 +381,14 @@ q= - open external editor to prompt for filter pattern.  See
     command.  Count will modify range.
 
                                                *vifm-CTRL-O*
-Ctrl-O - go backward through history.
+Ctrl-O - go backward through directory history of current view.  Nonexistent
+    directories are automatically skipped.
 
                                                *vifm-CTRL-I* *vifm-Tab*
 Ctrl-I - if |vifm-'cpoptions'| contains "t" flag (|vifm-cpo-t|), <tab> and
     <c-i> switch active pane just like |vifm-Space| does, otherwise it
-    goes forward through directory history of the current view.
+    goes forward through directory history of current view.  Nonexistent
+    directories are automatically skipped.
 
                                                *vifm-CTRL-G*
 Ctrl-G - creates a window showing detailed information about the current

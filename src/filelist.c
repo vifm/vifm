@@ -129,6 +129,7 @@ static void calculate_number_width(FileView *view);
 static int count_digits(int num);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
+static void navigate_to_history_pos(FileView *view, int pos);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
@@ -1383,7 +1384,53 @@ calculate_column_width(FileView *view)
 }
 
 void
-goto_history_pos(FileView *view, int pos)
+navigate_backward_in_history(FileView *view)
+{
+	int pos = view->history_pos - 1;
+
+	while(pos >= 0)
+	{
+		const char *const dir = view->history[pos].dir;
+		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
+		{
+			break;
+		}
+
+		--pos;
+	}
+
+	if(pos >= 0)
+	{
+		navigate_to_history_pos(view, pos);
+	}
+}
+
+void
+navigate_forward_in_history(FileView *view)
+{
+	int pos = view->history_pos + 1;
+
+	while(pos <= view->history_num - 1)
+	{
+		const char *const dir = view->history[pos].dir;
+		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
+		{
+			break;
+		}
+
+		++pos;
+	}
+
+	if(pos <= view->history_num - 1)
+	{
+		navigate_to_history_pos(view, pos);
+	}
+}
+
+/* Changes current directory of the view to one of previously visited
+ * locations. */
+static void
+navigate_to_history_pos(FileView *view, int pos)
 {
 	curr_stats.skip_history = 1;
 	if(change_directory(view, view->history[pos].dir) < 0)
@@ -1403,8 +1450,10 @@ void
 clean_positions_in_history(FileView *view)
 {
 	int i;
-	for(i = 0; i <= view->history_pos && i < view->history_num; i++)
+	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
+	{
 		view->history[i].file[0] = '\0';
+	}
 }
 
 void

@@ -105,7 +105,6 @@ Possible things to add.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
     Think about running vim on :help command in kind of sandbox, so the only
         help files available were those provided by vifm.
-    Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
     Invalidate calculated directory size if its modification time changed.
     Add search history for less-like mode.
@@ -185,3 +184,4 @@ Code improvements.
     Maybe move cancellation out of ui.c.
     Separate filelist data from view data (extract into separate structure).
     Create separate utilities for engine/ part to make them self-consistent.
+    Maybe extract history related code out of filelist.c to separate file..

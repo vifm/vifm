@@ -19,6 +19,7 @@
 
 #include "dirhistory_menu.h"
 
+#include <stddef.h> /* NULL */
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
@@ -34,13 +35,15 @@ int
 show_history_menu(FileView *view)
 {
 	int i;
-	static menu_info m;
+	int need_cleanup;
 
+	static menu_info m;
 	init_menu_info(&m, DIRHISTORY_MENU, strdup("History disabled or empty"));
 
 	m.title = strdup(" Directory History ");
 	m.execute_handler = &execute_dirhistory_cb;
 
+	need_cleanup = 0;
 	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
 	{
 		int j;
@@ -52,7 +55,13 @@ show_history_menu(FileView *view)
 		if(j < view->history_num && j < cfg.history_len)
 			continue;
 		if(!is_valid_dir(view->history[i].dir))
+		{
+			/* "Mark" directory as non-existent. */
+			free(view->history[i].dir);
+			view->history[i].dir = NULL;
+			need_cleanup = 1;
 			continue;
+		}
 
 		/* Change the current dir to reflect the current file. */
 		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
@@ -63,6 +72,39 @@ show_history_menu(FileView *view)
 		}
 
 		m.len = add_to_string_array(&m.items, m.len, 1, view->history[i].dir);
+	}
+
+	if(need_cleanup)
+	{
+		int i, j;
+
+		/* Erase non existing directories from history. */
+		j = 0;
+		for(i = 0; i < view->history_num && i < cfg.history_len; ++i)
+		{
+			if(view->history[i].dir == NULL)
+			{
+				free(view->history[i].file);
+				continue;
+			}
+
+			if(j != i)
+			{
+				view->history[j] = view->history[i];
+
+				view->history[i].dir = NULL;
+				view->history[i].file = NULL;
+				view->history[i].rel_pos = -1;
+			}
+
+			if(view->history_pos == i)
+			{
+				view->history_pos = j;
+			}
+
+			++j;
+		}
+		view->history_num = j;
 	}
 
 	/* Reverse order in which items appear. */
