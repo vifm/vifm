@@ -130,6 +130,10 @@
 	Repeat search with last used search pattern on empty pattern of the search
 	mode.
 
+	Automatically remove non-existent directories on from directory history on
+	:history command to speed up future operations (this clean up is very cheap
+	on composing menu).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
