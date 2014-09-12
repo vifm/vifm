@@ -1386,18 +1386,44 @@ calculate_column_width(FileView *view)
 void
 navigate_backward_in_history(FileView *view)
 {
-	if(view->history_pos > 0)
+	int pos = view->history_pos - 1;
+
+	while(pos >= 0)
 	{
-		navigate_to_history_pos(view, view->history_pos - 1);
+		const char *const dir = view->history[pos].dir;
+		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
+		{
+			break;
+		}
+
+		--pos;
+	}
+
+	if(pos >= 0)
+	{
+		navigate_to_history_pos(view, pos);
 	}
 }
 
 void
 navigate_forward_in_history(FileView *view)
 {
-	if(view->history_pos < view->history_num - 1)
+	int pos = view->history_pos + 1;
+
+	while(pos <= view->history_num - 1)
 	{
-		navigate_to_history_pos(view, view->history_pos + 1);
+		const char *const dir = view->history[pos].dir;
+		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
+		{
+			break;
+		}
+
+		++pos;
+	}
+
+	if(pos <= view->history_num - 1)
+	{
+		navigate_to_history_pos(view, pos);
 	}
 }
 

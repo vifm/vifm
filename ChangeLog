@@ -137,6 +137,8 @@
 	Optimized speed of checking existence of a directory (important on
 	displaying directory history).
 
+	Skip nonexistent directories on Ctrl-O/Ctrl-I.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

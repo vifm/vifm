@@ -1,4 +1,4 @@
-.TH vifm 1 "September 10, 2014" "" "Vifm"
+.TH vifm 1 "September 12, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -423,12 +423,13 @@ mode.
 enter command line mode with entered ! command.  Count will modify range.
 .TP
 .BI Ctrl-O
-go backward through history.
+go backward through directory history of current view.  Nonexistent directories
+are automatically skipped.
 .TP
 .BI Ctrl-I
 if 'cpoptions' contains "t" flag, <tab> and <c-i> switch active pane just like
-<space> does, otherwise it goes forward through directory history of the current
-view.
+<space> does, otherwise it goes forward through directory history of current
+view.  Nonexistent directories are automatically skipped.
 .TP
 .BI Ctrl-G
 creates a window showing detailed information about the current file.
