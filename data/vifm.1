@@ -1318,10 +1318,13 @@ of the commands action (:com rm rm %f &).  Command name cannot contain
 numbers or special symbols (except '?' and '!').
 .TP
 .BI ":com[mand] name /pattern"
-will set search pattern.
+sets search pattern.
+.TP
+.BI ":com[mand] name =pattern"
+sets local filter value.
 .TP
 .BI ":com[mand] name filter{:filter args}"
-will set file name filter (see :filter command description).  For example:
+sets file name filter (see :filter command description).  For example:
 .EX
  " display only audio files
  :command onlyaudio filter/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i

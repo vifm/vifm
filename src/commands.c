@@ -269,6 +269,8 @@ static int wq_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
+static int try_handle_ext_command(const char cmd[], MacroFlags flags,
+		int *save_msg);
 static void output_to_statusbar(const char *cmd);
 static void run_in_split(const FileView *view, const char cmd[]);
 
@@ -1450,9 +1452,10 @@ commands_block_finished(void)
 }
 
 /* Return value of all functions below which name ends with "_cmd" mean:
- *  <0 - one of CMDS_* errors from cmds.h
- *  =0 - nothing was outputted to the status bar, don't need to save its state
- *  <0 - someting was outputted to the status bar, need to save its state */
+ *  - <0 -- one of CMDS_* errors from cmds.h;
+ *  - =0 -- nothing was outputted to the status bar, don't need to save its
+ *          state;
+ *  - <0 -- someting was outputted to the status bar, need to save its state. */
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
@@ -1460,16 +1463,15 @@ goto_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Handles :! command, which executes external command via shell. */
 static int
 emark_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: Refactor this function emark_cmd(), see usercmd_cmd() */
-
-	int i;
 	int save_msg = 0;
-	char *com = (char *)cmd_info->args;
+	const char *com = cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
 	MacroFlags flags;
+	int handled;
 
 	if(cmd_info->argc == 0)
 	{
@@ -1486,34 +1488,25 @@ emark_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TOO_FEW_ARGS;
 	}
 
-	i = skip_whitespace(com) - com;
-
-	if(com[i] == '\0')
+	com = skip_whitespace(com);
+	if(com[0] == '\0')
+	{
 		return 0;
+	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	if(flags == MACRO_STATUSBAR_OUTPUT)
+	handled = try_handle_ext_command(com, flags, &save_msg);
+	if(handled > 0)
 	{
-		output_to_statusbar(com);
-		return 1;
+		/* Do nothing. */
 	}
-	else if(flags == MACRO_IGNORE)
+	else if(handled < 0)
 	{
-		output_to_nowhere(com);
-		return 0;
-	}
-	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
-	{
-		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
-		save_msg = show_user_menu(curr_view, com, navigate) != 0;
-	}
-	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
-	{
-		run_in_split(curr_view, com);
+		return save_msg;
 	}
 	else if(cmd_info->bg)
 	{
-		start_background_job(com + i, 0);
+		start_background_job(com, 0);
 	}
 	else
 	{
@@ -1522,7 +1515,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 		clean_selected_files(curr_view);
 		if(cfg.fast_run)
 		{
-			char *const buf = fast_run_complete(com + i);
+			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
 				(void)shellout(buf, cmd_info->emark ? 1 : -1, use_term_mux);
@@ -1531,14 +1524,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			(void)shellout(com + i, cmd_info->emark ? 1 : -1, use_term_mux);
+			(void)shellout(com, cmd_info->emark ? 1 : -1, use_term_mux);
 		}
 	}
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
 			replace_home_part(curr_view->curr_dir), cmd_info->raw_args);
 	cmd_group_begin(buf);
-	add_operation(OP_USR, strdup(com + i), NULL, "", "");
+	add_operation(OP_USR, strdup(com), NULL, "", "");
 	cmd_group_end();
 
 	return save_msg;
@@ -3976,14 +3969,13 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: Refactor this function usercmd_cmd(), see emark_cmd() */
-
 	char *expanded_com = NULL;
 	MacroFlags flags;
 	size_t len;
 	int external = 1;
 	int bg;
 	int save_msg = 0;
+	int handled;
 
 	/* Expand macros in a binded command. */
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
@@ -4004,26 +3996,15 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	clean_selected_files(curr_view);
 
-	if(flags == MACRO_STATUSBAR_OUTPUT)
+	handled = try_handle_ext_command(expanded_com, flags, &save_msg);
+	if(handled > 0)
 	{
-		output_to_statusbar(expanded_com);
+		/* Do nothing. */
+	}
+	else if(handled < 0)
+	{
 		free(expanded_com);
-		return 1;
-	}
-	else if(flags == MACRO_IGNORE)
-	{
-		output_to_nowhere(expanded_com);
-		free(expanded_com);
-		return 0;
-	}
-	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
-	{
-		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
-		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
-	}
-	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
-	{
-		run_in_split(curr_view, expanded_com);
+		return save_msg;
 	}
 	else if(starts_with_lit(expanded_com, "filter") &&
 			char_is_one_of(" !/", expanded_com[6]))
@@ -4058,6 +4039,13 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		external = 0;
 		keep_view_selection = 1;
 	}
+	else if(expanded_com[0] == '=')
+	{
+		exec_command(expanded_com + 1, curr_view, GET_FILTER_PATTERN);
+		ui_view_schedule_reload(curr_view);
+		external = 0;
+		keep_view_selection = 1;
+	}
 	else if(bg)
 	{
 		start_background_job(expanded_com, 0);
@@ -4077,6 +4065,41 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	free(expanded_com);
 
 	return save_msg;
+}
+
+/* Handles most of command handling variants.  Returns:
+ *  - > 0 -- handled, good to go;
+ *  - = 0 -- not handled at all;
+ *  - < 0 -- handled, exit. */
+static int
+try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
+{
+	if(flags == MACRO_STATUSBAR_OUTPUT)
+	{
+		output_to_statusbar(cmd);
+		*save_msg = 1;
+		return -1;
+	}
+	else if(flags == MACRO_IGNORE)
+	{
+		output_to_nowhere(cmd);
+		*save_msg = 0;
+		return -1;
+	}
+	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
+	{
+		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
+		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+	}
+	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
+	{
+		run_in_split(curr_view, cmd);
+	}
+	else
+	{
+		return 0;
+	}
+	return 1;
 }
 
 static void

@@ -51,6 +51,10 @@
 	Added progress for file system operations.  Available only if 'syscalls'
 	option is set.
 
+	Added =pattern special form of user-defined command that sets local filter
+	to the given value (alike "/pattern" and "filter value").  Thanks to
+	filterfalse.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

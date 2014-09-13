@@ -1162,8 +1162,9 @@ The builtin commands are:
     the background you must set it as a background command with & at the end
     of the commands action (:com rm rm %f &).  Command name cannot contain
     numbers or special symbols (except '?' and '!').
-:com[mand] name /pattern - will set search pattern.
-:com[mand] name filter{:filter args} - will set file name filter (see
+:com[mand] name /pattern - sets search pattern.
+:com[mand] name =pattern - sets local filter pattern.
+:com[mand] name filter{:filter args} - sets file name filter (see
     |vifm-:filter|).  For example: >
       " display only audio files
       :command onlyaudio filter/.+\.\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\)$/i
