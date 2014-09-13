@@ -1452,9 +1452,10 @@ commands_block_finished(void)
 }
 
 /* Return value of all functions below which name ends with "_cmd" mean:
- *  <0 - one of CMDS_* errors from cmds.h
- *  =0 - nothing was outputted to the status bar, don't need to save its state
- *  <0 - someting was outputted to the status bar, need to save its state */
+ *  - <0 -- one of CMDS_* errors from cmds.h;
+ *  - =0 -- nothing was outputted to the status bar, don't need to save its
+ *          state;
+ *  - <0 -- someting was outputted to the status bar, need to save its state. */
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
@@ -1462,14 +1463,12 @@ goto_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Handles :! command, which executes external command via shell. */
 static int
 emark_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: Refactor this function emark_cmd(), see usercmd_cmd() */
-
-	int i;
 	int save_msg = 0;
-	char *com = (char *)cmd_info->args;
+	const char *com = cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
 	MacroFlags flags;
 	int handled;
@@ -1489,13 +1488,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TOO_FEW_ARGS;
 	}
 
-	i = skip_whitespace(com) - com;
-
-	if(com[i] == '\0')
+	com = skip_whitespace(com);
+	if(com[0] == '\0')
+	{
 		return 0;
+	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	handled = try_handle_ext_command(com + i, flags, &save_msg);
+	handled = try_handle_ext_command(com, flags, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -1506,7 +1506,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		start_background_job(com + i, 0);
+		start_background_job(com, 0);
 	}
 	else
 	{
@@ -1515,7 +1515,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 		clean_selected_files(curr_view);
 		if(cfg.fast_run)
 		{
-			char *const buf = fast_run_complete(com + i);
+			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
 				(void)shellout(buf, cmd_info->emark ? 1 : -1, use_term_mux);
@@ -1524,14 +1524,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			(void)shellout(com + i, cmd_info->emark ? 1 : -1, use_term_mux);
+			(void)shellout(com, cmd_info->emark ? 1 : -1, use_term_mux);
 		}
 	}
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
 			replace_home_part(curr_view->curr_dir), cmd_info->raw_args);
 	cmd_group_begin(buf);
-	add_operation(OP_USR, strdup(com + i), NULL, "", "");
+	add_operation(OP_USR, strdup(com), NULL, "", "");
 	cmd_group_end();
 
 	return save_msg;
@@ -3969,8 +3969,6 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: Refactor this function usercmd_cmd(), see emark_cmd() */
-
 	char *expanded_com = NULL;
 	MacroFlags flags;
 	size_t len;
