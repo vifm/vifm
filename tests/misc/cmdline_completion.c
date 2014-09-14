@@ -3,6 +3,7 @@
 #include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h> /* wcsdup() */
 
 #include "seatest.h"
 
@@ -155,6 +156,8 @@ test_dquoted_completion(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch 'b"));
 }
 
+#ifndef __CYGWIN__
+
 static void
 test_dquoted_completion_escaping(void)
 {
@@ -165,6 +168,8 @@ test_dquoted_completion_escaping(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
 }
 
+#endif
+
 static void
 test_last_match_is_properly_escaped(void)
 {
@@ -172,20 +177,16 @@ test_last_match_is_properly_escaped(void)
 
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
-	prepare_for_line_completion(L"touch \"d-quote-\\\"-in");
+	prepare_for_line_completion(L"touch 's-quote-''-in");
 	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
+	assert_int_equal(0, wcscmp(stats.line, L"touch 's-quote-''-in-name"));
 
 	match = vle_compl_next();
-	assert_string_equal("d-quote-\\\"-in-name-2", match);
+	assert_string_equal("s-quote-''-in-name-2", match);
 	free(match);
 
 	match = vle_compl_next();
-	assert_string_equal("d-quote-\\\"-in-name-3", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("d-quote-\\\"-in", match);
+	assert_string_equal("s-quote-''-in", match);
 	free(match);
 }
 
@@ -280,12 +281,16 @@ test_cmdline_completion(void)
 	run_test(test_squoted_completion);
 	run_test(test_squoted_completion_escaping);
 	run_test(test_dquoted_completion);
-	run_test(test_dquoted_completion_escaping);
 	run_test(test_last_match_is_properly_escaped);
 	run_test(test_emark_cmd_escaping);
 	run_test(test_winrun_cmd_escaping);
 	run_test(test_help_cmd_escaping);
 	run_test(test_dirs_are_completed_with_trailing_slash);
+#ifndef __CYGWIN__
+	/* Cygwin fails to create files with double quotes in names, Windows quite
+	 * surprisingly failes, but "emulates" them. */
+	run_test(test_dquoted_completion_escaping);
+#endif
 
 	test_fixture_end();
 }
