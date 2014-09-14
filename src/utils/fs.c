@@ -76,6 +76,7 @@ is_dir(const char path[])
 static int
 is_dir_fast(const char path[])
 {
+#ifndef _WIN32
 	/* Optimization idea: is_dir() ends up using stat() call, which in turn has
 	 * to:
 	 *  1) resolve path to an inode number;
@@ -93,6 +94,10 @@ is_dir_fast(const char path[])
 	path_to_selfref[len + 2] = '\0';
 
 	return access(path_to_selfref, F_OK) == 0;
+#else
+	/* Windows reports that "/path/to/file/." is directory. */
+	return 0;
+#endif
 }
 
 int

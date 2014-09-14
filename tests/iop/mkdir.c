@@ -80,7 +80,7 @@ test_child_dir_is_not_created(void)
 	assert_int_equal(-1, access(NESTED_DIR_NAME, F_OK));
 }
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__CYGWIN__)
 
 static void
 test_permissions_are_taken_into_account(void)
@@ -182,7 +182,7 @@ mkdir_tests(void)
 	run_test(test_child_dir_and_parent_are_created);
 	run_test(test_create_by_absolute_path);
 	run_test(test_child_dir_is_not_created);
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__CYGWIN__)
 	run_test(test_permissions_are_taken_into_account);
 	run_test(test_permissions_are_taken_into_account_for_the_most_nested_only);
 #endif

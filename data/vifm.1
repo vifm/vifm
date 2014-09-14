@@ -1,4 +1,4 @@
-.TH vifm 1 "September 12, 2014" "" "Vifm"
+.TH vifm 1 "September 14, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3334,9 +3334,7 @@ type: set
 default: bookmarks
 .LP
 Controls what will be saved in the $VIFM/vifminfo file.
-   options   \- all options that can be set with the :set command
-   filetypes \- associated programs and viewers
-   commands  \- user defined commands (see :command description)
+
    bookmarks \- bookmarks, except special ones like '< and '>
    tui       \- state of the user interface (sorting, number of windows, quick
                 view state, active view)
@@ -3344,14 +3342,18 @@ Controls what will be saved in the $VIFM/vifminfo file.
    state     \- file name and dot filters and terminal multiplexers integration
                 state
    cs        \- primary color scheme
-   savedirs  \- save last visited directory (needs dhistory)
+   savedirs  \- save last visited directory (requires dhistory)
    chistory  \- command line history
    shistory  \- search history (/ and ? commands)
    phistory  \- prompt history
-   fhistory  \- filter history (see description of the "=" normal mode command)
+   fhistory  \- history of local filter (see description of the "=" normal mode
+                command)
    dirstack  \- directory stack overwrites previous stack, unless stack of
                 current session is empty
    registers \- registers content
+   options   \- all options that can be set with the :set command (obsolete)
+   filetypes \- associated programs and viewers (obsolete)
+   commands  \- user defined commands (see :command description) (obsolete)
 .TP
 .BI vimhelp
 type: boolean

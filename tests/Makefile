@@ -1,3 +1,5 @@
+include detectenv.mk
+
 dirs := colmgr commands column_view completion env escape filetype filter
 dirs += keys misc options parsing undo variables viewcolumns_parser
 dirs += ioeta ionotif iop ior
@@ -9,8 +11,7 @@ dirs_c := $(addsuffix _c, $(dirs))
 .PHONY: tests clean $(dirs) $(dirs_b) $(dirs_c)
 
 tests: bin $(dirs_b)
-ifneq ($(OS),Windows_NT)
-	@for test in `find bin/ -perm +111 -type f`; do\
+	@for test in bin/*; do\
 		echo '==================================================';\
 		echo Test Suite: $$test;\
 		echo '==================================================';\
@@ -23,28 +24,13 @@ ifneq ($(OS),Windows_NT)
 		echo;\
 		echo;\
 	done
-else
-	@for test in bin/*.exe; do\
-		echo '==================================================';\
-		echo Test Suite: $$test;\
-		echo '==================================================';\
-		echo;\
-		echo;\
-		if ! $$test; then\
-			exit 1;\
-		fi;\
-		echo;\
-		echo;\
-		echo;\
-	done
-endif
 
 $(dirs_b): bin
 	$(MAKE) --directory=$(subst _b,,$@) --makefile=../Makefile.inc
 
 $(dirs): bin
 	$(MAKE) --directory=$@ --makefile=../Makefile.inc
-ifneq ($(OS),Windows_NT)
+ifdef UNIX_ENV
 	@test=bin/$@;\
 	echo '==================================================';\
 	echo Test Suite: $$test;\
