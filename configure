@@ -8414,7 +8414,13 @@ fi
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
+		else
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&5
+$as_echo "$as_me: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&2;}
 		fi
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&5
+$as_echo "$as_me: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&2;}
 	fi
 fi
 

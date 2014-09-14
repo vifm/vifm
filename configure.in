@@ -469,7 +469,11 @@ if test "$use_gtk" = "yes"; then
 			AC_CHECK_FUNC([g_file_query_info], [], [AC_MSG_ERROR([g_file_query_info() function not found.])])
 			AC_CHECK_FUNC([g_object_unref], [], [AC_MSG_ERROR([g_object_unref() function not found.])])
 			AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+		else
+			AC_MSG_WARN("Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.")
 		fi
+	else
+		AC_MSG_WARN("Could not find pkg-config.  No GTK+ support.")
 	fi
 fi
 
