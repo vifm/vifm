@@ -234,9 +234,9 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
 		char *escaped;
 		char cmd[16 + PATH_MAX];
 		int result;
@@ -252,8 +252,40 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 
 		free(escaped);
 		return result;
-	}
+#else
+		if(is_dir(src))
+		{
+			char buf[PATH_MAX];
+			int err;
+			int i;
+			snprintf(buf, sizeof(buf), "%s%c", src, '\0');
+			for(i = 0; buf[i] != '\0'; i++)
+				if(buf[i] == '/')
+					buf[i] = '\\';
+			SHFILEOPSTRUCTA fo = {
+				.hwnd = NULL,
+				.wFunc = FO_DELETE,
+				.pFrom = buf,
+				.pTo = NULL,
+				.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
+			};
+			err = SHFileOperation(&fo);
+			log_msg("Error: %d", err);
+			return err;
+		}
+		else
+		{
+			int ok;
+			DWORD attributes = GetFileAttributesA(src);
+			if(attributes & FILE_ATTRIBUTE_READONLY)
+				SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
+			ok = DeleteFile(src);
+			if(!ok)
+				LOG_WERROR(GetLastError());
+			return !ok;
+		}
 #endif
+	}
 
 	io_args_t args =
 	{
@@ -372,9 +404,9 @@ op_movef(ops_t *ops, void *data, const char src[], const char dst[])
 static int
 op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
 		struct stat st;
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
@@ -409,8 +441,18 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		else if(is_under_trash(src))
 			remove_from_trash(src);
 		return 0;
-	}
+#else
+		BOOL ret = MoveFile(src, dst);
+		if(!ret && GetLastError() == 5)
+		{
+			int r = op_cp(data, src, dst, overwrite);
+			if(r != 0)
+				return r;
+			return op_removesl(data, src, NULL);
+		}
+		return ret == 0;
 #endif
+	}
 
 	io_args_t args =
 	{
@@ -529,12 +571,14 @@ op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
 		int result;
+#ifdef _WIN32
+		char buf[PATH_MAX + 2];
+#endif
 
 		escaped_src = escape_filename(src, 0);
 		escaped_dst = escape_filename(dst, 0);
@@ -545,15 +589,28 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 			return -1;
 		}
 
+#ifndef _WIN32
 		snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 		result = background_and_wait_for_errors(cmd, 1);
+#else
+		if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+		{
+			free(escaped_dst);
+			free(escaped_src);
+			return -1;
+		}
+
+		*strrchr(buf, '\\') = '\0';
+		snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
+				escaped_dst);
+		result = system(cmd);
+#endif
 
 		free(escaped_dst);
 		free(escaped_src);
 		return result;
 	}
-#endif
 
 	io_args_t args =
 	{
@@ -567,9 +624,9 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
@@ -579,8 +636,40 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		free(escaped);
 		LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
 		return background_and_wait_for_errors(cmd, 1);
-	}
+#else
+		if(data == NULL)
+		{
+			return CreateDirectory(src, NULL) == 0;
+		}
+		else
+		{
+			char *p;
+			char t;
+
+			p = strchr(src + 2, '/');
+			do
+			{
+				t = *p;
+				*p = '\0';
+
+				if(!is_dir(src))
+				{
+					if(!CreateDirectory(src, NULL))
+					{
+						*p = t;
+						return -1;
+					}
+				}
+
+				*p = t;
+				if((p = strchr(p + 1, '/')) == NULL)
+					p = (char *)src + strlen(src);
+			}
+			while(t != '\0');
+			return 0;
+		}
 #endif
+	}
 
 	io_args_t args =
 	{
@@ -594,9 +683,9 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
@@ -605,8 +694,10 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		free(escaped);
 		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
 		return background_and_wait_for_errors(cmd, 1);
-	}
+#else
+		return RemoveDirectory(src) == 0;
 #endif
+	}
 
 	io_args_t args =
 	{
@@ -618,9 +709,9 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 {
-#ifndef _WIN32
 	if(!cfg.use_system_calls)
 	{
+#ifndef _WIN32
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
@@ -629,8 +720,18 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 		free(escaped);
 		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
 		return background_and_wait_for_errors(cmd, 1);
-	}
+#else
+		HANDLE hfile;
+
+		hfile = CreateFileA(src, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+				NULL);
+		if(hfile == INVALID_HANDLE_VALUE)
+			return -1;
+
+		CloseHandle(hfile);
+		return 0;
 #endif
+	}
 
 	io_args_t args =
 	{
