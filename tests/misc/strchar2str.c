@@ -6,6 +6,7 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/utils.h"
 #include "../../src/escape.h"
 
 #ifndef _WIN32
@@ -110,7 +111,7 @@ strchar2str_tests(void)
 	test_fixture_start();
 
 	(void)setlocale(LC_ALL, "");
-	if(wcwidth(L'丝') != 2)
+	if(vifm_wcwidth(L'丝') != 2)
 	{
 		(void)setlocale(LC_ALL, "en_US.utf8");
 	}
@@ -119,7 +120,7 @@ strchar2str_tests(void)
 
 #ifndef _WIN32
 	/* UTF-8 isn't used on Windows yet. */
-	if(wcwidth(L'丝') == 2)
+	if(vifm_wcwidth(L'丝') == 2)
 	{
 		run_test(test_chinese_character_width_is_determined_correctly);
 		run_test(test_cyrillic_character_width_is_determined_correctly);
