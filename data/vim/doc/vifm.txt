@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 12
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2734,10 +2734,8 @@ whether it's preceded by space or not) means backgrounding of command.
 vifminfo
 type: set
 default: bookmarks
-Controls what will be saved in the $VIFM/vifminfo file.
-   options   - all options that can be set with the :set command
-   filetypes - associated programs and viewers
-   commands  - user defined commands (see :command description)
+Controls what will be saved in the $VIFM/vifminfo file:
+
    bookmarks - bookmarks, except special ones like '< and '>
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
@@ -2745,14 +2743,17 @@ Controls what will be saved in the $VIFM/vifminfo file.
    state     - file name and dot filters and terminal multiplexers integration
                state
    cs        - primary color scheme
-   savedirs  - save last visited directory (needs dhistory)
+   savedirs  - save last visited directory (requires dhistory)
    chistory  - command line history
    shistory  - search history (/ and ? commands)
    phistory  - prompt history
-   fhistory  - filter history (see |vifm-=|)
+   fhistory  - history of local filter (see |vifm-=|)
    dirstack  - directory stack overwrites previous stack, unless stack of
                current session is empty
    registers - registers content
+   options   - all options that can be set with the :set command (obsolete)
+   filetypes - associated programs and viewers (obsolete)
+   commands  - user defined commands (see :command description) (obsolete)
 
                                                *vifm-'vimhelp'*
 vimhelp
