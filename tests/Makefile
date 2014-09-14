@@ -1,3 +1,5 @@
+include detectenv.mk
+
 dirs := colmgr commands column_view completion env escape filetype filter
 dirs += keys misc options parsing undo variables viewcolumns_parser
 dirs += ioeta ionotif iop ior
@@ -28,7 +30,7 @@ $(dirs_b): bin
 
 $(dirs): bin
 	$(MAKE) --directory=$@ --makefile=../Makefile.inc
-ifneq ($(OS),Windows_NT)
+ifdef UNIX_ENV
 	@test=bin/$@;\
 	echo '==================================================';\
 	echo Test Suite: $$test;\
