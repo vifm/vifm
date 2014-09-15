@@ -2437,12 +2437,13 @@ fill_dir_list(FileView *view)
 		{
 			struct stat st;
 
-			if(check_link_is_dir(dir_entry->name))
+			const int dir = check_link_is_dir(dir_entry->name);
+			if(dir)
 			{
 				strcat(dir_entry->name, "/");
 			}
 
-			if(stat(dir_entry->name, &st) == 0)
+			if(dir != 2 && stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}
