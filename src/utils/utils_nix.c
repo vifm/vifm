@@ -294,10 +294,13 @@ is_on_slow_fs(const char full_path[])
 	{
 		if(state.curr_len > 0)
 		{
-			return begins_with_list_item(fs_name, cfg.slow_fs_list);
+			if(begins_with_list_item(fs_name, cfg.slow_fs_list))
+			{
+				return 1;
+			}
 		}
 	}
-	return 0;
+	return begins_with_list_item(full_path, cfg.slow_fs_list);
 }
 
 int
