@@ -50,7 +50,9 @@ int path_exists_at(const char *path, const char *filename);
  * it's so, otherwise zero is returned. */
 int is_symlink(const char path[]);
 
-int check_link_is_dir(const char *filename);
+/* Returns non-zero for directories.  Special value 2 is returned that objects
+ * on slow file systems that are believed to be directories. */
+int check_link_is_dir(const char filename[]);
 
 /* Fills the buf of size buf_len with the absolute path to a file pointed to by
  * the link symbolic link.  Uses the cwd parameter to make absolute path from
