@@ -574,6 +574,14 @@ get_line_color(FileView* view, int pos)
 				{
 					return BROKEN_LINK_COLOR;
 				}
+
+				/* Assume that targets on slow file system are not broken as actual
+				 * check might take long time. */
+				if(is_on_slow_fs(full))
+				{
+					return LINK_COLOR;
+				}
+
 				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
