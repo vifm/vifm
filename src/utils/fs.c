@@ -30,13 +30,13 @@
 #include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
-#include <unistd.h> /* F_OK access() readlink() */
+#include <unistd.h> /* F_OK access() getcwd() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() rename() */
 #include <stdlib.h> /* free() realpath() */
-#include <string.h> /* strdup() strlen() strncmp() strncpy() */
+#include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
 #include "fs_limits.h"
 #include "log.h"
@@ -222,15 +222,22 @@ is_symlink(const char path[])
 int
 check_link_is_dir(const char filename[])
 {
+	char cwd[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
 	int saved_errno;
 	char *filename_copy;
 	char *p;
 
-	/* Use readlink() before realpath() to check for target at slow file system.
-	 * realpath() doesn't fit in this case as it resolves chains of symbolic links
-	 * and we want to try only the first one. */
-	if(get_link_target(filename, linkto, sizeof(linkto) - 1) != 0)
+	if(getcwd(cwd, sizeof(cwd)) == NULL)
+	{
+		/* getcwd() failed, just use "." rather than fail. */
+		strcpy(cwd, ".");
+	}
+
+	/* Use readlink() (in get_link_target_abs) before realpath() to check for
+	 * target at slow file system.  realpath() doesn't fit in this case as it
+	 * resolves chains of symbolic links and we want to try only the first one. */
+	if(get_link_target_abs(filename, cwd, linkto, sizeof(linkto)) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't readlink \"%s\"", filename);
 		log_cwd();
