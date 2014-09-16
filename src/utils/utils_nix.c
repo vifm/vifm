@@ -38,7 +38,7 @@
                        SIG_UNBLOCK */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* atoi() */
+#include <stdlib.h> /* atoi() free() */
 #include <string.h> /* strchr() strlen() strncmp() */
 
 #include "../cfg/config.h"
@@ -371,25 +371,20 @@ traverse_mount_points(mptraverser client, void *arg)
 static int
 starts_with_list_item(const char str[], const char list[])
 {
-	const char *p = list - 1;
+	char *const list_copy = strdup(list);
 
-	do
+	char *prefix = list_copy, *state = NULL;
+	while((prefix = split_and_get(prefix, ',', &state)) != NULL)
 	{
-		char buf[128];
-		const char *t;
-		size_t len;
-
-		t = p + 1;
-		p = strchr(t, ',');
-		if(p == NULL)
-			p = t + strlen(t);
-
-		len = snprintf(buf, MIN(p - t + 1, sizeof(buf)), "%s", t);
-		if(len != 0 && strncmp(str, buf, len) == 0)
-			return 1;
+		if(starts_with(str, prefix))
+		{
+			break;
+		}
 	}
-	while(*p != '\0');
-	return 0;
+
+	free(list_copy);
+
+	return prefix != NULL;
 }
 
 unsigned int
