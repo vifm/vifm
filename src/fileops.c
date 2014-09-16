@@ -2843,7 +2843,14 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		erase_selection(view);
 	}
 
-	ops = ops_alloc(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
+	if(type == 0)
+	{
+		ops = ops_alloc(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
+	}
+	else
+	{
+		ops = ops_alloc(OP_SYMLINK, "Linking");
+	}
 
 	ops->estim = ioeta_alloc(ops);
 

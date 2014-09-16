@@ -1,4 +1,4 @@
-.TH vifm 1 "September 14, 2014" "" "Vifm"
+.TH vifm 1 "September 16, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3074,11 +3074,18 @@ default: ""
 .br
 only for *nix
 .br
-A list of mounter fs name beginnings (first column in /etc/mtab or /proc/mounts)
-that work too slow for you.  This option can be used to stop vifm from making
-some requests to particular kinds of file systems that can slow down file
-browsing.  Currently this means don't check if directory has changed and do not
-check if target of symbolic links exists.
+A list of mounter fs name beginnings (first column in /etc/mtab or
+/proc/mounts) or paths prefixes for fs/directories that work too slow for
+you.  This option can be used to stop vifm from making some requests to
+particular kinds of file systems that can slow down file browsing.
+Currently this means don't check if directory has changed, skip check if
+target of symbolic links exists, assume that link target located on slow fs
+to be a directory (allows entering directories and navigating to files via gf).
+
+Example for autofs root /mnt/autofs:
+.EX
+ set slowfs+=/mnt/autofs
+.EE
 .TP
 .BI "smartcase scs"
 type: boolean
