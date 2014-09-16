@@ -71,7 +71,7 @@ typedef struct
 get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
-static int begins_with_list_item(const char pattern[], const char list[]);
+static int starts_with_list_item(const char str[], const char list[]);
 
 void
 pause_shell(void)
@@ -294,13 +294,13 @@ is_on_slow_fs(const char full_path[])
 	{
 		if(state.curr_len > 0)
 		{
-			if(begins_with_list_item(fs_name, cfg.slow_fs_list))
+			if(starts_with_list_item(fs_name, cfg.slow_fs_list))
 			{
 				return 1;
 			}
 		}
 	}
-	return begins_with_list_item(full_path, cfg.slow_fs_list);
+	return starts_with_list_item(full_path, cfg.slow_fs_list);
 }
 
 int
@@ -366,8 +366,10 @@ traverse_mount_points(mptraverser client, void *arg)
 	return 0;
 }
 
+/* Checks that the str has at least one of comma separated list (the list) items
+ * as a prefix.  Returns non-zero if so, otherwise zero is returned. */
 static int
-begins_with_list_item(const char pattern[], const char list[])
+starts_with_list_item(const char str[], const char list[])
 {
 	const char *p = list - 1;
 
@@ -383,7 +385,7 @@ begins_with_list_item(const char pattern[], const char list[])
 			p = t + strlen(t);
 
 		len = snprintf(buf, MIN(p - t + 1, sizeof(buf)), "%s", t);
-		if(len != 0 && strncmp(pattern, buf, len) == 0)
+		if(len != 0 && strncmp(str, buf, len) == 0)
 			return 1;
 	}
 	while(*p != '\0');
