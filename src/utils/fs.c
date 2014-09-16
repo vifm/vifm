@@ -243,7 +243,7 @@ check_link_is_dir(const char filename[])
 		log_cwd();
 		return 0;
 	}
-	if(is_on_slow_fs(linkto))
+	if(refers_to_slower_fs(filename, linkto))
 	{
 		return 2;
 	}
