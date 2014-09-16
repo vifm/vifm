@@ -61,7 +61,13 @@ struct mntent;
  * stop traversal. */
 typedef int (*mptraverser)(struct mntent *entry, void *arg);
 
+/* Checks whether the full_paths points to a location that is slow to access.
+ * Returns non-zero if so, otherwise zero is returned. */
 int is_on_slow_fs(const char full_path[]);
+
+/* Checks whether accessing the to loation from the from location might cause
+ * slowdown.  Returns non-zero if so, otherwise zero is returned. */
+int refers_to_slower_fs(const char from[], const char to[]);
 
 /* Fills supplied buffer with user friendly representation of file size.
  * Returns non-zero in case resulting string is a shortened variant of size. */

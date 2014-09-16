@@ -38,8 +38,8 @@
                        SIG_UNBLOCK */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* atoi() */
-#include <string.h> /* strchr() strlen() strncmp() */
+#include <stdlib.h> /* atoi() free() */
+#include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
 #include "../ui.h"
@@ -71,7 +71,8 @@ typedef struct
 get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
-static int begins_with_list_item(const char pattern[], const char list[]);
+static int starts_with_list_item(const char str[], const char list[]);
+static int find_path_prefix_index(const char path[], const char list[]);
 
 void
 pause_shell(void)
@@ -272,6 +273,21 @@ get_perm_string(char buf[], int len, mode_t mode)
 }
 
 int
+refers_to_slower_fs(const char from[], const char to[])
+{
+	const int i = find_path_prefix_index(to, cfg.slow_fs_list);
+	/* When destination is not on slow file system, no performance penalties are
+	 * expected. */
+	if(i == -1)
+	{
+		return 0;
+	}
+
+	/* Otherwise, same slowdown as we have for the source location is bearable. */
+	return find_path_prefix_index(from, cfg.slow_fs_list) != i;
+}
+
+int
 is_on_slow_fs(const char full_path[])
 {
 	char fs_name[PATH_MAX];
@@ -294,10 +310,14 @@ is_on_slow_fs(const char full_path[])
 	{
 		if(state.curr_len > 0)
 		{
-			return begins_with_list_item(fs_name, cfg.slow_fs_list);
+			if(starts_with_list_item(fs_name, cfg.slow_fs_list))
+			{
+				return 1;
+			}
 		}
 	}
-	return 0;
+
+	return find_path_prefix_index(full_path, cfg.slow_fs_list) != -1;
 }
 
 int
@@ -363,28 +383,48 @@ traverse_mount_points(mptraverser client, void *arg)
 	return 0;
 }
 
+/* Checks that the str has at least one of comma separated list (the list) items
+ * as a prefix.  Returns non-zero if so, otherwise zero is returned. */
 static int
-begins_with_list_item(const char pattern[], const char list[])
+starts_with_list_item(const char str[], const char list[])
 {
-	const char *p = list - 1;
+	char *const list_copy = strdup(list);
 
-	do
+	char *prefix = list_copy, *state = NULL;
+	while((prefix = split_and_get(prefix, ',', &state)) != NULL)
 	{
-		char buf[128];
-		const char *t;
-		size_t len;
-
-		t = p + 1;
-		p = strchr(t, ',');
-		if(p == NULL)
-			p = t + strlen(t);
-
-		len = snprintf(buf, MIN(p - t + 1, sizeof(buf)), "%s", t);
-		if(len != 0 && strncmp(pattern, buf, len) == 0)
-			return 1;
+		if(starts_with(str, prefix))
+		{
+			break;
+		}
 	}
-	while(*p != '\0');
-	return 0;
+
+	free(list_copy);
+
+	return prefix != NULL;
+}
+
+/* Finds such elemenent of comma separated list of paths (the list) that the
+ * path is prefixed with it.  Returns the index or -1 on failure. */
+static int
+find_path_prefix_index(const char path[], const char list[])
+{
+	char *const list_copy = strdup(list);
+
+	char *prefix = list_copy, *state = NULL;
+	int i = 0;
+	while((prefix = split_and_get(prefix, ',', &state)) != NULL)
+	{
+		if(path_starts_with(path, prefix))
+		{
+			break;
+		}
+		++i;
+	}
+
+	free(list_copy);
+
+	return (prefix == NULL) ? -1 : i;
 }
 
 unsigned int

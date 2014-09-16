@@ -574,6 +574,14 @@ get_line_color(FileView* view, int pos)
 				{
 					return BROKEN_LINK_COLOR;
 				}
+
+				/* Assume that targets on slow file system are not broken as actual
+				 * check might take long time. */
+				if(is_on_slow_fs(full))
+				{
+					return LINK_COLOR;
+				}
+
 				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
@@ -2429,12 +2437,13 @@ fill_dir_list(FileView *view)
 		{
 			struct stat st;
 
-			if(check_link_is_dir(dir_entry->name))
+			const int dir = check_link_is_dir(dir_entry->name);
+			if(dir)
 			{
 				strcat(dir_entry->name, "/");
 			}
 
-			if(stat(dir_entry->name, &st) == 0)
+			if(dir != 2 && stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}

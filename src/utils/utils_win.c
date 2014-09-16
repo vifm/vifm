@@ -123,6 +123,12 @@ set_sigchld(int block)
 }
 
 int
+refers_to_slower_fs(const char from[], const char to[])
+{
+	return 0;
+}
+
+int
 is_on_slow_fs(const char full_path[])
 {
 	return 0;
