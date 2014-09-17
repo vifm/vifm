@@ -1940,7 +1940,9 @@ ui_view_entry_target_type(const FileView *const view, size_t pos)
 	if(entry->type == LINK)
 	{
 		char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
-		const FileType type = check_link_is_dir(full_path) ? DIRECTORY : LINK;
+		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
+		                    ? DIRECTORY
+		                    : LINK;
 		free(full_path);
 		return type;
 	}

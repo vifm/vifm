@@ -2437,13 +2437,13 @@ fill_dir_list(FileView *view)
 		{
 			struct stat st;
 
-			const int dir = check_link_is_dir(dir_entry->name);
-			if(dir)
+			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
+			if(symlink_type != SLT_UNKNOWN)
 			{
 				strcat(dir_entry->name, "/");
 			}
 
-			if(dir != 2 && stat(dir_entry->name, &st) == 0)
+			if(symlink_type != SLT_SLOW && stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}

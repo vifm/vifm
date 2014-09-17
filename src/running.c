@@ -141,7 +141,7 @@ is_runnable(const FileView *const view, const char full_path[], int type,
 		int force_follow)
 {
 	int runnable = !cfg.follow_links && type == LINK &&
-		!check_link_is_dir(full_path);
+		get_symlink_type(full_path) != SLT_DIR;
 	if(runnable && force_follow)
 	{
 		runnable = 0;

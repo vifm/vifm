@@ -27,6 +27,15 @@
 
 /* Functions to deal with file system objects */
 
+/* Link types for get_symlink_type() function. */
+typedef enum
+{
+	SLT_UNKNOWN, /* It's either a file or the link is broken. */
+	SLT_DIR,     /* It's a valid link to a directory. */
+	SLT_SLOW,    /* Target of the link is at slow file system, won't access it. */
+}
+SymLinkType;
+
 /* Checks if path is an existing directory.  Automatically deferences symbolic
  * links. */
 int is_dir(const char path[]);
@@ -50,9 +59,9 @@ int path_exists_at(const char *path, const char *filename);
  * it's so, otherwise zero is returned. */
 int is_symlink(const char path[]);
 
-/* Returns non-zero for directories.  Special value 2 is returned that objects
- * on slow file systems that are believed to be directories. */
-int check_link_is_dir(const char filename[]);
+/* Gets approximate symbolic link type: directory, won't check, anything else.
+ * Returns one of SymLinkType values. */
+SymLinkType get_symlink_type(const char path[]);
 
 /* Fills the buf of size buf_len with the absolute path to a file pointed to by
  * the link symbolic link.  Uses the cwd parameter to make absolute path from

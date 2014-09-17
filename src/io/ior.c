@@ -199,7 +199,8 @@ ior_mv(io_args_t *const args)
 			{
 #ifdef _WIN32
 				/* rename() on Windows doesn't replace files. */
-				if(!is_dir(dst) || (is_symlink(dst) && check_link_is_dir(dst)))
+				if(!is_dir(dst) || (is_symlink(dst) &&
+							get_symlink_type(dst) != SLT_UNKNOWN))
 				{
 					io_args_t rm_args =
 					{
