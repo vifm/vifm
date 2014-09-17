@@ -375,7 +375,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 	{
 		.arg1.src = src,
 		.arg2.dst = dst,
-		.arg3.crs = IO_CRS_REPLACE_FILES,
+		.arg3.crs = overwrite ? IO_CRS_REPLACE_FILES : IO_CRS_FAIL,
 
 		.cancellable = data == NULL,
 	};
@@ -458,7 +458,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 	{
 		.arg1.src = src,
 		.arg2.dst = dst,
-		.arg3.crs = IO_CRS_REPLACE_FILES,
+		.arg3.crs = overwrite ? IO_CRS_REPLACE_FILES : IO_CRS_FAIL,
 
 		.cancellable = data == NULL,
 	};
