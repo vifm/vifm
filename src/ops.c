@@ -57,6 +57,14 @@
 #define PRESERVE_FLAGS "-p"
 #endif
 
+/* Types of conflict resolution actions to perform. */
+typedef enum
+{
+	CA_FAIL,      /* Fail with an error. */
+	CA_OVERWRITE, /* Overwrite existing files. */
+}
+ConflictAction;
+
 static int op_none(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_remove(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_removesl(ops_t *ops, void *data, const char *src,
@@ -64,11 +72,12 @@ static int op_removesl(ops_t *ops, void *data, const char *src,
 static int op_copy(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_copyf(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_cp(ops_t *ops, void *data, const char src[], const char dst[],
-		int overwrite);
+		ConflictAction conflict_action);
 static int op_move(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_movef(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_mv(ops_t *ops, void *data, const char src[], const char dst[],
-		int overwrite);
+		ConflictAction conflict_action);
+static IoCrs ca_to_crs(ConflictAction conflict_action);
 static int op_chown(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_chgrp(ops_t *ops, void *data, const char *src, const char *dst);
 #ifndef _WIN32
@@ -302,7 +311,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_copy(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_cp(ops, data, src, dst, 0);
+	return op_cp(ops, data, src, dst, CA_FAIL);
 }
 
 /* OP_COPYF operation handler.  Copies file/directory overwriting destination
@@ -310,13 +319,14 @@ op_copy(ops_t *ops, void *data, const char src[], const char dst[])
 static int
 op_copyf(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_cp(ops, data, src, dst, 1);
+	return op_cp(ops, data, src, dst, CA_OVERWRITE);
 }
 
 /* Copies file/directory overwriting destination files if requested.  Returns
  * non-zero on error, otherwise zero is returned. */
 static int
-op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
+op_cp(ops_t *ops, void *data, const char src[], const char dst[],
+		ConflictAction conflict_action)
 {
 	if(!cfg.use_system_calls)
 	{
@@ -337,7 +347,8 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 
 		snprintf(cmd, sizeof(cmd),
 				"cp %s -R " PRESERVE_FLAGS " %s %s",
-				overwrite ? "" : NO_CLOBBER, escaped_src, escaped_dst);
+				(conflict_action == CA_FAIL) ? NO_CLOBBER : "",
+				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 		result = background_and_wait_for_errors(cmd, cancellable);
 
@@ -355,7 +366,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 
 			if(is_vista_and_above())
 				strcat(cmd, "/B ");
-			if(overwrite)
+			if(conflict_action != CA_FAIL)
 			{
 				strcat(cmd, "/Y ");
 			}
@@ -375,7 +386,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 	{
 		.arg1.src = src,
 		.arg2.dst = dst,
-		.arg3.crs = overwrite ? IO_CRS_REPLACE_FILES : IO_CRS_FAIL,
+		.arg3.crs = ca_to_crs(conflict_action),
 
 		.cancellable = data == NULL,
 	};
@@ -388,7 +399,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 static int
 op_move(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_mv(ops, data, src, dst, 0);
+	return op_mv(ops, data, src, dst, CA_FAIL);
 }
 
 /* OP_MOVEF operation handler.  Moves file/directory overwriting destination
@@ -396,13 +407,14 @@ op_move(ops_t *ops, void *data, const char src[], const char dst[])
 static int
 op_movef(ops_t *ops, void *data, const char src[], const char dst[])
 {
-	return op_mv(ops, data, src, dst, 1);
+	return op_mv(ops, data, src, dst, CA_OVERWRITE);
 }
 
 /* Moves file/directory overwriting destination files if requested.  Returns
  * non-zero on error, otherwise zero is returned. */
 static int
-op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
+op_mv(ops_t *ops, void *data, const char src[], const char dst[],
+		ConflictAction conflict_action)
 {
 	if(!cfg.use_system_calls)
 	{
@@ -413,7 +425,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		int result;
 		const int cancellable = data == NULL;
 
-		if(!overwrite && lstat(dst, &st) == 0)
+		if(conflict_action == CA_FAIL && lstat(dst, &st) == 0)
 		{
 			return -1;
 		}
@@ -427,7 +439,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 			return -1;
 		}
 
-		snprintf(cmd, sizeof(cmd), "mv %s %s %s", overwrite ? "" : NO_CLOBBER,
+		snprintf(cmd, sizeof(cmd), "mv %s %s %s",
+				(conflict_action == CA_FAIL) ? NO_CLOBBER : "",
 				escaped_src, escaped_dst);
 		free(escaped_dst);
 		free(escaped_src);
@@ -445,7 +458,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 		BOOL ret = MoveFile(src, dst);
 		if(!ret && GetLastError() == 5)
 		{
-			int r = op_cp(data, src, dst, overwrite);
+			int r = op_cp(data, src, dst, conflict_action != CA_FAIL);
 			if(r != 0)
 				return r;
 			return op_removesl(data, src, NULL);
@@ -458,11 +471,25 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[], int overwrite)
 	{
 		.arg1.src = src,
 		.arg2.dst = dst,
-		.arg3.crs = overwrite ? IO_CRS_REPLACE_FILES : IO_CRS_FAIL,
+		.arg3.crs = ca_to_crs(conflict_action),
 
 		.cancellable = data == NULL,
 	};
 	return exec_io_op(ops, &ior_mv, &args);
+}
+
+/* Maps conflict action to conflict resolution strategy of i/o modules.  Returns
+ * conflict resolution strategy type. */
+static IoCrs
+ca_to_crs(ConflictAction conflict_action)
+{
+	switch(conflict_action)
+	{
+		case CA_FAIL:      return IO_CRS_FAIL;
+		case CA_OVERWRITE: return IO_CRS_REPLACE_FILES;
+	}
+	assert(0 && "Unhandled conflict action.");
+	return IO_CRS_FAIL;
 }
 
 static int
