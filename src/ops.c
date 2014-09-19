@@ -62,6 +62,7 @@ typedef enum
 {
 	CA_FAIL,      /* Fail with an error. */
 	CA_OVERWRITE, /* Overwrite existing files. */
+	CA_APPEND,    /* Append the rest of source file to destination file. */
 }
 ConflictAction;
 
@@ -71,10 +72,12 @@ static int op_removesl(ops_t *ops, void *data, const char *src,
 		const char *dst);
 static int op_copy(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_copyf(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_copya(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action);
 static int op_move(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_movef(ops_t *ops, void *data, const char src[], const char dst[]);
+static int op_movea(ops_t *ops, void *data, const char src[], const char dst[]);
 static int op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action);
 static IoCrs ca_to_crs(ConflictAction conflict_action);
@@ -103,8 +106,10 @@ static op_func op_funcs[] = {
 	op_removesl, /* OP_REMOVESL */
 	op_copy,     /* OP_COPY */
 	op_copyf,    /* OP_COPYF */
+	op_copya,    /* OP_COPYA */
 	op_move,     /* OP_MOVE */
 	op_movef,    /* OP_MOVEF */
+	op_movea,    /* OP_MOVEA */
 	op_move,     /* OP_MOVETMP1 */
 	op_move,     /* OP_MOVETMP2 */
 	op_move,     /* OP_MOVETMP3 */
@@ -322,8 +327,16 @@ op_copyf(ops_t *ops, void *data, const char src[], const char dst[])
 	return op_cp(ops, data, src, dst, CA_OVERWRITE);
 }
 
-/* Copies file/directory overwriting destination files if requested.  Returns
- * non-zero on error, otherwise zero is returned. */
+/* OP_COPYA operation handler.  Copies file appending rest of the source file to
+ * the destination.  Returns non-zero on error, otherwise zero is returned. */
+static int
+op_copya(ops_t *ops, void *data, const char src[], const char dst[])
+{
+	return op_cp(ops, data, src, dst, CA_APPEND);
+}
+
+/* Copies file/directory overwriting/appending destination files if requested.
+ * Returns non-zero on error, otherwise zero is returned. */
 static int
 op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
@@ -410,8 +423,16 @@ op_movef(ops_t *ops, void *data, const char src[], const char dst[])
 	return op_mv(ops, data, src, dst, CA_OVERWRITE);
 }
 
-/* Moves file/directory overwriting destination files if requested.  Returns
- * non-zero on error, otherwise zero is returned. */
+/* OP_MOVEA operation handler.  Moves file appending rest of the source file to
+ * the destination.  Returns non-zero on error, otherwise zero is returned. */
+static int
+op_movea(ops_t *ops, void *data, const char src[], const char dst[])
+{
+	return op_mv(ops, data, src, dst, CA_APPEND);
+}
+
+/* Moves file/directory overwriting/appending destination files if requested.
+ * Returns non-zero on error, otherwise zero is returned. */
 static int
 op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
@@ -487,6 +508,7 @@ ca_to_crs(ConflictAction conflict_action)
 	{
 		case CA_FAIL:      return IO_CRS_FAIL;
 		case CA_OVERWRITE: return IO_CRS_REPLACE_FILES;
+		case CA_APPEND:    return IO_CRS_APPEND_TO_FILES;
 	}
 	assert(0 && "Unhandled conflict action.");
 	return IO_CRS_FAIL;
