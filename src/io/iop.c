@@ -30,8 +30,8 @@
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() fopen() fread() fwrite() rename()
-                      snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
+                      fsetpos() fwrite() rename() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -188,6 +188,7 @@ iop_cp(io_args_t *const args)
 	size_t nread;
 	int error;
 	struct stat src_st;
+	const char *open_mode = "wb";
 
 	ioeta_update(args->estim, src, 0, 0);
 
@@ -225,7 +226,11 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	if(crs != IO_CRS_FAIL)
+	if(crs == IO_CRS_APPEND_TO_FILES)
+	{
+		open_mode = "ab";
+	}
+	else if(crs != IO_CRS_FAIL)
 	{
 		const int ec = unlink(dst);
 		if(ec != 0 && errno != ENOENT)
@@ -244,16 +249,32 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	out = fopen(dst, "wb");
+	out = fopen(dst, open_mode);
 	if(out == NULL)
 	{
 		fclose(in);
 		return 1;
 	}
 
+	error = 0;
+
+	if(crs == IO_CRS_APPEND_TO_FILES)
+	{
+		fpos_t pos;
+		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
+
+		if(!error)
+		{
+			const off_t offset = ftello(out);
+			if(offset != -1)
+			{
+				ioeta_update(args->estim, src, 0, offset);
+			}
+		}
+	}
+
 	/* TODO: use sendfile() if platform supports it. */
 
-	error = 0;
 	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 	{
 		if(cancellable && ui_cancellation_requested())

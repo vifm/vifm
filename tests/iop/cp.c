@@ -225,6 +225,92 @@ test_double_block_size_plus_one_file_is_copied(void)
 	file_is_copied("../various-sizes/double-block-size-plus-one-file");
 }
 
+static void
+test_appending_works_for_files(void)
+{
+	uint64_t size;
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../various-sizes/block-size-minus-one-file",
+			.arg2.dst = "appending",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	size = get_file_size("appending");
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../various-sizes/block-size-file",
+			.arg2.dst = "appending",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_int_equal(size + 1, get_file_size("appending"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../various-sizes/block-size-plus-one-file",
+			.arg2.dst = "appending",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_int_equal(size + 2, get_file_size("appending"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "appending",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
+static void
+test_appending_does_not_shrink_files(void)
+{
+	uint64_t size;
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../read/two-lines",
+			.arg2.dst = "two-lines",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	size = get_file_size("two-lines");
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../existing-files/a",
+			.arg2.dst = "two-lines",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	assert_int_equal(size, get_file_size("two-lines"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "two-lines",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
 #ifndef WIN32
 
 static void
@@ -405,6 +491,8 @@ cp_tests(void)
 	run_test(test_double_block_size_file_is_copied);
 	run_test(test_double_block_size_minus_one_file_is_copied);
 	run_test(test_double_block_size_plus_one_file_is_copied);
+	run_test(test_appending_works_for_files);
+	run_test(test_appending_does_not_shrink_files);
 
 #ifndef _WIN32
 	run_test(test_file_permissions_are_preserved);

@@ -1,5 +1,6 @@
 #include "seatest.h"
 
+#include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
 
 #include <unistd.h> /* F_OK access() */
@@ -252,6 +253,93 @@ test_overwrites_dir_when_asked(void)
 }
 
 static void
+test_appending_fails_for_directories(void)
+{
+	create_empty_dir("dir");
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../read",
+			.arg2.dst = "read",
+		};
+		assert_int_equal(0, ior_cp(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "read",
+			.arg2.dst = "dir",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+		assert_false(ior_mv(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "dir",
+		};
+		assert_int_equal(0, iop_rmdir(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "read",
+		};
+		assert_int_equal(0, ior_rm(&args));
+	}
+}
+
+static void
+test_appending_works_for_files(void)
+{
+	uint64_t size;
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../read/two-lines",
+			.arg2.dst = "two-lines",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	size = get_file_size("two-lines");
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "../read/two-lines",
+			.arg2.dst = "two-lines2",
+		};
+		assert_int_equal(0, iop_cp(&args));
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "two-lines2",
+			.arg2.dst = "two-lines",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+		assert_int_equal(0, ior_mv(&args));
+	}
+
+	assert_int_equal(size, get_file_size("two-lines"));
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "two-lines",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
+static void
 test_directories_can_be_merged(void)
 {
 	create_empty_dir("first");
@@ -372,6 +460,8 @@ mv_tests(void)
 	run_test(test_fails_to_overwrite_dir_by_default);
 	run_test(test_overwrites_file_when_asked);
 	run_test(test_overwrites_dir_when_asked);
+	run_test(test_appending_fails_for_directories);
+	run_test(test_appending_works_for_files);
 	run_test(test_directories_can_be_merged);
 	run_test(test_fails_to_move_directory_inside_itself);
 
