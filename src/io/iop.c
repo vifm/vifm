@@ -179,7 +179,7 @@ iop_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int crs = args->arg3.crs;
+	const IoCrs crs = args->arg3.crs;
 	const int cancellable = args->cancellable;
 
 #ifndef _WIN32
