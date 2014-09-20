@@ -341,6 +341,11 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 
 	last_size = transferred.QuadPart;
 
+	if(args->cancellable && ui_cancellation_requested())
+	{
+		return PROGRESS_CANCEL;
+	}
+
 	return PROGRESS_CONTINUE;
 }
 
