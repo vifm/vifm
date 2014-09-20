@@ -265,11 +265,7 @@ iop_cp(io_args_t *const args)
 
 		if(!error)
 		{
-			const off_t offset = ftello(out);
-			if(offset != -1)
-			{
-				ioeta_update(args->estim, src, 0, offset);
-			}
+			ioeta_update(args->estim, src, 0, get_file_size(dst));
 		}
 	}
 
