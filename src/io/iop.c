@@ -182,7 +182,6 @@ iop_cp(io_args_t *const args)
 	const IoCrs crs = args->arg3.crs;
 	const int cancellable = args->cancellable;
 
-#ifndef _WIN32
 	char block[BLOCK_SIZE];
 	FILE *in, *out;
 	size_t nread;
@@ -191,6 +190,26 @@ iop_cp(io_args_t *const args)
 	const char *open_mode = "wb";
 
 	ioeta_update(args->estim, src, 0, 0);
+
+#ifdef _WIN32
+	if(is_symlink(src) || crs != IO_CRS_APPEND_TO_FILES)
+	{
+		DWORD flags;
+		int error;
+
+		flags = COPY_FILE_COPY_SYMLINK;
+		if(crs == IO_CRS_FAIL)
+		{
+			flags |= COPY_FILE_FAIL_IF_EXISTS;
+		}
+
+		error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
+
+		ioeta_update(args->estim, src, 1, 0);
+
+		return error;
+	}
+#endif
 
 	/* Create symbolic link rather than copying file it points to.  This check
 	 * should go before directory check as is_dir() resolves symbolic links. */
@@ -299,23 +318,6 @@ iop_cp(io_args_t *const args)
 	ioeta_update(args->estim, src, 1, 0);
 
 	return error;
-#else
-	DWORD flags;
-	int error;
-	(void)cancellable;
-
-	flags = COPY_FILE_COPY_SYMLINK;
-	if(crs == IO_CRS_FAIL)
-	{
-		flags |= COPY_FILE_FAIL_IF_EXISTS;
-	}
-
-	error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
-
-	ioeta_update(args->estim, src, 1, 0);
-
-	return error;
-#endif
 }
 
 #ifdef _WIN32
