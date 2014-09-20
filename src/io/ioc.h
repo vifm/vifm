@@ -38,6 +38,10 @@ typedef enum
 
 	/* Overwrite files existing at destination. */
 	IO_CRS_REPLACE_FILES,
+
+	/* Appends the reset of data to files at destination (assumes previously
+	 * terminated operation). */
+	IO_CRS_APPEND_TO_FILES,
 }
 IoCrs;
 

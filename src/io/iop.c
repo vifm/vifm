@@ -30,8 +30,8 @@
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() fopen() fread() fwrite() rename()
-                      snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
+                      fsetpos() fwrite() rename() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -179,17 +179,37 @@ iop_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int crs = args->arg3.crs;
+	const IoCrs crs = args->arg3.crs;
 	const int cancellable = args->cancellable;
 
-#ifndef _WIN32
 	char block[BLOCK_SIZE];
 	FILE *in, *out;
 	size_t nread;
 	int error;
 	struct stat src_st;
+	const char *open_mode = "wb";
 
 	ioeta_update(args->estim, src, 0, 0);
+
+#ifdef _WIN32
+	if(is_symlink(src) || crs != IO_CRS_APPEND_TO_FILES)
+	{
+		DWORD flags;
+		int error;
+
+		flags = COPY_FILE_COPY_SYMLINK;
+		if(crs == IO_CRS_FAIL)
+		{
+			flags |= COPY_FILE_FAIL_IF_EXISTS;
+		}
+
+		error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
+
+		ioeta_update(args->estim, src, 1, 0);
+
+		return error;
+	}
+#endif
 
 	/* Create symbolic link rather than copying file it points to.  This check
 	 * should go before directory check as is_dir() resolves symbolic links. */
@@ -225,7 +245,11 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	if(crs != IO_CRS_FAIL)
+	if(crs == IO_CRS_APPEND_TO_FILES)
+	{
+		open_mode = "ab";
+	}
+	else if(crs != IO_CRS_FAIL)
 	{
 		const int ec = unlink(dst);
 		if(ec != 0 && errno != ENOENT)
@@ -244,16 +268,28 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	out = fopen(dst, "wb");
+	out = fopen(dst, open_mode);
 	if(out == NULL)
 	{
 		fclose(in);
 		return 1;
 	}
 
+	error = 0;
+
+	if(crs == IO_CRS_APPEND_TO_FILES)
+	{
+		fpos_t pos;
+		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
+
+		if(!error)
+		{
+			ioeta_update(args->estim, src, 0, get_file_size(dst));
+		}
+	}
+
 	/* TODO: use sendfile() if platform supports it. */
 
-	error = 0;
 	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 	{
 		if(cancellable && ui_cancellation_requested())
@@ -282,23 +318,6 @@ iop_cp(io_args_t *const args)
 	ioeta_update(args->estim, src, 1, 0);
 
 	return error;
-#else
-	DWORD flags;
-	int error;
-	(void)cancellable;
-
-	flags = COPY_FILE_COPY_SYMLINK;
-	if(crs == IO_CRS_FAIL)
-	{
-		flags |= COPY_FILE_FAIL_IF_EXISTS;
-	}
-
-	error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
-
-	ioeta_update(args->estim, src, 1, 0);
-
-	return error;
-#endif
 }
 
 #ifdef _WIN32
@@ -323,6 +342,11 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 	ioeta_update(estim, src, 0, transferred.QuadPart - last_size);
 
 	last_size = transferred.QuadPart;
+
+	if(args->cancellable && ui_cancellation_requested())
+	{
+		return PROGRESS_CANCEL;
+	}
 
 	return PROGRESS_CONTINUE;
 }

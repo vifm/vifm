@@ -219,8 +219,8 @@ is_symlink(const char path[])
 #endif
 }
 
-int
-check_link_is_dir(const char filename[])
+SymLinkType
+get_symlink_type(const char path[])
 {
 	char cwd[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
@@ -237,18 +237,18 @@ check_link_is_dir(const char filename[])
 	/* Use readlink() (in get_link_target_abs) before realpath() to check for
 	 * target at slow file system.  realpath() doesn't fit in this case as it
 	 * resolves chains of symbolic links and we want to try only the first one. */
-	if(get_link_target_abs(filename, cwd, linkto, sizeof(linkto)) != 0)
+	if(get_link_target_abs(path, cwd, linkto, sizeof(linkto)) != 0)
 	{
-		LOG_SERROR_MSG(errno, "Can't readlink \"%s\"", filename);
+		LOG_SERROR_MSG(errno, "Can't readlink \"%s\"", path);
 		log_cwd();
-		return 0;
+		return SLT_UNKNOWN;
 	}
-	if(refers_to_slower_fs(filename, linkto))
+	if(refers_to_slower_fs(path, linkto))
 	{
-		return 2;
+		return SLT_SLOW;
 	}
 
-	filename_copy = strdup(filename);
+	filename_copy = strdup(path);
 	chosp(filename_copy);
 
 	p = realpath(filename_copy, linkto);
@@ -258,15 +258,12 @@ check_link_is_dir(const char filename[])
 
 	if(p == linkto)
 	{
-		return is_dir(linkto);
-	}
-	else
-	{
-		LOG_SERROR_MSG(saved_errno, "Can't realpath \"%s\"", filename);
-		log_cwd();
+		return is_dir(linkto) ? SLT_DIR : SLT_UNKNOWN;
 	}
 
-	return 0;
+	LOG_SERROR_MSG(saved_errno, "Can't realpath \"%s\"", path);
+	log_cwd();
+	return SLT_UNKNOWN;
 }
 
 int
@@ -567,7 +564,7 @@ is_dirent_targets_dir(const struct dirent *d)
 	}
 
 	return  d->d_type == DT_DIR
-	    || (d->d_type == DT_LNK && check_link_is_dir(d->d_name));
+	    || (d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN);
 #endif
 }
 

@@ -48,6 +48,7 @@ static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_visitor(const char full_path[], VisitAction action,
 		void *param);
+static int is_file(const char path[]);
 static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
@@ -115,14 +116,13 @@ ior_cp(io_args_t *const args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
-	const int overwrite = args->arg3.crs == IO_CRS_REPLACE_ALL;
 
 	if(is_in_subtree(dst, src))
 	{
 		return 1;
 	}
 
-	if(overwrite)
+	if(args->arg3.crs == IO_CRS_REPLACE_ALL)
 	{
 		io_args_t rm_args =
 		{
@@ -159,6 +159,14 @@ ior_mv(io_args_t *const args)
 	if(crs == IO_CRS_FAIL && path_exists(dst))
 	{
 		return 1;
+	}
+
+	if(crs == IO_CRS_APPEND_TO_FILES)
+	{
+		if(!is_file(src) || !is_file(dst))
+		{
+			return 1;
+		}
 	}
 
 	if(rename(src, dst) == 0)
@@ -199,7 +207,7 @@ ior_mv(io_args_t *const args)
 			{
 #ifdef _WIN32
 				/* rename() on Windows doesn't replace files. */
-				if(!is_dir(dst) || (is_symlink(dst) && check_link_is_dir(dst)))
+				if(is_file(dst))
 				{
 					io_args_t rm_args =
 					{
@@ -224,6 +232,15 @@ ior_mv(io_args_t *const args)
 		default:
 			return errno;
 	}
+}
+
+/* Checks that path points to a file or symbolic link.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_file(const char path[])
+{
+	return !is_dir(path)
+	    || (is_symlink(path) && get_symlink_type(path) != SLT_UNKNOWN);
 }
 
 /* Implementation of traverse() visitor for subtree moving.  Returns 0 on

@@ -791,7 +791,7 @@ is_dirent_targets_exec(const struct dirent *d)
 #ifndef _WIN32
 	if(d->d_type == DT_DIR)
 		return 0;
-	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
+	if(d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN)
 		return 0;
 	return access(d->d_name, X_OK) == 0;
 #else

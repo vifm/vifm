@@ -81,6 +81,7 @@ static struct
 	int x, y;
 	char *name;
 	int overwrite_all;
+	int append; /* Whether we're appending ending of a file or not. */
 	int allow_merge;
 	int merge;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
@@ -1491,7 +1492,7 @@ put_next(const char dest_name[], int override)
 			dest_name);
 	chosp(dst_buf);
 
-	if(path_exists(dst_buf))
+	if(!put_confirm.append && path_exists(dst_buf))
 	{
 		if(override)
 		{
@@ -1532,6 +1533,11 @@ put_next(const char dest_name[], int override)
 			copy_str(src_buf, sizeof(src_buf),
 					make_rel_path(filename, put_confirm.view->curr_dir));
 		}
+	}
+	else if(put_confirm.append)
+	{
+		op = move ? OP_MOVEA : OP_COPYA;
+		put_confirm.append = 0;
 	}
 	else if(move)
 	{
@@ -1675,6 +1681,16 @@ put_decide_cb(const char choice[])
 			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 		}
 	}
+	else if(strcmp(choice, "p") == 0 && cfg.use_system_calls &&
+			!is_dir(put_confirm.name))
+	{
+		put_confirm.append = 1;
+		if(put_next("", 0) == 0)
+		{
+			put_confirm.x++;
+			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		}
+	}
 	else if(strcmp(choice, "a") == 0)
 	{
 		put_confirm.overwrite_all = 1;
@@ -1707,8 +1723,11 @@ prompt_what_to_do(const char src_name[])
 
 	(void)replace_string(&put_confirm.name, src_name);
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll%" WPRINTF_MBSTR ": ",
-			src_name, put_confirm.allow_merge ? "/[m]erge" : "");
+			L". [r]ename/[s]kip/[o]verwrite%" WPRINTF_MBSTR
+			"/overwrite [a]ll%" WPRINTF_MBSTR ": ",
+			src_name,
+			(cfg.use_system_calls && !is_dir(src_name)) ? "/a[p]pend the end" : "",
+			put_confirm.allow_merge ? "/[m]erge" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 

@@ -42,7 +42,8 @@ typedef struct
 	int balance;
 	int can_undone;
 	int incomplete;
-}group_t;
+}
+group_t;
 
 typedef struct
 {
@@ -52,7 +53,8 @@ typedef struct
 	void *data;             /* for uid_t, gid_t and mode_t */
 	const char *exists;     /* NULL, buf1 or buf2 */
 	const char *dont_exist; /* NULL, buf1 or buf2 */
-}op_t;
+}
+op_t;
 
 typedef struct cmd_t
 {
@@ -64,7 +66,8 @@ typedef struct cmd_t
 	group_t *group;
 	struct cmd_t *prev;
 	struct cmd_t *next;
-}cmd_t;
+}
+cmd_t;
 
 static OPS undo_op[] = {
 	OP_NONE,     /* OP_NONE */
@@ -73,8 +76,10 @@ static OPS undo_op[] = {
 	OP_SYMLINK,  /* OP_REMOVESL */
 	OP_REMOVE,   /* OP_COPY */
 	OP_REMOVE,   /* OP_COPYF */
+	OP_REMOVE,   /* OP_COPYA */
 	OP_MOVE,     /* OP_MOVE */
 	OP_MOVE,     /* OP_MOVEF */
+	OP_MOVE,     /* OP_MOVEA */
 	OP_MOVETMP1, /* OP_MOVETMP1 */
 	OP_MOVETMP2, /* OP_MOVETMP2 */
 	OP_MOVETMP3, /* OP_MOVETMP1 */
@@ -101,7 +106,7 @@ static enum
 	OPER_1ST,
 	OPER_2ND,
 	OPER_NON,
-}opers[][8] = {
+} opers[][8] = {
 	/* 1st arg   2nd arg   exists    absent   */
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
@@ -115,9 +120,13 @@ static enum
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPYF  */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPYA  */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVEF */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE  */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVEA */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE  */
 	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP1 */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
@@ -162,8 +171,10 @@ static int data_is_ptr[] = {
 	0, /* OP_REMOVESL */
 	0, /* OP_COPY */
 	0, /* OP_COPYF */
+	0, /* OP_COPYA */
 	0, /* OP_MOVE */
 	0, /* OP_MOVEF */
+	0, /* OP_MOVEA */
 	0, /* OP_MOVETMP1 */
 	0, /* OP_MOVETMP2 */
 	0, /* OP_MOVETMP3 */
