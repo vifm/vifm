@@ -55,6 +55,10 @@
 	to the given value (alike "/pattern" and "filter value").  Thanks to
 	filterfalse.
 
+	Added "a[p]pend the end" conflict resolution option (appends the rest of
+	file, e.g. if previous operation was terminated).  Available only if
+	'syscalls' option is set. Thanks to Sergei Shilovsky.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
