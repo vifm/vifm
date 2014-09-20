@@ -83,7 +83,8 @@ int directory_accessible(const char *path);
  * absolute (in order for this function to work correctly). */
 int is_dir_writable(const char path[]);
 
-/* Gets correct file size independently of platform. */
+/* Gets correct file size independently of platform.  Returns zero for both
+ * empty files and on error. */
 uint64_t get_file_size(const char *path);
 
 /* Lists all regular files inside the path directory.  Allocates an array of
