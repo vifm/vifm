@@ -479,10 +479,12 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		BOOL ret = MoveFile(src, dst);
 		if(!ret && GetLastError() == 5)
 		{
-			int r = op_cp(data, src, dst, conflict_action != CA_FAIL);
+			const int r = op_cp(ops, data, src, dst, conflict_action);
 			if(r != 0)
+			{
 				return r;
-			return op_removesl(data, src, NULL);
+			}
+			return op_removesl(ops, data, src, NULL);
 		}
 		return ret == 0;
 #endif
