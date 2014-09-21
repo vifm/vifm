@@ -760,10 +760,19 @@ void
 mix_colors(col_attr_t *base, const col_attr_t *mixup)
 {
 	if(mixup->fg != -1)
+	{
 		base->fg = mixup->fg;
+	}
+
 	if(mixup->bg != -1)
+	{
 		base->bg = mixup->bg;
-	base->attr = mixup->attr;
+	}
+
+	if(mixup->attr != -1)
+	{
+		base->attr = mixup->attr;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
