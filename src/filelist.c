@@ -222,13 +222,11 @@ column_line_print(const void *data, int column_id, const char *buf,
 		int mixed;
 		const char *format;
 		int line_number;
-		int is_current_line;
 
 		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
 				cdt->is_current);
 
-		is_current_line = (i == view->list_pos);
-		mixed = is_current_line && view->num_type == NT_MIX;
+		mixed = cdt->is_current && view->num_type == NT_MIX;
 		format = mixed ? "%-*d" : "%*d";
 		line_number = ((view->num_type & NT_REL) && !mixed)
 		            ? abs(i - view->list_pos)
@@ -950,7 +948,7 @@ draw_dir_list(FileView *view)
 		{
 			.view = view,
 			.line_pos = x,
-			.is_current = 0,
+			.is_current = x == view->list_pos,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
 		};
