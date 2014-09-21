@@ -775,5 +775,11 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 	}
 }
 
+int
+is_color_set(const col_attr_t *color)
+{
+	return color->fg != -1 || color->bg != -1 || color->attr != -1;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

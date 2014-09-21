@@ -59,6 +59,9 @@
 	file, e.g. if previous operation was terminated).  Available only if
 	'syscalls' option is set. Thanks to Sergei Shilovsky.
 
+	Added OtherLine highlight group for cursor of inactive pane.  Thanks to
+	Svyatoslav Mishyn, a.k.a. juef.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

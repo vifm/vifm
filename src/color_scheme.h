@@ -92,6 +92,10 @@ void color_to_str(int color, size_t buf_len, char str_buf[]);
 
 void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
+/* Checks that color is non-empty (e.g. set from outside).  Returns non-zero if
+ * so, otherwise zero is returned. */
+int is_color_set(const col_attr_t *color);
+
 #endif /* VIFM__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

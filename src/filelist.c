@@ -124,6 +124,7 @@ static void draw_cell(const FileView *view, const column_data_t *cdt,
 static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
+static int prepare_inactive_color(FileView *view, int line_color, int selected);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
@@ -265,12 +266,22 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 
 	if(current)
 	{
-		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-		line_color = CURRENT_COLOR;
+		if(view == curr_view)
+		{
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			line_color = CURRENT_COLOR;
+		}
 	}
 	else if(selected)
 	{
 		line_color = SELECTED_COLOR;
+	}
+
+	if(view == other_view && current &&
+			is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+	{
+		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+		line_color = OTHER_LINE_COLOR;
 	}
 
 	init_pair(view->color_scheme + line_color, col.fg, col.bg);
@@ -294,11 +305,22 @@ prepare_secondary_col_color(FileView *view, int selected, int current)
 
 	if(current)
 	{
-		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-		line_color = CURRENT_COLOR;
+		if(view == curr_view)
+		{
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			line_color = CURRENT_COLOR;
+		}
 	}
 	else
 	{
+		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+	}
+
+	if(view == other_view && current &&
+			is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+	{
+		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+		line_color = OTHER_LINE_COLOR;
 		init_pair(view->color_scheme + line_color, col.fg, col.bg);
 	}
 
@@ -1308,13 +1330,37 @@ put_inactive_mark(FileView *view)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	is_selected = view->dir_entry[view->list_pos].selected;
-	line_attrs = prepare_secondary_col_color(view, is_selected, 0);
+	line_attrs = prepare_inactive_color(view,
+			get_line_color(view, view->list_pos), is_selected);
 
 	line = view->curr_line/col_count;
 	column = view->real_num_width + (view->curr_line%col_count)*col_width;
 	checked_wmove(view->win, line, column);
 
 	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
+}
+
+/* Calculate color attributes for cursor line of inactive pane.  Returns
+ * attributes that can be used for drawing on a window. */
+static int
+prepare_inactive_color(FileView *view, int line_color, int selected)
+{
+	col_attr_t col = view->cs.color[WIN_COLOR];
+
+	mix_colors(&col, &view->cs.color[line_color]);
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+	}
+
+	if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+	{
+		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+		init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
+	}
+
+	return COLOR_PAIR(view->color_scheme + OTHER_LINE_COLOR) | col.attr;
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
