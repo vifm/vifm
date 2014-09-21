@@ -56,6 +56,7 @@ char *HI_GROUPS[] = {
 	[CMD_LINE_COLOR]     = "CmdLine",
 	[ERROR_MSG_COLOR]    = "ErrorMsg",
 	[BORDER_COLOR]       = "Border",
+	[OTHER_LINE_COLOR]   = "OtherLine",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
 
@@ -348,6 +349,7 @@ static const int default_colors[][3] = {
 	[CMD_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
+	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 

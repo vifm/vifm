@@ -42,7 +42,7 @@ enum
 	FIFO_COLOR,         /* Named pipe. */
 	EXECUTABLE_COLOR,   /* Executable. */
 	SELECTED_COLOR,     /* Selected item. */
-	CURR_LINE_COLOR,    /* Line under the cursor. */
+	CURR_LINE_COLOR,    /* Line under the cursor in the selected pane. */
 	TOP_LINE_COLOR,     /* Top line of the other pane. */
 	TOP_LINE_SEL_COLOR, /* Top line of the selected pane. */
 	STATUS_LINE_COLOR,  /* Status line. */
@@ -50,6 +50,7 @@ enum
 	CMD_LINE_COLOR,     /* Command line. */
 	ERROR_MSG_COLOR,    /* Error of the command line. */
 	BORDER_COLOR,       /* Vertical border lines. */
+	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
 	CURRENT_COLOR,      /* Pane current line (mixed, internal use only). */
 	MENU_CURRENT_COLOR, /* Menu current line (mixed, internal use only). */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
