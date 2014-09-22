@@ -271,17 +271,15 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 			line_color = CURRENT_COLOR;
 		}
+		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+		{
+			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+			line_color = OTHER_LINE_COLOR;
+		}
 	}
 	else if(selected)
 	{
 		line_color = SELECTED_COLOR;
-	}
-
-	if(view == other_view && current &&
-			is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
-	{
-		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-		line_color = OTHER_LINE_COLOR;
 	}
 
 	init_pair(view->color_scheme + line_color, col.fg, col.bg);
@@ -310,17 +308,14 @@ prepare_secondary_col_color(FileView *view, int selected, int current)
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 			line_color = CURRENT_COLOR;
 		}
+		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+		{
+			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+			line_color = OTHER_LINE_COLOR;
+		}
 	}
 	else
 	{
-		init_pair(view->color_scheme + line_color, col.fg, col.bg);
-	}
-
-	if(view == other_view && current &&
-			is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
-	{
-		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-		line_color = OTHER_LINE_COLOR;
 		init_pair(view->color_scheme + line_color, col.fg, col.bg);
 	}
 
