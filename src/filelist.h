@@ -223,7 +223,7 @@ FILE * use_info_prog(const char *viewer);
 /* Loads filelist for the view, but doesn't redraw the view.  The reload
  * parameter should be set in case of view refresh operation. */
 void populate_dir_list(FileView *view, int reload);
-/* Loads filelist for the view and redraws the view.  The reload parameter
+/* Loads file list for the view and redraws the view.  The reload parameter
  * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
 /* Resorts view without reloading it and preserving currently file under cursor

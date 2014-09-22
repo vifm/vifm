@@ -116,9 +116,11 @@ static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static void capture_selection(FileView *view);
 static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
+static void draw_dir_list_only(FileView *view);
 static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
+static int clear_current_line_bar(FileView *view, int is_current);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width);
 static int calculate_top_position(FileView *view, int top);
@@ -136,6 +138,7 @@ static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static size_t get_filetype_decoration_width(FileType type);
+static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
 static void sort_dir_list(int msg, FileView *view);
@@ -915,6 +918,19 @@ invert_sorting_order(FileView *view)
 void
 draw_dir_list(FileView *view)
 {
+	draw_dir_list_only(view);
+
+	if(view != curr_view)
+	{
+		put_inactive_mark(view);
+	}
+}
+
+/* Redraws directory list without any extra actions that are performed in
+ * draw_dir_list(). */
+static void
+draw_dir_list_only(FileView *view)
+{
 	int attr;
 	int x;
 	int cell;
@@ -965,7 +981,7 @@ draw_dir_list(FileView *view)
 		{
 			.view = view,
 			.line_pos = x,
-			.is_current = x == view->list_pos,
+			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
 		};
@@ -980,11 +996,6 @@ draw_dir_list(FileView *view)
 
 	view->top_line = top;
 	view->curr_line = view->list_pos - view->top_line;
-
-	if(view != curr_view)
-	{
-		put_inactive_mark(view);
-	}
 
 	if(view == curr_view)
 	{
@@ -1125,22 +1136,44 @@ all_files_visible(const FileView *view)
 void
 erase_current_line_bar(FileView *view)
 {
+	if(clear_current_line_bar(view, 0) && view == other_view)
+	{
+		put_inactive_mark(view);
+	}
+}
+
+/* Redraws directory list without any extra actions that are performed in
+ * erase_current_line_bar().  is_current defines whether element under the
+ * cursor is being erased.  Returns non-zero if something was actually redrawn,
+ * otherwise zero is returned. */
+static int
+clear_current_line_bar(FileView *view, int is_current)
+{
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
 	size_t col_width;
 	size_t col_count;
-	column_data_t cdt = {view, old_pos, 0};
+	column_data_t cdt =
+	{
+		.view = view,
+		.line_pos = old_pos,
+		.is_current = is_current,
+	};
 
 	if(old_cursor < 0)
-		return;
+	{
+		return 0;
+	}
 
 	if(curr_stats.load_stage < 2)
-		return;
+	{
+		return 0;
+	}
 
 	if(old_pos < 0 || old_pos >= view->list_rows)
 	{
 		/* The entire list is going to be redrawn so just return. */
-		return;
+		return 0;
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
@@ -1150,10 +1183,7 @@ erase_current_line_bar(FileView *view)
 
 	draw_cell(view, &cdt, col_width);
 
-	if(view == other_view)
-	{
-		put_inactive_mark(view);
-	}
+	return 1;
 }
 
 /* Draws a full cell of the file list. */
@@ -1246,7 +1276,11 @@ move_to_list_pos(FileView *view, int pos)
 	size_t col_width;
 	size_t col_count;
 	size_t print_width;
-	column_data_t cdt = {view, 0, 1, 0};
+	column_data_t cdt =
+	{
+		.view = view,
+		.is_current = 1,
+	};
 
 	if(pos < 1)
 		pos = 0;
@@ -1321,6 +1355,8 @@ put_inactive_mark(FileView *view)
 	int is_selected;
 	int line_attrs;
 	int line, column;
+
+	(void)clear_current_line_bar(view, 1);
 
 	calculate_table_conf(view, &col_count, &col_width);
 
@@ -2689,12 +2725,30 @@ populate_dir_list(FileView *view, int reload)
 void
 load_dir_list(FileView *view, int reload)
 {
+	load_dir_list_internal(view, reload, 0);
+}
+
+/* Loads file list for the view and redraws the view.  The reload parameter
+ * should be set in case of view refresh operation.  The draw_only parameter
+ * prevents extra actions that might be taken care of outside this function as
+ * well. */
+static void
+load_dir_list_internal(FileView *view, int reload, int draw_only)
+{
 	if(populate_dir_list_internal(view, reload) != 0)
 	{
 		return;
 	}
 
-	draw_dir_list(view);
+	if(draw_only)
+	{
+		draw_dir_list_only(view);
+	}
+	else
+	{
+		draw_dir_list(view);
+	}
+
 	ui_view_reloaded(view);
 
 	if(view == curr_view)
@@ -3470,7 +3524,7 @@ load_saving_pos(FileView *view, int reload)
 
 	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
-	load_dir_list(view, reload);
+	load_dir_list_internal(view, reload, 1);
 	pos = find_file_pos_in_list(view, filename);
 	pos = (pos >= 0) ? pos : view->list_pos;
 	if(view == curr_view)
