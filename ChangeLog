@@ -160,6 +160,9 @@
 	Extended 'slowfs' option format to allow path prefixes (in particular,
 	it's useful for autofs).  Thanks to Евгений Жаров (a.k.a. ezharov).
 
+	Renamed configure.in to configure.ac.  Thanks to Hendrik Jaeger (a.k.a.
+	henk).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
