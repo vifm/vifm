@@ -1465,9 +1465,9 @@ actions:
         \\ {Mount with fuse-zip}
         \\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
         \\ {View contents}
-        \\ zip -sf %c | less,
+        \\ zip \-sf %c | less,
         \\ {Extract here}
-        \\ tar -xf %c,
+        \\ tar \-xf %c,
 .EE
 .TP
 .BI "                                         :filextype"
@@ -1530,7 +1530,7 @@ name of current file is appended as if command ended with %c macro.  See
 "Globs" section below for pattern definition.  Example for zip archives:
 
 .EX
- fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+ fileviewer *.zip,*.jar,*.war,*.ear zip \-sf %c
 .EE
 .TP
 .BI "                                         :filter"
@@ -2799,7 +2799,7 @@ If value is omitted, its default value is used.  Example:
 .BI findprg
 type: string
 .br
-default: "find %s %a \-print , -type d \\( ! \-readable -o ! -executable \\) \-prune"
+default: "find %s %a \-print , \-type d \\( ! \-readable -o ! \-executable \\) \-prune"
 .br
 Specifies format for an external command to be invoked by the :find
 command.  The format supports expanding of macros, specific for a particular
@@ -3541,8 +3541,8 @@ Examples:
   2  >   'b'         == 1
   2  >   '1b'        == 1
   2  >   '9b'        == 0
- -1  == -'1'         == 1
-  0  ==  '--1'       == 1
+ \-1  == \-'1'         == 1
+  0  ==  '\-\-1'       == 1
 .EE
 
 expr2
@@ -3562,11 +3562,11 @@ expr3
 -----
 .br
 
-- expr3              unary minus
+\- expr3              unary minus
 .br
 + expr3              unary plus
 
-For '-' the sign of the number is changed.
+For '\-' the sign of the number is changed.
 .br
 For '+' the number is unchanged.
 
@@ -3574,9 +3574,9 @@ A String will be converted to a Number first.
 
 These operations can be repeated and mixed.  Examples:
 .EX
-  --9                == 9
- ---9                == -9
-  -+9                == 9
+  \-\-9                == 9
+ \-\-\-9                == \-9
+  \-+9                == 9
 .EE
 
 expr4
