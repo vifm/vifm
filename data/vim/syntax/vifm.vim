@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: August 14, 2014
+" Last Change: September 21, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -58,7 +58,7 @@ syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\)" skipwhite
 syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
-		\ Directory Link Socket Device Executable Selected Current BrokenLink
+		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
 		\ TopLine TopLineSel StatusLine Fifo ErrorMsg
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none

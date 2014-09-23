@@ -56,6 +56,7 @@ char *HI_GROUPS[] = {
 	[CMD_LINE_COLOR]     = "CmdLine",
 	[ERROR_MSG_COLOR]    = "ErrorMsg",
 	[BORDER_COLOR]       = "Border",
+	[OTHER_LINE_COLOR]   = "OtherLine",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
 
@@ -348,6 +349,7 @@ static const int default_colors[][3] = {
 	[CMD_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
+	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
@@ -758,10 +760,25 @@ void
 mix_colors(col_attr_t *base, const col_attr_t *mixup)
 {
 	if(mixup->fg != -1)
+	{
 		base->fg = mixup->fg;
+	}
+
 	if(mixup->bg != -1)
+	{
 		base->bg = mixup->bg;
-	base->attr = mixup->attr;
+	}
+
+	if(mixup->attr != -1)
+	{
+		base->attr = mixup->attr;
+	}
+}
+
+int
+is_color_set(const col_attr_t *color)
+{
+	return color->fg != -1 || color->bg != -1 || color->attr != -1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
