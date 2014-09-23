@@ -1,5 +1,8 @@
 0.7.7 to current
 
+	Removed ltmain.sh script, which is part of libtool, which is not used
+	anymore.  Thanks to Hendrik Jaeger (a.k.a.  henk).
+
 	Added executable() builtin function that checks whether executable exists
 	at absolute path or in one of directories listed in $PATH.
 
