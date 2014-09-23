@@ -1404,14 +1404,17 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
-	*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
-	*count = 1;
-
 	if(view->ls_view)
 	{
 		*count = calculate_columns_count(view);
 		*width = calculate_column_width(view);
 	}
+	else
+	{
+		*count = 1;
+		*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
+	}
+
 	view->column_count = *count;
 	view->window_cells = *count*(view->window_rows + 1);
 }
