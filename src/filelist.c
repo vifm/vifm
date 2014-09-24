@@ -1186,6 +1186,11 @@ clear_current_line_bar(FileView *view, int is_current)
 	cdt.column_offset = (old_cursor%col_count)*col_width;
 
 	print_width = calculate_print_width(view, old_pos, col_width);
+
+	/* When this function is used to draw cursor position in inactive view, only
+	 * name width should be updated. */
+	col_width = is_current ? print_width : col_width;
+
 	draw_cell(view, &cdt, col_width, print_width);
 
 	return 1;
