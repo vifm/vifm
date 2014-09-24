@@ -265,6 +265,7 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 	if(selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		line_color = SELECTED_COLOR;
 	}
 
 	if(current)
@@ -279,10 +280,6 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
 			line_color = OTHER_LINE_COLOR;
 		}
-	}
-	else if(selected)
-	{
-		line_color = SELECTED_COLOR;
 	}
 
 	init_pair(view->color_scheme + line_color, col.fg, col.bg);
@@ -1396,8 +1393,9 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 	if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
 	{
 		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-		init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
 	}
+
+	init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
 
 	return COLOR_PAIR(view->color_scheme + OTHER_LINE_COLOR) | col.attr;
 }
