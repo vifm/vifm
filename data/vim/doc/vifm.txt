@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 21
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 24
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1570,6 +1570,7 @@ transparency:
     Executable
       Selected
         CurrLine
+        OtherLine
   TopLine
     TopLineSel
 

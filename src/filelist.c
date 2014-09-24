@@ -122,7 +122,7 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int clear_current_line_bar(FileView *view, int is_current);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
-		size_t col_width);
+		size_t col_width, size_t print_width);
 static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
@@ -265,6 +265,7 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 	if(selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		line_color = SELECTED_COLOR;
 	}
 
 	if(current)
@@ -279,10 +280,6 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
 			line_color = OTHER_LINE_COLOR;
 		}
-	}
-	else if(selected)
-	{
-		line_color = SELECTED_COLOR;
 	}
 
 	init_pair(view->color_scheme + line_color, col.fg, col.bg);
@@ -986,7 +983,9 @@ draw_dir_list_only(FileView *view)
 			.column_offset = (cell%col_count)*col_width,
 		};
 
-		draw_cell(view, &cdt, col_width);
+		const size_t print_width = calculate_print_width(view, x, col_width);
+
+		draw_cell(view, &cdt, col_width, print_width);
 
 		if(++cell >= view->window_cells)
 		{
@@ -1153,6 +1152,8 @@ clear_current_line_bar(FileView *view, int is_current)
 	int old_pos = view->top_line + old_cursor;
 	size_t col_width;
 	size_t col_count;
+	size_t print_width;
+
 	column_data_t cdt =
 	{
 		.view = view,
@@ -1181,18 +1182,22 @@ clear_current_line_bar(FileView *view, int is_current)
 	cdt.current_line = old_cursor/col_count;
 	cdt.column_offset = (old_cursor%col_count)*col_width;
 
-	draw_cell(view, &cdt, col_width);
+	print_width = calculate_print_width(view, old_pos, col_width);
+
+	/* When this function is used to draw cursor position in inactive view, only
+	 * name width should be updated. */
+	col_width = is_current ? print_width : col_width;
+
+	draw_cell(view, &cdt, col_width, print_width);
 
 	return 1;
 }
 
-/* Draws a full cell of the file list. */
+/* Draws a full cell of the file list.  print_width <= col_width. */
 static void
-draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width)
+draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
+		size_t print_width)
 {
-	const size_t print_width = calculate_print_width(view, cdt->line_pos,
-			col_width);
-
 	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, cdt, col_width);
 	column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
@@ -1388,8 +1393,9 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 	if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
 	{
 		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-		init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
 	}
+
+	init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
 
 	return COLOR_PAIR(view->color_scheme + OTHER_LINE_COLOR) | col.attr;
 }
