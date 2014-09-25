@@ -159,8 +159,6 @@ static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 
-const size_t COLUMN_GAP = 2;
-
 void
 init_filelists(void)
 {
@@ -196,17 +194,22 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
+	const int padding = (cfg.filelist_col_padding != 0);
+
 	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
 	size_t trim_pos;
+	int reserved_width;
 
 	const column_data_t *const cdt = data;
 	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[i];
 
-	const size_t prefix_len = view->real_num_width + 1;
+	const int displays_numbers = (offset == 0 && ui_view_displays_numbers(view));
+
+	const size_t prefix_len = padding + view->real_num_width;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(column_id == SK_BY_NAME || column_id == SK_BY_INAME)
@@ -220,7 +223,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 				cdt->is_current);
 	}
 
-	if(offset == 0 && ui_view_displays_numbers(view))
+	if(displays_numbers)
 	{
 		char number[view->real_num_width + 1];
 		int mixed;
@@ -231,22 +234,25 @@ column_line_print(const void *data, int column_id, const char *buf,
 				cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
-		format = mixed ? "%-*d" : "%*d";
+		format = mixed ? "%-*d " : "%*d ";
 		line_number = ((view->num_type & NT_REL) && !mixed)
 		            ? abs(i - view->list_pos)
 		            : (i + 1);
 
-		snprintf(number, sizeof(number), format, view->real_num_width, line_number);
+		snprintf(number, sizeof(number), format, view->real_num_width - 1,
+				line_number);
 
 		checked_wmove(view->win, cdt->current_line,
-				final_offset - 1 - view->real_num_width);
+				final_offset - view->real_num_width);
 		wprinta(view->win, number, line_attrs);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
 
 	strcpy(print_buf, buf);
-	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
+	reserved_width = cfg.filelist_col_padding ? (column_id != FILL_COLUMN_ID) : 0;
+	width_left = padding + ui_view_available_width(view)
+	           - reserved_width - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
 	wprinta(view->win, print_buf, line_attrs);
@@ -1084,7 +1090,8 @@ int
 get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 {
 	int scroll_offset = get_effective_scroll_offset(view);
-	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
+	if(view->list_pos <=
+			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
 	{
 		size_t column_correction = view->list_pos%view->column_count;
 		size_t offset = scroll_offset + pos_delta + column_correction;
@@ -1345,9 +1352,17 @@ static void
 draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
-	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
+	if(cfg.filelist_col_padding)
+	{
+		column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
+	}
+
 	columns_format_line(view->columns, cdt, col_width);
-	column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
+
+	if(cfg.filelist_col_padding)
+	{
+		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
+	}
 }
 
 void
@@ -1360,6 +1375,11 @@ put_inactive_mark(FileView *view)
 	int line, column;
 
 	(void)clear_current_line_bar(view, 1);
+
+	if(!cfg.filelist_col_padding)
+	{
+		return;
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 
@@ -1470,7 +1490,8 @@ calculate_columns_count(FileView *view)
 static size_t
 calculate_column_width(FileView *view)
 {
-	return MIN(view->max_filename_len + COLUMN_GAP,
+	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
+	return MIN(view->max_filename_len + column_gap,
 	           ui_view_available_width(view));
 }
 
