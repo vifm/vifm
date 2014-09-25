@@ -183,6 +183,7 @@ init_config(void)
 	replace_char(cfg.cd_path, ':', ',');
 
 	cfg.filelist_col_padding = 1;
+	cfg.side_borders_visible = 1;
 
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
