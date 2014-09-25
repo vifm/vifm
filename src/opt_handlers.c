@@ -60,7 +60,8 @@ typedef union
 	char **str_val;
 	int *enum_item;
 	int *set_items;
-}optvalref_t;
+}
+optvalref_t;
 
 typedef void (*optinit_func)(optval_t *val);
 
@@ -68,7 +69,8 @@ typedef struct
 {
 	optvalref_t ref;
 	optinit_func init;
-}optinit_t;
+}
+optinit_t;
 
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
@@ -81,6 +83,7 @@ static void init_numberwidth(optval_t *val);
 static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
+static void init_tuioptions(optval_t *val);
 static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
@@ -142,6 +145,7 @@ static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
+static void tuioptions_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
 static void vicmd_handler(OPT_OP op, optval_t val);
 static void vixcmd_handler(OPT_OP op, optval_t val);
@@ -187,6 +191,11 @@ ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 static const char shortmess_list[] = "T";
 static const char * shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
+
+/* Possible flags of 'tuioptions' and their count. */
+static const char tuioptions_list[] = "p";
+static const char * tuioptions_vals = tuioptions_list;
+#define tuioptions_count ARRAY_LEN(tuioptions_list)
 
 static const char * sort_types[] = {
 	"ext",   "+ext",   "-ext",
@@ -401,6 +410,10 @@ options[] =
 	  OPT_STRLIST, 0, NULL, &trashdir_handler,
 	  { .init = &init_trash_dir },
 	},
+	{ "tuioptions", "to",
+	  OPT_CHARSET, tuioptions_count, &tuioptions_vals, &tuioptions_handler,
+	  { .init = &init_tuioptions },
+	},
 	{ "undolevels", "ul",
 	  OPT_INT, 0, NULL, &undolevels_handler,
 	  { .ref.int_val = &cfg.undo_levels },
@@ -510,11 +523,14 @@ classify_to_str(void)
 	return buf;
 }
 
+/* Composes initial value for 'cpoptions' option from a set of configuration
+ * flags. */
 static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
-	/* TODO: move these flags to curr_stats structure. */
+	/* TODO: move these flags to curr_stats structure, or not why would they fit
+	 * there? */
 	snprintf(buf, sizeof(buf), "%s%s%s",
 			cfg.filter_inverted_by_default ? "f" : "",
 			cfg.selection_is_primary       ? "s" : "",
@@ -579,6 +595,16 @@ static void
 init_sortorder(optval_t *val)
 {
 	val->enum_item = 0;
+}
+
+/* Composes initial value for 'tuioptions' option from a set of configuration
+ * flags. */
+static void
+init_tuioptions(optval_t *val)
+{
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s", cfg.filelist_col_padding? "p" : "");
+	val->str_val = buf;
 }
 
 static void
@@ -863,12 +889,13 @@ confirm_handler(OPT_OP op, optval_t val)
 	cfg.confirm = val.bool_val;
 }
 
+/* Parses set of compatibility flags and changes configuration accordingly. */
 static void
 cpoptions_handler(OPT_OP op, optval_t val)
 {
 	const char *p;
 
-	/* Define new kind of behaviour. */
+	/* Set all options to new kind of behaviour. */
 	cfg.filter_inverted_by_default = 0;
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
@@ -893,7 +920,7 @@ cpoptions_handler(OPT_OP op, optval_t val)
 				assert(0 && "Unhandled cpoptions flag.");
 				break;
 		}
-		p++;
+		++p;
 	}
 }
 
@@ -1470,6 +1497,36 @@ trashdir_handler(OPT_OP op, optval_t val)
 		set_option("trashdir", val);
 	}
 	free(expanded_path);
+}
+
+/* Parses set of TUI flags and changes appearance configuration accordingly. */
+static void
+tuioptions_handler(OPT_OP op, optval_t val)
+{
+	const char *p;
+
+	/* Turn all flags off. */
+	cfg.filelist_col_padding = 0;
+
+	/* And set the ones present in the value. */
+	p = val.str_val;
+	while(*p != '\0')
+	{
+		switch(*p)
+		{
+			case 'p':
+				cfg.filelist_col_padding = 1;
+				break;
+
+			default:
+				assert(0 && "Unhandled tuioptions flag.");
+				break;
+		}
+		++p;
+	}
+
+	ui_view_schedule_redraw(&lwin);
+	ui_view_schedule_redraw(&rwin);
 }
 
 static void

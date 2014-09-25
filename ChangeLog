@@ -62,6 +62,9 @@
 	Added OtherLine highlight group for cursor of inactive pane.  Thanks to
 	Svyatoslav Mishyn, a.k.a. juef.
 
+	Added 'tuioptions' option.  Controls padding of file lists in panels.
+	Thanks to Bruce Hunsaker (a.k.a. hunsakerbn).
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
