@@ -127,8 +127,8 @@ typedef struct config_t
 	char *cd_path;
 
 	/* Whether there should be reserved single character width space before and
-	 * after file list inside a view. */
-	int filelist_padding;
+	 * after file list column inside a view. */
+	int filelist_col_padding;
 }
 config_t;
 
