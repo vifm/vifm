@@ -1325,14 +1325,14 @@ calculate_print_width(const FileView *view, int i, size_t max_width)
 	{
 		const FileType target_type = ui_view_entry_target_type(view, i);
 		const dir_entry_t *const entry = &view->dir_entry[i];
-		size_t old_name_width = strlen(entry->name)
+		size_t raw_name_width = strlen(entry->name)
 		                      + get_filetype_decoration_width(target_type);
 		/* FIXME: remove this hack for directories. */
 		if(target_type == DIRECTORY)
 		{
-			--old_name_width;
+			--raw_name_width;
 		}
-		return MIN(max_width - 1, old_name_width);
+		return MIN(max_width - 1, raw_name_width);
 	}
 	else
 	{
