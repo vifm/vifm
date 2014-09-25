@@ -1412,7 +1412,7 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 	else
 	{
 		*count = 1;
-		*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
+		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
 	}
 
 	view->column_count = *count;
@@ -1428,7 +1428,7 @@ calculate_number_width(FileView *view)
 	{
 		const int digit_count = count_digits(view->list_rows);
 		const int min = view->num_width;
-		const int max = view->window_width - 1;
+		const int max = ui_view_available_width(view);
 		view->real_num_width = MIN(MAX(1 + digit_count, min), max);
 	}
 	else
@@ -1457,8 +1457,8 @@ calculate_columns_count(FileView *view)
 {
 	if(view->ls_view)
 	{
-		size_t column_width = calculate_column_width(view);
-		return (view->window_width - 1)/column_width;
+		const size_t column_width = calculate_column_width(view);
+		return ui_view_available_width(view)/column_width;
 	}
 	else
 	{
@@ -1470,7 +1470,8 @@ calculate_columns_count(FileView *view)
 static size_t
 calculate_column_width(FileView *view)
 {
-	return MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
+	return MIN(view->max_filename_len + COLUMN_GAP,
+	           ui_view_available_width(view));
 }
 
 void

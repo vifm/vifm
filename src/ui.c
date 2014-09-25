@@ -1952,6 +1952,19 @@ ui_view_entry_target_type(const FileView *const view, size_t pos)
 	}
 }
 
+int
+ui_view_available_width(const FileView *const view)
+{
+	if(cfg.filelist_col_padding)
+	{
+		return (int)view->window_width - 1;
+	}
+	else
+	{
+		return (int)view->window_width + 1;
+	}
+}
+
 void
 ui_view_schedule_redraw(FileView *view)
 {
