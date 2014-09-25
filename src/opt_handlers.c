@@ -193,7 +193,7 @@ static const char * shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
 
 /* Possible flags of 'tuioptions' and their count. */
-static const char tuioptions_list[] = "p";
+static const char tuioptions_list[] = "ps";
 static const char * tuioptions_vals = tuioptions_list;
 #define tuioptions_count ARRAY_LEN(tuioptions_list)
 
@@ -603,7 +603,9 @@ static void
 init_tuioptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s", cfg.filelist_col_padding? "p" : "");
+	snprintf(buf, sizeof(buf), "%s%s",
+			cfg.filelist_col_padding ? "p" : "",
+			cfg.side_borders_visible ? "s" : "");
 	val->str_val = buf;
 }
 
@@ -1507,6 +1509,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 
 	/* Turn all flags off. */
 	cfg.filelist_col_padding = 0;
+	cfg.side_borders_visible = 0;
 
 	/* And set the ones present in the value. */
 	p = val.str_val;
@@ -1517,6 +1520,9 @@ tuioptions_handler(OPT_OP op, optval_t val)
 			case 'p':
 				cfg.filelist_col_padding = 1;
 				break;
+			case 's':
+				cfg.side_borders_visible = 1;
+				break;
 
 			default:
 				assert(0 && "Unhandled tuioptions flag.");
@@ -1525,8 +1531,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 		++p;
 	}
 
-	ui_view_schedule_redraw(&lwin);
-	ui_view_schedule_redraw(&rwin);
+	curr_stats.need_update = UT_REDRAW;
 }
 
 static void

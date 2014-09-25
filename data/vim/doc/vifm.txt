@@ -2708,11 +2708,14 @@ typed key sequence is ambiguous.
                                                *vifm-'tuioptions* *vifm-'to'*
 tuioptions to
 type: charset
-default: "p"
+default: "ps"
 Each flag configures some aspect of TUI appearance.  The flags are:
                                                *vifm-to-p*
 p - when included, file list inside a pane gets additional single character
 padding on left and right sides.
+                                               *vifm-to-s*
+s - when included, left and right borders (side borders, hence "s" character)
+are visible.
 
                                                *vifm-'undolevels'* *vifm-'ul'*
 undolevels ul

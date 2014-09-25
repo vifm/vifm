@@ -611,6 +611,7 @@ const char *tags[] = {
 	"vifm-startup",
 	"vifm-t",
 	"vifm-to-p",
+	"vifm-to-s",
 	"vifm-trash",
 	"vifm-u",
 	"vifm-v",

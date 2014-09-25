@@ -3300,12 +3300,15 @@ Will attempt to create the directory if it does not exist.  See
 .BI "tuioptions to"
 type: charset
 .br
-default: "p"
+default: "ps"
 .br
 Each flag configures some aspect of TUI appearance.  The flags are:
 .br
 p \- when included, file list inside a pane gets additional single character
-padding on left and right sides.
+padding on left and right sides;
+.br
+s \- when included, left and right borders (side borders, hence "s" character)
+are visible.
 .TP
 .BI "undolevels ul"
 type: integer
