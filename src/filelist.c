@@ -121,11 +121,11 @@ static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int clear_current_line_bar(FileView *view, int is_current);
-static void draw_cell(const FileView *view, const column_data_t *cdt,
-		size_t col_width, size_t print_width);
 static int calculate_top_position(FileView *view, int top);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
+static void draw_cell(const FileView *view, const column_data_t *cdt,
+		size_t col_width, size_t print_width);
 static int prepare_inactive_color(FileView *view, int line_color, int selected);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
@@ -158,8 +158,6 @@ static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
-
-const size_t COLUMN_GAP = 2;
 
 void
 init_filelists(void)
@@ -196,17 +194,22 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
+	const int padding = (cfg.filelist_col_padding != 0);
+
 	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
 	size_t trim_pos;
+	int reserved_width;
 
 	const column_data_t *const cdt = data;
 	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[i];
 
-	const size_t prefix_len = view->real_num_width + 1;
+	const int displays_numbers = (offset == 0 && ui_view_displays_numbers(view));
+
+	const size_t prefix_len = padding + view->real_num_width;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(column_id == SK_BY_NAME || column_id == SK_BY_INAME)
@@ -220,7 +223,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 				cdt->is_current);
 	}
 
-	if(offset == 0 && ui_view_displays_numbers(view))
+	if(displays_numbers)
 	{
 		char number[view->real_num_width + 1];
 		int mixed;
@@ -231,22 +234,25 @@ column_line_print(const void *data, int column_id, const char *buf,
 				cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
-		format = mixed ? "%-*d" : "%*d";
+		format = mixed ? "%-*d " : "%*d ";
 		line_number = ((view->num_type & NT_REL) && !mixed)
 		            ? abs(i - view->list_pos)
 		            : (i + 1);
 
-		snprintf(number, sizeof(number), format, view->real_num_width, line_number);
+		snprintf(number, sizeof(number), format, view->real_num_width - 1,
+				line_number);
 
 		checked_wmove(view->win, cdt->current_line,
-				final_offset - 1 - view->real_num_width);
+				final_offset - view->real_num_width);
 		wprinta(view->win, number, line_attrs);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
 
 	strcpy(print_buf, buf);
-	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
+	reserved_width = cfg.filelist_col_padding ? (column_id != FILL_COLUMN_ID) : 0;
+	width_left = padding + ui_view_available_width(view)
+	           - reserved_width - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
 	wprinta(view->win, print_buf, line_attrs);
@@ -1084,7 +1090,8 @@ int
 get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 {
 	int scroll_offset = get_effective_scroll_offset(view);
-	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
+	if(view->list_pos <=
+			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
 	{
 		size_t column_correction = view->list_pos%view->column_count;
 		size_t offset = scroll_offset + pos_delta + column_correction;
@@ -1191,16 +1198,6 @@ clear_current_line_bar(FileView *view, int is_current)
 	draw_cell(view, &cdt, col_width, print_width);
 
 	return 1;
-}
-
-/* Draws a full cell of the file list.  print_width <= col_width. */
-static void
-draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
-		size_t print_width)
-{
-	column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, cdt, col_width);
-	column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
 }
 
 int
@@ -1318,9 +1315,7 @@ move_to_list_pos(FileView *view, int pos)
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, &cdt, print_width);
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
+	draw_cell(view, &cdt, print_width, print_width);
 
 	refresh_view_win(view);
 	update_stat_window(view);
@@ -1337,18 +1332,36 @@ calculate_print_width(const FileView *view, int i, size_t max_width)
 	{
 		const FileType target_type = ui_view_entry_target_type(view, i);
 		const dir_entry_t *const entry = &view->dir_entry[i];
-		size_t old_name_width = strlen(entry->name)
+		size_t raw_name_width = strlen(entry->name)
 		                      + get_filetype_decoration_width(target_type);
 		/* FIXME: remove this hack for directories. */
 		if(target_type == DIRECTORY)
 		{
-			--old_name_width;
+			--raw_name_width;
 		}
-		return MIN(max_width - 1, old_name_width);
+		return MIN(max_width - 1, raw_name_width);
 	}
 	else
 	{
 		return max_width;
+	}
+}
+
+/* Draws a full cell of the file list.  print_width <= col_width. */
+static void
+draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
+		size_t print_width)
+{
+	if(cfg.filelist_col_padding)
+	{
+		column_line_print(cdt, FILL_COLUMN_ID, " ", -1);
+	}
+
+	columns_format_line(view->columns, cdt, col_width);
+
+	if(cfg.filelist_col_padding)
+	{
+		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width);
 	}
 }
 
@@ -1362,6 +1375,11 @@ put_inactive_mark(FileView *view)
 	int line, column;
 
 	(void)clear_current_line_bar(view, 1);
+
+	if(!cfg.filelist_col_padding)
+	{
+		return;
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 
@@ -1406,14 +1424,17 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
-	*width = MAX(0, (int)view->window_width - 1 - view->real_num_width);
-	*count = 1;
-
 	if(view->ls_view)
 	{
 		*count = calculate_columns_count(view);
 		*width = calculate_column_width(view);
 	}
+	else
+	{
+		*count = 1;
+		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
+	}
+
 	view->column_count = *count;
 	view->window_cells = *count*(view->window_rows + 1);
 }
@@ -1427,7 +1448,7 @@ calculate_number_width(FileView *view)
 	{
 		const int digit_count = count_digits(view->list_rows);
 		const int min = view->num_width;
-		const int max = view->window_width - 1;
+		const int max = ui_view_available_width(view);
 		view->real_num_width = MIN(MAX(1 + digit_count, min), max);
 	}
 	else
@@ -1456,8 +1477,8 @@ calculate_columns_count(FileView *view)
 {
 	if(view->ls_view)
 	{
-		size_t column_width = calculate_column_width(view);
-		return (view->window_width - 1)/column_width;
+		const size_t column_width = calculate_column_width(view);
+		return ui_view_available_width(view)/column_width;
 	}
 	else
 	{
@@ -1469,7 +1490,9 @@ calculate_columns_count(FileView *view)
 static size_t
 calculate_column_width(FileView *view)
 {
-	return MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
+	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
+	return MIN(view->max_filename_len + column_gap,
+	           ui_view_available_width(view));
 }
 
 void

@@ -182,6 +182,9 @@ init_config(void)
 	cfg.cd_path = strdup(env_get_def("CDPATH", DEFAULT_CD_PATH));
 	replace_char(cfg.cd_path, ':', ',');
 
+	cfg.filelist_col_padding = 1;
+	cfg.side_borders_visible = 1;
+
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

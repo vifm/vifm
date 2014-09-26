@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 24
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2704,6 +2704,18 @@ type: integer
 default: 1000
 The time in milliseconds that is waited for a mapped key in case of already
 typed key sequence is ambiguous.
+
+                                               *vifm-'tuioptions* *vifm-'to'*
+tuioptions to
+type: charset
+default: "ps"
+Each flag configures some aspect of TUI appearance.  The flags are:
+                                               *vifm-to-p*
+p - when included, file list inside a pane gets additional single character
+padding on left and right sides.
+                                               *vifm-to-s*
+s - when included, left and right borders (side borders, hence "s" character)
+are visible.
 
                                                *vifm-'undolevels'* *vifm-'ul'*
 undolevels ul

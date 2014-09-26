@@ -934,9 +934,13 @@ only_layout(FileView *view, int screen_x, int screen_y)
 	mvwin(view->win, 1, 1);
 }
 
+/* Updates TUI elements sizes and coordinates for virtical configuration of
+ * panes: left one and right one. */
 static void
 vertical_layout(int screen_x, int screen_y)
 {
+	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
 	const int border_height = screen_y - 3 + !cfg.last_status;
 
 	int splitter_pos;
@@ -958,8 +962,8 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(lwin.title, 1, splitter_pos - 1);
 	mvwin(lwin.title, 0, 1);
 
-	wresize(lwin.win, border_height, splitter_pos - 1);
-	mvwin(lwin.win, 1, 1);
+	wresize(lwin.win, border_height, splitter_pos + vborder_size_correction);
+	mvwin(lwin.win, 1, vborder_pos_correction);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
@@ -979,13 +983,18 @@ vertical_layout(int screen_x, int screen_y)
 	mvwin(rwin.title, 0, splitter_pos + splitter_width);
 
 	wresize(rwin.win, border_height,
-			screen_x - (splitter_pos + splitter_width + 1));
+			screen_x - (splitter_pos + splitter_width) + vborder_size_correction);
 	mvwin(rwin.win, 1, splitter_pos + splitter_width);
 }
 
+/* Updates TUI elements sizes and coordinates for horizontal configuration of
+ * panes: top one and bottom one. */
 static void
 horizontal_layout(int screen_x, int screen_y)
 {
+	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+
 	int splitter_pos;
 
 	if(curr_stats.splitter_pos < 0)
@@ -1005,12 +1014,12 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(rwin.title, 1, screen_x - 2);
 	mvwin(rwin.title, splitter_pos, 1);
 
-	wresize(lwin.win, splitter_pos - 1, screen_x - 2);
-	mvwin(lwin.win, 1, 1);
+	wresize(lwin.win, splitter_pos - 1, screen_x + vborder_size_correction);
+	mvwin(lwin.win, 1, vborder_pos_correction);
 
 	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.last_status - 1,
-			screen_x - 2);
-	mvwin(rwin.win, splitter_pos + 1, 1);
+			screen_x + vborder_size_correction);
+	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
@@ -1179,9 +1188,12 @@ update_screen(UpdateType update_kind)
 		return;
 
 	update_attributes();
-	werase(lborder);
+	if(cfg.side_borders_visible)
+	{
+		werase(lborder);
+		werase(rborder);
+	}
 	werase(mborder);
-	werase(rborder);
 
 	if(curr_stats.too_small_term)
 	{
@@ -1345,8 +1357,11 @@ update_all_windows(void)
 			update_view(&rwin);
 		}
 
-		update_window_lazy(lborder);
-		update_window_lazy(rborder);
+		if(cfg.side_borders_visible)
+		{
+			update_window_lazy(lborder);
+			update_window_lazy(rborder);
+		}
 
 		if(cfg.last_status)
 		{
@@ -1477,12 +1492,15 @@ update_attributes(void)
 		return;
 
 	attr = cfg.cs.color[BORDER_COLOR].attr;
-	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
-	werase(lborder);
+	if(cfg.side_borders_visible)
+	{
+		wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
+		werase(lborder);
+		wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
+		werase(rborder);
+	}
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
 	werase(mborder);
-	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
-	werase(rborder);
 
 	wbkgdset(ltop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
@@ -1949,6 +1967,19 @@ ui_view_entry_target_type(const FileView *const view, size_t pos)
 	else
 	{
 		return entry->type;
+	}
+}
+
+int
+ui_view_available_width(const FileView *const view)
+{
+	if(cfg.filelist_col_padding)
+	{
+		return (int)view->window_width - 1;
+	}
+	else
+	{
+		return (int)view->window_width + 1;
 	}
 }
 

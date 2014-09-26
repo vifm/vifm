@@ -125,6 +125,14 @@ typedef struct config_t
 
 	/* Coma separated list of places to look for relative path to directories. */
 	char *cd_path;
+
+	/* Whether there should be reserved single character width space before and
+	 * after file list column inside a view. */
+	int filelist_col_padding;
+
+	/* Whether side borders are visible (separator in the middle isn't
+	 * affected). */
+	int side_borders_visible;
 }
 config_t;
 
