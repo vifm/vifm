@@ -1021,32 +1021,13 @@ laststatus_handler(OPT_OP op, optval_t val)
 	if(cfg.last_status)
 	{
 		if(curr_stats.split == VSPLIT)
+		{
 			scroll_line_down(&lwin);
+		}
 		scroll_line_down(&rwin);
 	}
-	else
-	{
-		if(curr_stats.split == VSPLIT)
-			lwin.window_rows++;
-		rwin.window_rows++;
-		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
-		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
-		draw_dir_list(&lwin);
-		draw_dir_list(&rwin);
-	}
-	move_to_list_pos(curr_view, curr_view->list_pos);
-	touchwin(lwin.win);
-	touchwin(rwin.win);
-	touchwin(lborder);
-	if(curr_stats.split == VSPLIT)
-		touchwin(mborder);
-	touchwin(rborder);
-	wnoutrefresh(lwin.win);
-	wnoutrefresh(rwin.win);
-	wnoutrefresh(lborder);
-	wnoutrefresh(mborder);
-	wnoutrefresh(rborder);
-	doupdate();
+
+	curr_stats.need_update = UT_REDRAW;
 }
 
 /* Handles updates of the global 'lines' option, which reflects height of
