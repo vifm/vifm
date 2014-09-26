@@ -36,7 +36,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memmove() memset() */
+#include <string.h> /* memmove() memset() strdup() */
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
@@ -184,6 +184,8 @@ init_config(void)
 
 	cfg.filelist_col_padding = 1;
 	cfg.side_borders_visible = 1;
+
+	cfg.border_filler = strdup(" ");
 
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
