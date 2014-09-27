@@ -925,17 +925,23 @@ correct_size(FileView *view)
 	view->window_cells = view->column_count*y;
 }
 
+/* Updates TUI elements sizes and coordinates for single window
+ * configuration. */
 static void
 only_layout(FileView *view, int screen_x, int screen_y)
 {
+	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
+	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+
 	wresize(view->title, 1, screen_x - 2);
 	mvwin(view->title, 0, 1);
 
-	wresize(view->win, screen_y - 3 + !cfg.last_status, screen_x - 2);
-	mvwin(view->win, 1, 1);
+	wresize(view->win,
+			screen_y - 3 + !cfg.last_status, screen_x + vborder_size_correction);
+	mvwin(view->win, 1, vborder_pos_correction);
 }
 
-/* Updates TUI elements sizes and coordinates for virtical configuration of
+/* Updates TUI elements sizes and coordinates for vertical configuration of
  * panes: left one and right one. */
 static void
 vertical_layout(int screen_x, int screen_y)
