@@ -189,15 +189,16 @@ static const char * dotdirs_vals[] = {
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
 static const char shortmess_list[] = "T";
-static const char * shortmess_vals = shortmess_list;
+static const char *shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
 
 /* Possible flags of 'tuioptions' and their count. */
 static const char tuioptions_list[] = "ps";
-static const char * tuioptions_vals = tuioptions_list;
+static const char *tuioptions_vals = tuioptions_list;
 #define tuioptions_count ARRAY_LEN(tuioptions_list)
 
-static const char * sort_types[] = {
+/* Possible values of 'sort' option. */
+static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
 	"name",  "+name",  "-name",
 #ifndef _WIN32
@@ -219,12 +220,14 @@ static const char * sort_types[] = {
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
-static const char * sortorder_enum[] = {
+/* Possible values of 'sortorder' option. */
+static const char *sortorder_enum[] = {
 	"ascending",
 	"descending",
 };
 
-static const char * vifminfo_set[] = {
+/* Possible values of 'vifminfo' option. */
+static const char *vifminfo_set[] = {
 	"options",
 	"filetypes",
 	"commands",
