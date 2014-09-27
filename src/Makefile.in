@@ -66,7 +66,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" \
-	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)"
+	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)" \
+	"$(DESTDIR)$(vim_autoload_vifm_dir)" \
+	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" \
+	"$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" \
+	"$(DESTDIR)$(vim_syntax_dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
@@ -169,7 +173,10 @@ am__can_run_installinfo = \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
-DATA = $(desktopapp_DATA) $(desktoppix_DATA) $(pkgdata_DATA)
+DATA = $(desktopapp_DATA) $(desktoppix_DATA) $(pkgdata_DATA) \
+	$(vim_autoload_vifm__DATA) $(vim_doc__DATA) \
+	$(vim_ftdetect__DATA) $(vim_ftplugin__DATA) \
+	$(vim_plugin__DATA) $(vim_syntax__DATA)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -271,6 +278,22 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
+vim_dir = $(pkgdatadir)/vim
+vim_autoload_vifm_dir = $(vim_dir)/autoload/vifm
+vim_doc_dir = $(vim_dir)/doc
+vim_ftdetect_dir = $(vim_dir)/ftdetect
+vim_ftplugin_dir = $(vim_dir)/ftplugin
+vim_plugin_dir = $(vim_dir)/plugin
+vim_syntax_dir = $(vim_dir)/syntax
+vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+vim_doc__DATA = ../data/vim/doc/vifm.txt
+vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim
+vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
+										 ../data/vim/ftplugin/vifm-cmdedit.vim \
+										 ../data/vim/ftplugin/vifm-edit.vim
+
+vim_plugin__DATA = ../data/vim/plugin/vifm.vim
+vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
@@ -999,6 +1022,132 @@ uninstall-pkgdataDATA:
 	@list='$(pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(pkgdatadir)'; $(am__uninstall_files_from_dir)
+install-vim_autoload_vifm_DATA: $(vim_autoload_vifm__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_autoload_vifm__DATA)'; test -n "$(vim_autoload_vifm_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_autoload_vifm_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_autoload_vifm_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_autoload_vifm_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_autoload_vifm_dir)" || exit $$?; \
+	done
+
+uninstall-vim_autoload_vifm_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_autoload_vifm__DATA)'; test -n "$(vim_autoload_vifm_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_autoload_vifm_dir)'; $(am__uninstall_files_from_dir)
+install-vim_doc_DATA: $(vim_doc__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_doc__DATA)'; test -n "$(vim_doc_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_doc_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_doc_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_doc_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_doc_dir)" || exit $$?; \
+	done
+
+uninstall-vim_doc_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_doc__DATA)'; test -n "$(vim_doc_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_doc_dir)'; $(am__uninstall_files_from_dir)
+install-vim_ftdetect_DATA: $(vim_ftdetect__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_ftdetect__DATA)'; test -n "$(vim_ftdetect_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_ftdetect_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_ftdetect_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_ftdetect_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_ftdetect_dir)" || exit $$?; \
+	done
+
+uninstall-vim_ftdetect_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_ftdetect__DATA)'; test -n "$(vim_ftdetect_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_ftdetect_dir)'; $(am__uninstall_files_from_dir)
+install-vim_ftplugin_DATA: $(vim_ftplugin__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_ftplugin__DATA)'; test -n "$(vim_ftplugin_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_ftplugin_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_ftplugin_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_ftplugin_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_ftplugin_dir)" || exit $$?; \
+	done
+
+uninstall-vim_ftplugin_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_ftplugin__DATA)'; test -n "$(vim_ftplugin_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_ftplugin_dir)'; $(am__uninstall_files_from_dir)
+install-vim_plugin_DATA: $(vim_plugin__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_plugin__DATA)'; test -n "$(vim_plugin_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_plugin_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_plugin_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_plugin_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_plugin_dir)" || exit $$?; \
+	done
+
+uninstall-vim_plugin_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_plugin__DATA)'; test -n "$(vim_plugin_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_plugin_dir)'; $(am__uninstall_files_from_dir)
+install-vim_syntax_DATA: $(vim_syntax__DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(vim_syntax__DATA)'; test -n "$(vim_syntax_dir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(vim_syntax_dir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(vim_syntax_dir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(vim_syntax_dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(vim_syntax_dir)" || exit $$?; \
+	done
+
+uninstall-vim_syntax_DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(vim_syntax__DATA)'; test -n "$(vim_syntax_dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(vim_syntax_dir)'; $(am__uninstall_files_from_dir)
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -1194,7 +1343,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1268,7 +1417,10 @@ info: info-am
 info-am:
 
 install-data-am: install-desktopappDATA install-desktoppixDATA \
-	install-man install-pkgdataDATA
+	install-man install-pkgdataDATA install-vim_autoload_vifm_DATA \
+	install-vim_doc_DATA install-vim_ftdetect_DATA \
+	install-vim_ftplugin_DATA install-vim_plugin_DATA \
+	install-vim_syntax_DATA
 
 install-dvi: install-dvi-am
 
@@ -1315,7 +1467,10 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-desktopappDATA uninstall-desktoppixDATA \
-	uninstall-man uninstall-pkgdataDATA
+	uninstall-man uninstall-pkgdataDATA \
+	uninstall-vim_autoload_vifm_DATA uninstall-vim_doc_DATA \
+	uninstall-vim_ftdetect_DATA uninstall-vim_ftplugin_DATA \
+	uninstall-vim_plugin_DATA uninstall-vim_syntax_DATA
 
 uninstall-man: uninstall-man1
 
@@ -1331,13 +1486,19 @@ uninstall-man: uninstall-man1
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-man1 install-pdf \
 	install-pdf-am install-pkgdataDATA install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	install-strip install-vim_autoload_vifm_DATA \
+	install-vim_doc_DATA install-vim_ftdetect_DATA \
+	install-vim_ftplugin_DATA install-vim_plugin_DATA \
+	install-vim_syntax_DATA installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-binSCRIPTS uninstall-desktopappDATA \
 	uninstall-desktoppixDATA uninstall-man uninstall-man1 \
-	uninstall-pkgdataDATA
+	uninstall-pkgdataDATA uninstall-vim_autoload_vifm_DATA \
+	uninstall-vim_doc_DATA uninstall-vim_ftdetect_DATA \
+	uninstall-vim_ftplugin_DATA uninstall-vim_plugin_DATA \
+	uninstall-vim_syntax_DATA
 
 
 .PHONY: update_compile_info
