@@ -4,6 +4,23 @@
 
 AUTOMAKE_OPTIONS = subdir-objects
 
+vim_dir = $(pkgdatadir)/vim
+vim_autoload_vifm_dir = $(vim_dir)/autoload/vifm
+vim_doc_dir = $(vim_dir)/doc
+vim_ftdetect_dir = $(vim_dir)/ftdetect
+vim_ftplugin_dir = $(vim_dir)/ftplugin
+vim_plugin_dir = $(vim_dir)/plugin
+vim_syntax_dir = $(vim_dir)/syntax
+
+vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+vim_doc__DATA = ../data/vim/doc/vifm.txt
+vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim
+vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
+										 ../data/vim/ftplugin/vifm-cmdedit.vim \
+										 ../data/vim/ftplugin/vifm-edit.vim
+vim_plugin__DATA = ../data/vim/plugin/vifm.vim
+vim_syntax__DATA = ../data/vim/syntax/vifm.vim
+
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
