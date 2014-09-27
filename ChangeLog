@@ -66,6 +66,9 @@
 	visibility of side borders.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn)
 	and Svyatoslav Mishyn (a.k.a. juef).
 
+	Added 'fillchars' option.  Configures fill character for vertical borders.
+	Thanks Svyatoslav Mishyn (a.k.a. juef).
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

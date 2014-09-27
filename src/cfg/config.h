@@ -133,6 +133,9 @@ typedef struct config_t
 	/* Whether side borders are visible (separator in the middle isn't
 	 * affected). */
 	int side_borders_visible;
+
+	/* Per line pattern for borders. */
+	char *border_filler;
 }
 config_t;
 

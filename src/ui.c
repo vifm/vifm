@@ -35,7 +35,7 @@
 #include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h> /* memset() strcpy() strlen() */
+#include <string.h> /* memset() strcmp() strcpy() strlen() */
 #include <time.h>
 #include <wchar.h> /* wcslen() */
 
@@ -90,6 +90,7 @@ static void truncate_with_ellipsis(const char msg[], size_t width,
 static void create_windows(void);
 static void set_static_windows_attrs(void);
 static void update_geometry(void);
+static void clear_border(WINDOW *border);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
@@ -1185,15 +1186,18 @@ update_screen(UpdateType update_kind)
 	resize_all();
 
 	if(curr_stats.restart_in_progress)
+	{
 		return;
+	}
 
 	update_attributes();
+
 	if(cfg.side_borders_visible)
 	{
-		werase(lborder);
-		werase(rborder);
+		clear_border(lborder);
+		clear_border(rborder);
 	}
-	werase(mborder);
+	clear_border(mborder);
 
 	if(curr_stats.too_small_term)
 	{
@@ -1253,6 +1257,28 @@ update_screen(UpdateType update_kind)
 	update_input_buf();
 
 	curr_stats.need_update = UT_NONE;
+}
+
+/* Clears border, possibly by filling it with a pattern (depends on
+ * configuration). */
+static void
+clear_border(WINDOW *border)
+{
+	int i;
+	int height;
+
+	werase(border);
+
+	if(strcmp(cfg.border_filler, " ") == 0)
+	{
+		return;
+	}
+
+	height = getmaxy(border);
+	for(i = 0; i < height; ++i)
+	{
+		mvwaddstr(border, i, 0, cfg.border_filler);
+	}
 }
 
 /* Updates (redraws or reloads) views. */

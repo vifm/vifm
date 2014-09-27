@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 25
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2282,9 +2282,8 @@ default: nonrootparent
 Controls displaying of dot directories.  The following values are possible:
    rootparent    - show "../" in root directory of file system
    nonrootparent - show "../" in non-root directories of file system
-Note that empty directories will always contain "../" entry regardless of value
-of this option.  "../" will disappear at the moment at least one file is created
-inside the directory.
+Note that empty directories always contain "../" entry regardless of value of
+this option.  "../" disappears at the moment at least one file is created.
 
                                                *vifm-'fastrun'*
 fastrun
@@ -2293,6 +2292,16 @@ default: false
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
+                                               *vifm-'fillchars'* *vifm-'fcs'*
+fillchars fcs
+type: string list
+default: ""
+Sets characters used to fill borders.
+    item          default         Used for ~
+    vborder:c     ' '             left, middle and right vertical borders
+If value is omitted, its default value is used.  Example: >
+ set fillchars=vborder:·
+<
                                                *vifm-'findprg'*
 findprg
 type: string

@@ -203,10 +203,10 @@ void replace_char(char str[], char from, char to);
  *   }
  * Each next step undoes string change made on the previous one, so it could
  * also be (parts of <input> will be added from left to right):
- *   char *part = input, *state = NULL;
- *   while((part = split_and_get(part, ':', &state)) != NULL)
+ *   char *prefix = input, *state = NULL;
+ *   while((prefix = split_and_get(prefix, ':', &state)) != NULL)
  *   {
- *     process <input>;
+ *     process <prefix>;
  *   }
  */
 char * split_and_get(char str[], char sep, char **state);

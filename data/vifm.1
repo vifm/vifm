@@ -1,4 +1,4 @@
-.TH vifm 1 "September 25, 2014" "" "Vifm"
+.TH vifm 1 "September 27, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2771,9 +2771,8 @@ Controls displaying of dot directories.  The following values are possible:
  \- rootparent    \- show "../" in root directory of file system
  \- nonrootparent \- show "../" in non-root directories of file system
 .br
-Note that empty directories will always contain "../" entry regardless of value
-of this option.  "../" will disappear at the moment at least one file is created
-inside the directory.
+Note that empty directories always contain "../" entry regardless of value of
+this option.  "../" disappears at the moment at least one file is created.
 .TP
 .BI fastrun
 type: boolean
@@ -2782,6 +2781,20 @@ default: false
 .br
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+.TP
+.BI "fillchars fcs"
+type: string list
+.br
+default: ""
+.br
+Sets characters used to fill borders.
+  item       default  Used for
+  vborder:c  ' '      left, middle and right vertical borders
+.br
+If value is omitted, its default value is used.  Example:
+.EX
+ set fillchars=vborder:·
+.EE
 .TP
 .BI findprg
 type: string

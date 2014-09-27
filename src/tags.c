@@ -34,6 +34,8 @@ const char *tags[] = {
 	"vifm-'cpoptions'",
 	"vifm-'dotdirs'",
 	"vifm-'fastrun'",
+	"vifm-'fcs'",
+	"vifm-'fillchars'",
 	"vifm-'findprg'",
 	"vifm-'followlinks'",
 	"vifm-'fusehome'",

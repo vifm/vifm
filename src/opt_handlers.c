@@ -24,8 +24,8 @@
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* abs() */
-#include <string.h> /* memcpy() memmove() strchr() strlen() strncat()
+#include <stdlib.h> /* abs() free() */
+#include <string.h> /* memcpy() memmove() strchr() strdup() strlen() strncat()
                        strstr() */
 
 #include "cfg/config.h"
@@ -100,6 +100,8 @@ static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
+static void fillchars_handler(OPT_OP op, optval_t val);
+static void reset_fillchars(void);
 static void findprg_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
@@ -189,15 +191,21 @@ static const char * dotdirs_vals[] = {
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
 static const char shortmess_list[] = "T";
-static const char * shortmess_vals = shortmess_list;
+static const char *shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
 
 /* Possible flags of 'tuioptions' and their count. */
 static const char tuioptions_list[] = "ps";
-static const char * tuioptions_vals = tuioptions_list;
+static const char *tuioptions_vals = tuioptions_list;
 #define tuioptions_count ARRAY_LEN(tuioptions_list)
 
-static const char * sort_types[] = {
+/* Possible keys of 'fillchars' option. */
+static const char *fillchars_enum[] = {
+	"vborder:",
+};
+
+/* Possible values of 'sort' option. */
+static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
 	"name",  "+name",  "-name",
 #ifndef _WIN32
@@ -219,12 +227,14 @@ static const char * sort_types[] = {
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
-static const char * sortorder_enum[] = {
+/* Possible values of 'sortorder' option. */
+static const char *sortorder_enum[] = {
 	"ascending",
 	"descending",
 };
 
-static const char * vifminfo_set[] = {
+/* Possible values of 'vifminfo' option. */
+static const char *vifminfo_set[] = {
 	"options",
 	"filetypes",
 	"commands",
@@ -241,6 +251,10 @@ static const char * vifminfo_set[] = {
 	"phistory",
 	"fhistory",
 };
+
+/* Empty value to satisfy default initializer. */
+static char empty_val[] = "";
+static char *empty = empty_val;
 
 static struct
 {
@@ -291,6 +305,10 @@ options[] =
 	{ "fastrun", "",
 	  OPT_BOOL, 0, NULL, &fastrun_handler,
 	  { .ref.bool_val = &cfg.fast_run },
+	},
+	{ "fillchars", "fcs",
+		OPT_STRLIST, ARRAY_LEN(fillchars_enum), fillchars_enum, &fillchars_handler,
+	  { .ref.str_val = &empty },
 	},
 	{ "findprg", "",
 	  OPT_STR, 0, NULL, &findprg_handler,
@@ -937,6 +955,53 @@ static void
 fastrun_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_run = val.bool_val;
+}
+
+/* Handles new value for 'fillchars' option. */
+static void
+fillchars_handler(OPT_OP op, optval_t val)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "vborder:"))
+		{
+			(void)replace_string(&cfg.border_filler, after_first(part, ':'));
+		}
+		else
+		{
+			break_at(part, ':');
+			text_buffer_addf("Unknown key for 'fillchars' option: %s", part);
+		}
+	}
+	free(new_val);
+
+	if(part != NULL)
+	{
+		reset_fillchars();
+	}
+
+	curr_stats.need_update = UT_REDRAW;
+}
+
+/* Resets value of 'fillchars' option by composing it from current
+ * configuration. */
+static void
+reset_fillchars(void)
+{
+	optval_t val;
+	char value[128];
+
+	value[0] = '\0';
+
+	if(strcmp(cfg.border_filler, " ") != 0)
+	{
+		snprintf(value, sizeof(value), "vborder:%s", cfg.border_filler);
+	}
+
+	val.str_val = value;
+	set_option("fillchars", val);
 }
 
 static void
