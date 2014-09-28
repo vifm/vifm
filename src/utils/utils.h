@@ -141,6 +141,11 @@ int set_sigchld(int block);
  * otherwise zero is returned. */
 int executable_exists(const char path[]);
 
+/* Fills dir_buf of length dir_buf_len with full path to the directory where
+ * executable of the application is located.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int get_exe_dir(char dir_buf[], size_t dir_buf_len);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else
