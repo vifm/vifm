@@ -188,12 +188,13 @@ init_config(void)
 	cfg.border_filler = strdup(" ");
 
 #ifndef _WIN32
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
+	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else
-	GetModuleFileNameA(NULL, cfg.log_file, sizeof(cfg.log_file));
-	to_forward_slash(cfg.log_file);
-	*strrchr(cfg.log_file, '/') = '\0';
-	strcat(cfg.log_file, "/startup-log");
+	{
+		char exe_dir[PATH_MAX];
+		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+		snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/startup-log", exe_dir);
+	}
 #endif
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
@@ -317,18 +318,20 @@ try_exe_directory_for_conf(void)
 {
 	LOG_FUNC_ENTER;
 
-#ifndef _WIN32
-	return 0;
-#else
 	char exe_dir[PATH_MAX];
-	GetModuleFileNameA(NULL, exe_dir, sizeof(exe_dir));
-	to_forward_slash(exe_dir);
-	*strrchr(exe_dir, '/') = '\0';
-	if(!path_exists_at(exe_dir, VIFMRC))
+
+	if(get_exe_dir(exe_dir, sizeof(exe_dir)) != 0)
+	{
 		return 0;
+	}
+
+	if(!path_exists_at(exe_dir, VIFMRC))
+	{
+		return 0;
+	}
+
 	env_set(VIFM_EV, exe_dir);
 	return 1;
-#endif
 }
 
 /* tries to use $HOME/.vifm as configuration directory */
@@ -400,19 +403,22 @@ try_exe_directory_for_vifmrc(void)
 {
 	LOG_FUNC_ENTER;
 
-#ifndef _WIN32
-	return 0;
-#else
+	char exe_dir[PATH_MAX];
 	char vifmrc[PATH_MAX];
-	GetModuleFileNameA(NULL, vifmrc, sizeof(vifmrc));
-	to_forward_slash(vifmrc);
-	*strrchr(vifmrc, '/') = '\0';
-	strcat(vifmrc, "/" VIFMRC);
-	if(!path_exists(vifmrc))
+
+	if(get_exe_dir(exe_dir, sizeof(exe_dir)) != 0)
+	{
 		return 0;
+	}
+
+	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, exe_dir);
+	if(!path_exists(vifmrc))
+	{
+		return 0;
+	}
+
 	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
-#endif
 }
 
 /* tries to use $VIFM/vifmrc as configuration file */

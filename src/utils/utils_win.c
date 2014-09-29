@@ -42,6 +42,7 @@
 #include "log.h"
 #include "macros.h"
 #include "mntent.h"
+#include "path.h"
 #include "str.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
@@ -444,6 +445,15 @@ executable_exists(const char path[])
 			return 1;
 		}
 	}
+	return 0;
+}
+
+int
+get_exe_dir(char dir_buf[], size_t dir_buf_len)
+{
+	(void)GetModuleFileNameA(NULL, dir_buf, dir_buf_len);
+	to_forward_slash(dir_buf);
+	break_atr(dir_buf, '/');
 	return 0;
 }
 

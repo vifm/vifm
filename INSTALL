@@ -125,31 +125,55 @@ Windows Installation:
 
 Vim Specific Options:
 
-    If you use vim, copy the vifm.txt file in the data/vim/doc directory to
-    your ~/.vim/doc directory or the system vim/doc directory.
-    Then launch vim ahd give the command
-    :helptags ~/.vim/doc
-    or
-    :helptags path/to/system/vim/doc
-    depending on where you installed the vifm.txt file.
+    vim/ directory referred to below is:
+     - {install_prefix}/share/vifm/vim/ on *nix-like systems;
+     - data/vim/ on Windows.
 
-    You will also need to change set 'vimhelp' option
-    in ~/.vifm/vifmrc as the default setting is to use the plain text file.
+    Recommended way of installing Vifm-Vim integration is to point Vim's
+    'runtimepath' option to the vim/ directory, like this
+
+        set runtimepath+=/usr/share/vifm/vim/
+
+    in your .vimrc file.  Such setup has an additional benefit of Vifm help
+    being not visible unless Vim is started via :help command from Vifm.
+    If it's not what you desire, just add vim-doc/ directory in a similar
+    manner:
+
+        set runtimepath+=/usr/share/vifm/vim-doc/
+
+    Alternatively, you can install whole vim/ directory into Vim or only some
+    parts of it as described below.
+
+    vim/doc/vifm.txt file should go to your ~/.vim/doc directory or the system
+    vim/doc directory.  Then launch Vim and give the command
+
+        :helptags ~/.vim/doc
+
+    or
+
+        :helptags path/to/system/vim/doc
+
+    depending on where you installed the vifm.txt file.  Note that you have to
+    have write permission to corresponding directory.
+
+    You will also need to set 'vimhelp' option in ~/.vifm/vifmrc as the default
+    setting is to use the plain text file.
 
     If you want to use syntax highlighting and file type plugin for
-    ~/.vifm/vifmrc file, copy the data/vim/syntax/vifmrc.vim and
-    data/vim/ftplugin/vifmrc.vim file to either the system wide vim syntax and
-    ftplugin directories appropriately just copy the
-    data/vim/ftdetect/vifm.vim file to appropriate vim configuration
-    directory.  Or add to your .vimrc file commands like:
+    vifmrc file and on editing command line command externally, copy
+    vim/syntax/vifm.vim, vim/ftdetect/vifm.vim and all files in vim/ftplugin/
+    appropriately to either system wide or user syntax/ and ftplugin/
+    directories of Vim.  One can also add to .vimrc file commands like, but
+    using ftdetect/ directory is a cleaner way to achieve the same:
+
         autocmd BufNewFile,BufRead vifmrc :set filetype=vifm
         autocmd BufNewFile,BufRead ~/.vifm/colors/* :set filetype=vifm
-    or if you use mode lines, add as the first or the last line to
-    configuration file and color schemes:
+
+    or when parsing of mode lines is enabled in Vim, add the following as the
+    first or last line to configuration file and color schemes:
+
         " vim: set filetype=vifm :
 
-    If you want to use the vifm.vim plugin, copy the vifm.vim plugin script in
-    data/vim/plugin to either the system wide vim/plugin or to ~/.vim/plugin/.
-    The vifm.vim script allows you to use vifm from vim to select files.  The
-    vifm.vim script is not installed by default and must be manually copied to
-    the plugin directory.  Note: you need Vim 7.3 for plugin.
+    To use the vifm.vim plugin install vim/plugin/vifm.vim script to Vim in the
+    same way as described above.  The script allows you to use Vifm from Vim to
+    select files.  Note: you need at least Vim 7.3 to use it.

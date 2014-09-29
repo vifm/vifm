@@ -485,5 +485,12 @@ executable_exists(const char path[])
 	return access(path, X_OK) == 0;
 }
 
+int
+get_exe_dir(char dir_buf[], size_t dir_buf_len)
+{
+	/* This operation isn't supported on *nix-like operation systems. */
+	return 1;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
