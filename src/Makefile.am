@@ -209,8 +209,13 @@ update_compile_info:
 		fi \
 	fi
 
-tags.c: ../data/vim/doc/vifm.txt
-	@if [ "x$$(whereis vim)" != "x" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+../data/vim/doc/tags: ../data/vim/doc/vifm.txt
+	@if [ "x$$(whereis vim)" != "x" ]; then \
+		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
+	fi
+
+tags.c: ../data/vim/doc/tags
+	@if [ "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
 		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
