@@ -1274,7 +1274,7 @@ read_optional_number(FILE *f)
 		ungetc(c, f);
 		if(isdigit(c) || c == '-' || c == '+')
 		{
-			const int nread = fscanf(f, "%d\n", &num);
+			const int nread = fscanf(f, "%30d\n", &num);
 			assert(nread == 1 && "Wrong number of read numbers.");
 			(void)nread;
 		}
