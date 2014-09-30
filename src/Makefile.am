@@ -210,11 +210,8 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/tags: ../data/vim/doc/vifm.txt
-	@if [ -f /dev/tty -a "x$$(whereis vim)" != "x" ]; then \
-		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
-	else \
-		touch $@; \
-	fi
+	-vim -c 'helptags $(dir $<)|q' > /dev/null 2>&1 < /dev/tty
+	touch $@
 
 tags.c: ../data/vim/doc/tags
 	@if [ "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
