@@ -1193,7 +1193,10 @@ clear_current_line_bar(FileView *view, int is_current)
 
 	/* When this function is used to draw cursor position in inactive view, only
 	 * name width should be updated. */
-	col_width = is_current ? print_width : col_width;
+	if(is_current)
+	{
+		col_width = print_width;
+	}
 
 	draw_cell(view, &cdt, col_width, print_width);
 
