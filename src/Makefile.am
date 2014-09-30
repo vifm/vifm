@@ -214,7 +214,7 @@ update_compile_info:
 	touch $@
 
 tags.c: ../data/vim/doc/tags
-	@if [ "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
 		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
