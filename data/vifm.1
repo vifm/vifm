@@ -1,4 +1,4 @@
-.TH vifm 1 "September 27, 2014" "" "Vifm"
+.TH vifm 1 "September 30, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3701,10 +3701,10 @@ filetype({fnum})    String        Returns file type from position.
 
 executable({expr})
 .br
-If {expr} is absolute path, checks whether path destination exists and refers
-to executable, otherwise checks whether command named {expr} is present in
-directories listed in $PATH.  Checks for various executable extensions on
-Windows.  Returns boolean value describing result of the check.
+If {expr} is absolute or relative path, checks whether path destination exists
+and refers to an executable, otherwise checks whether command named {expr} is
+present in directories listed in $PATH.  Checks for various executable
+extensions on Windows.  Returns boolean value describing result of the check.
 
 Example:
 .EX

@@ -4,7 +4,7 @@
 	anymore.  Thanks to Hendrik Jaeger (a.k.a.  henk).
 
 	Added executable() builtin function that checks whether executable exists
-	at absolute path or in one of directories listed in $PATH.
+	at given path or in one of directories listed in $PATH.
 
 	Added one more :if command example to documentation.  Thanks to John
 	Magolske.
