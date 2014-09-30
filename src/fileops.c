@@ -1474,7 +1474,6 @@ put_next(const char dest_name[], int override)
 	move = from_trash || put_confirm.force_move;
 
 	copy_str(src_buf, sizeof(src_buf), filename);
-	chosp(src_buf);
 
 	if(dest_name[0] == '\0')
 	{
