@@ -1468,7 +1468,10 @@ put_next(const char dest_name[], int override)
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
 	if(lstat(filename, &src_st) != 0)
+	{
+		/* File isn't there, assume that it's fine and don't error in this case. */
 		return 0;
+	}
 
 	from_trash = is_under_trash(filename);
 	move = from_trash || put_confirm.force_move;
