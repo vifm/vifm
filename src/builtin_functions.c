@@ -23,7 +23,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcmp() strdup() */
+#include <string.h> /* strcmp() strdup() strpbrk() */
 
 #include "engine/functions.h"
 #include "engine/var.h"
@@ -68,7 +68,7 @@ executable_builtin(const call_info_t *call_info)
 
 	str_val = var_to_string(call_info->argv[0]);
 
-	if(is_path_absolute(str_val))
+	if(strpbrk(str_val, PATH_SEPARATORS) != NULL)
 	{
 		exists = executable_exists(str_val);
 	}
