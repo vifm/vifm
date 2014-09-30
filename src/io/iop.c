@@ -265,6 +265,7 @@ iop_cp(io_args_t *const args)
 	}
 	else if(path_exists(dst))
 	{
+		fclose(in);
 		return 1;
 	}
 
