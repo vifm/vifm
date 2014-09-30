@@ -489,7 +489,6 @@ update_info_file(const char filename[])
 	char **ft = NULL, **fx = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL, *bt = NULL;
-	size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL;
 	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
@@ -507,6 +506,7 @@ update_info_file(const char filename[])
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
+		size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL;
 		char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
