@@ -50,7 +50,9 @@ ioeta_add_file(ioeta_estim_t *estim, const char path[])
 void
 ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 {
-	ioeta_add_item(estim, path);
+	replace_string(&estim->item, path);
+
+	ionotif_notify(IO_PS_ESTIMATING, estim);
 }
 
 void
