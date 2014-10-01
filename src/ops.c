@@ -40,6 +40,7 @@
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "status.h"
 #include "trash.h"
@@ -185,6 +186,11 @@ ops_enqueue(ops_t *ops, const char src[], const char dst[])
 			default:
 				/* No optimizations for other operations. */
 				break;
+		}
+
+		if(is_on_slow_fs(src))
+		{
+			ops->shallow_eta = 1;
 		}
 	}
 
