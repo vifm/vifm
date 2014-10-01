@@ -152,7 +152,7 @@ ops_enqueue(ops_t *ops, const char src[], const char dst[])
 {
 	++ops->total;
 
-	if(ops->estim == NULL)
+	if(ops->estim == NULL || !cfg.use_system_calls)
 	{
 		return;
 	}
