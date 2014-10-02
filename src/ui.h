@@ -356,6 +356,10 @@ FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
  * width. */
 int ui_view_available_width(const FileView *const view);
 
+/* Immediately (UI is updated) displays message on the status bar without
+ * storing it in message history. */
+void ui_sb_quick_msgf(const char format[], ...);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

@@ -105,6 +105,8 @@ typedef struct
 bg_args_t;
 
 static void io_progress_changed(const io_progress_t *const progress);
+static void format_pretty_path(const char base_dir[], const char path[],
+		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
 static void delete_files_in_bg(void *arg);
 static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
@@ -133,7 +135,8 @@ static void put_decide_cb(const char dest_name[]);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files_from_register(FileView *view, OPS op,
 		const char descr[], int reg_name, int force_move, int link);
-static void reset_put_confirm(OPS main_op, const char descr[]);
+static void reset_put_confirm(OPS main_op, const char descr[],
+		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
@@ -143,6 +146,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
@@ -168,7 +172,7 @@ io_progress_changed(const io_progress_t *const state)
 	char current_size_str[16];
 	char total_size_str[16];
 	int progress;
-	char *msg = NULL;
+	char pretty_path[PATH_MAX];
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
@@ -206,11 +210,14 @@ io_progress_changed(const io_progress_t *const state)
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
+	format_pretty_path(ops->base_dir, estim->item, pretty_path,
+			sizeof(pretty_path));
+
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			msg = format_str("%s: estimating... %d; %s %s", ops_describe(ops),
-					estim->total_items, total_size_str, estim->item);
+			ui_sb_quick_msgf("%s: estimating... %d; %s %s", ops_describe(ops),
+					estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -219,26 +226,33 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				msg = format_str("%s: %d of %d; %s %s", ops_describe(ops),
+				ui_sb_quick_msgf("%s: %d of %d; %s %s", ops_describe(ops),
 						estim->current_item + 1, estim->total_items,
-						total_size_str, estim->item);
+						total_size_str, pretty_path);
 			}
 			else
 			{
-				msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+				ui_sb_quick_msgf("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
 						estim->current_item + 1, estim->total_items,
-						current_size_str, total_size_str, progress/PRECISION, estim->item);
+						current_size_str, total_size_str, progress/PRECISION, pretty_path);
 			}
 			break;
 	}
+}
 
-	checked_wmove(status_bar, 0, 0);
-	werase(status_bar);
-	wprintw(status_bar, "%s", msg);
-	wnoutrefresh(status_bar);
-	doupdate();
+/* Pretty prints path shortening it by skipping base directory path if
+ * possible, otherwise fallbacks to the full path. */
+static void
+format_pretty_path(const char base_dir[], const char path[], char pretty[],
+		size_t pretty_size)
+{
+	if(!path_starts_with(path, base_dir))
+	{
+		copy_str(pretty, pretty_size, path);
+		return;
+	}
 
-	free(msg);
+	copy_str(pretty, pretty_size, skip_char(path + strlen(base_dir), '/'));
 }
 
 /* returns new value for save_msg */
@@ -363,8 +377,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 1;
 	}
 
-	ops = ops_alloc(OP_REMOVE, use_trash ? "deleting" : "Deleting");
-	ops->estim = ioeta_alloc(ops);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -1891,8 +1904,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		erase_selection(view);
 	}
 
-	ops = ops_alloc(OP_COPY, "Cloning");
-	ops->estim = ioeta_alloc(ops);
+	ops = get_ops(OP_COPY, "Cloning", view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -2093,7 +2105,7 @@ initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(op, descr);
+	reset_put_confirm(op, descr, view->curr_dir);
 
 	put_confirm.force_move = force_move;
 	put_confirm.link = link;
@@ -2110,14 +2122,13 @@ initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op, const char descr[])
+reset_put_confirm(OPS main_op, const char descr[], const char base_dir[])
 {
 	ops_free(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = ops_alloc(main_op, descr);
-	put_confirm.ops->estim = ioeta_alloc(put_confirm.ops);
+	put_confirm.ops = get_ops(main_op, descr, base_dir);
 }
 
 /* Returns new value for save_msg flag. */
@@ -2866,14 +2877,13 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	if(type == 0)
 	{
-		ops = ops_alloc(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
+		ops = get_ops(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying",
+				view->curr_dir);
 	}
 	else
 	{
-		ops = ops_alloc(OP_SYMLINK, "Linking");
+		ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir);
 	}
-
-	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();
 
@@ -2947,6 +2957,19 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	ops_free(ops);
 
 	return 1;
+}
+
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure, which should be freed by ops_free(). */
+static ops_t *
+get_ops(OPS main_op, const char descr[], const char base_dir[])
+{
+	ops_t *const ops = ops_alloc(main_op, descr, base_dir);
+	if(cfg.use_system_calls)
+	{
+		ops->estim = ioeta_alloc(ops);
+	}
+	return ops;
 }
 
 /* Displays simple operation progress message.  The ready is zero based. */
