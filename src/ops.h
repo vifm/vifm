@@ -70,7 +70,7 @@ typedef struct
 }
 ops_t;
 
-/* Allocates and initializes new ioeta_estim_t. */
+/* Allocates and initializes new ops_t.  Returns just allocated structure. */
 ops_t * ops_alloc(OPS main_op, const char descr[]);
 
 /* Describes main operation with one generic word.  Returns the description. */
