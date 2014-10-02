@@ -143,6 +143,7 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static ops_t * get_ops(OPS main_op, const char descr[]);
 static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
@@ -363,8 +364,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 1;
 	}
 
-	ops = ops_alloc(OP_REMOVE, use_trash ? "deleting" : "Deleting");
-	ops->estim = ioeta_alloc(ops);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting");
 
 	ui_cancellation_reset();
 
@@ -1891,8 +1891,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		erase_selection(view);
 	}
 
-	ops = ops_alloc(OP_COPY, "Cloning");
-	ops->estim = ioeta_alloc(ops);
+	ops = get_ops(OP_COPY, "Cloning");
 
 	ui_cancellation_reset();
 
@@ -2116,8 +2115,7 @@ reset_put_confirm(OPS main_op, const char descr[])
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = ops_alloc(main_op, descr);
-	put_confirm.ops->estim = ioeta_alloc(put_confirm.ops);
+	put_confirm.ops = get_ops(main_op, descr);
 }
 
 /* Returns new value for save_msg flag. */
@@ -2866,14 +2864,12 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	if(type == 0)
 	{
-		ops = ops_alloc(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
+		ops = get_ops(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying");
 	}
 	else
 	{
-		ops = ops_alloc(OP_SYMLINK, "Linking");
+		ops = get_ops(OP_SYMLINK, "Linking");
 	}
-
-	ops->estim = ioeta_alloc(ops);
 
 	ui_cancellation_reset();
 
@@ -2947,6 +2943,19 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	ops_free(ops);
 
 	return 1;
+}
+
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure, which should be freed by ops_free(). */
+static ops_t *
+get_ops(OPS main_op, const char descr[])
+{
+	ops_t *const ops = ops_alloc(main_op, descr);
+	if(cfg.use_system_calls)
+	{
+		ops->estim = ioeta_alloc(ops);
+	}
+	return ops;
 }
 
 /* Displays simple operation progress message.  The ready is zero based. */
