@@ -29,6 +29,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() */
+#include <string.h> /* strdup() */
 
 #include "cfg/config.h"
 #include "io/ioeta.h"
@@ -133,11 +134,12 @@ static op_func op_funcs[] = {
 ARRAY_GUARD(op_funcs, OP_COUNT);
 
 ops_t *
-ops_alloc(OPS main_op, const char descr[])
+ops_alloc(OPS main_op, const char descr[], const char base_dir[])
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
 	ops->main_op = main_op;
 	ops->descr = descr;
+	ops->base_dir = strdup(base_dir);
 	return ops;
 }
 
@@ -220,6 +222,7 @@ ops_free(ops_t *ops)
 	}
 
 	ioeta_free(ops->estim);
+	free(ops->base_dir);
 	free(ops);
 }
 

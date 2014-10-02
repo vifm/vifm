@@ -2950,7 +2950,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 static ops_t *
 get_ops(OPS main_op, const char descr[])
 {
-	ops_t *const ops = ops_alloc(main_op, descr);
+	ops_t *const ops = ops_alloc(main_op, descr, "////fake");
 	if(cfg.use_system_calls)
 	{
 		ops->estim = ioeta_alloc(ops);
