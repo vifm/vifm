@@ -172,7 +172,6 @@ io_progress_changed(const io_progress_t *const state)
 	char current_size_str[16];
 	char total_size_str[16];
 	int progress;
-	char *msg = NULL;
 	char pretty_path[PATH_MAX];
 
 	if(state->stage == IO_PS_ESTIMATING)
@@ -217,7 +216,7 @@ io_progress_changed(const io_progress_t *const state)
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			msg = format_str("%s: estimating... %d; %s %s", ops_describe(ops),
+			ui_sb_quick_msgf("%s: estimating... %d; %s %s", ops_describe(ops),
 					estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
@@ -227,26 +226,18 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				msg = format_str("%s: %d of %d; %s %s", ops_describe(ops),
+				ui_sb_quick_msgf("%s: %d of %d; %s %s", ops_describe(ops),
 						estim->current_item + 1, estim->total_items,
 						total_size_str, pretty_path);
 			}
 			else
 			{
-				msg = format_str("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+				ui_sb_quick_msgf("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
 						estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path);
 			}
 			break;
 	}
-
-	checked_wmove(status_bar, 0, 0);
-	werase(status_bar);
-	wprintw(status_bar, "%s", msg);
-	wnoutrefresh(status_bar);
-	doupdate();
-
-	free(msg);
 }
 
 /* Pretty prints path shortening it by skipping base directory path if

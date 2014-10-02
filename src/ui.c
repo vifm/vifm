@@ -2016,6 +2016,21 @@ ui_view_available_width(const FileView *const view)
 }
 
 void
+ui_sb_quick_msgf(const char format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+
+	checked_wmove(status_bar, 0, 0);
+	werase(status_bar);
+	vwprintw(status_bar, format, ap);
+	wnoutrefresh(status_bar);
+	doupdate();
+
+	va_end(ap);
+}
+
+void
 ui_view_schedule_redraw(FileView *view)
 {
 	++view->postponed_redraw;
