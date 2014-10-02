@@ -189,7 +189,6 @@ get_attrs(void)
 
 	memset(attrs, 0, sizeof(attrs));
 
-	attributes = 0;
 	diff = 0;
 	i = 0;
 	while(i < view->list_rows && !view->dir_entry[i].selected)
