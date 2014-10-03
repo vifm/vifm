@@ -187,6 +187,8 @@ read_whole_file(const char filepath[], size_t *read)
 	char *content = NULL;
 	FILE *fp;
 
+	*read = 0U;
+
 	if((fp = fopen(filepath, "rb")) != NULL)
 	{
 		content = read_seekable_stream(fp, read);
