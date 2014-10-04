@@ -973,6 +973,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 		{
 			break_at(part, ':');
 			text_buffer_addf("Unknown key for 'fillchars' option: %s", part);
+			break;
 		}
 	}
 	free(new_val);
