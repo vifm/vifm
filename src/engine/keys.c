@@ -535,6 +535,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 		if(result == KEYS_UNKNOWN && def_handler != NULL)
 		{
+			/* curr shouldn't be freed here as if it was result would be 0. */
 			if(curr->enters == 0)
 			{
 				result = def_handler(conf->data.cmd[0]);
@@ -605,23 +606,27 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 	return result;
 }
 
+/* Handles entering a chunk.  Counterpart of leave_chunk(). */
 static void
 enter_chunk(key_chunk_t *chunk)
 {
 	chunk->enters = 1;
 }
 
+/* Handles leaving a chunk performing postponed chunk removal if needed.
+ * Counterpart of enter_chunk(). */
 static void
 leave_chunk(key_chunk_t *chunk)
 {
-	if(!chunk->deleted)
+	if(chunk->deleted)
 	{
-		chunk->enters = 0;
-	}
-	else
-	{
+		/* Removal of the chunk was postponed because it was in use, proceed with
+		 * this now. */
 		free(chunk);
+		return;
 	}
+
+	chunk->enters = 0;
 }
 
 static void
