@@ -75,24 +75,30 @@ vle_compl_add_path_match(const char path[])
 	return add_match(match);
 }
 
+/* Adds new match to the list of matches.  Becomes an owner of memory pointed to
+ * by the match.  Errors if match is NULL.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
 add_match(char match[])
 {
 	char **p;
 	assert(state != COMPLETING);
 
-	/* add new line */
-	if((p = realloc(lines, sizeof(*lines)*(count + 1))) == NULL)
-		return -1;
-	lines = p;
-
-	lines[count] = match;
-	if(lines[count] == NULL)
+	if(match == NULL)
 	{
 		return -1;
 	}
 
+	if((p = realloc(lines, sizeof(*lines)*(count + 1))) == NULL)
+	{
+		free(match);
+		return -1;
+	}
+	lines = p;
+
+	lines[count] = match;
 	count++;
+
 	state = FILLING_LIST;
 	return 0;
 }

@@ -484,7 +484,7 @@ complete_cmd(const char cmd[], void *arg)
 		args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 		cur = find_cmd(cmd_name);
 
-		if(*args == '\0' && *args != '!' && strcmp(cmd_name, "!") != 0)
+		if(*args == '\0' && strcmp(cmd_name, "!") != 0)
 		{
 			complete_cmd_name(cmd_name, 0);
 			prefix_len += cmd_name_pos - cmd;
