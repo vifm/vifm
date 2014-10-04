@@ -477,6 +477,7 @@ const char *tags[] = {
 	"vifm-guu",
 	"vifm-gv",
 	"vifm-h",
+	"vifm-has()",
 	"vifm-i",
 	"vifm-j",
 	"vifm-k",

@@ -38,12 +38,14 @@ static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
+static var_t has_builtin(const call_info_t *call_info);
 
 static const function_t functions[] =
 {
 	{ "executable", 1, &executable_builtin },
 	{ "expand",     1, &expand_builtin },
 	{ "filetype",   1, &filetype_builtin },
+	{ "has",        1, &has_builtin },
 };
 
 void
@@ -107,7 +109,7 @@ filetype_builtin(const call_info_t *call_info)
 	char *str_val = var_to_string(call_info->argv[0]);
 	const int fnum = get_fnum(str_val);
 	var_val_t var_val = { .string = "" };
-  free(str_val);
+	free(str_val);
 
 	if(fnum >= 0)
 	{
@@ -134,6 +136,41 @@ get_fnum(const char position[])
 	{
 		return -1;
 	}
+}
+
+/* Allows examining internal parameters from scripts to e.g. figure out
+ * environment in which application is running. */
+static var_t
+has_builtin(const call_info_t *call_info)
+{
+	var_t result;
+
+	char *const str_val = var_to_string(call_info->argv[0]);
+
+	if(strcmp(str_val, "unix") == 0)
+	{
+#ifndef _WIN32
+		result = var_true();
+#else
+		result = var_false();
+#endif
+	}
+	else if(strcmp(str_val, "win") == 0)
+	{
+#ifndef _WIN32
+		result = var_false();
+#else
+		result = var_true();
+#endif
+	}
+	else
+	{
+		result = var_false();
+	}
+
+	free(str_val);
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
