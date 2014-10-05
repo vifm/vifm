@@ -45,11 +45,11 @@ SourcingState;
 /* Type of execution environment. */
 typedef enum
 {
-	ENVTYPE_LINUX_NATIVE, /* Running in linux native console. */
-	ENVTYPE_EMULATOR, /* Running in terminal emulator with no DISPLAY defined. */
-	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
+	EET_LINUX_NATIVE,    /* Linux native console. */
+	EET_EMULATOR,        /* Terminal emulator with no DISPLAY defined. */
+	EET_EMULATOR_WITH_X, /* Terminal emulator within accessible X. */
 }
-EnvType;
+ExecEnvType;
 
 /* List of terminal multiplexers. */
 typedef enum
@@ -124,7 +124,7 @@ typedef struct
 	/* Set while executing :restart command to prevent excess screen updates. */
 	int restart_in_progress;
 
-	EnvType env_type; /* Specifies execution environment type. */
+	ExecEnvType exec_env_type; /* Specifies execution environment type. */
 
 	/* Shows which of supported terminal multiplexers is currently in use, if
 	 * any. */
