@@ -3079,7 +3079,7 @@ are supported (anything else will yield 0):
 
 Usage example: >
   " skip user/group on Windows
-  if has('win') == 0
+  if !has('win')
       let $RIGHTS = '%10u:%-7g '
   endif
 
