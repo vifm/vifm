@@ -81,7 +81,7 @@ executable_builtin(const call_info_t *call_info)
 
 	free(str_val);
 
-	return exists ? var_true() : var_false();
+	return var_from_bool(exists);
 }
 
 /* Returns string after expanding expression. */

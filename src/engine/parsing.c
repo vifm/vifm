@@ -597,7 +597,7 @@ eval_logical_not(const char **in)
 
 	var_free(term);
 
-	return bool_val ? var_false() : var_true();
+	return var_from_bool(!bool_val);
 }
 
 /* sequence ::= first { other }
