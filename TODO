@@ -142,8 +142,6 @@ Other (questionable) things.
         in a view (at least in current).  To be used in udf commands to
         make a choice between using %b and %f.  Or maybe adding a macro
         for this is a better way to go?
-    Add a builtin function to check whether some external application is
-        available?
     Use custom title for fuse mounts, e.g.:
         - fuse://...
         - /../fuse_file/...

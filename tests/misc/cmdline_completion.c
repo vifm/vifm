@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
+#include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/builtin_functions.h"
@@ -313,6 +314,8 @@ test_cmdline_completion(void)
 	 * surprisingly failes, but "emulates" them. */
 	run_test(test_dquoted_completion_escaping);
 #endif
+
+	function_reset_all();
 
 	test_fixture_end();
 }

@@ -18,7 +18,7 @@
 
 #include "functions.h"
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() */
 #include <string.h> /* memset() strcmp() strlen() */
@@ -111,6 +111,14 @@ find_function(const char func_name[])
 		}
 	}
 	return NULL;
+}
+
+void
+function_reset_all(void)
+{
+	free(functions);
+	functions = NULL;
+	function_count = 0U;
 }
 
 void

@@ -28,7 +28,8 @@ typedef struct
 {
 	size_t argc; /* Number of arguments passed to the function. */
 	var_t *argv; /* Arguments passed to the function. */
-}call_info_t;
+}
+call_info_t;
 
 /* A function prototype for builtin function implementation. */
 typedef var_t (*function_ptr_t)(const call_info_t *call_info);
@@ -39,7 +40,8 @@ typedef struct
 	const char *name; /* Name of a function. */
 	size_t arg_count; /* Required number of arguments. */
 	function_ptr_t ptr; /* Pointer to function implementation. */
-}function_t;
+}
+function_t;
 
 /* Registers new function.  Returns non-zero on error. */
 int function_register(const function_t *func_info);
@@ -47,6 +49,9 @@ int function_register(const function_t *func_info);
 /* Calls function.  Returns its result or variable of type VTYPE_ERROR in case
  * of error. */
 var_t function_call(const char func_name[], const call_info_t *call_info);
+
+/* Removes all registered functions. */
+void function_reset_all(void);
 
 /* Performs function name command completion. */
 void function_complete_name(const char str[], const char **start);
