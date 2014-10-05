@@ -112,7 +112,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->restart_in_progress = 0;
 
-	stats->env_type = ENVTYPE_EMULATOR;
+	stats->exec_env_type = EET_EMULATOR;
 
 	stats->term_multiplexer = TM_NONE;
 
@@ -160,16 +160,17 @@ set_env_type(status_t *stats)
 	const char *term = env_get("TERM");
 	if(term != NULL && ends_with(term, "linux"))
 	{
-		curr_stats.env_type = ENVTYPE_LINUX_NATIVE;
+		curr_stats.exec_env_type = EET_LINUX_NATIVE;
 	}
 	else
 	{
 		const char *display = env_get("DISPLAY");
-		curr_stats.env_type = is_null_or_empty(display) ?
-			ENVTYPE_EMULATOR : ENVTYPE_EMULATOR_WITH_X;
+		curr_stats.exec_env_type = is_null_or_empty(display)
+		                         ? EET_EMULATOR
+		                         : EET_EMULATOR_WITH_X;
 	}
 #else
-	curr_stats.env_type = ENVTYPE_EMULATOR_WITH_X;
+	curr_stats.exec_env_type = EET_EMULATOR_WITH_X;
 #endif
 }
 

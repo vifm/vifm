@@ -2,7 +2,6 @@
 
 #include <stdlib.h> /* free() */
 
-#include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
 
@@ -158,7 +157,7 @@ test_wrong_op_fail(void)
 }
 
 void
-statements_tests(void)
+compares_tests(void)
 {
 	test_fixture_start();
 

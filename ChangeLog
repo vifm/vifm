@@ -75,6 +75,11 @@
 	Added Vim plugin directory to share/vifm/vim on `make install`.  Thanks
 	Svyatoslav Mishyn (a.k.a. juef).
 
+	Added has() builtin function that checks whether particular property is
+	enabled (two properties for now: "unix" and "win").  Thanks to filterfalse.
+
+	Added logical NOT unary operator ("!").
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

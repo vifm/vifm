@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 September 30
+*vifm.txt*    For Vifm version 0.7.7  Last change: 2014 October 5
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2865,6 +2865,7 @@ Expression syntax summary, from least to most significant:
 
 |vifm-expr3| - expr3                 unary minus
              + expr3                 unary plus
+             ! expr3                 logical NOT
 
 |vifm-expr4| number                  number constant
              "string"                string constant, backslash is special
@@ -2915,9 +2916,11 @@ expr3                                          *vifm-expr3*
 
 - expr3              unary minus               *vifm-expr-unary--*
 + expr3              unary plus                *vifm-expr-unary-+*
+! expr3              logical NOT               *vifm-expr-unary-!*
 
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
+For '!' non-zero becomes zero, zero becomes one.
 
 A String will be converted to a Number first.
 
@@ -2925,6 +2928,10 @@ These operations can be repeated and mixed.  Examples: >
    --9               == 9
   ---9               == -9
    -+9               == 9
+   !-9               == 0
+   !''               == 1
+  !'x'               == 0
+   !!9               == 1
 <
 
 expr4                                          *vifm-expr4*
@@ -3018,6 +3025,7 @@ USAGE               RESULT        DESCRIPTION	~
 executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands macros in {expr}.
 filetype({fnum})    String        Returns file type from position.
+has({property})     Integer       Checks whether instance has {property}.
 
 executable({expr})                             *vifm-executable()*
 If {expr} is absolute or relative path, checks whether path destination exists
@@ -3060,6 +3068,23 @@ The result is a string, which represents file type and is one of the list:
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
 
+has({property})                                *vifm-has()*
+Allows examining internal parameters from scripts to e.g. figure out
+environment in which application is running.  Returns 1 if property is
+true/present, otherwise 0 is returned.  Currently the following properties
+are supported (anything else will yield 0):
+    unix  runs in *nix-like environment (including cygwin)
+    win   runs on Windows
+.br
+
+Usage example: >
+  " skip user/group on Windows
+  if !has('win')
+      let $RIGHTS = '%10u:%-7g '
+  endif
+
+  execute 'set' 'statusline=" '.$SL_PREFIX.' %t%= %A '.$RIGHTS.'%15E %20d  "'
+<
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
 

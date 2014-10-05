@@ -2184,7 +2184,7 @@ add_filetype(const cmd_info_t *cmd_info, int x)
 	records = skip_whitespace(records + 1);
 
 	set_programs(cmd_info->argv[0], records, x,
-			curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
+			curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 	return 0;
 }
 
@@ -2674,7 +2674,7 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 				return 1;
 			}
 			curr_stats.cs->color[group_id].attr = attrs;
-			if(curr_stats.env_type == ENVTYPE_LINUX_NATIVE &&
+			if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
 					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
 			{
 				curr_stats.cs->color[group_id].attr |= A_BLINK;
@@ -2741,7 +2741,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
 	if(light_col_pos >= 0)
 	{
-		*attr |= (!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE) ?
+		*attr |= (!fg && curr_stats.exec_env_type == EET_LINUX_NATIVE) ?
 				A_BLINK : A_BOLD;
 		return light_col_pos;
 	}
@@ -2750,7 +2750,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 			ARRAY_LEN(XTERM256_COLOR_NAMES), str);
 	if(col_pos >= 0)
 	{
-		if(!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE)
+		if(!fg && curr_stats.exec_env_type == EET_LINUX_NATIVE)
 		{
 			*attr &= ~A_BLINK;
 		}

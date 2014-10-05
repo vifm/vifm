@@ -7,9 +7,10 @@ void single_quoted_tests(void);
 void double_quoted_tests(void);
 void envvar_tests(void);
 void functions_tests(void);
-void statements_tests(void);
+void compares_tests(void);
 void numbers_tests(void);
 void ampersand_tests(void);
+void unary_tests(void);
 
 void
 all_tests(void)
@@ -19,9 +20,9 @@ all_tests(void)
 	double_quoted_tests();
 	envvar_tests();
 	functions_tests();
-	statements_tests();
+	compares_tests();
 	numbers_tests();
-	ampersand_tests();
+	unary_tests();
 }
 
 int

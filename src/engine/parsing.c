@@ -47,6 +47,7 @@ typedef enum
 	AMPERSAND,  /* Ampersand sign (&). */
 	LPAREN,     /* Left parenthesis ((). */
 	RPAREN,     /* Right parenthesis ()). */
+	EMARK,      /* Exclamation mark (!). */
 	COMMA,      /* Comma, concatenation operator (,). */
 	EQ,         /* Equality operator (==). */
 	NE,         /* Inequality operator (!=). */
@@ -76,6 +77,7 @@ static var_t eval_double_quoted_string(const char **in);
 static int eval_double_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
 static var_t eval_opt(const char **in);
+static var_t eval_logical_not(const char **in);
 static int read_sequence(const char **in, const char first[],
 		const char other[], size_t buf_len, char buf[]);
 static var_t eval_funccall(const char **in);
@@ -323,7 +325,8 @@ eval_expression(const char **in)
 	return result;
 }
 
-/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt */
+/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt |
+ *          logical_not */
 static var_t
 eval_term(const char **in)
 {
@@ -346,6 +349,9 @@ eval_term(const char **in)
 		case AMPERSAND:
 			get_next(in);
 			return eval_opt(in);
+		case EMARK:
+			get_next(in);
+			return eval_logical_not(in);
 
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
@@ -577,6 +583,23 @@ eval_opt(const char **in)
 	}
 }
 
+/* logical_not ::= '!' term */
+static var_t
+eval_logical_not(const char **in)
+{
+	var_t term;
+	int bool_val;
+
+	skip_whitespace_tokens(in);
+
+	term = eval_term(in);
+	bool_val = var_to_boolean(term);
+
+	var_free(term);
+
+	return var_from_bool(!bool_val);
+}
+
 /* sequence ::= first { other }
  * Returns zero on failure, otherwise non-zero is returned. */
 static int
@@ -784,6 +807,11 @@ get_next(const char **in)
 			{
 				tt = ((*in)[0] == '=') ? EQ : NE;
 				++*in;
+				break;
+			}
+			else if((*in)[0] == '!')
+			{
+				tt = EMARK;
 				break;
 			}
 			/* break is omitted intensionally. */

@@ -53,6 +53,9 @@ var_t var_true(void);
 /* Gets variable, which evaluates to false.  Returns the variable. */
 var_t var_false(void);
 
+/* Gets boolean variable for the boolean value.  Returns the variable. */
+var_t var_from_bool(int bool_val);
+
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
 

@@ -131,7 +131,7 @@ read_info_file(int reread)
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
 					set_programs(line_val, line2, 0,
-							curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
+							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 				}
 			}
 		}
@@ -140,7 +140,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				set_programs(line_val, line2, 1,
-						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
+						curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 			}
 		}
 		else if(type == LINE_TYPE_FILEVIEWER)

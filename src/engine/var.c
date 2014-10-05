@@ -39,6 +39,12 @@ var_false(void)
 }
 
 var_t
+var_from_bool(int bool_val)
+{
+	return bool_val ? var_true() : var_false();
+}
+
+var_t
 var_error(void)
 {
 	static const var_t fail_var = { VTYPE_ERROR };

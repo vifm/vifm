@@ -1,4 +1,4 @@
-.TH vifm 1 "September 30, 2014" "" "Vifm"
+.TH vifm 1 "October 05, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3501,6 +3501,7 @@ expr2      expr3 . expr3 ..        string concatenation
 
 expr3      \- expr3                 unary minus
            + expr3                 unary plus
+           ! expr3                 logical NOT
 
 expr4      number                  number constant
            "string"                string constant, \\ is special
@@ -3565,10 +3566,14 @@ expr3
 \- expr3              unary minus
 .br
 + expr3              unary plus
+.br
+! expr3              logical NOT
 
 For '\-' the sign of the number is changed.
 .br
 For '+' the number is unchanged.
+.br
+For '!' non-zero becomes zero, zero becomes one.
 
 A String will be converted to a Number first.
 
@@ -3577,6 +3582,10 @@ These operations can be repeated and mixed.  Examples:
   \-\-9                == 9
  \-\-\-9                == \-9
   \-+9                == 9
+  !\-9                == 0
+  !''                == 1
+ !'x'                == 0
+  !!9                == 1
 .EE
 
 expr4
@@ -3698,6 +3707,8 @@ executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands macros in {expr}.
 .br
 filetype({fnum})    String        Returns file type from position.
+.br
+has({property})     Integer       Checks whether instance has {property}.
 
 executable({expr})
 .br
@@ -3723,6 +3734,8 @@ expand({expr})
 .br
 Expands macros in {expr} just like it's done for command-line commands.
 Returns a string.  See "Command macros" section above.
+.br
+
 Examples:
 .EX
   " percent sign
@@ -3746,6 +3759,26 @@ The result is a string, which represents file type and is one of the list:
 .br
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
+
+has({property})
+.br
+Allows examining internal parameters from scripts to e.g. figure out
+environment in which application is running.  Returns 1 if property is
+true/present, otherwise 0 is returned.  Currently the following properties
+are supported (anything else will yield 0):
+    unix  runs in *nix-like environment (including cygwin)
+    win   runs on Windows
+.br
+
+Usage example:
+.EX
+  " skip user/group on Windows
+  if !has('win')
+      let $RIGHTS = '%10u:%-7g '
+  endif
+
+  execute 'set' 'statusline=" '.$SL_PREFIX.' %t%= %A '.$RIGHTS.'%15E %20d  "'
+.EE
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
 .\" ---------------------------------------------------------------------------
