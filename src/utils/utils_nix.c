@@ -43,6 +43,7 @@
 
 #include "../cfg/config.h"
 #include "../ui.h"
+#include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
 #include "macros.h"
@@ -482,7 +483,7 @@ S_ISEXE(mode_t mode)
 int
 executable_exists(const char path[])
 {
-	return access(path, X_OK) == 0;
+	return access(path, X_OK) == 0 && !is_dir(path);
 }
 
 int
