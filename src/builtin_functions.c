@@ -102,7 +102,7 @@ expand_builtin(const call_info_t *call_info)
 	return result;
 }
 
-/* Returns string representation of file type. */
+/* Gets string representation of file type.  Returns the string. */
 static var_t
 filetype_builtin(const call_info_t *call_info)
 {
@@ -113,13 +113,8 @@ filetype_builtin(const call_info_t *call_info)
 
 	if(fnum >= 0)
 	{
-#ifndef _WIN32
-		const mode_t mode = curr_view->dir_entry[fnum].mode;
-		var_val.const_string = get_mode_str(mode);
-#else
 		const FileType type = curr_view->dir_entry[fnum].type;
 		var_val.const_string = get_type_str(type);
-#endif
 	}
 	return var_new(VTYPE_STRING, var_val);
 }
