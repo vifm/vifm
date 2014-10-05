@@ -47,11 +47,14 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     makefile=src/Makefile.win
     sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
 
-    vimdoc=data/vim/doc/vifm.txt
-    # update version in data/vim/doc/vifm.txt
-    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimdoc}"
-    # update last change date in data/vim/doc/vifm.txt
-    sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimdoc}"
+    vimplugindoc=data/vim/doc/plugin/vifm-plugin.txt
+    vimappdoc=data/vim/doc/app/vifm-app.txt
+    # update version in data/vim/doc/vifm{,-app}.txt
+    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimplugindoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimappdoc}"
+    # update last change date in data/vim/doc/vifm{,-app}.txt
+    sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimplugindoc}"
+    sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
 
     # update date in README
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
@@ -111,7 +114,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         unix2dos "$dir/data/vifm-help.txt"
         unix2dos "$dir/data/vifmrc"
         mkdir "$dir/data/vim-doc"
-        mv "$dir/data/vim/doc" "$dir/data/vim-doc/doc"
+        mv "$dir/data/vim/doc/app" "$dir/data/vim-doc/doc"
         pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"

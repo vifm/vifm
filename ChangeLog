@@ -177,6 +177,8 @@
 	Made it possible to hide Vifm's configuration from Vim when it's not run
 	by Vifm's :help command.  Thanks to ranousse.
 
+	Separated Vifm's vimdoc from plugin documentation.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
