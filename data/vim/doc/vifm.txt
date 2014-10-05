@@ -3083,7 +3083,7 @@ Usage example: >
       let $RIGHTS = '%10u:%-7g '
   endif
 
-  execute 'set' 'statusline=" '.$SL_PREFIX.' %t%= %A '.$RIGHTS.'%15E %20d  "'
+  execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 <
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
