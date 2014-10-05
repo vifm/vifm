@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 July 28
+" Last Change: 2014 Octover 05
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -71,35 +71,35 @@ if !exists('g:vifm_term')
 	endif
 endif
 
-if has('win32')
+if !exists('g:vifm_home') &&  has('win32')
 	if filereadable(g:vifm_exec) || filereadable(g:vifm_exec.'.exe')
-		let s:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
+		let g:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
 	else
-		let s:vifm_home = $PATH
-		let s:vifm_home = substitute(s:vifm_home, ';', ',', 'g').',.'
-		let s:lst_str = globpath(s:vifm_home, g:vifm_exec, 1)
+		let g:vifm_home = $PATH
+		let g:vifm_home = substitute(g:vifm_home, ';', ',', 'g').',.'
+		let s:lst_str = globpath(g:vifm_home, g:vifm_exec, 1)
 		let s:lst = split(s:lst_str, '\n')
 		if empty(s:lst)
-			let s:lst_str = globpath(s:vifm_home, g:vifm_exec.'.exe', 1)
+			let s:lst_str = globpath(g:vifm_home, g:vifm_exec.'.exe', 1)
 			let s:lst = split(s:lst_str, '\n')
 		endif
 		if empty(s:lst)
 			finish
 		endif
-		let s:vifm_home = s:lst[0]
+		let g:vifm_home = s:lst[0]
 		unlet s:lst_str
 		unlet s:lst
 	endif
-	if !filereadable(s:vifm_home.'/vifmrc')
-		unlet s:vifm_home
+	if !filereadable(g:vifm_home.'/vifmrc')
+		unlet g:vifm_home
 	endif
 endif
 
-if !exists('s:vifm_home')
+if !exists('g:vifm_home')
 	if exists('$HOME') && isdirectory($HOME .'/.vifm/')
-		let s:vifm_home = $HOME."/.vifm"
+		let g:vifm_home = $HOME."/.vifm"
 	elseif exists('$APPDATA') && isdirectory($APPDATA.'/Vifm/')
-		let s:vifm_home = $APPDATA."/Vifm"
+		let g:vifm_home = $APPDATA."/Vifm"
 	else
 		echohl WarningMsg | echo 'Impossible to find your vifm configuration directory. Launch vifm one time and try again.' | echohl None
 		finish
@@ -131,7 +131,7 @@ function! s:StartVifm(editcmd, ...)
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
 
-	let vimfiles = fnamemodify(s:vifm_home.'/vimfiles', ':p')
+	let vimfiles = fnamemodify(g:vifm_home.'/vimfiles', ':p')
 	if !file_readable(vimfiles)
 		echohl WarningMsg | echo 'vimfiles file not found' | echohl None
 		return
