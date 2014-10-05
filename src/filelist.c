@@ -2811,7 +2811,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	{
 		if(!vle_mode_is(CMDLINE_MODE))
 		{
-			status_bar_message("Reading directory...");
+			ui_sb_quick_msgf("%s", "Reading directory...");
 		}
 	}
 
@@ -2942,7 +2942,7 @@ sort_dir_list(int msg, FileView *view)
 {
 	if(msg && view->list_rows > 2048 && !vle_mode_is(CMDLINE_MODE))
 	{
-		status_bar_message("Sorting directory...");
+		ui_sb_quick_msgf("%s", "Sorting directory...");
 	}
 
 	sort_view(view);

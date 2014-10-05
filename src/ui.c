@@ -1490,7 +1490,7 @@ show_progress(const char *msg, int period)
 
 	pause = 1;
 
-	status_bar_messagef("%s %c", msg, marks[count]);
+	ui_sb_quick_msgf("%s %c", msg, marks[count]);
 
 	count = (count + 1) % sizeof(marks);
 }
