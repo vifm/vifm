@@ -1,5 +1,6 @@
 # local automatically generated files
-/data/vim/doc/tags
+/data/vim/doc/app/tags
+/data/vim/doc/plugin/tags
 /data/vifm-help.txt
 /src/compile_info.c
 /src/runtests

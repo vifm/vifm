@@ -357,6 +357,7 @@ const char *tags[] = {
 	"vifm-[count]",
 	"vifm-^",
 	"vifm-al",
+	"vifm-app.txt",
 	"vifm-av",
 	"vifm-cW",
 	"vifm-c_ALT-.",
@@ -651,6 +652,5 @@ const char *tags[] = {
 	"vifm-zo",
 	"vifm-zt",
 	"vifm-zz",
-	"vifm.txt",
 	0,
 };

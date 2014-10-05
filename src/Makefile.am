@@ -8,6 +8,7 @@ vim_dir = $(pkgdatadir)/vim
 vimdoc_dir = $(pkgdatadir)/vim-doc
 
 vim_autoload_vifm_dir = $(vim_dir)/autoload/vifm
+vim_doc_dir = $(vim_dir)/doc
 vim_ftdetect_dir = $(vim_dir)/ftdetect
 vim_ftplugin_dir = $(vim_dir)/ftplugin
 vim_plugin_dir = $(vim_dir)/plugin
@@ -16,6 +17,8 @@ vim_syntax_dir = $(vim_dir)/syntax
 vimdoc_doc_dir = $(vimdoc_dir)/doc
 
 vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt \
+								../data/vim/doc/plugin/tags
 vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim
 vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 										 ../data/vim/ftplugin/vifm-cmdedit.vim \
@@ -23,8 +26,8 @@ vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 
-vimdoc_doc__DATA = ../data/vim/doc/vifm.txt \
-									 ../data/vim/doc/tags
+vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
+									 ../data/vim/doc/app/tags
 
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
@@ -209,11 +212,15 @@ update_compile_info:
 		fi \
 	fi
 
-../data/vim/doc/tags: ../data/vim/doc/vifm.txt
-	-vim -c 'helptags $(dir $<)|q' > /dev/null 2>&1 < /dev/tty
+../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
+	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
 	touch $@
 
-tags.c: ../data/vim/doc/tags
+../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
+	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
+	touch $@
+
+tags.c: ../data/vim/doc/app/tags
 	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
 		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
 		cat $(dir $<)/tags | awk ' \

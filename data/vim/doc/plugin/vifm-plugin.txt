@@ -1,0 +1,58 @@
+*vifm-plugin.txt*    For Vifm version 0.7.7  Last change: 2014 October 5
+
+ Email for bugs and suggestions: <xaizek@openmailbox.org>
+
+Using the vifm.vim plugin~
+
+vifm-plugin for using vifm in vim as a file selector.
+
+Commands:
+
+                                               *vifm-:EditVifm*
+  :EditVifm   select a file or files to open in the current buffer.
+                                               *vifm-:SplitVifm*
+  :SplitVifm  split buffer and select a file or files to open.
+                                               *vifm-:VsplitVifm*
+  :VsplitVifm vertically split buffer and select a file or files to open.
+                                               *vifm-:DiffVifm*
+  :DiffVifm   select a file or files to compare to the current file with
+              :vert diffsplit.
+                                               *vifm-:TabVifm*
+  :TabVifm    select a file or files to open in tabs.
+
+Each command accepts up to two arguments: left pane directory and right pane
+directory.  After arguments are checked, vifm process is spawned in a special
+"file-picker" mode.  To pick files just open them either by pressing l, i or
+Enter keys, or by running :edit command.  If no files are selected, file
+under the cursor is opened, otherwise whole selection is passed to the plugin
+and opened in vim.
+
+The plugin have only two settings.  It's a string variable named g:vifm_term to
+let user specify command to run gui terminal.  By default it's equal to
+'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
+by default and specifies path to vifm's executable.  To pass arguments to
+vifm use g:vifm_exec_args, which is empty by default.
+
+To use the plugin copy the vifm.vim file to either the system wide vim/plugin
+directory or into ~/.vim/plugin.
+
+If you would prefer not to use the plugin and it is in the system wide plugin
+directory add >
+
+ let loaded_vifm=1
+
+to your ~/.vimrc file.
+
+See also~
+
+Repository: https://github.com/vifm/vifm.vim
+Website: http://vifm.info/
+Wiki: http://wiki.vifm.info/
+
+Esperanto translation of the documentation by Sebastian Cyprych:
+http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
+
+Vifm's Vim-documentation: |vifm-app.txt|
+
+--------------------------------------------------------------------------------
+ vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
