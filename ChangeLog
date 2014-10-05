@@ -190,6 +190,8 @@
 	Do not store temporary messages of command-line in history (progress
 	messages).
 
+	Hidden misleading error message from git during successful build.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
