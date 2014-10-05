@@ -291,10 +291,13 @@ vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
 vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt \
 								../data/vim/doc/plugin/tags
 
-vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim
+vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
+										 ../data/vim/ftdetect/vifm-rename.vim
+
 vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 										 ../data/vim/ftplugin/vifm-cmdedit.vim \
-										 ../data/vim/ftplugin/vifm-edit.vim
+										 ../data/vim/ftplugin/vifm-edit.vim \
+										 ../data/vim/ftplugin/vifm-rename.vim
 
 vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 vim_syntax__DATA = ../data/vim/syntax/vifm.vim

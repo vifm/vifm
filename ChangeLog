@@ -82,6 +82,9 @@
 
 	Added function name completion on command-line.
 
+	Added file renaming filetype plugin for Vim.  It displays list of original
+	file names in a vertical split.  Thanks to Factorial Prime.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of
