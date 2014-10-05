@@ -187,6 +187,9 @@
 
 	Separated Vifm's vimdoc from plugin documentation.
 
+	Do not store temporary messages of command-line in history (progress
+	messages).
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
