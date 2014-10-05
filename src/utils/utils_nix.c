@@ -492,5 +492,11 @@ get_exe_dir(char dir_buf[], size_t dir_buf_len)
 	return 1;
 }
 
+EnvType
+get_env_type(void)
+{
+	return ET_UNIX;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

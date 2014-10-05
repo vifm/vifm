@@ -149,19 +149,11 @@ has_builtin(const call_info_t *call_info)
 
 	if(strcmp(str_val, "unix") == 0)
 	{
-#ifndef _WIN32
-		result = var_true();
-#else
-		result = var_false();
-#endif
+		result = var_from_bool(get_env_type() == ET_UNIX);
 	}
 	else if(strcmp(str_val, "win") == 0)
 	{
-#ifndef _WIN32
-		result = var_false();
-#else
-		result = var_true();
-#endif
+		result = var_from_bool(get_env_type() == ET_WIN);
 	}
 	else
 	{

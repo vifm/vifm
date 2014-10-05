@@ -28,6 +28,14 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
+/* Type of operating environment in which the application is running. */
+typedef enum
+{
+	ET_UNIX, /* *nix-like environment (including cygwin). */
+	ET_WIN,  /* Runs on Windows. */
+}
+EnvType;
+
 /* Regular expressions. */
 
 /* Gets flags for compiling a regular expression specified by the pattern taking
@@ -145,6 +153,10 @@ int executable_exists(const char path[]);
  * executable of the application is located.  Returns zero on success, otherwise
  * non-zero is returned. */
 int get_exe_dir(char dir_buf[], size_t dir_buf_len);
+
+/* Gets type of operating environment the application is running in.  Returns
+ * the type. */
+EnvType get_env_type(void);
 
 #ifdef _WIN32
 #include "utils_win.h"
