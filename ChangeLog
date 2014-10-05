@@ -85,6 +85,9 @@
 	Added file renaming filetype plugin for Vim.  It displays list of original
 	file names in a vertical split.  Thanks to Factorial Prime.
 
+	Added file additional mail filetype plugin for Vim.  It allows one to pick
+	attachments via Vifm on <leader>A shortcut.  Thanks to Pavneet Arora.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

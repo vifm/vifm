@@ -24,7 +24,8 @@ vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
 vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 										 ../data/vim/ftplugin/vifm-cmdedit.vim \
 										 ../data/vim/ftplugin/vifm-edit.vim \
-										 ../data/vim/ftplugin/vifm-rename.vim
+										 ../data/vim/ftplugin/vifm-rename.vim \
+										 ../data/vim/ftplugin/mail_vifm.vim
 vim_plugin__DATA = ../data/vim/plugin/vifm.vim
 vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 
