@@ -42,6 +42,7 @@
 
 #include "cfg/config.h"
 #include "engine/completion.h"
+#include "engine/functions.h"
 #include "engine/options.h"
 #include "engine/variables.h"
 #ifdef _WIN32
@@ -112,6 +113,10 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 		{
 			start = ampersand + 1;
 			complete_real_option_names(ampersand + 1);
+		}
+		else if(dollar == NULL)
+		{
+			function_complete_name(arg, &start);
 		}
 		else
 		{

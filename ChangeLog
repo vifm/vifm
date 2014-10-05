@@ -80,6 +80,8 @@
 
 	Added logical NOT unary operator ("!").
 
+	Added function name completion on command-line.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

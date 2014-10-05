@@ -431,16 +431,16 @@ executable_exists(const char path[])
 
 	if(strchr(after_last(path, '/'), '.') != NULL)
 	{
-		return path_exists(path);
+		return path_exists(path) && !is_dir(path);
 	}
 
-	snprintf(path_buf, sizeof(path_buf), "%s", path);
+	copy_str(path_buf, sizeof(path_buf), path);
 	pos = strlen(path_buf);
 
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
 	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
 	{
-		if(path_exists(path_buf))
+		if(path_exists(path_buf) && !is_dir(path_buf))
 		{
 			return 1;
 		}

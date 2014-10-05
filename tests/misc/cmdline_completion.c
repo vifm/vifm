@@ -10,8 +10,10 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
+#include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
 line_stats_t stats;
@@ -266,10 +268,30 @@ test_dirs_are_completed_with_trailing_slash(void)
 	assert_int_equal(0, chdir("read/"));
 }
 
+static void
+test_function_name_completion(void)
+{
+	char *match;
+
+	prepare_for_line_completion(L"echo e");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"echo executable("));
+
+	match = vle_compl_next();
+	assert_string_equal("expand(", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("e", match);
+	free(match);
+}
+
 void
 test_cmdline_completion(void)
 {
 	test_fixture_start();
+
+	init_builtin_functions();
 
 	fixture_setup(setup);
 	fixture_teardown(teardown);
@@ -286,11 +308,14 @@ test_cmdline_completion(void)
 	run_test(test_winrun_cmd_escaping);
 	run_test(test_help_cmd_escaping);
 	run_test(test_dirs_are_completed_with_trailing_slash);
+	run_test(test_function_name_completion);
 #ifndef __CYGWIN__
 	/* Cygwin fails to create files with double quotes in names, Windows quite
 	 * surprisingly failes, but "emulates" them. */
 	run_test(test_dquoted_completion_escaping);
 #endif
+
+	function_reset_all();
 
 	test_fixture_end();
 }

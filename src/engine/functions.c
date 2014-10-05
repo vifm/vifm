@@ -18,10 +18,13 @@
 
 #include "functions.h"
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() */
-#include <string.h> /* memset() strcmp() */
+#include <string.h> /* memset() strcmp() strlen() */
 
+#include "../utils/str.h"
+#include "completion.h"
 #include "text_buffer.h"
 #include "var.h"
 
@@ -108,6 +111,37 @@ find_function(const char func_name[])
 		}
 	}
 	return NULL;
+}
+
+void
+function_reset_all(void)
+{
+	free(functions);
+	functions = NULL;
+	function_count = 0U;
+}
+
+void
+function_complete_name(const char str[], const char **start)
+{
+	int i;
+	size_t len;
+
+	*start = str;
+
+	len = strlen(str);
+	for(i = 0; i < function_count; ++i)
+	{
+		const char *const name = functions[i].name;
+		if(starts_withn(name, str, len))
+		{
+			char name_with_quote[128];
+			snprintf(name_with_quote, sizeof(name_with_quote), "%s(", name);
+			vle_compl_add_match(name_with_quote);
+		}
+	}
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 void
