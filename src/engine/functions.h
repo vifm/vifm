@@ -48,6 +48,9 @@ int function_register(const function_t *func_info);
  * of error. */
 var_t function_call(const char func_name[], const call_info_t *call_info);
 
+/* Performs function name command completion. */
+void function_complete_name(const char str[], const char **start);
+
 
 /* Initializes function call information structure. */
 void function_call_info_init(call_info_t *call_info);
