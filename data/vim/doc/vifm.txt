@@ -2865,6 +2865,7 @@ Expression syntax summary, from least to most significant:
 
 |vifm-expr3| - expr3                 unary minus
              + expr3                 unary plus
+             ! expr3                 logical NOT
 
 |vifm-expr4| number                  number constant
              "string"                string constant, backslash is special
@@ -2915,9 +2916,11 @@ expr3                                          *vifm-expr3*
 
 - expr3              unary minus               *vifm-expr-unary--*
 + expr3              unary plus                *vifm-expr-unary-+*
+! expr3              logical NOT               *vifm-expr-unary-!*
 
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
+For '!' non-zero becomes zero, zero becomes one.
 
 A String will be converted to a Number first.
 
@@ -2925,6 +2928,10 @@ These operations can be repeated and mixed.  Examples: >
    --9               == 9
   ---9               == -9
    -+9               == 9
+   !-9               == 0
+   !''               == 1
+  !'x'               == 0
+   !!9               == 1
 <
 
 expr4                                          *vifm-expr4*

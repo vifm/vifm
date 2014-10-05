@@ -2,7 +2,6 @@
 
 #include <stdlib.h> /* free() */
 
-#include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
 

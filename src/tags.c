@@ -445,6 +445,7 @@ const char *tags[] = {
 	"vifm-expr-option",
 	"vifm-expr-quote",
 	"vifm-expr-string",
+	"vifm-expr-unary-!",
 	"vifm-expr-unary-+",
 	"vifm-expr-unary--",
 	"vifm-expr1",

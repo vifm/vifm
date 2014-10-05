@@ -10,6 +10,7 @@ void functions_tests(void);
 void compares_tests(void);
 void numbers_tests(void);
 void ampersand_tests(void);
+void unary_tests(void);
 
 void
 all_tests(void)
@@ -21,7 +22,7 @@ all_tests(void)
 	functions_tests();
 	compares_tests();
 	numbers_tests();
-	ampersand_tests();
+	unary_tests();
 }
 
 int

@@ -3501,6 +3501,7 @@ expr2      expr3 . expr3 ..        string concatenation
 
 expr3      \- expr3                 unary minus
            + expr3                 unary plus
+           ! expr3                 logical NOT
 
 expr4      number                  number constant
            "string"                string constant, \\ is special
@@ -3565,10 +3566,14 @@ expr3
 \- expr3              unary minus
 .br
 + expr3              unary plus
+.br
+! expr3              logical NOT
 
 For '\-' the sign of the number is changed.
 .br
 For '+' the number is unchanged.
+.br
+For '!' non-zero becomes zero, zero becomes one.
 
 A String will be converted to a Number first.
 
@@ -3577,6 +3582,10 @@ These operations can be repeated and mixed.  Examples:
   \-\-9                == 9
  \-\-\-9                == \-9
   \-+9                == 9
+  !\-9                == 0
+  !''                == 1
+ !'x'                == 0
+  !!9                == 1
 .EE
 
 expr4
