@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.7  Last change: 2014 October 5
+*vifm-app.txt*    For Vifm version 0.7.7  Last change: 2014 October 6
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1868,8 +1868,7 @@ Execute command for pane(s), which is determined by type argument:
  - , - other pane
 
                                                *vifm-:write* *vifm-:w*
-:w[rite] - will write vifminfo (add ! to force write even if settings
-    weren't changed).
+:w[rite] - write vifminfo.
 
                                                *vifm-:wq*
 :wq[!] - same as :quit, but ! disables only check of backgrounded commands.
