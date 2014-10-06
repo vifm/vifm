@@ -199,6 +199,8 @@
 	Made expand() builtin function expand environment variables.  Thanks to
 	filterfalse.
 
+	Do not show dead entries in :lstrash menu.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 

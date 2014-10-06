@@ -81,6 +81,9 @@ int is_trash_directory(const char path[]);
  * Returns that pointer. */
 const char * get_real_name_from_trash_name(const char trash_path[]);
 
+/* Removes entries that correspond to nonexistent files in trashes. */
+void trash_prune_dead_entries(void);
+
 #endif /* VIFM__TRASH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
