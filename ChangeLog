@@ -277,6 +277,8 @@
 	Fixed wrong single file selection after applying local filter (also wrong
 	number of selected files on status bar).  Thanks to filterfalse.
 
+	Fixed tracking of files in trash on Windows.  Thanks to filterfalse.
+
 0.7.7-beta to 0.7.7
 
 	Improved documentation on :file[x]type commands and time sorting keys.
