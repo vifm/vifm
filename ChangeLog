@@ -86,7 +86,7 @@
 	file names in a vertical split.  Thanks to Factorial Prime.
 
 	Added file additional mail filetype plugin for Vim.  It allows one to pick
-	attachments via Vifm on <leader>A shortcut.  Thanks to Pavneet Arora.
+	attachments via Vifm on <localleader>a shortcut.  Thanks to Pavneet Arora.
 
 	Added merge all option for name conflict resolution.  Same as "merge", but
 	remember the choice for future conflicts of directories.  Thanks to
@@ -196,6 +196,11 @@
 
 	Hidden misleading error message from git during successful build.
 
+	Made expand() builtin function expand environment variables.  Thanks to
+	filterfalse.
+
+	Do not show dead entries in :lstrash menu.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
@@ -273,6 +278,8 @@
 
 	Fixed wrong single file selection after applying local filter (also wrong
 	number of selected files on status bar).  Thanks to filterfalse.
+
+	Fixed tracking of files in trash on Windows.  Thanks to filterfalse.
 
 0.7.7-beta to 0.7.7
 

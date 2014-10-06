@@ -657,5 +657,25 @@ get_real_name_from_trash_name(const char trash_path[])
 	return real_name;
 }
 
+void
+trash_prune_dead_entries(void)
+{
+	int i, j;
+
+	j = 0;
+	for(i = 0; i < nentries; ++i)
+	{
+		if(!path_exists(trash_list[i].trash_name))
+		{
+			free(trash_list[i].path);
+			free(trash_list[i].trash_name);
+			continue;
+		}
+
+		trash_list[j++] = trash_list[i];
+	}
+	nentries = j;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

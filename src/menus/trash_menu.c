@@ -43,6 +43,8 @@ show_trash_menu(FileView *view)
 
 	m.title = strdup(" Original paths of files in trash ");
 
+	trash_prune_dead_entries();
+
 	for(i = 0; i < nentries; i++)
 	{
 		const trash_entry_t *const entry = &trash_list[i];

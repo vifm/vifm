@@ -91,9 +91,12 @@ expand_builtin(const call_info_t *call_info)
 	var_t result;
 	var_val_t var_val;
 	char *str_val;
+	char *env_expanded_str_val;
 
 	str_val = var_to_string(call_info->argv[0]);
-	var_val.string = expand_macros(str_val, NULL, NULL, 0);
+	env_expanded_str_val = expand_envvars(str_val, 0);
+	var_val.string = expand_macros(env_expanded_str_val, NULL, NULL, 0);
+	free(env_expanded_str_val);
 	free(str_val);
 
 	result = var_new(VTYPE_STRING, var_val);

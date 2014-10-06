@@ -1,4 +1,4 @@
-.TH vifm 1 "October 05, 2014" "" "Vifm"
+.TH vifm 1 "October 06, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2250,7 +2250,7 @@ Execute command for pane(s), which is determined by type argument:
 .BI "                                         :write"
 .TP
 .BI :w[rite]
-write vifminfo file (add ! to force write even if settings weren't changed).
+write vifminfo file.
 .TP
 .BI "                                         :wq"
 .TP
@@ -3704,7 +3704,7 @@ USAGE               RESULT        DESCRIPTION
 
 executable({expr})  Integer       Checks whether {expr} command available.
 .br
-expand({expr})      String        Expands macros in {expr}.
+expand({expr})      String        Expands special keywords in {expr}.
 .br
 filetype({fnum})    String        Returns file type from position.
 .br
@@ -3732,8 +3732,8 @@ Example:
 
 expand({expr})
 .br
-Expands macros in {expr} just like it's done for command-line commands.
-Returns a string.  See "Command macros" section above.
+Expands environment variables and macros in {expr} just like it's done for
+command-line commands.  Returns a string.  See "Command macros" section above.
 .br
 
 Examples:
@@ -3742,6 +3742,8 @@ Examples:
   :echo expand('%%')
   " the last part of directory name of the other pane
   :echo expand('%D:t')
+  " $PATH environment variable (same as `:echo $PATH`)
+  :echo expand('$PATH')
 .EE
 
 filetype({fnum})

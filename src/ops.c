@@ -446,13 +446,14 @@ static int
 op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
 {
+	int result;
+
 	if(!cfg.use_system_calls)
 	{
 #ifndef _WIN32
 		struct stat st;
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
-		int result;
 		const int cancellable = data == NULL;
 
 		if(conflict_action == CA_FAIL && lstat(dst, &st) == 0)
@@ -476,14 +477,11 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		free(escaped_src);
 
 		LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
-		if((result = background_and_wait_for_errors(cmd, cancellable)) != 0)
+		result = background_and_wait_for_errors(cmd, cancellable);
+		if(result != 0)
+		{
 			return result;
-
-		if(is_under_trash(dst))
-			add_to_trash(src, dst);
-		else if(is_under_trash(src))
-			remove_from_trash(src);
-		return 0;
+		}
 #else
 		BOOL ret = MoveFile(src, dst);
 		if(!ret && GetLastError() == 5)
@@ -495,19 +493,35 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			}
 			return op_removesl(ops, data, src, NULL);
 		}
-		return ret == 0;
+		result = (ret == 0);
 #endif
 	}
-
-	io_args_t args =
+	else
 	{
-		.arg1.src = src,
-		.arg2.dst = dst,
-		.arg3.crs = ca_to_crs(conflict_action),
+		io_args_t args =
+		{
+			.arg1.src = src,
+			.arg2.dst = dst,
+			.arg3.crs = ca_to_crs(conflict_action),
 
-		.cancellable = data == NULL,
-	};
-	return exec_io_op(ops, &ior_mv, &args);
+			.cancellable = data == NULL,
+		};
+		result = exec_io_op(ops, &ior_mv, &args);
+	}
+
+	if(result == 0)
+	{
+		if(is_under_trash(dst))
+		{
+			add_to_trash(src, dst);
+		}
+		else if(is_under_trash(src))
+		{
+			remove_from_trash(src);
+		}
+	}
+
+	return result;
 }
 
 /* Maps conflict action to conflict resolution strategy of i/o modules.  Returns
