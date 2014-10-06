@@ -3074,7 +3074,6 @@ true/present, otherwise 0 is returned.  Currently the following properties
 are supported (anything else will yield 0):
     unix  runs in *nix-like environment (including cygwin)
     win   runs on Windows
-.br
 
 Usage example: >
   " skip user/group on Windows
