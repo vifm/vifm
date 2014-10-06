@@ -133,6 +133,7 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
+static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files_from_register(FileView *view, OPS op,
 		const char descr[], int reg_name, int force_move, int link);
@@ -1692,52 +1693,43 @@ put_decide_cb(const char choice[])
 	}
 	else if(strcmp(choice, "o") == 0)
 	{
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else if(strcmp(choice, "p") == 0 && cfg.use_system_calls &&
 			!is_dir(put_confirm.name))
 	{
 		put_confirm.append = 1;
-		if(put_next("", 0) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(0);
 	}
 	else if(strcmp(choice, "a") == 0)
 	{
 		put_confirm.overwrite_all = 1;
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else if(put_confirm.allow_merge && strcmp(choice, "m") == 0)
 	{
 		put_confirm.merge = 1;
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else if(put_confirm.allow_merge && strcmp(choice, "M") == 0)
 	{
 		put_confirm.merge_all = 1;
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else
 	{
 		prompt_what_to_do(put_confirm.name);
+	}
+}
+
+/* Continues putting files. */
+static void
+put_continue(int force)
+{
+	if(put_next("", force) == 0)
+	{
+		++put_confirm.x;
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 	}
 }
 
