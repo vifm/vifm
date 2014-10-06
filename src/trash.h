@@ -19,14 +19,18 @@
 #ifndef VIFM__TRASH_H__
 #define VIFM__TRASH_H__
 
+/* Description of a single trash item. */
 typedef struct
 {
-	char *path;
-	char *trash_name;
+	char *path;       /* Original full path of file before its removal. */
+	char *trash_name; /* Full path of file inside trash directory. */
 }
 trash_entry_t;
 
+/* List of items in trashes. */
 trash_entry_t *trash_list;
+
+/* Number of items in the trash_list. */
 int nentries;
 
 /* Parses trash directory name specification.  Sets value of cfg.trash_dir as a
