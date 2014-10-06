@@ -24,6 +24,6 @@ function! s:AddMailAttacments()
 	redraw!
 endfunction
 
-nnoremap <buffer> <silent> <leader>A :call <sid>AddMailAttacments()<cr>
+nnoremap <buffer> <silent> <localleader>a :call <sid>AddMailAttacments()<cr>
 
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 :

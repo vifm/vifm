@@ -86,7 +86,7 @@
 	file names in a vertical split.  Thanks to Factorial Prime.
 
 	Added file additional mail filetype plugin for Vim.  It allows one to pick
-	attachments via Vifm on <leader>A shortcut.  Thanks to Pavneet Arora.
+	attachments via Vifm on <localleader>a shortcut.  Thanks to Pavneet Arora.
 
 	Added merge all option for name conflict resolution.  Same as "merge", but
 	remember the choice for future conflicts of directories.  Thanks to
