@@ -125,7 +125,7 @@ update_compile_info:
 		groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
-tags.c: ../data/vim/doc/vifm.txt
+tags.c: ../data/vim/doc/app/vifm-app.txt
 	@if [ "x$$(which vim)" != "x" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
 		vim -T pcterm -u NONE -c 'helptags $(dir $<)|q'; \
 		cat $(dir $<)/tags | awk ' \
