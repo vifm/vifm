@@ -88,6 +88,10 @@
 	Added file additional mail filetype plugin for Vim.  It allows one to pick
 	attachments via Vifm on <leader>A shortcut.  Thanks to Pavneet Arora.
 
+	Added merge all option for name conflict resolution.  Same as "merge", but
+	remember the choice for future conflicts of directories.  Thanks to
+	willemw12.
+
 	Highlight environment variables in :source command.
 
 	Do not highlight option names in the right-hand side of assignments of

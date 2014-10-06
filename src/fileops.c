@@ -81,10 +81,11 @@ static struct
 	int x, y;
 	char *name;
 	int overwrite_all;
-	int append; /* Whether we're appending ending of a file or not. */
+	int append;        /* Whether we're appending ending of a file or not. */
 	int allow_merge;
-	int merge;
-	int link; /* 0 - no, 1 - absolute, 2 - relative */
+	int merge;         /* Merge conflicting directory once. */
+	int merge_all;     /* Merge all conflicting directories. */
+	int link;          /* 0 - no, 1 - absolute, 2 - relative */
 	ops_t *ops;
 }
 put_confirm;
@@ -132,6 +133,7 @@ TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
+static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files_from_register(FileView *view, OPS op,
 		const char descr[], int reg_name, int force_move, int link);
@@ -1457,9 +1459,10 @@ prompt_dest_name(const char *src_name)
 	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
 }
 
-/* Returns 0 on success, otherwise non-zero is returned. */
+/* The force argument enables overwriting/replacing/merging.  Returns 0 on
+ * success, otherwise non-zero is returned. */
 static int
-put_next(const char dest_name[], int override)
+put_next(const char dest_name[], int force)
 {
 	char *filename;
 	struct stat src_st;
@@ -1468,6 +1471,7 @@ put_next(const char dest_name[], int override)
 	int op;
 	int move;
 	int success;
+	int merge;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -1476,7 +1480,8 @@ put_next(const char dest_name[], int override)
 		return -1;
 	}
 
-	override = override || put_confirm.overwrite_all;
+	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
+	merge = put_confirm.merge || put_confirm.merge_all;
 
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
@@ -1509,10 +1514,10 @@ put_next(const char dest_name[], int override)
 
 	if(!put_confirm.append && path_exists(dst_buf))
 	{
-		if(override)
+		if(force)
 		{
 			struct stat dst_st;
-			if(lstat(dst_buf, &dst_st) == 0 && (!put_confirm.merge ||
+			if(lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
 				if(perform_operation(OP_REMOVESL, NULL, NULL, dst_buf, NULL) != 0)
@@ -1523,11 +1528,9 @@ put_next(const char dest_name[], int override)
 				/* Schedule view update to reflect changes in UI. */
 				ui_view_schedule_reload(put_confirm.view);
 			}
-			else
+			else if(!cfg.use_system_calls && get_env_type() == ET_UNIX)
 			{
-#ifndef _WIN32
 				remove_last_path_component(dst_buf);
-#endif
 			}
 		}
 		else
@@ -1556,18 +1559,18 @@ put_next(const char dest_name[], int override)
 	}
 	else if(move)
 	{
-		op = put_confirm.merge ? OP_MOVEF : OP_MOVE;
+		op = merge ? OP_MOVEF : OP_MOVE;
 	}
 	else
 	{
-		op = put_confirm.merge ? OP_COPYF : OP_COPY;
+		op = merge ? OP_COPYF : OP_COPY;
 	}
 
 	progress_msg("Putting files", put_confirm.x, put_confirm.reg->num_files);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * "mv" itself. */
-	if(move && put_confirm.merge)
+	if(move && merge)
 	{
 		DIR *dir;
 
@@ -1649,7 +1652,7 @@ put_next(const char dest_name[], int override)
 		replace_group_msg(msg);
 		free(msg);
 
-		if(!(move && put_confirm.merge))
+		if(!(move && merge))
 		{
 			add_operation(op, NULL, NULL, src_buf, dst_buf);
 		}
@@ -1690,43 +1693,43 @@ put_decide_cb(const char choice[])
 	}
 	else if(strcmp(choice, "o") == 0)
 	{
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else if(strcmp(choice, "p") == 0 && cfg.use_system_calls &&
 			!is_dir(put_confirm.name))
 	{
 		put_confirm.append = 1;
-		if(put_next("", 0) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(0);
 	}
 	else if(strcmp(choice, "a") == 0)
 	{
 		put_confirm.overwrite_all = 1;
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
 	}
 	else if(put_confirm.allow_merge && strcmp(choice, "m") == 0)
 	{
 		put_confirm.merge = 1;
-		if(put_next("", 1) == 0)
-		{
-			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
-		}
+		put_continue(1);
+	}
+	else if(put_confirm.allow_merge && strcmp(choice, "M") == 0)
+	{
+		put_confirm.merge_all = 1;
+		put_continue(1);
 	}
 	else
 	{
 		prompt_what_to_do(put_confirm.name);
+	}
+}
+
+/* Continues putting files. */
+static void
+put_continue(int force)
+{
+	if(put_next("", force) == 0)
+	{
+		++put_confirm.x;
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 	}
 }
 
@@ -1739,10 +1742,11 @@ prompt_what_to_do(const char src_name[])
 	(void)replace_string(&put_confirm.name, src_name);
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite%" WPRINTF_MBSTR
-			"/overwrite [a]ll%" WPRINTF_MBSTR ": ",
+			"/overwrite [a]ll%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
 			src_name,
 			(cfg.use_system_calls && !is_dir(src_name)) ? "/a[p]pend the end" : "",
-			put_confirm.allow_merge ? "/[m]erge" : "");
+			put_confirm.allow_merge ? "/[m]erge" : "",
+			put_confirm.allow_merge ? "/[M]erge all" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
