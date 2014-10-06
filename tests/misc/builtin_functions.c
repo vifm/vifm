@@ -6,6 +6,7 @@
 #include "../parsing/asserts.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
+#include "../../src/utils/env.h"
 #include "../../src/builtin_functions.h"
 
 static void
@@ -26,6 +27,13 @@ test_executable_false_for_dir(void)
 	ASSERT_INT_OK("executable('.')", 0);
 }
 
+static void
+test_expand_expands_environment_variables(void)
+{
+	env_set("OPEN_ME", "Found something interesting?");
+	ASSERT_OK("expand('$OPEN_ME')", "Found something interesting?");
+}
+
 void
 builtin_functions_tests(void)
 {
@@ -36,6 +44,8 @@ builtin_functions_tests(void)
 	run_test(test_executable_true_for_executable);
 	run_test(test_executable_false_for_regular_file);
 	run_test(test_executable_false_for_dir);
+
+	run_test(test_expand_expands_environment_variables);
 
 	function_reset_all();
 

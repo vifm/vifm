@@ -3022,7 +3022,7 @@ Examples: >
 USAGE               RESULT        DESCRIPTION	~
 
 executable({expr})  Integer       Checks whether {expr} command available.
-expand({expr})      String        Expands macros in {expr}.
+expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
 has({property})     Integer       Checks whether instance has {property}.
 
@@ -3044,14 +3044,16 @@ Example: >
   endif
 <
 expand({expr})                                 *vifm-expand()*
-Expands macros in {expr} just like it's done for command-line commands.
-Returns a string.  See |vifm-macros|.
+Expands environment variables and macros in {expr} just like it's done for
+command-line commands.  Returns a string.  See |vifm-macros|.
 
 Examples: >
   " percent sign
   :echo expand('%%')
   " the last part of directory name of the other pane
   :echo expand('%D:t')
+  " $PATH environment variable (same as `:echo $PATH`)
+  :echo expand('$PATH')
 
 filetype({fnum})                               *vifm-filetype()*
 The result is a string, which represents file type and is one of the list:

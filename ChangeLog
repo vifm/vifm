@@ -196,6 +196,9 @@
 
 	Hidden misleading error message from git during successful build.
 
+	Made expand() builtin function expand environment variables.  Thanks to
+	filterfalse.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
