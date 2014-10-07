@@ -58,7 +58,7 @@
 	to the given value (alike "/pattern" and "filter value").  Thanks to
 	filterfalse.
 
-	Added "a[p]pend the end" conflict resolution option (appends the rest of
+	Added "[a]ppend the end" conflict resolution option (appends the rest of
 	file, e.g. if previous operation was terminated).  Available only if
 	'syscalls' option is set. Thanks to Sergei Shilovsky.
 
@@ -200,6 +200,12 @@
 	filterfalse.
 
 	Do not show dead entries in :lstrash menu.
+
+	Hide files from previously used trash directories in :lstrash.  Thanks to
+	filterfalse.
+
+	Change "overwrite all" key from "a" to "O" for consistency.  Thanks to
+	willemw12.
 
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.

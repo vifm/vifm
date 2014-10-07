@@ -48,7 +48,10 @@ show_trash_menu(FileView *view)
 	for(i = 0; i < nentries; i++)
 	{
 		const trash_entry_t *const entry = &trash_list[i];
-		m.len = add_to_string_array(&m.items, m.len, 1, entry->path);
+		if(is_under_trash(entry->trash_name))
+		{
+			m.len = add_to_string_array(&m.items, m.len, 1, entry->path);
+		}
 	}
 
 	return display_menu(&m, view);
