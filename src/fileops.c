@@ -1701,7 +1701,7 @@ put_decide_cb(const char choice[])
 		put_confirm.append = 1;
 		put_continue(0);
 	}
-	else if(strcmp(choice, "a") == 0)
+	else if(strcmp(choice, "O") == 0)
 	{
 		put_confirm.overwrite_all = 1;
 		put_continue(1);
@@ -1742,7 +1742,7 @@ prompt_what_to_do(const char src_name[])
 	(void)replace_string(&put_confirm.name, src_name);
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
 			L". [r]ename/[s]kip/[o]verwrite%" WPRINTF_MBSTR
-			"/overwrite [a]ll%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
+			"/[O]verwrite all%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
 			src_name,
 			(cfg.use_system_calls && !is_dir(src_name)) ? "/a[p]pend the end" : "",
 			put_confirm.allow_merge ? "/[m]erge" : "",

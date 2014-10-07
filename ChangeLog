@@ -204,6 +204,9 @@
 	Hide files from previously used trash directories in :lstrash.  Thanks to
 	filterfalse.
 
+	Change "overwrite all" key from "a" to "O" for consistency.  Thanks to
+	willemw12.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
