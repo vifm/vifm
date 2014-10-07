@@ -201,6 +201,9 @@
 
 	Do not show dead entries in :lstrash menu.
 
+	Hide files from previously used trash directories in :lstrash.  Thanks to
+	filterfalse.
+
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
 	vifmrc using 'trashdir' option.
 
