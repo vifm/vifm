@@ -1741,10 +1741,10 @@ prompt_what_to_do(const char src_name[])
 
 	(void)replace_string(&put_confirm.name, src_name);
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[o]verwrite%" WPRINTF_MBSTR
-			"/[O]verwrite all%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
+			L". [r]ename/[s]kip%" WPRINTF_MBSTR "/[o]verwrite/[O]verwrite all"
+			"%" WPRINTF_MBSTR ": ",
 			src_name,
-			(cfg.use_system_calls && !is_dir(src_name)) ? "/a[p]pend the end" : "",
+			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
 			put_confirm.allow_merge ? "/[m]erge" : "",
 			put_confirm.allow_merge ? "/[M]erge all" : "");
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);

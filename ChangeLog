@@ -58,7 +58,7 @@
 	to the given value (alike "/pattern" and "filter value").  Thanks to
 	filterfalse.
 
-	Added "a[p]pend the end" conflict resolution option (appends the rest of
+	Added "[a]ppend the end" conflict resolution option (appends the rest of
 	file, e.g. if previous operation was terminated).  Available only if
 	'syscalls' option is set. Thanks to Sergei Shilovsky.
 
