@@ -9,3 +9,4 @@ Terminal=true
 TryExec=vifm
 Type=Application
 Keywords=File;Directory;Browse;
+MimeType=inode/directory;
