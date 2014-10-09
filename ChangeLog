@@ -39,10 +39,10 @@
 	Added full command names to the manual page to ease searching them.
 	Thanks to y2kbugger.
 
-	Added 'syscalls' boolean option to 'cpoptions' option.  It makes vifm
-	prefer to perform file-system operations with external applications on
-	rather then with system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The
-	option will be eventually removed.  Mostly *nix-like systems are affected.
+	Added 'syscalls' boolean option.  It makes Vifm prefer to perform
+	file-system operations with external applications on rather then with
+	system calls.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}.  The option will be
+	eventually removed.  Mostly *nix-like systems are affected.
 
 	Added implementation for directory and file removal, copying, moving, file,
 	directory and symbolic link creation with system calls.  Advanced stuff
@@ -109,7 +109,7 @@
 
 	Provided additional repository for Vim plugin (see the README for URL).
 
-	Documented using of 256 colors in :highlight command.  Thanks to Michael
+	Documented how to use 256 colors in :highlight command.  Thanks to Michael
 	Vetter (a.k.a. jubalh).
 
 	Rewrote trash content removal with system calls in background thread to
@@ -171,7 +171,7 @@
 	Repeat search with last used search pattern on empty pattern of the search
 	mode.
 
-	Automatically remove non-existent directories on from directory history on
+	Automatically remove non-existent directories from directory history on
 	:history command to speed up future operations (this clean up is very cheap
 	on composing menu).
 
@@ -186,8 +186,8 @@
 	Renamed configure.in to configure.ac.  Thanks to Hendrik Jaeger (a.k.a.
 	henk).
 
-	Made it possible to hide Vifm's configuration from Vim when it's not run
-	by Vifm's :help command.  Thanks to ranousse.
+	Made it possible to hide Vifm's documentation from Vim when it's not run by
+	Vifm's :help command.  Thanks to ranousse.
 
 	Separated Vifm's vimdoc from plugin documentation.
 
@@ -204,7 +204,7 @@
 	Hide files from previously used trash directories in :lstrash.  Thanks to
 	filterfalse.
 
-	Change "overwrite all" key from "a" to "O" for consistency.  Thanks to
+	Changed "overwrite all" key from "a" to "O" for consistency.  Thanks to
 	willemw12.
 
 	Fixed odd creation of ~/.vifm/Trash directory even when it's redefined in
@@ -276,7 +276,7 @@
 	Fixed ga and gA commands for files bigger than 4 GiB on 32-bit operating
 	systems.  Thanks to filterfalse.
 
-	Fixed some buffer overrun bugs discovered on OS X and make tests more
+	Fixed some buffer overrun bugs discovered on OS X and made tests more
 	BSD-utils friendly.
 
 	Fixed segmentation fault on Alt-. command in command-line mode (since

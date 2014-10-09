@@ -1,5 +1,5 @@
 [Desktop Entry]
-Categories=System;FileTools;FileManager;ConsoleOnly;
+Categories=System;FileTools;FileManager;Utility;ConsoleOnly;
 Comment=Vim like ncurses based file manager
 Exec=vifm %F
 GenericName=File Manager
@@ -9,3 +9,4 @@ Terminal=true
 TryExec=vifm
 Type=Application
 Keywords=File;Directory;Browse;
+MimeType=inode/directory;
