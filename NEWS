@@ -1,3 +1,175 @@
+October 11, 2014
+================
+
+vifm v0.7.8 beta testing has started
+------------------------------------
+
+New version adds a couple of major features, allows for some more customizations
+and makes usual operations more convenient.  Finally, file system operations got
+progress (it's disabled by default, new implementation needs to be tested in
+different environments to become the primary one). Another frequently asked
+feature is multiblock selection ("extended visual mode" if you wish). Vifm also
+became friendlier to authors of colorschemes and those who'd like to customize
+UI a bit more.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - added multiblock "selection" (in quotes because it's also block deselection
+   and inversion of selection for completeness);
+ - added progress bar for file operations.  Available only if 'syscalls' option
+   is set  (please be careful with that, check basic operations on temp files
+   before using this with important data);
+ - added names for 256 colors, highlight group for inactive cursor,
+   ":highlight clear" command;
+ - some improvements for cancelling operations;
+ - better implementation of emptying trash directories;
+ - new types of conflict resolution;
+ - several extensions for filtering with user-defined commands;
+ - more customizable UI (borders, padding);
+ - smarter path completion;
+ - separated Vifm and Vim plugin documentation;
+ - a couple of extensions for Vim plugin (for mail and bulk file renaming).
+
+Core:
+ - added cancellation (handling of Ctrl-C) for FUSE mounting (but not
+   unmounting);
+ - added progress for long-running file system operations.  Available only if
+   'syscalls' option is set;
+ - added "[a]ppend the end" conflict resolution option (appends the rest of
+   file, e.g. if previous operation was terminated) (thanks to Sergei
+   Shilovsky).  Available only if 'syscalls' option is set;
+ - added merge all option for name conflict resolution.  Same as "merge", but
+   remembers the choice for future conflicts of directories (thanks to
+   willemw12);
+ - changed "overwrite all" key from "a" to "O" for consistency (thanks to
+   willemw12);
+ - implemented creation, removal, copying, moving of files with system calls.
+   Available only if 'syscalls' option is set;
+ - rewrote trash content removal with system calls in background thread (thanks
+   to lyuts and ckester).  It's also now visible in :jobs menu;
+ - several improvements for :lstrash menu (thanks to filterfalse);
+ - more reliable Ctrl-C detection.
+
+Normal and visual modes:
+ - added av normal mode shortcut that activates selection amending mode (thanks
+   to ranousse, Michelle Bonk (a.k.a. unixtechie));
+ - added/updated av/v/V visual mode keys to switch type of current visual mode;
+ - added Ctrl-G key to visual selection amending mode, which switches kind of
+   amending (append/remove/invert);
+ - separate visual selection marks ('< and '>), which allows to restore it via
+   gv in both panes (thanks to filterfalse);
+ - implement "(" and ")" keys for "perms" and "type" sorting keys (thanks to
+   filterfalse);
+ - skip nonexistent directories on Ctrl-O/Ctrl-I;
+ - repeat search with last used search pattern on empty pattern of the search
+   mode.
+
+Command-line mode:
+ - added i and I flags to :filter command to control filter case
+   sensitivity (thanks to filterfalse);
+ - added filter flags to output of :filter? command and formatted output as a
+   table;
+ - added ":highlight clear" to reset to builtin colors;
+ - added =pattern special form of user-defined command that sets local filter to
+   the given value (alike "/pattern" and "filter value") (thanks to
+   filterfalse);
+ - made :filter command consider trailing slash for symbolic links that point to
+   directories (thanks to filterfalse);
+ - allowed use of :filter syntax in user-defined filter commands (e.g.
+   "command conf filter/.*\.cfg$/");
+ - made +/- operands after semicolon in command-line range adjust base range end
+   position rather than base cursor position as Vim does (thanks to
+   filterfalse).
+
+:set command and options:
+ - added 'syscalls' boolean option.  Chooses external tools/system calls
+   implementation.  {EXPERIMENTAL}, {WORK-IN-PROGRESS}, although no data loss so
+   far.  The option will be eventually removed.  Mostly *nix-like systems are
+   affected;
+ - added 'cdpath' option (thanks to Bruce Hunsaker (a.k.a. hunsakerbn));
+ - added 'tuioptions' option.  Controls padding of file lists in panels and
+   visibility of side borders (thanks to Bruce Hunsaker (a.k.a. hunsakerbn) and
+   Svyatoslav Mishyn (a.k.a. juef));
+ - added 'fillchars' option.  Configures fill character for vertical
+   borders (thanks to Svyatoslav Mishyn (a.k.a. juef));
+ - extended 'slowfs' option format to allow path prefixes (in particular, it's
+   useful for autofs) (thanks to Евгений Жаров (a.k.a. ezharov)).
+
+Scripting:
+ - added logical NOT unary operator ("!");
+ - added executable() builtin function that checks whether executable exists at
+   given path or in one of directories listed in $PATH;
+ - added has() builtin function that checks whether particular property is
+   enabled (two properties for now: "unix" and "win") (thanks to filterfalse);
+ - made expand() builtin function expand environment variables (thanks to
+   filterfalse).
+
+Performance:
+ - optimized speed of checking existence of a directory (important on displaying
+   directory history);
+ - automatically remove non-existent directories from directory history on
+   :history command to speed up future operations (this clean up is very cheap
+   on composing menu).
+
+Completion:
+ - added function name completion on command-line;
+ - smart completion for paths.  Allows completion of quoted arguments (both
+   ' and " types of quotes) and considers argument type context by performing
+   escaping when needed.
+
+Documentation:
+ - added full command names to the manual page to ease searching them (thanks to
+   y2kbugger);
+ - documented how to use 256 colors in :highlight command (thanks to Michael
+   Vetter (a.k.a. jubalh));
+ - made it possible to hide Vifm's documentation from Vim when it's not run by
+   Vifm's :help command (thanks to ranousse);
+ - separated Vifm's vimdoc from plugin documentation.
+
+TUI (Text User Interface):
+ - added more human-friendly (xterm-like) names for 256 colors (thanks to
+   Michael Vetter (a.k.a. jubalh));
+ - added OtherLine highlight group for cursor of inactive pane (thanks to
+   Svyatoslav Mishyn (a.k.a. juef)).
+
+Vim:
+ - added file additional mail filetype plugin for Vim (thanks to Pavneet Arora).
+   It allows one to pick attachments via Vifm on <localleader>a shortcut;
+ - added file renaming filetype plugin for Vim (thanks to Factorial Prime).  It
+   displays list of original file names in a vertical split;
+ - provided additional repository for Vim
+   plugin (https://github.com/vifm/vifm.vim);
+ - make Vim plugin use cmd.exe as default shell on Windows (thanks to Jonathan
+   Da Silva);
+ - various minor syntax highlight improvements (wrapped lines, numbers,
+   options).
+
+Packaging:
+ - added Vim plugin directory to share/vifm/vim on `make install` (thanks
+   Svyatoslav Mishyn (a.k.a. juef));
+ - removed ltmain.sh script, which is part of libtool that's not used
+   anymore (thanks to Hendrik Jaeger (a.k.a. henk));
+ - renamed configure.in to configure.ac (thanks to Hendrik Jaeger (a.k.a.
+   henk)).
+
+Major fixes:
+ - fixed segmentation fault on running vifm with single argument if restored
+   cursor is in the right pane (thanks to Svyatoslav Mishyn, a.k.a. juef);
+ - fixed segmentation fault during startup in a small terminal on OS X (thanks
+   to Daniel Dettlaff (a.k.a. dmilith));
+ - fixed segmentation fault on no view history and ":set autochpos" in
+   vifmrc (thanks to ranousse);
+ - fixed unexpectedly broken compilation on FreeBSD (thanks to Daniel
+   Dettlaff (a.k.a. dmilith));
+ - fixed :!! command, seems to be not working for a while;
+ - fixed segmentation fault on Alt-. command in command-line mode (since 0.7.7).
+
+See change log for full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 May 16, 2014
 ============
 
