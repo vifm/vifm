@@ -29,7 +29,7 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     sed -i "1s/current/$1/" ChangeLog
 
     # update version in configure script
-    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.in
+    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.ac
 
     if [ "x$OS" != "xWindows_NT" ]; then
         # regenerate autotools files
