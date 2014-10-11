@@ -29,7 +29,7 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     sed -i "1s/current/$1/" ChangeLog
 
     # update version in configure script
-    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.in
+    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.ac
 
     if [ "x$OS" != "xWindows_NT" ]; then
         # regenerate autotools files
@@ -49,10 +49,10 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
 
     vimplugindoc=data/vim/doc/plugin/vifm-plugin.txt
     vimappdoc=data/vim/doc/app/vifm-app.txt
-    # update version in data/vim/doc/vifm{,-app}.txt
+    # update version in vifm-{app,plugin}.txt
     sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimplugindoc}"
     sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimappdoc}"
-    # update last change date in data/vim/doc/vifm{,-app}.txt
+    # update last change date in vifm-{app,plugin}.txt
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimplugindoc}"
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
 
