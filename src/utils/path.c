@@ -45,6 +45,7 @@
 
 static int skip_dotdir_if_any(const char *path[], int fully);
 static char * try_replace_tilde(const char path[]);
+static char * find_ext_dot(const char path[]);
 
 /* like chomp() but removes trailing slash */
 void
@@ -597,21 +598,37 @@ cut_extension(char path[])
 void
 split_ext(char path[], int *root_len, const char **ext_pos)
 {
-	const char *const slash = strrchr(path, '/');
-	char *const dot = strrchr(path, '.');
-	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
-			dot == slash + 1)
+	char *const dot = find_ext_dot(path);
+
+	if(dot == NULL)
 	{
 		const size_t len = strlen(path);
-		*root_len = len;
+
 		*ext_pos = path + len;
+		*root_len = len;
+
+		return;
 	}
-	else
-	{
-		*dot = '\0';
-		*root_len = dot - path;
-		*ext_pos = dot + 1;
-	}
+
+	*dot = '\0';
+	*ext_pos = dot + 1;
+	*root_len = dot - path;
+}
+
+/* Gets extension for file path.  Returns pointer to the dot or NULL if file
+ * name has no extension. */
+static char *
+find_ext_dot(const char path[])
+{
+	const char *const slash = strrchr(path, '/');
+	char *const dot = strrchr(path, '.');
+
+	const int no_ext = dot == NULL
+	                || (slash != NULL && dot < slash)
+	                || dot == path
+	                || dot == slash + 1;
+
+	return no_ext ? NULL : dot;
 }
 
 void
