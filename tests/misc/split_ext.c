@@ -36,6 +36,12 @@ test_empty_root(void)
 }
 
 static void
+test_empty_root_double_extension(void)
+{
+	TEST_EXT(".ext1.ext2", "ext2", 5);
+}
+
+static void
 test_filename_no_extension(void)
 {
 	TEST_EXT("withoutext", "", 10);
@@ -79,6 +85,7 @@ split_ext_tests(void)
 	run_test(test_empty_string);
 	run_test(test_empty_extension);
 	run_test(test_empty_root);
+	run_test(test_empty_root_double_extension);
 	run_test(test_filename_no_extension);
 	run_test(test_filename_unary_extension);
 	run_test(test_filename_binary_extensions);
