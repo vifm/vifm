@@ -615,6 +615,19 @@ split_ext(char path[], int *root_len, const char **ext_pos)
 	*root_len = dot - path;
 }
 
+char *
+get_ext(const char path[])
+{
+	char *const dot = find_ext_dot(path);
+
+	if(dot == NULL)
+	{
+		return (char *)path + strlen(path);
+	}
+
+	return dot + 1;
+}
+
 /* Gets extension for file path.  Returns pointer to the dot or NULL if file
  * name has no extension. */
 static char *

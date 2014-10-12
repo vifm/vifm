@@ -353,9 +353,14 @@ format_ext(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	const char *dot = strrchr(entry->name,  '.');
-	snprintf(buf, buf_len + 1, "%s", (dot == NULL) ? "" : (dot + 1));
-	chosp(buf);
+	const char *ext;
+
+	char name_without_slash[strlen(entry->name) + 1];
+	strcpy(name_without_slash, entry->name);
+	chosp(name_without_slash);
+
+	ext = get_ext(name_without_slash);
+	copy_str(buf, buf_len + 1, ext);
 }
 
 #ifndef _WIN32

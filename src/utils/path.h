@@ -97,6 +97,10 @@ char * cut_extension(char path[]);
  * root part and *ext_pos to beginning of last extension. */
 void split_ext(char path[], int *root_len, const char **ext_pos);
 
+/* Gets extension from the file path.  Returns pointer to beginning of the
+ * extension, which points to trailing null character for an empty extension. */
+char * get_ext(const char path[]);
+
 /* Removes file name from path. */
 void exclude_file_name(char *path);
 
