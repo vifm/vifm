@@ -340,9 +340,11 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 static void
 format_size(int id, const void *data, size_t buf_len, char *buf)
 {
-	char str[24] = "";
+	char str[24];
 	const column_data_t *cdt = data;
 	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line_pos);
+
+	str[0] = '\0';
 	friendly_size_notation(size, sizeof(str), str);
 	snprintf(buf, buf_len + 1, " %s", str);
 }
