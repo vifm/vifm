@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 05, 2014
+" Last Change: October 12, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -245,7 +245,7 @@ syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
-		\,vifmNumber,vifmComment
+		\,vifmNumber,vifmComment,vifmHiClear
 
 " common highlight for :command arguments
 syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
@@ -324,6 +324,9 @@ syntax region vifmComment contained start='^\(\s\|:\)*"' end='$'
 " Empty line
 syntax match vifmEmpty /^\s*$/
 
+" :highlight clear
+syntax match vifmHiClear contained /\s*\<clear\>\s*/
+
 " Highlight
 highlight link vifmComment Comment
 highlight link vifmCommand Statement
@@ -332,6 +335,7 @@ highlight link vifmCdCommand Statement
 highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
 highlight link vifmHiCommand Statement
+highlight link vifmHiClear Statement
 highlight link vifmInvertCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
