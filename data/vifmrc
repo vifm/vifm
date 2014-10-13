@@ -275,41 +275,41 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 
 " Sample mappings
 
-nmap s :shell<cr>
-nmap S :sort<cr>
-nmap w :view<cr>
-nmap o :!gvim --remote-tab-silent %f<cr>
-nmap O :!gvim %f<cr>
+nnoremap s :shell<cr>
+nnoremap S :sort<cr>
+nnoremap w :view<cr>
+nnoremap o :!gvim --remote-tab-silent %f<cr>
+nnoremap O :!gvim %f<cr>
 
 " Open file in the background using its default program
-nmap gb :file &<cr>l
+nnoremap gb :file &<cr>l
 
 " Yank current directory path into the clipboard
-nmap yd :!echo %d | xclip %i<cr>
+nnoremap yd :!echo %d | xclip %i<cr>
 
 " Yank current file path into the clipboard
-nmap yf :!echo %c:p | xclip %i<cr>
+nnoremap yf :!echo %c:p | xclip %i<cr>
 
 " Mappings for faster renaming
-nmap I cw<c-a>
-nmap cc cw<c-u>
-nmap A cw<c-w>
+nnoremap I cw<c-a>
+nnoremap cc cw<c-u>
+nnoremap A cw<c-w>
 
 " Opening console in current directory
-nmap ,t :!xterm &<cr>
+nnoremap ,t :!xterm &<cr>
 
 " Opening vim to edit .vifmrc
-nmap ,c :execute ':!vim $MYVIFMRC' | restart<cr>
+nnoremap ,c :execute ':!vim $MYVIFMRC' | restart<cr>
 " Opening gvim to edit .vifmrc
-nmap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
+nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
 
 " Toggle wrap setting on ,w key
-nmap ,w :set wrap!<cr>
+nnoremap ,w :set wrap!<cr>
 
 " Example of standard two-panel file managers mappings
-nmap <f3> :!less %f<cr>
-nmap <f4> :edit<cr>
-nmap <f5> :copy<cr>
-nmap <f6> :move<cr>
-nmap <f7> :mkdir<space>
-nmap <f8> :delete<cr>
+nnoremap <f3> :!less %f<cr>
+nnoremap <f4> :edit<cr>
+nnoremap <f5> :copy<cr>
+nnoremap <f6> :move<cr>
+nnoremap <f7> :mkdir<space>
+nnoremap <f8> :delete<cr>
