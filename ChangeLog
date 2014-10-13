@@ -2,6 +2,9 @@
 
 	Highlight "highlight clear".
 
+	Returned accidentally lost "Merge all" (from message only) conflict
+	resolution message.
+
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
 
