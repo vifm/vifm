@@ -107,7 +107,7 @@ set statusline="  %t%= %A %10u:%-7g %15s %20d  "
 mark b ~/bin/
 mark h ~/
 
-" :com[mand] command_name action
+" :com[mand][!] command_name action
 " The following macros can be used in a command
 " %a is replaced with the user arguments.
 " %c the current file under the cursor.
@@ -119,12 +119,12 @@ mark h ~/
 " %D the other window directory name.
 " %m run the command in a menu window
 
-command df df -h %m 2> /dev/null
-command diff vim -d %f %F
-command zip zip -r %f.zip %f
-command run !! ./%f
-command make !!make
-command vgrep vim "+grep %a"
+command! df df -h %m 2> /dev/null
+command! diff vim -d %f %F
+command! zip zip -r %f.zip %f
+command! run !! ./%f
+command! make !!make
+command! vgrep vim "+grep %a"
 
 " The file type is for the default programs to be used with
 " a file extension.
