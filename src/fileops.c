@@ -140,7 +140,6 @@ static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void clone_file(FileView* view, const char filename[], const char path[],
 		const char clone[], ops_t *ops);
-static uint64_t calc_dirsize(const char path[], int force_update);
 static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
@@ -163,6 +162,7 @@ static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
 static void * dir_size_bg(void *arg);
+static uint64_t calc_dirsize(const char path[], int force_update);
 
 void
 init_fileops(void)
@@ -2023,54 +2023,6 @@ set_dir_size(const char *path, uint64_t size)
 	pthread_mutex_unlock(&mutex);
 }
 
-/* Calculates size of a directory possibly using cache of known sizes.  Returns
- * size of a directory or zero on error. */
-static uint64_t
-calc_dirsize(const char path[], int force_update)
-{
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
-	uint64_t size;
-
-	dir = opendir(path);
-	if(dir == NULL)
-		return 0;
-
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
-
-	size = 0;
-	while((dentry = readdir(dir)) != NULL)
-	{
-		char buf[PATH_MAX];
-
-		if(is_builtin_dir(dentry->d_name))
-		{
-			continue;
-		}
-
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-		if(is_dir_entry(buf, dentry))
-		{
-			uint64_t dir_size = 0;
-			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
-					|| force_update)
-				dir_size = calc_dirsize(buf, force_update);
-			size += dir_size;
-		}
-		else
-		{
-			size += get_file_size(buf);
-		}
-	}
-
-	closedir(dir);
-
-	set_dir_size(path, size);
-	return size;
-}
-
 /* Uses dentry to check file type and fallbacks to lstat() if dentry contains
  * unknown type. */
 static int
@@ -3437,6 +3389,54 @@ dir_size_bg(void *arg)
 	free(dir_size->path);
 	free(dir_size);
 	return NULL;
+}
+
+/* Calculates size of a directory possibly using cache of known sizes.  Returns
+ * size of a directory or zero on error. */
+static uint64_t
+calc_dirsize(const char path[], int force_update)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+	uint64_t size;
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return 0;
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	size = 0;
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(is_builtin_dir(dentry->d_name))
+		{
+			continue;
+		}
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+		if(is_dir_entry(buf, dentry))
+		{
+			uint64_t dir_size = 0;
+			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
+					|| force_update)
+				dir_size = calc_dirsize(buf, force_update);
+			size += dir_size;
+		}
+		else
+		{
+			size += get_file_size(buf);
+		}
+	}
+
+	closedir(dir);
+
+	set_dir_size(path, size);
+	return size;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
