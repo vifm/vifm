@@ -5,13 +5,16 @@
 	Returned accidentally lost "Merge all" (from message only) conflict
 	resolution message.
 
+	Made "make clean" remove "tags" files for Vim documentation generated
+	during build.  Thanks to Hendrik Jaeger (a.k.a. henk).
+
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
 
 0.7.7 to 0.7.8-beta
 
 	Removed ltmain.sh script, which is part of libtool, which is not used
-	anymore.  Thanks to Hendrik Jaeger (a.k.a.  henk).
+	anymore.  Thanks to Hendrik Jaeger (a.k.a. henk).
 
 	Added executable() builtin function that checks whether executable exists
 	at given path or in one of directories listed in $PATH.
