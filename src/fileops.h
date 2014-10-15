@@ -88,8 +88,6 @@ int put_files_from_register(FileView *view, int reg_name, int force_move);
 
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 
-uint64_t calc_dirsize(const char *path, int force_update);
-
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs. */
 int check_if_dir_writable(DirRole dir_role, const char *path);
@@ -122,6 +120,9 @@ int make_files(FileView *view, char **names, int count);
 
 /* Returns new value for save_msg flag. */
 int restore_files(FileView *view);
+
+/* Initiates background directory size calculation. */
+void start_dir_size_calc(const char path[], int force);
 
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
