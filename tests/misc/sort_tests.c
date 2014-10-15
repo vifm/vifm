@@ -212,6 +212,27 @@ test_versort_zerox_and_one(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
+static void
+test_versort_man_page_example(void)
+{
+	/* According to the `man strverscmp`:
+	 *   000 < 00 < 01 < 010 < 09 < 0 < 1 < 9 < 10.
+	 * In Vifm these conditions differ:
+	 *  - 000 == 00;
+	 *  - 010 == 09;
+	 *  - 09  == 0.
+	 */
+
+	assert_true(strnumcmp("000", "00") == 0);
+	assert_true(strnumcmp("00", "01") < 0);
+	assert_true(strnumcmp("01", "010") < 0);
+	assert_true(strnumcmp("010", "09") > 0);
+	assert_true(strnumcmp("09", "0") > 0);
+	assert_true(strnumcmp("0", "1") < 0);
+	assert_true(strnumcmp("1", "9") < 0);
+	assert_true(strnumcmp("9", "10") < 0);
+}
+
 void
 sort_tests(void)
 {
@@ -228,6 +249,7 @@ sort_tests(void)
 	run_test(test_versort_numbers_only_and_letters_only);
 	run_test(test_versort_zero_and_zerox);
 	run_test(test_versort_zerox_and_one);
+	run_test(test_versort_man_page_example);
 
 	test_fixture_end();
 }
