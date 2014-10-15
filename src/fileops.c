@@ -161,6 +161,7 @@ static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
+static void start_dir_size_calc(const char path[], int force);
 static void * dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 
@@ -3356,6 +3357,20 @@ check_if_dir_writable(DirRole dir_role, const char *path)
 }
 
 void
+calculate_size(FileView *view, int force)
+{
+	char full_path[PATH_MAX];
+
+	if(view->dir_entry[view->list_pos].type != DIRECTORY)
+		return;
+
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir,
+			view->dir_entry[view->list_pos].name);
+	start_dir_size_calc(full_path, force);
+}
+
+/* Initiates background directory size calculation. */
+static void
 start_dir_size_calc(const char path[], int force)
 {
 	pthread_t id;

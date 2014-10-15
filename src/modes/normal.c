@@ -1024,27 +1024,13 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	char full_path[PATH_MAX];
-
-	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
-		return;
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	start_dir_size_calc(full_path, 1);
+	calculate_size(curr_view, 1);
 }
 
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	char full_path[PATH_MAX];
-
-	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
-		return;
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	start_dir_size_calc(full_path, 0);
+	calculate_size(curr_view, 0);
 }
 
 static void

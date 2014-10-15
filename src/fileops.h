@@ -121,8 +121,8 @@ int make_files(FileView *view, char **names, int count);
 /* Returns new value for save_msg flag. */
 int restore_files(FileView *view);
 
-/* Initiates background directory size calculation. */
-void start_dir_size_calc(const char path[], int force);
+/* Initiates background calculation of directory sizes. */
+void calculate_size(FileView *view, int force);
 
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
