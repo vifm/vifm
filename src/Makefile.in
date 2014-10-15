@@ -314,7 +314,9 @@ man_MANS = ../data/vifm.1 \
 					 ../data/vifmrc-converter.1
 
 MOSTLYCLEANFILES = compile_info.c \
-									 ../data/vifm-help.txt
+									 ../data/vifm-help.txt \
+									 ../data/vim/doc/app/tags \
+									 ../data/vim/doc/plugin/tags
 
 desktopappdir = $(datadir)/applications
 desktopappfile = ../data/vifm.desktop
