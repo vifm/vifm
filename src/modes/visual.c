@@ -96,6 +96,8 @@ static void delete(key_info_t key_info, int use_trash);
 static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ga(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
@@ -195,6 +197,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILTIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
+	{L"gA", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
+	{L"ga", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"gh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"gj", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
@@ -689,6 +693,22 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	find_goto(key_info.multi, key_info.count, 0);
+}
+
+/* Calculate size of selected directories ignoring cached sizes. */
+static void
+cmd_gA(key_info_t key_info, keys_info_t *keys_info)
+{
+	calculate_size(curr_view, 1);
+	accept_and_leave(0);
+}
+
+/* Calculate size of selected directories taking cached sizes into account. */
+static void
+cmd_ga(key_info_t key_info, keys_info_t *keys_info)
+{
+	calculate_size(curr_view, 0);
+	accept_and_leave(0);
 }
 
 /* Change file attributes (permissions or properties). */

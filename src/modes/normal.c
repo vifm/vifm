@@ -1021,12 +1021,14 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	pick_or_move(keys_info, new_pos);
 }
 
+/* Calculate size of selected directories ignoring cached sizes. */
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
 	calculate_size(curr_view, 1);
 }
 
+/* Calculate size of selected directories taking cached sizes into account. */
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
