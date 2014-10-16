@@ -164,7 +164,7 @@ static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
-static void * dir_size_bg(void *arg);
+static void dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
 
@@ -3396,18 +3396,27 @@ update_dir_entry_size(const FileView *view, int index, int force)
 static void
 start_dir_size_calc(const char path[], int force)
 {
-	pthread_t id;
+	char task_desc[PATH_MAX];
 	dir_size_args_t *dir_size;
 
 	dir_size = malloc(sizeof(*dir_size));
 	dir_size->path = strdup(path);
 	dir_size->force = force;
 
-	pthread_create(&id, NULL, dir_size_bg, dir_size);
+	snprintf(task_desc, sizeof(task_desc), "Calculating size: %s", path);
+
+	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, &dir_size_bg, dir_size) != 0)
+	{
+		free(dir_size->path);
+		free(dir_size);
+
+		show_error_msg("Can't calculate size",
+				"Failed to initiate background operation");
+	}
 }
 
 /* Entry point for a background task that calculates size of a directory. */
-static void *
+static void
 dir_size_bg(void *arg)
 {
 	dir_size_args_t *const dir_size = arg;
@@ -3426,7 +3435,6 @@ dir_size_bg(void *arg)
 
 	free(dir_size->path);
 	free(dir_size);
-	return NULL;
 }
 
 /* Calculates size of a directory possibly using cache of known sizes.  Returns
