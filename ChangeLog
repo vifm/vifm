@@ -10,6 +10,8 @@
 	Made "make clean" remove "tags" files for Vim documentation generated
 	during build.  Thanks to Hendrik Jaeger (a.k.a. henk).
 
+	Taught ga/gA commands to handle selection.  Thanks to geo909.
+
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
 

@@ -38,7 +38,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() strtol() */
 #include <string.h> /* memcmp() memset() strcpy() strdup() strerror() */
 
@@ -161,6 +161,7 @@ static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
+static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void * dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
@@ -3357,15 +3358,35 @@ check_if_dir_writable(DirRole dir_role, const char *path)
 }
 
 void
-calculate_size(FileView *view, int force)
+calculate_size(const FileView *view, int force)
+{
+	int i;
+
+	if(!view->dir_entry[view->list_pos].selected)
+	{
+		update_dir_entry_size(view, view->list_pos, force);
+		return;
+	}
+
+	for(i = 0; i < view->list_rows; i++)
+	{
+		const dir_entry_t *const entry = &view->dir_entry[i];
+
+		if(entry->selected && entry->type == DIRECTORY)
+		{
+			update_dir_entry_size(view, i, force);
+		}
+	}
+}
+
+/* Initiates background size calculation for view entry. */
+static void
+update_dir_entry_size(const FileView *view, int index, int force)
 {
 	char full_path[PATH_MAX];
+	const dir_entry_t *const entry = &view->dir_entry[index];
 
-	if(view->dir_entry[view->list_pos].type != DIRECTORY)
-		return;
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir,
-			view->dir_entry[view->list_pos].name);
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, entry->name);
 	start_dir_size_calc(full_path, force);
 }
 

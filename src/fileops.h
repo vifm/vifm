@@ -122,7 +122,7 @@ int make_files(FileView *view, char **names, int count);
 int restore_files(FileView *view);
 
 /* Initiates background calculation of directory sizes. */
-void calculate_size(FileView *view, int force);
+void calculate_size(const FileView *view, int force);
 
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
