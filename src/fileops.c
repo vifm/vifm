@@ -165,6 +165,7 @@ static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void * dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
+static void set_dir_size(const char path[], uint64_t size);
 
 void
 init_fileops(void)
@@ -2015,16 +2016,6 @@ clone_file(FileView* view, const char filename[], const char path[],
 	}
 }
 
-static void
-set_dir_size(const char *path, uint64_t size)
-{
-	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-	pthread_mutex_lock(&mutex);
-	tree_set_data(curr_stats.dirsize_cache, path, size);
-	pthread_mutex_unlock(&mutex);
-}
-
 /* Uses dentry to check file type and fallbacks to lstat() if dentry contains
  * unknown type. */
 static int
@@ -3473,6 +3464,17 @@ calc_dirsize(const char path[], int force_update)
 
 	set_dir_size(path, size);
 	return size;
+}
+
+/* Updates cached directory size in a thread-safe way. */
+static void
+set_dir_size(const char path[], uint64_t size)
+{
+	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+	pthread_mutex_lock(&mutex);
+	tree_set_data(curr_stats.dirsize_cache, path, size);
+	pthread_mutex_unlock(&mutex);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
