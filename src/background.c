@@ -51,6 +51,13 @@
 /* Size of error message reading buffer. */
 #define ERR_MSG_LEN 1025
 
+/* Value of job communication mean for internal jobs. */
+#ifndef _WIN32
+#define NO_JOB_ID (-1)
+#else
+#define NO_JOB_ID INVALID_HANDLE_VALUE
+#endif
+
 /* Structure with passed to background_task_bootstrap() so it can perform
  * correct initialization/cleanup. */
 typedef struct
@@ -63,6 +70,11 @@ background_task_args;
 
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
+#ifndef _WIN32
+static job_t * add_background_job(pid_t pid, const char cmd[], int fd);
+#else
+static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess);
+#endif
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
 static void make_current_job_key(void);
@@ -632,12 +644,14 @@ start_background_job(const char *cmd, int skip_errors)
 	return 0;
 }
 
+/* Creates structure that describes background job and registers it in the list
+ * of jobs. */
 #ifndef _WIN32
-job_t *
-add_background_job(pid_t pid, const char *cmd, int fd)
+static job_t *
+add_background_job(pid_t pid, const char cmd[], int fd)
 #else
-job_t *
-add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
+static job_t *
+add_background_job(pid_t pid, const char cmd[], HANDLE hprocess)
 #endif
 {
 	job_t *new;

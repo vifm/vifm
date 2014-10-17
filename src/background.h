@@ -90,14 +90,6 @@ void check_background_jobs(void);
 
 void inner_bg_next(void);
 
-#ifndef _WIN32
-#define NO_JOB_ID (-1)
-job_t * add_background_job(pid_t pid, const char *cmd, int fd);
-#else
-#define NO_JOB_ID INVALID_HANDLE_VALUE
-job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
-#endif
-
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
 int bg_execute(const char desc[], int total, bg_task_func task_func,
