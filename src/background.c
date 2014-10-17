@@ -700,7 +700,8 @@ inner_bg_next(void)
 }
 
 int
-bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
+bg_execute(const char desc[], int total, int important, bg_task_func task_func,
+		void *args)
 {
 	pthread_t id;
 
@@ -713,7 +714,7 @@ bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
 	task_args->func = task_func;
 	task_args->args = args;
 	task_args->job = add_background_job(WRONG_PID, desc, NO_JOB_ID,
-			BJT_OPERATION);
+			important ? BJT_OPERATION : BJT_TASK);
 
 	if(task_args->job == NULL)
 	{
@@ -783,7 +784,7 @@ int
 bg_has_active_jobs(void)
 {
 	const job_t *job;
-	int bg_count;
+	int bg_op_count;
 
 	if(bg_jobs_freeze() != 0)
 	{
@@ -792,18 +793,18 @@ bg_has_active_jobs(void)
 		return 1;
 	}
 
-	bg_count = 0;
+	bg_op_count = 0;
 	for(job = jobs; job != NULL; job = job->next)
 	{
-		if(job->running && job->type != BJT_COMMAND)
+		if(job->running && job->type == BJT_OPERATION)
 		{
-			++bg_count;
+			++bg_op_count;
 		}
 	}
 
 	bg_jobs_unfreeze();
 
-	return bg_count > 0;
+	return bg_op_count > 0;
 }
 
 int

@@ -37,6 +37,8 @@ typedef enum
 {
 	BJT_COMMAND,   /* Tracked external command started by Vifm. */
 	BJT_OPERATION, /* Important internal background operation, e.g. copying. */
+	BJT_TASK,      /* Unimportant internal background operations, e.g. calculation
+	                  of directory size. */
 }
 BgJobType;
 
@@ -97,8 +99,8 @@ void inner_bg_next(void);
 
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
-int bg_execute(const char desc[], int total, bg_task_func task_func,
-		void *args);
+int bg_execute(const char desc[], int total, int important,
+		bg_task_func task_func, void *args);
 
 /* Checks whether there are any internal jobs (not external applications tracked
  * by vifm) running in background. */

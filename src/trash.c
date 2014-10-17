@@ -239,7 +239,7 @@ empty_trash_dir(const char trash_dir[])
 
 	char *const trash_dir_copy = strdup(trash_dir);
 
-	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, &empty_trash_in_bg,
+	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
 			trash_dir_copy) != 0)
 	{
 		free(trash_dir_copy);
