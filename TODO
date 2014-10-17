@@ -20,7 +20,6 @@ Basic things that need to be done.
     Improve ga and gA commands to recalculate sizes of modified directories
         only, and maybe update size of all parent cached directories. And maybe
         show somehow in the TUI calculation process.
-    Make ga and gA work in visual mode.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.

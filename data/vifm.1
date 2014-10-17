@@ -1,4 +1,4 @@
-.TH vifm 1 "October 06, 2014" "" "Vifm"
+.TH vifm 1 "October 16, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -438,10 +438,14 @@ creates a window showing detailed information about the current file.
 enters view mode (works only after activating view pane with :view command).
 .TP
 .BI ga
-calculate directory size.
+calculate directory size.  Uses cached directory sizes when possible for better
+performance.
 .TP
 .BI gA
-like ga, but force update.
+like ga, but force update.  Ignores old values of directory sizes.
+.LP
+If file under cursor is selected, each selected item is processed, otherwise
+only current file is updated.
 .TP
 .BI gf
 find link destination (like l with 'followlinks' off, but also finds

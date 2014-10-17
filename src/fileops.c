@@ -38,9 +38,9 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() strtol() */
-#include <string.h> /* memcmp() memset() strcpy() strerror() */
+#include <string.h> /* memcmp() memset() strcpy() strdup() strerror() */
 
 #include "cfg/config.h"
 #include "io/ioeta.h"
@@ -105,6 +105,14 @@ typedef struct
 }
 bg_args_t;
 
+/* Arguments pack for dir_size_bg() background function. */
+typedef struct
+{
+	char *path; /* Full path to directory to process, will be freed. */
+	int force;  /* Whether cached values should be ignored. */
+}
+dir_size_args_t;
+
 static void io_progress_changed(const io_progress_t *const progress);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
@@ -153,6 +161,11 @@ static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static const char * get_cancellation_suffix(void);
+static void update_dir_entry_size(const FileView *view, int index, int force);
+static void start_dir_size_calc(const char path[], int force);
+static void * dir_size_bg(void *arg);
+static uint64_t calc_dirsize(const char path[], int force_update);
+static void set_dir_size(const char path[], uint64_t size);
 
 void
 init_fileops(void)
@@ -2003,62 +2016,6 @@ clone_file(FileView* view, const char filename[], const char path[],
 	}
 }
 
-static void
-set_dir_size(const char *path, uint64_t size)
-{
-	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-	pthread_mutex_lock(&mutex);
-	tree_set_data(curr_stats.dirsize_cache, path, size);
-	pthread_mutex_unlock(&mutex);
-}
-
-uint64_t
-calc_dirsize(const char *path, int force_update)
-{
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
-	uint64_t size;
-
-	dir = opendir(path);
-	if(dir == NULL)
-		return 0;
-
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
-
-	size = 0;
-	while((dentry = readdir(dir)) != NULL)
-	{
-		char buf[PATH_MAX];
-
-		if(is_builtin_dir(dentry->d_name))
-		{
-			continue;
-		}
-
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-		if(is_dir_entry(buf, dentry))
-		{
-			uint64_t dir_size = 0;
-			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
-					|| force_update)
-				dir_size = calc_dirsize(buf, force_update);
-			size += dir_size;
-		}
-		else
-		{
-			size += get_file_size(buf);
-		}
-	}
-
-	closedir(dir);
-
-	set_dir_size(path, size);
-	return size;
-}
-
 /* Uses dentry to check file type and fallbacks to lstat() if dentry contains
  * unknown type. */
 static int
@@ -3389,6 +3346,135 @@ check_if_dir_writable(DirRole dir_role, const char *path)
 	else
 		show_error_msg("Operation error", "Current directory is not writable");
 	return 0;
+}
+
+void
+calculate_size(const FileView *view, int force)
+{
+	int i;
+
+	if(!view->dir_entry[view->list_pos].selected)
+	{
+		update_dir_entry_size(view, view->list_pos, force);
+		return;
+	}
+
+	for(i = 0; i < view->list_rows; i++)
+	{
+		const dir_entry_t *const entry = &view->dir_entry[i];
+
+		if(entry->selected && entry->type == DIRECTORY)
+		{
+			update_dir_entry_size(view, i, force);
+		}
+	}
+}
+
+/* Initiates background size calculation for view entry. */
+static void
+update_dir_entry_size(const FileView *view, int index, int force)
+{
+	char full_path[PATH_MAX];
+	const dir_entry_t *const entry = &view->dir_entry[index];
+
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, entry->name);
+	start_dir_size_calc(full_path, force);
+}
+
+/* Initiates background directory size calculation. */
+static void
+start_dir_size_calc(const char path[], int force)
+{
+	pthread_t id;
+	dir_size_args_t *dir_size;
+
+	dir_size = malloc(sizeof(*dir_size));
+	dir_size->path = strdup(path);
+	dir_size->force = force;
+
+	pthread_create(&id, NULL, dir_size_bg, dir_size);
+}
+
+/* Entry point for a background task that calculates size of a directory. */
+static void *
+dir_size_bg(void *arg)
+{
+	dir_size_args_t *const dir_size = arg;
+
+	calc_dirsize(dir_size->path, dir_size->force);
+
+	remove_last_path_component(dir_size->path);
+	if(path_starts_with(lwin.curr_dir, dir_size->path))
+	{
+		ui_view_schedule_redraw(&lwin);
+	}
+	if(path_starts_with(rwin.curr_dir, dir_size->path))
+	{
+		ui_view_schedule_redraw(&rwin);
+	}
+
+	free(dir_size->path);
+	free(dir_size);
+	return NULL;
+}
+
+/* Calculates size of a directory possibly using cache of known sizes.  Returns
+ * size of a directory or zero on error. */
+static uint64_t
+calc_dirsize(const char path[], int force_update)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+	uint64_t size;
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return 0;
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	size = 0;
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(is_builtin_dir(dentry->d_name))
+		{
+			continue;
+		}
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+		if(is_dir_entry(buf, dentry))
+		{
+			uint64_t dir_size = 0;
+			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
+					|| force_update)
+				dir_size = calc_dirsize(buf, force_update);
+			size += dir_size;
+		}
+		else
+		{
+			size += get_file_size(buf);
+		}
+	}
+
+	closedir(dir);
+
+	set_dir_size(path, size);
+	return size;
+}
+
+/* Updates cached directory size in a thread-safe way. */
+static void
+set_dir_size(const char path[], uint64_t size)
+{
+	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+	pthread_mutex_lock(&mutex);
+	tree_set_data(curr_stats.dirsize_cache, path, size);
+	pthread_mutex_unlock(&mutex);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

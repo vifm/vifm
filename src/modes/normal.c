@@ -21,8 +21,6 @@
 
 #include <curses.h>
 
-#include <pthread.h>
-
 #include <sys/types.h> /* ssize_t */
 
 #include <assert.h> /* assert() */
@@ -63,12 +61,6 @@
 #include "modes.h"
 #include "view.h"
 #include "visual.h"
-
-typedef struct
-{
-	char *path;
-	int force;
-}dir_size_t;
 
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
@@ -158,8 +150,6 @@ static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ga(key_info_t key_info, keys_info_t *keys_info);
-static void start_dir_size_calc(const char *path, int force);
-static void * dir_size_stub(void *arg);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gh(key_info_t key_info, keys_info_t *keys_info);
@@ -1031,64 +1021,18 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	pick_or_move(keys_info, new_pos);
 }
 
+/* Calculate size of selected directories ignoring cached sizes. */
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	char full_path[PATH_MAX];
-
-	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
-		return;
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	start_dir_size_calc(full_path, 1);
+	calculate_size(curr_view, 1);
 }
 
+/* Calculate size of selected directories taking cached sizes into account. */
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	char full_path[PATH_MAX];
-
-	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
-		return;
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	start_dir_size_calc(full_path, 0);
-}
-
-static void
-start_dir_size_calc(const char *path, int force)
-{
-	pthread_t id;
-	dir_size_t *dir_size;
-
-	dir_size = malloc(sizeof(*dir_size));
-	dir_size->path = strdup(path);
-	dir_size->force = force;
-
-	pthread_create(&id, NULL, dir_size_stub, dir_size);
-}
-
-static void *
-dir_size_stub(void *arg)
-{
-	dir_size_t *dir_size = (dir_size_t *)arg;
-	calc_dirsize(dir_size->path, dir_size->force);
-
-	remove_last_path_component(dir_size->path);
-	if(path_starts_with(lwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&lwin);
-	}
-	if(path_starts_with(rwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&rwin);
-	}
-
-	free(dir_size->path);
-	free(dir_size);
-	return NULL;
+	calculate_size(curr_view, 0);
 }
 
 static void

@@ -1,5 +1,7 @@
 0.7.8-beta to current
 
+	Added ga and gA keys to visual mode.  Thanks to geo909.
+
 	Highlight "highlight clear".
 
 	Returned accidentally lost "Merge all" (from message only) conflict
@@ -7,6 +9,8 @@
 
 	Made "make clean" remove "tags" files for Vim documentation generated
 	during build.  Thanks to Hendrik Jaeger (a.k.a. henk).
+
+	Taught ga/gA commands to handle selection.  Thanks to geo909.
 
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
