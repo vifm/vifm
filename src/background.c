@@ -651,43 +651,6 @@ start_background_job(const char *cmd, int skip_errors)
 	return 0;
 }
 
-/* Creates structure that describes background job and registers it in the list
- * of jobs. */
-#ifndef _WIN32
-static job_t *
-add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
-#else
-static job_t *
-add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
-#endif
-{
-	job_t *new;
-
-	if((new = malloc(sizeof(job_t))) == 0)
-	{
-		show_error_msg("Memory error", "Unable to allocate enough memory");
-		return NULL;
-	}
-	new->type = type;
-	new->pid = pid;
-	new->cmd = strdup(cmd);
-	new->next = jobs;
-#ifndef _WIN32
-	new->fd = fd;
-#else
-	new->hprocess = hprocess;
-#endif
-	new->skip_errors = 0;
-	new->running = 1;
-	new->error = NULL;
-
-	new->total = 0;
-	new->done = 0;
-
-	jobs = new;
-	return new;
-}
-
 void
 inner_bg_next(void)
 {
@@ -731,6 +694,43 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 	}
 
 	return 0;
+}
+
+/* Creates structure that describes background job and registers it in the list
+ * of jobs. */
+#ifndef _WIN32
+static job_t *
+add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
+#else
+static job_t *
+add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
+#endif
+{
+	job_t *new;
+
+	if((new = malloc(sizeof(job_t))) == 0)
+	{
+		show_error_msg("Memory error", "Unable to allocate enough memory");
+		return NULL;
+	}
+	new->type = type;
+	new->pid = pid;
+	new->cmd = strdup(cmd);
+	new->next = jobs;
+#ifndef _WIN32
+	new->fd = fd;
+#else
+	new->hprocess = hprocess;
+#endif
+	new->skip_errors = 0;
+	new->running = 1;
+	new->error = NULL;
+
+	new->total = 0;
+	new->done = 0;
+
+	jobs = new;
+	return new;
 }
 
 /* Pthreads entry point for a new background task.  Performs correct
