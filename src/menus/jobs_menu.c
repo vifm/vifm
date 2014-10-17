@@ -54,7 +54,12 @@ show_jobs_menu(FileView *view)
 		if(p->running)
 		{
 			char item_buf[strlen(p->cmd) + 24];
-			if(p->pid == BG_INTERNAL_TASK_PID)
+			if(p->type == BJT_COMMAND)
+			{
+				snprintf(item_buf, sizeof(item_buf), " " PRINTF_PID_T " %s ", p->pid,
+						p->cmd);
+			}
+			else
 			{
 				if(p->total == BG_UNDEFINED_TOTAL)
 				{
@@ -65,11 +70,6 @@ show_jobs_menu(FileView *view)
 					snprintf(item_buf, sizeof(item_buf), " %d/%d %s ", p->done + 1,
 							p->total, p->cmd);
 				}
-			}
-			else
-			{
-				snprintf(item_buf, sizeof(item_buf), " " PRINTF_PID_T " %s ", p->pid,
-						p->cmd);
 			}
 			i = add_to_string_array(&m.items, i, 1, item_buf);
 		}

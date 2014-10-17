@@ -48,6 +48,10 @@
 #include "commands_completion.h"
 #include "ui.h"
 
+/* Special value of process id for internal tasks running in background
+ * threads. */
+#define WRONG_PID ((pid_t)-1)
+
 /* Size of error message reading buffer. */
 #define ERR_MSG_LEN 1025
 
@@ -71,9 +75,11 @@ background_task_args;
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
 #ifndef _WIN32
-static job_t * add_background_job(pid_t pid, const char cmd[], int fd);
+static job_t * add_background_job(pid_t pid, const char cmd[], int fd,
+		BgJobType type);
 #else
-static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess);
+static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
+		BgJobType type);
 #endif
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
@@ -597,7 +603,7 @@ start_background_job(const char *cmd, int skip_errors)
 	{
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		job = add_background_job(pid, command, error_pipe[0]);
+		job = add_background_job(pid, command, error_pipe[0], BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(command);
@@ -623,7 +629,8 @@ start_background_job(const char *cmd, int skip_errors)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess);
+		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess,
+				BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(command);
@@ -648,10 +655,10 @@ start_background_job(const char *cmd, int skip_errors)
  * of jobs. */
 #ifndef _WIN32
 static job_t *
-add_background_job(pid_t pid, const char cmd[], int fd)
+add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
 #else
 static job_t *
-add_background_job(pid_t pid, const char cmd[], HANDLE hprocess)
+add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 #endif
 {
 	job_t *new;
@@ -661,6 +668,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess)
 		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;
 	}
+	new->type = type;
 	new->pid = pid;
 	new->cmd = strdup(cmd);
 	new->next = jobs;
@@ -704,7 +712,8 @@ bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
 
 	task_args->func = task_func;
 	task_args->args = args;
-	task_args->job = add_background_job(BG_INTERNAL_TASK_PID, desc, NO_JOB_ID);
+	task_args->job = add_background_job(WRONG_PID, desc, NO_JOB_ID,
+			BJT_OPERATION);
 
 	if(task_args->job == NULL)
 	{
@@ -786,7 +795,7 @@ bg_has_active_jobs(void)
 	bg_count = 0;
 	for(job = jobs; job != NULL; job = job->next)
 	{
-		if(job->running && job->pid == BG_INTERNAL_TASK_PID)
+		if(job->running && job->type != BJT_COMMAND)
 		{
 			++bg_count;
 		}

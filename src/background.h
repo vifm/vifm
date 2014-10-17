@@ -28,16 +28,21 @@
 
 #include <stdio.h>
 
-/* Special value of process id for internal tasks running in background
- * threads. */
-#define BG_INTERNAL_TASK_PID ((pid_t)-1)
-
 /* Special value of total amount of work in job_t structure to indicate
  * undefined total number of countable operations. */
 #define BG_UNDEFINED_TOTAL (-1)
 
+/* Type of background job. */
+typedef enum
+{
+	BJT_COMMAND,   /* Tracked external command started by Vifm. */
+	BJT_OPERATION, /* Important internal background operation, e.g. copying. */
+}
+BgJobType;
+
 typedef struct job_t
 {
+	BgJobType type; /* Type of background job. */
 	pid_t pid;
 	char *cmd;
 	int skip_errors;
@@ -45,7 +50,7 @@ typedef struct job_t
 	int exit_code;
 	char *error;
 
-	/* for backgrounded commands */
+	/* For background operations and tasks. */
 	int total;
 	int done;
 
