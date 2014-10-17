@@ -3663,6 +3663,10 @@ ensure_file_is_selected(FileView *view, const char name[])
 		if(file_pos < 0)
 		{
 			remove_filename_filter(view);
+
+			/* remove_filename_filter() postpones list of files reloading. */
+			(void)populate_dir_list_internal(view, 1);
+
 			file_pos = find_file_pos_in_list(view, name);
 		}
 	}

@@ -575,8 +575,7 @@ navigate_to_selected_file(FileView *view, const char path[])
 
 	if(change_directory(view, dir) >= 0)
 	{
-		status_bar_message("Finding the correct directory...");
-		wrefresh(status_bar);
+		ui_sb_quick_msgf("%s", "Finding the correct directory...");
 
 		load_dir_list(view, 0);
 
