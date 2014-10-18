@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+#
+# helpztags generates tags for Vim helpfiles, for both .txt and .txt.gz files
+# Author: Jakub Turski <yacoob@chruptak.plukwa.net>
+#         Artur R. Czechowski <arturcz@hell.pl>
+# Version: 0.4
+#
+# xaizek: disallow bar symbol (|) in tags as Vim does
+
+# Please use following command for generate a manual file:
+# pod2man -c "User Commands" -s 1 -q none -r "vim 6.2" -d "September 2003" helpztags helpztags.1
+
+=head1 NAME
+
+helpztags - generate the help tags file for directory
+
+=head1 SYNOPSIS
+
+helpztags F<DIRS>...
+
+=head1 DESCRIPTION
+
+F<helpztags> scans given directories for F<*.txt> and F<*.txt.gz> files.
+Each file is scanned for tags used in F<vim> help files. For each directory
+proper F<tags> file is generated.
+
+There should be at least one directory given. In other case program exits
+with error.
+
+=head1 AUTHORS
+
+Written by Jakub Turski and Artur R. Czechowski based on idea
+contained in C<vim> sources for its C<:helptags command>.
+
+=head1 REPORTING BUGS
+
+Please use a Debian C<reportbug> command or procedure described at
+C<http://bugs.debian.org/>.
+
+=head1 SEE ALSO
+
+Read C<:help helptags> in F<vim> for detailed information about helptags.
+
+=cut
+
+use File::Glob ':globally';
+use POSIX qw(getcwd);
+
+($#ARGV==-1)&& die "Error: no directories given. Check manpage for details.\n";
+
+$startdir=getcwd();
+
+foreach $dir (@ARGV) {
+  chdir $dir || die "Error: $dir: no such directory\n";
+  print "Processing ".$dir."\n";
+  open(TAGSFILE,">tags") || die "Error: Cannot open $dir/tags for writing.\n";
+  foreach $file (<*.{gz,txt}>) {
+    do { open(GZ, "zcat $file|") if ($file =~ /\.gz$/) } or open(GZ,$file);
+    while (<GZ>) {
+        # From vim61/src/ex_cmds.c, lines 5034-5036
+        #
+        # Only accept a *tag* when it consists of valid
+        # characters, there is no '-' before it and is followed
+        # by a white character or end-of-line.
+      while (/(?<!-)\*([^*|\s]+?)\*\s+?/g) {
+        $tags{$+}=$file;
+      }
+    }
+    close(GZ);
+  }
+  map { print TAGSFILE "$_\t$tags{$_}\t/*"; s'\\'\\\\'g; s'/'\/'g; print TAGSFILE "$_*\n" } sort keys %tags;
+  close TAGSFILE;
+  chdir $startdir;
+}

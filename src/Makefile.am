@@ -218,16 +218,22 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
-	@if [ -f /dev/tty -a "x$$(whereis vim)" != "x" ]; then \
+	@if [ -f /usr/bin/perl ]; then \
+		./helpztags "$(dir $@)"; \
+	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
 		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+	else \
+		touch $@; \
 	fi
-	touch $@
 
 ../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
-	@if [ -f /dev/tty -a "x$$(whereis vim)" != "x" ]; then \
+	@if [ -f /usr/bin/perl ]; then \
+		./helpztags "$(dir $@)"; \
+	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
 		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+	else \
+		touch $@; \
 	fi
-	touch $@
 
 tags.c: ../data/vim/doc/app/tags
 	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
