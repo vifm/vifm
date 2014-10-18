@@ -1571,11 +1571,15 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
-	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
+	@if [ -f /dev/tty -a "x$$(whereis vim)" != "x" ]; then \
+		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+	fi
 	touch $@
 
 ../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
-	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
+	@if [ -f /dev/tty -a "x$$(whereis vim)" != "x" ]; then \
+		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+	fi
 	touch $@
 
 tags.c: ../data/vim/doc/app/tags
