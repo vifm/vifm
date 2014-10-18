@@ -14,6 +14,9 @@
 
 	More accurate scheduling of view updates.
 
+	Updated how tags are generated on build.  Thanks to Hendrik
+	Jaeger (a.k.a. henk).
+
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
 
