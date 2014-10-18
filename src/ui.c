@@ -27,16 +27,18 @@
 #include <sys/ioctl.h>
 #include <termios.h> /* struct winsize */
 #endif
+#include <sys/time.h> /* gettimeofday() */
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdarg.h> /* va_list va_start() va_end() */
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* NULL wchar_t */
+#include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcmp() strcpy() strlen() */
-#include <time.h>
+#include <time.h> /* time() */
 #include <wchar.h> /* wcslen() */
 
 #include "cfg/config.h"
@@ -97,6 +99,7 @@ static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void switch_panes_content(void);
+static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
 
@@ -2033,54 +2036,67 @@ ui_sb_quick_msgf(const char format[], ...)
 void
 ui_view_schedule_redraw(FileView *view)
 {
-	++view->postponed_redraw;
+	view->postponed_redraw = get_updated_time(view->postponed_redraw);
 }
 
 void
 ui_view_schedule_reload(FileView *view)
 {
-	if(view->postponed_reload >= 0)
-	{
-		++view->postponed_reload;
-	}
+	view->postponed_reload = get_updated_time(view->postponed_reload);
 }
 
 void
 ui_view_schedule_full_reload(FileView *view)
 {
-	view->postponed_reload = -abs(view->postponed_reload) - 1;
+	view->postponed_full_reload = get_updated_time(view->postponed_full_reload);
 }
 
-int
-ui_view_is_redraw_scheduled(const FileView *view)
+/* Gets updated timestamp ensuring that it differs from the previous value.
+ * Returns the timestamp. */
+static uint64_t
+get_updated_time(uint64_t prev)
 {
-	return view->postponed_redraw != 0;
+	struct timeval tv = {0};
+	uint64_t new;
+
+	(void)gettimeofday(&tv, NULL);
+
+	new = tv.tv_sec*1000000ULL + tv.tv_usec;
+	if(new == prev)
+	{
+		++new;
+	}
+
+	return new;
 }
 
-int
-ui_view_is_reload_scheduled(const FileView *view)
+UiUpdateEvent
+ui_view_query_scheduled_event(FileView *view)
 {
-	return view->postponed_reload != 0;
-}
+	UiUpdateEvent event;
 
-int
-ui_view_is_full_reload_scheduled(const FileView *view)
-{
-	return view->postponed_reload < 0;
-}
+	if(view->postponed_full_reload != view->last_reload)
+	{
+		event = UUE_FULL_RELOAD;
+	}
+	else if(view->postponed_reload != view->last_reload)
+	{
+		event = UUE_RELOAD;
+	}
+	else if(view->postponed_redraw != view->last_redraw)
+	{
+		event = UUE_REDRAW;
+	}
+	else
+	{
+		event = UUE_NONE;
+	}
 
-void
-ui_view_redrawn(FileView *view)
-{
-	view->postponed_redraw = 0;
-}
+	view->last_redraw = view->postponed_redraw;
+	view->last_reload = view->postponed_reload;
+	view->postponed_full_reload = view->postponed_reload;
 
-void
-ui_view_reloaded(FileView *view)
-{
-	ui_view_redrawn(view);
-
-	view->postponed_reload = 0;
+	return event;
 }
 
 void

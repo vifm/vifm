@@ -1015,7 +1015,6 @@ draw_dir_list_only(FileView *view)
 	}
 
 	ui_view_win_changed(view);
-	ui_view_redrawn(view);
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -2787,8 +2786,6 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 	{
 		draw_dir_list(view);
 	}
-
-	ui_view_reloaded(view);
 
 	if(view == curr_view)
 	{
