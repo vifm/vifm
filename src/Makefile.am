@@ -221,7 +221,7 @@ update_compile_info:
 	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
 		./helpztags "$(dir $@)"; \
 	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
-		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+		vim -e -s -c 'helptags $(dir $@)|q'; \
 	else \
 		touch $@; \
 	fi
@@ -230,7 +230,7 @@ update_compile_info:
 	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
 		./helpztags "$(dir $@)"; \
 	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
-		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
+		vim -e -s -c 'helptags $(dir $@)|q'; \
 	else \
 		touch $@; \
 	fi

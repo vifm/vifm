@@ -80,3 +80,6 @@ Patches for Vim plugin by Jonathan Da Silva.
 
 More human-friendly (xterm-like) names for 256 colors by Michael
 Vetter (a.k.a. jubalh).
+
+Some build system fixes/updates/best practices by Hendrik Jaeger (a.k.a.
+henk).
