@@ -218,7 +218,7 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
-	@if [ -f /usr/bin/perl ]; then \
+	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
 		./helpztags "$(dir $@)"; \
 	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
 		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
@@ -227,7 +227,7 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
-	@if [ -f /usr/bin/perl ]; then \
+	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
 		./helpztags "$(dir $@)"; \
 	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
 		vim -c 'helptags $(dir $@)|q' < /dev/tty; \
