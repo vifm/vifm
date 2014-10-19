@@ -209,8 +209,8 @@ update_compile_info:
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1
-	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
-		if [ "x$$(whereis col)" != "x" ]; then \
+	@if [ "x$$(which groff)" != "x" -a "x$$(which sed)" != "x" ]; then \
+		if [ "x$$(which col)" != "x" ]; then \
 			groff -Tutf8 -man ../data/vifm.1 | col -b | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 		else \
 			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
@@ -236,7 +236,7 @@ update_compile_info:
 	fi
 
 tags.c: ../data/vim/doc/app/tags
-	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+	@if [ -s "$<" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
 		cat "$<" | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
