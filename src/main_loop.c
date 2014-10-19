@@ -304,19 +304,29 @@ process_scheduled_updates(void)
 static void
 process_scheduled_updates_of_view(FileView *view)
 {
-	if(window_shows_dirlist(view))
+	if(!window_shows_dirlist(view))
 	{
-		/* Order of calls matters as reloading resets redraw request. */
+		return;
+	}
 
-		if(ui_view_is_reload_scheduled(view))
-		{
-			load_saving_pos(view, !ui_view_is_full_reload_scheduled(view));
-		}
-
-		if(ui_view_is_redraw_scheduled(view))
-		{
+	switch(ui_view_query_scheduled_event(view))
+	{
+		case UUE_NONE:
+			/* Nothing to do. */
+			break;
+		case UUE_REDRAW:
 			redraw_view_imm(view);
-		}
+			break;
+		case UUE_RELOAD:
+			load_saving_pos(view, 1);
+			break;
+		case UUE_FULL_RELOAD:
+			load_saving_pos(view, 0);
+			break;
+
+		default:
+			assert(0 && "Unexpected type of scheduled UI event.");
+			break;
 	}
 }
 
