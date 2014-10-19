@@ -127,7 +127,7 @@ update_compile_info:
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
 	@if [ "x$$(which vim)" != "x" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
-		vim -T pcterm -u NONE -c 'helptags $(dir $<)|q'; \
+		vim -e -s -c 'helptags $(dir $<)|q'; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \

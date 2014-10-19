@@ -216,7 +216,7 @@ Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
 Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
 Ctrl-W < - increase size of the view by count. *vifm-CTRL-W_<*
 Ctrl-W > - decrease size of the view by count. *vifm-CTRL-W_>*
-Ctrl-W | - maximize current view.              *vifm-CTRL-W_|*
+Ctrl-W | - maximize current view.              *vifm-CTRL-W_bar*
 Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
 
@@ -802,7 +802,7 @@ Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
 Ctrl-W - - decrease size of the view.          *vifm-q_CTRL-W_-*
 Ctrl-W < - increase size of the view.          *vifm-q_CTRL-W_<*
 Ctrl-W > - decrease size of the view.          *vifm-q_CTRL-W_>*
-Ctrl-W | - maximize current view.              *vifm-q_CTRL-W_|*
+Ctrl-W | - maximize current view.              *vifm-q_CTRL-W_bar*
 Ctrl-W _ - maximize current view.              *vifm-q_CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-q_CTRL-W_=*
 

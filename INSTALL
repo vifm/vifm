@@ -3,14 +3,15 @@ Installation
 
 On *nix you need:
 
-    A working version of ncursesw build as a shared library (*.so files,
+    A working version of ncursesw built as a shared library (*.so files,
     enabled by the --with-shared switch of ncurses' configure script) and
     an ascii compliant terminal.
 
-    Vifm will currently not work with Solaris curses or with PDcurses.
-
     Hint for building on Debian-based systems: ncurses package you need to
     build vifm is called libncursesw5-dev.
+
+    For best user-experience with Vim plugins availability of either perl
+    interpreter or vim executable is needed to automatically generate tags.
 
 *nix Installation:
 
@@ -174,6 +175,7 @@ Vim Specific Options:
 
         " vim: set filetype=vifm :
 
-    To use the vifm.vim plugin install vim/plugin/vifm.vim script to Vim in the
-    same way as described above.  The script allows you to use Vifm from Vim to
-    select files.  Note: you need at least Vim 7.3 to use it.
+    To use vifm.vim plugin install vim/plugin/vifm.vim script to Vim in the same
+    way as described above.  The script allows you to use Vifm from Vim to
+    select files and open them in different ways (e.g. in splits, tabs).
+    Note: you need at least Vim 7.3 to use it.

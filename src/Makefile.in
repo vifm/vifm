@@ -1562,8 +1562,8 @@ update_compile_info:
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1
-	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
-		if [ "x$$(whereis col)" != "x" ]; then \
+	@if [ "x$$(which groff)" != "x" -a "x$$(which sed)" != "x" ]; then \
+		if [ "x$$(which col)" != "x" ]; then \
 			groff -Tutf8 -man ../data/vifm.1 | col -b | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 		else \
 			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
@@ -1571,17 +1571,26 @@ update_compile_info:
 	fi
 
 ../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
-	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
-	touch $@
+	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
+		./helpztags "$(dir $@)"; \
+	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
+		vim -e -s -c 'helptags $(dir $@)|q'; \
+	else \
+		touch $@; \
+	fi
 
 ../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
-	-vim -c 'helptags $(dir $@)|q' > /dev/null 2>&1 < /dev/tty
-	touch $@
+	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
+		./helpztags "$(dir $@)"; \
+	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
+		vim -e -s -c 'helptags $(dir $@)|q'; \
+	else \
+		touch $@; \
+	fi
 
 tags.c: ../data/vim/doc/app/tags
-	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
-		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
-		cat $(dir $<)/tags | awk ' \
+	@if [ -s "$<" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
+		cat "$<" | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
 			} \
