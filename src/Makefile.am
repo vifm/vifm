@@ -237,7 +237,7 @@ update_compile_info:
 
 tags.c: ../data/vim/doc/app/tags
 	@if [ -s "$<" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
-		cat $(dir $<)/tags | awk ' \
+		cat "$<" | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
 			} \
