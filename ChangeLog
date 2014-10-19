@@ -2,6 +2,9 @@
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
 
+	Added "[S]kip all" conflict resolution option.  Thanks to Miodrag
+	Tokić (a.k.a.  loonies).
+
 	Highlight "highlight clear".
 
 	Returned accidentally lost "Merge all" (from message only) conflict

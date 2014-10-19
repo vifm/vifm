@@ -80,6 +80,7 @@ static struct
 	int force_move;
 	int x, y;
 	char *name;
+	int skip_all;      /* Skip all conflicting files/directories. */
 	int overwrite_all;
 	int append;        /* Whether we're appending ending of a file or not. */
 	int allow_merge;
@@ -1546,6 +1547,10 @@ put_next(const char dest_name[], int force)
 				remove_last_path_component(dst_buf);
 			}
 		}
+		else if(put_confirm.skip_all)
+		{
+			return 0;
+		}
 		else
 		{
 			struct stat dst_st;
@@ -1699,8 +1704,13 @@ put_decide_cb(const char choice[])
 	{
 		prompt_dest_name(put_confirm.name);
 	}
-	else if(strcmp(choice, "s") == 0)
+	else if(strcmp(choice, "s") == 0 || strcmp(choice, "S") == 0)
 	{
+		if(strcmp(choice, "S") == 0)
+		{
+			put_confirm.skip_all = 1;
+		}
+
 		put_confirm.x++;
 		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 	}
@@ -1754,7 +1764,8 @@ prompt_what_to_do(const char src_name[])
 
 	(void)replace_string(&put_confirm.name, src_name);
 	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip%" WPRINTF_MBSTR "/[o]verwrite/[O]verwrite all"
+			L". [r]ename/[s]kip/[S]kip all%" WPRINTF_MBSTR
+			"/[o]verwrite/[O]verwrite all"
 			"%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
 			src_name,
 			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
