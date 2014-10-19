@@ -7,10 +7,11 @@ On *nix you need:
     enabled by the --with-shared switch of ncurses' configure script) and
     an ascii compliant terminal.
 
-    Vifm will currently not work with Solaris curses or with PDcurses.
-
     Hint for building on Debian-based systems: ncurses package you need to
     build vifm is called libncursesw5-dev.
+
+    For best user-experience with Vim plugins availability of either perl
+    interpreter or vim executable is needed to automatically generate tags.
 
 *nix Installation:
 
