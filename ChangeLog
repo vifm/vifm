@@ -26,6 +26,8 @@
 	Fixed navigation to filtered-out files (e.g. from menus).  Cursor wasn't
 	moved to the file.
 
+	Fixed parsing of ":cmd &|cmd" pattern on the command-line.
+
 0.7.7 to 0.7.8-beta
 
 	Removed ltmain.sh script, which is part of libtool, which is not used
