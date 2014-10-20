@@ -4,6 +4,7 @@
 
 #include "seatest.h"
 
+#include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
 #include "../../src/commands.h"
 #include "../../src/status.h"

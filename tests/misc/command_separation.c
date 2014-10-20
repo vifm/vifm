@@ -76,6 +76,17 @@ test_custom_separator(void)
 	assert_int_equal(0, line_pos(buf, buf + 14, '/', 1));
 }
 
+static void
+test_space_amp_before_bar(void)
+{
+	const char buf[] = "apropos &|locate";
+
+	assert_int_equal(0, line_pos(buf, buf, ' ', 0));
+	assert_int_equal(0, line_pos(buf, buf + 7, ' ', 0));
+	assert_int_equal(0, line_pos(buf, buf + 8, ' ', 0));
+	assert_int_equal(0, line_pos(buf, buf + 9, ' ', 0));
+}
+
 void
 test_command_separation(void)
 {
@@ -86,6 +97,7 @@ test_command_separation(void)
 	run_test(test_set_command);
 	run_test(test_skip);
 	run_test(test_custom_separator);
+	run_test(test_space_amp_before_bar);
 
 	test_fixture_end();
 }

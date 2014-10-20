@@ -1077,6 +1077,8 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 					state = D_QUOTING;
 				else if(sep == ' ' && *begin == '/' && rquoting)
 					state = R_QUOTING;
+				else if(*begin == '&' && begin == end - 1)
+					state = BEGIN;
 				else if(*begin != sep)
 					state = NO_QUOTING;
 				break;
