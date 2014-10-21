@@ -26,9 +26,9 @@ set trash
 
 set history=100
 
-" Follow links on l or Enter.
+" Automatically resolve symbolic links on l or Enter.
 
-set followlinks
+set nofollowlinks
 
 " With this option turned on you can run partially entered commands with
 " unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
