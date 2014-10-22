@@ -188,7 +188,12 @@ typedef struct
 	char ** selected_filelist;
 	int nsaved_selection;
 	char ** saved_selection;
+
+	/* Whether files are selected by user or via range on the command-line.  Say
+	 * some commands (e.g. ga/gA) implement "smart selection", but it shouldn't
+	 * be applied for selected produced by a range. */
 	int user_selection;
+
 	int explore_mode; /* shows whether this view is used for file exploring */
 
 	/* Filter which is controlled by user. */

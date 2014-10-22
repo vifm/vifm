@@ -3364,7 +3364,7 @@ calculate_size(const FileView *view, int force)
 {
 	int i;
 
-	if(!view->dir_entry[view->list_pos].selected)
+	if(!view->dir_entry[view->list_pos].selected && view->user_selection)
 	{
 		update_dir_entry_size(view, view->list_pos, force);
 		return;
