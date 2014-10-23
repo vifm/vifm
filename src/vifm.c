@@ -548,11 +548,12 @@ load_scheme(void)
 {
 	if(are_old_color_schemes())
 	{
-		if(run_converter(2) != 0)
+		const int err = run_converter(2);
+		if(err != 0)
 		{
 			endwin();
 			fputs("Problems with running vifmrc-converter\n", stderr);
-			exit(0);
+			exit(err);
 		}
 	}
 	if(color_scheme_exists(curr_stats.color_scheme))
@@ -569,6 +570,7 @@ static void
 convert_configs(void)
 {
 	int vifm_like_mode;
+	int err;
 
 	if(!query_user_menu("Configuration update", "Your vifmrc will be "
 			"upgraded to a new format.  Your current configuration will be copied "
@@ -589,11 +591,12 @@ convert_configs(void)
 			"configuration file as it is done in vi/vim.  Do you want vifm to "
 			"behave like vi/vim?");
 
-	if(run_converter(vifm_like_mode) != 0)
+	err = run_converter(vifm_like_mode);
+	if(err != 0)
 	{
 		endwin();
 		fputs("Problems with running vifmrc-converter\n", stderr);
-		exit(0);
+		exit(err);
 	}
 
 	show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
