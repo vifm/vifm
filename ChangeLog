@@ -28,6 +28,9 @@
 
 	Fixed parsing of ":cmd &|cmd" pattern on the command-line.
 
+	Fixed error handling regarding vifmrc-converter.  Thanks to Hendrik
+	Jaeger (a.k.a. henk).
+
 0.7.7 to 0.7.8-beta
 
 	Removed ltmain.sh script, which is part of libtool, which is not used

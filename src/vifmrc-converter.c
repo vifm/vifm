@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
-#include <errno.h> /* ENOENT */
+#include <errno.h> /* ENOENT errno */
 #include <locale.h> /* setlocale() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
@@ -582,7 +582,7 @@ main(int argc, char **argv)
 
 	(void)unlink(config_file_bak);
 	err = rename(config_file, config_file_bak);
-	if(err != 0 && err != ENOENT)
+	if(err != 0 && errno != ENOENT)
 	{
 		fprintf(stderr, "Can't move vifmrc file to make a backup copy "
 				"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
@@ -591,7 +591,7 @@ main(int argc, char **argv)
 
 	(void)unlink(vifminfo_file_bak);
 	err = rename(vifminfo_file, vifminfo_file_bak);
-	if(err != 0 && err != ENOENT)
+	if(err != 0 && errno != ENOENT)
 	{
 		fprintf(stderr, "Can't move vifminfo file to make a backup copy "
 				"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
