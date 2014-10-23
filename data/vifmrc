@@ -5,6 +5,8 @@
 " Blank lines are ignored.
 " The basic format for each item is shown with an example.
 
+" ------------------------------------------------------------------------------
+
 " This is the actual command used to start vi.  The default is vim.
 " If you would like to use another vi clone such Elvis or Vile
 " you will need to change this setting.
@@ -102,10 +104,14 @@ set slowfs=curlftpfs
 
 set statusline="  %t%= %A %10u:%-7g %15s %20d  "
 
+" ------------------------------------------------------------------------------
+
 " :mark mark /full/directory/path [filename]
 
 mark b ~/bin/
 mark h ~/
+
+" ------------------------------------------------------------------------------
 
 " :com[mand][!] command_name action
 " The following macros can be used in a command
@@ -127,6 +133,8 @@ command! make !!make %a
 command! mkcd :mkdir %a | cd %a
 command! vgrep vim "+grep %a"
 command! reload :write | restart
+
+" ------------------------------------------------------------------------------
 
 " The file type is for the default programs to be used with
 " a file extension.
@@ -268,12 +276,16 @@ fileview .*/,*/ tree %f
 " For Windows:
 " filetype * start, explorer
 
+" ------------------------------------------------------------------------------
+
 " What should be saved automatically between vifm runs
 " Like in previous versions of vifm
 " set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs
 " Like in vi
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
     \phistory,fhistory,dirstack,registers,bookmarks
+
+" ------------------------------------------------------------------------------
 
 " Sample mappings
 
