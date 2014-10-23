@@ -287,6 +287,18 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 
 " ------------------------------------------------------------------------------
 
+" Examples of configuring both panels
+
+" Customize view columns a bit (enable ellipsis for truncated file names)
+"
+" windo set viewcolumns=-{name}..,6{}.
+
+" Filter-out build and temporary files
+"
+" windo filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
+
+" ------------------------------------------------------------------------------
+
 " Sample mappings
 
 " Start shell in current directory
