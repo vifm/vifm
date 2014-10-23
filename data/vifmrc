@@ -322,7 +322,7 @@ nnoremap A cw<c-w>
 nnoremap ,t :!xterm &<cr>
 
 " Open vim to edit vifmrc and apply settings after returning to vifm
-nnoremap ,c :execute ':!vim $MYVIFMRC' | restart<cr>
+nnoremap ,c :write | execute ':!vim $MYVIFMRC' | restart<cr>
 " Open gvim to edit vifmrc
 nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
 
