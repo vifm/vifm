@@ -84,6 +84,8 @@ void check_color_scheme(col_scheme_t *cs);
 
 void assoc_dir(const char *name, const char *dir);
 
+/* Aborts if color schemes directory exists, otherwise creates one containing
+ * "Default" color scheme. */
 void write_color_scheme_file(void);
 
 /* Converts color specified by an integer to a string and writes result in a

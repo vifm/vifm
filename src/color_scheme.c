@@ -394,7 +394,6 @@ color_scheme_exists(const char name[])
 	return is_regular_file(full_path);
 }
 
-/* This function is called only when colorschemes file doesn't exist */
 void
 write_color_scheme_file(void)
 {
@@ -458,6 +457,12 @@ write_color_scheme_file(void)
 	for(y = 0; y < MAXNUM_COLOR - 2; y++)
 	{
 		char fg_buf[16], bg_buf[16];
+
+		if(y == OTHER_LINE_COLOR)
+		{
+			/* Skip OtherLine as there is no way to express defaults. */
+			continue;
+		}
 
 		color_to_str(cfg.cs.color[y].fg, sizeof(fg_buf), fg_buf);
 		color_to_str(cfg.cs.color[y].bg, sizeof(bg_buf), bg_buf);
