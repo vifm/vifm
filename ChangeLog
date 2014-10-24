@@ -20,6 +20,8 @@
 	Updated how tags are generated on build.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
+	Updated sample vifmrc file.
+
 	Fixed extension extraction for column view (wasn't consistent with
 	filename modifiers).  Thanks to ranousse.
 
