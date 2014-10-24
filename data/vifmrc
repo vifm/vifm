@@ -163,39 +163,60 @@ command! reload :write | restart
 " program.
 
 " Pdf
-filetype *.pdf zathura %f,apvlv %f,xpdf %f
-fileview *.pdf pdftotext -nopgbrk %c -
+filextype *.pdf zathura %c %i &, apvlv %c, xpdf %c
+fileviewer *.pdf pdftotext -nopgbrk %c -
 
 " PostScript
-filextype *.ps,*.ps.gz gv %c %i &
+filextype *.ps,*.eps,*.ps.gz
+        \ {View in zathura}
+        \ zathura %f,
+        \ {View in gv}
+        \ gv %c %i &,
 
 " Djvu
-filextype *.djvu apvlv %f
+filextype *.djvu
+        \ {View in zathura}
+        \ zathura %f,
+        \ {View in apvlv}
+        \ apvlv %f,
 
 " Audio
-filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a
+filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
        \ {Play using ffplay}
-       \ ffplay %c,
+       \ ffplay -nodisp %c,
        \ {Play using MPlayer}
        \ mplayer %f,
+       \ ffplay %c,
 fileviewer *.mp3 mp3info
+fileviewer *.flac soxi
 
 " Video
-filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
         \ {View using ffplay}
         \ ffplay -fs %c,
         \ {View using Dragon}
         \ dragon %f,
         \ {View using mplayer}
         \ mplayer %f,
-fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
          \ ffprobe -pretty %c 2>&1
 
 " Web
-filetype *.html,*.htm links,mozilla,uzbl-browser %f %i &
+filextype *.html,*.htm
+        \ {Open with dwb}
+        \ dwb %f %i &,
+        \ {Open with firefox}
+        \ firefox %f &,
+        \ {Open with uzbl}
+        \ uzbl-browser %f %i &,
+filetype *.html,*.htm links, lynx
 
 " Object
 filetype *.o nm %f | less
+
+" Man page
+filetype *.[1-8] gtbl %c | groff -Tascii -man | less
+fileviewer *.[1-8] gtbl %c | groff -Tascii -man | col -b
 
 " Image
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
@@ -210,26 +231,38 @@ filetype *.md5
        \ {Check MD5 hash sum}
        \ md5sum -c %f,
 
+" GPG signature
+filetype *.asc
+       \ {Check signature}
+       \ !!gpg --verify %c,
+
+" Torrent
+filetype *.torrent ktorrent %f &
+fileviewer *.torrent dumptorrent -v %c
+
 " FuseZipMount
-filetype *.zip,*.jar,*.war,*.ear
+filetype *.zip,*.jar,*.war,*.ear,*.oxt
        \ {Mount with fuse-zip}
        \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
        \ {View contents}
        \ zip -sf %c | less,
+       \ {Extract here}
        \ tar -xf %c,
-fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt zip -sf %c
 
 " ArchiveMount
-filetype *.tar.bz2,*.tbz2,*.tgz,*.tar.gz
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz
        \ {Mount with archivemount}
        \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 fileviewer *.tgz,*.tar.gz tar -tzf %c
 fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
+fileviewer *.tar.txz,*.txz xz --list %c
 
-" Rar2FsMount
+" Rar2FsMount and rar archives
 filetype *.rar
        \ {Mount with rar2fs}
        \ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.rar unrar v %c
 
 " IsoMount
 filetype *.iso
@@ -246,14 +279,19 @@ filetype *.ftp
        \ {Mount with curlftpfs}
        \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR,
 
-" Fuse7z
+" Fuse7z and 7z archives
 filetype *.7z
        \ {Mount with fuse-7z}
        \ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.7z 7z l %c
 
 " Office files
-filextype *.doc,*.docx,*.xls,*.xlsx libreoffice %f &
-fileview *.docx, docx2txt.pl %f -
+filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx libreoffice %f &
+fileviewer *.doc catdoc %c
+fileviewer *.docx, docx2txt.pl %f -
+
+" TuDu files
+filetype *.tudu tudu -f %c
 
 " Qt projects
 filextype *.pro qtcreator %f &
@@ -262,7 +300,26 @@ filextype *.pro qtcreator %f &
 filextype */
         \ {View in thunar}
         \ Thunar %f &,
-fileview .*/,*/ tree %f
+fileviewer .*/,*/ tree %f
+
+" Syntax highlighting in preview
+"
+" Explicitly set highlight type for some extensions
+"
+" 256-color terminal
+" fileviewer *.[ch],*.[ch]pp highlight -O xterm256 -s dante --syntax c %c
+" fileviewer Makefile,Makefile.* highlight -O xterm256 -s dante --syntax make %c
+"
+" 16-color terminal
+" fileviewer *.c,*.h highlight -O ansi -s dante %c
+"
+" Or leave it for automatic detection
+"
+" fileviewer * pygmentize -O style=monokai -f console256 -g
+
+" Displaying pictures in terminal
+"
+" fileviewer *.jpg,*.png shellpic %c
 
 " Open all other files with default system programs (you can also remove all
 " :file[x]type commands above to ensure they don't interfere with system-wide
