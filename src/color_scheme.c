@@ -394,13 +394,12 @@ color_scheme_exists(const char name[])
 	return is_regular_file(full_path);
 }
 
-/* This function is called only when colorschemes file doesn't exist */
 void
 write_color_scheme_file(void)
 {
 	FILE *fp;
 	char colors_dir[PATH_MAX];
-	int y;
+	int i;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
 	if(make_dir(colors_dir, 0777) != 0)
@@ -455,15 +454,21 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
-	for(y = 0; y < MAXNUM_COLOR - 2; y++)
+	for(i = 0; i < MAXNUM_COLOR - 2; ++i)
 	{
 		char fg_buf[16], bg_buf[16];
 
-		color_to_str(cfg.cs.color[y].fg, sizeof(fg_buf), fg_buf);
-		color_to_str(cfg.cs.color[y].bg, sizeof(bg_buf), bg_buf);
+		if(i == OTHER_LINE_COLOR)
+		{
+			/* Skip OtherLine as there is no way to express defaults. */
+			continue;
+		}
 
-		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y],
-				attrs_to_str(cfg.cs.color[y].attr), fg_buf, bg_buf);
+		color_to_str(cfg.cs.color[i].fg, sizeof(fg_buf), fg_buf);
+		color_to_str(cfg.cs.color[i].bg, sizeof(bg_buf), bg_buf);
+
+		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
+				attrs_to_str(cfg.cs.color[i].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);

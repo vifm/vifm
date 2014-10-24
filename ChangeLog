@@ -33,6 +33,11 @@
 	Fixed error handling regarding vifmrc-converter.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
+	Fixed dumping Default colorscheme with regard to OtherLine highlight
+	group.
+
+	Fixed ignoring just installed sample vifmrc on first run.
+
 0.7.7 to 0.7.8-beta
 
 	Removed ltmain.sh script, which is part of libtool, which is not used

@@ -478,6 +478,10 @@ create_config_dir(void)
 			create_rc_file();
 		else
 			fclose(f);
+
+		/* This should be first start of Vifm, ensure that newly created sample
+		 * vifmrc file is used right away. */
+		env_set(MYVIFMRC_EV, rc_file);
 #else
 		if(make_dir(cfg.config_dir, 0777) != 0)
 			return;
