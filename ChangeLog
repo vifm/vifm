@@ -1,3 +1,8 @@
+0.7.8 to current
+
+	Removed unnecessary command existence checks from vifm.vim.  Thanks to
+	filterfalse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 Octover 05
+" Last Change: 2014 Octover 25
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -23,28 +23,11 @@ let loaded_vifm = 1
 " :DiffVifm - load file for :vert diffsplit.
 " :TabVifm - load file or files in tabs.
 
-" If the commands clash with your other user commands you can change the
-" command name.
-
-"	if !exists(':Insert_Your_Command_Name_Here')
-"		command -bar -nargs=* -complete=dir Insert_Your_Command_Name_Here :call s:StartVifm('edit', <f-args>)
-"	endif
-
-if !exists(':EditVifm')
-	command -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
-endif
-if !exists(':VsplitVifm')
-	command -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
-endif
-if !exists(':SplitVifm')
-	command -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
-endif
-if !exists(':DiffVifm')
-	command -bar -nargs=* -complete=dir DiffVifm :call s:StartVifm('vert diffsplit', <f-args>)
-endif
-if !exists(':TabVifm')
-	command -bar -nargs=* -complete=dir TabVifm :call s:StartVifm('tablast | tab drop', <f-args>)
-endif
+command! -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
+command! -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
+command! -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
+command! -bar -nargs=* -complete=dir DiffVifm :call s:StartVifm('vert diffsplit', <f-args>)
+command! -bar -nargs=* -complete=dir TabVifm :call s:StartVifm('tablast | tab drop', <f-args>)
 
 function! s:StartVifm(editcmd, ...)
 	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
