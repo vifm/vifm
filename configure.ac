@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(configure.ac)
-AM_INIT_AUTOMAKE(vifm, 0.7.8-beta)
+AM_INIT_AUTOMAKE(vifm, 0.7.8)
 AM_CONFIG_HEADER(config.h)
 
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
