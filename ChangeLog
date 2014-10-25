@@ -38,6 +38,8 @@
 
 	Fixed ignoring just installed sample vifmrc on first run.
 
+	Fixed cursor update in inactive view (say, after ga/gA finished).
+
 0.7.7 to 0.7.8-beta
 
 	Removed ltmain.sh script, which is part of libtool, which is not used
