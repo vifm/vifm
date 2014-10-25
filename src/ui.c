@@ -1596,6 +1596,7 @@ wprinta(WINDOW *win, const char str[], int line_attrs)
 	wattron(win, line_attrs);
 	wprint(win, str);
 	wattroff(win, line_attrs);
+	wnoutrefresh(win);
 }
 
 void

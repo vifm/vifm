@@ -3412,7 +3412,7 @@ dir_size_bg(void *arg)
 {
 	dir_size_args_t *const dir_size = arg;
 
-	calc_dirsize(dir_size->path, dir_size->force);
+	(void)calc_dirsize(dir_size->path, dir_size->force);
 
 	remove_last_path_component(dir_size->path);
 	if(path_starts_with(lwin.curr_dir, dir_size->path))
