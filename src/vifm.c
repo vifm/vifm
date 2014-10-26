@@ -386,7 +386,15 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
-	colmgr_init(COLOR_PAIRS);
+	{
+		const colmgr_conf_t colmgr_conf = {
+			.max_color_pairs = COLOR_PAIRS,
+			.init_pair = &init_pair,
+			.pair_content = &pair_content,
+		};
+		colmgr_init(&colmgr_conf);
+	}
+
 	init_modes();
 	init_undo_list(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);

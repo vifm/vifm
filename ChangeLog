@@ -1,5 +1,8 @@
 0.7.8 to current
 
+	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
+	henk).
+
 	Removed unnecessary command existence checks from vifm.vim.  Thanks to
 	filterfalse.
 
