@@ -18,8 +18,6 @@
 
 #include "color_manager.h"
 
-#include <curses.h>
-
 #include <assert.h> /* assert() */
 #include <limits.h> /* CHAR_BIT */
 #include <stddef.h> /* NULL size_t */
@@ -38,16 +36,27 @@ static void set_bit(char bit_array[], size_t i);
 
 /* Number of color pairs available. */
 static int avail_pairs;
+
 /* Map of allocated color pairs.  If element has non-zero value, it means it's
  * allocated. */
 static char *color_pair_map;
+
 /* Size of the color_pair_map in chars. */
 static size_t color_pair_map_size;
 
+/* Configuration data passed in during initialization. */
+static colmgr_conf_t conf;
+
 void
-colmgr_init(int max_color_pairs)
+colmgr_init(const colmgr_conf_t *conf_init)
 {
-	avail_pairs = max_color_pairs - FCOLOR_BASE;
+	assert(conf_init != NULL && "conf_init structure is required.");
+	assert(conf_init->init_pair != NULL && "init_pair must be set.");
+	assert(conf_init->pair_content != NULL && "pair_content must be set.");
+
+	conf = *conf_init;
+
+	avail_pairs = conf.max_color_pairs - FCOLOR_BASE;
 	assert(avail_pairs >= 0 && "Too few color pairs available.");
 
 	color_pair_map_size = DIV_ROUND_UP(avail_pairs, CHAR_BIT);
@@ -102,7 +111,7 @@ static int
 color_pair_matches(int pair, int fg, int bg)
 {
 	short pair_fg, pair_bg;
-	pair_content(pair, &pair_fg, &pair_bg);
+	conf.pair_content(pair, &pair_fg, &pair_bg);
 	return (pair_fg == fg && pair_bg == bg);
 }
 
@@ -115,7 +124,7 @@ allocate_pair(int fg, int bg)
 	{
 		if(!get_bit(color_pair_map, i))
 		{
-			init_pair(FCOLOR_BASE + i, fg, bg);
+			conf.init_pair(FCOLOR_BASE + i, fg, bg);
 			set_bit(color_pair_map, i);
 			break;
 		}

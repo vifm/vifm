@@ -19,10 +19,28 @@
 #ifndef VIFM__COLOR_MANAGER_H__
 #define VIFM__COLOR_MANAGER_H__
 
+/* Initialization data for colmgr_init(). */
+typedef struct
+{
+	/* Maximum number of color pairs. */
+	int max_color_pairs;
+
+	/* Function to set value of a color pair.  Should return zero on success and
+	 * anything else otherwise. */
+	int (*init_pair)(short int pair, short int f, short int b);
+
+	/* Function to get value of a color pair.  Should return zero on success and
+	 * anything else otherwise. */
+	int (*pair_content)(short int pair, short int *f, short int *b);
+}
+colmgr_conf_t;
+
 /* Initializes color manager unit.  Creates and prepares internal variables. */
-void colmgr_init(int max_color_pairs);
+void colmgr_init(const colmgr_conf_t *conf_init);
+
 /* Resets all color pairs that are available for dynamic allocation. */
 void colmgr_reset(void);
+
 /* Dynamically allocates color pair of specified foreground (fg) and background
  * (bg) colors.  Returns -1 on allocation failure. */
 int colmgr_alloc_pair(int fg, int bg);
