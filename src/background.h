@@ -28,16 +28,23 @@
 
 #include <stdio.h>
 
-/* Special value of process id for internal tasks running in background
- * threads. */
-#define BG_INTERNAL_TASK_PID ((pid_t)-1)
-
 /* Special value of total amount of work in job_t structure to indicate
  * undefined total number of countable operations. */
 #define BG_UNDEFINED_TOTAL (-1)
 
+/* Type of background job. */
+typedef enum
+{
+	BJT_COMMAND,   /* Tracked external command started by Vifm. */
+	BJT_OPERATION, /* Important internal background operation, e.g. copying. */
+	BJT_TASK,      /* Unimportant internal background operations, e.g. calculation
+	                  of directory size. */
+}
+BgJobType;
+
 typedef struct job_t
 {
+	BgJobType type; /* Type of background job. */
 	pid_t pid;
 	char *cmd;
 	int skip_errors;
@@ -45,7 +52,7 @@ typedef struct job_t
 	int exit_code;
 	char *error;
 
-	/* for backgrounded commands */
+	/* For background operations and tasks. */
 	int total;
 	int done;
 
@@ -90,18 +97,10 @@ void check_background_jobs(void);
 
 void inner_bg_next(void);
 
-#ifndef _WIN32
-#define NO_JOB_ID (-1)
-job_t * add_background_job(pid_t pid, const char *cmd, int fd);
-#else
-#define NO_JOB_ID INVALID_HANDLE_VALUE
-job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
-#endif
-
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
-int bg_execute(const char desc[], int total, bg_task_func task_func,
-		void *args);
+int bg_execute(const char desc[], int total, int important,
+		bg_task_func task_func, void *args);
 
 /* Checks whether there are any internal jobs (not external applications tracked
  * by vifm) running in background. */

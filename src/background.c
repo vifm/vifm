@@ -48,8 +48,19 @@
 #include "commands_completion.h"
 #include "ui.h"
 
+/* Special value of process id for internal tasks running in background
+ * threads. */
+#define WRONG_PID ((pid_t)-1)
+
 /* Size of error message reading buffer. */
 #define ERR_MSG_LEN 1025
+
+/* Value of job communication mean for internal jobs. */
+#ifndef _WIN32
+#define NO_JOB_ID (-1)
+#else
+#define NO_JOB_ID INVALID_HANDLE_VALUE
+#endif
 
 /* Structure with passed to background_task_bootstrap() so it can perform
  * correct initialization/cleanup. */
@@ -63,6 +74,13 @@ background_task_args;
 
 static void job_check(job_t *const job);
 static void job_free(job_t *const job);
+#ifndef _WIN32
+static job_t * add_background_job(pid_t pid, const char cmd[], int fd,
+		BgJobType type);
+#else
+static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
+		BgJobType type);
+#endif
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
 static void make_current_job_key(void);
@@ -585,7 +603,7 @@ start_background_job(const char *cmd, int skip_errors)
 	{
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		job = add_background_job(pid, command, error_pipe[0]);
+		job = add_background_job(pid, command, error_pipe[0], BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(command);
@@ -611,7 +629,8 @@ start_background_job(const char *cmd, int skip_errors)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess);
+		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess,
+				BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(command);
@@ -632,12 +651,59 @@ start_background_job(const char *cmd, int skip_errors)
 	return 0;
 }
 
+void
+inner_bg_next(void)
+{
+	job_t *job = pthread_getspecific(current_job);
+	if(job != NULL)
+	{
+		++job->done;
+		assert(job->done <= job->total);
+	}
+}
+
+int
+bg_execute(const char desc[], int total, int important, bg_task_func task_func,
+		void *args)
+{
+	pthread_t id;
+
+	background_task_args *const task_args = malloc(sizeof(*task_args));
+	if(task_args == NULL)
+	{
+		return 1;
+	}
+
+	task_args->func = task_func;
+	task_args->args = args;
+	task_args->job = add_background_job(WRONG_PID, desc, NO_JOB_ID,
+			important ? BJT_OPERATION : BJT_TASK);
+
+	if(task_args->job == NULL)
+	{
+		free(task_args);
+		return 2;
+	}
+
+	task_args->job->total = total;
+
+	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
+	{
+		free(task_args);
+		return 3;
+	}
+
+	return 0;
+}
+
+/* Creates structure that describes background job and registers it in the list
+ * of jobs. */
 #ifndef _WIN32
-job_t *
-add_background_job(pid_t pid, const char *cmd, int fd)
+static job_t *
+add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
 #else
-job_t *
-add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
+static job_t *
+add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 #endif
 {
 	job_t *new;
@@ -647,6 +713,7 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;
 	}
+	new->type = type;
 	new->pid = pid;
 	new->cmd = strdup(cmd);
 	new->next = jobs;
@@ -664,49 +731,6 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 
 	jobs = new;
 	return new;
-}
-
-void
-inner_bg_next(void)
-{
-	job_t *job = pthread_getspecific(current_job);
-	if(job != NULL)
-	{
-		++job->done;
-		assert(job->done <= job->total);
-	}
-}
-
-int
-bg_execute(const char desc[], int total, bg_task_func task_func, void *args)
-{
-	pthread_t id;
-
-	background_task_args *const task_args = malloc(sizeof(*task_args));
-	if(task_args == NULL)
-	{
-		return 1;
-	}
-
-	task_args->func = task_func;
-	task_args->args = args;
-	task_args->job = add_background_job(BG_INTERNAL_TASK_PID, desc, NO_JOB_ID);
-
-	if(task_args->job == NULL)
-	{
-		free(task_args);
-		return 2;
-	}
-
-	task_args->job->total = total;
-
-	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
-	{
-		free(task_args);
-		return 3;
-	}
-
-	return 0;
 }
 
 /* Pthreads entry point for a new background task.  Performs correct
@@ -760,7 +784,7 @@ int
 bg_has_active_jobs(void)
 {
 	const job_t *job;
-	int bg_count;
+	int bg_op_count;
 
 	if(bg_jobs_freeze() != 0)
 	{
@@ -769,18 +793,18 @@ bg_has_active_jobs(void)
 		return 1;
 	}
 
-	bg_count = 0;
+	bg_op_count = 0;
 	for(job = jobs; job != NULL; job = job->next)
 	{
-		if(job->running && job->pid == BG_INTERNAL_TASK_PID)
+		if(job->running && job->type == BJT_OPERATION)
 		{
-			++bg_count;
+			++bg_op_count;
 		}
 	}
 
 	bg_jobs_unfreeze();
 
-	return bg_count > 0;
+	return bg_op_count > 0;
 }
 
 int
