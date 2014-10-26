@@ -39,7 +39,7 @@ test_tabulation_is_expanded_properly(void)
 	for(pos = 0; pos < cfg.tab_stop; pos++)
 	{
 		size_t screen_width;
-		char out_buf[cfg.tab_stop];
+		char out_buf[cfg.tab_stop + 1];
 		const char *const str = strchar2str("\t", pos, &screen_width);
 		const int space_count = cfg.tab_stop - pos%cfg.tab_stop;
 		memset(out_buf, ' ', space_count);
