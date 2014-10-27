@@ -198,7 +198,7 @@ compile_info.c: update_compile_info
 	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
 	if [ "x$$(which git 2> /dev/null)" != "x" ]; then \
 		unset GIT_DIR; \
-		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD 2> /dev/null)\";"; \
+		new="const char GIT_HASH[] = \"$$(git describe --tags --long --always --abbrev=12 --dirty 2> /dev/null)\";"; \
 	else \
 		new='const char GIT_HASH[] = "";'; \
 	fi; \

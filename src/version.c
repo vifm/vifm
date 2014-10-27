@@ -39,7 +39,7 @@ fill_version_info(char **list)
 	}
 
 	list[x++] = strdup("Version: " VERSION);
-	list[x++] = format_str("Git commit hash: %s", GIT_HASH);
+	list[x++] = format_str("Git revision: %s", GIT_HASH);
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
 	list[x++] = strdup("");
 
