@@ -868,21 +868,21 @@ search_menu_list(const char pattern[], menu_info *m)
 		draw_menu(m);
 	}
 
-	for(i = 0; i < search_repeat; i++)
+	for(i = 0; i < search_repeat; ++i)
+	{
 		switch(m->match_dir)
 		{
 			case NONE:
+			case DOWN:
 				save = search_menu_forwards(m, m->pos + 1);
 				break;
 			case UP:
 				save = search_menu_backwards(m, m->pos - 1);
 				break;
-			case DOWN:
-				save = search_menu_forwards(m, m->pos + 1);
-				break;
 			default:
 				break;
 		}
+	}
 	return save;
 }
 
