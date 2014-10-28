@@ -10,6 +10,8 @@
 	Removed unnecessary command existence checks from vifm.vim.  Thanks to
 	filterfalse.
 
+	Fixed search messages in menus (nth time...).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

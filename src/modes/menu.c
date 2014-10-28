@@ -710,13 +710,14 @@ search(int backward)
 {
 	if(menu->regexp != NULL)
 	{
-		int was_msg;
 		menu->match_dir = backward ? UP : DOWN;
-		was_msg = search_menu_list(NULL, menu);
+		(void)search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 
-		if(!was_msg)
+		if(menu->matching_entries > 0)
+		{
 			status_bar_messagef("%c%s", backward ? '?' : '/', menu->regexp);
+		}
 	}
 	else
 	{
@@ -929,7 +930,7 @@ search_menu(menu_info *m, int start_pos)
 static int
 search_menu_forwards(menu_info *m, int start_pos)
 {
-	/* FIXME: code duplicatio with search_menu_backwards. */
+	/* FIXME: code duplication with search_menu_backwards. */
 
 	int match_up = -1;
 	int match_down = -1;
@@ -1036,9 +1037,8 @@ search_menu_backwards(menu_info *m, int start_pos)
 		{
 			menu_print_search_msg(m);
 		}
-		return 1;
 	}
-	return 0;
+	return 1;
 }
 
 void
