@@ -1,0 +1,15 @@
+#!/bin/sh
+
+before="`cat "compile_info.c" 2> /dev/null`"
+
+if [ "x`which git 2> /dev/null`" != 'x' ]; then
+    unset GIT_DIR
+    new="const char GIT_HASH[] = \"`git describe --tags --long --always --abbrev=12 --dirty 2> /dev/null`\";"
+else \
+    new='const char GIT_HASH[] = "";'
+fi
+
+if [ "x$before" != "x$new" -o ! -f "compile_info.c" ]; then
+    echo "Updating build revision"
+    echo "$new" > compile_info.c
+fi
