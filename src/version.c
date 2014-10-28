@@ -24,8 +24,8 @@
 
 #include "utils/str.h"
 
-/* This variable is automatically updated on building. */
-extern const char GIT_HASH[];
+/* This variable is automatically updated during build. */
+extern const char GIT_INFO[];
 
 int
 fill_version_info(char **list)
@@ -39,7 +39,7 @@ fill_version_info(char **list)
 	}
 
 	list[x++] = strdup("Version: " VERSION);
-	list[x++] = format_str("Git revision: %s", GIT_HASH);
+	list[x++] = format_str("Git info: %s", GIT_INFO);
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
 	list[x++] = strdup("");
 
