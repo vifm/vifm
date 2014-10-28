@@ -104,8 +104,6 @@ vifmres.o: vifm.res
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-
-update_compile_info:
 	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
 	if [ "x$$(which git)" != "x" ]; then \
 		unset GIT_DIR; \
@@ -114,8 +112,12 @@ update_compile_info:
 		new='const char GIT_HASH[] = "";'; \
 	fi; \
 	if [ "x$$before" != "x$$new" -o ! -f "compile_info.c" ]; then \
+		echo "Updating build revision"; \
 		echo "$$new" > compile_info.c; \
 	fi
+
+# No action needed for this target.
+update_compile_info:
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
