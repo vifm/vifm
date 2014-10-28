@@ -1,0 +1,24 @@
+#!/bin/sh
+
+if [ $# -ne 0 ]; then
+    echo "`basename "$0"`: no arguments expected."
+    exit 1
+fi
+
+if [ -r compile_info.c ]; then
+    old="`cat compile_info.c`"
+fi
+
+if [ -n "`which git 2> /dev/null`" -a -d ../.git ]; then
+    # This is set for scripts running from git hooks, but it breaks the command
+    # below.
+    unset GIT_DIR
+
+    info="`git describe --tags --long --always --abbrev=12 --dirty`"
+fi
+new="const char GIT_INFO[] = \"$info\";"
+
+if [ "$old" != "$new" -o ! -f compile_info.c ]; then
+    echo "Updating build revision"
+    echo "$new" > compile_info.c
+fi
