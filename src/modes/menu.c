@@ -67,6 +67,7 @@ static int can_scroll_menu_down(const menu_info *menu);
 static void change_menu_top(menu_info *const menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void update_ui_on_leaving(void);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static int get_effective_menu_scroll_offset(const menu_info *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
@@ -324,14 +325,7 @@ leave_menu_mode(void)
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
-	if(was_redraw)
-	{
-		update_screen(UT_FULL);
-	}
-	else
-	{
-		update_all_windows();
-	}
+	update_ui_on_leaving();
 }
 
 static void
@@ -456,10 +450,21 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		update_menu();
 	}
 
+	update_ui_on_leaving();
+}
+
+/* Updates UI on leaving the mode trying to minimize efforts to do this. */
+static void
+update_ui_on_leaving(void)
+{
 	if(was_redraw)
+	{
 		update_screen(UT_FULL);
+	}
 	else
+	{
 		update_all_windows();
+	}
 }
 
 static void
