@@ -67,6 +67,7 @@ static int can_scroll_menu_down(const menu_info *menu);
 static void change_menu_top(menu_info *const menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void update_ui_on_leaving(void);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static int get_effective_menu_scroll_offset(const menu_info *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
@@ -324,14 +325,7 @@ leave_menu_mode(void)
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
-	if(was_redraw)
-	{
-		update_screen(UT_FULL);
-	}
-	else
-	{
-		update_all_windows();
-	}
+	update_ui_on_leaving();
 }
 
 static void
@@ -456,10 +450,21 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		update_menu();
 	}
 
+	update_ui_on_leaving();
+}
+
+/* Updates UI on leaving the mode trying to minimize efforts to do this. */
+static void
+update_ui_on_leaving(void)
+{
 	if(was_redraw)
+	{
 		update_screen(UT_FULL);
+	}
 	else
+	{
 		update_all_windows();
+	}
 }
 
 static void
@@ -710,13 +715,14 @@ search(int backward)
 {
 	if(menu->regexp != NULL)
 	{
-		int was_msg;
 		menu->match_dir = backward ? UP : DOWN;
-		was_msg = search_menu_list(NULL, menu);
+		(void)search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 
-		if(!was_msg)
+		if(menu->matching_entries > 0)
+		{
 			status_bar_messagef("%c%s", backward ? '?' : '/', menu->regexp);
+		}
 	}
 	else
 	{
@@ -868,21 +874,21 @@ search_menu_list(const char pattern[], menu_info *m)
 		draw_menu(m);
 	}
 
-	for(i = 0; i < search_repeat; i++)
+	for(i = 0; i < search_repeat; ++i)
+	{
 		switch(m->match_dir)
 		{
 			case NONE:
+			case DOWN:
 				save = search_menu_forwards(m, m->pos + 1);
 				break;
 			case UP:
 				save = search_menu_backwards(m, m->pos - 1);
 				break;
-			case DOWN:
-				save = search_menu_forwards(m, m->pos + 1);
-				break;
 			default:
 				break;
 		}
+	}
 	return save;
 }
 
@@ -929,7 +935,7 @@ search_menu(menu_info *m, int start_pos)
 static int
 search_menu_forwards(menu_info *m, int start_pos)
 {
-	/* FIXME: code duplicatio with search_menu_backwards. */
+	/* FIXME: code duplication with search_menu_backwards. */
 
 	int match_up = -1;
 	int match_down = -1;
@@ -1036,9 +1042,8 @@ search_menu_backwards(menu_info *m, int start_pos)
 		{
 			menu_print_search_msg(m);
 		}
-		return 1;
 	}
-	return 0;
+	return 1;
 }
 
 void

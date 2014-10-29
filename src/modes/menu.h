@@ -41,8 +41,8 @@ void save_menu_pos(void);
 
 void load_menu_pos(void);
 
-/* Performs search of pattern among menu items.  Returns new value for save_msg
- * flag. */
+/* Performs search of pattern among menu items.  NULL pattern requests use of
+ * results of the last used pattern.  Returns new value for save_msg flag. */
 int search_menu_list(const char pattern[], menu_info *m);
 
 /* Allows running regular command-line mode commands from menu mode. */

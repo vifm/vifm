@@ -395,7 +395,7 @@ input_line_changed(void)
 			}
 			else
 			{
-				search_menu_list("", sub_mode_ptr);
+				(void)search_menu_list("", sub_mode_ptr);
 			}
 		}
 		free(previous);
@@ -431,7 +431,7 @@ input_line_changed(void)
 				break;
 			case MENU_SEARCH_FORWARD_SUBMODE:
 			case MENU_SEARCH_BACKWARD_SUBMODE:
-				search_menu_list(mbinput, sub_mode_ptr);
+				(void)search_menu_list(mbinput, sub_mode_ptr);
 				break;
 			case FILTER_SUBMODE:
 				set_local_filter(mbinput);
