@@ -1916,6 +1916,9 @@ cmd_home(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_end(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(input_stat.index == input_stat.len)
+		return;
+
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid +
 			wcswidth(input_stat.line, (size_t)-1);
