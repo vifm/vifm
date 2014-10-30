@@ -32,6 +32,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
+#include <errno.h> /* errno */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdint.h> /* uint64_t */
@@ -797,10 +798,10 @@ setup_ncurses_interface(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
-	if(screen_y < MIN_TERM_HEIGHT)
+	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
+	{
 		vifm_finish("Terminal is too small to run vifm.");
-	if(screen_x < MIN_TERM_WIDTH)
-		vifm_finish("Terminal is too small to run vifm.");
+	}
 
 	if(!has_colors())
 		vifm_finish("Vifm requires a console that can support color.");
@@ -891,11 +892,15 @@ is_term_working(void)
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
 	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
+	{
+		LOG_SERROR_MSG(errno, "Failed to query terminal size.");
 		vifm_finish("Terminal error.");
-	if(ws.ws_row <= 0)
+	}
+	if(ws.ws_row <= 0 || ws.ws_col <= 0)
+	{
+		LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
 		vifm_finish("Terminal is too small to run vifm.");
-	if(ws.ws_col <= 0)
-		vifm_finish("Terminal is too small to run vifm.");
+	}
 
 	resize_term(ws.ws_row, ws.ws_col);
 
@@ -1153,7 +1158,6 @@ update_geometry(void)
 	ioctl(0, TIOCGWINSZ, &ws);
 	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
 
-	/* changed for pdcurses */
 	resize_term(ws.ws_row, ws.ws_col);
 #endif
 
@@ -1599,8 +1603,9 @@ resize_for_menu_like(void)
 	struct winsize ws;
 
 	ioctl(0, TIOCGWINSZ, &ws);
-	/* changed for pdcurses */
-	resizeterm(ws.ws_row, ws.ws_col);
+	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
+
+	resize_term(ws.ws_row, ws.ws_col);
 #endif
 	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
