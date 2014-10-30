@@ -865,7 +865,7 @@ vifm_finish(const char message[])
 {
 	endwin();
 	write_info_file();
-	printf("%s", message);
+	printf("%s\n", message);
 	exit(0);
 }
 
