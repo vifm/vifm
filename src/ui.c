@@ -32,6 +32,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
+#include <errno.h> /* errno */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdint.h> /* uint64_t */
@@ -63,6 +64,7 @@
 #include "quickview.h"
 #include "status.h"
 #include "term_title.h"
+#include "vifm.h"
 
 /* State of cancellation request processing. */
 typedef enum
@@ -98,19 +100,11 @@ static void reload_lists(void);
 static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
+static void update_term_size(void);
 static void switch_panes_content(void);
 static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
-
-static void _gnuc_noreturn
-finish(const char *message)
-{
-	endwin();
-	write_info_file();
-	printf("%s", message);
-	exit(0);
-}
 
 static char *
 break_in_two(char *str, size_t max)
@@ -805,13 +799,13 @@ setup_ncurses_interface(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
-	if(screen_y < MIN_TERM_HEIGHT)
-		finish("Terminal is too small to run vifm\n");
-	if(screen_x < MIN_TERM_WIDTH)
-		finish("Terminal is too small to run vifm\n");
+	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
+	{
+		vifm_finish("Terminal is too small to run vifm.");
+	}
 
 	if(!has_colors())
-		finish("Vifm requires a console that can support color.\n");
+		vifm_finish("Vifm requires a console that can support color.");
 
 	start_color();
 	use_default_colors();
@@ -894,26 +888,19 @@ set_static_windows_attrs(void)
 void
 is_term_working(void)
 {
-#ifndef _WIN32
 	int screen_x, screen_y;
-	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
-	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
-		finish("Terminal error");
-	if(ws.ws_row <= 0)
-		finish("Terminal is too small to run vifm\n");
-	if(ws.ws_col <= 0)
-		finish("Terminal is too small to run vifm\n");
-
-	resize_term(ws.ws_row, ws.ws_col);
-
+	update_term_size();
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
+	{
 		curr_stats.too_small_term = 1;
+	}
 	else if(curr_stats.too_small_term)
+	{
 		curr_stats.too_small_term = -1;
-#endif
+	}
 }
 
 static void
@@ -1155,15 +1142,8 @@ static void
 update_geometry(void)
 {
 	int screen_x, screen_y;
-#ifndef _WIN32
-	struct winsize ws;
 
-	ioctl(0, TIOCGWINSZ, &ws);
-	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
-
-	/* changed for pdcurses */
-	resize_term(ws.ws_row, ws.ws_col);
-#endif
+	update_term_size();
 
 #ifdef _WIN32
 	getmaxyx(stdscr, screen_y, screen_x);
@@ -1173,6 +1153,8 @@ update_geometry(void)
 	getmaxyx(stdscr, screen_y, screen_x);
 	cfg.lines = screen_y;
 	cfg.columns = screen_x;
+
+	LOG_INFO_MSG("New geometry: %dx%d", screen_x, screen_y);
 
 	if(curr_stats.initial_lines == INT_MIN)
 	{
@@ -1603,13 +1585,8 @@ void
 resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
-#ifndef _WIN32
-	struct winsize ws;
 
-	ioctl(0, TIOCGWINSZ, &ws);
-	/* changed for pdcurses */
-	resizeterm(ws.ws_row, ws.ws_col);
-#endif
+	update_term_size();
 	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
 
@@ -1626,6 +1603,28 @@ resize_for_menu_like(void)
 	wrefresh(status_bar);
 	wrefresh(pos_win);
 	wrefresh(input_win);
+}
+
+/* Query terminal size from the "device" and pass it to curses library. */
+static void
+update_term_size(void)
+{
+#ifndef _WIN32
+	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
+
+	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
+	{
+		LOG_SERROR_MSG(errno, "Failed to query terminal size.");
+		vifm_finish("Terminal error.");
+	}
+	if(ws.ws_row <= 0 || ws.ws_col <= 0)
+	{
+		LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
+		vifm_finish("Terminal is unable to run vifm.");
+	}
+
+	resize_term(ws.ws_row, ws.ws_col);
+#endif
 }
 
 void
