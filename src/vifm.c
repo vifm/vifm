@@ -32,7 +32,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() fputs() puts()
                       snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS exit() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -865,8 +865,9 @@ vifm_finish(const char message[])
 {
 	endwin();
 	write_info_file();
-	printf("%s\n", message);
-	exit(0);
+	fprintf(stderr, "%s\n", message);
+	LOG_ERROR_MSG("Finishing: %s", message);
+	exit(EXIT_FAILURE);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
