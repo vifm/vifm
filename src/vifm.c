@@ -860,5 +860,14 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 	}
 }
 
+void _gnuc_noreturn
+vifm_finish(const char message[])
+{
+	endwin();
+	write_info_file();
+	printf("%s", message);
+	exit(0);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -34,6 +34,10 @@ void vifm_try_leave(int write_info, int force);
 void _gnuc_noreturn vifm_return_file_list(const FileView *view, int nfiles,
 		char *files[]);
 
+/* Quits vifm after deinitializing ncurses, saving state to vifminfo and
+ * displaying the message. */
+void _gnuc_noreturn vifm_finish(const char message[]);
+
 #endif // VIFM__VIFM_H__
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

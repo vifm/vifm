@@ -63,6 +63,7 @@
 #include "quickview.h"
 #include "status.h"
 #include "term_title.h"
+#include "vifm.h"
 
 /* State of cancellation request processing. */
 typedef enum
@@ -102,15 +103,6 @@ static void switch_panes_content(void);
 static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
-
-static void _gnuc_noreturn
-finish(const char *message)
-{
-	endwin();
-	write_info_file();
-	printf("%s", message);
-	exit(0);
-}
 
 static char *
 break_in_two(char *str, size_t max)
@@ -806,12 +798,12 @@ setup_ncurses_interface(void)
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
 	if(screen_y < MIN_TERM_HEIGHT)
-		finish("Terminal is too small to run vifm\n");
+		vifm_finish("Terminal is too small to run vifm\n");
 	if(screen_x < MIN_TERM_WIDTH)
-		finish("Terminal is too small to run vifm\n");
+		vifm_finish("Terminal is too small to run vifm\n");
 
 	if(!has_colors())
-		finish("Vifm requires a console that can support color.\n");
+		vifm_finish("Vifm requires a console that can support color.\n");
 
 	start_color();
 	use_default_colors();
@@ -899,11 +891,11 @@ is_term_working(void)
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
 	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
-		finish("Terminal error");
+		vifm_finish("Terminal error");
 	if(ws.ws_row <= 0)
-		finish("Terminal is too small to run vifm\n");
+		vifm_finish("Terminal is too small to run vifm\n");
 	if(ws.ws_col <= 0)
-		finish("Terminal is too small to run vifm\n");
+		vifm_finish("Terminal is too small to run vifm\n");
 
 	resize_term(ws.ws_row, ws.ws_col);
 
