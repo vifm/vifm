@@ -15,6 +15,9 @@
 	Fixed automatic finishing in some situation when no terminal is available.
 	Thanks to tYGjQCsvVI.
 
+	Fixed crash on navigation to end of line in command-line mode.  Thanks to
+	Christian Fillion (a.k.a. cfillion).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

@@ -86,3 +86,6 @@ Some build system fixes/updates/best practices by Hendrik Jaeger (a.k.a.
 henk).
 
 Patches for Vim plugin by filterfalse.
+
+Christian Fillion (a.k.a. cfillion) fixed crash on navigation to end of line
+in command-line mode.
