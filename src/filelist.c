@@ -1341,19 +1341,12 @@ calculate_print_width(const FileView *view, int i, size_t max_width)
 	{
 		const FileType target_type = ui_view_entry_target_type(view, i);
 		const dir_entry_t *const entry = &view->dir_entry[i];
-		size_t raw_name_width = strlen(entry->name)
-		                      + get_filetype_decoration_width(target_type);
-		/* FIXME: remove this hack for directories. */
-		if(target_type == DIRECTORY)
-		{
-			--raw_name_width;
-		}
+		const size_t raw_name_width = strlen(entry->name)
+		                            + get_filetype_decoration_width(target_type);
 		return MIN(max_width - 1, raw_name_width);
 	}
-	else
-	{
-		return max_width;
-	}
+
+	return max_width;
 }
 
 /* Draws a full cell of the file list.  print_width <= col_width. */
@@ -2385,16 +2378,13 @@ fill_with_shared(FileView *view)
 
 					dir_entry = view->dir_entry + view->list_rows;
 
-					/* Allocate extra for adding / to directories. */
-					dir_entry->name = malloc(strlen(buf) + 1 + 1);
+					dir_entry->name = strdup(buf);
 					if(dir_entry->name == NULL)
 					{
 						show_error_msg("Memory Error", "Unable to allocate enough memory");
 						p++;
 						continue;
 					}
-
-					strcpy(dir_entry->name, buf);
 
 					/* All files start as unselected and unmatched */
 					dir_entry->selected = 0;
@@ -2407,7 +2397,6 @@ fill_with_shared(FileView *view)
 					dir_entry->atime = 0;
 					dir_entry->ctime = 0;
 
-					strcat(dir_entry->name, "/");
 					dir_entry->type = DIRECTORY;
 					view->list_rows++;
 
@@ -2498,15 +2487,13 @@ fill_dir_list(FileView *view)
 
 		name_len = strlen(d->d_name);
 		/* Allocate extra for adding / to directories. */
-		dir_entry->name = malloc(name_len + 1 + 1);
+		dir_entry->name = strdup(d->d_name);
 		if(dir_entry->name == NULL)
 		{
 			closedir(dir);
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
-
-		strcpy(dir_entry->name, d->d_name);
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
@@ -2551,20 +2538,10 @@ fill_dir_list(FileView *view)
 			struct stat st;
 
 			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
-			if(symlink_type != SLT_UNKNOWN)
-			{
-				strcat(dir_entry->name, "/");
-			}
-
 			if(symlink_type != SLT_SLOW && stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}
-		}
-		else if(dir_entry->type == DIRECTORY)
-		{
-			strcat(dir_entry->name, "/");
-			name_len++;
 		}
 
 		name_len += get_filetype_decoration_width(dir_entry->type);
@@ -2632,15 +2609,13 @@ fill_dir_list(FileView *view)
 
 		name_len = strlen(ffd.cFileName);
 		/* Allocate extra for adding / to directories. */
-		dir_entry->name = malloc(name_len + 1 + 1);
+		dir_entry->name = strdup(ffd.cFileName);
 		if(dir_entry->name == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			FindClose(hfind);
 			return -1;
 		}
-
-		strcpy(dir_entry->name, ffd.cFileName);
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
@@ -2655,15 +2630,11 @@ fill_dir_list(FileView *view)
 
 		if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
 		{
-			if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				strcat(dir_entry->name, "/");
 			dir_entry->type = LINK;
 		}
 		else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			strcat(dir_entry->name, "/");
 			dir_entry->type = DIRECTORY;
-			name_len++;
 		}
 		else if(is_win_executable(dir_entry->name))
 		{

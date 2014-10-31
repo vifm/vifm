@@ -150,7 +150,6 @@ Code improvements.
     Improve logging (print back trace in some cases, increase verbosity).
     Add logging levels.
     Stay at the same file in some cases.
-    Store directories names without slash symbol.
     Replace a lot of fields in cmd_add_t struct with a set of bit flags.
     Change type of pause argument of shellout() function to an enum.
     Maybe move startup and initialization code out of config.c and vifm.c
