@@ -73,6 +73,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		int overhead;
 		int j;
 		const bookmark_t *bmark;
+		const char *file;
 
 		j = active_bookmarks[i];
 		bmark = get_bookmark(active_bookmarks[i]);
@@ -83,22 +84,23 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			size_t width = get_normal_utf8_string_widthn(with_tilde, max_len - 6);
 			strcpy(with_tilde + width, "...");
 		}
-		overhead = get_screen_overhead(with_tilde);
+
 		if(!is_valid_bookmark(j))
 		{
-			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, with_tilde, "[invalid]");
+			file = "[invalid]";
 		}
 		else if(is_parent_dir(bmark->file))
 		{
-			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, with_tilde, "[none]");
+			file = "[none]";
 		}
 		else
 		{
-			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, with_tilde, bmark->file);
+			file = bmark->file;
 		}
+
+		overhead = get_screen_overhead(with_tilde);
+		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
+				max_len + overhead, with_tilde, file);
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);
 	}
