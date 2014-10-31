@@ -3618,14 +3618,18 @@ int
 ensure_file_is_selected(FileView *view, const char name[])
 {
 	int file_pos;
+	char nm[NAME_MAX];
 
-	file_pos = find_file_pos_in_list(view, name);
-	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, name))
+	copy_str(nm, sizeof(nm), name);
+	chosp(nm);
+
+	file_pos = find_file_pos_in_list(view, nm);
+	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
 	{
-		if(name[0] == '.')
+		if(nm[0] == '.')
 		{
 			set_dot_files_visible(view, 1);
-			file_pos = find_file_pos_in_list(view, name);
+			file_pos = find_file_pos_in_list(view, nm);
 		}
 
 		if(file_pos < 0)
@@ -3635,7 +3639,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 			/* remove_filename_filter() postpones list of files reloading. */
 			(void)populate_dir_list_internal(view, 1);
 
-			file_pos = find_file_pos_in_list(view, name);
+			file_pos = find_file_pos_in_list(view, nm);
 		}
 	}
 

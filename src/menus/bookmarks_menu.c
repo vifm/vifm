@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() strcpy() strlen() */
 #include <wchar.h> /* wcscmp() */
 
+#include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
@@ -74,6 +75,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		int j;
 		const bookmark_t *bmark;
 		const char *file;
+		const char *suffix = "";
 
 		j = active_bookmarks[i];
 		bmark = get_bookmark(active_bookmarks[i]);
@@ -95,12 +97,20 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		}
 		else
 		{
+			char path[PATH_MAX];
+
 			file = bmark->file;
+
+			snprintf(path, sizeof(path), "%s/%s", bmark->directory, bmark->file);
+			if(is_dir(path))
+			{
+				suffix = "/";
+			}
 		}
 
 		overhead = get_screen_overhead(with_tilde);
-		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
-				max_len + overhead, with_tilde, file);
+		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(j),
+				max_len + overhead, with_tilde, file, suffix);
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);
 	}
