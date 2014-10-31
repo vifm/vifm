@@ -748,12 +748,11 @@ handle_dir(FileView *view)
 void
 cd_updir(FileView *view)
 {
-	char dir_name[strlen(view->curr_dir) + 2];
+	char dir_name[strlen(view->curr_dir) + 1];
 
 	dir_name[0] = '\0';
 
 	extract_last_path_component(view->curr_dir, dir_name);
-	strcat(dir_name, "/");
 
 	if(change_directory(view, "../") != 1)
 	{
