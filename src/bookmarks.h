@@ -30,7 +30,7 @@
 #define NUM_BOOKMARKS (NUM_REGULAR_BOOKMARKS + NUM_SPECIAL_BOOKMARKS)
 
 /* Special file name value for "directory bookmarks". */
-#define NO_BOOKMARK_FILE "../"
+#define NO_BOOKMARK_FILE ".."
 
 /* Structure that describes bookmark data. */
 typedef struct

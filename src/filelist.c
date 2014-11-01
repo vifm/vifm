@@ -2972,7 +2972,7 @@ add_parent_dir(FileView *view)
 
 	dir_entry = &view->dir_entry[view->list_rows];
 
-	dir_entry->name = strdup("../");
+	dir_entry->name = strdup("..");
 	if(dir_entry->name == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
