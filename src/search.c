@@ -131,7 +131,6 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		int i;
 		for(i = 0; i < view->list_rows; ++i)
 		{
-			char filename[NAME_MAX];
 			dir_entry_t *const entry = &view->dir_entry[i];
 
 			if(is_parent_dir(entry->name))
@@ -139,9 +138,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 				continue;
 			}
 
-			copy_str(filename, sizeof(filename), entry->name);
-			chosp(filename);
-			if(regexec(&re, filename, 0, NULL, 0) != 0)
+			if(regexec(&re, entry->name, 0, NULL, 0) != 0)
 			{
 				continue;
 			}
