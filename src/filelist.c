@@ -144,6 +144,7 @@ static int is_dir_big(const char path[]);
 static void sort_dir_list(int msg, FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
+static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static int load_unfiltered_list(FileView *const view);
@@ -2677,16 +2678,12 @@ fill_dir_list(FileView *view)
 TSTATIC int
 file_is_visible(FileView *view, const char filename[], int is_dir)
 {
+	/* FIXME: some very long file names won't be matched against some
+	 * regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	if(is_dir)
 	{
-		/* FIXME: some very long file names won't be matched against some
-		 * regexps. */
-		const size_t nchars = copy_str(name_with_slash, sizeof(name_with_slash) - 1,
-				filename);
-		name_with_slash[nchars - 1] = '/';
-		name_with_slash[nchars] = '\0';
-
+		append_slash(filename, name_with_slash, sizeof(name_with_slash));
 		filename = name_with_slash;
 	}
 
@@ -3311,15 +3308,29 @@ update_filtering_lists(FileView *view, int add, int clear)
 
 	for(i = 0; i < view->local_filter.unfiltered_count; i++)
 	{
+		/* FIXME: some very long file names won't be matched against some
+		 * regexps. */
+		char name_with_slash[NAME_MAX + 1 + 1];
+
 		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
-		if(is_parent_dir(entry->name))
+		const char *name = entry->name;
+
+		if(is_parent_dir(name))
 		{
 			if(add && parent_dir_is_visible(is_root_dir(view->curr_dir)))
 			{
 				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
 			}
+			continue;
 		}
-		else if(filter_matches(&view->local_filter.filter, entry->name) != 0)
+
+		if(is_directory_entry(entry))
+		{
+			append_slash(name, name_with_slash, sizeof(name_with_slash));
+			name = name_with_slash;
+		}
+
+		if(filter_matches(&view->local_filter.filter, name) != 0)
 		{
 			if(add)
 			{
@@ -3345,6 +3356,15 @@ update_filtering_lists(FileView *view, int add, int clear)
 			add_parent_dir(view);
 		}
 	}
+}
+
+/* Appends slash to the name and stores result in the buffer. */
+static void
+append_slash(const char name[], char buf[], size_t buf_size)
+{
+	const size_t nchars = copy_str(buf, buf_size - 1, name);
+	buf[nchars - 1] = '/';
+	buf[nchars] = '\0';
 }
 
 /* Finishes filtering process and frees associated resources. */
