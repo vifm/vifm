@@ -463,12 +463,11 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
-	char *filename;
+	const char *fname;
 	char path_buf[PATH_MAX];
 
-	filename = view->dir_entry[pos].name;
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	chosp(path_buf);
+	fname = view->dir_entry[pos].name;
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, fname);
 	file_attrib(path_buf, add, sub, recurse_dirs);
 }
 

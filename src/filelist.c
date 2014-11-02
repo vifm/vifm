@@ -358,11 +358,7 @@ format_ext(int id, const void *data, size_t buf_len, char *buf)
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	const char *ext;
 
-	char name_without_slash[strlen(entry->name) + 1];
-	strcpy(name_without_slash, entry->name);
-	chosp(name_without_slash);
-
-	ext = get_ext(name_without_slash);
+	ext = get_ext(entry->name);
 	copy_str(buf, buf_len + 1, ext);
 }
 

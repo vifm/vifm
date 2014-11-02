@@ -100,7 +100,6 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
 
 	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, curr->name);
-	chosp(full_path);
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
@@ -275,7 +274,6 @@ selection_is_consistent(const FileView *const view)
 			}
 
 			snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
-			chosp(full);
 			if(is_dir_entry(full, curr->type))
 			{
 				dirs++;

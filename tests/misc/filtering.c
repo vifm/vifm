@@ -60,7 +60,7 @@ setup(void)
 	rwin.dir_entry[4].name = strdup("file2.d");
 	rwin.dir_entry[5].name = strdup("file3.d");
 	rwin.dir_entry[6].name = strdup("withnonodots");
-	rwin.dir_entry[7].name = strdup("withnonodots/");
+	rwin.dir_entry[7].name = strdup("somedir");
 
 	rwin.dir_entry[0].selected = 0;
 	rwin.dir_entry[1].selected = 0;

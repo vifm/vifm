@@ -530,12 +530,11 @@ static void
 chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs)
 {
-	char *filename;
+	const char *fname;
 	char path_buf[PATH_MAX];
 
-	filename = view->dir_entry[pos].name;
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	chosp(path_buf);
+	fname = view->dir_entry[pos].name;
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, fname);
 	file_chmod(path_buf, mode, inv_mode, recurse_dirs);
 }
 
