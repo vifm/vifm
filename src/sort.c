@@ -286,16 +286,6 @@ compare_file_names(int dirs, const char s[], const char t[], int ignore_case)
 	char s_buf[NAME_MAX];
 	char t_buf[NAME_MAX];
 
-	/* TODO: FIXME: get rid of this when slash is removed from directory names. */
-	if(dirs)
-	{
-		copy_substr(s_buf, sizeof(s_buf), s, '/');
-		s = s_buf;
-
-		copy_substr(t_buf, sizeof(t_buf), t, '/');
-		t = t_buf;
-	}
-
 	if(ignore_case)
 	{
 		if(!dirs)

@@ -1753,26 +1753,8 @@ format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
 
 	const char prefix[2] = { cfg.decorations[type][DECORATION_PREFIX] };
 	const char suffix[2] = { cfg.decorations[type][DECORATION_SUFFIX] };
-	size_t name_len = 1;
 
-	/* FIXME: remove this hack for directories. */
-	if(type == DIRECTORY)
-	{
-		name_len = strlen(entry->name);
-		if(name_len > 0)
-		{
-			entry->name[name_len - 1] = '\0';
-		}
-	}
 	snprintf(buf, buf_len, "%s%s%s", prefix, entry->name, suffix);
-	/* FIXME: remove this hack for directories. */
-	if(type == DIRECTORY)
-	{
-		if(name_len > 0)
-		{
-			entry->name[name_len - 1] = '/';
-		}
-	}
 }
 
 void

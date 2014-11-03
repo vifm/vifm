@@ -296,7 +296,6 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 	snprintf(buf, sizeof(buf), "%s%s%s",
 			(dir_name_len != 0) ? view->curr_dir : "", (dir_name_len != 0) ? "/" : "",
 			view->dir_entry[pos].name);
-	chosp(buf);
 
 	modified = apply_mods(buf, view->curr_dir, mod, for_shell);
 	expanded = append_path_to_expanded(expanded, quotes, modified);

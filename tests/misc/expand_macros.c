@@ -51,7 +51,7 @@ setup_rwin(void)
 	rwin.dir_entry[4].name = strdup("rfile4");
 	rwin.dir_entry[5].name = strdup("rfile5");
 	rwin.dir_entry[6].type = DIRECTORY;
-	rwin.dir_entry[6].name = strdup("rdir6/");
+	rwin.dir_entry[6].name = strdup("rdir6");
 
 	rwin.dir_entry[1].selected = 1;
 	rwin.dir_entry[3].selected = 1;

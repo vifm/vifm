@@ -305,19 +305,18 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 void
 yank_selected_files(FileView *view, int reg)
 {
-	int x;
+	int i;
 
 	reg = prepare_register(reg);
 
-	for(x = 0; x < view->selected_files; x++)
+	for(i = 0; i < view->selected_files; ++i)
 	{
 		char buf[PATH_MAX];
-		if(view->selected_filelist[x] == NULL)
+		if(view->selected_filelist[i] == NULL)
 			break;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", view->curr_dir,
-				ends_with_slash(view->curr_dir) ? "" : "/", view->selected_filelist[x]);
-		chosp(buf);
+				ends_with_slash(view->curr_dir) ? "" : "/", view->selected_filelist[i]);
 		append_to_register(reg, buf);
 	}
 	update_unnamed_reg(reg);
@@ -407,8 +406,6 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		const char *const fname = view->selected_filelist[i];
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
-		chosp(full_buf);
-
 		ops_enqueue(ops, full_buf, dst_hint);
 	}
 
@@ -428,7 +425,6 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
-		chosp(full_buf);
 
 		progress_msg("Deleting files", i, sel_len);
 		if(use_trash)
@@ -693,15 +689,13 @@ rename_current_file(FileView *view, int name_only)
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return;
 
-	snprintf(filename, sizeof(filename), "%s", old);
+	copy_str(filename, sizeof(filename), old);
 	if(is_parent_dir(filename))
 	{
 		show_error_msg("Rename error",
 				"You can't rename parent directory this way");
 		return;
 	}
-
-	chosp(filename);
 
 	if(name_only)
 	{
@@ -950,7 +944,6 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		else
 		{
 			len = add_to_string_array(&files, len, 1, view->dir_entry[i].name);
-			chosp(files[len - 1]);
 		}
 	}
 
@@ -1130,7 +1123,6 @@ incdec_names(FileView *view, int k)
 			remove_from_string_array(names, names_len--, i--);
 			continue;
 		}
-		chosp(names[i]);
 		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
 				make_name_unique(names[i]));
 	}
@@ -1392,7 +1384,7 @@ change_link_cb(const char new_target[])
 {
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX)];
 	char linkto[PATH_MAX];
-	const char *filename;
+	const char *fname;
 
 	if(is_null_or_empty(new_target))
 	{
@@ -1401,19 +1393,18 @@ change_link_cb(const char new_target[])
 
 	curr_stats.confirmed = 1;
 
-	filename = curr_view->dir_entry[curr_view->list_pos].name;
-	if(get_link_target(filename, linkto, sizeof(linkto)) != 0)
+	fname = curr_view->dir_entry[curr_view->list_pos].name;
+	if(get_link_target(fname, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return;
 	}
 
 	snprintf(buf, sizeof(buf), "cl in %s: on %s from \"%s\" to \"%s\"",
-			replace_home_part(curr_view->curr_dir), filename, linkto, new_target);
+			replace_home_part(curr_view->curr_dir), fname, linkto, new_target);
 	cmd_group_begin(buf);
 
-	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, filename);
-	chosp(buf);
+	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, fname);
 
 	if(perform_operation(OP_REMOVESL, NULL, NULL, buf, NULL) == 0)
 		add_operation(OP_REMOVESL, NULL, NULL, buf, linkto);
@@ -2296,25 +2287,25 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	j = -1;
 	for(i = 0; i < view->list_rows; i++)
 	{
-		char buf[NAME_MAX];
+		const char *const fname = view->dir_entry[i].name;
 
-		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		if(!view->dir_entry[i].selected || is_parent_dir(fname))
 		{
 			continue;
 		}
 
-		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
-		chosp(buf);
-		j++;
-		if(strcmp(buf, dest[j]) == 0)
+		++j;
+		if(strcmp(fname, dest[j]) == 0)
+		{
 			continue;
+		}
 
 		if(i == view->list_pos)
 		{
 			(void)replace_string(&view->dir_entry[i].name, dest[j]);
 		}
 
-		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0, 1, NULL) == 0)
+		if(mv_file(fname, view->curr_dir, dest[j], view->curr_dir, 0, 1, NULL) == 0)
 		{
 			n++;
 		}
@@ -2361,29 +2352,27 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 	for(i = 0; i < view->list_rows; i++)
 	{
-		char buf[NAME_MAX];
 		const char *dst;
 		regmatch_t matches[10];
 		struct stat st;
+		const char *const fname = view->dir_entry[i].name;
 
-		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		if(!view->dir_entry[i].selected || is_parent_dir(fname))
 		{
 			continue;
 		}
 
-		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
-		chosp(buf);
-		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
+		if(regexec(&re, fname, ARRAY_LEN(matches), matches, 0) != 0)
 		{
 			view->dir_entry[i].selected = 0;
 			view->selected_files--;
 			continue;
 		}
 		if(glob)
-			dst = gsubstitute_regexp(&re, buf, sub, matches);
+			dst = gsubstitute_regexp(&re, fname, sub, matches);
 		else
-			dst = substitute_regexp(buf, sub, matches, NULL);
-		if(strcmp(buf, dst) == 0)
+			dst = substitute_regexp(fname, sub, matches, NULL);
+		if(strcmp(fname, dst) == 0)
 		{
 			view->dir_entry[i].selected = 0;
 			view->selected_files--;
@@ -2401,7 +2390,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_errorf("Destination name of \"%s\" is empty", buf);
+			status_bar_errorf("Destination name of \"%s\" is empty", fname);
 			return 1;
 		}
 		if(contains_slash(dst))
@@ -2460,19 +2449,17 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 
 	for(i = 0; i < view->list_rows; i++)
 	{
-		char buf[NAME_MAX];
 		const char *dst;
 		struct stat st;
+		const char *const fname = view->dir_entry[i].name;
 
 		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
 		{
 			continue;
 		}
 
-		copy_str(buf, sizeof(buf), view->dir_entry[i].name);
-		chosp(buf);
-		dst = substitute_tr(buf, pattern, sub);
-		if(strcmp(buf, dst) == 0)
+		dst = substitute_tr(fname, pattern, sub);
+		if(strcmp(fname, dst) == 0)
 		{
 			view->dir_entry[i].selected = 0;
 			view->selected_files--;
@@ -2488,7 +2475,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 		if(dst[0] == '\0')
 		{
 			free_string_array(dest, n);
-			status_bar_errorf("Destination name of \"%s\" is empty", buf);
+			status_bar_errorf("Destination name of \"%s\" is empty", fname);
 			return 1;
 		}
 		if(contains_slash(dst))
@@ -2561,7 +2548,6 @@ change_case(FileView *view, int toupper, int count, int indexes[])
 		char buf[NAME_MAX];
 		struct stat st;
 
-		chosp(view->selected_filelist[i]);
 		copy_str(buf, sizeof(buf), view->selected_filelist[i]);
 		if(toupper)
 			str_toupper(buf);
@@ -2864,7 +2850,6 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	{
 		char src_full[PATH_MAX];
 		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, sel[i]);
-		chosp(src_full);
 
 		ops_enqueue(ops, src_full, path);
 	}
@@ -3149,10 +3134,7 @@ go_to_first_file(FileView *view, char **names, int count)
 
 	for(i = 0; i < view->list_rows; i++)
 	{
-		char name[PATH_MAX];
-		snprintf(name, sizeof(name), "%s", view->dir_entry[i].name);
-		chosp(name);
-		if(is_in_string_array(names, count, name))
+		if(is_in_string_array(names, count, view->dir_entry[i].name))
 		{
 			view->list_pos = i;
 			break;
@@ -3324,11 +3306,10 @@ restore_files(FileView *view)
 			char full_path[PATH_MAX];
 			snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir,
 					view->dir_entry[i].name);
-			chosp(full_path);
 
 			if(restore_from_trash(full_path) == 0)
 			{
-				m++;
+				++m;
 			}
 		}
 	}

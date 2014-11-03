@@ -236,6 +236,10 @@ set_mark(const char mark, const char directory[], const char file[],
 		bmark->directory = strdup(directory);
 		bmark->file = strdup(file);
 		bmark->timestamp = timestamp;
+
+		/* Remove any trailing slashes, they might be convenient in configuration
+		 * file (hence they are permitted), but shouldn't be stored internally. */
+		chosp(bmark->file);
 	}
 }
 

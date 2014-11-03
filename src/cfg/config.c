@@ -519,8 +519,8 @@ add_default_bookmarks(void)
 {
 	LOG_FUNC_ENTER;
 
-	set_user_bookmark('H', cfg.home_dir, "../");
-	set_user_bookmark('z', cfg.config_dir, "../");
+	set_user_bookmark('H', cfg.home_dir, NO_BOOKMARK_FILE);
+	set_user_bookmark('z', cfg.config_dir, NO_BOOKMARK_FILE);
 }
 
 void

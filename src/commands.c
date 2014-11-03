@@ -3042,7 +3042,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				file = "../";
+				file = NO_BOOKMARK_FILE;
 			}
 		}
 		else
