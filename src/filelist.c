@@ -3822,7 +3822,7 @@ int
 is_directory_entry(const dir_entry_t *entry)
 {
 	return (entry->type == DIRECTORY)
-	    || (entry->type == LINK && ends_with_slash(entry->name));
+	    || (entry->type == LINK && get_symlink_type(entry->name) != SLT_UNKNOWN);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
