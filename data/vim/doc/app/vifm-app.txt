@@ -2824,6 +2824,7 @@ sequences that can be used in place of them.  They are:
 <cr> - Enter key.
 <esc> - Escape key.
 <space> - Space key.
+<lt> - Less-than character (<).
 <nop> - provides a way to disable a mapping (by mapping it to <nop>).
 <bs> - Backspace key.
 <tab> <s-tab> - Tabulation and Shift+Tabulation keys.

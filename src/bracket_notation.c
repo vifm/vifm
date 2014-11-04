@@ -147,6 +147,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<space>",    L" "                 },
 	{ L"<nop>",      L""                  },
 	{ L"<tab>",      L"\t"                },
+	{ L"<lt>",       L"<"                 },
 #ifdef ENABLE_EXTENDED_KEYS
 	{ L"<s-tab>",    { KEY_BTAB, 0 }      },
 #else
