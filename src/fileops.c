@@ -1961,11 +1961,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
 		{
-			free(view->dir_entry[view->list_pos].name);
-			view->dir_entry[view->list_pos].name = malloc(strlen(clone_name) + 2);
-			strcpy(view->dir_entry[view->list_pos].name, clone_name);
-			if(ends_with_slash(sel[i]))
-				strcat(view->dir_entry[view->list_pos].name, "/");
+			replace_string(&view->dir_entry[view->list_pos].name, clone_name);
 		}
 
 		ops_advance(ops, 1);
