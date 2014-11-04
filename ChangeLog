@@ -3,6 +3,9 @@
 	Added <lt> angle bracket notation (less-than character, '<').  Thanks to
 	filterfalse.
 
+	Added K mapping to Vim plugin (quick navigation to documentation, e.g.
+	from vifmrc).  Patch by filterfalse.
+
 	Aligned columns in :jobs menu.
 
 	Made calculation of directory size visible in :jobs menu.

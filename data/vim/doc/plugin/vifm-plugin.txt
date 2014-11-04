@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2014 Oct 25
+*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 04
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -42,6 +42,13 @@ directory add >
  let loaded_vifm=1
 
 to your ~/.vimrc file.
+
+Extension for "vifm" filetype~
+
+                                                *vifm-K*
+K                       Like setting 'keywordprg' to ":help vifm-" (if that
+                        would be possible), but slightly smarter.  Only mapped
+                        in vifm files.
 
 Extension for "mail" filetype~
 

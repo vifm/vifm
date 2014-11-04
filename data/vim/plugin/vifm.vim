@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 Octover 25
+" Last Change: 2014 November 04
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -161,5 +161,50 @@ function! s:PreparePath(path)
 	endif
 	return path
 endfunction
+
+" K {{{1
+
+" Mostly stolen from vim-scriptease, created by Tim Pope <http://tpo.pe/>
+
+function! vifm#synnames(...) abort
+	if a:0
+		let [line, col] = [a:1, a:2]
+	else
+		let [line, col] = [line('.'), col('.')]
+	endif
+	return reverse(map(synstack(line, col), 'synIDattr(v:val,"name")'))
+endfunction
+
+let g:vifm_help_mapping = get(g:, 'vifm_help_mapping', 'K')
+
+augroup vifm_help
+	autocmd!
+	execute "autocmd FileType vifm,vifm-cmdedit nnoremap <silent><buffer>"
+	      \ g:vifm_help_mapping ":execute 'help '.<SID>helpvifmtopic()<CR>"
+augroup END
+
+function! s:helpvifmtopic()
+	let col = col('.') - 1
+	while col && getline('.')[col] =~# '\k'
+		let col -= 1
+	endwhile
+	let pre = col == 0 ? '' : getline('.')[0 : col]
+	let syn = get(vifm#synnames(), 0, '')
+	let cword = expand('<cword>')
+	if syn ==# 'vifmBuiltinFunction'
+		let topic = cword.'()'
+	elseif syn ==# 'vifmOption'
+		let topic = "'".substitute(cword, '^\(no\|inv\)', '', '')."'"
+	elseif syn ==# 'vifmCommand' || pre =~# ':$'
+		let topic = ':'.cword
+	elseif syn ==# 'vifmNotation'
+		let topic = 'mappings'
+	else
+		let topic = '*'.cword
+	endif
+	return 'vifm-'.topic
+endfunction
+
+" }}}1
 
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
