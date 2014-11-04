@@ -48,7 +48,7 @@ Extension for "mail" filetype~
 Vifm's bundle for Vim also includes a tiny mail file type extension that allows
 one to pick files for attachments via Vifm.
 
-                                               *vifm-<localleader>-a*
+                                               *vifm-<localleader>a*
 The function is mapped to <localleader>a key for "mail" filetype buffers only.
 It inserts files picked via Vifm as attachments ("Attach: ...") after
 "Subject" header.
