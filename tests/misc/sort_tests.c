@@ -1,8 +1,11 @@
+#include <unistd.h> /* chdir() unlink() */
+
 #include <string.h> /* memset() */
 
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/str.h"
 #include "../../src/sort.h"
 #include "../../src/ui.h"
 
@@ -35,6 +38,8 @@ teardown(void)
 		free(lwin.dir_entry[i].name);
 	}
 	free(lwin.dir_entry);
+
+	lwin.list_rows = 0;
 }
 
 static void
@@ -47,6 +52,36 @@ test_special_chars_ignore_case_sort(void)
 
 	assert_string_equal("_", lwin.dir_entry[0].name);
 }
+
+/* Windows is really bad at handling links. */
+#ifndef _WIN32
+
+static void
+test_symlink_to_dir(void)
+{
+	assert_int_equal(0, chdir("test-data/sandbox"));
+	assert_int_equal(0, symlink(".", "self"));
+
+	lwin.sort[0] = SK_BY_INAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	replace_string(&lwin.dir_entry[2].name, "self");
+	lwin.dir_entry[2].type = LINK;
+
+	cfg.slow_fs_list = strdup("");
+
+	sort_view(&lwin);
+
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = NULL;
+
+	assert_string_equal("self", lwin.dir_entry[0].name);
+
+	assert_int_equal(0, unlink("self"));
+	assert_int_equal(0, chdir("../.."));
+}
+
+#endif
 
 static void
 test_versort_without_numbers(void)
@@ -242,6 +277,11 @@ sort_tests(void)
 	fixture_teardown(teardown);
 
 	run_test(test_special_chars_ignore_case_sort);
+
+#ifndef _WIN32
+	/* Windows is really bad at handling links. */
+	run_test(test_symlink_to_dir);
+#endif
 
 	run_test(test_versort_without_numbers);
 	run_test(test_versort_with_numbers);
