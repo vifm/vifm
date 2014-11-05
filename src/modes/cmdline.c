@@ -736,10 +736,9 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	save_input_to_history(keys_info, mbstr);
 	free(mbstr);
 
-	input_stat.line[0] = L'\0';
-
 	if(sub_mode != FILTER_SUBMODE)
 	{
+		input_stat.line[0] = L'\0';
 		input_line_changed();
 	}
 
