@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 November 04
+" Last Change: 2014 November 05
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -14,6 +14,9 @@ if exists('loaded_vifm')
 	finish
 endif
 let loaded_vifm = 1
+
+" Remember path to the script to know where to look for vifm documentation.
+let s:script_path = expand('<sfile>')
 
 " Setup commands to run vifm.
 
@@ -180,8 +183,26 @@ let g:vifm_help_mapping = get(g:, 'vifm_help_mapping', 'K')
 augroup vifm_help
 	autocmd!
 	execute "autocmd FileType vifm,vifm-cmdedit nnoremap <silent><buffer>"
-	      \ g:vifm_help_mapping ":execute 'help '.<SID>helpvifmtopic()<CR>"
+	      \ g:vifm_help_mapping ":execute <SID>DisplayVifmHelp()<CR>"
 augroup END
+
+" Modifies 'runtimepath' to include directory with vifm documentation and runs
+" help.  Result should be processed with :execute to do not print stacktrace
+" on exception.
+function! s:DisplayVifmHelp()
+	let runtimepath = &runtimepath
+	let vimdoc = substitute(s:script_path, '[/\\]plugin[/\\].*', '', '')
+	execute 'set runtimepath+='.vimdoc.'/../vim-doc'
+
+	try
+		execute 'help '.s:helpvifmtopic()
+	catch E149
+		return "echoerr '".escape(v:exception, "'")."'"
+	finally
+		let &runtimepath = runtimepath
+	endtry
+	return ''
+endfunction
 
 function! s:helpvifmtopic()
 	let col = col('.') - 1
