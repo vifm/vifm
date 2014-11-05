@@ -48,7 +48,7 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
-static int compare_file_names(int dirs, const char s[], const char t[],
+static int compare_file_names(const char s[], const char t[],
 		int ignore_case);
 
 void
@@ -163,7 +163,6 @@ sort_dir_list(const void *one, const void *two)
 	dir_entry_t *const second = (dir_entry_t *)two;
 	int first_is_dir;
 	int second_is_dir;
-	int dirs;
 
 	if(is_parent_dir(first->name))
 	{
@@ -177,8 +176,6 @@ sort_dir_list(const void *one, const void *two)
 	first_is_dir = is_directory_entry(first);
 	second_is_dir = is_directory_entry(second);
 
-	dirs = first_is_dir || second_is_dir;
-
 	retval = 0;
 	switch(sort_type)
 	{
@@ -189,7 +186,7 @@ sort_dir_list(const void *one, const void *two)
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = compare_file_names(dirs, first->name, second->name,
+				retval = compare_file_names(first->name, second->name,
 						sort_type == SK_BY_INAME);
 			break;
 
@@ -205,11 +202,11 @@ sort_dir_list(const void *one, const void *two)
 			psecond = strrchr(second->name, '.');
 
 			if(pfirst && psecond)
-				retval = compare_file_names(dirs, ++pfirst, ++psecond, 0);
+				retval = compare_file_names(++pfirst, ++psecond, 0);
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
-				retval = compare_file_names(dirs, first->name, second->name, 0);
+				retval = compare_file_names(first->name, second->name, 0);
 			break;
 
 		case SK_BY_SIZE:
@@ -281,21 +278,18 @@ sort_dir_list(const void *one, const void *two)
 /* Compares two filenames.  Returns positive value if s greater than t, zero if
  * they are equal, otherwise negative value is returned. */
 static int
-compare_file_names(int dirs, const char s[], const char t[], int ignore_case)
+compare_file_names(const char s[], const char t[], int ignore_case)
 {
 	char s_buf[NAME_MAX];
 	char t_buf[NAME_MAX];
 
 	if(ignore_case)
 	{
-		if(!dirs)
-		{
-			copy_str(s_buf, sizeof(s_buf), s);
-			s = s_buf;
+		copy_str(s_buf, sizeof(s_buf), s);
+		s = s_buf;
 
-			copy_str(t_buf, sizeof(t_buf), t);
-			t = t_buf;
-		}
+		copy_str(t_buf, sizeof(t_buf), t);
+		t = t_buf;
 
 		strtolower(s_buf);
 		strtolower(t_buf);

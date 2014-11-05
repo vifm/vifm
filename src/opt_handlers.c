@@ -1299,62 +1299,60 @@ update_num_type(NumberingType num_type, int enable)
 	}
 }
 
+/* Handler for 'sort' option, parses the value and checks it for correctness. */
 static void
 sort_handler(OPT_OP op, optval_t val)
 {
-	char *p = val.str_val - 1;
-	int i;
+	char *part = val.str_val, *state = NULL;
+	int key_count = 0;
+	char *const sort_keys = curr_view->sort;
 
-	i = 0;
-	do
+	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		char key[32];
-		char *t;
-		int minus;
+		char *name = part;
+		int reverse = 0;
 		int pos;
-		int j;
+		int key_pos;
 
-		t = p + 1;
-		p = strchr(t, ',');
-		if(p == NULL)
-			p = t + strlen(t);
+		if(*name == '-' || *name == '+')
+		{
+			reverse = (*name == '-');
+			++name;
+		}
 
-		minus = (*t == '-');
-		if(*t == '-' || *t == '+')
-			t++;
-
-		snprintf(key, MIN(p - t + 1, sizeof(key)), "%s", t);
-
-		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), key);
+		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
 		if(pos == -1)
 		{
-			if(key[0] != '\0')
+			if(name[0] != '\0')
 			{
-				text_buffer_addf("Skipped unknown 'sort' value: %s", key);
+				text_buffer_addf("Skipped unknown 'sort' value: %s", name);
 				error = 1;
 			}
 			continue;
 		}
-		pos++;
+		++pos;
 
-		for(j = 0; j < i; j++)
-			if(abs(curr_view->sort[j]) == pos)
+		for(key_pos = 0; key_pos < key_count; ++key_pos)
+		{
+			if(abs(sort_keys[key_pos]) == pos)
+			{
 				break;
+			}
+		}
 
-		if(minus)
-			curr_view->sort[j] = -pos;
-		else
-			curr_view->sort[j] = pos;
-		if(j == i)
-			i++;
+		sort_keys[key_pos] = reverse ? -pos : pos;
+
+		if(key_pos == key_count)
+		{
+			++key_count;
+		}
 	}
-	while(*p != '\0');
 
-	if(i < SK_COUNT)
+	if(key_count < SK_COUNT)
 	{
-		curr_view->sort[i] = SK_NONE;
+		sort_keys[key_count] = SK_NONE;
 	}
-	ui_view_sort_list_ensure_well_formed(curr_view->sort);
+	ui_view_sort_list_ensure_well_formed(sort_keys);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);
