@@ -198,7 +198,7 @@ function! s:DisplayVifmHelp()
 		execute 'help '.s:GetVifmHelpTopic()
 	catch E149
 		let msg = substitute(v:exception, '[^:]\+:', '', '')
-		return "echoerr '".escape(msg, '"')."'"
+		return 'echoerr "'.escape(msg, '\"').'"'
 	finally
 		let &runtimepath = runtimepath
 	endtry
