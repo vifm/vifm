@@ -136,6 +136,7 @@ static void finish_prompt_submode(const char input[]);
 static int search_submode_to_command_type(int sub_mode);
 static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
 static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
+static int replace_wstring(wchar_t **str, const wchar_t with[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
@@ -405,8 +406,7 @@ input_line_changed(void)
 	{
 		char *mbinput;
 
-		free(previous);
-		previous = vifm_wcsdup(input_stat.line);
+		(void)replace_wstring(&previous, input_stat.line);
 
 		mbinput = to_multibyte(input_stat.line);
 
@@ -1251,18 +1251,35 @@ is_backward_search(CMD_LINE_SUBMODES sub_mode)
 static void
 save_users_input(void)
 {
-	free(input_stat.line_buf);
-	input_stat.line_buf = vifm_wcsdup(input_stat.line);
+	(void)replace_wstring(&input_stat.line_buf, input_stat.line);
 }
 
 static void
 restore_user_input(void)
 {
 	input_stat.cmd_pos = -1;
-	free(input_stat.line);
-	input_stat.line = vifm_wcsdup(input_stat.line_buf);
+	(void)replace_wstring(&input_stat.line, input_stat.line_buf);
 	input_stat.len = wcslen(input_stat.line);
 	update_cmdline();
+}
+
+/* Replaces *str with a copy of the with string.  *str can be NULL or equal to
+ * the with (then function does nothing).  Returns non-zero if memory allocation
+ * failed. */
+static int
+replace_wstring(wchar_t **str, const wchar_t with[])
+{
+	if(*str != with)
+	{
+		wchar_t *const new = vifm_wcsdup(with);
+		if(new == NULL)
+		{
+			return 1;
+		}
+		free(*str);
+		*str = new;
+	}
+	return 0;
 }
 
 static void
