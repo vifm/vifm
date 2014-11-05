@@ -180,7 +180,7 @@ endfunction
 
 let g:vifm_help_mapping = get(g:, 'vifm_help_mapping', 'K')
 
-augroup vifm_help
+augroup VifmHelpAutoCmds
 	autocmd!
 	execute "autocmd FileType vifm,vifm-cmdedit nnoremap <silent><buffer>"
 	      \ g:vifm_help_mapping ":execute <SID>DisplayVifmHelp()<CR>"
@@ -195,7 +195,7 @@ function! s:DisplayVifmHelp()
 	execute 'set runtimepath+='.vimdoc.'/../vim-doc'
 
 	try
-		execute 'help '.s:helpvifmtopic()
+		execute 'help '.s:GetVifmHelpTopic()
 	catch E149
 		return "echoerr '".escape(v:exception, "'")."'"
 	finally
@@ -204,7 +204,7 @@ function! s:DisplayVifmHelp()
 	return ''
 endfunction
 
-function! s:helpvifmtopic()
+function! s:GetVifmHelpTopic()
 	let col = col('.') - 1
 	while col && getline('.')[col] =~# '\k'
 		let col -= 1
