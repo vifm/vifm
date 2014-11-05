@@ -2720,7 +2720,7 @@ default: 1000
 The time in milliseconds that is waited for a mapped key in case of already
 typed key sequence is ambiguous.
 
-                                               *vifm-'tuioptions* *vifm-'to'*
+                                               *vifm-'tuioptions'* *vifm-'to'*
 tuioptions to
 type: charset
 default: "ps"

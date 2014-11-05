@@ -89,7 +89,7 @@ const char *tags[] = {
 	"vifm-'trash'",
 	"vifm-'trashdir'",
 	"vifm-'ts'",
-	"vifm-'tuioptions",
+	"vifm-'tuioptions'",
 	"vifm-'ul'",
 	"vifm-'undolevels'",
 	"vifm-'vicmd'",
