@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 Octover 25
+" Last Change: 2014 November 05
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -14,6 +14,9 @@ if exists('loaded_vifm')
 	finish
 endif
 let loaded_vifm = 1
+
+" Remember path to the script to know where to look for vifm documentation.
+let s:script_path = expand('<sfile>')
 
 " Setup commands to run vifm.
 
@@ -161,5 +164,68 @@ function! s:PreparePath(path)
 	endif
 	return path
 endfunction
+
+" K {{{1
+
+" Mostly stolen from vim-scriptease, created by Tim Pope <http://tpo.pe/>
+
+function! vifm#synnames(...) abort
+	if a:0
+		let [line, col] = [a:1, a:2]
+	else
+		let [line, col] = [line('.'), col('.')]
+	endif
+	return reverse(map(synstack(line, col), 'synIDattr(v:val,"name")'))
+endfunction
+
+let g:vifm_help_mapping = get(g:, 'vifm_help_mapping', 'K')
+
+augroup VifmHelpAutoCmds
+	autocmd!
+	execute "autocmd FileType vifm,vifm-cmdedit nnoremap <silent><buffer>"
+	      \ g:vifm_help_mapping ":execute <SID>DisplayVifmHelp()<CR>"
+augroup END
+
+" Modifies 'runtimepath' to include directory with vifm documentation and runs
+" help.  Result should be processed with :execute to do not print stacktrace
+" on exception.
+function! s:DisplayVifmHelp()
+	let runtimepath = &runtimepath
+	let vimdoc = substitute(s:script_path, '[/\\]plugin[/\\].*', '', '')
+	execute 'set runtimepath+='.vimdoc.'/../vim-doc'
+
+	try
+		execute 'help '.s:GetVifmHelpTopic()
+	catch E149
+		return "echoerr '".escape(v:exception, "'")."'"
+	finally
+		let &runtimepath = runtimepath
+	endtry
+	return ''
+endfunction
+
+function! s:GetVifmHelpTopic()
+	let col = col('.') - 1
+	while col && getline('.')[col] =~# '\k'
+		let col -= 1
+	endwhile
+	let pre = col == 0 ? '' : getline('.')[0 : col]
+	let syn = get(vifm#synnames(), 0, '')
+	let cword = expand('<cword>')
+	if syn ==# 'vifmBuiltinFunction'
+		let topic = cword.'()'
+	elseif syn ==# 'vifmOption'
+		let topic = "'".substitute(cword, '^\(no\|inv\)', '', '')."'"
+	elseif syn ==# 'vifmCommand' || pre =~# ':$'
+		let topic = ':'.cword
+	elseif syn ==# 'vifmNotation'
+		let topic = 'mappings'
+	else
+		let topic = '*'.cword
+	endif
+	return 'vifm-'.topic
+endfunction
+
+" }}}1
 
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

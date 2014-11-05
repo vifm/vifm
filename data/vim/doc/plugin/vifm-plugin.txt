@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2014 Oct 25
+*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 04
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -43,12 +43,19 @@ directory add >
 
 to your ~/.vimrc file.
 
+Extension for "vifm" filetype~
+
+                                                *vifm-K*
+K                       Like setting 'keywordprg' to ":help vifm-" (if that
+                        would be possible), but slightly smarter.  Only mapped
+                        in vifm files.
+
 Extension for "mail" filetype~
 
 Vifm's bundle for Vim also includes a tiny mail file type extension that allows
 one to pick files for attachments via Vifm.
 
-                                               *vifm-<localleader>-a*
+                                               *vifm-<localleader>a*
 The function is mapped to <localleader>a key for "mail" filetype buffers only.
 It inserts files picked via Vifm as attachments ("Attach: ...") after
 "Subject" header.
