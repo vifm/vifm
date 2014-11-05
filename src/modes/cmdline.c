@@ -130,6 +130,7 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static int is_input_line_empty(void);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
@@ -380,7 +381,7 @@ input_line_changed(void)
 
 	set_view_port();
 
-	if(input_stat.line[0] == L'\0')
+	if(is_input_line_empty())
 	{
 		if(cfg.hl_search)
 		{
@@ -1065,7 +1066,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if(input_stat.line[0] == L'\0' && sub_mode == MENU_CMD_SUBMODE)
+	if(is_input_line_empty() && sub_mode == MENU_CMD_SUBMODE)
 	{
 		leave_cmdline_mode();
 		return;
@@ -1161,6 +1162,14 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	free(input);
+}
+
+/* Checks whether input line is empty.  Returns non-zero if so, otherwise
+ * non-zero is returned. */
+static int
+is_input_line_empty(void)
+{
+	return input_stat.line[0] == L'\0';
 }
 
 /* Saves command-line input into appropriate history.  input can be NULL, in
