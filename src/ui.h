@@ -128,6 +128,8 @@ history_t;
 typedef struct
 {
 	char *name;
+	char *origin;  /* Location where this file comes from, NULL if from
+	                  curr_dir. */
 	uint64_t size;
 #ifndef _WIN32
 	uid_t uid;

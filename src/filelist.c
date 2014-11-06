@@ -2394,6 +2394,8 @@ fill_with_shared(FileView *view)
 						continue;
 					}
 
+					dir_entry->origin = NULL;
+
 					/* All files start as unselected and unmatched */
 					dir_entry->selected = 0;
 					dir_entry->was_selected = 0;
@@ -2502,6 +2504,8 @@ fill_dir_list(FileView *view)
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
+
+		dir_entry->origin = NULL;
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
@@ -2624,6 +2628,8 @@ fill_dir_list(FileView *view)
 			FindClose(hfind);
 			return -1;
 		}
+
+		dir_entry->origin = NULL;
 
 		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
@@ -3008,6 +3014,8 @@ add_parent_dir(FileView *view)
 	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
 
 	view->list_rows++;
+
+	dir_entry->origin = NULL;
 
 	/* All files start as unselected and unmatched */
 	dir_entry->selected = 0;
