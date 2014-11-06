@@ -824,12 +824,8 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 	{
 		if(!view->dir_entry[view->list_pos].selected)
 		{
-			fprintf(fp, "%s", view->curr_dir);
-			if(view->curr_dir[strlen(view->curr_dir) - 1] != '/')
-			{
-				fprintf(fp, "%s", "/");
-			}
-			fprintf(fp, "%s\n", view->dir_entry[view->list_pos].name);
+			fprintf(fp, "%s/%s\n", view->curr_dir,
+					view->dir_entry[view->list_pos].name);
 		}
 		else
 		{
