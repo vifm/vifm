@@ -139,7 +139,6 @@ typedef struct
 	time_t mtime;
 	time_t atime;
 	time_t ctime;
-	char date[16];
 	FileType type;
 
 	int selected;
