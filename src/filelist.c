@@ -147,6 +147,7 @@ static void add_parent_dir(FileView *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
+static void init_dir_entry(dir_entry_t *entry, const char name[]);
 static int load_unfiltered_list(FileView *const view);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
@@ -2365,52 +2366,28 @@ fill_with_shared(FileView *view)
 			PSHARE_INFO_0 p;
 			DWORD i;
 
-			p = buf_ptr;
-			for(i = 1; i <= er; i++)
+			for(i = 0, p = buf_ptr; i < er; ++i, ++p)
 			{
-				char buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, buf,
-						sizeof(buf), NULL, NULL);
+				dir_entry_t *dir_entry;
 
+				char name_buf[512];
+				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, name_buf,
+						sizeof(name_buf), NULL, NULL);
 
-					dir_entry_t *dir_entry;
+				view->dir_entry = realloc(view->dir_entry,
+						(view->list_rows + 1)*sizeof(dir_entry_t));
+				if(view->dir_entry == NULL)
+				{
+					show_error_msg("Memory Error", "Unable to allocate enough memory");
+					continue;
+				}
 
-					view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
-							(view->list_rows + 1)*sizeof(dir_entry_t));
-					if(view->dir_entry == NULL)
-					{
-						show_error_msg("Memory Error", "Unable to allocate enough memory");
-						p++;
-						continue;
-					}
+				dir_entry = view->dir_entry + view->list_rows;
 
-					dir_entry = view->dir_entry + view->list_rows;
+				init_dir_entry(dir_entry, name_buf);
+				dir_entry->type = DIRECTORY;
 
-					dir_entry->name = strdup(buf);
-					if(dir_entry->name == NULL)
-					{
-						show_error_msg("Memory Error", "Unable to allocate enough memory");
-						p++;
-						continue;
-					}
-
-					dir_entry->origin = NULL;
-
-					/* All files start as unselected and unmatched */
-					dir_entry->selected = 0;
-					dir_entry->was_selected = 0;
-					dir_entry->search_match = 0;
-
-					dir_entry->size = 0;
-					dir_entry->attrs = 0;
-					dir_entry->mtime = 0;
-					dir_entry->atime = 0;
-					dir_entry->ctime = 0;
-
-					dir_entry->type = DIRECTORY;
-					view->list_rows++;
-
-				p++;
+				++view->list_rows;
 			}
 			NetApiBufferFree(buf_ptr);
 		}
@@ -2495,40 +2472,10 @@ fill_dir_list(FileView *view)
 
 		dir_entry = view->dir_entry + view->list_rows;
 
-		name_len = strlen(d->d_name);
-		/* Allocate extra for adding / to directories. */
-		dir_entry->name = strdup(d->d_name);
-		if(dir_entry->name == NULL)
-		{
-			closedir(dir);
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return -1;
-		}
+		init_dir_entry(dir_entry, d->d_name);
 
-		dir_entry->origin = NULL;
-
-		/* All files start as unselected and unmatched */
-		dir_entry->selected = 0;
-		dir_entry->was_selected = 0;
-		dir_entry->search_match = 0;
-
-		/* Load the inode info */
-		if(lstat(dir_entry->name, &s) != 0)
-		{
-			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-					dir_entry->name);
-			log_cwd();
-
-			dir_entry->type = UNKNOWN;
-			dir_entry->size = 0;
-			dir_entry->mode = 0;
-			dir_entry->uid = -1;
-			dir_entry->gid = -1;
-			dir_entry->mtime = 0;
-			dir_entry->atime = 0;
-			dir_entry->ctime = 0;
-		}
-		else
+		/* Load the inode info or leave blank values in dir_entry. */
+		if(lstat(dir_entry->name, &s) == 0)
 		{
 			dir_entry->type = get_type_from_mode(s.st_mode);
 			dir_entry->size = (uintmax_t)s.st_size;
@@ -2538,6 +2485,12 @@ fill_dir_list(FileView *view)
 			dir_entry->mtime = s.st_mtime;
 			dir_entry->atime = s.st_atime;
 			dir_entry->ctime = s.st_ctime;
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+					dir_entry->name);
+			log_cwd();
 		}
 
 		if(dir_entry->type == UNKNOWN)
@@ -2556,7 +2509,8 @@ fill_dir_list(FileView *view)
 			}
 		}
 
-		name_len += get_filetype_decoration_width(dir_entry->type);
+		name_len = strlen(dir_entry->name)
+		         + get_filetype_decoration_width(dir_entry->type);
 		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	closedir(dir);
@@ -2619,22 +2573,7 @@ fill_dir_list(FileView *view)
 
 		dir_entry = view->dir_entry + view->list_rows;
 
-		name_len = strlen(ffd.cFileName);
-		/* Allocate extra for adding / to directories. */
-		dir_entry->name = strdup(ffd.cFileName);
-		if(dir_entry->name == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			FindClose(hfind);
-			return -1;
-		}
-
-		dir_entry->origin = NULL;
-
-		/* All files start as unselected and unmatched */
-		dir_entry->selected = 0;
-		dir_entry->was_selected = 0;
-		dir_entry->search_match = 0;
+		init_dir_entry(dir_entry, ffd.cFileName);
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
 		dir_entry->attrs = ffd.dwFileAttributes;
@@ -2659,7 +2598,8 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
-		name_len += get_filetype_decoration_width(dir_entry->type);
+		name_len = strlen(dir_entry->name)
+		         + get_filetype_decoration_width(dir_entry->type);
 		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	while(FindNextFileA(hfind, &ffd));
@@ -3005,54 +2945,62 @@ add_parent_dir(FileView *view)
 
 	dir_entry = &view->dir_entry[view->list_rows];
 
-	dir_entry->name = strdup("..");
-	if(dir_entry->name == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
+	init_dir_entry(dir_entry, "..");
+	dir_entry->type = DIRECTORY;
+
 	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
 
 	view->list_rows++;
 
-	dir_entry->origin = NULL;
-
-	/* All files start as unselected and unmatched */
-	dir_entry->selected = 0;
-	dir_entry->was_selected = 0;
-	dir_entry->search_match = 0;
-
-	dir_entry->type = DIRECTORY;
-
-	/* Load the inode info */
+	/* Load the inode info or leave blank values in dir_entry. */
 	if(lstat(dir_entry->name, &s) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);
 		log_cwd();
+		return;
+	}
 
-		dir_entry->size = 0;
+	dir_entry->size = (uintmax_t)s.st_size;
 #ifndef _WIN32
-		dir_entry->mode = 0;
-		dir_entry->uid = -1;
-		dir_entry->gid = -1;
+	dir_entry->mode = s.st_mode;
+	dir_entry->uid = s.st_uid;
+	dir_entry->gid = s.st_gid;
 #endif
-		dir_entry->mtime = 0;
-		dir_entry->atime = 0;
-		dir_entry->ctime = 0;
-	}
-	else
-	{
-		dir_entry->size = (uintmax_t)s.st_size;
+	dir_entry->mtime = s.st_mtime;
+	dir_entry->atime = s.st_atime;
+	dir_entry->ctime = s.st_ctime;
+}
+
+/* Initializes dir_entry_t with name and all other fields with default
+ * values. */
+static void
+init_dir_entry(dir_entry_t *entry, const char name[])
+{
+	entry->name = strdup(name);
+	entry->origin = NULL;
+
+	entry->size = 0ULL;
 #ifndef _WIN32
-		dir_entry->mode = s.st_mode;
-		dir_entry->uid = s.st_uid;
-		dir_entry->gid = s.st_gid;
+	entry->uid = (uid_t)-1;
+	entry->gid = (gid_t)-1;
+	entry->mode = (mode_t)0;
+#else
+	entry->attrs = 0;
 #endif
-		dir_entry->mtime = s.st_mtime;
-		dir_entry->atime = s.st_atime;
-		dir_entry->ctime = s.st_ctime;
-	}
+
+	entry->mtime = (time_t)0;
+	entry->atime = (time_t)0;
+	entry->ctime = (time_t)0;
+
+	entry->type = UNKNOWN;
+
+	/* All files start as unselected and unmatched. */
+	entry->selected = 0;
+	entry->was_selected = 0;
+	entry->search_match = 0;
+
+	entry->list_num = -1;
 }
 
 void
