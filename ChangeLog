@@ -36,6 +36,9 @@
 	Fixed UI glitch related to considering 'classify' option for ".." entry in
 	directories without files.
 
+	Fixed 'lsview' layout calculation for non-ascii names, which used too much
+	space.
+
 	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
 	installed Vim documentation is used.  Thanks to ranousse.
 
