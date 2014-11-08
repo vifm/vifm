@@ -144,7 +144,7 @@ typedef struct
 	FileType type;
 
 	int selected;
-	int was_selected; /* Temporary field to store previous selection state. */
+	int was_selected; /* Stores previous selection state in Visual mode. */
 
 	int search_match;
 
