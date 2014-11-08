@@ -148,6 +148,7 @@ static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(dir_entry_t *entry, const char name[]);
+static void update_max_filename_len(FileView *view, const dir_entry_t *entry);
 static int load_unfiltered_list(FileView *const view);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
@@ -2430,7 +2431,6 @@ fill_dir_list(FileView *view)
 	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
 	{
 		dir_entry_t *dir_entry;
-		size_t name_len;
 		struct stat s;
 
 		/* Ignore the "." directory. */
@@ -2509,9 +2509,7 @@ fill_dir_list(FileView *view)
 			}
 		}
 
-		name_len = strlen(dir_entry->name)
-		         + get_filetype_decoration_width(dir_entry->type);
-		view->max_filename_len = MAX(view->max_filename_len, name_len);
+		update_max_filename_len(view, dir_entry);
 	}
 	closedir(dir);
 #else
@@ -2600,9 +2598,7 @@ fill_dir_list(FileView *view)
 
 		++view->list_rows;
 
-		name_len = strlen(dir_entry->name)
-		         + get_filetype_decoration_width(dir_entry->type);
-		view->max_filename_len = MAX(view->max_filename_len, name_len);
+		update_max_filename_len(view, dir_entry);
 	}
 	while(FindNextFileA(hfind, &ffd));
 	FindClose(hfind);
@@ -2938,7 +2934,6 @@ add_parent_dir(FileView *view)
 {
 	dir_entry_t *dir_entry;
 	struct stat s;
-	size_t name_len;
 
 	view->dir_entry = realloc(view->dir_entry,
 			sizeof(dir_entry_t)*(view->list_rows + 1));
@@ -2953,9 +2948,7 @@ add_parent_dir(FileView *view)
 	init_dir_entry(dir_entry, "..");
 	dir_entry->type = DIRECTORY;
 
-	name_len = strlen(dir_entry->name)
-	         + get_filetype_decoration_width(dir_entry->type);
-	view->max_filename_len = MAX(view->max_filename_len, name_len);
+	update_max_filename_len(view, dir_entry);
 
 	++view->list_rows;
 
@@ -3008,6 +3001,18 @@ init_dir_entry(dir_entry_t *entry, const char name[])
 	entry->search_match = 0;
 
 	entry->list_num = -1;
+}
+
+/* Updates maximum filename length in the view using the entry. */
+static void
+update_max_filename_len(FileView *view, const dir_entry_t *entry)
+{
+	const size_t name_len = strlen(entry->name)
+	                      + get_filetype_decoration_width(entry->type);
+	if(name_len > view->max_filename_len)
+	{
+		view->max_filename_len = name_len;
+	}
 }
 
 void
