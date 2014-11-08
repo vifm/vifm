@@ -142,7 +142,7 @@ static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
 static void sort_dir_list(int msg, FileView *view);
-static void rescue_from_empty_filelist(FileView * view);
+static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
@@ -2823,8 +2823,12 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(view->list_rows < 1)
 	{
-		rescue_from_empty_filelist(view);
-		return 1;
+		if(rescue_from_empty_filelist(view))
+		{
+			return 0;
+		}
+
+		add_parent_dir(view);
 	}
 
 	if(reload && view->selected_files != 0)
@@ -2899,33 +2903,29 @@ sort_dir_list(int msg, FileView *view)
 }
 
 /* Performs actions needed to rescue from abnormal situation with empty
- * filelist. */
-static void
-rescue_from_empty_filelist(FileView * view)
+ * filelist.  Returns non-zero if file list was reloaded. */
+static int
+rescue_from_empty_filelist(FileView *view)
 {
 	/*
 	 * It is possible to set the file name filter so that no files are showing
 	 * in the / directory.  All other directories will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
-	if(is_path_absolute(view->curr_dir) && !filter_is_empty(&view->manual_filter))
+	if(filter_is_empty(&view->manual_filter))
 	{
-		show_error_msgf("Filter error",
-				"The %s\"%s\" pattern did not match any files. It was reset.",
-				view->invert ? "" : "inverted ", view->manual_filter.raw);
-		filter_clear(&view->auto_filter);
-		filter_clear(&view->manual_filter);
-		view->invert = 1;
-
-		load_dir_list(view, 1);
-	}
-	else
-	{
-		add_parent_dir(view);
+		return 0;
 	}
 
-	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view);
+	show_error_msgf("Filter error",
+			"The %s\"%s\" pattern did not match any files. It was reset.",
+			view->invert ? "" : "inverted ", view->manual_filter.raw);
+	filter_clear(&view->auto_filter);
+	filter_clear(&view->manual_filter);
+	view->invert = 1;
+
+	load_dir_list(view, 1);
+	return 1;
 }
 
 /* Adds parent directory entry (..) to filelist. */
