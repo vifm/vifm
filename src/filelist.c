@@ -505,7 +505,7 @@ reset_view(FileView *view)
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
-	view->max_filename_len = 0;
+	view->max_filename_width = 0;
 	view->column_count = 1;
 
 	view->num_type = NT_NONE;
@@ -1490,7 +1490,7 @@ static size_t
 calculate_column_width(FileView *view)
 {
 	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
-	return MIN(view->max_filename_len + column_gap,
+	return MIN(view->max_filename_width + column_gap,
 	           ui_view_available_width(view));
 }
 
@@ -2814,8 +2814,8 @@ populate_dir_list_internal(FileView *view, int reload)
 		add_parent_dir(view);
 	}
 
-	/* Calculate maximum filename length after all entries are in place. */
-	view->max_filename_len = get_max_filename_width(view);
+	/* Calculate maximum filename width after all entries are in place. */
+	view->max_filename_width = get_max_filename_width(view);
 
 	if(reload && view->selected_files != 0)
 	{

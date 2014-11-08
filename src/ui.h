@@ -129,7 +129,7 @@ typedef struct
 {
 	char *name;
 	char *origin;  /* Location where this file comes from, NULL if from
-	                  curr_dir. */
+	                * curr_dir. */
 	uint64_t size;
 #ifndef _WIN32
 	uid_t uid;
@@ -246,7 +246,9 @@ typedef struct
 
 	/* ls-like view related fields */
 	int ls_view; /* non-zero if ls-like view is enabled */
-	size_t max_filename_len; /* max length of filename in current directory */
+	size_t max_filename_width; /* Maximum filename width (length in character
+	                            * positions on the screen) among all entries of
+	                            * the file list. */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 
