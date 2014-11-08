@@ -2382,7 +2382,7 @@ fill_with_shared(FileView *view)
 					continue;
 				}
 
-				dir_entry = view->dir_entry + view->list_rows;
+				dir_entry = &view->dir_entry[view->list_rows];
 
 				init_dir_entry(dir_entry, name_buf);
 				dir_entry->type = DIRECTORY;
@@ -2470,7 +2470,7 @@ fill_dir_list(FileView *view)
 			return -1;
 		}
 
-		dir_entry = view->dir_entry + view->list_rows;
+		dir_entry = &view->dir_entry[view->list_rows];
 
 		init_dir_entry(dir_entry, d->d_name);
 
@@ -2563,7 +2563,7 @@ fill_dir_list(FileView *view)
 		}
 
 		view->dir_entry = realloc(view->dir_entry,
-				(view->list_rows + 1) * sizeof(dir_entry_t));
+				(view->list_rows + 1)*sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -2571,7 +2571,7 @@ fill_dir_list(FileView *view)
 			return -1;
 		}
 
-		dir_entry = view->dir_entry + view->list_rows;
+		dir_entry = &view->dir_entry[view->list_rows];
 
 		init_dir_entry(dir_entry, ffd.cFileName);
 
@@ -2597,7 +2597,9 @@ fill_dir_list(FileView *view)
 		{
 			dir_entry->type = REGULAR;
 		}
-		view->list_rows++;
+
+		++view->list_rows;
+
 		name_len = strlen(dir_entry->name)
 		         + get_filetype_decoration_width(dir_entry->type);
 		view->max_filename_len = MAX(view->max_filename_len, name_len);
@@ -2732,7 +2734,9 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 	{
 		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
 				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
+		{
 			load_dir_list(other_view, 1);
+		}
 	}
 }
 
@@ -2950,7 +2954,7 @@ add_parent_dir(FileView *view)
 
 	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
 
-	view->list_rows++;
+	++view->list_rows;
 
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(lstat(dir_entry->name, &s) != 0)
@@ -3537,11 +3541,15 @@ load_saving_pos(FileView *view, int reload)
 		return;
 	}
 
-	snprintf(filename, sizeof(filename), "%s",
-			view->dir_entry[view->list_pos].name);
+	copy_str(filename, sizeof(filename), view->dir_entry[view->list_pos].name);
 	load_dir_list_internal(view, reload, 1);
+
 	pos = find_file_pos_in_list(view, filename);
-	pos = (pos >= 0) ? pos : view->list_pos;
+	if(pos < 0)
+	{
+		pos = view->list_pos;
+	}
+
 	if(view == curr_view)
 	{
 		move_to_list_pos(view, pos);
