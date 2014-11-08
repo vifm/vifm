@@ -33,6 +33,9 @@
 
 	Fixed quite rare UI glitch right after updating 'classify'.
 
+	Fixed UI glitch related to considering 'classify' option for ".." entry in
+	directories without files.
+
 	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
 	installed Vim documentation is used.  Thanks to ranousse.
 

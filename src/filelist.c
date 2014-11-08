@@ -2938,6 +2938,7 @@ add_parent_dir(FileView *view)
 {
 	dir_entry_t *dir_entry;
 	struct stat s;
+	size_t name_len;
 
 	view->dir_entry = realloc(view->dir_entry,
 			sizeof(dir_entry_t)*(view->list_rows + 1));
@@ -2952,7 +2953,9 @@ add_parent_dir(FileView *view)
 	init_dir_entry(dir_entry, "..");
 	dir_entry->type = DIRECTORY;
 
-	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
+	name_len = strlen(dir_entry->name)
+	         + get_filetype_decoration_width(dir_entry->type);
+	view->max_filename_len = MAX(view->max_filename_len, name_len);
 
 	++view->list_rows;
 
