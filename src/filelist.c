@@ -148,7 +148,7 @@ static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(dir_entry_t *entry, const char name[]);
-static void update_max_filename_len(FileView *view, const dir_entry_t *entry);
+static size_t get_max_ui_filename_len(const FileView *view);
 static int load_unfiltered_list(FileView *const view);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
@@ -2419,7 +2419,6 @@ fill_dir_list(FileView *view)
 	const int is_root = is_root_dir(view->curr_dir);
 
 	view->matches = 0;
-	view->max_filename_len = 0;
 
 #ifndef _WIN32
 	DIR *dir;
@@ -2508,8 +2507,6 @@ fill_dir_list(FileView *view)
 				dir_entry->mode = st.st_mode;
 			}
 		}
-
-		update_max_filename_len(view, dir_entry);
 	}
 	closedir(dir);
 #else
@@ -2597,8 +2594,6 @@ fill_dir_list(FileView *view)
 		}
 
 		++view->list_rows;
-
-		update_max_filename_len(view, dir_entry);
 	}
 	while(FindNextFileA(hfind, &ffd));
 	FindClose(hfind);
@@ -2831,6 +2826,9 @@ populate_dir_list_internal(FileView *view, int reload)
 		add_parent_dir(view);
 	}
 
+	/* Calculate maximum filename length after all entries are in place. */
+	view->max_filename_len = get_max_ui_filename_len(view);
+
 	if(reload && view->selected_files != 0)
 	{
 		reset_selected_files(view, need_free);
@@ -2948,8 +2946,6 @@ add_parent_dir(FileView *view)
 	init_dir_entry(dir_entry, "..");
 	dir_entry->type = DIRECTORY;
 
-	update_max_filename_len(view, dir_entry);
-
 	++view->list_rows;
 
 	/* Load the inode info or leave blank values in dir_entry. */
@@ -3003,16 +2999,24 @@ init_dir_entry(dir_entry_t *entry, const char name[])
 	entry->list_num = -1;
 }
 
-/* Updates maximum filename length in the view using the entry. */
-static void
-update_max_filename_len(FileView *view, const dir_entry_t *entry)
+/* Finds maximum effective (UI) filename length among all entries of the
+ * view.  Returns the length. */
+static size_t
+get_max_ui_filename_len(const FileView *view)
 {
-	const size_t name_len = strlen(entry->name)
-	                      + get_filetype_decoration_width(entry->type);
-	if(name_len > view->max_filename_len)
+	size_t max_len = 0UL;
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
 	{
-		view->max_filename_len = name_len;
+		const dir_entry_t *const entry = &view->dir_entry[i];
+		const size_t name_len = strlen(entry->name)
+		                      + get_filetype_decoration_width(entry->type);
+		if(name_len > max_len)
+		{
+			max_len = name_len;
+		}
 	}
+	return max_len;
 }
 
 void
