@@ -39,6 +39,9 @@
 	Fixed 'lsview' layout calculation for non-ascii names, which used too much
 	space.
 
+	Fixed 'lsview' entry highlight minor glitch related to symbolic links to
+	directories.
+
 	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
 	installed Vim documentation is used.  Thanks to ranousse.
 

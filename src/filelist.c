@@ -137,7 +137,6 @@ static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
-static size_t get_filetype_decoration_width(FileType type);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -148,7 +147,9 @@ static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(dir_entry_t *entry, const char name[]);
-static size_t get_max_ui_filename_len(const FileView *view);
+static size_t get_max_filename_width(const FileView *view);
+static size_t get_filename_width(const FileView *view, int i);
+static size_t get_filetype_decoration_width(FileType type);
 static int load_unfiltered_list(FileView *const view);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
@@ -1338,10 +1339,7 @@ calculate_print_width(const FileView *view, int i, size_t max_width)
 {
 	if(view->ls_view)
 	{
-		const FileType target_type = ui_view_entry_target_type(view, i);
-		const dir_entry_t *const entry = &view->dir_entry[i];
-		const size_t raw_name_width = get_screen_string_length(entry->name)
-		                            + get_filetype_decoration_width(target_type);
+		const size_t raw_name_width = get_filename_width(view, i);
 		return MIN(max_width - 1, raw_name_width);
 	}
 
@@ -2658,16 +2656,6 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	}
 }
 
-/* Returns additional number of characters which are needed to display names of
- * files of specific type. */
-static size_t
-get_filetype_decoration_width(FileType type)
-{
-	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
-	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
-	return prefix_len + suffix_len;
-}
-
 char *
 get_typed_current_fname(const FileView *view)
 {
@@ -2827,7 +2815,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	/* Calculate maximum filename length after all entries are in place. */
-	view->max_filename_len = get_max_ui_filename_len(view);
+	view->max_filename_len = get_max_filename_width(view);
 
 	if(reload && view->selected_files != 0)
 	{
@@ -2999,24 +2987,42 @@ init_dir_entry(dir_entry_t *entry, const char name[])
 	entry->list_num = -1;
 }
 
-/* Finds maximum effective (UI) filename length among all entries of the
- * view.  Returns the length. */
+/* Finds maximum filename width (length in character positions on the screen)
+ * among all entries of the view.  Returns the width. */
 static size_t
-get_max_ui_filename_len(const FileView *view)
+get_max_filename_width(const FileView *view)
 {
 	size_t max_len = 0UL;
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		const dir_entry_t *const entry = &view->dir_entry[i];
-		const size_t name_len = get_screen_string_length(entry->name)
-		                      + get_filetype_decoration_width(entry->type);
+		const size_t name_len = get_filename_width(view, i);
 		if(name_len > max_len)
 		{
 			max_len = name_len;
 		}
 	}
 	return max_len;
+}
+
+/* Gets filename width (length in character positions on the screen) of ith
+ * entry of the view.  Returns the width. */
+static size_t
+get_filename_width(const FileView *view, int i)
+{
+	const FileType target_type = ui_view_entry_target_type(view, i);
+	return get_screen_string_length(view->dir_entry[i].name)
+	     + get_filetype_decoration_width(target_type);
+}
+
+/* Returns additional number of characters which are needed to display names of
+ * files of specific type. */
+static size_t
+get_filetype_decoration_width(FileType type)
+{
+	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
+	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
+	return prefix_len + suffix_len;
 }
 
 void
