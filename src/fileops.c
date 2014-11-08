@@ -835,6 +835,9 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			pos = find_file_pos_in_list(view, files[i]);
 			if(pos == view->list_pos)
 			{
+				/* Rename file in internal structures for correct positioning of cursor
+				 * after reloading, as cursor will be positioned on the file with the
+				 * same name. */
 				(void)replace_string(&view->dir_entry[pos].name, list[i]);
 			}
 		}
@@ -2296,14 +2299,17 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 			continue;
 		}
 
-		if(i == view->list_pos)
-		{
-			(void)replace_string(&view->dir_entry[i].name, dest[j]);
-		}
-
 		if(mv_file(fname, view->curr_dir, dest[j], view->curr_dir, 0, 1, NULL) == 0)
 		{
-			n++;
+			if(i == view->list_pos)
+			{
+				/* Rename file in internal structures for correct positioning of cursor
+				 * after reloading, as cursor will be positioned on the file with the
+				 * same name. */
+				(void)replace_string(&view->dir_entry[i].name, dest[j]);
+			}
+
+			++n;
 		}
 	}
 	cmd_group_end();
