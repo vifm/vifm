@@ -799,10 +799,13 @@ classify_handler(OPT_OP op, optval_t val)
 
 	if(str_to_classify(val.str_val, decorations) == 0)
 	{
-		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
+		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged");
 		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
 
-		update_screen(UT_REDRAW);
+		/* 'classify' option affects columns layout, hence views must be reloaded as
+		 * loading list of files performs calculation of filename properties. */
+		ui_view_schedule_reload(curr_view);
+		ui_view_schedule_reload(other_view);
 	}
 	else
 	{

@@ -31,6 +31,8 @@
 	Fixed crash on navigation to end of line in command-line mode.  Thanks to
 	Christian Fillion (a.k.a. cfillion).
 
+	Fixed quite rare UI glitch right after updating 'classify'.
+
 	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
 	installed Vim documentation is used.  Thanks to ranousse.
 
