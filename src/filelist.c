@@ -3030,7 +3030,16 @@ filter_selected_files(FileView *view)
 
 		if(entry->selected && !is_parent_dir(entry->name))
 		{
-			filter_append(&view->auto_filter, entry->name);
+			const char *name = entry->name;
+			char name_with_slash[NAME_MAX + 1 + 1];
+
+			if(is_directory_entry(entry))
+			{
+				append_slash(entry->name, name_with_slash, sizeof(name_with_slash));
+				name = name_with_slash;
+			}
+
+			filter_append(&view->auto_filter, name);
 		}
 	}
 
