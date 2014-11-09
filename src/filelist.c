@@ -3019,31 +3019,27 @@ add_parent_dir(FileView *view)
 void
 filter_selected_files(FileView *view)
 {
-	int i;
+	dir_entry_t *entry;
 
 	if(!view->selected_files)
 		view->dir_entry[view->list_pos].selected = 1;
 
-	for(i = 0; i < view->list_rows; i++)
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
 	{
-		const dir_entry_t *const entry = &view->dir_entry[i];
+		const char *name = entry->name;
+		char name_with_slash[NAME_MAX + 1 + 1];
 
-		if(entry->selected && !is_parent_dir(entry->name))
+		if(is_directory_entry(entry))
 		{
-			const char *name = entry->name;
-			char name_with_slash[NAME_MAX + 1 + 1];
-
-			if(is_directory_entry(entry))
-			{
-				append_slash(entry->name, name_with_slash, sizeof(name_with_slash));
-				name = name_with_slash;
-			}
-
-			filter_append(&view->auto_filter, name);
+			append_slash(entry->name, name_with_slash, sizeof(name_with_slash));
+			name = name_with_slash;
 		}
+
+		filter_append(&view->auto_filter, name);
 	}
 
-	/* reload view */
+	/* Reload view. */
 	clean_status_bar();
 	load_dir_list(view, 1);
 	move_to_list_pos(view, view->list_pos);
@@ -3832,6 +3828,26 @@ is_directory_entry(const dir_entry_t *entry)
 {
 	return (entry->type == DIRECTORY)
 	    || (entry->type == LINK && get_symlink_type(entry->name) != SLT_UNKNOWN);
+}
+
+int
+iter_selected_entries(FileView *view, dir_entry_t **entry)
+{
+	int next = (*entry == NULL) ? 0 : (*entry - view->dir_entry + 1);
+
+	while(next < view->list_rows)
+	{
+		dir_entry_t *const e = &view->dir_entry[next];
+		if(e->selected && !is_parent_dir(e->name))
+		{
+			*entry = e;
+			return 1;
+		}
+		++next;
+	}
+
+	*entry = NULL;
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

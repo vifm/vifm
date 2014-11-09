@@ -248,6 +248,12 @@ uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 /* Checks whether entry corresponds to a directory.  Returns non-zero if so,
  * otherwise zero is returned. */
 int is_directory_entry(const dir_entry_t *entry);
+/* Loads pointer to the next selected entry in file list of the view.  *entry
+ * should be NULL for the first call and result of previous call otherwise.
+ * Returns zero when there is no more entries to supply, otherwise non-zero is
+ * returned.  List of entries shouldn't be reloaded between invocations of this
+ * function. */
+int iter_selected_entries(FileView *view, dir_entry_t **entry);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);
