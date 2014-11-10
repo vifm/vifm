@@ -3850,5 +3850,12 @@ iter_selected_entries(FileView *view, dir_entry_t **entry)
 	return 0;
 }
 
+int
+entry_to_pos(const FileView *view, const dir_entry_t *entry)
+{
+	const int pos = entry - view->dir_entry;
+	return (pos >= 0 && pos < view->list_rows) ? pos : -1;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

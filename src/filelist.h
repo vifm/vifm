@@ -254,6 +254,9 @@ int is_directory_entry(const dir_entry_t *entry);
  * returned.  List of entries shouldn't be reloaded between invocations of this
  * function. */
 int iter_selected_entries(FileView *view, dir_entry_t **entry);
+/* Maps one of file list entries to its position in the list.  Returns the
+ * position or -1 on wrong entry. */
+int entry_to_pos(const FileView *view, const dir_entry_t *entry);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

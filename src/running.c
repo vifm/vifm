@@ -334,7 +334,7 @@ run_file(FileView *view, int dont_execute)
 	assoc_record_t program = {};
 	int undef;
 	int same;
-	int i;
+	dir_entry_t *entry;
 	int no_multi_run = 0;
 
 	if(!view->dir_entry[view->list_pos].selected)
@@ -345,38 +345,40 @@ run_file(FileView *view, int dont_execute)
 	no_multi_run += !multi_run_compat(view, program.command);
 	undef = 0;
 	same = 1;
-	for(i = 0; i < view->list_rows; i++)
+
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
 	{
 		assoc_record_t prog;
 
-		if(!view->dir_entry[i].selected)
-			continue;
-
-		if(!path_exists(view->dir_entry[i].name))
+		if(!path_exists(entry->name))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
-					view->dir_entry[i].name);
+					entry->name);
 			free_assoc_record(&program);
 			return;
 		}
 
-		if(get_default_program_for_file(view->dir_entry[i].name, &prog))
+		if(!get_default_program_for_file(entry->name, &prog))
 		{
-			no_multi_run += !multi_run_compat(view, prog.command);
-			if(assoc_prog_is_empty(&program))
-			{
-				free_assoc_record(&program);
-				program = prog;
-			}
-			else
-			{
-				if(strcmp(prog.command, program.command) != 0)
-					same = 0;
-				free_assoc_record(&prog);
-			}
+			++undef;
+			continue;
+		}
+
+		no_multi_run += !multi_run_compat(view, prog.command);
+		if(assoc_prog_is_empty(&program))
+		{
+			free_assoc_record(&program);
+			program = prog;
 		}
 		else
-			undef++;
+		{
+			if(strcmp(prog.command, program.command) != 0)
+			{
+				same = 0;
+			}
+			free_assoc_record(&prog);
+		}
 	}
 
 	if(!same && undef == 0 && no_multi_run)
@@ -417,19 +419,21 @@ run_file(FileView *view, int dont_execute)
 
 	if(!no_multi_run)
 	{
-		int pos = view->list_pos;
+		dir_entry_t *entry;
+
+		const int pos = view->list_pos;
+
 		free_assoc_record(&program);
 
-		for(i = 0; i < view->list_rows; i++)
+		entry = NULL;
+		while(iter_selected_entries(view, &entry))
 		{
-			if(!view->dir_entry[i].selected)
-				continue;
-			view->list_pos = i;
-			(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
-					&program);
+			view->list_pos = entry_to_pos(view, entry);
+			(void)get_default_program_for_file(entry->name, &program);
 			run_using_prog(view, program.command, dont_execute, 0);
 			free_assoc_record(&program);
 		}
+
 		view->list_pos = pos;
 	}
 	else
