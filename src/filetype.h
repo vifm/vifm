@@ -22,6 +22,8 @@
 
 #include "utils/test_helpers.h"
 
+#define VIFM_PSEUDO_CMD "vifm"
+
 /* Type of file association by it's source. */
 typedef enum
 {
@@ -60,8 +62,6 @@ typedef struct
 	int count;
 }
 assoc_list_t;
-
-#define VIFM_PSEUDO_CMD "vifm"
 
 /* Prototype for external command existence check function. */
 typedef int (*external_command_exists_t)(const char *name);
