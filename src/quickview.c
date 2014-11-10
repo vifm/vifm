@@ -23,6 +23,7 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fclose() feof() fopen() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
@@ -140,7 +141,10 @@ quick_view_file(FileView *view)
 				const char *viewer;
 				FILE *fp;
 
-				viewer = get_viewer_for_file(get_last_path_component(buf));
+				char *const typed_fname = get_typed_fname(buf);
+				viewer = get_viewer_for_file(typed_fname);
+				free(typed_fname);
+
 				if(viewer == NULL && is_dir(buf))
 				{
 					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");

@@ -986,8 +986,9 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 {
 	FILE *fp;
 
-	const char *const viewer =
-		get_viewer_for_file(get_last_path_component(file_to_view));
+	char *const typed_fname = get_typed_fname(file_to_view);
+	const char *const viewer = get_viewer_for_file(typed_fname);
+	free(typed_fname);
 
 	if(is_null_or_empty(viewer))
 	{
@@ -1424,9 +1425,10 @@ is_trying_the_same_file(void)
 static int
 get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
-	const dir_entry_t *entry = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 
 	snprintf(buf, buf_len, "%s/%s", view->curr_dir, entry->name);
+
 	switch(entry->type)
 	{
 		case CHARACTER_DEVICE:

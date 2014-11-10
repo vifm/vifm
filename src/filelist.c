@@ -3857,5 +3857,12 @@ entry_to_pos(const FileView *view, const dir_entry_t *entry)
 	return (pos >= 0 && pos < view->list_rows) ? pos : -1;
 }
 
+char *
+get_typed_fname(const char path[])
+{
+	const char *const last_part = get_last_path_component(path);
+	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
