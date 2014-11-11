@@ -67,7 +67,7 @@ config_filetypes(external_command_exists_t ece_func)
 }
 
 int
-get_default_program_for_file(const char *file, assoc_record_t *result)
+get_default_program_for_file(const char file[], assoc_record_t *result)
 {
 	int j;
 	assoc_records_t records;
@@ -105,7 +105,7 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 	return 1;
 }
 
-char *
+const char *
 get_viewer_for_file(const char file[])
 {
 	int i = get_filetype_number(file, fileviewers);
@@ -133,7 +133,7 @@ get_filetype_number(const char *file, assoc_list_t assoc_list)
 }
 
 assoc_records_t
-get_all_programs_for_file(const char *file)
+get_all_programs_for_file(const char file[])
 {
 	int i;
 	assoc_records_t result = {};

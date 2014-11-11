@@ -76,10 +76,13 @@ assoc_list_t fileviewers;
  * function is not called, the module acts like all commands exist. */
 void config_filetypes(external_command_exists_t ece_func);
 
-/* Returns non-zero on success. */
-int get_default_program_for_file(const char *file, assoc_record_t *result);
+/* Gets default program that can be used to handle the file.  Returns non-zero
+ * on success, otherwise zero is returned. */
+int get_default_program_for_file(const char file[], assoc_record_t *result);
 
-char * get_viewer_for_file(const char file[]);
+/* Gets viewer for file.  Returns NULL if no suitable viewer available,
+ * otherwise returns pointer to string stored internally. */
+const char * get_viewer_for_file(const char file[]);
 
 /* Associates list of comma separated patters with list of comma separated
  * programs either for X or non-X associations and depending on current
@@ -89,8 +92,9 @@ void set_programs(const char patterns[], const char programs[], int for_x,
 
 void set_fileviewer(const char *patterns, const char *viewer);
 
-/* Caller should free only the array, but not its elements. */
-assoc_records_t get_all_programs_for_file(const char *file);
+/* Gets a list of programs associated with a given file name.  Caller should
+ * free only the array, but not its elements. */
+assoc_records_t get_all_programs_for_file(const char file[]);
 
 /* Resets associations set by :filetype, :filextype and :fileviewer commands.
  * Also registers default file associations. */
