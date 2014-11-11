@@ -64,6 +64,8 @@ static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
 static char * convert_old_trash_path(const char trash_path[]);
+static int assoc_exists(assoc_list_t *assocs, const char pattern[],
+		const char cmd[]);
 static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
@@ -520,44 +522,30 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					assoc_record_t prog;
-					if(get_default_program_for_file(line_val, &prog))
+					if(!assoc_exists(&filetypes, line_val, line2))
 					{
-						free_assoc_record(&prog);
-						continue;
+						nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 					}
-					nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 				}
 			}
 			else if(type == LINE_TYPE_XFILETYPE)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					assoc_record_t x_prog;
-					if(get_default_program_for_file(line_val, &x_prog))
+					if(!assoc_exists(&xfiletypes, line_val, line2))
 					{
-						assoc_record_t console_prog;
-						if(get_default_program_for_file(line_val, &console_prog))
-						{
-							if(strcmp(x_prog.command, console_prog.command) == 0)
-							{
-								free_assoc_record(&console_prog);
-								free_assoc_record(&x_prog);
-								continue;
-							}
-						}
-						free_assoc_record(&x_prog);
+						nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 					}
-					nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 				}
 			}
 			else if(type == LINE_TYPE_FILEVIEWER)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(get_viewer_for_file(line_val) != NULL)
-						continue;
-					nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
+					if(!assoc_exists(&fileviewers, line_val, line2))
+					{
+						nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
+					}
 				}
 			}
 			else if(type == LINE_TYPE_COMMAND)
@@ -854,6 +842,34 @@ convert_old_trash_path(const char trash_path[])
 		free(full_path);
 	}
 	return strdup(trash_path);
+}
+
+/* Checks that given pair of pattern and command exists in specified list of
+ * associations.  Returns non-zero if so, otherwise zero is returned. */
+static int
+assoc_exists(assoc_list_t *assocs, const char pattern[], const char cmd[])
+{
+	int i;
+	for(i = 0; i < assocs->count; ++i)
+	{
+		int j;
+
+		const assoc_t assoc = assocs->list[i];
+		if(strcmp(assoc.pattern, pattern) == 0)
+		{
+			continue;
+		}
+
+		for(j = 0; j < assoc.records.count; ++j)
+		{
+			const assoc_record_t ft_record = assoc.records.list[j];
+			if(strcmp(ft_record.command, cmd) == 0)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 /* Writes current values of all options into vifminfo file. */
