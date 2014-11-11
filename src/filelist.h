@@ -217,6 +217,18 @@ void save_view_history(FileView *view, const char *path, const char *file,
 int is_in_view_history(FileView *view, const char *path);
 void clean_positions_in_history(FileView *view);
 
+/* Typed (with trailing slash for directories) file name functions. */
+
+/* Gets typed filename (not path, just name) for current entry of the view.
+ * Allocates memory, that should be freed by the caller. */
+char * get_typed_current_fname(const FileView *view);
+/* Gets typed filename (not path, just name) for the entry.  Allocates memory,
+ * that should be freed by the caller. */
+char * get_typed_entry_fname(const dir_entry_t *entry);
+/* Gets typed filename (not path, just name).  Allocates memory, that should be
+ * freed by the caller. */
+char * get_typed_fname(const char path[]);
+
 /* Other functions. */
 
 FILE * use_info_prog(const char *viewer);
@@ -257,15 +269,6 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
-/* Gets typed filename (not path, just name) for current entry of the view.
- * Allocates memory, that should be freed by the caller. */
-char * get_typed_current_fname(const FileView *view);
-/* Gets typed filename (not path, just name) for the entry.  Allocates memory,
- * that should be freed by the caller. */
-char * get_typed_entry_fname(const dir_entry_t *entry);
-/* Gets typed filename (not path, just name).  Allocates memory, that should be
- * freed by the caller. */
-char * get_typed_fname(const char path[]);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);
