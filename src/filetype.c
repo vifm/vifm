@@ -177,8 +177,8 @@ set_programs(const char patterns[], const char programs[], int for_x, int in_x)
 	free(free_this);
 }
 
-/* Associates patter with list of comma separated programs either for X or non-X
- * associations and depending on current execution environment. */
+/* Associates pattern with list of comma separated programs either for X or
+ * non-X associations and depending on current execution environment. */
 static void
 assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 {
