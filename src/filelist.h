@@ -257,6 +257,12 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
+/* Gets typed filename (not path, just name) for current entry of the view.
+ * Allocates memory, that should be freed by the caller. */
+char * get_typed_current_fname(const FileView *view);
+/* Gets typed filename (not path, just name) for the entry.  Allocates memory,
+ * that should be freed by the caller. */
+char * get_typed_entry_fname(const dir_entry_t *entry);
 /* Gets typed filename (not path, just name).  Allocates memory, that should be
  * freed by the caller. */
 char * get_typed_fname(const char path[]);

@@ -379,16 +379,18 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	const char *filename = get_current_file_name(curr_view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
+	char *const typed_fname = get_typed_current_fname(curr_view);
+	assoc_records_t ft = get_all_programs_for_file(typed_fname);
 
 	complete_progs(str, ft);
 	free(ft.list);
 
-	complete_progs(str, get_magic_handlers(filename));
+	complete_progs(str, get_magic_handlers(typed_fname));
 
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
+
+	free(typed_fname);
 }
 
 static void

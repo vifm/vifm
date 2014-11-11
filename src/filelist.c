@@ -3858,6 +3858,19 @@ entry_to_pos(const FileView *view, const dir_entry_t *entry)
 }
 
 char *
+get_typed_current_fname(const FileView *view)
+{
+	return get_typed_entry_fname(&view->dir_entry[view->list_pos]);
+}
+
+char *
+get_typed_entry_fname(const dir_entry_t *entry)
+{
+	const char *const name = entry->name;
+	return is_directory_entry(entry) ? format_str("%s/", name) : strdup(name);
+}
+
+char *
 get_typed_fname(const char path[])
 {
 	const char *const last_part = get_last_path_component(path);

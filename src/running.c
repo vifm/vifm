@@ -1045,9 +1045,10 @@ output_to_nowhere(const char *cmd)
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
-	char *filename = get_current_file_name(view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-	assoc_records_t magic = get_magic_handlers(filename);
+	char *const typed_fname = get_typed_current_fname(view);
+	assoc_records_t ft = get_all_programs_for_file(typed_fname);
+	assoc_records_t magic = get_magic_handlers(typed_fname);
+	free(typed_fname);
 
 	if(try_run_with_filetype(view, ft, beginning, background))
 	{
