@@ -975,30 +975,38 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 		int prev_count, char *prev[])
 {
 	int i;
+
 	fprintf(fp, "\n# %s:\n", str);
-	for(i = 0; i < assocs->count; i++)
+
+	for(i = 0; i < assocs->count; ++i)
 	{
 		int j;
+
 		assoc_t assoc = assocs->list[i];
-		for(j = 0; j < assoc.records.count; j++)
+
+		for(j = 0; j < assoc.records.count; ++j)
 		{
 			assoc_record_t ft_record = assoc.records.list[j];
+
 			/* The type check is to prevent builtin fake associations to be written
 			 * into vifminfo file. */
-			if(ft_record.command[0] != '\0' && ft_record.type != ART_BUILTIN)
+			if(ft_record.command[0] == '\0' || ft_record.type == ART_BUILTIN)
 			{
-				if(ft_record.description[0] == '\0')
-				{
-					fprintf(fp, "%c%s\n\t%s\n", mark, assoc.pattern, ft_record.command);
-				}
-				else
-				{
-					fprintf(fp, "%c%s\n\t{%s}%s\n", mark, assoc.pattern,
-							ft_record.description, ft_record.command);
-				}
+				continue;
+			}
+
+			if(ft_record.description[0] == '\0')
+			{
+				fprintf(fp, "%c%s\n\t%s\n", mark, assoc.pattern, ft_record.command);
+			}
+			else
+			{
+				fprintf(fp, "%c%s\n\t{%s}%s\n", mark, assoc.pattern,
+						ft_record.description, ft_record.command);
 			}
 		}
 	}
+
 	for(i = 0; i < prev_count; i += 2)
 	{
 		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
