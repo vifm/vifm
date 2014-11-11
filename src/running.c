@@ -331,6 +331,7 @@ run_file(FileView *view, int dont_execute)
 {
 	/* TODO: refactor this function run_file() */
 
+	char *typed_fname;
 	assoc_record_t program = {};
 	int undef;
 	int same;
@@ -340,8 +341,10 @@ run_file(FileView *view, int dont_execute)
 	if(!view->dir_entry[view->list_pos].selected)
 		clean_selected_files(view);
 
-	(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
-			&program);
+	typed_fname = get_typed_current_fname(view);
+	(void)get_default_program_for_file(typed_fname, &program);
+	free(typed_fname);
+
 	no_multi_run += !multi_run_compat(view, program.command);
 	undef = 0;
 	same = 1;
@@ -350,6 +353,8 @@ run_file(FileView *view, int dont_execute)
 	while(iter_selected_entries(view, &entry))
 	{
 		assoc_record_t prog;
+		char *typed_fname;
+		int has_def_prog;
 
 		if(!path_exists(entry->name))
 		{
@@ -359,7 +364,11 @@ run_file(FileView *view, int dont_execute)
 			return;
 		}
 
-		if(!get_default_program_for_file(entry->name, &prog))
+		typed_fname = get_typed_entry_fname(entry);
+		has_def_prog = get_default_program_for_file(typed_fname, &prog);
+		free(typed_fname);
+
+		if(!has_def_prog)
 		{
 			++undef;
 			continue;
@@ -428,9 +437,15 @@ run_file(FileView *view, int dont_execute)
 		entry = NULL;
 		while(iter_selected_entries(view, &entry))
 		{
+			char *typed_fname;
+
+			typed_fname = get_typed_entry_fname(entry);
+			(void)get_default_program_for_file(typed_fname, &program);
+			free(typed_fname);
+
 			view->list_pos = entry_to_pos(view, entry);
-			(void)get_default_program_for_file(entry->name, &program);
 			run_using_prog(view, program.command, dont_execute, 0);
+
 			free_assoc_record(&program);
 		}
 
