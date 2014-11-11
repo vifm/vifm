@@ -23,6 +23,7 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fclose() feof() fopen() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
@@ -80,7 +81,7 @@ toggle_quick_view(void)
 void
 quick_view_file(FileView *view)
 {
-	char buf[PATH_MAX];
+	char path[PATH_MAX];
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -104,7 +105,7 @@ quick_view_file(FileView *view)
 
 	werase(other_view->win);
 
-	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
 
 	switch(view->dir_entry[view->list_pos].type)
@@ -124,14 +125,14 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
 			break;
 		case LINK:
-			if(get_link_target_abs(buf, view->curr_dir, buf, sizeof(buf)) != 0)
+			if(get_link_target_abs(path, view->curr_dir, path, sizeof(path)) != 0)
 			{
 				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
 				break;
 			}
-			if(!ends_with_slash(buf) && is_dir(buf))
+			if(!ends_with_slash(path) && is_dir(path))
 			{
-				strncat(buf, "/", sizeof(buf) - strlen(buf) - 1);
+				strncat(path, "/", sizeof(path) - strlen(path) - 1);
 			}
 			/* break intensionally omitted */
 		case UNKNOWN:
@@ -140,16 +141,23 @@ quick_view_file(FileView *view)
 				const char *viewer;
 				FILE *fp;
 
-				viewer = get_viewer_for_file(get_last_path_component(buf));
-				if(viewer == NULL && is_dir(buf))
+				char *const typed_fname = get_typed_fname(path);
+				viewer = get_viewer_for_file(typed_fname);
+				free(typed_fname);
+
+				if(viewer == NULL && is_dir(path))
 				{
 					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
 					break;
 				}
 				if(is_null_or_empty(viewer))
-					fp = fopen(buf, "rb");
+				{
+					fp = fopen(path, "rb");
+				}
 				else
+				{
 					fp = use_info_prog(viewer);
+				}
 
 				if(fp == NULL)
 				{
@@ -162,8 +170,8 @@ quick_view_file(FileView *view)
 				view_file(fp, cfg.wrap_quick_view);
 
 				fclose(fp);
+				break;
 			}
-			break;
 	}
 	refresh_view_win(other_view);
 

@@ -22,6 +22,8 @@
 
 #include "utils/test_helpers.h"
 
+#define VIFM_PSEUDO_CMD "vifm"
+
 /* Type of file association by it's source. */
 typedef enum
 {
@@ -61,8 +63,6 @@ typedef struct
 }
 assoc_list_t;
 
-#define VIFM_PSEUDO_CMD "vifm"
-
 /* Prototype for external command existence check function. */
 typedef int (*external_command_exists_t)(const char *name);
 
@@ -75,27 +75,42 @@ assoc_list_t fileviewers;
 /* Configures external functions for filetype unit.  If ece_func is NULL or this
  * function is not called, the module acts like all commands exist. */
 void config_filetypes(external_command_exists_t ece_func);
-/* Returns non-zero on success. */
-int get_default_program_for_file(const char *file, assoc_record_t *result);
-char * get_viewer_for_file(const char file[]);
+
+/* Gets default program that can be used to handle the file.  Returns non-zero
+ * on success, otherwise zero is returned. */
+int get_default_program_for_file(const char file[], assoc_record_t *result);
+
+/* Gets viewer for file.  Returns NULL if no suitable viewer available,
+ * otherwise returns pointer to string stored internally. */
+const char * get_viewer_for_file(const char file[]);
+
 /* Associates list of comma separated patters with list of comma separated
  * programs either for X or non-X associations and depending on current
  * execution environment. */
 void set_programs(const char patterns[], const char programs[], int for_x,
 		int in_x);
+
 void set_fileviewer(const char *patterns, const char *viewer);
-/* Caller should free only the array, but not its elements. */
-assoc_records_t get_all_programs_for_file(const char *file);
+
+/* Gets a list of programs associated with a given file name.  Caller should
+ * free only the array, but not its elements. */
+assoc_records_t get_all_programs_for_file(const char file[]);
+
 /* Resets associations set by :filetype, :filextype and :fileviewer commands.
  * Also registers default file associations. */
 void reset_all_file_associations(int in_x);
+
 /* After this call structure contains NULL values */
 void free_assoc_records(assoc_records_t *records);
+
 /* After this call structure contains NULL values */
 void free_assoc_record(assoc_record_t *record);
+
 void add_assoc_record(assoc_records_t *assocs, const char *command,
 		const char *description);
+
 void add_assoc_records(assoc_records_t *assocs, const assoc_records_t *src);
+
 /* Returns non-zero for an empty assoc_record_t structure. */
 int assoc_prog_is_empty(const assoc_record_t *record);
 

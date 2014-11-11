@@ -69,6 +69,7 @@ setup(void)
 	rwin.dir_entry[4].selected = 0;
 	rwin.dir_entry[5].selected = 0;
 	rwin.dir_entry[6].selected = 0;
+	rwin.dir_entry[7].selected = 0;
 	rwin.selected_files = 0;
 
 	filter_init(&rwin.manual_filter, CASE_SENSATIVE_FILTER);
@@ -78,7 +79,8 @@ setup(void)
 	rwin.column_count = 1;
 }
 
-static void cleanup_view(FileView *view)
+static void
+cleanup_view(FileView *view)
 {
 	int i;
 
@@ -117,20 +119,19 @@ test_filtering_file_does_not_filter_dir(void)
 	filter_selected_files(&rwin);
 
 	assert_hidden(rwin, rwin.dir_entry[6].name, 0);
-	/* Pass 0 as if for file, because we already have trailing slash there. */
-	assert_visible(rwin, rwin.dir_entry[7].name, 0);
+	assert_visible(rwin, rwin.dir_entry[6].name, 1);
 }
 
 static void
 test_filtering_dir_does_not_filter_file(void)
 {
-	rwin.dir_entry[7].selected = 1;
+	rwin.dir_entry[6].selected = 1;
+	rwin.dir_entry[6].type = DIRECTORY;
 	rwin.selected_files = 1;
 
 	filter_selected_files(&rwin);
 
-	/* Pass 0 as if for file, because we already have trailing slash there. */
-	assert_hidden(rwin, rwin.dir_entry[7].name, 0);
+	assert_hidden(rwin, rwin.dir_entry[6].name, 1);
 	assert_visible(rwin, rwin.dir_entry[6].name, 0);
 }
 
@@ -145,6 +146,9 @@ test_filtering_files_does_not_filter_dirs(void)
 	assert_hidden(rwin, rwin.dir_entry[3].name, 0);
 	assert_hidden(rwin, rwin.dir_entry[4].name, 0);
 	assert_hidden(rwin, rwin.dir_entry[5].name, 0);
+	assert_visible(rwin, rwin.dir_entry[6].name, 0);
+	assert_visible(rwin, rwin.dir_entry[7].name, 1);
+	assert_int_equal(8, rwin.list_rows);
 }
 
 static void
@@ -158,6 +162,9 @@ test_filtering_dirs_does_not_filter_files(void)
 	assert_visible(rwin, rwin.dir_entry[3].name, 0);
 	assert_visible(rwin, rwin.dir_entry[4].name, 0);
 	assert_visible(rwin, rwin.dir_entry[5].name, 0);
+	assert_visible(rwin, rwin.dir_entry[6].name, 0);
+	assert_visible(rwin, rwin.dir_entry[7].name, 1);
+	assert_int_equal(8, rwin.list_rows);
 }
 
 static void
@@ -171,6 +178,9 @@ test_filtering_files_and_dirs(void)
 	assert_hidden(rwin, rwin.dir_entry[3].name, 0);
 	assert_hidden(rwin, rwin.dir_entry[4].name, 0);
 	assert_hidden(rwin, rwin.dir_entry[5].name, 0);
+	assert_visible(rwin, rwin.dir_entry[6].name, 0);
+	assert_visible(rwin, rwin.dir_entry[7].name, 1);
+	assert_int_equal(8, rwin.list_rows);
 }
 
 void

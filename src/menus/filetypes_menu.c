@@ -20,6 +20,7 @@
 #include "filetypes_menu.h"
 
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"
@@ -47,9 +48,10 @@ show_filetypes_menu(FileView *view, int background)
 	int i;
 	int max_len;
 
-	const char *const filename = get_current_file_name(view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-	assoc_records_t magic = get_magic_handlers(filename);
+	char *const typed_name = get_typed_current_fname(view);
+	assoc_records_t ft = get_all_programs_for_file(typed_name);
+	assoc_records_t magic = get_magic_handlers(typed_name);
+	free(typed_name);
 
 	init_menu_info(&m, FILETYPE_MENU,
 			strdup("No programs set for this filetype"));
