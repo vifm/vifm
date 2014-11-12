@@ -146,7 +146,8 @@ static void add_parent_dir(FileView *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
-static void init_dir_entry(dir_entry_t *entry, const char name[]);
+static void init_dir_entry(FileView *view, dir_entry_t *entry,
+		const char name[]);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
@@ -572,6 +573,7 @@ load_initial_directory(FileView *view, const char *dir)
 
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = DIRECTORY;
+	view->dir_entry[0].origin = &view->curr_dir[0];
 
 	view->list_rows = 1;
 	if(!is_root_dir(view->curr_dir))
@@ -2383,7 +2385,7 @@ fill_with_shared(FileView *view)
 
 				dir_entry = &view->dir_entry[view->list_rows];
 
-				init_dir_entry(dir_entry, name_buf);
+				init_dir_entry(view, dir_entry, name_buf);
 				dir_entry->type = DIRECTORY;
 
 				++view->list_rows;
@@ -2469,7 +2471,7 @@ fill_dir_list(FileView *view)
 
 		dir_entry = &view->dir_entry[view->list_rows];
 
-		init_dir_entry(dir_entry, d->d_name);
+		init_dir_entry(view, dir_entry, d->d_name);
 
 		/* Load the inode info or leave blank values in dir_entry. */
 		if(lstat(dir_entry->name, &s) == 0)
@@ -2566,7 +2568,7 @@ fill_dir_list(FileView *view)
 
 		dir_entry = &view->dir_entry[view->list_rows];
 
-		init_dir_entry(dir_entry, ffd.cFileName);
+		init_dir_entry(view, dir_entry, ffd.cFileName);
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
 		dir_entry->attrs = ffd.dwFileAttributes;
@@ -2931,7 +2933,7 @@ add_parent_dir(FileView *view)
 
 	dir_entry = &view->dir_entry[view->list_rows];
 
-	init_dir_entry(dir_entry, "..");
+	init_dir_entry(view, dir_entry, "..");
 	dir_entry->type = DIRECTORY;
 
 	++view->list_rows;
@@ -2959,10 +2961,10 @@ add_parent_dir(FileView *view)
 /* Initializes dir_entry_t with name and all other fields with default
  * values. */
 static void
-init_dir_entry(dir_entry_t *entry, const char name[])
+init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 {
 	entry->name = strdup(name);
-	entry->origin = NULL;
+	entry->origin = &view->curr_dir[0];
 
 	entry->size = 0ULL;
 #ifndef _WIN32

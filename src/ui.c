@@ -102,6 +102,7 @@ static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void switch_panes_content(void);
+static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
@@ -1706,7 +1707,26 @@ switch_panes_content(void)
 	lwin = rwin;
 	rwin = tmp_view;
 
+	update_origins(&lwin, &rwin.curr_dir[0]);
+	update_origins(&rwin, &lwin.curr_dir[0]);
+
 	curr_stats.need_update = UT_REDRAW;
+}
+
+/* Updates pointers to main (default) origins in file list entries. */
+static void
+update_origins(FileView *view, const char *old_main_origin)
+{
+	char *const new_origin = &view->curr_dir[0];
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(entry->origin == old_main_origin)
+		{
+			entry->origin = new_origin;
+		}
+	}
 }
 
 void
