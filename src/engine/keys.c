@@ -76,6 +76,7 @@ static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
 		int no_remap);
 static int dispatch_key(key_info_t key_info, keys_info_t *keys_info,
 		key_chunk_t *curr, const wchar_t keys[]);
+static int has_def_handler(void);
 static default_handler def_handler(void);
 static int execute_after_remapping(const wchar_t rhs[],
 		const wchar_t left_keys[], keys_info_t keys_info, key_info_t key_info,
@@ -514,14 +515,14 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	}
 	else
 	{
-		int result = (def_handler() != NULL) ? 0 : KEYS_UNKNOWN;
+		int result = has_def_handler() ? 0 : KEYS_UNKNOWN;
 
 		if(curr->enters == 0)
 		{
 			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
 		}
-		else if(def_handler() != NULL)
+		else if(has_def_handler())
 		{
 			result = def_handler()(curr->key);
 
@@ -532,7 +533,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			}
 		}
 
-		if(result == KEYS_UNKNOWN && def_handler() != NULL)
+		if(result == KEYS_UNKNOWN && has_def_handler())
 		{
 			/* curr shouldn't be freed here as if it was result would be 0. */
 			if(curr->enters == 0)
@@ -554,6 +555,14 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 		return result;
 	}
+}
+
+/* Checks that default handler exists for active mode.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+has_def_handler(void)
+{
+	return (def_handler() != NULL);
 }
 
 /* Gets default handler of active mode.  Returns the handler, which is NULL when
