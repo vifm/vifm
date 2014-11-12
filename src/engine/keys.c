@@ -76,6 +76,7 @@ static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
 		int no_remap);
 static int dispatch_key(key_info_t key_info, keys_info_t *keys_info,
 		key_chunk_t *curr, const wchar_t keys[]);
+static default_handler def_handler(void);
 static int execute_after_remapping(const wchar_t rhs[],
 		const wchar_t left_keys[], keys_info_t keys_info, key_info_t key_info,
 		key_chunk_t *curr);
@@ -513,18 +514,16 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	}
 	else
 	{
-		const default_handler def_handler = def_handlers[vle_mode_get()];
-
-		int result = (def_handler == NULL) ? KEYS_UNKNOWN : 0;
+		int result = (def_handler() != NULL) ? 0 : KEYS_UNKNOWN;
 
 		if(curr->enters == 0)
 		{
 			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
 		}
-		else if(def_handler != NULL)
+		else if(def_handler() != NULL)
 		{
-			result = def_handler(curr->key);
+			result = def_handler()(curr->key);
 
 			if(result == 0)
 			{
@@ -533,12 +532,12 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			}
 		}
 
-		if(result == KEYS_UNKNOWN && def_handler != NULL)
+		if(result == KEYS_UNKNOWN && def_handler() != NULL)
 		{
 			/* curr shouldn't be freed here as if it was result would be 0. */
 			if(curr->enters == 0)
 			{
-				result = def_handler(conf->data.cmd[0]);
+				result = def_handler()(conf->data.cmd[0]);
 				enter_chunk(curr);
 				execute_keys_general(conf->data.cmd + 1, 0, 1, curr->no_remap);
 				leave_chunk(curr);
@@ -548,13 +547,21 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 				int i;
 				for(i = 0; conf->data.cmd[i] != '\0'; i++)
 				{
-					result = def_handler(conf->data.cmd[i]);
+					result = def_handler()(conf->data.cmd[i]);
 				}
 			}
 		}
 
 		return result;
 	}
+}
+
+/* Gets default handler of active mode.  Returns the handler, which is NULL when
+ * not set for active mode. */
+static default_handler
+def_handler(void)
+{
+	return def_handlers[vle_mode_get()];
 }
 
 /* Processes remapping of a key.  Returns error code. */
