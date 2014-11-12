@@ -696,11 +696,15 @@ leave_cmdline_mode(void)
 		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
 	}
 
-	curs_set(FALSE);
-	curr_stats.save_msg = 0;
 	free(input_stat.line);
 	free(input_stat.initial_line);
 	free(input_stat.line_buf);
+	input_stat.line = NULL;
+	input_stat.initial_line = NULL;
+	input_stat.line_buf = NULL;
+
+	curs_set(FALSE);
+	curr_stats.save_msg = 0;
 	clean_status_bar();
 
 	if(vle_mode_is(CMDLINE_MODE))
