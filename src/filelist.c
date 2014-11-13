@@ -565,9 +565,13 @@ void
 load_initial_directory(FileView *view, const char *dir)
 {
 	if(view->curr_dir[0] == '\0')
-		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	{
+		copy_str(view->curr_dir, sizeof(view->curr_dir), dir);
+	}
 	else
+	{
 		dir = view->curr_dir;
+	}
 
 	view->dir_entry = calloc(1, sizeof(dir_entry_t));
 
@@ -577,7 +581,9 @@ load_initial_directory(FileView *view, const char *dir)
 
 	view->list_rows = 1;
 	if(!is_root_dir(view->curr_dir))
+	{
 		chosp(view->curr_dir);
+	}
 	(void)change_directory(view, dir);
 }
 
@@ -598,8 +604,7 @@ get_line_color(FileView* view, int pos)
 			else
 			{
 				char full[PATH_MAX];
-				snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-						view->dir_entry[pos].name);
+				get_full_path_at(view, pos, sizeof(full), full);
 				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
 				{
 					return BROKEN_LINK_COLOR;
@@ -1582,7 +1587,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		return;
 
 	if(path == NULL)
-		path = view->curr_dir;
+		path = view->dir_entry[view->list_pos].origin;
 	if(file == NULL)
 		file = view->dir_entry[view->list_pos].name;
 	if(pos < 0)
@@ -3828,13 +3833,13 @@ uint64_t
 get_file_size_by_entry(const FileView *view, size_t pos)
 {
 	uint64_t size = 0;
-	dir_entry_t *entry = &view->dir_entry[pos];
+	const dir_entry_t *const entry = &view->dir_entry[pos];
 
 	if(entry->type == DIRECTORY)
 	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, entry->name);
-		tree_get_data(curr_stats.dirsize_cache, buf, &size);
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
 	}
 
 	return (size == 0) ? entry->size : size;
@@ -3872,6 +3877,35 @@ entry_to_pos(const FileView *view, const dir_entry_t *entry)
 {
 	const int pos = entry - view->dir_entry;
 	return (pos >= 0 && pos < view->list_rows) ? pos : -1;
+}
+
+void
+get_current_full_path(const FileView *view, size_t buf_len, char buf[])
+{
+	get_full_path_at(view, view->list_pos, buf_len, buf);
+}
+
+void
+get_full_path_at(const FileView *view, int pos, size_t buf_len, char buf[])
+{
+	get_full_path_of(&view->dir_entry[pos], buf_len, buf);
+}
+
+void
+get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
+{
+	snprintf(buf, buf_len, "%s%s%s", entry->origin,
+			ends_with_slash(entry->origin) ? "" : "/", entry->name);
+}
+
+void
+ensure_selection_exists(FileView *view)
+{
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

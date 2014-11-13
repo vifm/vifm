@@ -269,6 +269,11 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
+void get_current_full_path(const FileView *view, size_t buf_len, char buf[]);
+void get_full_path_at(const FileView *view, int pos, size_t buf_len,
+		char buf[]);
+void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
+void ensure_selection_exists(FileView *view);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

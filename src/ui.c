@@ -1992,19 +1992,18 @@ FileType
 ui_view_entry_target_type(const FileView *const view, size_t pos)
 {
 	const dir_entry_t *const entry = &view->dir_entry[pos];
+
 	if(entry->type == LINK)
 	{
-		char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
+		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
 		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
 		                    ? DIRECTORY
 		                    : LINK;
 		free(full_path);
 		return type;
 	}
-	else
-	{
-		return entry->type;
-	}
+
+	return entry->type;
 }
 
 int

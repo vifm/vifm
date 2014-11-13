@@ -879,8 +879,8 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	set_user_bookmark(key_info.multi, view->curr_dir,
-			get_current_file_name(view));
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	set_user_bookmark(key_info.multi, entry->origin, entry->name);
 }
 
 static void
@@ -1056,6 +1056,7 @@ static void
 update_marks(FileView *view)
 {
 	char start_mark, end_mark;
+	const dir_entry_t *start_entry, *end_entry;
 
 	if(start_pos >= view->list_rows)
 	{
@@ -1067,8 +1068,11 @@ update_marks(FileView *view)
 	start_mark = upwards_range ? '<' : '>';
 	end_mark = upwards_range ? '>' : '<';
 
-	set_spec_bookmark(start_mark, view->curr_dir, get_current_file_name(view));
-	set_spec_bookmark(end_mark, view->curr_dir, view->dir_entry[start_pos].name);
+	start_entry = &view->dir_entry[view->list_pos];
+	end_entry = &view->dir_entry[start_pos];
+
+	set_spec_bookmark(start_mark, start_entry->origin, start_entry->name);
+	set_spec_bookmark(end_mark, end_entry->origin, end_entry->name);
 }
 
 static void

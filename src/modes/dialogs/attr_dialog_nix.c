@@ -396,11 +396,11 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	char path[PATH_MAX];
 
 	if(!changed)
+	{
 		return;
+	}
 
-	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
-			view->dir_entry[view->list_pos].name);
-
+	get_current_full_path(view, sizeof(path), path);
 	set_perm_string(view, perms, origin_perms);
 
 	leave_attr_mode();
@@ -530,11 +530,9 @@ static void
 chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs)
 {
-	const char *fname;
 	char path_buf[PATH_MAX];
 
-	fname = view->dir_entry[pos].name;
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, fname);
+	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
 	file_chmod(path_buf, mode, inv_mode, recurse_dirs);
 }
 

@@ -83,10 +83,9 @@ fuse_try_mount(FileView *view, const char *program)
 		}
 	}
 
-	snprintf(file_full_path, PATH_MAX, "%s/%s", view->curr_dir,
-			get_current_file_name(view));
+	get_current_full_path(view, sizeof(file_full_path), file_full_path);
 
-	/* check if already mounted */
+	/* Check if already mounted. */
 	runner = get_mount_by_source(file_full_path);
 
 	if(runner != NULL)
@@ -95,8 +94,10 @@ fuse_try_mount(FileView *view, const char *program)
 	}
 	else
 	{
-		char param[PATH_MAX] = "";
-		/* new file to be mounted */
+		char param[PATH_MAX];
+		param[0] = '\0';
+
+		/* New file to be mounted. */
 		if(starts_with(program, "FUSE_MOUNT2"))
 		{
 			FILE *f;
@@ -253,7 +254,8 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	fuse_item = malloc(sizeof(*fuse_item));
 	copy_str(fuse_item->source_file_name, sizeof(fuse_item->source_file_name),
 			file_full_path);
-	strcpy(fuse_item->source_file_dir, view->curr_dir);
+	copy_str(fuse_item->source_file_dir, sizeof(fuse_item->source_file_dir),
+			view->curr_dir);
 	canonicalize_path(mount_point, fuse_item->mount_point,
 			sizeof(fuse_item->mount_point));
 	fuse_item->mount_point_id = mount_point_id;
@@ -427,7 +429,9 @@ try_unmount_fuse(FileView *view)
 	while(runner)
 	{
 		if(paths_are_equal(runner->mount_point, view->curr_dir))
+		{
 			break;
+		}
 
 		trailer = runner;
 		runner = runner->next;

@@ -26,6 +26,7 @@
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../filelist.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -66,8 +67,7 @@ show_history_menu(FileView *view)
 		/* Change the current dir to reflect the current file. */
 		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
 		{
-			(void)replace_string(&view->history[i].file,
-					view->dir_entry[view->list_pos].name);
+			(void)replace_string(&view->history[i].file, get_current_file_name(view));
 			m.pos = m.len;
 		}
 

@@ -1429,14 +1429,18 @@ delete(key_info_t key_info, int use_trash)
 	keys_info_t keys_info = {};
 
 	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	{
 		return;
+	}
 
 	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
 		if(!query_user_menu("Permanent deletion",
 					"Are you sure you want to delete files permanently?"))
+		{
 			return;
+		}
 		curr_stats.confirmed = 1;
 	}
 
@@ -1462,7 +1466,9 @@ static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	{
 		return;
+	}
 
 	curr_stats.confirmed = 0;
 	if(cfg.confirm)
@@ -1602,8 +1608,9 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = set_user_bookmark(key_info.multi, curr_view->curr_dir,
-			get_current_file_name(curr_view));
+	const dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	curr_stats.save_msg = set_user_bookmark(key_info.multi, entry->origin,
+			entry->name);
 }
 
 static void

@@ -1966,16 +1966,16 @@ edit_cmd(const cmd_info_t *cmd_info)
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
-		char buf[PATH_MAX];
+		char file_to_view[PATH_MAX];
+
 		if(curr_stats.file_picker_mode)
 		{
 			/* The call below does not return. */
 			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
-		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
-				get_current_file_name(curr_view));
-		(void)view_file(buf, -1, -1, 1);
+		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
+		(void)view_file(file_to_view, -1, -1, 1);
 	}
 	else
 	{
@@ -3015,9 +3015,10 @@ mark_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 1)
 	{
 		const int pos = (cmd_info->end == NOT_DEF)
-		  ? curr_view->list_pos : cmd_info->end;
-		return set_user_bookmark(mark, curr_view->curr_dir,
-				curr_view->dir_entry[pos].name);
+		              ? curr_view->list_pos
+		              : cmd_info->end;
+		const dir_entry_t *const entry = &curr_view->dir_entry[pos];
+		return set_user_bookmark(mark, entry->origin, entry->name);
 	}
 
 	expanded_path = expand_tilde(cmd_info->argv[1]);

@@ -363,17 +363,11 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	char path[PATH_MAX];
-
-	if(!changed)
-		return;
-
-	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
-			view->dir_entry[view->list_pos].name);
-
-	set_attrs(view, attrs, origin_attrs);
-
-	leave_attr_mode();
+	if(changed)
+	{
+		set_attrs(view, attrs, origin_attrs);
+		leave_attr_mode();
+	}
 }
 
 /* sets file properties according to users input. forms attribute change mask */
@@ -463,11 +457,9 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
-	const char *fname;
 	char path_buf[PATH_MAX];
 
-	fname = view->dir_entry[pos].name;
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, fname);
+	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
 	file_attrib(path_buf, add, sub, recurse_dirs);
 }
 
@@ -475,7 +467,7 @@ static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 static void
 file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 {
-	/* TODO: set attributes recursively */
+	/* TODO: set attributes recursively. */
 	DWORD attrs = GetFileAttributes(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{

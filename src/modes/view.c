@@ -1336,10 +1336,9 @@ update_with_half_win(key_info_t *const key_info)
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	char buf[PATH_MAX];
-	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	(void)view_file(buf, vi->line + (vi->view->window_rows - 1)/2, -1, 1);
+	char path[PATH_MAX];
+	get_current_full_path(curr_view, sizeof(path), path);
+	(void)view_file(path, vi->line + (vi->view->window_rows - 1)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
 	 * redrawn. */
 	update_screen(UT_REDRAW);
@@ -1427,7 +1426,7 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 
-	snprintf(buf, buf_len, "%s/%s", view->curr_dir, entry->name);
+	get_full_path_of(entry, buf_len, buf);
 
 	switch(entry->type)
 	{
@@ -1439,7 +1438,7 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 #endif
 			return 1;
 		case LINK:
-			if(get_link_target_abs(buf, view->curr_dir, buf, buf_len) != 0)
+			if(get_link_target_abs(buf, entry->origin, buf, buf_len) != 0)
 			{
 				return 1;
 			}

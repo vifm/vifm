@@ -82,6 +82,7 @@ void
 quick_view_file(FileView *view)
 {
 	char path[PATH_MAX];
+	const dir_entry_t *entry;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -105,8 +106,8 @@ quick_view_file(FileView *view)
 
 	werase(other_view->win);
 
-	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
-			view->dir_entry[view->list_pos].name);
+	entry = &view->dir_entry[view->list_pos];
+	get_full_path_of(entry, sizeof(path), path);
 
 	switch(view->dir_entry[view->list_pos].type)
 	{
@@ -125,7 +126,7 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
 			break;
 		case LINK:
-			if(get_link_target_abs(path, view->curr_dir, path, sizeof(path)) != 0)
+			if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0)
 			{
 				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
 				break;

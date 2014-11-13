@@ -623,11 +623,12 @@ delete_files_in_bg(void *arg)
 static void
 rename_file_cb(const char new_name[])
 {
-	char *filename = get_current_file_name(curr_view);
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];
 	int mv_res;
-	char **filename_ptr;
+	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	const char *const fname = entry->name;
+	const char *const forigin = entry->origin;
 
 	if(is_null_or_empty(new_name))
 	{
@@ -644,16 +645,15 @@ rename_file_cb(const char new_name[])
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext);
 
-	if(check_file_rename(curr_view->curr_dir, filename, new, ST_DIALOG) <= 0)
+	if(check_file_rename(forigin, fname, new, ST_DIALOG) <= 0)
 	{
 		return;
 	}
 
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
-			replace_home_part(curr_view->curr_dir), filename, new);
+			replace_home_part(forigin), fname, new);
 	cmd_group_begin(buf);
-	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0,
-			1, NULL);
+	mv_res = mv_file(fname, forigin, new, forigin, 0, 1, NULL);
 	cmd_group_end();
 	if(mv_res != 0)
 	{
@@ -664,8 +664,7 @@ rename_file_cb(const char new_name[])
 	/* Rename file in internal structures for correct positioning of cursor after
 	 * reloading, as cursor will be positioned on the file with the same name.
 	 * TODO: maybe create a function in ui or filelist to do this. */
-	filename_ptr = &curr_view->dir_entry[curr_view->list_pos].name;
-	(void)replace_string(filename_ptr, new);
+	(void)replace_string(&entry->name, new);
 
 	ui_view_schedule_reload(curr_view);
 }
@@ -807,8 +806,10 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
+			{
 				undo_group();
-			status_bar_error("Temporary rename error");
+			}
+			show_error_msg("Rename", "Failed to perform temporary rename");
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -1393,7 +1394,7 @@ change_link_cb(const char new_target[])
 
 	curr_stats.confirmed = 1;
 
-	fname = curr_view->dir_entry[curr_view->list_pos].name;
+	fname = get_current_file_name(curr_view);
 	if(get_link_target(fname, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
@@ -1404,12 +1405,16 @@ change_link_cb(const char new_target[])
 			replace_home_part(curr_view->curr_dir), fname, linkto, new_target);
 	cmd_group_begin(buf);
 
-	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, fname);
+	get_current_full_path(curr_view, sizeof(buf), buf);
 
 	if(perform_operation(OP_REMOVESL, NULL, NULL, buf, NULL) == 0)
+	{
 		add_operation(OP_REMOVESL, NULL, NULL, buf, linkto);
+	}
 	if(perform_operation(OP_SYMLINK2, NULL, NULL, new_target, buf) == 0)
+	{
 		add_operation(OP_SYMLINK2, NULL, NULL, new_target, buf);
+	}
 
 	cmd_group_end();
 }
@@ -1838,22 +1843,23 @@ is_clone_list_ok(int count, char **list)
 static int
 is_dir_path(FileView *view, const char *path, char *buf)
 {
-	strcpy(buf, view->curr_dir);
-
 	if(path[0] == '/' || path[0] == '~')
 	{
-		char *expanded_path = expand_tilde(path);
+		char *const expanded_path = expand_tilde(path);
 		strcpy(buf, expanded_path);
 		free(expanded_path);
 	}
 	else
 	{
+		strcpy(buf, view->curr_dir);
 		strcat(buf, "/");
 		strcat(buf, path);
 	}
 
 	if(is_dir(buf))
+	{
 		return 1;
+	}
 
 	strcpy(buf, view->curr_dir);
 	return 0;
@@ -2328,13 +2334,11 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	int err;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
-		return 0;
-
-	if(view->selected_files == 0)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
+		return 0;
 	}
+
+	ensure_selection_exists(view);
 
 	if(ic == 0)
 		cflags = get_regexp_cflags(pattern);
@@ -2438,13 +2442,11 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 	int n = 0;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
-		return 0;
-
-	if(view->selected_files == 0)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
+		return 0;
 	}
+
+	ensure_selection_exists(view);
 
 	for(i = 0; i < view->list_rows; i++)
 	{
@@ -3227,7 +3229,9 @@ make_files(FileView *view, char **names, int count)
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	for(i = 0; i < count; i++)
 	{
@@ -3303,8 +3307,7 @@ restore_files(FileView *view)
 		if(view->dir_entry[i].selected)
 		{
 			char full_path[PATH_MAX];
-			snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir,
-					view->dir_entry[i].name);
+			get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
 
 			if(restore_from_trash(full_path) == 0)
 			{
@@ -3367,9 +3370,8 @@ static void
 update_dir_entry_size(const FileView *view, int index, int force)
 {
 	char full_path[PATH_MAX];
-	const dir_entry_t *const entry = &view->dir_entry[index];
 
-	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, entry->name);
+	get_full_path_at(view, index, sizeof(full_path), full_path);
 	start_dir_size_calc(full_path, force);
 }
 
