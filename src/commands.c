@@ -2447,7 +2447,7 @@ help_cmd(const cmd_info_t *cmd_info)
 	{
 		const char *const topic = (cmd_info->argc > 0)
 		                        ? cmd_info->args
-		                        : "vifm.txt";
+		                        : VIFM_VIM_HELP;
 
 #ifndef _WIN32
 		char *const escaped_rtp = escape_filename(PACKAGE_DATA_DIR, 0);

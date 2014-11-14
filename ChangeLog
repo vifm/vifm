@@ -24,6 +24,9 @@
 	Fixed crash on navigation to end of line in command-line mode.  Thanks to
 	Christian Fillion (a.k.a. cfillion).
 
+	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
+	installed Vim documentation is used.  Thanks to ranousse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

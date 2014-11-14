@@ -31,6 +31,9 @@
 /* Name of help file in plain text format. */
 #define VIFM_HELP "vifm-help.txt"
 
+/* Name help file in Vim-documentation format. */
+#define VIFM_VIM_HELP "vifm-app.txt"
+
 /* Name of directory in main configuration directory that contains scripts
  * implicitly included into $PATH for Vifm only. */
 #define SCRIPTS_DIR "scripts"
