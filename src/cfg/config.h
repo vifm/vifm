@@ -28,7 +28,11 @@
 #include "../ui.h"
 #include "hist.h"
 
+/* Name of help file in plain text format. */
 #define VIFM_HELP "vifm-help.txt"
+
+/* Name of directory in main configuration directory that contains scripts
+ * implicitly included into $PATH for Vifm only. */
 #define SCRIPTS_DIR "scripts"
 
 typedef enum
