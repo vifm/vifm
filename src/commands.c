@@ -2445,37 +2445,33 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(cfg.use_vim_help)
 	{
-		if(cmd_info->argc > 0)
-		{
+		const char *const topic = (cmd_info->argc > 0)
+		                        ? cmd_info->args
+		                        : "vifm.txt";
+
 #ifndef _WIN32
-			char *const escaped_rtp = escape_filename(PACKAGE_DATA_DIR, 0);
-			char *const escaped_args = escape_filename(cmd_info->args, 0);
+		char *const escaped_rtp = escape_filename(PACKAGE_DATA_DIR, 0);
+		char *const escaped_args = escape_filename(topic, 0);
 
-			snprintf(buf, sizeof(buf),
-					"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
-					get_vicmd(&bg), escaped_rtp, escaped_args);
+		snprintf(buf, sizeof(buf),
+				"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
+				get_vicmd(&bg), escaped_rtp, escaped_args);
 
-			free(escaped_args);
-			free(escaped_rtp);
+		free(escaped_args);
+		free(escaped_rtp);
 #else
-			char exe_dir[PATH_MAX];
-			char *escaped_rtp;
+		char exe_dir[PATH_MAX];
+		char *escaped_rtp;
 
-			(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-			escaped_rtp = escape_filename(exe_dir, 0);
+		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+		escaped_rtp = escape_filename(exe_dir, 0);
 
-			snprintf(buf, sizeof(buf),
-					"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
-					get_vicmd(&bg), escaped_rtp, cmd_info->args);
+		snprintf(buf, sizeof(buf),
+				"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
+				get_vicmd(&bg), escaped_rtp, topic);
 
-			free(escaped_rtp);
+		free(escaped_rtp);
 #endif
-		}
-		else
-		{
-			snprintf(buf, sizeof(buf), "%s -c \"help vifm.txt\" -c only",
-					get_vicmd(&bg));
-		}
 	}
 	else
 	{
