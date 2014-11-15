@@ -271,55 +271,32 @@ format_pretty_path(const char base_dir[], const char path[], char pretty[],
 	copy_str(pretty, pretty_size, skip_char(path + strlen(base_dir), '/'));
 }
 
-/* returns new value for save_msg */
 int
-yank_files(FileView *view, int reg, int count, int *indexes)
+yank_files(FileView *view, int reg)
 {
-	int yanked;
-
-	if(count > 0)
-	{
-		capture_files_at(view, count, indexes);
-	}
-	else
-	{
-		capture_target_files(view);
-	}
-
-	yank_selected_files(view, reg);
-	yanked = view->selected_files;
-	free_file_capture(view);
-	recount_selected_files(view);
-
-	if(count == 0)
-	{
-		clean_selected_files(view);
-		redraw_view(view);
-	}
-
-	status_bar_messagef("%d %s yanked", yanked, yanked == 1 ? "file" : "files");
-
-	return yanked;
-}
-
-void
-yank_selected_files(FileView *view, int reg)
-{
-	int i;
+	int nyanked_files;
+	dir_entry_t *entry;
 
 	reg = prepare_register(reg);
 
-	for(i = 0; i < view->selected_files; ++i)
+	nyanked_files = 0;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
-		char buf[PATH_MAX];
-		if(view->selected_filelist[i] == NULL)
-			break;
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		snprintf(buf, sizeof(buf), "%s%s%s", view->curr_dir,
-				ends_with_slash(view->curr_dir) ? "" : "/", view->selected_filelist[i]);
-		append_to_register(reg, buf);
+		append_to_register(reg, full_path);
+
+		++nyanked_files;
 	}
+
 	update_unnamed_reg(reg);
+
+	status_bar_messagef("%d file%s yanked", nyanked_files,
+			(nyanked_files == 1) ? "" : "s");
+
+	return 1;
 }
 
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */

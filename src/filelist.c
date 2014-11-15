@@ -90,6 +90,8 @@ typedef struct
 }
 column_data_t;
 
+typedef int (*predicate_func)(const dir_entry_t *entry);
+
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
 static int prepare_primary_col_color(FileView *view, int line_color,
@@ -163,6 +165,12 @@ static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
+static int iter_entries(FileView *view, dir_entry_t **entry,
+		predicate_func pred);
+static int is_entry_selected(const dir_entry_t *entry);
+static int is_entry_marked(const dir_entry_t *entry);
+static void clear_marking(FileView *view);
+static void mark_selected(FileView *view);
 
 void
 init_filelists(void)
@@ -2986,10 +2994,11 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 
 	entry->type = UNKNOWN;
 
-	/* All files start as unselected and unmatched. */
+	/* All files start as unselected, unmatched and unmarked. */
 	entry->selected = 0;
 	entry->was_selected = 0;
 	entry->search_match = 0;
+	entry->marked = 0;
 
 	entry->list_num = -1;
 }
@@ -3855,12 +3864,24 @@ is_directory_entry(const dir_entry_t *entry)
 int
 iter_selected_entries(FileView *view, dir_entry_t **entry)
 {
+	return iter_entries(view, entry, &is_entry_selected);
+}
+
+int
+iter_marked_entries(FileView *view, dir_entry_t **entry)
+{
+	return iter_entries(view, entry, &is_entry_marked);
+}
+
+static int
+iter_entries(FileView *view, dir_entry_t **entry, predicate_func pred)
+{
 	int next = (*entry == NULL) ? 0 : (*entry - view->dir_entry + 1);
 
 	while(next < view->list_rows)
 	{
 		dir_entry_t *const e = &view->dir_entry[next];
-		if(e->selected && !is_parent_dir(e->name))
+		if(pred(e) && !is_parent_dir(e->name))
 		{
 			*entry = e;
 			return 1;
@@ -3870,6 +3891,18 @@ iter_selected_entries(FileView *view, dir_entry_t **entry)
 
 	*entry = NULL;
 	return 0;
+}
+
+static int
+is_entry_selected(const dir_entry_t *entry)
+{
+	return entry->selected;
+}
+
+static int
+is_entry_marked(const dir_entry_t *entry)
+{
+	return entry->marked;
 }
 
 int
@@ -3905,6 +3938,57 @@ ensure_selection_exists(FileView *view)
 	{
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
+	}
+}
+
+void
+check_marking(FileView *view, int count, const int indexes[])
+{
+	if(count != 0)
+	{
+		mark_files_at(view, count, indexes);
+	}
+	else if(view->selected_files != 0)
+	{
+		mark_selected(view);
+	}
+	else
+	{
+		clear_marking(view);
+		view->dir_entry[view->list_pos].marked = 1;
+	}
+}
+
+void
+mark_files_at(FileView *view, int count, const int indexes[])
+{
+	int i;
+
+	clear_marking(view);
+
+	for(i = 0; i < count; ++i)
+	{
+		view->dir_entry[indexes[i]].marked = 1;
+	}
+}
+
+static void
+clear_marking(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].marked = 0;
+	}
+}
+
+static void
+mark_selected(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].marked = view->dir_entry[i].selected;
 	}
 }
 

@@ -54,9 +54,9 @@ int delete_files(FileView *view, int reg, int count, int *indexes,
 /* Returns new value for save_msg. */
 int delete_files_bg(FileView *view, int use_trash);
 
-int yank_files(FileView *view, int reg, int count, int *indexes);
-
-void yank_selected_files(FileView *view, int reg);
+/* Yanks selected files of the view into register specified by its name via reg
+ * parameter.  Returns new value for save_msg. */
+int yank_files(FileView *view, int reg);
 
 int file_exec(char *command);
 

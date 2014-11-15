@@ -266,6 +266,8 @@ int is_directory_entry(const dir_entry_t *entry);
  * returned.  List of entries shouldn't be reloaded between invocations of this
  * function. */
 int iter_selected_entries(FileView *view, dir_entry_t **entry);
+/* Same as iter_selected_entries() function, but checks for marks. */
+int iter_marked_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
@@ -274,6 +276,9 @@ void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 		char buf[]);
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 void ensure_selection_exists(FileView *view);
+void check_marking(FileView *view, int count, const int indexes[]);
+/* Maerks files at positions specified in the indexes array of size count. */
+void mark_files_at(FileView *view, int count, const int indexes[]);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

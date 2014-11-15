@@ -128,8 +128,7 @@ history_t;
 typedef struct
 {
 	char *name;
-	char *origin;  /* Location where this file comes from, NULL if from
-	                * curr_dir. */
+	char *origin;     /* Location where this file comes from. */
 	uint64_t size;
 #ifndef _WIN32
 	uid_t uid;
@@ -148,7 +147,9 @@ typedef struct
 
 	int search_match;
 
-	int list_num; /* Used by sorting comparer to perform stable sort. */
+	int list_num;     /* Used by sorting comparer to perform stable sort. */
+
+	int marked;       /* Whether file should be processed. */
 }
 dir_entry_t;
 

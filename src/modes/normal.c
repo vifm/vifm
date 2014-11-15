@@ -188,6 +188,7 @@ static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
 static int calc_pick_files_end_pos(const FileView *view, int count);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
+static void yank(key_info_t key_info, keys_info_t *keys_info);
 static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zO(key_info_t key_info, keys_info_t *keys_info);
@@ -1817,17 +1818,13 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
 		pick_files(curr_view, end_pos, keys_info);
 	}
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-
-	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
+	else if(!cfg.selection_is_primary)
 	{
 		pick_files(curr_view, curr_view->list_pos, keys_info);
 	}
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes);
 
-	free(keys_info->indexes);
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	yank(key_info, keys_info);
 }
 
 /* Calculates end position for pick_files(...) function using cursor position
@@ -1852,14 +1849,21 @@ calc_pick_files_end_pos(const FileView *view, int count)
 static void
 cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->count == 0)
-		return;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes);
+	if(keys_info->count != 0)
+	{
+		mark_files_at(curr_view, keys_info->count, keys_info->indexes);
+		yank(key_info, keys_info);
+	}
+}
 
+static void
+yank(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = yank_files(curr_view, def_reg(key_info.reg));
 	free_list_of_file_indexes(keys_info);
+
+	clean_selected_files(curr_view);
+	ui_view_schedule_redraw(curr_view);
 }
 
 /* Frees memory allocated for selected files list in keys_info_t structure and

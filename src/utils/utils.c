@@ -37,7 +37,9 @@
 #include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
+#include "../engine/keys.h"
 #include "../fuse.h"
+#include "../registers.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
@@ -475,6 +477,12 @@ expand_dquotes_escaping(char s[])
 		*p++ = table[(int)*s++];
 	}
 	*p = '\0';
+}
+
+int
+def_reg(int reg)
+{
+	return (reg == NO_REG_GIVEN) ? DEFAULT_REG_NAME : reg;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

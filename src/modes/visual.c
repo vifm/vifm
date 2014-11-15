@@ -33,6 +33,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
@@ -1005,19 +1006,8 @@ change_amend_type(AmendType new_amend_type)
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-	{
-		key_info.reg = DEFAULT_REG_NAME;
-	}
-
-	capture_target_files(view);
-	yank_selected_files(view, key_info.reg);
-
-	status_bar_messagef("%d file%s yanked", view->selected_files,
-			(view->selected_files == 1) ? "" : "s");
-	curr_stats.save_msg = 1;
-
-	free_file_capture(view);
+	check_marking(view, 0, NULL);
+	curr_stats.save_msg = yank_files(view, def_reg(key_info.reg));
 
 	accept_and_leave(1);
 }
