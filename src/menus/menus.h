@@ -177,6 +177,10 @@ int display_menu(menu_info *m, FileView *view);
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
+/* Checks with the user that deletion is permitted.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int confirm_deletion(int use_trash);
+
 TSTATIC_DEFS(
 	char * parse_spec(const char spec[], int *line_num);
 )

@@ -146,6 +146,8 @@ static void cmd_D_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d_selector(key_info_t key_info, keys_info_t *keys_info);
 static void delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
 		int use_trash);
+static void call_delete(key_info_t key_info, keys_info_t *keys_info,
+		int use_trash);
 static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
@@ -1434,15 +1436,9 @@ delete(key_info_t key_info, int use_trash)
 		return;
 	}
 
-	curr_stats.confirmed = 0;
-	if(!use_trash && cfg.confirm)
+	if(!confirm_deletion(use_trash))
 	{
-		if(!query_user_menu("Permanent deletion",
-					"Are you sure you want to delete files permanently?"))
-		{
-			return;
-		}
-		curr_stats.confirmed = 1;
+		return;
 	}
 
 	if(key_info.count != NO_COUNT_GIVEN)
@@ -1450,17 +1446,13 @@ delete(key_info_t key_info, int use_trash)
 		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
 		pick_files(curr_view, end_pos, &keys_info);
 	}
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
 
 	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
 	{
 		pick_files(curr_view, curr_view->list_pos, &keys_info);
 	}
-	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info.count,
-			keys_info.indexes, use_trash);
 
-	free_list_of_file_indexes(&keys_info);
+	call_delete(key_info, &keys_info, use_trash);
 }
 
 static void
@@ -1495,13 +1487,18 @@ cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
-	if(keys_info->count == 0)
-		return;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes, use_trash);
+	if(keys_info->count != 0)
+	{
+		call_delete(key_info, keys_info, use_trash);
+	}
+}
 
+static void
+call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
+{
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	curr_stats.save_msg = delete_files(curr_view, def_reg(key_info.reg),
+			use_trash);
 	free_list_of_file_indexes(keys_info);
 }
 
@@ -1809,7 +1806,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = 1;
 }
 
-/* Yank file. */
+/* Yanks files. */
 static void
 cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 {

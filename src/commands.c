@@ -1862,12 +1862,19 @@ delete_cmd(const cmd_info_t *cmd_info)
 
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result != 0)
+	{
 		return result;
+	}
 
+	check_marking(curr_view, 0, NULL);
 	if(cmd_info->bg)
+	{
 		result = delete_files_bg(curr_view, !cmd_info->emark) != 0;
+	}
 	else
-		result = delete_files(curr_view, reg, 0, NULL, !cmd_info->emark) != 0;
+	{
+		result = delete_files(curr_view, reg, !cmd_info->emark) != 0;
+	}
 
 	return result;
 }

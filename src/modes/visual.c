@@ -665,24 +665,18 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 	delete(key_info, 1);
 }
 
+/* Deletes files. */
 static void
 delete(key_info_t key_info, int use_trash)
 {
-	int save_msg;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-
-	curr_stats.confirmed = 0;
-	if(!use_trash && cfg.confirm)
+	if(confirm_deletion(use_trash))
 	{
-		if(!query_user_menu("Permanent deletion",
-				"Are you sure you want to delete files permanently?"))
-			return;
-		curr_stats.confirmed = 1;
-	}
+		int save_msg;
 
-	save_msg = delete_files(view, key_info.reg, 0, NULL, use_trash);
-	accept_and_leave(save_msg);
+		check_marking(view, 0, NULL);
+		save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
+		accept_and_leave(save_msg);
+	}
 }
 
 static void
@@ -1003,13 +997,16 @@ change_amend_type(AmendType new_amend_type)
 	update();
 }
 
+/* Yanks files. */
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	check_marking(view, 0, NULL);
-	curr_stats.save_msg = yank_files(view, def_reg(key_info.reg));
+	int save_msg;
 
-	accept_and_leave(1);
+	check_marking(view, 0, NULL);
+	save_msg = yank_files(view, def_reg(key_info.reg));
+
+	accept_and_leave(save_msg);
 }
 
 /* Accepts selected region and leaves visual mode.  This means forgetting

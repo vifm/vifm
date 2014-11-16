@@ -48,8 +48,8 @@ SignalType;
 /* Initializes file operations. */
 void init_fileops(void);
 
-int delete_files(FileView *view, int reg, int count, int *indexes,
-		int use_trash);
+/* Returns new value for save_msg. */
+int delete_files(FileView *view, int reg, int use_trash);
 
 /* Returns new value for save_msg. */
 int delete_files_bg(FileView *view, int use_trash);

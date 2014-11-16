@@ -161,6 +161,7 @@ static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
+static void append_marked_files(FileView *view, char buf[]);
 static const char * get_cancellation_suffix(void);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -319,13 +320,13 @@ get_group_file_list(char **list, int count, char *buf)
 	}
 }
 
-/* returns new value for save_msg */
 int
-delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
+delete_files(FileView *view, int reg, int use_trash)
 {
-	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	int i;
-	int sel_len;
+	dir_entry_t *entry;
+	int nmarked_files;
 	ops_t *ops;
 	char *dst_hint;
 
@@ -343,25 +344,10 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 0;
 	}
 
-	if(count > 0)
-	{
-		capture_files_at(view, count, indexes);
-	}
-	else
-	{
-		capture_target_files(view);
-	}
-
 	if(use_trash)
 	{
 		reg = prepare_register(reg);
 	}
-
-	snprintf(buf, sizeof(buf), "%celete in %s: ", use_trash ? 'd' : 'D',
-			replace_home_part(view->curr_dir));
-
-	get_group_file_list(view->selected_filelist, view->selected_files, buf);
-	cmd_group_begin(buf);
 
 	if(vifm_chdir(curr_view->curr_dir) != 0)
 	{
@@ -369,57 +355,58 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		return 1;
 	}
 
+	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
+			replace_home_part(view->curr_dir));
+	append_marked_files(view, undo_msg);
+	cmd_group_begin(undo_msg);
+
 	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir);
 
 	ui_cancellation_reset();
 
-	sel_len = view->selected_files;
-
 	dst_hint = use_trash ? pick_trash_dir(view->curr_dir) : NULL;
 
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
+	nmarked_files = 0;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		char full_buf[PATH_MAX];
-		const char *const fname = view->selected_filelist[i];
+		char full_path[PATH_MAX];
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
-		ops_enqueue(ops, full_buf, dst_hint);
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		ops_enqueue(ops, full_path, dst_hint);
+
+		++nmarked_files;
 	}
 
 	free(dst_hint);
 
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
+	entry = NULL;
+	i = 0;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		const char *const fname = view->selected_filelist[i];
-		char full_buf[PATH_MAX];
+		char full_path[PATH_MAX];
 		int result;
 
-		if(is_parent_dir(fname))
-		{
-			show_error_msg("Can't perform deletion",
-					"You cannot delete the ../ directory");
-			continue;
-		}
+		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir, fname);
+		progress_msg("Deleting files", i++, nmarked_files);
 
-		progress_msg("Deleting files", i, sel_len);
 		if(use_trash)
 		{
-			if(!is_trash_directory(full_buf))
+			if(!is_trash_directory(full_path))
 			{
-				char *const dest = gen_trash_name(view->curr_dir, fname);
+				char *const dest = gen_trash_name(view->curr_dir, entry->name);
 				if(dest != NULL)
 				{
-					result = perform_operation(OP_MOVE, ops, NULL, full_buf, dest);
+					result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
 					/* For some reason "rm" sometimes returns 0 on cancellation. */
-					if(path_exists(full_buf))
+					if(path_exists(full_path))
 					{
 						result = -1;
 					}
 					if(result == 0)
 					{
-						add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+						add_operation(OP_MOVE, NULL, NULL, full_path, dest);
 						append_to_register(reg, dest);
 					}
 					free(dest);
@@ -428,7 +415,7 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 				{
 					show_error_msgf("No trash directory is available",
 							"Either correct trash directory paths or prune files.  "
-							"Deletion failed on: %s", fname);
+							"Deletion failed on: %s", entry->name);
 					result = -1;
 				}
 			}
@@ -441,29 +428,28 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 		else
 		{
-			result = perform_operation(OP_REMOVE, ops, NULL, full_buf, NULL);
+			result = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
 			/* For some reason "rm" sometimes returns 0 on cancellation. */
-			if(path_exists(full_buf))
+			if(path_exists(full_path))
 			{
 				result = -1;
 			}
 			if(result == 0)
 			{
-				add_operation(OP_REMOVE, NULL, NULL, full_buf, "");
+				add_operation(OP_REMOVE, NULL, NULL, full_path, "");
 			}
 		}
 
-		if(result == 0 && strcmp(view->dir_entry[view->list_pos].name, fname) == 0)
+		if(result == 0 && entry_to_pos(view, entry) == view->list_pos)
 		{
 			if(view->list_pos + 1 < view->list_rows)
 			{
-				view->list_pos++;
+				++view->list_pos;
 			}
 		}
 
 		ops_advance(ops, result == 0);
 	}
-	free_file_capture(view);
 
 	update_unnamed_reg(reg);
 
@@ -471,8 +457,9 @@ delete_files(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	ui_view_reset_selection_and_reload(view);
 
-	status_bar_messagef("%d %s deleted%s", ops->succeeded,
-			(ops->succeeded == 1) ? "file" : "files", get_cancellation_suffix());
+	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
+			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
+			get_cancellation_suffix());
 
 	ops_free(ops);
 
@@ -3259,6 +3246,28 @@ make_files(FileView *view, char **names, int count)
 	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
 			get_cancellation_suffix());
 	return 1;
+}
+
+/* buf should be at least COMMAND_GROUP_INFO_LEN characters length. */
+static void
+append_marked_files(FileView *view, char buf[])
+{
+	size_t len;
+	dir_entry_t *entry;
+
+	len = strlen(buf);
+
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && len < COMMAND_GROUP_INFO_LEN)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+		}
+		strncat(buf, entry->name, COMMAND_GROUP_INFO_LEN - len - 1);
+		len = strlen(buf);
+	}
 }
 
 int
