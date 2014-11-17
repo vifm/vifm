@@ -162,6 +162,7 @@ static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[]);
+static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -300,9 +301,10 @@ yank_files(FileView *view, int reg)
 	return 1;
 }
 
-/* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
+/* Fills undo message buffer with list of files.  buf should be at least
+ * COMMAND_GROUP_INFO_LEN characters length. */
 static void
-get_group_file_list(char **list, int count, char *buf)
+get_group_file_list(char **list, int count, char buf[])
 {
 	size_t len;
 	int i;
@@ -310,12 +312,7 @@ get_group_file_list(char **list, int count, char *buf)
 	len = strlen(buf);
 	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-		strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
+		append_fname(buf, len, list[i]);
 		len = strlen(buf);
 	}
 }
@@ -3248,7 +3245,8 @@ make_files(FileView *view, char **names, int count)
 	return 1;
 }
 
-/* buf should be at least COMMAND_GROUP_INFO_LEN characters length. */
+/* Fills undo message buffer with names of marked files.  buf should be at least
+ * COMMAND_GROUP_INFO_LEN characters length. */
 static void
 append_marked_files(FileView *view, char buf[])
 {
@@ -3260,14 +3258,23 @@ append_marked_files(FileView *view, char buf[])
 	entry = NULL;
 	while(iter_marked_entries(view, &entry) && len < COMMAND_GROUP_INFO_LEN)
 	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-		strncat(buf, entry->name, COMMAND_GROUP_INFO_LEN - len - 1);
+		append_fname(buf, len, entry->name);
 		len = strlen(buf);
 	}
+}
+
+/* Appends file name to undo message buffer.  buf should be at least
+ * COMMAND_GROUP_INFO_LEN characters length. */
+static void
+append_fname(char buf[], size_t len, const char fname[])
+{
+	if(buf[len - 2] != ':')
+	{
+		strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
+		len = strlen(buf);
+	}
+	strncat(buf, fname, COMMAND_GROUP_INFO_LEN - len - 1);
+	len = strlen(buf);
 }
 
 int
