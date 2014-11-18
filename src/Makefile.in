@@ -1540,8 +1540,9 @@ uninstall-man: uninstall-man1
 .PHONY: update_compile_info
 
 runtests:
-	echo '$(MAKE) -C ../tests' > $@
-	chmod +x $@
+	echo '$(MAKE) -C ../tests' > $@_
+	chmod +x $@_
+	mv $@_ $@
 
 distclean-local:
 	$(MAKE) -C ../tests clean

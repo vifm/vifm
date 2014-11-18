@@ -185,8 +185,9 @@ check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 
 runtests:
-	echo '$(MAKE) -C ../tests' > $@
-	chmod +x $@
+	echo '$(MAKE) -C ../tests' > $@_
+	chmod +x $@_
+	mv $@_ $@
 
 CLEANFILES = runtests
 
