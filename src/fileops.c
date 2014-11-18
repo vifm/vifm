@@ -160,6 +160,7 @@ static int edit_file(const char filepath[], int force_changed);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static void cpmv_in_bg(void *arg);
+static void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[]);
 static void append_fname(char buf[], size_t len, const char fname[]);
@@ -552,8 +553,7 @@ delete_files_bg(FileView *view, int use_trash)
 	if(bg_execute(task_desc, args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
 	{
-		free_string_array(args->sel_list, args->sel_list_len);
-		free(args);
+		free_bg_args(args);
 
 		show_error_msg("Can't perform deletion",
 				"Failed to initiate background operation");
@@ -570,8 +570,7 @@ delete_files_in_bg(void *arg)
 	delete_files_bg_i(args->src, args->sel_list, args->sel_list_len,
 			args->from_trash);
 
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
+	free_bg_args(args);
 }
 
 static void
@@ -3029,7 +3028,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 			sizeof(task_desc), args->path, &args->from_file, &args->from_trash);
 	if(i != 0)
 	{
-		free(args);
+		free_bg_args(args);
 		return i > 0;
 	}
 
@@ -3039,9 +3038,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_in_bg, args) != 0)
 	{
-		free_string_array(args->list, args->nlines);
-		free_string_array(args->sel_list, args->sel_list_len);
-		free(args);
+		free_bg_args(args);
 	}
 
 	return 0;
@@ -3057,6 +3054,13 @@ cpmv_in_bg(void *arg)
 			args->sel_list, args->sel_list_len, args->from_trash, args->src,
 			args->path);
 
+	free_bg_args(args);
+}
+
+/* Frees background arguments structure with all its data. */
+static void
+free_bg_args(bg_args_t *args)
+{
 	free_string_array(args->list, args->nlines);
 	free_string_array(args->sel_list, args->sel_list_len);
 	free(args);
