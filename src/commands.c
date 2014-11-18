@@ -931,12 +931,12 @@ execute_command(FileView *view, const char command[], int menu)
 
 	if(id == USER_CMD_ID)
 	{
-		char buf[COMMAND_GROUP_INFO_LEN];
+		char undo_msg[COMMAND_GROUP_INFO_LEN];
 
-		snprintf(buf, sizeof(buf), "in %s: %s",
-				replace_home_part(curr_view->curr_dir), command);
+		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
+				replace_home_part(view->curr_dir), command);
 
-		cmd_group_begin(buf);
+		cmd_group_begin(undo_msg);
 		cmd_group_end();
 	}
 
