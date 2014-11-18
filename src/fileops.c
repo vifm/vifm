@@ -519,7 +519,6 @@ int
 delete_files_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
-	int i;
 	bg_args_t *args;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
@@ -543,11 +542,7 @@ delete_files_bg(FileView *view, int use_trash)
 
 	capture_target_files(view);
 
-	i = view->list_pos;
-	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
-		i++;
-
-	view->list_pos = i;
+	move_cursor_out_of(view, FLS_SELECTION);
 
 	general_prepare_for_bg_task(view, args);
 
@@ -2653,10 +2648,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 
 	if(move)
 	{
-		int i = view->list_pos;
-		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
-			i++;
-		view->list_pos = i;
+		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
 	*from_trash = is_under_trash(view->curr_dir);
@@ -3284,12 +3276,7 @@ restore_files(FileView *view)
 	int m = 0;
 	int n = view->selected_files;
 
-	i = view->list_pos;
-	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
-	{
-		i++;
-	}
-	view->list_pos = i;
+	move_cursor_out_of(view, FLS_SELECTION);
 
 	ui_cancellation_reset();
 

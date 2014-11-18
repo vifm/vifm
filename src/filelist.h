@@ -20,7 +20,7 @@
 #ifndef VIFM__FILELIST_H__
 #define VIFM__FILELIST_H__
 
-#include <sys/types.h> /* for ssize_t */
+#include <sys/types.h> /* ssize_t */
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
@@ -35,6 +35,14 @@
 #else
 #define FILTER_DEF_CASE_SENSITIVITY 1
 #endif
+
+/* Type of contiguous area of file list. */
+typedef enum
+{
+	FLS_SELECTION, /* Of selected entries. */
+	FLS_MARKING,   /* Of marked entries. */
+}
+FileListScope;
 
 /* Initialization/termination functions. */
 
@@ -67,6 +75,8 @@ int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
 int all_files_visible(const FileView *view);
 void move_to_list_pos(FileView *view, int pos);
+/* Ensures that cursor is moved outside of entries of certain type. */
+void move_cursor_out_of(FileView *view, FileListScope scope);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
 /* Returns non-zero in case view can be scrolled up (there are more files). */

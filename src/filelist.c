@@ -124,6 +124,7 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int clear_current_line_bar(FileView *view, int is_current);
 static int calculate_top_position(FileView *view, int top);
+static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
@@ -1346,6 +1347,39 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+void
+move_cursor_out_of(FileView *view, FileListScope scope)
+{
+	switch(scope)
+	{
+		case FLS_SELECTION:
+			move_cursor_out_of_scope(view, &is_entry_selected);
+			break;
+		case FLS_MARKING:
+			move_cursor_out_of_scope(view, &is_entry_marked);
+			break;
+
+		default:
+			assert(0 && "Unhandled file list scope type");
+			break;
+	}
+}
+
+/* Ensures that cursor is moved outside of entries that satisfy the predicate if
+ * that's possible. */
+static void
+move_cursor_out_of_scope(FileView *view, predicate_func pred)
+{
+	/* TODO: if we reach bottom of the list and predicate holds try scanning to
+	 * the top. */
+	int i = view->list_pos;
+	while(i < view->list_rows - 1 && pred(&view->dir_entry[i]))
+	{
+		++i;
+	}
+	view->list_pos = i;
 }
 
 /* Calculates width of the column using entry and maximum width. */
