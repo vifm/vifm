@@ -3433,10 +3433,14 @@ calc_dirsize(const char path[], int force_update)
 
 	dir = opendir(path);
 	if(dir == NULL)
+	{
 		return 0;
+	}
 
-	if(path[strlen(path) - 1] != '/')
+	if(!ends_with_slash(path))
+	{
 		slash = "/";
+	}
 
 	size = 0;
 	while((dentry = readdir(dir)) != NULL)
