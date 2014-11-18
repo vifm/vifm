@@ -555,10 +555,6 @@ open_selected_file(const char path[], int line_num)
 static void
 navigate_to_selected_file(FileView *view, const char path[])
 {
-	/* Check whether target path is directory while we don't change current
-	 * working directory by invoking change_directory() function below. */
-	const int dst_is_dir = is_dir(path);
-
 	char name[NAME_MAX];
 	char *dir = strdup(path);
 	char *const last_slash = find_slashr(dir);
@@ -579,10 +575,6 @@ navigate_to_selected_file(FileView *view, const char path[])
 
 		load_dir_list(view, 0);
 
-		if(dst_is_dir)
-		{
-			strcat(name, "/");
-		}
 		(void)ensure_file_is_selected(view, name);
 	}
 	else

@@ -711,7 +711,7 @@ follow_link(FileView *view, int follow_dirs)
 			}
 		}
 		if((file = strrchr(link_dup, '/')) != NULL)
-			file++;
+			++file;
 		else if(dir == NULL)
 			file = link_dup;
 	}
@@ -721,20 +721,11 @@ follow_link(FileView *view, int follow_dirs)
 	}
 	if(file != NULL)
 	{
-		int pos;
-		if((target_stat.st_mode & S_IFMT) == S_IFDIR)
-		{
-			size_t len;
-
-			chosp(link_dup);
-			len = strlen(link_dup);
-			link_dup = realloc(link_dup, len + 1 + 1);
-			file = after_last(link_dup, '/');
-			strcat(file, "/");
-		}
-		pos = find_file_pos_in_list(view, file);
+		const int pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
+		{
 			move_to_list_pos(view, pos);
+		}
 	}
 	free(link_dup);
 	free(dir);

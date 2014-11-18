@@ -3661,6 +3661,8 @@ ensure_file_is_selected(FileView *view, const char name[])
 	int file_pos;
 	char nm[NAME_MAX];
 
+	/* This is for compatibility with paths loaded from vifminfo that have
+	 * trailing slash. */
 	copy_str(nm, sizeof(nm), name);
 	chosp(nm);
 
