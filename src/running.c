@@ -730,7 +730,6 @@ follow_link(FileView *view, int follow_dirs)
 			len = strlen(link_dup);
 			link_dup = realloc(link_dup, len + 1 + 1);
 			file = after_last(link_dup, '/');
-			strcat(file, "/");
 		}
 		pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
