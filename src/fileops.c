@@ -626,7 +626,6 @@ rename_file_cb(const char new_name[])
 	char *filename = get_current_file_name(curr_view);
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];
-	size_t len;
 	int mv_res;
 	char **filename_ptr;
 
@@ -642,10 +641,8 @@ rename_file_cb(const char new_name[])
 		return;
 	}
 
-	len = strlen(filename);
-	snprintf(new, sizeof(new), "%s%s%s%s", new_name,
-			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext,
-			(filename[len - 1] == '/') ? "/" : "");
+	snprintf(new, sizeof(new), "%s%s%s", new_name,
+			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext);
 
 	if(check_file_rename(curr_view->curr_dir, filename, new, ST_DIALOG) <= 0)
 	{
