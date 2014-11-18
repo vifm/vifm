@@ -522,23 +522,21 @@ delete_files_bg(FileView *view, int use_trash)
 	bg_args_t *args;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
-		return 0;
-
-	args = malloc(sizeof(*args));
-	args->from_trash = cfg.use_trash && use_trash;
-
-	if(args->from_trash && is_under_trash(view->curr_dir))
 	{
-		show_error_msg("Can't perform deletion",
-				"Current directory is under Trash directory");
-		free(args);
 		return 0;
 	}
 
-	args->list = NULL;
-	args->nlines = 0;
-	args->move = 0;
-	args->force = 0;
+	use_trash = use_trash && cfg.use_trash;
+
+	if(use_trash && is_under_trash(view->curr_dir))
+	{
+		show_error_msg("Can't perform deletion",
+				"Current directory is under Trash directory");
+		return 0;
+	}
+
+	args = calloc(1, sizeof(*args));
+	args->from_trash = use_trash;
 
 	capture_target_files(view);
 
@@ -547,7 +545,7 @@ delete_files_bg(FileView *view, int use_trash)
 	general_prepare_for_bg_task(view, args);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
-			args->from_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
+			use_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
 
 	get_group_file_list(view->selected_filelist, view->selected_files, task_desc);
 
