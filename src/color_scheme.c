@@ -576,8 +576,8 @@ reset_to_default_color_scheme(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
 
-	snprintf(cs->name, sizeof(cs->name), "%s", DEF_CS_NAME);
-	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
+	copy_str(cs->name, sizeof(cs->name), DEF_CS_NAME);
+	copy_str(cs->dir, sizeof(cs->dir), "/");
 
 	cs->state = CSS_NORMAL;
 }
