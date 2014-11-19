@@ -880,6 +880,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
 	fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 	fprintf(fp, "=cdpath=%s\n", cfg.cd_path);
+	fprintf(fp, "=%schaselinks\n", cfg.chase_links ? "" : "no");
 	fprintf(fp, "=columns=%d\n", cfg.columns);
 	fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
 	fprintf(fp, "=cpoptions=%s%s%s\n",

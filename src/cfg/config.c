@@ -187,6 +187,8 @@ init_config(void)
 
 	cfg.border_filler = strdup(" ");
 
+	cfg.chase_links = 0;
+
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

@@ -1,4 +1,4 @@
-.TH vifm 1 "November 4, 2014" "" "Vifm"
+.TH vifm 1 "November 20, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2724,6 +2724,14 @@ Example:
 .EE
 This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
 in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
+.TP
+.BI "chaselinks"
+type: boolean
+.br
+default: false
+.br
+When enabled path of view is always resolved to real path (with all symbolic
+links expanded).
 .TP
 .BI classify
 type: string list

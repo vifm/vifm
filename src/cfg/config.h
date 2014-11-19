@@ -143,6 +143,10 @@ typedef struct config_t
 
 	/* Per line pattern for borders. */
 	char *border_filler;
+
+	/* Whether directory path should always be resolved to real path (all symbolic
+	 * link expanded). */
+	int chase_links;
 }
 config_t;
 

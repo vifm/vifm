@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 12, 2014
+" Last Change: October 20, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -106,9 +106,9 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained aproposprg autochpos cdpath cd classify
-		\ columns co confirm cf cpoptions cpo dotdirs fastrun fillchars fcs findprg
-		\ followlinks fusehome gdefault grepprg history hi hlsearch hls iec
+syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
+		\ classify columns co confirm cf cpoptions cpo dotdirs fastrun fillchars fcs
+		\ findprg followlinks fusehome gdefault grepprg history hi hlsearch hls iec
 		\ ignorecase ic incsearch is laststatus lines locateprg ls lsview number nu
 		\ numberwidth nuw relativenumber rnu rulerformat ruf runexec scrollbind scb
 		\ scrolloff so sort sortorder shell sh shortmess shm slowfs smartcase scs
@@ -117,19 +117,19 @@ syntax keyword vifmOption contained aproposprg autochpos cdpath cd classify
 		\ vixcmd wildmenu wmnu wrap wrapscan ws
 
 " Disabled boolean options
-syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
-		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
-		\ nolaststatus nols nolsview nonumber nonu norelativenumber nornu
-		\ noscrollbind noscb norunexec nosmartcase noscs nosortnumbers nosyscalls
-		\ notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
+syntax keyword vifmOption contained noautochpos noconfirm nocf nochaselinks
+		\ nofastrun nofollowlinks nohlsearch nohls noiec noignorecase noic
+		\ noincsearch nois nolaststatus nols nolsview nonumber nonu norelativenumber
+		\ nornu noscrollbind noscb norunexec nosmartcase noscs nosortnumbers
+		\ nosyscalls notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
-syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
-		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invincsearch
-		\ invis invlaststatus invls invlsview invnumber invnu invrelativenumber
-		\ invrnu invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
-		\ invsyscalls invtrash invvimhelp invwildmenu invwmnu invwrap invwrapscan
-		\invws
+syntax keyword vifmOption contained invautochpos invconfirm invcf invchaselinks
+		\ invfastrun invfollowlinks invhlsearch invhls inviec invignorecase invic
+		\ invincsearch invis invlaststatus invls invlsview invnumber invnu
+		\ invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase
+		\ invscs invsortnumbers invsyscalls invtrash invvimhelp invwildmenu invwmnu
+		\ invwrap invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\(\s\|:\)*'
