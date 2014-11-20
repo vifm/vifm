@@ -2856,13 +2856,13 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
+		char src_full[PATH_MAX];
 		char dst_full[PATH_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		int success;
 
 		if(from_trash && nlines <= 0)
 		{
-			char src_full[PATH_MAX];
 			snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
 			chosp(src_full);
 			dst = get_real_name_from_trash_name(src_full);
@@ -2950,11 +2950,11 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 	int i;
 	for(i = 0; i < sel_list_len; i++)
 	{
+		char src_full[PATH_MAX];
 		char dst_full[PATH_MAX];
 		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
 		if(from_trash)
 		{
-			char src_full[PATH_MAX];
 			snprintf(src_full, sizeof(src_full), "%s/%s", src, dst);
 			chosp(src_full);
 			dst = get_real_name_from_trash_name(src_full);
