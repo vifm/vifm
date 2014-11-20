@@ -99,7 +99,6 @@ typedef struct
 	int force;
 	char **sel_list;
 	size_t sel_list_len;
-	char src[PATH_MAX];
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
@@ -119,8 +118,7 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
 static void delete_files_in_bg(void *arg);
-static void delete_files_bg_i(const char curr_dir[], char *list[], int count,
-		int use_trash);
+static void delete_files_bg_i(char *list[], int count, int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
@@ -151,8 +149,12 @@ static void reset_put_confirm(OPS main_op, const char descr[],
 static int put_files_from_register_i(FileView *view, int start);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
+static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
+		int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], int type, int cancellable, ops_t *ops);
+static int cp_file_f(const char src[], const char dst[], int type,
+		int cancellable, ops_t *ops);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -482,35 +484,27 @@ prepare_register(int reg)
 }
 
 static void
-delete_files_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
+delete_files_bg_i(char *list[], int count, int use_trash)
 {
 	int i;
 	for(i = 0; i < count; i++)
 	{
-		const char *const fname = list[i];
-		char full_buf[PATH_MAX];
-
-		if(is_parent_dir(fname))
-		{
-			continue;
-		}
-
-		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, fname);
-		chosp(full_buf);
+		const char *const path = list[i];
+		const char *const fname = get_last_path_component(path);
 
 		if(use_trash)
 		{
-			if(!is_trash_directory(full_buf))
+			if(!is_trash_directory(path))
 			{
-				char *const trash_name = gen_trash_name(curr_dir, fname);
+				char *const trash_name = gen_trash_name(path, fname);
 				const char *const dest = (trash_name != NULL) ? trash_name : fname;
-				(void)perform_operation(OP_MOVE, NULL, (void *)1, full_buf, dest);
+				(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
 				free(trash_name);
 			}
 		}
 		else
 		{
-			(void)perform_operation(OP_REMOVE, NULL, (void *)1, full_buf, NULL);
+			(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
 		}
 		inner_bg_next();
 	}
@@ -539,16 +533,14 @@ delete_files_bg(FileView *view, int use_trash)
 	args = calloc(1, sizeof(*args));
 	args->from_trash = use_trash;
 
-	capture_target_files(view);
-
-	move_cursor_out_of(view, FLS_SELECTION);
+	move_cursor_out_of(view, FLS_MARKING);
 
 	general_prepare_for_bg_task(view, args);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
 
-	get_group_file_list(view->selected_filelist, view->selected_files, task_desc);
+	append_marked_files(view, task_desc);
 
 	if(bg_execute(task_desc, args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
@@ -567,8 +559,7 @@ delete_files_in_bg(void *arg)
 {
 	bg_args_t *const args = arg;
 
-	delete_files_bg_i(args->src, args->sel_list, args->sel_list_len,
-			args->from_trash);
+	delete_files_bg_i(args->sel_list, args->sel_list_len, args->from_trash);
 
 	free_bg_args(args);
 }
@@ -2897,22 +2888,28 @@ progress_msg(const char text[], int ready, int total)
 
 static int
 cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
-		int sel_list_len, int from_trash, const char *src, const char *path)
+		int sel_list_len, int from_trash, const char *path)
 {
 	int i;
 	for(i = 0; i < sel_list_len; i++)
 	{
-		char src_full[PATH_MAX];
 		char dst_full[PATH_MAX];
-		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
-		if(from_trash)
+		const char *dst_name;
+
+		if(nlines > 0)
 		{
-			snprintf(src_full, sizeof(src_full), "%s/%s", src, dst);
-			chosp(src_full);
-			dst = get_real_name_from_trash_name(src_full);
+			dst_name = list[i];
+		}
+		else if(from_trash)
+		{
+			dst_name = get_real_name_from_trash_name(sel_list[i]);
+		}
+		else
+		{
+			dst_name = get_last_path_component(sel_list[i]);
 		}
 
-		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst_name);
 		if(path_exists(dst_full) && !from_trash)
 		{
 			perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
@@ -2920,11 +2917,11 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 
 		if(move)
 		{
-			(void)mv_file(sel_list[i], src, dst, path, -1, 0, NULL);
+			(void)mv_file_f(sel_list[i], dst_full, -1, 0, NULL);
 		}
 		else
 		{
-			(void)cp_file(src, path, sel_list[i], dst, -1, 0, NULL);
+			(void)cp_file_f(sel_list[i], dst_full, -1, 0, NULL);
 		}
 
 		inner_bg_next();
@@ -2937,18 +2934,28 @@ mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
 	chosp(full_src);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
 
-	/* compare case sensitive strings even on Windows to let user rename file
-	 * changing only case of some characters */
-	if(strcmp(full_src, full_dst) == 0)
+	return mv_file_f(full_src, full_dst, tmpfile_num, cancellable, ops);
+}
+
+static int
+mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
+		ops_t *ops)
+{
+	int op;
+	int result;
+
+	/* Compare case sensitive strings even on Windows to let user rename file
+	 * changing only case of some characters. */
+	if(strcmp(src, dst) == 0)
+	{
 		return 0;
+	}
 
 	if(tmpfile_num <= 0)
 		op = OP_MOVE;
@@ -2963,11 +2970,10 @@ mv_file(const char src[], const char src_path[], const char dst[],
 	else
 		op = OP_NONE;
 
-	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
-			full_dst);
+	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
 	if(result == 0 && tmpfile_num >= 0)
 	{
-		add_operation(op, NULL, NULL, full_src, full_dst);
+		add_operation(op, NULL, NULL, src, dst);
 	}
 	return result;
 }
@@ -2982,15 +2988,25 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], int type, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	int op;
-	int result;
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
 	chosp(full_src);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
 	chosp(full_dst);
 
-	if(strcmp(full_src, full_dst) == 0)
+	return cp_file_f(full_src, full_dst, type, cancellable, ops);
+}
+
+static int
+cp_file_f(const char src[], const char dst[], int type, int cancellable,
+		ops_t *ops)
+{
+	char rel_path[PATH_MAX];
+
+	int op;
+	int result;
+
+	if(strcmp(src, dst) == 0)
 	{
 		return 0;
 	}
@@ -3005,16 +3021,20 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 
 		if(type == 2)
 		{
-			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
-					dst_dir));
+			char dst_dir[PATH_MAX];
+
+			copy_str(dst_dir, sizeof(dst_dir), dst);
+			remove_last_path_component(dst_dir);
+
+			copy_str(rel_path, sizeof(rel_path), make_rel_path(src, dst_dir));
+			src = rel_path;
 		}
 	}
 
-	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
-			full_dst);
+	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
 	if(result == 0 && type >= 0)
 	{
-		add_operation(op, NULL, NULL, full_src, full_dst);
+		add_operation(op, NULL, NULL, src, dst);
 	}
 	return result;
 }
@@ -3060,8 +3080,7 @@ cpmv_in_bg(void *arg)
 	bg_args_t *const args = arg;
 
 	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
-			args->sel_list, args->sel_list_len, args->from_trash, args->src,
-			args->path);
+			args->sel_list, args->sel_list_len, args->from_trash, args->path);
 
 	free_bg_args(args);
 }
@@ -3079,15 +3098,19 @@ free_bg_args(bg_args_t *args)
 static void
 general_prepare_for_bg_task(FileView *view, bg_args_t *args)
 {
-	/* Steal captured file list from the view. */
-	args->sel_list = view->selected_filelist;
-	args->sel_list_len = view->selected_files;
-	view->selected_filelist = NULL;
+	dir_entry_t *entry;
 
-	free_file_capture(view);
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		char full_path[PATH_MAX];
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		args->sel_list_len = add_to_string_array(&args->sel_list,
+				args->sel_list_len, 1, full_path);
+	}
+
 	ui_view_reset_selection_and_reload(view);
-
-	copy_str(args->src, sizeof(args->src), view->curr_dir);
 }
 
 static void

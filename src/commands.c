@@ -3161,6 +3161,7 @@ move_cmd(const cmd_info_t *cmd_info)
 static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
+	check_marking(curr_view, 0, NULL);
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)

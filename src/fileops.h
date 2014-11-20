@@ -48,10 +48,12 @@ SignalType;
 /* Initializes file operations. */
 void init_fileops(void);
 
-/* Returns new value for save_msg. */
+/* Removes marked files (optionally into trash directory) of the view to
+ * specified register.  Returns new value for save_msg. */
 int delete_files(FileView *view, int reg, int use_trash);
 
-/* Returns new value for save_msg. */
+/* Removes marked files (optionally into trash directory) of the view to
+ * specified register.  Returns new value for save_msg. */
 int delete_files_bg(FileView *view, int use_trash);
 
 /* Yanks selected files of the view into register specified by its name via reg
