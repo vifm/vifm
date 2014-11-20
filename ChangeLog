@@ -8,6 +8,9 @@
 
 	Aligned columns in :jobs menu.
 
+	Added 'chaselinks' option to automatically expand all symbolic links in
+	path of a view (might not work on Windows).  Thanks to filterfalse.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

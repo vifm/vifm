@@ -90,6 +90,7 @@ static void add_options(void);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
+static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
 static int str_to_classify(const char str[],
 		char decorations[FILE_TYPE_COUNT][2]);
@@ -281,6 +282,10 @@ options[] =
 	{ "cdpath", "cd",
 	  OPT_STRLIST, 0, NULL, &cdpath_handler,
 	  { .ref.str_val = &cfg.cd_path },
+	},
+	{ "chaselinks", "",
+	  OPT_BOOL, 0, NULL, &chaselinks_handler,
+	  { .ref.bool_val = &cfg.chase_links },
 	},
 	{ "classify", "",
 	  OPT_STRLIST, 0, NULL, &classify_handler,
@@ -772,6 +777,19 @@ static void
 cdpath_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.cd_path, val.str_val);
+}
+
+/* Whether directory path should always be resolved to real path (no symbolic
+ * links). */
+static void
+chaselinks_handler(OPT_OP op, optval_t val)
+{
+	cfg.chase_links = val.bool_val;
+
+	/* Trigger paths update. */
+	(void)change_directory(other_view, other_view->curr_dir);
+	(void)change_directory(curr_view, curr_view->curr_dir);
+	ui_views_update_titles();
 }
 
 static void

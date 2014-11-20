@@ -2140,8 +2140,8 @@ navigate_to(FileView *view, const char path[])
 int
 change_directory(FileView *view, const char *directory)
 {
-	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
+	char real_path[PATH_MAX];
 	int location_changed;
 
 	if(is_dir_list_loaded(view))
@@ -2153,12 +2153,23 @@ change_directory(FileView *view, const char *directory)
 	directory = handle_mount_points(directory);
 #endif
 
+	if(cfg.chase_links)
+	{
+		if(realpath(directory, real_path) == real_path)
+		{
+			/* Do this on success only, if realpath() fails, just go with original
+			 * path. */
+			directory = real_path;
+		}
+	}
+
 	if(is_path_absolute(directory))
 	{
 		canonicalize_path(directory, dir_dup, sizeof(dir_dup));
 	}
 	else
 	{
+		char newdir[PATH_MAX];
 #ifdef _WIN32
 		if(directory[0] == '/')
 			snprintf(newdir, sizeof(newdir), "%c:%s", view->curr_dir[0], directory);

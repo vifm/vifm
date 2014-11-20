@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 04
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2235,6 +2235,13 @@ Example: >
  set cdpath=~
 This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
 in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
+
+                                               *vifm-'chaselinks'*
+chaselinks
+type: boolean
+default: false
+When enabled path of view is always resolved to real path (with all symbolic
+links expanded).
 
                                                *vifm-'classify'*
 classify

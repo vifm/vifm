@@ -26,6 +26,7 @@ const char *tags[] = {
 	"vifm-'cd'",
 	"vifm-'cdpath'",
 	"vifm-'cf'",
+	"vifm-'chaselinks'",
 	"vifm-'classify'",
 	"vifm-'co'",
 	"vifm-'columns'",
