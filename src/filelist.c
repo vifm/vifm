@@ -2507,8 +2507,8 @@ fill_dir_list(FileView *view)
 			continue;
 		}
 
-		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
-				(view->list_rows + 1) * sizeof(dir_entry_t));
+		view->dir_entry = realloc(view->dir_entry,
+				(view->list_rows + 1)*sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
 			closedir(dir);

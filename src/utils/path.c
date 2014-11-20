@@ -646,10 +646,12 @@ find_ext_dot(const char path[])
 }
 
 void
-exclude_file_name(char *path)
+exclude_file_name(char path[])
 {
 	if(path_exists(path) && !is_valid_dir(path))
+	{
 		remove_last_path_component(path);
+	}
 }
 
 int

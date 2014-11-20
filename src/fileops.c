@@ -2966,7 +2966,9 @@ mv_file(const char src[], const char src_path[], const char dst[],
 	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
 			full_dst);
 	if(result == 0 && tmpfile_num >= 0)
+	{
 		add_operation(op, NULL, NULL, full_src, full_dst);
+	}
 	return result;
 }
 
@@ -2989,7 +2991,9 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	chosp(full_dst);
 
 	if(strcmp(full_src, full_dst) == 0)
+	{
 		return 0;
+	}
 
 	if(type <= 0)
 	{
@@ -2998,6 +3002,7 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	else
 	{
 		op = OP_SYMLINK;
+
 		if(type == 2)
 		{
 			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
@@ -3008,7 +3013,9 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, full_src,
 			full_dst);
 	if(result == 0 && type >= 0)
+	{
 		add_operation(op, NULL, NULL, full_src, full_dst);
+	}
 	return result;
 }
 
@@ -3017,9 +3024,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 {
 	int i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
-	bg_args_t *args = malloc(sizeof(*args));
+	bg_args_t *args = calloc(1, sizeof(*args));
 
-	args->list = NULL;
 	args->nlines = nlines;
 	args->move = move;
 	args->force = force;
@@ -3039,6 +3045,9 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_in_bg, args) != 0)
 	{
 		free_bg_args(args);
+
+		show_error_msg("Can't process files",
+				"Failed to initiate background operation");
 	}
 
 	return 0;
