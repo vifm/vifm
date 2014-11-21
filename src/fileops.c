@@ -102,7 +102,7 @@ typedef struct
 	size_t sel_list_len;
 	char path[PATH_MAX];
 	int from_file;
-	int from_trash;
+	int use_trash; /* Whether either source or destination is trash directory. */
 }
 bg_args_t;
 
@@ -507,7 +507,7 @@ delete_files_bg(FileView *view, int use_trash)
 	}
 
 	args = calloc(1, sizeof(*args));
-	args->from_trash = use_trash;
+	args->use_trash = use_trash;
 
 	move_cursor_out_of(view, FLS_MARKING);
 
@@ -538,7 +538,7 @@ delete_files_in_bg(void *arg)
 
 	for(i = 0; i < args->sel_list_len; ++i)
 	{
-		delete_file_in_bg(args->sel_list[i], args->from_trash);
+		delete_file_in_bg(args->sel_list[i], args->use_trash);
 		inner_bg_next();
 	}
 
@@ -2899,7 +2899,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->force = force;
 
 	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
-			sizeof(task_desc), args->path, &args->from_file, &args->from_trash);
+			sizeof(task_desc), args->path, &args->from_file, &args->use_trash);
 	if(i != 0)
 	{
 		free_bg_args(args);
@@ -2933,7 +2933,7 @@ cpmv_files_in_bg(void *arg)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
-		cpmv_file_in_bg(src, dst, args->move, args->force, args->from_trash,
+		cpmv_file_in_bg(src, dst, args->move, args->force, args->use_trash,
 				args->path);
 		inner_bg_next();
 	}
