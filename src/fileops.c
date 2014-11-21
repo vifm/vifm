@@ -40,7 +40,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() strtol() */
-#include <string.h> /* memcmp() memset() strcpy() strdup() strerror() */
+#include <string.h> /* memcmp() memset() strcmp() strcpy() strdup()
+                       strerror() */
 
 #include "cfg/config.h"
 #include "io/ioeta.h"
@@ -2929,6 +2930,8 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 	return 0;
 }
 
+/* Adapter for mv_file_f() that accepts paths broken into directory/file
+ * parts. */
 static int
 mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops)
@@ -2943,6 +2946,8 @@ mv_file(const char src[], const char src_path[], const char dst[],
 	return mv_file_f(full_src, full_dst, tmpfile_num, cancellable, ops);
 }
 
+/* Moves file from one location to another.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
 mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
 		ops_t *ops)
@@ -2978,11 +2983,8 @@ mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
 	return result;
 }
 
-/* type:
- *  <= 0 - copy
- *  1 - absolute symbolic links
- *  2 - relative symbolic links
- */
+/* Adapter for cp_file_f() that accepts paths broken into directory/file
+ * parts. */
 static int
 cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], int type, int cancellable, ops_t *ops)
@@ -2997,6 +2999,11 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	return cp_file_f(full_src, full_dst, type, cancellable, ops);
 }
 
+/* Copies file from one location to another.  type argument values mean:
+ *  <= 0 - copy
+ *  1 - absolute symbolic links
+ *  2 - relative symbolic links
+ * Returns zero on success, otherwise non-zero is returned. */
 static int
 cp_file_f(const char src[], const char dst[], int type, int cancellable,
 		ops_t *ops)
