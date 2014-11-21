@@ -154,9 +154,9 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 static int edit_file(const char filepath[], int force_changed);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
-static void cpmv_in_bg(void *arg);
-static void cpmv_files_bg_i(char **list, int nlines, int move, int force,
-		char **sel_list, int sel_list_len, int from_trash, const char *path);
+static void cpmv_files_in_bg(void *arg);
+static void cpmv_file_in_bg(const char src[], const char dst[], int move,
+		int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
 static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
@@ -2910,7 +2910,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	general_prepare_for_bg_task(view, args);
 
-	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_in_bg, args) != 0)
+	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_files_in_bg, args) != 0)
 	{
 		free_bg_args(args);
 
@@ -2923,56 +2923,56 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 /* Entry point for a background task that copies/moves files. */
 static void
-cpmv_in_bg(void *arg)
+cpmv_files_in_bg(void *arg)
 {
+	int i;
 	bg_args_t *const args = arg;
+	const int custom_fnames = (args->nlines > 0);
 
-	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
-			args->sel_list, args->sel_list_len, args->from_trash, args->path);
+	for(i = 0; i < args->sel_list_len; ++i)
+	{
+		const char *const src = args->sel_list[i];
+		const char *const dst = custom_fnames ? args->list[i] : NULL;
+		cpmv_file_in_bg(src, dst, args->move, args->force, args->from_trash,
+				args->path);
+		inner_bg_next();
+	}
 
 	free_bg_args(args);
 }
 
 /* Actual implementation of background file copying/moving. */
 static void
-cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
-		int sel_list_len, int from_trash, const char *path)
+cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
+		int from_trash, const char dst_dir[])
 {
-	int i;
-	for(i = 0; i < sel_list_len; i++)
+	char dst_full[PATH_MAX];
+
+	if(dst == NULL)
 	{
-		char dst_full[PATH_MAX];
-		const char *dst_name;
-
-		if(nlines > 0)
+		if(from_trash)
 		{
-			dst_name = list[i];
-		}
-		else if(from_trash)
-		{
-			dst_name = get_real_name_from_trash_name(sel_list[i]);
+			dst = get_real_name_from_trash_name(src);
 		}
 		else
 		{
-			dst_name = get_last_path_component(sel_list[i]);
+			dst = get_last_path_component(src);
 		}
+	}
 
-		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst_name);
-		if(path_exists(dst_full) && !from_trash)
-		{
-			perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
-		}
+	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
+	if(path_exists(dst_full) && !from_trash)
+	{
+		perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
+	}
 
-		if(move)
-		{
-			(void)mv_file_f(sel_list[i], dst_full, -1, 0, NULL);
-		}
-		else
-		{
-			(void)cp_file_f(sel_list[i], dst_full, -1, 0, NULL);
-		}
-
-		inner_bg_next();
+	if(move)
+	{
+		(void)mv_file_f(src, dst_full, -1, 0, NULL);
+	}
+	else
+	{
+		(void)cp_file_f(src, dst_full, -1, 0, NULL);
 	}
 }
 
