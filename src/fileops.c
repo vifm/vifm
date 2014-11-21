@@ -119,7 +119,7 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
 static void delete_files_in_bg(void *arg);
-static void delete_files_bg_i(char *list[], int count, int use_trash);
+static void delete_file_in_bg(const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
@@ -533,38 +533,35 @@ delete_files_bg(FileView *view, int use_trash)
 static void
 delete_files_in_bg(void *arg)
 {
+	int i;
 	bg_args_t *const args = arg;
 
-	delete_files_bg_i(args->sel_list, args->sel_list_len, args->from_trash);
+	for(i = 0; i < args->sel_list_len; ++i)
+	{
+		delete_file_in_bg(args->sel_list[i], args->from_trash);
+		inner_bg_next();
+	}
 
 	free_bg_args(args);
 }
 
 /* Actual implementation of background file removal. */
 static void
-delete_files_bg_i(char *list[], int count, int use_trash)
+delete_file_in_bg(const char path[], int use_trash)
 {
-	int i;
-	for(i = 0; i < count; i++)
+	if(!use_trash)
 	{
-		const char *const path = list[i];
-		const char *const fname = get_last_path_component(path);
+		(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
+		return;
+	}
 
-		if(use_trash)
-		{
-			if(!is_trash_directory(path))
-			{
-				char *const trash_name = gen_trash_name(path, fname);
-				const char *const dest = (trash_name != NULL) ? trash_name : fname;
-				(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
-				free(trash_name);
-			}
-		}
-		else
-		{
-			(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
-		}
-		inner_bg_next();
+	if(!is_trash_directory(path))
+	{
+		const char *const fname = get_last_path_component(path);
+		char *const trash_name = gen_trash_name(path, fname);
+		const char *const dest = (trash_name != NULL) ? trash_name : fname;
+		(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
+		free(trash_name);
 	}
 }
 
