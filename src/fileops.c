@@ -148,6 +148,15 @@ static int initiate_put_files_from_register(FileView *view, OPS op,
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
+static int have_read_access(FileView *view);
+static char ** edit_list(size_t count, char **orig, int *nlines,
+		int ignore_change);
+static int edit_file(const char filepath[], int force_changed);
+static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
+static void progress_msg(const char text[], int ready, int total);
+static void cpmv_in_bg(void *arg);
+static void cpmv_files_bg_i(char **list, int nlines, int move, int force,
+		char **sel_list, int sel_list_len, int from_trash, const char *path);
 static int mv_file(const char src[], const char src_path[], const char dst[],
 		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
 static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
@@ -156,13 +165,6 @@ static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], int type, int cancellable, ops_t *ops);
 static int cp_file_f(const char src[], const char dst[], int type,
 		int cancellable, ops_t *ops);
-static int have_read_access(FileView *view);
-static char ** edit_list(size_t count, char **orig, int *nlines,
-		int ignore_change);
-static int edit_file(const char filepath[], int force_changed);
-static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
-static void progress_msg(const char text[], int ready, int total);
-static void cpmv_in_bg(void *arg);
 static void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[]);
@@ -484,33 +486,6 @@ prepare_register(int reg)
 	return reg;
 }
 
-static void
-delete_files_bg_i(char *list[], int count, int use_trash)
-{
-	int i;
-	for(i = 0; i < count; i++)
-	{
-		const char *const path = list[i];
-		const char *const fname = get_last_path_component(path);
-
-		if(use_trash)
-		{
-			if(!is_trash_directory(path))
-			{
-				char *const trash_name = gen_trash_name(path, fname);
-				const char *const dest = (trash_name != NULL) ? trash_name : fname;
-				(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
-				free(trash_name);
-			}
-		}
-		else
-		{
-			(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
-		}
-		inner_bg_next();
-	}
-}
-
 int
 delete_files_bg(FileView *view, int use_trash)
 {
@@ -563,6 +538,34 @@ delete_files_in_bg(void *arg)
 	delete_files_bg_i(args->sel_list, args->sel_list_len, args->from_trash);
 
 	free_bg_args(args);
+}
+
+/* Actual implementation of background file removal. */
+static void
+delete_files_bg_i(char *list[], int count, int use_trash)
+{
+	int i;
+	for(i = 0; i < count; i++)
+	{
+		const char *const path = list[i];
+		const char *const fname = get_last_path_component(path);
+
+		if(use_trash)
+		{
+			if(!is_trash_directory(path))
+			{
+				char *const trash_name = gen_trash_name(path, fname);
+				const char *const dest = (trash_name != NULL) ? trash_name : fname;
+				(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
+				free(trash_name);
+			}
+		}
+		else
+		{
+			(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
+		}
+		inner_bg_next();
+	}
 }
 
 static void
@@ -2887,7 +2890,54 @@ progress_msg(const char text[], int ready, int total)
 	}
 }
 
-static int
+int
+cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
+{
+	int i;
+	char task_desc[COMMAND_GROUP_INFO_LEN];
+	bg_args_t *args = calloc(1, sizeof(*args));
+
+	args->nlines = nlines;
+	args->move = move;
+	args->force = force;
+
+	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
+			sizeof(task_desc), args->path, &args->from_file, &args->from_trash);
+	if(i != 0)
+	{
+		free_bg_args(args);
+		return i > 0;
+	}
+
+	args->list = args->from_file ? list : copy_string_array(list, nlines);
+
+	general_prepare_for_bg_task(view, args);
+
+	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_in_bg, args) != 0)
+	{
+		free_bg_args(args);
+
+		show_error_msg("Can't process files",
+				"Failed to initiate background operation");
+	}
+
+	return 0;
+}
+
+/* Entry point for a background task that copies/moves files. */
+static void
+cpmv_in_bg(void *arg)
+{
+	bg_args_t *const args = arg;
+
+	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
+			args->sel_list, args->sel_list_len, args->from_trash, args->path);
+
+	free_bg_args(args);
+}
+
+/* Actual implementation of background file copying/moving. */
+static void
 cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		int sel_list_len, int from_trash, const char *path)
 {
@@ -2927,7 +2977,6 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 
 		inner_bg_next();
 	}
-	return 0;
 }
 
 /* Adapter for mv_file_f() that accepts paths broken into directory/file
@@ -3044,52 +3093,6 @@ cp_file_f(const char src[], const char dst[], int type, int cancellable,
 		add_operation(op, NULL, NULL, src, dst);
 	}
 	return result;
-}
-
-int
-cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
-{
-	int i;
-	char task_desc[COMMAND_GROUP_INFO_LEN];
-	bg_args_t *args = calloc(1, sizeof(*args));
-
-	args->nlines = nlines;
-	args->move = move;
-	args->force = force;
-
-	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
-			sizeof(task_desc), args->path, &args->from_file, &args->from_trash);
-	if(i != 0)
-	{
-		free_bg_args(args);
-		return i > 0;
-	}
-
-	args->list = args->from_file ? list : copy_string_array(list, nlines);
-
-	general_prepare_for_bg_task(view, args);
-
-	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_in_bg, args) != 0)
-	{
-		free_bg_args(args);
-
-		show_error_msg("Can't process files",
-				"Failed to initiate background operation");
-	}
-
-	return 0;
-}
-
-/* Entry point for a background task that copies/moves files. */
-static void
-cpmv_in_bg(void *arg)
-{
-	bg_args_t *const args = arg;
-
-	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
-			args->sel_list, args->sel_list_len, args->from_trash, args->path);
-
-	free_bg_args(args);
 }
 
 /* Frees background arguments structure with all its data. */
