@@ -693,23 +693,24 @@ follow_link(FileView *view, int follow_dirs)
 		{
 			if(linkto[i] == '/')
 			{
-				struct stat part_stat;
 				linkto[i] = '\0';
-				if(lstat(linkto, &part_stat) != 0)
+
+				if(!is_dir(linkto))
 				{
+					/* This seems to have something to do with Windows. */
 					strcat(linkto, "/");
-					if(lstat(linkto, &part_stat) != 0)
+
+					if(!is_dir(linkto))
 					{
-						continue;
+						break;
 					}
 				}
-				if((part_stat.st_mode & S_IFMT) == S_IFDIR)
-				{
-					dir = strdup(linkto);
-					break;
-				}
+
+				dir = strdup(linkto);
+				break;
 			}
 		}
+
 		if((file = strrchr(link_dup, '/')) != NULL)
 			++file;
 		else if(dir == NULL)
