@@ -644,13 +644,13 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	}
 }
 
+/* Resolve link target and either navigate inside directory link points to or
+ * navigate to directory where target is located pointing cursor on
+ * it (the follow_dirs flag controls behaviour). */
 static void
 follow_link(FileView *view, int follow_dirs)
 {
-	/* TODO: refactor this big function follow_link() */
-
-	struct stat target_stat;
-	char *dir = NULL, *file = NULL, *link_dup;
+	char *dir, *file;
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
 	const char *filename;
@@ -658,67 +658,40 @@ follow_link(FileView *view, int follow_dirs)
 	filename = view->dir_entry[view->list_pos].name;
 	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, filename);
 
-	if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
+	if(get_link_target_abs(full_path, view->curr_dir, linkto,
+				sizeof(linkto)) != 0)
 	{
-		show_error_msg("Error", "Can't read link");
+		show_error_msg("Error", "Can't read link.");
 		return;
 	}
 
 	if(!path_exists(linkto))
 	{
 		show_error_msg("Broken Link",
-				"Can't access link destination. It might be broken");
+				"Can't access link destination.  It might be broken.");
 		return;
 	}
 
 	chosp(linkto);
 
-	if(lstat(linkto, &target_stat) != 0)
-	{
-		show_error_msgf("Link Follow", "Can't stat link destination \"%s\": %s",
-				linkto, strerror(errno));
-		return;
-	}
-
-	link_dup = strdup(linkto);
-
-	if((target_stat.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
+	if(is_dir(linkto) && !follow_dirs)
 	{
 		dir = strdup(filename);
+		file = NULL;
 	}
 	else
 	{
-		int i;
-		for(i = strlen(linkto) - 1; i > 0; i--)
-		{
-			if(linkto[i] == '/')
-			{
-				struct stat part_stat;
-				linkto[i] = '\0';
-				if(lstat(linkto, &part_stat) != 0)
-				{
-					strcat(linkto, "/");
-					if(lstat(linkto, &part_stat) != 0)
-					{
-						continue;
-					}
-				}
-				if((part_stat.st_mode & S_IFMT) == S_IFDIR)
-				{
-					dir = strdup(linkto);
-					break;
-				}
-			}
-		}
-		if((file = strrchr(link_dup, '/')) != NULL)
-			++file;
-		else if(dir == NULL)
-			file = link_dup;
+		dir = strdup(linkto);
+		remove_last_path_component(dir);
+
+		file = get_last_path_component(linkto);
 	}
-	if(dir != NULL)
+
+	if(dir[0] != '\0')
 	{
 		navigate_to(view, dir);
 	}
+
 	if(file != NULL)
 	{
 		const int pos = find_file_pos_in_list(view, file);
@@ -727,7 +700,7 @@ follow_link(FileView *view, int follow_dirs)
 			move_to_list_pos(view, pos);
 		}
 	}
-	free(link_dup);
+
 	free(dir);
 }
 

@@ -510,7 +510,7 @@ get_last_path_component(const char path[])
 }
 
 void
-remove_last_path_component(char *path)
+remove_last_path_component(char path[])
 {
 	char *slash;
 
@@ -519,10 +519,11 @@ remove_last_path_component(char *path)
 		chosp(path);
 	}
 
-	if((slash = strrchr(path, '/')) != NULL)
+	slash = strrchr(path, '/');
+	if(slash != NULL)
 	{
-		int pos = is_root_dir(path) ? 1 : 0;
-		slash[pos] = '\0';
+		const int offset = is_root_dir(path) ? 1 : 0;
+		slash[offset] = '\0';
 	}
 }
 

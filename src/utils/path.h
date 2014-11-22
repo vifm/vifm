@@ -72,8 +72,8 @@ char * replace_tilde(char path[]);
  * slashes. */
 char * get_last_path_component(const char path[]);
 
-/* Modifies path. */
-void remove_last_path_component(char *path);
+/* Truncates last component from the path. */
+void remove_last_path_component(char path[]);
 
 /* Checks if path could refer to a real file system object. */
 int is_path_well_formed(const char *path);
