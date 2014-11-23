@@ -2462,94 +2462,98 @@ str_toupper(char *str)
 }
 
 int
-change_case(FileView *view, int toupper, int count, int indexes[])
+change_case(FileView *view, int toupper)
 {
 	int i;
-	char **dest = NULL;
-	int n = 0, k;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char **dest;
+	int ndest, nrenamed;
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	dir_entry_t *entry;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
 		return 0;
 	}
 
-	if(count > 0)
+	entry = NULL;
+	ndest = 0;
+	dest = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		capture_files_at(view, count, indexes);
-	}
-	else
-	{
-		capture_target_files(view);
-	}
-
-	if(view->selected_files == 0)
-	{
-		status_bar_message("0 files renamed");
-		return 1;
-	}
-
-	for(i = 0; i < view->selected_files; i++)
-	{
-		char buf[NAME_MAX];
+		char new_fname[NAME_MAX];
 		struct stat st;
 
-		copy_str(buf, sizeof(buf), view->selected_filelist[i]);
+		copy_str(new_fname, sizeof(new_fname), entry->name);
 		if(toupper)
-			str_toupper(buf);
-		else
-			str_tolower(buf);
-
-		n = add_to_string_array(&dest, n, 1, buf);
-
-		if(is_in_string_array(dest, n - 1, buf))
 		{
-			free_string_array(dest, n);
+			str_toupper(new_fname);
+		}
+		else
+		{
+			str_tolower(new_fname);
+		}
+
+		if(is_in_string_array(dest, ndest, new_fname))
+		{
+			free_string_array(dest, ndest);
 			free_file_capture(view);
 			view->selected_files = 0;
-			status_bar_errorf("Name \"%s\" duplicates", buf);
+			status_bar_errorf("Name \"%s\" duplicates", new_fname);
 			return 1;
 		}
-		if(strcmp(dest[i], buf) == 0)
-			continue;
-		if(lstat(buf, &st) == 0)
+
+		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+
+		if(strcmp(new_fname, entry->name) == 0)
 		{
-			free_string_array(dest, n);
+			continue;
+		}
+
+		if(lstat(new_fname, &st) == 0)
+		{
+			free_string_array(dest, ndest);
 			free_file_capture(view);
 			view->selected_files = 0;
-			status_bar_errorf("File \"%s\" already exists", buf);
+			status_bar_errorf("File \"%s\" already exists", new_fname);
 			return 1;
 		}
 	}
 
-	snprintf(buf, sizeof(buf), "g%c in %s: ", toupper ? 'U' : 'u',
+	snprintf(undo_msg, sizeof(undo_msg), "g%c in %s: ", toupper ? 'U' : 'u',
 			replace_home_part(view->curr_dir));
 
-	get_group_file_list(view->selected_filelist, view->selected_files, buf);
-	cmd_group_begin(buf);
-	k = 0;
-	for(i = 0; i < n; i++)
+	append_marked_files(view, undo_msg);
+	cmd_group_begin(undo_msg);
+
+	nrenamed = 0;
+	i = 0;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		int pos;
-		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
+		const char *const new_fname = dest[i++];
+
+		if(strcmp(new_fname, entry->name) == 0)
+		{
 			continue;
-		pos = find_file_pos_in_list(view, view->selected_filelist[i]);
-		if(pos == view->list_pos)
-		{
-			(void)replace_string(&view->dir_entry[pos].name, dest[i]);
 		}
-		if(mv_file(view->selected_filelist[i], view->curr_dir, dest[i],
-				view->curr_dir, 0, 1, NULL) == 0)
+
+		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
+					NULL) == 0)
 		{
-			k++;
+			++nrenamed;
+
+			if(entry_to_pos(view, entry) == view->list_pos)
+			{
+				(void)replace_string(&entry->name, new_fname);
+			}
 		}
 	}
+
 	cmd_group_end();
 
-	free_file_capture(view);
-	view->selected_files = 0;
-	free_string_array(dest, n);
-	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
+	free_string_array(dest, ndest);
+	status_bar_messagef("%d file%s renamed", nrenamed,
+			(nrenamed == 1) ? "" : "s");
 	return 1;
 }
 

@@ -1142,8 +1142,8 @@ do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
 		pick_files(curr_view, curr_view->list_pos + count, keys_info);
 	}
 
-	curr_stats.save_msg = change_case(curr_view, upper, keys_info->count,
-			keys_info->indexes);
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	curr_stats.save_msg = change_case(curr_view, upper);
 	free_list_of_file_indexes(keys_info);
 }
 
@@ -1493,6 +1493,7 @@ delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 	}
 }
 
+/* Invokes actual file deletion procedure. */
 static void
 call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {

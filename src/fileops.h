@@ -49,11 +49,11 @@ SignalType;
 void init_fileops(void);
 
 /* Removes marked files (optionally into trash directory) of the view to
- * specified register.  Returns new value for save_msg. */
+ * specified register.  Returns new value for save_msg flag. */
 int delete_files(FileView *view, int reg, int use_trash);
 
 /* Removes marked files (optionally into trash directory) of the view to
- * specified register.  Returns new value for save_msg. */
+ * specified register.  Returns new value for save_msg flag. */
 int delete_files_bg(FileView *view, int use_trash);
 
 /* Yanks selected files of the view into register specified by its name via reg
@@ -108,7 +108,9 @@ int tr_in_names(FileView *view, const char *pattern, const char *sub);
 const char * substitute_in_name(const char name[], const char pattern[],
 		const char sub[], int glob);
 
-int change_case(FileView *view, int toupper, int count, int indexes[]);
+/* Changes case of all letters in names of marked files of the view.  Returns
+ * new value for save_msg flag. */
+int change_case(FileView *view, int toupper);
 
 int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force);

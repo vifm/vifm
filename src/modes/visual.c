@@ -743,7 +743,9 @@ static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
-	save_msg = change_case(view, 1, 0, NULL);
+
+	check_marking(view, 0, NULL);
+	save_msg = change_case(view, 1);
 	accept_and_leave(save_msg);
 }
 
@@ -751,7 +753,9 @@ static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
-	save_msg = change_case(view, 0, 0, NULL);
+
+	check_marking(view, 0, NULL);
+	save_msg = change_case(view, 0);
 	accept_and_leave(save_msg);
 }
 
