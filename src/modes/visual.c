@@ -103,6 +103,7 @@ static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
+static void do_gu(int upper);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
 static void restore_previous_selection(void);
 static void select_first_one(void);
@@ -739,23 +740,28 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 	redraw_view(view);
 }
 
+/* Changes letters in filenames to upper case. */
 static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
-	int save_msg;
-
-	check_marking(view, 0, NULL);
-	save_msg = change_case(view, 1);
-	accept_and_leave(save_msg);
+	do_gu(1);
 }
 
+/* Changes letters in filenames to lower case. */
 static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
+{
+	do_gu(0);
+}
+
+/* Handles gU and gu commands. */
+static void
+do_gu(int upper)
 {
 	int save_msg;
 
 	check_marking(view, 0, NULL);
-	save_msg = change_case(view, 0);
+	save_msg = change_case(view, upper);
 	accept_and_leave(save_msg);
 }
 
