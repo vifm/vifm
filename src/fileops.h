@@ -93,12 +93,15 @@ int check_if_dir_writable(DirRole dir_role, const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
 
-/* Returns new value for save_msg flag. */
-int substitute_in_names(FileView *view, const char *pattern, const char *sub,
+/* Replaces matches of regular expression in names of files of the view.
+ * Returns new value for save_msg flag. */
+int substitute_in_names(FileView *view, const char pattern[], const char sub[],
 		int ic, int glob);
 
-/* Returns new value for save_msg flag. */
-int tr_in_names(FileView *view, const char *pattern, const char *sub);
+/* Replaces letters in names of marked files of the view according to the
+ * mapping: from[i] -> to[i] (must have the same length).  Returns new value for
+ * save_msg flag. */
+int tr_in_names(FileView *view, const char from[], const char to[]);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * substitute_in_name(const char name[], const char pattern[],

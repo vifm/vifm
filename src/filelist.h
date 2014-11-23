@@ -287,8 +287,10 @@ void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 void ensure_selection_exists(FileView *view);
 void check_marking(FileView *view, int count, const int indexes[]);
-/* Maerks files at positions specified in the indexes array of size count. */
+/* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(FileView *view, int count, const int indexes[]);
+/* Marks selected files of the view. */
+void mark_selected(FileView *view);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

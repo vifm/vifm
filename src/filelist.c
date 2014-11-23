@@ -171,7 +171,6 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
-static void mark_selected(FileView *view);
 
 void
 init_filelists(void)
@@ -4016,7 +4015,7 @@ clear_marking(FileView *view)
 	}
 }
 
-static void
+void
 mark_selected(FileView *view)
 {
 	int i;

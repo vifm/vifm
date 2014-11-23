@@ -3496,6 +3496,7 @@ split_cmd(const cmd_info_t *cmd_info)
 	return do_split(cmd_info, HSPLIT);
 }
 
+/* Replaces matches of regular expression in names of files. */
 static int
 substitute_cmd(const cmd_info_t *cmd_info)
 {
@@ -3546,6 +3547,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	mark_selected(curr_view);
 	return substitute_in_names(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
@@ -3592,6 +3594,7 @@ touch_cmd(const cmd_info_t *cmd_info)
 	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
+/* Replaces letters in names of files according to character mapping. */
 static int
 tr_cmd(const cmd_info_t *cmd_info)
 {
@@ -3620,6 +3623,8 @@ tr_cmd(const cmd_info_t *cmd_info)
 			sl++;
 		}
 	}
+
+	mark_selected(curr_view);
 	return tr_in_names(curr_view, cmd_info->argv[0], buf) != 0;
 }
 

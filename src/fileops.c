@@ -148,6 +148,8 @@ static int initiate_put_files_from_register(FileView *view, OPS op,
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
+static void fixup_current_fname(FileView *view, dir_entry_t *entry,
+		const char new_fname[]);
 static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -2203,94 +2205,69 @@ substitute_in_name(const char name[], const char pattern[], const char sub[],
 }
 
 static int
-change_in_names(FileView *view, char c, const char *pattern, const char *sub,
+change_in_names(FileView *view, char c, const char lhs[], const char rhs[],
 		char **dest)
 {
-	int i, j;
-	int n;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	size_t len;
+	int i;
+	int nrenamed;
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	dir_entry_t *entry;
 
-	len = snprintf(buf, sizeof(buf), "%c/%s/%s/ in %s: ", c, pattern, sub,
+	snprintf(undo_msg, sizeof(undo_msg), "%c/%s/%s/ in %s: ", c, lhs, rhs,
 			replace_home_part(view->curr_dir));
+	append_marked_files(view, undo_msg);
+	cmd_group_begin(undo_msg);
 
-	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	entry = NULL;
+	nrenamed = 0;
+	i = 0;
+	while(iter_marked_entries(view, &entry))
 	{
-		if(!view->dir_entry[i].selected)
-			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
-
-		if(buf[len - 2] != ':')
+		const char *const new_fname = dest[i++];
+		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
+					NULL) == 0)
 		{
-			strncat(buf, ", ", sizeof(buf) - len - 1);
-			len = strlen(buf);
-		}
-		strncat(buf, view->dir_entry[i].name, sizeof(buf) - len - 1);
-		len = strlen(buf);
-	}
-	cmd_group_begin(buf);
-	n = 0;
-	j = -1;
-	for(i = 0; i < view->list_rows; i++)
-	{
-		const char *const fname = view->dir_entry[i].name;
-
-		if(!view->dir_entry[i].selected || is_parent_dir(fname))
-		{
-			continue;
-		}
-
-		++j;
-		if(strcmp(fname, dest[j]) == 0)
-		{
-			continue;
-		}
-
-		if(mv_file(fname, view->curr_dir, dest[j], view->curr_dir, 0, 1, NULL) == 0)
-		{
-			if(i == view->list_pos)
-			{
-				/* Rename file in internal structures for correct positioning of cursor
-				 * after reloading, as cursor will be positioned on the file with the
-				 * same name. */
-				(void)replace_string(&view->dir_entry[i].name, dest[j]);
-			}
-
-			++n;
+			fixup_current_fname(view, entry, new_fname);
+			++nrenamed;
 		}
 	}
+
 	cmd_group_end();
-	free_string_array(dest, j + 1);
-	status_bar_messagef("%d file%s renamed", n, (n == 1) ? "" : "s");
+	status_bar_messagef("%d file%s renamed", nrenamed,
+			(nrenamed == 1) ? "" : "s");
+
 	return 1;
 }
 
-/* Returns new value for save_msg flag. */
 int
-substitute_in_names(FileView *view, const char *pattern, const char *sub,
+substitute_in_names(FileView *view, const char pattern[], const char sub[],
 		int ic, int glob)
 {
-	int i;
 	regex_t re;
-	char **dest = NULL;
-	int n = 0;
+	char **dest;
+	int ndest;
 	int cflags;
-	int err;
+	dir_entry_t *entry;
+	int err, save_msg;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
 		return 0;
 	}
 
-	ensure_selection_exists(view);
-
 	if(ic == 0)
+	{
 		cflags = get_regexp_cflags(pattern);
+	}
 	else if(ic > 0)
+	{
 		cflags = REG_EXTENDED | REG_ICASE;
+	}
 	else
+	{
 		cflags = REG_EXTENDED;
+	}
+
 	if((err = regcomp(&re, pattern, cflags)) != 0)
 	{
 		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
@@ -2298,67 +2275,79 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		return 1;
 	}
 
-	for(i = 0; i < view->list_rows; i++)
+	entry = NULL;
+	ndest = 0;
+	dest = NULL;
+	err = 0;
+	while(iter_marked_entries(view, &entry))
 	{
-		const char *dst;
+		const char *new_fname;
 		regmatch_t matches[10];
 		struct stat st;
-		const char *const fname = view->dir_entry[i].name;
 
-		if(!view->dir_entry[i].selected || is_parent_dir(fname))
+		if(regexec(&re, entry->name, ARRAY_LEN(matches), matches, 0) != 0)
 		{
+			entry->marked = 0;
 			continue;
 		}
 
-		if(regexec(&re, fname, ARRAY_LEN(matches), matches, 0) != 0)
-		{
-			view->dir_entry[i].selected = 0;
-			view->selected_files--;
-			continue;
-		}
 		if(glob)
-			dst = gsubstitute_regexp(&re, fname, sub, matches);
-		else
-			dst = substitute_regexp(fname, sub, matches, NULL);
-		if(strcmp(fname, dst) == 0)
 		{
-			view->dir_entry[i].selected = 0;
-			view->selected_files--;
+			new_fname = gsubstitute_regexp(&re, entry->name, sub, matches);
+		}
+		else
+		{
+			new_fname = substitute_regexp(entry->name, sub, matches, NULL);
+		}
+
+		if(strcmp(entry->name, new_fname) == 0)
+		{
+			entry->marked = 0;
 			continue;
 		}
-		n = add_to_string_array(&dest, n, 1, dst);
-		if(is_in_string_array(dest, n - 1, dst))
+
+		if(is_in_string_array(dest, ndest, new_fname))
 		{
-			regfree(&re);
-			free_string_array(dest, n);
-			status_bar_errorf("Name \"%s\" duplicates", dst);
-			return 1;
+			status_bar_errorf("Name \"%s\" duplicates", new_fname);
+			err = 1;
+			break;
 		}
-		if(dst[0] == '\0')
+		if(new_fname[0] == '\0')
 		{
-			regfree(&re);
-			free_string_array(dest, n);
-			status_bar_errorf("Destination name of \"%s\" is empty", fname);
-			return 1;
+			status_bar_errorf("Destination name of \"%s\" is empty", entry->name);
+			err = 1;
+			break;
 		}
-		if(contains_slash(dst))
+		if(contains_slash(new_fname))
 		{
-			regfree(&re);
-			free_string_array(dest, n);
-			status_bar_errorf("Destination name \"%s\" contains slash", dst);
-			return 1;
+			status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
+			err = 1;
+			break;
 		}
-		if(lstat(dst, &st) == 0)
+		if(lstat(new_fname, &st) == 0)
 		{
-			regfree(&re);
-			free_string_array(dest, n);
-			status_bar_errorf("File \"%s\" already exists", dst);
-			return 1;
+			status_bar_errorf("File \"%s\" already exists", new_fname);
+			err = 1;
+			break;
 		}
+
+		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
 	}
+
 	regfree(&re);
 
-	return change_in_names(view, 's', pattern, sub, dest);
+	if(err)
+	{
+		save_msg = 1;
+	}
+	else
+	{
+		save_msg = change_in_names(view, 's', pattern, sub, dest);
+	}
+
+	free_string_array(dest, ndest);
+
+	return save_msg;
 }
 
 static const char *
@@ -2380,65 +2369,77 @@ substitute_tr(const char *name, const char *pattern, const char *sub)
 }
 
 int
-tr_in_names(FileView *view, const char *pattern, const char *sub)
+tr_in_names(FileView *view, const char from[], const char to[])
 {
-	int i;
-	char **dest = NULL;
-	int n = 0;
+	char **dest;
+	int ndest;
+	dir_entry_t *entry;
+	int err, save_msg;
+
+	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
 		return 0;
 	}
 
-	ensure_selection_exists(view);
-
-	for(i = 0; i < view->list_rows; i++)
+	entry = NULL;
+	ndest = 0;
+	dest = NULL;
+	err = 0;
+	save_msg = 0;
+	while(iter_marked_entries(view, &entry))
 	{
-		const char *dst;
+		const char *new_fname;
 		struct stat st;
-		const char *const fname = view->dir_entry[i].name;
 
-		if(!view->dir_entry[i].selected || is_parent_dir(view->dir_entry[i].name))
+		new_fname = substitute_tr(entry->name, from, to);
+		if(strcmp(entry->name, new_fname) == 0)
 		{
+			entry->marked = 0;
 			continue;
 		}
 
-		dst = substitute_tr(fname, pattern, sub);
-		if(strcmp(fname, dst) == 0)
+		if(is_in_string_array(dest, ndest, new_fname))
 		{
-			view->dir_entry[i].selected = 0;
-			view->selected_files--;
-			continue;
+			status_bar_errorf("Name \"%s\" duplicates", new_fname);
+			err = 1;
+			break;
 		}
-		n = add_to_string_array(&dest, n, 1, dst);
-		if(is_in_string_array(dest, n - 1, dst))
+		if(new_fname[0] == '\0')
 		{
-			free_string_array(dest, n);
-			status_bar_errorf("Name \"%s\" duplicates", dst);
-			return 1;
+			status_bar_errorf("Destination name of \"%s\" is empty", entry->name);
+			err = 1;
+			break;
 		}
-		if(dst[0] == '\0')
+		if(contains_slash(new_fname))
 		{
-			free_string_array(dest, n);
-			status_bar_errorf("Destination name of \"%s\" is empty", fname);
-			return 1;
+			status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
+			err = 1;
+			break;
 		}
-		if(contains_slash(dst))
+		if(lstat(new_fname, &st) == 0)
 		{
-			free_string_array(dest, n);
-			status_bar_errorf("Destination name \"%s\" contains slash", dst);
-			return 1;
+			status_bar_errorf("File \"%s\" already exists", new_fname);
+			err = 1;
+			break;
 		}
-		if(lstat(dst, &st) == 0)
-		{
-			free_string_array(dest, n);
-			status_bar_errorf("File \"%s\" already exists", dst);
-			return 1;
-		}
+
+		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
 	}
 
-	return change_in_names(view, 't', pattern, sub, dest);
+	if(err)
+	{
+		save_msg = 1;
+	}
+	else
+	{
+		save_msg = change_in_names(view, 't', from, to, dest);
+	}
+
+	free_string_array(dest, ndest);
+
+	return save_msg;
 }
 
 static void
@@ -2478,7 +2479,7 @@ change_case(FileView *view, int toupper)
 	entry = NULL;
 	ndest = 0;
 	dest = NULL;
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry))
 	{
 		char new_fname[NAME_MAX];
 		struct stat st;
@@ -2528,7 +2529,7 @@ change_case(FileView *view, int toupper)
 	nrenamed = 0;
 	i = 0;
 	entry = NULL;
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry))
 	{
 		const char *const new_fname = dest[i++];
 
@@ -2540,12 +2541,8 @@ change_case(FileView *view, int toupper)
 		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
 					NULL) == 0)
 		{
+			fixup_current_fname(view, entry, new_fname);
 			++nrenamed;
-
-			if(entry_to_pos(view, entry) == view->list_pos)
-			{
-				(void)replace_string(&entry->name, new_fname);
-			}
 		}
 	}
 
@@ -2555,6 +2552,20 @@ change_case(FileView *view, int toupper)
 	status_bar_messagef("%d file%s renamed", nrenamed,
 			(nrenamed == 1) ? "" : "s");
 	return 1;
+}
+
+/* Updates entry if it corresponds to file under cursor to allow correct cursor
+ * positioning on view reload. */
+static void
+fixup_current_fname(FileView *view, dir_entry_t *entry, const char new_fname[])
+{
+	if(entry_to_pos(view, entry) == view->list_pos)
+	{
+		/* Rename file in internal structures for correct positioning of cursor
+		 * after reloading, as cursor will be positioned on the file with the same
+		 * name. */
+		(void)replace_string(&entry->name, new_fname);
+	}
 }
 
 static int
