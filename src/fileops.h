@@ -60,10 +60,6 @@ int delete_files_bg(FileView *view, int use_trash);
  * parameter.  Returns new value for save_msg. */
 int yank_files(FileView *view, int reg);
 
-int file_exec(char *command);
-
-void show_change_window(FileView *view, int type);
-
 void rename_current_file(FileView *view, int name_only);
 
 /* Renames selection to names given in the list of length nlines (or filled in
