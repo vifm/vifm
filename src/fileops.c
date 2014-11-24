@@ -148,7 +148,7 @@ static int initiate_put_files_from_register(FileView *view, OPS op,
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
-static int change_in_names(FileView *view, char c, const char lhs[],
+static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static void fixup_current_fname(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
@@ -2309,7 +2309,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	}
 	else
 	{
-		save_msg = change_in_names(view, 's', pattern, sub, dest);
+		save_msg = rename_marked(view, "s", pattern, sub, dest);
 	}
 
 	free_string_array(dest, ndest);
@@ -2401,7 +2401,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 	}
 	else
 	{
-		save_msg = change_in_names(view, 't', from, to, dest);
+		save_msg = rename_marked(view, "t", from, to, dest);
 	}
 
 	free_string_array(dest, ndest);
@@ -2412,11 +2412,11 @@ tr_in_names(FileView *view, const char from[], const char to[])
 int
 change_case(FileView *view, int toupper)
 {
-	int i;
 	char **dest;
-	int ndest, nrenamed;
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	int ndest;
 	dir_entry_t *entry;
+	int save_msg;
+	int err;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
@@ -2426,6 +2426,7 @@ change_case(FileView *view, int toupper)
 	entry = NULL;
 	ndest = 0;
 	dest = NULL;
+	err = 0;
 	while(iter_marked_entries(view, &entry))
 	{
 		char new_fname[NAME_MAX];
@@ -2441,83 +2442,70 @@ change_case(FileView *view, int toupper)
 			str_to_lower(new_fname);
 		}
 
+		if(strcmp(new_fname, entry->name) == 0)
+		{
+			entry->marked = 0;
+			continue;
+		}
+
 		if(is_in_string_array(dest, ndest, new_fname))
 		{
-			free_string_array(dest, ndest);
-			free_file_capture(view);
-			view->selected_files = 0;
 			status_bar_errorf("Name \"%s\" duplicates", new_fname);
-			return 1;
+			err = 1;
+			break;
+		}
+		if(lstat(new_fname, &st) == 0)
+		{
+			status_bar_errorf("File \"%s\" already exists", new_fname);
+			err = 1;
+			break;
 		}
 
 		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
-
-		if(strcmp(new_fname, entry->name) == 0)
-		{
-			continue;
-		}
-
-		if(lstat(new_fname, &st) == 0)
-		{
-			free_string_array(dest, ndest);
-			free_file_capture(view);
-			view->selected_files = 0;
-			status_bar_errorf("File \"%s\" already exists", new_fname);
-			return 1;
-		}
 	}
 
-	snprintf(undo_msg, sizeof(undo_msg), "g%c in %s: ", toupper ? 'U' : 'u',
-			replace_home_part(view->curr_dir));
-
-	append_marked_files(view, undo_msg);
-	cmd_group_begin(undo_msg);
-
-	nrenamed = 0;
-	i = 0;
-	entry = NULL;
-	while(iter_marked_entries(view, &entry))
+	if(err)
 	{
-		const char *const new_fname = dest[i++];
-
-		if(strcmp(new_fname, entry->name) == 0)
-		{
-			continue;
-		}
-
-		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
-					NULL) == 0)
-		{
-			fixup_current_fname(view, entry, new_fname);
-			++nrenamed;
-		}
+		save_msg = 1;
 	}
-
-	cmd_group_end();
+	else
+	{
+		save_msg = rename_marked(view, toupper ? "gU" : "gu", NULL, NULL, dest);
+	}
 
 	free_string_array(dest, ndest);
-	status_bar_messagef("%d file%s renamed", nrenamed,
-			(nrenamed == 1) ? "" : "s");
-	return 1;
+
+	return save_msg;
 }
 
+/* Renames marked files using corresponding entries of the dest array.  lhs and
+ * rhs can be NULL to omit their printing (both at the same time).  Returns new
+ * value for save_msg flag. */
 static int
-change_in_names(FileView *view, char c, const char lhs[], const char rhs[],
-		char **dest)
+rename_marked(FileView *view, const char desc[], const char lhs[],
+		const char rhs[], char **dest)
 {
 	int i;
 	int nrenamed;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	dir_entry_t *entry;
 
-	snprintf(undo_msg, sizeof(undo_msg), "%c/%s/%s/ in %s: ", c, lhs, rhs,
-			replace_home_part(view->curr_dir));
+	if(lhs == NULL && rhs == NULL)
+	{
+		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", desc,
+				replace_home_part(view->curr_dir));
+	}
+	else
+	{
+		snprintf(undo_msg, sizeof(undo_msg), "%s/%s/%s/ in %s: ", desc, lhs, rhs,
+				replace_home_part(view->curr_dir));
+	}
 	append_marked_files(view, undo_msg);
 	cmd_group_begin(undo_msg);
 
-	entry = NULL;
 	nrenamed = 0;
 	i = 0;
+	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const new_fname = dest[i++];
