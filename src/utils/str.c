@@ -135,12 +135,24 @@ to_multibyte(const wchar_t *s)
 }
 
 void
-strtolower(char *s)
+str_to_lower(char str[])
 {
-	while(*s != '\0')
+	/* FIXME: handle UTF-8 properly. */
+	while(*str != '\0')
 	{
-		*s = tolower(*s);
-		s++;
+		*str = tolower(*str);
+		++str;
+	}
+}
+
+void
+str_to_upper(char str[])
+{
+	/* FIXME: handle UTF-8 properly. */
+	while(*str != '\0')
+	{
+		*str = toupper(*str);
+		++str;
 	}
 }
 
@@ -150,7 +162,7 @@ wcstolower(wchar_t s[])
 	while(*s != L'\0')
 	{
 		*s = towlower(*s);
-		s++;
+		++s;
 	}
 }
 

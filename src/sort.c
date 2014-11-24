@@ -291,8 +291,8 @@ compare_file_names(const char s[], const char t[], int ignore_case)
 		copy_str(t_buf, sizeof(t_buf), t);
 		t = t_buf;
 
-		strtolower(s_buf);
-		strtolower(t_buf);
+		str_to_lower(s_buf);
+		str_to_lower(t_buf);
 	}
 
 	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);

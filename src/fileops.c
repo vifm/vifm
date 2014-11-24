@@ -2442,26 +2442,6 @@ tr_in_names(FileView *view, const char from[], const char to[])
 	return save_msg;
 }
 
-static void
-str_tolower(char *str)
-{
-	while(*str != '\0')
-	{
-		*str = tolower(*str);
-		str++;
-	}
-}
-
-static void
-str_toupper(char *str)
-{
-	while(*str != '\0')
-	{
-		*str = toupper(*str);
-		str++;
-	}
-}
-
 int
 change_case(FileView *view, int toupper)
 {
@@ -2487,11 +2467,11 @@ change_case(FileView *view, int toupper)
 		copy_str(new_fname, sizeof(new_fname), entry->name);
 		if(toupper)
 		{
-			str_toupper(new_fname);
+			str_to_upper(new_fname);
 		}
 		else
 		{
-			str_tolower(new_fname);
+			str_to_lower(new_fname);
 		}
 
 		if(is_in_string_array(dest, ndest, new_fname))
