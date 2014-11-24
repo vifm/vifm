@@ -148,6 +148,8 @@ static int initiate_put_files_from_register(FileView *view, OPS op,
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
+static int change_in_names(FileView *view, char c, const char lhs[],
+		const char rhs[], char **dest);
 static void fixup_current_fname(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
 static int have_read_access(FileView *view);
@@ -2204,41 +2206,6 @@ substitute_in_name(const char name[], const char pattern[], const char sub[],
 	return buf;
 }
 
-static int
-change_in_names(FileView *view, char c, const char lhs[], const char rhs[],
-		char **dest)
-{
-	int i;
-	int nrenamed;
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-	dir_entry_t *entry;
-
-	snprintf(undo_msg, sizeof(undo_msg), "%c/%s/%s/ in %s: ", c, lhs, rhs,
-			replace_home_part(view->curr_dir));
-	append_marked_files(view, undo_msg);
-	cmd_group_begin(undo_msg);
-
-	entry = NULL;
-	nrenamed = 0;
-	i = 0;
-	while(iter_marked_entries(view, &entry))
-	{
-		const char *const new_fname = dest[i++];
-		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
-					NULL) == 0)
-		{
-			fixup_current_fname(view, entry, new_fname);
-			++nrenamed;
-		}
-	}
-
-	cmd_group_end();
-	status_bar_messagef("%d file%s renamed", nrenamed,
-			(nrenamed == 1) ? "" : "s");
-
-	return 1;
-}
-
 int
 substitute_in_names(FileView *view, const char pattern[], const char sub[],
 		int ic, int glob)
@@ -2531,6 +2498,41 @@ change_case(FileView *view, int toupper)
 	free_string_array(dest, ndest);
 	status_bar_messagef("%d file%s renamed", nrenamed,
 			(nrenamed == 1) ? "" : "s");
+	return 1;
+}
+
+static int
+change_in_names(FileView *view, char c, const char lhs[], const char rhs[],
+		char **dest)
+{
+	int i;
+	int nrenamed;
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	dir_entry_t *entry;
+
+	snprintf(undo_msg, sizeof(undo_msg), "%c/%s/%s/ in %s: ", c, lhs, rhs,
+			replace_home_part(view->curr_dir));
+	append_marked_files(view, undo_msg);
+	cmd_group_begin(undo_msg);
+
+	entry = NULL;
+	nrenamed = 0;
+	i = 0;
+	while(iter_marked_entries(view, &entry))
+	{
+		const char *const new_fname = dest[i++];
+		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
+					NULL) == 0)
+		{
+			fixup_current_fname(view, entry, new_fname);
+			++nrenamed;
+		}
+	}
+
+	cmd_group_end();
+	status_bar_messagef("%d file%s renamed", nrenamed,
+			(nrenamed == 1) ? "" : "s");
+
 	return 1;
 }
 
