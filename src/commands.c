@@ -3162,6 +3162,7 @@ static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -3169,21 +3170,23 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
+
 		if(cmd_info->bg)
+		{
 			return cpmv_files_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
-		else
-			return cpmv_files(curr_view, NULL, -1, move, 0, 0) != 0;
+		}
+
+		return cpmv_files(curr_view, NULL, -1, move, 0, 0) != 0;
 	}
-	else if(cmd_info->bg)
+
+	if(cmd_info->bg)
 	{
 		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
 				cmd_info->emark) != 0;
 	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, move, 0,
-				cmd_info->emark) != 0;
-	}
+
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, move, 0,
+			cmd_info->emark) != 0;
 }
 
 static int
@@ -3402,11 +3405,9 @@ link_cmd(const cmd_info_t *cmd_info, int type)
 		}
 		return cpmv_files(curr_view, NULL, -1, 0, type, 0) != 0;
 	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, type,
-				cmd_info->emark) != 0;
-	}
+
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, type,
+			cmd_info->emark) != 0;
 }
 
 /* Shows status of terminal multiplexers support or toggles it. */
