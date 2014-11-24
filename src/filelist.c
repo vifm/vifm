@@ -3965,16 +3965,6 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 }
 
 void
-ensure_selection_exists(FileView *view)
-{
-	if(view->selected_files == 0)
-	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
-	}
-}
-
-void
 check_marking(FileView *view, int count, const int indexes[])
 {
 	if(count != 0)

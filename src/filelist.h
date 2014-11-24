@@ -281,11 +281,15 @@ int iter_marked_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
+/* Fills the buffer with the full path to file under cursor. */
 void get_current_full_path(const FileView *view, size_t buf_len, char buf[]);
+/* Fills the buffer with the full path to file at specified position. */
 void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 		char buf[]);
+/* Fills the buffer with the full path to file of specified file list entry. */
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
-void ensure_selection_exists(FileView *view);
+/* Ensures that either entries at specified positions, selected entries or file
+ * under cursor is marked. */
 void check_marking(FileView *view, int count, const int indexes[]);
 /* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(FileView *view, int count, const int indexes[]);
