@@ -160,6 +160,9 @@ static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[]);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
+static int cpmv_prepare(FileView *view, char ***list, int *nlines, int move,
+		int type, int force, char *buf, size_t buf_len, char *path, int *from_file,
+		int *from_trash);
 static void cpmv_files_in_bg(void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
@@ -2544,96 +2547,6 @@ is_copy_list_ok(const char *dst, int count, char **list)
 }
 
 static int
-cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
-		int force, char *buf, size_t buf_len, char *path, int *from_file,
-		int *from_trash)
-{
-	int error = 0;
-
-	if(move && !check_if_dir_writable(DR_CURRENT, view->curr_dir))
-	{
-		return -1;
-	}
-	if(move == 0 && type == 0 && !have_read_access(view))
-	{
-		return -1;
-	}
-
-	if(*nlines == 1)
-	{
-		if(is_dir_path(other_view, (*list)[0], path))
-		{
-			*nlines = 0;
-		}
-	}
-	else
-	{
-		strcpy(path, other_view->curr_dir);
-	}
-
-	if(!check_if_dir_writable(DR_DESTINATION, path))
-	{
-		return -1;
-	}
-
-	*from_file = *nlines < 0;
-	if(*from_file)
-	{
-		*list = edit_list(view->selected_files, view->selected_filelist, nlines, 1);
-		if(*list == NULL)
-		{
-			return -1;
-		}
-	}
-
-	if(*nlines > 0 &&
-			(!is_name_list_ok(view->selected_files, *nlines, *list, NULL) ||
-			(!is_copy_list_ok(path, *nlines, *list) && !force)))
-	{
-		error = 1;
-	}
-	if(*nlines == 0 && !force &&
-			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
-	{
-		error = 1;
-	}
-
-	if(error)
-	{
-		clean_selected_files(view);
-		redraw_view(view);
-		if(*from_file)
-		{
-			free_string_array(*list, *nlines);
-		}
-		return 1;
-	}
-
-	if(move)
-		strcpy(buf, "move");
-	else if(type == 0)
-		strcpy(buf, "copy");
-	else if(type == 1)
-		strcpy(buf, "alink");
-	else
-		strcpy(buf, "rlink");
-
-	snprintf(buf + strlen(buf), buf_len - strlen(buf), " from %s to ",
-			replace_home_part(view->curr_dir));
-	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s: ",
-			replace_home_part(path));
-	make_undo_string(view, buf, *nlines, *list);
-
-	if(move)
-	{
-		move_cursor_out_of(view, FLS_SELECTION);
-	}
-
-	*from_trash = is_under_trash(view->curr_dir);
-	return 0;
-}
-
-static int
 have_read_access(FileView *view)
 {
 	int i;
@@ -2895,7 +2808,7 @@ progress_msg(const char text[], int ready, int total)
 int
 cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 {
-	int i;
+	int err;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args = calloc(1, sizeof(*args));
 
@@ -2903,12 +2816,12 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->move = move;
 	args->force = force;
 
-	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
+	err = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
 			sizeof(task_desc), args->path, &args->from_file, &args->use_trash);
-	if(i != 0)
+	if(err != 0)
 	{
 		free_bg_args(args);
-		return i > 0;
+		return err > 0;
 	}
 
 	args->list = args->from_file ? list : copy_string_array(list, nlines);
@@ -2923,6 +2836,100 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 				"Failed to initiate background operation");
 	}
 
+	return 0;
+}
+
+/* Performs general preparations for file copy/move-like operations: resolving
+ * destination path, validating names, checking for conflicts, formatting undo
+ * message.  Returns zero on success, otherwise positive number for status bar
+ * message and negative number for other errors. */
+static int
+cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
+		int force, char *buf, size_t buf_len, char *path, int *from_file,
+		int *from_trash)
+{
+	int error = 0;
+
+	if(move && !check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
+		return -1;
+	}
+	if(move == 0 && type == 0 && !have_read_access(view))
+	{
+		return -1;
+	}
+
+	if(*nlines == 1)
+	{
+		if(is_dir_path(other_view, (*list)[0], path))
+		{
+			*nlines = 0;
+		}
+	}
+	else
+	{
+		strcpy(path, other_view->curr_dir);
+	}
+
+	if(!check_if_dir_writable(DR_DESTINATION, path))
+	{
+		return -1;
+	}
+
+	*from_file = *nlines < 0;
+	if(*from_file)
+	{
+		*list = edit_list(view->selected_files, view->selected_filelist, nlines, 1);
+		if(*list == NULL)
+		{
+			return -1;
+		}
+	}
+
+	if(*nlines > 0 &&
+			(!is_name_list_ok(view->selected_files, *nlines, *list, NULL) ||
+			(!is_copy_list_ok(path, *nlines, *list) && !force)))
+	{
+		error = 1;
+	}
+	if(*nlines == 0 && !force &&
+			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
+	{
+		error = 1;
+	}
+
+	if(error)
+	{
+		clean_selected_files(view);
+		redraw_view(view);
+		if(*from_file)
+		{
+			free_string_array(*list, *nlines);
+		}
+		return 1;
+	}
+
+	if(move)
+		strcpy(buf, "move");
+	else if(type == 0)
+		strcpy(buf, "copy");
+	else if(type == 1)
+		strcpy(buf, "alink");
+	else
+		strcpy(buf, "rlink");
+
+	snprintf(buf + strlen(buf), buf_len - strlen(buf), " from %s to ",
+			replace_home_part(view->curr_dir));
+	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s: ",
+			replace_home_part(path));
+	make_undo_string(view, buf, *nlines, *list);
+
+	if(move)
+	{
+		move_cursor_out_of(view, FLS_SELECTION);
+	}
+
+	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
 }
 
