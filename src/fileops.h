@@ -111,9 +111,13 @@ const char * substitute_in_name(const char name[], const char pattern[],
  * new value for save_msg flag. */
 int change_case(FileView *view, int toupper);
 
+/* Copies/moves/makes symlinks of marked files to the other view.  Returns new
+ * value for save_msg flag. */
 int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force);
 
+/* Copies or moves marked files to the other view in background.  Returns new
+ * value for save_msg flag. */
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 
 /* Can modify strings in the names array. */

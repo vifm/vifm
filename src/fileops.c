@@ -156,6 +156,8 @@ static int have_read_access(FileView *view);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
+static int enqueue_marked_files(ops_t *ops, FileView *view,
+		const char dst_hint[]);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static void cpmv_files_in_bg(void *arg);
@@ -372,19 +374,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	ui_cancellation_reset();
 
 	dst_hint = use_trash ? pick_trash_dir(view->curr_dir) : NULL;
-
-	nmarked_files = 0;
-	entry = NULL;
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
-	{
-		char full_path[PATH_MAX];
-
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		ops_enqueue(ops, full_path, dst_hint);
-
-		++nmarked_files;
-	}
-
+	nmarked_files = enqueue_marked_files(ops, view, dst_hint);
 	free(dst_hint);
 
 	entry = NULL;
@@ -2561,24 +2551,30 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	int error = 0;
 
 	if(move && !check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return -1;
-
+	}
 	if(move == 0 && type == 0 && !have_read_access(view))
+	{
 		return -1;
+	}
 
 	if(*nlines == 1)
 	{
 		if(is_dir_path(other_view, (*list)[0], path))
+		{
 			*nlines = 0;
+		}
 	}
 	else
 	{
 		strcpy(path, other_view->curr_dir);
 	}
-	if(!check_if_dir_writable(DR_DESTINATION, path))
-		return -1;
 
-	capture_target_files(view);
+	if(!check_if_dir_writable(DR_DESTINATION, path))
+	{
+		return -1;
+	}
 
 	*from_file = *nlines < 0;
 	if(*from_file)
@@ -2593,16 +2589,23 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	if(*nlines > 0 &&
 			(!is_name_list_ok(view->selected_files, *nlines, *list, NULL) ||
 			(!is_copy_list_ok(path, *nlines, *list) && !force)))
+	{
 		error = 1;
+	}
 	if(*nlines == 0 && !force &&
 			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
+	{
 		error = 1;
+	}
+
 	if(error)
 	{
 		clean_selected_files(view);
 		redraw_view(view);
 		if(*from_file)
+		{
 			free_string_array(*list, *nlines);
+		}
 		return 1;
 	}
 
@@ -2614,6 +2617,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		strcpy(buf, "alink");
 	else
 		strcpy(buf, "rlink");
+
 	snprintf(buf + strlen(buf), buf_len - strlen(buf), " from %s to ",
 			replace_home_part(view->curr_dir));
 	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s: ",
@@ -2725,13 +2729,15 @@ int
 cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force)
 {
+	int err;
+	int nmarked_files;
+	int custom_fnames;
 	int i;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	dir_entry_t *entry;
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
-	char **sel;
-	int sel_len;
 	ops_t *ops;
 
 	if(!move && type != 0 && !symlinks_available())
@@ -2741,10 +2747,12 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		return 0;
 	}
 
-	i = cpmv_prepare(view, &list, &nlines, move, type, force, buf, sizeof(buf),
-			path, &from_file, &from_trash);
-	if(i != 0)
-		return i > 0;
+	err = cpmv_prepare(view, &list, &nlines, move, type, force, undo_msg,
+			sizeof(undo_msg), path, &from_file, &from_trash);
+	if(err != 0)
+	{
+		return err > 0;
+	}
 
 	if(pane_in_dir(curr_view, path) && force)
 	{
@@ -2752,14 +2760,6 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 				"Forcing overwrite when destination and source is same directory will "
 				"lead to losing data");
 		return 0;
-	}
-
-	sel_len = view->selected_files;
-	sel = copy_string_array(view->selected_filelist, sel_len);
-	if(!view->user_selection)
-	{
-		/* Clean selection so that it won't get stored for gs command. */
-		erase_selection(view);
 	}
 
 	if(type == 0)
@@ -2774,25 +2774,24 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	ui_cancellation_reset();
 
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
-	{
-		char src_full[PATH_MAX];
-		snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, sel[i]);
+	nmarked_files = enqueue_marked_files(ops, view, path);
 
-		ops_enqueue(ops, src_full, path);
-	}
-
-	cmd_group_begin(buf);
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
+	cmd_group_begin(undo_msg);
+	i = 0;
+	entry = NULL;
+	custom_fnames = (nlines > 0);
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
+		/* Must be at this level as dst might point into this buffer. */
 		char src_full[PATH_MAX];
+
 		char dst_full[PATH_MAX];
-		const char *dst = (nlines > 0) ? list[i] : sel[i];
+		const char *dst = custom_fnames ? list[i] : entry->name;
 		int success;
 
-		if(from_trash && nlines <= 0)
+		if(from_trash && !custom_fnames)
 		{
-			snprintf(src_full, sizeof(src_full), "%s/%s", view->curr_dir, dst);
+			snprintf(src_full, sizeof(src_full), "%s/%s", entry->origin, dst);
 			chosp(src_full);
 			dst = get_real_name_from_trash_name(src_full);
 		}
@@ -2805,32 +2804,32 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		if(move)
 		{
-			progress_msg("Moving files", i, sel_len);
+			progress_msg("Moving files", i, nmarked_files);
 
-			success = mv_file(sel[i], view->curr_dir, dst, path, 0, 1, ops) == 0;
+			success = mv_file(entry->name, entry->origin, dst, path, 0, 1, ops) == 0;
 
 			if(!success)
 			{
-				view->list_pos = find_file_pos_in_list(view, sel[i]);
+				view->list_pos = find_file_pos_in_list(view, entry->name);
 			}
 		}
 		else
 		{
 			if(type == 0)
 			{
-				progress_msg("Copying files", i, sel_len);
+				progress_msg("Copying files", i, nmarked_files);
 			}
 
-			success = cp_file(view->curr_dir, path, sel[i], dst, type, 1, ops) == 0;
+			success = cp_file(entry->origin, path, entry->name, dst, type, 1,
+					ops) == 0;
 		}
 
 		ops_advance(ops, success);
+
+		++i;
 	}
 	cmd_group_end();
 
-	free_string_array(sel, sel_len);
-	free_file_capture(view);
-	clean_selected_files(view);
 	ui_views_reload_filelists();
 	if(from_file)
 	{
@@ -2843,6 +2842,27 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	ops_free(ops);
 
 	return 1;
+}
+
+/* Adds marked files to the ops.  Considers UI cancellation.  Returns number of
+ * files enqueued. */
+static int
+enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[])
+{
+	int nmarked_files = 0;
+	dir_entry_t *entry = NULL;
+
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX];
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		ops_enqueue(ops, full_path, dst_hint);
+
+		++nmarked_files;
+	}
+
+	return nmarked_files;
 }
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
