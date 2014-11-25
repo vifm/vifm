@@ -160,9 +160,10 @@ static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[]);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
-static int cpmv_prepare(FileView *view, char ***list, int *nlines, int move,
-		int type, int force, char *buf, size_t buf_len, char *path, int *from_file,
-		int *from_trash);
+static int cpmv_prepare(FileView *view, char ***list, int *nlines,
+		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
+		char *path, int *from_file, int *from_trash);
+static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
@@ -171,12 +172,12 @@ static int mv_file(const char src[], const char src_path[], const char dst[],
 static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
 		int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], int type, int cancellable, ops_t *ops);
-static int cp_file_f(const char src[], const char dst[], int type,
+		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
+static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int cancellable, ops_t *ops);
 static void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
-static void append_marked_files(FileView *view, char buf[]);
+static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
 static void update_dir_entry_size(const FileView *view, int index, int force);
@@ -369,7 +370,7 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
 			replace_home_part(view->curr_dir));
-	append_marked_files(view, undo_msg);
+	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
 	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir);
@@ -513,7 +514,7 @@ delete_files_bg(FileView *view, int use_trash)
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
 
-	append_marked_files(view, task_desc);
+	append_marked_files(view, task_desc, NULL);
 
 	if(bg_execute(task_desc, args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
@@ -2493,7 +2494,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 		snprintf(undo_msg, sizeof(undo_msg), "%s/%s/%s/ in %s: ", desc, lhs, rhs,
 				replace_home_part(view->curr_dir));
 	}
-	append_marked_files(view, undo_msg);
+	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
 	nrenamed = 0;
@@ -2639,7 +2640,7 @@ edit_file(const char filepath[], int force_changed)
 }
 
 int
-cpmv_files(FileView *view, char **list, int nlines, int move, int type,
+cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 		int force)
 {
 	int err;
@@ -2653,14 +2654,14 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	int from_trash;
 	ops_t *ops;
 
-	if(!move && type != 0 && !symlinks_available())
+	if((op == CMLO_LINK_REL || op == CMLO_LINK_ABS) && !symlinks_available())
 	{
 		show_error_msg("Symbolic Links Error",
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
 
-	err = cpmv_prepare(view, &list, &nlines, move, type, force, undo_msg,
+	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
 			sizeof(undo_msg), path, &from_file, &from_trash);
 	if(err != 0)
 	{
@@ -2675,14 +2676,22 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		return 0;
 	}
 
-	if(type == 0)
+	switch(op)
 	{
-		ops = get_ops(move ? OP_MOVE : OP_COPY, move ? "Moving" : "Copying",
-				view->curr_dir);
-	}
-	else
-	{
-		ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir);
+		case CMLO_COPY:
+			ops = get_ops(OP_COPY, "Copying", view->curr_dir);
+			break;
+		case CMLO_MOVE:
+			ops = get_ops(OP_MOVE, "Moving", view->curr_dir);
+			break;
+		case CMLO_LINK_REL:
+		case CMLO_LINK_ABS:
+			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir);
+			break;
+
+		default:
+			assert(0 && "Unexpected operation type.");
+			return 0;
 	}
 
 	ui_cancellation_reset();
@@ -2700,7 +2709,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		char dst_full[PATH_MAX];
 		const char *dst = custom_fnames ? list[i] : entry->name;
-		int success;
+		int err;
 
 		if(from_trash && !custom_fnames)
 		{
@@ -2715,29 +2724,29 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 			(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
 		}
 
-		if(move)
+		if(op == CMLO_COPY)
+		{
+			progress_msg("Copying files", i, nmarked_files);
+		}
+		else if(op == CMLO_MOVE)
 		{
 			progress_msg("Moving files", i, nmarked_files);
+		}
 
-			success = mv_file(entry->name, entry->origin, dst, path, 0, 1, ops) == 0;
-
-			if(!success)
+		if(op == CMLO_MOVE)
+		{
+			err = mv_file(entry->name, entry->origin, dst, path, 0, 1, ops);
+			if(err != 0)
 			{
 				view->list_pos = find_file_pos_in_list(view, entry->name);
 			}
 		}
 		else
 		{
-			if(type == 0)
-			{
-				progress_msg("Copying files", i, nmarked_files);
-			}
-
-			success = cp_file(entry->origin, path, entry->name, dst, type, 1,
-					ops) == 0;
+			err = cp_file(entry->origin, path, entry->name, dst, op, 1, ops);
 		}
 
-		ops_advance(ops, success);
+		ops_advance(ops, err == 0);
 
 		++i;
 	}
@@ -2816,8 +2825,9 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->move = move;
 	args->force = force;
 
-	err = cpmv_prepare(view, &list, &args->nlines, move, 0, force, task_desc,
-			sizeof(task_desc), args->path, &args->from_file, &args->use_trash);
+	err = cpmv_prepare(view, &list, &args->nlines, move ? CMLO_MOVE : CMLO_COPY,
+			force, task_desc, sizeof(task_desc), args->path, &args->from_file,
+			&args->use_trash);
 	if(err != 0)
 	{
 		free_bg_args(args);
@@ -2844,17 +2854,20 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
  * message.  Returns zero on success, otherwise positive number for status bar
  * message and negative number for other errors. */
 static int
-cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
-		int force, char *buf, size_t buf_len, char *path, int *from_file,
+cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
+		int force, char undo_msg[], size_t undo_msg_len, char *path, int *from_file,
 		int *from_trash)
 {
 	int error = 0;
 
-	if(move && !check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(op == CMLO_MOVE)
 	{
-		return -1;
+		if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+		{
+			return -1;
+		}
 	}
-	if(move == 0 && type == 0 && !have_read_access(view))
+	else if(op == CMLO_COPY && !have_read_access(view))
 	{
 		return -1;
 	}
@@ -2900,7 +2913,6 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 
 	if(error)
 	{
-		clean_selected_files(view);
 		redraw_view(view);
 		if(*from_file)
 		{
@@ -2909,28 +2921,41 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		return 1;
 	}
 
-	if(move)
-		strcpy(buf, "move");
-	else if(type == 0)
-		strcpy(buf, "copy");
-	else if(type == 1)
-		strcpy(buf, "alink");
-	else
-		strcpy(buf, "rlink");
-
-	snprintf(buf + strlen(buf), buf_len - strlen(buf), " from %s to ",
+	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
 			replace_home_part(view->curr_dir));
-	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s: ",
-			replace_home_part(path));
-	make_undo_string(view, buf, *nlines, *list);
+	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
+			"%s: ", replace_home_part(path));
+	append_marked_files(view, undo_msg, *list);
 
-	if(move)
+	if(op == CMLO_MOVE)
 	{
 		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
 	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
+}
+
+/* Gets string representation of a copy/move-like operation.  Returns the
+ * string. */
+static const char *
+cmlo_to_str(CopyMoveLikeOp op)
+{
+	switch(op)
+	{
+		case CMLO_COPY:
+			return "copy";
+		case CMLO_MOVE:
+			return "move";
+		case CMLO_LINK_REL:
+			return "rlink";
+		case CMLO_LINK_ABS:
+			return "alink";
+
+		default:
+			assert(0 && "Unexpected operation type.");
+			return "";
+	}
 }
 
 /* Entry point for a background task that copies/moves files. */
@@ -3045,7 +3070,7 @@ mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
  * parts. */
 static int
 cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], int type, int cancellable, ops_t *ops)
+		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
@@ -3054,21 +3079,18 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
 	chosp(full_dst);
 
-	return cp_file_f(full_src, full_dst, type, cancellable, ops);
+	return cp_file_f(full_src, full_dst, op, cancellable, ops);
 }
 
-/* Copies file from one location to another.  type argument values mean:
- *  <= 0 - copy
- *  1 - absolute symbolic links
- *  2 - relative symbolic links
- * Returns zero on success, otherwise non-zero is returned. */
+/* Copies file from one location to another.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
-cp_file_f(const char src[], const char dst[], int type, int cancellable,
-		ops_t *ops)
+cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
+		int cancellable, ops_t *ops)
 {
 	char rel_path[PATH_MAX];
 
-	int op;
+	int file_op;
 	int result;
 
 	if(strcmp(src, dst) == 0)
@@ -3076,15 +3098,15 @@ cp_file_f(const char src[], const char dst[], int type, int cancellable,
 		return 0;
 	}
 
-	if(type <= 0)
+	if(op == CMLO_COPY)
 	{
-		op = OP_COPY;
+		file_op = OP_COPY;
 	}
 	else
 	{
-		op = OP_SYMLINK;
+		file_op = OP_SYMLINK;
 
-		if(type == 2)
+		if(op == CMLO_LINK_ABS)
 		{
 			char dst_dir[PATH_MAX];
 
@@ -3096,10 +3118,11 @@ cp_file_f(const char src[], const char dst[], int type, int cancellable,
 		}
 	}
 
-	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
-	if(result == 0 && type >= 0)
+	result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1, src,
+			dst);
+	if(result == 0)
 	{
-		add_operation(op, NULL, NULL, src, dst);
+		add_operation(file_op, NULL, NULL, src, dst);
 	}
 	return result;
 }
@@ -3291,20 +3314,27 @@ make_files(FileView *view, char **names, int count)
 }
 
 /* Fills undo message buffer with names of marked files.  buf should be at least
- * COMMAND_GROUP_INFO_LEN characters length. */
+ * COMMAND_GROUP_INFO_LEN characters length.  fnames can be NULL. */
 static void
-append_marked_files(FileView *view, char buf[])
+append_marked_files(FileView *view, char buf[], char **fnames)
 {
-	size_t len;
-	dir_entry_t *entry;
-
-	len = strlen(buf);
-
-	entry = NULL;
+	const int custom_fnames = (fnames != NULL);
+	size_t len = strlen(buf);
+	dir_entry_t *entry = NULL;
 	while(iter_marked_entries(view, &entry) && len < COMMAND_GROUP_INFO_LEN)
 	{
 		append_fname(buf, len, entry->name);
 		len = strlen(buf);
+
+		if(custom_fnames)
+		{
+			const char *const custom_fname = *fnames++;
+
+			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+			strncat(buf, custom_fname, COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+		}
 	}
 }
 
@@ -3319,7 +3349,6 @@ append_fname(char buf[], size_t len, const char fname[])
 		len = strlen(buf);
 	}
 	strncat(buf, fname, COMMAND_GROUP_INFO_LEN - len - 1);
-	len = strlen(buf);
 }
 
 int

@@ -232,7 +232,7 @@ static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
-static int link_cmd(const cmd_info_t *cmd_info, int type);
+static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
@@ -3161,6 +3161,8 @@ move_cmd(const cmd_info_t *cmd_info)
 static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
+	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
+
 	check_marking(curr_view, 0, NULL);
 
 	if(cmd_info->qmark)
@@ -3176,7 +3178,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 			return cpmv_files_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
 		}
 
-		return cpmv_files(curr_view, NULL, -1, move, 0, 0) != 0;
+		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
 	}
 
 	if(cmd_info->bg)
@@ -3185,7 +3187,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 				cmd_info->emark) != 0;
 	}
 
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, move, 0,
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
 			cmd_info->emark) != 0;
 }
 
@@ -3389,13 +3391,17 @@ restore_cmd(const cmd_info_t *cmd_info)
 static int
 rlink_cmd(const cmd_info_t *cmd_info)
 {
-	return link_cmd(cmd_info, 2);
+	return link_cmd(cmd_info, 0);
 }
 
 /* Common part of alink and rlink commands interface implementation. */
 static int
-link_cmd(const cmd_info_t *cmd_info, int type)
+link_cmd(const cmd_info_t *cmd_info, int absolute)
 {
+	const CopyMoveLikeOp op = absolute ? CMLO_LINK_ABS : CMLO_LINK_REL;
+
+	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -3403,10 +3409,10 @@ link_cmd(const cmd_info_t *cmd_info, int type)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return cpmv_files(curr_view, NULL, -1, 0, type, 0) != 0;
+		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
 	}
 
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, type,
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
 			cmd_info->emark) != 0;
 }
 
