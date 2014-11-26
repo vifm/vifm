@@ -32,9 +32,19 @@ int put_into_string_array(char **array[], int len, char item[]);
 
 void remove_from_string_array(char **array, size_t len, int pos);
 
+/* Checks whether item is in the array.  Always uses case sensitive comparison.
+ * Returns non-zero on successful search, otherwise zero is returned. */
 int is_in_string_array(char *array[], size_t len, const char item[]);
 
+/* Checks whether item is in the array.  Always uses case insensitive
+ * comparison.  Returns non-zero on successful search, otherwise zero is
+ * returned. */
 int is_in_string_array_case(char *array[], size_t len, const char item[]);
+
+/* Checks whether item is in the array.  Uses case sensitive or case insensitive
+ * comparison depending on OS case sensitivity.  Returns non-zero on successful
+ * search, otherwise zero is returned. */
+int is_in_string_array_os(char *array[], size_t len, const char item[]);
 
 char ** copy_string_array(char **array, size_t len);
 
