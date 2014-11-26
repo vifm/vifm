@@ -485,5 +485,11 @@ def_reg(int reg)
 	return (reg == NO_REG_GIVEN) ? DEFAULT_REG_NAME : reg;
 }
 
+int
+def_count(int count)
+{
+	return (count == NO_COUNT_GIVEN) ? 1 : count;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

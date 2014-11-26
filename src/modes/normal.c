@@ -434,9 +434,8 @@ init_normal_mode(void)
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(curr_view, key_info.count);
+	curr_stats.save_msg = incdec_names(curr_view, def_count(key_info.count));
 }
 
 static void
@@ -856,9 +855,8 @@ cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(curr_view, -key_info.count);
+	curr_stats.save_msg = incdec_names(curr_view, -def_count(key_info.count));
 }
 
 static void

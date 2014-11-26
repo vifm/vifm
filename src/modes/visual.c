@@ -346,9 +346,7 @@ restore_selection_flags(FileView *view)
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(view, key_info.count);
+	curr_stats.save_msg = incdec_names(view, def_count(key_info.count));
 	accept_and_leave(curr_stats.save_msg);
 }
 
@@ -465,9 +463,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(view, -key_info.count);
+	curr_stats.save_msg = incdec_names(view, -def_count(key_info.count));
 	accept_and_leave(curr_stats.save_msg);
 }
 
