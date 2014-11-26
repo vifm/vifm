@@ -123,7 +123,7 @@ static void delete_file_in_bg(const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
-TSTATIC const char * add_to_name(const char filename[], int k);
+TSTATIC const char * incdec_name(const char fname[], int k);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
 #ifndef _WIN32
@@ -995,47 +995,6 @@ count_digits(int number)
 	return MAX(1, result);
 }
 
-/* Returns pointer to a statically allocated buffer */
-TSTATIC const char *
-add_to_name(const char filename[], int k)
-{
-	static char result[NAME_MAX];
-	char format[16];
-	char *b, *e;
-	int i, n;
-
-	if((b = strpbrk(filename, "0123456789")) == NULL)
-	{
-		copy_str(result, sizeof(result), filename);
-		return result;
-	}
-
-	n = 0;
-	while(b[n] == '0' && isdigit(b[n + 1]))
-	{
-		n++;
-	}
-
-	if(b != filename && b[-1] == '-')
-	{
-		b--;
-	}
-
-	i = strtol(b, &e, 10);
-
-	if(i + k < 0)
-	{
-		n++;
-	}
-
-	snprintf(result, b - filename + 1, "%s", filename);
-	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
-	snprintf(result + (b - filename), sizeof(result) - (b - filename), format,
-			i + k, e);
-
-	return result;
-}
-
 int
 incdec_names(FileView *view, int k)
 {
@@ -1077,7 +1036,7 @@ incdec_names(FileView *view, int k)
 	while(iter_marked_entries(view, &entry))
 	{
 		char new_path[PATH_MAX];
-		const char *const new_fname = add_to_name(entry->name, k);
+		const char *const new_fname = incdec_name(entry->name, k);
 
 		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
 
@@ -1125,7 +1084,7 @@ incdec_names(FileView *view, int k)
 	while(!err && iter_marked_entries(view, &entry))
 	{
 		const char *const path = entry->origin;
-		const char *const new_fname = add_to_name(entry->name, k);
+		const char *const new_fname = incdec_name(entry->name, k);
 		/* Rename: <temporary name> -> <final name>. */
 		if(mv_file(tmp_names[i++], path, new_fname, path, 3, 1, NULL) != 0)
 		{
@@ -1165,6 +1124,49 @@ incdec_names(FileView *view, int k)
 	}
 
 	return 1;
+}
+
+/* Increments/decrements first number in fname k time, if any. Returns pointer
+ * to statically allocated buffer. */
+TSTATIC const char *
+incdec_name(const char fname[], int k)
+{
+	static char result[NAME_MAX];
+	char format[16];
+	char *b, *e;
+	int i, n;
+
+	b = strpbrk(fname, "0123456789");
+	if(b == NULL)
+	{
+		copy_str(result, sizeof(result), fname);
+		return result;
+	}
+
+	n = 0;
+	while(b[n] == '0' && isdigit(b[n + 1]))
+	{
+		++n;
+	}
+
+	if(b != fname && b[-1] == '-')
+	{
+		--b;
+	}
+
+	i = strtol(b, &e, 10);
+
+	if(i + k < 0)
+	{
+		++n;
+	}
+
+	copy_str(result, b - fname + 1, fname);
+	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
+	snprintf(result + (b - fname), sizeof(result) - (b - fname), format, i + k,
+			e);
+
+	return result;
 }
 
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
