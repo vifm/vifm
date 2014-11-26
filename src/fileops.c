@@ -124,6 +124,7 @@ TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
+static int count_digits(int number);
 TSTATIC int check_file_rename(const char dir[], const char old[],
 		const char new[], SignalType signal_type);
 #ifndef _WIN32
@@ -982,19 +983,6 @@ make_undo_string(FileView *view, char *buf, int nlines, char **list)
 	}
 }
 
-/* Returns number of digets in passed number. */
-static int
-count_digits(int number)
-{
-	int result = 0;
-	while(number != 0)
-	{
-		number /= 10;
-		result++;
-	}
-	return MAX(1, result);
-}
-
 int
 incdec_names(FileView *view, int k)
 {
@@ -1167,6 +1155,19 @@ incdec_name(const char fname[], int k)
 			e);
 
 	return result;
+}
+
+/* Counts number of digits in passed number.  Returns the count. */
+static int
+count_digits(int number)
+{
+	int result = 0;
+	while(number != 0)
+	{
+		number /= 10;
+		result++;
+	}
+	return MAX(1, result);
 }
 
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
