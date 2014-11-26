@@ -78,7 +78,8 @@ void rename_current_file(FileView *view, int name_only);
  * incompatible with list of names.  Returns new value for save_msg flag. */
 int rename_files(FileView *view, char **list, int nlines, int recursive);
 
-/* Returns new value for save_msg flag. */
+/* Increments/decrements first number in names of marked files of the view k
+ * times.  Returns new value for save_msg flag. */
 int incdec_names(FileView *view, int k);
 
 #ifndef _WIN32

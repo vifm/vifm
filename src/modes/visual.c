@@ -73,6 +73,7 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
+static void call_incdec(int count);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
@@ -343,11 +344,12 @@ restore_selection_flags(FileView *view)
 	}
 }
 
+/* Increments first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = incdec_names(view, def_count(key_info.count));
-	accept_and_leave(curr_stats.save_msg);
+	call_incdec(def_count(key_info.count));
 }
 
 static void
@@ -460,11 +462,23 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Decrements first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = incdec_names(view, -def_count(key_info.count));
-	accept_and_leave(curr_stats.save_msg);
+	call_incdec(-def_count(key_info.count));
+}
+
+/* Increments/decrements first number in names of marked files of the view
+ * [count=1] times. */
+static void
+call_incdec(int count)
+{
+	int save_msg;
+	check_marking(view, 0, NULL);
+	save_msg = incdec_names(view, count);
+	accept_and_leave(save_msg);
 }
 
 static void

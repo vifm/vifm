@@ -431,10 +431,12 @@ init_normal_mode(void)
 	(void)ret_code;
 }
 
+/* Increments first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = incdec_names(curr_view, key_info.count);
+	check_marking(curr_view, 0, NULL);
 	curr_stats.save_msg = incdec_names(curr_view, def_count(key_info.count));
 }
 
@@ -852,10 +854,12 @@ cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 	preview_close();
 }
 
+/* Decrements first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = incdec_names(curr_view, -key_info.count);
+	check_marking(curr_view, 0, NULL);
 	curr_stats.save_msg = incdec_names(curr_view, -def_count(key_info.count));
 }
 

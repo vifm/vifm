@@ -1036,92 +1036,120 @@ add_to_name(const char filename[], int k)
 	return result;
 }
 
-/* Returns new value for save_msg flag. */
 int
 incdec_names(FileView *view, int k)
 {
-	size_t names_len;
-	char **names;
+	size_t names_len = 0;
+	char **names = NULL;
 	size_t tmp_len = 0;
 	char **tmp_names = NULL;
-	char buf[MAX(NAME_MAX, COMMAND_GROUP_INFO_LEN)];
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	dir_entry_t *entry;
 	int i;
-	int err = 0;
-	int renames = 0;
+	int err, nrenames, nrenamed;
 
-	capture_target_files(view);
-	names_len = view->selected_files;
-	names = copy_string_array(view->selected_filelist, names_len);
-
-	snprintf(buf, sizeof(buf), "<c-a> in %s: ",
+	snprintf(undo_msg, sizeof(undo_msg), "<c-a> in %s: ",
 			replace_home_part(view->curr_dir));
-	make_undo_string(view, buf, 0, NULL);
+	append_marked_files(view, undo_msg, NULL);
 
-	if(!view->user_selection)
-		clean_selected_files(view);
-
-	for(i = 0; i < names_len; i++)
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
-		if(strpbrk(names[i], "0123456789") == NULL)
+		char full_path[PATH_MAX];
+
+		if(strpbrk(entry->name, "0123456789") == NULL)
 		{
-			remove_from_string_array(names, names_len--, i--);
+			entry->marked = 0;
 			continue;
 		}
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		names_len = add_to_string_array(&names, names_len, 1, full_path);
 		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
-				make_name_unique(names[i]));
+				make_name_unique(entry->name));
 	}
 
-	for(i = 0; i < names_len; i++)
+	err = 0;
+
+	entry = NULL;
+	i = 0;
+	while(iter_marked_entries(view, &entry))
 	{
-		const char *p = add_to_name(names[i], k);
-		if(is_in_string_array_os(names, names_len, p))
+		char new_path[PATH_MAX];
+		const char *const new_fname = add_to_name(entry->name, k);
+
+		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
+
+		/* Skip check_file_rename() for final name that matches one of original
+		 * names. */
+		if(is_in_string_array_os(names, names_len, new_path))
+		{
 			continue;
-		if(check_file_rename(view->curr_dir, names[i], p, ST_STATUS_BAR) != 0)
+		}
+
+		if(check_file_rename(entry->origin, entry->name, new_fname,
+					ST_STATUS_BAR) != 0)
+		{
 			continue;
+		}
 
 		err = -1;
 		break;
 	}
 
-	cmd_group_begin(buf);
-	for(i = 0; i < names_len && !err; i++)
+	free_string_array(names, names_len);
+
+	nrenames = 0;
+	nrenamed = 0;
+
+	/* Two-step renaming. */
+	cmd_group_begin(undo_msg);
+
+	entry = NULL;
+	i = 0;
+	while(!err && iter_marked_entries(view, &entry))
 	{
-		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4, 1,
-				NULL) != 0)
+		const char *const path = entry->origin;
+		/* Rename: <original name> -> <temporary name>. */
+		if(mv_file(entry->name, path, tmp_names[i++], path, 4, 1, NULL) != 0)
 		{
 			err = 1;
 			break;
 		}
-		renames++;
+		++nrenames;
 	}
-	for(i = 0; i < names_len && !err; i++)
+
+	entry = NULL;
+	i = 0;
+	while(!err && iter_marked_entries(view, &entry))
 	{
-		if(mv_file(tmp_names[i], view->curr_dir, add_to_name(names[i], k),
-				view->curr_dir, 3, 1, NULL) != 0)
+		const char *const path = entry->origin;
+		const char *const new_fname = add_to_name(entry->name, k);
+		/* Rename: <temporary name> -> <final name>. */
+		if(mv_file(tmp_names[i++], path, new_fname, path, 3, 1, NULL) != 0)
 		{
 			err = 1;
 			break;
 		}
-		renames++;
+		fixup_current_fname(view, entry, new_fname);
+		++nrenames;
+		++nrenamed;
 	}
+
 	cmd_group_end();
 
-	free_string_array(names, names_len);
 	free_string_array(tmp_names, tmp_len);
 
 	if(err)
 	{
 		if(err > 0 && !last_cmd_group_empty())
+		{
 			undo_group();
-	}
-	else if(view->dir_entry[view->list_pos].selected || !view->user_selection)
-	{
-		char **filename = &view->dir_entry[view->list_pos].name;
-		(void)replace_string(filename, add_to_name(*filename, k));
+		}
 	}
 
-	clean_selected_files(view);
-	if(renames > 0)
+	if(nrenames > 0)
 	{
 		ui_view_schedule_full_reload(view);
 	}
@@ -1132,8 +1160,8 @@ incdec_names(FileView *view, int k)
 	}
 	else if(err == 0)
 	{
-		status_bar_messagef("%d file%s renamed", names_len,
-				(names_len == 1) ? "" : "s");
+		status_bar_messagef("%d file%s renamed", nrenamed,
+				(nrenamed == 1) ? "" : "s");
 	}
 
 	return 1;
