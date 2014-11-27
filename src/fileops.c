@@ -139,7 +139,8 @@ static int complete_filename(const char str[], void *arg);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
-static void clone_file(FileView* view, const char filename[], const char path[],
+static char ** grab_marked_files(FileView *view, size_t *nmarked);
+static void clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
@@ -957,30 +958,6 @@ is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 		}
 	}
 	return i >= len;
-}
-
-static void
-make_undo_string(FileView *view, char *buf, int nlines, char **list)
-{
-	int i;
-	size_t len = strlen(buf);
-	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN - len - 1);
-		len = strlen(buf);
-		if(nlines > 0)
-		{
-			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-	}
 }
 
 int
@@ -1835,118 +1812,125 @@ is_dir_path(FileView *view, const char *path, char *buf)
 	return 0;
 }
 
-/* returns new value for save_msg */
 int
 clone_files(FileView *view, char **list, int nlines, int force, int copies)
 {
 	int i;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	char path[PATH_MAX];
+	char **marked;
+	size_t nmarked;
+	int custom_fnames;
+	int nmarked_files;
 	int with_dir = 0;
 	int from_file;
-	char **sel;
-	int sel_len;
+	dir_entry_t *entry;
 	ops_t *ops;
 
 	if(!have_read_access(view))
+	{
 		return 0;
+	}
 
 	if(nlines == 1)
 	{
 		if((with_dir = is_dir_path(view, list[0], path)))
+		{
 			nlines = 0;
+		}
 	}
 	else
 	{
 		strcpy(path, view->curr_dir);
 	}
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
+	{
 		return 0;
+	}
 
-	capture_target_files(view);
+	marked = grab_marked_files(view, &nmarked);
 
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = edit_list(view->selected_files, view->selected_filelist, &nlines, 0);
+		list = edit_list(nmarked, marked, &nlines, 0);
 		if(list == NULL)
 		{
-			free_file_capture(view);
+			free_string_array(marked, nmarked);
 			return 0;
 		}
 	}
 
+	free_string_array(marked, nmarked);
+
 	if(nlines > 0 &&
-			(!is_name_list_ok(view->selected_files, nlines, list, NULL) ||
+			(!is_name_list_ok(nmarked, nlines, list, NULL) ||
 			(!force && !is_clone_list_ok(nlines, list))))
 	{
-		clean_selected_files(view);
 		redraw_view(view);
 		if(from_file)
+		{
 			free_string_array(list, nlines);
+		}
 		return 1;
 	}
 
-	if(with_dir)
-		snprintf(buf, sizeof(buf), "clone in %s to %s: ", view->curr_dir, list[0]);
-	else
-		snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
-	make_undo_string(view, buf, nlines, list);
+	clean_selected_files(view);
 
-	sel_len = view->selected_files;
-	sel = copy_string_array(view->selected_filelist, sel_len);
-	if(!view->user_selection)
+	if(with_dir)
 	{
-		erase_selection(view);
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", view->curr_dir,
+				list[0]);
 	}
+	else
+	{
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", view->curr_dir);
+	}
+	append_marked_files(view, undo_msg, list);
 
 	ops = get_ops(OP_COPY, "Cloning", view->curr_dir);
 
 	ui_cancellation_reset();
 
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); ++i)
-	{
-		ops_enqueue(ops, sel[i], path);
-	}
+	nmarked_files = enqueue_marked_files(ops, view, path);
 
-	cmd_group_begin(buf);
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
+	custom_fnames = (nlines > 0);
+
+	cmd_group_begin(undo_msg);
+	entry = NULL;
+	i = 0;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		int j;
-		const char * clone_name;
-		if(nlines > 0)
+		const char *const name = entry->name;
+		const char *clone_name;
+		if(custom_fnames)
 		{
 			clone_name = list[i];
 		}
 		else
 		{
-			clone_name = path_exists_at(path, sel[i]) ? gen_clone_name(sel[i]) :
-				sel[i];
+			clone_name = path_exists_at(path, name) ? gen_clone_name(name) : name;
 		}
 
-		progress_msg("Cloning files", i, sel_len);
+		progress_msg("Cloning files", i, nmarked_files);
 
-		for(j = 0; j < copies; j++)
+		for(j = 0; j < copies; ++j)
 		{
 			if(path_exists_at(path, clone_name))
 			{
-				clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
+				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
-			clone_file(view, sel[i], path, clone_name, ops);
+			clone_file(entry, path, clone_name, ops);
 		}
 
-		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
-		{
-			replace_string(&view->dir_entry[view->list_pos].name, clone_name);
-		}
-
+		fixup_current_fname(view, entry, clone_name);
 		ops_advance(ops, 1);
+
+		++i;
 	}
 	cmd_group_end();
-	free_file_capture(view);
-	free_string_array(sel, sel_len);
 
-	clean_selected_files(view);
 	ui_views_reload_filelists();
 	if(from_file)
 	{
@@ -1958,19 +1942,29 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	return 0;
 }
 
-/* Clones single file/directory named filaneme to directory specified by the
- * path under name in the clone. */
-static void
-clone_file(FileView* view, const char filename[], const char path[],
-		const char clone[], ops_t *ops)
+/* Makes list of marked filenames.  *nmarked is always set (0 for empty list).
+ * Returns pointer to the list, NULL for empty list. */
+static char **
+grab_marked_files(FileView *view, size_t *nmarked)
 {
-	char full[PATH_MAX];
-	char clone_name[PATH_MAX];
+	char **marked = NULL;
+	dir_entry_t *entry = NULL;
+	*nmarked = 0;
+	while(iter_marked_entries(view, &entry))
+	{
+		*nmarked = add_to_string_array(&marked, *nmarked, 1, entry->name);
+	}
+	return marked;
+}
 
-	if(stroscmp(filename, "./") == 0)
-		return;
-	if(is_parent_dir(filename))
-		return;
+/* Clones single file/directory to directory specified by the path under name in
+ * the clone. */
+static void
+clone_file(const dir_entry_t *entry, const char path[], const char clone[],
+		ops_t *ops)
+{
+	char full_path[PATH_MAX];
+	char clone_name[PATH_MAX];
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
 	chosp(clone_name);
@@ -1982,12 +1976,11 @@ clone_file(FileView* view, const char filename[], const char path[],
 		}
 	}
 
-	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
-	chosp(full);
+	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	if(perform_operation(OP_COPY, ops, NULL, full, clone_name) == 0)
+	if(perform_operation(OP_COPY, ops, NULL, full_path, clone_name) == 0)
 	{
-		add_operation(OP_COPY, NULL, NULL, full, clone_name);
+		add_operation(OP_COPY, NULL, NULL, full_path, clone_name);
 	}
 }
 

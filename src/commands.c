@@ -1725,9 +1725,12 @@ chown_cmd(const cmd_info_t *cmd_info)
 }
 #endif
 
+/* Clones file [count=1] times. */
 static int
 clone_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -1737,11 +1740,9 @@ clone_cmd(const cmd_info_t *cmd_info)
 		}
 		return clone_files(curr_view, NULL, -1, 0, 1) != 0;
 	}
-	else
-	{
-		return clone_files(curr_view, cmd_info->argv, cmd_info->argc,
-				cmd_info->emark, 1) != 0;
-	}
+
+	return clone_files(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark,
+			1) != 0;
 }
 
 static int

@@ -95,6 +95,7 @@ int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int reg_name, int force_move);
 
+/* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 
 /* This is a wrapper for is_dir_writable() function, which adds message

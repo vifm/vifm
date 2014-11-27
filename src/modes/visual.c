@@ -492,13 +492,15 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Clones selection.  Count specifies number of copies of each file or directory
+ * to create (one by default). */
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	accept_and_leave(curr_stats.save_msg);
+	int save_msg;
+	check_marking(curr_view, 0, NULL);
+	save_msg = clone_files(view, NULL, 0, 0, def_count(key_info.count));
+	accept_and_leave(save_msg);
 }
 
 static void
