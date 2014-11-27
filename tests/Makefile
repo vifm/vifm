@@ -1,55 +1,100 @@
-include detectenv.mk
-
-dirs := colmgr commands column_view completion env escape filetype filter
-dirs += keys misc options parsing undo variables viewcolumns_parser
-dirs += ioeta ionotif iop ior
-# generate names for build sub-targets (one for each directory)
-dirs_b := $(addsuffix _b, $(dirs))
-# generate names for clean sub-targets (one for each directory)
-dirs_c := $(addsuffix _c, $(dirs))
-
-.PHONY: tests clean $(dirs) $(dirs_b) $(dirs_c)
-
-tests: bin $(dirs_b)
-	@for test in bin/*; do\
-		echo '==================================================';\
-		echo Test Suite: $$test;\
-		echo '==================================================';\
-		echo;\
-		echo;\
-		if ! $$test; then\
-			exit 1;\
-		fi;\
-		echo;\
-		echo;\
-		echo;\
-	done
-
-$(dirs_b): bin
-	$(MAKE) --directory=$(subst _b,,$@) --makefile=../Makefile.inc
-
-$(dirs): bin
-	$(MAKE) --directory=$@ --makefile=../Makefile.inc
-ifdef UNIX_ENV
-	@test=bin/$@;\
-	echo '==================================================';\
-	echo Test Suite: $$test;\
-	echo '==================================================';\
-	$$test
+# determine kind of OS that is running
+ifeq ($(OS),Windows_NT)
+    ifeq ($(shell uname -o),Cygwin)
+        unix_env := true
+    else
+        win_env := true
+    endif
 else
-	@test=bin/$@.exe;\
-	echo '==================================================';\
-	echo Test Suite: $$test;\
-	echo '==================================================';\
-	$$test
+    unix_env := true
 endif
 
-bin:
-	mkdir $@
+# enumerate test suites
+suites := colmgr commands column_view completion env escape filetype filter
+suites += keys misc options parsing undo variables viewcolumns_parser
+suites += ioeta ionotif iop ior
 
-clean: $(dirs_c)
+# obtain list of sources that are being tested
+vifm_src := ./ cfg/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/ utils/
+vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
+
+# filter out generally non-testable or sources for another platform
+vifm_src := $(filter-out %/vifm.c %/vifmrc-converter.c %/win_helper.c, \
+              $(vifm_src))
+ifndef unix_env
+    vifm_src := $(filter-out %/desktop.c %/mntent.c %_nix.c, $(vifm_src))
+endif
+ifndef win_env
+    vifm_src := $(filter-out %/volumes_menu.c %_win.c, $(vifm_src))
+endif
+
+vifm_bin := ../src/vifm$(exe_suffix)
+vifm_obj := $(vifm_src:.c=.o) bin/build/stubs.o
+
+ifdef win_env
+    make_arg   := -f Makefile.win
+    exe_suffix := .exe
+endif
+
+# setup compile and link flags (partially depends on OS)
+CFLAGS := -MMD -g -Wall -Werror -Iseatest -DTEST -include ../config.h
+CFLAGS += -Wno-char-subscripts
+LDFLAGS := -lpthread
+ifdef unix_env
+    LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
+    LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
+    CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
+    CFLAGS  += -I/usr/include/ncursesw
+endif
+ifdef win_env
+    LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+endif
+
+.PHONY: check build clean $(suites)
+
+# check and build targets are defined mostly in suite_template
+check: build
+
+clean:
 	-$(RM) -r bin/
-	-$(RM) seatest/*.o seatest/*.d
 
-$(dirs_c):
-	$(MAKE) --directory=$(subst _c,,$@) --makefile=../Makefile.inc clean
+$(vifm_bin): $(vifm_src)
+	$(MAKE) -C ../../src/ $(make_arg) vifm$(exe_suffix)
+
+bin/build/stubs.o: stubs.c
+	gcc -c -o $@ $(CFLAGS) $<
+
+bin/build/seatest.o: seatest/seatest.c
+	gcc -c -o $@ $(CFLAGS) $<
+
+# suite definition template, takes single argument: name of the suite
+define suite_template
+
+$1.src := $$(wildcard $1/*.c)
+$1.obj := $$($1.src:%.c=bin/build/%.o)
+
+deps += $$($1.obj:.o=.d)
+
+bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj)
+	gcc -o $$@ $(LDFLAGS) $$^
+
+bin/build/$1/%.o: $1/%.c | bin/build/$1
+	gcc -c -o $$@ $(CFLAGS) $$<
+
+bin/build/$1:
+	mkdir -p $$@
+
+$1 $1.run: bin/$1$(exe_suffix)
+	@$$^
+
+build: bin/$1$(exe_suffix)
+
+check: $1.run
+
+endef
+
+# walk throw list of suites and instantiate template for each one
+$(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
+
+# import dependencies calculated by the compiler
+include $(wildcard $(deps) bin/build/seatest.d bin/build/stubs.d)
