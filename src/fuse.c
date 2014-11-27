@@ -57,9 +57,9 @@ static fuse_mount_t *fuse_mounts;
 
 static int fuse_mount(FileView *view, char *file_full_path, const char *param,
 		const char *program, char *mount_point);
-TSTATIC int format_mount_command(const char mount_point[],
+TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
-		size_t buf_size, char buf[]);
+		size_t buf_size, char buf[], int* clear_before_mount, int* cancellable);
 static fuse_mount_t * get_mount_by_source(const char *source);
 static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
@@ -162,6 +162,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	char buf[2*PATH_MAX];
 	char *escaped_filename;
 	int clear_before_mount = 0;
+	int cancellable = 0;
 	char errors_file[PATH_MAX];
 	int status;
 	int cancelled;
@@ -202,8 +203,8 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		return -1;
 	}
 
-	clear_before_mount = format_mount_command(mount_point, file_full_path, param,
-			program, sizeof(buf), buf);
+	format_mount_command(mount_point, file_full_path, param,
+			program, sizeof(buf), buf, &clear_before_mount, &cancellable);
 
 	status_bar_message("FUSE mounting selected file, please stand by..");
 
@@ -218,7 +219,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	strcat(buf, " 2> ");
 	strcat(buf, errors_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
-	status = background_and_wait_for_status(buf, 1, &cancelled);
+	status = background_and_wait_for_status(buf, cancellable, &cancelled);
 
 	clean_status_bar();
 
@@ -273,15 +274,18 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
  *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%CLEAR]
  * Returns non-zero if format contains %CLEAR.
  * */
-TSTATIC int
+TSTATIC void
 format_mount_command(const char mount_point[], const char file_name[],
-		const char param[], const char format[], size_t buf_size, char buf[])
+		const char param[], const char format[], size_t buf_size, char buf[],
+		int* clear_before_mount, int* cancellable)
 {
 	char *buf_pos;
 	const char *prog_pos;
 	char *escaped_path;
 	char *escaped_mount_point;
-	int result = 0;
+
+	*clear_before_mount = 0;
+	*cancellable        = 1;
 
 	escaped_path = escape_filename(file_name, 0);
 	escaped_mount_point = escape_filename(mount_point, 0);
@@ -324,7 +328,11 @@ format_mount_command(const char mount_point[], const char file_name[],
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))
 			{
-				result = 1;
+				*clear_before_mount = 1;
+			}
+			else if(!strcmp(cmd_buf, "%NOCANCEL"))
+			{
+				*cancellable = 0;
 			}
 		}
 		else
@@ -339,8 +347,6 @@ format_mount_command(const char mount_point[], const char file_name[],
 	*buf_pos = '\0';
 	free(escaped_mount_point);
 	free(escaped_path);
-
-	return result;
 }
 
 void
