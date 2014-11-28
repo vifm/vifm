@@ -157,7 +157,7 @@ static void fixup_current_fname(FileView *view, dir_entry_t *entry,
 static int have_read_access(FileView *view);
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
-		const char dst_hint[]);
+		const char dst_hint[], int to_trash);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
@@ -343,7 +343,6 @@ delete_files(FileView *view, int reg, int use_trash)
 	dir_entry_t *entry;
 	int nmarked_files;
 	ops_t *ops;
-	char *dst_hint;
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 	{
@@ -364,12 +363,6 @@ delete_files(FileView *view, int reg, int use_trash)
 		reg = prepare_register(reg);
 	}
 
-	if(vifm_chdir(curr_view->curr_dir) != 0)
-	{
-		show_error_msg("Directory return", "Can't chdir() to current directory");
-		return 1;
-	}
-
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
 			replace_home_part(view->curr_dir));
 	append_marked_files(view, undo_msg, NULL);
@@ -379,9 +372,7 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	ui_cancellation_reset();
 
-	dst_hint = use_trash ? pick_trash_dir(view->curr_dir) : NULL;
-	nmarked_files = enqueue_marked_files(ops, view, dst_hint);
-	free(dst_hint);
+	nmarked_files = enqueue_marked_files(ops, view, NULL, use_trash);
 
 	entry = NULL;
 	i = 0;
@@ -398,7 +389,7 @@ delete_files(FileView *view, int reg, int use_trash)
 		{
 			if(!is_trash_directory(full_path))
 			{
-				char *const dest = gen_trash_name(view->curr_dir, entry->name);
+				char *const dest = gen_trash_name(entry->origin, entry->name);
 				if(dest != NULL)
 				{
 					result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
@@ -1376,9 +1367,10 @@ change_link(FileView *view)
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
-
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return 0;
+	}
 
 	if(view->dir_entry[view->list_pos].type != LINK)
 	{
@@ -1787,7 +1779,7 @@ is_clone_list_ok(int count, char **list)
 }
 
 static int
-is_dir_path(FileView *view, const char *path, char *buf)
+check_dir_path(FileView *view, const char *path, char *buf)
 {
 	if(path[0] == '/' || path[0] == '~')
 	{
@@ -1833,7 +1825,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 	if(nlines == 1)
 	{
-		if((with_dir = is_dir_path(view, list[0], path)))
+		with_dir = check_dir_path(view, list[0], path);
+		if(with_dir)
 		{
 			nlines = 0;
 		}
@@ -1891,7 +1884,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, path);
+	nmarked_files = enqueue_marked_files(ops, view, path, 0);
 
 	custom_fnames = (nlines > 0);
 
@@ -2683,7 +2676,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, path);
+	nmarked_files = enqueue_marked_files(ops, view, path, 0);
 
 	cmd_group_begin(undo_msg);
 	i = 0;
@@ -2756,7 +2749,8 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 /* Adds marked files to the ops.  Considers UI cancellation.  Returns number of
  * files enqueued. */
 static int
-enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[])
+enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
+		int to_trash)
 {
 	int nmarked_files = 0;
 	dir_entry_t *entry = NULL;
@@ -2766,7 +2760,17 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[])
 		char full_path[PATH_MAX];
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		ops_enqueue(ops, full_path, dst_hint);
+
+		if(to_trash)
+		{
+			char *const trash_dir = pick_trash_dir(entry->origin);
+			ops_enqueue(ops, full_path, trash_dir);
+			free(trash_dir);
+		}
+		else
+		{
+			ops_enqueue(ops, full_path, dst_hint);
+		}
 
 		++nmarked_files;
 	}
@@ -2861,7 +2865,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(is_dir_path(other_view, (*list)[0], path))
+		if(check_dir_path(other_view, (*list)[0], path))
 		{
 			*nlines = 0;
 		}
