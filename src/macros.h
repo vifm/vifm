@@ -64,8 +64,8 @@ char * expand_custom_macros(const char pattern[], size_t nmacros,
 #endif
 
 TSTATIC_DEFS(
-	char * append_selected_files(FileView *view, char *expanded, int under_cursor,
-			int quotes, const char *mod);
+	char * append_selected_files(FileView *view, char expanded[],
+		int under_cursor, int quotes, const char mod[], int for_shell);
 )
 
 #endif /* VIFM__MACROS_H__ */
