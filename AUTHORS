@@ -89,3 +89,5 @@ Patches for Vim plugin by filterfalse.
 
 Christian Fillion (a.k.a. cfillion) fixed crash on navigation to end of line
 in command-line mode.
+
+%FOREGROUND FUSE mount flag by Johannes (a.k.a. johannesmeng).
