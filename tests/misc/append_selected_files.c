@@ -79,23 +79,23 @@ test_f(void)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "", 1);
 	assert_string_equal("lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 0, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "", 1);
 	assert_string_equal("/lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "", 1);
 	assert_string_equal(SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "", 1);
 	assert_string_equal("/" SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
@@ -107,22 +107,22 @@ test_c(void)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "", 1);
 	assert_string_equal("lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 1, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "", 1);
 	assert_string_equal("/lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "", 1);
 	assert_string_equal("" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "", 1);
 	assert_string_equal("/" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
@@ -141,4 +141,5 @@ test_append_selected_files(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

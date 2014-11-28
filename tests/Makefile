@@ -76,7 +76,7 @@ $1.obj := $$($1.src:%.c=bin/build/%.o)
 deps += $$($1.obj:.o=.d)
 
 bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj)
-	gcc -o $$@ $(LDFLAGS) $$^
+	gcc -o $$@ $$^ $(LDFLAGS)
 
 bin/build/$1/%.o: $1/%.c | bin/build/$1
 	gcc -c -o $$@ $(CFLAGS) $$<
