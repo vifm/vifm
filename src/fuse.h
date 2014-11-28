@@ -43,8 +43,9 @@ int has_mount_prefixes(const char string[]);
 void remove_mount_prefixes(char string[]);
 
 TSTATIC_DEFS(
-	int format_mount_command(const char mount_point[], const char file_name[],
-		const char param[], const char format[], size_t buf_size, char buf[]);
+	void format_mount_command(const char mount_point[], const char file_name[],
+		const char param[], const char format[], size_t buf_size, char buf[],
+		int *foreground);
 )
 
 #endif /* VIFM__FUSE_H__ */

@@ -2098,8 +2098,8 @@ ui_cancellation_enable(void)
 	                   ? CRS_ENABLED
 	                   : CRS_ENABLED_REQUESTED;
 
-	/* Temporary disable raw mode of terminal so that Ctrl-C is be handled as
-	 * SIGINT signal rather than as regular input character. */
+	/* Temporary disable raw mode of terminal so that Ctrl-C is handled as SIGINT
+	 * signal rather than as regular input character. */
 	noraw();
 }
 

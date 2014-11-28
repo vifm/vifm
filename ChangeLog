@@ -11,6 +11,10 @@
 	Added 'chaselinks' option to automatically expand all symbolic links in
 	path of a view (might not work on Windows).  Thanks to filterfalse.
 
+	Added %FOREGROUND FUSE mounting option, which supersedes %CLEAR and
+	fixes issue with passing input to FUSE mounter.  Thanks to Johannes (a.k.a.
+	johannesmeng).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

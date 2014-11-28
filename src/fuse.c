@@ -57,9 +57,9 @@ static fuse_mount_t *fuse_mounts;
 
 static int fuse_mount(FileView *view, char *file_full_path, const char *param,
 		const char *program, char *mount_point);
-TSTATIC int format_mount_command(const char mount_point[],
+TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
-		size_t buf_size, char buf[]);
+		size_t buf_size, char buf[], int *foreground);
 static fuse_mount_t * get_mount_by_source(const char *source);
 static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
@@ -161,7 +161,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	fuse_mount_t *fuse_item = NULL;
 	char buf[2*PATH_MAX];
 	char *escaped_filename;
-	int clear_before_mount = 0;
+	int foreground;
 	char errors_file[PATH_MAX];
 	int status;
 	int cancelled;
@@ -202,12 +202,12 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		return -1;
 	}
 
-	clear_before_mount = format_mount_command(mount_point, file_full_path, param,
-			program, sizeof(buf), buf);
+	format_mount_command(mount_point, file_full_path, param,
+			program, sizeof(buf), buf, &foreground);
 
 	status_bar_message("FUSE mounting selected file, please stand by..");
 
-	if(clear_before_mount)
+	if(foreground)
 	{
 		def_prog_mode();
 		endwin();
@@ -218,7 +218,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	strcat(buf, " 2> ");
 	strcat(buf, errors_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
-	status = background_and_wait_for_status(buf, 1, &cancelled);
+	status = background_and_wait_for_status(buf, !foreground, &cancelled);
 
 	clean_status_bar();
 
@@ -268,20 +268,22 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 
 /* Builds the mount command based on the file type program.
  * Accepted formats are:
- *   FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%CLEAR]
+ *   FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
  * and
- *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%CLEAR]
- * Returns non-zero if format contains %CLEAR.
- * */
-TSTATIC int
+ *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%FOREGROUND]
+ * %CLEAR is an obsolete name of %FOREGROUND.
+ * Always sets value of *foreground. */
+TSTATIC void
 format_mount_command(const char mount_point[], const char file_name[],
-		const char param[], const char format[], size_t buf_size, char buf[])
+		const char param[], const char format[], size_t buf_size, char buf[],
+		int *foreground)
 {
 	char *buf_pos;
 	const char *prog_pos;
 	char *escaped_path;
 	char *escaped_mount_point;
-	int result = 0;
+
+	*foreground = 0;
 
 	escaped_path = escape_filename(file_name, 0);
 	escaped_mount_point = escape_filename(mount_point, 0);
@@ -322,9 +324,9 @@ format_mount_command(const char mount_point[], const char file_name[],
 				copy_str(buf_pos, buf_size - (buf_pos - buf), escaped_mount_point);
 				buf_pos += strlen(buf_pos);
 			}
-			else if(!strcmp(cmd_buf, "%CLEAR"))
+			else if(!strcmp(cmd_buf, "%FOREGROUND") || !strcmp(cmd_buf, "%CLEAR"))
 			{
-				result = 1;
+				*foreground = 1;
 			}
 		}
 		else
@@ -339,8 +341,6 @@ format_mount_command(const char mount_point[], const char file_name[],
 	*buf_pos = '\0';
 	free(escaped_mount_point);
 	free(escaped_path);
-
-	return result;
 }
 
 void

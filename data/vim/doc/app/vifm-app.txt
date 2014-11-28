@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 20
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3332,7 +3332,7 @@ needs to use a specially formated program line in |vifm-:filetype| or
    don't require any file specific options.
 
    Format line:
-       FUSE_MOUNT|mounter %SOURCE_FILE %DESTINATION_DIR [%CLEAR]
+       FUSE_MOUNT|mounter %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
 
    Example |vifm-:filetype| command: >
        :filetype FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
@@ -3344,7 +3344,7 @@ needs to use a specially formated program line in |vifm-:filetype| or
    ssh.
 
    Format line:
-       FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%CLEAR]
+       FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%FOREGROUND]
 
    Example |vifm-:filetype| command: >
        :filetype FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
@@ -3354,15 +3354,20 @@ needs to use a specially formated program line in |vifm-:filetype| or
 <
 
 All % macros are expanded by vifm at runtime and have the following meaning:
-   - %SOURCE_FILE is replaced by full path to selected file
+   - %SOURCE_FILE is replaced by full path to selected file;
    - %DESTINATION_DIR is replaced by full path to mount directory, which is
-     created by vifm basing on the value of |vifm-'fusehome'| option.
+     created by vifm basing on the value of |vifm-'fusehome'| option;
    - %PARAM value is filled from the first line of file (whole line), though
-     in the future it can be changed to whole file content
-   - %CLEAR means that you want to clear screen before running mount command.
+     in the future it can be changed to whole file content;
+   - %FOREGROUND means that you want to run mount command as a regular
+     command (required to be able to provide input for communication with
+     mounter in interactive way).
 
-%CLEAR is an optional macro.  Other macros are not mandatory, but mount
+%FOREGROUND is an optional macro.  Other macros are not mandatory, but mount
 commands likely won't work without them.
+
+%CLEAR is obsolete name of %FOREGROUND, which is still supported, but might be
+removed in future.  Its use is discouraged.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
    - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal);
