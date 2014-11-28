@@ -70,12 +70,14 @@ int delete_files_bg(FileView *view, int use_trash);
  * parameter.  Returns new value for save_msg. */
 int yank_files(FileView *view, int reg);
 
+/* Renames single file under the cursor. */
 void rename_current_file(FileView *view, int name_only);
 
-/* Renames selection to names given in the list of length nlines (or filled in
- * by the user, when the list is empty).  Recursively traverses directories in
- * selection when recursive flag is not zero.  Recursive traversal is
- * incompatible with list of names.  Returns new value for save_msg flag. */
+/* Renames marked filese using names given in the list of length nlines (or
+ * filled in by the user, when the list is empty).  Recursively traverses
+ * directories in selection when recursive flag is not zero.  Recursive
+ * traversal is incompatible with list of names.  Returns new value for
+ * save_msg flag. */
 int rename_files(FileView *view, char **list, int nlines, int recursive);
 
 /* Increments/decrements first number in names of marked files of the view k

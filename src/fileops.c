@@ -39,7 +39,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() strtol() */
+#include <stdlib.h> /* calloc() free() malloc() strtol() */
 #include <string.h> /* memcmp() memset() strcmp() strcpy() strdup()
                        strerror() */
 
@@ -628,7 +628,9 @@ rename_current_file(FileView *view, int name_only)
 	char filename[strlen(old) + 1];
 
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	{
 		return;
+	}
 
 	copy_str(filename, sizeof(filename), old);
 	if(is_parent_dir(filename))
@@ -856,9 +858,9 @@ add_files_to_list(const char *path, char **files, int *len)
 int
 rename_files(FileView *view, char **list, int nlines, int recursive)
 {
-	char **files = NULL;
-	int len;
-	int i;
+	char **files;
+	int nfiles;
+	dir_entry_t *entry;
 	int *is_dup;
 
 	if(recursive && nlines != 0)
@@ -866,59 +868,56 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
-
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
-		return 0;
-
-	if(view->selected_files == 0)
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
+		return 0;
 	}
 
-	len = 0;
-	for(i = 0; i < view->list_rows; i++)
+	nfiles = 0;
+	files = NULL;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
-		if(!view->dir_entry[i].selected)
-			continue;
-		if(is_parent_dir(view->dir_entry[i].name))
-			continue;
 		if(recursive)
 		{
-			files = add_files_to_list(view->dir_entry[i].name, files, &len);
+			files = add_files_to_list(entry->name, files, &nfiles);
 		}
 		else
 		{
-			len = add_to_string_array(&files, len, 1, view->dir_entry[i].name);
+			nfiles = add_to_string_array(&files, nfiles, 1, entry->name);
 		}
 	}
 
-	is_dup = calloc(len, sizeof(*is_dup));
+	is_dup = calloc(nfiles, sizeof(*is_dup));
 	if(is_dup == NULL)
 	{
-		free_string_array(files, len);
+		free_string_array(files, nfiles);
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 
 	if(nlines == 0)
 	{
-		rename_files_ind(view, files, is_dup, len);
+		rename_files_ind(view, files, is_dup, nfiles);
 	}
 	else
 	{
 		int renamed = -1;
 
-		if(is_name_list_ok(len, nlines, list, files) &&
-				is_rename_list_ok(files, is_dup, len, list))
-			renamed = perform_renaming(view, files, is_dup, len, list);
+		if(is_name_list_ok(nfiles, nlines, list, files) &&
+				is_rename_list_ok(files, is_dup, nfiles, list))
+		{
+			renamed = perform_renaming(view, files, is_dup, nfiles, list);
+		}
 
 		if(renamed >= 0)
+		{
 			status_bar_messagef("%d file%s renamed", renamed,
 					(renamed == 1) ? "" : "s");
+		}
 	}
 
-	free_string_array(files, len);
+	free_string_array(files, nfiles);
 	free(is_dup);
 
 	clean_selected_files(view);

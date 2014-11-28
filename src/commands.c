@@ -3366,10 +3366,11 @@ registers_cmd(const cmd_info_t *cmd_info)
 	return show_register_menu(curr_view, buf) != 0;
 }
 
-/* Renames current selection. */
+/* Renames selected files of the current view. */
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
 	return rename_files(curr_view, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
