@@ -40,7 +40,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() strtol() */
-#include <string.h> /* memcmp() memset() strcmp() strcpy() strdup()
+#include <string.h> /* memcmp() memset() strcat() strcmp() strcpy() strdup()
                        strerror() */
 
 #include "cfg/config.h"
@@ -163,6 +163,7 @@ static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char *path, int *from_file, int *from_trash);
+static int check_dir_path(const FileView *view, const char path[], char buf[]);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
@@ -1778,31 +1779,6 @@ is_clone_list_ok(int count, char **list)
 	return 1;
 }
 
-static int
-check_dir_path(FileView *view, const char *path, char *buf)
-{
-	if(path[0] == '/' || path[0] == '~')
-	{
-		char *const expanded_path = expand_tilde(path);
-		strcpy(buf, expanded_path);
-		free(expanded_path);
-	}
-	else
-	{
-		strcpy(buf, view->curr_dir);
-		strcat(buf, "/");
-		strcat(buf, path);
-	}
-
-	if(is_dir(buf))
-	{
-		return 1;
-	}
-
-	strcpy(buf, view->curr_dir);
-	return 0;
-}
-
 int
 clone_files(FileView *view, char **list, int nlines, int force, int copies)
 {
@@ -2924,6 +2900,34 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	}
 
 	*from_trash = is_under_trash(view->curr_dir);
+	return 0;
+}
+
+/* Checks path argument and resolves target directory either to the argument or
+ * current directory of the view.  Returns non-zero if value of the path was
+ * used, otherwise zero is returned. */
+static int
+check_dir_path(const FileView *view, const char path[], char buf[])
+{
+	if(path[0] == '/' || path[0] == '~')
+	{
+		char *const expanded_path = expand_tilde(path);
+		strcpy(buf, expanded_path);
+		free(expanded_path);
+	}
+	else
+	{
+		strcpy(buf, view->curr_dir);
+		strcat(buf, "/");
+		strcat(buf, path);
+	}
+
+	if(is_dir(buf))
+	{
+		return 1;
+	}
+
+	strcpy(buf, view->curr_dir);
 	return 0;
 }
 
