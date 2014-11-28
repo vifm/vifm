@@ -31,7 +31,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #endif
-#include <unistd.h>
+#include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() tolower() */
@@ -155,8 +155,6 @@ static int rename_marked(FileView *view, const char desc[], const char lhs[],
 static void fixup_current_fname(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
 static int have_read_access(FileView *view);
-static char ** edit_list(size_t count, char **orig, int *nlines,
-		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[]);
@@ -165,6 +163,8 @@ static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char *path, int *from_file, int *from_trash);
+static char ** edit_list(size_t count, char **orig, int *nlines,
+		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
@@ -2592,38 +2592,6 @@ have_read_access(FileView *view)
 	return 1;
 }
 
-/* Prompts user with a file containing lines from orig array of length count and
- * returns modified list of strings of length *nlines or NULL on error.  The
- * ignore_change parameter makes function think that file is always changed. */
-static char **
-edit_list(size_t count, char **orig, int *nlines, int ignore_change)
-{
-	char rename_file[PATH_MAX];
-	char **list = NULL;
-
-	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
-
-	if(write_file_of_lines(rename_file, orig, count) != 0)
-	{
-		show_error_msgf("Error Getting List Of Renames",
-				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
-		return NULL;
-	}
-
-	if(edit_file(rename_file, ignore_change) > 0)
-	{
-		list = read_file_of_lines(rename_file, nlines);
-		if(list == NULL)
-		{
-			show_error_msgf("Error Getting List Of Renames",
-					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
-		}
-	}
-
-	unlink(rename_file);
-	return list;
-}
-
 /* Edits the filepath in the editor checking whether it was changed.  Returns
  * negative value on error, zero when no changes were detected and positive
  * number otherwise. */
@@ -2953,6 +2921,38 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
+}
+
+/* Prompts user with a file containing lines from orig array of length count and
+ * returns modified list of strings of length *nlines or NULL on error.  The
+ * ignore_change parameter makes function think that file is always changed. */
+static char **
+edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+{
+	char rename_file[PATH_MAX];
+	char **list = NULL;
+
+	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
+
+	if(write_file_of_lines(rename_file, orig, count) != 0)
+	{
+		show_error_msgf("Error Getting List Of Renames",
+				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
+		return NULL;
+	}
+
+	if(edit_file(rename_file, ignore_change) > 0)
+	{
+		list = read_file_of_lines(rename_file, nlines);
+		if(list == NULL)
+		{
+			show_error_msgf("Error Getting List Of Renames",
+					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
+		}
+	}
+
+	unlink(rename_file);
+	return list;
 }
 
 /* Gets string representation of a copy/move-like operation.  Returns the
