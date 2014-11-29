@@ -55,6 +55,10 @@ int path_exists(const char path[]);
 /* Checks whether path/file exists. */
 int path_exists_at(const char *path, const char *filename);
 
+/* Checks if two paths refer to the same file-system object.  Returns non-zero
+ * if so, otherwise zero is returned. */
+int paths_are_same(const char s[], const char t[]);
+
 /* Checks whether given path points to a symbolic link.  Returns non-zero if
  * it's so, otherwise zero is returned. */
 int is_symlink(const char path[]);

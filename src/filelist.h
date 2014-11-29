@@ -158,7 +158,9 @@ int cd(FileView *view, const char *base_dir, const char *path);
 /* Ensures that current directory of the view is a valid one.  Modifies
  * view->curr_dir. */
 void leave_invalid_dir(FileView *view);
-int pane_in_dir(FileView *view, const char *path);
+/* Checks if the view is the directory specified by the path.  Returns non-zero
+ * if so, otherwise zero is returned. */
+int pane_in_dir(const FileView *view, const char path[]);
 
 /* Selection related functions. */
 

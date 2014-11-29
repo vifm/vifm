@@ -3681,16 +3681,9 @@ change_sort_type(FileView *view, char type, char descending)
 }
 
 int
-pane_in_dir(FileView *view, const char *path)
+pane_in_dir(const FileView *view, const char path[])
 {
-	char pane_dir[PATH_MAX];
-	char dir[PATH_MAX];
-
-	if(realpath(view->curr_dir, pane_dir) != pane_dir)
-		return 0;
-	if(realpath(path, dir) != dir)
-		return 0;
-	return stroscmp(pane_dir, dir) == 0;
+	return paths_are_same(view->curr_dir, path);
 }
 
 /* Will remove dot and regexp filters if it's needed to make file visible.
