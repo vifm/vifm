@@ -59,7 +59,7 @@ clean:
 	-$(RM) -r bin/
 
 $(vifm_bin): $(vifm_src)
-	$(MAKE) -C ../../src/ $(make_arg) vifm$(exe_suffix)
+	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
