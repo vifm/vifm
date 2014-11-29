@@ -10,8 +10,8 @@ else
 endif
 
 # enumerate test suites
-suites := colmgr commands column_view completion env escape filetype filter
-suites += keys misc options parsing undo variables viewcolumns_parser
+suites := colmgr commands column_view completion env escape fileops filetype
+suites += filter keys misc options parsing undo variables viewcolumns_parser
 suites += ioeta ionotif iop ior
 
 # obtain list of sources that are being tested

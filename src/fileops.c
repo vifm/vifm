@@ -2833,6 +2833,8 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char *path, int *from_file,
 		int *from_trash)
 {
+	char **marked;
+	size_t nmarked;
 	int error = 0;
 
 	if(op == CMLO_MOVE)
@@ -2864,27 +2866,31 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		return -1;
 	}
 
+	marked = grab_marked_files(view, &nmarked);
+
 	*from_file = *nlines < 0;
 	if(*from_file)
 	{
-		*list = edit_list(view->selected_files, view->selected_filelist, nlines, 1);
+		*list = edit_list(nmarked, marked, nlines, 1);
 		if(*list == NULL)
 		{
+			free_string_array(marked, nmarked);
 			return -1;
 		}
 	}
 
 	if(*nlines > 0 &&
-			(!is_name_list_ok(view->selected_files, *nlines, *list, NULL) ||
+			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
 			(!is_copy_list_ok(path, *nlines, *list) && !force)))
 	{
 		error = 1;
 	}
-	if(*nlines == 0 && !force &&
-			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
+	if(*nlines == 0 && !force && !is_copy_list_ok(path, nmarked, marked))
 	{
 		error = 1;
 	}
+
+	free_string_array(marked, nmarked);
 
 	if(error)
 	{
