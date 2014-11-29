@@ -6,7 +6,7 @@
 /src/runtests
 
 # created during build process
-bin/
+/tests/bin/
 
 # autotools generated files
 /autom4te.cache/
