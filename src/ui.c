@@ -1463,6 +1463,11 @@ show_progress(const char *msg, int period)
 	static int count = 0;
 	static int pause = 1;
 
+	if(curr_stats.load_stage < 1)
+	{
+		return;
+	}
+
 	if(period == 0)
 	{
 		pause = 1;
