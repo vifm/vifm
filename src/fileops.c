@@ -1468,6 +1468,13 @@ put_next(const char dest_name[], int force)
 		if(force)
 		{
 			struct stat dst_st;
+
+			if(paths_are_same(src_buf, dst_buf))
+			{
+				/* Skip if destination matches source. */
+				return 0;
+			}
+
 			if(lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
