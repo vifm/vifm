@@ -1321,7 +1321,8 @@ complete_group(const char str[], void *arg)
 static void
 change_link_cb(const char new_target[])
 {
-	char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX)];
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	char full_path[PATH_MAX];
 	char linkto[PATH_MAX];
 	const char *fname;
 
@@ -1339,19 +1340,19 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
-	snprintf(buf, sizeof(buf), "cl in %s: on %s from \"%s\" to \"%s\"",
+	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(curr_view->curr_dir), fname, linkto, new_target);
-	cmd_group_begin(buf);
+	cmd_group_begin(undo_msg);
 
-	get_current_full_path(curr_view, sizeof(buf), buf);
+	get_current_full_path(curr_view, sizeof(full_path), full_path);
 
-	if(perform_operation(OP_REMOVESL, NULL, NULL, buf, NULL) == 0)
+	if(perform_operation(OP_REMOVESL, NULL, NULL, full_path, NULL) == 0)
 	{
-		add_operation(OP_REMOVESL, NULL, NULL, buf, linkto);
+		add_operation(OP_REMOVESL, NULL, NULL, full_path, linkto);
 	}
-	if(perform_operation(OP_SYMLINK2, NULL, NULL, new_target, buf) == 0)
+	if(perform_operation(OP_SYMLINK2, NULL, NULL, new_target, full_path) == 0)
 	{
-		add_operation(OP_SYMLINK2, NULL, NULL, new_target, buf);
+		add_operation(OP_SYMLINK2, NULL, NULL, new_target, full_path);
 	}
 
 	cmd_group_end();
