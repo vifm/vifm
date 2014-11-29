@@ -58,7 +58,7 @@ check: build
 clean:
 	-$(RM) -r bin/
 
-$(vifm_bin): $(vifm_src)
+$(vifm_bin): $(vifm_obj) $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/stubs.o: stubs.c
@@ -75,7 +75,7 @@ $1.obj := $$($1.src:%.c=bin/build/%.o)
 
 deps += $$($1.obj:.o=.d)
 
-bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj)
+bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj) | $(vifm_bin)
 	gcc -o $$@ $$^ $(LDFLAGS)
 
 bin/build/$1/%.o: $1/%.c | bin/build/$1
