@@ -38,8 +38,8 @@ int ends_with_slash(const char *path);
 /* Checks if path starts with given base path. */
 int path_starts_with(const char *path, const char *begin);
 
-/* Checks if two paths point to the same location, treating ending slashes
- * correctly.  Returns non-zero for same path. */
+/* Checks if two paths are equal, nothing is dereferenced.  Returns non-zero for
+ * same paths, otherwise zero is returned. */
 int paths_are_equal(const char s[], const char t[]);
 
 /* Removes excess slashes, "../" and "./" from the path.  buf will always

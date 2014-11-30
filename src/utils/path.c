@@ -84,19 +84,14 @@ path_starts_with(const char *path, const char *begin)
 int
 paths_are_equal(const char s[], const char t[])
 {
-	size_t s_len = strlen(s);
-	size_t t_len = strlen(t);
+	/* Some additional space is allocated for adding slashes. */
+	char s_can[strlen(s) + 8];
+	char t_can[strlen(t) + 8];
 
-	if(s_len > 0 && s[s_len - 1] == '/')
-		s_len--;
-	if(t_len > 0 && t[t_len - 1] == '/')
-		t_len--;
+	canonicalize_path(s, s_can, sizeof(s_can));
+	canonicalize_path(t, t_can, sizeof(t_can));
 
-	if(s_len == t_len)
-	{
-		return strnoscmp(s, t, s_len) == 0;
-	}
-	return 0;
+	return stroscmp(s_can, t_can) == 0;
 }
 
 void
