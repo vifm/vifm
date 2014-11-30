@@ -1469,7 +1469,7 @@ put_next(const char dest_name[], int force)
 		{
 			struct stat dst_st;
 
-			if(paths_are_same(src_buf, dst_buf))
+			if(paths_are_equal(src_buf, dst_buf))
 			{
 				/* Skip if destination matches source. */
 				return 0;
