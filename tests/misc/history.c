@@ -31,6 +31,7 @@ setup(void)
 	lwin.list_pos = 0;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("lfile0");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
 	/* rwin */
 	strcpy(rwin.curr_dir, "/rwin");
@@ -39,6 +40,7 @@ setup(void)
 	rwin.list_pos = 0;
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
+	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 
 	resize_history(INITIAL_SIZE);
 }

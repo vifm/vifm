@@ -94,6 +94,16 @@ is_in_string_array_case(char *array[], size_t len, const char item[])
 	return pos >= 0;
 }
 
+int
+is_in_string_array_os(char *array[], size_t len, const char item[])
+{
+#ifndef _WIN32
+	return is_in_string_array(array, len, item);
+#else
+	return is_in_string_array_case(array, len, item);
+#endif
+}
+
 char **
 copy_string_array(char **array, size_t len)
 {

@@ -33,6 +33,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
@@ -72,6 +73,7 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
+static void call_incdec(int count);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
@@ -102,6 +104,7 @@ static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
+static void do_gu(int upper);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
 static void restore_previous_selection(void);
 static void select_first_one(void);
@@ -341,13 +344,12 @@ restore_selection_flags(FileView *view)
 	}
 }
 
+/* Increments first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(view, key_info.count);
-	accept_and_leave(curr_stats.save_msg);
+	call_incdec(def_count(key_info.count));
 }
 
 static void
@@ -460,13 +462,23 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Decrements first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(view, -key_info.count);
-	accept_and_leave(curr_stats.save_msg);
+	call_incdec(-def_count(key_info.count));
+}
+
+/* Increments/decrements first number in names of marked files of the view
+ * [count=1] times. */
+static void
+call_incdec(int count)
+{
+	int save_msg;
+	check_marking(view, 0, NULL);
+	save_msg = incdec_names(view, count);
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -480,13 +492,15 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Clones selection.  Count specifies number of copies of each file or directory
+ * to create (one by default). */
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	accept_and_leave(curr_stats.save_msg);
+	int save_msg;
+	check_marking(curr_view, 0, NULL);
+	save_msg = clone_files(view, NULL, 0, 0, def_count(key_info.count));
+	accept_and_leave(save_msg);
 }
 
 static void
@@ -664,24 +678,18 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 	delete(key_info, 1);
 }
 
+/* Deletes files. */
 static void
 delete(key_info_t key_info, int use_trash)
 {
-	int save_msg;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-
-	curr_stats.confirmed = 0;
-	if(!use_trash && cfg.confirm)
+	if(confirm_deletion(use_trash))
 	{
-		if(!query_user_menu("Permanent deletion",
-				"Are you sure you want to delete files permanently?"))
-			return;
-		curr_stats.confirmed = 1;
-	}
+		int save_msg;
 
-	save_msg = delete_files(view, key_info.reg, 0, NULL, use_trash);
-	accept_and_leave(save_msg);
+		check_marking(view, 0, NULL);
+		save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
+		accept_and_leave(save_msg);
+	}
 }
 
 static void
@@ -744,19 +752,28 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 	redraw_view(view);
 }
 
+/* Changes letters in filenames to upper case. */
 static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
-	int save_msg;
-	save_msg = change_case(view, 1, 0, NULL);
-	accept_and_leave(save_msg);
+	do_gu(1);
 }
 
+/* Changes letters in filenames to lower case. */
 static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
+	do_gu(0);
+}
+
+/* Handles gU and gu commands. */
+static void
+do_gu(int upper)
+{
 	int save_msg;
-	save_msg = change_case(view, 0, 0, NULL);
+
+	check_marking(view, 0, NULL);
+	save_msg = change_case(view, upper);
 	accept_and_leave(save_msg);
 }
 
@@ -879,8 +896,8 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	set_user_bookmark(key_info.multi, view->curr_dir,
-			get_current_file_name(view));
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	set_user_bookmark(key_info.multi, entry->origin, entry->name);
 }
 
 static void
@@ -1002,24 +1019,16 @@ change_amend_type(AmendType new_amend_type)
 	update();
 }
 
+/* Yanks files. */
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-	{
-		key_info.reg = DEFAULT_REG_NAME;
-	}
+	int save_msg;
 
-	capture_target_files(view);
-	yank_selected_files(view, key_info.reg);
+	check_marking(view, 0, NULL);
+	save_msg = yank_files(view, def_reg(key_info.reg));
 
-	status_bar_messagef("%d file%s yanked", view->selected_files,
-			(view->selected_files == 1) ? "" : "s");
-	curr_stats.save_msg = 1;
-
-	free_file_capture(view);
-
-	accept_and_leave(1);
+	accept_and_leave(save_msg);
 }
 
 /* Accepts selected region and leaves visual mode.  This means forgetting
@@ -1056,6 +1065,7 @@ static void
 update_marks(FileView *view)
 {
 	char start_mark, end_mark;
+	const dir_entry_t *start_entry, *end_entry;
 
 	if(start_pos >= view->list_rows)
 	{
@@ -1067,8 +1077,11 @@ update_marks(FileView *view)
 	start_mark = upwards_range ? '<' : '>';
 	end_mark = upwards_range ? '>' : '<';
 
-	set_spec_bookmark(start_mark, view->curr_dir, get_current_file_name(view));
-	set_spec_bookmark(end_mark, view->curr_dir, view->dir_entry[start_pos].name);
+	start_entry = &view->dir_entry[view->list_pos];
+	end_entry = &view->dir_entry[start_pos];
+
+	set_spec_bookmark(start_mark, start_entry->origin, start_entry->name);
+	set_spec_bookmark(end_mark, end_entry->origin, end_entry->name);
 }
 
 static void

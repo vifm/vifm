@@ -31,6 +31,17 @@
 	Fixed crash on navigation to end of line in command-line mode.  Thanks to
 	Christian Fillion (a.k.a. cfillion).
 
+	Fixed quite rare UI glitch right after updating 'classify'.
+
+	Fixed UI glitch related to considering 'classify' option for ".." entry in
+	directories without files.
+
+	Fixed 'lsview' layout calculation for non-ascii names, which used too much
+	space.
+
+	Fixed 'lsview' entry highlight minor glitch related to symbolic links to
+	directories.
+
 	Fixed `:help` (no arguments) when 'vimhelp' is on and automatically
 	installed Vim documentation is used.  Thanks to ranousse.
 
@@ -38,6 +49,13 @@
 
 	Fixed gf normal mode key on following symbolic links that target files by
 	path that has symbolic links to directories.  Thanks to filterfalse.
+
+	Fixed failing with error on changing case (gu*/gU*) when target file
+	exists.
+
+	Fixed undesired file removal on overwriting them with themselves (data
+	loss after confirmation of overwriting files when destination matches
+	source).  Thanks to Сергей Соловьёв (Sergej Soloviov).
 
 0.7.8-beta to 0.7.8
 

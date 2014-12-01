@@ -178,6 +178,23 @@ path_exists_internal(const char *path, const char *filename)
 }
 
 int
+paths_are_same(const char s[], const char t[])
+{
+	char s_real[PATH_MAX];
+	char t_real[PATH_MAX];
+
+	if(realpath(s, s_real) != s_real)
+	{
+		return 0;
+	}
+	if(realpath(t, t_real) != t_real)
+	{
+		return 0;
+	}
+	return (stroscmp(s_real, t_real) == 0);
+}
+
+int
 is_symlink(const char path[])
 {
 #ifndef _WIN32

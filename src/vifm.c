@@ -822,23 +822,20 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 {
 	if(nfiles == 0)
 	{
-		if(!view->dir_entry[view->list_pos].selected)
+		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+		if(!entry->selected)
 		{
-			fprintf(fp, "%s", view->curr_dir);
-			if(view->curr_dir[strlen(view->curr_dir) - 1] != '/')
-			{
-				fprintf(fp, "%s", "/");
-			}
-			fprintf(fp, "%s\n", view->dir_entry[view->list_pos].name);
+			fprintf(fp, "%s/%s\n", entry->origin, entry->name);
 		}
 		else
 		{
 			int i;
 			for(i = 0; i < view->list_rows; ++i)
 			{
-				if(view->dir_entry[i].selected)
+				const dir_entry_t *const entry = &view->dir_entry[i];
+				if(entry->selected)
 				{
-					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+					fprintf(fp, "%s/%s\n", entry->origin, entry->name);
 				}
 			}
 		}

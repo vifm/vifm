@@ -128,6 +128,7 @@ history_t;
 typedef struct
 {
 	char *name;
+	char *origin;     /* Location where this file comes from. */
 	uint64_t size;
 #ifndef _WIN32
 	uid_t uid;
@@ -139,15 +140,16 @@ typedef struct
 	time_t mtime;
 	time_t atime;
 	time_t ctime;
-	char date[16];
 	FileType type;
 
 	int selected;
-	int was_selected; /* Temporary field to store previous selection state. */
+	int was_selected; /* Stores previous selection state in Visual mode. */
 
 	int search_match;
 
-	int list_num; /* Used by sorting comparer to perform stable sort. */
+	int list_num;     /* Used by sorting comparer to perform stable sort. */
+
+	int marked;       /* Whether file should be processed. */
 }
 dir_entry_t;
 
@@ -245,7 +247,9 @@ typedef struct
 
 	/* ls-like view related fields */
 	int ls_view; /* non-zero if ls-like view is enabled */
-	size_t max_filename_len; /* max length of filename in current directory */
+	size_t max_filename_width; /* Maximum filename width (length in character
+	                            * positions on the screen) among all entries of
+	                            * the file list. */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 

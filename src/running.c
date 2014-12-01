@@ -79,6 +79,7 @@ static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 TSTATIC char * format_edit_selection_cmd(int *bg);
+static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
 static char * gen_shell_cmd(const char cmd[], int pause,
@@ -99,7 +100,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	int runnable;
 	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
 
-	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, curr->name);
+	get_full_path_of(curr, sizeof(full_path), full_path);
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
@@ -273,7 +274,7 @@ selection_is_consistent(const FileView *const view)
 				continue;
 			}
 
-			snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
+			get_full_path_of(curr, sizeof(full), full);
 			if(is_dir_entry(full, curr->type))
 			{
 				dirs++;
@@ -411,17 +412,11 @@ run_file(FileView *view, int dont_execute)
 		}
 		else if(view->selected_files <= 1)
 		{
-			char buf[PATH_MAX];
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-					get_current_file_name(view));
-			(void)view_file(buf, -1, -1, 1);
+			view_current_file(view);
 		}
-		else
+		else if(edit_selection() != 0)
 		{
-			if(edit_selection() != 0)
-			{
-				show_error_msg("Running error", "Can't edit selection");
-			}
+			show_error_msg("Running error", "Can't edit selection");
 		}
 		return;
 	}
@@ -573,11 +568,15 @@ void
 run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background)
 {
-	int pause = starts_with(program, "!!");
-	if(pause)
-		program += 2;
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	const int pause = starts_with(program, "!!");
 
-	if(!path_exists_at(view->curr_dir, view->dir_entry[view->list_pos].name))
+	if(pause)
+	{
+		program += 2;
+	}
+
+	if(!path_exists_at(entry->origin, entry->name))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
 		return;
@@ -587,13 +586,12 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	{
 		if(dont_execute)
 		{
-			char buf[PATH_MAX];
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-					get_current_file_name(view));
-			(void)view_file(buf, -1, -1, 1);
+			view_current_file(view);
 		}
 		else
+		{
 			fuse_try_mount(view, program);
+		}
 	}
 	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
 	{
@@ -644,6 +642,15 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	}
 }
 
+/* Opens file under the cursor in the viewer. */
+static void
+view_current_file(const FileView *view)
+{
+	char full_path[PATH_MAX];
+	get_current_full_path(view, sizeof(full_path), full_path);
+	(void)view_file(full_path, -1, -1, 1);
+}
+
 /* Resolve link target and either navigate inside directory link points to or
  * navigate to directory where target is located pointing cursor on
  * it (the follow_dirs flag controls behaviour). */
@@ -653,13 +660,11 @@ follow_link(FileView *view, int follow_dirs)
 	char *dir, *file;
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
-	const char *filename;
+	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
 
-	filename = view->dir_entry[view->list_pos].name;
-	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, filename);
+	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	if(get_link_target_abs(full_path, view->curr_dir, linkto,
-				sizeof(linkto)) != 0)
+	if(get_link_target_abs(full_path, entry->origin, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link.");
 		return;
@@ -676,7 +681,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(is_dir(linkto) && !follow_dirs)
 	{
-		dir = strdup(filename);
+		dir = strdup(entry->name);
 		file = NULL;
 	}
 	else
@@ -708,7 +713,7 @@ void
 handle_dir(FileView *view)
 {
 	char full_path[PATH_MAX];
-	char *filename;
+	const char *filename;
 
 	filename = get_current_file_name(view);
 
@@ -718,8 +723,8 @@ handle_dir(FileView *view)
 		return;
 	}
 
-	snprintf(full_path, sizeof(full_path), "%s%s%s", view->curr_dir,
-			ends_with_slash(view->curr_dir) ? "" : "/", filename);
+	get_current_full_path(view, sizeof(full_path), full_path);
+
 	if(cd_is_possible(full_path))
 	{
 		navigate_to(view, filename);

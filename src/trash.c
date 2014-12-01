@@ -58,7 +58,7 @@ TrashResidentType;
 
 /* Client of the traverse_specs() function.  Should return non-zero to stop
  * traversal. */
-typedef int (*traverser)(const char base_dir[], const char trash_dir[],
+typedef int (*traverser)(const char base_path[], const char trash_dir[],
 		void *arg);
 
 /* List of trash directories. */
@@ -86,7 +86,7 @@ static void empty_trash_list(void);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
-static int pick_trash_dir_traverser(const char base_dir[],
+static int pick_trash_dir_traverser(const char base_path[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
 static TrashResidentType get_resident_type(const char path[]);
@@ -94,8 +94,8 @@ static int get_resident_type_traverser(const char path[],
 		const char trash_dir[], void *arg);
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], void *arg);
-static void traverse_specs(const char base_dir[], traverser client, void *arg);
-static char * get_rooted_trash_dir(const char base_dir[], const char spec[]);
+static void traverse_specs(const char base_path[], traverser client, void *arg);
+static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
 static char * format_root_spec(const char spec[], const char mount_point[]);
 
 static char **specs;
@@ -365,7 +365,7 @@ get_list_of_trashes(void)
 }
 
 /* traverse_mount_points() client that collects valid trash directories into a
- * list the base_dir. */
+ * list of trash directories. */
 static int
 get_list_of_trashes_traverser(struct mntent *entry, void *arg)
 {
@@ -465,12 +465,12 @@ remove_from_trash(const char trash_name[])
 }
 
 char *
-gen_trash_name(const char base_dir[], const char name[])
+gen_trash_name(const char base_path[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX];
 	int i;
-	char *const trash_dir = pick_trash_dir(base_dir);
+	char *const trash_dir = pick_trash_dir(base_path);
 
 	if(trash_dir == NULL)
 	{
@@ -491,17 +491,17 @@ gen_trash_name(const char base_dir[], const char name[])
 }
 
 char *
-pick_trash_dir(const char base_dir[])
+pick_trash_dir(const char base_path[])
 {
 	char *trash_dir = NULL;
-	traverse_specs(base_dir, &pick_trash_dir_traverser, &trash_dir);
+	traverse_specs(base_path, &pick_trash_dir_traverser, &trash_dir);
 	return trash_dir;
 }
 
 /* traverse_specs client that finds first available trash directory suitable for
- * the base_dir. */
+ * the base_path. */
 static int
-pick_trash_dir_traverser(const char base_dir[], const char trash_dir[],
+pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
 		void *arg)
 {
 	if(try_create_trash_dir(trash_dir) == 0)
@@ -586,7 +586,7 @@ is_trash_directory_traverser(const char path[], const char trash_dir[],
 /* Calls client traverser for each trash directory specification defined by
  * specs array. */
 static void
-traverse_specs(const char base_dir[], traverser client, void *arg)
+traverse_specs(const char base_path[], traverser client, void *arg)
 {
 	int i;
 	for(i = 0; i < nspecs; i++)
@@ -597,7 +597,7 @@ traverse_specs(const char base_dir[], traverser client, void *arg)
 		const char *const spec = specs[i];
 		if(is_rooted_trash_dir(spec))
 		{
-			to_free = get_rooted_trash_dir(base_dir, spec);
+			to_free = get_rooted_trash_dir(base_path, spec);
 			trash_dir = to_free;
 		}
 		else
@@ -605,7 +605,7 @@ traverse_specs(const char base_dir[], traverser client, void *arg)
 			trash_dir = spec;
 		}
 
-		if(trash_dir != NULL && client(base_dir, trash_dir, arg))
+		if(trash_dir != NULL && client(base_path, trash_dir, arg))
 		{
 			free(to_free);
 			break;
@@ -619,10 +619,10 @@ traverse_specs(const char base_dir[], traverser client, void *arg)
  * error, otherwise newly allocated string that should be freed by the caller is
  * returned. */
 static char *
-get_rooted_trash_dir(const char base_dir[], const char spec[])
+get_rooted_trash_dir(const char base_path[], const char spec[])
 {
 	char full[PATH_MAX];
-	if(get_mount_point(base_dir, sizeof(full), full) == 0)
+	if(get_mount_point(base_path, sizeof(full), full) == 0)
 	{
 		return format_root_spec(spec, full);
 	}

@@ -102,6 +102,7 @@ static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void switch_panes_content(void);
+static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
@@ -1462,6 +1463,11 @@ show_progress(const char *msg, int period)
 	static int count = 0;
 	static int pause = 1;
 
+	if(curr_stats.load_stage < 1)
+	{
+		return;
+	}
+
 	if(period == 0)
 	{
 		pause = 1;
@@ -1706,7 +1712,26 @@ switch_panes_content(void)
 	lwin = rwin;
 	rwin = tmp_view;
 
+	update_origins(&lwin, &rwin.curr_dir[0]);
+	update_origins(&rwin, &lwin.curr_dir[0]);
+
 	curr_stats.need_update = UT_REDRAW;
+}
+
+/* Updates pointers to main (default) origins in file list entries. */
+static void
+update_origins(FileView *view, const char *old_main_origin)
+{
+	char *const new_origin = &view->curr_dir[0];
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(entry->origin == old_main_origin)
+		{
+			entry->origin = new_origin;
+		}
+	}
 }
 
 void
@@ -1972,19 +1997,18 @@ FileType
 ui_view_entry_target_type(const FileView *const view, size_t pos)
 {
 	const dir_entry_t *const entry = &view->dir_entry[pos];
+
 	if(entry->type == LINK)
 	{
-		char *const full_path = format_str("%s/%s", view->curr_dir, entry->name);
+		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
 		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
 		                    ? DIRECTORY
 		                    : LINK;
 		free(full_path);
 		return type;
 	}
-	else
-	{
-		return entry->type;
-	}
+
+	return entry->type;
 }
 
 int

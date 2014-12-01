@@ -52,19 +52,19 @@ test_rename_inside_subdir_ok(void)
 static void
 test_incdec_leaves_zeros(void)
 {
-	assert_string_equal("1", add_to_name("0", 1));
-	assert_string_equal("01", add_to_name("00", 1));
-	assert_string_equal("00", add_to_name("01", -1));
-	assert_string_equal("-01", add_to_name("00", -1));
-	assert_string_equal("002", add_to_name("001", 1));
-	assert_string_equal("012", add_to_name("005", 7));
-	assert_string_equal("008", add_to_name("009", -1));
-	assert_string_equal("010", add_to_name("009", 1));
-	assert_string_equal("100", add_to_name("099", 1));
-	assert_string_equal("-08", add_to_name("-09", 1));
-	assert_string_equal("-10", add_to_name("-09", -1));
-	assert_string_equal("-14", add_to_name("-09", -5));
-	assert_string_equal("a01.", add_to_name("a00.", 1));
+	assert_string_equal("1", incdec_name("0", 1));
+	assert_string_equal("01", incdec_name("00", 1));
+	assert_string_equal("00", incdec_name("01", -1));
+	assert_string_equal("-01", incdec_name("00", -1));
+	assert_string_equal("002", incdec_name("001", 1));
+	assert_string_equal("012", incdec_name("005", 7));
+	assert_string_equal("008", incdec_name("009", -1));
+	assert_string_equal("010", incdec_name("009", 1));
+	assert_string_equal("100", incdec_name("099", 1));
+	assert_string_equal("-08", incdec_name("-09", 1));
+	assert_string_equal("-10", incdec_name("-09", -1));
+	assert_string_equal("-14", incdec_name("-09", -5));
+	assert_string_equal("a01.", incdec_name("a00.", 1));
 }
 
 static void

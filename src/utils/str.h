@@ -80,7 +80,11 @@ int ends_with(const char *str, const char *suffix);
 
 char * to_multibyte(const wchar_t *s);
 
-void strtolower(char *s);
+/* Converts all characters in the string to lower case.  Not aware of UTF-8. */
+void str_to_lower(char str[]);
+
+/* Converts all characters in the string to upper case.  Not aware of UTF-8. */
+void str_to_upper(char str[]);
 
 /* Converts all characters of the string s to their lowercase equivalents. */
 void wcstolower(wchar_t s[]);

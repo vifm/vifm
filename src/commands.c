@@ -232,7 +232,7 @@ static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
 static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
-static int link_cmd(const cmd_info_t *cmd_info, int type);
+static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
@@ -931,12 +931,12 @@ execute_command(FileView *view, const char command[], int menu)
 
 	if(id == USER_CMD_ID)
 	{
-		char buf[COMMAND_GROUP_INFO_LEN];
+		char undo_msg[COMMAND_GROUP_INFO_LEN];
 
-		snprintf(buf, sizeof(buf), "in %s: %s",
-				replace_home_part(curr_view->curr_dir), command);
+		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
+				replace_home_part(view->curr_dir), command);
 
-		cmd_group_begin(buf);
+		cmd_group_begin(undo_msg);
 		cmd_group_end();
 	}
 
@@ -1725,9 +1725,12 @@ chown_cmd(const cmd_info_t *cmd_info)
 }
 #endif
 
+/* Clones file [count=1] times. */
 static int
 clone_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -1737,11 +1740,9 @@ clone_cmd(const cmd_info_t *cmd_info)
 		}
 		return clone_files(curr_view, NULL, -1, 0, 1) != 0;
 	}
-	else
-	{
-		return clone_files(curr_view, cmd_info->argv, cmd_info->argc,
-				cmd_info->emark, 1) != 0;
-	}
+
+	return clone_files(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark,
+			1) != 0;
 }
 
 static int
@@ -1862,12 +1863,19 @@ delete_cmd(const cmd_info_t *cmd_info)
 
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result != 0)
+	{
 		return result;
+	}
 
+	check_marking(curr_view, 0, NULL);
 	if(cmd_info->bg)
+	{
 		result = delete_files_bg(curr_view, !cmd_info->emark) != 0;
+	}
 	else
-		result = delete_files(curr_view, reg, 0, NULL, !cmd_info->emark) != 0;
+	{
+		result = delete_files(curr_view, reg, !cmd_info->emark) != 0;
+	}
 
 	return result;
 }
@@ -1966,16 +1974,16 @@ edit_cmd(const cmd_info_t *cmd_info)
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
-		char buf[PATH_MAX];
+		char file_to_view[PATH_MAX];
+
 		if(curr_stats.file_picker_mode)
 		{
 			/* The call below does not return. */
 			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
-		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
-				get_current_file_name(curr_view));
-		(void)view_file(buf, -1, -1, 1);
+		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
+		(void)view_file(file_to_view, -1, -1, 1);
 	}
 	else
 	{
@@ -3015,9 +3023,10 @@ mark_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 1)
 	{
 		const int pos = (cmd_info->end == NOT_DEF)
-		  ? curr_view->list_pos : cmd_info->end;
-		return set_user_bookmark(mark, curr_view->curr_dir,
-				curr_view->dir_entry[pos].name);
+		              ? curr_view->list_pos
+		              : cmd_info->end;
+		const dir_entry_t *const entry = &curr_view->dir_entry[pos];
+		return set_user_bookmark(mark, entry->origin, entry->name);
 	}
 
 	expanded_path = expand_tilde(cmd_info->argv[1]);
@@ -3153,6 +3162,10 @@ move_cmd(const cmd_info_t *cmd_info)
 static int
 cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
+	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
+
+	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -3160,21 +3173,23 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
+
 		if(cmd_info->bg)
+		{
 			return cpmv_files_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
-		else
-			return cpmv_files(curr_view, NULL, -1, move, 0, 0) != 0;
+		}
+
+		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
 	}
-	else if(cmd_info->bg)
+
+	if(cmd_info->bg)
 	{
 		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
 				cmd_info->emark) != 0;
 	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, move, 0,
-				cmd_info->emark) != 0;
-	}
+
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
+			cmd_info->emark) != 0;
 }
 
 static int
@@ -3351,10 +3366,11 @@ registers_cmd(const cmd_info_t *cmd_info)
 	return show_register_menu(curr_view, buf) != 0;
 }
 
-/* Renames current selection. */
+/* Renames selected files of the current view. */
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
 	return rename_files(curr_view, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
@@ -3377,13 +3393,17 @@ restore_cmd(const cmd_info_t *cmd_info)
 static int
 rlink_cmd(const cmd_info_t *cmd_info)
 {
-	return link_cmd(cmd_info, 2);
+	return link_cmd(cmd_info, 0);
 }
 
 /* Common part of alink and rlink commands interface implementation. */
 static int
-link_cmd(const cmd_info_t *cmd_info, int type)
+link_cmd(const cmd_info_t *cmd_info, int absolute)
 {
+	const CopyMoveLikeOp op = absolute ? CMLO_LINK_ABS : CMLO_LINK_REL;
+
+	check_marking(curr_view, 0, NULL);
+
 	if(cmd_info->qmark)
 	{
 		if(cmd_info->argc > 0)
@@ -3391,13 +3411,11 @@ link_cmd(const cmd_info_t *cmd_info, int type)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return cpmv_files(curr_view, NULL, -1, 0, type, 0) != 0;
+		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
 	}
-	else
-	{
-		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, type,
-				cmd_info->emark) != 0;
-	}
+
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
+			cmd_info->emark) != 0;
 }
 
 /* Shows status of terminal multiplexers support or toggles it. */
@@ -3487,6 +3505,7 @@ split_cmd(const cmd_info_t *cmd_info)
 	return do_split(cmd_info, HSPLIT);
 }
 
+/* Replaces matches of regular expression in names of files. */
 static int
 substitute_cmd(const cmd_info_t *cmd_info)
 {
@@ -3537,6 +3556,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	mark_selected(curr_view);
 	return substitute_in_names(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
@@ -3583,6 +3603,7 @@ touch_cmd(const cmd_info_t *cmd_info)
 	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
+/* Replaces letters in names of files according to character mapping. */
 static int
 tr_cmd(const cmd_info_t *cmd_info)
 {
@@ -3611,6 +3632,8 @@ tr_cmd(const cmd_info_t *cmd_info)
 			sl++;
 		}
 	}
+
+	mark_selected(curr_view);
 	return tr_in_names(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
@@ -3927,7 +3950,10 @@ yank_cmd(const cmd_info_t *cmd_info)
 
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result == 0)
-		result = yank_files(curr_view, reg, 0, NULL) != 0;
+	{
+		result = yank_files(curr_view, reg) != 0;
+	}
+
 	return result;
 }
 

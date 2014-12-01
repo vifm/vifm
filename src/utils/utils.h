@@ -127,6 +127,13 @@ void expand_squotes_escaping(char s[]);
 /* Expands escape sequences from double quoted string (e.g. "\n") in place. */
 void expand_dquotes_escaping(char s[]);
 
+/* Gets correct register to operate on (user choice or the default one).
+ * Returns register name. */
+int def_reg(int reg);
+
+/* Gets correct count (user choice or the default one).  Returns the count. */
+int def_count(int count);
+
 /* Fills buf of the length buf_len with path to mount point of the path.
  * Returns non-zero on error, otherwise zero is returned. */
 int get_mount_point(const char path[], size_t buf_len, char buf[]);

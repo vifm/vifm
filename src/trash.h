@@ -63,15 +63,16 @@ int restore_from_trash(const char trash_name[]);
 
 int remove_from_trash(const char trash_name[]);
 
-/* Generates unique name for a file at base_dir/name in a trash directory.
- * Returns string containing full path that needs to be freed by caller, if no
- * trash directory available NULL is returned. */
-char * gen_trash_name(const char base_dir[], const char name[]);
+/* Generates unique name for a file at base_path location named name (doesn't
+ * have to be base_path/name as long as base_path is at same mount) in a trash
+ * directory.  Returns string containing full path that needs to be freed by
+ * caller, if no trash directory available NULL is returned. */
+char * gen_trash_name(const char base_path[], const char name[]);
 
-/* Picks trash directory basing on original directory of a file that is being
+/* Picks trash directory basing on original path for a file that is being
  * trashed.  Returns absolute path to picked trash directory on success which
  * should be freed by the caller, otherwise NULL is returned. */
-char * pick_trash_dir(const char base_dir[]);
+char * pick_trash_dir(const char base_path[]);
 
 /* Checks whether given absolute path points to a file under trash directory.
  * Returns non-zero if so, otherwise zero is returned. */

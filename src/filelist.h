@@ -20,7 +20,7 @@
 #ifndef VIFM__FILELIST_H__
 #define VIFM__FILELIST_H__
 
-#include <sys/types.h> /* for ssize_t */
+#include <sys/types.h> /* ssize_t */
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
@@ -35,6 +35,14 @@
 #else
 #define FILTER_DEF_CASE_SENSITIVITY 1
 #endif
+
+/* Type of contiguous area of file list. */
+typedef enum
+{
+	FLS_SELECTION, /* Of selected entries. */
+	FLS_MARKING,   /* Of marked entries. */
+}
+FileListScope;
 
 /* Initialization/termination functions. */
 
@@ -67,6 +75,8 @@ int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
 int all_files_visible(const FileView *view);
 void move_to_list_pos(FileView *view, int pos);
+/* Ensures that cursor is moved outside of entries of certain type. */
+void move_cursor_out_of(FileView *view, FileListScope scope);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
 /* Returns non-zero in case view can be scrolled up (there are more files). */
@@ -148,7 +158,9 @@ int cd(FileView *view, const char *base_dir, const char *path);
 /* Ensures that current directory of the view is a valid one.  Modifies
  * view->curr_dir. */
 void leave_invalid_dir(FileView *view);
-int pane_in_dir(FileView *view, const char *path);
+/* Checks if the view is the directory specified by the path.  Returns non-zero
+ * if so, otherwise zero is returned. */
+int pane_in_dir(const FileView *view, const char path[]);
 
 /* Selection related functions. */
 
@@ -266,9 +278,25 @@ int is_directory_entry(const dir_entry_t *entry);
  * returned.  List of entries shouldn't be reloaded between invocations of this
  * function. */
 int iter_selected_entries(FileView *view, dir_entry_t **entry);
+/* Same as iter_selected_entries() function, but checks for marks. */
+int iter_marked_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
+/* Fills the buffer with the full path to file under cursor. */
+void get_current_full_path(const FileView *view, size_t buf_len, char buf[]);
+/* Fills the buffer with the full path to file at specified position. */
+void get_full_path_at(const FileView *view, int pos, size_t buf_len,
+		char buf[]);
+/* Fills the buffer with the full path to file of specified file list entry. */
+void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
+/* Ensures that either entries at specified positions, selected entries or file
+ * under cursor is marked. */
+void check_marking(FileView *view, int count, const int indexes[]);
+/* Marks files at positions specified in the indexes array of size count. */
+void mark_files_at(FileView *view, int count, const int indexes[]);
+/* Marks selected files of the view. */
+void mark_selected(FileView *view);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

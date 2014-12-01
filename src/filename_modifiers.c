@@ -171,9 +171,9 @@ apply_dot_mod(const char *path, char *buf, size_t buf_len)
 {
 	size_t len = strlen(curr_view->curr_dir);
 	if(strnoscmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
-		snprintf(buf, buf_len, "%s", path);
+		copy_str(buf, buf_len, path);
 	else
-		snprintf(buf, buf_len, "%s", path + len + 1);
+		copy_str(buf, buf_len, path + len + 1);
 	return 0;
 }
 

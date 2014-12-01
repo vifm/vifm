@@ -34,6 +34,7 @@
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
+#include "filelist.h"
 #include "filename_modifiers.h"
 #include "registers.h"
 #include "status.h"
@@ -42,7 +43,7 @@
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
 static char * append_selected_file(FileView *view, char *expanded,
-		int dir_name_len, int pos, int quotes, const char *mod, int for_shell);
+		int full_path, int pos, int quotes, const char *mod, int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
 static char * expand_register(const char curr_dir[], char expanded[],
@@ -245,13 +246,10 @@ TSTATIC char *
 append_selected_files(FileView *view, char expanded[], int under_cursor,
 		int quotes, const char mod[], int for_shell)
 {
-	int dir_name_len = 0;
+	const int full_path = (view == other_view);
 #ifdef _WIN32
 	size_t old_len = strlen(expanded);
 #endif
-
-	if(view == other_view)
-		dir_name_len = strlen(other_view->curr_dir) + 1;
 
 	if(view->selected_files && !under_cursor)
 	{
@@ -261,8 +259,8 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 			if(!view->dir_entry[y].selected)
 				continue;
 
-			expanded = append_selected_file(view, expanded, dir_name_len, y, quotes,
-					mod, for_shell);
+			expanded = append_selected_file(view, expanded, full_path, y, quotes, mod,
+					for_shell);
 
 			if(++x != view->selected_files)
 			{
@@ -272,8 +270,8 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	}
 	else
 	{
-		expanded = append_selected_file(view, expanded, dir_name_len,
-				view->list_pos, quotes, mod, for_shell);
+		expanded = append_selected_file(view, expanded, full_path, view->list_pos,
+				quotes, mod, for_shell);
 	}
 
 #ifdef _WIN32
@@ -287,17 +285,22 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 }
 
 static char *
-append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
+append_selected_file(FileView *view, char *expanded, int full_path, int pos,
 		int quotes, const char *mod, int for_shell)
 {
-	char buf[PATH_MAX];
+	char path[PATH_MAX];
 	const char *modified;
 
-	snprintf(buf, sizeof(buf), "%s%s%s",
-			(dir_name_len != 0) ? view->curr_dir : "", (dir_name_len != 0) ? "/" : "",
-			view->dir_entry[pos].name);
+	if(full_path)
+	{
+		get_full_path_at(view, pos, sizeof(path), path);
+	}
+	else
+	{
+		copy_str(path, sizeof(path), view->dir_entry[pos].name);
+	}
 
-	modified = apply_mods(buf, view->curr_dir, mod, for_shell);
+	modified = apply_mods(path, view->curr_dir, mod, for_shell);
 	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;

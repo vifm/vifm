@@ -146,6 +146,8 @@ static void cmd_D_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d_selector(key_info_t key_info, keys_info_t *keys_info);
 static void delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
 		int use_trash);
+static void call_delete(key_info_t key_info, keys_info_t *keys_info,
+		int use_trash);
 static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
@@ -188,6 +190,7 @@ static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
 static int calc_pick_files_end_pos(const FileView *view, int count);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
+static void yank(key_info_t key_info, keys_info_t *keys_info);
 static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zO(key_info_t key_info, keys_info_t *keys_info);
@@ -428,12 +431,13 @@ init_normal_mode(void)
 	(void)ret_code;
 }
 
+/* Increments first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(curr_view, key_info.count);
+	check_marking(curr_view, 0, NULL);
+	curr_stats.save_msg = incdec_names(curr_view, def_count(key_info.count));
 }
 
 static void
@@ -850,12 +854,13 @@ cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 	preview_close();
 }
 
+/* Decrements first number in names of marked files of the view [count=1]
+ * times. */
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = incdec_names(curr_view, -key_info.count);
+	check_marking(curr_view, 0, NULL);
+	curr_stats.save_msg = incdec_names(curr_view, -def_count(key_info.count));
 }
 
 static void
@@ -908,9 +913,9 @@ try_switch_into_view_mode(void)
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	curr_stats.save_msg = clone_files(curr_view, NULL, 0, 0, key_info.count);
+	check_marking(curr_view, 0, NULL);
+	curr_stats.save_msg = clone_files(curr_view, NULL, 0, 0,
+			def_count(key_info.count));
 }
 
 static void
@@ -1139,8 +1144,8 @@ do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
 		pick_files(curr_view, curr_view->list_pos + count, keys_info);
 	}
 
-	curr_stats.save_msg = change_case(curr_view, upper, keys_info->count,
-			keys_info->indexes);
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	curr_stats.save_msg = change_case(curr_view, upper);
 	free_list_of_file_indexes(keys_info);
 }
 
@@ -1404,9 +1409,13 @@ static void
 cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view->selected_files > 1)
+	{
+		check_marking(curr_view, 0, NULL);
 		rename_files(curr_view, NULL, 0, 0);
-	else
-		rename_current_file(curr_view, 0);
+		return;
+	}
+
+	rename_current_file(curr_view, 0);
 }
 
 /* Delete file. */
@@ -1429,15 +1438,13 @@ delete(key_info_t key_info, int use_trash)
 	keys_info_t keys_info = {};
 
 	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
-		return;
-
-	curr_stats.confirmed = 0;
-	if(!use_trash && cfg.confirm)
 	{
-		if(!query_user_menu("Permanent deletion",
-					"Are you sure you want to delete files permanently?"))
-			return;
-		curr_stats.confirmed = 1;
+		return;
+	}
+
+	if(!confirm_deletion(use_trash))
+	{
+		return;
 	}
 
 	if(key_info.count != NO_COUNT_GIVEN)
@@ -1445,24 +1452,22 @@ delete(key_info_t key_info, int use_trash)
 		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
 		pick_files(curr_view, end_pos, &keys_info);
 	}
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
 
 	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
 	{
 		pick_files(curr_view, curr_view->list_pos, &keys_info);
 	}
-	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info.count,
-			keys_info.indexes, use_trash);
 
-	free_list_of_file_indexes(&keys_info);
+	call_delete(key_info, &keys_info, use_trash);
 }
 
 static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	{
 		return;
+	}
 
 	curr_stats.confirmed = 0;
 	if(cfg.confirm)
@@ -1488,13 +1493,19 @@ cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
-	if(keys_info->count == 0)
-		return;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = delete_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes, use_trash);
+	if(keys_info->count != 0)
+	{
+		call_delete(key_info, keys_info, use_trash);
+	}
+}
 
+/* Invokes actual file deletion procedure. */
+static void
+call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
+{
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	curr_stats.save_msg = delete_files(curr_view, def_reg(key_info.reg),
+			use_trash);
 	free_list_of_file_indexes(keys_info);
 }
 
@@ -1602,8 +1613,9 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.save_msg = set_user_bookmark(key_info.multi, curr_view->curr_dir,
-			get_current_file_name(curr_view));
+	const dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	curr_stats.save_msg = set_user_bookmark(key_info.multi, entry->origin,
+			entry->name);
 }
 
 static void
@@ -1801,7 +1813,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = 1;
 }
 
-/* Yank file. */
+/* Yanks files. */
 static void
 cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1810,17 +1822,13 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
 		pick_files(curr_view, end_pos, keys_info);
 	}
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-
-	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
+	else if(!cfg.selection_is_primary)
 	{
 		pick_files(curr_view, curr_view->list_pos, keys_info);
 	}
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes);
 
-	free(keys_info->indexes);
+	check_marking(curr_view, keys_info->count, keys_info->indexes);
+	yank(key_info, keys_info);
 }
 
 /* Calculates end position for pick_files(...) function using cursor position
@@ -1845,14 +1853,21 @@ calc_pick_files_end_pos(const FileView *view, int count)
 static void
 cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->count == 0)
-		return;
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes);
+	if(keys_info->count != 0)
+	{
+		mark_files_at(curr_view, keys_info->count, keys_info->indexes);
+		yank(key_info, keys_info);
+	}
+}
 
+static void
+yank(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = yank_files(curr_view, def_reg(key_info.reg));
 	free_list_of_file_indexes(keys_info);
+
+	clean_selected_files(curr_view);
+	ui_view_schedule_redraw(curr_view);
 }
 
 /* Frees memory allocated for selected files list in keys_info_t structure and

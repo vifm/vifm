@@ -45,32 +45,43 @@ typedef enum
 }
 SignalType;
 
+/* Type of copy/move-like operation. */
+typedef enum
+{
+	CMLO_COPY,     /* Copy file. */
+	CMLO_MOVE,     /* Move file. */
+	CMLO_LINK_REL, /* Make relative symbolic link. */
+	CMLO_LINK_ABS, /* Make absolute symbolic link. */
+}
+CopyMoveLikeOp;
+
 /* Initializes file operations. */
 void init_fileops(void);
 
-int delete_files(FileView *view, int reg, int count, int *indexes,
-		int use_trash);
+/* Removes marked files (optionally into trash directory) of the view to
+ * specified register.  Returns new value for save_msg flag. */
+int delete_files(FileView *view, int reg, int use_trash);
 
-/* Returns new value for save_msg. */
+/* Removes marked files (optionally into trash directory) of the view to
+ * specified register.  Returns new value for save_msg flag. */
 int delete_files_bg(FileView *view, int use_trash);
 
-int yank_files(FileView *view, int reg, int count, int *indexes);
+/* Yanks selected files of the view into register specified by its name via reg
+ * parameter.  Returns new value for save_msg. */
+int yank_files(FileView *view, int reg);
 
-void yank_selected_files(FileView *view, int reg);
-
-int file_exec(char *command);
-
-void show_change_window(FileView *view, int type);
-
+/* Renames single file under the cursor. */
 void rename_current_file(FileView *view, int name_only);
 
-/* Renames selection to names given in the list of length nlines (or filled in
- * by the user, when the list is empty).  Recursively traverses directories in
- * selection when recursive flag is not zero.  Recursive traversal is
- * incompatible with list of names.  Returns new value for save_msg flag. */
+/* Renames marked filese using names given in the list of length nlines (or
+ * filled in by the user, when the list is empty).  Recursively traverses
+ * directories in selection when recursive flag is not zero.  Recursive
+ * traversal is incompatible with list of names.  Returns new value for
+ * save_msg flag. */
 int rename_files(FileView *view, char **list, int nlines, int recursive);
 
-/* Returns new value for save_msg flag. */
+/* Increments/decrements first number in names of marked files of the view k
+ * times.  Returns new value for save_msg flag. */
 int incdec_names(FileView *view, int k);
 
 #ifndef _WIN32
@@ -86,6 +97,7 @@ int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int reg_name, int force_move);
 
+/* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 
 /* This is a wrapper for is_dir_writable() function, which adds message
@@ -95,22 +107,31 @@ int check_if_dir_writable(DirRole dir_role, const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
 
-/* Returns new value for save_msg flag. */
-int substitute_in_names(FileView *view, const char *pattern, const char *sub,
+/* Replaces matches of regular expression in names of files of the view.
+ * Returns new value for save_msg flag. */
+int substitute_in_names(FileView *view, const char pattern[], const char sub[],
 		int ic, int glob);
 
-/* Returns new value for save_msg flag. */
-int tr_in_names(FileView *view, const char *pattern, const char *sub);
+/* Replaces letters in names of marked files of the view according to the
+ * mapping: from[i] -> to[i] (must have the same length).  Returns new value for
+ * save_msg flag. */
+int tr_in_names(FileView *view, const char from[], const char to[]);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * substitute_in_name(const char name[], const char pattern[],
 		const char sub[], int glob);
 
-int change_case(FileView *view, int toupper, int count, int indexes[]);
+/* Changes case of all letters in names of marked files of the view.  Returns
+ * new value for save_msg flag. */
+int change_case(FileView *view, int toupper);
 
-int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
+/* Performs copy/moves-like operation on marked files.  Returns new value for
+ * save_msg flag. */
+int cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 		int force);
 
+/* Copies or moves marked files to the other view in background.  Returns new
+ * value for save_msg flag. */
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 
 /* Can modify strings in the names array. */
@@ -130,7 +151,7 @@ TSTATIC_DEFS(
 		SignalType signal_type);
 	const char * gen_clone_name(const char normal_name[]);
 	int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
-	const char * add_to_name(const char filename[], int k);
+	const char * incdec_name(const char fname[], int k);
 )
 
 #endif /* VIFM__FILEOPS_H__ */

@@ -10,8 +10,8 @@ else
 endif
 
 # enumerate test suites
-suites := colmgr commands column_view completion env escape filetype filter
-suites += keys misc options parsing undo variables viewcolumns_parser
+suites := colmgr commands column_view completion env escape fileops filetype
+suites += filter keys misc options parsing undo variables viewcolumns_parser
 suites += ioeta ionotif iop ior
 
 # obtain list of sources that are being tested
@@ -58,8 +58,8 @@ check: build
 clean:
 	-$(RM) -r bin/
 
-$(vifm_bin): $(vifm_src)
-	$(MAKE) -C ../../src/ $(make_arg) vifm$(exe_suffix)
+$(vifm_bin): $(vifm_obj) $(vifm_src)
+	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
@@ -75,7 +75,7 @@ $1.obj := $$($1.src:%.c=bin/build/%.o)
 
 deps += $$($1.obj:.o=.d)
 
-bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj)
+bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj) | $(vifm_bin)
 	gcc -o $$@ $$^ $(LDFLAGS)
 
 bin/build/$1/%.o: $1/%.c | bin/build/$1

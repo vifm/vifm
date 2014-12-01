@@ -1006,5 +1006,24 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 	return KHR_UNHANDLED;
 }
 
+int
+confirm_deletion(int use_trash)
+{
+	curr_stats.confirmed = 0;
+	if(!use_trash && cfg.confirm)
+	{
+		const int proceed = query_user_menu("Permanent deletion",
+				"Are you sure you want to delete files permanently?");
+
+		if(!proceed)
+		{
+			return 0;
+		}
+
+		curr_stats.confirmed = 1;
+	}
+	return 1;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
