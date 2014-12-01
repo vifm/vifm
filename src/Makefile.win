@@ -55,7 +55,7 @@ vifm_SOURCES := $(cfg) $(engine) $(io) $(menus) $(modes) $(utilities) \
                 ipc.c macros.c main_loop.c ops.c opt_handlers.c path_env.c \
                 quickview.c registers.c running.c search.c signals.c sort.c \
                 status.c tags.c term_title.c trash.c types.c ui.c undo.c \
-                version.c viewcolumns_parser.c vifmres.o vifm.c
+                version.c viewcolumns_parser.c vifmres.o vifm.c vim.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

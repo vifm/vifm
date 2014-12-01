@@ -71,6 +71,7 @@
 #include "types.h"
 #include "ui.h"
 #include "undo.h"
+#include "vim.h"
 
 static char rename_file_ext[NAME_MAX];
 
@@ -2585,7 +2586,7 @@ edit_file(const char filepath[], int force_changed)
 		return -1;
 	}
 
-	if(view_file(filepath, -1, -1, 0) != 0)
+	if(vim_view_file(filepath, -1, -1, 0) != 0)
 	{
 		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
 				filepath);

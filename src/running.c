@@ -32,7 +32,7 @@
 #define ERROR_ELEVATION_REQUIRED 740L
 #endif
 #endif
-#include <unistd.h> /* F_OK X_OK pid_t access() */
+#include <unistd.h> /* X_OK pid_t access() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -62,7 +62,7 @@
 #include "status.h"
 #include "types.h"
 #include "ui.h"
-#include "vifm.h"
+#include "vim.h"
 
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
@@ -78,7 +78,6 @@ static void execute_file(const char full_path[]);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
-TSTATIC char * format_edit_selection_cmd(int *bg);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -117,7 +116,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	if(curr_stats.file_picker_mode && (executable || runnable))
 	{
 		/* The call below does not return. */
-		vifm_return_file_list(view, 0, NULL);
+		vim_return_file_list(view, 0, NULL);
 	}
 
 	if(executable && !is_dir_entry(full_path, curr->type))
@@ -414,7 +413,7 @@ run_file(FileView *view, int dont_execute)
 		{
 			view_current_file(view);
 		}
-		else if(edit_selection() != 0)
+		else if(vim_edit_selection() != 0)
 		{
 			show_error_msg("Running error", "Can't edit selection");
 		}
@@ -470,98 +469,6 @@ multi_run_compat(FileView *view, const char *program)
 	if(strstr(program, "%c") == NULL && strstr(program, "%C") == NULL)
 		return 0;
 	return 1;
-}
-
-int
-view_file(const char filename[], int line, int column, int allow_forking)
-{
-	char vicmd[PATH_MAX];
-	char command[PATH_MAX + 5] = "";
-	const char *fork_str = allow_forking ? "" : "--nofork";
-	char *escaped;
-	int bg;
-	int result;
-
-	if(!path_exists(filename))
-	{
-		if(access(filename, F_OK) != 0)
-		{
-			show_error_msg("Broken Link", "Link destination doesn't exist");
-		}
-		else
-		{
-			show_error_msg("Wrong Path", "File doesn't exist");
-		}
-		return 1;
-	}
-
-#ifndef _WIN32
-	escaped = escape_filename(filename, 0);
-#else
-	escaped = (char *)enclose_in_dquotes(filename);
-#endif
-
-	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
-	(void)trim_right(vicmd);
-	if(!allow_forking)
-	{
-		char *p = strrchr(vicmd, ' ');
-		if(p != NULL && strstr(p, "remote"))
-		{
-			*p = '\0';
-		}
-	}
-
-	if(line < 0 && column < 0)
-		snprintf(command, sizeof(command), "%s %s %s", vicmd, fork_str, escaped);
-	else if(column < 0)
-		snprintf(command, sizeof(command), "%s %s +%d %s", vicmd, fork_str, line,
-				escaped);
-	else
-		snprintf(command, sizeof(command), "%s %s \"+call cursor(%d, %d)\" %s",
-				vicmd, fork_str, line, column, escaped);
-
-#ifndef _WIN32
-	free(escaped);
-#endif
-
-	if(bg && allow_forking)
-	{
-		result = start_background_job(command, 0);
-	}
-	else
-	{
-		result = shellout(command, -1, allow_forking);
-	}
-	curs_set(FALSE);
-
-	return result;
-}
-
-int
-edit_selection(void)
-{
-	int error = 1;
-	int bg;
-	char *const cmd = format_edit_selection_cmd(&bg);
-	if(cmd != NULL)
-	{
-		/* TODO: move next line to a separate function. */
-		error = bg ? start_background_job(cmd, 0) : shellout(cmd, -1, 1);
-		free(cmd);
-	}
-	return error;
-}
-
-/* Formats a command to edit selected files of the current view in an editor.
- * Returns a newly allocated string, which should be freed by the caller. */
-TSTATIC char *
-format_edit_selection_cmd(int *bg)
-{
-	char *const files = expand_macros("%f", NULL, NULL, 1);
-	char *const cmd = format_str("%s %s", get_vicmd(bg), files);
-	free(files);
-	return cmd;
 }
 
 void
@@ -648,7 +555,7 @@ view_current_file(const FileView *view)
 {
 	char full_path[PATH_MAX];
 	get_current_full_path(view, sizeof(full_path), full_path);
-	(void)view_file(full_path, -1, -1, 1);
+	(void)vim_view_file(full_path, -1, -1, 1);
 }
 
 /* Resolve link target and either navigate inside directory link points to or

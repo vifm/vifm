@@ -175,7 +175,8 @@ vifm_SOURCES = \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
 	compile_info.c \
-	vifm.c
+	vifm.c vifm.h \
+	vim.c vim.h
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \

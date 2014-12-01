@@ -92,6 +92,7 @@
 #include "ui.h"
 #include "undo.h"
 #include "vifm.h"
+#include "vim.h"
 
 /* Commands without completion. */
 enum
@@ -593,7 +594,7 @@ get_ext_command(const char beginning[], size_t line_pos, int type)
 
 	if(setup_extcmd_file(cmd_file, beginning, type) == 0)
 	{
-		if(view_file(cmd_file, 1, line_pos, 0) == 0)
+		if(vim_view_file(cmd_file, 1, line_pos, 0) == 0)
 		{
 			cmd = get_file_first_line(cmd_file);
 		}
@@ -1946,28 +1947,13 @@ edit_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc != 0)
 	{
-		char buf[PATH_MAX];
-		size_t len;
-		int i;
-		int bg;
-
 		if(curr_stats.file_picker_mode)
 		{
 			/* The call below does not return. */
-			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
-		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd(&bg));
-		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
-		{
-			char *escaped = escape_filename(cmd_info->argv[i], 0);
-			len += snprintf(buf + len, sizeof(buf) - len, "%s ", escaped);
-			free(escaped);
-		}
-		if(bg)
-			start_background_job(buf, 0);
-		else
-			shellout(buf, -1, 1);
+		vim_edit_files(cmd_info->argc, cmd_info->argv);
 		return 0;
 	}
 
@@ -1979,11 +1965,11 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(curr_stats.file_picker_mode)
 		{
 			/* The call below does not return. */
-			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
-		(void)view_file(file_to_view, -1, -1, 1);
+		(void)vim_view_file(file_to_view, -1, -1, 1);
 	}
 	else
 	{
@@ -2007,10 +1993,10 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(curr_stats.file_picker_mode)
 		{
 			/* The call below does not return. */
-			vifm_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
-		if(edit_selection() != 0)
+		if(vim_edit_selection() != 0)
 		{
 			show_error_msg("Edit error", "Can't edit selection");
 		}
@@ -2456,30 +2442,7 @@ help_cmd(const cmd_info_t *cmd_info)
 		const char *const topic = (cmd_info->argc > 0)
 		                        ? cmd_info->args
 		                        : VIFM_VIM_HELP;
-
-#ifndef _WIN32
-		char *const escaped_rtp = escape_filename(PACKAGE_DATA_DIR, 0);
-		char *const escaped_args = escape_filename(topic, 0);
-
-		snprintf(buf, sizeof(buf),
-				"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
-				get_vicmd(&bg), escaped_rtp, escaped_args);
-
-		free(escaped_args);
-		free(escaped_rtp);
-#else
-		char exe_dir[PATH_MAX];
-		char *escaped_rtp;
-
-		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-		escaped_rtp = escape_filename(exe_dir, 0);
-
-		snprintf(buf, sizeof(buf),
-				"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
-				get_vicmd(&bg), escaped_rtp, topic);
-
-		free(escaped_rtp);
-#endif
+		bg = vim_format_help_cmd(topic, buf, sizeof(buf));
 	}
 	else
 	{

@@ -5,7 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
-#include "../../src/running.h"
+#include "../../src/vim.h"
 #include "../../src/ui.h"
 
 static void teardown_view(FileView *view);

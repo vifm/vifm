@@ -52,6 +52,7 @@
 #include "../status.h"
 #include "../types.h"
 #include "../ui.h"
+#include "../vim.h"
 #include "cmdline.h"
 #include "modes.h"
 #include "normal.h"
@@ -1338,7 +1339,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	char path[PATH_MAX];
 	get_current_full_path(curr_view, sizeof(path), path);
-	(void)view_file(path, vi->line + (vi->view->window_rows - 1)/2, -1, 1);
+	(void)vim_view_file(path, vi->line + (vi->view->window_rows - 1)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
 	 * redrawn. */
 	update_screen(UT_REDRAW);

@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 25 October, 2014
+Updated: 30 November, 2014
 Version: 0.7.8
 
 Brief Description
@@ -184,6 +184,7 @@ Package content
     |  |-- vifm.c - contains main initialization/termination code
     |  |-- vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme
     |  |                        files
+    |  |-- vim.c - contains Vim integration functionality
     |  `-- win_helper.c - needed for temporary rights evaluation on Windows
     |
     |-- tests/ - unit tests
