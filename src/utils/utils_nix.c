@@ -42,6 +42,7 @@
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
+#include "../running.h"
 #include "../ui.h"
 #include "fs.h"
 #include "fs_limits.h"
@@ -497,6 +498,22 @@ EnvType
 get_env_type(void)
 {
 	return ET_UNIX;
+}
+
+int
+format_help_cmd(char cmd[], size_t cmd_size)
+{
+	int bg;
+	char *const escaped = escape_filename(cfg.config_dir, 0);
+	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
+	free(escaped);
+	return bg;
+}
+
+void
+display_help(const char cmd[])
+{
+	(void)shellout(cmd, -1, 1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

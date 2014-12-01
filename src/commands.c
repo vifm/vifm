@@ -1942,6 +1942,7 @@ echo_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
+/* Edits current/selected/specified file(s) in editor. */
 static int
 edit_cmd(const cmd_info_t *cmd_info)
 {
@@ -2431,25 +2432,20 @@ grep_cmd(const cmd_info_t *cmd_info)
 	return show_grep_menu(curr_view, last_args, inv) != 0;
 }
 
+/* Displays documentation. */
 static int
 help_cmd(const cmd_info_t *cmd_info)
 {
-	char buf[PATH_MAX];
+	char cmd[PATH_MAX];
 	int bg;
 
 	if(cfg.use_vim_help)
 	{
-		const char *const topic = (cmd_info->argc > 0)
-		                        ? cmd_info->args
-		                        : VIFM_VIM_HELP;
-		bg = vim_format_help_cmd(topic, buf, sizeof(buf));
+		const char *topic = (cmd_info->argc > 0) ? cmd_info->args : VIFM_VIM_HELP;
+		bg = vim_format_help_cmd(topic, cmd, sizeof(cmd));
 	}
 	else
 	{
-#ifndef _WIN32
-		char *escaped;
-#endif
-
 		if(cmd_info->argc != 0)
 		{
 			status_bar_error("No arguments are allowed when 'vimhelp' option is off");
@@ -2463,35 +2459,16 @@ help_cmd(const cmd_info_t *cmd_info)
 			return 0;
 		}
 
-#ifndef _WIN32
-		escaped = escape_filename(cfg.config_dir, 0);
-		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
-		free(escaped);
-#else
-		snprintf(buf, sizeof(buf), "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
-				cfg.config_dir);
-#endif
+		bg = format_help_cmd(cmd, sizeof(cmd));
 	}
 
 	if(bg)
 	{
-		start_background_job(buf, 0);
+		start_background_job(cmd, 0);
 	}
 	else
 	{
-#ifndef _WIN32
-		shellout(buf, -1, 1);
-#else
-		def_prog_mode();
-		endwin();
-		system("cls");
-		if(system(buf) != EXIT_SUCCESS)
-		{
-			system("pause");
-		}
-		update_screen(UT_FULL);
-		update_screen(UT_REDRAW);
-#endif
+		display_help(cmd);
 	}
 	return 0;
 }
