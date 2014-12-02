@@ -121,7 +121,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
 	types.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
 	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
-	vifm.$(OBJEXT)
+	vifm.$(OBJEXT) vim.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -443,7 +443,8 @@ vifm_SOURCES = \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
 	compile_info.c \
-	vifm.c
+	vifm.c vifm.h \
+	vim.c vim.h
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
@@ -850,6 +851,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vim.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@

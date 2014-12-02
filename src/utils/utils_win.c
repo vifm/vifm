@@ -30,12 +30,14 @@
 #include <ctype.h> /* toupper() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
+#include <stdlib.h> /* EXIT_SUCCESS */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
 #include "../commands_completion.h"
 #include "../status.h"
+#include "../ui.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
@@ -461,6 +463,29 @@ EnvType
 get_env_type(void)
 {
 	return ET_WIN;
+}
+
+int
+format_help_cmd(char cmd[], size_t cmd_size)
+{
+	int bg;
+	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
+			cfg.config_dir);
+	return bg;
+}
+
+void
+display_help(const char cmd[])
+{
+	def_prog_mode();
+	endwin();
+	system("cls");
+	if(system(cmd) != EXIT_SUCCESS)
+	{
+		system("pause");
+	}
+	update_screen(UT_FULL);
+	update_screen(UT_REDRAW);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

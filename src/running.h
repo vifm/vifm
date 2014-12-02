@@ -20,19 +20,11 @@
 #ifndef VIFM__RUNNING_H__
 #define VIFM__RUNNING_H__
 
-#include "utils/test_helpers.h"
 #include "ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
-/* Opens external editor to edit selected files of the current view.  Returns
- * non-zero on error, otherwise zero is returned. */
-int edit_selection(void);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
-/* Negative line/column means ignore parameter.  First line/column number has
- * number one, while zero means don't change it.  Returns zero on success, on
- * error non-zero is returned. */
-int view_file(const char filename[], int line, int column, int allow_forking);
 void handle_dir(FileView *view);
 void cd_updir(FileView *view);
 /* Returns zero on success, otherwise non-zero is returned. */
@@ -40,10 +32,6 @@ int shellout(const char *command, int pause, int use_term_multiplexer);
 void output_to_nowhere(const char *cmd);
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
-
-TSTATIC_DEFS(
-	char * format_edit_selection_cmd(int *bg);
-)
 
 #endif /* VIFM__RUNNING_H__ */
 

@@ -60,6 +60,7 @@
 #include "../search.h"
 #include "../status.h"
 #include "../ui.h"
+#include "../vim.h"
 
 static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
@@ -543,7 +544,7 @@ open_selected_file(const char path[], int line_num)
 {
 	if(access(path, R_OK) == 0)
 	{
-		(void)view_file(path, line_num, -1, 1);
+		(void)vim_view_file(path, line_num, -1, 1);
 	}
 	else
 	{

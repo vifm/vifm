@@ -165,6 +165,14 @@ int get_exe_dir(char dir_buf[], size_t dir_buf_len);
  * the type. */
 EnvType get_env_type(void);
 
+/* Formats command to view documentation in plain-text format.  Returns non-zero
+ * if command that should be run in background, otherwise zero is returned. */
+int format_help_cmd(char cmd[], size_t cmd_size);
+
+/* Displays documentation in plain-text format without detaching from the
+ * terminal. */
+void display_help(const char cmd[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

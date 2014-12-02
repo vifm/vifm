@@ -14,12 +14,6 @@ vifm_try_leave(int write_info, int force)
 }
 
 void
-vifm_return_file_list(const FileView *view, int nfiles, char *files[])
-{
-	/* Do nothing. */
-}
-
-void
 vifm_finish(const FileView *view, int nfiles, char *files[])
 {
 	/* Do nothing. */
