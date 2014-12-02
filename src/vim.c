@@ -18,11 +18,13 @@
 
 #include "vim.h"
 
+#include <curses.h> /* FALSE curs_set() */
+
 #include <unistd.h> /* F_OK access() */
 
 #include <errno.h> /* errno */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strrchr() strstr() */
 
 #include "cfg/config.h"
@@ -40,9 +42,11 @@
 #include "running.h"
 #include "ui.h"
 
+/* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
 
 TSTATIC char * format_edit_selection_cmd(int *bg);
+static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
 static void dump_filenames(const FileView *view, FILE *fp, int nfiles,
 		char *files[]);
 
@@ -81,23 +85,20 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 void
 vim_edit_files(int nfiles, char *files[])
 {
-	char buf[PATH_MAX];
+	char cmd[PATH_MAX];
 	size_t len;
 	int i;
 	int bg;
 
-	len = snprintf(buf, sizeof(buf), "%s ", get_vicmd(&bg));
-	for(i = 0; i < nfiles && len < sizeof(buf) - 1; i++)
+	len = snprintf(cmd, sizeof(cmd), "%s ", get_vicmd(&bg));
+	for(i = 0; i < nfiles && len < sizeof(cmd) - 1; ++i)
 	{
 		char *escaped = escape_filename(files[i], 0);
-		len += snprintf(buf + len, sizeof(buf) - len, "%s ", escaped);
+		len += snprintf(cmd + len, sizeof(cmd) - len, "%s ", escaped);
 		free(escaped);
 	}
 
-	if(bg)
-		start_background_job(buf, 0);
-	else
-		shellout(buf, -1, 1);
+	run_vim(cmd, bg, 1);
 }
 
 int
@@ -108,8 +109,7 @@ vim_edit_selection(void)
 	char *const cmd = format_edit_selection_cmd(&bg);
 	if(cmd != NULL)
 	{
-		/* TODO: move next line to a separate function. */
-		error = bg ? start_background_job(cmd, 0) : shellout(cmd, -1, 1);
+		error = run_vim(cmd, bg, 1);
 		free(cmd);
 	}
 	return error;
@@ -130,11 +130,13 @@ int
 vim_view_file(const char filename[], int line, int column, int allow_forking)
 {
 	char vicmd[PATH_MAX];
-	char command[PATH_MAX + 5] = "";
+	char cmd[PATH_MAX + 5];
 	const char *fork_str = allow_forking ? "" : "--nofork";
 	char *escaped;
 	int bg;
 	int result;
+
+	cmd[0] = '\0';
 
 	if(!path_exists(filename))
 	{
@@ -155,7 +157,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	escaped = (char *)enclose_in_dquotes(filename);
 #endif
 
-	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
+	copy_str(vicmd, sizeof(vicmd), get_vicmd(&bg));
 	(void)trim_right(vicmd);
 	if(!allow_forking)
 	{
@@ -167,29 +169,33 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	}
 
 	if(line < 0 && column < 0)
-		snprintf(command, sizeof(command), "%s %s %s", vicmd, fork_str, escaped);
+		snprintf(cmd, sizeof(cmd), "%s %s %s", vicmd, fork_str, escaped);
 	else if(column < 0)
-		snprintf(command, sizeof(command), "%s %s +%d %s", vicmd, fork_str, line,
-				escaped);
+		snprintf(cmd, sizeof(cmd), "%s %s +%d %s", vicmd, fork_str, line, escaped);
 	else
-		snprintf(command, sizeof(command), "%s %s \"+call cursor(%d, %d)\" %s",
-				vicmd, fork_str, line, column, escaped);
+		snprintf(cmd, sizeof(cmd), "%s %s \"+call cursor(%d, %d)\" %s", vicmd,
+				fork_str, line, column, escaped);
 
 #ifndef _WIN32
 	free(escaped);
 #endif
 
-	if(bg && allow_forking)
-	{
-		result = start_background_job(command, 0);
-	}
-	else
-	{
-		result = shellout(command, -1, allow_forking);
-	}
+	result = run_vim(cmd, bg && allow_forking, allow_forking);
 	curs_set(FALSE);
 
 	return result;
+}
+
+/* Runs command with specified settings.  Returns exit code of the command. */
+static int
+run_vim(const char cmd[], int bg, int use_term_multiplexer)
+{
+	if(bg)
+	{
+		return start_background_job(cmd, 0);
+	}
+
+	return shellout(cmd, -1, use_term_multiplexer);
 }
 
 void _gnuc_noreturn
@@ -266,18 +272,18 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 void
 vim_write_empty_file_list(void)
 {
-	char buf[PATH_MAX];
+	char path[PATH_MAX];
 	FILE *fp;
 
-	snprintf(buf, sizeof(buf), "%s/" LIST_FILE, cfg.config_dir);
-	fp = fopen(buf, "w");
+	snprintf(path, sizeof(path), "%s/" LIST_FILE, cfg.config_dir);
+	fp = fopen(path, "w");
 	if(fp != NULL)
 	{
 		fclose(fp);
 	}
 	else
 	{
-		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", buf);
+		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", path);
 	}
 }
 
