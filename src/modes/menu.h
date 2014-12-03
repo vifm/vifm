@@ -30,8 +30,10 @@ void enter_menu_mode(menu_info *m, FileView *active_view);
 
 void menu_pre(void);
 
+/* Performs post-actions (at the end of input processing loop) for menus. */
 void menu_post(void);
 
+/* Redraws menu. */
 void menu_redraw(void);
 
 /* Redraws and refreshes menu window. */

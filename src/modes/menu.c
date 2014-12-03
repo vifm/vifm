@@ -293,8 +293,7 @@ menu_post(void)
 {
 	if(curr_stats.need_update != UT_NONE)
 	{
-		touchwin(menu_win);
-		wrefresh(menu_win);
+		menu_redraw();
 		curr_stats.need_update = UT_NONE;
 	}
 	status_bar_message(curr_stats.save_msg ? NULL : "");
@@ -420,10 +419,11 @@ get_last_visible_line(const menu_info *menu)
 	return menu->top + (menu->win_rows - 2) - 1;
 }
 
+/* Redraw TUI. */
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	redraw_menu(menu);
+	menu_redraw();
 }
 
 static void
