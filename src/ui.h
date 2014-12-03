@@ -33,6 +33,7 @@
 
 #include "utils/filter.h"
 #include "utils/fs_limits.h"
+#include "utils/test_helpers.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "status.h"
@@ -428,6 +429,10 @@ int ui_cancellation_requested(void);
 
 /* Disables handling of cancellation requests through the UI. */
 void ui_cancellation_disable(void);
+
+TSTATIC_DEFS(
+	char * expand_status_line_macros(FileView *view, const char format[]);
+)
 
 #endif /* VIFM__UI_H__ */
 

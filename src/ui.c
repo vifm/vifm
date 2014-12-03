@@ -54,6 +54,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
@@ -304,10 +305,12 @@ get_gid_string(FileView *view, size_t len, char *out_buf)
 #endif
 }
 
-static char *
-expand_status_line_macros(FileView *view, const char *format)
+/* Returns newly allocated string, which should be freed by the caller, or NULL
+ * if there is not enough memory. */
+TSTATIC char *
+expand_status_line_macros(FileView *view, const char format[])
 {
-	static const char STATUS_CHARS[] = "tAugsd-lLS%0123456789";
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
 
 	char *result = strdup("");
 	size_t len = 0;
