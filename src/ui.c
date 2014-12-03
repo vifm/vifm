@@ -1629,7 +1629,10 @@ update_term_size(void)
 		vifm_finish("Terminal is unable to run vifm.");
 	}
 
-	resize_term(ws.ws_row, ws.ws_col);
+	if(is_term_resized(ws.ws_row, ws.ws_col))
+	{
+		resizeterm(ws.ws_row, ws.ws_col);
+	}
 #endif
 }
 
