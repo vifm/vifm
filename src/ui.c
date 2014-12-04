@@ -478,21 +478,8 @@ expand_status_line_macros(FileView *view, const char format[])
 				snprintf(buf, sizeof(buf), "%%%c", c);
 				break;
 		}
-		if(strlen(buf) < width)
-		{
-			if(left_align)
-			{
-				int i = width - strlen(buf);
-				memset(buf + strlen(buf), ' ', i);
-				buf[width] = '\0';
-			}
-			else
-			{
-				int i = width - strlen(buf);
-				memmove(buf + i, buf, width - i + 1);
-				memset(buf, ' ', i);
-			}
-		}
+
+		stralign(buf, width, ' ', left_align);
 
 		if(strappend(&result, &len, buf) != 0)
 		{

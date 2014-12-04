@@ -24,8 +24,8 @@
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() mbstowcs() realloc() strtol()
-                       wcstombs() */
+#include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
+                       strtol() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* vswprintf() */
@@ -301,6 +301,29 @@ strappend(char **str, size_t *len, const char suffix[])
 	*len += suffix_len;
 
 	return 0;
+}
+
+void
+stralign(char str[], size_t width, char pad, int left_align)
+{
+	const size_t len = strlen(str);
+	const int pad_width = width - len;
+
+	if(pad_width <= 0)
+	{
+		return;
+	}
+
+	if(left_align)
+	{
+		memset(str + len, pad, pad_width);
+		str[width] = '\0';
+	}
+	else
+	{
+		memmove(str + pad_width, str, len + 1);
+		memset(str, pad, pad_width);
+	}
 }
 
 int

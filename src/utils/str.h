@@ -139,6 +139,9 @@ int strappendch(char **str, size_t *len, char c);
  * appropriately.  Returns zero on success, otherwise non-zero is returned. */
 int strappend(char **str, size_t *len, const char suffix[]);
 
+/* Pads buffer pointed to by str to be at least of width "width + 1". */
+void stralign(char str[], size_t width, char pad, int left_align);
+
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */
 int vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...);
