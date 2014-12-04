@@ -273,10 +273,34 @@ replace_string(char **str, const char with[])
 }
 
 char *
-strcatch(char *str, char c)
+strcatch(char str[], char c)
 {
 	const char buf[2] = { c, '\0' };
 	return strcat(str, buf);
+}
+
+int
+strappendch(char **str, size_t *len, char c)
+{
+	const char suffix[] = { c, '\0' };
+	return strappend(str, len, suffix);
+}
+
+int
+strappend(char **str, size_t *len, const char suffix[])
+{
+	const size_t suffix_len = strlen(suffix);
+	char *const new = realloc(*str, *len + suffix_len + 1);
+	if(new == NULL)
+	{
+		return 1;
+	}
+
+	strcpy(new + *len, suffix);
+	*str = new;
+	*len += suffix_len;
+
+	return 0;
 }
 
 int

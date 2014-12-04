@@ -128,8 +128,16 @@ char * after_first(const char str[], char c);
  * failed. */
 int replace_string(char **str, const char with[]);
 
-/* Adds a character to the end of a string. */
-char * strcatch(char *str, char c);
+/* Adds a character to the end of the string.  Returns the str argument. */
+char * strcatch(char str[], char c);
+
+/* Appends single character to a string.  Might reallocate it.  Updates *len
+ * appropriately.  Returns zero on success, otherwise non-zero is returned. */
+int strappendch(char **str, size_t *len, char c);
+
+/* Appends suffix to a string.  Might reallocate the string.  Updates *len
+ * appropriately.  Returns zero on success, otherwise non-zero is returned. */
+int strappend(char **str, size_t *len, const char suffix[]);
 
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */

@@ -387,16 +387,14 @@ expand_status_line_macros(FileView *view, const char format[])
 	{
 		size_t width = 0;
 		int left_align = 0;
-		char *p;
 		char buf[PATH_MAX];
+
 		if(c != '%' || !char_is_one_of(STATUS_CHARS, *format))
 		{
-			p = realloc(result, len + 1 + 1);
-			if(p == NULL)
+			if(strappendch(&result, &len, c) != 0)
+			{
 				break;
-			result = p;
-			result[len++] = c;
-			result[len] = '\0';
+			}
 			continue;
 		}
 		if(*format == '-')
@@ -495,12 +493,11 @@ expand_status_line_macros(FileView *view, const char format[])
 				memset(buf, ' ', i);
 			}
 		}
-		p = realloc(result, len + strlen(buf) + 1);
-		if(p == NULL)
+
+		if(strappend(&result, &len, buf) != 0)
+		{
 			break;
-		result = p;
-		strcat(result, buf);
-		len += strlen(buf);
+		}
 	}
 
 	return result;
