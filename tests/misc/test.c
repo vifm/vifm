@@ -51,6 +51,7 @@ void is_dir_tests(void);
 void builtin_functions_tests(void);
 void get_ext_tests(void);
 void commands_tests(void);
+void expand_status_line_macros_tests(void);
 
 void
 all_tests(void)
@@ -106,6 +107,7 @@ all_tests(void)
 	builtin_functions_tests();
 	get_ext_tests();
 	commands_tests();
+	expand_status_line_macros_tests();
 }
 
 int

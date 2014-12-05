@@ -34,7 +34,7 @@
 #include <ctype.h>
 #include <errno.h> /* errno */
 #include <stdarg.h> /* va_list va_start() va_end() */
-#include <stddef.h> /* NULL wchar_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
@@ -54,6 +54,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
@@ -89,6 +90,9 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
+static void update_stat_window_old(FileView *view);
+TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
+static char * break_in_two(char str[], size_t max);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 static void create_windows(void);
@@ -106,46 +110,6 @@ static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
-
-static char *
-break_in_two(char *str, size_t max)
-{
-	int i;
-	size_t len, size;
-	char *result;
-	char *break_point = strstr(str, "%=");
-	if(break_point == NULL)
-		return str;
-
-	len = get_screen_string_length(str) - 2;
-	size = strlen(str);
-	size = MAX(size, max);
-	result = malloc(size*4 + 2);
-
-	snprintf(result, break_point - str + 1, "%s", str);
-
-	if(len > max)
-	{
-		const int l = get_screen_string_length(result) - (len - max);
-		break_point = str + get_real_string_width(str, MAX(l, 0));
-	}
-
-	snprintf(result, break_point - str + 1, "%s", str);
-	i = break_point - str;
-	while(max > len)
-	{
-		result[i++] = ' ';
-		max--;
-	}
-	result[i] = '\0';
-
-	if(len > max)
-		break_point = strstr(str, "%=");
-	strcat(result, break_point + 2);
-
-	free(str);
-	return result;
-}
 
 static char *
 expand_ruler_macros(FileView *view, const char *format)
@@ -304,10 +268,116 @@ get_gid_string(FileView *view, size_t len, char *out_buf)
 #endif
 }
 
-static char *
-expand_status_line_macros(FileView *view, const char *format)
+void
+update_stat_window(FileView *view)
 {
-	static const char STATUS_CHARS[] = "tAugsd-lLS%0123456789";
+	int x;
+	char *buf;
+
+	if(!cfg.last_status)
+		return;
+
+	/* Don't redraw anything until :restart command is finished. */
+	if(curr_stats.restart_in_progress)
+	{
+		return;
+	}
+
+	if(cfg.status_line[0] == '\0')
+	{
+		update_stat_window_old(view);
+		return;
+	}
+
+	x = getmaxx(stdscr);
+	wresize(stat_win, 1, x);
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			cfg.cs.color[STATUS_LINE_COLOR].attr);
+
+	buf = expand_status_line_macros(view, cfg.status_line);
+	buf = break_in_two(buf, getmaxx(stdscr));
+
+	werase(stat_win);
+	checked_wmove(stat_win, 0, 0);
+	wprint(stat_win, buf);
+	wrefresh(stat_win);
+
+	free(buf);
+}
+
+/* Formats status line in the "old way" (before introduction of 'statusline'
+ * option). */
+static void
+update_stat_window_old(FileView *view)
+{
+	char name_buf[160*2 + 1];
+	char perm_buf[26];
+	char size_buf[56];
+	char id_buf[52];
+	int x;
+	int cur_x;
+	size_t print_width;
+	char *filename;
+
+	if(!cfg.last_status)
+		return;
+
+	x = getmaxx(stdscr);
+	wresize(stat_win, 1, x);
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			cfg.cs.color[STATUS_LINE_COLOR].attr);
+
+	filename = get_current_file_name(view);
+	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
+	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
+	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
+			size_buf);
+
+	get_uid_string(view, sizeof(id_buf), id_buf);
+	if(id_buf[0] != '\0')
+		strcat(id_buf, ":");
+	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
+			id_buf + strlen(id_buf));
+#ifndef _WIN32
+	get_perm_string(perm_buf, sizeof(perm_buf),
+			view->dir_entry[view->list_pos].mode);
+#else
+	snprintf(perm_buf, sizeof(perm_buf), "%s",
+			attr_str_long(view->dir_entry[view->list_pos].attrs));
+#endif
+
+	werase(stat_win);
+	cur_x = 2;
+	checked_wmove(stat_win, 0, cur_x);
+	wprint(stat_win, name_buf);
+	cur_x += 22;
+	if(x > 83)
+		cur_x += x - 83;
+	mvwaddstr(stat_win, 0, cur_x, size_buf);
+	cur_x += 12;
+	mvwaddstr(stat_win, 0, cur_x, perm_buf);
+	cur_x += 11;
+
+	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", view->filtered,
+			(view->filtered == 1) ? "file" : "files");
+	if(view->filtered > 0)
+		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2), name_buf);
+
+	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
+		break_at(id_buf, ':');
+	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
+		id_buf[0] = '\0';
+	mvwaddstr(stat_win, 0, cur_x, id_buf);
+
+	wrefresh(stat_win);
+}
+
+/* Returns newly allocated string, which should be freed by the caller, or NULL
+ * if there is not enough memory. */
+TSTATIC char *
+expand_status_line_macros(FileView *view, const char format[])
+{
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
 
 	char *result = strdup("");
 	size_t len = 0;
@@ -317,26 +387,32 @@ expand_status_line_macros(FileView *view, const char *format)
 	{
 		size_t width = 0;
 		int left_align = 0;
-		char *p;
 		char buf[PATH_MAX];
+		const char *const next = format;
+		int ok;
+
 		if(c != '%' || !char_is_one_of(STATUS_CHARS, *format))
 		{
-			p = realloc(result, len + 1 + 1);
-			if(p == NULL)
+			if(strappendch(&result, &len, c) != 0)
+			{
 				break;
-			result = p;
-			result[len++] = c;
-			result[len] = '\0';
+			}
 			continue;
 		}
+
 		if(*format == '-')
 		{
 			left_align = 1;
 			format++;
 		}
+
 		while(isdigit(*format))
+		{
 			width = width*10 + *format++ - '0';
+		}
 		c = *format++;
+
+		ok = 1;
 		switch(c)
 		{
 			case 't':
@@ -407,135 +483,73 @@ expand_status_line_macros(FileView *view, const char *format)
 
 			default:
 				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
-				snprintf(buf, sizeof(buf), "%%%c", c);
+				ok = 0;
 				break;
 		}
-		if(strlen(buf) < width)
+
+		if(!ok)
 		{
-			if(left_align)
+			format = next;
+			if(strappendch(&result, &len, '%') != 0)
 			{
-				int i = width - strlen(buf);
-				memset(buf + strlen(buf), ' ', i);
-				buf[width] = '\0';
+				break;
 			}
-			else
-			{
-				int i = width - strlen(buf);
-				memmove(buf + i, buf, width - i + 1);
-				memset(buf, ' ', i);
-			}
+			continue;
 		}
-		p = realloc(result, len + strlen(buf) + 1);
-		if(p == NULL)
+
+		stralign(buf, width, ' ', left_align);
+
+		if(strappend(&result, &len, buf) != 0)
+		{
 			break;
-		result = p;
-		strcat(result, buf);
-		len += strlen(buf);
+		}
 	}
 
 	return result;
 }
 
-static void
-update_stat_window_old(FileView *view)
+/* "Breaks" single line it two parts (before and after "%=" separator), and
+ * re-formats it filling specified width by putting "left part", padded centre
+ * followed by "right part".  Frees the str.  Returns re-formatted string in
+ * newly allocated buffer. */
+static char *
+break_in_two(char str[], size_t max)
 {
-	char name_buf[160*2 + 1];
-	char perm_buf[26];
-	char size_buf[56];
-	char id_buf[52];
-	int x;
-	int cur_x;
-	size_t print_width;
-	char *filename;
+	int i;
+	size_t len, size;
+	char *result;
+	char *break_point = strstr(str, "%=");
+	if(break_point == NULL)
+		return str;
 
-	if(!cfg.last_status)
-		return;
+	len = get_screen_string_length(str) - 2;
+	size = strlen(str);
+	size = MAX(size, max);
+	result = malloc(size*4 + 2);
 
-	x = getmaxx(stdscr);
-	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
-			cfg.cs.color[STATUS_LINE_COLOR].attr);
+	snprintf(result, break_point - str + 1, "%s", str);
 
-	filename = get_current_file_name(view);
-	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
-	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
-			size_buf);
-
-	get_uid_string(view, sizeof(id_buf), id_buf);
-	if(id_buf[0] != '\0')
-		strcat(id_buf, ":");
-	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
-			id_buf + strlen(id_buf));
-#ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf),
-			view->dir_entry[view->list_pos].mode);
-#else
-	snprintf(perm_buf, sizeof(perm_buf), "%s",
-			attr_str_long(view->dir_entry[view->list_pos].attrs));
-#endif
-
-	werase(stat_win);
-	cur_x = 2;
-	checked_wmove(stat_win, 0, cur_x);
-	wprint(stat_win, name_buf);
-	cur_x += 22;
-	if(x > 83)
-		cur_x += x - 83;
-	mvwaddstr(stat_win, 0, cur_x, size_buf);
-	cur_x += 12;
-	mvwaddstr(stat_win, 0, cur_x, perm_buf);
-	cur_x += 11;
-
-	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", view->filtered,
-			(view->filtered == 1) ? "file" : "files");
-	if(view->filtered > 0)
-		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2), name_buf);
-
-	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
-		break_at(id_buf, ':');
-	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
-		id_buf[0] = '\0';
-	mvwaddstr(stat_win, 0, cur_x, id_buf);
-
-	wrefresh(stat_win);
-}
-
-void
-update_stat_window(FileView *view)
-{
-	int x;
-	char *buf;
-
-	if(!cfg.last_status)
-		return;
-
-	/* Don't redraw anything until :restart command is finished. */
-	if(curr_stats.restart_in_progress)
+	if(len > max)
 	{
-		return;
+		const int l = get_screen_string_length(result) - (len - max);
+		break_point = str + get_real_string_width(str, MAX(l, 0));
 	}
 
-	if(cfg.status_line[0] == '\0')
+	snprintf(result, break_point - str + 1, "%s", str);
+	i = break_point - str;
+	while(max > len)
 	{
-		update_stat_window_old(view);
-		return;
+		result[i++] = ' ';
+		max--;
 	}
+	result[i] = '\0';
 
-	x = getmaxx(stdscr);
-	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
-			cfg.cs.color[STATUS_LINE_COLOR].attr);
+	if(len > max)
+		break_point = strstr(str, "%=");
+	strcat(result, break_point + 2);
 
-	buf = expand_status_line_macros(view, cfg.status_line);
-	buf = break_in_two(buf, getmaxx(stdscr));
-
-	werase(stat_win);
-	checked_wmove(stat_win, 0, 0);
-	wprint(stat_win, buf);
-	wrefresh(stat_win);
-
-	free(buf);
+	free(str);
+	return result;
 }
 
 static void

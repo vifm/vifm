@@ -57,6 +57,9 @@
 	loss after confirmation of overwriting files when destination matches
 	source).  Thanks to Сергей Соловьёв (Sergej Soloviov).
 
+	Fixed parsing of %E without field width in 'statusline'.  Thanks to
+	willemw12.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
