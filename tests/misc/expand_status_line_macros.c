@@ -1,7 +1,7 @@
 #include "seatest.h"
 
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcmp() */
+#include <string.h> /* strchr() strcmp() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui.h"
@@ -130,7 +130,17 @@ test_L_macro_expanded(void)
 static void
 test_dash_macro_expanded(void)
 {
-	ASSERT_EXPANDED("%-");
+	ASSERT_EXPANDED("%-t");
+	ASSERT_EXPANDED("%-A");
+	ASSERT_EXPANDED("%-u");
+	ASSERT_EXPANDED("%-g");
+	ASSERT_EXPANDED("%-s");
+	ASSERT_EXPANDED("%-E");
+	ASSERT_EXPANDED("%-d");
+	ASSERT_EXPANDED("%-l");
+	ASSERT_EXPANDED("%-L");
+	ASSERT_EXPANDED("%-S");
+	ASSERT_EXPANDED("%-%");
 }
 
 static void
@@ -161,6 +171,22 @@ test_wrong_macros_ignored(void)
 	}
 }
 
+static void
+test_wrong_macros_with_width_field_ignored(void)
+{
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
+	int i;
+
+	for(i = 1; i <= 255; ++i)
+	{
+		if(strchr(STATUS_CHARS, i) == NULL)
+		{
+			const char format[] = { '%', '5', i, '\0' };
+			ASSERT_EXPANDED_TO(format, format);
+		}
+	}
+}
+
 void
 expand_status_line_macros_tests(void)
 {
@@ -186,6 +212,7 @@ expand_status_line_macros_tests(void)
 	run_test(test_percent_macro_expanded);
 
 	run_test(test_wrong_macros_ignored);
+	run_test(test_wrong_macros_with_width_field_ignored);
 
 	test_fixture_end();
 }

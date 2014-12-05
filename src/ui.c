@@ -388,6 +388,8 @@ expand_status_line_macros(FileView *view, const char format[])
 		size_t width = 0;
 		int left_align = 0;
 		char buf[PATH_MAX];
+		const char *const next = format;
+		int ok;
 
 		if(c != '%' || !char_is_one_of(STATUS_CHARS, *format))
 		{
@@ -397,14 +399,20 @@ expand_status_line_macros(FileView *view, const char format[])
 			}
 			continue;
 		}
+
 		if(*format == '-')
 		{
 			left_align = 1;
 			format++;
 		}
+
 		while(isdigit(*format))
+		{
 			width = width*10 + *format++ - '0';
+		}
 		c = *format++;
+
+		ok = 1;
 		switch(c)
 		{
 			case 't':
@@ -475,8 +483,18 @@ expand_status_line_macros(FileView *view, const char format[])
 
 			default:
 				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
-				snprintf(buf, sizeof(buf), "%%%c", c);
+				ok = 0;
 				break;
+		}
+
+		if(!ok)
+		{
+			format = next;
+			if(strappendch(&result, &len, '%') != 0)
+			{
+				break;
+			}
+			continue;
 		}
 
 		stralign(buf, width, ' ', left_align);
