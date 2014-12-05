@@ -23,7 +23,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() free() */
 
-#include "../ui/ui.h"
+#include "../ui/cancellation.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
 

@@ -125,6 +125,7 @@ Package content
     |  |
     |  |-- ui/ - most of ui related code
     |  |  |
+    |  |  |-- cancellation.c - managing operation cancellation
     |  |  `-- ui.c - ui initialization and other ui related functions
     |  |
     |  |-- utils/ - miscellaneous utility functions

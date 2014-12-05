@@ -43,7 +43,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
-#include "ui/ui.h"
+#include "ui/cancellation.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"

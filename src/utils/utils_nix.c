@@ -42,7 +42,7 @@
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
-#include "../ui/ui.h"
+#include "../ui/cancellation.h"
 #include "../running.h"
 #include "fs.h"
 #include "fs_limits.h"

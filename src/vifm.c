@@ -44,6 +44,7 @@
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/view.h"
+#include "ui/cancellation.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"

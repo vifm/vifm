@@ -409,27 +409,6 @@ void ui_view_redrawn(FileView *view);
  * scheduled event. */
 UiUpdateEvent ui_view_query_scheduled_event(FileView *view);
 
-/* Operation cancellation. */
-
-/* Resets state so that ui_cancellation_requested() returns zero. */
-void ui_cancellation_reset(void);
-
-/* Enables handling of cancellation requests through the UI. */
-void ui_cancellation_enable(void);
-
-/* External callback for notifying this unit about cancellation request.  Should
- * be called between ui_cancellation_enable() and ui_cancellation_disable(). */
-void ui_cancellation_request(void);
-
-/* If cancellation is enabled, checks whether cancelling of current operation is
- * requested.  Should be called between ui_cancellation_enable() and
- * ui_cancellation_disable().  Returns non-zero if so, otherwise zero is
- * returned. */
-int ui_cancellation_requested(void);
-
-/* Disables handling of cancellation requests through the UI. */
-void ui_cancellation_disable(void);
-
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);
 )

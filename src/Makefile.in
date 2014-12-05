@@ -97,21 +97,21 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/dialogs/sort_dialog.$(OBJEXT) modes/cmdline.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
-	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) ui/ui.$(OBJEXT) \
-	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
-	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) \
-	background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	color_manager.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
-	dir_stack.$(OBJEXT) escape.$(OBJEXT) globals.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
+	ui/cancellation.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
+	utils/file_streams.$(OBJEXT) utils/filter.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/mntent.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) background.$(OBJEXT) \
+	bookmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
+	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
+	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
@@ -385,6 +385,7 @@ vifm_SOURCES = \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\
+	ui/cancellation.c ui/cancellation.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \
@@ -670,6 +671,8 @@ ui/$(am__dirstamp):
 ui/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ui/$(DEPDIR)
 	@: > ui/$(DEPDIR)/$(am__dirstamp)
+ui/cancellation.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/ui.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
 utils/$(am__dirstamp):
 	@$(MKDIR_P) utils
@@ -798,6 +801,7 @@ mostlyclean-compile:
 	-rm -f modes/normal.$(OBJEXT)
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
+	-rm -f ui/cancellation.$(OBJEXT)
 	-rm -f ui/ui.$(OBJEXT)
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
@@ -909,6 +913,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/change_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@

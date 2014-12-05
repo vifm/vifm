@@ -42,7 +42,7 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
          visual.c
 modes := $(addprefix modes/, $(modes))
 
-ui := ui.c
+ui := cancellation.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := env.c file_streams.c filter.c fs.c int_stack.c log.c path.c str.c \

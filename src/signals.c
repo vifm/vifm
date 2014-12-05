@@ -43,7 +43,7 @@ static void _gnuc_noreturn shutdown_nicely(void);
 
 #include <stdlib.h> /* exit() */
 
-#include "ui/ui.h"
+#include "ui/cancellation.h"
 #include "utils/macros.h"
 #include "background.h"
 #include "status.h"

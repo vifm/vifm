@@ -32,7 +32,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
 
-#include "../ui/ui.h"
+#include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"

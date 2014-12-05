@@ -36,6 +36,7 @@
 #include "io/iop.h"
 #include "io/ior.h"
 #include "menus/menus.h"
+#include "ui/cancellation.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
