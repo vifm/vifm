@@ -21,8 +21,8 @@
 
 #include <string.h> /* strdup() */
 
+#include "../ui/ui.h"
 #include "../dir_stack.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_dirstack_cb(FileView *view, menu_info *m);

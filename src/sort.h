@@ -20,8 +20,8 @@
 #ifndef VIFM__SORT_H__
 #define VIFM__SORT_H__
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 void sort_view(FileView *view);
 /* Maps primary sort key to second column type. */

@@ -4,7 +4,7 @@
 #include <string.h> /* strchr() strcmp() */
 
 #include "../../src/cfg/config.h"
-#include "../../src/ui.h"
+#include "../../src/ui/ui.h"
 
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \

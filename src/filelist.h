@@ -26,8 +26,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 /* Default value of case sensitivity for filters. */
 #ifdef _WIN32

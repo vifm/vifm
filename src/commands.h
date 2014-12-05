@@ -22,10 +22,10 @@
 
 #include <stddef.h> /* size_t */
 
-#include "status.h"
+#include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
+#include "status.h"
 
 enum
 {

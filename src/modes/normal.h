@@ -21,7 +21,7 @@
 #define VIFM__MODES__NORMAL_H__
 
 #include "../engine/keys.h"
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Initializes normal mode. */
 void init_normal_mode(void);

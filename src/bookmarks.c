@@ -24,12 +24,12 @@
 #include <string.h> /* strdup() */
 #include <time.h> /* time_t time() */
 
+#include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
-#include "ui.h"
 
 static int is_valid_index(const int bmark_index);
 static void clear_bmarks(bookmark_t bmarks[], int count);

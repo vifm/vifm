@@ -23,11 +23,11 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../macros.h"
-#include "../ui.h"
 #include "menus.h"
 
 #ifdef _WIN32

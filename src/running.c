@@ -45,6 +45,7 @@
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "menus/menus.h"
+#include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -61,7 +62,6 @@
 #include "macros.h"
 #include "status.h"
 #include "types.h"
-#include "ui.h"
 #include "vim.h"
 
 static int is_runnable(const FileView *const view, const char full_path[],

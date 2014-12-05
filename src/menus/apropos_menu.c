@@ -25,12 +25,12 @@
 #include <string.h> /* strdup() strchr() strlen() */
 
 #include "../cfg/config.h"
+#include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../macros.h"
 #include "../running.h"
 #include "../status.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_apropos_cb(FileView *view, menu_info *m);

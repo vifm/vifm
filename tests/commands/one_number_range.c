@@ -3,8 +3,8 @@
 #include "seatest.h"
 
 #include "../../src/engine/cmds.h"
+#include "../../src/ui/ui.h"
 #include "../../src/commands.h"
-#include "../../src/ui.h"
 
 extern cmds_conf_t cmds_conf;
 

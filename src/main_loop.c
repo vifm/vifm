@@ -37,6 +37,7 @@
 #include "engine/keys.h"
 #include "engine/mode.h"
 #include "modes/modes.h"
+#include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
@@ -44,7 +45,6 @@
 #include "filelist.h"
 #include "ipc.h"
 #include "status.h"
-#include "ui.h"
 
 static void process_scheduled_updates(void);
 static void process_scheduled_updates_of_view(FileView *view);

@@ -26,11 +26,11 @@
 
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
+#include "../../ui/ui.h"
 #include "../../utils/macros.h"
 #include "../../colors.h"
 #include "../../fileops.h"
 #include "../../status.h"
-#include "../../ui.h"
 #include "../modes.h"
 #include "attr_dialog.h"
 

@@ -1,6 +1,6 @@
 #include "seatest.h"
 
-#include "../../src/ui.h"
+#include "../../src/ui/ui.h"
 
 static FileView *const view = &lwin;
 

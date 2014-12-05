@@ -27,12 +27,12 @@
 
 #include "engine/functions.h"
 #include "engine/var.h"
+#include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/utils.h"
 #include "macros.h"
 #include "types.h"
-#include "ui.h"
 
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);

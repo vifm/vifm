@@ -25,6 +25,7 @@
 #include <string.h> /* strrchr() */
 
 #include "cfg/config.h"
+#include "ui/ui.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -34,7 +35,6 @@
 #include "filelist.h"
 #include "status.h"
 #include "types.h"
-#include "ui.h"
 
 static FileView* view;
 static int sort_descending;

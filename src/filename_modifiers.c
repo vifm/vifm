@@ -23,12 +23,12 @@
 #include <string.h> /* memmove() strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
+#include "ui/ui.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "fileops.h"
 #include "status.h"
-#include "ui.h"
 
 static const char * apply_mod(const char *path, const char *parent,
 		const char *mod, int *mod_len, int for_shell);

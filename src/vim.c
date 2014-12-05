@@ -30,6 +30,7 @@
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "menus/menus.h"
+#include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -40,7 +41,6 @@
 #include "background.h"
 #include "macros.h"
 #include "running.h"
-#include "ui.h"
 
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"

@@ -20,8 +20,8 @@
 #ifndef VIFM__FUSE_H__
 #define VIFM__FUSE_H__
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 /* Won't mount same file twice */
 void fuse_try_mount(FileView *view, const char *program);

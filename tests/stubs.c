@@ -1,5 +1,5 @@
+#include "../src/ui/ui.h"
 #include "../src/utils/macros.h"
-#include "../src/ui.h"
 
 void
 vifm_restart(void)

@@ -26,6 +26,7 @@
 
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
+#include "../../ui/ui.h"
 #include "../../utils/fs.h"
 #include "../../utils/fs_limits.h"
 #include "../../utils/log.h"
@@ -33,7 +34,6 @@
 #include "../../utils/path.h"
 #include "../../filelist.h"
 #include "../../status.h"
-#include "../../ui.h"
 #include "../../undo.h"
 #include "../modes.h"
 

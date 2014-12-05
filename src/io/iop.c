@@ -35,6 +35,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -42,7 +43,6 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
-#include "../ui.h"
 #include "private/ioeta.h"
 #include "ioc.h"
 

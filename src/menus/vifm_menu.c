@@ -23,7 +23,7 @@
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strdup() */
 
-#include "../ui.h"
+#include "../ui/ui.h"
 #include "../version.h"
 #include "menus.h"
 

@@ -25,11 +25,11 @@
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../filelist.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_volumes_cb(FileView *view, menu_info *m);

@@ -22,8 +22,8 @@
 
 #include <stddef.h> /* size_t */
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 /* Macros that affect running of commands and processing their output. */
 typedef enum

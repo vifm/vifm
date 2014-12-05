@@ -23,11 +23,11 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../macros.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_locate_cb(FileView *view, menu_info *m);

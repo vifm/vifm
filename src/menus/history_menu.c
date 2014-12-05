@@ -24,9 +24,9 @@
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
 #include "../modes/menu.h"
+#include "../ui/ui.h"
 #include "../utils/string_array.h"
 #include "../commands.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int show_history(FileView *view, int type, hist_t *hist,

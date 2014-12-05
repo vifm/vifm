@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* wchar_t */
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],

@@ -37,6 +37,7 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../menus/menus.h"
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
@@ -46,7 +47,6 @@
 #include "../file_magic.h"
 #include "../status.h"
 #include "../types.h"
-#include "../ui.h"
 #include "modes.h"
 
 static void leave_file_info_mode(void);

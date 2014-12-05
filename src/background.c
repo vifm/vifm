@@ -43,10 +43,10 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "ui/ui.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
-#include "ui.h"
 
 /* Special value of process id for internal tasks running in background
  * threads. */

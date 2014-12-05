@@ -19,7 +19,7 @@
 #ifndef VIFM__MODES__VIEW_H__
 #define VIFM__MODES__VIEW_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Initializes view mode. */
 void init_view_mode(void);

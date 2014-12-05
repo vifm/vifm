@@ -22,8 +22,8 @@
 
 #include <time.h> /* time_t */
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 #define NUM_REGULAR_BOOKMARKS 61
 #define NUM_SPECIAL_BOOKMARKS 3

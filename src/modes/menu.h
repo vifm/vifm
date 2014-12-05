@@ -20,8 +20,8 @@
 #ifndef VIFM__MODES__MENU_H__
 #define VIFM__MODES__MENU_H__
 
+#include "../ui/ui.h"
 #include "../menus/menus.h"
-#include "../ui.h"
 
 /* Initiailizes menu mode. */
 void init_menu_mode(void);

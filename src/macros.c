@@ -29,6 +29,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "ui/ui.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -38,7 +39,6 @@
 #include "filename_modifiers.h"
 #include "registers.h"
 #include "status.h"
-#include "ui.h"
 
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);

@@ -21,9 +21,9 @@
 
 #include <stddef.h> /* size_t */
 
+#include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 /* Formats command to display documentation on the topic in Vim-help format.
  * Returns non-zero if command that should be run in background, otherwise zero

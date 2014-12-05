@@ -23,10 +23,10 @@
 #include <string.h> /* strlen() strdup() */
 
 #include "../modes/menu.h"
+#include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../background.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_jobs_cb(FileView *view, menu_info *m);

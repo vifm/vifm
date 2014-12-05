@@ -25,11 +25,11 @@
 
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../ui/ui.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../main_loop.h"
 #include "../status.h"
-#include "../ui.h"
 #include "dialogs/attr_dialog.h"
 #include "dialogs/change_dialog.h"
 #include "dialogs/sort_dialog.h"

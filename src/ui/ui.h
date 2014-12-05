@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UI_H__
-#define VIFM__UI_H__
+#ifndef VIFM__UI__UI_H__
+#define VIFM__UI__UI_H__
 
 #ifdef _WIN32
 #include <windows.h>
@@ -31,13 +31,13 @@
 #include <sys/types.h>
 #include <time.h> /* time_t timespec */
 
-#include "utils/filter.h"
-#include "utils/fs_limits.h"
-#include "utils/test_helpers.h"
-#include "color_scheme.h"
-#include "column_view.h"
-#include "status.h"
-#include "types.h"
+#include "../utils/filter.h"
+#include "../utils/fs_limits.h"
+#include "../utils/test_helpers.h"
+#include "../color_scheme.h"
+#include "../column_view.h"
+#include "../status.h"
+#include "../types.h"
 
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
@@ -434,7 +434,7 @@ TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);
 )
 
-#endif /* VIFM__UI_H__ */
+#endif /* VIFM__UI__UI_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

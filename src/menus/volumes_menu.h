@@ -20,7 +20,7 @@
 #ifndef VIFM__MENUS__VOLUMES_MENU_H__
 #define VIFM__MENUS__VOLUMES_MENU_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 #include "menus.h"
 
 /* Returns non-zero if status bar message should be saved. */

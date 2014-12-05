@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() strcpy() strlen() */
 #include <wchar.h> /* wcscmp() */
 
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
@@ -33,7 +34,6 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../bookmarks.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int execute_bookmark_cb(FileView *view, menu_info *m);

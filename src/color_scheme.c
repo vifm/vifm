@@ -29,6 +29,7 @@
 #include "cfg/config.h"
 #include "engine/completion.h"
 #include "menus/menus.h"
+#include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
@@ -36,7 +37,6 @@
 #include "utils/string_array.h"
 #include "utils/tree.h"
 #include "status.h"
-#include "ui.h"
 
 char *HI_GROUPS[] = {
 	[WIN_COLOR]          = "Win",

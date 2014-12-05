@@ -50,6 +50,7 @@
 #include "engine/mode.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
+#include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
@@ -73,7 +74,6 @@
 #include "sort.h"
 #include "status.h"
 #include "types.h"
-#include "ui.h"
 
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"

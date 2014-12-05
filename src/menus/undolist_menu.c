@@ -23,8 +23,8 @@
 #include <stdlib.h> /* realloc() */
 #include <string.h> /* strdup() strlen() */
 
+#include "../ui/ui.h"
 #include "../utils/string_array.h"
-#include "../ui.h"
 #include "../undo.h"
 #include "menus.h"
 

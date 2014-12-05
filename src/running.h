@@ -20,7 +20,7 @@
 #ifndef VIFM__RUNNING_H__
 #define VIFM__RUNNING_H__
 
-#include "ui.h"
+#include "ui/ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
 void run_using_prog(FileView *view, const char *program, int dont_execute,

@@ -3,8 +3,8 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strlen() */
 
+#include "../../src/ui/ui.h"
 #include "../../src/bookmarks.h"
-#include "../../src/ui.h"
 
 static void
 test_unexistant_bookmark(void)

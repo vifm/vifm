@@ -15,7 +15,8 @@ suites += filter keys misc options parsing undo variables viewcolumns_parser
 suites += ioeta ionotif iop ior
 
 # obtain list of sources that are being tested
-vifm_src := ./ cfg/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/ utils/
+vifm_src := ./ cfg/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/ ui/
+vifm_src += utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 
 # filter out generally non-testable or sources for another platform
