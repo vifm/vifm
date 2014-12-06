@@ -33,7 +33,6 @@
 
 #include "../utils/filter.h"
 #include "../utils/fs_limits.h"
-#include "../utils/test_helpers.h"
 #include "../color_scheme.h"
 #include "../column_view.h"
 #include "../status.h"
@@ -292,7 +291,6 @@ WINDOW *rborder;
 
 void is_term_working(void);
 int setup_ncurses_interface(void);
-void update_stat_window(FileView *view);
 float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
@@ -311,7 +309,7 @@ void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
-/* Forced immediate update of attributes for most of windows. */
+/* Forces immediate update of attributes for most of windows. */
 void update_attributes(void);
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
@@ -398,10 +396,6 @@ void ui_view_redrawn(FileView *view);
 /* Checks for scheduled update and marks it as fulfilled.  Returns kind of
  * scheduled event. */
 UiUpdateEvent ui_view_query_scheduled_event(FileView *view);
-
-TSTATIC_DEFS(
-	char * expand_status_line_macros(FileView *view, const char format[]);
-)
 
 #endif /* VIFM__UI__UI_H__ */
 

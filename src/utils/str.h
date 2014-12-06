@@ -142,6 +142,12 @@ int strappend(char **str, size_t *len, const char suffix[]);
 /* Pads buffer pointed to by str to be at least of width "width + 1". */
 void stralign(char str[], size_t width, char pad, int left_align);
 
+/* "Breaks" single line it two parts (before and after "%=" separator), and
+ * re-formats it filling specified width by putting "left part", padded centre
+ * followed by "right part".  Frees the str.  Returns re-formatted string in
+ * newly allocated buffer. */
+char * break_in_two(char str[], size_t max);
+
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */
 int vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...);

@@ -119,6 +119,7 @@ vifm_SOURCES = \
 	\
 	ui/cancellation.c ui/cancellation.h \
 	ui/statusbar.c ui/statusbar.h \
+	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \

@@ -127,6 +127,7 @@ Package content
     |  |  |
     |  |  |-- cancellation.c - managing operation cancellation
     |  |  |-- statusbar.c - managing status bar
+    |  |  |-- statusline.c - status line formatting
     |  |  `-- ui.c - ui initialization and other ui related functions
     |  |
     |  |-- utils/ - miscellaneous utility functions

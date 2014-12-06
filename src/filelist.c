@@ -51,6 +51,7 @@
 #include "menus/menus.h"
 #include "modes/modes.h"
 #include "ui/statusbar.h"
+#include "ui/statusline.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/filter.h"

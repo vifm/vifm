@@ -326,6 +326,46 @@ stralign(char str[], size_t width, char pad, int left_align)
 	}
 }
 
+char *
+break_in_two(char str[], size_t max)
+{
+	int i;
+	size_t len, size;
+	char *result;
+	char *break_point = strstr(str, "%=");
+	if(break_point == NULL)
+		return str;
+
+	len = get_screen_string_length(str) - 2;
+	size = strlen(str);
+	size = MAX(size, max);
+	result = malloc(size*4 + 2);
+
+	snprintf(result, break_point - str + 1, "%s", str);
+
+	if(len > max)
+	{
+		const int l = get_screen_string_length(result) - (len - max);
+		break_point = str + get_real_string_width(str, MAX(l, 0));
+	}
+
+	snprintf(result, break_point - str + 1, "%s", str);
+	i = break_point - str;
+	while(max > len)
+	{
+		result[i++] = ' ';
+		max--;
+	}
+	result[i] = '\0';
+
+	if(len > max)
+		break_point = strstr(str, "%=");
+	strcat(result, break_point + 2);
+
+	free(str);
+	return result;
+}
+
 int
 vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...)
 {
