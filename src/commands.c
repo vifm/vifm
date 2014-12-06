@@ -59,6 +59,7 @@
 #include "modes/normal.h"
 #include "modes/view.h"
 #include "modes/visual.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/file_streams.h"

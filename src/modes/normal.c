@@ -37,6 +37,7 @@
 #include "../engine/mode.h"
 #include "../menus/menus.h"
 #include "../ui/cancellation.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"

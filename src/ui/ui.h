@@ -301,12 +301,6 @@ void update_pos_window(FileView *view);
 /* Sets text to be displayed in position window (ruler).  Real window update is
  * postponed for efficiency reasons. */
 void ui_pos_window_set(const char val[]);
-void status_bar_messagef(const char *format, ...);
-void status_bar_message(const char *message);
-void status_bar_error(const char *message);
-void status_bar_errorf(const char *message, ...);
-int is_status_bar_multiline(void);
-void clean_status_bar(void);
 /* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);
@@ -383,10 +377,6 @@ FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
 int ui_view_available_width(const FileView *const view);
-
-/* Immediately (UI is updated) displays message on the status bar without
- * storing it in message history. */
-void ui_sb_quick_msgf(const char format[], ...);
 
 /* View update scheduling. */
 

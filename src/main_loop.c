@@ -37,6 +37,7 @@
 #include "engine/keys.h"
 #include "engine/mode.h"
 #include "modes/modes.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"

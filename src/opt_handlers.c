@@ -32,6 +32,7 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "modes/view.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"

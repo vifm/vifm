@@ -23,6 +23,7 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"

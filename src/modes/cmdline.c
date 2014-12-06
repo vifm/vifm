@@ -36,6 +36,7 @@
 #include "../engine/completion.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"

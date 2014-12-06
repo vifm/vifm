@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 05 December, 2014
+Updated: 06 December, 2014
 Version: 0.7.8
 
 Brief Description
@@ -126,6 +126,7 @@ Package content
     |  |-- ui/ - most of ui related code
     |  |  |
     |  |  |-- cancellation.c - managing operation cancellation
+    |  |  |-- statusbar.c - managing status bar
     |  |  `-- ui.c - ui initialization and other ui related functions
     |  |
     |  |-- utils/ - miscellaneous utility functions

@@ -24,6 +24,7 @@
 #include <string.h> /* strdup() */
 #include <time.h> /* time_t time() */
 
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/macros.h"

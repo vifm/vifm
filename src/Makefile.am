@@ -118,6 +118,7 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
+	ui/statusbar.c ui/statusbar.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \

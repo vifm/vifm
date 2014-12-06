@@ -49,6 +49,7 @@
 #include "menus/menus.h"
 #include "modes/cmdline.h"
 #include "ui/cancellation.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #ifdef _WIN32
 #include "utils/env.h"

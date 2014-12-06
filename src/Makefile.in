@@ -98,7 +98,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	ui/cancellation.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
+	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filter.$(OBJEXT) \
 	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
 	utils/log.$(OBJEXT) utils/mntent.$(OBJEXT) \
@@ -386,6 +387,7 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
+	ui/statusbar.c ui/statusbar.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \
@@ -673,6 +675,8 @@ ui/$(DEPDIR)/$(am__dirstamp):
 	@: > ui/$(DEPDIR)/$(am__dirstamp)
 ui/cancellation.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/statusbar.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/ui.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
 utils/$(am__dirstamp):
 	@$(MKDIR_P) utils
@@ -802,6 +806,7 @@ mostlyclean-compile:
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
 	-rm -f ui/cancellation.$(OBJEXT)
+	-rm -f ui/statusbar.$(OBJEXT)
 	-rm -f ui/ui.$(OBJEXT)
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
@@ -914,6 +919,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/change_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@

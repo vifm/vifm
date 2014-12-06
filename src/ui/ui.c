@@ -30,15 +30,13 @@
 #include <sys/time.h> /* gettimeofday() */
 #include <unistd.h>
 
-#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <errno.h> /* errno */
-#include <stdarg.h> /* va_list va_start() va_end() */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
-#include <string.h> /* memset() strcmp() strcpy() strlen() */
+#include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
 #include <time.h> /* time() */
 #include <wchar.h> /* wcslen() */
 
@@ -66,10 +64,7 @@
 #include "../status.h"
 #include "../term_title.h"
 #include "../vifm.h"
-
-static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
-
-static int multiline_status_bar;
+#include "statusbar.h"
 
 static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
@@ -79,8 +74,6 @@ static WINDOW *rtop_line2;
 static void update_stat_window_old(FileView *view);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
 static char * break_in_two(char str[], size_t max);
-static void truncate_with_ellipsis(const char msg[], size_t width,
-		char buffer[]);
 static void create_windows(void);
 static void set_static_windows_attrs(void);
 static void update_geometry(void);
@@ -534,254 +527,6 @@ break_in_two(char str[], size_t max)
 
 	free(str);
 	return result;
-}
-
-static void
-save_status_bar_msg(const char *msg)
-{
-	if(!curr_stats.save_msg_in_list || *msg == '\0')
-	{
-		return;
-	}
-
-	if(curr_stats.msg_tail != curr_stats.msg_head &&
-			strcmp(curr_stats.msgs[curr_stats.msg_tail], msg) == 0)
-	{
-		return;
-	}
-
-	curr_stats.msg_tail = (curr_stats.msg_tail + 1) % ARRAY_LEN(curr_stats.msgs);
-	if(curr_stats.msg_tail == curr_stats.msg_head)
-	{
-		free(curr_stats.msgs[curr_stats.msg_head]);
-		curr_stats.msg_head = (curr_stats.msg_head + 1) %
-				ARRAY_LEN(curr_stats.msgs);
-	}
-	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
-}
-
-static void
-status_bar_message_i(const char *message, int error)
-{
-	/* TODO: Refactor this function status_bar_message_i() */
-
-	static char *msg;
-	static int err;
-
-	int len;
-	const char *p, *q;
-	int lines;
-	int status_bar_lines;
-	size_t screen_length;
-	const char *out_msg;
-	char truncated_msg[2048];
-
-	if(curr_stats.load_stage == 0)
-	{
-		return;
-	}
-
-	if(message != NULL)
-	{
-		if(replace_string(&msg, message))
-		{
-			return;
-		}
-
-		err = error;
-
-		save_status_bar_msg(msg);
-	}
-
-	if(msg == NULL || vle_mode_is(CMDLINE_MODE))
-	{
-		return;
-	}
-
-	p = msg;
-	q = msg - 1;
-	status_bar_lines = 0;
-	len = getmaxx(stdscr);
-	while((q = strchr(q + 1, '\n')) != NULL)
-	{
-		status_bar_lines += DIV_ROUND_UP(q - p, len );
-		if(q == p)
-		{
-			status_bar_lines++;
-		}
-		p = q + 1;
-	}
-	if(*p == '\0')
-	{
-		status_bar_lines++;
-	}
-	screen_length = get_screen_string_length(p);
-	status_bar_lines += DIV_ROUND_UP(screen_length, len);
-	if(status_bar_lines == 0)
-		status_bar_lines = 1;
-
-	lines = status_bar_lines;
-	if(status_bar_lines > 1 || screen_length > getmaxx(status_bar))
-		lines++;
-
-	out_msg = msg;
-
-	if(lines > 1)
-	{
-		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
-		{
-			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH,
-					truncated_msg);
-			out_msg = truncated_msg;
-			lines = 1;
-		}
-		else
-		{
-			const int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
-			lines += extra;
-		}
-	}
-
-	if(lines > getmaxy(stdscr))
-		lines = getmaxy(stdscr);
-
-	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
-	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
-	if(lines == 1)
-	{
-		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH);
-	}
-	else
-	{
-		wresize(status_bar, lines, getmaxx(stdscr));
-	}
-	checked_wmove(status_bar, 0, 0);
-
-	if(err)
-	{
-		col_attr_t col = cfg.cs.color[CMD_LINE_COLOR];
-		mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
-		init_pair(DCOLOR_BASE + ERROR_MSG_COLOR, col.fg, col.bg);
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | col.attr);
-	}
-	else
-	{
-		int attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
-	}
-	werase(status_bar);
-
-	wprint(status_bar, out_msg);
-	multiline_status_bar = lines > 1;
-	if(multiline_status_bar)
-	{
-		checked_wmove(status_bar,
-				lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
-		wclrtoeol(status_bar);
-		if(lines < status_bar_lines)
-			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
-		wprintw(status_bar, "%s", PRESS_ENTER_MSG);
-	}
-
-	wattrset(status_bar, 0);
-
-	update_all_windows();
-	doupdate();
-}
-
-/* Truncate the msg to the width by placing ellipsis in the middle and put the
- * result to the buffer. */
-static void
-truncate_with_ellipsis(const char msg[], size_t width, char buffer[])
-{
-	const size_t screen_len = get_screen_string_length(msg);
-	const size_t screen_left_len = (width - 3)/2;
-	const size_t screen_right_len = (width - 3) - screen_left_len;
-	const size_t left = get_normal_utf8_string_widthn(msg, screen_left_len);
-	const size_t right = get_normal_utf8_string_widthn(msg,
-			screen_len - screen_right_len);
-	strncpy(buffer, msg, left);
-	strcpy(buffer + left, "...");
-	strcpy(buffer + left + 3, msg + right);
-	assert(get_screen_string_length(buffer) == width);
-}
-
-static void
-vstatus_bar_messagef(int error, const char *format, va_list ap)
-{
-	char buf[1024];
-
-	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message_i(buf, error);
-}
-
-void
-status_bar_error(const char *message)
-{
-	status_bar_message_i(message, 1);
-}
-
-void
-status_bar_errorf(const char *message, ...)
-{
-	va_list ap;
-
-	va_start(ap, message);
-
-	vstatus_bar_messagef(1, message, ap);
-
-	va_end(ap);
-}
-
-void
-status_bar_messagef(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-
-	vstatus_bar_messagef(0, format, ap);
-
-	va_end(ap);
-}
-
-/*
- * Repeats last message if message is NULL
- */
-void
-status_bar_message(const char *message)
-{
-	status_bar_message_i(message, 0);
-}
-
-int
-is_status_bar_multiline(void)
-{
-	return multiline_status_bar;
-}
-
-void
-clean_status_bar(void)
-{
-	werase(status_bar);
-	mvwin(stat_win, getmaxy(stdscr) - 2, 0);
-	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
-	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
-	wnoutrefresh(status_bar);
-
-	if(curr_stats.load_stage <= 2)
-	{
-		multiline_status_bar = 0;
-		curr_stats.need_update = UT_FULL;
-		return;
-	}
-
-	if(multiline_status_bar)
-	{
-		multiline_status_bar = 0;
-		update_screen(UT_FULL);
-	}
-	multiline_status_bar = 0;
 }
 
 int
@@ -2023,21 +1768,6 @@ ui_view_available_width(const FileView *const view)
 	{
 		return (int)view->window_width + 1;
 	}
-}
-
-void
-ui_sb_quick_msgf(const char format[], ...)
-{
-	va_list ap;
-	va_start(ap, format);
-
-	checked_wmove(status_bar, 0, 0);
-	werase(status_bar);
-	vwprintw(status_bar, format, ap);
-	wnoutrefresh(status_bar);
-	doupdate();
-
-	va_end(ap);
 }
 
 void

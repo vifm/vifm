@@ -25,6 +25,7 @@
 #include <string.h> /* strdup() strchr() strlen() */
 
 #include "../cfg/config.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"

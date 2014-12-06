@@ -40,6 +40,7 @@
 #include "../modes/menu.h"
 #include "../modes/modes.h"
 #include "../ui/cancellation.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
