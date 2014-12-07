@@ -45,6 +45,9 @@ typedef struct
 	/* Relative path to currently processed file. */
 	char *item;
 
+	/* Progress reported while this flag is on is ignored. */
+	int silent;
+
 	/* Custom parameter for notification callbacks. */
 	void *param;
 }

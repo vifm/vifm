@@ -179,8 +179,23 @@ ior_mv(io_args_t *const args)
 	{
 		case EXDEV:
 			{
-				const int result = ior_cp(args);
-				return (result == 0) ? ior_rm(args) : result;
+				int result = ior_cp(args);
+				if(result == 0)
+				{
+					io_args_t rm_args =
+					{
+						.arg1.path = src,
+
+						.cancellable = args->cancellable,
+						.estim = args->estim,
+					};
+
+					/* Disable progress reporting for this "secondary" operation. */
+					const int silent = ioeta_silent_on(rm_args.estim);
+					result = ior_rm(&rm_args);
+					ioeta_silent_set(rm_args.estim, silent);
+				}
+				return result;
 			}
 		case EISDIR:
 		case ENOTEMPTY:

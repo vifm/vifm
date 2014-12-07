@@ -42,6 +42,13 @@ void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		uint64_t bytes);
 
+/* Silence future progress reports.  Returns previous state to be passed to
+ * ioeta_silent_set() later.  If estim is NULL, returns zero. */
+int ioeta_silent_on(ioeta_estim_t *estim);
+
+/* Sets silence flag for the estimation.  Does nothing if estim is NULL. */
+void ioeta_silent_set(ioeta_estim_t *estim, int silent);
+
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
