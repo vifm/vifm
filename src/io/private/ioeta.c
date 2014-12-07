@@ -59,7 +59,7 @@ void
 ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		uint64_t bytes)
 {
-	if(estim == NULL)
+	if(estim == NULL || estim->silent)
 	{
 		return;
 	}
@@ -87,6 +87,30 @@ ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 	}
 
 	ionotif_notify(IO_PS_IN_PROGRESS, estim);
+}
+
+int
+ioeta_silent_on(ioeta_estim_t *estim)
+{
+	int silent;
+
+	if(estim == NULL)
+	{
+		return 0;
+	}
+
+	silent = estim->silent;
+	estim->silent = 1;
+	return silent;
+}
+
+void
+ioeta_silent_set(ioeta_estim_t *estim, int silent)
+{
+	if(estim != NULL)
+	{
+		estim->silent = silent;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
