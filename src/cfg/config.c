@@ -39,6 +39,7 @@
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../menus/menus.h"
+#include "../ui/ui.h"
 #include "../utils/env.h"
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
@@ -54,7 +55,6 @@
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../types.h"
-#include "../ui.h"
 #include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */

@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__VISUAL_H__
 #define VIFM__MODES__VISUAL_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Generic submodes of the visual mode. */
 typedef enum

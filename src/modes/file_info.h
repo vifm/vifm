@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__FILE_INFO_H__
 #define VIFM__MODES__FILE_INFO_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Initializes file information dialog mode. */
 void init_file_info_mode(void);

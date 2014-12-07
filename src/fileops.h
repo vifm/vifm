@@ -26,8 +26,8 @@
 
 #include <stdint.h> /* uint64_t */
 
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "ui.h"
 
 typedef enum
 {

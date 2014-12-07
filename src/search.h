@@ -20,7 +20,7 @@
 #ifndef VIFM__SEARCH_H__
 #define VIFM__SEARCH_H__
 
-#include "ui.h"
+#include "ui/ui.h"
 
 /* Search and navigation functions. */
 

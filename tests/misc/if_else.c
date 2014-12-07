@@ -3,9 +3,9 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcmp() */
 
+#include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
 #include "../../src/commands.h"
-#include "../../src/ui.h"
 
 #define VAR_A "VAR_A"
 #define VAR_B "VAR_B"

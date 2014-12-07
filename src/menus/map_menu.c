@@ -27,9 +27,9 @@
 #include <string.h> /* strdup() strlen() strcat() */
 #include <wchar.h> /* wcsncmp() wcslen() */
 
+#include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../ui.h"
 #include "menus.h"
 
 static void add_mapping_item(menu_info *m, const wchar_t map_info[]);

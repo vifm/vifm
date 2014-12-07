@@ -24,6 +24,7 @@
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"
+#include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/string_array.h"
@@ -32,7 +33,6 @@
 #include "../filetype.h"
 #include "../running.h"
 #include "../types.h"
-#include "../ui.h"
 #include "menus.h"
 
 static const char * form_filetype_menu_entry(assoc_record_t prog,

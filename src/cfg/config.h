@@ -22,10 +22,10 @@
 
 #include <stddef.h> /* size_t */
 
+#include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../color_scheme.h"
 #include "../types.h"
-#include "../ui.h"
 #include "hist.h"
 
 /* Name of help file in plain text format. */

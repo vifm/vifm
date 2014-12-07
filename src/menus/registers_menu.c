@@ -21,8 +21,8 @@
 
 #include <string.h> /* strdup() */
 
+#include "../ui/ui.h"
 #include "../registers.h"
-#include "../ui.h"
 #include "menus.h"
 
 int

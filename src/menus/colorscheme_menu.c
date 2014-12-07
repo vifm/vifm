@@ -23,11 +23,11 @@
 #include <string.h> /* strdup() strcmp() */
 
 #include "../cfg/config.h"
+#include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../color_scheme.h"
-#include "../ui.h"
 #include "menus.h"
 
 static int sorter(const void *first, const void *second);

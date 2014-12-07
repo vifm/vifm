@@ -31,6 +31,8 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "ui/statusbar.h"
+#include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"

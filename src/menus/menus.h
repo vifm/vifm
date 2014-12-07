@@ -23,8 +23,8 @@
 #include <stddef.h> /* wchar_t */
 #include <stdio.h> /* FILE */
 
+#include "../ui/ui.h"
 #include "../utils/test_helpers.h"
-#include "../ui.h"
 
 enum
 {

@@ -28,10 +28,10 @@
 
 #include "../engine/cmds.h"
 #include "../modes/menu.h"
+#include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../commands.h"
-#include "../ui.h"
 #include "menus.h"
 
 /* Minimal length of command name column. */

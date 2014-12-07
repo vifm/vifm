@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +16,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MENUS__REGISTERS_MENU_H__
-#define VIFM__MENUS__REGISTERS_MENU_H__
+#ifndef VIFM__UI__STATUSLINE_H__
+#define VIFM__UI__STATUSLINE_H__
 
-#include "../ui/ui.h"
+#include "ui.h"
 
-/* Returns non-zero if status bar message should be saved. */
-int show_register_menu(FileView *view, const char registers[]);
+#include "../utils/test_helpers.h"
 
-#endif /* VIFM__MENUS__REGISTERS_MENU_H__ */
+/* Formatting status line. */
+
+void update_stat_window(FileView *view);
+
+TSTATIC_DEFS(
+	char * expand_status_line_macros(FileView *view, const char format[]);
+)
+
+#endif /* VIFM__UI__STATUSLINE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

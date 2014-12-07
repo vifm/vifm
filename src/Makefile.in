@@ -98,20 +98,21 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
-	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) \
-	background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	color_manager.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
-	dir_stack.$(OBJEXT) escape.$(OBJEXT) globals.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
+	utils/file_streams.$(OBJEXT) utils/filter.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/mntent.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) background.$(OBJEXT) \
+	bookmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
+	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
+	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
@@ -119,7 +120,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
 	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
 	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
 	vifm.$(OBJEXT) vim.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
@@ -385,6 +386,11 @@ vifm_SOURCES = \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\
+	ui/cancellation.c ui/cancellation.h \
+	ui/statusbar.c ui/statusbar.h \
+	ui/statusline.c ui/statusline.h \
+	ui/ui.c ui/ui.h \
+	\
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filter.c utils/filter.h \
@@ -438,7 +444,6 @@ vifm_SOURCES = \
 	term_title.c term_title.h \
 	trash.c trash.h \
 	types.c types.h \
-	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
@@ -663,6 +668,19 @@ modes/view.$(OBJEXT): modes/$(am__dirstamp) \
 	modes/$(DEPDIR)/$(am__dirstamp)
 modes/visual.$(OBJEXT): modes/$(am__dirstamp) \
 	modes/$(DEPDIR)/$(am__dirstamp)
+ui/$(am__dirstamp):
+	@$(MKDIR_P) ui
+	@: > ui/$(am__dirstamp)
+ui/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ui/$(DEPDIR)
+	@: > ui/$(DEPDIR)/$(am__dirstamp)
+ui/cancellation.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/statusbar.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/statusline.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/ui.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
 utils/$(am__dirstamp):
 	@$(MKDIR_P) utils
 	@: > utils/$(am__dirstamp)
@@ -790,6 +808,10 @@ mostlyclean-compile:
 	-rm -f modes/normal.$(OBJEXT)
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
+	-rm -f ui/cancellation.$(OBJEXT)
+	-rm -f ui/statusbar.$(OBJEXT)
+	-rm -f ui/statusline.$(OBJEXT)
+	-rm -f ui/ui.$(OBJEXT)
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
 	-rm -f utils/filter.$(OBJEXT)
@@ -845,7 +867,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/term_title.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/types.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
@@ -901,6 +922,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/change_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
@@ -1424,6 +1449,8 @@ distclean-generic:
 	-rm -f modes/$(am__dirstamp)
 	-rm -f modes/dialogs/$(DEPDIR)/$(am__dirstamp)
 	-rm -f modes/dialogs/$(am__dirstamp)
+	-rm -f ui/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ui/$(am__dirstamp)
 	-rm -f utils/$(DEPDIR)/$(am__dirstamp)
 	-rm -f utils/$(am__dirstamp)
 
@@ -1435,7 +1462,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -1485,7 +1512,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

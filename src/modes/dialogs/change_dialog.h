@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
 #define VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
 
-#include "../../ui.h"
+#include "../../ui/ui.h"
 
 /* Initializes change dialog mode. */
 void init_change_dialog_mode(void);

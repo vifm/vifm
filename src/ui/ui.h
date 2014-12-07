@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UI_H__
-#define VIFM__UI_H__
+#ifndef VIFM__UI__UI_H__
+#define VIFM__UI__UI_H__
 
 #ifdef _WIN32
 #include <windows.h>
@@ -31,13 +31,12 @@
 #include <sys/types.h>
 #include <time.h> /* time_t timespec */
 
-#include "utils/filter.h"
-#include "utils/fs_limits.h"
-#include "utils/test_helpers.h"
-#include "color_scheme.h"
-#include "column_view.h"
-#include "status.h"
-#include "types.h"
+#include "../utils/filter.h"
+#include "../utils/fs_limits.h"
+#include "../color_scheme.h"
+#include "../column_view.h"
+#include "../status.h"
+#include "../types.h"
 
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
@@ -292,7 +291,6 @@ WINDOW *rborder;
 
 void is_term_working(void);
 int setup_ncurses_interface(void);
-void update_stat_window(FileView *view);
 float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
@@ -301,12 +299,6 @@ void update_pos_window(FileView *view);
 /* Sets text to be displayed in position window (ruler).  Real window update is
  * postponed for efficiency reasons. */
 void ui_pos_window_set(const char val[]);
-void status_bar_messagef(const char *format, ...);
-void status_bar_message(const char *message);
-void status_bar_error(const char *message);
-void status_bar_errorf(const char *message, ...);
-int is_status_bar_multiline(void);
-void clean_status_bar(void);
 /* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);
@@ -317,7 +309,7 @@ void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
-/* Forced immediate update of attributes for most of windows. */
+/* Forces immediate update of attributes for most of windows. */
 void update_attributes(void);
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
@@ -384,10 +376,6 @@ FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
  * width. */
 int ui_view_available_width(const FileView *const view);
 
-/* Immediately (UI is updated) displays message on the status bar without
- * storing it in message history. */
-void ui_sb_quick_msgf(const char format[], ...);
-
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual
@@ -409,32 +397,7 @@ void ui_view_redrawn(FileView *view);
  * scheduled event. */
 UiUpdateEvent ui_view_query_scheduled_event(FileView *view);
 
-/* Operation cancellation. */
-
-/* Resets state so that ui_cancellation_requested() returns zero. */
-void ui_cancellation_reset(void);
-
-/* Enables handling of cancellation requests through the UI. */
-void ui_cancellation_enable(void);
-
-/* External callback for notifying this unit about cancellation request.  Should
- * be called between ui_cancellation_enable() and ui_cancellation_disable(). */
-void ui_cancellation_request(void);
-
-/* If cancellation is enabled, checks whether cancelling of current operation is
- * requested.  Should be called between ui_cancellation_enable() and
- * ui_cancellation_disable().  Returns non-zero if so, otherwise zero is
- * returned. */
-int ui_cancellation_requested(void);
-
-/* Disables handling of cancellation requests through the UI. */
-void ui_cancellation_disable(void);
-
-TSTATIC_DEFS(
-	char * expand_status_line_macros(FileView *view, const char format[]);
-)
-
-#endif /* VIFM__UI_H__ */
+#endif /* VIFM__UI__UI_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

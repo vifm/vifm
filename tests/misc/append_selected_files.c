@@ -4,8 +4,8 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/macros.h"
-#include "../../src/ui.h"
 
 #ifdef _WIN32
 #define SL "\\\\"

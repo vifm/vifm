@@ -27,11 +27,11 @@
 
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
+#include "../../ui/ui.h"
 #include "../../utils/macros.h"
 #include "../../colors.h"
 #include "../../filelist.h"
 #include "../../status.h"
-#include "../../ui.h"
 #include "../modes.h"
 
 static FileView *view;

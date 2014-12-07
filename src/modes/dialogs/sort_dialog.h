@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__DIALOGS__SORT_DIALOG_H__
 #define VIFM__MODES__DIALOGS__SORT_DIALOG_H__
 
-#include "../../ui.h"
+#include "../../ui/ui.h"
 
 /* Initializes sort dialog mode. */
 void init_sort_dialog_mode(void);

@@ -2,8 +2,8 @@
 
 #include "seatest.h"
 
+#include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
-#include "../../src/ui.h"
 
 #ifndef _WIN32
 #define ROOT "/"

@@ -20,7 +20,7 @@
 #ifndef VIFM__MENUS__USERS_MENU_H__
 #define VIFM__MENUS__USERS_MENU_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_user_menu(FileView *view, const char command[], int navigate);

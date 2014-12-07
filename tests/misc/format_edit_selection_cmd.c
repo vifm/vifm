@@ -4,9 +4,9 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
 #include "../../src/vim.h"
-#include "../../src/ui.h"
 
 static void teardown_view(FileView *view);
 

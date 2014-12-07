@@ -29,6 +29,7 @@
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
+#include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/filter.h"
 #include "../utils/fs.h"
@@ -48,7 +49,6 @@
 #include "../registers.h"
 #include "../status.h"
 #include "../trash.h"
-#include "../ui.h"
 #include "config.h"
 #include "hist.h"
 #include "info_chars.h"

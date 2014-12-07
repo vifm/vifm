@@ -19,7 +19,7 @@
 #ifndef VIFM__OPT_HANDLERS_H__
 #define VIFM__OPT_HANDLERS_H__
 
-#include "ui.h"
+#include "ui/ui.h"
 
 enum
 {

@@ -4,8 +4,8 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
-#include "../../src/ui.h"
 
 #define assert_hidden(view, name, dir) \
 	assert_false(file_is_visible(&view, name, dir))

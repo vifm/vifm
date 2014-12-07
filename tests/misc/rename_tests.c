@@ -2,9 +2,9 @@
 
 #include <unistd.h> /* chdir() */
 
+#include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
 #include "../../src/fileops.h"
-#include "../../src/ui.h"
 
 static void
 test_names_less_than_files(void)

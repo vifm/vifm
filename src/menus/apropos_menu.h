@@ -20,7 +20,7 @@
 #ifndef VIFM__MENUS__APROPOS_MENU_H__
 #define VIFM__MENUS__APROPOS_MENU_H__
 
-#include "../ui.h"
+#include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_apropos_menu(FileView *view, const char args[]);

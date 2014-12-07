@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 30 November, 2014
+Updated: 06 December, 2014
 Version: 0.7.8
 
 Brief Description
@@ -123,6 +123,13 @@ Package content
     |  |  |-- view.c - view mode commands
     |  |  `-- visual.c - implementation of visual mode commands
     |  |
+    |  |-- ui/ - most of ui related code
+    |  |  |
+    |  |  |-- cancellation.c - managing operation cancellation
+    |  |  |-- statusbar.c - managing status bar
+    |  |  |-- statusline.c - status line formatting
+    |  |  `-- ui.c - ui initialization and other ui related functions
+    |  |
     |  |-- utils/ - miscellaneous utility functions
     |  |  |
     |  |  |-- env.c - environment variables related functions
@@ -177,7 +184,6 @@ Package content
     |  |-- term_title.c - implementation of support of terminal title changing
     |  |-- trash.c - code that handles list of files in trash
     |  |-- types.c - internal file type detection and conversions
-    |  |-- ui.c - setup_ncurses_interface() and other ui related functions
     |  |-- undo.c - stores and handles the undo list
     |  |-- version.c - git hash and other version information
     |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option

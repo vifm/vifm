@@ -117,6 +117,11 @@ vifm_SOURCES = \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\
+	ui/cancellation.c ui/cancellation.h \
+	ui/statusbar.c ui/statusbar.h \
+	ui/statusline.c ui/statusline.h \
+	ui/ui.c ui/ui.h \
+	\
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filter.c utils/filter.h \
@@ -170,7 +175,6 @@ vifm_SOURCES = \
 	term_title.c term_title.h \
 	trash.c trash.h \
 	types.c types.h \
-	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \

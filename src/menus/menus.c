@@ -39,6 +39,9 @@
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"
+#include "../ui/cancellation.h"
+#include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -59,7 +62,6 @@
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
-#include "../ui.h"
 #include "../vim.h"
 
 static int prompt_error_msg_internalv(const char title[], const char format[],

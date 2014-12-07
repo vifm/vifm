@@ -6,11 +6,11 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
-#include "../../src/ui.h"
 
 #ifdef _WIN32
 #define SL "\\\\"

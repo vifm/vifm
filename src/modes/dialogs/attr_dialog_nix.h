@@ -20,7 +20,7 @@
 #ifndef VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__
 #define VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__
 
-#include "../../ui.h"
+#include "../../ui/ui.h"
 
 /* Initializes attributes dialog mode. */
 void init_attr_dialog_mode(void);

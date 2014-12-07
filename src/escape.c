@@ -29,12 +29,12 @@
 #include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
 
 #include "cfg/config.h"
+#include "ui/ui.h"
 #include "utils/test_helpers.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_manager.h"
-#include "ui.h"
 
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re);

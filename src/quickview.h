@@ -20,7 +20,7 @@
 #ifndef VIFM__QUICKVIEW_H__
 #define VIFM__QUICKVIEW_H__
 
-#include "ui.h"
+#include "ui/ui.h"
 
 void quick_view_file(FileView * view);
 

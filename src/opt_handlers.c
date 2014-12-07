@@ -32,6 +32,8 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "modes/view.h"
+#include "ui/statusbar.h"
+#include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -45,7 +47,6 @@
 #include "status.h"
 #include "trash.h"
 #include "types.h"
-#include "ui.h"
 #include "viewcolumns_parser.h"
 
 /* TODO: provide default primitive type based handlers (see *prg_handler). */

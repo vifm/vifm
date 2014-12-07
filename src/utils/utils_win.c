@@ -35,9 +35,9 @@
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../ui/ui.h"
 #include "../commands_completion.h"
 #include "../status.h"
-#include "../ui.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"

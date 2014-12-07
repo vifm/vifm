@@ -48,6 +48,7 @@
 #ifdef _WIN32
 #include "menus/menus.h"
 #endif
+#include "ui/statusbar.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"

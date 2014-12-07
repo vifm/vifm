@@ -23,10 +23,11 @@
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcscmp() */
 
+#include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/string_array.h"
 #include "../status.h"
 #include "../trash.h"
-#include "../ui.h"
 #include "../undo.h"
 #include "menus.h"
 

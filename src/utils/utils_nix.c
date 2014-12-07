@@ -42,8 +42,8 @@
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
+#include "../ui/cancellation.h"
 #include "../running.h"
-#include "../ui.h"
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"

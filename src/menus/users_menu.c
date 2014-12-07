@@ -21,7 +21,7 @@
 
 #include <string.h> /* strdup() */
 
-#include "../ui.h"
+#include "../ui/ui.h"
 #include "menus.h"
 
 static int execute_users_cb(FileView *view, menu_info *m);

@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +16,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MENUS__REGISTERS_MENU_H__
-#define VIFM__MENUS__REGISTERS_MENU_H__
+#ifndef VIFM__UI__STATUSBAR_H__
+#define VIFM__UI__STATUSBAR_H__
 
-#include "../ui/ui.h"
+/* Managing status bar. */
 
-/* Returns non-zero if status bar message should be saved. */
-int show_register_menu(FileView *view, const char registers[]);
+void clean_status_bar(void);
 
-#endif /* VIFM__MENUS__REGISTERS_MENU_H__ */
+/* Immediately (UI is updated) displays message on the status bar without
+ * storing it in message history. */
+void ui_sb_quick_msgf(const char format[], ...);
+
+/* Repeats last message if message is NULL. */
+void status_bar_message(const char message[]);
+
+void status_bar_messagef(const char format[], ...);
+
+void status_bar_error(const char message[]);
+
+void status_bar_errorf(const char message[], ...);
+
+int is_status_bar_multiline(void);
+
+#endif /* VIFM__UI__STATUSBAR_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
