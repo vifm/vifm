@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dev 05
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dev 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2372,9 +2372,10 @@ an absolute path.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.  See |vifm-fuse| section for more information about FUSE mounts.
 
-                                               *vifm-'gdefault'* |vifm-'gd'|
+                                               *vifm-'gdefault'* *vifm-'gd'*
 gdefault gd
 type: boolean
+default: false
 When on, 'g' flag is on for |vifm-:substitute| by default.
 
                                                *vifm-'grepprg'*
