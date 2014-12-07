@@ -12,9 +12,6 @@ feature is multiblock selection ("extended visual mode" if you wish). Vifm also
 became friendlier to authors of colorschemes and those who'd like to customize
 UI a bit more.
 
-The beta stage will last about two weeks.  In case any serious bugs are found
-during this period, another beta version might be released.
-
 Main changes:
  - added multiblock "selection" (in quotes because it's also block deselection
    and inversion of selection for completeness);
