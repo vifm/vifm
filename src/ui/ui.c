@@ -525,11 +525,6 @@ resize_all(void)
 	mvwin(stat_win, screen_y - 2, 0);
 	wresize(status_bar, 1, screen_x - FIELDS_WIDTH);
 
-#ifdef ENABLE_EXTENDED_KEYS
-	/* For FreeBSD */
-	keypad(status_bar, TRUE);
-#endif /* ENABLE_EXTENDED_KEYS */
-
 	mvwin(status_bar, screen_y - 1, 0);
 	wresize(pos_win, 1, POS_WIN_WIDTH);
 	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
