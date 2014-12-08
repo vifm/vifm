@@ -79,6 +79,8 @@ static void reload_list(FileView *view);
 static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
+static void update_statusbar_layout(void);
+static int get_pos_window_width(FileView *view);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
@@ -168,20 +170,22 @@ expand_ruler_macros(FileView *view, const char *format)
 void
 update_pos_window(FileView *view)
 {
-	char *buf;
+	char *expanded;
 
-	buf = expand_ruler_macros(view, cfg.ruler_format);
-	buf = break_in_two(buf, POS_WIN_WIDTH);
+	update_statusbar_layout();
 
-	ui_pos_window_set(buf);
+	expanded = expand_ruler_macros(view, cfg.ruler_format);
+	expanded = break_in_two(expanded, getmaxx(pos_win));
 
-	free(buf);
+	ui_pos_window_set(expanded);
+
+	free(expanded);
 }
 
 void
 ui_pos_window_set(const char val[])
 {
-	const int x = POS_WIN_WIDTH - strlen(val);
+	const int x = getmaxx(pos_win)- strlen(val);
 
 	werase(pos_win);
 	mvwaddstr(pos_win, 0, MAX(x, 0), val);
@@ -523,14 +527,8 @@ resize_all(void)
 
 	wresize(stat_win, 1, screen_x);
 	mvwin(stat_win, screen_y - 2, 0);
-	wresize(status_bar, 1, screen_x - FIELDS_WIDTH);
 
-	mvwin(status_bar, screen_y - 1, 0);
-	wresize(pos_win, 1, POS_WIN_WIDTH);
-	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
-
-	wresize(input_win, 1, INPUT_WIN_WIDTH);
-	mvwin(input_win, screen_y - 1, screen_x - FIELDS_WIDTH);
+	update_statusbar_layout();
 
 	curs_set(FALSE);
 }
@@ -998,11 +996,9 @@ resize_for_menu_like(void)
 	werase(pos_win);
 
 	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(status_bar, 1, screen_x - FIELDS_WIDTH);
-	mvwin(status_bar, screen_y - 1, 0);
-	wresize(pos_win, 1, POS_WIN_WIDTH);
-	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
-	mvwin(input_win, screen_y - 1, screen_x - FIELDS_WIDTH);
+
+	update_statusbar_layout();
+
 	wrefresh(status_bar);
 	wrefresh(pos_win);
 	wrefresh(input_win);
@@ -1031,6 +1027,55 @@ update_term_size(void)
 		resizeterm(ws.ws_row, ws.ws_col);
 	}
 #endif
+}
+
+/* Re-layouts windows located on status bar (status bar itself, input and
+ * position windows). */
+static void
+update_statusbar_layout(void)
+{
+	int screen_x, screen_y;
+
+	int pos_window_width;
+	int fields_pos;
+
+	getmaxyx(stdscr, screen_y, screen_x);
+
+	pos_window_width = get_pos_window_width(curr_view);
+	fields_pos = screen_x - (INPUT_WIN_WIDTH + pos_window_width);
+
+	wresize(status_bar, 1, fields_pos);
+	mvwin(status_bar, screen_y - 1, 0);
+
+	wresize(pos_win, 1, pos_window_width);
+	mvwin(pos_win, screen_y - 1, fields_pos + INPUT_WIN_WIDTH);
+	wnoutrefresh(pos_win);
+
+	wresize(input_win, 1, INPUT_WIN_WIDTH);
+	mvwin(input_win, screen_y - 1, fields_pos);
+	wnoutrefresh(input_win);
+}
+
+/* Gets "recommended" width for position window on status bar.  Returns the
+ * width. */
+static int
+get_pos_window_width(FileView *view)
+{
+	char *expanded;
+	int len;
+	int list_pos;
+
+	/* Size must correspond to the "worst case" of the last list item. */
+	list_pos = view->list_pos;
+	view->list_pos = (view->list_rows == 0) ? 0 : (view->list_rows - 1);
+
+	expanded = expand_ruler_macros(view, cfg.ruler_format);
+	len = strlen(expanded);
+	free(expanded);
+
+	view->list_pos = list_pos;
+
+	return MAX(POS_WIN_MIN_WIDTH, len);
 }
 
 void

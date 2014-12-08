@@ -23,6 +23,9 @@
 	Removed unnecessary command existence checks from vifm.vim.  Thanks to
 	filterfalse.
 
+	Auto-resize position field on the status bar to fit the text.  Thanks to
+	ranousse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

@@ -48,7 +48,7 @@ clean_status_bar(void)
 {
 	werase(status_bar);
 	mvwin(stat_win, getmaxy(stdscr) - 2, 0);
-	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
+	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 	wnoutrefresh(status_bar);
 
@@ -197,7 +197,7 @@ status_bar_message_i(const char message[], int error)
 	{
 		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
 		{
-			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH,
+			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH(),
 					truncated_msg);
 			out_msg = truncated_msg;
 			lines = 1;
@@ -216,7 +216,7 @@ status_bar_message_i(const char message[], int error)
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
 	{
-		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH);
+		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH());
 	}
 	else
 	{

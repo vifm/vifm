@@ -81,7 +81,7 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static void
 show_position_in_menu(menu_info *m)
 {
-	char pos_buf[POS_WIN_WIDTH + 1];
+	char pos_buf[POS_WIN_MIN_WIDTH + 1];
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
 	ui_pos_window_set(pos_buf);

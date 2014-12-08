@@ -46,11 +46,12 @@
 /* Width of the input window (located to the left of position window). */
 #define INPUT_WIN_WIDTH 6
 
-/* Width of the position window (located in the right corner of status line). */
-#define POS_WIN_WIDTH 13
+/* Minimal width of the position window (located in the right corner of status
+ * line). */
+#define POS_WIN_MIN_WIDTH 13
 
 /* Width of the position and input windows. */
-#define FIELDS_WIDTH (INPUT_WIN_WIDTH + POS_WIN_WIDTH)
+#define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(pos_win))
 
 /* New values should be added at the end of enumeration to do not brake sort
  * settings stored in vifminfo files.  Also SK_LAST and SK_COUNT should be

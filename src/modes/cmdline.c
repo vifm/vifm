@@ -685,7 +685,7 @@ leave_cmdline_mode(void)
 	if(getmaxy(status_bar) > 1)
 	{
 		curr_stats.need_update = UT_FULL;
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
+		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
 		{
@@ -695,7 +695,7 @@ leave_cmdline_mode(void)
 	}
 	else
 	{
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
+		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	}
 
 	free(input_stat.line);
