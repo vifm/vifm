@@ -280,6 +280,24 @@ strcatch(char str[], char c)
 }
 
 int
+strprepend(char **str, size_t *len, const char prefix[])
+{
+	const size_t prefix_len = strlen(prefix);
+	char *const new = realloc(*str, prefix_len + *len + 1);
+	if(new == NULL)
+	{
+		return 1;
+	}
+
+	memmove(new + prefix_len, new, *len + 1);
+	strncpy(new + *len, prefix, prefix_len);
+	*str = new;
+	*len += prefix_len;
+
+	return 0;
+}
+
+int
 strappendch(char **str, size_t *len, char c)
 {
 	const char suffix[] = { c, '\0' };

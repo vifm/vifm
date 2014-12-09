@@ -158,7 +158,7 @@ test_percent_macro_expanded(void)
 static void
 test_wrong_macros_ignored(void)
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -174,7 +174,7 @@ test_wrong_macros_ignored(void)
 static void
 test_wrong_macros_with_width_field_ignored(void)
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -185,6 +185,46 @@ test_wrong_macros_with_width_field_ignored(void)
 			ASSERT_EXPANDED_TO(format, format);
 		}
 	}
+}
+
+static void
+test_optional_empty(void)
+{
+	lwin.filtered = 0;
+	ASSERT_EXPANDED_TO("%[%0-%]", "");
+}
+
+static void
+test_optional_non_empty(void)
+{
+	lwin.filtered = 1;
+	ASSERT_EXPANDED_TO("%[%0-%]", "1");
+}
+
+static void
+test_nested_optional_empty(void)
+{
+	lwin.filtered = 0;
+	ASSERT_EXPANDED_TO("%[%[%0-%]%]", "");
+}
+
+static void
+test_nested_optional_non_empty(void)
+{
+	lwin.filtered = 1;
+	ASSERT_EXPANDED_TO("%[%[%0-%]%]", "1");
+}
+
+static void
+test_ignore_mismatched_opening_bracket(void)
+{
+	ASSERT_EXPANDED_TO("%[", "%[");
+}
+
+static void
+test_ignore_mismatched_closing_bracket(void)
+{
+	ASSERT_EXPANDED_TO("%]", "%]");
 }
 
 void
@@ -213,6 +253,13 @@ expand_status_line_macros_tests(void)
 
 	run_test(test_wrong_macros_ignored);
 	run_test(test_wrong_macros_with_width_field_ignored);
+
+	run_test(test_optional_empty);
+	run_test(test_optional_non_empty);
+	run_test(test_nested_optional_empty);
+	run_test(test_nested_optional_non_empty);
+	run_test(test_ignore_mismatched_opening_bracket);
+	run_test(test_ignore_mismatched_closing_bracket);
 
 	test_fixture_end();
 }

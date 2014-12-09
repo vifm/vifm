@@ -43,8 +43,11 @@
 
 static void update_stat_window_old(FileView *view);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
-static void get_uid_string(FileView *view, size_t len, char *out_buf);
-static void get_gid_string(FileView *view, size_t len, char *out_buf);
+static char * parse_macros(FileView *view, const char **format, int opt);
+static void get_uid_string(FileView *view, size_t len, char out_buf[]);
+static void get_gid_string(FileView *view, size_t len, char out_buf[]);
+static int expand_num(char buf[], size_t buf_len, int val);
+static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 
 void
 update_stat_window(FileView *view)
@@ -155,21 +158,32 @@ update_stat_window_old(FileView *view)
 TSTATIC char *
 expand_status_line_macros(FileView *view, const char format[])
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%0123456789";
+	return parse_macros(view, &format, 0);
+}
+
+/* Expands macros in the *format string advancing the pointer as it goes.  The
+ * opt represents conditional expression state, should be zero for non-recursive
+ * calls.  Returns newly allocated string, which should be freed by the
+ * caller. */
+static char *
+parse_macros(FileView *view, const char **format, int opt)
+{
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
 
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
+	int nexpansions = 0;
 
-	while((c = *format++) != '\0')
+	while((c = **format) != '\0')
 	{
 		size_t width = 0;
 		int left_align = 0;
 		char buf[PATH_MAX];
-		const char *const next = format;
-		int ok;
+		const char *const next = ++*format;
+		int skip, ok;
 
-		if(c != '%' || !char_is_one_of(STATUS_CHARS, *format))
+		if(c != '%' || !char_is_one_of(STATUS_CHARS, **format))
 		{
 			if(strappendch(&result, &len, c) != 0)
 			{
@@ -178,18 +192,19 @@ expand_status_line_macros(FileView *view, const char format[])
 			continue;
 		}
 
-		if(*format == '-')
+		if(**format == '-')
 		{
 			left_align = 1;
-			format++;
+			++*format;
 		}
 
-		while(isdigit(*format))
+		while(isdigit(**format))
 		{
-			width = width*10 + *format++ - '0';
+			width = width*10 + *(*format)++ - '0';
 		}
-		c = *format++;
+		c = *(*format)++;
 
+		skip = 0;
 		ok = 1;
 		switch(c)
 		{
@@ -244,19 +259,41 @@ expand_status_line_macros(FileView *view, const char format[])
 				}
 				break;
 			case '-':
-				snprintf(buf, sizeof(buf), "%d", view->filtered);
+				skip = expand_num(buf, sizeof(buf), view->filtered);
 				break;
 			case 'l':
-				snprintf(buf, sizeof(buf), "%d", view->list_pos + 1);
+				skip = expand_num(buf, sizeof(buf), view->list_pos + 1);
 				break;
 			case 'L':
-				snprintf(buf, sizeof(buf), "%d", view->list_rows + view->filtered);
+				skip = expand_num(buf, sizeof(buf), view->list_rows + view->filtered);
 				break;
 			case 'S':
-				snprintf(buf, sizeof(buf), "%d", view->list_rows);
+				skip = expand_num(buf, sizeof(buf), view->list_rows);
 				break;
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
+				break;
+			case '[':
+				{
+					char *const opt_str = parse_macros(view, format, 1);
+					copy_str(buf, sizeof(buf), opt_str);
+					free(opt_str);
+					break;
+				}
+			case ']':
+				if(opt)
+				{
+					if(nexpansions == 0)
+					{
+						replace_string(&result, "");
+					}
+					return result;
+				}
+				else
+				{
+					LOG_INFO_MSG("Unmatched %]", c);
+					ok = 0;
+				}
 				break;
 
 			default:
@@ -267,7 +304,7 @@ expand_status_line_macros(FileView *view, const char format[])
 
 		if(!ok)
 		{
-			format = next;
+			*format = next;
 			if(strappendch(&result, &len, '%') != 0)
 			{
 				break;
@@ -275,6 +312,7 @@ expand_status_line_macros(FileView *view, const char format[])
 			continue;
 		}
 
+		check_expanded_str(buf, skip, &nexpansions);
 		stralign(buf, width, ' ', left_align);
 
 		if(strappend(&result, &len, buf) != 0)
@@ -283,11 +321,19 @@ expand_status_line_macros(FileView *view, const char format[])
 		}
 	}
 
+	/* Unmatched %[. */
+	if(opt)
+	{
+		(void)strprepend(&result, &len, "%[");
+	}
+
 	return result;
 }
 
+/* Fills the buffer with string representation of owner user for current file of
+ * the view. */
 static void
-get_uid_string(FileView *view, size_t len, char *out_buf)
+get_uid_string(FileView *view, size_t len, char out_buf[])
 {
 #ifndef _WIN32
 	char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
@@ -312,8 +358,10 @@ get_uid_string(FileView *view, size_t len, char *out_buf)
 #endif
 }
 
+/* Fills the buffer with string representation of owner group for current file
+ * of the view. */
 static void
-get_gid_string(FileView *view, size_t len, char *out_buf)
+get_gid_string(FileView *view, size_t len, char out_buf[])
 {
 #ifndef _WIN32
 	char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
@@ -336,6 +384,26 @@ get_gid_string(FileView *view, size_t len, char *out_buf)
 #else
 	out_buf[0] = '\0';
 #endif
+}
+
+/* Prints number into the buffer.  Returns non-zero if numeric value is
+ * "empty" (zero). */
+static int
+expand_num(char buf[], size_t buf_len, int val)
+{
+	snprintf(buf, buf_len, "%d", val);
+	return (val == 0);
+}
+
+/* Examines expansion buffer to check whether expansion took place.  Updates
+ * *nexpansions accordingly. */
+static void
+check_expanded_str(const char buf[], int skip, int *nexpansions)
+{
+	if(buf[0] != '\0' && !skip)
+	{
+		++*nexpansions;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
