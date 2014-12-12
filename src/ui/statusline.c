@@ -43,7 +43,10 @@
 
 static void update_stat_window_old(FileView *view);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
-static char * parse_macros(FileView *view, const char **format, int opt);
+static char * expand_view_macros(FileView *view, const char format[],
+		const char macros[]);
+static char * parse_view_macros(FileView *view, const char **format,
+		const char macros[], int opt);
 static void get_uid_string(FileView *view, size_t len, char out_buf[]);
 static void get_gid_string(FileView *view, size_t len, char out_buf[]);
 static int expand_num(char buf[], size_t buf_len, int val);
@@ -158,7 +161,15 @@ update_stat_window_old(FileView *view)
 TSTATIC char *
 expand_status_line_macros(FileView *view, const char format[])
 {
-	return parse_macros(view, &format, 0);
+	return expand_view_macros(view, format, "tAugsEd-lLS%[]");
+}
+
+/* Expands possibly limited set of view macros.  Returns newly allocated string,
+ * which should be freed by the caller. */
+static char *
+expand_view_macros(FileView *view, const char format[], const char macros[])
+{
+	return parse_view_macros(view, &format, macros, 0);
 }
 
 /* Expands macros in the *format string advancing the pointer as it goes.  The
@@ -166,10 +177,9 @@ expand_status_line_macros(FileView *view, const char format[])
  * calls.  Returns newly allocated string, which should be freed by the
  * caller. */
 static char *
-parse_macros(FileView *view, const char **format, int opt)
+parse_view_macros(FileView *view, const char **format, const char macros[],
+		int opt)
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
-
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -183,7 +193,7 @@ parse_macros(FileView *view, const char **format, int opt)
 		const char *const next = ++*format;
 		int skip, ok;
 
-		if(c != '%' || !char_is_one_of(STATUS_CHARS, **format))
+		if(c != '%' || (!char_is_one_of(macros, *next) && !isdigit(*next)))
 		{
 			if(strappendch(&result, &len, c) != 0)
 			{
@@ -192,7 +202,7 @@ parse_macros(FileView *view, const char **format, int opt)
 			continue;
 		}
 
-		if(**format == '-')
+		if(*next == '-')
 		{
 			left_align = 1;
 			++*format;
@@ -275,7 +285,7 @@ parse_macros(FileView *view, const char **format, int opt)
 				break;
 			case '[':
 				{
-					char *const opt_str = parse_macros(view, format, 1);
+					char *const opt_str = parse_view_macros(view, format, macros, 1);
 					copy_str(buf, sizeof(buf), opt_str);
 					free(opt_str);
 					break;
