@@ -158,7 +158,7 @@ test_percent_macro_expanded(void)
 static void
 test_wrong_macros_ignored(void)
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -174,7 +174,7 @@ test_wrong_macros_ignored(void)
 static void
 test_wrong_macros_with_width_field_ignored(void)
 {
-	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]0123456789";
+	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
