@@ -25,6 +25,7 @@
 #include <grp.h> /* getgrgid_r() */
 #include <pwd.h> /* getpwuid_r() */
 #endif
+#include <stddef.h> /* NULL */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h> /* _SC_* sysconf() */
 
@@ -43,7 +44,7 @@
 
 static void update_stat_window_old(FileView *view);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
-static char * expand_view_macros(FileView *view, const char format[],
+char * expand_view_macros(FileView *view, const char format[],
 		const char macros[]);
 static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
@@ -156,8 +157,9 @@ update_stat_window_old(FileView *view)
 	wrefresh(stat_win);
 }
 
-/* Returns newly allocated string, which should be freed by the caller, or NULL
- * if there is not enough memory. */
+/* Expands view macros to be displayed on the status line according to the
+ * format string.  Returns newly allocated string, which should be freed by the
+ * caller, or NULL if there is not enough memory. */
 TSTATIC char *
 expand_status_line_macros(FileView *view, const char format[])
 {
@@ -166,7 +168,7 @@ expand_status_line_macros(FileView *view, const char format[])
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
  * which should be freed by the caller. */
-static char *
+char *
 expand_view_macros(FileView *view, const char format[], const char macros[])
 {
 	return parse_view_macros(view, &format, macros, 0);

@@ -61,6 +61,7 @@
 #include "../status.h"
 #include "../term_title.h"
 #include "../vifm.h"
+#include "private/statusline.h"
 #include "statusbar.h"
 #include "statusline.h"
 
@@ -81,91 +82,10 @@ static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
 static int get_pos_window_width(FileView *view);
+static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
-
-static char *
-expand_ruler_macros(FileView *view, const char *format)
-{
-	static const char RULER_CHARS[] = "-lLS%0123456789";
-
-	char *result = strdup("");
-	size_t len = 0;
-	char c;
-
-	while((c = *format++) != '\0')
-	{
-		size_t width = 0;
-		int left_align = 0;
-		char *p;
-		char buf[32];
-		if(c != '%' || !char_is_one_of(RULER_CHARS, *format))
-		{
-			p = realloc(result, len + 1 + 1);
-			if(p == NULL)
-				break;
-			result = p;
-			result[len++] = c;
-			result[len] = '\0';
-			continue;
-		}
-		if(*format == '-')
-		{
-			left_align = 1;
-			format++;
-		}
-		while(isdigit(*format))
-			width = width*10 + *format++ - '0';
-		c = *format++;
-		switch(c)
-		{
-			case '-':
-				snprintf(buf, sizeof(buf), "%d", view->filtered);
-				break;
-			case 'l':
-				snprintf(buf, sizeof(buf), "%d", view->list_pos + 1);
-				break;
-			case 'L':
-				snprintf(buf, sizeof(buf), "%d", view->list_rows + view->filtered);
-				break;
-			case 'S':
-				snprintf(buf, sizeof(buf), "%d", view->list_rows);
-				break;
-			case '%':
-				snprintf(buf, sizeof(buf), "%%");
-				break;
-
-			default:
-				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
-				snprintf(buf, sizeof(buf), "%%%c", c);
-				break;
-		}
-		if(strlen(buf) < width)
-		{
-			if(left_align)
-			{
-				int i = width - strlen(buf);
-				memset(buf + strlen(buf), ' ', i);
-				buf[width] = '\0';
-			}
-			else
-			{
-				int i = width - strlen(buf);
-				memmove(buf + i, buf, width - i + 1);
-				memset(buf, ' ', i);
-			}
-		}
-		p = realloc(result, len + strlen(buf) + 1);
-		if(p == NULL)
-			break;
-		result = p;
-		strcat(result, buf);
-		len += strlen(buf);
-	}
-
-	return result;
-}
 
 void
 update_pos_window(FileView *view)
@@ -1076,6 +996,15 @@ get_pos_window_width(FileView *view)
 	view->list_pos = list_pos;
 
 	return MAX(POS_WIN_MIN_WIDTH, len);
+}
+
+/* Expands view macros to be displayed on the ruler line according to the format
+ * string.  Returns newly allocated string, which should be freed by the caller,
+ * or NULL if there is not enough memory. */
+static char *
+expand_ruler_macros(FileView *view, const char format[])
+{
+	return expand_view_macros(view, format, "-lLS%[]");
 }
 
 void

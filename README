@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2014
 
-Updated: 06 December, 2014
+Updated: 12 December, 2014
 Version: 0.7.8
 
 Brief Description
@@ -71,10 +71,12 @@ Package content
     |  |
     |  |-- io/ - file system operations implementation
     |  |  |
-    |  |  |-- private/ - private part of i/o
-    |  |  |-- private/ioeta.c - private part of i/o estimations
-    |  |  |-- private/ionotif.c - private part of i/o notifications
-    |  |  |-- private/traverser.c - file system traversing routine
+    |  |  |-- private/ - internal part of i/o
+    |  |  |  |
+    |  |  |  |-- ioeta.c - internal part of i/o estimations
+    |  |  |  |-- ionotif.c - internal part of i/o notifications
+    |  |  |  `-- traverser.c - file system traversing routine
+    |  |  |
     |  |  |-- ioeta.c - i/o estimations management
     |  |  |-- iop.c - implementation of i/o primitive
     |  |  `-- ior.c - implementation of recursive i/o operations
@@ -125,6 +127,7 @@ Package content
     |  |
     |  |-- ui/ - most of ui related code
     |  |  |
+    |  |  |-- private/ - internal headers of ui
     |  |  |-- cancellation.c - managing operation cancellation
     |  |  |-- statusbar.c - managing status bar
     |  |  |-- statusline.c - status line formatting
