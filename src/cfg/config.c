@@ -161,7 +161,7 @@ init_config(void)
 	cfg.use_system_calls = 0;
 	cfg.last_status = 1;
 	cfg.tab_stop = 8;
-	cfg.ruler_format = strdup("%=%l/%S ");
+	cfg.ruler_format = strdup("%l/%S ");
 	cfg.status_line = strdup("");
 
 	cfg.lines = INT_MIN;

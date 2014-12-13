@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dev 07
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2509,7 +2509,7 @@ lead to such results:
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf
 type: string
-default: "%=%l-%S "
+default: "%l/%S "
 Determines the content of the ruler.  Its width is 13 characters and it's
 right aligned.  Following macros are supported:
     %l - file number
