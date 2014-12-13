@@ -15,6 +15,8 @@
 	fixes issue with passing input to FUSE mounter.  Thanks to Johannes (a.k.a.
 	johannesmeng).
 
+	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
@@ -22,6 +24,9 @@
 
 	Removed unnecessary command existence checks from vifm.vim.  Thanks to
 	filterfalse.
+
+	Auto-resize position field on the status bar to fit the text.  Thanks to
+	ranousse.
 
 	Fixed search messages in menus (nth time...).
 

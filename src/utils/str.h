@@ -131,6 +131,10 @@ int replace_string(char **str, const char with[]);
 /* Adds a character to the end of the string.  Returns the str argument. */
 char * strcatch(char str[], char c);
 
+/* Prepends prefix to a string.  Might reallocate the string.  Updates *len
+ * appropriately.  Returns zero on success, otherwise non-zero is returned. */
+int strprepend(char **str, size_t *len, const char prefix[]);
+
 /* Appends single character to a string.  Might reallocate it.  Updates *len
  * appropriately.  Returns zero on success, otherwise non-zero is returned. */
 int strappendch(char **str, size_t *len, char c);

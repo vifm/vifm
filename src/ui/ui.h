@@ -43,14 +43,15 @@
 
 #define SORT_WIN_WIDTH 32
 
-/* Width of the input window (located to the left of position window). */
+/* Width of the input window (located to the left of the ruler). */
 #define INPUT_WIN_WIDTH 6
 
-/* Width of the position window (located in the right corner of status line). */
-#define POS_WIN_WIDTH 13
+/* Minimal width of the position window (located in the right corner of status
+ * line). */
+#define POS_WIN_MIN_WIDTH 13
 
-/* Width of the position and input windows. */
-#define FIELDS_WIDTH (INPUT_WIN_WIDTH + POS_WIN_WIDTH)
+/* Width of the ruler and input windows. */
+#define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(ruler_win))
 
 /* New values should be added at the end of enumeration to do not brake sort
  * settings stored in vifminfo files.  Also SK_LAST and SK_COUNT should be
@@ -277,7 +278,7 @@ FileView *curr_view;
 
 WINDOW *status_bar;
 WINDOW *stat_win;
-WINDOW *pos_win;
+WINDOW *ruler_win;
 WINDOW *input_win;
 WINDOW *menu_win;
 WINDOW *sort_win;
@@ -289,89 +290,129 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
+/* Updates the ruler with infomation from the view. */
+void ui_ruler_update(FileView *view);
+
+/* Sets text to be displayed on the ruler.  Real window update is postponed for
+ * efficiency reasons. */
+void ui_ruler_set(const char val[]);
+
 void is_term_working(void);
+
 int setup_ncurses_interface(void);
+
 float get_splitter_pos(int max);
+
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);
-void update_pos_window(FileView *view);
-/* Sets text to be displayed in position window (ruler).  Real window update is
- * postponed for efficiency reasons. */
-void ui_pos_window_set(const char val[]);
+
 /* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);
+
 /* Swaps curr_view and other_view pointers. */
 void swap_view_roles(void);
+
 void update_all_windows(void);
+
 void update_input_bar(const wchar_t *str);
+
 void clear_num_window(void);
+
 void show_progress(const char *msg, int period);
+
 void redraw_lists(void);
+
 /* Forces immediate update of attributes for most of windows. */
 void update_attributes(void);
+
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
+
 /* Prints str in current window position with specified line attributes, which
  * set during print operation only. */
 void wprinta(WINDOW *win, const char str[], int line_attrs);
+
 /* Performs resizing of some of TUI elements for menu like modes. */
 void resize_for_menu_like(void);
+
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);
+
 /* Layouts the view in correct corner with correct relative position
  * (horizontally/vertically, left-top/right-bottom). */
 void move_window(FileView *view, int horizontally, int first);
+
 /* Switches two panes saving current windows as the active one (left/top or
  * right/bottom). */
 void switch_windows(void);
+
 /* Swaps current and other views. */
 void switch_panes(void);
+
 /* Switches to other pane, ignoring state of the preview and entering view mode
  * in case the other pane has explore mode active. */
 void go_to_other_pane(void);
+
 /* Splits windows according to the value of orientation. */
 void split_view(SPLIT orientation);
+
 /* Switches view to one-window mode. */
 void only(void);
+
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
 void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
+
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */
 void checked_wmove(WINDOW *win, int y, int x);
+
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
+
 /* Resets selection of the view and reloads it preserving cursor position. */
 void ui_view_reset_selection_and_reload(FileView *view);
+
 /* Reloads visible lists of files preserving current position of cursor. */
 void ui_views_reload_visible_filelists(void);
+
 /* Reloads lists of files preserving current position of cursor. */
 void ui_views_reload_filelists(void);
+
 /* Updates title of the views. */
 void ui_views_update_titles(void);
+
 /* Updates title of the view. */
 void ui_view_title_update(FileView *view);
+
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
 int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
+
 /* Ensures that list of sorting keys contains either "name" or "iname". */
 void ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT]);
+
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
 int ui_view_displays_numbers(const FileView *const view);
+
 /* Checks whether view is visible on the screen.  Returns non-zero if so,
  * otherwise zero is returned. */
 int ui_view_is_visible(const FileView *const view);
+
 /* Cleans directory history of the view. */
 void ui_view_clear_history(FileView *const view);
+
 /* Checks whether view displays column view.  Returns non-zero if so, otherwise
  * zero is returned. */
 int ui_view_displays_columns(const FileView *const view);
+
 /* Gets real type of file view entry.  Returns type of entry, resolving symbolic
  * link if needed. */
 FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
+
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
 int ui_view_available_width(const FileView *const view);

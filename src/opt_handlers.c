@@ -358,7 +358,7 @@ options[] =
 	},
 	{ "laststatus", "ls",
 	  OPT_BOOL, 0, NULL, &laststatus_handler,
-	  { .ref.bool_val = &cfg.last_status },
+	  { .ref.bool_val = &cfg.display_statusline },
 	},
 	{ "lines", "",
 	  OPT_INT, 0, NULL, &lines_handler,
@@ -1105,8 +1105,8 @@ incsearch_handler(OPT_OP op, optval_t val)
 static void
 laststatus_handler(OPT_OP op, optval_t val)
 {
-	cfg.last_status = val.bool_val;
-	if(cfg.last_status)
+	cfg.display_statusline = val.bool_val;
+	if(cfg.display_statusline)
 	{
 		if(curr_stats.split == VSPLIT)
 		{

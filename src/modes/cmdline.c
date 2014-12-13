@@ -337,7 +337,7 @@ update_cmdline_size(void)
 
 		if(prev_mode != MENU_MODE)
 		{
-			if(cfg.last_status)
+			if(cfg.display_statusline)
 			{
 				mvwin(stat_win, y - d - 1, 0);
 				wrefresh(stat_win);
@@ -685,7 +685,7 @@ leave_cmdline_mode(void)
 	if(getmaxy(status_bar) > 1)
 	{
 		curr_stats.need_update = UT_FULL;
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
+		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
 		{
@@ -695,7 +695,7 @@ leave_cmdline_mode(void)
 	}
 	else
 	{
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
+		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	}
 
 	free(input_stat.line);
@@ -716,7 +716,7 @@ leave_cmdline_mode(void)
 
 	if(!vle_mode_is(MENU_MODE))
 	{
-		update_pos_window(curr_view);
+		ui_ruler_update(curr_view);
 	}
 
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
@@ -2290,7 +2290,7 @@ stop_history_completion(void)
 	if(cfg.wild_menu &&
 			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
 	{
-		if(cfg.last_status)
+		if(cfg.display_statusline)
 		{
 			update_stat_window(curr_view);
 		}

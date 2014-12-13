@@ -285,8 +285,8 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 void
 menu_pre(void)
 {
-	touchwin(pos_win);
-	wrefresh(pos_win);
+	touchwin(ruler_win);
+	wrefresh(ruler_win);
 }
 
 void

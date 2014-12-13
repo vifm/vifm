@@ -43,7 +43,7 @@ void view_post(void);
 
 /* Displays view mode specific position information.  Assumes that view mode is
  * active. */
-void view_draw_pos(void);
+void view_ruler_update(void);
 
 void view_redraw(void);
 
