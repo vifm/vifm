@@ -374,11 +374,11 @@ void
 view_post(void)
 {
 	update_screen(curr_stats.need_update);
-	view_draw_pos();
+	view_ruler_update();
 }
 
 void
-view_draw_pos(void)
+view_ruler_update(void)
 {
 	char buf[POS_WIN_MIN_WIDTH + 1];
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);

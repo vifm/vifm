@@ -530,7 +530,7 @@ update_screen(UpdateType update_kind)
 
 		if(vle_mode_is(VIEW_MODE))
 		{
-			view_draw_pos();
+			view_ruler_update();
 		}
 		else
 		{
