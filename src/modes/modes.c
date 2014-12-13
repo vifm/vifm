@@ -161,7 +161,7 @@ modes_post(void)
 		if(!is_status_bar_multiline())
 		{
 			update_stat_window(curr_view);
-			update_ruler(curr_view);
+			ui_ruler_update(curr_view);
 		}
 	}
 

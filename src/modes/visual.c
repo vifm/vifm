@@ -1277,7 +1277,7 @@ static void
 update(void)
 {
 	redraw_view(view);
-	update_ruler(view);
+	ui_ruler_update(view);
 }
 
 void

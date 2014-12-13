@@ -290,16 +290,17 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
+/* Updates the ruler with infomation from the view. */
+void ui_ruler_update(FileView *view);
+/* Sets text to be displayed on the ruler.  Real window update is postponed for
+ * efficiency reasons. */
+void ui_ruler_set(const char val[]);
 void is_term_working(void);
 int setup_ncurses_interface(void);
 float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);
-void update_ruler(FileView *view);
-/* Sets text to be displayed on the ruler.  Real window update is postponed for
- * efficiency reasons. */
-void ui_ruler_set(const char val[]);
 /* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);

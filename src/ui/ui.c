@@ -88,7 +88,7 @@ static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
-update_ruler(FileView *view)
+ui_ruler_update(FileView *view)
 {
 	char *expanded;
 
@@ -534,7 +534,7 @@ update_screen(UpdateType update_kind)
 		}
 		else
 		{
-			update_ruler(curr_view);
+			ui_ruler_update(curr_view);
 		}
 	}
 
