@@ -3027,14 +3027,14 @@ type: string
 .br
 default: "%l/%S "
 .br
-Determines the content of the ruler.  Its width is 13 characters and it's right
-aligned.  Following macros are supported:
+Determines the content of the ruler.  Its minimal width is 13 characters and
+it's right aligned.  Following macros are supported:
 .br
  %l \- file number
 .br
- %L \- total number of files in view (including filtered)
+ %L \- total number of files in view (including filtered out ones)
 .br
- %\- \- number of filtered files
+ %\- \- number of filtered out files
 .br
  %S \- number of showed files
 .br
@@ -3042,13 +3042,20 @@ aligned.  Following macros are supported:
 .br
  %% \- percent sign
 .br
+ %[ \- designates beginning of an optional block
+.br
+ %] \- designates end of an optional block
+.br
 
 Percent sign can be followed by optional minimum field width.  Add '\-' before
-minimum field width if you want field to be right aligned.
+minimum field width if you want field to be right aligned.  Note ambiguity with
+number of filtered out files, which can be resolved with the help of width
+field ("%0-").
+
 Example:
 
 .EX
- set rulerformat="%=%2l\-%S [%L] "
+ set rulerformat='%2l-%S%[ +%0-%]'
 .EE
 .TP
 .BI runexec
