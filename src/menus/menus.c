@@ -84,7 +84,7 @@ show_position_in_menu(menu_info *m)
 	char pos_buf[POS_WIN_MIN_WIDTH + 1];
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
-	ui_pos_window_set(pos_buf);
+	ui_ruler_set(pos_buf);
 }
 
 void
@@ -321,9 +321,9 @@ setup_menu(void)
 	curs_set(FALSE);
 	werase(menu_win);
 	werase(status_bar);
-	werase(pos_win);
+	werase(ruler_win);
 	wrefresh(status_bar);
-	wrefresh(pos_win);
+	wrefresh(ruler_win);
 }
 
 void

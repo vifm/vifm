@@ -43,15 +43,15 @@
 
 #define SORT_WIN_WIDTH 32
 
-/* Width of the input window (located to the left of position window). */
+/* Width of the input window (located to the left of the ruler). */
 #define INPUT_WIN_WIDTH 6
 
 /* Minimal width of the position window (located in the right corner of status
  * line). */
 #define POS_WIN_MIN_WIDTH 13
 
-/* Width of the position and input windows. */
-#define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(pos_win))
+/* Width of the ruler and input windows. */
+#define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(ruler_win))
 
 /* New values should be added at the end of enumeration to do not brake sort
  * settings stored in vifminfo files.  Also SK_LAST and SK_COUNT should be
@@ -278,7 +278,7 @@ FileView *curr_view;
 
 WINDOW *status_bar;
 WINDOW *stat_win;
-WINDOW *pos_win;
+WINDOW *ruler_win;
 WINDOW *input_win;
 WINDOW *menu_win;
 WINDOW *sort_win;
@@ -296,10 +296,10 @@ float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);
-void update_pos_window(FileView *view);
-/* Sets text to be displayed in position window (ruler).  Real window update is
- * postponed for efficiency reasons. */
-void ui_pos_window_set(const char val[]);
+void update_ruler(FileView *view);
+/* Sets text to be displayed on the ruler.  Real window update is postponed for
+ * efficiency reasons. */
+void ui_ruler_set(const char val[]);
 /* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);

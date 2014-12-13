@@ -383,7 +383,7 @@ view_draw_pos(void)
 	char buf[POS_WIN_MIN_WIDTH + 1];
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
 
-	ui_pos_window_set(buf);
+	ui_ruler_set(buf);
 }
 
 void

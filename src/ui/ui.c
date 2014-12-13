@@ -81,35 +81,35 @@ static void update_view(FileView *win);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
-static int get_pos_window_width(FileView *view);
+static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
-update_pos_window(FileView *view)
+update_ruler(FileView *view)
 {
 	char *expanded;
 
 	update_statusbar_layout();
 
 	expanded = expand_ruler_macros(view, cfg.ruler_format);
-	expanded = break_in_two(expanded, getmaxx(pos_win));
+	expanded = break_in_two(expanded, getmaxx(ruler_win));
 
-	ui_pos_window_set(expanded);
+	ui_ruler_set(expanded);
 
 	free(expanded);
 }
 
 void
-ui_pos_window_set(const char val[])
+ui_ruler_set(const char val[])
 {
-	const int x = getmaxx(pos_win)- strlen(val);
+	const int x = getmaxx(ruler_win)- strlen(val);
 
-	werase(pos_win);
-	mvwaddstr(pos_win, 0, MAX(x, 0), val);
-	wnoutrefresh(pos_win);
+	werase(ruler_win);
+	mvwaddstr(ruler_win, 0, MAX(x, 0), val);
+	wnoutrefresh(ruler_win);
 }
 
 int
@@ -193,7 +193,7 @@ create_windows(void)
 
 	stat_win = newwin(1, 1, 0, 0);
 	status_bar = newwin(1, 1, 0, 0);
-	pos_win = newwin(1, 1, 0, 0);
+	ruler_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
 }
 
@@ -205,8 +205,8 @@ set_static_windows_attrs(void)
 	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
 	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 
-	wattrset(pos_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+	wattrset(ruler_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(ruler_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 
 	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
 	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
@@ -534,7 +534,7 @@ update_screen(UpdateType update_kind)
 		}
 		else
 		{
-			update_pos_window(curr_view);
+			update_ruler(curr_view);
 		}
 	}
 
@@ -702,7 +702,7 @@ update_all_windows(void)
 		}
 	}
 
-	update_window_lazy(pos_win);
+	update_window_lazy(ruler_win);
 	update_window_lazy(input_win);
 	update_window_lazy(status_bar);
 
@@ -913,14 +913,14 @@ resize_for_menu_like(void)
 
 	werase(stdscr);
 	werase(status_bar);
-	werase(pos_win);
+	werase(ruler_win);
 
 	wresize(menu_win, screen_y - 1, screen_x);
 
 	update_statusbar_layout();
 
 	wrefresh(status_bar);
-	wrefresh(pos_win);
+	wrefresh(ruler_win);
 	wrefresh(input_win);
 }
 
@@ -949,37 +949,36 @@ update_term_size(void)
 #endif
 }
 
-/* Re-layouts windows located on status bar (status bar itself, input and
- * position windows). */
+/* Re-layouts windows located on status bar (status bar itself, input and the
+ * ruler). */
 static void
 update_statusbar_layout(void)
 {
 	int screen_x, screen_y;
 
-	int pos_window_width;
+	int ruler_width;
 	int fields_pos;
 
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	pos_window_width = get_pos_window_width(curr_view);
-	fields_pos = screen_x - (INPUT_WIN_WIDTH + pos_window_width);
+	ruler_width = get_ruler_width(curr_view);
+	fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
 
 	wresize(status_bar, 1, fields_pos);
 	mvwin(status_bar, screen_y - 1, 0);
 
-	wresize(pos_win, 1, pos_window_width);
-	mvwin(pos_win, screen_y - 1, fields_pos + INPUT_WIN_WIDTH);
-	wnoutrefresh(pos_win);
+	wresize(ruler_win, 1, ruler_width);
+	mvwin(ruler_win, screen_y - 1, fields_pos + INPUT_WIN_WIDTH);
+	wnoutrefresh(ruler_win);
 
 	wresize(input_win, 1, INPUT_WIN_WIDTH);
 	mvwin(input_win, screen_y - 1, fields_pos);
 	wnoutrefresh(input_win);
 }
 
-/* Gets "recommended" width for position window on status bar.  Returns the
- * width. */
+/* Gets "recommended" width for the ruler.  Returns the width. */
 static int
-get_pos_window_width(FileView *view)
+get_ruler_width(FileView *view)
 {
 	char *expanded;
 	int len;
