@@ -159,7 +159,6 @@ init_config(void)
 	cfg.selection_is_primary = 1;
 	cfg.tab_switches_pane = 1;
 	cfg.use_system_calls = 0;
-	cfg.last_status = 1;
 	cfg.tab_stop = 8;
 	cfg.ruler_format = strdup("%l/%S ");
 	cfg.status_line = strdup("");
@@ -184,6 +183,7 @@ init_config(void)
 
 	cfg.filelist_col_padding = 1;
 	cfg.side_borders_visible = 1;
+	cfg.display_statusline = 1;
 
 	cfg.border_filler = strdup(" ");
 

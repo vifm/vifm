@@ -888,7 +888,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 
 	getmaxyx(stdscr, sy, sx);
 
-	y = sy - 3 + !cfg.last_status;
+	y = sy - 3 + !cfg.display_statusline;
 	x = sx - 2;
 	wresize(error_win, y, x);
 

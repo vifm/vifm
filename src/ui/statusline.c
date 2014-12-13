@@ -59,8 +59,10 @@ update_stat_window(FileView *view)
 	int x;
 	char *buf;
 
-	if(!cfg.last_status)
+	if(!cfg.display_statusline)
+	{
 		return;
+	}
 
 	/* Don't redraw anything until :restart command is finished. */
 	if(curr_stats.restart_in_progress)
@@ -104,8 +106,10 @@ update_stat_window_old(FileView *view)
 	size_t print_width;
 	char *filename;
 
-	if(!cfg.last_status)
+	if(!cfg.display_statusline)
+	{
 		return;
+	}
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);

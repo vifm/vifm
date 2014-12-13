@@ -337,7 +337,7 @@ update_cmdline_size(void)
 
 		if(prev_mode != MENU_MODE)
 		{
-			if(cfg.last_status)
+			if(cfg.display_statusline)
 			{
 				mvwin(stat_win, y - d - 1, 0);
 				wrefresh(stat_win);
@@ -2290,7 +2290,7 @@ stop_history_completion(void)
 	if(cfg.wild_menu &&
 			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
 	{
-		if(cfg.last_status)
+		if(cfg.display_statusline)
 		{
 			update_stat_window(curr_view);
 		}

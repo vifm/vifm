@@ -253,8 +253,8 @@ only_layout(FileView *view, int screen_x, int screen_y)
 	wresize(view->title, 1, screen_x - 2);
 	mvwin(view->title, 0, 1);
 
-	wresize(view->win,
-			screen_y - 3 + !cfg.last_status, screen_x + vborder_size_correction);
+	wresize(view->win, screen_y - 3 + !cfg.display_statusline,
+			screen_x + vborder_size_correction);
 	mvwin(view->win, 1, vborder_pos_correction);
 }
 
@@ -265,7 +265,7 @@ vertical_layout(int screen_x, int screen_y)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
-	const int border_height = screen_y - 3 + !cfg.last_status;
+	const int border_height = screen_y - 3 + !cfg.display_statusline;
 
 	int splitter_pos;
 	int splitter_width;
@@ -327,8 +327,8 @@ horizontal_layout(int screen_x, int screen_y)
 		splitter_pos = curr_stats.splitter_pos;
 	if(splitter_pos < 2)
 		splitter_pos = 2;
-	if(splitter_pos > screen_y - 3 - cfg.last_status - 1)
-		splitter_pos = screen_y - 3 - cfg.last_status;
+	if(splitter_pos > screen_y - 3 - cfg.display_statusline - 1)
+		splitter_pos = screen_y - 3 - cfg.display_statusline;
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
@@ -341,7 +341,7 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(lwin.win, splitter_pos - 1, screen_x + vborder_size_correction);
 	mvwin(lwin.win, 1, vborder_pos_correction);
 
-	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.last_status - 1,
+	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.display_statusline - 1,
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
@@ -412,7 +412,7 @@ resize_all(void)
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
 	mvwin(error_win, (screen_y - 10)/2, 1);
 
-	border_height = screen_y - 3 + !cfg.last_status;
+	border_height = screen_y - 3 + !cfg.display_statusline;
 
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
@@ -696,7 +696,7 @@ update_all_windows(void)
 			update_window_lazy(rborder);
 		}
 
-		if(cfg.last_status)
+		if(cfg.display_statusline)
 		{
 			update_window_lazy(stat_win);
 		}
@@ -1010,12 +1010,14 @@ void
 refresh_view_win(FileView *view)
 {
 	if(curr_stats.restart_in_progress)
+	{
 		return;
+	}
 
 	wrefresh(view->win);
-	/* we use getmaxy(...) instead of multiline_status_bar to handle command line
-	 * mode, which doesn't use this module to show multilined messages */
-	if(cfg.last_status && getmaxy(status_bar) > 1)
+	/* Use getmaxy(...) instead of multiline_status_bar to handle command line
+	 * mode, which doesn't use this module to show multilined messages. */
+	if(cfg.display_statusline && getmaxy(status_bar) > 1)
 	{
 		touchwin(stat_win);
 		wrefresh(stat_win);

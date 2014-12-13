@@ -114,7 +114,6 @@ typedef struct config_t
 	int selection_is_primary; /* For yy, dd and DD: act on selection not file. */
 	int tab_switches_pane; /* Whether <tab> is switch pane or history forward. */
 	int use_system_calls; /* Prefer performing operations with system calls. */
-	int last_status;
 	int tab_stop;
 	char *ruler_format;
 	char *status_line;
@@ -140,6 +139,9 @@ typedef struct config_t
 	/* Whether side borders are visible (separator in the middle isn't
 	 * affected). */
 	int side_borders_visible;
+
+	/* Whether statusline is visible. */
+	int display_statusline;
 
 	/* Per line pattern for borders. */
 	char *border_filler;
