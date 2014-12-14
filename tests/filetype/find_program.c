@@ -7,7 +7,8 @@
 #include "../../src/status.h"
 #include "../../src/utils/str.h"
 
-static int prog_exists(const char *name)
+static int
+prog_exists(const char name[])
 {
 	return stroscmp(name, "console") == 0;
 }

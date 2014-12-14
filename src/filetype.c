@@ -20,6 +20,7 @@
 #include "filetype.h"
 
 #include <ctype.h> /* isspace() */
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
@@ -108,6 +109,8 @@ get_default_program_for_file(const char file[], assoc_record_t *result)
 const char *
 get_viewer_for_file(const char file[])
 {
+	assoc_records_t records;
+	int j;
 	int i = get_filetype_number(file, fileviewers);
 
 	if(i < 0)
@@ -115,7 +118,27 @@ get_viewer_for_file(const char file[])
 		return NULL;
 	}
 
-	return fileviewers.list[i].records.list[0].command;
+	records = fileviewers.list[i].records;
+
+	j = 0;
+	while(j < records.count)
+	{
+		char name_buf[NAME_MAX];
+		(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
+				name_buf);
+		if(external_command_exists_func == NULL ||
+				external_command_exists_func(name_buf))
+		{
+			break;
+		}
+		++j;
+	}
+	if(j >= records.count)
+	{
+		return NULL;
+	}
+
+	return records.list[j].command;
 }
 
 static int
@@ -317,6 +340,7 @@ assoc_viewer(const char *pattern, const char *viewer)
 			break;
 		}
 	}
+
 	if(i == fileviewers.count)
 	{
 		assoc_t assoc =
@@ -330,7 +354,7 @@ assoc_viewer(const char *pattern, const char *viewer)
 	}
 	else
 	{
-		(void)replace_string(&fileviewers.list[i].records.list[0].command, viewer);
+		add_assoc_record(&fileviewers.list[i].records, viewer, "");
 	}
 }
 

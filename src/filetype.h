@@ -84,7 +84,7 @@ int get_default_program_for_file(const char file[], assoc_record_t *result);
  * otherwise returns pointer to string stored internally. */
 const char * get_viewer_for_file(const char file[]);
 
-/* Associates list of comma separated patters with list of comma separated
+/* Associates list of comma separated patterns with list of comma separated
  * programs either for X or non-X associations and depending on current
  * execution environment. */
 void set_programs(const char patterns[], const char programs[], int for_x,
