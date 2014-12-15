@@ -306,19 +306,12 @@ set_fileviewer(const char patterns[], const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 1);
 
-	char *exptr;
-	char *ex_copy = strdup(patterns);
-	char *free_this = ex_copy;
-	while((exptr = strchr(ex_copy, ',')) != NULL)
+	char *pattern = strdup(patterns), *state = NULL;
+	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
-		*exptr = '\0';
-
-		assoc_viewers(ex_copy, &view_records);
-
-		ex_copy = exptr + 1;
+		assoc_viewers(pattern, &view_records);
 	}
-	assoc_viewers(ex_copy, &view_records);
-	free(free_this);
+	free(pattern);
 
 	free_assoc_records(&view_records);
 }
