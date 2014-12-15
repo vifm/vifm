@@ -26,7 +26,13 @@ nothing_available(const char name[])
 }
 
 static void
-test_multiple_choice(void)
+test_null_if_nothing_set(void)
+{
+	assert_true(get_viewer_for_file("file.version.tar.bz2") == NULL);
+}
+
+static void
+test_multiple_choice_separated(void)
 {
 	const char *viewer;
 
@@ -54,12 +60,42 @@ test_multiple_choice(void)
 	assert_true(viewer == NULL);
 }
 
+static void
+test_multiple_choice_joined(void)
+{
+	const char *viewer;
+
+	set_fileviewer("*.tar.bz2", "prog1,prog2");
+
+	config_filetypes(&prog1_available);
+	viewer = get_viewer_for_file("file.version.tar.bz2");
+	assert_true(viewer != NULL);
+	if(viewer != NULL)
+	{
+		assert_string_equal("prog1", viewer);
+	}
+
+	config_filetypes(&prog2_available);
+	viewer = get_viewer_for_file("file.version.tar.bz2");
+	assert_true(viewer != NULL);
+	if(viewer != NULL)
+	{
+		assert_string_equal("prog2", viewer);
+	}
+
+	config_filetypes(&nothing_available);
+	viewer = get_viewer_for_file("file.version.tar.bz2");
+	assert_true(viewer == NULL);
+}
+
 void
 viewers_tests(void)
 {
 	test_fixture_start();
 
-	run_test(test_multiple_choice);
+	run_test(test_null_if_nothing_set);
+	run_test(test_multiple_choice_separated);
+	run_test(test_multiple_choice_joined);
 
 	test_fixture_end();
 }

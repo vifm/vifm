@@ -47,15 +47,14 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
-static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char pattern[],
 		const assoc_records_t *programs, int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 TSTATIC void replace_double_comma(char cmd[], int put_null);
-static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewer(const char *pattern, const char *viewer);
+static void assoc_viewers(const char pattern[], const assoc_records_t *viewers);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
@@ -111,50 +110,35 @@ get_default_program_for_file(const char file[], assoc_record_t *result)
 const char *
 get_viewer_for_file(const char file[])
 {
-	assoc_records_t records;
-	int j;
-	int i = get_filetype_number(file, fileviewers);
-
-	if(i < 0)
-	{
-		return NULL;
-	}
-
-	records = fileviewers.list[i].records;
-
-	j = 0;
-	while(j < records.count)
-	{
-		char name_buf[NAME_MAX];
-		(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
-				name_buf);
-		if(external_command_exists_func == NULL ||
-				external_command_exists_func(name_buf))
-		{
-			break;
-		}
-		++j;
-	}
-	if(j >= records.count)
-	{
-		return NULL;
-	}
-
-	return records.list[j].command;
-}
-
-static int
-get_filetype_number(const char *file, assoc_list_t assoc_list)
-{
 	int i;
-	for(i = 0; i < assoc_list.count; i++)
+
+	for(i = 0; i < fileviewers.count; ++i)
 	{
-		if(global_matches(assoc_list.list[i].pattern, file))
+		int j;
+		assoc_records_t records;
+
+		if(!global_matches(fileviewers.list[i].pattern, file))
 		{
-			return i;
+			continue;
+		}
+
+		records = fileviewers.list[i].records;
+
+		for(j = 0; j < records.count; ++j)
+		{
+			char name_buf[NAME_MAX];
+			(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
+					name_buf);
+
+			if(external_command_exists_func == NULL ||
+					external_command_exists_func(name_buf))
+			{
+				return records.list[j].command;
+			}
 		}
 	}
-	return -1;
+
+	return NULL;
 }
 
 assoc_records_t
@@ -298,22 +282,6 @@ replace_double_comma(char cmd[], int put_null)
 	*p = '\0';
 }
 
-/* Clones list of association records.  Returns the clone. */
-static assoc_records_t
-clone_assoc_records(const assoc_records_t *records)
-{
-	int i;
-	assoc_records_t clone = {};
-
-	for(i = 0; i < records->count; i++)
-	{
-		const assoc_record_t *const record = &records->list[i];
-		add_assoc_record(&clone, record->command, record->description);
-	}
-
-	return clone;
-}
-
 /* Registers association in appropriate associations list and possibly in list
  * of active associations, which depends on association type and execution
  * environment. */
@@ -328,8 +296,10 @@ register_assoc(assoc_t assoc, int for_x, int in_x)
 }
 
 void
-set_fileviewer(const char *patterns, const char *viewer)
+set_fileviewer(const char patterns[], const char viewers[])
 {
+	assoc_records_t view_records = parse_command_list(viewers, 1);
+
 	char *exptr;
 	char *ex_copy = strdup(patterns);
 	char *free_this = ex_copy;
@@ -337,47 +307,42 @@ set_fileviewer(const char *patterns, const char *viewer)
 	{
 		*exptr = '\0';
 
-		assoc_viewer(ex_copy, viewer);
+		assoc_viewers(ex_copy, &view_records);
 
 		ex_copy = exptr + 1;
 	}
-	assoc_viewer(ex_copy, viewer);
+	assoc_viewers(ex_copy, &view_records);
 	free(free_this);
+
+	free_assoc_records(&view_records);
 }
 
 static void
-assoc_viewer(const char *pattern, const char *viewer)
+assoc_viewers(const char pattern[], const assoc_records_t *viewers)
+{
+	const assoc_t assoc =
+	{
+		.pattern = strdup(pattern),
+		.records = clone_assoc_records(viewers),
+	};
+
+	add_assoc(&fileviewers, assoc);
+}
+
+/* Clones list of association records.  Returns the clone. */
+static assoc_records_t
+clone_assoc_records(const assoc_records_t *records)
 {
 	int i;
+	assoc_records_t clone = {};
 
-	if(pattern[0] == '\0')
+	for(i = 0; i < records->count; i++)
 	{
-		return;
-	}
-
-	for(i = 0; i < fileviewers.count; i++)
-	{
-		if(strcasecmp(fileviewers.list[i].pattern, pattern) == 0)
-		{
-			break;
-		}
+		const assoc_record_t *const record = &records->list[i];
+		add_assoc_record(&clone, record->command, record->description);
 	}
 
-	if(i == fileviewers.count)
-	{
-		assoc_t assoc =
-		{
-			.pattern = strdup(pattern),
-			.records.list = NULL,
-			.records.count = 0,
-		};
-		add_assoc_record(&assoc.records, viewer, "");
-		add_assoc(&fileviewers, assoc);
-	}
-	else
-	{
-		add_assoc_record(&fileviewers.list[i].records, viewer, "");
-	}
+	return clone;
 }
 
 static void

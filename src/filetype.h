@@ -90,7 +90,7 @@ const char * get_viewer_for_file(const char file[]);
 void set_programs(const char patterns[], const char programs[], int for_x,
 		int in_x);
 
-void set_fileviewer(const char *patterns, const char *viewer);
+void set_fileviewer(const char patterns[], const char viewer[]);
 
 /* Gets a list of programs associated with a given file name.  Caller should
  * free only the array, but not its elements. */
