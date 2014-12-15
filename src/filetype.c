@@ -187,41 +187,29 @@ get_all_programs_for_file(const char file[])
 void
 set_programs(const char patterns[], const char programs[], int for_x, int in_x)
 {
-	char *exptr;
-	char *ex_copy = strdup(patterns);
-	char *free_this = ex_copy;
-
 	assoc_records_t prog_records = parse_command_list(programs, 1);
 
-	while((exptr = strchr(ex_copy, ',')) != NULL)
+	char *pattern = strdup(patterns), *state = NULL;
+	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
-		*exptr = '\0';
-
-		assoc_programs(ex_copy, &prog_records, for_x, in_x);
-
-		ex_copy = exptr + 1;
+		assoc_programs(pattern, &prog_records, for_x, in_x);
 	}
-	assoc_programs(ex_copy, &prog_records, for_x, in_x);
+	free(pattern);
 
 	free_assoc_records(&prog_records);
-	free(free_this);
 }
 
 /* Associates pattern with list of comma separated programs either for X or
  * non-X associations and depending on current execution environment. */
 static void
-assoc_programs(const char pattern[], const assoc_records_t *programs,
-		int for_x, int in_x)
+assoc_programs(const char pattern[], const assoc_records_t *programs, int for_x,
+		int in_x)
 {
-	assoc_t assoc;
-
-	if(pattern[0] == '\0')
+	const assoc_t assoc =
 	{
-		return;
-	}
-
-	assoc.pattern = strdup(pattern);
-	assoc.records = clone_assoc_records(programs);
+		.pattern = strdup(pattern),
+		.records = clone_assoc_records(programs),
+	};
 
 	register_assoc(assoc, for_x, in_x);
 }
