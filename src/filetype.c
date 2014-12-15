@@ -51,6 +51,7 @@ TSTATIC void replace_double_comma(char cmd[], int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char pattern[], const char programs[],
 		int for_x, int in_x);
+static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
@@ -206,8 +207,6 @@ static void
 assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 {
 	assoc_t assoc;
-	char *prog;
-	char *free_this;
 
 	if(pattern[0] == '\0')
 	{
@@ -215,18 +214,30 @@ assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 	}
 
 	assoc.pattern = strdup(pattern);
-	assoc.records.list = NULL;
-	assoc.records.count = 0;
+	assoc.records = parse_command_list(programs, 1);
 
-	prog = strdup(programs);
-	free_this = prog;
+	register_assoc(assoc, for_x, in_x);
+}
 
-	while(prog != NULL)
+/* Parses comma separated list of commands into array of associations.  Returns
+ * the list. */
+static assoc_records_t
+parse_command_list(const char cmds[], int with_descr)
+{
+	assoc_records_t records = {};
+
+	char *cmd;
+	char *free_this;
+
+	cmd = strdup(cmds);
+	free_this = cmd;
+
+	while(cmd != NULL)
 	{
 		char *ptr;
 		const char *description = "";
 
-		if((ptr = strchr(prog, ',')) != NULL)
+		if((ptr = strchr(cmd, ',')) != NULL)
 		{
 			while(ptr != NULL && ptr[1] == ',')
 			{
@@ -235,37 +246,37 @@ assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 			if(ptr != NULL)
 			{
 				*ptr = '\0';
-				ptr++;
+				++ptr;
 			}
 		}
 
-		while(isspace(*prog) || *prog == ',')
+		while(isspace(*cmd) || *cmd == ',')
 		{
-			prog++;
+			++cmd;
 		}
 
-		if(*prog == '{')
+		if(with_descr && *cmd == '{')
 		{
-			char *p = strchr(prog + 1, '}');
+			char *p = strchr(cmd + 1, '}');
 			if(p != NULL)
 			{
 				*p = '\0';
-				description = prog + 1;
-				prog = skip_whitespace(p + 1);
+				description = cmd + 1;
+				cmd = skip_whitespace(p + 1);
 			}
 		}
 
-		if(prog[0] != '\0')
+		if(cmd[0] != '\0')
 		{
-			replace_double_comma(prog, 0);
-			add_assoc_record(&assoc.records, prog, description);
+			replace_double_comma(cmd, 0);
+			add_assoc_record(&records, cmd, description);
 		}
-		prog = ptr;
+		cmd = ptr;
 	}
 
 	free(free_this);
 
-	register_assoc(assoc, for_x, in_x);
+	return records;
 }
 
 TSTATIC void
