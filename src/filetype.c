@@ -47,6 +47,7 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
+static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(const char pattern[],
 		const assoc_records_t *programs, int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
@@ -71,32 +72,20 @@ config_filetypes(external_command_exists_t ece_func)
 int
 get_default_program_for_file(const char file[], assoc_record_t *result)
 {
-	int j;
 	assoc_records_t records;
 	assoc_record_t prog;
 
-	j = 0;
 	records = get_all_programs_for_file(file);
-	while(j < records.count)
+	prog = find_existing_cmd_record(&records);
+	free(records.list);
+
+	if(prog.command == NULL)
 	{
-		char name_buf[NAME_MAX];
-		(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
-				name_buf);
-		if(external_command_exists_func == NULL ||
-				external_command_exists_func(name_buf))
-			break;
-		j++;
-	}
-	if(j >= records.count)
-	{
-		free(records.list);
 		return 0;
 	}
 
-	prog = records.list[j];
 	result->command = strdup(prog.command);
 	result->description = strdup(prog.description);
-	free(records.list);
 
 	if(result->command == NULL || result->description == NULL)
 	{
@@ -114,8 +103,8 @@ get_viewer_for_file(const char file[])
 
 	for(i = 0; i < fileviewers.count; ++i)
 	{
-		int j;
 		assoc_records_t records;
+		assoc_record_t prog;
 
 		if(!global_matches(fileviewers.list[i].pattern, file))
 		{
@@ -124,21 +113,38 @@ get_viewer_for_file(const char file[])
 
 		records = fileviewers.list[i].records;
 
-		for(j = 0; j < records.count; ++j)
+		prog = find_existing_cmd_record(&records);
+		if(prog.command != NULL)
 		{
-			char name_buf[NAME_MAX];
-			(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
-					name_buf);
-
-			if(external_command_exists_func == NULL ||
-					external_command_exists_func(name_buf))
-			{
-				return records.list[j].command;
-			}
+			return prog.command;
 		}
 	}
 
 	return NULL;
+}
+
+/* Finds record that corresponds to an external command that is available.
+ * Returns the record on success or an empty record on failure. */
+static assoc_record_t
+find_existing_cmd_record(const assoc_records_t *records)
+{
+	static assoc_record_t empty_record;
+
+	int i;
+	for(i = 0; i < records->count; ++i)
+	{
+		char cmd_name[NAME_MAX];
+		(void)extract_cmd_name(records->list[i].command, 0, sizeof(cmd_name),
+				cmd_name);
+
+		if(external_command_exists_func == NULL ||
+				external_command_exists_func(cmd_name))
+		{
+			return records->list[i];
+		}
+	}
+
+	return empty_record;
 }
 
 assoc_records_t
