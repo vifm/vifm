@@ -2194,7 +2194,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	records = skip_non_whitespace(cmd_info->args);
 	records = skip_whitespace(records + 1);
 
-	set_fileviewer(cmd_info->argv[0], records);
+	set_fileviewers(cmd_info->argv[0], records);
 	return 0;
 }
 

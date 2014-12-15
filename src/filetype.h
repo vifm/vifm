@@ -84,13 +84,15 @@ int get_default_program_for_file(const char file[], assoc_record_t *result);
  * otherwise returns pointer to string stored internally. */
 const char * get_viewer_for_file(const char file[]);
 
-/* Associates list of comma separated patterns with list of comma separated
- * programs either for X or non-X associations and depending on current
- * execution environment. */
+/* Associates list of comma separated patterns with each item in the list of
+ * comma separated programs either for X or non-X associations and depending on
+ * current execution environment. */
 void set_programs(const char patterns[], const char programs[], int for_x,
 		int in_x);
 
-void set_fileviewer(const char patterns[], const char viewer[]);
+/* Associates list of comma separated patterns with each item in the list of
+ * comma separated viewers. */
+void set_fileviewers(const char patterns[], const char viewers[]);
 
 /* Gets a list of programs associated with a given file name.  Caller should
  * free only the array, but not its elements. */

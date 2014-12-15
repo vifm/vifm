@@ -36,8 +36,8 @@ test_multiple_choice_separated(void)
 {
 	const char *viewer;
 
-	set_fileviewer("*.tar.bz2", "prog1");
-	set_fileviewer("*.tar.bz2", "prog2");
+	set_fileviewers("*.tar.bz2", "prog1");
+	set_fileviewers("*.tar.bz2", "prog2");
 
 	config_filetypes(&prog1_available);
 	viewer = get_viewer_for_file("file.version.tar.bz2");
@@ -65,7 +65,7 @@ test_multiple_choice_joined(void)
 {
 	const char *viewer;
 
-	set_fileviewer("*.tar.bz2", "prog1,prog2");
+	set_fileviewers("*.tar.bz2", "prog1,prog2");
 
 	config_filetypes(&prog1_available);
 	viewer = get_viewer_for_file("file.version.tar.bz2");

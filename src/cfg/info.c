@@ -149,7 +149,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				set_fileviewer(line_val, line2);
+				set_fileviewers(line_val, line2);
 			}
 		}
 		else if(type == LINE_TYPE_COMMAND)
