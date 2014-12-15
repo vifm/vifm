@@ -189,8 +189,8 @@ set_programs(const char patterns[], const char programs[], int for_x, int in_x)
 	free_assoc_records(&prog_records);
 }
 
-/* Associates pattern with list of comma separated programs either for X or
- * non-X associations and depending on current execution environment. */
+/* Associates pattern with the list of programs either for X or non-X
+ * associations and depending on current execution environment. */
 static void
 assoc_programs(const char pattern[], const assoc_records_t *programs, int for_x,
 		int in_x)
@@ -316,6 +316,7 @@ set_fileviewers(const char patterns[], const char viewers[])
 	free_assoc_records(&view_records);
 }
 
+/* Associates pattern with the list of viewers. */
 static void
 assoc_viewers(const char pattern[], const assoc_records_t *viewers)
 {
