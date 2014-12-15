@@ -47,11 +47,12 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
-TSTATIC void replace_double_comma(char cmd[], int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
-static void assoc_programs(const char pattern[], const char programs[],
-		int for_x, int in_x);
+static void assoc_programs(const char pattern[],
+		const assoc_records_t *programs, int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
+TSTATIC void replace_double_comma(char cmd[], int put_null);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
@@ -189,22 +190,28 @@ set_programs(const char patterns[], const char programs[], int for_x, int in_x)
 	char *exptr;
 	char *ex_copy = strdup(patterns);
 	char *free_this = ex_copy;
+
+	assoc_records_t prog_records = parse_command_list(programs, 1);
+
 	while((exptr = strchr(ex_copy, ',')) != NULL)
 	{
 		*exptr = '\0';
 
-		assoc_programs(ex_copy, programs, for_x, in_x);
+		assoc_programs(ex_copy, &prog_records, for_x, in_x);
 
 		ex_copy = exptr + 1;
 	}
-	assoc_programs(ex_copy, programs, for_x, in_x);
+	assoc_programs(ex_copy, &prog_records, for_x, in_x);
+
+	free_assoc_records(&prog_records);
 	free(free_this);
 }
 
 /* Associates pattern with list of comma separated programs either for X or
  * non-X associations and depending on current execution environment. */
 static void
-assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
+assoc_programs(const char pattern[], const assoc_records_t *programs,
+		int for_x, int in_x)
 {
 	assoc_t assoc;
 
@@ -214,7 +221,7 @@ assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 	}
 
 	assoc.pattern = strdup(pattern);
-	assoc.records = parse_command_list(programs, 1);
+	assoc.records = clone_assoc_records(programs);
 
 	register_assoc(assoc, for_x, in_x);
 }
@@ -301,6 +308,22 @@ replace_double_comma(char cmd[], int put_null)
 		*p++ = *cmd++;
 	}
 	*p = '\0';
+}
+
+/* Clones list of association records.  Returns the clone. */
+static assoc_records_t
+clone_assoc_records(const assoc_records_t *records)
+{
+	int i;
+	assoc_records_t clone = {};
+
+	for(i = 0; i < records->count; i++)
+	{
+		const assoc_record_t *const record = &records->list[i];
+		add_assoc_record(&clone, record->command, record->description);
+	}
+
+	return clone;
 }
 
 /* Registers association in appropriate associations list and possibly in list
