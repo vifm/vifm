@@ -11,14 +11,14 @@ test_one_pattern(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar", "{description} tar prog", 0, 0);
+	ft_set_programs("*.tar", "{description} tar prog", 0, 0);
 
-	success = get_default_program_for_file("file.version.tar", &program);
+	success = ft_get_program("file.version.tar", &program);
 	assert_true(success);
 	if(success)
 	{
 		assert_string_equal("description", program.description);
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 }
 
@@ -28,22 +28,22 @@ test_two_patterns(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
+	ft_set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
 
-	success = get_default_program_for_file("file.version.tar", &program);
+	success = ft_get_program("file.version.tar", &program);
 	assert_true(success);
 	if(success)
 	{
 		assert_string_equal("archives", program.description);
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 
-	success = get_default_program_for_file("file.version.zip", &program);
+	success = ft_get_program("file.version.zip", &program);
 	assert_true(success);
 	if(success)
 	{
 		assert_string_equal("archives", program.description);
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 }
 
@@ -52,9 +52,9 @@ test_two_programs(void)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
+	ft_set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
 
-	ft = get_all_programs_for_file("a.tar");
+	ft = ft_get_all_programs("a.tar");
 
 	assert_int_equal(2, ft.count);
 

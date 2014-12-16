@@ -345,9 +345,9 @@ main(int argc, char *argv[])
 
 	/* Tell file type module what function to use to check availability of
 	 * external programs. */
-	config_filetypes(&external_command_exists);
+	ft_init(&external_command_exists);
 	/* This should be called before loading any configuration file. */
-	reset_all_file_associations(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	ft_reset(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 
 	init_option_handlers();
 
@@ -693,7 +693,7 @@ vifm_restart(void)
 	curr_view = tmp_view;
 
 	/* File types and viewers. */
-	reset_all_file_associations(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	ft_reset(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 
 	/* Undo list. */
 	reset_undo_list();

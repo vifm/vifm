@@ -16,13 +16,13 @@ void viewers_tests(void);
 static void
 setup(void)
 {
-	config_filetypes(NULL);
+	ft_init(NULL);
 }
 
 static void
 teardown(void)
 {
-	reset_all_file_associations(0);
+	ft_reset(0);
 }
 
 static void

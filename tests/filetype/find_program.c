@@ -19,17 +19,17 @@ test_find_program(void)
 	assoc_record_t program;
 	int success;
 
-	config_filetypes(&prog_exists);
+	ft_init(&prog_exists);
 
-	set_programs("*.tar.bz2", "no console prog", 0, 0);
-	set_programs("*.tar.bz2", "console prog", 0, 0);
+	ft_set_programs("*.tar.bz2", "no console prog", 0, 0);
+	ft_set_programs("*.tar.bz2", "console prog", 0, 0);
 
-	success = get_default_program_for_file("file.version.tar.bz2", &program);
+	success = ft_get_program("file.version.tar.bz2", &program);
 	assert_true(success);
 	if(success)
 	{
 		assert_string_equal("console prog", program.command);
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 }
 

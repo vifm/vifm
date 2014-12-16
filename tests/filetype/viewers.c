@@ -28,7 +28,7 @@ nothing_available(const char name[])
 static void
 test_null_if_nothing_set(void)
 {
-	assert_true(get_viewer_for_file("file.version.tar.bz2") == NULL);
+	assert_true(ft_get_viewer("file.version.tar.bz2") == NULL);
 }
 
 static void
@@ -36,27 +36,27 @@ test_multiple_choice_separated(void)
 {
 	const char *viewer;
 
-	set_fileviewers("*.tar.bz2", "prog1");
-	set_fileviewers("*.tar.bz2", "prog2");
+	ft_set_viewers("*.tar.bz2", "prog1");
+	ft_set_viewers("*.tar.bz2", "prog2");
 
-	config_filetypes(&prog1_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&prog1_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer != NULL);
 	if(viewer != NULL)
 	{
 		assert_string_equal("prog1", viewer);
 	}
 
-	config_filetypes(&prog2_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&prog2_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer != NULL);
 	if(viewer != NULL)
 	{
 		assert_string_equal("prog2", viewer);
 	}
 
-	config_filetypes(&nothing_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&nothing_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer == NULL);
 }
 
@@ -65,26 +65,26 @@ test_multiple_choice_joined(void)
 {
 	const char *viewer;
 
-	set_fileviewers("*.tar.bz2", "prog1,prog2");
+	ft_set_viewers("*.tar.bz2", "prog1,prog2");
 
-	config_filetypes(&prog1_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&prog1_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer != NULL);
 	if(viewer != NULL)
 	{
 		assert_string_equal("prog1", viewer);
 	}
 
-	config_filetypes(&prog2_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&prog2_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer != NULL);
 	if(viewer != NULL)
 	{
 		assert_string_equal("prog2", viewer);
 	}
 
-	config_filetypes(&nothing_available);
-	viewer = get_viewer_for_file("file.version.tar.bz2");
+	ft_init(&nothing_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
 	assert_true(viewer == NULL);
 }
 

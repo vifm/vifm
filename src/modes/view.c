@@ -989,7 +989,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	FILE *fp;
 
 	char *const typed_fname = get_typed_fname(file_to_view);
-	const char *const viewer = get_viewer_for_file(typed_fname);
+	const char *const viewer = ft_get_viewer(typed_fname);
 	free(typed_fname);
 
 	if(is_null_or_empty(viewer))

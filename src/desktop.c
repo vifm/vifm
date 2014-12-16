@@ -133,7 +133,7 @@ process_file(const char *path, const char *file_mime_type,
 	}
 
 	expand_desktop(exec, buf);
-	add_assoc_record(result, buf, name);
+	ft_assoc_record_add(result, buf, name);
 }
 
 static void

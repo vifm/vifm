@@ -342,7 +342,7 @@ run_file(FileView *view, int dont_execute)
 		clean_selected_files(view);
 
 	typed_fname = get_typed_current_fname(view);
-	(void)get_default_program_for_file(typed_fname, &program);
+	(void)ft_get_program(typed_fname, &program);
 	free(typed_fname);
 
 	no_multi_run += !multi_run_compat(view, program.command);
@@ -360,12 +360,12 @@ run_file(FileView *view, int dont_execute)
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
-			free_assoc_record(&program);
+			ft_assoc_record_free(&program);
 			return;
 		}
 
 		typed_fname = get_typed_entry_fname(entry);
-		has_def_prog = get_default_program_for_file(typed_fname, &prog);
+		has_def_prog = ft_get_program(typed_fname, &prog);
 		free(typed_fname);
 
 		if(!has_def_prog)
@@ -375,9 +375,9 @@ run_file(FileView *view, int dont_execute)
 		}
 
 		no_multi_run += !multi_run_compat(view, prog.command);
-		if(assoc_prog_is_empty(&program))
+		if(ft_assoc_record_is_empty(&program))
 		{
-			free_assoc_record(&program);
+			ft_assoc_record_free(&program);
 			program = prog;
 		}
 		else
@@ -386,19 +386,19 @@ run_file(FileView *view, int dont_execute)
 			{
 				same = 0;
 			}
-			free_assoc_record(&prog);
+			ft_assoc_record_free(&prog);
 		}
 	}
 
 	if(!same && undef == 0 && no_multi_run)
 	{
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 		show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
 	{
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 
 	/* Check for a filetype */
@@ -426,7 +426,7 @@ run_file(FileView *view, int dont_execute)
 
 		const int pos = view->list_pos;
 
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 
 		entry = NULL;
 		while(iter_selected_entries(view, &entry))
@@ -434,13 +434,13 @@ run_file(FileView *view, int dont_execute)
 			char *typed_fname;
 
 			typed_fname = get_typed_entry_fname(entry);
-			(void)get_default_program_for_file(typed_fname, &program);
+			(void)ft_get_program(typed_fname, &program);
 			free(typed_fname);
 
 			view->list_pos = entry_to_pos(view, entry);
 			run_using_prog(view, program.command, dont_execute, 0);
 
-			free_assoc_record(&program);
+			ft_assoc_record_free(&program);
 		}
 
 		view->list_pos = pos;
@@ -448,7 +448,7 @@ run_file(FileView *view, int dont_execute)
 	else
 	{
 		run_using_prog(view, program.command, dont_execute, 0);
-		free_assoc_record(&program);
+		ft_assoc_record_free(&program);
 	}
 }
 
@@ -937,7 +937,7 @@ int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
 	char *const typed_fname = get_typed_current_fname(view);
-	assoc_records_t ft = get_all_programs_for_file(typed_fname);
+	assoc_records_t ft = ft_get_all_programs(typed_fname);
 	assoc_records_t magic = get_magic_handlers(typed_fname);
 	free(typed_fname);
 
