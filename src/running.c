@@ -332,7 +332,7 @@ run_file(FileView *view, int dont_execute)
 	/* TODO: refactor this function run_file() */
 
 	char *typed_fname;
-	assoc_record_t program = {};
+	const char *multi_prog_cmd;
 	int undef;
 	int same;
 	dir_entry_t *entry;
@@ -342,68 +342,60 @@ run_file(FileView *view, int dont_execute)
 		clean_selected_files(view);
 
 	typed_fname = get_typed_current_fname(view);
-	(void)ft_get_program(typed_fname, &program);
+	multi_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	no_multi_run += !multi_run_compat(view, program.command);
+	no_multi_run += !multi_run_compat(view, multi_prog_cmd);
 	undef = 0;
 	same = 1;
 
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		assoc_record_t prog;
 		char *typed_fname;
-		int has_def_prog;
+		const char *entry_prog_cmd;
 
 		if(!path_exists(entry->name))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
-			ft_assoc_record_free(&program);
 			return;
 		}
 
 		typed_fname = get_typed_entry_fname(entry);
-		has_def_prog = ft_get_program(typed_fname, &prog);
+		entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
-		if(!has_def_prog)
+		if(entry_prog_cmd == NULL)
 		{
 			++undef;
 			continue;
 		}
 
-		no_multi_run += !multi_run_compat(view, prog.command);
-		if(ft_assoc_record_is_empty(&program))
+		no_multi_run += !multi_run_compat(view, entry_prog_cmd);
+		if(multi_prog_cmd == NULL)
 		{
-			ft_assoc_record_free(&program);
-			program = prog;
+			multi_prog_cmd = entry_prog_cmd;
 		}
-		else
+		else if(strcmp(entry_prog_cmd, multi_prog_cmd) != 0)
 		{
-			if(strcmp(prog.command, program.command) != 0)
-			{
-				same = 0;
-			}
-			ft_assoc_record_free(&prog);
+			same = 0;
 		}
 	}
 
 	if(!same && undef == 0 && no_multi_run)
 	{
-		ft_assoc_record_free(&program);
 		show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
 	{
-		ft_assoc_record_free(&program);
+		multi_prog_cmd = NULL;
 	}
 
 	/* Check for a filetype */
 	/* vi is set as the default for any extension without a program */
-	if(program.command == NULL)
+	if(multi_prog_cmd == NULL)
 	{
 		if(view->dir_entry[view->list_pos].type == DIRECTORY)
 		{
@@ -426,29 +418,25 @@ run_file(FileView *view, int dont_execute)
 
 		const int pos = view->list_pos;
 
-		ft_assoc_record_free(&program);
-
 		entry = NULL;
 		while(iter_selected_entries(view, &entry))
 		{
 			char *typed_fname;
+			const char *entry_prog_cmd;
 
 			typed_fname = get_typed_entry_fname(entry);
-			(void)ft_get_program(typed_fname, &program);
+			entry_prog_cmd = ft_get_program(typed_fname);
 			free(typed_fname);
 
 			view->list_pos = entry_to_pos(view, entry);
-			run_using_prog(view, program.command, dont_execute, 0);
-
-			ft_assoc_record_free(&program);
+			run_using_prog(view, entry_prog_cmd, dont_execute, 0);
 		}
 
 		view->list_pos = pos;
 	}
 	else
 	{
-		run_using_prog(view, program.command, dont_execute, 0);
-		ft_assoc_record_free(&program);
+		run_using_prog(view, multi_prog_cmd, dont_execute, 0);
 	}
 }
 

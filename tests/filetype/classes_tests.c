@@ -8,96 +8,62 @@
 static void
 test_enumeration(void)
 {
-	assoc_record_t program;
-	int success;
+	const char *prog_cmd;
 
 	ft_set_programs("*.[ch]", "c file", 0, 0);
 
-	assert_false(ft_get_program("main.cpp", &program));
-	assert_false(ft_get_program("main.hpp", &program));
+	assert_true((prog_cmd = ft_get_program("main.cpp")) == NULL);
+	assert_true((prog_cmd = ft_get_program("main.hpp")) == NULL);
 
-	success = ft_get_program("main.c", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("c file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.c")) != NULL);
+	assert_string_equal("c file", prog_cmd);
 
-	success = ft_get_program("main.h", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("c file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.h")) != NULL);
+	assert_string_equal("c file", prog_cmd);
 }
 
 static void
 test_negotiation_with_emark(void)
 {
-	assoc_record_t program;
-	int success;
+	const char *prog_cmd;
 
 	ft_set_programs("*.[!ch]", "not c file", 0, 0);
 
-	assert_false(ft_get_program("main.c", &program));
-	assert_false(ft_get_program("main.h", &program));
+	assert_false((prog_cmd = ft_get_program("main.c")) != NULL);
+	assert_false((prog_cmd = ft_get_program("main.h")) != NULL);
 
-	success = ft_get_program("main.o", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("not c file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.o")) != NULL);
+	assert_string_equal("not c file", prog_cmd);
 }
 
 static void
 test_negotiation_with_hat(void)
 {
-	assoc_record_t program;
-	int success;
+	const char *prog_cmd;
 
 	ft_set_programs("*.[^ch]", "not c file", 0, 0);
 
-	assert_false(ft_get_program("main.c", &program));
-	assert_false(ft_get_program("main.h", &program));
+	assert_false((prog_cmd = ft_get_program("main.c")) != NULL);
+	assert_false((prog_cmd = ft_get_program("main.h")) != NULL);
 
-	success = ft_get_program("main.o", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("not c file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.o")) != NULL);
+	assert_string_equal("not c file", prog_cmd);
 }
 
 static void
 test_ranges(void)
 {
-	assoc_record_t program;
-	int success;
+	const char *prog_cmd;
 
 	ft_set_programs("*.[0-9]", "part file", 0, 0);
 
-	assert_false(ft_get_program("main.A", &program));
+	assert_false((prog_cmd = ft_get_program("main.A")) != NULL);
 
-	success = ft_get_program("main.0", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("part file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.0")) != NULL);
+	assert_string_equal("part file", prog_cmd);
 
-	success = ft_get_program("main.8", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("part file", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("main.8")) != NULL);
+	assert_string_equal("part file", prog_cmd);
 }
 
 void
@@ -113,4 +79,5 @@ classes_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

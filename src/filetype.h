@@ -84,10 +84,9 @@ void ft_reset(int in_x);
 
 /* Programs. */
 
-/* Gets default program that can be used to handle the file.  Returns non-zero
- * on success, otherwise zero is returned.
- * TODO: just return "const char*". */
-int ft_get_program(const char file[], assoc_record_t *result);
+/* Gets default program that can be used to handle the file.  Returns command
+ * on success, otherwise NULL is returned. */
+const char * ft_get_program(const char file[]);
 
 /* Gets a list of programs associated with a given file name.  Caller should
  * free only the array, but not its elements. */
@@ -117,14 +116,8 @@ void ft_assoc_record_add(assoc_records_t *assocs, const char *command,
 void ft_assoc_record_add_all(assoc_records_t *assocs,
 		const assoc_records_t *src);
 
-/* Returns non-zero for an empty assoc_record_t structure. */
-int ft_assoc_record_is_empty(const assoc_record_t *record);
-
 /* After this call the structure contains NULL values. */
 void ft_assoc_records_free(assoc_records_t *records);
-
-/* After this call the structure contains NULL values. */
-void ft_assoc_record_free(assoc_record_t *record);
 
 TSTATIC_DEFS(
 	void replace_double_comma(char cmd[], int put_null);

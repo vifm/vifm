@@ -8,42 +8,44 @@
 static void
 test_one_pattern(void)
 {
-	assoc_record_t program;
-	int success;
+	assoc_records_t ft;
 
 	ft_set_programs("*.tar", "{description} tar prog", 0, 0);
 
-	success = ft_get_program("file.version.tar", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("description", program.description);
-		ft_assoc_record_free(&program);
-	}
+	ft = ft_get_all_programs("file.version.tar");
+	assert_int_equal(1, ft.count);
+
+	assert_true(ft.list[0].command != NULL);
+	assert_string_equal("description", ft.list[0].description);
+
+	free(ft.list);
 }
 
 static void
 test_two_patterns(void)
 {
-	assoc_record_t program;
-	int success;
+	assoc_records_t ft;
 
 	ft_set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
 
-	success = ft_get_program("file.version.tar", &program);
-	assert_true(success);
-	if(success)
 	{
-		assert_string_equal("archives", program.description);
-		ft_assoc_record_free(&program);
+		ft = ft_get_all_programs("file.version.tar");
+		assert_int_equal(1, ft.count);
+
+		assert_true(ft.list[0].command != NULL);
+		assert_string_equal("archives", ft.list[0].description);
+
+		free(ft.list);
 	}
 
-	success = ft_get_program("file.version.zip", &program);
-	assert_true(success);
-	if(success)
 	{
-		assert_string_equal("archives", program.description);
-		ft_assoc_record_free(&program);
+		ft = ft_get_all_programs("file.version.zip");
+		assert_int_equal(1, ft.count);
+
+		assert_true(ft.list[0].command != NULL);
+		assert_string_equal("archives", ft.list[0].description);
+
+		free(ft.list);
 	}
 }
 
@@ -79,4 +81,5 @@ description_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

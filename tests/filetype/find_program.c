@@ -16,21 +16,15 @@ prog_exists(const char name[])
 static void
 test_find_program(void)
 {
-	assoc_record_t program;
-	int success;
+	const char *prog_cmd;
 
 	ft_init(&prog_exists);
 
 	ft_set_programs("*.tar.bz2", "no console prog", 0, 0);
 	ft_set_programs("*.tar.bz2", "console prog", 0, 0);
 
-	success = ft_get_program("file.version.tar.bz2", &program);
-	assert_true(success);
-	if(success)
-	{
-		assert_string_equal("console prog", program.command);
-		ft_assoc_record_free(&program);
-	}
+	assert_true((prog_cmd = ft_get_program("file.version.tar.bz2")) != NULL);
+	assert_string_equal("console prog", prog_cmd);
 }
 
 void

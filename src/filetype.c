@@ -60,8 +60,10 @@ static void reset_all_list(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
+static void free_assoc_record(assoc_record_t *record);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
+static int is_assoc_record_empty(const assoc_record_t *record);
 
 void
 ft_init(external_command_exists_t ece_func)
@@ -69,8 +71,8 @@ ft_init(external_command_exists_t ece_func)
 	external_command_exists_func = ece_func;
 }
 
-int
-ft_get_program(const char file[], assoc_record_t *result)
+const char *
+ft_get_program(const char file[])
 {
 	assoc_records_t records;
 	assoc_record_t prog;
@@ -79,21 +81,7 @@ ft_get_program(const char file[], assoc_record_t *result)
 	prog = find_existing_cmd_record(&records);
 	free(records.list);
 
-	if(prog.command == NULL)
-	{
-		return 0;
-	}
-
-	result->command = strdup(prog.command);
-	result->description = strdup(prog.description);
-
-	if(result->command == NULL || result->description == NULL)
-	{
-		ft_assoc_record_free(result);
-		return 0;
-	}
-
-	return 1;
+	return prog.command;
 }
 
 const char *
@@ -114,7 +102,7 @@ ft_get_viewer(const char file[])
 		records = fileviewers.list[i].records;
 
 		prog = find_existing_cmd_record(&records);
-		if(!ft_assoc_record_is_empty(&prog))
+		if(!is_assoc_record_empty(&prog))
 		{
 			return prog.command;
 		}
@@ -419,7 +407,7 @@ ft_assoc_records_free(assoc_records_t *records)
 	int i;
 	for(i = 0; i < records->count; i++)
 	{
-		ft_assoc_record_free(&records->list[i]);
+		free_assoc_record(&records->list[i]);
 	}
 
 	free(records->list);
@@ -427,8 +415,9 @@ ft_assoc_records_free(assoc_records_t *records)
 	records->count = 0;
 }
 
-void
-ft_assoc_record_free(assoc_record_t *record)
+/* After this call the structure contains NULL values. */
+static void
+free_assoc_record(assoc_record_t *record)
 {
 	safe_free(&record->command);
 	safe_free(&record->description);
@@ -491,8 +480,9 @@ safe_free(char **adr)
 	*adr = NULL;
 }
 
-int
-ft_assoc_record_is_empty(const assoc_record_t *record)
+/* Returns non-zero for an empty assoc_record_t structure. */
+static int
+is_assoc_record_empty(const assoc_record_t *record)
 {
 	return record->command == NULL && record->description == NULL;
 }
