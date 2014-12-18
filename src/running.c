@@ -77,7 +77,9 @@ static int selection_is_consistent(const FileView *const view);
 static void execute_file(const char full_path[]);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
-static int multi_run_compat(FileView *view, const char *program);
+static void run_with_defaults(FileView *view);
+static void run_selection_separately(FileView *view, int dont_execute);
+static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -336,16 +338,18 @@ run_file(FileView *view, int dont_execute)
 	int undef;
 	int same;
 	dir_entry_t *entry;
-	int no_multi_run = 0;
+	int no_multi_run;
 
 	if(!view->dir_entry[view->list_pos].selected)
+	{
 		clean_selected_files(view);
+	}
 
 	typed_fname = get_typed_current_fname(view);
 	multi_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	no_multi_run += !multi_run_compat(view, multi_prog_cmd);
+	no_multi_run = !is_multi_run_compat(view, multi_prog_cmd);
 	undef = 0;
 	same = 1;
 
@@ -372,7 +376,7 @@ run_file(FileView *view, int dont_execute)
 			continue;
 		}
 
-		no_multi_run += !multi_run_compat(view, entry_prog_cmd);
+		no_multi_run += !is_multi_run_compat(view, entry_prog_cmd);
 		if(multi_prog_cmd == NULL)
 		{
 			multi_prog_cmd = entry_prog_cmd;
@@ -385,7 +389,7 @@ run_file(FileView *view, int dont_execute)
 
 	if(!same && undef == 0 && no_multi_run)
 	{
-		show_error_msg("Selection error", "Files have different programs");
+		show_error_msg("Run error", "Handlers of selected files are incompatible.");
 		return;
 	}
 	if(undef > 0)
@@ -397,64 +401,82 @@ run_file(FileView *view, int dont_execute)
 	/* vi is set as the default for any extension without a program */
 	if(multi_prog_cmd == NULL)
 	{
-		if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		{
-			handle_dir(view);
-		}
-		else if(view->selected_files <= 1)
-		{
-			view_current_file(view);
-		}
-		else if(vim_edit_selection() != 0)
-		{
-			show_error_msg("Running error", "Can't edit selection");
-		}
+		run_with_defaults(view);
 		return;
 	}
 
-	if(!no_multi_run)
-	{
-		dir_entry_t *entry;
-
-		const int pos = view->list_pos;
-
-		entry = NULL;
-		while(iter_selected_entries(view, &entry))
-		{
-			char *typed_fname;
-			const char *entry_prog_cmd;
-
-			typed_fname = get_typed_entry_fname(entry);
-			entry_prog_cmd = ft_get_program(typed_fname);
-			free(typed_fname);
-
-			view->list_pos = entry_to_pos(view, entry);
-			run_using_prog(view, entry_prog_cmd, dont_execute, 0);
-		}
-
-		view->list_pos = pos;
-	}
-	else
+	if(no_multi_run)
 	{
 		run_using_prog(view, multi_prog_cmd, dont_execute, 0);
 	}
+	else
+	{
+		run_selection_separately(view, dont_execute);
+	}
 }
 
+/* Runs current file entry of the view in a generic way (entering directories
+ * and opening files in editors). */
+static void
+run_with_defaults(FileView *view)
+{
+	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+	{
+		handle_dir(view);
+	}
+	else if(view->selected_files <= 1)
+	{
+		view_current_file(view);
+	}
+	else if(vim_edit_selection() != 0)
+	{
+		show_error_msg("Running error", "Can't edit selection");
+	}
+}
+
+/* Runs each of selected file entries of the view individually. */
+static void
+run_selection_separately(FileView *view, int dont_execute)
+{
+	dir_entry_t *entry;
+
+	const int pos = view->list_pos;
+
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
+	{
+		char *typed_fname;
+		const char *entry_prog_cmd;
+
+		typed_fname = get_typed_entry_fname(entry);
+		entry_prog_cmd = ft_get_program(typed_fname);
+		free(typed_fname);
+
+		view->list_pos = entry_to_pos(view, entry);
+		run_using_prog(view, entry_prog_cmd, dont_execute, 0);
+	}
+
+	view->list_pos = pos;
+}
+
+/* Checks whether command is compatible with firing multiple file handlers for a
+ * set of selected files.  Returns non-zero if so, otherwise zero is
+ * returned. */
 static int
-multi_run_compat(FileView *view, const char *program)
+is_multi_run_compat(FileView *view, const char prog_cmd[])
 {
 	size_t len;
-	if(program == NULL)
+	if(prog_cmd == NULL)
 		return 0;
 	if(view->selected_files <= 1)
 		return 0;
-	if((len = strlen(program)) == 0)
+	if((len = strlen(prog_cmd)) == 0)
 		return 0;
-	if(program[len - 1] != '&')
+	if(prog_cmd[len - 1] != '&')
 		return 0;
-	if(strstr(program, "%f") != NULL || strstr(program, "%F") != NULL)
+	if(strstr(prog_cmd, "%f") != NULL || strstr(prog_cmd, "%F") != NULL)
 		return 0;
-	if(strstr(program, "%c") == NULL && strstr(program, "%C") == NULL)
+	if(strstr(prog_cmd, "%c") == NULL && strstr(prog_cmd, "%C") == NULL)
 		return 0;
 	return 1;
 }
