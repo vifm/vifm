@@ -88,6 +88,18 @@ test_multiple_choice_joined(void)
 	assert_true(viewer == NULL);
 }
 
+static void
+test_description_is_not_allowed(void)
+{
+	const char *viewer;
+
+	ft_set_viewers("*.tar.bz2", "{archives} prog1");
+
+	ft_init(&prog1_available);
+	viewer = ft_get_viewer("file.version.tar.bz2");
+	assert_true(viewer == NULL);
+}
+
 void
 viewers_tests(void)
 {
@@ -96,6 +108,7 @@ viewers_tests(void)
 	run_test(test_null_if_nothing_set);
 	run_test(test_multiple_choice_separated);
 	run_test(test_multiple_choice_joined);
+	run_test(test_description_is_not_allowed);
 
 	test_fixture_end();
 }

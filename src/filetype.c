@@ -293,7 +293,7 @@ register_assoc(assoc_t assoc, int for_x, int in_x)
 void
 ft_set_viewers(const char patterns[], const char viewers[])
 {
-	assoc_records_t view_records = parse_command_list(viewers, 1);
+	assoc_records_t view_records = parse_command_list(viewers, 0);
 
 	char *pattern = strdup(patterns), *state = NULL;
 	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
