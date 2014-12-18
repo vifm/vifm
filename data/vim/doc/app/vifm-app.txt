@@ -1329,14 +1329,18 @@ The builtin commands are:
     in native console.
 
                                                *vifm-:fileviewer* *vifm-:filev*
-:filev[iewer] pat1,pat2,... command - will associate given command as a
-    viewer to each of the patterns.  Viewer is a command which output is
-    captured and displayed in the second pane of vifm after running :view
-    command.  When the command doesn't contain any of vifm macros, name of
-    current file is appended as if command ended with %c macro.  See
-    |vifm-globs| for pattern definition.  Example for zip archives: >
+:filev[iewer] pat1,pat2,... command1,command2,... - register specified list of
+    commands as viewers for each of the patterns.  Viewer is a command which
+    output is captured and displayed in the second pane of vifm after running
+    |vifm-:view| command.  When the command doesn't contain any of vifm macros,
+    name of current file is appended as if command ended with |vifm-%c| macro.
+    Comma escaping and missing commands processing rules as for
+    |vifm-:filetype| apply to this command.  See |vifm-globs| for pattern
+    definition.
 
-    fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+    Example for zip archives: >
+
+     fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c, echo "No zip to preview:"
 <
                                                *vifm-:filter*
 :filter[!] regular_expression
