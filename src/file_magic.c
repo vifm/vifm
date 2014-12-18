@@ -165,7 +165,7 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 static assoc_records_t
 get_handlers(const char *mime_type)
 {
-	free_assoc_records(&handlers);
+	ft_assoc_records_free(&handlers);
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 	parse_app_dir("/usr/share/applications", mime_type, &handlers);
@@ -181,8 +181,8 @@ parse_app_dir(const char *directory, const char *mime_type,
 		assoc_records_t *result)
 {
 	assoc_records_t desktop_assocs = parse_desktop_files(directory, mime_type);
-	add_assoc_records(result, &desktop_assocs);
-	free_assoc_records(&desktop_assocs);
+	ft_assoc_record_add_all(result, &desktop_assocs);
+	ft_assoc_records_free(&desktop_assocs);
 }
 #endif
 

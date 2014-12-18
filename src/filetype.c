@@ -20,6 +20,7 @@
 #include "filetype.h"
 
 #include <ctype.h> /* isspace() */
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
@@ -46,94 +47,96 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
+static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
+static void assoc_programs(const char pattern[],
+		const assoc_records_t *programs, int for_x, int in_x);
+static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 TSTATIC void replace_double_comma(char cmd[], int put_null);
-static int get_filetype_number(const char *file, assoc_list_t assoc_list);
-static void assoc_programs(const char pattern[], const char programs[],
-		int for_x, int in_x);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewer(const char *pattern, const char *viewer);
+static void assoc_viewers(const char pattern[], const assoc_records_t *viewers);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
+static void free_assoc_record(assoc_record_t *record);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
+static int is_assoc_record_empty(const assoc_record_t *record);
 
 void
-config_filetypes(external_command_exists_t ece_func)
+ft_init(external_command_exists_t ece_func)
 {
 	external_command_exists_func = ece_func;
 }
 
-int
-get_default_program_for_file(const char file[], assoc_record_t *result)
+const char *
+ft_get_program(const char file[])
 {
-	int j;
 	assoc_records_t records;
 	assoc_record_t prog;
 
-	j = 0;
-	records = get_all_programs_for_file(file);
-	while(j < records.count)
-	{
-		char name_buf[NAME_MAX];
-		(void)extract_cmd_name(records.list[j].command, 0, sizeof(name_buf),
-				name_buf);
-		if(external_command_exists_func == NULL ||
-				external_command_exists_func(name_buf))
-			break;
-		j++;
-	}
-	if(j >= records.count)
-	{
-		free(records.list);
-		return 0;
-	}
-
-	prog = records.list[j];
-	result->command = strdup(prog.command);
-	result->description = strdup(prog.description);
+	records = ft_get_all_programs(file);
+	prog = find_existing_cmd_record(&records);
 	free(records.list);
 
-	if(result->command == NULL || result->description == NULL)
-	{
-		free_assoc_record(result);
-		return 0;
-	}
-
-	return 1;
+	return prog.command;
 }
 
 const char *
-get_viewer_for_file(const char file[])
-{
-	int i = get_filetype_number(file, fileviewers);
-
-	if(i < 0)
-	{
-		return NULL;
-	}
-
-	return fileviewers.list[i].records.list[0].command;
-}
-
-static int
-get_filetype_number(const char *file, assoc_list_t assoc_list)
+ft_get_viewer(const char file[])
 {
 	int i;
-	for(i = 0; i < assoc_list.count; i++)
+
+	for(i = 0; i < fileviewers.count; ++i)
 	{
-		if(global_matches(assoc_list.list[i].pattern, file))
+		assoc_records_t records;
+		assoc_record_t prog;
+
+		if(!global_matches(fileviewers.list[i].pattern, file))
 		{
-			return i;
+			continue;
+		}
+
+		records = fileviewers.list[i].records;
+
+		prog = find_existing_cmd_record(&records);
+		if(!is_assoc_record_empty(&prog))
+		{
+			return prog.command;
 		}
 	}
-	return -1;
+
+	return NULL;
+}
+
+/* Finds record that corresponds to an external command that is available.
+ * Returns the record on success or an empty record on failure. */
+static assoc_record_t
+find_existing_cmd_record(const assoc_records_t *records)
+{
+	static assoc_record_t empty_record;
+
+	int i;
+	for(i = 0; i < records->count; ++i)
+	{
+		char cmd_name[NAME_MAX];
+		(void)extract_cmd_name(records->list[i].command, 0, sizeof(cmd_name),
+				cmd_name);
+
+		if(external_command_exists_func == NULL ||
+				external_command_exists_func(cmd_name))
+		{
+			return records->list[i];
+		}
+	}
+
+	return empty_record;
 }
 
 assoc_records_t
-get_all_programs_for_file(const char file[])
+ft_get_all_programs(const char file[])
 {
 	int i;
 	assoc_records_t result = {};
@@ -152,7 +155,7 @@ get_all_programs_for_file(const char file[])
 		for(j = 0; j < progs.count; j++)
 		{
 			assoc_record_t prog = progs.list[j];
-			add_assoc_record(&result, prog.command, prog.description);
+			ft_assoc_record_add(&result, prog.command, prog.description);
 		}
 	}
 
@@ -160,50 +163,55 @@ get_all_programs_for_file(const char file[])
 }
 
 void
-set_programs(const char patterns[], const char programs[], int for_x, int in_x)
+ft_set_programs(const char patterns[], const char programs[], int for_x,
+		int in_x)
 {
-	char *exptr;
-	char *ex_copy = strdup(patterns);
-	char *free_this = ex_copy;
-	while((exptr = strchr(ex_copy, ',')) != NULL)
+	assoc_records_t prog_records = parse_command_list(programs, 1);
+
+	char *pattern = strdup(patterns), *state = NULL;
+	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
-		*exptr = '\0';
-
-		assoc_programs(ex_copy, programs, for_x, in_x);
-
-		ex_copy = exptr + 1;
+		assoc_programs(pattern, &prog_records, for_x, in_x);
 	}
-	assoc_programs(ex_copy, programs, for_x, in_x);
-	free(free_this);
+	free(pattern);
+
+	ft_assoc_records_free(&prog_records);
 }
 
-/* Associates pattern with list of comma separated programs either for X or
- * non-X associations and depending on current execution environment. */
+/* Associates pattern with the list of programs either for X or non-X
+ * associations and depending on current execution environment. */
 static void
-assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
+assoc_programs(const char pattern[], const assoc_records_t *programs, int for_x,
+		int in_x)
 {
-	assoc_t assoc;
-	char *prog;
+	const assoc_t assoc =
+	{
+		.pattern = strdup(pattern),
+		.records = clone_assoc_records(programs),
+	};
+
+	register_assoc(assoc, for_x, in_x);
+}
+
+/* Parses comma separated list of commands into array of associations.  Returns
+ * the list. */
+static assoc_records_t
+parse_command_list(const char cmds[], int with_descr)
+{
+	assoc_records_t records = {};
+
+	char *cmd;
 	char *free_this;
 
-	if(pattern[0] == '\0')
-	{
-		return;
-	}
+	cmd = strdup(cmds);
+	free_this = cmd;
 
-	assoc.pattern = strdup(pattern);
-	assoc.records.list = NULL;
-	assoc.records.count = 0;
-
-	prog = strdup(programs);
-	free_this = prog;
-
-	while(prog != NULL)
+	while(cmd != NULL)
 	{
 		char *ptr;
 		const char *description = "";
 
-		if((ptr = strchr(prog, ',')) != NULL)
+		if((ptr = strchr(cmd, ',')) != NULL)
 		{
 			while(ptr != NULL && ptr[1] == ',')
 			{
@@ -212,37 +220,37 @@ assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 			if(ptr != NULL)
 			{
 				*ptr = '\0';
-				ptr++;
+				++ptr;
 			}
 		}
 
-		while(isspace(*prog) || *prog == ',')
+		while(isspace(*cmd) || *cmd == ',')
 		{
-			prog++;
+			++cmd;
 		}
 
-		if(*prog == '{')
+		if(with_descr && *cmd == '{')
 		{
-			char *p = strchr(prog + 1, '}');
+			char *p = strchr(cmd + 1, '}');
 			if(p != NULL)
 			{
 				*p = '\0';
-				description = prog + 1;
-				prog = skip_whitespace(p + 1);
+				description = cmd + 1;
+				cmd = skip_whitespace(p + 1);
 			}
 		}
 
-		if(prog[0] != '\0')
+		if(cmd[0] != '\0')
 		{
-			replace_double_comma(prog, 0);
-			add_assoc_record(&assoc.records, prog, description);
+			replace_double_comma(cmd, 0);
+			ft_assoc_record_add(&records, cmd, description);
 		}
-		prog = ptr;
+		cmd = ptr;
 	}
 
 	free(free_this);
 
-	register_assoc(assoc, for_x, in_x);
+	return records;
 }
 
 TSTATIC void
@@ -283,55 +291,47 @@ register_assoc(assoc_t assoc, int for_x, int in_x)
 }
 
 void
-set_fileviewer(const char *patterns, const char *viewer)
+ft_set_viewers(const char patterns[], const char viewers[])
 {
-	char *exptr;
-	char *ex_copy = strdup(patterns);
-	char *free_this = ex_copy;
-	while((exptr = strchr(ex_copy, ',')) != NULL)
+	assoc_records_t view_records = parse_command_list(viewers, 0);
+
+	char *pattern = strdup(patterns), *state = NULL;
+	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
-		*exptr = '\0';
-
-		assoc_viewer(ex_copy, viewer);
-
-		ex_copy = exptr + 1;
+		assoc_viewers(pattern, &view_records);
 	}
-	assoc_viewer(ex_copy, viewer);
-	free(free_this);
+	free(pattern);
+
+	ft_assoc_records_free(&view_records);
 }
 
+/* Associates pattern with the list of viewers. */
 static void
-assoc_viewer(const char *pattern, const char *viewer)
+assoc_viewers(const char pattern[], const assoc_records_t *viewers)
+{
+	const assoc_t assoc =
+	{
+		.pattern = strdup(pattern),
+		.records = clone_assoc_records(viewers),
+	};
+
+	add_assoc(&fileviewers, assoc);
+}
+
+/* Clones list of association records.  Returns the clone. */
+static assoc_records_t
+clone_assoc_records(const assoc_records_t *records)
 {
 	int i;
+	assoc_records_t clone = {};
 
-	if(pattern[0] == '\0')
+	for(i = 0; i < records->count; i++)
 	{
-		return;
+		const assoc_record_t *const record = &records->list[i];
+		ft_assoc_record_add(&clone, record->command, record->description);
 	}
 
-	for(i = 0; i < fileviewers.count; i++)
-	{
-		if(strcasecmp(fileviewers.list[i].pattern, pattern) == 0)
-		{
-			break;
-		}
-	}
-	if(i == fileviewers.count)
-	{
-		assoc_t assoc =
-		{
-			.pattern = strdup(pattern),
-			.records.list = NULL,
-			.records.count = 0,
-		};
-		add_assoc_record(&assoc.records, viewer, "");
-		add_assoc(&fileviewers, assoc);
-	}
-	else
-	{
-		(void)replace_string(&fileviewers.list[i].records.list[0].command, viewer);
-	}
+	return clone;
 }
 
 static void
@@ -350,7 +350,7 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 }
 
 void
-reset_all_file_associations(int in_x)
+ft_reset(int in_x)
 {
 	reset_all_list();
 	add_defaults(in_x);
@@ -371,7 +371,7 @@ static void
 add_defaults(int in_x)
 {
 	new_records_type = ART_BUILTIN;
-	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
+	ft_set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
 	new_records_type = ART_CUSTOM;
 }
 
@@ -398,11 +398,11 @@ static void
 free_assoc(assoc_t *assoc)
 {
 	safe_free(&assoc->pattern);
-	free_assoc_records(&assoc->records);
+	ft_assoc_records_free(&assoc->records);
 }
 
 void
-free_assoc_records(assoc_records_t *records)
+ft_assoc_records_free(assoc_records_t *records)
 {
 	int i;
 	for(i = 0; i < records->count; i++)
@@ -415,7 +415,8 @@ free_assoc_records(assoc_records_t *records)
 	records->count = 0;
 }
 
-void
+/* After this call the structure contains NULL values. */
+static void
 free_assoc_record(assoc_record_t *record)
 {
 	safe_free(&record->command);
@@ -423,7 +424,7 @@ free_assoc_record(assoc_record_t *record)
 }
 
 void
-add_assoc_record(assoc_records_t *records, const char *command,
+ft_assoc_record_add(assoc_records_t *records, const char *command,
 		const char *description)
 {
 	void *p = realloc(records->list, sizeof(assoc_record_t)*(records->count + 1));
@@ -441,7 +442,7 @@ add_assoc_record(assoc_records_t *records, const char *command,
 }
 
 void
-add_assoc_records(assoc_records_t *assocs, const assoc_records_t *src)
+ft_assoc_record_add_all(assoc_records_t *assocs, const assoc_records_t *src)
 {
 	int i;
 	void *p;
@@ -479,8 +480,9 @@ safe_free(char **adr)
 	*adr = NULL;
 }
 
-int
-assoc_prog_is_empty(const assoc_record_t *record)
+/* Returns non-zero for an empty assoc_record_t structure. */
+static int
+is_assoc_record_empty(const assoc_record_t *record)
 {
 	return record->command == NULL && record->description == NULL;
 }

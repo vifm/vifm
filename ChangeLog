@@ -17,6 +17,9 @@
 
 	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
 
+	Allowed having multiple file viewers with same rules for choosing them at
+	run-time as for file associations.  Thanks to filterfalse.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

@@ -49,7 +49,7 @@ show_filetypes_menu(FileView *view, int background)
 	int max_len;
 
 	char *const typed_name = get_typed_current_fname(view);
-	assoc_records_t ft = get_all_programs_for_file(typed_name);
+	assoc_records_t ft = ft_get_all_programs(typed_name);
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
@@ -74,7 +74,7 @@ show_filetypes_menu(FileView *view, int background)
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
-	free_assoc_records(&ft);
+	ft_assoc_records_free(&ft);
 
 #ifdef ENABLE_DESKTOP_FILES
 	(void)add_to_string_array(&m.data, m.len, 1,

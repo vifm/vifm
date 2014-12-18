@@ -98,6 +98,7 @@ typedef struct
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
 	int line_edited;          /* Cache for whether input line changed flag. */
+	int entered_by_mapping;   /* The mode was entered by a mapping. */
 }
 line_stats_t;
 #endif

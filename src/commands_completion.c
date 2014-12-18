@@ -381,7 +381,7 @@ static void
 complete_filetype(const char *str)
 {
 	char *const typed_fname = get_typed_current_fname(curr_view);
-	assoc_records_t ft = get_all_programs_for_file(typed_fname);
+	assoc_records_t ft = ft_get_all_programs(typed_fname);
 
 	complete_progs(str, ft);
 	free(ft.list);

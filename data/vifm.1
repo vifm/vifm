@@ -1,4 +1,4 @@
-.TH vifm 1 "December 13, 2014" "" "Vifm"
+.TH vifm 1 "December 18, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -898,9 +898,9 @@ make size of two views equal.
 In general, all "Ctrl-W x" keys above work the same was as in Normal mode.
 Active mode is automatically changed on navigating among windows.  When
 less-like mode activated on file preview is left using one by "Ctrl-W x" keys,
-its state is stored until another file is showed using preview (it's possible to
-leave the mode, hide preview pane, do something else, then get back to the file
-and show preview pane again with previously stored state in it).
+its state is stored until another file is displayed using preview (it's possible
+to leave the mode, hide preview pane, do something else, then get back to the
+file and show preview pane again with previously stored state in it).
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------
@@ -1526,20 +1526,23 @@ in native console.
 .TP
 .BI "                                         :fileviewer"
 .TP
-.BI ":filev[iewer] pat1,pat2,... command"
-will associate given command as a viewer to each of the patterns.  Viewer is a
-command which output is captured and showed in the second pane of vifm after
-running :view command.  When the command doesn't contain any of vifm macros,
-name of current file is appended as if command ended with %c macro.  See
-"Globs" section below for pattern definition.  Example for zip archives:
+.BI ":filev[iewer] pat1,pat2,... command1,command2,..."
+register specified list of commands as viewers for each of the patterns.  Viewer
+is a command which output is captured and displayed in the second pane of vifm
+after running :view command.  When the command doesn't contain any of vifm
+macros, name of current file is appended as if command ended with %c macro.
+Comma escaping and missing commands processing rules as for :filetype apply to
+this command.  See "Globs" section below for pattern definition.
 
+Example for zip archives:
 .EX
- fileviewer *.zip,*.jar,*.war,*.ear zip \-sf %c
+ fileviewer *.zip,*.jar,*.war,*.ear zip \-sf %c, echo "No zip to preview:"
 .EE
 .TP
 .BI "                                         :filter"
 .TP
 .BI ":filter[!] regular_expression_pattern"
+.TP
 .BI ":filter[!] /regular_expression_pattern/[flags]"
 will filter all the files out of the directory listing that match the regular
 expression.  Using second variant you can use the bar ('|') symbol without
@@ -3036,7 +3039,7 @@ it's right aligned.  Following macros are supported:
 .br
  %\- \- number of filtered out files
 .br
- %S \- number of showed files
+ %S \- number of displayed files
 .br
  %= \- separation point between left and right align items
 .br

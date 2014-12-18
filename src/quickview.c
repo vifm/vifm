@@ -143,7 +143,7 @@ quick_view_file(FileView *view)
 				FILE *fp;
 
 				char *const typed_fname = get_typed_fname(path);
-				viewer = get_viewer_for_file(typed_fname);
+				viewer = ft_get_viewer(typed_fname);
 				free(typed_fname);
 
 				if(viewer == NULL && is_dir(path))
