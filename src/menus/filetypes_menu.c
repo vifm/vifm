@@ -41,7 +41,7 @@ static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_info *m);
 
 int
-show_filetypes_menu(FileView *view, int background)
+show_file_menu(FileView *view, int background)
 {
 	static menu_info m;
 
@@ -53,8 +53,7 @@ show_filetypes_menu(FileView *view, int background)
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_info(&m, FILE_MENU,
-			strdup("No programs set for this filetype"));
+	init_menu_info(&m, FILE_MENU, strdup("No programs set for this filetype"));
 
 	m.title = strdup(" Filetype associated commands ");
 	m.execute_handler = &execute_filetype_cb;

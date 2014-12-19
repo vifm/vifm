@@ -2142,24 +2142,24 @@ eval_arglist(const char args[], const char **stop_ptr)
 	}
 }
 
+/* Displays file handler picking menu. */
 static int
 file_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
 		keep_view_selection = 1;
-		return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
+		return show_file_menu(curr_view, cmd_info->bg) != 0;
 	}
-	else
+
+	if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
 	{
-		if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
-		{
-			status_bar_error(
-					"Can't find associated program with requested beginning");
-			return 1;
-		}
-		return 0;
+		status_bar_error(
+				"Can't find associated program with requested beginning");
+		return 1;
 	}
+
+	return 0;
 }
 
 static int
