@@ -53,7 +53,7 @@ show_filetypes_menu(FileView *view, int background)
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_info(&m, FILETYPE_MENU,
+	init_menu_info(&m, FILE_MENU,
 			strdup("No programs set for this filetype"));
 
 	m.title = strdup(" Filetype associated commands ");
