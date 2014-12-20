@@ -78,13 +78,14 @@
 	Fixed current file number in progress message on moving files across file
 	systems when 'syscalls' is on.  Thanks to filterfalse.
 
+	Fixed memory leak related to list of filetypes.
+
 	Fixed unexpected path resolution on Windows under path containing symbolic
 	links.
 
 	Fixed case change renames on Windows when 'syscalls' is set.
 
 	Fixed file name case change undoing/redoing on Windows.
-
 
 0.7.8-beta to 0.7.8
 

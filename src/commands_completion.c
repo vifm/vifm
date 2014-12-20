@@ -384,7 +384,7 @@ complete_filetype(const char *str)
 	assoc_records_t ft = ft_get_all_programs(typed_fname);
 
 	complete_progs(str, ft);
-	free(ft.list);
+	ft_assoc_records_free(&ft);
 
 	complete_progs(str, get_magic_handlers(typed_fname));
 

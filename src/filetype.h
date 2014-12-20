@@ -89,7 +89,7 @@ void ft_reset(int in_x);
 const char * ft_get_program(const char file[]);
 
 /* Gets a list of programs associated with a given file name.  Caller should
- * free only the array, but not its elements. */
+ * free the array by calling ft_assoc_records_free() on it. */
 assoc_records_t ft_get_all_programs(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
