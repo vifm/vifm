@@ -55,6 +55,8 @@ static void assoc_programs(const char pattern[],
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 TSTATIC void replace_double_comma(char cmd[], int put_null);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
+static assoc_records_t clone_all_matching_records(const char file[],
+		const assoc_list_t *record_list);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(const char pattern[], const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records);
@@ -138,28 +140,7 @@ find_existing_cmd_record(const assoc_records_t *records)
 assoc_records_t
 ft_get_all_programs(const char file[])
 {
-	int i;
-	assoc_records_t result = {};
-
-	for(i = 0; i < active_filetypes.count; i++)
-	{
-		assoc_records_t progs;
-		int j;
-
-		if(!global_matches(active_filetypes.list[i].pattern, file))
-		{
-			continue;
-		}
-
-		progs = active_filetypes.list[i].records;
-		for(j = 0; j < progs.count; j++)
-		{
-			assoc_record_t prog = progs.list[j];
-			ft_assoc_record_add(&result, prog.command, prog.description);
-		}
-	}
-
-	return result;
+	return clone_all_matching_records(file, &active_filetypes);
 }
 
 void
@@ -289,6 +270,25 @@ register_assoc(assoc_t assoc, int for_x, int in_x)
 	{
 		add_assoc(&active_filetypes, assoc);
 	}
+}
+
+/* Clones all records which pattern matches the file.  Returns list of records
+ * composed of clones. */
+static assoc_records_t
+clone_all_matching_records(const char file[], const assoc_list_t *record_list)
+{
+	int i;
+	assoc_records_t result = {};
+
+	for(i = 0; i < record_list->count; ++i)
+	{
+		if(global_matches(record_list->list[i].pattern, file))
+		{
+			ft_assoc_record_add_all(&result, &record_list->list[i].records);
+		}
+	}
+
+	return result;
 }
 
 void
