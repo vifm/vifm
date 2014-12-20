@@ -324,16 +324,9 @@ assoc_viewers(const char pattern[], const assoc_records_t *viewers)
 static assoc_records_t
 clone_assoc_records(const assoc_records_t *records)
 {
-	int i;
-	assoc_records_t clone = {};
-
-	for(i = 0; i < records->count; i++)
-	{
-		const assoc_record_t *const record = &records->list[i];
-		ft_assoc_record_add(&clone, record->command, record->description);
-	}
-
-	return clone;
+	assoc_records_t list = {};
+	ft_assoc_record_add_all(&list, records);
+	return list;
 }
 
 static void
