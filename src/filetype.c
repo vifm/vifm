@@ -168,12 +168,13 @@ ft_set_programs(const char patterns[], const char programs[], int for_x,
 {
 	assoc_records_t prog_records = parse_command_list(programs, 1);
 
-	char *pattern = strdup(patterns), *state = NULL;
+	char *patterns_copy = strdup(patterns);
+	char *pattern = patterns_copy, *state = NULL;
 	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
 		assoc_programs(pattern, &prog_records, for_x, in_x);
 	}
-	free(pattern);
+	free(patterns_copy);
 
 	ft_assoc_records_free(&prog_records);
 }
@@ -295,12 +296,13 @@ ft_set_viewers(const char patterns[], const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 0);
 
-	char *pattern = strdup(patterns), *state = NULL;
+	char *patterns_copy = strdup(patterns);
+	char *pattern = patterns_copy, *state = NULL;
 	while((pattern = split_and_get(pattern, ',', &state)) != NULL)
 	{
 		assoc_viewers(pattern, &view_records);
 	}
-	free(pattern);
+	free(patterns_copy);
 
 	ft_assoc_records_free(&view_records);
 }
