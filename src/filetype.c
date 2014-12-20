@@ -47,6 +47,8 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
+static const char * find_existing_cmd(const assoc_list_t *record_list,
+		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(const char pattern[],
 		const assoc_records_t *programs, int for_x, int in_x);
@@ -74,34 +76,32 @@ ft_init(external_command_exists_t ece_func)
 const char *
 ft_get_program(const char file[])
 {
-	assoc_records_t records;
-	assoc_record_t prog;
-
-	records = ft_get_all_programs(file);
-	prog = find_existing_cmd_record(&records);
-	free(records.list);
-
-	return prog.command;
+	return find_existing_cmd(&active_filetypes, file);
 }
 
 const char *
 ft_get_viewer(const char file[])
 {
+	return find_existing_cmd(&fileviewers, file);
+}
+
+/* Finds first existing command which pattern matches given file.  Returns the
+ * command (it's lifetime is managed by this unit) or NULL on failure. */
+static const char *
+find_existing_cmd(const assoc_list_t *record_list, const char file[])
+{
 	int i;
 
-	for(i = 0; i < fileviewers.count; ++i)
+	for(i = 0; i < record_list->count; ++i)
 	{
-		assoc_records_t records;
 		assoc_record_t prog;
 
-		if(!global_matches(fileviewers.list[i].pattern, file))
+		if(!global_matches(record_list->list[i].pattern, file))
 		{
 			continue;
 		}
 
-		records = fileviewers.list[i].records;
-
-		prog = find_existing_cmd_record(&records);
+		prog = find_existing_cmd_record(&record_list->list[i].records);
 		if(!is_assoc_record_empty(&prog))
 		{
 			return prog.command;
