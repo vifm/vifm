@@ -42,6 +42,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "private/ioeta.h"
 #include "ioc.h"

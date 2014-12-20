@@ -2579,7 +2579,6 @@ fill_dir_list(FileView *view)
 	do
 	{
 		dir_entry_t *dir_entry;
-		size_t name_len;
 
 		/* Ignore the "." directory. */
 		if(stroscmp(ffd.cFileName, ".") == 0)
