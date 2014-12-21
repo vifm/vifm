@@ -1,6 +1,6 @@
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
-    ifeq ($(shell uname -o),Cygwin)
+    ifeq ($(shell uname -o 2> /dev/null),Cygwin)
         unix_env := true
     else
         win_env := true
