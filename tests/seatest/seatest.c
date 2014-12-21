@@ -4,7 +4,9 @@
 #include "windows.h"
 int seatest_is_string_equal_i(const char* s1, const char* s2)
 {
+#ifdef _MSC_VER
 	#pragma warning(disable: 4996)
+#endif
 	return stricmp(s1, s2) == 0;
 }
 
