@@ -158,7 +158,7 @@ test_dquoted_completion(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch 'b"));
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !defined(_WIN32)
 
 static void
 test_dquoted_completion_escaping(void)
@@ -309,9 +309,8 @@ test_cmdline_completion(void)
 	run_test(test_help_cmd_escaping);
 	run_test(test_dirs_are_completed_with_trailing_slash);
 	run_test(test_function_name_completion);
-#ifndef __CYGWIN__
-	/* Cygwin fails to create files with double quotes in names, Windows quite
-	 * surprisingly failes, but "emulates" them. */
+#if !defined(__CYGWIN__) && !defined(_WIN32)
+	/* Cygwin and Windows fail to create files with double quotes in names. */
 	run_test(test_dquoted_completion_escaping);
 #endif
 
