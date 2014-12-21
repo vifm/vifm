@@ -34,13 +34,17 @@ setup(void)
 	init_undo_list_for_tests(&exec_func, &undo_levels);
 
 	cfg.use_system_calls = 1;
+#ifndef _WIN32
 	cfg.slow_fs_list = strdup("");
+#endif
 }
 
 static void
 teardown(void)
 {
+#ifndef _WIN32
 	free(cfg.slow_fs_list);
+#endif
 
 	reset_undo_list();
 }

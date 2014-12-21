@@ -22,6 +22,8 @@
 
 #include <assert.h> /* assert() */
 
+#include "../status.h"
+
 static int ui_cancellation_enabled(void);
 static int ui_cancellation_disabled(void);
 
@@ -56,9 +58,14 @@ ui_cancellation_enable(void)
 	                   ? CRS_ENABLED
 	                   : CRS_ENABLED_REQUESTED;
 
-	/* Temporary disable raw mode of terminal so that Ctrl-C is handled as SIGINT
-	 * signal rather than as regular input character. */
-	noraw();
+	/* The check is here for tests, which are running with uninitialized
+	 * curses. */
+	if(curr_stats.load_stage > 0)
+	{
+		/* Temporary disable raw mode of terminal so that Ctrl-C is handled as
+			* SIGINT signal rather than as regular input character. */
+		noraw();
+	}
 }
 
 void
@@ -82,9 +89,14 @@ ui_cancellation_disable(void)
 {
 	assert(ui_cancellation_enabled() && "Can't disable what disabled.");
 
-	/* Restore raw mode of terminal so that Ctrl-C is be handled as regular input
-	 * character rather than as SIGINT signal. */
-	raw();
+	/* The check is here for tests, which are running with uninitialized
+	 * curses. */
+	if(curr_stats.load_stage > 0)
+	{
+		/* Restore raw mode of terminal so that Ctrl-C is be handled as regular
+		 * input character rather than as SIGINT signal. */
+		raw();
+	}
 
 	cancellation_state = (cancellation_state == CRS_ENABLED_REQUESTED)
 	                   ? CRS_DISABLED_REQUESTED
