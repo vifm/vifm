@@ -218,7 +218,11 @@ ior_mv(io_args_t *const args)
 
 				return rename(src, dst);
 			}
-			else if(crs == IO_CRS_REPLACE_FILES)
+			else if(crs == IO_CRS_REPLACE_FILES
+#ifdef _WIN32
+					|| crs == IO_CRS_APPEND_TO_FILES
+#endif
+					)
 			{
 #ifdef _WIN32
 				/* rename() on Windows doesn't replace files. */
