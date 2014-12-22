@@ -40,7 +40,7 @@ endif
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -g -Wall -Werror -Iseatest -DTEST -include ../config.h
 CFLAGS += -Wno-char-subscripts
-LDFLAGS := -lpthread
+LDFLAGS := -lpthread -g
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
