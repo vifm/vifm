@@ -2418,10 +2418,7 @@ fill_with_shared(FileView *view)
 			for(i = 0, p = buf_ptr; i < er; ++i, ++p)
 			{
 				dir_entry_t *dir_entry;
-
-				char name_buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, name_buf,
-						sizeof(name_buf), NULL, NULL);
+				char *utf8_name;
 
 				view->dir_entry = realloc(view->dir_entry,
 						(view->list_rows + 1)*sizeof(dir_entry_t));
@@ -2433,8 +2430,12 @@ fill_with_shared(FileView *view)
 
 				dir_entry = &view->dir_entry[view->list_rows];
 
-				init_dir_entry(view, dir_entry, name_buf);
+				utf8_name = utf8_from_utf16((wchar_t *)p->shi0_netname);
+
+				init_dir_entry(view, dir_entry, utf8_name);
 				dir_entry->type = DIRECTORY;
+
+				free(utf8_name);
 
 				++view->list_rows;
 			}
@@ -2558,9 +2559,10 @@ fill_dir_list(FileView *view)
 	}
 	closedir(dir);
 #else
-	char buf[PATH_MAX];
+	char find_pat[PATH_MAX];
+	wchar_t *utf16_path;
 	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
+	WIN32_FIND_DATAW ffd;
 
 	if(is_unc_root(view->curr_dir))
 	{
@@ -2568,23 +2570,35 @@ fill_dir_list(FileView *view)
 		return 0;
 	}
 
-	snprintf(buf, sizeof(buf), "%s/*", view->curr_dir);
+	snprintf(find_pat, sizeof(find_pat), "%s/*", view->curr_dir);
 
 	view->list_rows = 0;
 
-	hfind = FindFirstFileA(buf, &ffd);
+	utf16_path = utf8_to_utf16(find_pat);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+	free(utf16_path);
+
 	if(hfind == INVALID_HANDLE_VALUE)
+	{
 		return -1;
+	}
 
 	do
 	{
 		dir_entry_t *dir_entry;
 
+		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
+		char name[strlen(utf8_name) + 1];
+		strcpy(name, utf8_name);
+		free(utf8_name);
+
 		/* Ignore the "." directory. */
-		if(stroscmp(ffd.cFileName, ".") == 0)
+		if(strcmp(name, ".") == 0)
+		{
 			continue;
+		}
 		/* Always include the ../ directory unless it is the root directory. */
-		if(stroscmp(ffd.cFileName, "..") == 0)
+		if(strcmp(name, "..") == 0)
 		{
 			if(!parent_dir_is_visible(is_root))
 			{
@@ -2592,13 +2606,13 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(!file_is_visible(view, ffd.cFileName,
+		else if(!file_is_visible(view, name,
 				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			view->filtered++;
 			continue;
 		}
-		else if(view->hide_dot && ffd.cFileName[0] == '.')
+		else if(view->hide_dot && name[0] == '.')
 		{
 			view->filtered++;
 			continue;
@@ -2615,7 +2629,7 @@ fill_dir_list(FileView *view)
 
 		dir_entry = &view->dir_entry[view->list_rows];
 
-		init_dir_entry(view, dir_entry, ffd.cFileName);
+		init_dir_entry(view, dir_entry, name);
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
 		dir_entry->attrs = ffd.dwFileAttributes;
@@ -2642,7 +2656,7 @@ fill_dir_list(FileView *view)
 
 		++view->list_rows;
 	}
-	while(FindNextFileA(hfind, &ffd));
+	while(FindNextFileW(hfind, &ffd));
 	FindClose(hfind);
 
 	/* Not all Windows file systems contain or show dot directories. */
