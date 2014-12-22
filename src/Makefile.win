@@ -15,7 +15,7 @@ LDFLAGS := $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
-DIRS := ./ cfg/ engine/ io/ menus/ modes/ modes/dialogs/ utils/
+DIRS := ./ cfg/ engine/ io/ io/private/ menus/ modes/ modes/dialogs/ utils/
 
 cfg := config.c hist.c info.c
 cfg := $(addprefix cfg/, $(cfg))
