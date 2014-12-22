@@ -56,6 +56,10 @@ Package content
     |  |  |-- hist.c - convenient history list abstraction
     |  |  `-- info.c - read and write vifminfo
     |  |
+    |  |-- compat/ - implementation of features that are missing on some OSes
+    |  |  |
+    |  |  `-- wcwidth.c - wcwidth() and wcswidth() implementation for Windows
+    |  |
     |  |-- engine/ - the core of vi[m]-like functionality
     |  |  |
     |  |  |-- private/ - private headers of the engine

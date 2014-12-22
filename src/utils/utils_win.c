@@ -35,6 +35,7 @@
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../compat/wcwidth.h"
 #include "../ui/ui.h"
 #include "../commands_completion.h"
 #include "../status.h"
@@ -146,14 +147,13 @@ get_pid(void)
 int
 wcwidth(wchar_t c)
 {
-	return 1;
+	return compat_wcwidth(c);
 }
 
 int
 wcswidth(const wchar_t str[], size_t max_len)
 {
-	const size_t wcslen_result = wcslen(str);
-	return MIN(max_len, wcslen_result);
+	return compat_wcswidth(str, max_len);
 }
 
 int

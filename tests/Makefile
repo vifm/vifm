@@ -15,18 +15,18 @@ suites += filter keys misc options parsing undo variables viewcolumns_parser
 suites += ioeta ionotif iop ior
 
 # obtain list of sources that are being tested
-vifm_src := ./ cfg/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/ ui/
-vifm_src += utils/
+vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
+vifm_src += ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 
 # filter out generally non-testable or sources for another platform
 vifm_src := $(filter-out %/vifm.c %/vifmrc-converter.c %/win_helper.c, \
-              $(vifm_src))
+                         $(vifm_src))
 ifndef unix_env
     vifm_src := $(filter-out %/desktop.c %/mntent.c %_nix.c, $(vifm_src))
 endif
 ifndef win_env
-    vifm_src := $(filter-out %/volumes_menu.c %_win.c, $(vifm_src))
+    vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
 vifm_bin := ../src/vifm$(exe_suffix)
