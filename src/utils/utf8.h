@@ -19,7 +19,7 @@
 #ifndef VIFM__UTILS__UTF8_H__
 #define VIFM__UTILS__UTF8_H__
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t wchar_t */
 
 /* Returns real width of valid and complete utf-8 character. */
 size_t get_char_width(const char str[]);
@@ -38,6 +38,12 @@ size_t get_screen_string_length(const char str[]);
 size_t get_utf8_overhead(const char str[]);
 /* Returns (string_screen_width - string_length). */
 size_t get_screen_overhead(const char str[]);
+
+/* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */
+wchar_t * utf8_to_utf16(const char utf8[]);
+
+/* Converts utf-16 to utf-8 string. Returns newly allocated utf-16 string. */
+char * utf8_from_utf16(const wchar_t utf16[]);
 
 #endif /* VIFM__UTILS__UTF8_H__ */
 

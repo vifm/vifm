@@ -20,6 +20,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t wchar_t */
+#include <stdlib.h> /* malloc() */
 #include <string.h> /* strlen() */
 
 #include "macros.h"
@@ -28,6 +29,8 @@
 static size_t guess_char_width(char c);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
 static size_t get_char_screen_width(const char str[], size_t char_width);
+static size_t utf16_length(const char utf8[]);
+static size_t utf8_length(const wchar_t utf16[]);
 
 size_t
 get_char_width(const char str[])
@@ -194,6 +197,160 @@ get_screen_overhead(const char str[])
 		overhead += (char_width - 1) - (char_screen_width - 1);
 	}
 	return overhead;
+}
+
+wchar_t *
+utf8_to_utf16(const char utf8[])
+{
+	size_t size = utf16_length(utf8);
+
+	wchar_t *const utf16 = malloc(sizeof(wchar_t)*(size + 1));
+
+	wchar_t *t = utf16;
+	const char *p = utf8;
+	unsigned char c;
+	while((c = *p++) != '\0')
+	{
+		wchar_t wc;
+		if(c < 0x80)
+		{
+			wc = c;
+		}
+		else if((c & 0xe0) == 0xc0)
+		{
+			wc = ((c & 0x1f) << 6) | ((*p++) & 0x3f);
+		}
+		else if((c & 0xf0) == 0xe0)
+		{
+			wc = ((c & 0x0f) << 12) | ((p[0] & 0x3f) << 6) | (p[1] & 0x3f);
+			p += 2;
+		}
+		else
+		{
+			const unsigned int r32 = ((c & 0x07) << 18)
+			                       | ((p[0] & 0x3f) << 12)
+			                       | ((p[1] & 0x3f) << 6)
+			                       | (p[2] & 0x3f);
+			p += 3;
+			*t++ = 0xd800 | (((r32 - 0x10000) >> 10) & 0x3ff);
+			wc = 0xdc00 | (r32 & 0x3ff);
+		}
+		*t++ = wc;
+	}
+	*t = 0;
+
+	return utf16;
+}
+
+/* Calculates how many utf-16 chars are needed to store given utf-8 string.
+ * Returns the number. */
+static size_t
+utf16_length(const char utf8[])
+{
+	size_t size = 0;
+	const char *p = utf8;
+	unsigned char c;
+	while((c = *p++) != '\0')
+	{
+		++size;
+		if(c < 0x80)
+		{
+			/* Do nothing. */
+		}
+		else if((c&0xe0) == 0xc0)
+		{
+			++p;
+		}
+		else if((c&0xf0) == 0xe0)
+		{
+			p += 2;
+		}
+		else
+		{
+			p += 3;
+			/* Surrogate. */
+			++size;
+		}
+	}
+	return size;
+}
+
+char *
+utf8_from_utf16(const wchar_t utf16[])
+{
+	const size_t size = utf8_length(utf16);
+
+	char *const utf8 = malloc(size + 1);
+
+	const wchar_t *p = utf16;
+	char *t = utf8;
+	unsigned short int c;
+	while((c = *p++) != 0)
+	{
+		if(c < 0x80)
+		{
+			/* 7 bit (ascii). */
+			*t++ = (char)c;
+		}
+		else if(c < 0x0800)
+		{
+			/* 11 bit. */
+			*t++ = (char)(0xc0 | (c >> 6));
+			*t++ = (char)(0x80 | (c & 0x3f));
+		}
+		else if((c&0xf8) != 0xd8)
+		{
+			/* 16 bit. */
+			*t++ = (char)(0xe0 | (c >> 12));
+			*t++ = (char)(0x80 | ((c >> 6) & 0x3f));
+			*t++ = (char)(0x80 | (c & 0x3f));
+		}
+		else
+		{
+			/* 21 bit - surrogate pair. */
+			const unsigned short int c1 = (*p ? *p++ : 0xdc);
+			/* utf-32 character. */
+			const unsigned int d = (((c & 0x3ff) << 10) | (c1 & 0x3ff)) + 0x10000;
+			*t++ = (char)(0xf0 | ((d >> 18) & 0x7));
+			*t++ = (char)(0x80 | ((d >> 12) & 0x3f));
+			*t++ = (char)(0x80 | ((d >> 6) & 0x3f));
+			*t++ = (char)(0x80 | (d & 0x3f));
+		}
+	}
+	*t = '\0';
+
+	return utf8;
+}
+
+/* Calculate how many utf8 chars are needed to store given utf-16 string.
+ * Returns the number. */
+static size_t
+utf8_length(const wchar_t utf16[])
+{
+	const wchar_t *p = utf16;
+	size_t len = 0;
+	unsigned short int c;
+	while((c = *p++) != 0)
+	{
+		if(c < 0x80)
+		{
+			++len;
+		}
+		else if(c < 0x0800)
+		{
+			len += 2;
+		}
+		else if((c & 0xf8) != 0xd8)
+		{
+			len += 3;
+		}
+		else
+		{
+			++p;
+			len += 4;
+		}
+	}
+	return len;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
