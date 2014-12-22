@@ -282,6 +282,9 @@ iop_cp(io_args_t *const args)
 	if(crs == IO_CRS_APPEND_TO_FILES)
 	{
 		fpos_t pos;
+		/* The following line is required for stupid Windows sometimes.  Why?
+		 * Probably because it's stupid...  Won't harm other systems. */
+		fseek(out, 0, SEEK_END);
 		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
 
 		if(!error)
