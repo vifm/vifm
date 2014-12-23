@@ -65,6 +65,7 @@ trim_right(char *text)
 wchar_t *
 to_wide(const char s[])
 {
+#ifndef _WIN32
 	wchar_t *result = NULL;
 	size_t len;
 
@@ -78,6 +79,9 @@ to_wide(const char s[])
 		}
 	}
 	return result;
+#else
+	return utf8_to_utf16(s);
+#endif
 }
 
 /* I'm really worry about the portability... */
@@ -123,6 +127,7 @@ ends_with(const char *str, const char *suffix)
 char *
 to_multibyte(const wchar_t *s)
 {
+#ifndef _WIN32
 	size_t len;
 	char *result;
 
@@ -132,6 +137,9 @@ to_multibyte(const wchar_t *s)
 
 	wcstombs(result, s, len);
 	return result;
+#else
+	return utf8_from_utf16(s);
+#endif
 }
 
 void
