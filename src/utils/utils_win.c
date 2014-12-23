@@ -47,6 +47,7 @@
 #include "mntent.h"
 #include "path.h"
 #include "str.h"
+#include "utf8.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
 #define PE_HDR_OFFSET 0x3cU
@@ -411,10 +412,14 @@ win_resolve_mount_points(const char path[])
 
 	attr = GetFileAttributes(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
 		return path;
+	}
 
 	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	{
 		return path;
+	}
 
 	copy_str(resolved_path, sizeof(resolved_path), path);
 	chosp(resolved_path);
@@ -443,7 +448,9 @@ win_resolve_mount_points(const char path[])
 	free(utf16_path);
 
 	if(hfile == INVALID_HANDLE_VALUE)
+	{
 		return path;
+	}
 
 	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
 			&attr, NULL))
