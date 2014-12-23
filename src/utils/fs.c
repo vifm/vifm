@@ -669,20 +669,10 @@ win_get_file_attrs(const char path[])
 }
 
 char *
-realpath(const char *path, char *buf)
+realpath(const char path[], char buf[])
 {
-	if(get_link_target(path, buf, PATH_MAX) == 0)
-		return buf;
-
-	buf[0] = '\0';
-	if(!is_path_absolute(path) && GetCurrentDirectory(PATH_MAX, buf) > 0)
-	{
-		to_forward_slash(buf);
-		chosp(buf);
-		strcat(buf, "/");
-	}
-
-	strcat(buf, path);
+	const char *const resolved_path = win_resolve_mount_points(path);
+	copy_str(buf, PATH_MAX, resolved_path);
 	return buf;
 }
 

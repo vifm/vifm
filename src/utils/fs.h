@@ -134,7 +134,10 @@ int are_on_the_same_fs(const char s[], const char t[]);
 
 #ifdef _WIN32
 
-char * realpath(const char *path, char *buf);
+/* Resolves the path to the real path without any symbolic links.  buf should be
+ * at least PATH_MAX in length.  Returns the buf on success, otherwise NULL is
+ * returned. */
+char * realpath(const char path[], char buf[]);
 
 int S_ISLNK(mode_t mode);
 
