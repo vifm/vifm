@@ -706,14 +706,13 @@ is_on_fat_volume(const char *path)
 	return 0;
 }
 
-/* Checks specified drive for existence */
 int
 drive_exists(char letter)
 {
-	const char drive[] = {letter, ':', '\\', '\0'};
-	int type = GetDriveTypeA(drive);
+	const wchar_t drive[] = { (wchar_t)letter, L':', L'\\', L'\0' };
+	const int drive_type = GetDriveTypeW(drive);
 
-	switch(type)
+	switch(drive_type)
 	{
 		case DRIVE_CDROM:
 		case DRIVE_REMOTE:
