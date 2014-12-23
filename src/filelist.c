@@ -2142,10 +2142,6 @@ change_directory(FileView *view, const char *directory)
 		save_view_history(view, NULL, NULL, -1);
 	}
 
-#ifdef _WIN32
-	directory = handle_mount_points(directory);
-#endif
-
 	if(cfg.chase_links)
 	{
 		if(realpath(directory, real_path) == real_path)

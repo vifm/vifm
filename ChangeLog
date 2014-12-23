@@ -74,6 +74,9 @@
 	Fixed current file number in progress message on moving files across file
 	systems when 'syscalls' is on.  Thanks to filterfalse.
 
+	Fixed unexpected path resolution on Windows under path containing symbolic
+	links.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
