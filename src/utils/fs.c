@@ -649,9 +649,7 @@ win_get_file_attrs(const char path[])
 
 	if(is_path_absolute(path) && !is_unc_path(path))
 	{
-		char buf[] = {path[0], ':', '\\', '\0'};
-		UINT type = GetDriveTypeA(buf);
-		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+		if(!drive_exists(path[0]))
 		{
 			return 0;
 		}
