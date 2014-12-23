@@ -2107,63 +2107,6 @@ update_dir_mtime(FileView *view)
 #endif
 }
 
-#ifdef _WIN32
-static const char *
-handle_mount_points(const char *path)
-{
-	static char buf[PATH_MAX];
-
-	DWORD attr;
-	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	REPARSE_DATA_BUFFER *rdbp;
-
-	attr = GetFileAttributes(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-		return path;
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-		return path;
-
-	snprintf(buf, sizeof(buf), "%s", path);
-	chosp(buf);
-	hfind = FindFirstFileA(buf, &ffd);
-	if(hfind == INVALID_HANDLE_VALUE)
-		return path;
-
-	FindClose(hfind);
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
-		return path;
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return path;
-
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
-				sizeof(rdb), &attr, NULL))
-	{
-		CloseHandle(hfile);
-		return path;
-	}
-	CloseHandle(hfile);
-
-	rdbp = (REPARSE_DATA_BUFFER *)rdb;
-	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
-	if(strncmp(t, "\\??\\", 4) == 0)
-		strcpy(buf, t + 4);
-	else
-		strcpy(buf, t);
-	free(t);
-	return buf;
-}
-#endif
-
 void
 navigate_to(FileView *view, const char path[])
 {

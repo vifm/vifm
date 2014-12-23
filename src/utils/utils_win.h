@@ -65,6 +65,10 @@ const char * attr_str_long(DWORD attr);
 /* Returns pointer to a statically allocated buffer. */
 const char * escape_for_cd(const char str[]);
 
+/* Resolves path to its destination.  Returns pointer to a statically allocated
+ * buffer. */
+const char * win_resolve_mount_points(const char path[]);
+
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
