@@ -165,15 +165,7 @@ path_exists_internal(const char *path, const char *filename)
 #ifndef _WIN32
 	return access(path_to_check, F_OK) == 0;
 #else
-	if(is_path_absolute(path_to_check) && !is_unc_path(path_to_check))
-	{
-		if(!drive_exists(path_to_check[0]))
-		{
-			return 0;
-		}
-	}
-
-	return (GetFileAttributesA(path_to_check) != INVALID_FILE_ATTRIBUTES);
+	return win_get_file_attrs(path_to_check) != INVALID_FILE_ATTRIBUTES;
 #endif
 }
 
