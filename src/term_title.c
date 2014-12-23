@@ -40,6 +40,7 @@
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/utf8.h"
 
 static struct
 {
@@ -61,7 +62,7 @@ static void get_x11_window_title(Display *disp, Window win, char *buf,
 		size_t buf_len);
 static int x_error_check(Display *dpy, XErrorEvent *error_event);
 #endif
-static void set_terminal_title(const char *path);
+static void set_terminal_title(const char path[]);
 
 #if !defined(_WIN32) && defined(HAVE_X11)
 #ifdef DYN_X11
@@ -229,14 +230,18 @@ x_error_check(Display *dpy, XErrorEvent *error_event)
 }
 #endif
 
-/* does real job on setting terminal title */
+/* Does all the real work on setting terminal title. */
 static void
-set_terminal_title(const char *path)
+set_terminal_title(const char path[])
 {
 #ifdef _WIN32
-	wchar_t buf[2048];
-	vifm_swprintf(buf, ARRAY_LEN(buf), L"%" WPRINTF_MBSTR L" - VIFM", path);
-	SetConsoleTitleW(buf);
+	wchar_t *utf16;
+	char title[2048];
+	snprintf(title, sizeof(title), "%s - VIFM", path);
+
+	utf16 = utf8_to_utf16(title);
+	SetConsoleTitleW(utf16);
+	free(utf16);
 #else
 	char *const title = format_str("\033]2;%s - VIFM\007", path);
 	putp(title);
