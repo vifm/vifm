@@ -1,6 +1,3 @@
-/* UTF-8 isn't used on Windows yet. */
-#ifndef _WIN32
-
 /* To get wcswidth() function. */
 #define _XOPEN_SOURCE
 
@@ -13,7 +10,7 @@
 
 #include "../../src/utils/utf8.h"
 
-/* For wcswidth() stub. */
+/* For wcswidth(). */
 #ifdef _WIN32
 #include "../../src/utils/utils.h"
 #endif
@@ -72,14 +69,5 @@ utf8_tests(void)
 	test_fixture_end();
 }
 
-#else
-
-void
-utf8_tests(void)
-{
-	/* UTF-8 isn't used on Windows yet. */
-}
-
-#endif
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -35,8 +35,6 @@ static size_t utf8_length(const wchar_t utf16[]);
 size_t
 get_char_width(const char str[])
 {
-	/* On Windows utf-8 is not used. */
-#ifndef _WIN32
 	const size_t expected = guess_char_width(str[0]);
 	if(expected == 2 && (str[1] & 0xc0) == 0x80)
 		return 2;
@@ -47,7 +45,6 @@ get_char_width(const char str[])
 		return 4;
 	else if(str[0] == '\0')
 		return 0;
-#endif
 	return 1;
 }
 
@@ -116,15 +113,12 @@ get_normal_utf8_string_widthn(const char str[], size_t max_screen_width)
 static size_t
 guess_char_width(char c)
 {
-	/* On Windows utf-8 is not used. */
-#ifndef _WIN32
 	if((c & 0xe0) == 0xc0)
 		return 2;
 	else if((c & 0xf0) == 0xe0)
 		return 3;
 	else if((c & 0xf8) == 0xf0)
 		return 4;
-#endif
 	return 1;
 }
 

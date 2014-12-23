@@ -1,6 +1,3 @@
-/* UTF-8 isn't used on Windows yet. */
-#ifndef _WIN32
-
 #include <locale.h> /* setlocale() */
 #include <string.h>
 
@@ -217,16 +214,6 @@ utf8_tests(void)
 
 	test_fixture_end();
 }
-
-#else
-
-void
-utf8_tests(void)
-{
-	/* UTF-8 isn't used on Windows yet. */
-}
-
-#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
