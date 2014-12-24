@@ -554,7 +554,11 @@ executable_exists(const char path[])
 int
 get_exe_dir(char dir_buf[], size_t dir_buf_len)
 {
-	(void)GetModuleFileNameA(NULL, dir_buf, dir_buf_len);
+	if(GetModuleFileNameA(NULL, dir_buf, dir_buf_len) == 0)
+	{
+		return 1;
+	}
+
 	to_forward_slash(dir_buf);
 	break_atr(dir_buf, '/');
 	return 0;

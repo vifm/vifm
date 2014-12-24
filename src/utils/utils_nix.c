@@ -490,7 +490,7 @@ executable_exists(const char path[])
 int
 get_exe_dir(char dir_buf[], size_t dir_buf_len)
 {
-	/* This operation isn't supported on *nix-like operation systems. */
+	/* This operation isn't supported on *nix-like operating systems. */
 	return 1;
 }
 
