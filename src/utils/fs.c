@@ -25,6 +25,8 @@
 #include <windows.h>
 #include <ntdef.h>
 #include <winioctl.h>
+
+#include "utf8.h"
 #endif
 
 #include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
@@ -401,11 +403,19 @@ is_dir_writable(const char path[])
 	{
 #ifdef _WIN32
 		HANDLE hdir;
+		wchar_t *utf16_path;
+
 		if(is_on_fat_volume(path))
+		{
 			return 1;
-		hdir = CreateFileA(path, GENERIC_WRITE,
+		}
+
+		utf16_path = utf8_to_utf16(path);
+		hdir = CreateFileW(utf16_path, GENERIC_WRITE,
 				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
 				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+		free(utf16_path);
+
 		if(hdir != INVALID_HANDLE_VALUE)
 		{
 			CloseHandle(hdir);
@@ -638,6 +648,7 @@ static DWORD
 win_get_file_attrs(const char path[])
 {
 	DWORD attr;
+	wchar_t *utf16_path;
 
 	if(is_path_absolute(path) && !is_unc_path(path))
 	{
@@ -647,7 +658,10 @@ win_get_file_attrs(const char path[])
 		}
 	}
 
-	attr = GetFileAttributesA(path);
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
+
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
 		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);

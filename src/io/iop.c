@@ -31,7 +31,7 @@
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
-                      fsetpos() fwrite() rename() snprintf() */
+                      fsetpos() fwrite() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -42,6 +42,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
 #include "private/ioeta.h"
@@ -68,7 +69,11 @@ iop_mkfile(io_args_t *const args)
 #else
 	HANDLE file;
 
-	file = CreateFileA(path, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	file = CreateFileW(utf16_path, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+			NULL);
+	free(utf16_path);
+
 	if(file == INVALID_HANDLE_VALUE)
 	{
 		return -1;
@@ -119,10 +124,8 @@ iop_mkdir(io_args_t *const args)
 		return 0;
 #endif
 	}
-	else
-	{
-		return make_dir(path, mode);
-	}
+
+	return make_dir(path, mode);
 }
 
 int
@@ -141,13 +144,15 @@ iop_rmfile(io_args_t *const args)
 	result = unlink(path);
 #else
 	{
-		const DWORD attributes = GetFileAttributesA(path);
+		wchar_t *const utf16_path = utf8_to_utf16(path);
+		const DWORD attributes = GetFileAttributesW(utf16_path);
 		if(attributes & FILE_ATTRIBUTE_READONLY)
 		{
-			SetFileAttributesA(path, attributes & ~FILE_ATTRIBUTE_READONLY);
+			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
+		result = !DeleteFileW(utf16_path);
+		free(utf16_path);
 	}
-	result = !DeleteFile(path);
 #endif
 
 	ioeta_update(args->estim, path, 1, size);
@@ -167,7 +172,11 @@ iop_rmdir(io_args_t *const args)
 #ifndef _WIN32
 	result = rmdir(path);
 #else
-	result = RemoveDirectory(path) == 0;
+	{
+		wchar_t *const utf16_path = utf8_to_utf16(path);
+		result = RemoveDirectoryW(utf16_path) == 0;
+		free(utf16_path);
+	}
 #endif
 
 	ioeta_update(args->estim, path, 1, 0);
@@ -197,6 +206,7 @@ iop_cp(io_args_t *const args)
 	{
 		DWORD flags;
 		int error;
+		wchar_t *utf16_src, *utf16_dst;
 
 		flags = COPY_FILE_COPY_SYMLINK;
 		if(crs == IO_CRS_FAIL)
@@ -204,7 +214,12 @@ iop_cp(io_args_t *const args)
 			flags |= COPY_FILE_FAIL_IF_EXISTS;
 		}
 
-		error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
+		utf16_src = utf8_to_utf16(src);
+		utf16_dst = utf8_to_utf16(dst);
+		error = CopyFileExW(utf16_src, utf16_dst, &win_progress_cb, args, NULL,
+				flags) == 0;
+		free(utf16_src);
+		free(utf16_dst);
 
 		ioeta_update(args->estim, src, 1, 0);
 

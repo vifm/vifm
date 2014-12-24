@@ -2030,14 +2030,24 @@ check_dir_changed(FileView *view)
 
 	if(stroscmp(view->watched_dir, view->curr_dir) != 0)
 	{
+		wchar_t *utf16_cwd;
+
 		FindCloseChangeNotification(view->dir_watcher);
 		strcpy(view->watched_dir, view->curr_dir);
-		view->dir_watcher = FindFirstChangeNotificationA(view->curr_dir, 1,
+
+		utf16_cwd = utf8_to_utf16(view->curr_dir);
+
+		view->dir_watcher = FindFirstChangeNotificationW(utf16_cwd, 1,
 				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
 				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
 				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
+
+		free(utf16_cwd);
+
 		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
+		{
 			log_msg("ha%s", "d");
+		}
 	}
 
 	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)

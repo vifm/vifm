@@ -21,6 +21,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
+
+#include "utils/utf8.h"
 #endif
 
 #include <sys/stat.h> /* gid_t uid_t lstat() stat() */
@@ -42,6 +44,7 @@
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "status.h"
@@ -279,33 +282,46 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 #else
 		if(is_dir(src))
 		{
-			char buf[PATH_MAX];
+			char path[PATH_MAX];
 			int err;
-			int i;
-			snprintf(buf, sizeof(buf), "%s%c", src, '\0');
-			for(i = 0; buf[i] != '\0'; i++)
-				if(buf[i] == '/')
-					buf[i] = '\\';
-			SHFILEOPSTRUCTA fo = {
+
+			copy_str(path, sizeof(path), src);
+			to_back_slash(path);
+
+			wchar_t *const utf16_path = utf8_to_utf16(path);
+
+			SHFILEOPSTRUCTW fo =
+			{
 				.hwnd = NULL,
 				.wFunc = FO_DELETE,
-				.pFrom = buf,
+				.pFrom = utf16_path,
 				.pTo = NULL,
 				.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
 			};
-			err = SHFileOperation(&fo);
+			err = SHFileOperationW(&fo);
+
 			log_msg("Error: %d", err);
+			free(utf16_path);
+
 			return err;
 		}
 		else
 		{
 			int ok;
-			DWORD attributes = GetFileAttributesA(src);
+			wchar_t *const utf16_path = utf8_to_utf16(src);
+			DWORD attributes = GetFileAttributesW(utf16_path);
 			if(attributes & FILE_ATTRIBUTE_READONLY)
-				SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
-			ok = DeleteFile(src);
+			{
+				SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
+			}
+
+			ok = DeleteFileW(utf16_path);
 			if(!ok)
+			{
 				LOG_WERROR(GetLastError());
+			}
+
+			free(utf16_path);
 			return !ok;
 		}
 #endif
@@ -398,7 +414,11 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		}
 		else
 		{
-			ret = (CopyFileA(src, dst, 0) == 0);
+			wchar_t *const utf16_src = utf8_to_utf16(src);
+			wchar_t *const utf16_dst = utf8_to_utf16(dst);
+			ret = (CopyFileW(utf16_src, utf16_dst, 0) == 0);
+			free(utf16_dst);
+			free(utf16_src);
 		}
 
 		return ret;
@@ -484,7 +504,14 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			return result;
 		}
 #else
-		BOOL ret = MoveFile(src, dst);
+		wchar_t *const utf16_src = utf8_to_utf16(src);
+		wchar_t *const utf16_dst = utf8_to_utf16(dst);
+
+		BOOL ret = MoveFileW(utf16_src, utf16_dst);
+
+		free(utf16_src);
+		free(utf16_dst);
+
 		if(!ret && GetLastError() == 5)
 		{
 			const int r = op_cp(ops, data, src, dst, conflict_action);
@@ -610,17 +637,21 @@ static int
 op_addattr(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	const DWORD add_mask = (size_t)data;
-	const DWORD attrs = GetFileAttributesA(src);
+	wchar_t *const utf16_path = utf8_to_utf16(src);
+	const DWORD attrs = GetFileAttributesW(utf16_path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
+		free(utf16_path);
 		LOG_WERROR(GetLastError());
 		return -1;
 	}
-	if(!SetFileAttributesA(src, attrs | add_mask))
+	if(!SetFileAttributesW(utf16_path, attrs | add_mask))
 	{
+		free(utf16_path);
 		LOG_WERROR(GetLastError());
 		return -1;
 	}
+	free(utf16_path);
 	return 0;
 }
 
@@ -628,17 +659,21 @@ static int
 op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	const DWORD sub_mask = (size_t)data;
-	const DWORD attrs = GetFileAttributesA(src);
+	wchar_t *const utf16_path = utf8_to_utf16(src);
+	const DWORD attrs = GetFileAttributesW(utf16_path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
+		free(utf16_path);
 		LOG_WERROR(GetLastError());
 		return -1;
 	}
-	if(!SetFileAttributesA(src, attrs & ~sub_mask))
+	if(!SetFileAttributesW(utf16_path, attrs & ~sub_mask))
 	{
+		free(utf16_path);
 		LOG_WERROR(GetLastError());
 		return -1;
 	}
+	free(utf16_path);
 	return 0;
 }
 #endif
@@ -652,7 +687,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		char cmd[6 + PATH_MAX*2 + 1];
 		int result;
 #ifdef _WIN32
-		char buf[PATH_MAX + 2];
+		char exe_dir[PATH_MAX + 2];
 #endif
 
 		escaped_src = escape_filename(src, 0);
@@ -669,15 +704,14 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
 		result = background_and_wait_for_errors(cmd, 1);
 #else
-		if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+		if(get_exe_dir(exe_dir, ARRAY_LEN(exe_dir)) != 0)
 		{
 			free(escaped_dst);
 			free(escaped_src);
 			return -1;
 		}
 
-		*strrchr(buf, '\\') = '\0';
-		snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
+		snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", exe_dir, escaped_src,
 				escaped_dst);
 		result = system(cmd);
 #endif
@@ -714,7 +748,10 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 #else
 		if(data == NULL)
 		{
-			return CreateDirectory(src, NULL) == 0;
+			wchar_t *const utf16_path = utf8_to_utf16(src);
+			int r = CreateDirectoryW(utf16_path, NULL) == 0;
+			free(utf16_path);
+			return r;
 		}
 		else
 		{
@@ -729,11 +766,14 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 
 				if(!is_dir(src))
 				{
-					if(!CreateDirectory(src, NULL))
+					wchar_t *const utf16_path = utf8_to_utf16(src);
+					if(!CreateDirectoryW(utf16_path, NULL))
 					{
+						free(utf16_path);
 						*p = t;
 						return -1;
 					}
+					free(utf16_path);
 				}
 
 				*p = t;
@@ -770,7 +810,10 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
 		return background_and_wait_for_errors(cmd, 1);
 #else
-		return RemoveDirectory(src) == 0;
+		wchar_t *const utf16_path = utf8_to_utf16(src);
+		int r = RemoveDirectoryW(utf16_path);
+		free(utf16_path);
+		return r;
 #endif
 	}
 
@@ -798,10 +841,14 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 #else
 		HANDLE hfile;
 
-		hfile = CreateFileA(src, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
-				NULL);
+		wchar_t *const utf16_path = utf8_to_utf16(src);
+		hfile = CreateFileW(utf16_path, 0, 0, NULL, CREATE_NEW,
+				FILE_ATTRIBUTE_NORMAL, NULL);
+		free(utf16_path);
 		if(hfile == INVALID_HANDLE_VALUE)
+		{
 			return -1;
+		}
 
 		CloseHandle(hfile);
 		return 0;
