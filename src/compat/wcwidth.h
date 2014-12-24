@@ -23,7 +23,7 @@
 
 int compat_wcwidth(wchar_t ucs);
 
-int compat_wcswidth(const wchar_t *pwcs, size_t n);
+int compat_wcswidth(const wchar_t pwcs[], size_t n);
 
 #endif /* VIFM__COMPAT__WCWIDTH_H__ */
 
