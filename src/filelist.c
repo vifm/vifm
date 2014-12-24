@@ -2025,8 +2025,6 @@ leave_invalid_dir(FileView *view)
 static int
 check_dir_changed(FileView *view)
 {
-	char buf[PATH_MAX];
-	HANDLE hfile;
 	FILETIME ft;
 	int r;
 
@@ -2048,19 +2046,10 @@ check_dir_changed(FileView *view)
 		return 1;
 	}
 
-	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	if(!GetFileTime(hfile, NULL, NULL, &ft))
+	if(win_get_dir_mtime(view->curr_dir, &ft) != 0)
 	{
-		CloseHandle(hfile);
 		return -1;
 	}
-	CloseHandle(hfile);
 
 	r = CompareFileTime(&view->dir_mtime, &ft);
 	view->dir_mtime = ft;
@@ -2084,24 +2073,15 @@ update_dir_mtime(FileView *view)
 #endif
 	return 0;
 #else
-	char buf[PATH_MAX];
-	HANDLE hfile;
-
-	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	if(!GetFileTime(hfile, NULL, NULL, &view->dir_mtime))
+	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
 	{
-		CloseHandle(hfile);
 		return -1;
 	}
-	CloseHandle(hfile);
 
-	while(check_dir_changed(view) > 0);
+	while(check_dir_changed(view) > 0)
+	{
+		/* Do nothing. */
+	}
 
 	return 0;
 #endif

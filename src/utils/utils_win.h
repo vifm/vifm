@@ -20,7 +20,7 @@
 #ifndef VIFM__UTILS__UTILS_WIN_H__
 #define VIFM__UTILS__UTILS_WIN_H__
 
-#include <windef.h>
+#include <windows.h>
 
 #include <stddef.h> /* size_t */
 #include <wchar.h> /* wchar_t */
@@ -68,6 +68,10 @@ const char * escape_for_cd(const char str[]);
 /* Resolves path to its destination.  Returns pointer to a statically allocated
  * buffer. */
 const char * win_resolve_mount_points(const char path[]);
+
+/* Gets last directory modification time.  Returns non-zero on error, otherwise
+ * zero is returned. */
+int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 

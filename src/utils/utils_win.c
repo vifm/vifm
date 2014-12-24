@@ -472,6 +472,31 @@ win_resolve_mount_points(const char path[])
 }
 
 int
+win_get_dir_mtime(const char dir_path[], FILETIME *ft)
+{
+	char selfref_path[PATH_MAX];
+	wchar_t *utf16_path;
+	HANDLE hfile;
+	int r;
+
+	snprintf(selfref_path, sizeof(selfref_path), "%s/.", dir_path);
+
+	utf16_path = utf8_to_utf16(selfref_path);
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	free(utf16_path);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	r = !GetFileTime(hfile, NULL, NULL, ft);
+	CloseHandle(hfile);
+	return r;
+}
+
+int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len, "%c:/", path[0]);
