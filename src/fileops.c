@@ -310,9 +310,10 @@ yank_files(FileView *view, int reg)
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		append_to_register(reg, full_path);
-
-		++nyanked_files;
+		if(append_to_register(reg, full_path) == 0)
+		{
+			++nyanked_files;
+		}
 	}
 
 	update_unnamed_reg(reg);

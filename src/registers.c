@@ -109,25 +109,31 @@ check_for_duplicate_file_names(registers_t *reg, const char file[])
 	return 0;
 }
 
-void
+int
 append_to_register(int key, const char file[])
 {
 	registers_t *reg;
 	struct stat st;
 
 	if(key == BLACKHOLE_REG_NAME)
-		return;
-
+	{
+		return 0;
+	}
 	if((reg = find_register(key)) == NULL)
-		return;
-
+	{
+		return 1;
+	}
 	if(lstat(file, &st) != 0)
-		return;
-
+	{
+		return 1;
+	}
 	if(check_for_duplicate_file_names(reg, file))
-		return;
+	{
+		return 1;
+	}
 
 	reg->num_files = add_to_string_array(&reg->files, reg->num_files, 1, file);
+	return 0;
 }
 
 void
