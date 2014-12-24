@@ -40,6 +40,7 @@
 #include <stdlib.h> /* free() realpath() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
+#include "../compat/os.h"
 #include "fs_limits.h"
 #include "log.h"
 #include "path.h"
@@ -373,11 +374,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 int
 make_dir(const char *dir_name, mode_t mode)
 {
-#ifndef _WIN32
-	return mkdir(dir_name, mode);
-#else
-	return mkdir(dir_name);
-#endif
+	return os_mkdir(dir_name, mode);
 }
 
 int
@@ -393,7 +390,7 @@ symlinks_available(void)
 int
 directory_accessible(const char *path)
 {
-	return (path_exists(path) && access(path, X_OK) == 0) || is_unc_root(path);
+	return (path_exists(path) && os_access(path, X_OK) == 0) || is_unc_root(path);
 }
 
 int

@@ -21,7 +21,7 @@ DIRS := ./ compat/ cfg/ engine/ io/ io/private/ menus/ modes/ modes/dialogs/ \
 cfg := config.c hist.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
-compat := wcwidth.c
+compat := os.c wcwidth.c
 compat := $(addprefix compat/, $(compat))
 
 engine := cmds.c functions.c completion.c keys.c mode.c options.c parsing.c \

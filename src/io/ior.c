@@ -32,6 +32,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
 
+#include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -169,7 +170,7 @@ ior_mv(io_args_t *const args)
 		}
 	}
 
-	if(rename(src, dst) == 0)
+	if(os_rename(src, dst) == 0)
 	{
 		ioeta_update(args->estim, src, 1, 0);
 		return 0;
@@ -216,7 +217,7 @@ ior_mv(io_args_t *const args)
 					return error;
 				}
 
-				return rename(src, dst);
+				return os_rename(src, dst);
 			}
 			else if(crs == IO_CRS_REPLACE_FILES
 #ifdef _WIN32
@@ -225,7 +226,7 @@ ior_mv(io_args_t *const args)
 					)
 			{
 #ifdef _WIN32
-				/* rename() on Windows doesn't replace files. */
+				/* os_rename() on Windows doesn't replace files. */
 				if(is_file(dst))
 				{
 					io_args_t rm_args =

@@ -35,6 +35,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
+#include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -434,7 +435,8 @@ iop_ln(io_args_t *const args)
 	break_atr(base_dir, '\\');
 	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_path,
 			escaped_target);
-	result = system(cmd);
+
+	result = os_system(cmd);
 
 	free(escaped_target);
 	free(escaped_path);

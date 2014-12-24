@@ -23,11 +23,13 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <winioctl.h>
+
+#include "utf8.h"
 #endif
 
 #include <regex.h>
 
-#include <unistd.h> /* chdir() */
+#include <unistd.h>
 
 #include <ctype.h> /* isalnum() isalpha() */
 #include <stddef.h> /* size_t */
@@ -37,6 +39,7 @@
 #include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../fuse.h"
 #include "../registers.h"
@@ -75,7 +78,7 @@ vifm_chdir(const char path[])
 			return 0;
 		}
 	}
-	return chdir(path);
+	return os_chdir(path);
 }
 
 char *

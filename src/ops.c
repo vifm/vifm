@@ -34,6 +34,7 @@
 #include <string.h> /* strdup() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "io/ioeta.h"
 #include "io/iop.h"
 #include "io/ior.h"
@@ -410,7 +411,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 				strcat(cmd, "/Y ");
 			}
 			strcat(cmd, "/E /I /H /R > NUL");
-			ret = system(cmd);
+			ret = os_system(cmd);
 		}
 		else
 		{
@@ -713,7 +714,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 
 		snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", exe_dir, escaped_src,
 				escaped_dst);
-		result = system(cmd);
+		result = os_system(cmd);
 #endif
 
 		free(escaped_dst);

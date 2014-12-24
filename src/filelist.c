@@ -47,6 +47,7 @@
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/mode.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
@@ -2219,7 +2220,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
+	if(os_access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
@@ -2231,7 +2232,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
+	if(os_access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
