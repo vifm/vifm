@@ -89,7 +89,7 @@ int is_dir_writable(const char path[]);
 
 /* Gets correct file size independently of platform.  Returns zero for both
  * empty files and on error. */
-uint64_t get_file_size(const char *path);
+uint64_t get_file_size(const char path[]);
 
 /* Lists all regular files inside the path directory.  Allocates an array of
  * strings, which should be freed by the caller.  Always sets *len.  Returns

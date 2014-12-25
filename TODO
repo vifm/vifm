@@ -158,7 +158,6 @@ Code improvements.
     Get rid of repeatable `(menu->win_rows - 3 + 1)/2 - 1` in menu.c.
     Think about window_rows and window_width members of FileView: why
         do they contain (rows - 1) and (width - 1) ?
-    Get file size on Windows using GetFileAttributesEx().
     Reduce number of magic numbers.
     List of errors, which are accumulated and shown at appropriate time (try
         sourcing colorscheme with scripting errors to understand the issue).

@@ -428,7 +428,7 @@ is_dir_writable(const char path[])
 }
 
 uint64_t
-get_file_size(const char *path)
+get_file_size(const char path[])
 {
 #ifndef _WIN32
 	struct stat st;
@@ -438,24 +438,23 @@ get_file_size(const char *path)
 	}
 	return 0;
 #else
-	HANDLE hfile;
+	wchar_t *utf16_path;
+	int ok;
+	WIN32_FILE_ATTRIBUTE_DATA attrs;
 	LARGE_INTEGER size;
 
-	hfile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
+	utf16_path = utf8_to_utf16(path);
+	ok = GetFileAttributesExW(utf16_path, GetFileExInfoStandard, &attrs);
+	free(utf16_path);
+	if(!ok)
 	{
 		LOG_WERROR(GetLastError());
 		return 0;
 	}
 
-	if(GetFileSizeEx(hfile, &size))
-	{
-		CloseHandle(hfile);
-		return size.QuadPart;
-	}
-	CloseHandle(hfile);
-	return 0;
+	size.u.LowPart = attrs.nFileSizeLow;
+	size.u.HighPart = attrs.nFileSizeHigh;
+	return size.QuadPart;
 #endif
 }
 
