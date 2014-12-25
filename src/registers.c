@@ -26,6 +26,7 @@
 #include <stdlib.h> /* free() realloc() */
 #include <string.h>
 
+#include "compat/os.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -123,7 +124,7 @@ append_to_register(int key, const char file[])
 	{
 		return 1;
 	}
-	if(lstat(file, &st) != 0)
+	if(os_lstat(file, &st) != 0)
 	{
 		return 1;
 	}

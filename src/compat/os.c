@@ -46,6 +46,15 @@ os_chdir(const char path[])
 }
 
 int
+os_lstat(const char path[], struct stat *buf)
+{
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	const int result = _wstat(utf16_path, (struct _stat *)buf);
+	free(utf16_path);
+	return result;
+}
+
+int
 os_rename(const char oldpath[], const char newpath[])
 {
 	wchar_t *const utf16_oldpath = utf8_to_utf16(oldpath);
