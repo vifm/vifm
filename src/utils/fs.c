@@ -201,7 +201,7 @@ is_symlink(const char path[])
 	HANDLE hfind;
 	WIN32_FIND_DATAA ffd;
 
-	attr = GetFileAttributes(path);
+	attr = win_get_file_attrs(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
 		LOG_WERROR(GetLastError());
@@ -492,7 +492,7 @@ is_regular_file(const char path[])
 	struct stat s;
 	return stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
 #else
-	const DWORD attrs = GetFileAttributesA(path);
+	const DWORD attrs = win_get_file_attrs(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
 		return 0;
