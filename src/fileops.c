@@ -81,7 +81,7 @@ static struct
 {
 	registers_t *reg;
 	FileView *view;
-	int force_move;
+	CopyMoveLikeOp op; /* Type of current operation. */
 	int x, y;
 	char *name;
 	int skip_all;      /* Skip all conflicting files/directories. */
@@ -90,7 +90,6 @@ static struct
 	int allow_merge;
 	int merge;         /* Merge conflicting directory once. */
 	int merge_all;     /* Merge all conflicting directories. */
-	int link;          /* 0 - no, 1 - absolute, 2 - relative */
 	ops_t *ops;
 }
 put_confirm;
@@ -148,8 +147,9 @@ static void clone_file(const dir_entry_t *entry, const char path[],
 static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static int initiate_put_files_from_register(FileView *view, OPS op,
-		const char descr[], int reg_name, int force_move, int link);
+static int initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
+				const char descr[], int reg_name);
+static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
@@ -1447,7 +1447,7 @@ put_next(const char dest_name[], int force)
 	}
 
 	from_trash = is_under_trash(filename);
-	move = from_trash || put_confirm.force_move;
+	move = from_trash || put_confirm.op == CMLO_MOVE;
 
 	copy_str(src_buf, sizeof(src_buf), filename);
 
@@ -1509,10 +1509,10 @@ put_next(const char dest_name[], int force)
 		}
 	}
 
-	if(put_confirm.link)
+	if(put_confirm.op == CMLO_LINK_REL || put_confirm.op == CMLO_LINK_ABS)
 	{
 		op = OP_SYMLINK;
-		if(put_confirm.link == 2)
+		if(put_confirm.op == CMLO_LINK_REL)
 		{
 			copy_str(src_buf, sizeof(src_buf),
 					make_rel_path(filename, put_confirm.view->curr_dir));
@@ -1722,20 +1722,12 @@ prompt_what_to_do(const char src_name[])
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
-/* Returns new value for save_msg flag. */
 int
-put_files_from_register(FileView *view, int reg_name, int force_move)
+put_files_from_register(FileView *view, int reg_name, int move)
 {
-	if(force_move)
-	{
-		return initiate_put_files_from_register(view, OP_MOVE, "Putting", reg_name,
-				force_move, 0);
-	}
-	else
-	{
-		return initiate_put_files_from_register(view, OP_COPY, "putting", reg_name,
-				force_move, 0);
-	}
+	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
+	const char *const descr = move ? "Putting" : "putting";
+	return initiate_put_files_from_register(view, op, descr, reg_name);
 }
 
 TSTATIC const char *
@@ -1988,15 +1980,15 @@ is_dir_entry(const char full_path[], const struct dirent* dentry)
 int
 put_links(FileView *view, int reg_name, int relative)
 {
-	return initiate_put_files_from_register(view, OP_SYMLINK, "Symlinking",
-		reg_name, 0, relative ? 2 : 1);
+	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
+	return initiate_put_files_from_register(view, op, "Symlinking", reg_name);
 }
 
 /* Performs preparations necessary for putting files/links.  Returns new value
  * for save_msg flag. */
 static int
-initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
-		int reg_name, int force_move, int link)
+initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
+		const char descr[], int reg_name)
 {
 	registers_t *reg;
 	int i;
@@ -2014,10 +2006,9 @@ initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(op, descr, view->curr_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir);
 
-	put_confirm.force_move = force_move;
-	put_confirm.link = link;
+	put_confirm.op = op;
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 
@@ -2027,6 +2018,27 @@ initiate_put_files_from_register(FileView *view, OPS op, const char descr[],
 	}
 
 	return put_files_from_register_i(view, 1);
+}
+
+/* Gets operation kind that corresponds to copy/move-like operation.  Returns
+ * the kind. */
+static OPS
+cmlo_to_op(CopyMoveLikeOp op)
+{
+	switch(op)
+	{
+		case CMLO_COPY:
+			return OP_COPY;
+		case CMLO_MOVE:
+			return OP_MOVE;
+		case CMLO_LINK_REL:
+		case CMLO_LINK_ABS:
+			return OP_SYMLINK;
+
+		default:
+			assert(0 && "Unexpected operation type.");
+			return CMLO_COPY;
+	}
 }
 
 /* Resets state of global put_confirm variable in this module. */
@@ -2046,18 +2058,26 @@ put_files_from_register_i(FileView *view, int start)
 {
 	if(start)
 	{
-		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
-		const char *op = "UNKNOWN";
+		char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+		const char *descr;
 		const int from_trash = is_under_trash(put_confirm.reg->files[0]);
-		if(put_confirm.link == 0)
-			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
-		else if(put_confirm.link == 1)
-			op = "put absolute links";
-		else if(put_confirm.link == 2)
-			op = "put relative links";
-		snprintf(buf, sizeof(buf), "%s in %s: ", op,
+
+		if(put_confirm.op == CMLO_LINK_ABS)
+		{
+			descr = "put absolute links";
+		}
+		else if(put_confirm.op == CMLO_LINK_REL)
+		{
+			descr = "put relative links";
+		}
+		else
+		{
+			descr = (put_confirm.op == CMLO_MOVE || from_trash) ? "Put" : "put";
+		}
+
+		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", descr,
 				replace_home_part(view->curr_dir));
-		cmd_group_begin(buf);
+		cmd_group_begin(undo_msg);
 		cmd_group_end();
 	}
 

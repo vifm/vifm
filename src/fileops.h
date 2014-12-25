@@ -95,7 +95,7 @@ void change_group(void);
 int change_link(FileView *view);
 
 /* Returns new value for save_msg flag. */
-int put_files_from_register(FileView *view, int reg_name, int force_move);
+int put_files_from_register(FileView *view, int reg_name, int move);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
