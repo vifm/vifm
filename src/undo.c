@@ -18,14 +18,13 @@
 
 #include "undo.h"
 
-#include <sys/stat.h>
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
@@ -643,8 +642,6 @@ is_redo_group_possible(void)
 static int
 is_op_possible(const op_t *op)
 {
-	struct stat st;
-
 	if(op_avail_func != NULL)
 	{
 		const int avail = op_avail_func(op->op);
@@ -654,13 +651,13 @@ is_op_possible(const op_t *op)
 		}
 	}
 
-	if(op->exists != NULL && lstat(op->exists, &st) != 0)
-		return 0;
-	if(op->dont_exist != NULL && lstat(op->dont_exist, &st) == 0)
+	if(op->exists != NULL && !path_exists(op->exists, NODEREF))
 	{
-		if(is_under_trash(op->dst))
-			return -1;
 		return 0;
+	}
+	if(op->dont_exist != NULL && path_exists(op->dont_exist, NODEREF))
+	{
+		return is_under_trash(op->dst) ? -1 : 0;
 	}
 	return 1;
 }
