@@ -44,6 +44,7 @@
                        strerror() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "menus/menus.h"
@@ -1440,7 +1441,7 @@ put_next(const char dest_name[], int force)
 
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
-	if(lstat(filename, &src_st) != 0)
+	if(os_lstat(filename, &src_st) != 0)
 	{
 		/* File isn't there, assume that it's fine and don't error in this case. */
 		return 0;
@@ -2266,7 +2267,6 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	{
 		const char *new_fname;
 		regmatch_t matches[10];
-		struct stat st;
 
 		if(regexec(&re, entry->name, ARRAY_LEN(matches), matches, 0) != 0)
 		{
@@ -2307,7 +2307,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 			err = 1;
 			break;
 		}
-		if(lstat(new_fname, &st) == 0)
+		if(path_exists(new_fname, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", new_fname);
 			err = 1;
@@ -2374,7 +2374,6 @@ tr_in_names(FileView *view, const char from[], const char to[])
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *new_fname;
-		struct stat st;
 
 		new_fname = substitute_tr(entry->name, from, to);
 		if(strcmp(entry->name, new_fname) == 0)
@@ -2401,7 +2400,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 			err = 1;
 			break;
 		}
-		if(lstat(new_fname, &st) == 0)
+		if(path_exists(new_fname, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", new_fname);
 			err = 1;
@@ -2446,7 +2445,6 @@ change_case(FileView *view, int toupper)
 	while(iter_marked_entries(view, &entry))
 	{
 		char new_fname[NAME_MAX];
-		struct stat st;
 
 		copy_str(new_fname, sizeof(new_fname), entry->name);
 		if(toupper)
@@ -2470,7 +2468,7 @@ change_case(FileView *view, int toupper)
 			err = 1;
 			break;
 		}
-		if(lstat(new_fname, &st) == 0)
+		if(path_exists(new_fname, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", new_fname);
 			err = 1;
@@ -3257,7 +3255,6 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	for(i = 0; i < count; i++)
 	{
-		struct stat st;
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
@@ -3268,7 +3265,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 			status_bar_errorf("Name #%d is empty", i + 1);
 			return;
 		}
-		if(lstat(names[i], &st) == 0)
+		if(path_exists(names[i], NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return;
@@ -3331,7 +3328,6 @@ make_files(FileView *view, char **names, int count)
 
 	for(i = 0; i < count; i++)
 	{
-		struct stat st;
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
@@ -3347,7 +3343,7 @@ make_files(FileView *view, char **names, int count)
 			status_bar_errorf("Name \"%s\" contains slash", names[i]);
 			return 1;
 		}
-		if(lstat(names[i], &st) == 0)
+		if(path_exists(names[i], NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return 1;
