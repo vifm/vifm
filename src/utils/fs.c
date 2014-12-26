@@ -392,9 +392,9 @@ symlinks_available(void)
 }
 
 int
-directory_accessible(const char *path)
+directory_accessible(const char path[])
 {
-	return (path_exists(path) && os_access(path, X_OK) == 0) || is_unc_root(path);
+	return os_access(path, X_OK) == 0 || is_unc_root(path);
 }
 
 int

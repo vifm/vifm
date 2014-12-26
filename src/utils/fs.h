@@ -80,8 +80,9 @@ int make_dir(const char *dir_name, mode_t mode);
 
 int symlinks_available(void);
 
-/* Checks if one can change current directory to a path. */
-int directory_accessible(const char *path);
+/* Checks if one can change current directory to the path.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int directory_accessible(const char path[]);
 
 /* Checks if one can write in directory specified by the path, which should be
  * absolute (in order for this function to work correctly). */
