@@ -68,7 +68,11 @@ is_dir(const char path[])
 #ifndef _WIN32
 	return is_directory(path, 1);
 #else
-	return win_get_file_attrs(path) & FILE_ATTRIBUTE_DIRECTORY;
+	{
+		const DWORD attrs = win_get_file_attrs(path);
+		return attrs != INVALID_FILE_ATTRIBUTES
+		    && (attrs & FILE_ATTRIBUTE_DIRECTORY);
+	}
 #endif
 }
 
@@ -563,7 +567,9 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 	     : dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
-	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
+	const DWORD attrs = win_get_file_attrs(full_path);
+	return attrs != INVALID_FILE_ATTRIBUTES
+	    && (attrs & MASK) == FILE_ATTRIBUTE_DIRECTORY;
 #endif
 }
 
@@ -639,7 +645,7 @@ is_directory(const char path[], int dereference_links)
 #else
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
- * attributes. */
+ * attributes, which is INVALID_FILE_ATTRIBUTES on error. */
 static DWORD
 win_get_file_attrs(const char path[])
 {
@@ -650,20 +656,13 @@ win_get_file_attrs(const char path[])
 	{
 		if(!drive_exists(path[0]))
 		{
-			return 0;
+			return INVALID_FILE_ATTRIBUTES;
 		}
 	}
 
 	utf16_path = utf8_to_utf16(path);
 	attr = GetFileAttributesW(utf16_path);
 	free(utf16_path);
-
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
-		log_cwd();
-		return 0;
-	}
 
 	return attr;
 }
