@@ -49,7 +49,8 @@
 #include "utils.h"
 
 static int is_dir_fast(const char path[]);
-static int path_exists_internal(const char *path, const char *filename);
+static int path_exists_internal(const char path[], const char filename[],
+		int deref);
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
@@ -137,26 +138,26 @@ is_valid_dir(const char *path)
 }
 
 int
-path_exists(const char path[])
+path_exists(const char path[], int deref)
 {
 	if(!is_path_absolute(path))
 	{
 		LOG_ERROR_MSG("Passed relative path where absolute one is expected: %s",
 				path);
 	}
-	return path_exists_internal(NULL, path);
+	return path_exists_internal(NULL, path, deref);
 }
 
 int
-path_exists_at(const char *path, const char *filename)
+path_exists_at(const char path[], const char filename[], int deref)
 {
-	return path_exists_internal(path, filename);
+	return path_exists_internal(path, filename, deref);
 }
 
 /* Checks whether path/file exists. If path is NULL, filename is assumed to
  * contain full path. */
 static int
-path_exists_internal(const char *path, const char *filename)
+path_exists_internal(const char path[], const char filename[], int deref)
 {
 	const char *path_to_check;
 	char full[PATH_MAX];
@@ -169,11 +170,13 @@ path_exists_internal(const char *path, const char *filename)
 		snprintf(full, sizeof(full), "%s/%s", path, filename);
 		path_to_check = full;
 	}
-#ifndef _WIN32
-	return access(path_to_check, F_OK) == 0;
-#else
-	return win_get_file_attrs(path_to_check) != INVALID_FILE_ATTRIBUTES;
-#endif
+
+	if(!deref)
+	{
+		struct stat st;
+		return os_lstat(path_to_check, &st) == 0;
+	}
+	return os_access(path_to_check, F_OK) == 0;
 }
 
 int

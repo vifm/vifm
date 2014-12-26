@@ -213,7 +213,7 @@ split_path_list(void)
 		/* No need to check "." path for existence. */
 		if(strcmp(s, ".") != 0)
 		{
-			if(!path_exists(s))
+			if(!path_exists(s, DEREF))
 			{
 				free(s);
 				continue;

@@ -251,8 +251,10 @@ show_file_type(FileView *view, int curr_y)
 		{
 			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
 
-			if(!path_exists(linkto))
+			if(!path_exists(linkto, DEREF))
+			{
 				mvwaddstr(menu_win, curr_y - 2, 12, " (BROKEN)");
+			}
 		}
 		else
 		{

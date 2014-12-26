@@ -27,6 +27,13 @@
 
 /* Functions to deal with file system objects */
 
+/* Named boolean values of "deref" parameter for better readability. */
+enum
+{
+	NODEREF, /* Do not dereference symbolic links in checks. */
+	DEREF,   /* Dereference symbolic links in checks. */
+};
+
 /* Link types for get_symlink_type() function. */
 typedef enum
 {
@@ -50,10 +57,10 @@ int is_valid_dir(const char *path);
 /* Checks whether file at path exists.  The path should be an absolute path.
  * Relative paths are checked relatively to the working directory, which might
  * produce incorrect results. */
-int path_exists(const char path[]);
+int path_exists(const char path[], int deref);
 
 /* Checks whether path/file exists. */
-int path_exists_at(const char *path, const char *filename);
+int path_exists_at(const char path[], const char filename[], int deref);
 
 /* Checks if two paths refer to the same file-system object.  Returns non-zero
  * if so, otherwise zero is returned. */

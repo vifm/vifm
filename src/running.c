@@ -359,7 +359,7 @@ run_file(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		if(!path_exists(entry->name))
+		if(!path_exists(entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
@@ -493,7 +493,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		program += 2;
 	}
 
-	if(!path_exists_at(entry->origin, entry->name))
+	if(!path_exists_at(entry->origin, entry->name, DEREF))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
 		return;
@@ -587,7 +587,7 @@ follow_link(FileView *view, int follow_dirs)
 		return;
 	}
 
-	if(!path_exists(linkto))
+	if(!path_exists(linkto, DEREF))
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination.  It might be broken.");

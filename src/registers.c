@@ -239,7 +239,7 @@ clean_regs_with_trash(void)
 		{
 			if(!is_under_trash(registers[x].files[y]))
 				continue;
-			if(!path_exists(registers[x].files[y]))
+			if(!path_exists(registers[x].files[y], DEREF))
 				continue;
 
 			free(registers[x].files[y]);

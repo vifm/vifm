@@ -835,7 +835,7 @@ convert_old_trash_path(const char trash_path[])
 	if(!is_path_absolute(trash_path) && is_dir_writable(cfg.trash_dir))
 	{
 		char *const full_path = format_str("%s/%s", cfg.trash_dir, trash_path);
-		if(path_exists(full_path))
+		if(path_exists(full_path, DEREF))
 		{
 			return full_path;
 		}

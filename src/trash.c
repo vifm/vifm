@@ -395,7 +395,7 @@ is_trash_valid(const char trash_dir[])
 int
 exists_in_trash(const char trash_name[])
 {
-	return path_exists(trash_name);
+	return path_exists(trash_name, DEREF);
 }
 
 int
@@ -665,7 +665,7 @@ trash_prune_dead_entries(void)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(!path_exists(trash_list[i].trash_name))
+		if(!path_exists(trash_list[i].trash_name, DEREF))
 		{
 			free(trash_list[i].path);
 			free(trash_list[i].trash_name);

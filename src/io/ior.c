@@ -157,7 +157,7 @@ ior_mv(io_args_t *const args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 
-	if(crs == IO_CRS_FAIL && path_exists(dst))
+	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF))
 	{
 		return 1;
 	}

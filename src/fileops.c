@@ -399,7 +399,7 @@ delete_files(FileView *view, int reg, int use_trash)
 				{
 					result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
 					/* For some reason "rm" sometimes returns 0 on cancellation. */
-					if(path_exists(full_path))
+					if(path_exists(full_path, DEREF))
 					{
 						result = -1;
 					}
@@ -429,7 +429,7 @@ delete_files(FileView *view, int reg, int use_trash)
 		{
 			result = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
 			/* For some reason "rm" sometimes returns 0 on cancellation. */
-			if(path_exists(full_path))
+			if(path_exists(full_path, DEREF))
 			{
 				result = -1;
 			}
@@ -1154,7 +1154,7 @@ check_file_rename(const char dir[], const char old[], const char new[],
 		return -1;
 	}
 
-	if(path_exists_at(dir, new) && stroscmp(old, new) != 0)
+	if(path_exists_at(dir, new, DEREF) && stroscmp(old, new) != 0)
 	{
 		switch(signal_type)
 		{
@@ -1467,7 +1467,7 @@ put_next(const char dest_name[], int force)
 			dest_name);
 	chosp(dst_buf);
 
-	if(!put_confirm.append && path_exists(dst_buf))
+	if(!put_confirm.append && path_exists(dst_buf, DEREF))
 	{
 		if(force)
 		{
@@ -1598,7 +1598,7 @@ put_next(const char dest_name[], int force)
 		size_t len;
 
 		/* For some reason "mv" sometimes returns 0 on cancellation. */
-		if(!path_exists(dst_buf))
+		if(!path_exists(dst_buf, DEREF))
 		{
 			return -1;
 		}
@@ -1763,7 +1763,7 @@ gen_clone_name(const char normal_name[])
 		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
 				(extension[0] == '\0') ? "" : ".", extension);
 	}
-	while(path_exists(result));
+	while(path_exists(result, DEREF));
 
 	return result;
 }
@@ -1774,7 +1774,7 @@ is_clone_list_ok(int count, char **list)
 	int i;
 	for(i = 0; i < count; i++)
 	{
-		if(path_exists(list[i]))
+		if(path_exists(list[i], DEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
@@ -1882,14 +1882,16 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		}
 		else
 		{
-			clone_name = path_exists_at(path, name) ? gen_clone_name(name) : name;
+			clone_name = path_exists_at(path, name, DEREF)
+			           ? gen_clone_name(name)
+			           : name;
 		}
 
 		progress_msg("Cloning files", i, nmarked_files);
 
 		for(j = 0; j < copies; ++j)
 		{
-			if(path_exists_at(path, clone_name))
+			if(path_exists_at(path, clone_name, DEREF))
 			{
 				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
@@ -1940,7 +1942,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
 	chosp(clone_name);
-	if(path_exists(clone_name))
+	if(path_exists(clone_name, DEREF))
 	{
 		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)
 		{
@@ -2558,7 +2560,7 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	int i;
 	for(i = 0; i < count; i++)
 	{
-		if(path_exists_at(dst, list[i]))
+		if(path_exists_at(dst, list[i], DEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
@@ -2707,7 +2709,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(path_exists(dst_full) && !from_trash)
+		if(path_exists(dst_full, DEREF) && !from_trash)
 		{
 			(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
 		}
@@ -3063,7 +3065,7 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
 	}
 
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-	if(path_exists(dst_full) && !from_trash)
+	if(path_exists(dst_full, DEREF) && !from_trash)
 	{
 		perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
 	}

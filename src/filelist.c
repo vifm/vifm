@@ -628,7 +628,7 @@ get_line_color(FileView* view, int pos)
 					return LINK_COLOR;
 				}
 
-				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
+				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
 		case SOCKET:
@@ -2206,7 +2206,7 @@ change_directory(FileView *view, const char *directory)
 		chosp(view->last_dir);
 
 #ifndef _WIN32
-	if(!path_exists(dir_dup))
+	if(!path_exists(dir_dup, DEREF))
 #else
 	if(!is_valid_dir(dir_dup))
 #endif
@@ -3679,7 +3679,7 @@ file_can_be_displayed(const char directory[], const char filename[])
 	{
 		return parent_dir_is_visible(is_root_dir(directory));
 	}
-	return path_exists_at(directory, filename);
+	return path_exists_at(directory, filename, DEREF);
 }
 
 /* Returns non-zero if ../ directory can be displayed. */

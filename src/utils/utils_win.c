@@ -534,7 +534,7 @@ executable_exists(const char path[])
 
 	if(strchr(after_last(path, '/'), '.') != NULL)
 	{
-		return path_exists(path) && !is_dir(path);
+		return path_exists(path, DEREF) && !is_dir(path);
 	}
 
 	copy_str(path_buf, sizeof(path_buf), path);
@@ -543,7 +543,7 @@ executable_exists(const char path[])
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
 	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
 	{
-		if(path_exists(path_buf) && !is_dir(path_buf))
+		if(path_exists(path_buf, DEREF) && !is_dir(path_buf))
 		{
 			return 1;
 		}

@@ -259,7 +259,7 @@ make_name_unique(const char filename[])
 #endif
 	i = 0;
 
-	while(path_exists(unique))
+	while(path_exists(unique, DEREF))
 	{
 		sprintf(unique + len - 2, "%d", ++i);
 	}

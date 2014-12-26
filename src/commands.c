@@ -1983,7 +1983,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			if(curr_view->dir_entry[i].selected == 0)
 				continue;
 			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
-					!path_exists(curr_view->dir_entry[i].name))
+					!path_exists(curr_view->dir_entry[i].name, DEREF))
 			{
 				show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
@@ -2453,7 +2453,7 @@ help_cmd(const cmd_info_t *cmd_info)
 			return 1;
 		}
 
-		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
+		if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
 		{
 			show_error_msgf("No help file", "Can't find \"%s/" VIFM_HELP "\" file",
 					cfg.config_dir);
@@ -3421,7 +3421,7 @@ source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
 	char *path = expand_tilde(cmd_info->argv[0]);
-	if(!path_exists(path))
+	if(!path_exists(path, DEREF))
 	{
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = 1;

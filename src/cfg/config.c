@@ -327,7 +327,7 @@ try_exe_directory_for_conf(void)
 		return 0;
 	}
 
-	if(!path_exists_at(exe_dir, VIFMRC))
+	if(!path_exists_at(exe_dir, VIFMRC, DEREF))
 	{
 		return 0;
 	}
@@ -396,7 +396,7 @@ try_myvifmrc_envvar_for_vifmrc(void)
 	LOG_FUNC_ENTER;
 
 	const char *myvifmrc = env_get(MYVIFMRC_EV);
-	return myvifmrc != NULL && path_exists(myvifmrc);
+	return myvifmrc != NULL && path_exists(myvifmrc, DEREF);
 }
 
 /* tries to use vifmrc in directory of executable file as configuration file */
@@ -414,7 +414,7 @@ try_exe_directory_for_vifmrc(void)
 	}
 
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, exe_dir);
-	if(!path_exists(vifmrc))
+	if(!path_exists(vifmrc, DEREF))
 	{
 		return 0;
 	}
@@ -434,7 +434,7 @@ try_vifm_vifmrc_for_vifmrc(void)
 	if(vifm == NULL || !is_dir(vifm))
 		return 0;
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, vifm);
-	if(!path_exists(vifmrc))
+	if(!path_exists(vifmrc, DEREF))
 		return 0;
 	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
@@ -664,7 +664,8 @@ are_old_color_schemes(void)
 {
 	char colors_dir[PATH_MAX];
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return !is_dir(colors_dir) && path_exists_at(cfg.config_dir, "colorschemes");
+	return !is_dir(colors_dir)
+	    && path_exists_at(cfg.config_dir, "colorschemes", DEREF);
 }
 
 const char *

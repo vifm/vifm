@@ -280,7 +280,7 @@ iop_cp(io_args_t *const args)
 		 * but this approach has disadvantage of requiring more free space on
 		 * destination file system. */
 	}
-	else if(path_exists(dst))
+	else if(path_exists(dst, DEREF))
 	{
 		fclose(in);
 		return 1;
@@ -406,7 +406,7 @@ iop_ln(io_args_t *const args)
 		}
 	}
 #else
-	if(!overwrite && path_exists(target))
+	if(!overwrite && path_exists(target, DEREF))
 	{
 		return -1;
 	}
