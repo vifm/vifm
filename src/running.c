@@ -54,6 +54,7 @@
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
+#include "utils/utf8.h"
 #include "background.h"
 #include "file_magic.h"
 #include "filelist.h"
@@ -236,21 +237,28 @@ run_win_executable(char full_path[])
 static int
 run_win_executable_as_evaluated(const char full_path[])
 {
-	SHELLEXECUTEINFOA sei;
+	wchar_t *utf16_path;
+	SHELLEXECUTEINFOW sei;
+
+	utf16_path = utf8_to_utf16(full_path);
+
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-	sei.lpVerb = "runas";
-	sei.lpFile = full_path;
+	sei.lpVerb = L"runas";
+	sei.lpFile = utf16_path;
 	sei.lpParameters = NULL;
 	sei.nShow = SW_SHOWNORMAL;
 
-	if(!ShellExecuteEx(&sei))
+	if(!ShellExecuteExW(&sei))
 	{
 		const DWORD last_error = GetLastError();
+		free(utf16_path);
 		LOG_WERROR(last_error);
 		return last_error != ERROR_CANCELLED;
 	}
+
+	free(utf16_path);
 	CloseHandle(sei.hProcess);
 	return 0;
 }

@@ -30,7 +30,7 @@
 #include <ctype.h> /* toupper() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
-#include <stdlib.h> /* EXIT_SUCCESS */
+#include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
@@ -160,15 +160,19 @@ wcswidth(const wchar_t str[], size_t max_len)
 int
 win_exec_cmd(char cmd[], int *const returned_exit_code)
 {
+	wchar_t *utf16_cmd;
 	BOOL ret;
 	DWORD code;
-	STARTUPINFO startup = {};
+	STARTUPINFOW startup = {};
 	PROCESS_INFORMATION pinfo;
 
 	*returned_exit_code = 0;
 
-	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	utf16_cmd = utf8_to_utf16(cmd);
+	ret = CreateProcessW(NULL, utf16_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
+	free(utf16_cmd);
+
 	if(ret == 0)
 	{
 		const DWORD last_error = GetLastError();
@@ -239,7 +243,10 @@ get_subsystem(const char filename[])
 {
 	int subsystem;
 
-	FILE *const fp = fopen(filename, "rb");
+	wchar_t *const utf16_filename = utf8_to_utf16(filename);
+	FILE *const fp = _wfopen(utf16_filename, L"rb");
+	free(utf16_filename);
+
 	if(fp == NULL)
 	{
 		return -1;
