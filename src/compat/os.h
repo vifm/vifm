@@ -28,14 +28,18 @@
 
 #define os_access access
 #define os_chdir chdir
-#define os_lstat stat
+#define os_lstat lstat
 #define os_mkdir mkdir
 #define os_rename rename
+#define os_stat stat
 #define os_system system
 
 #else
 
 #include <fcntl.h> /* *_OK */
+
+/* Not straight forward for Windows and not very important. */
+#define os_lstat os_stat
 
 struct stat;
 
@@ -43,11 +47,11 @@ int os_access(const char pathname[], int mode);
 
 int os_chdir(const char path[]);
 
-int os_lstat(const char path[], struct stat *buf);
-
 int os_rename(const char oldpath[], const char newpath[]);
 
 int os_mkdir(const char pathname[], int mode);
+
+int os_stat(const char path[], struct stat *buf);
 
 int os_system(const char command[]);
 

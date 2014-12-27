@@ -4,6 +4,7 @@
 #include <sys/types.h> /* stat */
 #include <unistd.h> /* F_OK access() lstat() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
@@ -331,8 +332,6 @@ test_fails_to_copy_directory_inside_itself(void)
 	}
 }
 
-#ifndef WIN32
-
 static void
 test_dir_permissions_are_preserved(void)
 {
@@ -357,8 +356,8 @@ test_dir_permissions_are_preserved(void)
 		assert_int_equal(0, ior_cp(&args));
 	}
 
-	assert_int_equal(0, lstat("dir", &src));
-	assert_int_equal(0, lstat("dir-copy", &dst));
+	assert_int_equal(0, os_stat("dir", &src));
+	assert_int_equal(0, os_stat("dir-copy", &dst));
 	assert_int_equal(src.st_mode & 0777, dst.st_mode & 0777);
 
 	{
@@ -405,8 +404,8 @@ test_permissions_are_set_in_correct_order(void)
 		assert_int_equal(0, ior_cp(&args));
 	}
 
-	assert_int_equal(0, lstat("dir", &src));
-	assert_int_equal(0, lstat("dir-copy", &dst));
+	assert_int_equal(0, os_stat("dir", &src));
+	assert_int_equal(0, os_stat("dir-copy", &dst));
 	assert_int_equal(src.st_mode & 0777, dst.st_mode & 0777);
 
 	assert_int_equal(0, chmod("dir", 0700));
@@ -428,6 +427,8 @@ test_permissions_are_set_in_correct_order(void)
 		assert_int_equal(0, ior_rm(&args));
 	}
 }
+
+#ifndef WIN32
 
 static void
 test_symlink_to_file_is_symlink_after_copy(void)
@@ -534,10 +535,10 @@ cp_tests(void)
 	run_test(test_directories_can_be_merged);
 	run_test(test_fails_to_copy_directory_inside_itself);
 
-#ifndef WIN32
 	run_test(test_dir_permissions_are_preserved);
 	run_test(test_permissions_are_set_in_correct_order);
 
+#ifndef WIN32
 	/* Creating symbolic links on Windows requires administrator rights. */
 	run_test(test_symlink_to_file_is_symlink_after_copy);
 	run_test(test_symlink_to_dir_is_symlink_after_copy);

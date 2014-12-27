@@ -18,11 +18,6 @@
 
 #include "ior.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#include <shellapi.h>
-#endif
-
 #include <sys/stat.h> /* stat chmod() */
 #include <unistd.h> /* lstat() unlink() */
 
@@ -347,24 +342,18 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 			}
 		case VA_DIR_LEAVE:
 			{
-#ifndef _WIN32
-				{
-					struct stat st;
+				struct stat st;
 
-					if(lstat(full_path, &st) == 0)
-					{
-						result = (chmod(dst_full_path, st.st_mode & 07777) == 0)
-						       ? VR_OK
-						       : VR_ERROR;
-					}
-					else
-					{
-						result = VR_ERROR;
-					}
+				if(os_stat(full_path, &st) == 0)
+				{
+					result = (chmod(dst_full_path, st.st_mode & 07777) == 0)
+									? VR_OK
+									: VR_ERROR;
 				}
-#else
-				result = VR_OK;
-#endif
+				else
+				{
+					result = VR_ERROR;
+				}
 				break;
 			}
 	}
