@@ -405,6 +405,16 @@ case_insensitive_paths(void)
 }
 
 int
+has_atomic_file_replace(void)
+{
+#ifndef _WIN32
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+int
 directory_accessible(const char path[])
 {
 	return os_access(path, X_OK) == 0 || is_unc_root(path);

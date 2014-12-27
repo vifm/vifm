@@ -215,15 +215,10 @@ ior_mv(io_args_t *const args)
 
 				return os_rename(src, dst);
 			}
-			else if(crs == IO_CRS_REPLACE_FILES
-#ifdef _WIN32
-					|| crs == IO_CRS_APPEND_TO_FILES
-#endif
-					)
+			else if(crs == IO_CRS_REPLACE_FILES ||
+					(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
 			{
-#ifdef _WIN32
-				/* os_rename() on Windows doesn't replace files. */
-				if(is_file(dst))
+				if(!has_atomic_file_replace() && is_file(dst))
 				{
 					io_args_t rm_args =
 					{
@@ -239,7 +234,6 @@ ior_mv(io_args_t *const args)
 						return error;
 					}
 				}
-#endif
 
 				return traverse(src, &mv_visitor, args);
 			}
