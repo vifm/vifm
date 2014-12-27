@@ -169,7 +169,6 @@ static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static void fixup_current_fname(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
-static int have_read_access(FileView *view);
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
@@ -178,6 +177,7 @@ static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char *path, int *from_file, int *from_trash);
+static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[]);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
@@ -1810,7 +1810,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	dir_entry_t *entry;
 	ops_t *ops;
 
-	if(!have_read_access(view))
+	if(!can_read_selected_files(view))
 	{
 		return 0;
 	}
@@ -2588,33 +2588,6 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	return 1;
 }
 
-static int
-have_read_access(FileView *view)
-{
-	dir_entry_t *entry;
-
-	if(is_unc_path(view->curr_dir))
-	{
-		return 1;
-	}
-
-	entry = NULL;
-	while(iter_selected_entries(view, &entry))
-	{
-		if(os_access(entry->name, R_OK) == 0)
-		{
-			continue;
-		}
-
-		show_error_msgf("Access denied",
-				"You don't have read permissions on \"%s\"", entry->name);
-		clean_selected_files(view);
-		redraw_view(view);
-		return 0;
-	}
-	return 1;
-}
-
 /* Edits the filepath in the editor checking whether it was changed.  Returns
  * negative value on error, zero when no changes were detected and positive
  * number otherwise. */
@@ -2890,7 +2863,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 			return -1;
 		}
 	}
-	else if(op == CMLO_COPY && !have_read_access(view))
+	else if(op == CMLO_COPY && !can_read_selected_files(view))
 	{
 		return -1;
 	}
@@ -2961,6 +2934,35 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
+}
+
+/* Checks that all selected files can be read.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+can_read_selected_files(FileView *view)
+{
+	dir_entry_t *entry;
+
+	if(is_unc_path(view->curr_dir))
+	{
+		return 1;
+	}
+
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
+	{
+		if(os_access(entry->name, R_OK) == 0)
+		{
+			continue;
+		}
+
+		show_error_msgf("Access denied",
+				"You don't have read permissions on \"%s\"", entry->name);
+		clean_selected_files(view);
+		redraw_view(view);
+		return 0;
+	}
+	return 1;
 }
 
 /* Checks path argument and resolves target directory either to the argument or
