@@ -2464,9 +2464,10 @@ change_case(FileView *view, int toupper)
 	err = 0;
 	while(iter_marked_entries(view, &entry))
 	{
+		const char *const old_fname = entry->name;
 		char new_fname[NAME_MAX];
 
-		copy_str(new_fname, sizeof(new_fname), entry->name);
+		copy_str(new_fname, sizeof(new_fname), old_fname);
 		if(toupper)
 		{
 			str_to_upper(new_fname);
@@ -2476,7 +2477,7 @@ change_case(FileView *view, int toupper)
 			str_to_lower(new_fname);
 		}
 
-		if(strcmp(new_fname, entry->name) == 0)
+		if(strcmp(new_fname, old_fname) == 0)
 		{
 			entry->marked = 0;
 			continue;
@@ -2488,7 +2489,7 @@ change_case(FileView *view, int toupper)
 			err = 1;
 			break;
 		}
-		if(path_exists(new_fname, NODEREF))
+		if(path_exists(new_fname, NODEREF) && !is_case_change(new_fname, old_fname))
 		{
 			status_bar_errorf("File \"%s\" already exists", new_fname);
 			err = 1;

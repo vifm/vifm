@@ -647,6 +647,17 @@ are_on_the_same_fs(const char s[], const char t[])
 	return s_stat.st_dev == t_stat.st_dev;
 }
 
+int
+is_case_change(const char src[], const char dst[])
+{
+	if(!case_insensitive_paths())
+	{
+		return 0;
+	}
+
+	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
+}
+
 #ifndef _WIN32
 
 /* Checks if path (dereferencer or not symbolic link) is an existing directory.

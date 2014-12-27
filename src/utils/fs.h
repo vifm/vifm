@@ -148,6 +148,11 @@ int is_in_subtree(const char path[], const char root[]);
  * so, otherwise zero is returned. */
 int are_on_the_same_fs(const char s[], const char t[]);
 
+/* Checks whether file moving from src to dst corresponds to file rename that
+ * just changes case of file name on case insensitive file system.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int is_case_change(const char src[], const char dst[]);
+
 #ifdef _WIN32
 
 /* Resolves the path to the real path without any symbolic links.  buf should be
