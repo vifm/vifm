@@ -655,7 +655,8 @@ is_op_possible(const op_t *op)
 	{
 		return 0;
 	}
-	if(op->dont_exist != NULL && path_exists(op->dont_exist, NODEREF))
+	if(op->dont_exist != NULL && path_exists(op->dont_exist, NODEREF) &&
+			!is_case_change(op->src, op->dst))
 	{
 		return is_under_trash(op->dst) ? -1 : 0;
 	}
