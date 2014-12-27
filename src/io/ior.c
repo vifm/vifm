@@ -49,6 +49,7 @@ static VisitResult rm_visitor(const char full_path[], VisitAction action,
 		void *param);
 static VisitResult cp_visitor(const char full_path[], VisitAction action,
 		void *param);
+static int is_case_change(const char src[], const char dst[]);
 static int is_file(const char path[]);
 static VisitResult mv_visitor(const char full_path[], VisitAction action,
 		void *param);
@@ -157,7 +158,7 @@ ior_mv(io_args_t *const args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 
-	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF))
+	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
 		return 1;
 	}
@@ -252,6 +253,19 @@ ior_mv(io_args_t *const args)
 		default:
 			return errno;
 	}
+}
+
+/* Checks whether file moving from src to dst corresponds to file rename that
+ * just changes case of file name on case insensitive file system. */
+static int
+is_case_change(const char src[], const char dst[])
+{
+	if(!case_insensitive_paths())
+	{
+		return 0;
+	}
+
+	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
 }
 
 /* Checks that path points to a file or symbolic link.  Returns non-zero if so,

@@ -87,6 +87,10 @@ int make_dir(const char *dir_name, mode_t mode);
 
 int symlinks_available(void);
 
+/* Whether paths are case insensitive.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int case_insensitive_paths(void);
+
 /* Checks if one can change current directory to the path.  Returns non-zero if
  * so, otherwise zero is returned. */
 int directory_accessible(const char path[]);

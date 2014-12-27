@@ -77,6 +77,8 @@
 	Fixed unexpected path resolution on Windows under path containing symbolic
 	links.
 
+	Fixed case change renames on Windows when 'syscalls' is set.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

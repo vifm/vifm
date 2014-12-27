@@ -395,6 +395,16 @@ symlinks_available(void)
 }
 
 int
+case_insensitive_paths(void)
+{
+#ifndef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
+}
+
+int
 directory_accessible(const char path[])
 {
 	return os_access(path, X_OK) == 0 || is_unc_root(path);
