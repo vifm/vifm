@@ -76,6 +76,15 @@
 #include "undo.h"
 #include "vim.h"
 
+/* What to do with rename candidate name (old name and new name). */
+typedef enum
+{
+	RA_SKIP,   /* Skip rename (when new name matches the old one). */
+	RA_FAIL,   /* Abort renaming (status bar error was printed). */
+	RA_RENAME, /* Rename this file. */
+}
+RenameAction;
+
 static char rename_file_ext[NAME_MAX];
 
 static struct
@@ -154,6 +163,8 @@ static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
 static int put_files_from_register_i(FileView *view, int start);
+static RenameAction check_rename(const char old_fname[], const char new_fname[],
+		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static void fixup_current_fname(FileView *view, dir_entry_t *entry,
@@ -2263,10 +2274,11 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	ndest = 0;
 	dest = NULL;
 	err = 0;
-	while(iter_marked_entries(view, &entry))
+	while(iter_marked_entries(view, &entry) && !err)
 	{
 		const char *new_fname;
 		regmatch_t matches[10];
+		RenameAction action;
 
 		if(regexec(&re, entry->name, ARRAY_LEN(matches), matches, 0) != 0)
 		{
@@ -2283,38 +2295,23 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 			new_fname = substitute_regexp(entry->name, sub, matches, NULL);
 		}
 
-		if(strcmp(entry->name, new_fname) == 0)
+		action = check_rename(entry->name, new_fname, dest, ndest);
+		switch(action)
 		{
-			entry->marked = 0;
-			continue;
-		}
+			case RA_SKIP:
+				entry->marked = 0;
+				continue;
+			case RA_FAIL:
+				err = 1;
+				break;
+			case RA_RENAME:
+				ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+				break;
 
-		if(is_in_string_array(dest, ndest, new_fname))
-		{
-			status_bar_errorf("Name \"%s\" duplicates", new_fname);
-			err = 1;
-			break;
+			default:
+				assert(0 && "Unhandled rename action.");
+				break;
 		}
-		if(new_fname[0] == '\0')
-		{
-			status_bar_errorf("Destination name of \"%s\" is empty", entry->name);
-			err = 1;
-			break;
-		}
-		if(contains_slash(new_fname))
-		{
-			status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
-			err = 1;
-			break;
-		}
-		if(path_exists(new_fname, NODEREF))
-		{
-			status_bar_errorf("File \"%s\" already exists", new_fname);
-			err = 1;
-			break;
-		}
-
-		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
 	}
 
 	regfree(&re);
@@ -2370,44 +2367,30 @@ tr_in_names(FileView *view, const char from[], const char to[])
 	ndest = 0;
 	dest = NULL;
 	err = 0;
-	save_msg = 0;
-	while(iter_marked_entries(view, &entry))
+	while(iter_marked_entries(view, &entry) && !err)
 	{
 		const char *new_fname;
+		RenameAction action;
 
 		new_fname = substitute_tr(entry->name, from, to);
-		if(strcmp(entry->name, new_fname) == 0)
-		{
-			entry->marked = 0;
-			continue;
-		}
 
-		if(is_in_string_array(dest, ndest, new_fname))
+		action = check_rename(entry->name, new_fname, dest, ndest);
+		switch(action)
 		{
-			status_bar_errorf("Name \"%s\" duplicates", new_fname);
-			err = 1;
-			break;
-		}
-		if(new_fname[0] == '\0')
-		{
-			status_bar_errorf("Destination name of \"%s\" is empty", entry->name);
-			err = 1;
-			break;
-		}
-		if(contains_slash(new_fname))
-		{
-			status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
-			err = 1;
-			break;
-		}
-		if(path_exists(new_fname, NODEREF))
-		{
-			status_bar_errorf("File \"%s\" already exists", new_fname);
-			err = 1;
-			break;
-		}
+			case RA_SKIP:
+				entry->marked = 0;
+				continue;
+			case RA_FAIL:
+				err = 1;
+				break;
+			case RA_RENAME:
+				ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+				break;
 
-		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+			default:
+				assert(0 && "Unhandled rename action.");
+				break;
+		}
 	}
 
 	if(err)
@@ -2422,6 +2405,43 @@ tr_in_names(FileView *view, const char from[], const char to[])
 	free_string_array(dest, ndest);
 
 	return save_msg;
+}
+
+/* Evaluates possibility of renaming old_fname to new_fname.  Returns
+ * resolution. */
+static RenameAction
+check_rename(const char old_fname[], const char new_fname[], char **dest,
+		int ndest)
+{
+	/* Compare case sensitive strings even on Windows to let user rename file
+	 * changing only case of some characters. */
+	if(strcmp(old_fname, new_fname) == 0)
+	{
+		return RA_SKIP;
+	}
+
+	if(is_in_string_array(dest, ndest, new_fname))
+	{
+		status_bar_errorf("Name \"%s\" duplicates", new_fname);
+		return RA_FAIL;
+	}
+	if(new_fname[0] == '\0')
+	{
+		status_bar_errorf("Destination name of \"%s\" is empty", old_fname);
+		return RA_FAIL;
+	}
+	if(contains_slash(new_fname))
+	{
+		status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
+		return RA_FAIL;
+	}
+	if(path_exists(new_fname, NODEREF))
+	{
+		status_bar_errorf("File \"%s\" already exists", new_fname);
+		return RA_FAIL;
+	}
+
+	return RA_RENAME;
 }
 
 int
