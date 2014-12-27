@@ -2591,25 +2591,26 @@ is_copy_list_ok(const char *dst, int count, char **list)
 static int
 have_read_access(FileView *view)
 {
-	int i;
+	dir_entry_t *entry;
 
-#ifdef _WIN32
 	if(is_unc_path(view->curr_dir))
-		return 1;
-#endif
-
-	for(i = 0; i < view->list_rows; i++)
 	{
-		if(!view->dir_entry[i].selected)
-			continue;
-		if(access(view->dir_entry[i].name, R_OK) != 0)
+		return 1;
+	}
+
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
+	{
+		if(os_access(entry->name, R_OK) == 0)
 		{
-			show_error_msgf("Access denied",
-					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
-			clean_selected_files(view);
-			redraw_view(view);
-			return 0;
+			continue;
 		}
+
+		show_error_msgf("Access denied",
+				"You don't have read permissions on \"%s\"", entry->name);
+		clean_selected_files(view);
+		redraw_view(view);
+		return 0;
 	}
 	return 1;
 }
