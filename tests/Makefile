@@ -59,7 +59,9 @@ check: build
 clean:
 	-$(RM) -r bin/
 
-$(vifm_bin): $(vifm_obj) $(vifm_src)
+$(vifm_src:.c=.o): | $(vifm_bin)
+
+$(vifm_bin): $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/stubs.o: stubs.c
