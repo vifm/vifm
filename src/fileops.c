@@ -1490,7 +1490,7 @@ put_next(const char dest_name[], int force)
 				return 0;
 			}
 
-			if(lstat(dst_buf, &dst_st) == 0 && (!merge ||
+			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
 				if(perform_operation(OP_REMOVESL, NULL, NULL, dst_buf, NULL) != 0)
@@ -1513,7 +1513,7 @@ put_next(const char dest_name[], int force)
 		else
 		{
 			struct stat dst_st;
-			put_confirm.allow_merge = lstat(dst_buf, &dst_st) == 0 &&
+			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
 					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
 			prompt_what_to_do(dest_name);
 			return 1;
@@ -1977,7 +1977,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 	return 0;
 }
 
-/* Uses dentry to check file type and fallbacks to lstat() if dentry contains
+/* Uses dentry to check file type and falls back to lstat() if dentry contains
  * unknown type. */
 static int
 is_dir_entry(const char full_path[], const struct dirent* dentry)
@@ -1988,7 +1988,7 @@ is_dir_entry(const char full_path[], const struct dirent* dentry)
 	{
 		return dentry->d_type == DT_DIR;
 	}
-	if(lstat(full_path, &s) == 0 && s.st_ino != 0)
+	if(os_lstat(full_path, &s) == 0 && s.st_ino != 0)
 	{
 		return (s.st_mode&S_IFMT) == S_IFDIR;
 	}

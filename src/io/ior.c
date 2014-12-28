@@ -19,7 +19,7 @@
 #include "ior.h"
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* lstat() unlink() */
+#include <unistd.h> /* unlink() */
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
 #include <stddef.h> /* NULL */

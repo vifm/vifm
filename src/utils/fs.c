@@ -29,7 +29,7 @@
 #include "utf8.h"
 #endif
 
-#include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
+#include <sys/stat.h> /* S_* statbuf stat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
 #include <unistd.h> /* getcwd() readlink() */
 
@@ -200,7 +200,7 @@ is_symlink(const char path[])
 {
 #ifndef _WIN32
 	struct stat st;
-	return lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
+	return os_lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
 #else
 	char filename[PATH_MAX];
 	DWORD attr;
@@ -458,7 +458,7 @@ get_file_size(const char path[])
 {
 #ifndef _WIN32
 	struct stat st;
-	if(lstat(path, &st) == 0)
+	if(os_lstat(path, &st) == 0)
 	{
 		return (uint64_t)st.st_size;
 	}
@@ -638,7 +638,7 @@ int
 are_on_the_same_fs(const char s[], const char t[])
 {
 	struct stat s_stat, t_stat;
-	if(lstat(s, &s_stat) != 0 || lstat(t, &t_stat) != 0)
+	if(os_lstat(s, &s_stat) != 0 || os_lstat(t, &t_stat) != 0)
 	{
 		return 0;
 	}
@@ -665,7 +665,7 @@ static int
 is_directory(const char path[], int dereference_links)
 {
 	struct stat statbuf;
-	if((dereference_links ? &stat : &lstat)(path, &statbuf) != 0)
+	if((dereference_links ? &stat : &os_lstat)(path, &statbuf) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
 		log_cwd();

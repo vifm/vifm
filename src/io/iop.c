@@ -331,7 +331,7 @@ iop_cp(io_args_t *const args)
 	fclose(in);
 	fclose(out);
 
-	if(error == 0 && lstat(src, &src_st) == 0)
+	if(error == 0 && os_lstat(src, &src_st) == 0)
 	{
 		error = os_chmod(dst, src_st.st_mode & 07777);
 	}

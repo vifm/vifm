@@ -19,7 +19,6 @@
 #include "trash.h"
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* lstat */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -29,6 +28,7 @@
 #include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -483,7 +483,7 @@ gen_trash_name(const char base_path[], const char name[])
 		snprintf(buf, sizeof(buf), "%s/%03d_%s", trash_dir, i++, name);
 		chosp(buf);
 	}
-	while(lstat(buf, &st) == 0);
+	while(os_lstat(buf, &st) == 0);
 
 	free(trash_dir);
 

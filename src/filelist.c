@@ -2452,7 +2452,7 @@ fill_dir_list(FileView *view)
 		init_dir_entry(view, dir_entry, d->d_name);
 
 		/* Load the inode info or leave blank values in dir_entry. */
-		if(lstat(dir_entry->name, &s) == 0)
+		if(os_lstat(dir_entry->name, &s) == 0)
 		{
 			dir_entry->type = get_type_from_mode(s.st_mode);
 			dir_entry->size = (uintmax_t)s.st_size;
@@ -2929,7 +2929,7 @@ add_parent_dir(FileView *view)
 	++view->list_rows;
 
 	/* Load the inode info or leave blank values in dir_entry. */
-	if(lstat(dir_entry->name, &s) != 0)
+	if(os_lstat(dir_entry->name, &s) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);

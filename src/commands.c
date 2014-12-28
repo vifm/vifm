@@ -27,7 +27,7 @@
 
 #include <curses.h>
 
-#include <sys/stat.h> /* gid_t lstat() stat() uid_t */
+#include <sys/stat.h> /* gid_t stat() uid_t */
 #include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
@@ -1983,7 +1983,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			struct stat st;
 			if(curr_view->dir_entry[i].selected == 0)
 				continue;
-			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
+			if(os_lstat(curr_view->dir_entry[i].name, &st) == 0 &&
 					!path_exists(curr_view->dir_entry[i].name, DEREF))
 			{
 				show_error_msgf("Access error",
