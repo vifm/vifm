@@ -2088,6 +2088,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 {
 	void *t;
 	wchar_t *line_ending;
+	wchar_t *wide_completed;
 
 	const size_t new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
 			+ (stat->len - stat->index) + 1;
@@ -2105,8 +2106,10 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	}
 	stat->line = t;
 
+	wide_completed = to_wide(completed);
 	vifm_swprintf(stat->line + (p - line_mb), new_len,
-			L"%" WPRINTF_MBSTR L"%" WPRINTF_WSTR, completed, line_ending);
+			L"%" WPRINTF_WSTR L"%" WPRINTF_WSTR, wide_completed, line_ending);
+	free(wide_completed);
 	free(line_ending);
 
 	update_line_stat(stat, new_len);
