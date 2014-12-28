@@ -152,7 +152,7 @@ static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
-static void clone_file(const dir_entry_t *entry, const char path[],
+static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
@@ -1885,6 +1885,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	i = 0;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
+		int err;
 		int j;
 		const char *const name = entry->name;
 		const char *clone_name;
@@ -1901,17 +1902,18 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 		progress_msg("Cloning files", i, nmarked_files);
 
+		err = 0;
 		for(j = 0; j < copies; ++j)
 		{
 			if(path_exists_at(path, clone_name, DEREF))
 			{
 				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
-			clone_file(entry, path, clone_name, ops);
+			err += clone_file(entry, path, clone_name, ops);
 		}
 
 		fixup_current_fname(view, entry, clone_name);
-		ops_advance(ops, 1);
+		ops_advance(ops, err == 0);
 
 		++i;
 	}
@@ -1923,9 +1925,12 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		free_string_array(list, nlines);
 	}
 
+	status_bar_messagef("%d file%s cloned%s", ops->succeeded,
+			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
+
 	ops_free(ops);
 
-	return 0;
+	return 1;
 }
 
 /* Makes list of marked filenames.  *nmarked is always set (0 for empty list).
@@ -1944,8 +1949,8 @@ grab_marked_files(FileView *view, size_t *nmarked)
 }
 
 /* Clones single file/directory to directory specified by the path under name in
- * the clone. */
-static void
+ * the clone.  Returns zero on success, otherwise non-zero is returned. */
+static int
 clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 		ops_t *ops)
 {
@@ -1958,16 +1963,19 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 	{
 		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)
 		{
-			return;
+			return 1;
 		}
 	}
 
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	if(perform_operation(OP_COPY, ops, NULL, full_path, clone_name) == 0)
+	if(perform_operation(OP_COPY, ops, NULL, full_path, clone_name) != 0)
 	{
-		add_operation(OP_COPY, NULL, NULL, full_path, clone_name);
+		return 1;
 	}
+
+	add_operation(OP_COPY, NULL, NULL, full_path, clone_name);
+	return 0;
 }
 
 /* Uses dentry to check file type and fallbacks to lstat() if dentry contains
