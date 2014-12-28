@@ -18,7 +18,7 @@
 
 #include "ior.h"
 
-#include <sys/stat.h> /* stat chmod() */
+#include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat() unlink() */
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */

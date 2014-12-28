@@ -24,7 +24,7 @@
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* stat chmod() mkdir() */
+#include <sys/stat.h> /* stat mkdir() */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
@@ -120,7 +120,7 @@ iop_mkdir(io_args_t *const args)
 
 		free(partial_path);
 #ifndef _WIN32
-		return chmod(path, mode);
+		return os_chmod(path, mode);
 #else
 		return 0;
 #endif
@@ -333,7 +333,7 @@ iop_cp(io_args_t *const args)
 
 	if(error == 0 && lstat(src, &src_st) == 0)
 	{
-		error = chmod(dst, src_st.st_mode & 07777);
+		error = os_chmod(dst, src_st.st_mode & 07777);
 	}
 
 	ioeta_update(args->estim, src, 1, 0);
