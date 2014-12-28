@@ -326,7 +326,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 
 				if(os_stat(full_path, &st) == 0)
 				{
-					result = (chmod(dst_full_path, st.st_mode & 07777) == 0)
+					result = (os_chmod(dst_full_path, st.st_mode & 07777) == 0)
 									? VR_OK
 									: VR_ERROR;
 				}

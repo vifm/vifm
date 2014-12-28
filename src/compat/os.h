@@ -22,12 +22,13 @@
 #ifndef _WIN32
 
 #include <sys/stat.h> /* mkdir() */
-#include <unistd.h> /* access() chdir() lstat() rename() */
+#include <unistd.h> /* access() chdir() chmod() lstat() rename() */
 
 #include <stdlib.h> /* system() */
 
 #define os_access access
 #define os_chdir chdir
+#define os_chmod chmod
 #define os_lstat lstat
 #define os_mkdir mkdir
 #define os_rename rename
@@ -46,6 +47,8 @@ struct stat;
 int os_access(const char pathname[], int mode);
 
 int os_chdir(const char path[]);
+
+int os_chmod(const char path[], int mode);
 
 int os_rename(const char oldpath[], const char newpath[]);
 

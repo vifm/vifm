@@ -27,7 +27,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strdup() */
-#include <wchar.h> /* wcswidth() */
+#include <wchar.h> /* wcslen() wcswidth() */
 #include <wctype.h>
 
 #include "../cfg/config.h"

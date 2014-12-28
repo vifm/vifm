@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 
-#include <wchar.h> /* *_OK _waccess() _wmkdir() _wrename() _wsystem() */
+#include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
 #include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
@@ -41,6 +41,15 @@ os_chdir(const char path[])
 {
 	wchar_t *const utf16_path = utf8_to_utf16(path);
 	const int result = _wchdir(utf16_path);
+	free(utf16_path);
+	return result;
+}
+
+int
+os_chmod(const char path[], int mode)
+{
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	const int result = _wchmod(utf16_path, mode);
 	free(utf16_path);
 	return result;
 }
