@@ -2090,8 +2090,8 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	wchar_t *line_ending;
 	wchar_t *wide_completed;
 
-	const size_t new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
-			+ (stat->len - stat->index) + 1;
+	const size_t new_len = (p - line_mb) + wide_len(completed) +
+		(stat->len - stat->index) + 1;
 
 	line_ending = vifm_wcsdup(stat->line + stat->index);
 	if(line_ending == NULL)
@@ -2130,28 +2130,21 @@ line_completion(line_stats_t *stat)
 
 	if(!stat->complete_continue)
 	{
-		int i;
-		void *p;
 		wchar_t t;
 		CompletionPreProcessing compl_func_arg;
 
-		/* only complete the part before the cursor
-		 * so just copy that part to line_mb */
+		/* Only complete the part before the cursor so just copy that part to
+		 * line_mb. */
 		t = stat->line[stat->index];
 		stat->line[stat->index] = L'\0';
 
-		i = wcstombs(NULL, stat->line, 0) + 1;
-
-		p = realloc(line_mb, i);
-		if(p == NULL)
+		free(line_mb);
+		line_mb = to_multibyte(stat->line);
+		if(line_mb == NULL)
 		{
-			free(line_mb);
-			line_mb = NULL;
 			return -1;
 		}
-		line_mb = p;
 
-		wcstombs(line_mb, stat->line, i);
 		line_mb_cmd = find_last_command(line_mb);
 
 		stat->line[stat->index] = t;
@@ -2161,7 +2154,8 @@ line_completion(line_stats_t *stat)
 		compl_func_arg = CPP_NONE;
 		if(sub_mode == CMD_SUBMODE)
 		{
-			const CmdLineLocation ipt = get_cmdline_location(line_mb, line_mb + i);
+			const CmdLineLocation ipt = get_cmdline_location(line_mb,
+					line_mb + strlen(line_mb));
 			switch(ipt)
 			{
 				case CLL_OUT_OF_ARG:

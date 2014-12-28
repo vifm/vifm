@@ -29,8 +29,6 @@
 static size_t guess_char_width(char c);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
 static size_t get_char_screen_width(const char str[], size_t char_width);
-static size_t utf16_length(const char utf8[]);
-static size_t utf8_length(const wchar_t utf16[]);
 
 size_t
 get_char_width(const char str[])
@@ -196,7 +194,7 @@ get_screen_overhead(const char str[])
 wchar_t *
 utf8_to_utf16(const char utf8[])
 {
-	size_t size = utf16_length(utf8);
+	size_t size = utf8_widen_len(utf8);
 
 	wchar_t *const utf16 = malloc(sizeof(wchar_t)*(size + 1));
 
@@ -236,10 +234,8 @@ utf8_to_utf16(const char utf8[])
 	return utf16;
 }
 
-/* Calculates how many utf-16 chars are needed to store given utf-8 string.
- * Returns the number. */
-static size_t
-utf16_length(const char utf8[])
+size_t
+utf8_widen_len(const char utf8[])
 {
 	size_t size = 0;
 	const char *p = utf8;
@@ -272,7 +268,7 @@ utf16_length(const char utf8[])
 char *
 utf8_from_utf16(const wchar_t utf16[])
 {
-	const size_t size = utf8_length(utf16);
+	const size_t size = utf8_narrowd_len(utf16);
 
 	char *const utf8 = malloc(size + 1);
 
@@ -316,10 +312,8 @@ utf8_from_utf16(const wchar_t utf16[])
 	return utf8;
 }
 
-/* Calculate how many utf8 chars are needed to store given utf-16 string.
- * Returns the number. */
-static size_t
-utf8_length(const wchar_t utf16[])
+size_t
+utf8_narrowd_len(const wchar_t utf16[])
 {
 	const wchar_t *p = utf16;
 	size_t len = 0;
