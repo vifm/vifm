@@ -22,10 +22,20 @@
 
 #include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
-#include <stddef.h> /* wchar_t */
-#include <stdlib.h> /* free() */
+#include <stddef.h> /* NULL wchar_t */
+#include <stdlib.h> /* free() malloc() */
+#include <string.h> /* strlen() */
 
+#include "../utils/str.h"
 #include "../utils/utf8.h"
+
+/* Fake DIR structure for directory traversing functions. */
+typedef struct
+{
+	_WDIR *dirp;         /* Handle returned by opendir(). */
+	struct dirent entry; /* Buffer for modified return value of readdir(). */
+}
+os_dir_t;
 
 int
 os_access(const char pathname[], int mode)
@@ -52,6 +62,61 @@ os_chmod(const char path[], int mode)
 	const int result = _wchmod(utf16_path, mode);
 	free(utf16_path);
 	return result;
+}
+
+int
+os_closedir(DIR *dirp)
+{
+	os_dir_t *const os_dir = (os_dir_t *)dirp;
+	const int result = _wclosedir(os_dir->dirp);
+	free(os_dir);
+	return result;
+}
+
+DIR *
+os_opendir(const char name[])
+{
+	os_dir_t *os_dir;
+	wchar_t *const utf16_name = utf8_to_utf16(name);
+	_WDIR *const d = _wopendir(utf16_name);
+	free(utf16_name);
+
+	if(d == NULL)
+	{
+		return NULL;
+	}
+
+	os_dir = malloc(sizeof(*os_dir));
+	if(os_dir == NULL)
+	{
+		(void)_wclosedir(d);
+		return NULL;
+	}
+
+	os_dir->dirp = d;
+	return (DIR *)os_dir;
+}
+
+struct dirent *
+os_readdir(DIR *dirp)
+{
+	char *utf8_name;
+	os_dir_t *const os_dir = (os_dir_t *)dirp;
+	struct _wdirent *const entry = _wreaddir(os_dir->dirp);
+	if(entry == NULL)
+	{
+		return NULL;
+	}
+
+	utf8_name = utf8_from_utf16(entry->d_name);
+	copy_str(os_dir->entry.d_name, sizeof(os_dir->entry.d_name), utf8_name);
+	free(utf8_name);
+
+	os_dir->entry.d_ino = 0;
+	os_dir->entry.d_reclen  = 0;
+	os_dir->entry.d_namlen = strlen(os_dir->entry.d_name);
+
+	return &os_dir->entry;
 }
 
 int

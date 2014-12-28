@@ -19,6 +19,8 @@
 #ifndef VIFM__COMPAT__OS_H__
 #define VIFM__COMPAT__OS_H__
 
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
+
 #ifndef _WIN32
 
 #include <sys/stat.h> /* mkdir() */
@@ -29,6 +31,9 @@
 #define os_access access
 #define os_chdir chdir
 #define os_chmod chmod
+#define os_closedir closedir
+#define os_opendir opendir
+#define os_readdir readdir
 #define os_lstat lstat
 #define os_mkdir mkdir
 #define os_rename rename
@@ -49,6 +54,12 @@ int os_access(const char pathname[], int mode);
 int os_chdir(const char path[]);
 
 int os_chmod(const char path[], int mode);
+
+int os_closedir(DIR *dirp);
+
+DIR * os_opendir(const char name[]);
+
+struct dirent * os_readdir(DIR *dirp);
 
 int os_rename(const char oldpath[], const char newpath[]);
 
