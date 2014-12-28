@@ -23,11 +23,11 @@
 #ifndef _WIN32
 #include <sys/dir.h>
 #endif
-#include <dirent.h> /* DIR */
 
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
+#include "compat/os.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -63,14 +63,14 @@ parse_desktop_files_internal(const char *path, const char *mime_type,
 	struct dirent *dentry;
 	const char *slash;
 
-	if((dir = opendir(path)) == NULL)
+	if((dir = os_opendir(path)) == NULL)
 	{
 		return;
 	}
 
 	slash = ends_with_slash(path) ? "" : "/";
 
-	while((dentry = readdir(dir)) != NULL)
+	while((dentry = os_readdir(dir)) != NULL)
 	{
 		char buf[PATH_MAX];
 
@@ -90,7 +90,7 @@ parse_desktop_files_internal(const char *path, const char *mime_type,
 		}
 	}
 
-	closedir(dir);
+	os_closedir(dir);
 }
 
 static void

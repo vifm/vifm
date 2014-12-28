@@ -23,7 +23,6 @@
 
 #include <pthread.h>
 
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
@@ -842,14 +841,14 @@ add_files_to_list(const char *path, char **files, int *len)
 		return files;
 	}
 
-	dir = opendir(path);
+	dir = os_opendir(path);
 	if(dir == NULL)
 		return files;
 
 	if(path[strlen(path) - 1] != '/')
 		slash = "/";
 
-	while((dentry = readdir(dir)) != NULL)
+	while((dentry = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(dentry->d_name))
 		{
@@ -859,7 +858,7 @@ add_files_to_list(const char *path, char **files, int *len)
 		}
 	}
 
-	closedir(dir);
+	os_closedir(dir);
 	return files;
 }
 
@@ -1556,10 +1555,10 @@ put_next(const char dest_name[], int force)
 
 		cmd_group_continue();
 
-		if((dir = opendir(src_buf)) != NULL)
+		if((dir = os_opendir(src_buf)) != NULL)
 		{
 			struct dirent *d;
-			while((d = readdir(dir)) != NULL)
+			while((d = os_readdir(dir)) != NULL)
 			{
 				if(!is_builtin_dir(d->d_name))
 				{
@@ -1577,7 +1576,7 @@ put_next(const char dest_name[], int force)
 					add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
 				}
 			}
-			closedir(dir);
+			os_closedir(dir);
 		}
 		else
 		{
@@ -3587,7 +3586,7 @@ calc_dirsize(const char path[], int force_update)
 	const char* slash = "";
 	uint64_t size;
 
-	dir = opendir(path);
+	dir = os_opendir(path);
 	if(dir == NULL)
 	{
 		return 0;
@@ -3599,7 +3598,7 @@ calc_dirsize(const char path[], int force_update)
 	}
 
 	size = 0;
-	while((dentry = readdir(dir)) != NULL)
+	while((dentry = os_readdir(dir)) != NULL)
 	{
 		char buf[PATH_MAX];
 
@@ -3623,7 +3622,7 @@ calc_dirsize(const char path[], int force_update)
 		}
 	}
 
-	closedir(dir);
+	os_closedir(dir);
 
 	set_dir_size(path, size);
 	return size;

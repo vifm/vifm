@@ -31,7 +31,6 @@
 
 #include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* F_OK access() getcwd() readlink() */
 
 #include <errno.h> /* errno */
@@ -114,19 +113,19 @@ is_dir_empty(const char path[])
 	DIR *dir;
 	struct dirent *d;
 
-	if((dir = opendir(path)) == NULL)
+	if((dir = os_opendir(path)) == NULL)
 	{
 		return 0;
 	}
 
-	while((d = readdir(dir)) != NULL)
+	while((d = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(d->d_name))
 		{
 			break;
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 
 	return d == NULL;
 }
@@ -492,10 +491,10 @@ list_regular_files(const char path[], int *len)
 	char **list = NULL;
 	*len = 0;
 
-	if((dir = opendir(path)) != NULL)
+	if((dir = os_opendir(path)) != NULL)
 	{
 		struct dirent *d;
-		while((d = readdir(dir)) != NULL)
+		while((d = os_readdir(dir)) != NULL)
 		{
 			char full_path[PATH_MAX];
 			snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
@@ -505,7 +504,7 @@ list_regular_files(const char path[], int *len)
 				*len = add_to_string_array(&list, *len, 1, d->d_name);
 			}
 		}
-		closedir(dir);
+		os_closedir(dir);
 	}
 
 	return list;
@@ -547,13 +546,13 @@ remove_dir_content(const char path[])
 	DIR *dir;
 	struct dirent *d;
 
-	dir = opendir(path);
+	dir = os_opendir(path);
 	if(dir == NULL)
 	{
 		return;
 	}
 
-	while((d = readdir(dir)) != NULL)
+	while((d = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(d->d_name))
 		{
@@ -566,7 +565,7 @@ remove_dir_content(const char path[])
 			free(full_path);
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 }
 
 int

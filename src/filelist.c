@@ -29,7 +29,6 @@
 
 #include <curses.h>
 
-#include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <pwd.h>
@@ -2403,10 +2402,10 @@ fill_dir_list(FileView *view)
 	DIR *dir;
 	struct dirent *d;
 
-	if((dir = opendir(view->curr_dir)) == NULL)
+	if((dir = os_opendir(view->curr_dir)) == NULL)
 		return -1;
 
-	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
+	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
 	{
 		dir_entry_t *dir_entry;
 		struct stat s;
@@ -2443,7 +2442,7 @@ fill_dir_list(FileView *view)
 				(view->list_rows + 1)*sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			closedir(dir);
+			os_closedir(dir);
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
@@ -2487,7 +2486,7 @@ fill_dir_list(FileView *view)
 			}
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 #else
 	char find_pat[PATH_MAX];
 	wchar_t *utf16_path;
