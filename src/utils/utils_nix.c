@@ -28,7 +28,7 @@
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <unistd.h> /* X_OK access() dup2() getpid() */
+#include <unistd.h> /* X_OK dup2() getpid() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -42,6 +42,7 @@
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../running.h"
 #include "fs.h"
@@ -484,7 +485,7 @@ S_ISEXE(mode_t mode)
 int
 executable_exists(const char path[])
 {
-	return access(path, X_OK) == 0 && !is_dir(path);
+	return os_access(path, X_OK) == 0 && !is_dir(path);
 }
 
 int

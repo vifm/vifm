@@ -34,7 +34,7 @@
 #include <pwd.h>
 #include <grp.h>
 #endif
-#include <unistd.h> /* access() close() fork() pipe() */
+#include <unistd.h> /* close() fork() pipe() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -3524,7 +3524,7 @@ cd_is_possible(const char *path)
 	}
 	else if(!directory_accessible(path))
 	{
-		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", path);
+		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", path);
 
 		show_error_msgf("Permission denied", "\"%s\"", path);
 		return 0;

@@ -31,7 +31,7 @@
 
 #include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
-#include <unistd.h> /* F_OK access() getcwd() readlink() */
+#include <unistd.h> /* getcwd() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
@@ -100,7 +100,7 @@ is_dir_fast(const char path[])
 	path_to_selfref[len + 1] = '.';
 	path_to_selfref[len + 2] = '\0';
 
-	return access(path_to_selfref, F_OK) == 0;
+	return os_access(path_to_selfref, F_OK) == 0;
 #else
 	/* Some systems report that "/path/to/file/." is directory... */
 	return 0;
@@ -445,7 +445,7 @@ is_dir_writable(const char path[])
 			return 1;
 		}
 #else
-	if(access(path, W_OK) == 0)
+	if(os_access(path, W_OK) == 0)
 		return 1;
 #endif
 	}

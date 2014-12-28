@@ -32,7 +32,7 @@
 #define ERROR_ELEVATION_REQUIRED 740L
 #endif
 #endif
-#include <unistd.h> /* X_OK pid_t access() */
+#include <unistd.h> /* pid_t */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -44,6 +44,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/os.h"
 #include "menus/menus.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -167,7 +168,7 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 	int executable;
 #ifndef _WIN32
 	executable = curr->type == EXECUTABLE ||
-			(runnable && access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
+			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
 	executable = curr->type == EXECUTABLE;
 #endif

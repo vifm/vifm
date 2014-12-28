@@ -28,7 +28,7 @@
 #include <curses.h>
 
 #include <sys/stat.h> /* gid_t lstat() stat() uid_t */
-#include <unistd.h> /* R_OK access() unlink() */
+#include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() isspace() */
@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "cfg/hist.h"
 #include "cfg/info.h"
+#include "compat/os.h"
 #include "engine/cmds.h"
 #include "engine/mode.h"
 #include "engine/options.h"
@@ -3426,7 +3427,7 @@ source_cmd(const cmd_info_t *cmd_info)
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
-	if(access(path, R_OK) != 0)
+	if(os_access(path, R_OK) != 0)
 	{
 		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
 		ret = 1;

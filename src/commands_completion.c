@@ -28,7 +28,6 @@
 
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR dirent */
-#include <unistd.h> /* X_OK access() */
 
 #ifndef _WIN32
 #include <grp.h> /* getgrent setgrent */
@@ -802,7 +801,7 @@ is_dirent_targets_exec(const struct dirent *d)
 		return 0;
 	if(d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN)
 		return 0;
-	return access(d->d_name, X_OK) == 0;
+	return os_access(d->d_name, X_OK) == 0;
 #else
 	return is_win_executable(d->d_name);
 #endif

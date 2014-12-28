@@ -19,8 +19,6 @@
 
 #include "info.h"
 
-#include <unistd.h> /* R_OK access() */
-
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
@@ -28,6 +26,7 @@
 #include <stdlib.h> /* abs() free() realloc() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
+#include "../compat/os.h"
 #include "../engine/cmds.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
@@ -415,7 +414,7 @@ write_info_file(void)
 	(void)snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 	(void)snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
 
-	if(access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
+	if(os_access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
 	{
 		update_info_file(tmp_file);
 
