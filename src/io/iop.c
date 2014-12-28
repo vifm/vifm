@@ -24,7 +24,7 @@
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* stat mkdir() */
+#include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 

@@ -29,13 +29,13 @@
 #include "utf8.h"
 #endif
 
-#include <sys/stat.h> /* S_* statbuf stat() mkdir() */
+#include <sys/stat.h> /* S_* statbuf */
 #include <sys/types.h> /* size_t mode_t */
 #include <unistd.h> /* getcwd() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() remove() rename() */
+#include <stdio.h> /* snprintf() remove() */
 #include <stdlib.h> /* free() realpath() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
@@ -515,7 +515,7 @@ is_regular_file(const char path[])
 {
 #ifndef _WIN32
 	struct stat s;
-	return stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+	return os_stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
 #else
 	const DWORD attrs = win_get_file_attrs(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
@@ -533,7 +533,7 @@ rename_file(const char src[], const char dst[])
 #ifdef _WIN32
 	(void)remove(dst);
 #endif
-	if((error = rename(src, dst)))
+	if((error = os_rename(src, dst)))
 	{
 		LOG_SERROR_MSG(errno, "Rename operation failed: {%s => %s}", src, dst);
 	}
@@ -665,7 +665,7 @@ static int
 is_directory(const char path[], int dereference_links)
 {
 	struct stat statbuf;
-	if((dereference_links ? &stat : &os_lstat)(path, &statbuf) != 0)
+	if((dereference_links ? &os_stat : &os_lstat)(path, &statbuf) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
 		log_cwd();

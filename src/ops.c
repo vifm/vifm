@@ -25,7 +25,7 @@
 #include "utils/utf8.h"
 #endif
 
-#include <sys/stat.h> /* gid_t uid_t stat() */
+#include <sys/stat.h> /* gid_t uid_t */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */

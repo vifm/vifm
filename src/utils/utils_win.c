@@ -35,6 +35,7 @@
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../compat/wcwidth.h"
 #include "../ui/ui.h"
 #include "../commands_completion.h"
@@ -84,7 +85,7 @@ run_in_shell_no_cls(char command[])
 		/* See "cmd /?" for an "explanation" why extra double quotes are
 		 * omitted. */
 		snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
-		return system(buf);
+		return os_system(buf);
 	}
 	else
 	{
@@ -592,7 +593,7 @@ display_help(const char cmd[])
 	def_prog_mode();
 	endwin();
 	system("cls");
-	if(system(cmd) != EXIT_SUCCESS)
+	if(os_system(cmd) != EXIT_SUCCESS)
 	{
 		system("pause");
 	}

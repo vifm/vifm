@@ -2603,7 +2603,7 @@ edit_file(const char filepath[], int force_changed)
 {
 	struct stat st_before, st_after;
 
-	if(!force_changed && stat(filepath, &st_before) != 0)
+	if(!force_changed && os_stat(filepath, &st_before) != 0)
 	{
 		show_error_msgf("Error Editing File",
 				"Could not stat file \"%s\" before edit: %s", filepath,
@@ -2618,7 +2618,7 @@ edit_file(const char filepath[], int force_changed)
 		return -1;
 	}
 
-	if(!force_changed && stat(filepath, &st_after) != 0)
+	if(!force_changed && os_stat(filepath, &st_after) != 0)
 	{
 		show_error_msgf("Error Editing File",
 				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));

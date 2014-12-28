@@ -2074,7 +2074,7 @@ update_dir_mtime(FileView *view)
 #ifndef _WIN32
 	struct stat s;
 
-	if(stat(view->curr_dir, &s) != 0)
+	if(os_stat(view->curr_dir, &s) != 0)
 		return -1;
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
 	view->dir_mtime = s.st_mtim;
@@ -2480,7 +2480,7 @@ fill_dir_list(FileView *view)
 			struct stat st;
 
 			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
-			if(symlink_type != SLT_SLOW && stat(dir_entry->name, &st) == 0)
+			if(symlink_type != SLT_SLOW && os_stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}
@@ -2829,7 +2829,7 @@ is_dir_big(const char path[])
 {
 #ifndef _WIN32
 	struct stat s;
-	if(stat(path, &s) != 0)
+	if(os_stat(path, &s) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", path);
 		return 1;
@@ -3479,7 +3479,7 @@ check_if_filelists_have_changed(FileView *view)
 
 #ifndef _WIN32
 	struct stat s;
-	if(stat(view->curr_dir, &s) != 0)
+	if(os_stat(view->curr_dir, &s) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))

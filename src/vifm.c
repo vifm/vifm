@@ -25,7 +25,7 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* getcwd, stat, sysconf */
+#include <unistd.h> /* getcwd sysconf */
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */

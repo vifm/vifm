@@ -27,7 +27,7 @@
 
 #include <curses.h>
 
-#include <sys/stat.h> /* gid_t stat() uid_t */
+#include <sys/stat.h> /* gid_t uid_t */
 #include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
@@ -36,7 +36,7 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() system() */
+#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() */
 
