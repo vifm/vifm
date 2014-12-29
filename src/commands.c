@@ -175,7 +175,7 @@ TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
-static int add_filetype(const cmd_info_t *cmd_info, int x);
+static int add_filetype(const cmd_info_t *cmd_info, int for_x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
@@ -2162,26 +2162,31 @@ file_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Registers non-x file association handler. */
 static int
 filetype_cmd(const cmd_info_t *cmd_info)
 {
 	return add_filetype(cmd_info, 0);
 }
 
+/* Registers x file association handler. */
 static int
 filextype_cmd(const cmd_info_t *cmd_info)
 {
 	return add_filetype(cmd_info, 1);
 }
 
+/* Registers x/non-x file association handler.  Returns value for
+ * *_cmd handler. */
 static int
-add_filetype(const cmd_info_t *cmd_info, int x)
+add_filetype(const cmd_info_t *cmd_info, int for_x)
 {
 	const char *records;
+	int in_x;
 
 	records = skip_word(cmd_info->args);
-	ft_set_programs(cmd_info->argv[0], records, x,
-			curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
+	ft_set_programs(cmd_info->argv[0], records, for_x, in_x);
 	return 0;
 }
 
