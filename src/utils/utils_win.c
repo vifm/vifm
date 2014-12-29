@@ -20,6 +20,7 @@
 #include "utils_win.h"
 #include "utils_int.h"
 
+#include <ntdef.h>
 #include <windows.h>
 #include <winioctl.h>
 

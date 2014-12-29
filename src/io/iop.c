@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "iop.h"
-
 #ifdef _WIN32
 #define REQUIRED_WINVER 0x0600
 #include "../utils/windefs.h"
 #include <windows.h>
 #endif
+
+#include "iop.h"
 
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
