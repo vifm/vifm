@@ -272,6 +272,12 @@ register_assoc(assoc_t assoc, int for_x, int in_x)
 	}
 }
 
+assoc_records_t
+ft_get_all_viewers(const char file[])
+{
+	return clone_all_matching_records(file, &fileviewers);
+}
+
 /* Clones all records which pattern matches the file.  Returns list of records
  * composed of clones. */
 static assoc_records_t
