@@ -31,6 +31,10 @@
 	Auto-resize position field on the status bar to fit the text.  Thanks to
 	ranousse.
 
+	Switch to utf-8 internal representation of paths on Windows.  This fixes
+	issues when file name encoding doesn't match system encoding.  Thanks to
+	Stas Panteleev.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
