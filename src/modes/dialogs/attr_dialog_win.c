@@ -26,6 +26,7 @@
 
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
+#include "../../ui/cancellation.h"
 #include "../../ui/ui.h"
 #include "../../utils/fs.h"
 #include "../../utils/fs_limits.h"

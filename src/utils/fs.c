@@ -25,19 +25,21 @@
 #include <windows.h>
 #include <ntdef.h>
 #include <winioctl.h>
+
+#include "utf8.h"
 #endif
 
-#include <sys/stat.h> /* S_* statbuf stat() lstat() mkdir() */
+#include <sys/stat.h> /* S_* statbuf */
 #include <sys/types.h> /* size_t mode_t */
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
-#include <unistd.h> /* F_OK access() getcwd() readlink() */
+#include <unistd.h> /* getcwd() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() remove() rename() */
+#include <stdio.h> /* snprintf() remove() */
 #include <stdlib.h> /* free() realpath() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
+#include "../compat/os.h"
 #include "fs_limits.h"
 #include "log.h"
 #include "path.h"
@@ -46,7 +48,8 @@
 #include "utils.h"
 
 static int is_dir_fast(const char path[]);
-static int path_exists_internal(const char *path, const char *filename);
+static int path_exists_internal(const char path[], const char filename[],
+		int deref);
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
@@ -65,7 +68,11 @@ is_dir(const char path[])
 #ifndef _WIN32
 	return is_directory(path, 1);
 #else
-	return win_get_file_attrs(path) & FILE_ATTRIBUTE_DIRECTORY;
+	{
+		const DWORD attrs = win_get_file_attrs(path);
+		return attrs != INVALID_FILE_ATTRIBUTES
+		    && (attrs & FILE_ATTRIBUTE_DIRECTORY);
+	}
 #endif
 }
 
@@ -93,7 +100,7 @@ is_dir_fast(const char path[])
 	path_to_selfref[len + 1] = '.';
 	path_to_selfref[len + 2] = '\0';
 
-	return access(path_to_selfref, F_OK) == 0;
+	return os_access(path_to_selfref, F_OK) == 0;
 #else
 	/* Some systems report that "/path/to/file/." is directory... */
 	return 0;
@@ -106,19 +113,19 @@ is_dir_empty(const char path[])
 	DIR *dir;
 	struct dirent *d;
 
-	if((dir = opendir(path)) == NULL)
+	if((dir = os_opendir(path)) == NULL)
 	{
 		return 0;
 	}
 
-	while((d = readdir(dir)) != NULL)
+	while((d = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(d->d_name))
 		{
 			break;
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 
 	return d == NULL;
 }
@@ -130,26 +137,26 @@ is_valid_dir(const char *path)
 }
 
 int
-path_exists(const char path[])
+path_exists(const char path[], int deref)
 {
 	if(!is_path_absolute(path))
 	{
 		LOG_ERROR_MSG("Passed relative path where absolute one is expected: %s",
 				path);
 	}
-	return path_exists_internal(NULL, path);
+	return path_exists_internal(NULL, path, deref);
 }
 
 int
-path_exists_at(const char *path, const char *filename)
+path_exists_at(const char path[], const char filename[], int deref)
 {
-	return path_exists_internal(path, filename);
+	return path_exists_internal(path, filename, deref);
 }
 
 /* Checks whether path/file exists. If path is NULL, filename is assumed to
  * contain full path. */
 static int
-path_exists_internal(const char *path, const char *filename)
+path_exists_internal(const char path[], const char filename[], int deref)
 {
 	const char *path_to_check;
 	char full[PATH_MAX];
@@ -162,19 +169,13 @@ path_exists_internal(const char *path, const char *filename)
 		snprintf(full, sizeof(full), "%s/%s", path, filename);
 		path_to_check = full;
 	}
-#ifndef _WIN32
-	return access(path_to_check, F_OK) == 0;
-#else
-	if(is_path_absolute(path_to_check) && !is_unc_path(path_to_check))
-	{
-		if(!drive_exists(path_to_check[0]))
-		{
-			return 0;
-		}
-	}
 
-	return (GetFileAttributesA(path_to_check) != INVALID_FILE_ATTRIBUTES);
-#endif
+	if(!deref)
+	{
+		struct stat st;
+		return os_lstat(path_to_check, &st) == 0;
+	}
+	return os_access(path_to_check, F_OK) == 0;
 }
 
 int
@@ -199,14 +200,14 @@ is_symlink(const char path[])
 {
 #ifndef _WIN32
 	struct stat st;
-	return lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
+	return os_lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
 #else
 	char filename[PATH_MAX];
 	DWORD attr;
 	HANDLE hfind;
 	WIN32_FIND_DATAA ffd;
 
-	attr = GetFileAttributes(path);
+	attr = win_get_file_attrs(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
 		LOG_WERROR(GetLastError());
@@ -379,11 +380,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 int
 make_dir(const char *dir_name, mode_t mode)
 {
-#ifndef _WIN32
-	return mkdir(dir_name, mode);
-#else
-	return mkdir(dir_name);
-#endif
+	return os_mkdir(dir_name, mode);
 }
 
 int
@@ -397,9 +394,29 @@ symlinks_available(void)
 }
 
 int
-directory_accessible(const char *path)
+case_insensitive_paths(void)
 {
-	return (path_exists(path) && access(path, X_OK) == 0) || is_unc_root(path);
+#ifndef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
+}
+
+int
+has_atomic_file_replace(void)
+{
+#ifndef _WIN32
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+int
+directory_accessible(const char path[])
+{
+	return os_access(path, X_OK) == 0 || is_unc_root(path);
 }
 
 int
@@ -409,18 +426,26 @@ is_dir_writable(const char path[])
 	{
 #ifdef _WIN32
 		HANDLE hdir;
+		wchar_t *utf16_path;
+
 		if(is_on_fat_volume(path))
+		{
 			return 1;
-		hdir = CreateFileA(path, GENERIC_WRITE,
+		}
+
+		utf16_path = utf8_to_utf16(path);
+		hdir = CreateFileW(utf16_path, GENERIC_WRITE,
 				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
 				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+		free(utf16_path);
+
 		if(hdir != INVALID_HANDLE_VALUE)
 		{
 			CloseHandle(hdir);
 			return 1;
 		}
 #else
-	if(access(path, W_OK) == 0)
+	if(os_access(path, W_OK) == 0)
 		return 1;
 #endif
 	}
@@ -429,34 +454,33 @@ is_dir_writable(const char path[])
 }
 
 uint64_t
-get_file_size(const char *path)
+get_file_size(const char path[])
 {
 #ifndef _WIN32
 	struct stat st;
-	if(lstat(path, &st) == 0)
+	if(os_lstat(path, &st) == 0)
 	{
 		return (uint64_t)st.st_size;
 	}
 	return 0;
 #else
-	HANDLE hfile;
+	wchar_t *utf16_path;
+	int ok;
+	WIN32_FILE_ATTRIBUTE_DATA attrs;
 	LARGE_INTEGER size;
 
-	hfile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
+	utf16_path = utf8_to_utf16(path);
+	ok = GetFileAttributesExW(utf16_path, GetFileExInfoStandard, &attrs);
+	free(utf16_path);
+	if(!ok)
 	{
 		LOG_WERROR(GetLastError());
 		return 0;
 	}
 
-	if(GetFileSizeEx(hfile, &size))
-	{
-		CloseHandle(hfile);
-		return size.QuadPart;
-	}
-	CloseHandle(hfile);
-	return 0;
+	size.u.LowPart = attrs.nFileSizeLow;
+	size.u.HighPart = attrs.nFileSizeHigh;
+	return size.QuadPart;
 #endif
 }
 
@@ -467,10 +491,10 @@ list_regular_files(const char path[], int *len)
 	char **list = NULL;
 	*len = 0;
 
-	if((dir = opendir(path)) != NULL)
+	if((dir = os_opendir(path)) != NULL)
 	{
 		struct dirent *d;
-		while((d = readdir(dir)) != NULL)
+		while((d = os_readdir(dir)) != NULL)
 		{
 			char full_path[PATH_MAX];
 			snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
@@ -480,7 +504,7 @@ list_regular_files(const char path[], int *len)
 				*len = add_to_string_array(&list, *len, 1, d->d_name);
 			}
 		}
-		closedir(dir);
+		os_closedir(dir);
 	}
 
 	return list;
@@ -491,9 +515,9 @@ is_regular_file(const char path[])
 {
 #ifndef _WIN32
 	struct stat s;
-	return stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+	return os_stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
 #else
-	const DWORD attrs = GetFileAttributesA(path);
+	const DWORD attrs = win_get_file_attrs(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{
 		return 0;
@@ -509,7 +533,7 @@ rename_file(const char src[], const char dst[])
 #ifdef _WIN32
 	(void)remove(dst);
 #endif
-	if((error = rename(src, dst)))
+	if((error = os_rename(src, dst)))
 	{
 		LOG_SERROR_MSG(errno, "Rename operation failed: {%s => %s}", src, dst);
 	}
@@ -522,13 +546,13 @@ remove_dir_content(const char path[])
 	DIR *dir;
 	struct dirent *d;
 
-	dir = opendir(path);
+	dir = os_opendir(path);
 	if(dir == NULL)
 	{
 		return;
 	}
 
-	while((d = readdir(dir)) != NULL)
+	while((d = os_readdir(dir)) != NULL)
 	{
 		if(!is_builtin_dir(d->d_name))
 		{
@@ -541,7 +565,7 @@ remove_dir_content(const char path[])
 			free(full_path);
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 }
 
 int
@@ -565,7 +589,9 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 	     : dentry->d_type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
-	return (win_get_file_attrs(full_path) & MASK) == FILE_ATTRIBUTE_DIRECTORY;
+	const DWORD attrs = win_get_file_attrs(full_path);
+	return attrs != INVALID_FILE_ATTRIBUTES
+	    && (attrs & MASK) == FILE_ATTRIBUTE_DIRECTORY;
 #endif
 }
 
@@ -612,12 +638,23 @@ int
 are_on_the_same_fs(const char s[], const char t[])
 {
 	struct stat s_stat, t_stat;
-	if(lstat(s, &s_stat) != 0 || lstat(t, &t_stat) != 0)
+	if(os_lstat(s, &s_stat) != 0 || os_lstat(t, &t_stat) != 0)
 	{
 		return 0;
 	}
 
 	return s_stat.st_dev == t_stat.st_dev;
+}
+
+int
+is_case_change(const char src[], const char dst[])
+{
+	if(!case_insensitive_paths())
+	{
+		return 0;
+	}
+
+	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
 }
 
 #ifndef _WIN32
@@ -628,7 +665,7 @@ static int
 is_directory(const char path[], int dereference_links)
 {
 	struct stat statbuf;
-	if((dereference_links ? &stat : &lstat)(path, &statbuf) != 0)
+	if((dereference_links ? &os_stat : &os_lstat)(path, &statbuf) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
 		log_cwd();
@@ -641,48 +678,33 @@ is_directory(const char path[], int dereference_links)
 #else
 
 /* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
- * attributes. */
+ * attributes, which is INVALID_FILE_ATTRIBUTES on error. */
 static DWORD
 win_get_file_attrs(const char path[])
 {
 	DWORD attr;
+	wchar_t *utf16_path;
 
 	if(is_path_absolute(path) && !is_unc_path(path))
 	{
-		char buf[] = {path[0], ':', '\\', '\0'};
-		UINT type = GetDriveTypeA(buf);
-		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+		if(!drive_exists(path[0]))
 		{
-			return 0;
+			return INVALID_FILE_ATTRIBUTES;
 		}
 	}
 
-	attr = GetFileAttributesA(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
-		log_cwd();
-		return 0;
-	}
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
 
 	return attr;
 }
 
 char *
-realpath(const char *path, char *buf)
+realpath(const char path[], char buf[])
 {
-	if(get_link_target(path, buf, PATH_MAX) == 0)
-		return buf;
-
-	buf[0] = '\0';
-	if(!is_path_absolute(path) && GetCurrentDirectory(PATH_MAX, buf) > 0)
-	{
-		to_forward_slash(buf);
-		chosp(buf);
-		strcat(buf, "/");
-	}
-
-	strcat(buf, path);
+	const char *const resolved_path = win_resolve_mount_points(path);
+	copy_str(buf, PATH_MAX, resolved_path);
 	return buf;
 }
 
@@ -726,14 +748,13 @@ is_on_fat_volume(const char *path)
 	return 0;
 }
 
-/* Checks specified drive for existence */
 int
 drive_exists(char letter)
 {
-	const char drive[] = {letter, ':', '\\', '\0'};
-	int type = GetDriveTypeA(drive);
+	const wchar_t drive[] = { (wchar_t)letter, L':', L'\\', L'\0' };
+	const int drive_type = GetDriveTypeW(drive);
 
-	switch(type)
+	switch(drive_type)
 	{
 		case DRIVE_CDROM:
 		case DRIVE_REMOTE:

@@ -53,13 +53,13 @@ test_move_file(void)
 	FILE *const f = fopen(lwin.dir_entry[0].name, "w");
 	fclose(f);
 
-	assert_true(path_exists(lwin.dir_entry[0].name));
+	assert_true(path_exists(lwin.dir_entry[0].name, DEREF));
 
 	lwin.dir_entry[0].marked = 1;
 	(void)cpmv_files(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
 
-	assert_false(path_exists(lwin.dir_entry[0].name));
-	assert_true(path_exists(new_fname));
+	assert_false(path_exists(lwin.dir_entry[0].name, DEREF));
+	assert_true(path_exists(new_fname, DEREF));
 
 	(void)unlink(new_fname);
 }

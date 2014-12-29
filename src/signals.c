@@ -29,6 +29,7 @@
 #include <stdio.h> /* fprintf */
 
 #include "cfg/info.h"
+#include "ui/cancellation.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "fuse.h"
@@ -43,7 +44,6 @@ static void _gnuc_noreturn shutdown_nicely(void);
 
 #include <stdlib.h> /* exit() */
 
-#include "ui/cancellation.h"
 #include "utils/macros.h"
 #include "background.h"
 #include "status.h"

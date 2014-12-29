@@ -74,7 +74,7 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
-	cfg/info.$(OBJEXT) engine/cmds.$(OBJEXT) \
+	cfg/info.$(OBJEXT) compat/os.$(OBJEXT) engine/cmds.$(OBJEXT) \
 	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
 	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
 	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
@@ -331,6 +331,8 @@ vifm_SOURCES = \
 	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	\
+	compat/os.c compat/os.h \
+	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
@@ -542,6 +544,14 @@ cfg/config.$(OBJEXT): cfg/$(am__dirstamp) \
 	cfg/$(DEPDIR)/$(am__dirstamp)
 cfg/hist.$(OBJEXT): cfg/$(am__dirstamp) cfg/$(DEPDIR)/$(am__dirstamp)
 cfg/info.$(OBJEXT): cfg/$(am__dirstamp) cfg/$(DEPDIR)/$(am__dirstamp)
+compat/$(am__dirstamp):
+	@$(MKDIR_P) compat
+	@: > compat/$(am__dirstamp)
+compat/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) compat/$(DEPDIR)
+	@: > compat/$(DEPDIR)/$(am__dirstamp)
+compat/os.$(OBJEXT): compat/$(am__dirstamp) \
+	compat/$(DEPDIR)/$(am__dirstamp)
 engine/$(am__dirstamp):
 	@$(MKDIR_P) engine
 	@: > engine/$(am__dirstamp)
@@ -762,6 +772,7 @@ mostlyclean-compile:
 	-rm -f cfg/config.$(OBJEXT)
 	-rm -f cfg/hist.$(OBJEXT)
 	-rm -f cfg/info.$(OBJEXT)
+	-rm -f compat/os.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/functions.$(OBJEXT)
@@ -876,6 +887,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/os.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/functions.Po@am__quote@
@@ -1437,6 +1449,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f cfg/$(DEPDIR)/$(am__dirstamp)
 	-rm -f cfg/$(am__dirstamp)
+	-rm -f compat/$(DEPDIR)/$(am__dirstamp)
+	-rm -f compat/$(am__dirstamp)
 	-rm -f engine/$(DEPDIR)/$(am__dirstamp)
 	-rm -f engine/$(am__dirstamp)
 	-rm -f io/$(DEPDIR)/$(am__dirstamp)
@@ -1462,7 +1476,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -1512,7 +1526,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

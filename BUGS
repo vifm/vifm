@@ -6,8 +6,6 @@ vifm freezes sometimes on Windows (maybe fixed).
 New data, only on :copy! _directory (ies)_ to network drive, one needs to
 press anykey N times, where N is number of files inside folder.
 
-Case insensitive rename can not be undone on Windows.
-
 Files with names containing Unicode characters are not always processed correctly.
 
 %s macro depends on undocumented external dependency (script called

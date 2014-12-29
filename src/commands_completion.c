@@ -28,7 +28,6 @@
 
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR dirent */
-#include <unistd.h> /* X_OK access() */
 
 #ifndef _WIN32
 #include <grp.h> /* getgrent setgrent */
@@ -41,6 +40,7 @@
 #include <string.h> /* strdup() strlen() strncasecmp() strncmp() strrchr() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/completion.h"
 #include "engine/functions.h"
 #include "engine/options.h"
@@ -81,8 +81,8 @@ static void complete_winrun(const char *str);
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
-static void filename_completion_internal(DIR * dir, const char * dirname,
-		const char * filename, CompletionType type);
+static void filename_completion_internal(DIR *dir, const char dirname[],
+		const char filename[], CompletionType type);
 static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static void complete_with_shared(const char *server, const char *file);
@@ -729,7 +729,7 @@ filename_completion(const char *str, CompletionType type)
 	}
 #endif
 
-	dir = opendir(dirname);
+	dir = os_opendir(dirname);
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
@@ -746,18 +746,18 @@ filename_completion(const char *str, CompletionType type)
 
 	if(dir != NULL)
 	{
-		closedir(dir);
+		os_closedir(dir);
 	}
 }
 
 static void
-filename_completion_internal(DIR * dir, const char * dirname,
-		const char * filename, CompletionType type)
+filename_completion_internal(DIR *dir, const char dirname[],
+		const char filename[], CompletionType type)
 {
 	struct dirent *d;
 
 	size_t filename_len = strlen(filename);
-	while((d = readdir(dir)) != NULL)
+	while((d = os_readdir(dir)) != NULL)
 	{
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
@@ -801,7 +801,7 @@ is_dirent_targets_exec(const struct dirent *d)
 		return 0;
 	if(d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN)
 		return 0;
-	return access(d->d_name, X_OK) == 0;
+	return os_access(d->d_name, X_OK) == 0;
 #else
 	return is_win_executable(d->d_name);
 #endif

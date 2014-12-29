@@ -1,6 +1,6 @@
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
-    ifeq ($(shell uname -o),Cygwin)
+    ifeq ($(shell uname -o 2> /dev/null),Cygwin)
         unix_env := true
     else
         win_env := true
@@ -15,18 +15,18 @@ suites += filter keys misc options parsing undo variables viewcolumns_parser
 suites += ioeta ionotif iop ior
 
 # obtain list of sources that are being tested
-vifm_src := ./ cfg/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/ ui/
-vifm_src += utils/
+vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
+vifm_src += ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 
 # filter out generally non-testable or sources for another platform
 vifm_src := $(filter-out %/vifm.c %/vifmrc-converter.c %/win_helper.c, \
-              $(vifm_src))
+                         $(vifm_src))
 ifndef unix_env
     vifm_src := $(filter-out %/desktop.c %/mntent.c %_nix.c, $(vifm_src))
 endif
 ifndef win_env
-    vifm_src := $(filter-out %/volumes_menu.c %_win.c, $(vifm_src))
+    vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
 vifm_bin := ../src/vifm$(exe_suffix)
@@ -40,7 +40,7 @@ endif
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -g -Wall -Werror -Iseatest -DTEST -include ../config.h
 CFLAGS += -Wno-char-subscripts
-LDFLAGS := -lpthread
+LDFLAGS := -lpthread -g
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
@@ -59,7 +59,9 @@ check: build
 clean:
 	-$(RM) -r bin/
 
-$(vifm_bin): $(vifm_obj) $(vifm_src)
+$(vifm_src:.c=.o): | $(vifm_bin)
+
+$(vifm_bin): $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/stubs.o: stubs.c

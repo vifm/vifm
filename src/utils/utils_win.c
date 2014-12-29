@@ -20,6 +20,7 @@
 #include "utils_win.h"
 #include "utils_int.h"
 
+#include <ntdef.h>
 #include <windows.h>
 #include <winioctl.h>
 
@@ -30,11 +31,13 @@
 #include <ctype.h> /* toupper() */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
-#include <stdlib.h> /* EXIT_SUCCESS */
+#include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
+#include "../compat/wcwidth.h"
 #include "../ui/ui.h"
 #include "../commands_completion.h"
 #include "../status.h"
@@ -46,6 +49,7 @@
 #include "mntent.h"
 #include "path.h"
 #include "str.h"
+#include "utf8.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
 #define PE_HDR_OFFSET 0x3cU
@@ -82,7 +86,7 @@ run_in_shell_no_cls(char command[])
 		/* See "cmd /?" for an "explanation" why extra double quotes are
 		 * omitted. */
 		snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
-		return system(buf);
+		return os_system(buf);
 	}
 	else
 	{
@@ -146,28 +150,31 @@ get_pid(void)
 int
 wcwidth(wchar_t c)
 {
-	return 1;
+	return compat_wcwidth(c);
 }
 
 int
 wcswidth(const wchar_t str[], size_t max_len)
 {
-	const size_t wcslen_result = wcslen(str);
-	return MIN(max_len, wcslen_result);
+	return compat_wcswidth(str, max_len);
 }
 
 int
 win_exec_cmd(char cmd[], int *const returned_exit_code)
 {
+	wchar_t *utf16_cmd;
 	BOOL ret;
 	DWORD code;
-	STARTUPINFO startup = {};
+	STARTUPINFOW startup = {};
 	PROCESS_INFORMATION pinfo;
 
 	*returned_exit_code = 0;
 
-	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	utf16_cmd = utf8_to_utf16(cmd);
+	ret = CreateProcessW(NULL, utf16_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
+	free(utf16_cmd);
+
 	if(ret == 0)
 	{
 		const DWORD last_error = GetLastError();
@@ -238,7 +245,10 @@ get_subsystem(const char filename[])
 {
 	int subsystem;
 
-	FILE *const fp = fopen(filename, "rb");
+	wchar_t *const utf16_filename = utf8_to_utf16(filename);
+	FILE *const fp = _wfopen(utf16_filename, L"rb");
+	free(utf16_filename);
+
 	if(fp == NULL)
 	{
 		return -1;
@@ -395,6 +405,106 @@ escape_for_cd(const char str[])
 	return buf;
 }
 
+const char *
+win_resolve_mount_points(const char path[])
+{
+	static char resolved_path[PATH_MAX];
+
+	DWORD attr;
+	wchar_t *utf16_path;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+	REPARSE_DATA_BUFFER *rdbp;
+
+	attr = GetFileAttributes(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		return path;
+	}
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	{
+		return path;
+	}
+
+	copy_str(resolved_path, sizeof(resolved_path), path);
+	chosp(resolved_path);
+
+	utf16_path = utf8_to_utf16(resolved_path);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		free(utf16_path);
+		return path;
+	}
+
+	FindClose(hfind);
+
+	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
+	{
+		free(utf16_path);
+		return path;
+	}
+
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+
+	free(utf16_path);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		return path;
+	}
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
+			&attr, NULL))
+	{
+		CloseHandle(hfile);
+		return path;
+	}
+	CloseHandle(hfile);
+
+	rdbp = (REPARSE_DATA_BUFFER *)rdb;
+	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
+	if(starts_with_lit(t, "\\??\\"))
+	{
+		t += 4;
+	}
+	strcpy(resolved_path, t);
+	free(t);
+	return resolved_path;
+}
+
+int
+win_get_dir_mtime(const char dir_path[], FILETIME *ft)
+{
+	char selfref_path[PATH_MAX];
+	wchar_t *utf16_path;
+	HANDLE hfile;
+	int r;
+
+	snprintf(selfref_path, sizeof(selfref_path), "%s/.", dir_path);
+
+	utf16_path = utf8_to_utf16(selfref_path);
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	free(utf16_path);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	r = !GetFileTime(hfile, NULL, NULL, ft);
+	CloseHandle(hfile);
+	return r;
+}
+
 int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {
@@ -433,7 +543,7 @@ executable_exists(const char path[])
 
 	if(strchr(after_last(path, '/'), '.') != NULL)
 	{
-		return path_exists(path) && !is_dir(path);
+		return path_exists(path, DEREF) && !is_dir(path);
 	}
 
 	copy_str(path_buf, sizeof(path_buf), path);
@@ -442,7 +552,7 @@ executable_exists(const char path[])
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
 	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
 	{
-		if(path_exists(path_buf) && !is_dir(path_buf))
+		if(path_exists(path_buf, DEREF) && !is_dir(path_buf))
 		{
 			return 1;
 		}
@@ -453,7 +563,11 @@ executable_exists(const char path[])
 int
 get_exe_dir(char dir_buf[], size_t dir_buf_len)
 {
-	(void)GetModuleFileNameA(NULL, dir_buf, dir_buf_len);
+	if(GetModuleFileNameA(NULL, dir_buf, dir_buf_len) == 0)
+	{
+		return 1;
+	}
+
 	to_forward_slash(dir_buf);
 	break_atr(dir_buf, '/');
 	return 0;
@@ -480,7 +594,7 @@ display_help(const char cmd[])
 	def_prog_mode();
 	endwin();
 	system("cls");
-	if(system(cmd) != EXIT_SUCCESS)
+	if(os_system(cmd) != EXIT_SUCCESS)
 	{
 		system("pause");
 	}

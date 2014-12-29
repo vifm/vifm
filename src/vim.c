@@ -20,8 +20,6 @@
 
 #include <curses.h> /* FALSE curs_set() */
 
-#include <unistd.h> /* F_OK access() */
-
 #include <errno.h> /* errno */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
@@ -138,9 +136,9 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 
 	cmd[0] = '\0';
 
-	if(!path_exists(filename))
+	if(!path_exists(filename, DEREF))
 	{
-		if(access(filename, F_OK) != 0)
+		if(path_exists(filename, NODEREF))
 		{
 			show_error_msg("Broken Link", "Link destination doesn't exist");
 		}

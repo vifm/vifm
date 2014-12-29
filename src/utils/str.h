@@ -64,6 +64,10 @@ size_t trim_right(char *text);
  * returned. */
 wchar_t * to_wide(const char s[]);
 
+/* Calculates length of multibyte string after converting it to wide string.
+ * Returns the length. */
+size_t wide_len(const char s[]);
+
 /* Duplicates a wide-character string.  Returns pointer to new string or NULL on
  * error. */
 wchar_t * vifm_wcsdup(const wchar_t ws[]);
@@ -79,6 +83,10 @@ int starts_withn(const char str[], const char prefix[], size_t prefix_len);
 int ends_with(const char *str, const char *suffix);
 
 char * to_multibyte(const wchar_t *s);
+
+/* Calculates length of wide string after converting it to multibyte string.
+ * Returns the length. */
+size_t multibyte_len(const wchar_t wide[]);
 
 /* Converts all characters in the string to lower case.  Not aware of UTF-8. */
 void str_to_lower(char str[]);

@@ -27,8 +27,8 @@
 
 #include <curses.h>
 
-#include <sys/stat.h> /* gid_t lstat() stat() uid_t */
-#include <unistd.h> /* R_OK access() unlink() */
+#include <sys/stat.h> /* gid_t uid_t */
+#include <unistd.h> /* unlink() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() isspace() */
@@ -36,13 +36,14 @@
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() system() */
+#include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() */
 
 #include "cfg/config.h"
 #include "cfg/hist.h"
 #include "cfg/info.h"
+#include "compat/os.h"
 #include "engine/cmds.h"
 #include "engine/mode.h"
 #include "engine/options.h"
@@ -1982,8 +1983,8 @@ edit_cmd(const cmd_info_t *cmd_info)
 			struct stat st;
 			if(curr_view->dir_entry[i].selected == 0)
 				continue;
-			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
-					!path_exists(curr_view->dir_entry[i].name))
+			if(os_lstat(curr_view->dir_entry[i].name, &st) == 0 &&
+					!path_exists(curr_view->dir_entry[i].name, DEREF))
 			{
 				show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
@@ -2453,7 +2454,7 @@ help_cmd(const cmd_info_t *cmd_info)
 			return 1;
 		}
 
-		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
+		if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
 		{
 			show_error_msgf("No help file", "Can't find \"%s/" VIFM_HELP "\" file",
 					cfg.config_dir);
@@ -3421,12 +3422,12 @@ source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
 	char *path = expand_tilde(cmd_info->argv[0]);
-	if(!path_exists(path))
+	if(!path_exists(path, DEREF))
 	{
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
-	if(access(path, R_OK) != 0)
+	if(os_access(path, R_OK) != 0)
 	{
 		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
 		ret = 1;

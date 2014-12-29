@@ -444,6 +444,31 @@ test_symlink_is_symlink_after_move(void)
 	}
 }
 
+#else
+
+static void
+test_case_insensitive_rename(void)
+{
+	create_empty_file("a-file");
+
+	{
+		io_args_t args =
+		{
+			.arg1.src = "a-file",
+			.arg2.dst = "A-file",
+		};
+		assert_true(ior_mv(&args) == 0);
+	}
+
+	{
+		io_args_t args =
+		{
+			.arg1.path = "A-file",
+		};
+		assert_int_equal(0, iop_rmfile(&args));
+	}
+}
+
 #endif
 
 void
@@ -468,6 +493,9 @@ mv_tests(void)
 #ifndef _WIN32
 	/* Creating symbolic links on Windows requires administrator rights. */
 	run_test(test_symlink_is_symlink_after_move);
+#else
+	/* Case insensitive renames are easier to check on Windows. */
+	run_test(test_case_insensitive_rename);
 #endif
 
 	test_fixture_end();

@@ -26,6 +26,7 @@
 #include <stdlib.h> /* free() realloc() */
 #include <string.h>
 
+#include "compat/os.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -109,25 +110,31 @@ check_for_duplicate_file_names(registers_t *reg, const char file[])
 	return 0;
 }
 
-void
+int
 append_to_register(int key, const char file[])
 {
 	registers_t *reg;
 	struct stat st;
 
 	if(key == BLACKHOLE_REG_NAME)
-		return;
-
+	{
+		return 0;
+	}
 	if((reg = find_register(key)) == NULL)
-		return;
-
-	if(lstat(file, &st) != 0)
-		return;
-
+	{
+		return 1;
+	}
+	if(os_lstat(file, &st) != 0)
+	{
+		return 1;
+	}
 	if(check_for_duplicate_file_names(reg, file))
-		return;
+	{
+		return 1;
+	}
 
 	reg->num_files = add_to_string_array(&reg->files, reg->num_files, 1, file);
+	return 0;
 }
 
 void
@@ -232,7 +239,7 @@ clean_regs_with_trash(void)
 		{
 			if(!is_under_trash(registers[x].files[y]))
 				continue;
-			if(!path_exists(registers[x].files[y]))
+			if(!path_exists(registers[x].files[y], DEREF))
 				continue;
 
 			free(registers[x].files[y]);

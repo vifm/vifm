@@ -18,13 +18,12 @@
 
 #include "path_env.h"
 
-#include <dirent.h> /* DIR opendir() readdir() closedir() DT_DIR */
-
 #include <stdio.h> /* snprintf() sprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strchr() strlen() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/variables.h"
 #include "utils/env.h"
 #include "utils/fs.h"
@@ -99,7 +98,7 @@ add_dirs_to_path(const char *path)
 	struct dirent *dentry;
 	const char *slash = "";
 
-	dir = opendir(path);
+	dir = os_opendir(path);
 	if(dir == NULL)
 		return;
 
@@ -107,7 +106,7 @@ add_dirs_to_path(const char *path)
 
 	add_to_path(path);
 
-	while((dentry = readdir(dir)) != NULL)
+	while((dentry = os_readdir(dir)) != NULL)
 	{
 		char buf[PATH_MAX];
 
@@ -127,7 +126,7 @@ add_dirs_to_path(const char *path)
 		}
 	}
 
-	closedir(dir);
+	os_closedir(dir);
 }
 
 /* Adds a path to PATH environment variable. */
@@ -213,7 +212,7 @@ split_path_list(void)
 		/* No need to check "." path for existence. */
 		if(strcmp(s, ".") != 0)
 		{
-			if(!path_exists(s))
+			if(!path_exists(s, DEREF))
 			{
 				free(s);
 				continue;

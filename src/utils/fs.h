@@ -27,6 +27,13 @@
 
 /* Functions to deal with file system objects */
 
+/* Named boolean values of "deref" parameter for better readability. */
+enum
+{
+	NODEREF, /* Do not dereference symbolic links in checks. */
+	DEREF,   /* Dereference symbolic links in checks. */
+};
+
 /* Link types for get_symlink_type() function. */
 typedef enum
 {
@@ -50,10 +57,10 @@ int is_valid_dir(const char *path);
 /* Checks whether file at path exists.  The path should be an absolute path.
  * Relative paths are checked relatively to the working directory, which might
  * produce incorrect results. */
-int path_exists(const char path[]);
+int path_exists(const char path[], int deref);
 
 /* Checks whether path/file exists. */
-int path_exists_at(const char *path, const char *filename);
+int path_exists_at(const char path[], const char filename[], int deref);
 
 /* Checks if two paths refer to the same file-system object.  Returns non-zero
  * if so, otherwise zero is returned. */
@@ -80,8 +87,17 @@ int make_dir(const char *dir_name, mode_t mode);
 
 int symlinks_available(void);
 
-/* Checks if one can change current directory to a path. */
-int directory_accessible(const char *path);
+/* Whether paths are case insensitive.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int case_insensitive_paths(void);
+
+/* Whether file rename-with-replace (deletion of file at destination) is
+ * supported and atomic.  Returns non-zero if so, otherwise zero is returned. */
+int has_atomic_file_replace(void);
+
+/* Checks if one can change current directory to the path.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int directory_accessible(const char path[]);
 
 /* Checks if one can write in directory specified by the path, which should be
  * absolute (in order for this function to work correctly). */
@@ -89,7 +105,7 @@ int is_dir_writable(const char path[]);
 
 /* Gets correct file size independently of platform.  Returns zero for both
  * empty files and on error. */
-uint64_t get_file_size(const char *path);
+uint64_t get_file_size(const char path[]);
 
 /* Lists all regular files inside the path directory.  Allocates an array of
  * strings, which should be freed by the caller.  Always sets *len.  Returns
@@ -132,9 +148,17 @@ int is_in_subtree(const char path[], const char root[]);
  * so, otherwise zero is returned. */
 int are_on_the_same_fs(const char s[], const char t[]);
 
+/* Checks whether file moving from src to dst corresponds to file rename that
+ * just changes case of file name on case insensitive file system.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int is_case_change(const char src[], const char dst[]);
+
 #ifdef _WIN32
 
-char * realpath(const char *path, char *buf);
+/* Resolves the path to the real path without any symbolic links.  buf should be
+ * at least PATH_MAX in length.  Returns the buf on success, otherwise NULL is
+ * returned. */
+char * realpath(const char path[], char buf[]);
 
 int S_ISLNK(mode_t mode);
 
@@ -142,6 +166,8 @@ int readlink(const char *path, char *buf, size_t len);
 
 int is_on_fat_volume(const char *path);
 
+/* Checks specified drive for existence.  Returns non-zero if it exists,
+ * otherwise zero is returned. */
 int drive_exists(char letter);
 
 int is_win_symlink(uint32_t attr, uint32_t tag);

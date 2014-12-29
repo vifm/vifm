@@ -38,7 +38,10 @@ void init_registers(void);
  * Returns non-zero if it exists, otherwise zero is returned. */
 int register_exists(int key);
 registers_t * find_register(int key);
-void append_to_register(int reg, const char file[]);
+/* Appends path to the file to register specified by name.  Might fail for
+ * duplicate, non-existing path or wrong register name.  Returns zero when file
+ * is added, otherwise non-zero is returned. */
+int append_to_register(int reg, const char file[]);
 /* Clears all registers. */
 void clear_registers(void);
 void clear_register(int reg);

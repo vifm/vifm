@@ -32,7 +32,7 @@
 #define ERROR_ELEVATION_REQUIRED 740L
 #endif
 #endif
-#include <unistd.h> /* X_OK pid_t access() */
+#include <unistd.h> /* pid_t */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -44,6 +44,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/os.h"
 #include "menus/menus.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -54,6 +55,7 @@
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
+#include "utils/utf8.h"
 #include "background.h"
 #include "file_magic.h"
 #include "filelist.h"
@@ -166,7 +168,7 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 	int executable;
 #ifndef _WIN32
 	executable = curr->type == EXECUTABLE ||
-			(runnable && access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
+			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
 	executable = curr->type == EXECUTABLE;
 #endif
@@ -236,21 +238,28 @@ run_win_executable(char full_path[])
 static int
 run_win_executable_as_evaluated(const char full_path[])
 {
-	SHELLEXECUTEINFOA sei;
+	wchar_t *utf16_path;
+	SHELLEXECUTEINFOW sei;
+
+	utf16_path = utf8_to_utf16(full_path);
+
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-	sei.lpVerb = "runas";
-	sei.lpFile = full_path;
+	sei.lpVerb = L"runas";
+	sei.lpFile = utf16_path;
 	sei.lpParameters = NULL;
 	sei.nShow = SW_SHOWNORMAL;
 
-	if(!ShellExecuteEx(&sei))
+	if(!ShellExecuteExW(&sei))
 	{
 		const DWORD last_error = GetLastError();
+		free(utf16_path);
 		LOG_WERROR(last_error);
 		return last_error != ERROR_CANCELLED;
 	}
+
+	free(utf16_path);
 	CloseHandle(sei.hProcess);
 	return 0;
 }
@@ -359,7 +368,7 @@ run_file(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		if(!path_exists(entry->name))
+		if(!path_exists(entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
@@ -493,7 +502,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		program += 2;
 	}
 
-	if(!path_exists_at(entry->origin, entry->name))
+	if(!path_exists_at(entry->origin, entry->name, DEREF))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
 		return;
@@ -587,7 +596,7 @@ follow_link(FileView *view, int follow_dirs)
 		return;
 	}
 
-	if(!path_exists(linkto))
+	if(!path_exists(linkto, DEREF))
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination.  It might be broken.");

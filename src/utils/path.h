@@ -126,6 +126,10 @@ void to_forward_slash(char path[]);
 
 void to_back_slash(char path[]);
 
+#else
+
+#define is_unc_path(path) (0)
+
 #endif
 
 #endif /* VIFM__UTILS__PATH_H__ */

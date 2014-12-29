@@ -25,8 +25,6 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* access() F_OK R_OK */
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
@@ -36,6 +34,7 @@
 #include <wchar.h> /* wchar_t wcscmp() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"
@@ -467,7 +466,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 		return;
 	}
 
-	if(access(path_buf, F_OK) == 0)
+	if(path_exists(path_buf, DEREF))
 	{
 		if(try_open)
 		{
@@ -544,7 +543,7 @@ parse_spec(const char spec[], int *line_num)
 static void
 open_selected_file(const char path[], int line_num)
 {
-	if(access(path, R_OK) == 0)
+	if(os_access(path, R_OK) == 0)
 	{
 		(void)vim_view_file(path, line_num, -1, 1);
 	}

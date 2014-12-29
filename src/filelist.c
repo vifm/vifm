@@ -22,20 +22,18 @@
 #ifdef _WIN32
 #include <fcntl.h>
 #include <lm.h>
-#include <ntdef.h>
 #include <windows.h>
 #include <winioctl.h>
 #endif
 
 #include <curses.h>
 
-#include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <pwd.h>
 #include <grp.h>
 #endif
-#include <unistd.h> /* access() close() fork() pipe() */
+#include <unistd.h> /* close() fork() pipe() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -47,6 +45,7 @@
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/mode.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
@@ -627,7 +626,7 @@ get_line_color(FileView* view, int pos)
 					return LINK_COLOR;
 				}
 
-				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
+				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
 		case SOCKET:
@@ -2025,21 +2024,29 @@ leave_invalid_dir(FileView *view)
 static int
 check_dir_changed(FileView *view)
 {
-	char buf[PATH_MAX];
-	HANDLE hfile;
 	FILETIME ft;
 	int r;
 
 	if(stroscmp(view->watched_dir, view->curr_dir) != 0)
 	{
+		wchar_t *utf16_cwd;
+
 		FindCloseChangeNotification(view->dir_watcher);
 		strcpy(view->watched_dir, view->curr_dir);
-		view->dir_watcher = FindFirstChangeNotificationA(view->curr_dir, 1,
+
+		utf16_cwd = utf8_to_utf16(view->curr_dir);
+
+		view->dir_watcher = FindFirstChangeNotificationW(utf16_cwd, 1,
 				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
 				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
 				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
+
+		free(utf16_cwd);
+
 		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
+		{
 			log_msg("ha%s", "d");
+		}
 	}
 
 	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
@@ -2048,19 +2055,10 @@ check_dir_changed(FileView *view)
 		return 1;
 	}
 
-	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	if(!GetFileTime(hfile, NULL, NULL, &ft))
+	if(win_get_dir_mtime(view->curr_dir, &ft) != 0)
 	{
-		CloseHandle(hfile);
 		return -1;
 	}
-	CloseHandle(hfile);
 
 	r = CompareFileTime(&view->dir_mtime, &ft);
 	view->dir_mtime = ft;
@@ -2075,7 +2073,7 @@ update_dir_mtime(FileView *view)
 #ifndef _WIN32
 	struct stat s;
 
-	if(stat(view->curr_dir, &s) != 0)
+	if(os_stat(view->curr_dir, &s) != 0)
 		return -1;
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
 	view->dir_mtime = s.st_mtim;
@@ -2084,85 +2082,19 @@ update_dir_mtime(FileView *view)
 #endif
 	return 0;
 #else
-	char buf[PATH_MAX];
-	HANDLE hfile;
-
-	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return -1;
-
-	if(!GetFileTime(hfile, NULL, NULL, &view->dir_mtime))
+	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
 	{
-		CloseHandle(hfile);
 		return -1;
 	}
-	CloseHandle(hfile);
 
-	while(check_dir_changed(view) > 0);
+	while(check_dir_changed(view) > 0)
+	{
+		/* Do nothing. */
+	}
 
 	return 0;
 #endif
 }
-
-#ifdef _WIN32
-static const char *
-handle_mount_points(const char *path)
-{
-	static char buf[PATH_MAX];
-
-	DWORD attr;
-	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	REPARSE_DATA_BUFFER *rdbp;
-
-	attr = GetFileAttributes(path);
-	if(attr == INVALID_FILE_ATTRIBUTES)
-		return path;
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-		return path;
-
-	snprintf(buf, sizeof(buf), "%s", path);
-	chosp(buf);
-	hfind = FindFirstFileA(buf, &ffd);
-	if(hfind == INVALID_HANDLE_VALUE)
-		return path;
-
-	FindClose(hfind);
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
-		return path;
-
-	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
-	if(hfile == INVALID_HANDLE_VALUE)
-		return path;
-
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
-				sizeof(rdb), &attr, NULL))
-	{
-		CloseHandle(hfile);
-		return path;
-	}
-	CloseHandle(hfile);
-
-	rdbp = (REPARSE_DATA_BUFFER *)rdb;
-	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
-	if(strncmp(t, "\\??\\", 4) == 0)
-		strcpy(buf, t + 4);
-	else
-		strcpy(buf, t);
-	free(t);
-	return buf;
-}
-#endif
 
 void
 navigate_to(FileView *view, const char path[])
@@ -2198,10 +2130,6 @@ change_directory(FileView *view, const char *directory)
 	{
 		save_view_history(view, NULL, NULL, -1);
 	}
-
-#ifdef _WIN32
-	directory = handle_mount_points(directory);
-#endif
 
 	if(cfg.chase_links)
 	{
@@ -2276,7 +2204,7 @@ change_directory(FileView *view, const char *directory)
 		chosp(view->last_dir);
 
 #ifndef _WIN32
-	if(!path_exists(dir_dup))
+	if(!path_exists(dir_dup, DEREF))
 #else
 	if(!is_valid_dir(dir_dup))
 #endif
@@ -2290,7 +2218,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
+	if(os_access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
@@ -2302,7 +2230,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
+	if(os_access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
@@ -2418,10 +2346,7 @@ fill_with_shared(FileView *view)
 			for(i = 0, p = buf_ptr; i < er; ++i, ++p)
 			{
 				dir_entry_t *dir_entry;
-
-				char name_buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, name_buf,
-						sizeof(name_buf), NULL, NULL);
+				char *utf8_name;
 
 				view->dir_entry = realloc(view->dir_entry,
 						(view->list_rows + 1)*sizeof(dir_entry_t));
@@ -2433,8 +2358,12 @@ fill_with_shared(FileView *view)
 
 				dir_entry = &view->dir_entry[view->list_rows];
 
-				init_dir_entry(view, dir_entry, name_buf);
+				utf8_name = utf8_from_utf16((wchar_t *)p->shi0_netname);
+
+				init_dir_entry(view, dir_entry, utf8_name);
 				dir_entry->type = DIRECTORY;
+
+				free(utf8_name);
 
 				++view->list_rows;
 			}
@@ -2472,10 +2401,10 @@ fill_dir_list(FileView *view)
 	DIR *dir;
 	struct dirent *d;
 
-	if((dir = opendir(view->curr_dir)) == NULL)
+	if((dir = os_opendir(view->curr_dir)) == NULL)
 		return -1;
 
-	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
+	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
 	{
 		dir_entry_t *dir_entry;
 		struct stat s;
@@ -2512,7 +2441,7 @@ fill_dir_list(FileView *view)
 				(view->list_rows + 1)*sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			closedir(dir);
+			os_closedir(dir);
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
@@ -2522,7 +2451,7 @@ fill_dir_list(FileView *view)
 		init_dir_entry(view, dir_entry, d->d_name);
 
 		/* Load the inode info or leave blank values in dir_entry. */
-		if(lstat(dir_entry->name, &s) == 0)
+		if(os_lstat(dir_entry->name, &s) == 0)
 		{
 			dir_entry->type = get_type_from_mode(s.st_mode);
 			dir_entry->size = (uintmax_t)s.st_size;
@@ -2550,17 +2479,18 @@ fill_dir_list(FileView *view)
 			struct stat st;
 
 			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
-			if(symlink_type != SLT_SLOW && stat(dir_entry->name, &st) == 0)
+			if(symlink_type != SLT_SLOW && os_stat(dir_entry->name, &st) == 0)
 			{
 				dir_entry->mode = st.st_mode;
 			}
 		}
 	}
-	closedir(dir);
+	os_closedir(dir);
 #else
-	char buf[PATH_MAX];
+	char find_pat[PATH_MAX];
+	wchar_t *utf16_path;
 	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
+	WIN32_FIND_DATAW ffd;
 
 	if(is_unc_root(view->curr_dir))
 	{
@@ -2568,24 +2498,35 @@ fill_dir_list(FileView *view)
 		return 0;
 	}
 
-	snprintf(buf, sizeof(buf), "%s/*", view->curr_dir);
+	snprintf(find_pat, sizeof(find_pat), "%s/*", view->curr_dir);
 
 	view->list_rows = 0;
 
-	hfind = FindFirstFileA(buf, &ffd);
+	utf16_path = utf8_to_utf16(find_pat);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+	free(utf16_path);
+
 	if(hfind == INVALID_HANDLE_VALUE)
+	{
 		return -1;
+	}
 
 	do
 	{
 		dir_entry_t *dir_entry;
-		size_t name_len;
+
+		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
+		char name[strlen(utf8_name) + 1];
+		strcpy(name, utf8_name);
+		free(utf8_name);
 
 		/* Ignore the "." directory. */
-		if(stroscmp(ffd.cFileName, ".") == 0)
+		if(strcmp(name, ".") == 0)
+		{
 			continue;
+		}
 		/* Always include the ../ directory unless it is the root directory. */
-		if(stroscmp(ffd.cFileName, "..") == 0)
+		if(strcmp(name, "..") == 0)
 		{
 			if(!parent_dir_is_visible(is_root))
 			{
@@ -2593,13 +2534,13 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(!file_is_visible(view, ffd.cFileName,
+		else if(!file_is_visible(view, name,
 				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			view->filtered++;
 			continue;
 		}
-		else if(view->hide_dot && ffd.cFileName[0] == '.')
+		else if(view->hide_dot && name[0] == '.')
 		{
 			view->filtered++;
 			continue;
@@ -2616,7 +2557,7 @@ fill_dir_list(FileView *view)
 
 		dir_entry = &view->dir_entry[view->list_rows];
 
-		init_dir_entry(view, dir_entry, ffd.cFileName);
+		init_dir_entry(view, dir_entry, name);
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
 		dir_entry->attrs = ffd.dwFileAttributes;
@@ -2643,7 +2584,7 @@ fill_dir_list(FileView *view)
 
 		++view->list_rows;
 	}
-	while(FindNextFileA(hfind, &ffd));
+	while(FindNextFileW(hfind, &ffd));
 	FindClose(hfind);
 
 	/* Not all Windows file systems contain or show dot directories. */
@@ -2887,7 +2828,7 @@ is_dir_big(const char path[])
 {
 #ifndef _WIN32
 	struct stat s;
-	if(stat(path, &s) != 0)
+	if(os_stat(path, &s) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", path);
 		return 1;
@@ -2987,7 +2928,7 @@ add_parent_dir(FileView *view)
 	++view->list_rows;
 
 	/* Load the inode info or leave blank values in dir_entry. */
-	if(lstat(dir_entry->name, &s) != 0)
+	if(os_lstat(dir_entry->name, &s) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);
@@ -3537,7 +3478,7 @@ check_if_filelists_have_changed(FileView *view)
 
 #ifndef _WIN32
 	struct stat s;
-	if(stat(view->curr_dir, &s) != 0)
+	if(os_stat(view->curr_dir, &s) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))
@@ -3582,7 +3523,7 @@ cd_is_possible(const char *path)
 	}
 	else if(!directory_accessible(path))
 	{
-		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", path);
+		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", path);
 
 		show_error_msgf("Permission denied", "\"%s\"", path);
 		return 0;
@@ -3736,7 +3677,7 @@ file_can_be_displayed(const char directory[], const char filename[])
 	{
 		return parent_dir_is_visible(is_root_dir(directory));
 	}
-	return path_exists_at(directory, filename);
+	return path_exists_at(directory, filename, DEREF);
 }
 
 /* Returns non-zero if ../ directory can be displayed. */

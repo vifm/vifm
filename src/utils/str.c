@@ -65,6 +65,7 @@ trim_right(char *text)
 wchar_t *
 to_wide(const char s[])
 {
+#ifndef _WIN32
 	wchar_t *result = NULL;
 	size_t len;
 
@@ -78,9 +79,21 @@ to_wide(const char s[])
 		}
 	}
 	return result;
+#else
+	return utf8_to_utf16(s);
+#endif
 }
 
-/* I'm really worry about the portability... */
+size_t
+wide_len(const char s[])
+{
+#ifndef _WIN32
+	return mbstowcs(NULL, s, 0);
+#else
+	return utf8_widen_len(s);
+#endif
+}
+
 wchar_t *
 vifm_wcsdup(const wchar_t ws[])
 {
@@ -123,6 +136,7 @@ ends_with(const char *str, const char *suffix)
 char *
 to_multibyte(const wchar_t *s)
 {
+#ifndef _WIN32
 	size_t len;
 	char *result;
 
@@ -132,6 +146,19 @@ to_multibyte(const wchar_t *s)
 
 	wcstombs(result, s, len);
 	return result;
+#else
+	return utf8_from_utf16(s);
+#endif
+}
+
+size_t
+multibyte_len(const wchar_t wide[])
+{
+#ifndef _WIN32
+	return wcstombs(NULL, wide, 0);
+#else
+	return utf8_narrowd_len(wide);
+#endif
 }
 
 void

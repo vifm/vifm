@@ -62,6 +62,8 @@ vifm_SOURCES = \
 	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	\
+	compat/os.c compat/os.h \
+	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \

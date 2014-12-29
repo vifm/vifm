@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2012 xaizek.
+ * Copyright (C) 2014 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__
-#define VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__
+#ifndef VIFM__COMPAT__WCWIDTH_H__
+#define VIFM__COMPAT__WCWIDTH_H__
 
-#include "../../ui/ui.h"
+#include <wchar.h> /* wchar_t */
 
-/* Initializes attributes dialog mode. */
-void init_attr_dialog_mode(void);
+int compat_wcwidth(wchar_t ucs);
 
-void enter_attr_mode(FileView *active_view);
+int compat_wcswidth(const wchar_t pwcs[], size_t n);
 
-void redraw_attr_dialog(void);
-
-#endif /* VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__ */
+#endif /* VIFM__COMPAT__WCWIDTH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

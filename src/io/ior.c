@@ -18,13 +18,8 @@
 
 #include "ior.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#include <shellapi.h>
-#endif
-
-#include <sys/stat.h> /* stat chmod() */
-#include <unistd.h> /* lstat() unlink() */
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* unlink() */
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
 #include <stddef.h> /* NULL */
@@ -32,6 +27,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
 
+#include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -156,7 +152,7 @@ ior_mv(io_args_t *const args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 
-	if(crs == IO_CRS_FAIL && path_exists(dst))
+	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
 		return 1;
 	}
@@ -169,7 +165,7 @@ ior_mv(io_args_t *const args)
 		}
 	}
 
-	if(rename(src, dst) == 0)
+	if(os_rename(src, dst) == 0)
 	{
 		ioeta_update(args->estim, src, 1, 0);
 		return 0;
@@ -216,13 +212,12 @@ ior_mv(io_args_t *const args)
 					return error;
 				}
 
-				return rename(src, dst);
+				return os_rename(src, dst);
 			}
-			else if(crs == IO_CRS_REPLACE_FILES)
+			else if(crs == IO_CRS_REPLACE_FILES ||
+					(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
 			{
-#ifdef _WIN32
-				/* rename() on Windows doesn't replace files. */
-				if(is_file(dst))
+				if(!has_atomic_file_replace() && is_file(dst))
 				{
 					io_args_t rm_args =
 					{
@@ -238,7 +233,6 @@ ior_mv(io_args_t *const args)
 						return error;
 					}
 				}
-#endif
 
 				return traverse(src, &mv_visitor, args);
 			}
@@ -328,24 +322,18 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 			}
 		case VA_DIR_LEAVE:
 			{
-#ifndef _WIN32
-				{
-					struct stat st;
+				struct stat st;
 
-					if(lstat(full_path, &st) == 0)
-					{
-						result = (chmod(dst_full_path, st.st_mode & 07777) == 0)
-						       ? VR_OK
-						       : VR_ERROR;
-					}
-					else
-					{
-						result = VR_ERROR;
-					}
+				if(os_stat(full_path, &st) == 0)
+				{
+					result = (os_chmod(dst_full_path, st.st_mode & 07777) == 0)
+									? VR_OK
+									: VR_ERROR;
 				}
-#else
-				result = VR_OK;
-#endif
+				else
+				{
+					result = VR_ERROR;
+				}
 				break;
 			}
 	}

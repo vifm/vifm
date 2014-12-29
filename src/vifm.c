@@ -25,7 +25,7 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* getcwd, stat, sysconf */
+#include <unistd.h> /* getcwd sysconf */
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
@@ -238,7 +238,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			/* do nothing, it's handeled in exec_startup_commands() */
 		}
-		else if(path_exists(argv[x]) || is_path_absolute(argv[x]) ||
+		else if(path_exists(argv[x], DEREF) || is_path_absolute(argv[x]) ||
 				is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')

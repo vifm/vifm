@@ -16,25 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "iop.h"
-
 #ifdef _WIN32
 #define REQUIRED_WINVER 0x0600
 #include "../utils/windefs.h"
 #include <windows.h>
 #endif
 
-#include <sys/stat.h> /* stat chmod() mkdir() */
+#include "iop.h"
+
+#include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
-                      fsetpos() fwrite() rename() snprintf() */
+                      fsetpos() fwrite() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
+#include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
@@ -42,6 +43,8 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utf8.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "private/ioeta.h"
 #include "ioc.h"
@@ -67,7 +70,11 @@ iop_mkfile(io_args_t *const args)
 #else
 	HANDLE file;
 
-	file = CreateFileA(path, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	file = CreateFileW(utf16_path, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+			NULL);
+	free(utf16_path);
+
 	if(file == INVALID_HANDLE_VALUE)
 	{
 		return -1;
@@ -113,15 +120,13 @@ iop_mkdir(io_args_t *const args)
 
 		free(partial_path);
 #ifndef _WIN32
-		return chmod(path, mode);
+		return os_chmod(path, mode);
 #else
 		return 0;
 #endif
 	}
-	else
-	{
-		return make_dir(path, mode);
-	}
+
+	return make_dir(path, mode);
 }
 
 int
@@ -140,13 +145,15 @@ iop_rmfile(io_args_t *const args)
 	result = unlink(path);
 #else
 	{
-		const DWORD attributes = GetFileAttributesA(path);
+		wchar_t *const utf16_path = utf8_to_utf16(path);
+		const DWORD attributes = GetFileAttributesW(utf16_path);
 		if(attributes & FILE_ATTRIBUTE_READONLY)
 		{
-			SetFileAttributesA(path, attributes & ~FILE_ATTRIBUTE_READONLY);
+			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
+		result = !DeleteFileW(utf16_path);
+		free(utf16_path);
 	}
-	result = !DeleteFile(path);
 #endif
 
 	ioeta_update(args->estim, path, 1, size);
@@ -166,7 +173,11 @@ iop_rmdir(io_args_t *const args)
 #ifndef _WIN32
 	result = rmdir(path);
 #else
-	result = RemoveDirectory(path) == 0;
+	{
+		wchar_t *const utf16_path = utf8_to_utf16(path);
+		result = RemoveDirectoryW(utf16_path) == 0;
+		free(utf16_path);
+	}
 #endif
 
 	ioeta_update(args->estim, path, 1, 0);
@@ -196,6 +207,7 @@ iop_cp(io_args_t *const args)
 	{
 		DWORD flags;
 		int error;
+		wchar_t *utf16_src, *utf16_dst;
 
 		flags = COPY_FILE_COPY_SYMLINK;
 		if(crs == IO_CRS_FAIL)
@@ -203,7 +215,12 @@ iop_cp(io_args_t *const args)
 			flags |= COPY_FILE_FAIL_IF_EXISTS;
 		}
 
-		error = CopyFileExA(src, dst, &win_progress_cb, args, NULL, flags) == 0;
+		utf16_src = utf8_to_utf16(src);
+		utf16_dst = utf8_to_utf16(dst);
+		error = CopyFileExW(utf16_src, utf16_dst, &win_progress_cb, args, NULL,
+				flags) == 0;
+		free(utf16_src);
+		free(utf16_dst);
 
 		ioeta_update(args->estim, src, 1, 0);
 
@@ -263,7 +280,7 @@ iop_cp(io_args_t *const args)
 		 * but this approach has disadvantage of requiring more free space on
 		 * destination file system. */
 	}
-	else if(path_exists(dst))
+	else if(path_exists(dst, DEREF))
 	{
 		fclose(in);
 		return 1;
@@ -281,6 +298,9 @@ iop_cp(io_args_t *const args)
 	if(crs == IO_CRS_APPEND_TO_FILES)
 	{
 		fpos_t pos;
+		/* The following line is required for stupid Windows sometimes.  Why?
+		 * Probably because it's stupid...  Won't harm other systems. */
+		fseek(out, 0, SEEK_END);
 		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
 
 		if(!error)
@@ -311,9 +331,9 @@ iop_cp(io_args_t *const args)
 	fclose(in);
 	fclose(out);
 
-	if(error == 0 && lstat(src, &src_st) == 0)
+	if(error == 0 && os_lstat(src, &src_st) == 0)
 	{
-		error = chmod(dst, src_st.st_mode & 07777);
+		error = os_chmod(dst, src_st.st_mode & 07777);
 	}
 
 	ioeta_update(args->estim, src, 1, 0);
@@ -386,7 +406,7 @@ iop_ln(io_args_t *const args)
 		}
 	}
 #else
-	if(!overwrite && path_exists(target))
+	if(!overwrite && path_exists(target, DEREF))
 	{
 		return -1;
 	}
@@ -415,7 +435,8 @@ iop_ln(io_args_t *const args)
 	break_atr(base_dir, '\\');
 	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", base_dir, escaped_path,
 			escaped_target);
-	result = system(cmd);
+
+	result = os_system(cmd);
 
 	free(escaped_target);
 	free(escaped_path);

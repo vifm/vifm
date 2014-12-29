@@ -22,8 +22,6 @@
 
 #include <regex.h>
 
-#include <unistd.h> /* R_OK access() */
-
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
@@ -31,6 +29,7 @@
 #include <stdlib.h> /* malloc() free() */
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../menus/menus.h"
@@ -1444,7 +1443,7 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 			{
 				return 1;
 			}
-			return (access(buf, R_OK) != 0);
+			return (os_access(buf, R_OK) != 0);
 
 		default:
 			return 0;
