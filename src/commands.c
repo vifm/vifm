@@ -340,7 +340,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = COM_FILETYPE,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = COM_FILEVIEWER,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
@@ -2187,10 +2187,19 @@ add_filetype(const cmd_info_t *cmd_info, int x)
 	return 0;
 }
 
+/* Registers external applications as file viewer scripts for files that match
+ * name pattern.  Single argument form lists currently registered patterns that
+ * match specified file name in menu mode. */
 static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *records;
+
+	if(cmd_info->argc == 1)
+	{
+		show_fileviewers_menu(curr_view, cmd_info->argv[0]);
+		return 0;
+	}
 
 	records = skip_non_whitespace(cmd_info->args);
 	records = skip_whitespace(records + 1);

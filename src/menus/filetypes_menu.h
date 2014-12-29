@@ -26,6 +26,10 @@
  * should be saved. */
 int show_file_menu(FileView *view, int background);
 
+/* Displays menu with list of viewers registered for specified file name.
+ * Returns non-zero if status bar message should be saved. */
+int show_fileviewers_menu(FileView *view, const char fname[]);
+
 #endif /* VIFM__MENUS__FILETYPES_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

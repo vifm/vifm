@@ -27,6 +27,7 @@
 #include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../file_magic.h"
 #include "../filelist.h"
@@ -39,6 +40,7 @@ static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_info *m);
+static int max_desc_len(const assoc_records_t *records);
 
 int
 show_file_menu(FileView *view, int background)
@@ -59,11 +61,7 @@ show_file_menu(FileView *view, int background)
 	m.execute_handler = &execute_filetype_cb;
 	m.extra_data = (background ? 1 : 0);
 
-	max_len = 0;
-	for(i = 0; i < ft.count; i++)
-		max_len = MAX(max_len, strlen(ft.list[i].description));
-	for(i = 0; i < magic.count; i++)
-		max_len = MAX(max_len, strlen(magic.list[i].description));
+	max_len = MAX(max_desc_len(&ft), max_desc_len(&magic));
 
 	for(i = 0; i < ft.count; i++)
 	{
@@ -148,6 +146,48 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	clean_selected_files(view);
 	redraw_view(view);
 	return 0;
+}
+
+int
+show_fileviewers_menu(FileView *view, const char fname[])
+{
+	static menu_info m;
+
+	int i;
+	int max_len;
+
+	assoc_records_t fileviewers = ft_get_all_viewers(fname);
+
+	init_menu_info(&m, FILEVIEWERS_MENU,
+			format_str("No viewers match %s", fname));
+
+	m.title = format_str(" Viewers that match %s ", fname);
+
+	max_len = max_desc_len(&fileviewers);
+
+	for(i = 0; i < fileviewers.count; ++i)
+	{
+		m.len = add_to_string_array(&m.items, m.len, 1,
+				form_filetype_menu_entry(fileviewers.list[i], max_len));
+	}
+
+	ft_assoc_records_free(&fileviewers);
+
+	return display_menu(&m, view);
+}
+
+/* Calculates the maximum length of the description among the records.  Returns
+ * the length. */
+static int
+max_desc_len(const assoc_records_t *records)
+{
+	int i;
+	int max_len = 0;
+	for(i = 0; i < records->count; ++i)
+	{
+		max_len = MAX(max_len, strlen(records->list[i].description));
+	}
+	return max_len;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

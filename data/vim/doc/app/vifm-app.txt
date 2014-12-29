@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 18
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1342,6 +1342,9 @@ The builtin commands are:
 
      fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c, echo "No zip to preview:"
 <
+:filev[iewer] filename - list (in menu mode) currently registered patterns
+    that match specified file name.
+
                                                *vifm-:filter*
 :filter[!] regular_expression
 :filter[!] /regular_expression/[flags] - will filter files matching the
