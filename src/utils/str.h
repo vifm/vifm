@@ -105,10 +105,17 @@ void break_at(char str[], char c);
  * Nothing is done if the character isn't found. */
 void break_atr(char str[], char c);
 
-char * skip_non_whitespace(const char *str);
+/* Skips consecutive non-whitespace characters followed by any number of
+ * whitespace.  Returns pointer to the next character in the str. */
+char * skip_word(const char str[]);
 
-/* Skips consecutive whitespace characters. */
-char * skip_whitespace(const char *str);
+/* Skips consecutive non-whitespace characters.  Returns pointer to the next
+ * character in the str. */
+char * skip_non_whitespace(const char str[]);
+
+/* Skips consecutive whitespace characters.  Returns pointer to the next
+ * character in the str. */
+char * skip_whitespace(const char str[]);
 
 /* Checks if the c is one of characters in the list string. c cannot be '\0'. */
 int char_is_one_of(const char *list, char c);

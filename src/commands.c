@@ -2179,9 +2179,7 @@ add_filetype(const cmd_info_t *cmd_info, int x)
 {
 	const char *records;
 
-	records = skip_non_whitespace(cmd_info->args);
-	records = skip_whitespace(records + 1);
-
+	records = skip_word(cmd_info->args);
 	ft_set_programs(cmd_info->argv[0], records, x,
 			curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 	return 0;
@@ -2201,9 +2199,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	records = skip_non_whitespace(cmd_info->args);
-	records = skip_whitespace(records + 1);
-
+	records = skip_word(cmd_info->args);
 	ft_set_viewers(cmd_info->argv[0], records);
 	return 0;
 }

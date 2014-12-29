@@ -213,20 +213,30 @@ break_atr(char str[], char c)
 	}
 }
 
-/* Skips consecutive non-whitespace characters. */
 char *
-skip_non_whitespace(const char *str)
+skip_word(const char str[])
+{
+	str = skip_non_whitespace(str);
+	return skip_whitespace(str);
+}
+
+char *
+skip_non_whitespace(const char str[])
 {
 	while(!isspace(*str) && *str != '\0')
-		str++;
+	{
+		++str;
+	}
 	return (char *)str;
 }
 
 char *
-skip_whitespace(const char *str)
+skip_whitespace(const char str[])
 {
 	while(isspace(*str))
-		str++;
+	{
+		++str;
+	}
 	return (char *)str;
 }
 
