@@ -175,7 +175,7 @@ TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
-static int add_filetype(const cmd_info_t *cmd_info, int x);
+static int add_filetype(const cmd_info_t *cmd_info, int for_x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
@@ -338,11 +338,11 @@ static const cmd_add_t commands[] = {
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = COM_FILETYPE,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = COM_FILEVIEWER,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -2142,59 +2142,74 @@ eval_arglist(const char args[], const char **stop_ptr)
 	}
 }
 
+/* Displays file handler picking menu. */
 static int
 file_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
 		keep_view_selection = 1;
-		return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
+		return show_file_menu(curr_view, cmd_info->bg) != 0;
 	}
-	else
+
+	if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
 	{
-		if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
-		{
-			status_bar_error(
-					"Can't find associated program with requested beginning");
-			return 1;
-		}
-		return 0;
+		status_bar_error(
+				"Can't find associated program with requested beginning");
+		return 1;
 	}
+
+	return 0;
 }
 
+/* Registers non-x file association handler. */
 static int
 filetype_cmd(const cmd_info_t *cmd_info)
 {
 	return add_filetype(cmd_info, 0);
 }
 
+/* Registers x file association handler. */
 static int
 filextype_cmd(const cmd_info_t *cmd_info)
 {
 	return add_filetype(cmd_info, 1);
 }
 
+/* Registers x/non-x file association handler.  Single argument form lists
+ * currently registered patterns that match specified file name in menu mode.
+ * Returns regular *_cmd handler value. */
 static int
-add_filetype(const cmd_info_t *cmd_info, int x)
+add_filetype(const cmd_info_t *cmd_info, int for_x)
 {
 	const char *records;
+	int in_x;
 
-	records = skip_non_whitespace(cmd_info->args);
-	records = skip_whitespace(records + 1);
+	if(cmd_info->argc == 1)
+	{
+		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
+	}
 
-	ft_set_programs(cmd_info->argv[0], records, x,
-			curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	records = skip_word(cmd_info->args);
+	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
+	ft_set_programs(cmd_info->argv[0], records, for_x, in_x);
 	return 0;
 }
 
+/* Registers external applications as file viewer scripts for files that match
+ * name pattern.  Single argument form lists currently registered patterns that
+ * match specified file name in menu mode. */
 static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *records;
 
-	records = skip_non_whitespace(cmd_info->args);
-	records = skip_whitespace(records + 1);
+	if(cmd_info->argc == 1)
+	{
+		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
+	}
 
+	records = skip_word(cmd_info->args);
 	ft_set_viewers(cmd_info->argv[0], records);
 	return 0;
 }

@@ -17,6 +17,10 @@
 
 	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
 
+	Added single-argument form of :file[x]type and :fileviewer command that
+	lists (in menu mode) currently registered patterns that match specified
+	file name.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
@@ -78,13 +82,14 @@
 	Fixed current file number in progress message on moving files across file
 	systems when 'syscalls' is on.  Thanks to filterfalse.
 
+	Fixed memory leak related to list of filetypes.
+
 	Fixed unexpected path resolution on Windows under path containing symbolic
 	links.
 
 	Fixed case change renames on Windows when 'syscalls' is set.
 
 	Fixed file name case change undoing/redoing on Windows.
-
 
 0.7.8-beta to 0.7.8
 

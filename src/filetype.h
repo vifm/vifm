@@ -88,8 +88,8 @@ void ft_reset(int in_x);
  * on success, otherwise NULL is returned. */
 const char * ft_get_program(const char file[]);
 
-/* Gets a list of programs associated with a given file name.  Caller should
- * free only the array, but not its elements. */
+/* Gets list of programs associated with specified file name.  Returns the list.
+ * Caller should free the result by calling ft_assoc_records_free() on it. */
 assoc_records_t ft_get_all_programs(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
@@ -103,6 +103,10 @@ void ft_set_programs(const char patterns[], const char programs[], int for_x,
 /* Gets viewer for file.  Returns NULL if no suitable viewer available,
  * otherwise returns pointer to string stored internally. */
 const char * ft_get_viewer(const char file[]);
+
+/* Gets list of programs associated with specified file name.  Returns the list.
+ * Caller should free the result by calling ft_assoc_records_free() on it. */
+assoc_records_t ft_get_all_viewers(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated viewers. */

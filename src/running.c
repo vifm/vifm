@@ -962,11 +962,11 @@ run_with_filetype(FileView *view, const char beginning[], int background)
 
 	if(try_run_with_filetype(view, ft, beginning, background))
 	{
-		free(ft.list);
+		ft_assoc_records_free(&ft);
 		return 0;
 	}
 
-	free(ft.list);
+	ft_assoc_records_free(&ft);
 
 	return !try_run_with_filetype(view, magic, beginning, background);
 }

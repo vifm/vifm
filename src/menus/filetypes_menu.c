@@ -27,6 +27,7 @@
 #include "../ui/ui.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../file_magic.h"
 #include "../filelist.h"
@@ -39,9 +40,12 @@ static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_info *m);
+static void fill_menu_from_records(menu_info *m,
+		const assoc_records_t *records);
+static int max_desc_len(const assoc_records_t *records);
 
 int
-show_filetypes_menu(FileView *view, int background)
+show_file_menu(FileView *view, int background)
 {
 	static menu_info m;
 
@@ -53,18 +57,13 @@ show_filetypes_menu(FileView *view, int background)
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_info(&m, FILETYPE_MENU,
-			strdup("No programs set for this filetype"));
+	init_menu_info(&m, FILE_MENU, strdup("No programs set for this filetype"));
 
 	m.title = strdup(" Filetype associated commands ");
 	m.execute_handler = &execute_filetype_cb;
 	m.extra_data = (background ? 1 : 0);
 
-	max_len = 0;
-	for(i = 0; i < ft.count; i++)
-		max_len = MAX(max_len, strlen(ft.list[i].description));
-	for(i = 0; i < magic.count; i++)
-		max_len = MAX(max_len, strlen(magic.list[i].description));
+	max_len = MAX(max_desc_len(&ft), max_desc_len(&magic));
 
 	for(i = 0; i < ft.count; i++)
 	{
@@ -149,6 +148,72 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	clean_selected_files(view);
 	redraw_view(view);
 	return 0;
+}
+
+int
+show_fileprograms_menu(FileView *view, const char fname[])
+{
+	static menu_info m;
+
+	assoc_records_t file_programs;
+
+	init_menu_info(&m, FILEPROGRAMS_MENU,
+			format_str("No programs match %s", fname));
+
+	m.title = format_str(" Programs that match %s ", fname);
+
+	file_programs = ft_get_all_programs(fname);
+	fill_menu_from_records(&m, &file_programs);
+	ft_assoc_records_free(&file_programs);
+
+	return display_menu(&m, view);
+}
+
+int
+show_fileviewers_menu(FileView *view, const char fname[])
+{
+	static menu_info m;
+
+	assoc_records_t file_viewers;
+
+	init_menu_info(&m, FILEVIEWERS_MENU,
+			format_str("No viewers match %s", fname));
+
+	m.title = format_str(" Viewers that match %s ", fname);
+
+	file_viewers = ft_get_all_viewers(fname);
+	fill_menu_from_records(&m, &file_viewers);
+	ft_assoc_records_free(&file_viewers);
+
+	return display_menu(&m, view);
+}
+
+/* Fills the menu with commands from association records. */
+static void
+fill_menu_from_records(menu_info *m, const assoc_records_t *records)
+{
+	int i;
+	const int max_len = max_desc_len(records);
+
+	for(i = 0; i < records->count; ++i)
+	{
+		m->len = add_to_string_array(&m->items, m->len, 1,
+				form_filetype_menu_entry(records->list[i], max_len));
+	}
+}
+
+/* Calculates the maximum length of the description among the records.  Returns
+ * the length. */
+static int
+max_desc_len(const assoc_records_t *records)
+{
+	int i;
+	int max_len = 0;
+	for(i = 0; i < records->count; ++i)
+	{
+		max_len = MAX(max_len, strlen(records->list[i].description));
+	}
+	return max_len;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
