@@ -40,6 +40,8 @@ static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_info *m);
+static void fill_menu_from_records(menu_info *m,
+		const assoc_records_t *records);
 static int max_desc_len(const assoc_records_t *records);
 
 int
@@ -149,31 +151,55 @@ execute_filetype_cb(FileView *view, menu_info *m)
 }
 
 int
+show_fileprograms_menu(FileView *view, const char fname[])
+{
+	static menu_info m;
+
+	assoc_records_t file_programs;
+
+	init_menu_info(&m, FILEPROGRAMS_MENU,
+			format_str("No programs match %s", fname));
+
+	m.title = format_str(" Programs that match %s ", fname);
+
+	file_programs = ft_get_all_programs(fname);
+	fill_menu_from_records(&m, &file_programs);
+	ft_assoc_records_free(&file_programs);
+
+	return display_menu(&m, view);
+}
+
+int
 show_fileviewers_menu(FileView *view, const char fname[])
 {
 	static menu_info m;
 
-	int i;
-	int max_len;
-
-	assoc_records_t fileviewers = ft_get_all_viewers(fname);
+	assoc_records_t file_viewers;
 
 	init_menu_info(&m, FILEVIEWERS_MENU,
 			format_str("No viewers match %s", fname));
 
 	m.title = format_str(" Viewers that match %s ", fname);
 
-	max_len = max_desc_len(&fileviewers);
-
-	for(i = 0; i < fileviewers.count; ++i)
-	{
-		m.len = add_to_string_array(&m.items, m.len, 1,
-				form_filetype_menu_entry(fileviewers.list[i], max_len));
-	}
-
-	ft_assoc_records_free(&fileviewers);
+	file_viewers = ft_get_all_viewers(fname);
+	fill_menu_from_records(&m, &file_viewers);
+	ft_assoc_records_free(&file_viewers);
 
 	return display_menu(&m, view);
+}
+
+/* Fills the menu with commands from association records. */
+static void
+fill_menu_from_records(menu_info *m, const assoc_records_t *records)
+{
+	int i;
+	const int max_len = max_desc_len(records);
+
+	for(i = 0; i < records->count; ++i)
+	{
+		m->len = add_to_string_array(&m->items, m->len, 1,
+				form_filetype_menu_entry(records->list[i], max_len));
+	}
 }
 
 /* Calculates the maximum length of the description among the records.  Returns

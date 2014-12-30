@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 29
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1258,7 +1258,7 @@ The builtin commands are:
 
                                                *vifm-:filetype* *vifm-:filet*
 :filet[ype] pat1,pat2,... [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
-    will associate given program list to each of the patterns.  Associated
+    associate given program list to each of the patterns.  Associated
     program (command) is used by handlers of l and Enter keys (and also in
     the :file menu).  If you need to insert comma into command just double
     it (",,").  Space followed by an ampersand as two last characters of
@@ -1281,6 +1281,9 @@ The builtin commands are:
            \ {Extract here}
            \ tar -xf %c,
 <
+:filet[ype] filename - list (in menu mode) currently registered patterns that
+    match specified file name.  Same as ":filextype filename".
+
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
@@ -1327,6 +1330,9 @@ The builtin commands are:
     The purpose of such differentiation is to allow comfortable use of vifm
     with same settings in desktop environment/through remote connection (SSH)/
     in native console.
+
+:filext[ype] filename - list (in menu mode) currently registered patterns that
+    match specified file name.  Same as ":filetype filename".
 
                                                *vifm-:fileviewer* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command1,command2,... - register specified list of

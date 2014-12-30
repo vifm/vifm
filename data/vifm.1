@@ -1,4 +1,4 @@
-.TH vifm 1 "December 29, 2014" "" "Vifm"
+.TH vifm 1 "December 30, 2014" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1449,7 +1449,7 @@ run associated command that begins with the arg without opening menu.
 .BI "                                         :filetype"
 .TP
 .BI ":filet[ype] pat1,pat2,... [{descr}]def_prog[ &],[{descr}]prog2[ &],..."
-will associate given program list to each of the patterns.  Associated
+associate given program list to each of the patterns.  Associated
 program (command) is used by handlers of l and Enter keys (and also in
 the :file menu).  If you need to insert comma into command just double it
 (",,").  Space followed by an ampersand as two last characters of a command
@@ -1473,6 +1473,10 @@ actions:
         \\ {Extract here}
         \\ tar \-xf %c,
 .EE
+.TP
+.BI ":filet[ype] filename"
+list (in menu mode) currently registered patterns that match specified file
+name.  Same as ":filextype filename".
 .TP
 .BI "                                         :filextype"
 .TP
@@ -1523,6 +1527,10 @@ Just as if all :filextype commands were not there.
 The purpose of such differentiation is to allow comfortable use of vifm
 with same settings in desktop environment/through remote connection (SSH)/
 in native console.
+.TP
+.BI ":filext[ype] filename"
+list (in menu mode) currently registered patterns that match specified file
+name.  Same as ":filetype filename".
 .TP
 .BI "                                         :fileviewer"
 .TP

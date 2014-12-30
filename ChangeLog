@@ -17,8 +17,9 @@
 
 	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
 
-	Added single-argument form of :fileviewer command that lists (in menu mode)
-	currently registered patterns that match specified file name.
+	Added single-argument form of :file[x]type and :fileviewer command that
+	lists (in menu mode) currently registered patterns that match specified
+	file name.
 
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.

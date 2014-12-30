@@ -338,11 +338,11 @@ static const cmd_add_t commands[] = {
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = COM_FILETYPE,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = COM_FILEVIEWER,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -2176,13 +2176,19 @@ filextype_cmd(const cmd_info_t *cmd_info)
 	return add_filetype(cmd_info, 1);
 }
 
-/* Registers x/non-x file association handler.  Returns value for
- * *_cmd handler. */
+/* Registers x/non-x file association handler.  Single argument form lists
+ * currently registered patterns that match specified file name in menu mode.
+ * Returns regular *_cmd handler value. */
 static int
 add_filetype(const cmd_info_t *cmd_info, int for_x)
 {
 	const char *records;
 	int in_x;
+
+	if(cmd_info->argc == 1)
+	{
+		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
+	}
 
 	records = skip_word(cmd_info->args);
 	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
@@ -2200,8 +2206,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		show_fileviewers_menu(curr_view, cmd_info->argv[0]);
-		return 0;
+		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
 	records = skip_word(cmd_info->args);
