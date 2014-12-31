@@ -1805,8 +1805,8 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 			assoc_dir(cmd_info->argv[0], directory);
 			free(directory);
 
-			lwin.color_scheme = check_directory_for_color_scheme(1, lwin.curr_dir);
-			rwin.color_scheme = check_directory_for_color_scheme(0, rwin.curr_dir);
+			lwin.local_cs = check_directory_for_color_scheme(1, lwin.curr_dir);
+			rwin.local_cs = check_directory_for_color_scheme(0, rwin.curr_dir);
 			redraw_lists();
 			return 0;
 		}
@@ -2505,7 +2505,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clear") == 0)
 	{
-		reset_color_scheme(curr_stats.cs_base, curr_stats.cs);
+		reset_color_scheme(curr_stats.cs);
 
 		/* Request full update instead of redraw to force recalculation of mixed
 		 * colors like cursor line, which otherwise are not updated. */

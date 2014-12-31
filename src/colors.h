@@ -54,15 +54,6 @@ enum
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 
-/* Start indices of different parts of color pairs space. */
-enum
-{
-	DCOLOR_BASE = 1,                          /* Default color scheme. */
-	LCOLOR_BASE = DCOLOR_BASE + MAXNUM_COLOR, /* Left pane's color scheme. */
-	RCOLOR_BASE = LCOLOR_BASE + MAXNUM_COLOR, /* Right pane's color scheme. */
-	FCOLOR_BASE = RCOLOR_BASE + MAXNUM_COLOR  /* Free. */
-};
-
 #endif /* VIFM__COLORS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

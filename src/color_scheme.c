@@ -357,7 +357,7 @@ ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
 static void reset_color_scheme_colors(col_scheme_t *cs);
-static void load_color_pairs(int base, col_scheme_t *cs);
+static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
 static tree_t dirs = NULL_TREE;
@@ -505,7 +505,6 @@ load_primary_color_scheme(const char name[])
 	}
 
 	prev_cs = cfg.cs;
-	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
@@ -548,9 +547,9 @@ load_color_scheme_colors(void)
 {
 	ensure_dirs_tree_exists();
 
-	load_color_pairs(DCOLOR_BASE, &cfg.cs);
-	load_color_pairs(LCOLOR_BASE, &lwin.cs);
-	load_color_pairs(RCOLOR_BASE, &rwin.cs);
+	load_color_pairs(&cfg.cs);
+	load_color_pairs(&lwin.cs);
+	load_color_pairs(&rwin.cs);
 }
 
 void
@@ -559,15 +558,16 @@ load_def_scheme(void)
 	tree_free(dirs);
 	dirs = NULL_TREE;
 
+	lwin.local_cs = 0;
+	rwin.local_cs = 0;
+
 	reset_to_default_color_scheme(&cfg.cs);
 	reset_to_default_color_scheme(&lwin.cs);
-	lwin.color_scheme = LCOLOR_BASE;
 	reset_to_default_color_scheme(&rwin.cs);
-	rwin.color_scheme = RCOLOR_BASE;
 
-	load_color_pairs(DCOLOR_BASE, &cfg.cs);
-	load_color_pairs(LCOLOR_BASE, &lwin.cs);
-	load_color_pairs(RCOLOR_BASE, &rwin.cs);
+	load_color_pairs(&cfg.cs);
+	load_color_pairs(&lwin.cs);
+	load_color_pairs(&rwin.cs);
 }
 
 /* Completely resets the cs to builtin default color scheme.  Changes: colors,
@@ -584,10 +584,10 @@ reset_to_default_color_scheme(col_scheme_t *cs)
 }
 
 void
-reset_color_scheme(int color_base, col_scheme_t *cs)
+reset_color_scheme(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
-	load_color_pairs(color_base, cs);
+	load_color_pairs(cs);
 }
 
 /* Resets color scheme to default builtin values. */
@@ -611,13 +611,8 @@ reset_color_scheme_colors(col_scheme_t *cs)
 	}
 }
 
-/* The return value is the color scheme base number for the colorpairs.
- *
- * The color scheme with the longest matching directory path is the one that
- * should be returned.
- */
 int
-check_directory_for_color_scheme(int left, const char *dir)
+check_directory_for_color_scheme(int left, const char dir[])
 {
 	char *p;
 	char t;
@@ -630,10 +625,9 @@ check_directory_for_color_scheme(int left, const char *dir)
 
 	if(dirs == NULL_TREE)
 	{
-		return DCOLOR_BASE;
+		return 0;
 	}
 
-	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
 	*curr_stats.cs = cfg.cs;
 
@@ -662,16 +656,15 @@ check_directory_for_color_scheme(int left, const char *dir)
 	while(t != '\0');
 
 	check_color_scheme(curr_stats.cs);
-	load_color_pairs(curr_stats.cs_base, curr_stats.cs);
-	curr_stats.cs_base = DCOLOR_BASE;
+	load_color_pairs(curr_stats.cs);
 	curr_stats.cs = &cfg.cs;
 
-	return left ? LCOLOR_BASE : RCOLOR_BASE;
+	return 1;
 }
 
 /* Loads color scheme settings into color pairs. */
 static void
-load_color_pairs(int base, col_scheme_t *cs)
+load_color_pairs(col_scheme_t *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)

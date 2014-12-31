@@ -477,7 +477,7 @@ init_view(FileView *view)
 	view->selected_filelist = NULL;
 	view->history_num = 0;
 	view->history_pos = 0;
-	view->color_scheme = 1;
+	view->local_cs = 0;
 
 	view->hide_dot = 1;
 	view->matches = 0;
@@ -982,12 +982,16 @@ draw_dir_list_only(FileView *view)
 
 	top = calculate_top_position(view, top);
 
-	/* Colorize the files */
+	/* Colorize the files. */
 
-	if(view->color_scheme == DCOLOR_BASE)
-		attr = cfg.cs.color[WIN_COLOR].attr;
-	else
+	if(view->local_cs)
+	{
 		attr = view->cs.color[WIN_COLOR].attr;
+	}
+	else
+	{
+		attr = cfg.cs.color[WIN_COLOR].attr;
+	}
 	wbkgdset(view->win, COLOR_PAIR(view->cs.pair[WIN_COLOR]) | attr);
 	werase(view->win);
 
@@ -2789,7 +2793,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	if(!reload)
 		check_view_dir_history(view);
 
-	view->color_scheme = check_directory_for_color_scheme(view == &lwin,
+	view->local_cs = check_directory_for_color_scheme(view == &lwin,
 			view->curr_dir);
 
 	if(view->list_rows < 1)

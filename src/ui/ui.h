@@ -186,7 +186,7 @@ typedef struct
 	unsigned int window_width;
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files;
-	int color_scheme; /* current color scheme being used */
+	int local_cs; /* Whether directory-specific color scheme is in use. */
 	dir_entry_t *dir_entry;
 	char ** selected_filelist;
 	int nsaved_selection;
