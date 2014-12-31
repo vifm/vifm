@@ -25,6 +25,9 @@ typedef struct
 	/* Maximum number of color pairs. */
 	int max_color_pairs;
 
+	/* Maximum number of colors. */
+	int max_colors;
+
 	/* Function to set value of a color pair.  Should return zero on success and
 	 * anything else otherwise. */
 	int (*init_pair)(short int pair, short int f, short int b);
@@ -41,9 +44,10 @@ void colmgr_init(const colmgr_conf_t *conf_init);
 /* Resets all color pairs that are available for dynamic allocation. */
 void colmgr_reset(void);
 
-/* Dynamically allocates color pair of specified foreground (fg) and background
- * (bg) colors.  Returns -1 on allocation failure. */
-int colmgr_alloc_pair(int fg, int bg);
+/* Gets (might dynamically allocate) color pair number for specified
+ * foreground (fg) and background (bg) colors.  Returns the number on success or
+ * -1 on allocation failure. */
+int colmgr_get_pair(int fg, int bg);
 
 #endif /* VIFM__COLOR_MANAGER_H__ */
 

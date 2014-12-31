@@ -19,30 +19,23 @@
 #include "color_manager.h"
 
 #include <assert.h> /* assert() */
-#include <limits.h> /* CHAR_BIT */
-#include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* calloc() */
-#include <string.h> /* memset() */
+#include <stddef.h> /* NULL */
 
 #include "utils/macros.h"
 #include "colors.h"
+
+/* Number of preallocated color pairs. */
+#define PREALLOCATED_COUNT 64
 
 static int find_pair(int fg, int bg);
 static int color_pair_matches(int pair, int fg, int bg);
 static int allocate_pair(int fg, int bg);
 
-static int get_bit(const char bit_array[], size_t i);
-static void set_bit(char bit_array[], size_t i);
-
 /* Number of color pairs available. */
 static int avail_pairs;
 
-/* Map of allocated color pairs.  If element has non-zero value, it means it's
- * allocated. */
-static char *color_pair_map;
-
-/* Size of the color_pair_map in chars. */
-static size_t color_pair_map_size;
+/* Number of used color pairs. */
+static int used_pairs;
 
 /* Configuration data passed in during initialization. */
 static colmgr_conf_t conf;
@@ -50,31 +43,51 @@ static colmgr_conf_t conf;
 void
 colmgr_init(const colmgr_conf_t *conf_init)
 {
+	int fg, bg;
+
 	assert(conf_init != NULL && "conf_init structure is required.");
 	assert(conf_init->init_pair != NULL && "init_pair must be set.");
 	assert(conf_init->pair_content != NULL && "pair_content must be set.");
 
 	conf = *conf_init;
 
-	avail_pairs = conf.max_color_pairs - FCOLOR_BASE;
-	assert(avail_pairs >= 0 && "Too few color pairs available.");
+	/* Pre-allocate 64 lower pairs for 8-color values. */
+	for(fg = 0; fg < 8; ++fg)
+	{
+		for(bg = 0; bg < 8; ++bg)
+		{
+			conf.init_pair(colmgr_get_pair(fg, bg), fg, bg);
+		}
+	}
 
-	color_pair_map_size = DIV_ROUND_UP(avail_pairs, CHAR_BIT);
-	color_pair_map = calloc(color_pair_map_size, 1);
-	assert((color_pair_map != NULL || avail_pairs == 0) && "Not enough memory.");
+	colmgr_reset();
 }
 
 void
 colmgr_reset(void)
 {
-	memset(color_pair_map, '\0', color_pair_map_size);
+	used_pairs = PREALLOCATED_COUNT;
+	avail_pairs = conf.max_color_pairs - used_pairs;
 }
 
 int
-colmgr_alloc_pair(int fg, int bg)
+colmgr_get_pair(int fg, int bg)
 {
-	const int pair_index = find_pair(fg, bg);
-	return (pair_index != -1) ? pair_index : allocate_pair(fg, bg);
+	int p;
+
+	if(fg < 8 && bg < 8)
+	{
+		return fg*8 + bg;
+	}
+
+	p = find_pair(fg, bg);
+	if(p != -1)
+	{
+		return p;
+	}
+
+	p = allocate_pair(fg, bg);
+	return (p == -1) ? 0 : p;
 }
 
 /* Tries to find pair with specified colors among already allocated pairs.
@@ -84,7 +97,7 @@ find_pair(int fg, int bg)
 {
 	int i;
 
-	for(i = 0; i < DCOLOR_BASE + MAXNUM_COLOR; i++)
+	for(i = PREALLOCATED_COUNT; i < used_pairs; ++i)
 	{
 		if(color_pair_matches(i, fg, bg))
 		{
@@ -92,17 +105,7 @@ find_pair(int fg, int bg)
 		}
 	}
 
-	for(i = 0; i < avail_pairs; i++)
-	{
-		if(get_bit(color_pair_map, i))
-		{
-			if(color_pair_matches(FCOLOR_BASE + i, fg, bg))
-			{
-				break;
-			}
-		}
-	}
-	return (i < avail_pairs) ? (FCOLOR_BASE + i) : -1;
+	return -1;
 }
 
 /* Checks whether color pair number pair has specified foreground (fg) and
@@ -119,35 +122,16 @@ color_pair_matches(int pair, int fg, int bg)
 static int
 allocate_pair(int fg, int bg)
 {
-	int i;
-	for(i = 0; i < avail_pairs; i++)
+	if(avail_pairs == 0)
 	{
-		if(!get_bit(color_pair_map, i))
-		{
-			conf.init_pair(FCOLOR_BASE + i, fg, bg);
-			set_bit(color_pair_map, i);
-			break;
-		}
+		/* Out of pairs. TODO: free unused (LRU?) pairs. */
+		return -1;
 	}
-	return (i < avail_pairs) ? (FCOLOR_BASE + i) : -1;
-}
 
-/* Returns value of the i-th bit in the bit_array. */
-static int
-get_bit(const char bit_array[], size_t i)
-{
-	const size_t index = i/CHAR_BIT;
-	const size_t offset = i%CHAR_BIT;
-	return (bit_array[index] >> offset) & 1;
-}
+	conf.init_pair(used_pairs, fg, bg);
 
-/* Sets value of the i-th bit in the bit_array. */
-static void
-set_bit(char bit_array[], size_t i)
-{
-	const size_t index = i/CHAR_BIT;
-	const size_t offset = i%CHAR_BIT;
-	bit_array[index] |= 1 << offset;
+	--avail_pairs;
+	return used_pairs++;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -36,6 +36,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
+#include "color_manager.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {
@@ -356,7 +357,7 @@ ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
 static void reset_color_scheme_colors(col_scheme_t *cs);
-static void load_color_pairs(int base, const col_scheme_t *cs);
+static void load_color_pairs(int base, col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
 static tree_t dirs = NULL_TREE;
@@ -668,22 +669,14 @@ check_directory_for_color_scheme(int left, const char *dir)
 	return left ? LCOLOR_BASE : RCOLOR_BASE;
 }
 
+/* Loads color scheme settings into color pairs. */
 static void
-load_color_pairs(int base, const col_scheme_t *cs)
+load_color_pairs(int base, col_scheme_t *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)
 	{
-		/* XXX: This is an ugly hack to avoid flickering of top line of the current
-		 * view.  We need colors attributes recalculated correctly before applying
-		 * them, otherwise color changes twice on the screen.  Need to generalize
-		 * this by updating all color pairs that we can, or that depend on group,
-		 * whose properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in
-		 * ui.c and will be initialized on redraw. */
-		if(i != TOP_LINE_SEL_COLOR)
-		{
-			init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
-		}
+		cs->pair[i] = colmgr_get_pair(cs->color[i].fg, cs->color[i].bg);
 	}
 }
 

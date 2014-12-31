@@ -7,7 +7,7 @@
 
 void basic_tests(void);
 
-static int colors[64][2];
+static int colors[128][2];
 
 static void
 all_tests(void)
@@ -39,6 +39,7 @@ main(void)
 	{
 		const colmgr_conf_t colmgr_conf = {
 			.max_color_pairs = ARRAY_LEN(colors),
+			.max_colors = 8,
 			.init_pair = &init_pair,
 			.pair_content = &pair_content,
 		};

@@ -65,6 +65,7 @@
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
+#include "color_manager.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "fuse.h"
@@ -97,8 +98,8 @@ static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
 static int prepare_primary_col_color(FileView *view, int line_color,
 		int selected, int current);
-static int prepare_secondary_col_color(FileView *view, int selected,
-		int current);
+static int prepare_secondary_col_color(FileView *view, int line_color,
+		int selected, int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
 static void format_ext(int id, const void *data, size_t buf_len, char *buf);
@@ -233,8 +234,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 	}
 	else
 	{
-		line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->is_current);
+		line_attrs = prepare_secondary_col_color(view, get_line_color(view, i),
+				entry->selected, cdt->is_current);
 	}
 
 	if(displays_numbers)
@@ -244,8 +245,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 		const char *format;
 		int line_number;
 
-		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->is_current);
+		const int line_attrs = prepare_secondary_col_color(view,
+				get_line_color(view, i), entry->selected, cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
 		format = mixed ? "%-*d " : "%*d ";
@@ -285,7 +286,6 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 	if(selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		line_color = SELECTED_COLOR;
 	}
 
 	if(current)
@@ -293,53 +293,44 @@ prepare_primary_col_color(FileView *view, int line_color, int selected,
 		if(view == curr_view)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
 		}
 		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
 		{
 			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-			line_color = OTHER_LINE_COLOR;
 		}
 	}
 
-	init_pair(view->color_scheme + line_color, col.fg, col.bg);
-
-	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
+	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
 /* Calculate color attributes for secondary view column.  Returns attributes
  * that can be used for drawing on a window. */
 static int
-prepare_secondary_col_color(FileView *view, int selected, int current)
+prepare_secondary_col_color(FileView *view, int line_color, int selected,
+		int current)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
-	int line_color = WIN_COLOR;
 
 	if(selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		line_color = SELECTED_COLOR;
 	}
 
 	if(current)
 	{
+		mix_colors(&col, &view->cs.color[line_color]);
+
 		if(view == curr_view)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
 		}
 		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
 		{
 			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-			line_color = OTHER_LINE_COLOR;
 		}
 	}
-	else
-	{
-		init_pair(view->color_scheme + line_color, col.fg, col.bg);
-	}
 
-	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
+	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
 /* File name format callback for column_view unit. */
@@ -997,7 +988,7 @@ draw_dir_list_only(FileView *view)
 		attr = cfg.cs.color[WIN_COLOR].attr;
 	else
 		attr = view->cs.color[WIN_COLOR].attr;
-	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
+	wbkgdset(view->win, COLOR_PAIR(view->cs.pair[WIN_COLOR]) | attr);
 	werase(view->win);
 
 	cell = 0;
@@ -1461,9 +1452,7 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
 	}
 
-	init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
-
-	return COLOR_PAIR(view->color_scheme + OTHER_LINE_COLOR) | col.attr;
+	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
 /* Calculates number of columns and maximum width of column in a view. */

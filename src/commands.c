@@ -77,6 +77,7 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
+#include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
 #include "commands_completion.h"
@@ -2536,7 +2537,8 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	 * will be initialized on redraw. */
 	if(group_id != TOP_LINE_SEL_COLOR)
 	{
-		init_pair(curr_stats.cs_base + group_id, curr_stats.cs->color[group_id].fg,
+		curr_stats.cs->pair[group_id] =
+				colmgr_get_pair(curr_stats.cs->color[group_id].fg,
 				curr_stats.cs->color[group_id].bg);
 	}
 

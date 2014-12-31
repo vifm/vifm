@@ -31,6 +31,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "../color_manager.h"
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
@@ -228,13 +229,12 @@ status_bar_message_i(const char message[], int error)
 	{
 		col_attr_t col = cfg.cs.color[CMD_LINE_COLOR];
 		mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
-		init_pair(DCOLOR_BASE + ERROR_MSG_COLOR, col.fg, col.bg);
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | col.attr);
+		wattron(status_bar, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 	}
 	else
 	{
 		int attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
+		wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 	}
 	werase(status_bar);
 

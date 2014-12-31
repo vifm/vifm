@@ -47,6 +47,7 @@ typedef struct
 	char dir[PATH_MAX];             /* Associated root dir of the color scheme. */
 	ColorSchemeState state;         /* Current state. */
 	col_attr_t color[MAXNUM_COLOR]; /* Colors with their attributes. */
+	int pair[MAXNUM_COLOR];         /* Pairs for corresponding color. */
 }
 col_scheme_t;
 

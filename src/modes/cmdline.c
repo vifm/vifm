@@ -46,6 +46,7 @@
 #include "../utils/test_helpers.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
+#include "../color_manager.h"
 #include "../color_scheme.h"
 #include "../colors.h"
 #include "../commands.h"
@@ -363,7 +364,7 @@ update_cmdline_text(void)
 	werase(status_bar);
 
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
+	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, input_stat.prompt_wid/line_width,
@@ -720,7 +721,7 @@ leave_cmdline_mode(void)
 	}
 
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
+	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
 	if(prev_mode != MENU_MODE && prev_mode != VIEW_MODE)
 	{
@@ -1022,13 +1023,12 @@ draw_wild_menu(int op)
 			col = cfg.cs.color[STATUS_LINE_COLOR];
 			mix_colors(&col, &cfg.cs.color[MENU_COLOR]);
 
-			init_pair(DCOLOR_BASE + MENU_COLOR, col.fg, col.bg);
-			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) | col.attr);
+			wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}
 		wprint(stat_win, list[i]);
 		if(i == pos)
 		{
-			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
 					cfg.cs.color[STATUS_LINE_COLOR].attr);
 			pos = -pos;
 		}
