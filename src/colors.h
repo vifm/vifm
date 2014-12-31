@@ -51,8 +51,6 @@ enum
 	ERROR_MSG_COLOR,    /* Error of the command line. */
 	BORDER_COLOR,       /* Vertical border lines. */
 	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
-	CURRENT_COLOR,      /* Pane current line (mixed, internal use only). */
-	MENU_CURRENT_COLOR, /* Menu current line (mixed, internal use only). */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

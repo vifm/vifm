@@ -59,7 +59,7 @@ char *HI_GROUPS[] = {
 	[BORDER_COLOR]       = "Border",
 	[OTHER_LINE_COLOR]   = "OtherLine",
 };
-ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
+ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
 char *LIGHT_COLOR_NAMES[8] = {
 	[COLOR_BLACK] = "lightblack",
@@ -352,7 +352,7 @@ static const int default_colors[][3] = {
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 };
-ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
+ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
@@ -455,7 +455,7 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
-	for(i = 0; i < MAXNUM_COLOR - 2; ++i)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		char fg_buf[16], bg_buf[16];
 

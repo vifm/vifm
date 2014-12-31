@@ -2513,8 +2513,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2,
-			cmd_info->argv[0]);
+	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
 	if(group_id < 0)
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
@@ -2555,18 +2554,18 @@ highlight_cmd(const cmd_info_t *cmd_info)
 static const char *
 get_all_highlights(void)
 {
-	static char msg[256*(MAXNUM_COLOR - 2)];
+	static char msg[256*MAXNUM_COLOR];
 
 	size_t msg_len = 0U;
 	int i;
 
 	msg[0] = '\0';
 
-	for(i = 0; i < MAXNUM_COLOR - 2; i++)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
 				get_group_str(i, curr_view->cs.color[i]),
-				(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
+				(i < MAXNUM_COLOR - 1) ? "\n" : "");
 	}
 
 	return msg;
