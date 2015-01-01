@@ -141,7 +141,7 @@ shutdown_nicely(void)
 
 	endwin();
 	set_term_title(NULL);
-	unmount_fuse();
+	fuse_unmount_all();
 	write_info_file();
 	fprintf(stdout, "Vifm killed by signal.\n");
 	exit(0);

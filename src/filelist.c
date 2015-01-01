@@ -2002,14 +2002,15 @@ leave_invalid_dir(FileView *view)
 {
 	char *const path = view->curr_dir;
 
-	if(try_updir_from_fuse_mount(path, view))
+	if(fuse_try_updir_from_a_mount(path, view))
 	{
 		return;
 	}
 
-	while(!directory_accessible(path) && is_path_well_formed(path))
+	while((!is_dir(path) || !directory_accessible(path)) &&
+			is_path_well_formed(path))
 	{
-		if(try_updir_from_fuse_mount(path, view))
+		if(fuse_try_updir_from_a_mount(path, view))
 		{
 			break;
 		}
@@ -2182,16 +2183,18 @@ change_directory(FileView *view, const char *directory)
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
-	if(is_parent_dir(directory) && in_mounted_dir(view->curr_dir))
+	if(is_parent_dir(directory) && fuse_is_in_mounted_dir(view->curr_dir))
 	{
 		FileView *other = (view == curr_view) ? other_view : curr_view;
 		if(!path_starts_with(other->curr_dir, view->curr_dir))
 		{
-			int r = try_unmount_fuse(view);
+			const int r = fuse_try_unmount(view);
 			if(r != 0)
+			{
 				return r;
+			}
 		}
-		else if(try_updir_from_fuse_mount(view->curr_dir, view))
+		else if(fuse_try_updir_from_a_mount(view->curr_dir, view))
 		{
 			return 1;
 		}

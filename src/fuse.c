@@ -57,17 +57,17 @@ fuse_mount_t;
 
 static fuse_mount_t *fuse_mounts;
 
-static int fuse_mount(FileView *view, char *file_full_path, const char *param,
-		const char *program, char *mount_point);
+static int fuse_mount(FileView *view, char file_full_path[], const char param[],
+		const char program[], char mount_point[]);
 TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
 		size_t buf_size, char buf[], int *foreground);
-static fuse_mount_t * get_mount_by_source(const char *source);
-static fuse_mount_t * get_mount_by_mount_point(const char *dir);
+static fuse_mount_t * get_mount_by_source(const char source[]);
+static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
 
 void
-fuse_try_mount(FileView *view, const char *program)
+fuse_try_mount(FileView *view, const char program[])
 {
 	/* TODO: refactor this function fuse_try_mount() */
 
@@ -129,7 +129,9 @@ fuse_try_mount(FileView *view, const char *program)
 
 		}
 		if(fuse_mount(view, file_full_path, param, program, mount_point) != 0)
+		{
 			return;
+		}
 	}
 
 	navigate_to(view, mount_point);
@@ -137,7 +139,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 /* Searchers for mount record by source file path. */
 static fuse_mount_t *
-get_mount_by_source(const char *source)
+get_mount_by_source(const char source[])
 {
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
@@ -149,15 +151,13 @@ get_mount_by_source(const char *source)
 	return runner;
 }
 
-/*
- * mount_point should be an array of at least PATH_MAX characters
- * Returns non-zero on error.
- */
+/* mount_point should be an array of at least PATH_MAX characters
+ * Returns non-zero on error. */
 static int
-fuse_mount(FileView *view, char *file_full_path, const char *param,
-		const char *program, char *mount_point)
+fuse_mount(FileView *view, char file_full_path[], const char param[],
+		const char program[], char mount_point[])
 {
-	/* TODO: refactor this function fuse_mount() */
+	/* TODO: refactor this function fuse_mount(). */
 
 	fuse_mount_t *runner = NULL;
 	int mount_point_id = 0;
@@ -350,7 +350,7 @@ format_mount_command(const char mount_point[], const char file_name[],
 }
 
 void
-unmount_fuse(void)
+fuse_unmount_all(void)
 {
 	fuse_mount_t *runner;
 
@@ -388,7 +388,7 @@ unmount_fuse(void)
 }
 
 int
-try_updir_from_fuse_mount(const char *path, FileView *view)
+fuse_try_updir_from_a_mount(const char path[], FileView *view)
 {
 	fuse_mount_t *runner;
 	if((runner = get_mount_by_mount_point(path)) != NULL)
@@ -400,14 +400,14 @@ try_updir_from_fuse_mount(const char *path, FileView *view)
 }
 
 int
-in_mounted_dir(const char *path)
+fuse_is_in_mounted_dir(const char path[])
 {
 	return get_mount_by_mount_point(path) != NULL;
 }
 
-/* Searchers for mount record by path to mount point. */
+/* Searches for mount record by path to mount point. */
 static fuse_mount_t *
-get_mount_by_mount_point(const char *dir)
+get_mount_by_mount_point(const char dir[])
 {
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
@@ -420,7 +420,7 @@ get_mount_by_mount_point(const char *dir)
 }
 
 int
-try_unmount_fuse(FileView *view)
+fuse_try_unmount(FileView *view)
 {
 	char buf[14 + PATH_MAX + 1];
 	fuse_mount_t *runner, *trailer;
@@ -507,14 +507,14 @@ updir_from_mount(FileView *view, fuse_mount_t *runner)
 }
 
 int
-has_mount_prefixes(const char string[])
+fuse_is_mount_string(const char string[])
 {
 	return starts_with(string, "FUSE_MOUNT|") ||
 		starts_with(string, "FUSE_MOUNT2|");
 }
 
 void
-remove_mount_prefixes(char string[])
+fuse_strip_mount_metadata(char string[])
 {
 	size_t prefix_len;
 	if(starts_with(string, "FUSE_MOUNT|"))

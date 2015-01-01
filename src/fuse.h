@@ -24,28 +24,32 @@
 #include "utils/test_helpers.h"
 
 /* Won't mount same file twice */
-void fuse_try_mount(FileView *view, const char *program);
+void fuse_try_mount(FileView *view, const char program[]);
+
 /* Unmounts all FUSE mounded filesystems. */
-void unmount_fuse(void);
+void fuse_unmount_all(void);
+
 /* Returns non-zero on successful leaving mount point directory. */
-int try_updir_from_fuse_mount(const char *path, FileView *view);
-int in_mounted_dir(const char *path);
-/*
- * Return value:
+int fuse_try_updir_from_a_mount(const char path[], FileView *view);
+
+int fuse_is_in_mounted_dir(const char path[]);
+
+/* Return value:
  *   -1 error occurred.
  *   0  not mount point.
- *   1  left FUSE mount directory.
- */
-int try_unmount_fuse(FileView *view);
+ *   1  left FUSE mount directory. */
+int fuse_try_unmount(FileView *view);
+
 /* Returns non-zero in case string is a FUSE mount string. */
-int has_mount_prefixes(const char string[]);
+int fuse_is_mount_string(const char string[]);
+
 /* Removes fuse mount prefixes from the string. */
-void remove_mount_prefixes(char string[]);
+void fuse_strip_mount_metadata(char string[]);
 
 TSTATIC_DEFS(
 	void format_mount_command(const char mount_point[], const char file_name[],
-		const char param[], const char format[], size_t buf_size, char buf[],
-		int *foreground);
+			const char param[], const char format[], size_t buf_size, char buf[],
+			int *foreground);
 )
 
 #endif /* VIFM__FUSE_H__ */
