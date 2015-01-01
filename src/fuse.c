@@ -405,7 +405,7 @@ in_mounted_dir(const char *path)
 	return get_mount_by_mount_point(path) != NULL;
 }
 
-/* Searchers for mount record by path to mount point. */
+/* Searches for mount record by path to mount point. */
 static fuse_mount_t *
 get_mount_by_mount_point(const char *dir)
 {
