@@ -306,7 +306,7 @@ extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 #endif
 	if(!raw)
 	{
-		remove_mount_prefixes(buf);
+		fuse_strip_mount_metadata(buf);
 	}
 	result = skip_whitespace(result);
 

@@ -350,7 +350,7 @@ format_mount_command(const char mount_point[], const char file_name[],
 }
 
 void
-unmount_fuse(void)
+fuse_unmount_all(void)
 {
 	fuse_mount_t *runner;
 
@@ -388,7 +388,7 @@ unmount_fuse(void)
 }
 
 int
-try_updir_from_fuse_mount(const char *path, FileView *view)
+fuse_try_updir_from_a_mount(const char *path, FileView *view)
 {
 	fuse_mount_t *runner;
 	if((runner = get_mount_by_mount_point(path)) != NULL)
@@ -400,7 +400,7 @@ try_updir_from_fuse_mount(const char *path, FileView *view)
 }
 
 int
-in_mounted_dir(const char *path)
+fuse_is_in_mounted_dir(const char *path)
 {
 	return get_mount_by_mount_point(path) != NULL;
 }
@@ -420,7 +420,7 @@ get_mount_by_mount_point(const char *dir)
 }
 
 int
-try_unmount_fuse(FileView *view)
+fuse_try_unmount(FileView *view)
 {
 	char buf[14 + PATH_MAX + 1];
 	fuse_mount_t *runner, *trailer;
@@ -507,14 +507,14 @@ updir_from_mount(FileView *view, fuse_mount_t *runner)
 }
 
 int
-has_mount_prefixes(const char string[])
+fuse_is_mount_string(const char string[])
 {
 	return starts_with(string, "FUSE_MOUNT|") ||
 		starts_with(string, "FUSE_MOUNT2|");
 }
 
 void
-remove_mount_prefixes(char string[])
+fuse_strip_mount_metadata(char string[])
 {
 	size_t prefix_len;
 	if(starts_with(string, "FUSE_MOUNT|"))

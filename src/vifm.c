@@ -753,7 +753,7 @@ vifm_try_leave(int write_info, int force)
 		}
 	}
 
-	unmount_fuse();
+	fuse_unmount_all();
 
 	if(write_info)
 	{

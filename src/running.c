@@ -508,7 +508,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		return;
 	}
 
-	if(has_mount_prefixes(program))
+	if(fuse_is_mount_string(program))
 	{
 		if(dont_execute)
 		{
