@@ -39,6 +39,9 @@
 	issues when file name encoding doesn't match system encoding.  Thanks to
 	Stas Panteleev.
 
+	Made leaving wrong (unexpectedly removed) directory more robust.  Thanks
+	to willemw12.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
