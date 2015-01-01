@@ -25,11 +25,15 @@
 
 /* Won't mount same file twice */
 void fuse_try_mount(FileView *view, const char *program);
+
 /* Unmounts all FUSE mounded filesystems. */
 void unmount_fuse(void);
+
 /* Returns non-zero on successful leaving mount point directory. */
 int try_updir_from_fuse_mount(const char *path, FileView *view);
+
 int in_mounted_dir(const char *path);
+
 /*
  * Return value:
  *   -1 error occurred.
@@ -37,8 +41,10 @@ int in_mounted_dir(const char *path);
  *   1  left FUSE mount directory.
  */
 int try_unmount_fuse(FileView *view);
+
 /* Returns non-zero in case string is a FUSE mount string. */
 int has_mount_prefixes(const char string[]);
+
 /* Removes fuse mount prefixes from the string. */
 void remove_mount_prefixes(char string[]);
 
