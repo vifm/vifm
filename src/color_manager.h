@@ -35,6 +35,13 @@ typedef struct
 	/* Function to get value of a color pair.  Should return zero on success and
 	 * anything else otherwise. */
 	int (*pair_content)(short int pair, short int *f, short int *b);
+
+	/* Checks whether pair is being used at the moment.  Should return non-zero if
+	 * so and zero otherwise. */
+	int (*pair_in_use)(short int pair);
+
+	/* Substitutes old pair number with the new one. */
+	void (*move_pair)(short int from, short int to);
 }
 colmgr_conf_t;
 

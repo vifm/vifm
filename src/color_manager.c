@@ -30,6 +30,7 @@
 static int find_pair(int fg, int bg);
 static int color_pair_matches(int pair, int fg, int bg);
 static int allocate_pair(int fg, int bg);
+static int compress_pair_space(void);
 
 /* Number of color pairs available. */
 static int avail_pairs;
@@ -48,6 +49,8 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	assert(conf_init != NULL && "conf_init structure is required.");
 	assert(conf_init->init_pair != NULL && "init_pair must be set.");
 	assert(conf_init->pair_content != NULL && "pair_content must be set.");
+	assert(conf_init->pair_in_use != NULL && "pair_in_use must be set.");
+	assert(conf_init->move_pair != NULL && "move_pair must be set.");
 
 	conf = *conf_init;
 
@@ -124,14 +127,72 @@ allocate_pair(int fg, int bg)
 {
 	if(avail_pairs == 0)
 	{
-		/* Out of pairs. TODO: free unused (LRU?) pairs. */
-		return -1;
+		/* Out of pairs, free unused ones. */
+		if(compress_pair_space() != 0)
+		{
+			return -1;
+		}
 	}
 
 	conf.init_pair(used_pairs, fg, bg);
 
 	--avail_pairs;
 	return used_pairs++;
+}
+
+/* Returns zero if at least one pair is now available, otherwise non-zero is
+ * returned. */
+static int
+compress_pair_space(void)
+{
+	/* TODO: in case of performance issues cache pair_in_use() in the first loop
+	 * or change the function to fill in bit field of pairs. */
+
+	int i;
+	int j;
+	int in_use;
+	int first_unused;
+
+	in_use = 0;
+	first_unused = -1;
+	for(i = PREALLOCATED_COUNT; i < used_pairs; ++i)
+	{
+		if(conf.pair_in_use(i))
+		{
+			++in_use;
+		}
+		else if(first_unused == -1)
+		{
+			first_unused = i;
+		}
+	}
+
+	if(first_unused == -1)
+	{
+		/* No unused pairs. */
+		return -1;
+	}
+
+	j = first_unused;
+	for(i = PREALLOCATED_COUNT + in_use; i < used_pairs; ++i)
+	{
+		if(conf.pair_in_use(i))
+		{
+			conf.move_pair(i, j);
+
+			/* Advance to next unused pair. */
+			do
+			{
+				++j;
+			}
+			while(conf.pair_in_use(j));
+		}
+	}
+
+	used_pairs = j;
+	avail_pairs = conf.max_color_pairs - used_pairs;
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
