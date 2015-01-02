@@ -2000,6 +2000,7 @@ invert_selection(FileView *view)
 void
 leave_invalid_dir(FileView *view)
 {
+	struct stat s;
 	char *const path = view->curr_dir;
 
 	if(fuse_try_updir_from_a_mount(path, view))
@@ -2007,8 +2008,12 @@ leave_invalid_dir(FileView *view)
 		return;
 	}
 
-	while((!is_dir(path) || !directory_accessible(path)) &&
-			is_path_well_formed(path))
+	/* Use stat() directly to skip all possible optimizations.  It might be a bit
+	 * heavier, but this is quite rare error-recovery procedure, we can afford it
+	 * here.  Even in the worst case of going to the root, this isn't that much
+	 * calls. */
+	while((os_stat(path, &s) != 0 || !(s.st_mode & S_IFDIR) ||
+			!directory_accessible(path)) && is_path_well_formed(path))
 	{
 		if(fuse_try_updir_from_a_mount(path, view))
 		{
