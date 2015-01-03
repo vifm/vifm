@@ -191,6 +191,7 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
+static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, col_attr_t col);
 static int parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info);
@@ -2494,9 +2495,6 @@ help_cmd(const cmd_info_t *cmd_info)
 static int
 highlight_cmd(const cmd_info_t *cmd_info)
 {
-	int result;
-	int group_id;
-
 	if(cmd_info->argc == 0)
 	{
 		status_bar_message(get_all_highlights());
@@ -2512,6 +2510,17 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		curr_stats.need_update = UT_FULL;
 		return 0;
 	}
+
+	return highlight_group(cmd_info);
+}
+
+/* Handles highlight-group form of :highlight command.  Returns value to be
+ * returned by command handler. */
+static int
+highlight_group(const cmd_info_t *cmd_info)
+{
+	int result;
+	int group_id;
 
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
 	if(group_id < 0)
