@@ -96,9 +96,7 @@ typedef int (*predicate_func)(const dir_entry_t *entry);
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
-static int prepare_primary_col_color(FileView *view, int line_color,
-		int selected, int current);
-static int prepare_secondary_col_color(FileView *view, int line_color,
+static int prepare_col_color(FileView *view, int primary, int line_color,
 		int selected, int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
@@ -211,6 +209,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 {
 	const int padding = (cfg.filelist_col_padding != 0);
 
+	int primary;
 	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
@@ -227,16 +226,9 @@ column_line_print(const void *data, int column_id, const char *buf,
 	const size_t prefix_len = padding + view->real_num_width;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
-	if(column_id == SK_BY_NAME || column_id == SK_BY_INAME)
-	{
-		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
-				entry->selected, cdt->is_current);
-	}
-	else
-	{
-		line_attrs = prepare_secondary_col_color(view, get_line_color(view, i),
-				entry->selected, cdt->is_current);
-	}
+	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
+	line_attrs = prepare_col_color(view, primary, get_line_color(view, i),
+			entry->selected, cdt->is_current);
 
 	if(displays_numbers)
 	{
@@ -245,7 +237,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 		const char *format;
 		int line_number;
 
-		const int line_attrs = prepare_secondary_col_color(view,
+		const int line_attrs = prepare_col_color(view, primary,
 				get_line_color(view, i), entry->selected, cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
@@ -273,52 +265,30 @@ column_line_print(const void *data, int column_id, const char *buf,
 	wprinta(view->win, print_buf, line_attrs);
 }
 
-/* Calculate color attributes for primary view column.  Returns attributes that
- * can be used for drawing on a window. */
+/* Calculate color attributes for a view column.  Returns attributes that can be
+ * used for drawing on a window. */
 static int
-prepare_primary_col_color(FileView *view, int line_color, int selected,
+prepare_col_color(FileView *view, int primary, int line_color, int selected,
 		int current)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
-	mix_colors(&col, &view->cs.color[line_color]);
-
-	if(selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-	}
-
-	if(current)
-	{
-		if(view == curr_view)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-		}
-		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
-		{
-			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-		}
-	}
-
-	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
-}
-
-/* Calculate color attributes for secondary view column.  Returns attributes
- * that can be used for drawing on a window. */
-static int
-prepare_secondary_col_color(FileView *view, int line_color, int selected,
-		int current)
-{
-	col_attr_t col = view->cs.color[WIN_COLOR];
-
-	if(selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-	}
-
-	if(current)
+	if(primary)
 	{
 		mix_colors(&col, &view->cs.color[line_color]);
+	}
+
+	if(selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+	}
+
+	if(current)
+	{
+		if(!primary)
+		{
+			mix_colors(&col, &view->cs.color[line_color]);
+		}
 
 		if(view == curr_view)
 		{
