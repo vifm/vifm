@@ -83,9 +83,10 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	FileView *view;  /* View on which cell is being drawn. */
-	size_t line_pos; /* File position in the file list (the view). */
-	int is_current;  /* Whether this file is selected with the cursor. */
+	FileView *view;    /* View on which cell is being drawn. */
+	size_t line_pos;   /* File position in the file list (the view). */
+	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
+	int is_current;    /* Whether this file is selected with the cursor. */
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
@@ -227,7 +228,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
-	line_attrs = prepare_col_color(view, primary, get_line_color(view, i),
+	line_attrs = prepare_col_color(view, primary, cdt->line_hi_group,
 			entry->selected, cdt->is_current);
 
 	if(displays_numbers)
@@ -237,8 +238,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 		const char *format;
 		int line_number;
 
-		const int line_attrs = prepare_col_color(view, primary,
-				get_line_color(view, i), entry->selected, cdt->is_current);
+		const int line_attrs = prepare_col_color(view, primary, cdt->line_hi_group,
+				entry->selected, cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
 		format = mixed ? "%-*d " : "%*d ";
@@ -972,6 +973,7 @@ draw_dir_list_only(FileView *view)
 		{
 			.view = view,
 			.line_pos = x,
+			.line_hi_group = get_line_color(view, x),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
@@ -1152,6 +1154,7 @@ clear_current_line_bar(FileView *view, int is_current)
 	{
 		.view = view,
 		.line_pos = old_pos,
+		.line_hi_group = get_line_color(view, old_pos),
 		.is_current = is_current,
 	};
 
@@ -1302,6 +1305,7 @@ move_to_list_pos(FileView *view, int pos)
 	print_width = calculate_print_width(view, view->list_pos, col_width);
 
 	cdt.line_pos = pos;
+	cdt.line_hi_group = get_line_color(view, pos);
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 

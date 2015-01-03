@@ -3,6 +3,7 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strlen() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/bookmarks.h"
 
@@ -80,10 +81,15 @@ bookmarks_tests(void)
 {
 	test_fixture_start();
 
+	cfg.slow_fs_list = strdup("");
+
 	run_test(test_unexistant_bookmark);
 	run_test(test_all_valid_bookmarks_can_be_queried);
 	run_test(test_regular_bmarks_are_global);
 	run_test(test_sel_bmarks_are_local);
+
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = NULL;
 
 	test_fixture_end();
 }
