@@ -621,7 +621,8 @@ check_directory_for_color_scheme(int left, const char dir[])
 	{
 		char *name;
 		tree_val_t buf;
-	}u;
+	}
+	u;
 
 	if(dirs == NULL_TREE)
 	{

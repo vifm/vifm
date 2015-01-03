@@ -58,7 +58,8 @@ main(void)
 	int result;
 
 	{
-		const colmgr_conf_t colmgr_conf = {
+		const colmgr_conf_t colmgr_conf =
+		{
 			.max_color_pairs = ARRAY_LEN(colors),
 			.max_colors = 8,
 			.init_pair = &init_pair,

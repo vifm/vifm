@@ -214,7 +214,7 @@ static struct
 {
 	int count;
 	col_scheme_t array[MAX_COLOR_SCHEMES];
-}cs = {
+} cs = {
 	.count = 0,
 };
 

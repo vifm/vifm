@@ -389,7 +389,8 @@ main(int argc, char *argv[])
 		return -1;
 
 	{
-		const colmgr_conf_t colmgr_conf = {
+		const colmgr_conf_t colmgr_conf =
+		{
 			.max_color_pairs = COLOR_PAIRS,
 			.max_colors = COLORS,
 			.init_pair = &init_pair,
