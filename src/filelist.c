@@ -115,7 +115,6 @@ static void init_view(FileView *view);
 static void reset_view(FileView *view);
 static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
-static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static void capture_selection(FileView *view);
 static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
@@ -131,6 +130,7 @@ static size_t calculate_print_width(const FileView *view, int i,
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
 static int prepare_inactive_color(FileView *view, int line_color, int selected);
+static int get_line_color(const FileView *view, int pos);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
@@ -556,52 +556,6 @@ load_initial_directory(FileView *view, const char *dir)
 		chosp(view->curr_dir);
 	}
 	(void)change_directory(view, dir);
-}
-
-static int
-get_line_color(FileView* view, int pos)
-{
-	switch(view->dir_entry[pos].type)
-	{
-		case DIRECTORY:
-			return DIRECTORY_COLOR;
-		case FIFO:
-			return FIFO_COLOR;
-		case LINK:
-			if(is_on_slow_fs(view->curr_dir))
-			{
-				return LINK_COLOR;
-			}
-			else
-			{
-				char full[PATH_MAX];
-				get_full_path_at(view, pos, sizeof(full), full);
-				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
-				{
-					return BROKEN_LINK_COLOR;
-				}
-
-				/* Assume that targets on slow file system are not broken as actual
-				 * check might take long time. */
-				if(is_on_slow_fs(full))
-				{
-					return LINK_COLOR;
-				}
-
-				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
-			}
-#ifndef _WIN32
-		case SOCKET:
-			return SOCKET_COLOR;
-#endif
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
-			return DEVICE_COLOR;
-		case EXECUTABLE:
-			return EXECUTABLE_COLOR;
-		default:
-			return WIN_COLOR;
-	}
 }
 
 #ifndef _WIN32
@@ -1431,6 +1385,54 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 	}
 
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+}
+
+/* Calculates highlight group for the line specified by its position.  Returns
+ * grouop number. */
+static int
+get_line_color(const FileView *view, int pos)
+{
+	switch(view->dir_entry[pos].type)
+	{
+		case DIRECTORY:
+			return DIRECTORY_COLOR;
+		case FIFO:
+			return FIFO_COLOR;
+		case LINK:
+			if(is_on_slow_fs(view->curr_dir))
+			{
+				return LINK_COLOR;
+			}
+			else
+			{
+				char full[PATH_MAX];
+				get_full_path_at(view, pos, sizeof(full), full);
+				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
+				{
+					return BROKEN_LINK_COLOR;
+				}
+
+				/* Assume that targets on slow file system are not broken as actual
+				 * check might take long time. */
+				if(is_on_slow_fs(full))
+				{
+					return LINK_COLOR;
+				}
+
+				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
+			}
+#ifndef _WIN32
+		case SOCKET:
+			return SOCKET_COLOR;
+#endif
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
+			return DEVICE_COLOR;
+		case EXECUTABLE:
+			return EXECUTABLE_COLOR;
+		default:
+			return WIN_COLOR;
+	}
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
