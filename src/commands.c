@@ -2528,18 +2528,9 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	result = parse_and_apply_highlight(group_id, cmd_info);
 
-	/* XXX: This is an ugly hack to avoid flickering of top line of the current
-	 * view.  We need colors attributes recalculated correctly before applying
-	 * them, otherwise color changes twice on the screen.  Need to generalize this
-	 * by updating all color pairs that we can, or that depend on group, whose
-	 * properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in ui.c and
-	 * will be initialized on redraw. */
-	if(group_id != TOP_LINE_SEL_COLOR)
-	{
-		curr_stats.cs->pair[group_id] =
-				colmgr_get_pair(curr_stats.cs->color[group_id].fg,
-				curr_stats.cs->color[group_id].bg);
-	}
+	curr_stats.cs->pair[group_id] =
+			colmgr_get_pair(curr_stats.cs->color[group_id].fg,
+			curr_stats.cs->color[group_id].bg);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
 	 * Request full update instead of redraw to force recalculation of mixed
