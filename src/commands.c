@@ -193,9 +193,11 @@ static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
-static const char * get_group_str(int group, col_attr_t col);
-static int parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info);
-static int try_parse_color_name_value(const char str[], int fg, int pos);
+static const char * get_group_str(int group, const col_attr_t *col);
+static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
+		col_attr_t *color);
+static int try_parse_color_name_value(const char str[], int fg,
+		col_attr_t *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
@@ -2521,6 +2523,7 @@ highlight_group(const cmd_info_t *cmd_info)
 {
 	int result;
 	int group_id;
+	col_attr_t *color;
 
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
 	if(group_id < 0)
@@ -2529,17 +2532,17 @@ highlight_group(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	color = &curr_stats.cs->color[group_id];
+
 	if(cmd_info->argc == 1)
 	{
-		status_bar_message(get_group_str(group_id, curr_stats.cs->color[group_id]));
+		status_bar_message(get_group_str(group_id, color));
 		return 1;
 	}
 
-	result = parse_and_apply_highlight(group_id, cmd_info);
+	result = parse_and_apply_highlight(cmd_info, color);
 
-	curr_stats.cs->pair[group_id] =
-			colmgr_get_pair(curr_stats.cs->color[group_id].fg,
-			curr_stats.cs->color[group_id].bg);
+	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
 	 * Request full update instead of redraw to force recalculation of mixed
@@ -2564,7 +2567,7 @@ get_all_highlights(void)
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
-				get_group_str(i, curr_view->cs.color[i]),
+				get_group_str(i, &curr_view->cs.color[i]),
 				(i < MAXNUM_COLOR - 1) ? "\n" : "");
 	}
 
@@ -2574,17 +2577,17 @@ get_all_highlights(void)
 /* Composes string representation of highlight group definition.  Returns
  * pointer to statically allocated buffer. */
 static const char *
-get_group_str(int group, col_attr_t col)
+get_group_str(int group, const col_attr_t *col)
 {
 	static char buf[256];
 
 	char fg_buf[16], bg_buf[16];
 
-	color_to_str(col.fg, sizeof(fg_buf), fg_buf);
-	color_to_str(col.bg, sizeof(bg_buf), bg_buf);
+	color_to_str(col->fg, sizeof(fg_buf), fg_buf);
+	color_to_str(col->bg, sizeof(bg_buf), bg_buf);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
-			HI_GROUPS[group], attrs_to_str(col.attr), fg_buf, bg_buf);
+			HI_GROUPS[group], attrs_to_str(col->attr), fg_buf, bg_buf);
 
 	return buf;
 }
@@ -2592,7 +2595,7 @@ get_group_str(int group, col_attr_t col)
 /* Parses arguments of :highlight command.  Returns non-zero in case something
  * was output to the status bar, otherwise zero is returned. */
 static int
-parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
+parse_and_apply_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 {
 	int i;
 
@@ -2617,14 +2620,14 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 0, group_id) != 0)
+			if(try_parse_color_name_value(equal + 1, 0, color) != 0)
 			{
 				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 1, group_id) != 0)
+			if(try_parse_color_name_value(equal + 1, 1, color) != 0)
 			{
 				return 1;
 			}
@@ -2637,11 +2640,11 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 				status_bar_errorf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
-			curr_stats.cs->color[group_id].attr = attrs;
+			color->attr = attrs;
 			if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
 					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
 			{
-				curr_stats.cs->color[group_id].attr |= A_BLINK;
+				color->attr |= A_BLINK;
 			}
 		}
 		else
@@ -2657,10 +2660,9 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 /* Tries to parse color name value into a number.  Returns non-zero if status
  * bar message should be preserved, otherwise zero is returned. */
 static int
-try_parse_color_name_value(const char str[], int fg, int pos)
+try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 {
 	col_scheme_t *const cs = curr_stats.cs;
-	col_attr_t *const color = &cs->color[pos];
 	const int col_num = parse_color_name_value(str, fg, &color->attr);
 
 	if(col_num < -1)
