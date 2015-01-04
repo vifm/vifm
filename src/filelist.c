@@ -97,8 +97,8 @@ typedef int (*predicate_func)(const dir_entry_t *entry);
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
-static int prepare_col_color(FileView *view, int primary, int line_color,
-		int selected, int current);
+static int prepare_col_color(const FileView *view, dir_entry_t *entry,
+		int primary, int line_color, int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
 static void format_ext(int id, const void *data, size_t buf_len, char *buf);
@@ -228,8 +228,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
 	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
-	line_attrs = prepare_col_color(view, primary, cdt->line_hi_group,
-			entry->selected, cdt->is_current);
+	line_attrs = prepare_col_color(view, entry, primary, cdt->line_hi_group,
+			cdt->is_current);
 
 	if(displays_numbers)
 	{
@@ -238,8 +238,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 		const char *format;
 		int line_number;
 
-		const int line_attrs = prepare_col_color(view, primary, cdt->line_hi_group,
-				entry->selected, cdt->is_current);
+		const int line_attrs = prepare_col_color(view, entry, 0, cdt->line_hi_group,
+				cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
 		format = mixed ? "%-*d " : "%*d ";
@@ -269,8 +269,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 /* Calculate color attributes for a view column.  Returns attributes that can be
  * used for drawing on a window. */
 static int
-prepare_col_color(FileView *view, int primary, int line_color, int selected,
-		int current)
+prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
+		int line_color, int current)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
@@ -279,7 +279,7 @@ prepare_col_color(FileView *view, int primary, int line_color, int selected,
 		mix_colors(&col, &view->cs.color[line_color]);
 	}
 
-	if(selected)
+	if(entry->selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 	}
