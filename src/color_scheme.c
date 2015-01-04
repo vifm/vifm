@@ -633,29 +633,25 @@ check_directory_for_color_scheme(int left, const char dir[])
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
 	*curr_stats.cs = cfg.cs;
 
+	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
 	p = (char *)dir;
 	altered = 0;
 	do
 	{
-		char full[PATH_MAX];
 		t = *p;
 		*p = '\0';
 
-		if(tree_get_data(dirs, dir, &u.buf) != 0 || !color_scheme_exists(u.name))
+		if(tree_get_data(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
 		{
-			*p = t;
-			if((p = strchr(p + 1, '/')) == NULL)
-				p = (char *)dir + strlen(dir);
-			continue;
+			char full_cs_path[PATH_MAX];
+			snprintf(full_cs_path, sizeof(full_cs_path), "%s/colors/%s",
+					cfg.config_dir, u.name);
+			(void)source_file(full_cs_path);
+			altered = 1;
 		}
 
-		snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
-		(void)source_file(full);
-		altered = 1;
-
 		*p = t;
-		if((p = strchr(p + 1, '/')) == NULL)
-			p = (char *)dir + strlen(dir);
+		p = until_first(p + 1, '/');
 	}
 	while(t != '\0');
 
