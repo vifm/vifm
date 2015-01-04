@@ -1772,63 +1772,63 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		status_bar_message(cfg.cs.name);
 		return 1;
 	}
-	else if(cmd_info->argc == 0)
+
+	if(cmd_info->argc == 0)
 	{
 		/* Show menu with colorschemes listed. */
 		return show_colorschemes_menu(curr_view) != 0;
 	}
-	else if(color_scheme_exists(cmd_info->argv[0]))
-	{
-		if(cmd_info->argc == 2)
-		{
-			char *directory = expand_tilde(cmd_info->argv[1]);
-			if(!is_path_absolute(directory))
-			{
-				if(curr_stats.load_stage < 3)
-				{
-					status_bar_errorf("The path in :colorscheme command cannot be "
-							"relative in startup scripts (%s)", directory);
-					free(directory);
-					return 1;
-				}
-				else
-				{
-					char path[PATH_MAX];
-					snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
-					(void)replace_string(&directory, path);
-				}
-			}
-			if(!is_dir(directory))
-			{
-				status_bar_errorf("%s isn't a directory", directory);
-				free(directory);
-				return 1;
-			}
 
-			assoc_dir(cmd_info->argv[0], directory);
-			free(directory);
-
-			lwin.local_cs = check_directory_for_color_scheme(1, lwin.curr_dir);
-			rwin.local_cs = check_directory_for_color_scheme(0, rwin.curr_dir);
-			redraw_lists();
-			return 0;
-		}
-		else
-		{
-			const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
-
-			lwin.cs = cfg.cs;
-			rwin.cs = cfg.cs;
-			redraw_lists();
-			update_all_windows();
-
-			return cs_load_result;
-		}
-	}
-	else
+	if(!color_scheme_exists(cmd_info->argv[0]))
 	{
 		status_bar_errorf("Cannot find colorscheme %s" , cmd_info->argv[0]);
 		return 1;
+	}
+
+	if(cmd_info->argc == 2)
+	{
+		char *directory = expand_tilde(cmd_info->argv[1]);
+		if(!is_path_absolute(directory))
+		{
+			if(curr_stats.load_stage < 3)
+			{
+				status_bar_errorf("The path in :colorscheme command cannot be "
+						"relative in startup scripts (%s)", directory);
+				free(directory);
+				return 1;
+			}
+			else
+			{
+				char path[PATH_MAX];
+				snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
+				(void)replace_string(&directory, path);
+			}
+		}
+		if(!is_dir(directory))
+		{
+			status_bar_errorf("%s isn't a directory", directory);
+			free(directory);
+			return 1;
+		}
+
+		assoc_dir(cmd_info->argv[0], directory);
+		free(directory);
+
+		lwin.local_cs = check_directory_for_color_scheme(1, lwin.curr_dir);
+		rwin.local_cs = check_directory_for_color_scheme(0, rwin.curr_dir);
+		redraw_lists();
+		return 0;
+	}
+	else
+	{
+		const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
+
+		lwin.cs = cfg.cs;
+		rwin.cs = cfg.cs;
+		redraw_lists();
+		update_all_windows();
+
+		return cs_load_result;
 	}
 }
 
