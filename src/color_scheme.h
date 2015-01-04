@@ -68,6 +68,9 @@ void load_def_scheme(void);
 /* Resets color scheme to default builtin values and reloads them. */
 void reset_color_scheme(col_scheme_t *cs);
 
+/* Copies data from *from to *to. */
+void assign_color_scheme(col_scheme_t *to, const col_scheme_t *from);
+
 /* The color scheme with the longest matching directory path is the one that
  * is chosen.  Return non-zero if non-default colorscheme should be used for the
  * specified directory, otherwise zero is returned. */

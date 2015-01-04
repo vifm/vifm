@@ -1823,8 +1823,8 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	{
 		const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
 
-		lwin.cs = cfg.cs;
-		rwin.cs = cfg.cs;
+		assign_color_scheme(&lwin.cs, &cfg.cs);
+		assign_color_scheme(&rwin.cs, &cfg.cs);
 		redraw_lists();
 		update_all_windows();
 

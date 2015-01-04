@@ -590,6 +590,12 @@ reset_color_scheme(col_scheme_t *cs)
 	load_color_pairs(cs);
 }
 
+void
+assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
+{
+	*to = *from;
+}
+
 /* Resets color scheme to default builtin values. */
 static void
 reset_color_scheme_colors(col_scheme_t *cs)
@@ -631,7 +637,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	}
 
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
-	*curr_stats.cs = cfg.cs;
+	assign_color_scheme(curr_stats.cs, &cfg.cs);
 
 	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
 	p = (char *)dir;
