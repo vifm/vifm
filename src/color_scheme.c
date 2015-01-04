@@ -616,6 +616,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 {
 	char *p;
 	char t;
+	int altered;
 
 	union
 	{
@@ -633,6 +634,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	*curr_stats.cs = cfg.cs;
 
 	p = (char *)dir;
+	altered = 0;
 	do
 	{
 		char full[PATH_MAX];
@@ -649,6 +651,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 
 		snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
 		(void)source_file(full);
+		altered = 1;
 
 		*p = t;
 		if((p = strchr(p + 1, '/')) == NULL)
@@ -656,9 +659,15 @@ check_directory_for_color_scheme(int left, const char dir[])
 	}
 	while(t != '\0');
 
+	curr_stats.cs = &cfg.cs;
+
+	if(!altered)
+	{
+		return 0;
+	}
+
 	check_color_scheme(curr_stats.cs);
 	load_color_pairs(curr_stats.cs);
-	curr_stats.cs = &cfg.cs;
 
 	return 1;
 }
