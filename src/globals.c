@@ -21,19 +21,21 @@
 #include <regex.h> /* regex_t regcomp() regexec() regfree() */
 
 #include <stdlib.h> /* realloc() free() */
+#include <stdio.h> /* sprintf() */
 #include <string.h> /* strdup() */
 
 #include "utils/str.h"
 
-static char * to_regex(const char global[]);
+static char * globals_to_regex(const char globals[]);
+static char * global_to_regex(const char global[]);
 
 int
-global_matches(const char global[], const char file[])
+global_matches(const char globals[], const char file[])
 {
 	char *regex;
 	regex_t re;
 
-	regex = to_regex(global);
+	regex = globals_to_regex(globals);
 
 	if(regcomp(&re, regex, REG_EXTENDED | REG_ICASE) == 0)
 	{
@@ -49,11 +51,46 @@ global_matches(const char global[], const char file[])
 	return 0;
 }
 
+/* Converts comma-separated list of globals into equivalent regular expression.
+ * Returns pointer to a newly allocated string, which should be freed by the
+ * caller, or NULL if there is not enough memory or no patters are given. */
+static char *
+globals_to_regex(const char globals[])
+{
+	char *final_regex = NULL;
+	size_t final_regex_len = 0UL;
+
+	char *globals_copy = strdup(globals);
+	char *global = globals_copy, *state = NULL;
+	while((global = split_and_get(global, ',', &state)) != NULL)
+	{
+		void *p;
+		char *regex;
+		size_t new_len;
+
+		regex = global_to_regex(global);
+
+		new_len = final_regex_len + 1 + 1 + strlen(regex) + 1;
+		p = realloc(final_regex, new_len + 1);
+		if(p != NULL)
+		{
+			final_regex = p;
+			final_regex_len += sprintf(final_regex + final_regex_len, "%s(%s)",
+					(final_regex_len != 0UL) ? "|" : "", regex);
+		}
+
+		free(regex);
+	}
+	free(globals_copy);
+
+	return final_regex;
+}
+
 /* Converts the global into equivalent regular expression.  Returns pointer to
  * a newly allocated string, which should be freed by the caller, or NULL if
  * there is not enough memory. */
 static char *
-to_regex(const char global[])
+global_to_regex(const char global[])
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");

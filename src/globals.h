@@ -22,9 +22,9 @@
 /* Implements globals by converting them into regular expressions.  They are
  * treated as case insensitive. */
 
-/* Checks whether file name matches the global.  Returns non-zero if so,
- * otherwise zero is returned. */
-int global_matches(const char global[], const char file[]);
+/* Checks whether file name matches comma-separated list of globals.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int global_matches(const char globals[], const char file[]);
 
 #endif /* VIFM__GLOBALS_H__ */
 
