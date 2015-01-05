@@ -21,8 +21,10 @@
 
 #include <curses.h>
 
+#include <regex.h> /* regcomp() regexec() regfree() */
+
 #include <assert.h> /* assert() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strlen() */
@@ -38,6 +40,7 @@
 #include "utils/string_array.h"
 #include "utils/tree.h"
 #include "color_manager.h"
+#include "globals.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {
@@ -357,6 +360,8 @@ ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
+static void free_color_scheme_highlights(col_scheme_t *cs);
+static file_hi_t * clone_color_scheme_highlights(const col_scheme_t *from);
 static void reset_color_scheme_colors(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
@@ -588,13 +593,16 @@ void
 reset_color_scheme(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
+	free_color_scheme_highlights(cs);
 	load_color_pairs(cs);
 }
 
 void
 assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
 {
+	free_color_scheme_highlights(to);
 	*to = *from;
+	to->file_hi = clone_color_scheme_highlights(from);
 }
 
 /* Resets color scheme to default builtin values. */
@@ -616,6 +624,55 @@ reset_color_scheme_colors(col_scheme_t *cs)
 		cs->color[i].bg = -1;
 		cs->color[i].attr = 0;
 	}
+}
+
+/* Frees data structures of the color scheme that are related to filename
+ * specific highlight. */
+static void
+free_color_scheme_highlights(col_scheme_t *cs)
+{
+	int i;
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		file_hi_t *const hi = &cs->file_hi[i];
+		free(hi->pattern);
+		regfree(&hi->re);
+	}
+
+	free(cs->file_hi);
+
+	cs->file_hi = NULL;
+	cs->file_hi_count = 0;
+}
+
+/* Clones filename specific highlight array of the *from color scheme and
+ * returns it. */
+static file_hi_t *
+clone_color_scheme_highlights(const col_scheme_t *from)
+{
+	int i;
+	file_hi_t *file_hi = malloc(sizeof(*from->file_hi)*(from->file_hi_count + 1));
+
+	for(i = 0; i < from->file_hi_count; ++i)
+	{
+		const file_hi_t *const hi = &from->file_hi[i];
+
+		if(hi->global)
+		{
+			(void)global_compile_as_re(hi->pattern, &file_hi[i].re);
+		}
+		else
+		{
+			(void)regcomp(&file_hi[i].re, hi->pattern, REG_EXTENDED | REG_ICASE);
+		}
+
+		file_hi[i].pattern = strdup(hi->pattern);
+		file_hi[i].global = hi->global;
+		file_hi[i].hi = hi->hi;
+	}
+
+	return file_hi;
 }
 
 int
