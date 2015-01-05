@@ -133,6 +133,13 @@ ends_with(const char *str, const char *suffix)
 	return strcmp(suffix, str + str_len - suffix_len) == 0;
 }
 
+int
+surrounded_with(const char str[], char left, char right)
+{
+	const size_t len = strlen(str);
+	return len > 2 && str[0] == left && str[len - 1] == right;
+}
+
 char *
 to_multibyte(const wchar_t *s)
 {

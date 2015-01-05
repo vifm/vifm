@@ -52,6 +52,7 @@ void builtin_functions_tests(void);
 void get_ext_tests(void);
 void commands_tests(void);
 void expand_status_line_macros_tests(void);
+void surrounded_with_tests(void);
 
 void
 all_tests(void)
@@ -108,6 +109,7 @@ all_tests(void)
 	get_ext_tests();
 	commands_tests();
 	expand_status_line_macros_tests();
+	surrounded_with_tests();
 }
 
 int

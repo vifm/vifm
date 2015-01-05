@@ -82,6 +82,11 @@ int starts_withn(const char str[], const char prefix[], size_t prefix_len);
 
 int ends_with(const char *str, const char *suffix);
 
+/* Checks whether the string starts and ends with specified mark characters.
+ * Substring can't be empty.  The string can't consist of single mark character
+ * when they are equal.  Returns non-zero if so, otherwise zero is returned. */
+int surrounded_with(const char str[], char left, char right);
+
 char * to_multibyte(const wchar_t *s);
 
 /* Calculates length of wide string after converting it to multibyte string.
