@@ -129,7 +129,8 @@ static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
-static int prepare_inactive_color(FileView *view, int line_color, int selected);
+static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
+		int line_color);
 static int get_line_color(const FileView *view, int pos);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
@@ -1341,7 +1342,6 @@ put_inactive_mark(FileView *view)
 {
 	size_t col_width;
 	size_t col_count;
-	int is_selected;
 	int line_attrs;
 	int line, column;
 
@@ -1354,9 +1354,8 @@ put_inactive_mark(FileView *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	is_selected = view->dir_entry[view->list_pos].selected;
-	line_attrs = prepare_inactive_color(view,
-			get_line_color(view, view->list_pos), is_selected);
+	line_attrs = prepare_inactive_color(view, &view->dir_entry[view->list_pos],
+			get_line_color(view, view->list_pos));
 
 	line = view->curr_line/col_count;
 	column = view->real_num_width + (view->curr_line%col_count)*col_width;
@@ -1368,13 +1367,13 @@ put_inactive_mark(FileView *view)
 /* Calculate color attributes for cursor line of inactive pane.  Returns
  * attributes that can be used for drawing on a window. */
 static int
-prepare_inactive_color(FileView *view, int line_color, int selected)
+prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
 	mix_colors(&col, &view->cs.color[line_color]);
 
-	if(selected)
+	if(entry->selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 	}
