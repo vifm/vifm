@@ -32,23 +32,33 @@ static char * global_to_regex(const char global[]);
 int
 global_matches(const char globals[], const char file[])
 {
-	char *regex;
+	int matches;
 	regex_t re;
 
-	regex = globals_to_regex(globals);
-
-	if(regcomp(&re, regex, REG_EXTENDED | REG_ICASE) == 0)
+	matches = 0;
+	if(global_compile_as_re(globals, &re) == 0)
 	{
 		if(regexec(&re, file, 0, NULL, 0) == 0)
 		{
-			regfree(&re);
-			free(regex);
-			return 1;
+			matches = 1;
 		}
 	}
+
 	regfree(&re);
+	return matches;
+}
+
+int
+global_compile_as_re(const char global[], regex_t *re)
+{
+	char *regex;
+	int result;
+
+	regex = globals_to_regex(global);
+	result = regcomp(re, regex, REG_EXTENDED | REG_ICASE);
 	free(regex);
-	return 0;
+
+	return result;
 }
 
 /* Converts comma-separated list of globals into equivalent regular expression.
