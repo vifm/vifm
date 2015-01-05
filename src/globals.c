@@ -18,17 +18,17 @@
 
 #include "globals.h"
 
-#include <regex.h>
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
 
 #include <stdlib.h> /* realloc() free() */
-#include <string.h> /* strdup() strchr() */
+#include <string.h> /* strdup() */
 
 #include "utils/str.h"
 
-static char * to_regex(const char *global);
+static char * to_regex(const char global[]);
 
 int
-global_matches(const char *global, const char *file)
+global_matches(const char global[], const char file[])
 {
 	char *regex;
 	regex_t re;
@@ -49,8 +49,11 @@ global_matches(const char *global, const char *file)
 	return 0;
 }
 
+/* Converts the global into equivalent regular expression.  Returns pointer to
+ * a newly allocated string, which should be freed by the caller, or NULL if
+ * there is not enough memory. */
 static char *
-to_regex(const char *global)
+to_regex(const char global[])
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");
