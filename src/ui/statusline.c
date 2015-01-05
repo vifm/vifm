@@ -78,7 +78,7 @@ update_stat_window(FileView *view)
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
 	buf = expand_status_line_macros(view, cfg.status_line);
@@ -113,7 +113,7 @@ update_stat_window_old(FileView *view)
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
 	filename = get_current_file_name(view);

@@ -52,6 +52,7 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../color_manager.h"
 #include "../color_scheme.h"
 #include "../colors.h"
 #include "../filelist.h"
@@ -203,13 +204,13 @@ static void
 set_static_windows_attrs(void)
 {
 	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+	wbkgdset(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
 
 	wattrset(ruler_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(ruler_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+	wbkgdset(ruler_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
 
 	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
+	wbkgdset(input_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
 }
 
 void
@@ -289,7 +290,7 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(lwin.win, border_height, splitter_pos + vborder_size_correction);
 	mvwin(lwin.win, 1, vborder_pos_correction);
 
-	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
+	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(mborder, border_height, splitter_width);
 	mvwin(mborder, 1, splitter_pos);
@@ -345,7 +346,7 @@ horizontal_layout(int screen_x, int screen_y)
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
-	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
+	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(mborder, 1, screen_x);
 	mvwin(mborder, splitter_pos, 0);
@@ -414,12 +415,12 @@ resize_all(void)
 
 	border_height = screen_y - 3 + !cfg.display_statusline;
 
-	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
+	wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(lborder, border_height, 1);
 	mvwin(lborder, 1, 0);
 
-	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
+	wbkgdset(rborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(rborder, border_height, 1);
 	mvwin(rborder, 1, screen_x - 1);
@@ -832,47 +833,47 @@ update_attributes(void)
 	attr = cfg.cs.color[BORDER_COLOR].attr;
 	if(cfg.side_borders_visible)
 	{
-		wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
+		wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
 		werase(lborder);
-		wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
+		wbkgdset(rborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
 		werase(rborder);
 	}
-	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
+	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
 	werase(mborder);
 
-	wbkgdset(ltop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(ltop_line1, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(ltop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(ltop_line1);
 
-	wbkgdset(ltop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(ltop_line2, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(ltop_line2);
 
-	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
-	wbkgdset(rtop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(rtop_line1, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(rtop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(rtop_line1);
 
-	wbkgdset(rtop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(rtop_line2, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(rtop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(rtop_line2);
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) | attr);
+	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
 
 	attr = cfg.cs.color[WIN_COLOR].attr;
-	wbkgdset(menu_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
-	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
-	wbkgdset(change_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
-	wbkgdset(error_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
+	wbkgdset(menu_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
+	wbkgdset(sort_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
+	wbkgdset(change_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
+	wbkgdset(error_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
 }
 
 void
@@ -1075,9 +1076,9 @@ switch_panes_content(void)
 	lwin.window_width = rwin.window_width;
 	rwin.window_width = t;
 
-	t = lwin.color_scheme;
-	lwin.color_scheme = rwin.color_scheme;
-	rwin.color_scheme = t;
+	t = lwin.local_cs;
+	lwin.local_cs = rwin.local_cs;
+	rwin.local_cs = t;
 
 	tmp = lwin.title;
 	lwin.title = rwin.title;
@@ -1225,18 +1226,17 @@ ui_view_title_update(FileView *view)
 
 		col = cfg.cs.color[TOP_LINE_COLOR];
 		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
-		init_pair(DCOLOR_BASE + TOP_LINE_SEL_COLOR, col.fg, col.bg);
 
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+		wbkgdset(view->title, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) |
 				(col.attr & A_REVERSE));
 		wattrset(view->title, col.attr & ~A_REVERSE);
 	}
 	else
 	{
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+		wbkgdset(view->title, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+		wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 		werase(top_line);

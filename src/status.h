@@ -106,7 +106,6 @@ typedef struct
 	/* Whether to skip complete UI redraw after returning from a shellout. */
 	int skip_shellout_redraw;
 
-	int cs_base;
 	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];
 

@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "../../cfg/config.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
 #include "../../ui/ui.h"
@@ -93,7 +94,7 @@ enter_change_mode(FileView *active_view)
 	view = active_view;
 	vle_mode_set(CHANGE_MODE, VMT_SECONDARY);
 
-	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
+	wattroff(view->win, COLOR_PAIR(cfg.cs.pair[CURR_LINE_COLOR]) | A_BOLD);
 	curs_set(FALSE);
 	update_all_windows();
 

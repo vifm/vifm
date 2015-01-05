@@ -22,18 +22,27 @@
 static void
 setup(void)
 {
+	cfg.slow_fs_list = strdup("");
+
 	cfg.filter_inverted_by_default = 1;
 
 	lwin.list_rows = 7;
 	lwin.list_pos = 2;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("with(round)");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("with[square]");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[2].name = strdup("with{curly}");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[3].name = strdup("with<angle>");
+	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[4].name = strdup("withSPECS+*^$?|\\");
+	lwin.dir_entry[4].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[5].name = strdup("with....dots");
+	lwin.dir_entry[5].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[6].name = strdup("withnonodots");
+	lwin.dir_entry[6].origin = &lwin.curr_dir[0];
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.dir_entry[1].selected = 1;
@@ -54,13 +63,21 @@ setup(void)
 	rwin.list_pos = 2;
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("dir1.d");
+	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[1].name = strdup("dir2.d");
+	rwin.dir_entry[1].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[2].name = strdup("dir3.d");
+	rwin.dir_entry[2].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[3].name = strdup("file1.d");
+	rwin.dir_entry[3].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[4].name = strdup("file2.d");
+	rwin.dir_entry[4].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[5].name = strdup("file3.d");
+	rwin.dir_entry[5].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[6].name = strdup("withnonodots");
+	rwin.dir_entry[6].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[7].name = strdup("somedir");
+	rwin.dir_entry[7].origin = &rwin.curr_dir[0];
 
 	rwin.dir_entry[0].selected = 0;
 	rwin.dir_entry[1].selected = 0;
@@ -94,6 +111,9 @@ cleanup_view(FileView *view)
 static void
 teardown(void)
 {
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = NULL;
+
 	cleanup_view(&lwin);
 	cleanup_view(&rwin);
 }

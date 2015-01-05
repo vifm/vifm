@@ -51,18 +51,7 @@ enum
 	ERROR_MSG_COLOR,    /* Error of the command line. */
 	BORDER_COLOR,       /* Vertical border lines. */
 	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
-	CURRENT_COLOR,      /* Pane current line (mixed, internal use only). */
-	MENU_CURRENT_COLOR, /* Menu current line (mixed, internal use only). */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
-};
-
-/* Start indices of different parts of color pairs space. */
-enum
-{
-	DCOLOR_BASE = 1,                          /* Default color scheme. */
-	LCOLOR_BASE = DCOLOR_BASE + MAXNUM_COLOR, /* Left pane's color scheme. */
-	RCOLOR_BASE = LCOLOR_BASE + MAXNUM_COLOR, /* Right pane's color scheme. */
-	FCOLOR_BASE = RCOLOR_BASE + MAXNUM_COLOR  /* Free. */
 };
 
 #endif /* VIFM__COLORS_H__ */

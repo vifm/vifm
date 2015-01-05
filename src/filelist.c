@@ -65,6 +65,7 @@
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
+#include "color_manager.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "fuse.h"
@@ -82,9 +83,10 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	FileView *view;  /* View on which cell is being drawn. */
-	size_t line_pos; /* File position in the file list (the view). */
-	int is_current;  /* Whether this file is selected with the cursor. */
+	FileView *view;    /* View on which cell is being drawn. */
+	size_t line_pos;   /* File position in the file list (the view). */
+	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
+	int is_current;    /* Whether this file is selected with the cursor. */
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
@@ -95,10 +97,8 @@ typedef int (*predicate_func)(const dir_entry_t *entry);
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
-static int prepare_primary_col_color(FileView *view, int line_color,
-		int selected, int current);
-static int prepare_secondary_col_color(FileView *view, int selected,
-		int current);
+static int prepare_col_color(const FileView *view, dir_entry_t *entry,
+		int primary, int line_color, int current);
 static void format_name(int id, const void *data, size_t buf_len, char *buf);
 static void format_size(int id, const void *data, size_t buf_len, char *buf);
 static void format_ext(int id, const void *data, size_t buf_len, char *buf);
@@ -115,7 +115,6 @@ static void init_view(FileView *view);
 static void reset_view(FileView *view);
 static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
-static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static void capture_selection(FileView *view);
 static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
@@ -131,6 +130,7 @@ static size_t calculate_print_width(const FileView *view, int i,
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
 static int prepare_inactive_color(FileView *view, int line_color, int selected);
+static int get_line_color(const FileView *view, int pos);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
@@ -210,6 +210,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 {
 	const int padding = (cfg.filelist_col_padding != 0);
 
+	int primary;
 	int line_attrs;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
@@ -226,16 +227,9 @@ column_line_print(const void *data, int column_id, const char *buf,
 	const size_t prefix_len = padding + view->real_num_width;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
 
-	if(column_id == SK_BY_NAME || column_id == SK_BY_INAME)
-	{
-		line_attrs = prepare_primary_col_color(view, get_line_color(view, i),
-				entry->selected, cdt->is_current);
-	}
-	else
-	{
-		line_attrs = prepare_secondary_col_color(view, entry->selected,
-				cdt->is_current);
-	}
+	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
+	line_attrs = prepare_col_color(view, entry, primary, cdt->line_hi_group,
+			cdt->is_current);
 
 	if(displays_numbers)
 	{
@@ -244,7 +238,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 		const char *format;
 		int line_number;
 
-		const int line_attrs = prepare_secondary_col_color(view, entry->selected,
+		const int line_attrs = prepare_col_color(view, entry, 0, cdt->line_hi_group,
 				cdt->is_current);
 
 		mixed = cdt->is_current && view->num_type == NT_MIX;
@@ -272,74 +266,42 @@ column_line_print(const void *data, int column_id, const char *buf,
 	wprinta(view->win, print_buf, line_attrs);
 }
 
-/* Calculate color attributes for primary view column.  Returns attributes that
- * can be used for drawing on a window. */
+/* Calculate color attributes for a view column.  Returns attributes that can be
+ * used for drawing on a window. */
 static int
-prepare_primary_col_color(FileView *view, int line_color, int selected,
-		int current)
+prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
+		int line_color, int current)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
-	mix_colors(&col, &view->cs.color[line_color]);
+	if(primary)
+	{
+		mix_colors(&col, &view->cs.color[line_color]);
+	}
 
-	if(selected)
+	if(entry->selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		line_color = SELECTED_COLOR;
 	}
 
 	if(current)
 	{
+		if(!primary)
+		{
+			mix_colors(&col, &view->cs.color[line_color]);
+		}
+
 		if(view == curr_view)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
 		}
 		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
 		{
 			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-			line_color = OTHER_LINE_COLOR;
 		}
 	}
 
-	init_pair(view->color_scheme + line_color, col.fg, col.bg);
-
-	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
-}
-
-/* Calculate color attributes for secondary view column.  Returns attributes
- * that can be used for drawing on a window. */
-static int
-prepare_secondary_col_color(FileView *view, int selected, int current)
-{
-	col_attr_t col = view->cs.color[WIN_COLOR];
-	int line_color = WIN_COLOR;
-
-	if(selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		line_color = SELECTED_COLOR;
-	}
-
-	if(current)
-	{
-		if(view == curr_view)
-		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			line_color = CURRENT_COLOR;
-		}
-		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
-		{
-			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
-			line_color = OTHER_LINE_COLOR;
-		}
-	}
-	else
-	{
-		init_pair(view->color_scheme + line_color, col.fg, col.bg);
-	}
-
-	return COLOR_PAIR(view->color_scheme + line_color) | col.attr;
+	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
 /* File name format callback for column_view unit. */
@@ -486,7 +448,7 @@ init_view(FileView *view)
 	view->selected_filelist = NULL;
 	view->history_num = 0;
 	view->history_pos = 0;
-	view->color_scheme = 1;
+	view->local_cs = 0;
 
 	view->hide_dot = 1;
 	view->matches = 0;
@@ -594,52 +556,6 @@ load_initial_directory(FileView *view, const char *dir)
 		chosp(view->curr_dir);
 	}
 	(void)change_directory(view, dir);
-}
-
-static int
-get_line_color(FileView* view, int pos)
-{
-	switch(view->dir_entry[pos].type)
-	{
-		case DIRECTORY:
-			return DIRECTORY_COLOR;
-		case FIFO:
-			return FIFO_COLOR;
-		case LINK:
-			if(is_on_slow_fs(view->curr_dir))
-			{
-				return LINK_COLOR;
-			}
-			else
-			{
-				char full[PATH_MAX];
-				get_full_path_at(view, pos, sizeof(full), full);
-				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
-				{
-					return BROKEN_LINK_COLOR;
-				}
-
-				/* Assume that targets on slow file system are not broken as actual
-				 * check might take long time. */
-				if(is_on_slow_fs(full))
-				{
-					return LINK_COLOR;
-				}
-
-				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
-			}
-#ifndef _WIN32
-		case SOCKET:
-			return SOCKET_COLOR;
-#endif
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
-			return DEVICE_COLOR;
-		case EXECUTABLE:
-			return EXECUTABLE_COLOR;
-		default:
-			return WIN_COLOR;
-	}
 }
 
 #ifndef _WIN32
@@ -991,13 +907,17 @@ draw_dir_list_only(FileView *view)
 
 	top = calculate_top_position(view, top);
 
-	/* Colorize the files */
+	/* Colorize the files. */
 
-	if(view->color_scheme == DCOLOR_BASE)
-		attr = cfg.cs.color[WIN_COLOR].attr;
-	else
+	if(view->local_cs)
+	{
 		attr = view->cs.color[WIN_COLOR].attr;
-	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
+	}
+	else
+	{
+		attr = cfg.cs.color[WIN_COLOR].attr;
+	}
+	wbkgdset(view->win, COLOR_PAIR(view->cs.pair[WIN_COLOR]) | attr);
 	werase(view->win);
 
 	cell = 0;
@@ -1007,6 +927,7 @@ draw_dir_list_only(FileView *view)
 		{
 			.view = view,
 			.line_pos = x,
+			.line_hi_group = get_line_color(view, x),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
@@ -1187,6 +1108,7 @@ clear_current_line_bar(FileView *view, int is_current)
 	{
 		.view = view,
 		.line_pos = old_pos,
+		.line_hi_group = get_line_color(view, old_pos),
 		.is_current = is_current,
 	};
 
@@ -1337,6 +1259,7 @@ move_to_list_pos(FileView *view, int pos)
 	print_width = calculate_print_width(view, view->list_pos, col_width);
 
 	cdt.line_pos = pos;
+	cdt.line_hi_group = get_line_color(view, pos);
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
@@ -1461,9 +1384,55 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
 	}
 
-	init_pair(view->color_scheme + OTHER_LINE_COLOR, col.fg, col.bg);
+	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+}
 
-	return COLOR_PAIR(view->color_scheme + OTHER_LINE_COLOR) | col.attr;
+/* Calculates highlight group for the line specified by its position.  Returns
+ * grouop number. */
+static int
+get_line_color(const FileView *view, int pos)
+{
+	switch(view->dir_entry[pos].type)
+	{
+		case DIRECTORY:
+			return DIRECTORY_COLOR;
+		case FIFO:
+			return FIFO_COLOR;
+		case LINK:
+			if(is_on_slow_fs(view->curr_dir))
+			{
+				return LINK_COLOR;
+			}
+			else
+			{
+				char full[PATH_MAX];
+				get_full_path_at(view, pos, sizeof(full), full);
+				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
+				{
+					return BROKEN_LINK_COLOR;
+				}
+
+				/* Assume that targets on slow file system are not broken as actual
+				 * check might take long time. */
+				if(is_on_slow_fs(full))
+				{
+					return LINK_COLOR;
+				}
+
+				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
+			}
+#ifndef _WIN32
+		case SOCKET:
+			return SOCKET_COLOR;
+#endif
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
+			return DEVICE_COLOR;
+		case EXECUTABLE:
+			return EXECUTABLE_COLOR;
+		default:
+			return WIN_COLOR;
+	}
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
@@ -2800,7 +2769,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	if(!reload)
 		check_view_dir_history(view);
 
-	view->color_scheme = check_directory_for_color_scheme(view == &lwin,
+	view->local_cs = check_directory_for_color_scheme(view == &lwin,
 			view->curr_dir);
 
 	if(view->list_rows < 1)

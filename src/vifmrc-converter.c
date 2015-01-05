@@ -174,7 +174,7 @@ char *HI_GROUPS[] =
 	[BORDER_COLOR]       = "Border",
 	[OTHER_LINE_COLOR]   = "OtherLine",
 };
-ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
+ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
 char *COLOR_NAMES[8] = {
 	[COLOR_BLACK]   = "black",
@@ -208,13 +208,13 @@ static const int default_colors[][3] = {
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 };
-ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
+ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 
 static struct
 {
 	int count;
 	col_scheme_t array[MAX_COLOR_SCHEMES];
-}cs = {
+} cs = {
 	.count = 0,
 };
 
@@ -1328,7 +1328,7 @@ write_color_schemes(const char *colors_dir)
 
 		fprintf(fp, "\" highlight group cterm=style ctermfg=foreground_color ctermbg=background_color\n\n");
 
-		for(y = 0; y < MAXNUM_COLOR - 2; y++)
+		for(y = 0; y < MAXNUM_COLOR; y++)
 		{
 			char fg_buf[16], bg_buf[16];
 			int fg = cs.array[x].color[y].fg;

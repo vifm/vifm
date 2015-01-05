@@ -54,6 +54,7 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../bookmarks.h"
+#include "../color_manager.h"
 #include "../color_scheme.h"
 #include "../colors.h"
 #include "../filelist.h"
@@ -112,7 +113,6 @@ clean_menu_position(menu_info *m)
 	int off = 0;
 	char * buf = (char *)NULL;
 	col_attr_t col;
-	int type = MENU_COLOR;
 
 	x = getmaxx(menu_win) + get_utf8_overhead(m->items[m->pos]);
 
@@ -150,11 +150,9 @@ clean_menu_position(menu_info *m)
 	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
 	{
 		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
-		type = SELECTED_COLOR;
 	}
 
-	init_pair(DCOLOR_BASE + type, col.fg, col.bg);
-	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
+	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
@@ -174,7 +172,7 @@ clean_menu_position(menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
+	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 	free(buf);
 }
@@ -414,8 +412,7 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
 
-	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, col.fg, col.bg);
-	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
+	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 	checked_wmove(menu_win, m->current, 1);
 	if(get_screen_string_length(m->items[pos] + off) > getmaxx(menu_win) - 4)
@@ -435,7 +432,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
+	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 	m->pos = pos;
 	free(buf);
@@ -629,7 +626,6 @@ draw_menu(menu_info *m)
 		char *buf;
 		char *ptr = NULL;
 		col_attr_t col;
-		int type = WIN_COLOR;
 
 		chomp(m->items[x]);
 		if((ptr = strchr(m->items[x], '\n')) || (ptr = strchr(m->items[x], '\r')))
@@ -640,11 +636,9 @@ draw_menu(menu_info *m)
 		if(cfg.hl_search && m->matches != NULL && m->matches[x])
 		{
 			mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
-			type = SELECTED_COLOR;
 		}
 
-		init_pair(DCOLOR_BASE + type, col.fg, col.bg);
-		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
+		wattron(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 		z = m->hor_pos;
 		off = 0;
@@ -678,7 +672,7 @@ draw_menu(menu_info *m)
 
 		free(buf);
 
-		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
+		wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 
 		if(i + 3 > y)
 			break;

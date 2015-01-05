@@ -91,6 +91,8 @@
 #endif
 
 static void quit_on_arg_parsing(void);
+static int pair_in_use(short int pair);
+static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
@@ -387,10 +389,14 @@ main(int argc, char *argv[])
 		return -1;
 
 	{
-		const colmgr_conf_t colmgr_conf = {
+		const colmgr_conf_t colmgr_conf =
+		{
 			.max_color_pairs = COLOR_PAIRS,
+			.max_colors = COLORS,
 			.init_pair = &init_pair,
 			.pair_content = &pair_content,
+			.pair_in_use = &pair_in_use,
+			.move_pair = &move_pair,
 		};
 		colmgr_init(&colmgr_conf);
 	}
@@ -454,6 +460,47 @@ main(int argc, char *argv[])
 	main_loop();
 
 	return 0;
+}
+
+/* Checks whether pair is being used at the moment.  Returns non-zero if so and
+ * zero otherwise. */
+static int
+pair_in_use(short int pair)
+{
+	int i;
+
+	for(i = 0; i < MAXNUM_COLOR; ++i)
+	{
+		if(cfg.cs.pair[i] == pair || lwin.cs.pair[i] == pair ||
+				rwin.cs.pair[i] == pair)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/* Substitutes old pair number with the new one. */
+static void
+move_pair(short int from, short int to)
+{
+	int i;
+	for(i = 0; i < MAXNUM_COLOR; ++i)
+	{
+		if(cfg.cs.pair[i] == from)
+		{
+			cfg.cs.pair[i] = to;
+		}
+		if(lwin.cs.pair[i] == from)
+		{
+			lwin.cs.pair[i] = to;
+		}
+		if(rwin.cs.pair[i] == from)
+		{
+			rwin.cs.pair[i] = to;
+		}
+	}
 }
 
 /* perform_operation() interface adaptor for the undo unit. */

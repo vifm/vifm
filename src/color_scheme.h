@@ -47,6 +47,7 @@ typedef struct
 	char dir[PATH_MAX];             /* Associated root dir of the color scheme. */
 	ColorSchemeState state;         /* Current state. */
 	col_attr_t color[MAXNUM_COLOR]; /* Colors with their attributes. */
+	int pair[MAXNUM_COLOR];         /* Pairs for corresponding color. */
 }
 col_scheme_t;
 
@@ -65,9 +66,15 @@ void load_color_scheme_colors(void);
 void load_def_scheme(void);
 
 /* Resets color scheme to default builtin values and reloads them. */
-void reset_color_scheme(int color_base, col_scheme_t *cs);
+void reset_color_scheme(col_scheme_t *cs);
 
-int check_directory_for_color_scheme(int left, const char *dir);
+/* Copies data from *from to *to. */
+void assign_color_scheme(col_scheme_t *to, const col_scheme_t *from);
+
+/* The color scheme with the longest matching directory path is the one that
+ * is chosen.  Return non-zero if non-default colorscheme should be used for the
+ * specified directory, otherwise zero is returned. */
+int check_directory_for_color_scheme(int left, const char dir[]);
 
 /* Lists names of all color schemes.  Allocates an array of strings, which
  * should be freed by the caller.  Always sets *len.  Returns NULL on error. */

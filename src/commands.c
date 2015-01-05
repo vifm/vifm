@@ -77,6 +77,7 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
+#include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
 #include "commands_completion.h"
@@ -190,10 +191,13 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
+static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
-static const char * get_group_str(int group, col_attr_t col);
-static int parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info);
-static int try_parse_color_name_value(const char str[], int fg, int pos);
+static const char * get_group_str(int group, const col_attr_t *col);
+static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
+		col_attr_t *color);
+static int try_parse_color_name_value(const char str[], int fg,
+		col_attr_t *color);
 static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
@@ -1768,63 +1772,63 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		status_bar_message(cfg.cs.name);
 		return 1;
 	}
-	else if(cmd_info->argc == 0)
+
+	if(cmd_info->argc == 0)
 	{
 		/* Show menu with colorschemes listed. */
 		return show_colorschemes_menu(curr_view) != 0;
 	}
-	else if(color_scheme_exists(cmd_info->argv[0]))
-	{
-		if(cmd_info->argc == 2)
-		{
-			char *directory = expand_tilde(cmd_info->argv[1]);
-			if(!is_path_absolute(directory))
-			{
-				if(curr_stats.load_stage < 3)
-				{
-					status_bar_errorf("The path in :colorscheme command cannot be "
-							"relative in startup scripts (%s)", directory);
-					free(directory);
-					return 1;
-				}
-				else
-				{
-					char path[PATH_MAX];
-					snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
-					(void)replace_string(&directory, path);
-				}
-			}
-			if(!is_dir(directory))
-			{
-				status_bar_errorf("%s isn't a directory", directory);
-				free(directory);
-				return 1;
-			}
 
-			assoc_dir(cmd_info->argv[0], directory);
-			free(directory);
-
-			lwin.color_scheme = check_directory_for_color_scheme(1, lwin.curr_dir);
-			rwin.color_scheme = check_directory_for_color_scheme(0, rwin.curr_dir);
-			redraw_lists();
-			return 0;
-		}
-		else
-		{
-			const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
-
-			lwin.cs = cfg.cs;
-			rwin.cs = cfg.cs;
-			redraw_lists();
-			update_all_windows();
-
-			return cs_load_result;
-		}
-	}
-	else
+	if(!color_scheme_exists(cmd_info->argv[0]))
 	{
 		status_bar_errorf("Cannot find colorscheme %s" , cmd_info->argv[0]);
 		return 1;
+	}
+
+	if(cmd_info->argc == 2)
+	{
+		char *directory = expand_tilde(cmd_info->argv[1]);
+		if(!is_path_absolute(directory))
+		{
+			if(curr_stats.load_stage < 3)
+			{
+				status_bar_errorf("The path in :colorscheme command cannot be "
+						"relative in startup scripts (%s)", directory);
+				free(directory);
+				return 1;
+			}
+			else
+			{
+				char path[PATH_MAX];
+				snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
+				(void)replace_string(&directory, path);
+			}
+		}
+		if(!is_dir(directory))
+		{
+			status_bar_errorf("%s isn't a directory", directory);
+			free(directory);
+			return 1;
+		}
+
+		assoc_dir(cmd_info->argv[0], directory);
+		free(directory);
+
+		lwin.local_cs = check_directory_for_color_scheme(1, lwin.curr_dir);
+		rwin.local_cs = check_directory_for_color_scheme(0, rwin.curr_dir);
+		redraw_lists();
+		return 0;
+	}
+	else
+	{
+		const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
+
+		assign_color_scheme(&lwin.cs, &cfg.cs);
+		assign_color_scheme(&rwin.cs, &cfg.cs);
+		redraw_lists();
+		update_all_windows();
+
+		return cs_load_result;
 	}
 }
 
@@ -2493,9 +2497,6 @@ help_cmd(const cmd_info_t *cmd_info)
 static int
 highlight_cmd(const cmd_info_t *cmd_info)
 {
-	int result;
-	int group_id;
-
 	if(cmd_info->argc == 0)
 	{
 		status_bar_message(get_all_highlights());
@@ -2504,7 +2505,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clear") == 0)
 	{
-		reset_color_scheme(curr_stats.cs_base, curr_stats.cs);
+		reset_color_scheme(curr_stats.cs);
 
 		/* Request full update instead of redraw to force recalculation of mixed
 		 * colors like cursor line, which otherwise are not updated. */
@@ -2512,33 +2513,36 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2,
-			cmd_info->argv[0]);
+	return highlight_group(cmd_info);
+}
+
+/* Handles highlight-group form of :highlight command.  Returns value to be
+ * returned by command handler. */
+static int
+highlight_group(const cmd_info_t *cmd_info)
+{
+	int result;
+	int group_id;
+	col_attr_t *color;
+
+	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
 	if(group_id < 0)
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
 		return 1;
 	}
 
+	color = &curr_stats.cs->color[group_id];
+
 	if(cmd_info->argc == 1)
 	{
-		status_bar_message(get_group_str(group_id, curr_stats.cs->color[group_id]));
+		status_bar_message(get_group_str(group_id, color));
 		return 1;
 	}
 
-	result = parse_and_apply_highlight(group_id, cmd_info);
+	result = parse_and_apply_highlight(cmd_info, color);
 
-	/* XXX: This is an ugly hack to avoid flickering of top line of the current
-	 * view.  We need colors attributes recalculated correctly before applying
-	 * them, otherwise color changes twice on the screen.  Need to generalize this
-	 * by updating all color pairs that we can, or that depend on group, whose
-	 * properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in ui.c and
-	 * will be initialized on redraw. */
-	if(group_id != TOP_LINE_SEL_COLOR)
-	{
-		init_pair(curr_stats.cs_base + group_id, curr_stats.cs->color[group_id].fg,
-				curr_stats.cs->color[group_id].bg);
-	}
+	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
 	 * Request full update instead of redraw to force recalculation of mixed
@@ -2553,18 +2557,18 @@ highlight_cmd(const cmd_info_t *cmd_info)
 static const char *
 get_all_highlights(void)
 {
-	static char msg[256*(MAXNUM_COLOR - 2)];
+	static char msg[256*MAXNUM_COLOR];
 
 	size_t msg_len = 0U;
 	int i;
 
 	msg[0] = '\0';
 
-	for(i = 0; i < MAXNUM_COLOR - 2; i++)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
-				get_group_str(i, curr_view->cs.color[i]),
-				(i < MAXNUM_COLOR - 2 - 1) ? "\n" : "");
+				get_group_str(i, &curr_view->cs.color[i]),
+				(i < MAXNUM_COLOR - 1) ? "\n" : "");
 	}
 
 	return msg;
@@ -2573,17 +2577,17 @@ get_all_highlights(void)
 /* Composes string representation of highlight group definition.  Returns
  * pointer to statically allocated buffer. */
 static const char *
-get_group_str(int group, col_attr_t col)
+get_group_str(int group, const col_attr_t *col)
 {
 	static char buf[256];
 
 	char fg_buf[16], bg_buf[16];
 
-	color_to_str(col.fg, sizeof(fg_buf), fg_buf);
-	color_to_str(col.bg, sizeof(bg_buf), bg_buf);
+	color_to_str(col->fg, sizeof(fg_buf), fg_buf);
+	color_to_str(col->bg, sizeof(bg_buf), bg_buf);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
-			HI_GROUPS[group], attrs_to_str(col.attr), fg_buf, bg_buf);
+			HI_GROUPS[group], attrs_to_str(col->attr), fg_buf, bg_buf);
 
 	return buf;
 }
@@ -2591,7 +2595,7 @@ get_group_str(int group, col_attr_t col)
 /* Parses arguments of :highlight command.  Returns non-zero in case something
  * was output to the status bar, otherwise zero is returned. */
 static int
-parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
+parse_and_apply_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 {
 	int i;
 
@@ -2616,14 +2620,14 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 0, group_id) != 0)
+			if(try_parse_color_name_value(equal + 1, 0, color) != 0)
 			{
 				return 1;
 			}
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
-			if(try_parse_color_name_value(equal + 1, 1, group_id) != 0)
+			if(try_parse_color_name_value(equal + 1, 1, color) != 0)
 			{
 				return 1;
 			}
@@ -2636,11 +2640,11 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 				status_bar_errorf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
-			curr_stats.cs->color[group_id].attr = attrs;
+			color->attr = attrs;
 			if(curr_stats.exec_env_type == EET_LINUX_NATIVE &&
 					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
 			{
-				curr_stats.cs->color[group_id].attr |= A_BLINK;
+				color->attr |= A_BLINK;
 			}
 		}
 		else
@@ -2656,10 +2660,9 @@ parse_and_apply_highlight(int group_id, const cmd_info_t *cmd_info)
 /* Tries to parse color name value into a number.  Returns non-zero if status
  * bar message should be preserved, otherwise zero is returned. */
 static int
-try_parse_color_name_value(const char str[], int fg, int pos)
+try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 {
 	col_scheme_t *const cs = curr_stats.cs;
-	col_attr_t *const color = &cs->color[pos];
 	const int col_num = parse_color_name_value(str, fg, &color->attr);
 
 	if(col_num < -1)

@@ -36,6 +36,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
+#include "color_manager.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {
@@ -58,7 +59,7 @@ char *HI_GROUPS[] = {
 	[BORDER_COLOR]       = "Border",
 	[OTHER_LINE_COLOR]   = "OtherLine",
 };
-ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
+ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
 char *LIGHT_COLOR_NAMES[8] = {
 	[COLOR_BLACK] = "lightblack",
@@ -351,12 +352,12 @@ static const int default_colors[][3] = {
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 };
-ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
+ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
 static void reset_color_scheme_colors(col_scheme_t *cs);
-static void load_color_pairs(int base, const col_scheme_t *cs);
+static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
 static tree_t dirs = NULL_TREE;
@@ -454,7 +455,7 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
-	for(i = 0; i < MAXNUM_COLOR - 2; ++i)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		char fg_buf[16], bg_buf[16];
 
@@ -504,7 +505,6 @@ load_primary_color_scheme(const char name[])
 	}
 
 	prev_cs = cfg.cs;
-	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
@@ -547,9 +547,9 @@ load_color_scheme_colors(void)
 {
 	ensure_dirs_tree_exists();
 
-	load_color_pairs(DCOLOR_BASE, &cfg.cs);
-	load_color_pairs(LCOLOR_BASE, &lwin.cs);
-	load_color_pairs(RCOLOR_BASE, &rwin.cs);
+	load_color_pairs(&cfg.cs);
+	load_color_pairs(&lwin.cs);
+	load_color_pairs(&rwin.cs);
 }
 
 void
@@ -558,15 +558,16 @@ load_def_scheme(void)
 	tree_free(dirs);
 	dirs = NULL_TREE;
 
+	lwin.local_cs = 0;
+	rwin.local_cs = 0;
+
 	reset_to_default_color_scheme(&cfg.cs);
 	reset_to_default_color_scheme(&lwin.cs);
-	lwin.color_scheme = LCOLOR_BASE;
 	reset_to_default_color_scheme(&rwin.cs);
-	rwin.color_scheme = RCOLOR_BASE;
 
-	load_color_pairs(DCOLOR_BASE, &cfg.cs);
-	load_color_pairs(LCOLOR_BASE, &lwin.cs);
-	load_color_pairs(RCOLOR_BASE, &rwin.cs);
+	load_color_pairs(&cfg.cs);
+	load_color_pairs(&lwin.cs);
+	load_color_pairs(&rwin.cs);
 }
 
 /* Completely resets the cs to builtin default color scheme.  Changes: colors,
@@ -583,10 +584,16 @@ reset_to_default_color_scheme(col_scheme_t *cs)
 }
 
 void
-reset_color_scheme(int color_base, col_scheme_t *cs)
+reset_color_scheme(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
-	load_color_pairs(color_base, cs);
+	load_color_pairs(cs);
+}
+
+void
+assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
+{
+	*to = *from;
 }
 
 /* Resets color scheme to default builtin values. */
@@ -610,80 +617,71 @@ reset_color_scheme_colors(col_scheme_t *cs)
 	}
 }
 
-/* The return value is the color scheme base number for the colorpairs.
- *
- * The color scheme with the longest matching directory path is the one that
- * should be returned.
- */
 int
-check_directory_for_color_scheme(int left, const char *dir)
+check_directory_for_color_scheme(int left, const char dir[])
 {
 	char *p;
 	char t;
+	int altered;
 
 	union
 	{
 		char *name;
 		tree_val_t buf;
-	}u;
+	}
+	u;
 
 	if(dirs == NULL_TREE)
 	{
-		return DCOLOR_BASE;
+		return 0;
 	}
 
-	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
-	*curr_stats.cs = cfg.cs;
+	assign_color_scheme(curr_stats.cs, &cfg.cs);
 
+	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
 	p = (char *)dir;
+	altered = 0;
 	do
 	{
-		char full[PATH_MAX];
 		t = *p;
 		*p = '\0';
 
-		if(tree_get_data(dirs, dir, &u.buf) != 0 || !color_scheme_exists(u.name))
+		if(tree_get_data(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
 		{
-			*p = t;
-			if((p = strchr(p + 1, '/')) == NULL)
-				p = (char *)dir + strlen(dir);
-			continue;
+			char full_cs_path[PATH_MAX];
+			snprintf(full_cs_path, sizeof(full_cs_path), "%s/colors/%s",
+					cfg.config_dir, u.name);
+			(void)source_file(full_cs_path);
+			altered = 1;
 		}
 
-		snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
-		(void)source_file(full);
-
 		*p = t;
-		if((p = strchr(p + 1, '/')) == NULL)
-			p = (char *)dir + strlen(dir);
+		p = until_first(p + 1, '/');
 	}
 	while(t != '\0');
 
-	check_color_scheme(curr_stats.cs);
-	load_color_pairs(curr_stats.cs_base, curr_stats.cs);
-	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 
-	return left ? LCOLOR_BASE : RCOLOR_BASE;
+	if(!altered)
+	{
+		return 0;
+	}
+
+	check_color_scheme(curr_stats.cs);
+	load_color_pairs(curr_stats.cs);
+
+	return 1;
 }
 
+/* Loads color scheme settings into color pairs. */
 static void
-load_color_pairs(int base, const col_scheme_t *cs)
+load_color_pairs(col_scheme_t *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)
 	{
-		/* XXX: This is an ugly hack to avoid flickering of top line of the current
-		 * view.  We need colors attributes recalculated correctly before applying
-		 * them, otherwise color changes twice on the screen.  Need to generalize
-		 * this by updating all color pairs that we can, or that depend on group,
-		 * whose properties are changed.  Note that TOP_LINE_SEL_COLOR is mixed in
-		 * ui.c and will be initialized on redraw. */
-		if(i != TOP_LINE_SEL_COLOR)
-		{
-			init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
-		}
+		cs->pair[i] = colmgr_get_pair(cs->color[i].fg, cs->color[i].bg);
 	}
 }
 

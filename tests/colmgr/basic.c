@@ -1,5 +1,7 @@
 #include <curses.h>
 
+#include <limits.h>
+
 #include "seatest.h"
 
 #include "../../src/colors.h"
@@ -7,7 +9,7 @@
 
 #include "test.h"
 
-static int count_available_pairs(void);
+static int count_available_pairs(int seed, int max);
 
 static void
 setup(void)
@@ -18,24 +20,35 @@ setup(void)
 static void
 test_number_of_available_pairs(void)
 {
-	assert_true(count_available_pairs() >= MAX_COLOR_PAIRS - FCOLOR_BASE);
+	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
 }
 
 static void
 test_number_of_available_pairs_after_reset(void)
 {
-	(void)count_available_pairs();
+	(void)count_available_pairs(INUSE_SEED, INT_MAX);
 	colmgr_reset();
-	assert_true(count_available_pairs() >= MAX_COLOR_PAIRS - FCOLOR_BASE);
+	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
+}
+
+static void
+test_compression(void)
+{
+	assert_true(
+			count_available_pairs(UNUSED_SEED, CUSTOM_COLOR_PAIRS)
+			==
+			CUSTOM_COLOR_PAIRS
+	);
+	assert_true(count_available_pairs(INUSE_SEED, INT_MAX) == CUSTOM_COLOR_PAIRS);
 }
 
 static int
-count_available_pairs(void)
+count_available_pairs(int seed, int max)
 {
 	int i = 0;
-	while(colmgr_alloc_pair(i, i) != -1)
+	while(i < max && colmgr_get_pair(seed, i) != 0)
 	{
-		i++;
+		++i;
 	}
 	return i;
 }
@@ -43,7 +56,7 @@ count_available_pairs(void)
 static void
 test_reuse_of_existing_pair(void)
 {
-	assert_int_equal(colmgr_alloc_pair(1, 1), colmgr_alloc_pair(1, 1));
+	assert_int_equal(colmgr_get_pair(1, 1), colmgr_get_pair(1, 1));
 }
 
 void
@@ -55,6 +68,7 @@ basic_tests(void)
 
 	run_test(test_number_of_available_pairs);
 	run_test(test_number_of_available_pairs_after_reset);
+	run_test(test_compression);
 	run_test(test_reuse_of_existing_pair);
 
 	test_fixture_end();
