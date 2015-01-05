@@ -21,6 +21,7 @@
 
 #include <curses.h>
 
+#include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
@@ -776,6 +777,30 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 	{
 		base->attr = mixup->attr;
 	}
+}
+
+const col_attr_t *
+get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
+{
+	int i;
+
+	if(*hi_hint != -1)
+	{
+		assert(*hi_hint >= 0 && "Wrong index.");
+		assert(*hi_hint < cs->file_hi_count && "Wrong index.");
+		return &cs->file_hi[*hi_hint].hi;
+	}
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		const file_hi_t *const file_hi = &cs->file_hi[i];
+		if(regexec(&file_hi->re, fname, 0, NULL, 0) == 0)
+		{
+			*hi_hint = i;
+			return &file_hi->hi;
+		}
+	}
+	return NULL;
 }
 
 int
