@@ -277,7 +277,9 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
-	if(primary)
+	/* File-specific highlight affects only primary field for non-current lines
+	 * and whole line for the current line. */
+	if(primary || current)
 	{
 		mix_colors(&col, &view->cs.color[line_color]);
 		mix_in_hi(view, entry, &col);
@@ -290,12 +292,6 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 
 	if(current)
 	{
-		if(!primary)
-		{
-			mix_colors(&col, &view->cs.color[line_color]);
-			mix_in_hi(view, entry, &col);
-		}
-
 		if(view == curr_view)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
