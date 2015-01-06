@@ -26,7 +26,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
                        strtol() wcstombs() */
-#include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr()
+#include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* vswprintf() */
 #include <wctype.h> /* towlower() iswupper() */
@@ -656,6 +656,23 @@ replace_char(char str[], char from, char to)
 		}
 		++str;
 	}
+}
+
+int
+is_in_str_list(const char list[], char separator, const char needle[])
+{
+	char *list_copy = strdup(list);
+	char *item = list_copy, *state = NULL;
+	while((item = split_and_get(item, separator, &state)) != NULL)
+	{
+		if(strcasecmp(item, needle) == 0)
+		{
+			break;
+		}
+	}
+	free(list_copy);
+
+	return (item != NULL);
 }
 
 char *

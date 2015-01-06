@@ -230,7 +230,7 @@ size_t copy_substr(char dst[], size_t dst_len, const char src[],
 		char terminator);
 
 /* Converts string into integer handling underflow and overflow.  Returns
- * converted number, which is INT_MIN/INT_MAX in case underflow/overflow is
+ * converted number, which is INT_MIN/INT_MAX in case of underflow/overflow
  * happened. */
 int str_to_int(const char str[]);
 
@@ -238,8 +238,12 @@ int str_to_int(const char str[]);
  * character. */
 void replace_char(char str[], char from, char to);
 
-/*
- * Splits string on a separator multiple times returning next part.  *state must
+/* Checks that needle is present in the list.  Empty elements are ignored and
+ * can't be checked for presence.  Presence check is case insensitive.  Returns
+ * non-zero if so, otherwise zero is used. */
+int is_in_str_list(const char list[], char separator, const char needle[]);
+
+/* Splits string on a separator multiple times returning next part.  *state must
  * be NULL for the first call.  Usage example:
  *   char *part = input, *state = NULL;
  *   while((part = split_and_get(part, ':', &state)) != NULL)
@@ -252,8 +256,7 @@ void replace_char(char str[], char from, char to);
  *   while((prefix = split_and_get(prefix, ':', &state)) != NULL)
  *   {
  *     process <prefix>;
- *   }
- */
+ *   } */
 char * split_and_get(char str[], char sep, char **state);
 
 #if defined(_WIN32) && !defined(strtok_r)

@@ -53,6 +53,7 @@ void get_ext_tests(void);
 void commands_tests(void);
 void expand_status_line_macros_tests(void);
 void surrounded_with_tests(void);
+void is_in_str_list_tests(void);
 
 void
 all_tests(void)
@@ -110,6 +111,7 @@ all_tests(void)
 	commands_tests();
 	expand_status_line_macros_tests();
 	surrounded_with_tests();
+	is_in_str_list_tests();
 }
 
 int
