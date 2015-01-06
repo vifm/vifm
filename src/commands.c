@@ -192,9 +192,13 @@ static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_file(const cmd_info_t *cmd_info, int global);
+static void display_file_highlights(const char pattern[], int global);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
+static const char * get_file_hi_str(const char pattern[], int global,
+		const col_attr_t *col);
+static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
 		col_attr_t *color);
 static int try_parse_color_name_value(const char str[], int fg,
@@ -2545,8 +2549,7 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 
 	if(cmd_info->argc == 1)
 	{
-		/* TODO: implement displaying of filename specific highlights. */
-		status_bar_errorf("Highlight group not found: %s", pattern);
+		display_file_highlights(pattern, global);
 		return 1;
 	}
 
@@ -2557,6 +2560,44 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 	curr_stats.need_update = UT_REDRAW;
 
 	return result;
+}
+
+/* Displays information about filename specific highlight on the status bar. */
+static void
+display_file_highlights(const char pattern[], int global)
+{
+	int i;
+
+	const col_scheme_t *cs = curr_view->local_cs ? &curr_view->cs : &cfg.cs;
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		const file_hi_t *const file_hi = &cs->file_hi[i];
+
+		if(file_hi->global != global)
+		{
+			continue;
+		}
+
+		if(strcasecmp(file_hi->pattern, pattern) == 0)
+		{
+			break;
+		}
+
+		if(global && is_in_str_list(file_hi->pattern, ',', pattern))
+		{
+			break;
+		}
+	}
+
+	if(i >= cs->file_hi_count)
+	{
+		status_bar_errorf("Highlight group not found: %s", pattern);
+		return;
+	}
+
+	status_bar_message(get_file_hi_str(cs->file_hi[i].pattern,
+				cs->file_hi[i].global, &cs->file_hi[i].hi));
 }
 
 /* Handles highlight-group form of :highlight command.  Returns value to be
@@ -2602,6 +2643,7 @@ get_all_highlights(void)
 {
 	static char msg[256*MAXNUM_COLOR];
 
+	const col_scheme_t *cs = curr_view->local_cs ? &curr_view->cs : &cfg.cs;
 	size_t msg_len = 0U;
 	int i;
 
@@ -2610,17 +2652,53 @@ get_all_highlights(void)
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s",
-				get_group_str(i, &curr_view->cs.color[i]),
-				(i < MAXNUM_COLOR - 1) ? "\n" : "");
+				get_group_str(i, &cs->color[i]), (i < MAXNUM_COLOR - 1) ? "\n" : "");
+	}
+
+	if(cs->file_hi_count <= 0)
+	{
+		return msg;
+	}
+
+	msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "\n\n");
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		const file_hi_t *const file_hi = &cs->file_hi[i];
+		const char *const line = get_file_hi_str(file_hi->pattern, file_hi->global,
+				&file_hi->hi);
+		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
+				(i < cs->file_hi_count - 1) ? "\n" : "");
 	}
 
 	return msg;
 }
 
 /* Composes string representation of highlight group definition.  Returns
- * pointer to statically allocated buffer. */
+ * pointer to a statically allocated buffer. */
 static const char *
 get_group_str(int group, const col_attr_t *col)
+{
+	return get_hi_str(HI_GROUPS[group], col);
+}
+
+/* Composes string representation of filename specific highlight definition.
+ * Returns pointer to a statically allocated buffer. */
+static const char *
+get_file_hi_str(const char pattern[], int global, const col_attr_t *col)
+{
+	char title[128];
+	const char left = global ? '{' : '/';
+	const char right = global ? '}' : '/';
+
+	snprintf(title, sizeof(title), "%c%s%c", left, pattern, right);
+	return get_hi_str(title, col);
+}
+
+/* Composes string representation of highlight definition.  Returns pointer to a
+ * statically allocated buffer. */
+static const char *
+get_hi_str(const char title[], const col_attr_t *col)
 {
 	static char buf[256];
 
@@ -2629,8 +2707,8 @@ get_group_str(int group, const col_attr_t *col)
 	color_to_str(col->fg, sizeof(fg_buf), fg_buf);
 	color_to_str(col->bg, sizeof(bg_buf), bg_buf);
 
-	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
-			HI_GROUPS[group], attrs_to_str(col->attr), fg_buf, bg_buf);
+	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s", title,
+			attrs_to_str(col->attr), fg_buf, bg_buf);
 
 	return buf;
 }
