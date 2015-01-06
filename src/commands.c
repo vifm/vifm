@@ -191,6 +191,7 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
+static int highlight_file(const cmd_info_t *cmd_info, int global);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
@@ -2494,6 +2495,10 @@ help_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Handles :highlight command.  There are three forms:
+ *  - clear all
+ *  - highlight file
+ *  - highlight group */
 static int
 highlight_cmd(const cmd_info_t *cmd_info)
 {
@@ -2513,7 +2518,45 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
+	if(surrounded_with(cmd_info->argv[0], '/', '/'))
+	{
+		return highlight_file(cmd_info, 0);
+	}
+
+	if(surrounded_with(cmd_info->argv[0], '{', '}'))
+	{
+		return highlight_file(cmd_info, 1);
+	}
+
 	return highlight_group(cmd_info);
+}
+
+/* Handles highlight-file form of :highlight command.  Returns value to be
+ * returned by command handler. */
+static int
+highlight_file(const cmd_info_t *cmd_info, int global)
+{
+	char pattern[128];
+	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
+	int result;
+
+	snprintf(pattern, MIN(sizeof(pattern), strlen(cmd_info->argv[0]) - 2 + 1),
+			"%s", cmd_info->argv[0] + 1);
+
+	if(cmd_info->argc == 1)
+	{
+		/* TODO: implement displaying of filename specific highlights. */
+		status_bar_errorf("Highlight group not found: %s", pattern);
+		return 1;
+	}
+
+	result = parse_and_apply_highlight(cmd_info, &color);
+	result += add_file_hi(pattern, global, &color);
+
+	/* Redraw is enough to update filename specific highlights. */
+	curr_stats.need_update = UT_REDRAW;
+
+	return result;
 }
 
 /* Handles highlight-group form of :highlight command.  Returns value to be

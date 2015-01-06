@@ -117,6 +117,10 @@ void color_to_str(int color, size_t buf_len, char str_buf[]);
 
 void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
+/* Registers pattern-highlight pair for active color scheme.  Returns new value
+ * for curr_stats.save_msg. */
+int add_file_hi(const char pattern[], int global, const col_attr_t *hi);
+
 /* Gets filename specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing was found, otherwise returns
  * pointer to one of color scheme's highlights. */

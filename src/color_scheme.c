@@ -26,12 +26,13 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
 #include "menus/menus.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -39,6 +40,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
+#include "utils/utils.h"
 #include "color_manager.h"
 #include "globals.h"
 #include "status.h"
@@ -834,6 +836,48 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 	{
 		base->attr = mixup->attr;
 	}
+}
+
+int
+add_file_hi(const char pattern[], int global, const col_attr_t *hi)
+{
+	int err;
+	file_hi_t *file_hi;
+	col_scheme_t *const cs = curr_stats.cs;
+	void *const p = realloc(cs->file_hi,
+			sizeof(*cs->file_hi)*(cs->file_hi_count + 1));
+	if(p == NULL)
+	{
+		show_error_msg("Color Scheme File Highlight", "Not enough memory");
+		return 1;
+	}
+
+	cs->file_hi = p;
+	file_hi = &cs->file_hi[cs->file_hi_count];
+
+	if(global)
+	{
+		err = global_compile_as_re(pattern, &file_hi->re);
+	}
+	else
+	{
+		err = regcomp(&file_hi->re, pattern, REG_EXTENDED | REG_ICASE);
+	}
+
+	if(err != 0)
+	{
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &file_hi->re));
+		regfree(&file_hi->re);
+		return 1;
+	}
+
+	file_hi->pattern = strdup(pattern);
+	file_hi->global = global;
+	file_hi->hi = *hi;
+
+	++cs->file_hi_count;
+
+	return 0;
 }
 
 const col_attr_t *
