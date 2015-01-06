@@ -100,6 +100,18 @@ test_description_is_not_allowed(void)
 	assert_true(viewer == NULL);
 }
 
+static void
+test_several_patterns(void)
+{
+	ft_set_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
+
+	ft_init(&prog1_available);
+
+	assert_true(ft_get_viewer("file.version.tbz") != NULL);
+	assert_true(ft_get_viewer("file.version.tbz2") != NULL);
+	assert_true(ft_get_viewer("file.version.tar.bz2") != NULL);
+}
+
 void
 viewers_tests(void)
 {
@@ -109,6 +121,7 @@ viewers_tests(void)
 	run_test(test_multiple_choice_separated);
 	run_test(test_multiple_choice_joined);
 	run_test(test_description_is_not_allowed);
+	run_test(test_several_patterns);
 
 	test_fixture_end();
 }

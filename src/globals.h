@@ -19,7 +19,18 @@
 #ifndef VIFM__GLOBALS_H__
 #define VIFM__GLOBALS_H__
 
-int global_matches(const char *global, const char *file);
+#include <regex.h> /* regex_t */
+
+/* Implements globals by converting them into regular expressions.  They are
+ * treated as case insensitive. */
+
+/* Checks whether file name matches comma-separated list of globals.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int global_matches(const char globals[], const char file[]);
+
+/* Compiles global into regular expression.  Returns zero on success, on error
+ * result of regcomp() is returned, which is non-zero. */
+int global_compile_as_re(const char global[], regex_t *re);
 
 #endif /* VIFM__GLOBALS_H__ */
 

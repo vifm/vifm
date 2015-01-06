@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 20, 2014
+" Last Change: January 06, 2014
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -241,11 +241,13 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 		\ end='\ze<[cC][rR]>\|$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)' keepend
 		\ contained
 		\ contains=vifmStatementCN
+" Non-empty pattern or form {*.ext,*.e} or /regex/.
+syntax match vifmPattern contained /\(\/\S\+\/\|{\S\+}\)\ze\(\s\|$\)/
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
-		\,vifmNumber,vifmComment,vifmHiClear
+		\,vifmNumber,vifmComment,vifmHiClear,vifmPattern
 
 " common highlight for :command arguments
 syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
@@ -351,6 +353,7 @@ highlight link vifmMap Statement
 highlight link vifmCMap Statement
 highlight link vifmHiArgs Type
 highlight link vifmHiGroups Identifier
+highlight link vifmPattern String
 highlight link vifmHiStyles PreProc
 highlight link vifmHiColors Special
 highlight link vifmOption PreProc

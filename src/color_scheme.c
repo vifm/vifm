@@ -21,14 +21,18 @@
 
 #include <curses.h>
 
-#include <stddef.h> /* size_t */
+#include <regex.h> /* regcomp() regexec() regfree() */
+
+#include <assert.h> /* assert() */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
 #include "menus/menus.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -36,7 +40,9 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
+#include "utils/utils.h"
 #include "color_manager.h"
+#include "globals.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {
@@ -356,6 +362,8 @@ ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
+static void free_color_scheme_highlights(col_scheme_t *cs);
+static file_hi_t * clone_color_scheme_highlights(const col_scheme_t *from);
 static void reset_color_scheme_colors(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
@@ -587,13 +595,16 @@ void
 reset_color_scheme(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
+	free_color_scheme_highlights(cs);
 	load_color_pairs(cs);
 }
 
 void
 assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
 {
+	free_color_scheme_highlights(to);
 	*to = *from;
+	to->file_hi = clone_color_scheme_highlights(from);
 }
 
 /* Resets color scheme to default builtin values. */
@@ -615,6 +626,55 @@ reset_color_scheme_colors(col_scheme_t *cs)
 		cs->color[i].bg = -1;
 		cs->color[i].attr = 0;
 	}
+}
+
+/* Frees data structures of the color scheme that are related to filename
+ * specific highlight. */
+static void
+free_color_scheme_highlights(col_scheme_t *cs)
+{
+	int i;
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		file_hi_t *const hi = &cs->file_hi[i];
+		free(hi->pattern);
+		regfree(&hi->re);
+	}
+
+	free(cs->file_hi);
+
+	cs->file_hi = NULL;
+	cs->file_hi_count = 0;
+}
+
+/* Clones filename specific highlight array of the *from color scheme and
+ * returns it. */
+static file_hi_t *
+clone_color_scheme_highlights(const col_scheme_t *from)
+{
+	int i;
+	file_hi_t *file_hi = malloc(sizeof(*from->file_hi)*(from->file_hi_count + 1));
+
+	for(i = 0; i < from->file_hi_count; ++i)
+	{
+		const file_hi_t *const hi = &from->file_hi[i];
+
+		if(hi->global)
+		{
+			(void)global_compile_as_re(hi->pattern, &file_hi[i].re);
+		}
+		else
+		{
+			(void)regcomp(&file_hi[i].re, hi->pattern, REG_EXTENDED | REG_ICASE);
+		}
+
+		file_hi[i].pattern = strdup(hi->pattern);
+		file_hi[i].global = hi->global;
+		file_hi[i].hi = hi->hi;
+	}
+
+	return file_hi;
 }
 
 int
@@ -776,6 +836,72 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 	{
 		base->attr = mixup->attr;
 	}
+}
+
+int
+add_file_hi(const char pattern[], int global, const col_attr_t *hi)
+{
+	int err;
+	file_hi_t *file_hi;
+	col_scheme_t *const cs = curr_stats.cs;
+	void *const p = realloc(cs->file_hi,
+			sizeof(*cs->file_hi)*(cs->file_hi_count + 1));
+	if(p == NULL)
+	{
+		show_error_msg("Color Scheme File Highlight", "Not enough memory");
+		return 1;
+	}
+
+	cs->file_hi = p;
+	file_hi = &cs->file_hi[cs->file_hi_count];
+
+	if(global)
+	{
+		err = global_compile_as_re(pattern, &file_hi->re);
+	}
+	else
+	{
+		err = regcomp(&file_hi->re, pattern, REG_EXTENDED | REG_ICASE);
+	}
+
+	if(err != 0)
+	{
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &file_hi->re));
+		regfree(&file_hi->re);
+		return 1;
+	}
+
+	file_hi->pattern = strdup(pattern);
+	file_hi->global = global;
+	file_hi->hi = *hi;
+
+	++cs->file_hi_count;
+
+	return 0;
+}
+
+const col_attr_t *
+get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
+{
+	int i;
+
+	if(*hi_hint != -1)
+	{
+		assert(*hi_hint >= 0 && "Wrong index.");
+		assert(*hi_hint < cs->file_hi_count && "Wrong index.");
+		return &cs->file_hi[*hi_hint].hi;
+	}
+
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		const file_hi_t *const file_hi = &cs->file_hi[i];
+		if(regexec(&file_hi->re, fname, 0, NULL, 0) == 0)
+		{
+			*hi_hint = i;
+			return &file_hi->hi;
+		}
+	}
+	return NULL;
 }
 
 int

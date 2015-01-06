@@ -129,7 +129,10 @@ static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
-static int prepare_inactive_color(FileView *view, int line_color, int selected);
+static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
+		int line_color);
+static void mix_in_hi(const FileView *view, dir_entry_t *entry,
+		col_attr_t *col);
 static int get_line_color(const FileView *view, int pos);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
@@ -274,9 +277,12 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
-	if(primary)
+	/* File-specific highlight affects only primary field for non-current lines
+	 * and whole line for the current line. */
+	if(primary || current)
 	{
 		mix_colors(&col, &view->cs.color[line_color]);
+		mix_in_hi(view, entry, &col);
 	}
 
 	if(entry->selected)
@@ -286,11 +292,6 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 
 	if(current)
 	{
-		if(!primary)
-		{
-			mix_colors(&col, &view->cs.color[line_color]);
-		}
-
 		if(view == curr_view)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
@@ -548,6 +549,7 @@ load_initial_directory(FileView *view, const char *dir)
 
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = DIRECTORY;
+	view->dir_entry[0].hi_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 
 	view->list_rows = 1;
@@ -1341,7 +1343,6 @@ put_inactive_mark(FileView *view)
 {
 	size_t col_width;
 	size_t col_count;
-	int is_selected;
 	int line_attrs;
 	int line, column;
 
@@ -1354,9 +1355,8 @@ put_inactive_mark(FileView *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	is_selected = view->dir_entry[view->list_pos].selected;
-	line_attrs = prepare_inactive_color(view,
-			get_line_color(view, view->list_pos), is_selected);
+	line_attrs = prepare_inactive_color(view, &view->dir_entry[view->list_pos],
+			get_line_color(view, view->list_pos));
 
 	line = view->curr_line/col_count;
 	column = view->real_num_width + (view->curr_line%col_count)*col_width;
@@ -1368,13 +1368,14 @@ put_inactive_mark(FileView *view)
 /* Calculate color attributes for cursor line of inactive pane.  Returns
  * attributes that can be used for drawing on a window. */
 static int
-prepare_inactive_color(FileView *view, int line_color, int selected)
+prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 {
 	col_attr_t col = view->cs.color[WIN_COLOR];
 
 	mix_colors(&col, &view->cs.color[line_color]);
+	mix_in_hi(view, entry, &col);
 
-	if(selected)
+	if(entry->selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 	}
@@ -1385,6 +1386,18 @@ prepare_inactive_color(FileView *view, int line_color, int selected)
 	}
 
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+}
+
+/* Applies filetype specific highlight for the entry. */
+static void
+mix_in_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
+{
+	const col_scheme_t *const cs = view->local_cs ? &view->cs : &cfg.cs;
+	const col_attr_t *color = get_file_hi(cs, entry->name, &entry->hi_num);
+	if(color != NULL)
+	{
+		mix_colors(col, color);
+	}
 }
 
 /* Calculates highlight group for the line specified by its position.  Returns
@@ -2946,6 +2959,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->ctime = (time_t)0;
 
 	entry->type = UNKNOWN;
+	entry->hi_num = -1;
 
 	/* All files start as unselected, unmatched and unmarked. */
 	entry->selected = 0;

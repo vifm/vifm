@@ -151,6 +151,8 @@ typedef struct
 	int list_num;     /* Used by sorting comparer to perform stable sort. */
 
 	int marked;       /* Whether file should be processed. */
+
+	int hi_num;       /* File highlighting parameters cache (initially -1). */
 }
 dir_entry_t;
 

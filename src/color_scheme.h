@@ -20,6 +20,8 @@
 #ifndef VIFM__COLOR_SCHEME_H__
 #define VIFM__COLOR_SCHEME_H__
 
+#include <regex.h> /* regex_t */
+
 #include <stddef.h> /* size_t */
 
 #include "utils/fs_limits.h"
@@ -41,6 +43,17 @@ typedef enum
 }
 ColorSchemeState;
 
+/* Single file highlight description. */
+typedef struct
+{
+	char *pattern; /* Raw pattern literal. */
+	int global;    /* Whether pattern is global or regular expression. */
+	regex_t re;    /* Pattern in compiled form. */
+	col_attr_t hi; /* File appearance parameters. */
+}
+file_hi_t;
+
+/* Color scheme description. */
 typedef struct
 {
 	char name[NAME_MAX];            /* Name of the color scheme. */
@@ -48,6 +61,9 @@ typedef struct
 	ColorSchemeState state;         /* Current state. */
 	col_attr_t color[MAXNUM_COLOR]; /* Colors with their attributes. */
 	int pair[MAXNUM_COLOR];         /* Pairs for corresponding color. */
+
+	file_hi_t *file_hi; /* List of file highlight preferences. */
+	int file_hi_count;  /* Number of file highlight definitions. */
 }
 col_scheme_t;
 
@@ -100,6 +116,16 @@ void write_color_scheme_file(void);
 void color_to_str(int color, size_t buf_len, char str_buf[]);
 
 void mix_colors(col_attr_t *base, const col_attr_t *mixup);
+
+/* Registers pattern-highlight pair for active color scheme.  Returns new value
+ * for curr_stats.save_msg. */
+int add_file_hi(const char pattern[], int global, const col_attr_t *hi);
+
+/* Gets filename specific highlight.  hi_hint can't be NULL and should be equal
+ * to -1 initially.  Returns NULL if nothing was found, otherwise returns
+ * pointer to one of color scheme's highlights. */
+const col_attr_t * get_file_hi(const col_scheme_t *cs, const char fname[],
+		int *hi_hint);
 
 /* Checks that color is non-empty (e.g. set from outside).  Returns non-zero if
  * so, otherwise zero is returned. */

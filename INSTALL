@@ -13,7 +13,8 @@ On *nix you need:
     For best user-experience with Vim plugins availability of either perl
     interpreter or vim executable is needed to automatically generate tags.
 
-*nix Installation:
+*nix Installation (Cygwin emulates *nix environmnent, so follow these steps
+when building with Cygwin):
 
     ./configure
     make
@@ -101,7 +102,7 @@ Cross-compiling for Windows using MXE (http://mxe.cc/):
      - cd src/
      - make -f Makefile.win CROSS=i686-pc-mingw32-
 
-Windows Installation:
+Windows Installation (using Windows native API, not Cygwin):
 
     cd src
     (uncomment some lines in Makefile.win below 'config:' if you want)
