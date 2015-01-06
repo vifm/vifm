@@ -1,4 +1,4 @@
-.TH vifm 1 "December 30, 2014" "" "Vifm"
+.TH vifm 1 "January 06, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1645,12 +1645,14 @@ will show information about all highlight groups in the current directory.
 .BI ":hi[ghlight] clear"
 will reset all highlighting to builtin defaults.
 .TP
-.BI ":hi[ghlight] group\-name"
-will show information on given highlight group of the primary color scheme.
+.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/ )"
+will show information on given highlight group or file name pattern of color
+scheme used in the active view.
 .TP
-.BI ":hi[ghlight] group\-name cterm=style | ctermfg=color | ctermbg=color"
+.BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/ ) cterm=style | ctermfg=color | ctermbg=color"
 sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
-of highlight groups of the current primary color scheme.
+of highlight group or file name pattern for color scheme used in the active
+view.
 .LP
 All style values as well as color names are case insensitive.
 .LP

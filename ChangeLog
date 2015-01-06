@@ -21,6 +21,9 @@
 	lists (in menu mode) currently registered patterns that match specified
 	file name.
 
+	Added filename specific highlight.  Thanks to Ink (a.k.a. inknoir),
+	filterfalse and Michael Maddern (a.k.a. madders).
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

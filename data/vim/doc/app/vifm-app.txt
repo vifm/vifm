@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2014 Dec 30
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1412,11 +1412,13 @@ The builtin commands are:
 :hi[ghlight] - will show information about all highlight groups in the
     current directory.
 :hi[ghlight] clear - will reset all highlighting to builtin defaults.
-:hi[ghlight] group-name - will show information on given highlight
-    group of the primary color scheme.
+:hi[ghlight] group-name | {pat1,pat2,...} | /regexp/ - will show
+    information on given highlight group or file name pattern of color
+    scheme used in the active view.
 :hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color - sets
     style (cterm), foreground (ctermfg) or/and background (ctermbg)
-    parameters of highlight group of the current primary color scheme.
+    parameters of highlight group or file name pattern for color scheme
+    used in the active view.
 
 All style values as well as color names are case insensitive.
 
