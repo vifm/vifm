@@ -30,8 +30,8 @@
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
-                      fsetpos() fwrite() snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fread() fseek() fsetpos()
+                      fwrite() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -239,7 +239,7 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	in = fopen(src, "rb");
+	in = os_fopen(src, "rb");
 	if(in == NULL)
 	{
 		return 1;
@@ -269,7 +269,7 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	out = fopen(dst, open_mode);
+	out = os_fopen(dst, open_mode);
 	if(out == NULL)
 	{
 		fclose(in);
