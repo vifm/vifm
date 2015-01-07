@@ -212,13 +212,22 @@ sort_dir_list(const void *one, const void *two)
 		case SK_BY_SIZE:
 			{
 				if(first_is_dir)
-					tree_get_data(curr_stats.dirsize_cache, first->name, &first->size);
+				{
+					char full_path[PATH_MAX];
+					get_full_path_of(first, sizeof(full_path), full_path);
+					tree_get_data(curr_stats.dirsize_cache, full_path, &first->size);
+				}
 
 				if(second_is_dir)
-					tree_get_data(curr_stats.dirsize_cache, second->name, &second->size);
+				{
+					char full_path[PATH_MAX];
+					get_full_path_of(second, sizeof(full_path), full_path);
+					tree_get_data(curr_stats.dirsize_cache, full_path, &second->size);
+				}
 
-				retval = (first->size < second->size) ?
-						-1 : (first->size > second->size);
+				retval = (first->size < second->size)
+				       ? -1
+				       : (first->size > second->size);
 			}
 			break;
 
