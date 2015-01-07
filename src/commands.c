@@ -2540,12 +2540,15 @@ highlight_cmd(const cmd_info_t *cmd_info)
 static int
 highlight_file(const cmd_info_t *cmd_info, int global)
 {
-	char pattern[128];
+	char pattern[strlen(cmd_info->args)];
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
 	int result;
 
-	snprintf(pattern, MIN(sizeof(pattern), strlen(cmd_info->argv[0]) - 2 + 1),
-			"%s", cmd_info->argv[0] + 1);
+	(void)extract_part(cmd_info->args + 1, ' ', pattern);
+	if(pattern[0] != '\0')
+	{
+		pattern[strlen(pattern) - 1] = '\0';
+	}
 
 	if(cmd_info->argc == 1)
 	{
