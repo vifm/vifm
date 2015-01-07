@@ -25,11 +25,12 @@
 #include <unistd.h> /* rmdir() unlink() */
 
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() fclose() fopen() */
+#include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* WIFEXITED free() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "menus/menus.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -103,7 +104,7 @@ fuse_try_mount(FileView *view, const char program[])
 		if(starts_with(program, "FUSE_MOUNT2"))
 		{
 			FILE *f;
-			if((f = fopen(file_full_path, "r")) == NULL)
+			if((f = os_fopen(file_full_path, "r")) == NULL)
 			{
 				show_error_msg("SSH mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
@@ -228,7 +229,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	/* check child status */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{
-		FILE *ef = fopen(errors_file, "r");
+		FILE *ef = os_fopen(errors_file, "r");
 		print_errors(ef);
 		unlink(errors_file);
 

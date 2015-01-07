@@ -22,7 +22,9 @@
 static void
 setup(void)
 {
+#ifndef _WIN32
 	cfg.slow_fs_list = strdup("");
+#endif
 
 	cfg.filter_inverted_by_default = 1;
 
@@ -111,8 +113,10 @@ cleanup_view(FileView *view)
 static void
 teardown(void)
 {
+#ifndef _WIN32
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
+#endif
 
 	cleanup_view(&lwin);
 	cleanup_view(&rwin);

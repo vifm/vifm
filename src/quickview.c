@@ -22,11 +22,12 @@
 #include <curses.h> /* mvwaddstr() werase() wattrset() */
 
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() feof() fopen() */
+#include <stdio.h> /* FILE fclose() feof() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/mode.h"
 #include "modes/modes.h"
 #include "modes/view.h"
@@ -153,7 +154,7 @@ quick_view_file(FileView *view)
 				}
 				if(is_null_or_empty(viewer))
 				{
-					fp = fopen(path, "rb");
+					fp = os_fopen(path, "rb");
 				}
 				else
 				{

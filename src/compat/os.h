@@ -21,6 +21,8 @@
 
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 
+#include <stdio.h> /* FILE */
+
 #ifndef _WIN32
 
 #include <sys/stat.h> /* mkdir() */
@@ -32,6 +34,7 @@
 #define os_chdir chdir
 #define os_chmod chmod
 #define os_closedir closedir
+#define os_fopen fopen
 #define os_opendir opendir
 #define os_readdir readdir
 #define os_lstat lstat
@@ -56,6 +59,8 @@ int os_chdir(const char path[]);
 int os_chmod(const char path[], int mode);
 
 int os_closedir(DIR *dirp);
+
+FILE * os_fopen(const char path[], const char mode[]);
 
 DIR * os_opendir(const char name[]);
 

@@ -33,7 +33,7 @@
 #include <stdint.h> /* uint32_t */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
-#include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
+#include <stdio.h> /* FILE SEEK_SET fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
@@ -417,9 +417,13 @@ win_resolve_mount_points(const char path[])
 	HANDLE hfile;
 	char rdb[2048];
 	char *t;
+	int offset;
 	REPARSE_DATA_BUFFER *rdbp;
 
-	attr = GetFileAttributes(path);
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
+
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
 		return path;
@@ -471,12 +475,12 @@ win_resolve_mount_points(const char path[])
 
 	rdbp = (REPARSE_DATA_BUFFER *)rdb;
 	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
-	if(starts_with_lit(t, "\\??\\"))
-	{
-		t += 4;
-	}
-	strcpy(resolved_path, t);
+
+	offset = starts_with_lit(t, "\\??\\") ? 4 : 0;
+	strcpy(resolved_path, t + offset);
+
 	free(t);
+
 	return resolved_path;
 }
 

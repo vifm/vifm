@@ -30,6 +30,7 @@
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
+#include "compat/os.h"
 #include "engine/completion.h"
 #include "menus/menus.h"
 #include "ui/statusbar.h"
@@ -415,7 +416,7 @@ write_color_scheme_file(void)
 		return;
 
 	strncat(colors_dir, "/Default", sizeof(colors_dir) - strlen(colors_dir) - 1);
-	if((fp = fopen(colors_dir, "w")) == NULL)
+	if((fp = os_fopen(colors_dir, "w")) == NULL)
 		return;
 
 	fprintf(fp, "\" You can edit this file by hand.\n");

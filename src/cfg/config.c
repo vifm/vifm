@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <string.h> /* memmove() memset() strdup() */
 
+#include "../compat/os.h"
 #include "../menus/menus.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
@@ -470,13 +471,13 @@ create_config_dir(void)
 			return;
 
 		snprintf(help_file, sizeof(help_file), "%s/" VIFM_HELP, cfg.config_dir);
-		if((f = fopen(help_file, "r")) == NULL)
+		if((f = os_fopen(help_file, "r")) == NULL)
 			create_help_file();
 		else
 			fclose(f);
 
 		snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
-		if((f = fopen(rc_file, "r")) == NULL)
+		if((f = os_fopen(rc_file, "r")) == NULL)
 			create_rc_file();
 		else
 			fclose(f);
@@ -542,7 +543,7 @@ source_file(const char filename[])
 	int result;
 	SourcingState sourcing_state;
 
-	if((fp = fopen(filename, "r")) == NULL)
+	if((fp = os_fopen(filename, "r")) == NULL)
 		return 1;
 
 	sourcing_state = curr_stats.sourcing_state;
@@ -641,7 +642,7 @@ is_old_config(void)
 static int
 is_conf_file(const char file[])
 {
-	FILE *const fp = fopen(file, "r");
+	FILE *const fp = os_fopen(file, "r");
 	char *line = NULL;
 
 	if(fp != NULL)

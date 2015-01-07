@@ -25,6 +25,7 @@
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strlen() */
+#include <stdio.h> /* FILE */
 
 #include "../utils/str.h"
 #include "../utils/utf8.h"
@@ -70,6 +71,17 @@ os_closedir(DIR *dirp)
 	os_dir_t *const os_dir = (os_dir_t *)dirp;
 	const int result = _wclosedir(os_dir->dirp);
 	free(os_dir);
+	return result;
+}
+
+FILE *
+os_fopen(const char path[], const char mode[])
+{
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	wchar_t *const utf16_mode = utf8_to_utf16(mode);
+	FILE *const result = _wfopen(utf16_path, utf16_mode);
+	free(utf16_mode);
+	free(utf16_path);
 	return result;
 }
 

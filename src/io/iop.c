@@ -30,8 +30,8 @@
 
 #include <errno.h> /* EEXIST errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fopen() fread() fseek()
-                      fsetpos() fwrite() snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fread() fseek() fsetpos()
+                      fwrite() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -64,25 +64,8 @@ iop_mkfile(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 
-#ifndef _WIN32
-	FILE *const f = fopen(path, "wb");
+	FILE *const f = os_fopen(path, "wb");
 	return (f == NULL) ? -1 : fclose(f);
-#else
-	HANDLE file;
-
-	wchar_t *const utf16_path = utf8_to_utf16(path);
-	file = CreateFileW(utf16_path, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
-			NULL);
-	free(utf16_path);
-
-	if(file == INVALID_HANDLE_VALUE)
-	{
-		return -1;
-	}
-
-	CloseHandle(file);
-	return 0;
-#endif
 }
 
 int
@@ -256,7 +239,7 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	in = fopen(src, "rb");
+	in = os_fopen(src, "rb");
 	if(in == NULL)
 	{
 		return 1;
@@ -286,7 +269,7 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	out = fopen(dst, open_mode);
+	out = os_fopen(dst, open_mode);
 	if(out == NULL)
 	{
 		fclose(in);

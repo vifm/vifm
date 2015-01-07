@@ -204,8 +204,9 @@ is_symlink(const char path[])
 #else
 	char filename[PATH_MAX];
 	DWORD attr;
+	wchar_t *utf16_filename;
 	HANDLE hfind;
-	WIN32_FIND_DATAA ffd;
+	WIN32_FIND_DATAW ffd;
 
 	attr = win_get_file_attrs(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
@@ -221,7 +222,11 @@ is_symlink(const char path[])
 
 	copy_str(filename, sizeof(filename), path);
 	chosp(filename);
-	hfind = FindFirstFileA(filename, &ffd);
+
+	utf16_filename = utf8_to_utf16(path);
+	hfind = FindFirstFileW(utf16_filename, &ffd);
+	free(utf16_filename);
+
 	if(hfind == INVALID_HANDLE_VALUE)
 	{
 		LOG_WERROR(GetLastError());
@@ -329,6 +334,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 #else
 	char filename[PATH_MAX];
 	DWORD attr;
+	wchar_t *utf16_filename;
 	HANDLE hfile;
 	char rdb[2048];
 	char *t;
@@ -342,9 +348,13 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 
 	copy_str(filename, sizeof(filename), link);
 	chosp(filename);
-	hfile = CreateFileA(filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
+
+	utf16_filename = utf8_to_utf16(filename);
+	hfile = CreateFileW(utf16_filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL, OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+	free(utf16_filename);
+
 	if(hfile == INVALID_HANDLE_VALUE)
 	{
 		LOG_WERROR(GetLastError());
@@ -704,6 +714,19 @@ char *
 realpath(const char path[], char buf[])
 {
 	const char *const resolved_path = win_resolve_mount_points(path);
+
+	if(!is_path_absolute(resolved_path))
+	{
+		/* Try to compose absolute path. */
+		char cwd[PATH_MAX];
+		if(getcwd(cwd, sizeof(cwd)) == cwd)
+		{
+			to_forward_slash(cwd);
+			snprintf(buf, PATH_MAX, "%s/%s", cwd, resolved_path);
+			return buf;
+		}
+	}
+
 	copy_str(buf, PATH_MAX, resolved_path);
 	return buf;
 }
