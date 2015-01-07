@@ -25,7 +25,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* strcpy() strdup() strlen() */
-#include <stdio.h>  /* fclose() fopen() snprintf() */
+#include <stdio.h>  /* fclose() snprintf() */
 #include <stdlib.h> /* malloc() free() */
 
 #include "../cfg/config.h"
@@ -997,7 +997,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		{
 			return 1;
 		}
-		else if((fp = fopen(file_to_view, "rb")) == NULL)
+		else if((fp = os_fopen(file_to_view, "rb")) == NULL)
 		{
 			return 2;
 		}

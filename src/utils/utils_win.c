@@ -33,7 +33,7 @@
 #include <stdint.h> /* uint32_t */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strcat() strchr() strcpy() strlen() */
-#include <stdio.h> /* FILE SEEK_SET fopen() fread() fclose() snprintf() */
+#include <stdio.h> /* FILE SEEK_SET fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
