@@ -714,6 +714,19 @@ char *
 realpath(const char path[], char buf[])
 {
 	const char *const resolved_path = win_resolve_mount_points(path);
+
+	if(!is_path_absolute(resolved_path))
+	{
+		/* Try to compose absolute path. */
+		char cwd[PATH_MAX];
+		if(getcwd(cwd, sizeof(cwd)) == cwd)
+		{
+			to_forward_slash(cwd);
+			snprintf(buf, PATH_MAX, "%s/%s", cwd, resolved_path);
+			return buf;
+		}
+	}
+
 	copy_str(buf, PATH_MAX, resolved_path);
 	return buf;
 }
