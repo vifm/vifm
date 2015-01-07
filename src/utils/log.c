@@ -26,6 +26,7 @@
 #include <time.h>
 
 #include "../cfg/config.h"
+#include "../compat/os.h"
 #include "../status.h"
 #include "fs_limits.h"
 
@@ -65,7 +66,7 @@ reinit_logger(void)
 static void
 init(void)
 {
-	log = fopen(cfg.log_file, "a");
+	log = os_fopen(cfg.log_file, "a");
 	if(log == NULL)
 		return;
 	setvbuf(log, NULL, _IONBF, 0);

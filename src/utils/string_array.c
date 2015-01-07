@@ -21,11 +21,12 @@
 #include <assert.h> /* assert() */
 #include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fopen() fprintf() fread()
+#include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fprintf() fread()
                       ftell() fseek() */
 #include <stdlib.h> /* free() malloc() realloc() */
 #include <string.h> /* strcspn() */
 
+#include "../compat/os.h"
 #include "fs_limits.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
@@ -199,7 +200,7 @@ read_whole_file(const char filepath[], size_t *read)
 
 	*read = 0U;
 
-	if((fp = fopen(filepath, "rb")) != NULL)
+	if((fp = os_fopen(filepath, "rb")) != NULL)
 	{
 		content = read_seekable_stream(fp, read);
 		fclose(fp);
@@ -381,7 +382,7 @@ write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 	FILE *fp;
 	size_t i;
 
-	if((fp = fopen(filepath, "w")) == NULL)
+	if((fp = os_fopen(filepath, "w")) == NULL)
 	{
 		return 1;
 	}

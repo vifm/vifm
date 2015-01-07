@@ -99,7 +99,7 @@ read_info_file(int reread)
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
-	if((fp = fopen(info_file, "r")) == NULL)
+	if((fp = os_fopen(info_file, "r")) == NULL)
 		return;
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
@@ -430,8 +430,8 @@ write_info_file(void)
 static int
 copy_file(const char src[], const char dst[])
 {
-	FILE *const src_fp = fopen(src, "rb");
-	FILE *const dst_fp = fopen(dst, "wb");
+	FILE *const src_fp = os_fopen(src, "rb");
+	FILE *const dst_fp = os_fopen(dst, "wb");
 	int result;
 
 	result = copy_file_internal(src_fp, dst_fp);
@@ -505,7 +505,7 @@ update_info_file(const char filename[])
 
 	non_conflicting_bmarks = strdup(valid_bookmarks);
 
-	if((fp = fopen(filename, "r")) != NULL)
+	if((fp = os_fopen(filename, "r")) != NULL)
 	{
 		size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL;
 		char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
@@ -715,7 +715,7 @@ update_info_file(const char filename[])
 		fclose(fp);
 	}
 
-	if((fp = fopen(filename, "w")) != NULL)
+	if((fp = os_fopen(filename, "w")) != NULL)
 	{
 		fprintf(fp, "# You can edit this file by hand, but it's recommended not to "
 				"do that.\n");

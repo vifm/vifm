@@ -625,7 +625,7 @@ get_ext_command(const char beginning[], size_t line_pos, int type)
 static int
 setup_extcmd_file(const char path[], const char beginning[], int type)
 {
-	FILE *const fp = fopen(path, "wt");
+	FILE *const fp = os_fopen(path, "wt");
 	if(fp == NULL)
 	{
 		return 1;
@@ -683,7 +683,7 @@ history_by_type(int type)
 static char *
 get_file_first_line(const char path[])
 {
-	FILE *const fp = fopen(path, "rb");
+	FILE *const fp = os_fopen(path, "rb");
 	char *result = NULL;
 	if(fp != NULL)
 	{

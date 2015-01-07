@@ -21,12 +21,13 @@
 #include <curses.h> /* FALSE curs_set() */
 
 #include <errno.h> /* errno */
-#include <stdio.h> /* FILE fclose() fopen() fprintf() snprintf() */
+#include <stdio.h> /* FILE fclose() fprintf() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strrchr() strstr() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/os.h"
 #include "menus/menus.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
@@ -204,7 +205,7 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 	int exit_code = EXIT_SUCCESS;
 
 	snprintf(filepath, sizeof(filepath), "%s/" LIST_FILE, cfg.config_dir);
-	fp = fopen(filepath, "w");
+	fp = os_fopen(filepath, "w");
 	if(fp != NULL)
 	{
 		dump_filenames(view, fp, nfiles, files);
@@ -274,7 +275,7 @@ vim_write_empty_file_list(void)
 	FILE *fp;
 
 	snprintf(path, sizeof(path), "%s/" LIST_FILE, cfg.config_dir);
-	fp = fopen(path, "w");
+	fp = os_fopen(path, "w");
 	if(fp != NULL)
 	{
 		fclose(fp);

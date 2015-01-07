@@ -101,7 +101,7 @@ process_file(const char *path, const char *file_mime_type,
 	char exec[1024] = "", mime_type[2048] = "", name[2048] = "";
 	char buf[2048];
 
-	if(!ends_with(path, ".desktop") || (f = fopen(path, "r")) == NULL)
+	if(!ends_with(path, ".desktop") || (f = os_fopen(path, "r")) == NULL)
 	{
 		return;
 	}
