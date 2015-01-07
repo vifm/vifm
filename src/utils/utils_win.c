@@ -420,7 +420,10 @@ win_resolve_mount_points(const char path[])
 	int offset;
 	REPARSE_DATA_BUFFER *rdbp;
 
-	attr = GetFileAttributes(path);
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
+
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
 		return path;
