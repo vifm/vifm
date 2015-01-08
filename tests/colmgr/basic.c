@@ -59,6 +59,14 @@ test_reuse_of_existing_pair(void)
 	assert_int_equal(colmgr_get_pair(1, 1), colmgr_get_pair(1, 1));
 }
 
+static void
+test_negative_fg_and_or_bg(void)
+{
+	assert_true(colmgr_get_pair(-1, 0) >= 0);
+	assert_true(colmgr_get_pair(0, -1) >= 0);
+	assert_true(colmgr_get_pair(-1, -1) >= 0);
+}
+
 void
 basic_tests(void)
 {
@@ -70,6 +78,7 @@ basic_tests(void)
 	run_test(test_number_of_available_pairs_after_reset);
 	run_test(test_compression);
 	run_test(test_reuse_of_existing_pair);
+	run_test(test_negative_fg_and_or_bg);
 
 	test_fixture_end();
 }
