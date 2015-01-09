@@ -309,10 +309,11 @@ vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
-bin_SCRIPTS = vifm-pause
+bin_SCRIPTS = vifm-pause vifm-convert-dircolors
 man_MANS = ../data/vifm.1 \
 					 ../data/vifm-pause.1 \
-					 ../data/vifmrc-converter.1
+					 ../data/vifmrc-converter.1 \
+					 ../data/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt \

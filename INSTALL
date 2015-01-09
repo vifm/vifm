@@ -13,7 +13,7 @@ On *nix you need:
     For best user-experience with Vim plugins availability of either perl
     interpreter or vim executable is needed to automatically generate tags.
 
-*nix Installation (Cygwin emulates *nix environmnent, so follow these steps
+*nix Installation (Cygwin emulates *nix environment, so follow these steps
 when building with Cygwin):
 
     ./configure

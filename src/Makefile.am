@@ -37,11 +37,12 @@ pkgdata_DATA = ../data/vifmrc \
 
 bin_PROGRAMS = vifm vifmrc-converter
 
-bin_SCRIPTS = vifm-pause
+bin_SCRIPTS = vifm-pause vifm-convert-dircolors
 
 man_MANS = ../data/vifm.1 \
 					 ../data/vifm-pause.1 \
-					 ../data/vifmrc-converter.1
+					 ../data/vifmrc-converter.1 \
+					 ../data/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt \

@@ -78,6 +78,16 @@ colmgr_get_pair(int fg, int bg)
 {
 	int p;
 
+	if(fg < 0)
+	{
+		fg = 7;
+	}
+
+	if(bg < 0)
+	{
+		bg = 0;
+	}
+
 	if(fg < 8 && bg < 8)
 	{
 		return fg*8 + bg;
