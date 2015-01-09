@@ -1,0 +1,312 @@
+#!/usr/bin/env perl
+
+# vifm
+# Copyright (C) 2015 xaizek.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+
+use strict;
+use warnings;
+
+use File::Basename('basename');
+use Getopt::Long('GetOptions');
+
+# "{color number} -> {Vifm color name}" mapping.
+my @COLORS = (
+    'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white',
+);
+
+# "{dircolors type} -> {Vifm color group}" mapping.
+my %GROUPS = (
+    'chr'    => 'Device',     'blk'  => 'Device',
+    'normal' => 'Win',        'file' => 'Win',
+    'dir'    => 'Directory',
+    'exec'   => 'Executable',
+    'fifo'   => 'Fifo',
+    'link'   => 'Link',
+    'orphan' => 'BrokenLink',
+    'sock'   => 'Socket',
+);
+
+# "{$LS_COLORS type} -> {Vifm color group}" mapping.
+my %SHORT_GROUPS = (
+    'cd' => 'Device',     'bd' => 'Device',
+    'no' => 'Win',        'fi' => 'Win',
+    'di' => 'Directory',
+    'ex' => 'Executable',
+    'ln' => 'Link',
+    'or' => 'BrokenLink',
+    'pi' => 'Fifo',
+    'so' => 'Socket',
+);
+
+my ($help, $env);
+GetOptions('h|help|?' => \$help, 'e|environment' => \$env) or exit 1;
+
+if ($help) {
+    &abort_with_usage(1);
+}
+
+if (scalar(@ARGV) > 1) {
+    &abort_with_usage_error("Too many arguments.");
+}
+
+# Input source data either from file/stdin or LS_COLORS environment variable.
+my ($extcol, $typecol);
+if ($env) {
+    ($extcol, $typecol) = &import_from_env('LS_COLORS');
+} else {
+    my $dircolors = shift;
+    ($extcol, $typecol) = &import_from_file($dircolors);
+}
+my %extcol = %$extcol;
+my %typecol = %$typecol;
+
+# Join extensions that have same attributes into single record.
+my %colext = &invert_extcol(%extcol);
+
+# Print out Vifm commands to stdout.
+&print_typecol(\%typecol);
+&print_colext(\%colext);
+
+# Aborts execution after displaying a message.
+# * $msg - error message.
+sub abort_with_usage_error
+{
+    my $msg = shift;
+
+    print STDERR "@{[basename($0)]}: $msg\n";
+    &abort_with_usage(0);
+}
+
+# Aborts execution after displaying usage.
+# * $detailed - whether short description should be displayed.
+sub abort_with_usage
+{
+    my $detailed = shift;
+
+    if ($detailed) {
+        print "Description:\n\n".
+              "Converts ls file highlighting configuration (man dircolors) ".
+              "into set\nof Vifm highlight commands.\n\n";
+    }
+
+    print "Usage: @{[basename($0)]} [-h|--help] [-e|--environment] [dircolors_file]
+
+By default standard input is processed.
+
+Options:
+    -h, --help          brief help message
+    -e, --environment   parse \$LS_COLORS for configuration\n";
+    exit 1;
+}
+
+# Imports initial data from file/stdin.
+# * $dircolors - path to the file or undef for stdin.
+# Returns (\%extcol, \%typecol), where
+# * %extcol  - "*.ext"                => "attrlist".
+# * %typecol - "Vifm highlight group" => "attrlist".
+sub import_from_file
+{
+    my $dircolors = shift;
+
+    if (!defined($dircolors)) {
+        $dircolors = '-';
+    }
+
+    my %extcol = ();
+    my %typecol = ();
+
+    open (DIRCOLORS, $dircolors) or die("Cannot open $dircolors $!");
+    while (my $line = <DIRCOLORS>) {
+        chomp $line;
+
+        if ($line =~ /^\.(\S+)\s+(\S+)/) {
+            my $ext = '*.'.lc $1;
+            my $attrs = $2;
+
+            &add_to_extcol(\%extcol, $ext, $attrs);
+        } elsif ($line =~ /^(\S+)\s+(\S+)/) {
+            my $type = lc $1;
+            my $attrs = $2;
+
+            if (exists($GROUPS{$type})) {
+                my $group = $GROUPS{$type};
+                $typecol{$group} = $attrs;
+            }
+        }
+    }
+    close DIRCOLORS;
+
+    return (\%extcol, \%typecol);
+}
+
+# Imports initial data from an environment variable.
+# * $env - name of environment variable to use.
+# Returns (\%extcol, \%typecol), where
+# * %extcol  - "*.ext"                => "attrlist"
+# * %typecol - "Vifm highlight group" => "attrlist"
+sub import_from_env
+{
+    my $env = shift;
+
+    my %extcol = ();
+    my %typecol = ();
+
+    my @specs = split(':', $ENV{$env});
+    foreach my $spec (@specs) {
+        my ($name, $attrs) = split('=', $spec);
+        if (exists($SHORT_GROUPS{$name})) {
+            my $group = $SHORT_GROUPS{$name};
+            $typecol{$group} = $attrs;
+        } elsif ($name =~ /^\*\./) {
+            my $ext = lc $name;
+            &add_to_extcol(\%extcol, $ext, $attrs);
+        }
+    }
+
+    return (\%extcol, \%typecol);
+}
+
+# Adds extension pattern entry to a dictionary ("*.ext" => "attrlist").
+# * $extcol - the dictionary.
+# * $ext - the pattern.
+# * $attrs - list of attributes.
+sub add_to_extcol
+{
+    my $extcol = shift;
+    my $ext = shift;
+    my $attrs = shift;
+
+    if (exists($extcol->{$ext}) && $extcol->{$ext} ne $attrs) {
+        warn 'Different attributes for extention in different cases: '.
+                $ext;
+    }
+
+    $extcol->{$ext} = $attrs;
+}
+
+# Join extensions that have same attributes into single record.
+# * $extcol - "*.ext" => "attrlist".
+# Returns %colext, where
+# * %colext - "attrlist" => "*.ext".
+sub invert_extcol
+{
+    my $extcol = shift;
+
+    my %colext = ();
+
+    foreach my $ext (sort keys %extcol) {
+        my $color = $extcol{$ext};
+        if (exists($colext{$color})) {
+            $colext{$color} .= ',';
+        }
+        $colext{$color} .= $ext;
+    }
+
+    return %colext;
+}
+
+# Formats and prints to stdout generic file types highlighting commands.
+# * \%typecol - "Vifm highlight group" => "attrlist".
+sub print_typecol
+{
+    my $typecol = shift;
+    my %typecol = %$typecol;
+    return unless %typecol;
+
+    print "\" generic file types\n";
+
+    foreach my $type (sort keys %typecol) {
+        my $color = $typecol{$type};
+        my $hi = &color_to_hi($color);
+        print 'highlight ', $type, $hi, "\n";
+    }
+}
+
+# Formats and prints to stdout file name specific highlighting commands.
+# * \%colext - "attrlist" => "*.ext".
+sub print_colext
+{
+    my $colext = shift;
+    my %colext = %$colext;
+    return unless %colext;
+
+    print "\" file name specific highlight\n";
+
+    foreach my $color (sort keys %colext) {
+        my $pattern = "{$colext{$color}}";
+        my $hi = &color_to_hi($color);
+        print 'highlight ', $pattern, $hi, "\n";
+    }
+}
+
+# Converts list of attributes (escape codes) into arguments for the :highlight
+# command of Vifm.
+# * $color - semicolon-separated list of attributes.
+# Returns $hi_str, where
+# * $hi_str - arguments in form of string that starts with white space.
+sub color_to_hi
+{
+    my $color = shift;
+
+    my @attrs = ();
+    my $fg = undef;
+    my $bg = undef;
+
+    my @color_components = split(';', $color);
+    foreach my $component (@color_components) {
+        if ($component == 0) {
+            @attrs = ();
+            $fg = undef;
+            $bg = undef;
+        } elsif ($component == 1) {
+            push @attrs, 'bold';
+        } elsif ($component == 4) {
+            push @attrs, 'underline';
+        } elsif ($component == 3 || $component == 7) {
+            push @attrs, 'reverse';
+        } elsif ($component >= 30 || $component <= 37) {
+            $fg = $COLORS[$component - 30];
+        } elsif ($component == 39) {
+            $fg = undef;
+        } elsif ($component >= 40 || $component <= 47) {
+            $bg = $COLORS[$component - 40];
+        } elsif ($component == 49) {
+            $bg = undef;
+        }
+    }
+
+    my $hi_str = '';
+    if (scalar(@attrs) != 0) {
+        $hi_str .= ' cterm='.join(',', @attrs);
+    } else {
+        $hi_str .= ' cterm=none';
+    }
+
+    if (defined $fg) {
+        $hi_str .= ' ctermfg='.$fg;
+    } else {
+        $hi_str .= ' ctermfg=default';
+    }
+
+    if (defined $bg) {
+        $hi_str .= ' ctermbg='.$bg;
+    } else {
+        $hi_str .= ' ctermbg=default';
+    }
+
+    return $hi_str;
+}
