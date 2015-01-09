@@ -1,0 +1,56 @@
+.TH vifm\-convert\-dircolors 1 "January 09, 2015" "" vifm\-convert\-dircolors
+.\" ---------------------------------------------------------------------------
+.SH "NAME"
+.\" ---------------------------------------------------------------------------
+vifm\-convert\-dircolors \- converts ls colorscheme to vifm colorscheme
+.\" ---------------------------------------------------------------------------
+.SH "SYNOPSIS"
+.\" ---------------------------------------------------------------------------
+\fBvifm\-convert\-dircolors\fR [\fI\-h\fR|\fI\-\-help\fR]
+[\fI\-e\fR|\fI\-\-environment\fR] [\fIdircolors_file\fR]
+.\" ---------------------------------------------------------------------------
+.SH "DESCRIPTION"
+.\" ---------------------------------------------------------------------------
+Converts ls file highlighting configuration (dircolors) into set of vifm
+highlight commands.  Outputs results to standard output.
+.TP
+.BI "\-h, \-\-help"
+Displays brief help message.
+.TP
+.BI "\-e, \-\-environment"
+Instructs the script to use \fB$LS_COLORS\fR environment variable instead of
+data from file or standard input stream.
+.TP
+.BI dircolors_file
+Converting of colorscheme file only.
+.LP
+When both \fB\-\-environment\fR option and \fBdircolors_file\fR are absent,
+standard input stream is read.
+.\" ---------------------------------------------------------------------------
+.SH "EXAMPLES"
+.\" ---------------------------------------------------------------------------
+Parse \fB$LS_COLORS\fR and append results of conversion to
+\fB~/.vifm/colors/Default\fR:
+.LP
+.EX\fB
+    vifm\-convert\-dircolors \-e >> ~/.vifm/colors/Default
+.EE\fR
+.LP
+Parse \fB/etc/DIR_COLORS\fR and store results of conversion to
+\fB~/.vifm/colors/ls\-based\fR:
+.LP
+.EX\fB
+    vifm\-convert\-dircolors /etc/DIR_COLORS > ~/.vifm/colors/ls\-based
+.EE\fR
+.\" ---------------------------------------------------------------------------
+.SH "SEE ALSO"
+.\" ---------------------------------------------------------------------------
+\fBvifm\fR(1)
+.br
+\fBls\fR(1)
+.br
+\fBdircolors\fR(1)
+.\" ---------------------------------------------------------------------------
+.SH "AUTHOR"
+.\" ---------------------------------------------------------------------------
+This manual page was written by xaizek <xaizek@openmailbox.org>.
