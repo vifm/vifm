@@ -147,6 +147,7 @@ static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int update_dir_mtime(FileView *view);
 static int is_dir_big(const char path[]);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
@@ -2056,27 +2057,6 @@ check_dir_changed(FileView *view)
 }
 #endif
 
-/* Returns zero on success, otherwise non-zero is returned. */
-static int
-update_dir_mtime(FileView *view)
-{
-#ifndef _WIN32
-	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
-#else
-	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
-	{
-		return -1;
-	}
-
-	while(check_dir_changed(view) > 0)
-	{
-		/* Do nothing. */
-	}
-
-	return 0;
-#endif
-}
-
 void
 navigate_to(FileView *view, const char path[])
 {
@@ -2801,6 +2781,28 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	return 0;
+}
+
+/* Updates dir_mtime field of the view.  Returns zero on success, otherwise
+ * non-zero is returned. */
+static int
+update_dir_mtime(FileView *view)
+{
+#ifndef _WIN32
+	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
+#else
+	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
+	{
+		return -1;
+	}
+
+	while(check_dir_changed(view) > 0)
+	{
+		/* Do nothing. */
+	}
+
+	return 0;
+#endif
 }
 
 /* Checks for subjectively relative size of a directory specified by the path
