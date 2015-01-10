@@ -285,7 +285,7 @@ main_loop(void)
 	}
 }
 
-/* Updates TUI or it's elements if something is scheduled. */
+/* Updates TUI or its elements if something is scheduled. */
 static void
 process_scheduled_updates(void)
 {
