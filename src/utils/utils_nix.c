@@ -52,6 +52,7 @@
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
 #include "str.h"
+#include "ts.h"
 #include "utils.h"
 
 /* Types of mount point information for get_mount_point_traverser_state. */
@@ -515,6 +516,12 @@ void
 display_help(const char cmd[])
 {
 	(void)shellout(cmd, -1, 1);
+}
+
+int
+update_dir_mtime(FileView *view)
+{
+	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

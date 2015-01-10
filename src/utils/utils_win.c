@@ -62,6 +62,7 @@ static int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
+static int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
 
 void
 pause_shell(void)
@@ -485,31 +486,6 @@ win_resolve_mount_points(const char path[])
 }
 
 int
-win_get_dir_mtime(const char dir_path[], FILETIME *ft)
-{
-	char selfref_path[PATH_MAX];
-	wchar_t *utf16_path;
-	HANDLE hfile;
-	int r;
-
-	snprintf(selfref_path, sizeof(selfref_path), "%s/.", dir_path);
-
-	utf16_path = utf8_to_utf16(selfref_path);
-	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	free(utf16_path);
-
-	if(hfile == INVALID_HANDLE_VALUE)
-	{
-		return 1;
-	}
-
-	r = !GetFileTime(hfile, NULL, NULL, ft);
-	CloseHandle(hfile);
-	return r;
-}
-
-int
 win_check_dir_changed(FileView *view)
 {
 	FILETIME ft;
@@ -552,6 +528,33 @@ win_check_dir_changed(FileView *view)
 	view->dir_mtime = ft;
 
 	return r != 0;
+}
+
+/* Gets last directory modification time.  Returns non-zero on error, otherwise
+ * zero is returned. */
+static int
+win_get_dir_mtime(const char dir_path[], FILETIME *ft)
+{
+	char selfref_path[PATH_MAX];
+	wchar_t *utf16_path;
+	HANDLE hfile;
+	int r;
+
+	snprintf(selfref_path, sizeof(selfref_path), "%s/.", dir_path);
+
+	utf16_path = utf8_to_utf16(selfref_path);
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	free(utf16_path);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	r = !GetFileTime(hfile, NULL, NULL, ft);
+	CloseHandle(hfile);
+	return r;
 }
 
 int
@@ -649,6 +652,23 @@ display_help(const char cmd[])
 	}
 	update_screen(UT_FULL);
 	update_screen(UT_REDRAW);
+}
+
+int
+update_dir_mtime(FileView *view)
+{
+	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
+	{
+		return -1;
+	}
+
+	/* Skip all directory change events accumulated so far. */
+	while(win_check_dir_changed(view) > 0)
+	{
+		/* Do nothing. */
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

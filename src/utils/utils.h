@@ -28,6 +28,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
+#include "../ui/ui.h"
+
 /* Type of operating environment in which the application is running. */
 typedef enum
 {
@@ -172,6 +174,10 @@ int format_help_cmd(char cmd[], size_t cmd_size);
 /* Displays documentation in plain-text format without detaching from the
  * terminal. */
 void display_help(const char cmd[]);
+
+/* Updates dir_mtime field of the view.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int update_dir_mtime(FileView *view);
 
 #ifdef _WIN32
 #include "utils_win.h"
