@@ -157,6 +157,7 @@ static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
+static int scroll_to_bottom(view_info_t *vi);
 
 view_info_t view_info[VI_COUNT];
 view_info_t* vi = &view_info[VI_QV];
@@ -887,6 +888,8 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(VIEW_SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
+/* Either scrolls to specific line number (when specified) or to the bottom of
+ * the view. */
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -896,15 +899,10 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
-		return;
-
-	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
-	for(vi->line = 0; vi->line < vi->nlines - 1; vi->line++)
-		if(vi->linev < vi->widths[vi->line + 1][0])
-			break;
-
-	draw();
+	if(scroll_to_bottom(vi))
+	{
+		draw();
+	}
 }
 
 static void
@@ -1439,6 +1437,28 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 		default:
 			return 0;
 	}
+}
+
+/* Scrolls view to the bottom if there is any room for that.  Returns non-zero
+ * if position was changed, otherwise zero is returned. */
+static int
+scroll_to_bottom(view_info_t *vi)
+{
+	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
+	{
+		return 0;
+	}
+
+	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
+	for(vi->line = 0; vi->line < vi->nlines - 1; ++vi->line)
+	{
+		if(vi->linev < vi->widths[vi->line + 1][0])
+		{
+			break;
+		}
+	}
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
