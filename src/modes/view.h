@@ -56,6 +56,9 @@ void view_switch_views(void);
  * Returns non-zero on success, otherwise zero is returned. */
 int draw_abandoned_view_mode(void);
 
+/* Checks whether contents of either view should be updated. */
+void view_check_for_updates(void);
+
 #endif /* VIFM__MODES__VIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

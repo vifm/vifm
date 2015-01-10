@@ -41,6 +41,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/ts.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../color_manager.h"
@@ -78,7 +79,11 @@ typedef struct
 	int wrap;
 	int abandoned; /* Shows whether view mode was abandoned. */
 	char *filename;
-}view_info_t;
+
+	int auto_forward;       /* Whether auto forwarding (tail -F) is enabled. */
+	timestamp_t file_mtime; /* Time stamp for auto forwarding mode. */
+}
+view_info_t;
 
 /* View information structure indexes and count. */
 enum
@@ -127,6 +132,7 @@ static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
@@ -157,6 +163,7 @@ static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
+static int forward_if_changed(view_info_t *vi);
 static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi);
 
@@ -233,6 +240,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{ALT_V}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 #endif
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L"F", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_F}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"Q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
@@ -889,6 +897,17 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(VIEW_SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
+/* Toggles automatic forwarding of file. */
+static void
+cmd_F(key_info_t key_info, keys_info_t *keys_info)
+{
+	vi->auto_forward = !vi->auto_forward;
+	if(vi->auto_forward && forward_if_changed(vi))
+	{
+		draw();
+	}
+}
+
 /* Either scrolls to specific line number (when specified) or to the bottom of
  * the view. */
 static void
@@ -1023,6 +1042,8 @@ replace_vi(view_info_t *const orig, view_info_t *const new)
 	new->line = orig->line;
 	new->linev = orig->linev;
 	new->view = orig->view;
+	new->auto_forward = orig->auto_forward;
+	ts_assign(&new->file_mtime, &orig->file_mtime);
 
 	free_view_info(orig);
 	*orig = *new;
@@ -1430,6 +1451,48 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 		default:
 			return 0;
 	}
+}
+
+void
+view_check_for_updates(void)
+{
+	int need_redraw = 0;
+
+	need_redraw += forward_if_changed(&view_info[VI_QV]);
+	need_redraw += forward_if_changed(&view_info[VI_LWIN]);
+	need_redraw += forward_if_changed(&view_info[VI_RWIN]);
+
+	if(need_redraw)
+	{
+		schedule_redraw();
+	}
+}
+
+/* Forwards the view if underlying file changed.  Returns non-zero if reload
+ * occurred, otherwise zero is returned. */
+static int
+forward_if_changed(view_info_t *vi)
+{
+	timestamp_t mtime;
+
+	if(!vi->auto_forward)
+	{
+		return 0;
+	}
+
+	if(ts_get_file_mtime(vi->filename, &mtime) != 0)
+	{
+		return 0;
+	}
+
+	if(ts_equal(&mtime, &vi->file_mtime))
+	{
+		return 0;
+	}
+
+	ts_assign(&vi->file_mtime, &mtime);
+	reload_view(vi);
+	return scroll_to_bottom(vi);
 }
 
 /* Scrolls view to the bottom if there is any room for that.  Returns non-zero
