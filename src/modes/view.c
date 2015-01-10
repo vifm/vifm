@@ -457,7 +457,7 @@ view_explore_mode_quit(FileView *view)
 	ui_view_title_update(view);
 }
 
-/* Frees and initializes anew view_into_t structure instance. */
+/* Frees and initializes anew view_info_t structure instance. */
 static void
 reset_view_info(view_info_t *vi)
 {
@@ -465,7 +465,7 @@ reset_view_info(view_info_t *vi)
 	init_view_info(vi);
 }
 
-/* Initializes view_into_t structure instance with safe default values. */
+/* Initializes view_info_t structure instance with safe default values. */
 static void
 init_view_info(view_info_t *vi)
 {
@@ -477,7 +477,7 @@ init_view_info(view_info_t *vi)
 	vi->search_repeat = NO_COUNT_GIVEN;
 }
 
-/* Frees all resources allocated by view_into_t structure instance. */
+/* Frees all resources allocated by view_info_t structure instance. */
 static void
 free_view_info(view_info_t *vi)
 {
