@@ -381,7 +381,8 @@ view_pre(void)
 {
 	if(curr_stats.save_msg == 0)
 	{
-		status_bar_message("-- VIEW -- ");
+		const char *const suffix = vi->auto_forward ? "(auto forwarding)" : "";
+		status_bar_messagef("-- VIEW -- %s", suffix);
 		curr_stats.save_msg = 2;
 	}
 }
