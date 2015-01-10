@@ -73,6 +73,11 @@ const char * win_resolve_mount_points(const char path[]);
  * zero is returned. */
 int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
 
+/* Checks whether contents of working directory of the view was externally
+ * modified.  Returns negative value on error, zero for unchanged directory and
+ * positive number if directory was modified. */
+int win_check_dir_changed(FileView *view);
+
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

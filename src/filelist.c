@@ -2010,53 +2010,6 @@ leave_invalid_dir(FileView *view)
 	ensure_path_well_formed(path);
 }
 
-#ifdef _WIN32
-static int
-check_dir_changed(FileView *view)
-{
-	FILETIME ft;
-	int r;
-
-	if(stroscmp(view->watched_dir, view->curr_dir) != 0)
-	{
-		wchar_t *utf16_cwd;
-
-		FindCloseChangeNotification(view->dir_watcher);
-		strcpy(view->watched_dir, view->curr_dir);
-
-		utf16_cwd = utf8_to_utf16(view->curr_dir);
-
-		view->dir_watcher = FindFirstChangeNotificationW(utf16_cwd, 1,
-				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
-				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
-				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
-
-		free(utf16_cwd);
-
-		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
-		{
-			log_msg("ha%s", "d");
-		}
-	}
-
-	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
-	{
-		FindNextChangeNotification(view->dir_watcher);
-		return 1;
-	}
-
-	if(win_get_dir_mtime(view->curr_dir, &ft) != 0)
-	{
-		return -1;
-	}
-
-	r = CompareFileTime(&view->dir_mtime, &ft);
-	view->dir_mtime = ft;
-
-	return r != 0;
-}
-#endif
-
 void
 navigate_to(FileView *view, const char path[])
 {
@@ -2796,7 +2749,8 @@ update_dir_mtime(FileView *view)
 		return -1;
 	}
 
-	while(check_dir_changed(view) > 0)
+	/* Skip all directory change events accumulated so far. */
+	while(win_check_dir_changed(view) > 0)
 	{
 		/* Do nothing. */
 	}
@@ -3469,7 +3423,7 @@ check_if_filelists_have_changed(FileView *view)
 	int r;
 	if(is_unc_root(view->curr_dir))
 		return;
-	r = check_dir_changed(view);
+	r = win_check_dir_changed(view);
 	if(r < 0)
 #endif
 	{
