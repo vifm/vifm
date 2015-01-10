@@ -24,9 +24,9 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
-#include <string.h> /* strcpy() strdup() strlen() */
+#include <string.h> /* memset() strdup() */
 #include <stdio.h>  /* fclose() snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* free() malloc() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
@@ -469,21 +469,12 @@ reset_view_info(view_info_t *vi)
 static void
 init_view_info(view_info_t *vi)
 {
-	vi->lines = NULL;
-	vi->widths = NULL;
-	vi->nlines = 0;
-	vi->nlinesv = 0;
-	vi->line = 0;
-	vi->linev = 0;
+	memset(vi, '\0', sizeof(*vi));
 	vi->win_size = -1;
 	vi->half_win = -1;
 	vi->width = -1;
-	vi->view = NULL;
 	vi->last_search_backward = -1;
 	vi->search_repeat = NO_COUNT_GIVEN;
-	vi->wrap = 0;
-	vi->filename = NULL;
-	vi->abandoned = 0;
 }
 
 /* Frees all resources allocated by view_into_t structure instance. */
