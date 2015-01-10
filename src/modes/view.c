@@ -408,8 +408,6 @@ view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
 
-	colmgr_reset();
-
 	try_redraw_explore_view(&lwin, VI_LWIN);
 	try_redraw_explore_view(&rwin, VI_RWIN);
 

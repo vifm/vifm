@@ -167,7 +167,6 @@ quick_view_file(FileView *view)
 					break;
 				}
 
-				colmgr_reset();
 				wattrset(other_view->win, 0);
 				view_file(fp, cfg.wrap_quick_view);
 
