@@ -61,6 +61,13 @@
 /* Column at which view content should be displayed. */
 #define COL 1
 
+/* Named boolean values of "silent" parameter for better readability. */
+enum
+{
+	NOSILENT, /* Display error message dialog. */
+	SILENT,   /* Do not display error message dialog. */
+};
+
 typedef struct
 {
 	char **lines;
@@ -137,7 +144,7 @@ static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(view_info_t *vi, const char action[],
-		const char file_to_view[]);
+		const char file_to_view[], int silent);
 static int get_view_data(view_info_t *vi, const char file_to_view[]);
 static void replace_vi(view_info_t *const orig, view_info_t *const new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
@@ -165,7 +172,7 @@ static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
 static int forward_if_changed(view_info_t *vi);
 static int scroll_to_bottom(view_info_t *vi);
-static void reload_view(view_info_t *vi);
+static void reload_view(view_info_t *vi, int silent);
 
 view_info_t view_info[VI_COUNT];
 view_info_t* vi = &view_info[VI_QV];
@@ -308,7 +315,7 @@ enter_view_mode(int explore)
 
 	pick_vi(explore);
 
-	if(load_view_data(vi, "File exploring", full_path) != 0)
+	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
 		return;
 	}
@@ -935,16 +942,24 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
-	reload_view(vi);
+	reload_view(vi, NOSILENT);
 }
 
 /* Loads list of strings and related data into view_info_t structure from
  * specified file.  The action parameter is a title to be used for error
  * messages.  Returns non-zero on error, otherwise zero is returned. */
 static int
-load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
+load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
+		int silent)
 {
-	switch(get_view_data(vi, file_to_view))
+	const int error = get_view_data(vi, file_to_view);
+
+	if(error != 0 && silent)
+	{
+		return 1;
+	}
+
+	switch(error)
 	{
 		case 0:
 			break;
@@ -1491,7 +1506,7 @@ forward_if_changed(view_info_t *vi)
 	}
 
 	ts_assign(&vi->file_mtime, &mtime);
-	reload_view(vi);
+	reload_view(vi, SILENT);
 	return scroll_to_bottom(vi);
 }
 
@@ -1520,13 +1535,14 @@ scroll_to_bottom(view_info_t *vi)
 /* Reloads contents of the specified view by rerunning corresponding viewer or
  * just rereading a file. */
 static void
-reload_view(view_info_t *vi)
+reload_view(view_info_t *vi, int silent)
 {
 	view_info_t new_vi;
 
 	init_view_info(&new_vi);
 
-	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
+	if(load_view_data(&new_vi, "File exploring reload", vi->filename, silent)
+			== 0)
 	{
 		replace_vi(vi, &new_vi);
 		view_redraw();
