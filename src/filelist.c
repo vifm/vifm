@@ -63,6 +63,7 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
+#include "utils/ts.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_manager.h"
@@ -2055,20 +2056,12 @@ check_dir_changed(FileView *view)
 }
 #endif
 
+/* Returns zero on success, otherwise non-zero is returned. */
 static int
 update_dir_mtime(FileView *view)
 {
 #ifndef _WIN32
-	struct stat s;
-
-	if(os_stat(view->curr_dir, &s) != 0)
-		return -1;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	view->dir_mtime = s.st_mtim;
-#else
-	view->dir_mtime = s.st_mtime;
-#endif
-	return 0;
+	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
 #else
 	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
 	{
@@ -3468,8 +3461,8 @@ check_if_filelists_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	struct stat s;
-	if(os_stat(view->curr_dir, &s) != 0)
+	timestamp_t dir_mtime;
+	if(ts_get_file_mtime(view->curr_dir, &dir_mtime) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))
@@ -3491,15 +3484,13 @@ check_if_filelists_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	if(memcmp(&s.st_mtim, &view->dir_mtime, sizeof(view->dir_mtime)) != 0)
-#else
-	if(s.st_mtime != view->dir_mtime)
-#endif
+	if(!ts_equal(&dir_mtime, &view->dir_mtime))
 #else
 	if(r > 0)
 #endif
+	{
 		reload_window(view);
+	}
 }
 
 int
