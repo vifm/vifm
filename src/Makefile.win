@@ -50,7 +50,7 @@ ui := cancellation.c statusbar.c statusline.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := env.c file_streams.c filter.c fs.c int_stack.c log.c path.c str.c \
-             string_array.c tree.c utf8.c utils.c utils_win.c
+             string_array.c tree.c ts.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(io) $(menus) $(modes) $(ui) \

@@ -103,6 +103,9 @@ init_modes(void)
 void
 modes_pre(void)
 {
+	/* Trigger possible view updates. */
+	view_check_for_updates();
+
 	if(vle_mode_is(CMDLINE_MODE))
 	{
 		touchwin(status_bar);

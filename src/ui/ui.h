@@ -29,10 +29,11 @@
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* mode_t */
 #include <sys/types.h>
-#include <time.h> /* time_t timespec */
+#include <time.h> /* time_t */
 
 #include "../utils/filter.h"
 #include "../utils/fs_limits.h"
+#include "../utils/ts.h"
 #include "../color_scheme.h"
 #include "../column_view.h"
 #include "../status.h"
@@ -162,11 +163,7 @@ typedef struct
 	WINDOW *title;
 	char curr_dir[PATH_MAX];
 #ifndef _WIN32
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	struct timespec dir_mtime;
-#else
-	time_t dir_mtime;
-#endif
+	timestamp_t dir_mtime;
 #else
 	FILETIME dir_mtime;
 	HANDLE dir_watcher;

@@ -63,6 +63,7 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
+#include "utils/ts.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_manager.h"
@@ -2008,82 +2009,6 @@ leave_invalid_dir(FileView *view)
 	ensure_path_well_formed(path);
 }
 
-#ifdef _WIN32
-static int
-check_dir_changed(FileView *view)
-{
-	FILETIME ft;
-	int r;
-
-	if(stroscmp(view->watched_dir, view->curr_dir) != 0)
-	{
-		wchar_t *utf16_cwd;
-
-		FindCloseChangeNotification(view->dir_watcher);
-		strcpy(view->watched_dir, view->curr_dir);
-
-		utf16_cwd = utf8_to_utf16(view->curr_dir);
-
-		view->dir_watcher = FindFirstChangeNotificationW(utf16_cwd, 1,
-				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
-				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
-				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
-
-		free(utf16_cwd);
-
-		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
-		{
-			log_msg("ha%s", "d");
-		}
-	}
-
-	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
-	{
-		FindNextChangeNotification(view->dir_watcher);
-		return 1;
-	}
-
-	if(win_get_dir_mtime(view->curr_dir, &ft) != 0)
-	{
-		return -1;
-	}
-
-	r = CompareFileTime(&view->dir_mtime, &ft);
-	view->dir_mtime = ft;
-
-	return r != 0;
-}
-#endif
-
-static int
-update_dir_mtime(FileView *view)
-{
-#ifndef _WIN32
-	struct stat s;
-
-	if(os_stat(view->curr_dir, &s) != 0)
-		return -1;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	view->dir_mtime = s.st_mtim;
-#else
-	view->dir_mtime = s.st_mtime;
-#endif
-	return 0;
-#else
-	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
-	{
-		return -1;
-	}
-
-	while(check_dir_changed(view) > 0)
-	{
-		/* Do nothing. */
-	}
-
-	return 0;
-#endif
-}
-
 void
 navigate_to(FileView *view, const char path[])
 {
@@ -3468,13 +3393,13 @@ check_if_filelists_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	struct stat s;
-	if(os_stat(view->curr_dir, &s) != 0)
+	timestamp_t dir_mtime;
+	if(ts_get_file_mtime(view->curr_dir, &dir_mtime) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))
 		return;
-	r = check_dir_changed(view);
+	r = win_check_dir_changed(view);
 	if(r < 0)
 #endif
 	{
@@ -3491,15 +3416,13 @@ check_if_filelists_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	if(memcmp(&s.st_mtim, &view->dir_mtime, sizeof(view->dir_mtime)) != 0)
-#else
-	if(s.st_mtime != view->dir_mtime)
-#endif
+	if(!ts_equal(&dir_mtime, &view->dir_mtime))
 #else
 	if(r > 0)
 #endif
+	{
 		reload_window(view);
+	}
 }
 
 int

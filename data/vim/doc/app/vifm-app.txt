@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 06
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -745,6 +745,11 @@ r, Ctrl-R, Ctrl-L, R - repaint screen.
 
                                                *vifm-q_R*
 reload view preserving scroll position.
+
+                                               *vifm-q_F*
+toggle automatic forwarding.  Roughly equivalent to periodic file reload and
+scrolling to the bottom.  The behaviour is similar to `tail -F` or F key in
+less.
 
 
                                                *vifm-q_/*

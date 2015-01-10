@@ -1,4 +1,4 @@
-.TH vifm 1 "January 07, 2015" "" "Vifm"
+.TH vifm 1 "January 10, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -790,6 +790,11 @@ repaint screen.
 .TP
 .BI R
 reload view preserving scroll position.
+.TP
+.BI F
+toggle automatic forwarding.  Roughly equivalent to periodic file reload and
+scrolling to the bottom.  The behaviour is similar to `tail \-F` or F key in
+less.
 .TP
 .BI [count]/pattern
 search forward for ([count]\(hyth) matching line.

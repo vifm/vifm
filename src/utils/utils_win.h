@@ -69,9 +69,10 @@ const char * escape_for_cd(const char str[]);
  * buffer. */
 const char * win_resolve_mount_points(const char path[]);
 
-/* Gets last directory modification time.  Returns non-zero on error, otherwise
- * zero is returned. */
-int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
+/* Checks whether contents of working directory of the view was externally
+ * modified.  Returns negative value on error, zero for unchanged directory and
+ * positive number if directory was modified. */
+int win_check_dir_changed(FileView *view);
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 

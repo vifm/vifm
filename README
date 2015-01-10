@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
-2001 - 2014
+2001 - 2015
 
-Updated: 12 December, 2014
+Updated: 10 January, 2015
 Version: 0.7.8
 
 Brief Description
@@ -151,6 +151,7 @@ Package content
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- tree.c - cache for ga command results
+    |  |  |-- ts.c - various time stamp service functions
     |  |  |-- utf8.c - functions to handle utf8 strings
     |  |  |-- utils.c - various utilities
     |  |  |-- utils_nix.c - various utilities for *nix systems

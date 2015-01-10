@@ -24,9 +24,9 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
-#include <string.h> /* strcpy() strdup() strlen() */
+#include <string.h> /* memset() strdup() */
 #include <stdio.h>  /* fclose() snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* free() malloc() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
@@ -41,6 +41,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/ts.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../color_manager.h"
@@ -60,6 +61,13 @@
 /* Column at which view content should be displayed. */
 #define COL 1
 
+/* Named boolean values of "silent" parameter for better readability. */
+enum
+{
+	NOSILENT, /* Display error message dialog. */
+	SILENT,   /* Do not display error message dialog. */
+};
+
 typedef struct
 {
 	char **lines;
@@ -78,7 +86,11 @@ typedef struct
 	int wrap;
 	int abandoned; /* Shows whether view mode was abandoned. */
 	char *filename;
-}view_info_t;
+
+	int auto_forward;       /* Whether auto forwarding (tail -F) is enabled. */
+	timestamp_t file_mtime; /* Time stamp for auto forwarding mode. */
+}
+view_info_t;
 
 /* View information structure indexes and count. */
 enum
@@ -127,11 +139,12 @@ static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(view_info_t *vi, const char action[],
-		const char file_to_view[]);
+		const char file_to_view[], int silent);
 static int get_view_data(view_info_t *vi, const char file_to_view[]);
 static void replace_vi(view_info_t *const orig, view_info_t *const new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
@@ -157,6 +170,9 @@ static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
+static int forward_if_changed(view_info_t *vi);
+static int scroll_to_bottom(view_info_t *vi);
+static void reload_view(view_info_t *vi, int silent);
 
 view_info_t view_info[VI_COUNT];
 view_info_t* vi = &view_info[VI_QV];
@@ -231,6 +247,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{ALT_V}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 #endif
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L"F", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_F}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"Q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
@@ -298,7 +315,7 @@ enter_view_mode(int explore)
 
 	pick_vi(explore);
 
-	if(load_view_data(vi, "File exploring", full_path) != 0)
+	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
 		return;
 	}
@@ -457,7 +474,7 @@ view_explore_mode_quit(FileView *view)
 	ui_view_title_update(view);
 }
 
-/* Frees and initializes anew view_into_t structure instance. */
+/* Frees and initializes anew view_info_t structure instance. */
 static void
 reset_view_info(view_info_t *vi)
 {
@@ -465,28 +482,19 @@ reset_view_info(view_info_t *vi)
 	init_view_info(vi);
 }
 
-/* Initializes view_into_t structure instance with safe default values. */
+/* Initializes view_info_t structure instance with safe default values. */
 static void
 init_view_info(view_info_t *vi)
 {
-	vi->lines = NULL;
-	vi->widths = NULL;
-	vi->nlines = 0;
-	vi->nlinesv = 0;
-	vi->line = 0;
-	vi->linev = 0;
+	memset(vi, '\0', sizeof(*vi));
 	vi->win_size = -1;
 	vi->half_win = -1;
 	vi->width = -1;
-	vi->view = NULL;
 	vi->last_search_backward = -1;
 	vi->search_repeat = NO_COUNT_GIVEN;
-	vi->wrap = 0;
-	vi->filename = NULL;
-	vi->abandoned = 0;
 }
 
-/* Frees all resources allocated by view_into_t structure instance. */
+/* Frees all resources allocated by view_info_t structure instance. */
 static void
 free_view_info(view_info_t *vi)
 {
@@ -896,6 +904,19 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(VIEW_SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
+/* Toggles automatic forwarding of file. */
+static void
+cmd_F(key_info_t key_info, keys_info_t *keys_info)
+{
+	vi->auto_forward = !vi->auto_forward;
+	if(vi->auto_forward && forward_if_changed(vi))
+	{
+		draw();
+	}
+}
+
+/* Either scrolls to specific line number (when specified) or to the bottom of
+ * the view. */
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -905,15 +926,10 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
-		return;
-
-	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
-	for(vi->line = 0; vi->line < vi->nlines - 1; vi->line++)
-		if(vi->linev < vi->widths[vi->line + 1][0])
-			break;
-
-	draw();
+	if(scroll_to_bottom(vi))
+	{
+		draw();
+	}
 }
 
 static void
@@ -926,24 +942,24 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
-	view_info_t new_vi;
-
-	init_view_info(&new_vi);
-
-	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
-	{
-		replace_vi(vi, &new_vi);
-		view_redraw();
-	}
+	reload_view(vi, NOSILENT);
 }
 
 /* Loads list of strings and related data into view_info_t structure from
  * specified file.  The action parameter is a title to be used for error
  * messages.  Returns non-zero on error, otherwise zero is returned. */
 static int
-load_view_data(view_info_t *vi, const char action[], const char file_to_view[])
+load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
+		int silent)
 {
-	switch(get_view_data(vi, file_to_view))
+	const int error = get_view_data(vi, file_to_view);
+
+	if(error != 0 && silent)
+	{
+		return 1;
+	}
+
+	switch(error)
 	{
 		case 0:
 			break;
@@ -1041,6 +1057,8 @@ replace_vi(view_info_t *const orig, view_info_t *const new)
 	new->line = orig->line;
 	new->linev = orig->linev;
 	new->view = orig->view;
+	new->auto_forward = orig->auto_forward;
+	ts_assign(&new->file_mtime, &orig->file_mtime);
 
 	free_view_info(orig);
 	*orig = *new;
@@ -1447,6 +1465,87 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 
 		default:
 			return 0;
+	}
+}
+
+void
+view_check_for_updates(void)
+{
+	int need_redraw = 0;
+
+	need_redraw += forward_if_changed(&view_info[VI_QV]);
+	need_redraw += forward_if_changed(&view_info[VI_LWIN]);
+	need_redraw += forward_if_changed(&view_info[VI_RWIN]);
+
+	if(need_redraw)
+	{
+		schedule_redraw();
+	}
+}
+
+/* Forwards the view if underlying file changed.  Returns non-zero if reload
+ * occurred, otherwise zero is returned. */
+static int
+forward_if_changed(view_info_t *vi)
+{
+	timestamp_t mtime;
+
+	if(!vi->auto_forward)
+	{
+		return 0;
+	}
+
+	if(ts_get_file_mtime(vi->filename, &mtime) != 0)
+	{
+		return 0;
+	}
+
+	if(ts_equal(&mtime, &vi->file_mtime))
+	{
+		return 0;
+	}
+
+	ts_assign(&vi->file_mtime, &mtime);
+	reload_view(vi, SILENT);
+	return scroll_to_bottom(vi);
+}
+
+/* Scrolls view to the bottom if there is any room for that.  Returns non-zero
+ * if position was changed, otherwise zero is returned. */
+static int
+scroll_to_bottom(view_info_t *vi)
+{
+	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
+	{
+		return 0;
+	}
+
+	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
+	for(vi->line = 0; vi->line < vi->nlines - 1; ++vi->line)
+	{
+		if(vi->linev < vi->widths[vi->line + 1][0])
+		{
+			break;
+		}
+	}
+
+	return 1;
+}
+
+/* Reloads contents of the specified view by rerunning corresponding viewer or
+ * just rereading a file. */
+static void
+reload_view(view_info_t *vi, int silent)
+{
+	view_info_t new_vi;
+
+	init_view_info(&new_vi);
+
+	if(load_view_data(&new_vi, "File exploring reload", vi->filename, silent)
+			== 0)
+	{
+		replace_vi(vi, &new_vi);
+		view_redraw();
 	}
 }
 
