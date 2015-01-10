@@ -158,6 +158,7 @@ static int is_trying_the_same_file(void);
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
 static int scroll_to_bottom(view_info_t *vi);
+static void reload_view(view_info_t *vi);
 
 view_info_t view_info[VI_COUNT];
 view_info_t* vi = &view_info[VI_QV];
@@ -915,15 +916,7 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
-	view_info_t new_vi;
-
-	init_view_info(&new_vi);
-
-	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
-	{
-		replace_vi(vi, &new_vi);
-		view_redraw();
-	}
+	reload_view(vi);
 }
 
 /* Loads list of strings and related data into view_info_t structure from
@@ -1459,6 +1452,22 @@ scroll_to_bottom(view_info_t *vi)
 	}
 
 	return 1;
+}
+
+/* Reloads contents of the specified view by rerunning corresponding viewer or
+ * just rereading a file. */
+static void
+reload_view(view_info_t *vi)
+{
+	view_info_t new_vi;
+
+	init_view_info(&new_vi);
+
+	if(load_view_data(&new_vi, "File exploring reload", vi->filename) == 0)
+	{
+		replace_vi(vi, &new_vi);
+		view_redraw();
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
