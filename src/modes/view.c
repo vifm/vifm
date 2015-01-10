@@ -909,9 +909,12 @@ static void
 cmd_F(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->auto_forward = !vi->auto_forward;
-	if(vi->auto_forward && forward_if_changed(vi))
+	if(vi->auto_forward)
 	{
-		draw();
+		if(forward_if_changed(vi) || scroll_to_bottom(vi))
+		{
+			draw();
+		}
 	}
 }
 
