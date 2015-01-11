@@ -3521,10 +3521,6 @@ pane_in_dir(const FileView *view, const char path[])
 	return paths_are_same(view->curr_dir, path);
 }
 
-/* Will remove dot and regexp filters if it's needed to make file visible.
- *
- * Returns non-zero if file was found.
- */
 int
 ensure_file_is_selected(FileView *view, const char name[])
 {
