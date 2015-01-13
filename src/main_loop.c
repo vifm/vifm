@@ -251,8 +251,6 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 	static const int T = 150;
 	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
 
-	int result = ERR;
-
 	while(timeout >= 0)
 	{
 		int i;
@@ -267,24 +265,24 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 
 		for(i = 0; i < IPC_F; ++i)
 		{
+			int result;
+
 			ipc_check();
 			wtimeout(win, MIN(T, timeout)/IPC_F);
 
-			if((result = wget_wch(win, c)) != ERR)
+			result = wget_wch(win, c);
+			if(result != ERR)
 			{
-				break;
+				return result;
 			}
 
 			process_scheduled_updates();
 		}
-		if(result != ERR)
-		{
-			break;
-		}
 
 		timeout -= T;
 	}
-	return result;
+
+	return ERR;
 }
 
 /* Updates TUI or its elements if something is scheduled. */
