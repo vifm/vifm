@@ -69,7 +69,7 @@ static int
 read_char(WINDOW *win, wint_t *c, int timeout)
 {
 	static const int T = 150;
-	static const int IPC_F = 10;
+	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
 
 	int i;
 	int result = ERR;
