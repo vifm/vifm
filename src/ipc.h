@@ -37,6 +37,10 @@ void ipc_send(char *data[]);
 /* Returns non-zero value if current instance is a server. */
 int ipc_server(void);
 
+/* Checks whether IPC is in use.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int ipc_enabled(void);
+
 #endif /* VIFM__IPC_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
