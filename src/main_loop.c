@@ -86,8 +86,6 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			check_view_for_changes(other_view);
 		}
 
-		check_background_jobs();
-
 		for(j = 0; j < IPC_F; j++)
 		{
 			ipc_check();
@@ -171,6 +169,8 @@ main_loop(void)
 		}
 
 		modes_pre();
+
+		check_background_jobs();
 
 		/* This waits for timeout then skips if no keypress. */
 		ret = read_char(status_bar, (wint_t*)&c, timeout);
