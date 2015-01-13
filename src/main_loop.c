@@ -47,6 +47,7 @@
 #include "ipc.h"
 #include "status.h"
 
+static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
 static void process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
@@ -64,56 +65,6 @@ update_win_console(void)
 			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
 }
 #endif
-
-/* Sub-loop of the main loop that "asynchronously" queries for the input
- * performing the following tasks while waiting for input:
- *  - checks for new IPC messages;
- *  - checks whether contents of displayed directories changed;
- *  - redraws UI if requested.
- * Returns KEY_CODE_YES for functional keys, OK for wide character and ERR
- * otherwise (e.g. after timeout). */
-static int
-get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
-{
-	static const int T = 150;
-	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
-
-	int i;
-	int result = ERR;
-
-	for(i = 0; i <= timeout/T; i++)
-	{
-		int j;
-
-		process_scheduled_updates();
-
-		if(should_check_views_for_changes())
-		{
-			check_view_for_changes(curr_view);
-			check_view_for_changes(other_view);
-		}
-
-		for(j = 0; j < IPC_F; j++)
-		{
-			ipc_check();
-			wtimeout(win, MIN(T, timeout)/IPC_F);
-
-			if((result = wget_wch(win, c)) != ERR)
-			{
-				break;
-			}
-
-			process_scheduled_updates();
-		}
-		if(result != ERR)
-		{
-			break;
-		}
-
-		timeout -= T;
-	}
-	return result;
-}
 
 /*
  * Main Loop
@@ -290,6 +241,56 @@ main_loop(void)
 		(void)vifm_chdir(curr_view->curr_dir);
 		modes_post();
 	}
+}
+
+/* Sub-loop of the main loop that "asynchronously" queries for the input
+ * performing the following tasks while waiting for input:
+ *  - checks for new IPC messages;
+ *  - checks whether contents of displayed directories changed;
+ *  - redraws UI if requested.
+ * Returns KEY_CODE_YES for functional keys, OK for wide character and ERR
+ * otherwise (e.g. after timeout). */
+static int
+get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
+{
+	static const int T = 150;
+	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
+
+	int i;
+	int result = ERR;
+
+	for(i = 0; i <= timeout/T; i++)
+	{
+		int j;
+
+		process_scheduled_updates();
+
+		if(should_check_views_for_changes())
+		{
+			check_view_for_changes(curr_view);
+			check_view_for_changes(other_view);
+		}
+
+		for(j = 0; j < IPC_F; j++)
+		{
+			ipc_check();
+			wtimeout(win, MIN(T, timeout)/IPC_F);
+
+			if((result = wget_wch(win, c)) != ERR)
+			{
+				break;
+			}
+
+			process_scheduled_updates();
+		}
+		if(result != ERR)
+		{
+			break;
+		}
+
+		timeout -= T;
+	}
+	return result;
 }
 
 /* Updates TUI or its elements if something is scheduled. */
