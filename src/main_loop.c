@@ -65,8 +65,15 @@ update_win_console(void)
 }
 #endif
 
+/* Sub-loop of the main loop that "asynchronously" queries for the input
+ * performing the following tasks while waiting for input:
+ *  - checks for new IPC messages;
+ *  - checks whether contents of displayed directories changed;
+ *  - redraws UI if requested.
+ * Returns KEY_CODE_YES for functional keys, OK for wide character and ERR
+ * otherwise (e.g. after timeout). */
 static int
-read_char(WINDOW *win, wint_t *c, int timeout)
+get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 {
 	static const int T = 150;
 	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
@@ -173,7 +180,7 @@ main_loop(void)
 		check_background_jobs();
 
 		/* This waits for timeout then skips if no keypress. */
-		ret = read_char(status_bar, (wint_t*)&c, timeout);
+		ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
