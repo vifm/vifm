@@ -66,11 +66,6 @@ update_win_console(void)
 }
 #endif
 
-/*
- * Main Loop
- * Everything is driven from this function with the exception of
- * signals which are handled in signals.c
- */
 void
 main_loop(void)
 {
