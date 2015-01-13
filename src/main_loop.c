@@ -251,12 +251,11 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 	static const int T = 150;
 	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
 
-	int i;
 	int result = ERR;
 
-	for(i = 0; i <= timeout/T; i++)
+	while(timeout >= 0)
 	{
-		int j;
+		int i;
 
 		process_scheduled_updates();
 
@@ -266,7 +265,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			check_view_for_changes(other_view);
 		}
 
-		for(j = 0; j < IPC_F; j++)
+		for(i = 0; i < IPC_F; ++i)
 		{
 			ipc_check();
 			wtimeout(win, MIN(T, timeout)/IPC_F);
