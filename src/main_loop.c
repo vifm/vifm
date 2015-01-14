@@ -125,8 +125,19 @@ main_loop(void)
 
 		check_background_jobs();
 
-		/* This waits for timeout then skips if no keypress. */
-		ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
+		/* Waits for timeout then skips if no keypress.  Short-circuit if we're not
+		 * waiting for the next key after timeout. */
+		do
+		{
+			ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
+			if(ret == ERR && pos == 0)
+			{
+				timeout = cfg.timeout_len;
+				continue;
+			}
+			break;
+		}
+		while(1);
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
