@@ -451,6 +451,7 @@ init_view(FileView *view)
 	view->history_num = 0;
 	view->history_pos = 0;
 	view->local_cs = 0;
+	view->on_slow_fs = 0;
 
 	view->hide_dot = 1;
 	view->matches = 0;
@@ -1413,7 +1414,7 @@ get_line_color(const FileView *view, int pos)
 		case FIFO:
 			return FIFO_COLOR;
 		case LINK:
-			if(is_on_slow_fs(view->curr_dir))
+			if(view->on_slow_fs)
 			{
 				return LINK_COLOR;
 			}
@@ -2077,6 +2078,7 @@ change_directory(FileView *view, const char directory[])
 	if(location_changed)
 	{
 		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
+		view->on_slow_fs = is_on_slow_fs(view->curr_dir);
 	}
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the
@@ -3376,7 +3378,7 @@ reload_window(FileView *view)
 void
 check_if_filelists_have_changed(FileView *view)
 {
-	if(is_on_slow_fs(view->curr_dir))
+	if(view->on_slow_fs)
 	{
 		return;
 	}
