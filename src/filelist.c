@@ -2019,21 +2019,8 @@ navigate_to(FileView *view, const char path[])
 	}
 }
 
-/*
- * The directory can either be relative to the current
- * directory - ../
- * or an absolute path - /usr/local/share
- * The *directory passed to change_directory() cannot be modified.
- * Symlink directories require an absolute path
- *
- * Return value:
- *  -1  if there were errors.
- *   0  if directory successfully changed and we didn't leave FUSE mount
- *      directory.
- *   1  if directory successfully changed and we left FUSE mount directory.
- */
 int
-change_directory(FileView *view, const char *directory)
+change_directory(FileView *view, const char directory[])
 {
 	char dir_dup[PATH_MAX];
 	char real_path[PATH_MAX];
@@ -2108,6 +2095,8 @@ change_directory(FileView *view, const char *directory)
 		}
 		else if(fuse_try_updir_from_a_mount(view->curr_dir, view))
 		{
+			/* On success fuse_try_updir_from_a_mount() calls change_directory()
+			 * recursively to change directory, so we can just leave. */
 			return 1;
 		}
 	}

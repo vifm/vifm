@@ -152,7 +152,18 @@ size_t calculate_columns_count(FileView *view);
  * case of success reloads filelist of the view and sets its cursor position
  * according to directory history of the view. */
 void navigate_to(FileView *view, const char path[]);
-int change_directory(FileView *view, const char *path);
+/* The directory can either be relative to the current
+ * directory - ../
+ * or an absolute path - /usr/local/share
+ * The *directory passed to change_directory() cannot be modified.
+ * Symlink directories require an absolute path
+ *
+ * Return value:
+ *  -1  if there were errors.
+ *   0  if directory successfully changed and we didn't leave FUSE mount
+ *      directory.
+ *   1  if directory successfully changed and we left FUSE mount directory. */
+int change_directory(FileView *view, const char path[]);
 /* Changes pane directory handling path just like cd command does. */
 int cd(FileView *view, const char *base_dir, const char *path);
 /* Ensures that current directory of the view is a valid one.  Modifies
