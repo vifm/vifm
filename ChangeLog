@@ -30,6 +30,9 @@
 	Added F key to less-like (file view) mode, which acts similar to `tail -F`
 	or F key in less.  Thanks to Daniel Dettlaff (a.k.a. dmilith).
 
+	Added 'mintimeout' option.  It enables controlling responsiveness on
+	external events by Vifm.  Thanks to hofheinz.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

@@ -259,7 +259,6 @@ main_loop(void)
 static int
 get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 {
-	static const int T = 150;
 	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
 
 	while(timeout >= 0)
@@ -279,7 +278,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			int result;
 
 			ipc_check();
-			wtimeout(win, MIN(T, timeout)/IPC_F);
+			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
 
 			result = wget_wch(win, c);
 			if(result != ERR)
@@ -290,7 +289,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			process_scheduled_updates();
 		}
 
-		timeout -= T;
+		timeout -= cfg.min_timeout_len;
 	}
 
 	return ERR;

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 10
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2480,6 +2480,16 @@ option should include the %a macro to specify placement of arguments passed
 to the |vifm-:locate| command.  If the macro is not used, it will be
 implicitly added after a space to the value of this option.
 
+                                               *vifm-'mintimeoutlen'*
+mintimeoutlen
+type: integer
+default: 150
+The fracture of |vifm-'timeoutlen'| in milliseconds that is waited between
+subsequent input polls, which affects various asynchronous
+operations (detecting changes made by external applications, monitoring
+background jobs, redrawing UI).  There are no strict guarantees, however the
+higher this value is, the less is CPU load in idle mode.
+
                                                *vifm-'lsview'*
 lsview
 type: boolean
@@ -2752,7 +2762,7 @@ timeoutlen tm
 type: integer
 default: 1000
 The time in milliseconds that is waited for a mapped key in case of already
-typed key sequence is ambiguous.
+typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
 
                                                *vifm-'tuioptions'* *vifm-'to'*
 tuioptions to

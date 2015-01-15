@@ -904,6 +904,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%slaststatus\n", cfg.display_statusline ? "" : "no");
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
+	fprintf(fp, "=mintimeoutlen=%d\n", cfg.min_timeout_len);
 	fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
 	fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");

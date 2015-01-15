@@ -148,7 +148,6 @@ init_config(void)
 	cfg.hl_search = 1;
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
-	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
 #ifndef _WIN32
@@ -189,6 +188,9 @@ init_config(void)
 	cfg.border_filler = strdup(" ");
 
 	cfg.chase_links = 0;
+
+	cfg.timeout_len = 1000;
+	cfg.min_timeout_len = 150;
 
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");

@@ -102,7 +102,6 @@ typedef struct config_t
 	int vifm_info;
 	int auto_ch_pos;
 	char *shell;
-	int timeout_len;
 	int scroll_off;
 	int gdefault;
 #ifndef _WIN32
@@ -149,6 +148,9 @@ typedef struct config_t
 	/* Whether directory path should always be resolved to real path (all symbolic
 	 * link expanded). */
 	int chase_links;
+
+	int timeout_len;     /* Maximum period on waiting for the input. */
+	int min_timeout_len; /* Minimum period on waiting for the input. */
 }
 config_t;
 

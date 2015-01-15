@@ -1,4 +1,4 @@
-.TH vifm 1 "January 10, 2015" "" "Vifm"
+.TH vifm 1 "January 15, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2991,6 +2991,17 @@ and %% sequence for inserting percent sign literally.  This option should
 include the %a macro to specify placement of arguments passed to the :locate
 command.  If the macro is not used, it will be implicitly added after a space to
 the value of this option.
+.TP
+.BI mintimeoutlen
+type: integer
+.br
+default: 150
+.br
+The fracture of 'timeoutlen' in milliseconds that is waited between subsequent
+input polls, which affects various asynchronous operations (detecting changes
+made by external applications, monitoring background jobs, redrawing UI).  There
+are no strict guarantees, however the higher this value is, the less is CPU load
+in idle mode.
 .TP
 .BI lsview
 type: boolean
