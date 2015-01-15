@@ -261,7 +261,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 {
 	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
 
-	while(timeout >= 0)
+	do
 	{
 		int i;
 
@@ -291,6 +291,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 
 		timeout -= cfg.min_timeout_len;
 	}
+	while(timeout > 0);
 
 	return ERR;
 }
