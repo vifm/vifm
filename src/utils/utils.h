@@ -179,6 +179,9 @@ void display_help(const char cmd[]);
  * non-zero is returned. */
 int update_dir_mtime(FileView *view);
 
+/* Suspends process until external signal comes. */
+void wait_for_signal(void);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

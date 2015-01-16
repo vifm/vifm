@@ -28,7 +28,7 @@
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <unistd.h> /* X_OK dup2() getpid() */
+#include <unistd.h> /* X_OK dup2() getpid() pause() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -619,6 +619,12 @@ int
 update_dir_mtime(FileView *view)
 {
 	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
+}
+
+void
+wait_for_signal(void)
+{
+	pause();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

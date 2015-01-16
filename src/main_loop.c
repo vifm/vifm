@@ -107,9 +107,7 @@ main_loop(void)
 			touchwin(status_bar);
 			wrefresh(status_bar);
 
-#ifndef _WIN32
-			pause();
-#endif
+			wait_for_signal();
 			continue;
 		}
 		else if(curr_stats.too_small_term < 0)
