@@ -150,9 +150,6 @@ init_config(void)
 	cfg.auto_ch_pos = 1;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
-#ifndef _WIN32
-	cfg.slow_fs_list = strdup("");
-#endif
 	cfg.scroll_bind = 0;
 	cfg.wrap_scan = 1;
 	cfg.inc_search = 0;
@@ -177,6 +174,8 @@ init_config(void)
 			"-type d \\( ! -readable -o ! -executable \\) -prune");
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
+
+	cfg.slow_fs_list = strdup("");
 
 	cfg.cd_path = strdup(env_get_def("CDPATH", DEFAULT_CD_PATH));
 	replace_char(cfg.cd_path, ':', ',');

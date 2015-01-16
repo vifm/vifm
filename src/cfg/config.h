@@ -104,9 +104,6 @@ typedef struct config_t
 	char *shell;
 	int scroll_off;
 	int gdefault;
-#ifndef _WIN32
-	char *slow_fs_list;
-#endif
 	int scroll_bind;
 	int wrap_scan;
 	int inc_search;
@@ -127,6 +124,9 @@ typedef struct config_t
 	char *find_prg; /* find tool calling pattern. */
 	char *grep_prg; /* grep tool calling pattern. */
 	char *locate_prg; /* locate tool calling pattern. */
+
+	/* Comma-separated list of file system types which are slow to respond. */
+	char *slow_fs_list;
 
 	/* Coma separated list of places to look for relative path to directories. */
 	char *cd_path;
