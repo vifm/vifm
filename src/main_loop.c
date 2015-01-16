@@ -54,7 +54,7 @@ static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 
 /* Input buffer. */
-static wchar_t buf[128];
+static wchar_t input_buf[128];
 /* Current position in the input buffer. */
 static int input_buf_pos;
 
@@ -71,13 +71,15 @@ update_win_console(void)
 void
 main_loop(void)
 {
+	/* TODO: refactor this function main_loop(). */
+
 	LOG_FUNC_ENTER;
 
 	int last_result = 0;
 	int wait_enter = 0;
 	int timeout = cfg.timeout_len;
 
-	buf[0] = L'\0';
+	input_buf[0] = L'\0';
 	while(1)
 	{
 		wchar_t c;
@@ -145,7 +147,7 @@ main_loop(void)
 		 * code rely on this). */
 		(void)vifm_chdir(curr_view->curr_dir);
 
-		if(ret != ERR && input_buf_pos != ARRAY_LEN(buf) - 2)
+		if(ret != ERR && input_buf_pos != ARRAY_LEN(input_buf) - 2)
 		{
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
@@ -170,8 +172,8 @@ main_loop(void)
 					continue;
 			}
 
-			buf[input_buf_pos++] = c;
-			buf[input_buf_pos] = L'\0';
+			input_buf[input_buf_pos++] = c;
+			input_buf[input_buf_pos] = L'\0';
 		}
 
 		if(wait_enter && ret == ERR)
@@ -180,36 +182,36 @@ main_loop(void)
 		counter = get_key_counter();
 		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
 		{
-			last_result = execute_keys_timed_out(buf);
+			last_result = execute_keys_timed_out(input_buf);
 			counter = get_key_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
-				memmove(buf, buf + counter,
-						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+				memmove(input_buf, input_buf + counter,
+						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
 		}
 		else
 		{
 			if(ret != ERR)
 				curr_stats.save_msg = 0;
-			last_result = execute_keys(buf);
+			last_result = execute_keys(input_buf);
 			counter = get_key_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
 				input_buf_pos -= counter;
-				memmove(buf, buf + counter,
-						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+				memmove(input_buf, input_buf + counter,
+						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
 				{
-					modupd_input_bar(buf);
+					modupd_input_bar(input_buf);
 				}
 
-				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
+				if(last_result == KEYS_WAIT_SHORT && wcscmp(input_buf, L"\033") == 0)
 				{
 					timeout = 1;
 				}
@@ -233,7 +235,7 @@ main_loop(void)
 		process_scheduled_updates();
 
 		input_buf_pos = 0;
-		buf[0] = L'\0';
+		input_buf[0] = L'\0';
 		clear_input_bar();
 
 		if(is_status_bar_multiline())
@@ -367,7 +369,7 @@ check_view_for_changes(FileView *view)
 void
 update_input_buf(void)
 {
-	wprintw(input_win, "%ls", buf);
+	wprintw(input_win, "%ls", input_buf);
 	wrefresh(input_win);
 }
 
