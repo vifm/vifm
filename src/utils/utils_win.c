@@ -677,5 +677,11 @@ wait_for_signal(void)
 	/* Do nothing. */
 }
 
+void
+stop_process(void)
+{
+	/* Do nothing. */
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

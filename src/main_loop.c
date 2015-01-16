@@ -151,13 +151,7 @@ main_loop(void)
 			{
 				def_prog_mode();
 				endwin();
-#ifndef _WIN32
-				{
-					void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
-					kill(0, SIGTSTP);
-					signal(SIGTSTP, saved_stp_sig_handler);
-				}
-#endif
+				stop_process();
 				continue;
 			}
 

@@ -33,9 +33,9 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* EINTR errno */
-#include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
-                       sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
-                       SIG_UNBLOCK */
+#include <signal.h> /* SIGINT SIGTSTP SIGCHLD SIG_DFL SIG_BLOCK SIG_UNBLOCK
+                       sigset_t kill() sigaddset() sigemptyset() signal()
+                       sigprocmask() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* atoi() free() */
@@ -625,6 +625,14 @@ void
 wait_for_signal(void)
 {
 	pause();
+}
+
+void
+stop_process(void)
+{
+	void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
+	kill(0, SIGTSTP);
+	signal(SIGTSTP, saved_stp_sig_handler);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

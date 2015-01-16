@@ -182,6 +182,9 @@ int update_dir_mtime(FileView *view);
 /* Suspends process until external signal comes. */
 void wait_for_signal(void);
 
+/* Suspends process as a terminal job. */
+void stop_process(void);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else
