@@ -683,5 +683,13 @@ stop_process(void)
 	/* Do nothing. */
 }
 
+void
+update_terminal_settings(void)
+{
+	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_ECHO_INPUT |
+			ENABLE_EXTENDED_FLAGS | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT |
+			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

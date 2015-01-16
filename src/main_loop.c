@@ -21,10 +21,6 @@
 
 #include <curses.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */
@@ -58,16 +54,6 @@ static wchar_t input_buf[128];
 /* Current position in the input buffer. */
 static int input_buf_pos;
 
-#ifdef _WIN32
-static void
-update_win_console(void)
-{
-	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_ECHO_INPUT |
-			ENABLE_EXTENDED_FLAGS | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT |
-			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
-}
-#endif
-
 void
 main_loop(void)
 {
@@ -88,9 +74,7 @@ main_loop(void)
 
 		is_term_working();
 
-#ifdef _WIN32
-		update_win_console();
-#endif
+		update_terminal_settings();
 
 		lwin.user_selection = 1;
 		rwin.user_selection = 1;

@@ -635,5 +635,11 @@ stop_process(void)
 	signal(SIGTSTP, saved_stp_sig_handler);
 }
 
+void
+update_terminal_settings(void)
+{
+	/* Do nothing. */
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
