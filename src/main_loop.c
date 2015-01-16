@@ -53,8 +53,10 @@ static void process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 
+/* Input buffer. */
 static wchar_t buf[128];
-static int pos;
+/* Current position in the input buffer. */
+static int input_buf_pos;
 
 #ifdef _WIN32
 static void
@@ -130,7 +132,7 @@ main_loop(void)
 		do
 		{
 			ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
-			if(ret == ERR && pos == 0)
+			if(ret == ERR && input_buf_pos == 0)
 			{
 				timeout = cfg.timeout_len;
 				continue;
@@ -143,7 +145,7 @@ main_loop(void)
 		 * code rely on this). */
 		(void)vifm_chdir(curr_view->curr_dir);
 
-		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
+		if(ret != ERR && input_buf_pos != ARRAY_LEN(buf) - 2)
 		{
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
@@ -168,8 +170,8 @@ main_loop(void)
 					continue;
 			}
 
-			buf[pos++] = c;
-			buf[pos] = L'\0';
+			buf[input_buf_pos++] = c;
+			buf[input_buf_pos] = L'\0';
 		}
 
 		if(wait_enter && ret == ERR)
@@ -180,7 +182,7 @@ main_loop(void)
 		{
 			last_result = execute_keys_timed_out(buf);
 			counter = get_key_counter() - counter;
-			assert(counter <= pos);
+			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
 				memmove(buf, buf + counter,
@@ -193,10 +195,10 @@ main_loop(void)
 				curr_stats.save_msg = 0;
 			last_result = execute_keys(buf);
 			counter = get_key_counter() - counter;
-			assert(counter <= pos);
+			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
-				pos -= counter;
+				input_buf_pos -= counter;
 				memmove(buf, buf + counter,
 						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
 			}
@@ -230,7 +232,7 @@ main_loop(void)
 
 		process_scheduled_updates();
 
-		pos = 0;
+		input_buf_pos = 0;
 		buf[0] = L'\0';
 		clear_input_bar();
 
@@ -372,7 +374,7 @@ update_input_buf(void)
 int
 is_input_buf_empty(void)
 {
-	return pos == 0;
+	return input_buf_pos == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
