@@ -3372,11 +3372,8 @@ reload_window(FileView *view)
 	curr_stats.skip_history = 0;
 }
 
-/*
- * This checks the modified times of the directories.
- */
 void
-check_if_filelists_have_changed(FileView *view)
+check_if_filelist_have_changed(FileView *view)
 {
 	if(view->on_slow_fs)
 	{

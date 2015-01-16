@@ -362,7 +362,7 @@ check_view_for_changes(FileView *view)
 {
 	if(window_shows_dirlist(view))
 	{
-		check_if_filelists_have_changed(view);
+		check_if_filelist_have_changed(view);
 	}
 }
 
