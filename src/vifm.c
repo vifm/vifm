@@ -41,7 +41,7 @@
 #include "engine/mode.h"
 #include "engine/options.h"
 #include "engine/variables.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/view.h"
 #include "ui/cancellation.h"

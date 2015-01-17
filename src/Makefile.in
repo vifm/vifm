@@ -94,6 +94,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
+	modes/dialogs/msg_dialog.$(OBJEXT) \
 	modes/dialogs/sort_dialog.$(OBJEXT) modes/cmdline.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
@@ -379,6 +380,7 @@ vifm_SOURCES = \
 	modes/dialogs/attr_dialog.h \
 	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
 	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
+	modes/dialogs/msg_dialog.c modes/dialogs/msg_dialog.h \
 	modes/dialogs/sort_dialog.c modes/dialogs/sort_dialog.h \
 	\
 	modes/cmdline.c modes/cmdline.h \
@@ -658,6 +660,8 @@ modes/dialogs/attr_dialog_nix.$(OBJEXT):  \
 	modes/dialogs/$(DEPDIR)/$(am__dirstamp)
 modes/dialogs/change_dialog.$(OBJEXT): modes/dialogs/$(am__dirstamp) \
 	modes/dialogs/$(DEPDIR)/$(am__dirstamp)
+modes/dialogs/msg_dialog.$(OBJEXT): modes/dialogs/$(am__dirstamp) \
+	modes/dialogs/$(DEPDIR)/$(am__dirstamp)
 modes/dialogs/sort_dialog.$(OBJEXT): modes/dialogs/$(am__dirstamp) \
 	modes/dialogs/$(DEPDIR)/$(am__dirstamp)
 modes/$(am__dirstamp):
@@ -816,6 +820,7 @@ mostlyclean-compile:
 	-rm -f modes/cmdline.$(OBJEXT)
 	-rm -f modes/dialogs/attr_dialog_nix.$(OBJEXT)
 	-rm -f modes/dialogs/change_dialog.$(OBJEXT)
+	-rm -f modes/dialogs/msg_dialog.$(OBJEXT)
 	-rm -f modes/dialogs/sort_dialog.$(OBJEXT)
 	-rm -f modes/file_info.$(OBJEXT)
 	-rm -f modes/menu.$(OBJEXT)
@@ -938,6 +943,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/visual.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/change_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/msg_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@

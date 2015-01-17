@@ -33,6 +33,7 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
@@ -308,7 +309,7 @@ menu_redraw(void)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg_window();
+		redraw_msg_dialog();
 		redrawwin(error_win);
 		wnoutrefresh(error_win);
 		doupdate();

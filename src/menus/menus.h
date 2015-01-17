@@ -119,27 +119,6 @@ void reset_popup_menu(menu_info *m);
 
 void setup_menu(void);
 
-/* Shows error message to a user. */
-void show_error_msg(const char title[], const char message[]);
-
-/* Same as show_error_msg(...), but with format. */
-void show_error_msgf(const char title[], const char format[], ...);
-
-/* Same as show_error_msg(...), but asks about future errors.  Returns non-zero
- * when user asks to skip error messages that left. */
-int prompt_error_msg(const char title[], const char message[]);
-
-/* Same as show_error_msgf(...), but asks about future errors.  Returns non-zero
- * when user asks to skip error messages that left. */
-int prompt_error_msgf(const char title[], const char format[], ...);
-
-/* Asks user to confirm some action by answering "Yes" or "No".  Returns
- * non-zero when user answers yes, otherwise zero is returned. */
-int query_user_menu(const char title[], const char message[]);
-
-/* Redraws currently visible error message on the screen. */
-void redraw_error_msg_window(void);
-
 /* Removes current menu item and redraws the menu. */
 void remove_current_item(menu_info *m);
 
@@ -178,10 +157,6 @@ int display_menu(menu_info *m, FileView *view);
  * Returns code that specifies both taken actions and what should be done
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
-
-/* Checks with the user that deletion is permitted.  Returns non-zero if so,
- * otherwise zero is returned. */
-int confirm_deletion(int use_trash);
 
 TSTATIC_DEFS(
 	char * parse_spec(const char spec[], int *line_num);

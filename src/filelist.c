@@ -47,7 +47,7 @@
 #include "cfg/config.h"
 #include "compat/os.h"
 #include "engine/mode.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"

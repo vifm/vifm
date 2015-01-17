@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 10 January, 2015
+Updated: 17 January, 2015
 Version: 0.7.8
 
 Brief Description
@@ -119,6 +119,7 @@ Package content
     |  |  |  |-- attr_dialog_win.c - file properties dialog for MS Windows
     |  |  |  |                       systems
     |  |  |  |-- change_dialog.c - change dialog
+    |  |  |  |-- msg_dialog.c - information/error/prompt messages
     |  |  |  `-- sort_dialog.c - dialog to choose sort type
     |  |  |
     |  |  |-- cmdline.c - command line mode

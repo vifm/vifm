@@ -39,7 +39,7 @@ menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
          users_menu.c vifm_menu.c volumes_menu.c
 menus := $(addprefix menus/, $(menus))
 
-dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
+dialogs := attr_dialog_win.c change_dialog.c msg_dialog.c sort_dialog.c
 dialogs := $(addprefix dialogs/, $(dialogs))
 
 modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \

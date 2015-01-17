@@ -110,6 +110,7 @@ vifm_SOURCES = \
 	modes/dialogs/attr_dialog.h \
 	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
 	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
+	modes/dialogs/msg_dialog.c modes/dialogs/msg_dialog.h \
 	modes/dialogs/sort_dialog.c modes/dialogs/sort_dialog.h \
 	\
 	modes/cmdline.c modes/cmdline.h \

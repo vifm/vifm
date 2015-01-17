@@ -41,7 +41,7 @@
 #include "../cfg/config.h"
 #include "../cfg/info.h"
 #include "../engine/mode.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../utils/fs.h"
@@ -539,7 +539,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg_window();
+		redraw_msg_dialog();
 		update_window_lazy(error_win);
 		doupdate();
 	}

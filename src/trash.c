@@ -29,7 +29,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"

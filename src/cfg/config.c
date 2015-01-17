@@ -39,7 +39,7 @@
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../compat/os.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
 #include "../utils/file_streams.h"

@@ -32,7 +32,7 @@
 #include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"

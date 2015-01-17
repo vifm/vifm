@@ -45,7 +45,7 @@
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "compat/os.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs.h"

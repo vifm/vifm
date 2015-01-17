@@ -24,7 +24,7 @@
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "utils/fs_limits.h"
 #include "utils/str.h"
 #include "utils/utils.h"
