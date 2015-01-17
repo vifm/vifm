@@ -102,12 +102,8 @@ typedef struct config_t
 	int vifm_info;
 	int auto_ch_pos;
 	char *shell;
-	int timeout_len;
 	int scroll_off;
 	int gdefault;
-#ifndef _WIN32
-	char *slow_fs_list;
-#endif
 	int scroll_bind;
 	int wrap_scan;
 	int inc_search;
@@ -129,6 +125,9 @@ typedef struct config_t
 	char *grep_prg; /* grep tool calling pattern. */
 	char *locate_prg; /* locate tool calling pattern. */
 
+	/* Comma-separated list of file system types which are slow to respond. */
+	char *slow_fs_list;
+
 	/* Coma separated list of places to look for relative path to directories. */
 	char *cd_path;
 
@@ -149,6 +148,9 @@ typedef struct config_t
 	/* Whether directory path should always be resolved to real path (all symbolic
 	 * link expanded). */
 	int chase_links;
+
+	int timeout_len;     /* Maximum period on waiting for the input. */
+	int min_timeout_len; /* Minimum period on waiting for the input. */
 }
 config_t;
 

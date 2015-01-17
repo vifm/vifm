@@ -117,6 +117,7 @@ static void incsearch_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
+static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
@@ -367,6 +368,10 @@ options[] =
 	{ "locateprg", "",
 	  OPT_STR, 0, NULL, &locateprg_handler,
 	  { .ref.str_val = &cfg.locate_prg },
+	},
+	{ "mintimeoutlen", "",
+	  OPT_INT, 0, NULL, &mintimeoutlen_handler,
+	  { .ref.int_val = &cfg.min_timeout_len },
 	},
 	{ "rulerformat", "ruf",
 	  OPT_STR, 0, NULL, &rulerformat_handler,
@@ -1159,6 +1164,22 @@ locateprg_handler(OPT_OP op, optval_t val)
 	(void)replace_string(&cfg.locate_prg, val.str_val);
 }
 
+/* Minimum period on waiting for the input.  Works together with timeoutlen. */
+static void
+mintimeoutlen_handler(OPT_OP op, optval_t val)
+{
+	if(val.int_val <= 0)
+	{
+		text_buffer_addf("Argument must be > 0: %d", val.int_val);
+		error = 1;
+		val.int_val = 1;
+		set_option("mintimeoutlen", val);
+		return;
+	}
+
+	cfg.min_timeout_len = val.int_val;
+}
+
 static void
 scroll_line_down(FileView *view)
 {
@@ -1534,6 +1555,8 @@ timefmt_handler(OPT_OP op, optval_t val)
 	redraw_lists();
 }
 
+/* Maximum period on waiting for the input.  Works together with
+ * mintimeoutlen. */
 static void
 timeoutlen_handler(OPT_OP op, optval_t val)
 {

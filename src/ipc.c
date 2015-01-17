@@ -46,6 +46,12 @@ ipc_server(void)
 	return 1;
 }
 
+int
+ipc_enabled(void)
+{
+	return 0;
+}
+
 #else
 
 #ifdef _WIN32
@@ -313,6 +319,12 @@ int
 ipc_server(void)
 {
 	return (server);
+}
+
+int
+ipc_enabled(void)
+{
+	return 1;
 }
 
 #endif

@@ -81,19 +81,15 @@ bookmarks_tests(void)
 {
 	test_fixture_start();
 
-#ifndef _WIN32
 	cfg.slow_fs_list = strdup("");
-#endif
 
 	run_test(test_unexistant_bookmark);
 	run_test(test_all_valid_bookmarks_can_be_queried);
 	run_test(test_regular_bmarks_are_global);
 	run_test(test_sel_bmarks_are_local);
 
-#ifndef _WIN32
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
-#endif
 
 	test_fixture_end();
 }

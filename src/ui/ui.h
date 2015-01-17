@@ -267,6 +267,8 @@ typedef struct
 
 	uint64_t last_redraw; /* Time of last redraw. */
 	uint64_t last_reload; /* Time of last [full] reload. */
+
+	int on_slow_fs; /* Whether current directory has access penalties. */
 }
 FileView;
 

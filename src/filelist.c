@@ -451,6 +451,7 @@ init_view(FileView *view)
 	view->history_num = 0;
 	view->history_pos = 0;
 	view->local_cs = 0;
+	view->on_slow_fs = 0;
 
 	view->hide_dot = 1;
 	view->matches = 0;
@@ -1413,7 +1414,7 @@ get_line_color(const FileView *view, int pos)
 		case FIFO:
 			return FIFO_COLOR;
 		case LINK:
-			if(is_on_slow_fs(view->curr_dir))
+			if(view->on_slow_fs)
 			{
 				return LINK_COLOR;
 			}
@@ -2019,21 +2020,8 @@ navigate_to(FileView *view, const char path[])
 	}
 }
 
-/*
- * The directory can either be relative to the current
- * directory - ../
- * or an absolute path - /usr/local/share
- * The *directory passed to change_directory() cannot be modified.
- * Symlink directories require an absolute path
- *
- * Return value:
- *  -1  if there were errors.
- *   0  if directory successfully changed and we didn't leave FUSE mount
- *      directory.
- *   1  if directory successfully changed and we left FUSE mount directory.
- */
 int
-change_directory(FileView *view, const char *directory)
+change_directory(FileView *view, const char directory[])
 {
 	char dir_dup[PATH_MAX];
 	char real_path[PATH_MAX];
@@ -2090,6 +2078,7 @@ change_directory(FileView *view, const char *directory)
 	if(location_changed)
 	{
 		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
+		view->on_slow_fs = is_on_slow_fs(view->curr_dir);
 	}
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the
@@ -2108,6 +2097,8 @@ change_directory(FileView *view, const char *directory)
 		}
 		else if(fuse_try_updir_from_a_mount(view->curr_dir, view))
 		{
+			/* On success fuse_try_updir_from_a_mount() calls change_directory()
+			 * recursively to change directory, so we can just leave. */
 			return 1;
 		}
 	}
@@ -3381,13 +3372,10 @@ reload_window(FileView *view)
 	curr_stats.skip_history = 0;
 }
 
-/*
- * This checks the modified times of the directories.
- */
 void
-check_if_filelists_have_changed(FileView *view)
+check_if_filelist_have_changed(FileView *view)
 {
-	if(is_on_slow_fs(view->curr_dir))
+	if(view->on_slow_fs)
 	{
 		return;
 	}

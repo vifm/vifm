@@ -28,14 +28,14 @@
 #include <fcntl.h> /* O_RDONLY open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <unistd.h> /* X_OK dup2() getpid() */
+#include <unistd.h> /* X_OK dup2() getpid() pause() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* EINTR errno */
-#include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
-                       sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
-                       SIG_UNBLOCK */
+#include <signal.h> /* SIGINT SIGTSTP SIGCHLD SIG_DFL SIG_BLOCK SIG_UNBLOCK
+                       sigset_t kill() sigaddset() sigemptyset() signal()
+                       sigprocmask() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* atoi() free() */
@@ -75,6 +75,10 @@ typedef struct
 get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
+static void free_mnt_entries(struct mntent *entries, unsigned int nentries);
+struct mntent * read_mnt_entries(unsigned int *nentries);
+static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
+static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
 
@@ -370,21 +374,114 @@ get_mount_info_traverser(struct mntent *entry, void *arg)
 int
 traverse_mount_points(mptraverser client, void *arg)
 {
-	FILE *f;
-	struct mntent *ent;
+	/* Cached mount entries, updated only when /etc/mtab changes. */
+	static timestamp_t mtab_mtime;
+	static struct mntent *entries;
+	static unsigned int nentries;
 
-	if((f = setmntent("/etc/mtab", "r")) == NULL)
+	timestamp_t mtime;
+	unsigned int i;
+
+	/* Check for cache validity. */
+	if(ts_get_file_mtime("/etc/mtab", &mtime) != 0 ||
+			!ts_equal(&mtime, &mtab_mtime))
+	{
+		ts_assign(&mtab_mtime, &mtime);
+		free_mnt_entries(entries, nentries);
+		entries = read_mnt_entries(&nentries);
+	}
+
+	if(nentries == 0U)
 	{
 		return 1;
 	}
 
+	for(i = 0; i < nentries; ++i)
+	{
+		client(&entries[i], arg);
+	}
+
+	return 0;
+}
+
+/* Frees array of mount entries. */
+static void
+free_mnt_entries(struct mntent *entries, unsigned int nentries)
+{
+	unsigned int i;
+
+	for(i = 0; i < nentries; ++i)
+	{
+		free_mnt_entry(&entries[i]);
+	}
+
+	free(entries);
+}
+
+/* Reads in array of mount entries.  Always sets *nentries.  Returns the array,
+ * which might be NULL if empty.  On memory allocation error, skips entries. */
+struct mntent *
+read_mnt_entries(unsigned int *nentries)
+{
+	FILE *f;
+	struct mntent *entries = NULL;
+	struct mntent *ent;
+
+	*nentries = 0U;
+
+	if((f = setmntent("/etc/mtab", "r")) == NULL)
+	{
+		return NULL;
+	}
+
 	while((ent = getmntent(f)) != NULL)
 	{
-		client(ent, arg);
+		void *p = realloc(entries, sizeof(*entries)*(*nentries + 1));
+		if(p != NULL)
+		{
+			entries = p;
+			if(clone_mnt_entry(&entries[*nentries], ent) == 0)
+			{
+				++*nentries;
+			}
+		}
 	}
 
 	endmntent(f);
+
+	return entries;
+}
+
+/* Clones *rhs mount entry into *lhs, which is assumed to do not contain data.
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs)
+{
+	lhs->mnt_fsname = strdup(rhs->mnt_fsname);
+	lhs->mnt_dir = strdup(rhs->mnt_dir);
+	lhs->mnt_type = strdup(rhs->mnt_type);
+	lhs->mnt_opts = strdup(rhs->mnt_opts);
+	lhs->mnt_freq = rhs->mnt_freq;
+	lhs->mnt_passno = rhs->mnt_passno;
+
+	if(lhs->mnt_fsname == NULL || lhs->mnt_dir == NULL || lhs->mnt_type == NULL ||
+			lhs->mnt_opts == NULL)
+	{
+		free_mnt_entry(lhs);
+		return 1;
+	}
+
 	return 0;
+}
+
+/* Frees single mount entry. */
+static void
+free_mnt_entry(struct mntent *entry)
+{
+	free(entry->mnt_fsname);
+	free(entry->mnt_dir);
+	free(entry->mnt_type);
+	free(entry->mnt_opts);
 }
 
 /* Checks that the str has at least one of comma separated list (the list) items
@@ -522,6 +619,26 @@ int
 update_dir_mtime(FileView *view)
 {
 	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
+}
+
+void
+wait_for_signal(void)
+{
+	pause();
+}
+
+void
+stop_process(void)
+{
+	void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
+	kill(0, SIGTSTP);
+	signal(SIGTSTP, saved_stp_sig_handler);
+}
+
+void
+update_terminal_settings(void)
+{
+	/* Do nothing. */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

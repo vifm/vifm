@@ -148,12 +148,8 @@ init_config(void)
 	cfg.hl_search = 1;
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
-	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
-#ifndef _WIN32
-	cfg.slow_fs_list = strdup("");
-#endif
 	cfg.scroll_bind = 0;
 	cfg.wrap_scan = 1;
 	cfg.inc_search = 0;
@@ -179,6 +175,8 @@ init_config(void)
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
 
+	cfg.slow_fs_list = strdup("");
+
 	cfg.cd_path = strdup(env_get_def("CDPATH", DEFAULT_CD_PATH));
 	replace_char(cfg.cd_path, ':', ',');
 
@@ -189,6 +187,9 @@ init_config(void)
 	cfg.border_filler = strdup(" ");
 
 	cfg.chase_links = 0;
+
+	cfg.timeout_len = 1000;
+	cfg.min_timeout_len = 150;
 
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");

@@ -21,10 +21,6 @@
 
 #include <curses.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */
@@ -47,84 +43,29 @@
 #include "ipc.h"
 #include "status.h"
 
+static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
 static void process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 
-static wchar_t buf[128];
-static int pos;
+/* Input buffer. */
+static wchar_t input_buf[128];
+/* Current position in the input buffer. */
+static int input_buf_pos;
 
-#ifdef _WIN32
-static void
-update_win_console(void)
-{
-	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_ECHO_INPUT |
-			ENABLE_EXTENDED_FLAGS | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT |
-			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
-}
-#endif
-
-static int
-read_char(WINDOW *win, wint_t *c, int timeout)
-{
-	static const int T = 150;
-	static const int IPC_F = 10;
-
-	int i;
-	int result = ERR;
-
-	for(i = 0; i <= timeout/T; i++)
-	{
-		int j;
-
-		process_scheduled_updates();
-
-		if(should_check_views_for_changes())
-		{
-			check_view_for_changes(curr_view);
-			check_view_for_changes(other_view);
-		}
-
-		check_background_jobs();
-
-		for(j = 0; j < IPC_F; j++)
-		{
-			ipc_check();
-			wtimeout(win, MIN(T, timeout)/IPC_F);
-
-			if((result = wget_wch(win, c)) != ERR)
-			{
-				break;
-			}
-
-			process_scheduled_updates();
-		}
-		if(result != ERR)
-		{
-			break;
-		}
-
-		timeout -= T;
-	}
-	return result;
-}
-
-/*
- * Main Loop
- * Everything is driven from this function with the exception of
- * signals which are handled in signals.c
- */
 void
 main_loop(void)
 {
+	/* TODO: refactor this function main_loop(). */
+
 	LOG_FUNC_ENTER;
 
 	int last_result = 0;
 	int wait_enter = 0;
 	int timeout = cfg.timeout_len;
 
-	buf[0] = L'\0';
+	input_buf[0] = L'\0';
 	while(1)
 	{
 		wchar_t c;
@@ -133,9 +74,7 @@ main_loop(void)
 
 		is_term_working();
 
-#ifdef _WIN32
-		update_win_console();
-#endif
+		update_terminal_settings();
 
 		lwin.user_selection = 1;
 		rwin.user_selection = 1;
@@ -152,9 +91,7 @@ main_loop(void)
 			touchwin(status_bar);
 			wrefresh(status_bar);
 
-#ifndef _WIN32
-			pause();
-#endif
+			wait_for_signal();
 			continue;
 		}
 		else if(curr_stats.too_small_term < 0)
@@ -172,26 +109,33 @@ main_loop(void)
 
 		modes_pre();
 
-		/* This waits for timeout then skips if no keypress. */
-		ret = read_char(status_bar, (wint_t*)&c, timeout);
+		check_background_jobs();
+
+		/* Waits for timeout then skips if no keypress.  Short-circuit if we're not
+		 * waiting for the next key after timeout. */
+		do
+		{
+			ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
+			if(ret == ERR && input_buf_pos == 0)
+			{
+				timeout = cfg.timeout_len;
+				continue;
+			}
+			break;
+		}
+		while(1);
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
 		(void)vifm_chdir(curr_view->curr_dir);
 
-		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
+		if(ret != ERR && input_buf_pos != ARRAY_LEN(input_buf) - 2)
 		{
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
 				def_prog_mode();
 				endwin();
-#ifndef _WIN32
-				{
-					void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
-					kill(0, SIGTSTP);
-					signal(SIGTSTP, saved_stp_sig_handler);
-				}
-#endif
+				stop_process();
 				continue;
 			}
 
@@ -204,8 +148,8 @@ main_loop(void)
 					continue;
 			}
 
-			buf[pos++] = c;
-			buf[pos] = L'\0';
+			input_buf[input_buf_pos++] = c;
+			input_buf[input_buf_pos] = L'\0';
 		}
 
 		if(wait_enter && ret == ERR)
@@ -214,36 +158,36 @@ main_loop(void)
 		counter = get_key_counter();
 		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
 		{
-			last_result = execute_keys_timed_out(buf);
+			last_result = execute_keys_timed_out(input_buf);
 			counter = get_key_counter() - counter;
-			assert(counter <= pos);
+			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
-				memmove(buf, buf + counter,
-						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+				memmove(input_buf, input_buf + counter,
+						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
 		}
 		else
 		{
 			if(ret != ERR)
 				curr_stats.save_msg = 0;
-			last_result = execute_keys(buf);
+			last_result = execute_keys(input_buf);
 			counter = get_key_counter() - counter;
-			assert(counter <= pos);
+			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
-				pos -= counter;
-				memmove(buf, buf + counter,
-						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+				input_buf_pos -= counter;
+				memmove(input_buf, input_buf + counter,
+						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
 				{
-					modupd_input_bar(buf);
+					modupd_input_bar(input_buf);
 				}
 
-				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
+				if(last_result == KEYS_WAIT_SHORT && wcscmp(input_buf, L"\033") == 0)
 				{
 					timeout = 1;
 				}
@@ -266,8 +210,8 @@ main_loop(void)
 
 		process_scheduled_updates();
 
-		pos = 0;
-		buf[0] = L'\0';
+		input_buf_pos = 0;
+		input_buf[0] = L'\0';
 		clear_input_bar();
 
 		if(is_status_bar_multiline())
@@ -283,6 +227,53 @@ main_loop(void)
 		(void)vifm_chdir(curr_view->curr_dir);
 		modes_post();
 	}
+}
+
+/* Sub-loop of the main loop that "asynchronously" queries for the input
+ * performing the following tasks while waiting for input:
+ *  - checks for new IPC messages;
+ *  - checks whether contents of displayed directories changed;
+ *  - redraws UI if requested.
+ * Returns KEY_CODE_YES for functional keys, OK for wide character and ERR
+ * otherwise (e.g. after timeout). */
+static int
+get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
+{
+	const int IPC_F = (ipc_enabled() && ipc_server()) ? 10 : 1;
+
+	do
+	{
+		int i;
+
+		process_scheduled_updates();
+
+		if(should_check_views_for_changes())
+		{
+			check_view_for_changes(curr_view);
+			check_view_for_changes(other_view);
+		}
+
+		for(i = 0; i < IPC_F; ++i)
+		{
+			int result;
+
+			ipc_check();
+			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
+
+			result = wget_wch(win, c);
+			if(result != ERR)
+			{
+				return result;
+			}
+
+			process_scheduled_updates();
+		}
+
+		timeout -= cfg.min_timeout_len;
+	}
+	while(timeout > 0);
+
+	return ERR;
 }
 
 /* Updates TUI or its elements if something is scheduled. */
@@ -347,21 +338,21 @@ check_view_for_changes(FileView *view)
 {
 	if(window_shows_dirlist(view))
 	{
-		check_if_filelists_have_changed(view);
+		check_if_filelist_have_changed(view);
 	}
 }
 
 void
 update_input_buf(void)
 {
-	wprintw(input_win, "%ls", buf);
+	wprintw(input_win, "%ls", input_buf);
 	wrefresh(input_win);
 }
 
 int
 is_input_buf_empty(void)
 {
-	return pos == 0;
+	return input_buf_pos == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

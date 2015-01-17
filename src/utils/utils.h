@@ -179,6 +179,16 @@ void display_help(const char cmd[]);
  * non-zero is returned. */
 int update_dir_mtime(FileView *view);
 
+/* Suspends process until external signal comes. */
+void wait_for_signal(void);
+
+/* Suspends process as a terminal job. */
+void stop_process(void);
+
+/* Resets terminal to its normal state, if needed.  E.g. after some programs run
+ * by Vifm messed it up. */
+void update_terminal_settings(void);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

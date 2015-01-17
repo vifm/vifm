@@ -20,8 +20,12 @@
 #ifndef VIFM__MAIN_LOOP_H__
 #define VIFM__MAIN_LOOP_H__
 
+/* Everything is driven from this function with the exception of
+ * signals which are handled in signals.c. */
 void main_loop(void);
+
 void update_input_buf(void);
+
 int is_input_buf_empty(void);
 
 #endif /* VIFM__MAIN_LOOP_H__ */
