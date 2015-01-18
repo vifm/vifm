@@ -580,9 +580,7 @@ draw(void)
 
 	esc_state_init(&state, &cs->color[WIN_COLOR]);
 
-	wbkgdset(vi->view->win,
-			COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr);
-	werase(vi->view->win);
+	ui_view_erase(vi->view);
 
 	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{

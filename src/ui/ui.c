@@ -1406,6 +1406,15 @@ ui_view_get_cs(const FileView *view)
 }
 
 void
+ui_view_erase(FileView *view)
+{
+	const col_scheme_t *cs = ui_view_get_cs(view);
+	const int bg = COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr;
+	wbkgdset(view->win, bg);
+	werase(view->win);
+}
+
+void
 ui_view_schedule_redraw(FileView *view)
 {
 	view->postponed_redraw = get_updated_time(view->postponed_redraw);

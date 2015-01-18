@@ -422,6 +422,9 @@ int ui_view_available_width(const FileView *const view);
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const FileView *view);
 
+/* Erases view window by filling it with the background color. */
+void ui_view_erase(FileView *view);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

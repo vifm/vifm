@@ -878,7 +878,6 @@ draw_dir_list(FileView *view)
 static void
 draw_dir_list_only(FileView *view)
 {
-	const col_scheme_t *cs;
 	int x;
 	int cell;
 	size_t col_width;
@@ -912,10 +911,7 @@ draw_dir_list_only(FileView *view)
 
 	top = calculate_top_position(view, top);
 
-	cs = ui_view_get_cs(view);
-	wbkgdset(view->win,
-			COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr);
-	werase(view->win);
+	ui_view_erase(view);
 
 	cell = 0;
 	for(x = top; x < view->list_rows; ++x)

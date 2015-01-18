@@ -84,7 +84,6 @@ quick_view_file(FileView *view)
 {
 	char path[PATH_MAX];
 	const dir_entry_t *entry;
-	const col_scheme_t *cs;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -106,10 +105,7 @@ quick_view_file(FileView *view)
 		return;
 	}
 
-	cs = ui_view_get_cs(other_view);
-	wbkgdset(other_view->win,
-			COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr);
-	werase(other_view->win);
+	ui_view_erase(other_view);
 
 	entry = &view->dir_entry[view->list_pos];
 	get_full_path_of(entry, sizeof(path), path);
