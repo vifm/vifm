@@ -39,6 +39,12 @@ vle_mode_get_primary(void)
 	return primary_mode;
 }
 
+int
+vle_primary_mode_is(vle_mode_t mode)
+{
+	return primary_mode == mode;
+}
+
 void
 vle_mode_set(vle_mode_t mode, VleModeType type)
 {

@@ -143,7 +143,6 @@ static size_t calculate_column_width(FileView *view);
 static void navigate_to_history_pos(FileView *view, int pos);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
-static int primary_mode_is(vle_mode_t mode);
 static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
@@ -3495,20 +3494,13 @@ window_shows_dirlist(const FileView *const view)
 		return 0;
 	}
 
-	if(NONE(primary_mode_is, NORMAL_MODE, VISUAL_MODE, VIEW_MODE, CMDLINE_MODE))
+	if(NONE(vle_primary_mode_is, NORMAL_MODE, VISUAL_MODE, VIEW_MODE,
+				CMDLINE_MODE))
 	{
 		return 0;
 	}
 
 	return 1;
-}
-
-/* Checks that primary mode is the mode.  Returns non-zero if so, otherwise zero
- * is returned. */
-static int
-primary_mode_is(vle_mode_t mode)
-{
-	return vle_mode_get_primary() == mode;
 }
 
 void
