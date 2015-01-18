@@ -421,7 +421,7 @@ complete_highlight_groups(const char *str)
 {
 	int i;
 	const size_t len = strlen(str);
-	for(i = 0; i < MAXNUM_COLOR - 2; i++)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
 		{
