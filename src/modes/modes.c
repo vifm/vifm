@@ -325,7 +325,7 @@ clear_input_bar(void)
 int
 is_in_menu_like_mode(void)
 {
-	return ANY(vle_mode_is, MENU_MODE, FILE_INFO_MODE);
+	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE);
 }
 
 void
