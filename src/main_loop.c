@@ -25,7 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <signal.h> /* signal() */
-#include <stddef.h> /* size_t wchar_t wint_t */
+#include <stddef.h> /* NULL size_t wchar_t wint_t */
 #include <string.h> /* memmove() strncpy() */
 #include <wchar.h> /* wcslen() wcscmp() */
 
@@ -49,10 +49,10 @@ static void process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 
-/* Input buffer. */
-static wchar_t input_buf[128];
-/* Current position in the input buffer. */
-static int input_buf_pos;
+/* Current input buffer. */
+static const wchar_t *curr_input_buf;
+/* Current position in current input buffer. */
+static const int *curr_input_buf_pos;
 
 void
 main_loop(void)
@@ -61,11 +61,18 @@ main_loop(void)
 
 	LOG_FUNC_ENTER;
 
+	wchar_t input_buf[128];
+	int input_buf_pos;
+
 	int last_result = 0;
 	int wait_enter = 0;
 	int timeout = cfg.timeout_len;
 
 	input_buf[0] = L'\0';
+	input_buf_pos = 0;
+	curr_input_buf = &input_buf[0];
+	curr_input_buf_pos = &input_buf_pos;
+
 	while(1)
 	{
 		wchar_t c;
@@ -346,14 +353,14 @@ void
 update_input_buf(void)
 {
 	werase(input_win);
-	wprintw(input_win, "%ls", input_buf);
+	wprintw(input_win, "%ls", (curr_input_buf == NULL) ? L"" : curr_input_buf);
 	wrefresh(input_win);
 }
 
 int
 is_input_buf_empty(void)
 {
-	return input_buf_pos == 0;
+	return curr_input_buf_pos == NULL || *curr_input_buf_pos == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
