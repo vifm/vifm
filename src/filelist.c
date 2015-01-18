@@ -276,30 +276,31 @@ static int
 prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 		int line_color, int current)
 {
-	col_attr_t col = view->cs.color[WIN_COLOR];
+	const col_scheme_t *const cs = ui_view_get_cs(view);
+	col_attr_t col = cs->color[WIN_COLOR];
 
 	/* File-specific highlight affects only primary field for non-current lines
 	 * and whole line for the current line. */
 	if(primary || current)
 	{
-		mix_colors(&col, &view->cs.color[line_color]);
+		mix_colors(&col, &cs->color[line_color]);
 		mix_in_hi(view, entry, &col);
 	}
 
 	if(entry->selected)
 	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
 	if(current)
 	{
 		if(view == curr_view)
 		{
-			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
 		}
-		else if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+		else if(is_color_set(&cs->color[OTHER_LINE_COLOR]))
 		{
-			mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+			mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 		}
 	}
 
@@ -877,7 +878,7 @@ draw_dir_list(FileView *view)
 static void
 draw_dir_list_only(FileView *view)
 {
-	int attr;
+	const col_scheme_t *cs;
 	int x;
 	int cell;
 	size_t col_width;
@@ -913,15 +914,9 @@ draw_dir_list_only(FileView *view)
 
 	/* Colorize the files. */
 
-	if(view->local_cs)
-	{
-		attr = view->cs.color[WIN_COLOR].attr;
-	}
-	else
-	{
-		attr = cfg.cs.color[WIN_COLOR].attr;
-	}
-	wbkgdset(view->win, COLOR_PAIR(view->cs.pair[WIN_COLOR]) | attr);
+	cs = ui_view_get_cs(view);
+	wbkgdset(view->win,
+			COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr);
 	werase(view->win);
 
 	cell = 0;
@@ -1372,19 +1367,20 @@ put_inactive_mark(FileView *view)
 static int
 prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 {
-	col_attr_t col = view->cs.color[WIN_COLOR];
+	const col_scheme_t *cs = ui_view_get_cs(view);
+	col_attr_t col = cs->color[WIN_COLOR];
 
-	mix_colors(&col, &view->cs.color[line_color]);
+	mix_colors(&col, &cs->color[line_color]);
 	mix_in_hi(view, entry, &col);
 
 	if(entry->selected)
 	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
-	if(is_color_set(&view->cs.color[OTHER_LINE_COLOR]))
+	if(is_color_set(&cs->color[OTHER_LINE_COLOR]))
 	{
-		mix_colors(&col, &view->cs.color[OTHER_LINE_COLOR]);
+		mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 	}
 
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;

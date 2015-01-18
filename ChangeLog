@@ -109,6 +109,8 @@
 
 	Fixed file name case change undoing/redoing on Windows.
 
+	Fixed view background update on ":highlight Win ...".  Thanks to hofheinz.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
