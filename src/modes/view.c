@@ -584,7 +584,7 @@ draw(void)
 			COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr);
 	werase(vi->view->win);
 
-	for(vl = 0, l = vi->line; l < max_l && vl < height; l++)
+	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{
 		int offset = 0;
 		int t = 0;

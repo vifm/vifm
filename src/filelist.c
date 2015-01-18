@@ -903,16 +903,14 @@ draw_dir_list_only(FileView *view)
 
 	ui_view_title_update(view);
 
-	/* This is needed for reloading a list that has had files deleted */
-	while((view->list_rows - view->list_pos) <= 0)
+	/* This is needed for reloading a list that has had files deleted. */
+	while(view->list_rows - view->list_pos <= 0)
 	{
-		view->list_pos--;
-		view->curr_line--;
+		--view->list_pos;
+		--view->curr_line;
 	}
 
 	top = calculate_top_position(view, top);
-
-	/* Colorize the files. */
 
 	cs = ui_view_get_cs(view);
 	wbkgdset(view->win,
@@ -920,7 +918,7 @@ draw_dir_list_only(FileView *view)
 	werase(view->win);
 
 	cell = 0;
-	for(x = top; x < view->list_rows; x++)
+	for(x = top; x < view->list_rows; ++x)
 	{
 		const column_data_t cdt =
 		{
