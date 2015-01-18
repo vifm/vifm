@@ -55,7 +55,7 @@ static const wchar_t *curr_input_buf;
 static const int *curr_input_buf_pos;
 
 void
-main_loop(void)
+main_loop(const int *quit)
 {
 	/* TODO: refactor this function main_loop(). */
 
@@ -73,7 +73,7 @@ main_loop(void)
 	curr_input_buf = &input_buf[0];
 	curr_input_buf_pos = &input_buf_pos;
 
-	while(1)
+	while(!*quit)
 	{
 		wchar_t c;
 		size_t counter;

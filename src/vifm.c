@@ -302,6 +302,8 @@ main(int argc, char *argv[])
 {
 	/* TODO: refactor main() function */
 
+	static const int quit = 0;
+
 	char dir[PATH_MAX];
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
@@ -457,7 +459,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
-	main_loop();
+	main_loop(&quit);
 
 	return 0;
 }
