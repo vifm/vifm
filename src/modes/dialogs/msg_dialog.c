@@ -27,17 +27,129 @@
 #include <string.h> /* strdup() strchr() strlen() */
 
 #include "../../cfg/config.h"
+#include "../../engine/keys.h"
+#include "../../engine/mode.h"
 #include "../../modes/modes.h"
 #include "../../ui/ui.h"
+#include "../../utils/macros.h"
 #include "../../utils/str.h"
+#include "../../main_loop.h"
 #include "../../status.h"
 
+/* Kinds of dialog results. */
+typedef enum
+{
+	R_OK,     /* Agreed. */
+	R_CANCEL, /* Cancelled. */
+	R_YES,    /* Confirmed. */
+	R_NO,     /* Denied. */
+}
+Result;
+
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
+static void handle_response(Result r);
+static void leave(Result r);
 static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
+
+static keys_add_info_t builtin_cmds[] = {
+	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
+	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+};
+
+/* Mode that was active before the dialog. */
+static vle_mode_t prev_mode;
+/* Main loop quit flag. */
+static int quit;
+/* Dialog result. */
+static Result result;
+/* Previous value of curr_stats.use_input_bar. */
+static int prev_use_input_bar;
+/* Bit mask of R_* kinds of results that are allowed. */
+static int accept_mask;
+
+void
+init_msg_dialog_mode(void)
+{
+	int ret_code;
+
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
+	assert(ret_code == 0 && "Failed to register msg dialog keys.");
+
+	(void)ret_code;
+}
+
+/* Cancels the query. */
+static void
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(R_CANCEL);
+}
+
+/* Redraws the screen. */
+static void
+cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
+{
+	update_screen(UT_REDRAW);
+}
+
+/* Agrees to the query. */
+static void
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(R_OK);
+}
+
+/* Denies the query. */
+static void
+cmd_n(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(R_NO);
+}
+
+/* Confirms the query. */
+static void
+cmd_y(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_response(R_YES);
+}
+
+/* Processes users choice.  Leaves the mode if the result is found among the
+ * list of expected results. */
+static void
+handle_response(Result r)
+{
+	/* Stay in message mode unless such result is not expected. */
+	if(accept_mask & MASK(r))
+	{
+		leave(r);
+	}
+}
+
+/* Leaves the mode with given result. */
+static void
+leave(Result r)
+{
+	curr_stats.use_input_bar = prev_use_input_bar;
+	result = r;
+
+	vle_mode_set(prev_mode, VMT_SECONDARY);
+
+	quit = 1;
+}
 
 void
 redraw_msg_dialog(void)
@@ -100,7 +212,6 @@ prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip)
 {
 	static int skip_until_started;
-	int key;
 
 	if(curr_stats.load_stage == 0)
 		return 1;
@@ -117,12 +228,10 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	redraw_error_msg(title, message, prompt_skip);
 
-	do
-		key = wgetch(error_win);
-	while(key != 13 && (!prompt_skip || key != 3)); /* ascii Return, Ctrl-c */
+	enter(MASK(R_OK) | (prompt_skip ? MASK(R_CANCEL) : 0));
 
 	if(curr_stats.load_stage < 2)
-		skip_until_started = key == 3;
+		skip_until_started = (result == R_CANCEL);
 
 	werase(error_win);
 	wrefresh(error_win);
@@ -133,25 +242,19 @@ prompt_error_msg_internal(const char title[], const char message[],
 	if(curr_stats.need_update != UT_NONE)
 		modes_redraw();
 
-	return key == 3;
+	return result == R_CANCEL;
 }
-
 
 int
 query_user_menu(const char title[], const char message[])
 {
-	int key;
 	char *dup = strdup(message);
 
 	curr_stats.errmsg_shown = 2;
 
 	redraw_error_msg(title, message, 0);
 
-	do
-	{
-		key = wgetch(error_win);
-	}
-	while(key != 'y' && key != 'n' && key != ERR);
+	enter(MASK(R_YES, R_NO));
 
 	free(dup);
 
@@ -167,9 +270,24 @@ query_user_menu(const char title[], const char message[])
 	if(curr_stats.need_update != UT_NONE)
 		update_screen(UT_FULL);
 
-	return key == 'y';
+	return result == R_YES;
 }
 
+/* Enters the mode, which won't be left until one of expected results specified
+ * by the mask is picked by the user. */
+static void
+enter(int result_mask)
+{
+	accept_mask = result_mask;
+	prev_use_input_bar = curr_stats.use_input_bar;
+	curr_stats.use_input_bar = 0;
+
+	prev_mode = vle_mode_get();
+	vle_mode_set(MSG_MODE, VMT_SECONDARY);
+
+	quit = 0;
+	main_loop(&quit);
+}
 
 /* Draws error message on the screen or redraws the last message when both
  * title_arg and message_arg are NULL. */
@@ -268,6 +386,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		text = "Enter [y]es or [n]o";
 	}
 	mvwaddstr(error_win, y - 2, (x - strlen(text))/2, text);
+
+	wrefresh(error_win);
 }
 
 int

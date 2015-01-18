@@ -22,6 +22,9 @@
 
 #include "../../ui/ui.h"
 
+/* Initializes message dialog mode. */
+void init_msg_dialog_mode(void);
+
 /* Redraws currently visible error message on the screen. */
 void redraw_msg_dialog(void);
 

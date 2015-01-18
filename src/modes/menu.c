@@ -306,14 +306,6 @@ menu_redraw(void)
 {
 	was_redraw = 1;
 	redraw_menu(menu);
-
-	if(curr_stats.errmsg_shown)
-	{
-		redraw_msg_dialog();
-		redrawwin(error_win);
-		wnoutrefresh(error_win);
-		doupdate();
-	}
 }
 
 static void
