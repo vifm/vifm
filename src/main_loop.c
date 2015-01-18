@@ -358,9 +358,12 @@ check_view_for_changes(FileView *view)
 void
 update_input_buf(void)
 {
-	werase(input_win);
-	wprintw(input_win, "%ls", (curr_input_buf == NULL) ? L"" : curr_input_buf);
-	wrefresh(input_win);
+	if(curr_stats.use_input_bar)
+	{
+		werase(input_win);
+		wprintw(input_win, "%ls", (curr_input_buf == NULL) ? L"" : curr_input_buf);
+		wrefresh(input_win);
+	}
 }
 
 int
