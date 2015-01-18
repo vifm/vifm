@@ -61,6 +61,9 @@ main_loop(const int *quit)
 
 	LOG_FUNC_ENTER;
 
+	const wchar_t *const prev_input_buf = curr_input_buf;
+	const int *const prev_input_buf_pos = curr_input_buf_pos;
+
 	wchar_t input_buf[128];
 	int input_buf_pos;
 
@@ -234,6 +237,9 @@ main_loop(const int *quit)
 		(void)vifm_chdir(curr_view->curr_dir);
 		modes_post();
 	}
+
+	curr_input_buf = prev_input_buf;
+	curr_input_buf_pos = prev_input_buf_pos;
 }
 
 /* Sub-loop of the main loop that "asynchronously" queries for the input
