@@ -94,36 +94,41 @@
  * ALL(isdigit, 'z', '9') == 0 */
 #define ALL(f, ...) ALL_(f, COUNT(__VA_ARGS__), __VA_ARGS__)
 #define ALL_(f, n, ...) ALL__(f, n, __VA_ARGS__)
-#define ALL__(f, n, ...) comb##n(f, !!, &&, __VA_ARGS__)
+#define ALL__(f, n, ...) comb##n((f), !!, &&, __VA_ARGS__)
 
 /* Evaluates to "true" if any of expressions is true.  Examples:
  * ANY(isdigit, 'z', '9') == 1
  * ANY(isdigit, 'z', 'a') == 0 */
 #define ANY(f, ...) ({ ANY_(f, COUNT(__VA_ARGS__), __VA_ARGS__); })
 #define ANY_(f, n, ...) ANY__(f, n, __VA_ARGS__)
-#define ANY__(f, n, ...) comb##n(f, !!, ||, __VA_ARGS__)
+#define ANY__(f, n, ...) comb##n((f), !!, ||, __VA_ARGS__)
 
 /* Evaluates to "true" if none of expressions is true.  Examples:
  * NONE(isdigit, 'z', 'a') == 1
  * NONE(isdigit, '1', '9') == 0 */
 #define NONE(f, ...) ({ NONE_(f, COUNT(__VA_ARGS__), __VA_ARGS__); })
 #define NONE_(f, n, ...) NONE__(f, n, __VA_ARGS__)
-#define NONE__(f, n, ...) comb##n(f, !, &&, __VA_ARGS__)
+#define NONE__(f, n, ...) comb##n((f), !, &&, __VA_ARGS__)
+
+/* Makes bit mask from a list of bits. */
+#define MASK(...) MASK_(COUNT(__VA_ARGS__), __VA_ARGS__)
+#define MASK_(n, ...) MASK__(n, __VA_ARGS__)
+#define MASK__(n, ...) comb##n(<<, 1, |, __VA_ARGS__)
 
 /* Neat trick to obtain number number of variadic arguments. */
 #define COUNT(...) COUNT_(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #define COUNT_(_1, _2, _3, _4, _5, _6, _7, _8, _9, n, ...) n
 
 /* Helper macros to process variable arguments of macros. */
-#define comb9(f, n, op, val, ...) (n((f)(val)) op comb8(f, n, op, __VA_ARGS__))
-#define comb8(f, n, op, val, ...) (n((f)(val)) op comb7(f, n, op, __VA_ARGS__))
-#define comb7(f, n, op, val, ...) (n((f)(val)) op comb6(f, n, op, __VA_ARGS__))
-#define comb6(f, n, op, val, ...) (n((f)(val)) op comb5(f, n, op, __VA_ARGS__))
-#define comb5(f, n, op, val, ...) (n((f)(val)) op comb4(f, n, op, __VA_ARGS__))
-#define comb4(f, n, op, val, ...) (n((f)(val)) op comb3(f, n, op, __VA_ARGS__))
-#define comb3(f, n, op, val, ...) (n((f)(val)) op comb2(f, n, op, __VA_ARGS__))
-#define comb2(f, n, op, val, ...) (n((f)(val)) op comb1(f, n, op, __VA_ARGS__))
-#define comb1(f, n, op, val)      (n((f)(val)))
+#define comb9(f, n, op, val, ...) (n f(val) op comb8(f, n, op, __VA_ARGS__))
+#define comb8(f, n, op, val, ...) (n f(val) op comb7(f, n, op, __VA_ARGS__))
+#define comb7(f, n, op, val, ...) (n f(val) op comb6(f, n, op, __VA_ARGS__))
+#define comb6(f, n, op, val, ...) (n f(val) op comb5(f, n, op, __VA_ARGS__))
+#define comb5(f, n, op, val, ...) (n f(val) op comb4(f, n, op, __VA_ARGS__))
+#define comb4(f, n, op, val, ...) (n f(val) op comb3(f, n, op, __VA_ARGS__))
+#define comb3(f, n, op, val, ...) (n f(val) op comb2(f, n, op, __VA_ARGS__))
+#define comb2(f, n, op, val, ...) (n f(val) op comb1(f, n, op, __VA_ARGS__))
+#define comb1(f, n, op, val)      (n f(val))
 
 #endif /* VIFM__UTILS__MACROS_H__ */
 
