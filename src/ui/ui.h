@@ -418,6 +418,10 @@ FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
  * width. */
 int ui_view_available_width(const FileView *const view);
 
+/* Gets color scheme that corresponds to the view.  Returns pointer to the color
+ * scheme. */
+const col_scheme_t * ui_view_get_cs(const FileView *view);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

@@ -1394,7 +1394,7 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 static void
 mix_in_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 {
-	const col_scheme_t *const cs = view->local_cs ? &view->cs : &cfg.cs;
+	const col_scheme_t *const cs = ui_view_get_cs(view);
 	const col_attr_t *color = get_file_hi(cs, entry->name, &entry->hi_num);
 	if(color != NULL)
 	{
