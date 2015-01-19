@@ -78,7 +78,9 @@ my %typecol = %$typecol;
 my %colext = &invert_extcol(%extcol);
 
 # Print out Vifm commands to stdout.
+print "\" generic file types\n";
 &print_typecol(\%typecol);
+print "\" file name specific highlight\n";
 &print_colext(\%colext);
 
 # Aborts execution after displaying a message.
@@ -227,8 +229,6 @@ sub print_typecol
     my %typecol = %$typecol;
     return unless %typecol;
 
-    print "\" generic file types\n";
-
     foreach my $type (sort keys %typecol) {
         my $color = $typecol{$type};
         my $hi = &color_to_hi($color);
@@ -243,8 +243,6 @@ sub print_colext
     my $colext = shift;
     my %colext = %$colext;
     return unless %colext;
-
-    print "\" file name specific highlight\n";
 
     foreach my $color (sort keys %colext) {
         my $pattern = "{$colext{$color}}";
