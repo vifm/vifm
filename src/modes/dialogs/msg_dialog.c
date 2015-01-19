@@ -36,6 +36,14 @@
 #include "../../main_loop.h"
 #include "../../status.h"
 
+/* Kinds of dialogs. */
+typedef enum
+{
+	D_ERROR, /* Error message. */
+	D_QUERY, /* User query. */
+}
+Dialog;
+
 /* Kinds of dialog results. */
 typedef enum
 {
@@ -80,6 +88,8 @@ static Result result;
 static int prev_use_input_bar;
 /* Bit mask of R_* kinds of results that are allowed. */
 static int accept_mask;
+/* Type of active dialog message. */
+static Dialog msg_kind;
 
 void
 init_msg_dialog_mode(void)
@@ -224,7 +234,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 		return 0;
 	}
 
-	curr_stats.errmsg_shown = 1;
+	msg_kind = D_ERROR;
 
 	redraw_error_msg(title, message, prompt_skip);
 
@@ -235,8 +245,6 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	werase(error_win);
 	wrefresh(error_win);
-
-	curr_stats.errmsg_shown = 0;
 
 	modes_update();
 	if(curr_stats.need_update != UT_NONE)
@@ -250,15 +258,13 @@ query_user_menu(const char title[], const char message[])
 {
 	char *dup = strdup(message);
 
-	curr_stats.errmsg_shown = 2;
+	msg_kind = D_QUERY;
 
 	redraw_error_msg(title, message, 0);
 
 	enter(MASK(R_YES, R_NO));
 
 	free(dup);
-
-	curr_stats.errmsg_shown = 0;
 
 	werase(error_win);
 	wrefresh(error_win);
@@ -370,20 +376,17 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	if(title[0] != '\0')
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
-	if(curr_stats.errmsg_shown == 1)
+	if(msg_kind == D_QUERY)
 	{
-		if(ctrl_c)
-		{
-			text = "Press Return to continue or Ctrl-C to skip other error messages";
-		}
-		else
-		{
-			text = "Press Return to continue";
-		}
+		text = "Enter [y]es or [n]o";
+	}
+	else if(ctrl_c)
+	{
+		text = "Press Return to continue or Ctrl-C to skip other error messages";
 	}
 	else
 	{
-		text = "Enter [y]es or [n]o";
+		text = "Press Return to continue";
 	}
 	mvwaddstr(error_win, y - 2, (x - strlen(text))/2, text);
 

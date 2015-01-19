@@ -537,13 +537,6 @@ update_screen(UpdateType update_kind)
 	if(!curr_view->explore_mode)
 		move_to_list_pos(curr_view, curr_view->list_pos);
 
-	if(curr_stats.errmsg_shown)
-	{
-		redraw_msg_dialog();
-		update_window_lazy(error_win);
-		doupdate();
-	}
-
 	update_input_buf();
 
 	curr_stats.need_update = UT_NONE;
@@ -697,7 +690,7 @@ update_all_windows(void)
 		update_window_lazy(rtop_line2);
 	}
 
-	if(!curr_stats.errmsg_shown && curr_stats.load_stage >= 2)
+	if(curr_stats.load_stage >= 2)
 	{
 		doupdate();
 	}

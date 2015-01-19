@@ -91,8 +91,6 @@ typedef struct
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
-	int errmsg_shown; /* 0 - none, 1 - error, 2 - query */
-
 	int too_small_term;
 
 	tree_t dirsize_cache; /* ga command results */
