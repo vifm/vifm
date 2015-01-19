@@ -278,11 +278,11 @@ sub color_to_hi
             push @attrs, 'underline';
         } elsif ($component == 3 || $component == 7) {
             push @attrs, 'reverse';
-        } elsif ($component >= 30 || $component <= 37) {
+        } elsif ($component >= 30 && $component <= 37) {
             $fg = $COLORS[$component - 30];
         } elsif ($component == 39) {
             $fg = undef;
-        } elsif ($component >= 40 || $component <= 47) {
+        } elsif ($component >= 40 && $component <= 47) {
             $bg = $COLORS[$component - 40];
         } elsif ($component == 49) {
             $bg = undef;
