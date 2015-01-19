@@ -571,14 +571,18 @@ static void
 draw(void)
 {
 	int l, vl;
+	const col_scheme_t *cs = ui_view_get_cs(vi->view);
 	const int height = vi->view->window_rows - 1;
 	const int width = vi->view->window_width - 1;
 	const int max_l = MIN(vi->line + height, vi->nlines);
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
-	esc_state_init(&state, &vi->view->cs.color[WIN_COLOR]);
-	werase(vi->view->win);
-	for(vl = 0, l = vi->line; l < max_l && vl < height; l++)
+
+	esc_state_init(&state, &cs->color[WIN_COLOR]);
+
+	ui_view_erase(vi->view);
+
+	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{
 		int offset = 0;
 		int t = 0;

@@ -1399,6 +1399,21 @@ ui_view_available_width(const FileView *const view)
 	}
 }
 
+const col_scheme_t *
+ui_view_get_cs(const FileView *view)
+{
+	return view->local_cs ? &view->cs : &cfg.cs;
+}
+
+void
+ui_view_erase(FileView *view)
+{
+	const col_scheme_t *cs = ui_view_get_cs(view);
+	const int bg = COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr;
+	wbkgdset(view->win, bg);
+	werase(view->win);
+}
+
 void
 ui_view_schedule_redraw(FileView *view)
 {

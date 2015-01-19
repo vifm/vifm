@@ -105,7 +105,7 @@ quick_view_file(FileView *view)
 		return;
 	}
 
-	werase(other_view->win);
+	ui_view_erase(other_view);
 
 	entry = &view->dir_entry[view->list_pos];
 	get_full_path_of(entry, sizeof(path), path);
@@ -189,12 +189,15 @@ view_file(FILE *fp, int wrapped)
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_y = other_view->window_rows - 1;
 
+	const col_scheme_t *cs = ui_view_get_cs(other_view);
 	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
 	int y = LINE;
 	const char *res = get_line(fp, line, sizeof(line));
 	esc_state state;
-	esc_state_init(&state, &other_view->cs.color[WIN_COLOR]);
+
+	esc_state_init(&state, &cs->color[WIN_COLOR]);
+
 	while(res != NULL && y <= max_y)
 	{
 		int offset;

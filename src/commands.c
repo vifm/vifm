@@ -2571,7 +2571,7 @@ display_file_highlights(const char pattern[], int global)
 {
 	int i;
 
-	const col_scheme_t *cs = curr_view->local_cs ? &curr_view->cs : &cfg.cs;
+	const col_scheme_t *cs = ui_view_get_cs(curr_view);
 
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
@@ -2646,7 +2646,7 @@ get_all_highlights(void)
 {
 	static char msg[256*MAXNUM_COLOR];
 
-	const col_scheme_t *cs = curr_view->local_cs ? &curr_view->cs : &cfg.cs;
+	const col_scheme_t *cs = ui_view_get_cs(curr_view);
 	size_t msg_len = 0U;
 	int i;
 
