@@ -267,7 +267,16 @@ sub color_to_hi
     my $bg = undef;
 
     my @color_components = split(';', $color);
+    my $long_fg = 0;
+    my $long_bg = 0;
     foreach my $component (@color_components) {
+        if (&long_attr($component, \$fg, \$long_fg)) {
+            next;
+        }
+        if (&long_attr($component, \$bg, \$long_bg)) {
+            next;
+        }
+
         if ($component == 0) {
             @attrs = ();
             $fg = undef;
@@ -280,10 +289,14 @@ sub color_to_hi
             push @attrs, 'reverse';
         } elsif ($component >= 30 && $component <= 37) {
             $fg = $COLORS[$component - 30];
+        } elsif ($component == 38) {
+            $long_fg = 1;
         } elsif ($component == 39) {
             $fg = undef;
         } elsif ($component >= 40 && $component <= 47) {
             $bg = $COLORS[$component - 40];
+        } elsif ($component == 48) {
+            $long_bg = 1;
         } elsif ($component == 49) {
             $bg = undef;
         }
@@ -309,4 +322,29 @@ sub color_to_hi
     }
 
     return $hi_str;
+}
+
+# Parses long attribute (256-color).
+# * $component - attribute.
+# * \$col - final color storage.
+# * \$state - long attribute parsing state (0 - not active, 1 - start, 2 - mid).
+# Returns $consumed, where
+# * $consumed - true when component is consumed, false otherwise.
+sub long_attr
+{
+    my $component = shift;
+    my $col = shift;
+    my $state = shift;
+
+    if (${$state} == 1) {
+        if ($component == 5) {
+            $${state} = 2;
+            return 1;
+        }
+    } elsif (${$state} == 2) {
+        ${$col} = $component;
+        $${state} = 0;
+        return 1;
+    }
+    return 0;
 }
