@@ -72,7 +72,6 @@ static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
 static void create_windows(void);
-static void set_static_windows_attrs(void);
 static void update_geometry(void);
 static void clear_border(WINDOW *border);
 static void update_views(int reload);
@@ -106,7 +105,7 @@ ui_ruler_update(FileView *view)
 void
 ui_ruler_set(const char val[])
 {
-	const int x = getmaxx(ruler_win)- strlen(val);
+	const int x = getmaxx(ruler_win) - strlen(val);
 
 	werase(ruler_win);
 	mvwaddstr(ruler_win, 0, MAX(x, 0), val);
@@ -141,8 +140,6 @@ setup_ncurses_interface(void)
 	load_def_scheme();
 
 	create_windows();
-
-	set_static_windows_attrs();
 
 	cfg.tab_stop = TABSIZE;
 
@@ -196,21 +193,6 @@ create_windows(void)
 	status_bar = newwin(1, 1, 0, 0);
 	ruler_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
-}
-
-/* Set attributes for elements of status bar.  This is the only place where it's
- * done as they are not customizable separately. */
-static void
-set_static_windows_attrs(void)
-{
-	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
-
-	wattrset(ruler_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(ruler_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
-
-	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(input_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
 }
 
 void
@@ -874,6 +856,15 @@ update_attributes(void)
 	wbkgdset(sort_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
 	wbkgdset(change_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
 	wbkgdset(error_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
+
+	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
+
+	wattrset(ruler_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(ruler_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
+
+	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(input_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
 }
 
 void
