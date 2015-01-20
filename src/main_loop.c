@@ -345,6 +345,7 @@ check_view_for_changes(FileView *view)
 void
 update_input_buf(void)
 {
+	werase(input_win);
 	wprintw(input_win, "%ls", input_buf);
 	wrefresh(input_win);
 }
