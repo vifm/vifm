@@ -39,7 +39,7 @@ menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
          users_menu.c vifm_menu.c volumes_menu.c
 menus := $(addprefix menus/, $(menus))
 
-dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
+dialogs := attr_dialog_win.c change_dialog.c msg_dialog.c sort_dialog.c
 dialogs := $(addprefix dialogs/, $(dialogs))
 
 modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
@@ -57,11 +57,11 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(io) $(menus) $(modes) $(ui) \
                 $(utilities) background.c bookmarks.c bracket_notation.c \
                 builtin_functions.c color_manager.c color_scheme.c \
                 column_view.c commands.c commands_completion.c compile_info.c \
-                dir_stack.c escape.c file_magic.c filelist.c \
+                dir_stack.c escape.c event_loop.c file_magic.c filelist.c \
                 filename_modifiers.c fileops.c filetype.c fuse.c globals.c \
-                ipc.c macros.c main_loop.c ops.c opt_handlers.c path_env.c \
-                quickview.c registers.c running.c search.c signals.c sort.c \
-                status.c tags.c term_title.c trash.c types.c undo.c version.c \
+                ipc.c macros.c ops.c opt_handlers.c path_env.c quickview.c \
+                registers.c running.c search.c signals.c sort.c status.c \
+                tags.c term_title.c trash.c types.c undo.c version.c \
                 viewcolumns_parser.c vifmres.o vifm.c vim.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)

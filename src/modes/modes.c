@@ -30,10 +30,11 @@
 #include "../ui/ui.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
-#include "../main_loop.h"
+#include "../event_loop.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"
 #include "dialogs/change_dialog.h"
+#include "dialogs/msg_dialog.h"
 #include "dialogs/sort_dialog.h"
 #include "cmdline.h"
 #include "file_info.h"
@@ -52,6 +53,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT,                /* CHANGE_MODE */
 	MF_USES_COUNT,                /* VIEW_MODE */
 	0,                            /* FILE_INFO_MODE */
+	0,                            /* MSG_MODE */
 };
 ARRAY_GUARD(mode_flags, MODES_COUNT);
 
@@ -65,6 +67,7 @@ static char uses_input_bar[] = {
 	1, /* CHANGE_MODE */
 	1, /* VIEW_MODE */
 	1, /* FILE_INFO_MODE */
+	0, /* MSG_MODE */
 };
 ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
@@ -79,6 +82,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_change_dialog_mode, /* CHANGE_MODE */
 	&init_view_mode,          /* VIEW_MODE */
 	&init_file_info_mode,     /* FILE_INFO_MODE */
+	&init_msg_dialog_mode,    /* MSG_MODE */
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
@@ -221,9 +225,13 @@ modes_redraw(void)
 		redraw_cmdline();
 		goto finish;
 	}
-	else if(vle_mode_is(MENU_MODE))
+	else if(vle_primary_mode_is(MENU_MODE))
 	{
 		menu_redraw();
+		if(vle_mode_is(MSG_MODE))
+		{
+			redraw_msg_dialog();
+		}
 		goto finish;
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
@@ -254,6 +262,10 @@ modes_redraw(void)
 	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_redraw();
+	}
+	else if(vle_mode_is(MSG_MODE))
+	{
+		redraw_msg_dialog();
 	}
 
 finish:
@@ -325,7 +337,7 @@ clear_input_bar(void)
 int
 is_in_menu_like_mode(void)
 {
-	return ANY(vle_mode_is, MENU_MODE, FILE_INFO_MODE);
+	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE);
 }
 
 void

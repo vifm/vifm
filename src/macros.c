@@ -28,7 +28,7 @@
                        strdup() */
 
 #include "cfg/config.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "ui/ui.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"

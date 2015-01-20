@@ -25,6 +25,7 @@
 #include <string.h> /* strdup() strchr() strlen() */
 
 #include "../cfg/config.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"

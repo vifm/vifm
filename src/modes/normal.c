@@ -35,7 +35,7 @@
 #include "../cfg/hist.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"

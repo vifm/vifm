@@ -42,7 +42,7 @@
 #endif
 
 #include "cfg/config.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "utils/str.h"
 #include "utils/utils.h"

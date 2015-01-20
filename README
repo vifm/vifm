@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 10 January, 2015
+Updated: 20 January, 2015
 Version: 0.7.8
 
 Brief Description
@@ -119,6 +119,7 @@ Package content
     |  |  |  |-- attr_dialog_win.c - file properties dialog for MS Windows
     |  |  |  |                       systems
     |  |  |  |-- change_dialog.c - change dialog
+    |  |  |  |-- msg_dialog.c - information/error/prompt messages
     |  |  |  `-- sort_dialog.c - dialog to choose sort type
     |  |  |
     |  |  |-- cmdline.c - command line mode
@@ -167,6 +168,7 @@ Package content
     |  |-- commands_completion.c - handles command line completion
     |  |-- desktop.c - code that parses *.desktop files on *nix systems
     |  |-- escape.c - escape sequences related stuff
+    |  |-- event_loop.c - event dispatching loop
     |  |-- dir_stack.c - for :pushd and :popd commands
     |  |-- file_magic.c - determines programs associated with file using its
     |  |                  mime-type
@@ -178,7 +180,6 @@ Package content
     |  |-- globals.c - provides support of globals
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
-    |  |-- main_loop.c - the main loop
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
     |  |-- quickview.c - implementation of quick view

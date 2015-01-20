@@ -110,6 +110,7 @@ vifm_SOURCES = \
 	modes/dialogs/attr_dialog.h \
 	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
 	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
+	modes/dialogs/msg_dialog.c modes/dialogs/msg_dialog.h \
 	modes/dialogs/sort_dialog.c modes/dialogs/sort_dialog.h \
 	\
 	modes/cmdline.c modes/cmdline.h \
@@ -155,6 +156,7 @@ vifm_SOURCES = \
 	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
+	event_loop.c event_loop.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
@@ -164,7 +166,6 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
-	main_loop.c main_loop.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	path_env.c path_env.h \

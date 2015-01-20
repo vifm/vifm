@@ -32,7 +32,7 @@
 #include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
@@ -407,8 +407,6 @@ void
 view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
-
-	colmgr_reset();
 
 	try_redraw_explore_view(&lwin, VI_LWIN);
 	try_redraw_explore_view(&rwin, VI_RWIN);

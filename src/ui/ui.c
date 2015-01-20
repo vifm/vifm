@@ -41,7 +41,7 @@
 #include "../cfg/config.h"
 #include "../cfg/info.h"
 #include "../engine/mode.h"
-#include "../menus/menus.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../utils/fs.h"
@@ -55,8 +55,8 @@
 #include "../color_manager.h"
 #include "../color_scheme.h"
 #include "../colors.h"
+#include "../event_loop.h"
 #include "../filelist.h"
-#include "../main_loop.h"
 #include "../opt_handlers.h"
 #include "../quickview.h"
 #include "../status.h"
@@ -537,13 +537,6 @@ update_screen(UpdateType update_kind)
 	if(!curr_view->explore_mode)
 		move_to_list_pos(curr_view, curr_view->list_pos);
 
-	if(curr_stats.errmsg_shown)
-	{
-		redraw_error_msg_window();
-		update_window_lazy(error_win);
-		doupdate();
-	}
-
 	update_input_buf();
 
 	curr_stats.need_update = UT_NONE;
@@ -697,7 +690,7 @@ update_all_windows(void)
 		update_window_lazy(rtop_line2);
 	}
 
-	if(!curr_stats.errmsg_shown && curr_stats.load_stage >= 2)
+	if(curr_stats.load_stage >= 2)
 	{
 		doupdate();
 	}

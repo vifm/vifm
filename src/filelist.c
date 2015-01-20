@@ -47,7 +47,7 @@
 #include "cfg/config.h"
 #include "compat/os.h"
 #include "engine/mode.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -3494,7 +3494,8 @@ window_shows_dirlist(const FileView *const view)
 		return 0;
 	}
 
-	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE, VIEW_MODE, CMDLINE_MODE))
+	if(NONE(vle_primary_mode_is, NORMAL_MODE, VISUAL_MODE, VIEW_MODE,
+				CMDLINE_MODE))
 	{
 		return 0;
 	}
@@ -3521,10 +3522,6 @@ pane_in_dir(const FileView *view, const char path[])
 	return paths_are_same(view->curr_dir, path);
 }
 
-/* Will remove dot and regexp filters if it's needed to make file visible.
- *
- * Returns non-zero if file was found.
- */
 int
 ensure_file_is_selected(FileView *view, const char name[])
 {

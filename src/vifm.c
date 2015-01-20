@@ -41,7 +41,7 @@
 #include "engine/mode.h"
 #include "engine/options.h"
 #include "engine/variables.h"
-#include "menus/menus.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/view.h"
 #include "ui/cancellation.h"
@@ -64,12 +64,12 @@
 #include "commands.h"
 #include "commands_completion.h"
 #include "dir_stack.h"
+#include "event_loop.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
 #include "fuse.h"
 #include "ipc.h"
-#include "main_loop.h"
 #include "ops.h"
 #include "opt_handlers.h"
 #include "path_env.h"
@@ -302,6 +302,8 @@ main(int argc, char *argv[])
 {
 	/* TODO: refactor main() function */
 
+	static const int quit = 0;
+
 	char dir[PATH_MAX];
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
@@ -457,7 +459,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
-	main_loop();
+	event_loop(&quit);
 
 	return 0;
 }

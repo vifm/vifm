@@ -148,13 +148,15 @@ redraw_sort_dialog(void)
 {
 	int x, y, cy;
 
+	y = (getmaxy(stdscr) - ((top + SK_COUNT) - 2 + 3))/2;
+	x = (getmaxx(stdscr) - SORT_WIN_WIDTH)/2;
 	wresize(sort_win, SK_COUNT + 6, SORT_WIN_WIDTH);
+	mvwin(sort_win, MAX(0, y), x);
 
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
 
-	getmaxyx(sort_win, y, x);
-	mvwaddstr(sort_win, 0, (x - 6)/2, " Sort ");
+	mvwaddstr(sort_win, 0, (getmaxx(sort_win) - 6)/2, " Sort ");
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
 	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
@@ -181,8 +183,6 @@ redraw_sort_dialog(void)
 			"Sort dialog and sort options should not diverge");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
-	getmaxyx(stdscr, y, x);
-	mvwin(sort_win, (y - (cy - 2 + 3))/2, (x - SORT_WIN_WIDTH)/2);
 	wrefresh(sort_win);
 }
 

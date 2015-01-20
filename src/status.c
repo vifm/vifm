@@ -88,7 +88,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->register_saved = 0;
 	stats->view = 0;
 	stats->use_input_bar = 1;
-	stats->errmsg_shown = 0;
 	stats->load_stage = 0;
 	stats->too_small_term = 0;
 	stats->dirsize_cache = NULL_TREE;

@@ -32,8 +32,7 @@
  *
  *    - no secondary mode, when vle_mode_get() == vle_mode_get_primary();
  *    - secondary mode present, which makes "current" and "primary" modes be
- *      different.
- */
+ *      different. */
 
 /* Type of mode. */
 typedef enum
@@ -56,10 +55,14 @@ int vle_mode_is(vle_mode_t mode);
 /* Gets identifier of currently active primary mode.  Returns the id. */
 const vle_mode_t vle_mode_get_primary(void);
 
+/* Checks that primary mode is the mode.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int vle_primary_mode_is(vle_mode_t mode);
+
 /* Sets current mode of the specified type. */
 void vle_mode_set(vle_mode_t mode, VleModeType type);
 
-#endif // VIFM__ENGINE__MODE_H__
+#endif /* VIFM__ENGINE__MODE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
