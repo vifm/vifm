@@ -24,8 +24,8 @@
 #include "utils/macros.h"
 #include "colors.h"
 
-/* Number of preallocated color pairs. */
-#define PREALLOCATED_COUNT 64
+/* Number of color pairs preallocated by curses library. */
+#define PREALLOCATED_COUNT 1
 
 static int find_pair(int fg, int bg);
 static int color_pair_matches(int pair, int fg, int bg);
@@ -44,8 +44,6 @@ static colmgr_conf_t conf;
 void
 colmgr_init(const colmgr_conf_t *conf_init)
 {
-	int fg, bg;
-
 	assert(conf_init != NULL && "conf_init structure is required.");
 	assert(conf_init->init_pair != NULL && "init_pair must be set.");
 	assert(conf_init->pair_content != NULL && "pair_content must be set.");
@@ -53,15 +51,6 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	assert(conf_init->move_pair != NULL && "move_pair must be set.");
 
 	conf = *conf_init;
-
-	/* Pre-allocate 64 lower pairs for 8-color values. */
-	for(fg = 0; fg < 8; ++fg)
-	{
-		for(bg = 0; bg < 8; ++bg)
-		{
-			conf.init_pair(colmgr_get_pair(fg, bg), fg, bg);
-		}
-	}
 
 	colmgr_reset();
 }
@@ -80,17 +69,12 @@ colmgr_get_pair(int fg, int bg)
 
 	if(fg < 0)
 	{
-		fg = 7;
+		fg = -1;
 	}
 
 	if(bg < 0)
 	{
-		bg = 0;
-	}
-
-	if(fg < 8 && bg < 8)
-	{
-		return fg*8 + bg;
+		bg = -1;
 	}
 
 	p = find_pair(fg, bg);

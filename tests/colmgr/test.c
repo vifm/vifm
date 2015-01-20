@@ -7,7 +7,7 @@
 
 void basic_tests(void);
 
-static int colors[TOTAL_COLOR_PAIRS ][2];
+static int colors[TOTAL_COLOR_PAIRS][2];
 
 static void
 setup(void)
