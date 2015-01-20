@@ -57,6 +57,9 @@
 	Significantly reduced amount of work performed by Vifm is idle.  Thanks to
 	hofheinz.
 
+	Made message dialogs interact better with everything else on the screen.
+	E.g. redraw properly after terminal resize.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
