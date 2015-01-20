@@ -197,7 +197,7 @@ static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
 static const char * get_file_hi_str(const char pattern[], int global,
-		const col_attr_t *col);
+		int case_sensitive, const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
 		col_attr_t *color);
@@ -2557,7 +2557,7 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += add_file_hi(pattern, global, &color);
+	result += add_file_hi(pattern, global, 0, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;
@@ -2600,7 +2600,8 @@ display_file_highlights(const char pattern[], int global)
 	}
 
 	status_bar_message(get_file_hi_str(cs->file_hi[i].pattern,
-				cs->file_hi[i].global, &cs->file_hi[i].hi));
+				cs->file_hi[i].global, cs->file_hi[i].case_sensitive,
+				&cs->file_hi[i].hi));
 }
 
 /* Handles highlight-group form of :highlight command.  Returns value to be
@@ -2669,7 +2670,7 @@ get_all_highlights(void)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
 		const char *const line = get_file_hi_str(file_hi->pattern, file_hi->global,
-				&file_hi->hi);
+				file_hi->case_sensitive, &file_hi->hi);
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
 				(i < cs->file_hi_count - 1) ? "\n" : "");
 	}
@@ -2688,13 +2689,15 @@ get_group_str(int group, const col_attr_t *col)
 /* Composes string representation of filename specific highlight definition.
  * Returns pointer to a statically allocated buffer. */
 static const char *
-get_file_hi_str(const char pattern[], int global, const col_attr_t *col)
+get_file_hi_str(const char pattern[], int global, int case_sensitive,
+		const col_attr_t *col)
 {
 	char title[128];
 	const char left = global ? '{' : '/';
 	const char right = global ? '}' : '/';
+	const char *const case_str = case_sensitive ? "I" : "";
 
-	snprintf(title, sizeof(title), "%c%s%c", left, pattern, right);
+	snprintf(title, sizeof(title), "%c%s%c%s", left, pattern, right, case_str);
 	return get_hi_str(title, col);
 }
 
