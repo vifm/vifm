@@ -17,18 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MAIN_LOOP_H__
-#define VIFM__MAIN_LOOP_H__
+#ifndef VIFM__EVENT_LOOP_H__
+#define VIFM__EVENT_LOOP_H__
 
-/* Everything is driven from this function with the exception of
- * signals which are handled in signals.c. */
-void main_loop(const int *quit);
+/* Everything is driven from this function with the exception of signals which
+ * are handled in signals.c.  It is reentrant so remote pieces of code can run
+ * nested event loops. */
+void event_loop(const int *quit);
 
 void update_input_buf(void);
 
 int is_input_buf_empty(void);
 
-#endif /* VIFM__MAIN_LOOP_H__ */
+#endif /* VIFM__EVENT_LOOP_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

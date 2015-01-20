@@ -113,10 +113,10 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
 	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
 	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
-	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
-	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
-	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
+	event_loop.$(OBJEXT) globals.$(OBJEXT) file_magic.$(OBJEXT) \
+	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) fuse.$(OBJEXT) \
+	ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
 	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
 	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
@@ -426,6 +426,7 @@ vifm_SOURCES = \
 	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
+	event_loop.c event_loop.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
@@ -435,7 +436,6 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
-	main_loop.c main_loop.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	path_env.c path_env.h \
@@ -864,6 +864,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/desktop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/escape.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filename_modifiers.Po@am__quote@
@@ -873,7 +874,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/path_env.Po@am__quote@

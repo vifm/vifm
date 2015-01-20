@@ -30,7 +30,7 @@
 #include "../ui/ui.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
-#include "../main_loop.h"
+#include "../event_loop.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"
 #include "dialogs/change_dialog.h"

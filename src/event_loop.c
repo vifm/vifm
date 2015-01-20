@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "main_loop.h"
+#include "event_loop.h"
 
 #include <curses.h>
 
@@ -55,9 +55,9 @@ static const wchar_t *curr_input_buf;
 static const int *curr_input_buf_pos;
 
 void
-main_loop(const int *quit)
+event_loop(const int *quit)
 {
-	/* TODO: refactor this function main_loop(). */
+	/* TODO: refactor this function event_loop(). */
 
 	LOG_FUNC_ENTER;
 

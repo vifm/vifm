@@ -64,12 +64,12 @@
 #include "commands.h"
 #include "commands_completion.h"
 #include "dir_stack.h"
+#include "event_loop.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
 #include "fuse.h"
 #include "ipc.h"
-#include "main_loop.h"
 #include "ops.h"
 #include "opt_handlers.h"
 #include "path_env.h"
@@ -459,7 +459,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
-	main_loop(&quit);
+	event_loop(&quit);
 
 	return 0;
 }

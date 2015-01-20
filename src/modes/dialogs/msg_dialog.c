@@ -33,7 +33,7 @@
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
 #include "../../utils/str.h"
-#include "../../main_loop.h"
+#include "../../event_loop.h"
 #include "../../status.h"
 
 /* Kinds of dialogs. */
@@ -292,7 +292,7 @@ enter(int result_mask)
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
 
 	quit = 0;
-	main_loop(&quit);
+	event_loop(&quit);
 }
 
 /* Draws error message on the screen or redraws the last message when both
