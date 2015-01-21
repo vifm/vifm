@@ -1,4 +1,4 @@
-.TH vifm\-convert\-dircolors 1 "January 09, 2015" "" vifm\-convert\-dircolors
+.TH vifm\-convert\-dircolors 1 "January 21, 2015" "" vifm\-convert\-dircolors
 .\" ---------------------------------------------------------------------------
 .SH "NAME"
 .\" ---------------------------------------------------------------------------
@@ -7,7 +7,8 @@ vifm\-convert\-dircolors \- converts ls colorscheme to vifm colorscheme
 .SH "SYNOPSIS"
 .\" ---------------------------------------------------------------------------
 \fBvifm\-convert\-dircolors\fR [\fI\-h\fR|\fI\-\-help\fR]
-[\fI\-e\fR|\fI\-\-environment\fR] [\fIdircolors_file\fR]
+[\fI\-e\fR|\fI\-\-environment\fR] [\fI-r|--human-readable\fR]
+[\fIdircolors_file\fR]
 .\" ---------------------------------------------------------------------------
 .SH "DESCRIPTION"
 .\" ---------------------------------------------------------------------------
@@ -20,6 +21,9 @@ Displays brief help message.
 .BI "\-e, \-\-environment"
 Instructs the script to use \fB$LS_COLORS\fR environment variable instead of
 data from file or standard input stream.
+.TP
+.BI "\-r, \-\-human\-readable"
+Output patterns on separate lines.
 .TP
 .BI dircolors_file
 Converting of colorscheme file only.

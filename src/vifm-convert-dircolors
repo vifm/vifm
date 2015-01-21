@@ -52,8 +52,10 @@ my %SHORT_GROUPS = (
     'so' => 'Socket',
 );
 
-my ($help, $env);
-GetOptions('h|help|?' => \$help, 'e|environment' => \$env) or exit 1;
+my ($help, $env, $readable);
+GetOptions('h|help|?' => \$help,
+           'e|environment' => \$env,
+           'r|human-readable' => \$readable) or exit 1;
 
 if ($help) {
     &abort_with_usage(1);
@@ -110,13 +112,17 @@ sub abort_with_usage
               "into set\nof Vifm highlight commands.\n\n";
     }
 
-    print "Usage: @{[basename($0)]} [-h|--help] [-e|--environment] [dircolors_file]
+    print "Usage: @{[basename($0)]} [-h|--help] ".
+                                   "[-e|--environment] ".
+                                   "[-r|--human-readable] ".
+                                   "[dircolors_file]
 
 By default standard input is processed.
 
 Options:
-    -h, --help          brief help message
-    -e, --environment   parse \$LS_COLORS for configuration\n";
+    -h, --help             brief help message
+    -e, --environment      parse \$LS_COLORS for configuration
+    -r, --human-readable   output patterns on separate lines\n";
     exit 1;
 }
 
@@ -227,7 +233,7 @@ sub invert_attrmap
     foreach my $ext (sort keys %attrmap) {
         my $color = $attrmap{$ext};
         if (exists($inverted{$color})) {
-            $inverted{$color} .= '|';
+            $inverted{$color} .= $readable ? "|\n          \\" : '|';
         }
         $inverted{$color} .= $ext.'$';
     }
