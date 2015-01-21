@@ -80,7 +80,7 @@ my %colpat = &invert_attrmap(\%patcol);
 # Print out Vifm commands to stdout.
 print "\" generic file types\n";
 &print_typecol(\%typecol);
-print "\" file name specific highlight\n";
+print "\n\" file name specific highlight\n";
 &print_attrmap(\%colpat);
 
 # Aborts execution after displaying a message.
