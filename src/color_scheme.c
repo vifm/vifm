@@ -667,7 +667,8 @@ clone_color_scheme_highlights(const col_scheme_t *from)
 		}
 		else
 		{
-			(void)regcomp(&file_hi[i].re, hi->pattern, REG_EXTENDED | REG_ICASE);
+			const int re_flags = REG_EXTENDED | (hi->case_sensitive ? 0 : REG_ICASE);
+			(void)regcomp(&file_hi[i].re, hi->pattern, re_flags);
 		}
 
 		file_hi[i].pattern = strdup(hi->pattern);
@@ -840,7 +841,8 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 }
 
 int
-add_file_hi(const char pattern[], int global, const col_attr_t *hi)
+add_file_hi(const char pattern[], int global, int case_sensitive,
+		const col_attr_t *hi)
 {
 	int err;
 	file_hi_t *file_hi;
@@ -862,7 +864,8 @@ add_file_hi(const char pattern[], int global, const col_attr_t *hi)
 	}
 	else
 	{
-		err = regcomp(&file_hi->re, pattern, REG_EXTENDED | REG_ICASE);
+		const int re_flags = REG_EXTENDED | (case_sensitive ? 0 : REG_ICASE);
+		err = regcomp(&file_hi->re, pattern, re_flags);
 	}
 
 	if(err != 0)
@@ -874,6 +877,7 @@ add_file_hi(const char pattern[], int global, const col_attr_t *hi)
 
 	file_hi->pattern = strdup(pattern);
 	file_hi->global = global;
+	file_hi->case_sensitive = case_sensitive;
 	file_hi->hi = *hi;
 
 	++cs->file_hi_count;

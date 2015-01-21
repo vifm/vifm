@@ -38,8 +38,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
-                       strlen() */
-
+                       strlen() strrchr() */
 #include "cfg/config.h"
 #include "cfg/hist.h"
 #include "cfg/info.h"
@@ -192,12 +191,14 @@ static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_file(const cmd_info_t *cmd_info, int global);
+static int is_re_arg(const char arg[]);
+static int parse_case_flag(const char flags[], int *case_sensitive);
 static void display_file_highlights(const char pattern[], int global);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
 static const char * get_file_hi_str(const char pattern[], int global,
-		const col_attr_t *col);
+		int case_sensitive, const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
 		col_attr_t *color);
@@ -2253,21 +2254,9 @@ filter_cmd(const cmd_info_t *cmd_info)
 
 		if(cmd_info->argc == 2)
 		{
-			/* TODO: maybe extract into a function to generalize code with
-			 * substitute_cmd(). */
-			const char *flags = cmd_info->argv[1];
-			while(*flags != '\0')
+			if(parse_case_flag(cmd_info->argv[1], &case_sensitive) != 0)
 			{
-				switch(*flags)
-				{
-					case 'i': case_sensitive = 0; break;
-					case 'I': case_sensitive = 1; break;
-
-					default:
-						return CMDS_ERR_TRAILING_CHARS;
-				}
-
-				++flags;
+				return CMDS_ERR_TRAILING_CHARS;
 			}
 		}
 
@@ -2522,7 +2511,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(surrounded_with(cmd_info->argv[0], '/', '/'))
+	if(is_re_arg(cmd_info->argv[0]))
 	{
 		return highlight_file(cmd_info, 0);
 	}
@@ -2535,20 +2524,38 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	return highlight_group(cmd_info);
 }
 
+/* Checks whether arg matches regular expression file name pattern.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+is_re_arg(const char arg[])
+{
+	const char *e = strrchr(arg, '/');
+	return arg[0] == '/'                         /* Starts with slash. */
+	    && e != NULL && e != arg                 /* Has second slash. */
+	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
+}
+
 /* Handles highlight-file form of :highlight command.  Returns value to be
  * returned by command handler. */
 static int
 highlight_file(const cmd_info_t *cmd_info, int global)
 {
-	char pattern[strlen(cmd_info->args)];
+	char pattern[strlen(cmd_info->args) + 1];
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
+	char *flags;
+	int case_sensitive = 0;
 	int result;
 
 	(void)extract_part(cmd_info->args + 1, ' ', pattern);
-	if(pattern[0] != '\0')
+
+	flags = strrchr(pattern, '/') + 1;
+	if(parse_case_flag(flags, &case_sensitive) != 0)
 	{
-		pattern[strlen(pattern) - 1] = '\0';
+		return CMDS_ERR_TRAILING_CHARS;
 	}
+
+	/* Cut the flags off by replacing slash with null-character. */
+	flags[-1] = '\0';
 
 	if(cmd_info->argc == 1)
 	{
@@ -2557,12 +2564,36 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += add_file_hi(pattern, global, &color);
+	result += add_file_hi(pattern, global, case_sensitive, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;
 
 	return result;
+}
+
+/* *case_sensitive should be initialized with default value outside the call.
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+parse_case_flag(const char flags[], int *case_sensitive)
+{
+	/* TODO: maybe generalize code with substitute_cmd(). */
+
+	while(*flags != '\0')
+	{
+		switch(*flags)
+		{
+			case 'i': *case_sensitive = 0; break;
+			case 'I': *case_sensitive = 1; break;
+
+			default:
+				return 1;
+		}
+
+		++flags;
+	}
+
+	return 0;
 }
 
 /* Displays information about filename specific highlight on the status bar. */
@@ -2600,7 +2631,8 @@ display_file_highlights(const char pattern[], int global)
 	}
 
 	status_bar_message(get_file_hi_str(cs->file_hi[i].pattern,
-				cs->file_hi[i].global, &cs->file_hi[i].hi));
+				cs->file_hi[i].global, cs->file_hi[i].case_sensitive,
+				&cs->file_hi[i].hi));
 }
 
 /* Handles highlight-group form of :highlight command.  Returns value to be
@@ -2669,7 +2701,7 @@ get_all_highlights(void)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
 		const char *const line = get_file_hi_str(file_hi->pattern, file_hi->global,
-				&file_hi->hi);
+				file_hi->case_sensitive, &file_hi->hi);
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
 				(i < cs->file_hi_count - 1) ? "\n" : "");
 	}
@@ -2688,13 +2720,15 @@ get_group_str(int group, const col_attr_t *col)
 /* Composes string representation of filename specific highlight definition.
  * Returns pointer to a statically allocated buffer. */
 static const char *
-get_file_hi_str(const char pattern[], int global, const col_attr_t *col)
+get_file_hi_str(const char pattern[], int global, int case_sensitive,
+		const col_attr_t *col)
 {
 	char title[128];
 	const char left = global ? '{' : '/';
 	const char right = global ? '}' : '/';
+	const char *const case_str = case_sensitive ? "I" : "";
 
-	snprintf(title, sizeof(title), "%c%s%c", left, pattern, right);
+	snprintf(title, sizeof(title), "%c%s%c%s", left, pattern, right, case_str);
 	return get_hi_str(title, col);
 }
 

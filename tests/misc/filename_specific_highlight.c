@@ -34,6 +34,32 @@ test_pattern_length_is_not_limited(void)
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$", cfg.cs.file_hi[0].pattern);
 }
 
+static void
+test_i_flag(void)
+{
+	const char *const COMMANDS = "highlight /^\\./i ctermfg=red";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
+}
+
+static void
+test_I_flag(void)
+{
+	const char *const COMMANDS = "highlight /^\\./I ctermfg=red";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
+}
+
+static void
+test_wrong_flag(void)
+{
+	const char *const COMMANDS = "highlight /^\\./x ctermfg=red";
+
+	assert_int_equal(1, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+}
+
 void
 filename_specific_highlight_tests(void)
 {
@@ -46,6 +72,10 @@ filename_specific_highlight_tests(void)
 
 	run_test(test_pattern_is_not_unescaped);
 	run_test(test_pattern_length_is_not_limited);
+
+	run_test(test_i_flag);
+	run_test(test_I_flag);
+	run_test(test_wrong_flag);
 
 	test_fixture_end();
 }

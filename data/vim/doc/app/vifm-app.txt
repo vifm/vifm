@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 15
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1420,7 +1420,8 @@ The builtin commands are:
 :hi[ghlight] group-name | {pat1,pat2,...} | /regexp/ - will show
     information on given highlight group or file name pattern of color
     scheme used in the active view.
-:hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color - sets
+:hi[ghlight] ( group-name | {pat1,pat2,...} | /regexp/[iI] )
+             cterm=style | ctermfg=color | ctermbg=color - sets
     style (cterm), foreground (ctermfg) or/and background (ctermbg)
     parameters of highlight group or file name pattern for color scheme
     used in the active view.
