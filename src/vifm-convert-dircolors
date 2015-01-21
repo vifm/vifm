@@ -140,12 +140,12 @@ sub import_from_file
         chomp $line;
 
         if ($line =~ /^\.(\S+)\s+(\S+)/) {
-            my $ext = '*.'.lc $1;
+            my $ext = '.*\.'.$1;
             my $attrs = $2;
 
-            &add_to_attrmap(\%extcol, $ext, $attrs);
+            &add_to_attrmap(\%endcol, $ext, $attrs);
         } elsif ($line =~ /^\*(\S+)\s+(\S+)/) {
-            my $ext = '*'.lc $1;
+            my $ext = '*'.$1;
             my $attrs = $2;
 
             &add_to_attrmap(\%endcol, $ext, $attrs);
@@ -180,14 +180,16 @@ sub import_from_env
     my @specs = split(':', $ENV{$env});
     foreach my $spec (@specs) {
         my ($name, $attrs) = split('=', $spec);
+        $name = lc $name;
+
         if (exists($SHORT_GROUPS{$name})) {
             my $group = $SHORT_GROUPS{$name};
             $typecol{$group} = $attrs;
         } elsif ($name =~ /^\*\./) {
-            my $ext = lc $name;
+            my $ext = $name;
             &add_to_attrmap(\%extcol, $ext, $attrs);
         } elsif ($name =~ /^\*?/) {
-            my $ext = lc $name;
+            my $ext = $name;
             &add_to_attrmap(\%endcol, $ext, $attrs);
         }
     }
@@ -224,7 +226,7 @@ sub invert_attrmap
     my $is_re = shift;
     my %attrmap = %$attrmap;
 
-    my ($sep, $prefix, $suffix) = $is_re ? ('|', '.', '$') : (',', '', '');
+    my ($sep, $suffix) = $is_re ? ('|', '$') : (',', '');
 
     my %inverted = ();
     foreach my $ext (sort keys %attrmap) {
@@ -232,7 +234,7 @@ sub invert_attrmap
         if (exists($inverted{$color})) {
             $inverted{$color} .= $sep;
         }
-        $inverted{$color} .= $prefix.$ext.$suffix;
+        $inverted{$color} .= $ext.$suffix;
     }
 
     return %inverted;
@@ -264,7 +266,7 @@ sub print_attrmap
     return unless %attrmap;
 
     foreach my $color (sort keys %attrmap) {
-        my $pattern = $is_re ? "/$attrmap{$color}/" : "{$attrmap{$color}}";
+        my $pattern = $is_re ? "/$attrmap{$color}/I" : "{$attrmap{$color}}";
         my $hi = &color_to_hi($color);
         print 'highlight ', $pattern, $hi, "\n";
     }
