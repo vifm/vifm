@@ -78,10 +78,15 @@ my %typecol = %$typecol;
 my %colpat = &invert_attrmap(\%patcol);
 
 # Print out Vifm commands to stdout.
-print "\" generic file types\n";
-&print_typecol(\%typecol);
-print "\n\" file name specific highlight\n";
-&print_attrmap(\%colpat);
+if (%typecol) {
+    print "\" generic file types\n";
+    &print_typecol(\%typecol);
+}
+if (%colpat) {
+    print "\n" if %typecol;
+    print "\" file name specific highlight\n";
+    &print_attrmap(\%colpat);
+}
 
 # Aborts execution after displaying a message.
 # * $msg - error message.
