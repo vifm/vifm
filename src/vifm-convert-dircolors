@@ -64,27 +64,24 @@ if (scalar(@ARGV) > 1) {
 }
 
 # Input source data either from file/stdin or LS_COLORS environment variable.
-my ($extcol, $endcol, $typecol);
+my ($patcol, $typecol);
 if ($env) {
-    ($extcol, $endcol, $typecol) = &import_from_env('LS_COLORS');
+    ($patcol, $typecol) = &import_from_env('LS_COLORS');
 } else {
     my $dircolors = shift;
-    ($extcol, $endcol, $typecol) = &import_from_file($dircolors);
+    ($patcol, $typecol) = &import_from_file($dircolors);
 }
-my %extcol = %$extcol;
-my %endcol = %$endcol;
+my %patcol = %$patcol;
 my %typecol = %$typecol;
 
 # Join extensions that have same attributes into single record.
-my %colext = &invert_attrmap(\%extcol, 0);
-my %colend = &invert_attrmap(\%endcol, 1);
+my %colpat = &invert_attrmap(\%patcol);
 
 # Print out Vifm commands to stdout.
 print "\" generic file types\n";
 &print_typecol(\%typecol);
 print "\" file name specific highlight\n";
-&print_attrmap(\%colext, 0);
-&print_attrmap(\%colend, 1);
+&print_attrmap(\%colpat);
 
 # Aborts execution after displaying a message.
 # * $msg - error message.
@@ -120,8 +117,8 @@ Options:
 
 # Imports initial data from file/stdin.
 # * $dircolors - path to the file or undef for stdin.
-# Returns (\%extcol, \%typecol), where
-# * %extcol  - "*.ext"                => "attrlist".
+# Returns (\%patcol, \%typecol), where
+# * %patcol  - ".*\.ext"              => "attrlist"
 # * %typecol - "Vifm highlight group" => "attrlist".
 sub import_from_file
 {
@@ -131,8 +128,7 @@ sub import_from_file
         $dircolors = '-';
     }
 
-    my %extcol = ();
-    my %endcol = ();
+    my %patcol = ();
     my %typecol = ();
 
     open (DIRCOLORS, $dircolors) or die("Cannot open $dircolors $!");
@@ -140,15 +136,15 @@ sub import_from_file
         chomp $line;
 
         if ($line =~ /^\.(\S+)\s+(\S+)/) {
-            my $ext = '.*\.'.$1;
+            my $pat = '.*\.'.$1;
             my $attrs = $2;
 
-            &add_to_attrmap(\%endcol, $ext, $attrs);
+            &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($line =~ /^\*(\S+)\s+(\S+)/) {
-            my $ext = '*'.$1;
+            my $pat = '.*'.$1;
             my $attrs = $2;
 
-            &add_to_attrmap(\%endcol, $ext, $attrs);
+            &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($line =~ /^(\S+)\s+(\S+)/) {
             my $type = lc $1;
             my $attrs = $2;
@@ -161,40 +157,38 @@ sub import_from_file
     }
     close DIRCOLORS;
 
-    return (\%extcol, \%endcol, \%typecol);
+    return (\%patcol, \%typecol);
 }
 
 # Imports initial data from an environment variable.
 # * $env - name of environment variable to use.
-# Returns (\%extcol, \%typecol), where
-# * %extcol  - "*.ext"                => "attrlist"
+# Returns (\%patcol, \%typecol), where
+# * %patcol  - ".*\.ext"              => "attrlist"
 # * %typecol - "Vifm highlight group" => "attrlist"
 sub import_from_env
 {
     my $env = shift;
 
-    my %extcol = ();
-    my %endcol = ();
+    my %patcol = ();
     my %typecol = ();
 
     my @specs = split(':', $ENV{$env});
     foreach my $spec (@specs) {
         my ($name, $attrs) = split('=', $spec);
-        $name = lc $name;
 
-        if (exists($SHORT_GROUPS{$name})) {
+        if (exists($SHORT_GROUPS{lc $name})) {
             my $group = $SHORT_GROUPS{$name};
             $typecol{$group} = $attrs;
-        } elsif ($name =~ /^\*\./) {
-            my $ext = $name;
-            &add_to_attrmap(\%extcol, $ext, $attrs);
-        } elsif ($name =~ /^\*?/) {
-            my $ext = $name;
-            &add_to_attrmap(\%endcol, $ext, $attrs);
+        } elsif ($name =~ /^\*\.(\S+)/) {
+            my $pat = '.*\.'.$1;
+            &add_to_attrmap(\%patcol, $pat, $attrs);
+        } elsif ($name =~ /^\*(\S+)/) {
+            my $pat = '.*'.$1;
+            &add_to_attrmap(\%patcol, $pat, $attrs);
         }
     }
 
-    return (\%extcol, \%endcol, \%typecol);
+    return (\%patcol, \%typecol);
 }
 
 # Adds extension pattern entry to a dictionary ("*.ext" => "attrlist").
@@ -216,25 +210,21 @@ sub add_to_attrmap
 }
 
 # Join extensions that have same attributes into single record.
-# * $attrmap - "*.ext" or "*ext" => "attrlist".
-# * $is_re - whether output patterns are regular expressions.
+# * $attrmap - ".*\.ext" => "attrlist".
 # Returns %inverted, where
 # * %inverted - "attrlist" => "*.ext,..." or "*ext,...".
 sub invert_attrmap
 {
     my $attrmap = shift;
-    my $is_re = shift;
     my %attrmap = %$attrmap;
-
-    my ($sep, $suffix) = $is_re ? ('|', '$') : (',', '');
 
     my %inverted = ();
     foreach my $ext (sort keys %attrmap) {
         my $color = $attrmap{$ext};
         if (exists($inverted{$color})) {
-            $inverted{$color} .= $sep;
+            $inverted{$color} .= '|';
         }
-        $inverted{$color} .= $ext.$suffix;
+        $inverted{$color} .= $ext.'$';
     }
 
     return %inverted;
@@ -257,16 +247,14 @@ sub print_typecol
 
 # Formats and prints to stdout file name specific highlighting commands.
 # * \%attrmap - "attrlist" => "*.ext" or "*ext".
-# * $is_re - whether these are regular expressions
 sub print_attrmap
 {
     my $attrmap = shift;
-    my $is_re = shift;
     my %attrmap = %$attrmap;
     return unless %attrmap;
 
     foreach my $color (sort keys %attrmap) {
-        my $pattern = $is_re ? "/$attrmap{$color}/I" : "{$attrmap{$color}}";
+        my $pattern = "/$attrmap{$color}/I";
         my $hi = &color_to_hi($color);
         print 'highlight ', $pattern, $hi, "\n";
     }
