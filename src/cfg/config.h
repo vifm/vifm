@@ -157,33 +157,48 @@ config_t;
 extern config_t cfg;
 
 void init_config(void);
+
 void set_config_paths(void);
+
 /* Sources vifmrc file (pointed to by the $MYVIFMRC). */
 void source_config(void);
+
 /* Returns non-zero on error. */
 int source_file(const char filename[]);
+
 /* Checks whether vifmrc file (pointed to by the $MYVIFMRC) has old format.
  * Returns non-zero if so, otherwise zero is returned. */
 int is_old_config(void);
+
 int are_old_color_schemes(void);
+
 const char * get_vicmd(int *bg);
+
 /* Generates name of file inside tmp folder. */
 void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
+
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
+
 /* Sets value of cfg.fuse_home.  Returns non-zero in case of error, otherwise
  * zero is returned. */
 int set_fuse_home(const char new_value[]);
+
 /* Sets whether support of terminal multiplexers is enabled. */
 void set_use_term_multiplexer(int use_term_multiplexer);
+
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
+
 /* Saves command to command history. */
 void save_command_history(const char command[]);
+
 /* Saves pattern to search history. */
 void save_search_history(const char pattern[]);
+
 /* Saves input to prompt history. */
 void save_prompt_history(const char input[]);
+
 /* Saves input to local filter history. */
 void save_filter_history(const char pattern[]);
 
