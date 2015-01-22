@@ -156,8 +156,13 @@ config_t;
 
 extern config_t cfg;
 
+/* Initializes cfg global variable with initial values.  Re-initialization is
+ * not supported. */
 void init_config(void);
 
+/* Searches for configuration file and directories, stores them and ensures
+ * existence of some of them.  This routine is separated from init_config() to
+ * allow logging of path discovery. */
 void set_config_paths(void);
 
 /* Sources vifmrc file (pointed to by the $MYVIFMRC). */
@@ -170,8 +175,13 @@ int source_file(const char filename[]);
  * Returns non-zero if so, otherwise zero is returned. */
 int is_old_config(void);
 
+/* Checks whether color scheme are stored in obsolete single-file format.
+ * Returns non-zero if so, otherwise zero is returned. */
 int are_old_color_schemes(void);
 
+/* Gets editor invocation command.  Sets *bg to indicate whether the command
+ * should be executed in background.  Returns pointer to a string from
+ * configuration variables. */
 const char * get_vicmd(int *bg);
 
 /* Generates name of file inside tmp folder. */

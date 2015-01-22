@@ -207,8 +207,6 @@ init_config(void)
 	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = '/';
 }
 
-/* searches for configuration file and directories, stores them and ensures
- * existence of some of them */
 void
 set_config_paths(void)
 {
