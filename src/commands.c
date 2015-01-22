@@ -1406,24 +1406,32 @@ exec_command(const char cmd[], FileView *view, int type)
 {
 	if(cmd == NULL)
 	{
-		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
-			return find_npattern(view, cfg_get_last_search_pattern(),
-					type == GET_BSEARCH_PATTERN, 1);
-		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
-			return find_vpattern(view, cfg_get_last_search_pattern(),
-					type == GET_VBSEARCH_PATTERN, 1);
-		if(type == GET_COMMAND)
-			return execute_command(view, NULL, 0);
-		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
-			return find_vwpattern(NULL, type == GET_VWBSEARCH_PATTERN);
-		if(type == GET_FILTER_PATTERN)
+		int backward = 0;
+		switch(type)
 		{
-			local_filter_apply(view, "");
-			return 0;
-		}
+			case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
+			case GET_FSEARCH_PATTERN:
+				return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
 
-		assert(0 && "Received command execution request of unexpected type.");
-		return 0;
+			case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
+			case GET_VFSEARCH_PATTERN:
+				return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
+
+			case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
+			case GET_VWFSEARCH_PATTERN:
+				return find_vwpattern(NULL, backward);
+
+			case GET_COMMAND:
+				return execute_command(view, NULL, 0);
+
+			case GET_FILTER_PATTERN:
+				local_filter_apply(view, "");
+				return 0;
+
+			default:
+				assert(0 && "Received command execution request of unexpected type.");
+				return 0;
+		}
 	}
 
 	if(type == GET_COMMAND)
