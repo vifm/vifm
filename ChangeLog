@@ -1,5 +1,9 @@
 0.7.8 to current
 
+	Removed per-view last search pattern.  Don't worry, you probably won't
+	even notice it: this doesn't affect regular use case, rather more exotic
+	one, which is hard to notice.
+
 	Added <lt> angle bracket notation (less-than character, '<').  Thanks to
 	filterfalse.
 

@@ -1629,6 +1629,8 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward)
 {
+	/* TODO: extract common part of this function and visual.c:search(). */
+
 	int found;
 
 	if(hist_is_empty(&cfg.search_hist))
@@ -1642,8 +1644,7 @@ search(key_info_t key_info, int backward)
 	found = 0;
 	if(curr_view->matches == 0)
 	{
-		const char *pattern = (curr_view->regexp[0] == '\0') ?
-				cfg.search_hist.items[0] : curr_view->regexp;
+		const char *const pattern = cfg_get_last_search_pattern();
 		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found,
 				0);
 		key_info.count--;
@@ -1656,7 +1657,8 @@ search(key_info_t key_info, int backward)
 
 	if(found)
 	{
-		status_bar_messagef("%c%s", backward ? '?' : '/', curr_view->regexp);
+		status_bar_messagef("%c%s", backward ? '?' : '/',
+				cfg_get_last_search_pattern());
 	}
 	else
 	{

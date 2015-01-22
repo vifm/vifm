@@ -477,7 +477,6 @@ reset_views(void)
 static void
 reset_view(FileView *view)
 {
-	strncpy(view->regexp, "", sizeof(view->regexp));
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;

@@ -212,6 +212,10 @@ void save_prompt_history(const char input[]);
 /* Saves input to local filter history. */
 void save_filter_history(const char pattern[]);
 
+/* Gets the most recently used search pattern.  Returns the pattern or empty
+ * string if search history is empty. */
+const char * cfg_get_last_search_pattern(void);
+
 /* Sets shell invocation command. */
 void cfg_set_shell(const char shell[]);
 

@@ -910,6 +910,8 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward, int interactive)
 {
+	/* TODO: extract common part of this function and normal.c:search(). */
+
 	int found;
 
 	if(hist_is_empty(&cfg.search_hist))
@@ -919,8 +921,7 @@ search(key_info_t key_info, int backward, int interactive)
 
 	if(view->matches == 0)
 	{
-		const char *pattern = (view->regexp[0] == '\0') ?
-				cfg.search_hist.items[0] : view->regexp;
+		const char *const pattern = cfg_get_last_search_pattern();
 		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
 		return;
 	}
@@ -938,7 +939,8 @@ search(key_info_t key_info, int backward, int interactive)
 		return;
 	}
 
-	status_bar_messagef("%c%s", backward ? '?' : '/', view->regexp);
+	status_bar_messagef("%c%s", backward ? '?' : '/',
+			cfg_get_last_search_pattern());
 	curr_stats.save_msg = 1;
 }
 

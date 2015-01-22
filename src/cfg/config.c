@@ -910,6 +910,12 @@ save_into_history(const char item[], hist_t *hist, int len)
 	}
 }
 
+const char *
+cfg_get_last_search_pattern(void)
+{
+	return hist_is_empty(&cfg.search_hist) ? "" : cfg.search_hist.items[0];
+}
+
 void
 cfg_set_shell(const char shell[])
 {
