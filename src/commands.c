@@ -143,7 +143,7 @@ TSTATIC int line_pos(const char begin[], const char end[], char sep,
 		int rquoting);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
-
+static int repeat_command(FileView *view, int type);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
@@ -1406,32 +1406,7 @@ exec_command(const char cmd[], FileView *view, int type)
 {
 	if(cmd == NULL)
 	{
-		int backward = 0;
-		switch(type)
-		{
-			case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
-			case GET_FSEARCH_PATTERN:
-				return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
-
-			case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
-			case GET_VFSEARCH_PATTERN:
-				return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
-
-			case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
-			case GET_VWFSEARCH_PATTERN:
-				return find_vwpattern(NULL, backward);
-
-			case GET_COMMAND:
-				return execute_command(view, NULL, 0);
-
-			case GET_FILTER_PATTERN:
-				local_filter_apply(view, "");
-				return 0;
-
-			default:
-				assert(0 && "Received command execution request of unexpected type.");
-				return 0;
-		}
+		return repeat_command(view, type);
 	}
 
 	if(type == GET_COMMAND)
@@ -1462,6 +1437,40 @@ exec_command(const char cmd[], FileView *view, int type)
 
 	assert(0 && "Received command execution request of unknown/unexpected type.");
 	return 0;
+}
+
+/* Repeats last command of the specified type.  Returns 0 on success if no
+ * message should be saved in the status bar, > 0 to save message on successful
+ * execution and < 0 in case of error with error message. */
+static int
+repeat_command(FileView *view, int type)
+{
+	int backward = 0;
+	switch(type)
+	{
+		case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_FSEARCH_PATTERN:
+			return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
+
+		case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_VFSEARCH_PATTERN:
+			return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
+
+		case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_VWFSEARCH_PATTERN:
+			return find_vwpattern(NULL, backward);
+
+		case GET_COMMAND:
+			return execute_command(view, NULL, 0);
+
+		case GET_FILTER_PATTERN:
+			local_filter_apply(view, "");
+			return 0;
+
+		default:
+			assert(0 && "Received command execution request of unexpected type.");
+			return 0;
+	}
 }
 
 int
