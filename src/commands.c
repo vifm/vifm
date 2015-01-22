@@ -1404,39 +1404,42 @@ skip_command_beginning(const char cmd[])
 int
 exec_command(const char cmd[], FileView *view, int type)
 {
+	int menu;
+	int backward;
+
 	if(cmd == NULL)
 	{
 		return repeat_command(view, type);
 	}
 
-	if(type == GET_COMMAND)
+	menu = 0;
+	backward = 0;
+	switch(type)
 	{
-		return execute_command(view, cmd, 0);
-	}
-	if(type == GET_MENU_COMMAND)
-	{
-		return execute_command(view, cmd, 1);
-	}
-	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
-	{
-		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
-	}
-	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
-	{
-		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN, 1);
-	}
-	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
-	{
-		return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
-	}
-	else if(type == GET_FILTER_PATTERN)
-	{
-		local_filter_apply(view, cmd);
-		return 0;
-	}
+		case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_FSEARCH_PATTERN:
+			return find_npattern(view, cmd, backward, 1);
 
-	assert(0 && "Received command execution request of unknown/unexpected type.");
-	return 0;
+		case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_VFSEARCH_PATTERN:
+			return find_vpattern(view, cmd, backward, 1);
+
+		case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case GET_VWFSEARCH_PATTERN:
+			return find_vwpattern(cmd, backward);
+
+		case GET_MENU_COMMAND: menu = 1; /* Fall through. */
+		case GET_COMMAND:
+			return execute_command(view, cmd, menu);
+
+		case GET_FILTER_PATTERN:
+			local_filter_apply(view, cmd);
+			return 0;
+
+		default:
+			assert(0 && "Command execution request of unknown/unexpected type.");
+			return 0;
+	};
 }
 
 /* Repeats last command of the specified type.  Returns 0 on success if no
@@ -1468,7 +1471,7 @@ repeat_command(FileView *view, int type)
 			return 0;
 
 		default:
-			assert(0 && "Received command execution request of unexpected type.");
+			assert(0 && "Command repetition request of unexpected type.");
 			return 0;
 	}
 }
