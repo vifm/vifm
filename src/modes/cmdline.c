@@ -122,7 +122,7 @@ static int is_line_edited(void);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
-static int submode_to_editable_command_type(int sub_mode);
+static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -137,7 +137,7 @@ static int is_input_line_empty(void);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
-static int search_submode_to_command_type(int sub_mode);
+static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
 static int is_forward_search(CmdLineSubmode sub_mode);
 static int is_backward_search(CmdLineSubmode sub_mode);
 static int replace_wstring(wchar_t **str, const wchar_t with[]);
@@ -409,25 +409,26 @@ input_line_changed(void)
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
 		char *mbinput;
+		int backward;
 
 		(void)replace_wstring(&previous, input_stat.line);
 
 		mbinput = to_multibyte(input_stat.line);
 
+		backward = 0;
 		switch(sub_mode)
 		{
+			case CLS_BSEARCH: backward = 1; /* Fall through. */
 			case CLS_FSEARCH:
-				(void)find_npattern(curr_view, mbinput, 0, 0);
-				break;
-			case CLS_BSEARCH:
-				(void)find_npattern(curr_view, mbinput, 1, 0);
+				(void)find_npattern(curr_view, mbinput, backward, 0);
 				break;
 			case CLS_VFSEARCH:
-				exec_command(mbinput, curr_view, CIT_VFSEARCH_PATTERN);
-				break;
 			case CLS_VBSEARCH:
-				exec_command(mbinput, curr_view, CIT_VBSEARCH_PATTERN);
-				break;
+				{
+					const CmdInputType cit = search_cls_to_cit(sub_mode);
+					(void)exec_command(mbinput, curr_view, cit);
+					break;
+				}
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				(void)search_menu_list(mbinput, sub_mode_ptr);
@@ -774,7 +775,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int type = submode_to_editable_command_type(sub_mode);
+	const CmdInputType type = cls_to_editable_cit(sub_mode);
 	const int prompt_ee = sub_mode == CLS_PROMPT && sub_mode_allows_ee;
 	if(type != -1 || prompt_ee)
 	{
@@ -799,11 +800,11 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Converts command-line sub-mode to type of command for the commands.c unit,
- * which supports editing.  Returns -1 when there is no appropriate command
+/* Converts command-line sub-mode to type of command input which supports
+ * editing.  Returns (CmdInputType)-1 when there is no appropriate command
  * type. */
-static int
-submode_to_editable_command_type(int sub_mode)
+static CmdInputType
+cls_to_editable_cit(CmdLineSubmode sub_mode)
 {
 	switch(sub_mode)
 	{
@@ -815,7 +816,7 @@ submode_to_editable_command_type(int sub_mode)
 		case CLS_FILTER:   return CIT_FILTER_PATTERN;
 
 		default:
-			return -1;
+			return (CmdInputType)-1;
 	}
 }
 
@@ -1123,8 +1124,8 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_VWFSEARCH:
 			case CLS_VWBSEARCH:
 				{
-					const int command_type = search_submode_to_command_type(sub_mode);
-					curr_stats.save_msg = exec_command(pattern, curr_view, command_type);
+					const CmdInputType cit = search_cls_to_cit(sub_mode);
+					curr_stats.save_msg = exec_command(pattern, curr_view, cit);
 					break;
 				}
 			case CLS_MENU_FSEARCH:
@@ -1204,10 +1205,10 @@ finish_prompt_submode(const char input[])
 	cb(input);
 }
 
-/* Converts search command-line sub-mode to type of command for the commands.c
- * unit.  Returns -1 when there is no appropriate command type. */
-static int
-search_submode_to_command_type(int sub_mode)
+/* Converts search command-line sub-mode to type of command input.  Returns
+ * (CmdInputType)-1 if there is no appropriate command type. */
+static CmdInputType
+search_cls_to_cit(CmdLineSubmode sub_mode)
 {
 	switch(sub_mode)
 	{
@@ -1220,7 +1221,7 @@ search_submode_to_command_type(int sub_mode)
 
 		default:
 			assert(0 && "Unknown search command-line submode.");
-			return -1;
+			return (CmdInputType)-1;
 	}
 }
 
