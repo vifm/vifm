@@ -118,6 +118,13 @@ int is_builtin_dir(const char name[]);
  * non-zero is returned. */
 int find_cmd_in_path(const char cmd[], size_t path_len, char path[]);
 
+/* Generates file name inside temporary directory. */
+void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
+
+/* Uses environment variables to determine the correct place.  Returns path to
+ * tmp directory. */
+const char * get_tmpdir(void);
+
 #ifdef _WIN32
 
 int is_unc_path(const char *path);

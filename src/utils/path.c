@@ -35,9 +35,7 @@
 
 #include "../cfg/config.h"
 #include "../path_env.h"
-#ifdef _WIN32
 #include "env.h"
-#endif
 #include "fs.h"
 #include "fs_limits.h"
 #include "str.h"
@@ -688,6 +686,22 @@ find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 		}
 	}
 	return 1;
+}
+
+void
+generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
+{
+	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	copy_str(buf, buf_len, make_name_unique(buf));
+}
+
+const char *
+get_tmpdir(void)
+{
+	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP", NULL);
 }
 
 #ifdef _WIN32

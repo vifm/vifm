@@ -96,7 +96,6 @@ static void create_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
@@ -686,24 +685,6 @@ get_vicmd(int *bg)
 		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;
 	}
-}
-
-void
-generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
-{
-	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-	copy_str(buf, buf_len, make_name_unique(buf));
-}
-
-/* Returns path to tmp directory.  Uses environment variables to determine the
- * correct place. */
-const char *
-get_tmpdir(void)
-{
-	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP", NULL);
 }
 
 void
