@@ -30,18 +30,18 @@
 /* Submodes of command-line mode. */
 typedef enum
 {
-	CLS_CMD,                  /* Regular command-line command. */
-	CLS_MENU_CMD,             /* Menu command-line command. */
-	CLS_SEARCH_FORWARD,       /* Forward search in normal mode. */
-	CLS_SEARCH_BACKWARD,      /* Backward search in normal mode. */
-	CLS_MENU_SEARCH_FORWARD,  /* Forward search in menu mode. */
-	CLS_MENU_SEARCH_BACKWARD, /* Backward search in menu mode. */
-	CLS_VSEARCH_FORWARD,      /* Forward search in visual mode. */
-	CLS_VSEARCH_BACKWARD,     /* Backward search in visual mode. */
-	CLS_PROMPT,               /* Input request. */
-	CLS_VIEW_SEARCH_FORWARD,  /* Forward search in view mode. */
-	CLS_VIEW_SEARCH_BACKWARD, /* Backward search in view mode. */
-	CLS_FILTER,               /* Filter value. */
+	CLS_COMMAND,      /* Regular command-line command. */
+	CLS_MENU_COMMAND, /* Menu command-line command. */
+	CLS_MENU_FSEARCH, /* Forward search in menu mode. */
+	CLS_MENU_BSEARCH, /* Backward search in menu mode. */
+	CLS_FSEARCH,      /* Forward search in normal mode. */
+	CLS_BSEARCH,      /* Backward search in normal mode. */
+	CLS_VFSEARCH,     /* Forward search in visual mode. */
+	CLS_VBSEARCH,     /* Backward search in visual mode. */
+	CLS_VWFSEARCH,    /* Forward search in view mode. */
+	CLS_VWBSEARCH,    /* Backward search in view mode. */
+	CLS_FILTER,       /* Filter value. */
+	CLS_PROMPT,       /* Input request. */
 }
 CmdLineSubmode;
 

@@ -630,7 +630,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	enter_cmdline_mode(CLS_CMD, L"", NULL);
+	enter_cmdline_mode(CLS_COMMAND, L"", NULL);
 }
 
 static void
@@ -970,6 +970,8 @@ cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 static void
 activate_search(int count, int back, int external)
 {
+	/* TODO: generalize with normal.c:activate_search(). */
+
 	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
 	curr_stats.last_search_backward = back;
 	if(external)
@@ -979,7 +981,7 @@ activate_search(int count, int back, int external)
 	}
 	else
 	{
-		CmdLineSubmode submode = back ? CLS_VSEARCH_BACKWARD : CLS_VSEARCH_FORWARD;
+		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
 		enter_cmdline_mode(submode, L"", NULL);
 	}
 }

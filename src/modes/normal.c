@@ -530,7 +530,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 			vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 		}
 	}
-	enter_cmdline_mode(CLS_CMD, buf, NULL);
+	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
 }
 
 /* Processes !<selector> normal mode command.  Processes results of applying
@@ -1321,7 +1321,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	{
 		vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
 	}
-	enter_cmdline_mode(CLS_CMD, buf, NULL);
+	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
 }
 
 static void
@@ -1719,6 +1719,8 @@ cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 static void
 activate_search(int count, int back, int external)
 {
+	/* TODO: generalize with visual.c:activate_search(). */
+
 	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
 	curr_stats.last_search_backward = back;
 	if(external)
@@ -1728,7 +1730,7 @@ activate_search(int count, int back, int external)
 	}
 	else
 	{
-		CmdLineSubmode submode = back ? CLS_SEARCH_BACKWARD : CLS_SEARCH_FORWARD;
+		const CmdLineSubmode submode = back ? CLS_BSEARCH : CLS_FSEARCH;
 		enter_cmdline_mode(submode, L"", NULL);
 	}
 }
