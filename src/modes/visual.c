@@ -630,7 +630,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	enter_cmdline_mode(CMD_SUBMODE, L"", NULL);
+	enter_cmdline_mode(CLS_CMD, L"", NULL);
 }
 
 static void
@@ -979,8 +979,8 @@ activate_search(int count, int back, int external)
 	}
 	else
 	{
-		const int type = back ? VSEARCH_BACKWARD_SUBMODE : VSEARCH_FORWARD_SUBMODE;
-		enter_cmdline_mode(type, L"", NULL);
+		CmdLineSubmode submode = back ? CLS_VSEARCH_BACKWARD : CLS_VSEARCH_FORWARD;
+		enter_cmdline_mode(submode, L"", NULL);
 	}
 }
 

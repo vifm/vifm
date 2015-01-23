@@ -530,7 +530,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 			vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 		}
 	}
-	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+	enter_cmdline_mode(CLS_CMD, buf, NULL);
 }
 
 /* Processes !<selector> normal mode command.  Processes results of applying
@@ -1278,7 +1278,7 @@ static void
 cmd_equal(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t *previous = to_wide(curr_view->local_filter.filter.raw);
-	enter_cmdline_mode(FILTER_SUBMODE, previous, NULL);
+	enter_cmdline_mode(CLS_FILTER, previous, NULL);
 	free(previous);
 }
 
@@ -1321,7 +1321,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	{
 		vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
 	}
-	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+	enter_cmdline_mode(CLS_CMD, buf, NULL);
 }
 
 static void
@@ -1723,13 +1723,13 @@ activate_search(int count, int back, int external)
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
-		const CmdInputType type = back ? CIT_BSEARCH_PATTERN : CIT_FSEARCH_PATTERN;
+		CmdInputType type = back ? CIT_BSEARCH_PATTERN : CIT_FSEARCH_PATTERN;
 		get_and_execute_command("", 0U, type);
 	}
 	else
 	{
-		const int type = back ? SEARCH_BACKWARD_SUBMODE : SEARCH_FORWARD_SUBMODE;
-		enter_cmdline_mode(type, L"", NULL);
+		CmdLineSubmode submode = back ? CLS_SEARCH_BACKWARD : CLS_SEARCH_FORWARD;
+		enter_cmdline_mode(submode, L"", NULL);
 	}
 }
 

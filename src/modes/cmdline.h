@@ -27,20 +27,21 @@
 #endif
 #include "../utils/test_helpers.h"
 
+/* Submodes of command-line mode. */
 typedef enum
 {
-	CMD_SUBMODE,
-	MENU_CMD_SUBMODE,
-	SEARCH_FORWARD_SUBMODE,
-	SEARCH_BACKWARD_SUBMODE,
-	MENU_SEARCH_FORWARD_SUBMODE,
-	MENU_SEARCH_BACKWARD_SUBMODE,
-	VSEARCH_FORWARD_SUBMODE,
-	VSEARCH_BACKWARD_SUBMODE,
-	PROMPT_SUBMODE,
-	VIEW_SEARCH_FORWARD_SUBMODE,
-	VIEW_SEARCH_BACKWARD_SUBMODE,
-	FILTER_SUBMODE,
+	CLS_CMD,                  /* Regular command-line command. */
+	CLS_MENU_CMD,             /* Menu command-line command. */
+	CLS_SEARCH_FORWARD,       /* Forward search in normal mode. */
+	CLS_SEARCH_BACKWARD,      /* Backward search in normal mode. */
+	CLS_MENU_SEARCH_FORWARD,  /* Forward search in menu mode. */
+	CLS_MENU_SEARCH_BACKWARD, /* Backward search in menu mode. */
+	CLS_VSEARCH_FORWARD,      /* Forward search in visual mode. */
+	CLS_VSEARCH_BACKWARD,     /* Backward search in visual mode. */
+	CLS_PROMPT,               /* Input request. */
+	CLS_VIEW_SEARCH_FORWARD,  /* Forward search in view mode. */
+	CLS_VIEW_SEARCH_BACKWARD, /* Backward search in view mode. */
+	CLS_FILTER,               /* Filter value. */
 }
 CmdLineSubmode;
 
