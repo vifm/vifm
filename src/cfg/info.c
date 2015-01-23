@@ -158,7 +158,7 @@ read_info_file(int reread)
 				char *cmdadd_cmd;
 				if((cmdadd_cmd = format_str("command %s %s", line_val, line2)) != NULL)
 				{
-					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
+					exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
 					free(cmdadd_cmd);
 				}
 			}

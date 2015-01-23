@@ -1299,7 +1299,7 @@ static void
 cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.save_msg = exec_commands(curr_stats.last_cmdline_command,
-			curr_view, GET_COMMAND);
+			curr_view, CIT_COMMAND);
 }
 
 /* Move cursor to the first column in ls-view sub-mode. */
@@ -1698,7 +1698,7 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, GET_COMMAND);
+	get_and_execute_command("", 0U, CIT_COMMAND);
 }
 
 /* Runs external editor to get search pattern and then executes it. */
@@ -1723,7 +1723,7 @@ activate_search(int count, int back, int external)
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
-		const int type = back ? GET_BSEARCH_PATTERN : GET_FSEARCH_PATTERN;
+		const CmdInputType type = back ? CIT_BSEARCH_PATTERN : CIT_FSEARCH_PATTERN;
 		get_and_execute_command("", 0U, type);
 	}
 	else
@@ -1737,7 +1737,7 @@ activate_search(int count, int back, int external)
 static void
 cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, GET_FILTER_PATTERN);
+	get_and_execute_command("", 0U, CIT_FILTER_PATTERN);
 }
 
 /* Tag file. */

@@ -589,7 +589,7 @@ source_file_internal(FILE *fp, const char filename[])
 			else
 				break;
 		}
-		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
+		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
 			show_sourcing_error(filename, line_num);
 			encoutered_errors = 1;

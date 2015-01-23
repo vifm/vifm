@@ -1043,7 +1043,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 void
 execute_cmdline_command(const char cmd[])
 {
-	if(exec_command(cmd, curr_view, GET_COMMAND) < 0)
+	if(exec_command(cmd, curr_view, CIT_COMMAND) < 0)
 	{
 		status_bar_error("An error occurred while trying to execute command");
 	}

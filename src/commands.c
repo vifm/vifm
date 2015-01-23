@@ -128,12 +128,13 @@ static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
 		int *usr2);
 static int setup_extcmd_file(const char path[], const char beginning[],
-		int type);
-static void prepare_extcmd_file(FILE *fp, const char beginning[], int type);
-static hist_t * history_by_type(int type);
+		CmdInputType type);
+static void prepare_extcmd_file(FILE *fp, const char beginning[],
+		CmdInputType type);
+static hist_t * history_by_type(CmdInputType type);
 static char * get_file_first_line(const char path[]);
-static void execute_extcmd(const char command[], int type);
-static void save_extcmd(const char command[], int type);
+static void execute_extcmd(const char command[], CmdInputType type);
+static void save_extcmd(const char command[], CmdInputType type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
@@ -143,7 +144,7 @@ TSTATIC int line_pos(const char begin[], const char end[], char sep,
 		int rquoting);
 static int is_whole_line_command(const char cmd[]);
 static char * skip_command_beginning(const char cmd[]);
-static int repeat_command(FileView *view, int type);
+static int repeat_command(FileView *view, CmdInputType type);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
@@ -534,12 +535,12 @@ exec_startup_commands(int c, char **v)
 	{
 		if(strcmp(argv[x], "-c") == 0)
 		{
-			(void)exec_commands(argv[x + 1], curr_view, GET_COMMAND);
+			(void)exec_commands(argv[x + 1], curr_view, CIT_COMMAND);
 			x++;
 		}
 		else if(argv[x][0] == '+')
 		{
-			(void)exec_commands(argv[x] + 1, curr_view, GET_COMMAND);
+			(void)exec_commands(argv[x] + 1, curr_view, CIT_COMMAND);
 		}
 	}
 }
@@ -581,7 +582,7 @@ cmds_expand_envvars(const char str[])
 }
 
 void
-get_and_execute_command(const char line[], size_t line_pos, int type)
+get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
 {
 	char *const cmd = get_ext_command(line, line_pos, type);
 	if(cmd == NULL)
@@ -597,7 +598,7 @@ get_and_execute_command(const char line[], size_t line_pos, int type)
 }
 
 char *
-get_ext_command(const char beginning[], size_t line_pos, int type)
+get_ext_command(const char beginning[], size_t line_pos, CmdInputType type)
 {
 	char cmd_file[PATH_MAX];
 	char *cmd = NULL;
@@ -624,7 +625,7 @@ get_ext_command(const char beginning[], size_t line_pos, int type)
 /* Create and fill file for external command prompt.  Returns zero on success,
  * otherwise non-zero is returned and errno contains valid value. */
 static int
-setup_extcmd_file(const char path[], const char beginning[], int type)
+setup_extcmd_file(const char path[], const char beginning[], CmdInputType type)
 {
 	FILE *const fp = os_fopen(path, "wt");
 	if(fp == NULL)
@@ -638,9 +639,9 @@ setup_extcmd_file(const char path[], const char beginning[], int type)
 
 /* Fills the file with history (more recent goes first). */
 static void
-prepare_extcmd_file(FILE *fp, const char beginning[], int type)
+prepare_extcmd_file(FILE *fp, const char beginning[], CmdInputType type)
 {
-	const int is_cmd = (type == GET_COMMAND);
+	const int is_cmd = (type == CIT_COMMAND);
 	const hist_t *const hist = history_by_type(type);
 	int i;
 
@@ -662,15 +663,15 @@ prepare_extcmd_file(FILE *fp, const char beginning[], int type)
 
 /* Picks history by command type.  Returns pointer to history. */
 static hist_t *
-history_by_type(int type)
+history_by_type(CmdInputType type)
 {
 	switch(type)
 	{
-		case GET_COMMAND:
+		case CIT_COMMAND:
 			return &cfg.cmd_hist;
-		case GET_PROMPT_INPUT:
+		case CIT_PROMPT_INPUT:
 			return &cfg.prompt_hist;
-		case GET_FILTER_PATTERN:
+		case CIT_FILTER_PATTERN:
 			return &cfg.filter_hist;
 
 		default:
@@ -696,9 +697,9 @@ get_file_first_line(const char path[])
 
 /* Executes the command of the type. */
 static void
-execute_extcmd(const char command[], int type)
+execute_extcmd(const char command[], CmdInputType type)
 {
-	if(type == GET_COMMAND)
+	if(type == CIT_COMMAND)
 	{
 		curr_stats.save_msg = exec_commands(command, curr_view, type);
 	}
@@ -710,9 +711,9 @@ execute_extcmd(const char command[], int type)
 
 /* Saves the command to the appropriate history. */
 static void
-save_extcmd(const char command[], int type)
+save_extcmd(const char command[], CmdInputType type)
 {
-	if(type == GET_COMMAND)
+	if(type == CIT_COMMAND)
 	{
 		save_command_history(command);
 	}
@@ -1180,7 +1181,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 }
 
 int
-exec_commands(const char cmd[], FileView *view, int type)
+exec_commands(const char cmd[], FileView *view, CmdInputType type)
 {
 	char cmd_copy[strlen(cmd) + 1];
 	int save_msg = 0;
@@ -1229,7 +1230,7 @@ exec_commands(const char cmd[], FileView *view, int type)
 			/* For non-menu commands set command-line mode configuration before
 			 * calling is_whole_line_command() function, which calls functions of the
 			 * cmds module of the engine that use context. */
-			if(type != GET_MENU_COMMAND)
+			if(type != CIT_MENU_COMMAND)
 			{
 				init_cmds(1, &cmds_conf);
 			}
@@ -1402,7 +1403,7 @@ skip_command_beginning(const char cmd[])
 }
 
 int
-exec_command(const char cmd[], FileView *view, int type)
+exec_command(const char cmd[], FileView *view, CmdInputType type)
 {
 	int menu;
 	int backward;
@@ -1416,23 +1417,23 @@ exec_command(const char cmd[], FileView *view, int type)
 	backward = 0;
 	switch(type)
 	{
-		case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_FSEARCH_PATTERN:
+		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_FSEARCH_PATTERN:
 			return find_npattern(view, cmd, backward, 1);
 
-		case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_VFSEARCH_PATTERN:
+		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_VFSEARCH_PATTERN:
 			return find_vpattern(view, cmd, backward, 1);
 
-		case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_VWFSEARCH_PATTERN:
+		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_VWFSEARCH_PATTERN:
 			return find_vwpattern(cmd, backward);
 
-		case GET_MENU_COMMAND: menu = 1; /* Fall through. */
-		case GET_COMMAND:
+		case CIT_MENU_COMMAND: menu = 1; /* Fall through. */
+		case CIT_COMMAND:
 			return execute_command(view, cmd, menu);
 
-		case GET_FILTER_PATTERN:
+		case CIT_FILTER_PATTERN:
 			local_filter_apply(view, cmd);
 			return 0;
 
@@ -1446,27 +1447,27 @@ exec_command(const char cmd[], FileView *view, int type)
  * message should be saved in the status bar, > 0 to save message on successful
  * execution and < 0 in case of error with error message. */
 static int
-repeat_command(FileView *view, int type)
+repeat_command(FileView *view, CmdInputType type)
 {
 	int backward = 0;
 	switch(type)
 	{
-		case GET_BSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_FSEARCH_PATTERN:
+		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_FSEARCH_PATTERN:
 			return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
 
-		case GET_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_VFSEARCH_PATTERN:
+		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_VFSEARCH_PATTERN:
 			return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
 
-		case GET_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
-		case GET_VWFSEARCH_PATTERN:
+		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
+		case CIT_VWFSEARCH_PATTERN:
 			return find_vwpattern(NULL, backward);
 
-		case GET_COMMAND:
+		case CIT_COMMAND:
 			return execute_command(view, NULL, 0);
 
-		case GET_FILTER_PATTERN:
+		case CIT_FILTER_PATTERN:
 			local_filter_apply(view, "");
 			return 0;
 
@@ -1520,7 +1521,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 				status_bar_message("No previous command-line command");
 				return 1;
 			}
-			return exec_commands(last_cmd, curr_view, GET_COMMAND) != 0;
+			return exec_commands(last_cmd, curr_view, CIT_COMMAND) != 0;
 		}
 		return CMDS_ERR_TOO_FEW_ARGS;
 	}
@@ -2082,7 +2083,7 @@ exe_cmd(const cmd_info_t *cmd_info)
 	char *const eval_result = try_eval_arglist(cmd_info);
 	if(eval_result != NULL)
 	{
-		result = exec_commands(eval_result, curr_view, GET_COMMAND);
+		result = exec_commands(eval_result, curr_view, CIT_COMMAND);
 		free(eval_result);
 	}
 	return result != 0;
@@ -4047,7 +4048,7 @@ winrun(FileView *view, const char cmd[])
 		load_local_options(curr_view);
 	}
 
-	result = exec_commands(cmd, curr_view, GET_COMMAND);
+	result = exec_commands(cmd, curr_view, CIT_COMMAND);
 
 	curr_view = tmp_curr;
 	other_view = tmp_other;
@@ -4167,7 +4168,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	if(expanded_com[0] == ':')
 	{
-		int sm = exec_commands(expanded_com, curr_view, GET_COMMAND);
+		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
 		return sm != 0;
 	}
@@ -4187,7 +4188,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(starts_with_lit(expanded_com, "filter") &&
 			char_is_one_of(" !/", expanded_com[6]))
 	{
-		save_msg = exec_command(expanded_com, curr_view, GET_COMMAND);
+		save_msg = exec_command(expanded_com, curr_view, CIT_COMMAND);
 		external = 0;
 	}
 	else if(expanded_com[0] == '!')
@@ -4213,13 +4214,13 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '/')
 	{
-		exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
+		exec_command(expanded_com + 1, curr_view, CIT_FSEARCH_PATTERN);
 		external = 0;
 		keep_view_selection = 1;
 	}
 	else if(expanded_com[0] == '=')
 	{
-		exec_command(expanded_com + 1, curr_view, GET_FILTER_PATTERN);
+		exec_command(expanded_com + 1, curr_view, CIT_FILTER_PATTERN);
 		ui_view_schedule_reload(curr_view);
 		external = 0;
 		keep_view_selection = 1;

@@ -949,7 +949,7 @@ static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_clearing_selection(0, 0);
-	get_and_execute_command("", 0U, GET_COMMAND);
+	get_and_execute_command("", 0U, CIT_COMMAND);
 }
 
 /* Runs external editor to get search pattern and then executes it. */
@@ -974,7 +974,7 @@ activate_search(int count, int back, int external)
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
-		const int type = back ? GET_VBSEARCH_PATTERN : GET_VFSEARCH_PATTERN;
+		CmdInputType type = back ? CIT_VBSEARCH_PATTERN : CIT_VFSEARCH_PATTERN;
 		get_and_execute_command("", 0U, type);
 	}
 	else

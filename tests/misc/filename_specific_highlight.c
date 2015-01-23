@@ -17,7 +17,7 @@ test_pattern_is_not_unescaped(void)
 {
 	const char *const COMMANDS = "highlight /^\\./ ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
 }
 
@@ -28,7 +28,7 @@ test_pattern_length_is_not_limited(void)
 		"|bz2|cab|cpio|deb|gz|jar|lha|lrz|lz|lzma|lzo|rar|rpm|rz|t7z|tZ|tar|tbz"
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$/ ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("\\.(7z|Z|a|ace|alz|apkg|arc|arj|bz"
 		"|bz2|cab|cpio|deb|gz|jar|lha|lrz|lz|lzma|lzo|rar|rpm|rz|t7z|tZ|tar|tbz"
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$", cfg.cs.file_hi[0].pattern);
@@ -39,7 +39,7 @@ test_i_flag(void)
 {
 	const char *const COMMANDS = "highlight /^\\./i ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
 }
 
@@ -48,7 +48,7 @@ test_I_flag(void)
 {
 	const char *const COMMANDS = "highlight /^\\./I ctermfg=red";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
 }
 
@@ -57,7 +57,7 @@ test_wrong_flag(void)
 {
 	const char *const COMMANDS = "highlight /^\\./x ctermfg=red";
 
-	assert_int_equal(1, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 }
 
 void

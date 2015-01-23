@@ -423,10 +423,10 @@ input_line_changed(void)
 				(void)find_npattern(curr_view, mbinput, 1, 0);
 				break;
 			case VSEARCH_FORWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_VFSEARCH_PATTERN);
+				exec_command(mbinput, curr_view, CIT_VFSEARCH_PATTERN);
 				break;
 			case VSEARCH_BACKWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_VBSEARCH_PATTERN);
+				exec_command(mbinput, curr_view, CIT_VBSEARCH_PATTERN);
 				break;
 			case MENU_SEARCH_FORWARD_SUBMODE:
 			case MENU_SEARCH_BACKWARD_SUBMODE:
@@ -762,7 +762,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	}
 	if(sub_mode == CMD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
+		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
 	}
 	else if(sub_mode == FILTER_SUBMODE)
 	{
@@ -812,17 +812,17 @@ submode_to_editable_command_type(int sub_mode)
 	switch(sub_mode)
 	{
 		case CMD_SUBMODE:
-			return GET_COMMAND;
+			return CIT_COMMAND;
 		case SEARCH_FORWARD_SUBMODE:
-			return GET_FSEARCH_PATTERN;
+			return CIT_FSEARCH_PATTERN;
 		case SEARCH_BACKWARD_SUBMODE:
-			return GET_BSEARCH_PATTERN;
+			return CIT_BSEARCH_PATTERN;
 		case VSEARCH_FORWARD_SUBMODE:
-			return GET_VFSEARCH_PATTERN;
+			return CIT_VFSEARCH_PATTERN;
 		case VSEARCH_BACKWARD_SUBMODE:
-			return GET_VBSEARCH_PATTERN;
+			return CIT_VBSEARCH_PATTERN;
 		case FILTER_SUBMODE:
-			return GET_FILTER_PATTERN;
+			return CIT_FILTER_PATTERN;
 
 		default:
 			return -1;
@@ -833,7 +833,7 @@ submode_to_editable_command_type(int sub_mode)
 static void
 extedit_prompt(const char input[], int cursor_col)
 {
-	char *const ext_cmd = get_ext_command(input, cursor_col, GET_PROMPT_INPUT);
+	char *const ext_cmd = get_ext_command(input, cursor_col, CIT_PROMPT_INPUT);
 
 	if(ext_cmd != NULL)
 	{
@@ -1091,8 +1091,8 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
 		const CMD_LINE_SUBMODES cmd_type = (sub_mode == CMD_SUBMODE)
-		                                 ? GET_COMMAND
-		                                 : GET_MENU_COMMAND;
+		                                 ? CIT_COMMAND
+		                                 : CIT_MENU_COMMAND;
 
 		const char *real_start = input;
 		while(*real_start == ' ' || *real_start == ':')
@@ -1222,17 +1222,17 @@ search_submode_to_command_type(int sub_mode)
 	switch(sub_mode)
 	{
 		case SEARCH_FORWARD_SUBMODE:
-			return GET_FSEARCH_PATTERN;
+			return CIT_FSEARCH_PATTERN;
 		case SEARCH_BACKWARD_SUBMODE:
-			return GET_BSEARCH_PATTERN;
+			return CIT_BSEARCH_PATTERN;
 		case VSEARCH_FORWARD_SUBMODE:
-			return GET_VFSEARCH_PATTERN;
+			return CIT_VFSEARCH_PATTERN;
 		case VSEARCH_BACKWARD_SUBMODE:
-			return GET_VBSEARCH_PATTERN;
+			return CIT_VBSEARCH_PATTERN;
 		case VIEW_SEARCH_FORWARD_SUBMODE:
-			return GET_VWFSEARCH_PATTERN;
+			return CIT_VWFSEARCH_PATTERN;
 		case VIEW_SEARCH_BACKWARD_SUBMODE:
-			return GET_VWBSEARCH_PATTERN;
+			return CIT_VWBSEARCH_PATTERN;
 
 		default:
 			assert(0 && "Unknown search command-line submode.");
