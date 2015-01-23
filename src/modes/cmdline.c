@@ -102,7 +102,7 @@ line_stats_t;
 #endif
 
 static int prev_mode;
-static CMD_LINE_SUBMODES sub_mode;
+static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
 static int line_width = 1;
 static void *sub_mode_ptr;
@@ -138,8 +138,8 @@ static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
 static int search_submode_to_command_type(int sub_mode);
-static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
-static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
+static int is_forward_search(CmdLineSubmode sub_mode);
+static int is_backward_search(CmdLineSubmode sub_mode);
 static int replace_wstring(wchar_t **str, const wchar_t with[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
@@ -492,7 +492,7 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
+enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd, void *ptr)
 {
 	const wchar_t *prompt;
 	complete_cmd_func complete_func;
@@ -1090,9 +1090,9 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
-		const CMD_LINE_SUBMODES cmd_type = (sub_mode == CMD_SUBMODE)
-		                                 ? CIT_COMMAND
-		                                 : CIT_MENU_COMMAND;
+		const CmdLineSubmode cmd_type = (sub_mode == CMD_SUBMODE)
+		                              ? CIT_COMMAND
+		                              : CIT_MENU_COMMAND;
 
 		const char *real_start = input;
 		while(*real_start == ' ' || *real_start == ':')
@@ -1243,7 +1243,7 @@ search_submode_to_command_type(int sub_mode)
 /* Checks whether specified mode is one of forward searching modes.  Returns
  * non-zero if it is, otherwise zero is returned. */
 static int
-is_forward_search(CMD_LINE_SUBMODES sub_mode)
+is_forward_search(CmdLineSubmode sub_mode)
 {
 	return sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
@@ -1254,7 +1254,7 @@ is_forward_search(CMD_LINE_SUBMODES sub_mode)
 /* Checks whether specified mode is one of backward searching modes.  Returns
  * non-zero if it is, otherwise zero is returned. */
 static int
-is_backward_search(CMD_LINE_SUBMODES sub_mode)
+is_backward_search(CmdLineSubmode sub_mode)
 {
 	return sub_mode == SEARCH_BACKWARD_SUBMODE
 			|| sub_mode == VSEARCH_BACKWARD_SUBMODE

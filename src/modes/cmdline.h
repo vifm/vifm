@@ -42,7 +42,7 @@ typedef enum
 	VIEW_SEARCH_BACKWARD_SUBMODE,
 	FILTER_SUBMODE,
 }
-CMD_LINE_SUBMODES;
+CmdLineSubmode;
 
 typedef void (*prompt_cb)(const char renponse[]);
 
@@ -53,7 +53,7 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void init_cmdline_mode(void);
 
-void enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd,
+void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 
 /* Enters command-line editing mode with prompt submode activated.  cmd
