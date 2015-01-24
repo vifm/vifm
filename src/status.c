@@ -48,7 +48,6 @@
 
 static void load_def_values(status_t *stats, config_t *config);
 static void set_gtk_available(status_t *stats);
-static void set_number_of_windows(status_t *stats, config_t *config);
 static int reset_dircache(status_t *stats);
 static void set_last_cmdline_command(const char cmd[]);
 
@@ -66,7 +65,6 @@ init_status(config_t *config)
 
 	load_def_values(&curr_stats, config);
 	set_gtk_available(&curr_stats);
-	set_number_of_windows(&curr_stats, config);
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
@@ -86,6 +84,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->use_register = 0;
 	stats->curr_register = -1;
 	stats->register_saved = 0;
+	stats->number_of_windows = 2;
 	stats->view = 0;
 	stats->use_input_bar = 1;
 	stats->load_stage = 0;
@@ -135,15 +134,6 @@ set_gtk_available(status_t *stats)
 	char **ptr = argv;
 	curr_stats.gtk_available = gtk_init_check(&argc, &ptr);
 #endif
-}
-
-static void
-set_number_of_windows(status_t *stats, config_t *config)
-{
-	if(config->show_one_window)
-		curr_stats.number_of_windows = 1;
-	else
-		curr_stats.number_of_windows = 2;
 }
 
 int

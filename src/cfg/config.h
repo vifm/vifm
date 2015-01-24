@@ -73,7 +73,6 @@ typedef struct config_t
 	int history_len;
 
 	int auto_execute;
-	int show_one_window;
 	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;

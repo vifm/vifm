@@ -108,7 +108,6 @@ static void save_into_history(const char item[], hist_t *hist, int len);
 void
 cfg_init(void)
 {
-	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 
 	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
