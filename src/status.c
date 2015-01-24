@@ -233,22 +233,7 @@ set_last_cmdline_command(const char cmd[])
 void
 stats_update_shell_type(const char shell_cmd[])
 {
-#ifdef _WIN32
-	char shell[NAME_MAX];
-	const char *shell_name;
-
-	(void)extract_cmd_name(shell_cmd, 0, sizeof(shell), shell);
-	shell_name = get_last_path_component(shell);
-
-	if(stroscmp(shell_name, "cmd") == 0 || stroscmp(shell_name, "cmd.exe") == 0)
-	{
-		curr_stats.shell_type = ST_CMD;
-	}
-	else
-#endif
-	{
-		curr_stats.shell_type = ST_NORMAL;
-	}
+	curr_stats.shell_type = get_shell_type(shell_cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

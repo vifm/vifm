@@ -616,6 +616,12 @@ get_exec_env_type(void)
 	}
 }
 
+ShellType
+get_shell_type(const char shell_cmd[])
+{
+	return ST_NORMAL;
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
