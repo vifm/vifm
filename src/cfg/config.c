@@ -572,6 +572,8 @@ source_file_internal(FILE *fp, const char filename[])
 	}
 	chomp(line);
 
+	commands_scope_start();
+
 	line_num = 1;
 	for(;;)
 	{
@@ -611,7 +613,7 @@ source_file_internal(FILE *fp, const char filename[])
 
 	free(next_line);
 
-	if(commands_block_finished() != 0)
+	if(commands_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);
 		encoutered_errors = 1;

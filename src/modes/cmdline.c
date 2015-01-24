@@ -2108,7 +2108,8 @@ TSTATIC int
 line_completion(line_stats_t *stat)
 {
 	static int offset;
-	static char *line_mb, *line_mb_cmd;
+	static char *line_mb;
+	static const char *line_mb_cmd;
 
 	char *completion;
 	int result;

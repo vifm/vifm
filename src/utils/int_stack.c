@@ -38,6 +38,12 @@ int_stack_get_top(const int_stack_t *const stack)
 	return stack->data[stack->top - 1];
 }
 
+int
+int_stack_top_is(const int_stack_t *const stack, const int val)
+{
+	return !int_stack_is_empty(stack) && int_stack_get_top(stack) == val;
+}
+
 void
 int_stack_set_top(const int_stack_t *const stack, const int val)
 {
@@ -79,7 +85,16 @@ int_stack_pop(int_stack_t *const stack)
 {
 	assert(!int_stack_is_empty(stack));
 
-	stack->top--;
+	--stack->top;
+}
+
+void
+int_stack_pop_seq(int_stack_t *const stack, const int seq_guard)
+{
+	while(--stack->top > 0 && stack->data[stack->top] != seq_guard)
+	{
+		/* Do nothing. */
+	}
 }
 
 void

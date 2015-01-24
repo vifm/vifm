@@ -187,6 +187,16 @@ test_if_true_else_if_else_condition(void)
 	assert_string_equal(NULL, env_get(VAR_D));
 }
 
+static void
+test_sourcing_in_body(void)
+{
+	const char *const CMDS = " | if 1 == 1"
+	                         " |     source test-data/scripts/set-env.vifm"
+	                         " | endif";
+
+	assert_int_equal(0, exec_commands(CMDS, &lwin, CIT_COMMAND));
+}
+
 void
 if_else_tests(void)
 {
@@ -205,6 +215,8 @@ if_else_tests(void)
 	run_test(test_if_false_else_if_true_condition);
 	run_test(test_if_false_if_else_condition);
 	run_test(test_if_true_else_if_else_condition);
+
+	run_test(test_sourcing_in_body);
 
 	test_fixture_end();
 }

@@ -33,6 +33,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() isspace() */
 #include <errno.h> /* errno */
+#include <limits.h> /* INT_MIN */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -95,6 +96,9 @@
 #include "undo.h"
 #include "vifm.h"
 #include "vim.h"
+
+/* Command scope marker. */
+#define SCOPE_GUARD INT_MIN
 
 /* Commands without completion. */
 enum
@@ -170,6 +174,7 @@ static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
+static int is_at_scope_bottom(const int_stack_t *scope_stack);
 static int exe_cmd(const cmd_info_t *cmd_info);
 static char * try_eval_arglist(const cmd_info_t *cmd_info);
 TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
@@ -515,7 +520,8 @@ static cmds_conf_t cmds_conf = {
 /* Shows whether view selection should be preserved on command-line finishing.
  * By default it's reset. */
 static int keep_view_selection;
-/* Stores condition evaluation result for all nesting if-endif statements. */
+/* Stores condition evaluation result for all nesting if-endif statements as
+ * well as file scope marks (SCOPE_GUARD). */
 static int_stack_t if_levels;
 
 void
@@ -1034,7 +1040,7 @@ cmd_should_be_processed(int cmd_id)
 {
 	static int skipped_nested_if_stmts;
 
-	if(int_stack_is_empty(&if_levels) || int_stack_get_top(&if_levels))
+	if(is_at_scope_bottom(&if_levels) || int_stack_get_top(&if_levels) == 1)
 	{
 		return 1;
 	}
@@ -1346,48 +1352,51 @@ is_whole_line_command(const char cmd[])
 	}
 }
 
-char *
-find_last_command(char *cmd)
+const char *
+find_last_command(const char cmds[])
 {
-	char *p, *q;
+	const char *p, *q;
 
-	p = cmd;
-	q = cmd;
-	while(*cmd != '\0')
+	p = cmds;
+	q = cmds;
+	while(*cmds != '\0')
 	{
 		if(*p == '\\')
 		{
-			if(*(p + 1) == '|')
-				q++;
-			else
-				q += 2;
+			q += (p[1] == '|') ? 1 : 2;
 			p += 2;
 		}
-		else if((*p == '|' &&
-				line_pos(cmd, q, ' ', starts_with_lit(cmd, "fil")) == 0) || *p == '\0')
+		else if(*p == '\0' || (*p == '|' &&
+				line_pos(cmds, q, ' ', starts_with_lit(cmds, "fil")) == 0))
 		{
 			if(*p != '\0')
-				p++;
+			{
+				++p;
+			}
 
-			cmd = skip_command_beginning(cmd);
-			if(*cmd == '!' || starts_with_lit(cmd, "com"))
+			cmds = skip_command_beginning(cmds);
+			if(*cmds == '!' || starts_with_lit(cmds, "com"))
+			{
 				break;
+			}
 
 			q = p;
 
 			if(*q == '\0')
+			{
 				break;
+			}
 
-			cmd = q;
+			cmds = q;
 		}
 		else
 		{
-			q++;
-			p++;
+			++q;
+			++p;
 		}
 	}
 
-	return cmd;
+	return cmds;
 }
 
 /* Skips consecutive whitespace or colon characters at the beginning of the
@@ -1477,15 +1486,23 @@ repeat_command(FileView *view, CmdInputType type)
 	}
 }
 
-int
-commands_block_finished(void)
+void
+commands_scope_start(void)
 {
-	if(!int_stack_is_empty(&if_levels))
+	(void)int_stack_push(&if_levels, SCOPE_GUARD);
+}
+
+int
+commands_scope_finish(void)
+{
+	if(!is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error("Missing :endif");
-		int_stack_clear(&if_levels);
+		int_stack_pop_seq(&if_levels, SCOPE_GUARD);
 		return 1;
 	}
+
+	int_stack_pop(&if_levels);
 	return 0;
 }
 
@@ -2045,7 +2062,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 static int
 else_cmd(const cmd_info_t *cmd_info)
 {
-	if(int_stack_is_empty(&if_levels))
+	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":else without :if");
 		return 1;
@@ -2066,13 +2083,22 @@ empty_cmd(const cmd_info_t *cmd_info)
 static int
 endif_cmd(const cmd_info_t *cmd_info)
 {
-	if(int_stack_is_empty(&if_levels))
+	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":endif without :if");
 		return 1;
 	}
 	int_stack_pop(&if_levels);
 	return 0;
+}
+
+/* Checks that bottom of block scope is reached.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_at_scope_bottom(const int_stack_t *scope_stack)
+{
+	return int_stack_is_empty(scope_stack)
+	    || int_stack_top_is(scope_stack, SCOPE_GUARD);
 }
 
 /* This command composes a string from expressions and runs it as a command. */
@@ -2979,7 +3005,7 @@ if_cmd(const cmd_info_t *cmd_info)
 		status_bar_error(text_buffer_get());
 		return 1;
 	}
-	int_stack_push(&if_levels, var_to_boolean(condition));
+	(void)int_stack_push(&if_levels, var_to_boolean(condition));
 	var_free(condition);
 	keep_view_selection = 1;
 	return 0;
