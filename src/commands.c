@@ -715,11 +715,11 @@ save_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
-		save_command_history(command);
+		cfg_save_command_history(command);
 	}
 	else
 	{
-		save_search_history(command);
+		cfg_save_search_history(command);
 	}
 }
 
@@ -3584,7 +3584,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 		}
 		return 1;
 	}
-	set_use_term_multiplexer(!cfg.use_term_multiplexer);
+	cfg_set_use_term_multiplexer(!cfg.use_term_multiplexer);
 	return 0;
 }
 
@@ -3631,7 +3631,7 @@ source_cmd(const cmd_info_t *cmd_info)
 		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
-	if(source_file(path) != 0)
+	if(cfg_source_file(path) != 0)
 	{
 		status_bar_errorf("Error sourcing file: %s", cmd_info->argv[0]);
 		ret = 1;

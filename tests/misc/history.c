@@ -42,7 +42,7 @@ setup(void)
 	rwin.dir_entry[0].name = strdup("rfile0");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 
-	resize_history(INITIAL_SIZE);
+	cfg_resize_histories(INITIAL_SIZE);
 }
 
 static void
@@ -50,7 +50,7 @@ teardown(void)
 {
 	int i;
 
-	resize_history(0);
+	cfg_resize_histories(0);
 
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
@@ -64,9 +64,9 @@ teardown(void)
 static void
 save_to_history(const char str[])
 {
-	save_command_history(str);
-	save_search_history(str);
-	save_prompt_history(str);
+	cfg_save_command_history(str);
+	cfg_save_search_history(str);
+	cfg_save_prompt_history(str);
 
 	save_view_history(&lwin, str, str + 1, 0);
 	save_view_history(&rwin, str, str + 1, 0);
@@ -114,7 +114,7 @@ test_add_after_decreasing_ok(void)
 		save_to_history(str + i);
 	}
 
-	resize_history(INITIAL_SIZE/2);
+	cfg_resize_histories(INITIAL_SIZE/2);
 
 	for(i = 0; i < INITIAL_SIZE; i++)
 	{
@@ -133,7 +133,7 @@ test_add_after_increasing_ok(void)
 		save_to_history(str + i);
 	}
 
-	resize_history(INITIAL_SIZE*2);
+	cfg_resize_histories(INITIAL_SIZE*2);
 
 	for(i = 0; i < INITIAL_SIZE; i++)
 	{

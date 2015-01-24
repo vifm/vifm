@@ -234,19 +234,19 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			append_to_history(&cfg.cmd_hist, save_command_history, line_val);
+			append_to_history(&cfg.cmd_hist, cfg_save_command_history, line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			append_to_history(&cfg.search_hist, save_search_history, line_val);
+			append_to_history(&cfg.search_hist, cfg_save_search_history, line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			append_to_history(&cfg.prompt_hist, save_prompt_history, line_val);
+			append_to_history(&cfg.prompt_hist, cfg_save_prompt_history, line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			append_to_history(&cfg.filter_hist, save_filter_history, line_val);
+			append_to_history(&cfg.filter_hist, cfg_save_filter_history, line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -297,7 +297,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
 			const int i = atoi(line_val);
-			set_use_term_multiplexer(i != 0);
+			cfg_set_use_term_multiplexer(i != 0);
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
@@ -361,7 +361,7 @@ ensure_history_not_full(hist_t *hist)
 {
 	if(hist->pos + 1 == cfg.history_len)
 	{
-		resize_history(MAX(0, cfg.history_len + 1));
+		cfg_resize_histories(cfg.history_len + 1);
 		assert(hist->pos + 1 != cfg.history_len && "Failed to resize history.");
 	}
 }
@@ -372,7 +372,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 {
 	if(view->history_num == cfg.history_len)
 	{
-		resize_history(MAX(0, cfg.history_len + 1));
+		cfg_resize_histories(cfg.history_len + 1);
 	}
 
 	if(!reread)

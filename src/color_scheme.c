@@ -518,7 +518,7 @@ load_primary_color_scheme(const char name[])
 	cfg.cs.state = CSS_LOADING;
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
-	if(source_file(full) != 0)
+	if(cfg_source_file(full) != 0)
 	{
 		restore_primary_color_scheme(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
@@ -714,7 +714,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 			char full_cs_path[PATH_MAX];
 			snprintf(full_cs_path, sizeof(full_cs_path), "%s/colors/%s",
 					cfg.config_dir, u.name);
-			(void)source_file(full_cs_path);
+			(void)cfg_source_file(full_cs_path);
 			altered = 1;
 		}
 

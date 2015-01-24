@@ -635,7 +635,7 @@ int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
+	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", cfg_get_vicmd(&bg),
 			cfg.config_dir);
 	return bg;
 }

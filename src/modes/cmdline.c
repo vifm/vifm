@@ -832,7 +832,7 @@ extedit_prompt(const char input[], int cursor_col)
 	}
 	else
 	{
-		save_prompt_history(input);
+		cfg_save_prompt_history(input);
 
 		status_bar_error("Error querying data from external source.");
 		curr_stats.save_msg = 1;
@@ -1176,7 +1176,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 {
 	if(input_stat.search_mode)
 	{
-		save_search_history(input);
+		cfg_save_search_history(input);
 	}
 	else if(sub_mode == CLS_COMMAND)
 	{
@@ -1184,12 +1184,12 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 		const int ignore_input = mapped_input || keys_info->recursive;
 		if(!ignore_input)
 		{
-			save_command_history(input);
+			cfg_save_command_history(input);
 		}
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		save_prompt_history(input);
+		cfg_save_prompt_history(input);
 	}
 }
 

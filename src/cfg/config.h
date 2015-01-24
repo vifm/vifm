@@ -158,56 +158,56 @@ extern config_t cfg;
 
 /* Initializes cfg global variable with initial values.  Re-initialization is
  * not supported. */
-void init_config(void);
+void cfg_init(void);
 
 /* Searches for configuration file and directories, stores them and ensures
- * existence of some of them.  This routine is separated from init_config() to
+ * existence of some of them.  This routine is separated from cfg_init() to
  * allow logging of path discovery. */
-void set_config_paths(void);
+void cfg_discover_paths(void);
 
 /* Sources vifmrc file (pointed to by the $MYVIFMRC). */
-void source_config(void);
+void cfg_load(void);
 
 /* Returns non-zero on error. */
-int source_file(const char filename[]);
+int cfg_source_file(const char filename[]);
 
 /* Checks whether vifmrc file (pointed to by the $MYVIFMRC) has old format.
  * Returns non-zero if so, otherwise zero is returned. */
-int is_old_config(void);
+int cfg_has_old_format(void);
 
 /* Checks whether color scheme are stored in obsolete single-file format.
  * Returns non-zero if so, otherwise zero is returned. */
-int are_old_color_schemes(void);
+int cfg_has_old_color_schemes(void);
 
 /* Gets editor invocation command.  Sets *bg to indicate whether the command
  * should be executed in background.  Returns pointer to a string from
  * configuration variables. */
-const char * get_vicmd(int *bg);
+const char * cfg_get_vicmd(int *bg);
 
-/* Changes size of all histories. */
-void resize_history(size_t new_len);
+/* Changes size of all histories.  Zero or negative length disables history. */
+void cfg_resize_histories(int new_len);
 
 /* Sets value of cfg.fuse_home.  Returns non-zero in case of error, otherwise
  * zero is returned. */
-int set_fuse_home(const char new_value[]);
+int cfg_set_fuse_home(const char new_value[]);
 
 /* Sets whether support of terminal multiplexers is enabled. */
-void set_use_term_multiplexer(int use_term_multiplexer);
+void cfg_set_use_term_multiplexer(int use_term_multiplexer);
 
 /* Frees memory previously allocated for specified history items. */
-void free_history_items(const history_t history[], size_t len);
+void cfg_free_history_items(const history_t history[], size_t len);
 
 /* Saves command to command history. */
-void save_command_history(const char command[]);
+void cfg_save_command_history(const char command[]);
 
 /* Saves pattern to search history. */
-void save_search_history(const char pattern[]);
+void cfg_save_search_history(const char pattern[]);
 
 /* Saves input to prompt history. */
-void save_prompt_history(const char input[]);
+void cfg_save_prompt_history(const char input[]);
 
 /* Saves input to local filter history. */
-void save_filter_history(const char pattern[]);
+void cfg_save_filter_history(const char pattern[]);
 
 /* Gets the most recently used search pattern.  Returns the pattern or empty
  * string if search history is empty. */

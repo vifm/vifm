@@ -604,7 +604,7 @@ format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
 	char *const escaped = escape_filename(cfg.config_dir, 0);
-	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
+	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;
 }
