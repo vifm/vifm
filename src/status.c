@@ -132,7 +132,7 @@ set_gtk_available(status_t *stats)
 	char *argv[] = { "vifm", NULL };
 	int argc = ARRAY_LEN(argv) - 1;
 	char **ptr = argv;
-	curr_stats.gtk_available = gtk_init_check(&argc, &ptr);
+	stats->gtk_available = gtk_init_check(&argc, &ptr);
 #endif
 }
 
