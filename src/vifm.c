@@ -285,11 +285,8 @@ check_path_for_file(FileView *view, const char *path, int handle)
 {
 	if(path[0] != '\0' && !is_dir(path))
 	{
-		const char *slash = strrchr(path, '/');
-		if(slash == NULL)
-			slash = path - 1;
 		load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-		if(ensure_file_is_selected(view, slash + 1))
+		if(ensure_file_is_selected(view, after_last(path, '/')))
 		{
 			if(handle)
 				handle_file(view, 0, 0);
