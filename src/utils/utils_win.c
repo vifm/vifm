@@ -631,6 +631,12 @@ get_env_type(void)
 	return ET_WIN;
 }
 
+ExecEnvType
+get_exec_env_type(void)
+{
+	return EET_EMULATOR_WITH_X;
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {

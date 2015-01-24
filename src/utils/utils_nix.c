@@ -45,6 +45,8 @@
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../running.h"
+#include "../status.h"
+#include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -597,6 +599,21 @@ EnvType
 get_env_type(void)
 {
 	return ET_UNIX;
+}
+
+ExecEnvType
+get_exec_env_type(void)
+{
+	const char *const term = env_get("TERM");
+	if(term != NULL && ends_with(term, "linux"))
+	{
+		return EET_LINUX_NATIVE;
+	}
+	else
+	{
+		const char *const display = env_get("DISPLAY");
+		return is_null_or_empty(display) ? EET_EMULATOR : EET_EMULATOR_WITH_X;
+	}
 }
 
 int

@@ -38,6 +38,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/tree.h"
+#include "utils/utils.h"
 #include "colors.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
@@ -48,7 +49,6 @@
 static void load_def_values(status_t *stats, config_t *config);
 static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats, config_t *config);
-static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
 static void set_last_cmdline_command(const char cmd[]);
 
@@ -67,7 +67,7 @@ init_status(config_t *config)
 	load_def_values(&curr_stats, config);
 	set_gtk_available(&curr_stats);
 	set_number_of_windows(&curr_stats, config);
-	set_env_type(&curr_stats);
+	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
 	return reset_status(config);
@@ -148,28 +148,6 @@ set_number_of_windows(status_t *stats, config_t *config)
 		curr_stats.number_of_windows = 1;
 	else
 		curr_stats.number_of_windows = 2;
-}
-
-/* Checks if running in X, terminal emulator or linux native console. */
-static void
-set_env_type(status_t *stats)
-{
-#ifndef _WIN32
-	const char *term = env_get("TERM");
-	if(term != NULL && ends_with(term, "linux"))
-	{
-		curr_stats.exec_env_type = EET_LINUX_NATIVE;
-	}
-	else
-	{
-		const char *display = env_get("DISPLAY");
-		curr_stats.exec_env_type = is_null_or_empty(display)
-		                         ? EET_EMULATOR
-		                         : EET_EMULATOR_WITH_X;
-	}
-#else
-	curr_stats.exec_env_type = EET_EMULATOR_WITH_X;
-#endif
 }
 
 int

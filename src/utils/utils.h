@@ -29,6 +29,7 @@
 #include <stdio.h> /* FILE */
 
 #include "../ui/ui.h"
+#include "../status.h"
 
 /* Type of operating environment in which the application is running. */
 typedef enum
@@ -166,6 +167,9 @@ int get_exe_dir(char dir_buf[], size_t dir_buf_len);
 /* Gets type of operating environment the application is running in.  Returns
  * the type. */
 EnvType get_env_type(void);
+
+/* Determines type of active execution environment.  Returns the type. */
+ExecEnvType get_exec_env_type(void);
 
 /* Formats command to view documentation in plain-text format.  Returns non-zero
  * if command that should be run in background, otherwise zero is returned. */
