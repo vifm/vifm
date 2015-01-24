@@ -23,13 +23,23 @@
 #include "ui/ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
-void run_using_prog(FileView *view, const char *program, int dont_execute,
+
+void run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background);
+
 void handle_dir(FileView *view);
+
 void cd_updir(FileView *view);
-/* Returns zero on success, otherwise non-zero is returned. */
-int shellout(const char *command, int pause, int use_term_multiplexer);
-void output_to_nowhere(const char *cmd);
+
+/* Values of pause:
+ *  > 0 - pause always
+ *  = 0 - do not pause
+ *  < 0 - pause on error
+ * Returns zero on success, otherwise non-zero is returned. */
+int shellout(const char command[], int pause, int use_term_multiplexer);
+
+void output_to_nowhere(const char cmd[]);
+
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
 

@@ -491,7 +491,7 @@ is_multi_run_compat(FileView *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(FileView *view, const char *program, int dont_execute,
+run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
@@ -682,14 +682,8 @@ extract_last_path_component(const char path[], char buf[])
 	snprintf(buf, until_first(last, '/') - last + 1, "%s", last);
 }
 
-/*
- * pause:
- *  > 0 - pause always
- *  = 0 - do not pause
- *  < 0 - pause on error
- */
 int
-shellout(const char *command, int pause, int use_term_multiplexer)
+shellout(const char command[], int pause, int use_term_multiplexer)
 {
 	char *cmd;
 	int result;
@@ -938,7 +932,7 @@ set_pwd_in_screen(const char path[])
 }
 
 void
-output_to_nowhere(const char *cmd)
+output_to_nowhere(const char cmd[])
 {
 	FILE *file, *err;
 
