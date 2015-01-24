@@ -1352,48 +1352,51 @@ is_whole_line_command(const char cmd[])
 	}
 }
 
-char *
-find_last_command(char *cmd)
+const char *
+find_last_command(const char cmds[])
 {
-	char *p, *q;
+	const char *p, *q;
 
-	p = cmd;
-	q = cmd;
-	while(*cmd != '\0')
+	p = cmds;
+	q = cmds;
+	while(*cmds != '\0')
 	{
 		if(*p == '\\')
 		{
-			if(*(p + 1) == '|')
-				q++;
-			else
-				q += 2;
+			q += (p[1] == '|') ? 1 : 2;
 			p += 2;
 		}
-		else if((*p == '|' &&
-				line_pos(cmd, q, ' ', starts_with_lit(cmd, "fil")) == 0) || *p == '\0')
+		else if(*p == '\0' || (*p == '|' &&
+				line_pos(cmds, q, ' ', starts_with_lit(cmds, "fil")) == 0))
 		{
 			if(*p != '\0')
-				p++;
+			{
+				++p;
+			}
 
-			cmd = skip_command_beginning(cmd);
-			if(*cmd == '!' || starts_with_lit(cmd, "com"))
+			cmds = skip_command_beginning(cmds);
+			if(*cmds == '!' || starts_with_lit(cmds, "com"))
+			{
 				break;
+			}
 
 			q = p;
 
 			if(*q == '\0')
+			{
 				break;
+			}
 
-			cmd = q;
+			cmds = q;
 		}
 		else
 		{
-			q++;
-			p++;
+			++q;
+			++p;
 		}
 	}
 
-	return cmd;
+	return cmds;
 }
 
 /* Skips consecutive whitespace or colon characters at the beginning of the

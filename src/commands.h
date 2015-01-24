@@ -77,7 +77,10 @@ void commands_scope_start(void);
  * otherwise zero is returned. */
 int commands_scope_finish(void);
 
-char * find_last_command(char *cmd);
+/* Find start of the last command in pipe-separated list of command-line
+ * commands.  Accounts for pipe escaping.  Returns pointer to start of the last
+ * command. */
+const char * find_last_command(const char cmds[]);
 
 void exec_startup_commands(int argc, char **argv);
 
