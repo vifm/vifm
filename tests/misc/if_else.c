@@ -36,7 +36,7 @@ test_if_without_else_true_condition(void)
 	                             " |     let $"VAR_A" = '"VAR_A"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(VAR_A, env_get(VAR_A));
 }
 
@@ -47,7 +47,7 @@ test_if_without_else_false_condition(void)
 	                             " |     let $"VAR_A" = '"VAR_A"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 }
 
@@ -59,7 +59,7 @@ test_if_with_else_true_condition(void)
 	                             " |     let $"VAR_A" = '"VAR_A"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 }
 
@@ -71,7 +71,7 @@ test_if_with_else_false_condition(void)
 	                             " |     let $"VAR_A" = '"VAR_A"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(VAR_A, env_get(VAR_A));
 }
 
@@ -86,7 +86,7 @@ test_if_true_if_true_condition(void)
 	                             " |     let $"VAR_C" = '"VAR_C"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(VAR_A, env_get(VAR_A));
 	assert_string_equal(VAR_B, env_get(VAR_B));
 	assert_string_equal(VAR_C, env_get(VAR_C));
@@ -103,7 +103,7 @@ test_if_true_if_false_condition(void)
 	                             " |     let $"VAR_C" = '"VAR_C"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(VAR_A, env_get(VAR_A));
 	assert_string_equal(NULL, env_get(VAR_B));
 	assert_string_equal(VAR_C, env_get(VAR_C));
@@ -120,7 +120,7 @@ test_if_false_if_true_condition(void)
 	                             " |     let $"VAR_C" = '"VAR_C"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 	assert_string_equal(NULL, env_get(VAR_B));
 	assert_string_equal(NULL, env_get(VAR_C));
@@ -139,7 +139,7 @@ test_if_false_else_if_true_condition(void)
 	                             " |     let $"VAR_D" = '"VAR_D"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 	assert_string_equal(VAR_B, env_get(VAR_B));
 	assert_string_equal(VAR_C, env_get(VAR_C));
@@ -159,7 +159,7 @@ test_if_false_if_else_condition(void)
 	                             " |     let $"VAR_D" = '"VAR_D"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 	assert_string_equal(NULL, env_get(VAR_B));
 	assert_string_equal(NULL, env_get(VAR_C));
@@ -180,7 +180,7 @@ test_if_true_else_if_else_condition(void)
 	                             " |     let $"VAR_D" = '"VAR_D"'"
 	                             " | endif";
 
-	assert_int_equal(0, exec_commands(COMMANDS, &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get(VAR_A));
 	assert_string_equal(NULL, env_get(VAR_B));
 	assert_string_equal(NULL, env_get(VAR_C));

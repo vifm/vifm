@@ -45,6 +45,8 @@
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../running.h"
+#include "../status.h"
+#include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -599,12 +601,33 @@ get_env_type(void)
 	return ET_UNIX;
 }
 
+ExecEnvType
+get_exec_env_type(void)
+{
+	const char *const term = env_get("TERM");
+	if(term != NULL && ends_with(term, "linux"))
+	{
+		return EET_LINUX_NATIVE;
+	}
+	else
+	{
+		const char *const display = env_get("DISPLAY");
+		return is_null_or_empty(display) ? EET_EMULATOR : EET_EMULATOR_WITH_X;
+	}
+}
+
+ShellType
+get_shell_type(const char shell_cmd[])
+{
+	return ST_NORMAL;
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
 	char *const escaped = escape_filename(cfg.config_dir, 0);
-	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, get_vicmd(&bg), escaped);
+	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;
 }

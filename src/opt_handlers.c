@@ -1049,7 +1049,7 @@ fusehome_handler(OPT_OP op, optval_t val)
 {
 	char *const expanded_path = expand_path(val.str_val);
 	/* Set cfg.fuse_home in the correct way. */
-	if(set_fuse_home(expanded_path) != 0)
+	if(cfg_set_fuse_home(expanded_path) != 0)
 	{
 		/* Reset the 'fusehome' options to its previous value. */
 		val.str_val = cfg.fuse_home;
@@ -1073,7 +1073,7 @@ grepprg_handler(OPT_OP op, optval_t val)
 static void
 history_handler(OPT_OP op, optval_t val)
 {
-	resize_history(MAX(0, val.int_val));
+	cfg_resize_histories(val.int_val);
 }
 
 static void

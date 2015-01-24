@@ -96,7 +96,6 @@ static void create_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
@@ -107,9 +106,8 @@ static void zero_new_history_items(size_t old_len, size_t delta);
 static void save_into_history(const char item[], hist_t *hist, int len);
 
 void
-init_config(void)
+cfg_init(void)
 {
-	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 
 	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
@@ -136,7 +134,7 @@ init_config(void)
 		char fuse_home[PATH_MAX];
 		int update_stat;
 		snprintf(fuse_home, sizeof(fuse_home), "%s/vifm_FUSE", get_tmpdir());
-		update_stat = set_fuse_home(fuse_home);
+		update_stat = cfg_set_fuse_home(fuse_home);
 		assert(update_stat == 0);
 	}
 
@@ -207,10 +205,8 @@ init_config(void)
 	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = '/';
 }
 
-/* searches for configuration file and directories, stores them and ensures
- * existence of some of them */
 void
-set_config_paths(void)
+cfg_discover_paths(void)
 {
 	LOG_FUNC_ENTER;
 
@@ -528,18 +524,20 @@ add_default_bookmarks(void)
 }
 
 void
-source_config(void)
+cfg_load(void)
 {
 	const char *const myvifmrc = env_get(MYVIFMRC_EV);
 	if(myvifmrc != NULL)
 	{
-		(void)source_file(myvifmrc);
+		(void)cfg_source_file(myvifmrc);
 	}
 }
 
 int
-source_file(const char filename[])
+cfg_source_file(const char filename[])
 {
+	/* TODO: maybe move this to commands.c or separate unit eventually. */
+
 	FILE *fp;
 	int result;
 	SourcingState sourcing_state;
@@ -591,7 +589,7 @@ source_file_internal(FILE *fp, const char filename[])
 			else
 				break;
 		}
-		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
+		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
 			show_sourcing_error(filename, line_num);
 			encoutered_errors = 1;
@@ -632,7 +630,7 @@ show_sourcing_error(const char filename[], int line_num)
 }
 
 int
-is_old_config(void)
+cfg_has_old_format(void)
 {
 	const char *const myvifmrc = env_get(MYVIFMRC_EV);
 	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
@@ -662,7 +660,7 @@ is_conf_file(const char file[])
 }
 
 int
-are_old_color_schemes(void)
+cfg_has_old_color_schemes(void)
 {
 	char colors_dir[PATH_MAX];
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
@@ -671,7 +669,7 @@ are_old_color_schemes(void)
 }
 
 const char *
-get_vicmd(int *bg)
+cfg_get_vicmd(int *bg)
 {
 	if(curr_stats.exec_env_type != EET_EMULATOR_WITH_X)
 	{
@@ -691,30 +689,12 @@ get_vicmd(int *bg)
 }
 
 void
-generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
-{
-	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-	copy_str(buf, buf_len, make_name_unique(buf));
-}
-
-/* Returns path to tmp directory.  Uses environment variables to determine the
- * correct place. */
-const char *
-get_tmpdir(void)
-{
-	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP", NULL);
-}
-
-void
-resize_history(size_t new_len)
+cfg_resize_histories(int new_len)
 {
 	const int old_len = MAX(cfg.history_len, 0);
-	const int delta = (int)new_len - old_len;
+	const int delta = new_len - old_len;
 
-	if(new_len == 0)
+	if(new_len <= 0)
 	{
 		disable_history();
 		return;
@@ -760,7 +740,7 @@ disable_history(void)
 static void
 free_view_history(FileView *view)
 {
-	free_history_items(view->history, view->history_num);
+	cfg_free_history_items(view->history, view->history_num);
 	free(view->history);
 	view->history = NULL;
 
@@ -791,7 +771,7 @@ reduce_view_history(FileView *view, size_t size)
 	if(delta <= 0)
 		return;
 
-	free_history_items(view->history, MIN(size, delta));
+	cfg_free_history_items(view->history, MIN(size, delta));
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 
@@ -835,7 +815,7 @@ zero_new_history_items(size_t old_len, size_t delta)
 }
 
 int
-set_fuse_home(const char new_value[])
+cfg_set_fuse_home(const char new_value[])
 {
 	char canonicalized[PATH_MAX];
 #ifdef _WIN32
@@ -857,14 +837,14 @@ set_fuse_home(const char new_value[])
 }
 
 void
-set_use_term_multiplexer(int use_term_multiplexer)
+cfg_set_use_term_multiplexer(int use_term_multiplexer)
 {
 	cfg.use_term_multiplexer = use_term_multiplexer;
 	set_using_term_multiplexer(use_term_multiplexer);
 }
 
 void
-free_history_items(const history_t history[], size_t len)
+cfg_free_history_items(const history_t history[], size_t len)
 {
 	size_t i;
 	for(i = 0; i < len; i++)
@@ -875,7 +855,7 @@ free_history_items(const history_t history[], size_t len)
 }
 
 void
-save_command_history(const char command[])
+cfg_save_command_history(const char command[])
 {
 	if(is_history_command(command))
 	{
@@ -885,19 +865,19 @@ save_command_history(const char command[])
 }
 
 void
-save_search_history(const char pattern[])
+cfg_save_search_history(const char pattern[])
 {
 	save_into_history(pattern, &cfg.search_hist, cfg.history_len);
 }
 
 void
-save_prompt_history(const char input[])
+cfg_save_prompt_history(const char input[])
 {
 	save_into_history(input, &cfg.prompt_hist, cfg.history_len);
 }
 
 void
-save_filter_history(const char input[])
+cfg_save_filter_history(const char input[])
 {
 	save_into_history(input, &cfg.filter_hist, cfg.history_len);
 }
@@ -910,6 +890,12 @@ save_into_history(const char item[], hist_t *hist, int len)
 	{
 		hist_add(hist, item, len);
 	}
+}
+
+const char *
+cfg_get_last_search_pattern(void)
+{
+	return hist_is_empty(&cfg.search_hist) ? "" : cfg.search_hist.items[0];
 }
 
 void

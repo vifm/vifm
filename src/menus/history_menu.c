@@ -93,16 +93,16 @@ execute_history_cb(FileView *view, menu_info *m)
 	switch(m->type)
 	{
 		case CMDHISTORY_MENU:
-			save_command_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_COMMAND);
+			cfg_save_command_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, CIT_COMMAND);
 			break;
 		case FSEARCHHISTORY_MENU:
-			save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
+			cfg_save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY_MENU:
-			save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
+			cfg_save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, CIT_BSEARCH_PATTERN);
 			break;
 	}
 

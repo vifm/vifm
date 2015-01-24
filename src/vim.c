@@ -60,7 +60,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 
 	snprintf(cmd, cmd_size,
 			"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
-			get_vicmd(&bg), escaped_rtp, escaped_args);
+			cfg_get_vicmd(&bg), escaped_rtp, escaped_args);
 
 	free(escaped_args);
 	free(escaped_rtp);
@@ -73,7 +73,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 
 	snprintf(cmd, cmd_size,
 			"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
-			get_vicmd(&bg), escaped_rtp, topic);
+			cfg_get_vicmd(&bg), escaped_rtp, topic);
 
 	free(escaped_rtp);
 #endif
@@ -89,7 +89,7 @@ vim_edit_files(int nfiles, char *files[])
 	int i;
 	int bg;
 
-	len = snprintf(cmd, sizeof(cmd), "%s ", get_vicmd(&bg));
+	len = snprintf(cmd, sizeof(cmd), "%s ", cfg_get_vicmd(&bg));
 	for(i = 0; i < nfiles && len < sizeof(cmd) - 1; ++i)
 	{
 		char *escaped = escape_filename(files[i], 0);
@@ -120,7 +120,7 @@ TSTATIC char *
 format_edit_selection_cmd(int *bg)
 {
 	char *const files = expand_macros("%f", NULL, NULL, 1);
-	char *const cmd = format_str("%s %s", get_vicmd(bg), files);
+	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
 	free(files);
 	return cmd;
 }
@@ -156,7 +156,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	escaped = (char *)enclose_in_dquotes(filename);
 #endif
 
-	copy_str(vicmd, sizeof(vicmd), get_vicmd(&bg));
+	copy_str(vicmd, sizeof(vicmd), cfg_get_vicmd(&bg));
 	(void)trim_right(vicmd);
 	if(!allow_forking)
 	{

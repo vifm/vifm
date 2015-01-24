@@ -141,10 +141,6 @@ typedef struct
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
-
-#ifdef _WIN32
-	int as_admin;
-#endif
 }
 status_t;
 

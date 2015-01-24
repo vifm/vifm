@@ -39,7 +39,7 @@ static void
 test_space_amp(void)
 {
 	called = 0;
-	assert_int_equal(0, exec_commands("builtin &", &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands("builtin &", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 	assert_int_equal(1, bg);
 }
@@ -48,7 +48,7 @@ static void
 test_space_bg_bar(void)
 {
 	called = 0;
-	assert_int_equal(0, exec_commands("builtin &|", &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands("builtin &|", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 	assert_int_equal(1, bg);
 }
@@ -57,7 +57,7 @@ static void
 test_bg_space_bar(void)
 {
 	called = 0;
-	assert_int_equal(0, exec_commands("builtin& |", &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands("builtin& |", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 	assert_int_equal(1, bg);
 }
@@ -66,7 +66,7 @@ static void
 test_space_bg_space_bar(void)
 {
 	called = 0;
-	assert_int_equal(0, exec_commands("builtin & |", &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands("builtin & |", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 	assert_int_equal(1, bg);
 }

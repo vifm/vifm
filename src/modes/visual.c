@@ -630,7 +630,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	enter_cmdline_mode(CMD_SUBMODE, L"", NULL);
+	enter_cmdline_mode(CLS_COMMAND, L"", NULL);
 }
 
 static void
@@ -748,7 +748,7 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 0);
-	handle_file(view, 0, 0);
+	handle_file(view, FHE_RUN, FHL_NO_FOLLOW);
 	clean_selected_files(view);
 	redraw_view(view);
 }
@@ -839,7 +839,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(view, 1, 0);
+	handle_file(view, FHE_NO_RUN, FHL_NO_FOLLOW);
 	accept_and_leave(curr_stats.save_msg);
 }
 
@@ -910,6 +910,8 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward, int interactive)
 {
+	/* TODO: extract common part of this function and normal.c:search(). */
+
 	int found;
 
 	if(hist_is_empty(&cfg.search_hist))
@@ -919,8 +921,7 @@ search(key_info_t key_info, int backward, int interactive)
 
 	if(view->matches == 0)
 	{
-		const char *pattern = (view->regexp[0] == '\0') ?
-				cfg.search_hist.items[0] : view->regexp;
+		const char *const pattern = cfg_get_last_search_pattern();
 		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
 		return;
 	}
@@ -938,7 +939,8 @@ search(key_info_t key_info, int backward, int interactive)
 		return;
 	}
 
-	status_bar_messagef("%c%s", backward ? '?' : '/', view->regexp);
+	status_bar_messagef("%c%s", backward ? '?' : '/',
+			cfg_get_last_search_pattern());
 	curr_stats.save_msg = 1;
 }
 
@@ -947,7 +949,7 @@ static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_clearing_selection(0, 0);
-	get_and_execute_command("", 0U, GET_COMMAND);
+	get_and_execute_command("", 0U, CIT_COMMAND);
 }
 
 /* Runs external editor to get search pattern and then executes it. */
@@ -968,17 +970,19 @@ cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 static void
 activate_search(int count, int back, int external)
 {
+	/* TODO: generalize with normal.c:activate_search(). */
+
 	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
-		const int type = back ? GET_VBSEARCH_PATTERN : GET_VFSEARCH_PATTERN;
+		CmdInputType type = back ? CIT_VBSEARCH_PATTERN : CIT_VFSEARCH_PATTERN;
 		get_and_execute_command("", 0U, type);
 	}
 	else
 	{
-		const int type = back ? VSEARCH_BACKWARD_SUBMODE : VSEARCH_FORWARD_SUBMODE;
-		enter_cmdline_mode(type, L"", NULL);
+		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
+		enter_cmdline_mode(submode, L"", NULL);
 	}
 }
 

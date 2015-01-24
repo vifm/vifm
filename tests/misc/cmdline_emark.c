@@ -49,13 +49,13 @@ static void
 test_repeat_of_no_command_prints_message(void)
 {
 	called = 0;
-	(void)exec_commands("builtin", &lwin, GET_COMMAND);
+	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
 	assert_string_equal(NULL, curr_stats.last_cmdline_command);
 
 	called = 0;
-	assert_int_equal(1, exec_commands("!!", &lwin, GET_COMMAND));
+	assert_int_equal(1, exec_commands("!!", &lwin, CIT_COMMAND));
 	assert_int_equal(0, called);
 }
 
@@ -63,14 +63,14 @@ static void
 test_double_emark_repeats_last_command(void)
 {
 	called = 0;
-	(void)exec_commands("builtin", &lwin, GET_COMMAND);
+	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
 	free(curr_stats.last_cmdline_command);
 	curr_stats.last_cmdline_command = strdup("builtin");
 
 	called = 0;
-	assert_int_equal(0, exec_commands("!!", &lwin, GET_COMMAND));
+	assert_int_equal(0, exec_commands("!!", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 
 	free(curr_stats.last_cmdline_command);
@@ -84,7 +84,7 @@ test_single_emark_without_args_fails(void)
 	curr_stats.last_cmdline_command = strdup("builtin");
 
 	called = 0;
-	assert_false(exec_commands("!", &lwin, GET_COMMAND) == 0);
+	assert_false(exec_commands("!", &lwin, CIT_COMMAND) == 0);
 	assert_int_equal(0, called);
 
 	free(curr_stats.last_cmdline_command);

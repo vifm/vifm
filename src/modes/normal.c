@@ -530,7 +530,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 			vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 		}
 	}
-	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
 }
 
 /* Processes !<selector> normal mode command.  Processes results of applying
@@ -586,7 +586,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 0, 0);
+	handle_file(curr_view, FHE_RUN, FHL_NO_FOLLOW);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1046,7 +1046,7 @@ static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	clean_selected_files(curr_view);
-	handle_file(curr_view, 0, 1);
+	handle_file(curr_view, FHE_RUN, FHL_FOLLOW);
 	redraw_current_view();
 }
 
@@ -1071,9 +1071,7 @@ cmd_gh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.as_admin = 1;
-	handle_file(curr_view, 0, 0);
-	curr_stats.as_admin = 0;
+	handle_file(curr_view, FHE_ELEVATE_AND_RUN, FHL_NO_FOLLOW);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1278,7 +1276,7 @@ static void
 cmd_equal(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t *previous = to_wide(curr_view->local_filter.filter.raw);
-	enter_cmdline_mode(FILTER_SUBMODE, previous, NULL);
+	enter_cmdline_mode(CLS_FILTER, previous, NULL);
 	free(previous);
 }
 
@@ -1299,7 +1297,7 @@ static void
 cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.save_msg = exec_commands(curr_stats.last_cmdline_command,
-			curr_view, GET_COMMAND);
+			curr_view, CIT_COMMAND);
 }
 
 /* Move cursor to the first column in ls-view sub-mode. */
@@ -1321,7 +1319,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	{
 		vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
 	}
-	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
 }
 
 static void
@@ -1551,7 +1549,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 1, 0);
+	handle_file(curr_view, FHE_NO_RUN, FHL_NO_FOLLOW);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1629,6 +1627,8 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 static void
 search(key_info_t key_info, int backward)
 {
+	/* TODO: extract common part of this function and visual.c:search(). */
+
 	int found;
 
 	if(hist_is_empty(&cfg.search_hist))
@@ -1642,8 +1642,7 @@ search(key_info_t key_info, int backward)
 	found = 0;
 	if(curr_view->matches == 0)
 	{
-		const char *pattern = (curr_view->regexp[0] == '\0') ?
-				cfg.search_hist.items[0] : curr_view->regexp;
+		const char *const pattern = cfg_get_last_search_pattern();
 		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found,
 				0);
 		key_info.count--;
@@ -1656,7 +1655,8 @@ search(key_info_t key_info, int backward)
 
 	if(found)
 	{
-		status_bar_messagef("%c%s", backward ? '?' : '/', curr_view->regexp);
+		status_bar_messagef("%c%s", backward ? '?' : '/',
+				cfg_get_last_search_pattern());
 	}
 	else
 	{
@@ -1696,7 +1696,7 @@ cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_q_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, GET_COMMAND);
+	get_and_execute_command("", 0U, CIT_COMMAND);
 }
 
 /* Runs external editor to get search pattern and then executes it. */
@@ -1717,17 +1717,19 @@ cmd_q_question(key_info_t key_info, keys_info_t *keys_info)
 static void
 activate_search(int count, int back, int external)
 {
+	/* TODO: generalize with visual.c:activate_search(). */
+
 	search_repeat = (count == NO_COUNT_GIVEN) ? 1 : count;
 	curr_stats.last_search_backward = back;
 	if(external)
 	{
-		const int type = back ? GET_BSEARCH_PATTERN : GET_FSEARCH_PATTERN;
+		CmdInputType type = back ? CIT_BSEARCH_PATTERN : CIT_FSEARCH_PATTERN;
 		get_and_execute_command("", 0U, type);
 	}
 	else
 	{
-		const int type = back ? SEARCH_BACKWARD_SUBMODE : SEARCH_FORWARD_SUBMODE;
-		enter_cmdline_mode(type, L"", NULL);
+		const CmdLineSubmode submode = back ? CLS_BSEARCH : CLS_FSEARCH;
+		enter_cmdline_mode(submode, L"", NULL);
 	}
 }
 
@@ -1735,7 +1737,7 @@ activate_search(int count, int back, int external)
 static void
 cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 {
-	get_and_execute_command("", 0U, GET_FILTER_PATTERN);
+	get_and_execute_command("", 0U, CIT_FILTER_PATTERN);
 }
 
 /* Tag file. */

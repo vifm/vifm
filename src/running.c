@@ -72,11 +72,11 @@ static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
 static int is_dir_entry(const char full_path[], int type);
 #ifdef _WIN32
-static void run_win_executable(char full_path[]);
+static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
 static int selection_is_consistent(const FileView *const view);
-static void execute_file(const char full_path[]);
+static void execute_file(const char full_path[], int elevate);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
@@ -96,7 +96,7 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
-handle_file(FileView *view, int dont_execute, int force_follow)
+handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
 	int executable;
@@ -107,15 +107,15 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->selected && (curr->type != LINK || !force_follow))
+		if(!curr->selected && (curr->type != LINK || follow == FHL_NO_FOLLOW))
 		{
 			handle_dir(view);
 			return;
 		}
 	}
 
-	runnable = is_runnable(view, full_path, curr->type, force_follow);
-	executable = is_executable(full_path, curr, dont_execute, runnable);
+	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
+	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(curr_stats.file_picker_mode && (executable || runnable))
 	{
@@ -125,15 +125,15 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 	if(executable && !is_dir_entry(full_path, curr->type))
 	{
-		execute_file(full_path);
+		execute_file(full_path, exec == FHE_ELEVATE_AND_RUN);
 	}
 	else if(runnable)
 	{
-		run_selection(view, dont_execute);
+		run_selection(view, exec == FHE_NO_RUN);
 	}
 	else if(curr->type == LINK)
 	{
-		follow_link(view, force_follow);
+		follow_link(view, follow == FHL_FOLLOW);
 	}
 }
 
@@ -187,11 +187,11 @@ is_dir_entry(const char full_path[], int type)
 
 /* Runs a Windows executable handling errors and rights elevation. */
 static void
-run_win_executable(char full_path[])
+run_win_executable(char full_path[], int elevate)
 {
 	int running_error = 0;
 	int running_error_code = NO_ERROR;
-	if(curr_stats.as_admin && is_vista_and_above())
+	if(elevate && is_vista_and_above())
 	{
 		running_error = run_win_executable_as_evaluated(full_path);
 	}
@@ -305,7 +305,7 @@ selection_is_consistent(const FileView *const view)
 /* Executes file, specified by the full_path.  Changes type of slashes on
  * Windows. */
 static void
-execute_file(const char full_path[])
+execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = escape_filename(full_path, 0);
@@ -315,7 +315,7 @@ execute_file(const char full_path[])
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
 
 	to_back_slash(dquoted_full_path);
-	run_win_executable(dquoted_full_path);
+	run_win_executable(dquoted_full_path, elevate);
 
 	free(dquoted_full_path);
 #endif
@@ -491,7 +491,7 @@ is_multi_run_compat(FileView *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(FileView *view, const char *program, int dont_execute,
+run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
@@ -682,14 +682,8 @@ extract_last_path_component(const char path[], char buf[])
 	snprintf(buf, until_first(last, '/') - last + 1, "%s", last);
 }
 
-/*
- * pause:
- *  > 0 - pause always
- *  = 0 - do not pause
- *  < 0 - pause on error
- */
 int
-shellout(const char *command, int pause, int use_term_multiplexer)
+shellout(const char command[], int pause, int use_term_multiplexer)
 {
 	char *cmd;
 	int result;
@@ -831,7 +825,7 @@ static char *
 gen_term_multiplexer_title_arg(const char cmd[])
 {
 	int bg;
-	const char *const vicmd = get_vicmd(&bg);
+	const char *const vicmd = cfg_get_vicmd(&bg);
 	const char *const visubcmd = strstr(cmd, vicmd);
 	char *command_name = NULL;
 	const char *title;
@@ -938,7 +932,7 @@ set_pwd_in_screen(const char path[])
 }
 
 void
-output_to_nowhere(const char *cmd)
+output_to_nowhere(const char cmd[])
 {
 	FILE *file, *err;
 

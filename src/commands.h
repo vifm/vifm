@@ -27,19 +27,21 @@
 #include "utils/test_helpers.h"
 #include "status.h"
 
-enum
+/* Kinds of command-line alike input. */
+typedef enum
 {
-	GET_COMMAND,
-	GET_MENU_COMMAND,
-	GET_FSEARCH_PATTERN,
-	GET_BSEARCH_PATTERN,
-	GET_VFSEARCH_PATTERN,
-	GET_VBSEARCH_PATTERN,
-	GET_VWFSEARCH_PATTERN,
-	GET_VWBSEARCH_PATTERN,
-	GET_FILTER_PATTERN,
-	GET_PROMPT_INPUT,
-};
+	CIT_COMMAND,           /* Regular command-line command. */
+	CIT_MENU_COMMAND,      /* Menu command-line command. */
+	CIT_FSEARCH_PATTERN,   /* Forward search in normal mode. */
+	CIT_BSEARCH_PATTERN,   /* Backward search in normal mode. */
+	CIT_VFSEARCH_PATTERN,  /* Forward search in visual mode. */
+	CIT_VBSEARCH_PATTERN,  /* Backward search in visual mode. */
+	CIT_VWFSEARCH_PATTERN, /* Forward search in view mode. */
+	CIT_VWBSEARCH_PATTERN, /* Backward search in view mode. */
+	CIT_FILTER_PATTERN,    /* Filter value. */
+	CIT_PROMPT_INPUT,      /* Response to an arbitrary input request. */
+}
+CmdInputType;
 
 /* Type of location on the command-line string. */
 typedef enum
@@ -58,13 +60,13 @@ void init_commands(void);
  * no message should be saved in the status bar, positive value to save message
  * on successful execution and negative value in case of error with error
  * message. */
-int exec_commands(const char cmd[], FileView *view, int type);
+int exec_commands(const char cmd[], FileView *view, CmdInputType type);
 
 /* Executes command of specified kind.  Returns zero on success if no message
  * should be saved in the status bar, positive value to save message on
  * successful execution and negative value in case of error with error
  * message. */
-int exec_command(const char cmd[], FileView *view, int type);
+int exec_command(const char cmd[], FileView *view, CmdInputType type);
 
 /* An event like function, which should be used to inform commands unit that
  * set of a command has come to its end.  Allows for performing some of internal
@@ -82,13 +84,15 @@ char * cmds_expand_envvars(const char str[]);
 
 /* Opens the editor with the line at given column, gets entered command and
  * executes it in the way dependent on the type of command. */
-void get_and_execute_command(const char line[], size_t line_pos, int type);
+void get_and_execute_command(const char line[], size_t line_pos,
+		CmdInputType type);
 
 /* Opens the editor with the beginning at the line_pos column.  Type is used to
  * provide useful context.  On success returns entered command as a newly
  * allocated string, which should be freed by the caller, otherwise NULL is
  * returned. */
-char * get_ext_command(const char beginning[], size_t line_pos, int type);
+char * get_ext_command(const char beginning[], size_t line_pos,
+		CmdInputType type);
 
 /* Checks whether command should be stored in command-line history.  Returns
  * non-zero if it should be stored, otherwise zero is returned. */

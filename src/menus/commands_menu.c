@@ -87,7 +87,7 @@ static int
 execute_commands_cb(FileView *view, menu_info *m)
 {
 	break_at(m->items[m->pos], ' ');
-	exec_command(m->items[m->pos], view, GET_COMMAND);
+	exec_command(m->items[m->pos], view, CIT_COMMAND);
 	return 0;
 }
 

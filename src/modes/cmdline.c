@@ -102,7 +102,7 @@ line_stats_t;
 #endif
 
 static int prev_mode;
-static CMD_LINE_SUBMODES sub_mode;
+static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
 static int line_width = 1;
 static void *sub_mode_ptr;
@@ -122,7 +122,7 @@ static int is_line_edited(void);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
-static int submode_to_editable_command_type(int sub_mode);
+static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
@@ -137,9 +137,9 @@ static int is_input_line_empty(void);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
-static int search_submode_to_command_type(int sub_mode);
-static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
-static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
+static CmdInputType search_cls_to_cit(CmdLineSubmode sub_mode);
+static int is_forward_search(CmdLineSubmode sub_mode);
+static int is_backward_search(CmdLineSubmode sub_mode);
 static int replace_wstring(wchar_t **str, const wchar_t with[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
@@ -379,7 +379,7 @@ input_line_changed(void)
 {
 	static wchar_t *previous;
 
-	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != FILTER_SUBMODE))
+	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != CLS_FILTER))
 		return;
 
 	set_view_port();
@@ -401,7 +401,7 @@ input_line_changed(void)
 		free(previous);
 		previous = NULL;
 
-		if(sub_mode == FILTER_SUBMODE)
+		if(sub_mode == CLS_FILTER)
 		{
 			set_local_filter("");
 		}
@@ -409,30 +409,31 @@ input_line_changed(void)
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
 		char *mbinput;
+		int backward;
 
 		(void)replace_wstring(&previous, input_stat.line);
 
 		mbinput = to_multibyte(input_stat.line);
 
+		backward = 0;
 		switch(sub_mode)
 		{
-			case SEARCH_FORWARD_SUBMODE:
-				(void)find_npattern(curr_view, mbinput, 0, 0);
+			case CLS_BSEARCH: backward = 1; /* Fall through. */
+			case CLS_FSEARCH:
+				(void)find_npattern(curr_view, mbinput, backward, 0);
 				break;
-			case SEARCH_BACKWARD_SUBMODE:
-				(void)find_npattern(curr_view, mbinput, 1, 0);
-				break;
-			case VSEARCH_FORWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_VFSEARCH_PATTERN);
-				break;
-			case VSEARCH_BACKWARD_SUBMODE:
-				exec_command(mbinput, curr_view, GET_VBSEARCH_PATTERN);
-				break;
-			case MENU_SEARCH_FORWARD_SUBMODE:
-			case MENU_SEARCH_BACKWARD_SUBMODE:
+			case CLS_VFSEARCH:
+			case CLS_VBSEARCH:
+				{
+					const CmdInputType cit = search_cls_to_cit(sub_mode);
+					(void)exec_command(mbinput, curr_view, cit);
+					break;
+				}
+			case CLS_MENU_FSEARCH:
+			case CLS_MENU_BSEARCH:
 				(void)search_menu_list(mbinput, sub_mode_ptr);
 				break;
-			case FILTER_SUBMODE:
+			case CLS_FILTER:
 				set_local_filter(mbinput);
 				break;
 
@@ -492,7 +493,7 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
+enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd, void *ptr)
 {
 	const wchar_t *prompt;
 	complete_cmd_func complete_func;
@@ -501,11 +502,11 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 	sub_mode = cl_sub_mode;
 	sub_mode_allows_ee = 0;
 
-	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
+	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
 		prompt = L":";
 	}
-	else if(sub_mode == FILTER_SUBMODE)
+	else if(sub_mode == CLS_FILTER)
 	{
 		prompt = L"=";
 	}
@@ -523,7 +524,7 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 		prompt = L"E";
 	}
 
-	complete_func = (sub_mode == FILTER_SUBMODE) ? NULL : complete_cmd;
+	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
 	prepare_cmdline_mode(prompt, cmd, complete_func);
 }
 
@@ -534,7 +535,7 @@ enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 	wchar_t *buf;
 
 	sub_mode_ptr = cb;
-	sub_mode = PROMPT_SUBMODE;
+	sub_mode = CLS_PROMPT;
 	sub_mode_allows_ee = allow_ee;
 
 	buf = to_wide(cmd);
@@ -598,17 +599,13 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.line_edited = 0;
 	input_stat.entered_by_mapping = is_inside_mapping();
 
-	if(sub_mode == SEARCH_FORWARD_SUBMODE
-			|| sub_mode == VSEARCH_FORWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
-			|| sub_mode == SEARCH_BACKWARD_SUBMODE
-			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
+			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
 	{
 		input_stat.search_mode = 1;
 	}
 
-	if(input_stat.search_mode || sub_mode == FILTER_SUBMODE)
+	if(input_stat.search_mode || sub_mode == CLS_FILTER)
 	{
 		save_view_port();
 	}
@@ -653,7 +650,7 @@ set_view_port(void)
 		return;
 	}
 
-	if(sub_mode != FILTER_SUBMODE || !is_line_edited())
+	if(sub_mode != CLS_FILTER || !is_line_edited())
 	{
 		curr_view->top_line = input_stat.old_top;
 		curr_view->list_pos = input_stat.old_pos;
@@ -744,7 +741,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	save_input_to_history(keys_info, mbstr);
 	free(mbstr);
 
-	if(sub_mode != FILTER_SUBMODE)
+	if(sub_mode != CLS_FILTER)
 	{
 		input_stat.line[0] = L'\0';
 		input_line_changed();
@@ -760,11 +757,11 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 			move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
 		}
 	}
-	if(sub_mode == CMD_SUBMODE)
+	if(sub_mode == CLS_COMMAND)
 	{
-		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
+		curr_stats.save_msg = exec_commands("", curr_view, CIT_COMMAND);
 	}
-	else if(sub_mode == FILTER_SUBMODE)
+	else if(sub_mode == CLS_FILTER)
 	{
 		local_filter_cancel(curr_view);
 		curr_view->top_line = input_stat.old_top;
@@ -778,14 +775,14 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int type = submode_to_editable_command_type(sub_mode);
-	const int prompt_ee = sub_mode == PROMPT_SUBMODE && sub_mode_allows_ee;
+	const CmdInputType type = cls_to_editable_cit(sub_mode);
+	const int prompt_ee = sub_mode == CLS_PROMPT && sub_mode_allows_ee;
 	if(type != -1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);
 		leave_cmdline_mode();
 
-		if(sub_mode == FILTER_SUBMODE)
+		if(sub_mode == CLS_FILTER)
 		{
 			local_filter_cancel(curr_view);
 		}
@@ -803,29 +800,23 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Converts command-line sub-mode to type of command for the commands.c unit,
- * which supports editing.  Returns -1 when there is no appropriate command
+/* Converts command-line sub-mode to type of command input which supports
+ * editing.  Returns (CmdInputType)-1 when there is no appropriate command
  * type. */
-static int
-submode_to_editable_command_type(int sub_mode)
+static CmdInputType
+cls_to_editable_cit(CmdLineSubmode sub_mode)
 {
 	switch(sub_mode)
 	{
-		case CMD_SUBMODE:
-			return GET_COMMAND;
-		case SEARCH_FORWARD_SUBMODE:
-			return GET_FSEARCH_PATTERN;
-		case SEARCH_BACKWARD_SUBMODE:
-			return GET_BSEARCH_PATTERN;
-		case VSEARCH_FORWARD_SUBMODE:
-			return GET_VFSEARCH_PATTERN;
-		case VSEARCH_BACKWARD_SUBMODE:
-			return GET_VBSEARCH_PATTERN;
-		case FILTER_SUBMODE:
-			return GET_FILTER_PATTERN;
+		case CLS_COMMAND:  return CIT_COMMAND;
+		case CLS_FSEARCH:  return CIT_FSEARCH_PATTERN;
+		case CLS_BSEARCH:  return CIT_BSEARCH_PATTERN;
+		case CLS_VFSEARCH: return CIT_VFSEARCH_PATTERN;
+		case CLS_VBSEARCH: return CIT_VBSEARCH_PATTERN;
+		case CLS_FILTER:   return CIT_FILTER_PATTERN;
 
 		default:
-			return -1;
+			return (CmdInputType)-1;
 	}
 }
 
@@ -833,7 +824,7 @@ submode_to_editable_command_type(int sub_mode)
 static void
 extedit_prompt(const char input[], int cursor_col)
 {
-	char *const ext_cmd = get_ext_command(input, cursor_col, GET_PROMPT_INPUT);
+	char *const ext_cmd = get_ext_command(input, cursor_col, CIT_PROMPT_INPUT);
 
 	if(ext_cmd != NULL)
 	{
@@ -841,7 +832,7 @@ extedit_prompt(const char input[], int cursor_col)
 	}
 	else
 	{
-		save_prompt_history(input);
+		cfg_save_prompt_history(input);
 
 		status_bar_error("Error querying data from external source.");
 		curr_stats.save_msg = 1;
@@ -892,8 +883,8 @@ should_quit_on_backspace(void)
 {
 	return input_stat.index == 0
 	    && input_stat.len == 0
-	    && sub_mode != PROMPT_SUBMODE
-	    && (sub_mode != FILTER_SUBMODE || no_initial_line());
+	    && sub_mode != CLS_PROMPT
+	    && (sub_mode != CLS_FILTER || no_initial_line());
 }
 
 /* Checks whether initial line was empty.  Returns non-zero if so, otherwise
@@ -964,7 +955,7 @@ draw_wild_menu(int op)
 	int i;
 	int len = getmaxx(stdscr);
 
-	if(sub_mode == MENU_CMD_SUBMODE || input_stat.complete == NULL)
+	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL)
 		return;
 
 	if(count < 2)
@@ -1072,7 +1063,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if(is_input_line_empty() && sub_mode == MENU_CMD_SUBMODE)
+	if(is_input_line_empty() && sub_mode == CLS_MENU_COMMAND)
 	{
 		leave_cmdline_mode();
 		return;
@@ -1082,17 +1073,17 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	leave_cmdline_mode();
 
-	if(prev_mode == VISUAL_MODE && sub_mode != VSEARCH_FORWARD_SUBMODE &&
-			sub_mode != VSEARCH_BACKWARD_SUBMODE)
+	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
+			sub_mode != CLS_VBSEARCH)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
 	save_input_to_history(keys_info, input);
 
-	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
+	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
-		const CMD_LINE_SUBMODES cmd_type = (sub_mode == CMD_SUBMODE)
-		                                 ? GET_COMMAND
-		                                 : GET_MENU_COMMAND;
+		const CmdLineSubmode cmd_type = (sub_mode == CLS_COMMAND)
+		                              ? CIT_COMMAND
+		                              : CIT_MENU_COMMAND;
 
 		const char *real_start = input;
 		while(*real_start == ' ' || *real_start == ':')
@@ -1102,11 +1093,11 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 		curr_stats.save_msg = exec_commands(real_start, curr_view, cmd_type);
 	}
-	else if(sub_mode == PROMPT_SUBMODE)
+	else if(sub_mode == CLS_PROMPT)
 	{
 		finish_prompt_submode(input);
 	}
-	else if(sub_mode == FILTER_SUBMODE)
+	else if(sub_mode == CLS_FILTER)
 	{
 		if(cfg.inc_search)
 		{
@@ -1121,24 +1112,24 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE || input[0] == '\0')
 	{
 		const char *const pattern = (input[0] == '\0')
-		                          ? cfg.search_hist.items[0]
+		                          ? cfg_get_last_search_pattern()
 		                          : input;
 
 		switch(sub_mode)
 		{
-			case SEARCH_FORWARD_SUBMODE:
-			case SEARCH_BACKWARD_SUBMODE:
-			case VSEARCH_FORWARD_SUBMODE:
-			case VSEARCH_BACKWARD_SUBMODE:
-			case VIEW_SEARCH_FORWARD_SUBMODE:
-			case VIEW_SEARCH_BACKWARD_SUBMODE:
+			case CLS_FSEARCH:
+			case CLS_BSEARCH:
+			case CLS_VFSEARCH:
+			case CLS_VBSEARCH:
+			case CLS_VWFSEARCH:
+			case CLS_VWBSEARCH:
 				{
-					const int command_type = search_submode_to_command_type(sub_mode);
-					curr_stats.save_msg = exec_command(pattern, curr_view, command_type);
+					const CmdInputType cit = search_cls_to_cit(sub_mode);
+					curr_stats.save_msg = exec_command(pattern, curr_view, cit);
 					break;
 				}
-			case MENU_SEARCH_FORWARD_SUBMODE:
-			case MENU_SEARCH_BACKWARD_SUBMODE:
+			case CLS_MENU_FSEARCH:
+			case CLS_MENU_BSEARCH:
 				curr_stats.need_update = UT_FULL;
 				curr_stats.save_msg = search_menu_list(pattern, sub_mode_ptr);
 				break;
@@ -1185,20 +1176,20 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 {
 	if(input_stat.search_mode)
 	{
-		save_search_history(input);
+		cfg_save_search_history(input);
 	}
-	else if(sub_mode == CMD_SUBMODE)
+	else if(sub_mode == CLS_COMMAND)
 	{
 		const int mapped_input = input_stat.entered_by_mapping && keys_info->mapped;
 		const int ignore_input = mapped_input || keys_info->recursive;
 		if(!ignore_input)
 		{
-			save_command_history(input);
+			cfg_save_command_history(input);
 		}
 	}
-	else if(sub_mode == PROMPT_SUBMODE)
+	else if(sub_mode == CLS_PROMPT)
 	{
-		save_prompt_history(input);
+		cfg_save_prompt_history(input);
 	}
 }
 
@@ -1214,52 +1205,46 @@ finish_prompt_submode(const char input[])
 	cb(input);
 }
 
-/* Converts search command-line sub-mode to type of command for the commands.c
- * unit.  Returns -1 when there is no appropriate command type. */
-static int
-search_submode_to_command_type(int sub_mode)
+/* Converts search command-line sub-mode to type of command input.  Returns
+ * (CmdInputType)-1 if there is no appropriate command type. */
+static CmdInputType
+search_cls_to_cit(CmdLineSubmode sub_mode)
 {
 	switch(sub_mode)
 	{
-		case SEARCH_FORWARD_SUBMODE:
-			return GET_FSEARCH_PATTERN;
-		case SEARCH_BACKWARD_SUBMODE:
-			return GET_BSEARCH_PATTERN;
-		case VSEARCH_FORWARD_SUBMODE:
-			return GET_VFSEARCH_PATTERN;
-		case VSEARCH_BACKWARD_SUBMODE:
-			return GET_VBSEARCH_PATTERN;
-		case VIEW_SEARCH_FORWARD_SUBMODE:
-			return GET_VWFSEARCH_PATTERN;
-		case VIEW_SEARCH_BACKWARD_SUBMODE:
-			return GET_VWBSEARCH_PATTERN;
+		case CLS_FSEARCH:   return CIT_FSEARCH_PATTERN;
+		case CLS_BSEARCH:   return CIT_BSEARCH_PATTERN;
+		case CLS_VFSEARCH:  return CIT_VFSEARCH_PATTERN;
+		case CLS_VBSEARCH:  return CIT_VBSEARCH_PATTERN;
+		case CLS_VWFSEARCH: return CIT_VWFSEARCH_PATTERN;
+		case CLS_VWBSEARCH: return CIT_VWBSEARCH_PATTERN;
 
 		default:
 			assert(0 && "Unknown search command-line submode.");
-			return -1;
+			return (CmdInputType)-1;
 	}
 }
 
 /* Checks whether specified mode is one of forward searching modes.  Returns
  * non-zero if it is, otherwise zero is returned. */
 static int
-is_forward_search(CMD_LINE_SUBMODES sub_mode)
+is_forward_search(CmdLineSubmode sub_mode)
 {
-	return sub_mode == SEARCH_FORWARD_SUBMODE
-			|| sub_mode == VSEARCH_FORWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
-			|| sub_mode == VIEW_SEARCH_FORWARD_SUBMODE;
+	return sub_mode == CLS_FSEARCH
+	    || sub_mode == CLS_VFSEARCH
+	    || sub_mode == CLS_MENU_FSEARCH
+	    || sub_mode == CLS_VWFSEARCH;
 }
 
 /* Checks whether specified mode is one of backward searching modes.  Returns
  * non-zero if it is, otherwise zero is returned. */
 static int
-is_backward_search(CMD_LINE_SUBMODES sub_mode)
+is_backward_search(CmdLineSubmode sub_mode)
 {
-	return sub_mode == SEARCH_BACKWARD_SUBMODE
-			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE
-			|| sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE;
+	return sub_mode == CLS_BSEARCH
+	    || sub_mode == CLS_VBSEARCH
+	    || sub_mode == CLS_MENU_BSEARCH
+	    || sub_mode == CLS_VWBSEARCH;
 }
 
 static void
@@ -1331,7 +1316,7 @@ cmd_down(key_info_t key_info, keys_info_t *keys_info)
 static void
 search_next(void)
 {
-	if(sub_mode == CMD_SUBMODE)
+	if(sub_mode == CLS_COMMAND)
 	{
 		complete_next(&cfg.cmd_hist, cfg.history_len);
 	}
@@ -1339,11 +1324,11 @@ search_next(void)
 	{
 		complete_next(&cfg.search_hist, cfg.history_len);
 	}
-	else if(sub_mode == PROMPT_SUBMODE)
+	else if(sub_mode == CLS_PROMPT)
 	{
 		complete_next(&cfg.prompt_hist, cfg.history_len);
 	}
-	else if(sub_mode == FILTER_SUBMODE)
+	else if(sub_mode == CLS_FILTER)
 	{
 		complete_next(&cfg.filter_hist, cfg.history_len);
 	}
@@ -1601,7 +1586,7 @@ paste_str(const char str[], int allow_escaping)
 
 	stop_completion();
 
-	escaped = (allow_escaping && sub_mode == CMD_SUBMODE)
+	escaped = (allow_escaping && sub_mode == CLS_COMMAND)
 	        ? escape_cmd_for_pasting(str)
 	        : NULL;
 	if(escaped != NULL)
@@ -1717,7 +1702,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t *wide;
 
-	if(sub_mode != CMD_SUBMODE)
+	if(sub_mode != CLS_COMMAND)
 	{
 		return;
 	}
@@ -1922,7 +1907,7 @@ update_cursor(void)
 static void
 search_prev(void)
 {
-	if(sub_mode == CMD_SUBMODE)
+	if(sub_mode == CLS_COMMAND)
 	{
 		complete_prev(&cfg.cmd_hist, cfg.history_len);
 	}
@@ -1930,11 +1915,11 @@ search_prev(void)
 	{
 		complete_prev(&cfg.search_hist, cfg.history_len);
 	}
-	else if(sub_mode == PROMPT_SUBMODE)
+	else if(sub_mode == CLS_PROMPT)
 	{
 		complete_prev(&cfg.prompt_hist, cfg.history_len);
 	}
-	else if(sub_mode == FILTER_SUBMODE)
+	else if(sub_mode == CLS_FILTER)
 	{
 		complete_prev(&cfg.filter_hist, cfg.history_len);
 	}
@@ -2152,7 +2137,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(sub_mode == CMD_SUBMODE)
+		if(sub_mode == CLS_COMMAND)
 		{
 			const CmdLineLocation ipt = get_cmdline_location(line_mb,
 					line_mb + strlen(line_mb));
@@ -2285,7 +2270,7 @@ stop_history_completion(void)
 	input_stat.complete_continue = 0;
 	vle_compl_reset();
 	if(cfg.wild_menu &&
-			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
+			(sub_mode != CLS_MENU_COMMAND && input_stat.complete != NULL))
 	{
 		if(cfg.display_statusline)
 		{

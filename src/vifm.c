@@ -285,14 +285,13 @@ check_path_for_file(FileView *view, const char *path, int handle)
 {
 	if(path[0] != '\0' && !is_dir(path))
 	{
-		const char *slash = strrchr(path, '/');
-		if(slash == NULL)
-			slash = path - 1;
 		load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-		if(ensure_file_is_selected(view, slash + 1))
+		if(ensure_file_is_selected(view, after_last(path, '/')))
 		{
 			if(handle)
-				handle_file(view, 0, 0);
+			{
+				handle_file(view, FHE_RUN, FHL_NO_FOLLOW);
+			}
 		}
 	}
 }
@@ -311,7 +310,7 @@ main(int argc, char *argv[])
 	int old_config;
 	int no_configs;
 
-	init_config();
+	cfg_init();
 
 	if(is_in_string_array(argv + 1, argc - 1, "--logging"))
 	{
@@ -330,7 +329,7 @@ main(int argc, char *argv[])
 
 	init_filelists();
 	init_registers();
-	set_config_paths();
+	cfg_discover_paths();
 	reinit_logger();
 
 	/* Commands module also initializes bracket notation and variables. */
@@ -355,7 +354,7 @@ main(int argc, char *argv[])
 
 	init_option_handlers();
 
-	old_config = is_old_config();
+	old_config = cfg_has_old_format();
 	if(!old_config && !no_configs)
 		read_info_file(0);
 
@@ -413,7 +412,7 @@ main(int argc, char *argv[])
 	if(!old_config && !no_configs)
 	{
 		load_scheme();
-		source_config();
+		cfg_load();
 	}
 
 	write_color_scheme_file();
@@ -433,7 +432,7 @@ main(int argc, char *argv[])
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
 
-		source_config();
+		cfg_load();
 	}
 
 	/* Ensure trash directories exist, it might not have been called during
@@ -603,7 +602,7 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 static void
 load_scheme(void)
 {
-	if(are_old_color_schemes())
+	if(cfg_has_old_color_schemes())
 	{
 		const int err = run_converter(2);
 		if(err != 0)
@@ -782,7 +781,7 @@ vifm_restart(void)
 	}
 	load_color_scheme_colors();
 
-	source_config();
+	cfg_load();
 	exec_startup_commands(0, NULL);
 
 	curr_stats.restart_in_progress = 0;

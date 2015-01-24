@@ -631,11 +631,36 @@ get_env_type(void)
 	return ET_WIN;
 }
 
+ExecEnvType
+get_exec_env_type(void)
+{
+	return EET_EMULATOR_WITH_X;
+}
+
+ShellType
+get_shell_type(const char shell_cmd[])
+{
+	char shell[NAME_MAX];
+	const char *shell_name;
+
+	(void)extract_cmd_name(shell_cmd, 0, sizeof(shell), shell);
+	shell_name = get_last_path_component(shell);
+
+	if(stroscmp(shell_name, "cmd") == 0 || stroscmp(shell_name, "cmd.exe") == 0)
+	{
+		return ST_CMD;
+	}
+	else
+	{
+		return ST_NORMAL;
+	}
+}
+
 int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", get_vicmd(&bg),
+	snprintf(cmd, cmd_size, "%s \"%s/" VIFM_HELP "\"", cfg_get_vicmd(&bg),
 			cfg.config_dir);
 	return bg;
 }

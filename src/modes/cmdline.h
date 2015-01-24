@@ -27,22 +27,23 @@
 #endif
 #include "../utils/test_helpers.h"
 
+/* Submodes of command-line mode. */
 typedef enum
 {
-	CMD_SUBMODE,
-	MENU_CMD_SUBMODE,
-	SEARCH_FORWARD_SUBMODE,
-	SEARCH_BACKWARD_SUBMODE,
-	MENU_SEARCH_FORWARD_SUBMODE,
-	MENU_SEARCH_BACKWARD_SUBMODE,
-	VSEARCH_FORWARD_SUBMODE,
-	VSEARCH_BACKWARD_SUBMODE,
-	PROMPT_SUBMODE,
-	VIEW_SEARCH_FORWARD_SUBMODE,
-	VIEW_SEARCH_BACKWARD_SUBMODE,
-	FILTER_SUBMODE,
+	CLS_COMMAND,      /* Regular command-line command. */
+	CLS_MENU_COMMAND, /* Menu command-line command. */
+	CLS_MENU_FSEARCH, /* Forward search in menu mode. */
+	CLS_MENU_BSEARCH, /* Backward search in menu mode. */
+	CLS_FSEARCH,      /* Forward search in normal mode. */
+	CLS_BSEARCH,      /* Backward search in normal mode. */
+	CLS_VFSEARCH,     /* Forward search in visual mode. */
+	CLS_VBSEARCH,     /* Backward search in visual mode. */
+	CLS_VWFSEARCH,    /* Forward search in view mode. */
+	CLS_VWBSEARCH,    /* Backward search in view mode. */
+	CLS_FILTER,       /* Filter value. */
+	CLS_PROMPT,       /* Input request. */
 }
-CMD_LINE_SUBMODES;
+CmdLineSubmode;
 
 typedef void (*prompt_cb)(const char renponse[]);
 
@@ -53,7 +54,7 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void init_cmdline_mode(void);
 
-void enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd,
+void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 
 /* Enters command-line editing mode with prompt submode activated.  cmd

@@ -171,7 +171,6 @@ typedef struct
 #endif
 	char last_dir[PATH_MAX];
 
-	char regexp[256]; /* regular expression pattern for / and ? searching */
 	int matches;
 
 	int hide_dot;

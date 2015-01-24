@@ -477,7 +477,6 @@ reset_views(void)
 static void
 reset_view(FileView *view)
 {
-	strncpy(view->regexp, "", sizeof(view->regexp));
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
@@ -1634,7 +1633,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 
 	if(x == cfg.history_len)
 	{
-		free_history_items(view->history, 1);
+		cfg_free_history_items(view->history, 1);
 		memmove(view->history, view->history + 1,
 				sizeof(history_t)*(cfg.history_len - 1));
 
@@ -3157,7 +3156,7 @@ local_filter_accept(FileView *view)
 
 	local_filter_finish(view);
 
-	save_filter_history(view->local_filter.filter.raw);
+	cfg_save_filter_history(view->local_filter.filter.raw);
 
 	/* Some of previously selected files could be filtered out, update number of
 	 * selected files. */
@@ -3174,7 +3173,7 @@ local_filter_apply(FileView *view, const char filter[])
 	}
 
 	(void)filter_set(&view->local_filter.filter, filter);
-	save_filter_history(view->local_filter.filter.raw);
+	cfg_save_filter_history(view->local_filter.filter.raw);
 }
 
 void

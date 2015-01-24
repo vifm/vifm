@@ -507,7 +507,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 	menu->match_dir = NONE;
 	free(menu->regexp);
 	menu->regexp = NULL;
-	enter_cmdline_mode(MENU_SEARCH_FORWARD_SUBMODE, L"", menu);
+	enter_cmdline_mode(CLS_MENU_FSEARCH, L"", menu);
 }
 
 static void
@@ -516,7 +516,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	cmds_conf.begin = 1;
 	cmds_conf.current = menu->pos;
 	cmds_conf.end = menu->len;
-	enter_cmdline_mode(MENU_CMD_SUBMODE, L"", menu);
+	enter_cmdline_mode(CLS_MENU_COMMAND, L"", menu);
 }
 
 static void
@@ -526,7 +526,7 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 1;
 	menu->match_dir = NONE;
 	free(menu->regexp);
-	enter_cmdline_mode(MENU_SEARCH_BACKWARD_SUBMODE, L"", menu);
+	enter_cmdline_mode(CLS_MENU_BSEARCH, L"", menu);
 }
 
 static void
@@ -1043,7 +1043,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 void
 execute_cmdline_command(const char cmd[])
 {
-	if(exec_command(cmd, curr_view, GET_COMMAND) < 0)
+	if(exec_command(cmd, curr_view, CIT_COMMAND) < 0)
 	{
 		status_bar_error("An error occurred while trying to execute command");
 	}

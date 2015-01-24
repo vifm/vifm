@@ -116,7 +116,6 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 
 	reset_search_results(view);
-	copy_str(view->regexp, sizeof(view->regexp), pattern);
 
 	if(pattern[0] == '\0')
 	{
@@ -225,14 +224,14 @@ print_search_msg(const FileView *view, int backward)
 	else
 	{
 		status_bar_messagef("%d matching file%s for: %s", view->matches,
-				(view->matches == 1) ? "" : "s", view->regexp);
+				(view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
 	}
 }
 
 void
 print_search_fail_msg(const FileView *view, int backward)
 {
-	const char *const regexp = view->regexp;
+	const char *const regexp = cfg_get_last_search_pattern();
 
 	int cflags;
 	regex_t re;

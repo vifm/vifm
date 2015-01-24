@@ -22,14 +22,42 @@
 
 #include "ui/ui.h"
 
-void handle_file(FileView *view, int dont_execute, int force_follow);
-void run_using_prog(FileView *view, const char *program, int dont_execute,
+/* Kinds of executable file treatment on file handling. */
+typedef enum
+{
+	FHE_NO_RUN,          /* Don't run. */
+	FHE_RUN,             /* Run with rights of current user. */
+	FHE_ELEVATE_AND_RUN, /* Run with rights elevation (if available). */
+}
+FileHandleExec;
+
+/* Kinds of symbolic link file treatment on file handling. */
+typedef enum
+{
+	FHL_NO_FOLLOW, /* Don't follow (navigate to instead of navigation inside). */
+	FHL_FOLLOW,    /* Follow (end up on the link target, not inside it). */
+}
+FileHandleLink;
+
+/* Handles opening of current file/selection of the view. */
+void handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow);
+
+void run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background);
+
 void handle_dir(FileView *view);
+
 void cd_updir(FileView *view);
-/* Returns zero on success, otherwise non-zero is returned. */
-int shellout(const char *command, int pause, int use_term_multiplexer);
-void output_to_nowhere(const char *cmd);
+
+/* Values of pause:
+ *  > 0 - pause always
+ *  = 0 - do not pause
+ *  < 0 - pause on error
+ * Returns zero on success, otherwise non-zero is returned. */
+int shellout(const char command[], int pause, int use_term_multiplexer);
+
+void output_to_nowhere(const char cmd[]);
+
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
 
