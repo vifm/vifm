@@ -96,7 +96,7 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
-handle_file(FileView *view, FileHandleExec exec, int force_follow)
+handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
 	int executable;
@@ -107,14 +107,14 @@ handle_file(FileView *view, FileHandleExec exec, int force_follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->selected && (curr->type != LINK || !force_follow))
+		if(!curr->selected && (curr->type != LINK || follow == FHL_NO_FOLLOW))
 		{
 			handle_dir(view);
 			return;
 		}
 	}
 
-	runnable = is_runnable(view, full_path, curr->type, force_follow);
+	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
 	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(curr_stats.file_picker_mode && (executable || runnable))
@@ -133,7 +133,7 @@ handle_file(FileView *view, FileHandleExec exec, int force_follow)
 	}
 	else if(curr->type == LINK)
 	{
-		follow_link(view, force_follow);
+		follow_link(view, follow == FHL_FOLLOW);
 	}
 }
 
