@@ -68,11 +68,14 @@ int exec_commands(const char cmd[], FileView *view, CmdInputType type);
  * message. */
 int exec_command(const char cmd[], FileView *view, CmdInputType type);
 
-/* An event like function, which should be used to inform commands unit that
- * set of a command has come to its end.  Allows for performing some of internal
- * checks.  Returns non-zero when there were errors, otherwise zero is
- * returned. */
-int commands_block_finished(void);
+/* Should precede new command execution scope (e.g. before start of sourced
+ * script). */
+void commands_scope_start(void);
+
+/* Should terminate command execution scope (e.g. end of sourced script).
+ * Performs some of internal checks.  Returns non-zero when there were errors,
+ * otherwise zero is returned. */
+int commands_scope_finish(void);
 
 char * find_last_command(char *cmd);
 
