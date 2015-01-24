@@ -124,10 +124,6 @@ load_def_values(status_t *stats, config_t *config)
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif
-
-#ifdef _WIN32
-	stats->as_admin = 0;
-#endif
 }
 
 static void

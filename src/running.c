@@ -72,11 +72,11 @@ static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
 static int is_dir_entry(const char full_path[], int type);
 #ifdef _WIN32
-static void run_win_executable(char full_path[]);
+static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
 static int selection_is_consistent(const FileView *const view);
-static void execute_file(const char full_path[]);
+static void execute_file(const char full_path[], int elevate);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
@@ -96,7 +96,7 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
-handle_file(FileView *view, int dont_execute, int force_follow)
+handle_file(FileView *view, FileHandleExec exec, int force_follow)
 {
 	char full_path[PATH_MAX];
 	int executable;
@@ -115,7 +115,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 
 	runnable = is_runnable(view, full_path, curr->type, force_follow);
-	executable = is_executable(full_path, curr, dont_execute, runnable);
+	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(curr_stats.file_picker_mode && (executable || runnable))
 	{
@@ -125,11 +125,11 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 	if(executable && !is_dir_entry(full_path, curr->type))
 	{
-		execute_file(full_path);
+		execute_file(full_path, exec == FHE_ELEVATE_AND_RUN);
 	}
 	else if(runnable)
 	{
-		run_selection(view, dont_execute);
+		run_selection(view, exec == FHE_NO_RUN);
 	}
 	else if(curr->type == LINK)
 	{
@@ -187,11 +187,11 @@ is_dir_entry(const char full_path[], int type)
 
 /* Runs a Windows executable handling errors and rights elevation. */
 static void
-run_win_executable(char full_path[])
+run_win_executable(char full_path[], int elevate)
 {
 	int running_error = 0;
 	int running_error_code = NO_ERROR;
-	if(curr_stats.as_admin && is_vista_and_above())
+	if(elevate && is_vista_and_above())
 	{
 		running_error = run_win_executable_as_evaluated(full_path);
 	}
@@ -305,7 +305,7 @@ selection_is_consistent(const FileView *const view)
 /* Executes file, specified by the full_path.  Changes type of slashes on
  * Windows. */
 static void
-execute_file(const char full_path[])
+execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = escape_filename(full_path, 0);
@@ -315,7 +315,7 @@ execute_file(const char full_path[])
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
 
 	to_back_slash(dquoted_full_path);
-	run_win_executable(dquoted_full_path);
+	run_win_executable(dquoted_full_path, elevate);
 
 	free(dquoted_full_path);
 #endif

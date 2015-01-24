@@ -586,7 +586,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 0, 0);
+	handle_file(curr_view, FHE_RUN, 0);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1046,7 +1046,7 @@ static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	clean_selected_files(curr_view);
-	handle_file(curr_view, 0, 1);
+	handle_file(curr_view, FHE_RUN, 1);
 	redraw_current_view();
 }
 
@@ -1071,9 +1071,7 @@ cmd_gh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
-	curr_stats.as_admin = 1;
-	handle_file(curr_view, 0, 0);
-	curr_stats.as_admin = 0;
+	handle_file(curr_view, FHE_ELEVATE_AND_RUN, 0);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1551,7 +1549,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 1, 0);
+	handle_file(curr_view, FHE_NO_RUN, 0);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }

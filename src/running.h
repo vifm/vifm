@@ -22,7 +22,17 @@
 
 #include "ui/ui.h"
 
-void handle_file(FileView *view, int dont_execute, int force_follow);
+/* Kinds of executable file treatment on file handling. */
+typedef enum
+{
+	FHE_NO_RUN,          /* Don't run. */
+	FHE_RUN,             /* Run with rights of current user. */
+	FHE_ELEVATE_AND_RUN, /* Run with rights elevation (if available). */
+}
+FileHandleExec;
+
+/* Handles opening of current file/selection of the view. */
+void handle_file(FileView *view, FileHandleExec exec, int force_follow);
 
 void run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background);

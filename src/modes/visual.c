@@ -748,7 +748,7 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 0);
-	handle_file(view, 0, 0);
+	handle_file(view, FHE_RUN, 0);
 	clean_selected_files(view);
 	redraw_view(view);
 }
@@ -839,7 +839,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(view, 1, 0);
+	handle_file(view, FHE_NO_RUN, 0);
 	accept_and_leave(curr_stats.save_msg);
 }
 

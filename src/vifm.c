@@ -289,7 +289,9 @@ check_path_for_file(FileView *view, const char *path, int handle)
 		if(ensure_file_is_selected(view, after_last(path, '/')))
 		{
 			if(handle)
-				handle_file(view, 0, 0);
+			{
+				handle_file(view, FHE_RUN, 0);
+			}
 		}
 	}
 }
