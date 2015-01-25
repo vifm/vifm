@@ -149,6 +149,7 @@ static void search_next(void);
 static void complete_next(const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
@@ -242,6 +243,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x18"L"/",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xslash}}},
 	{L"\x18"L"a",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xa}}},
 	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
 	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
@@ -1452,6 +1454,13 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	update_cmdline_text();
+}
+
+/* Inserts last pattern from search history into current cursor position. */
+static void
+cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info)
+{
+	paste_str(cfg_get_last_search_pattern(), 0);
 }
 
 /* Inserts value of automatic filter of active pane into current cursor

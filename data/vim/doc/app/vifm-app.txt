@@ -973,6 +973,9 @@ Ctrl-X m - value of manual filter of the active pane.
                                                *vifm-c_CTRL-X_=*
 Ctrl-X = - value of local filter of the active pane.
 
+                                               *vifm-c_CTRL-X_/*
+Ctrl-X / - last pattern from search history.
+
 --------------------------------------------------------------------------------
 *vifm-command-line-edit*
 
