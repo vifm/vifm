@@ -180,8 +180,12 @@ event_loop(const int *quit)
 		else
 		{
 			if(ret != ERR)
+			{
 				curr_stats.save_msg = 0;
+			}
+
 			last_result = execute_keys(input_buf);
+
 			counter = get_key_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
@@ -190,6 +194,7 @@ event_loop(const int *quit)
 				memmove(input_buf, input_buf + counter,
 						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
+
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
