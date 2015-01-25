@@ -553,7 +553,7 @@ expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
 			strncpy(buf, line, char_width);
 			buf += char_width;
 
-			col += char_screen_width;
+			col += (char_screen_width == (size_t)-1) ? 1 : char_screen_width;
 		}
 
 		line += char_width;
@@ -565,7 +565,7 @@ expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
 wchar_t
 get_first_wchar(const char str[])
 {
-	wchar_t wc[2];
+	wchar_t wc[2] = {};
 	return (mbstowcs(wc, str, ARRAY_LEN(wc)) >= 1) ? wc[0] : str[0];
 }
 

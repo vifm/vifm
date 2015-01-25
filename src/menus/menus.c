@@ -150,7 +150,10 @@ clean_menu_position(menu_info *m)
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
 		memset(buf + len, ' ', strlen(buf) - len);
-		buf[len + 3] = '\0';
+		if(strlen(buf) > len + 3)
+		{
+			buf[len + 3] = '\0';
+		}
 		wprint(menu_win, buf);
 		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
 	}
@@ -319,7 +322,10 @@ move_to_menu_pos(int pos, menu_info *m)
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
 		memset(buf + len, ' ', strlen(buf) - len);
-		buf[len + 3] = '\0';
+		if(strlen(buf) > len + 3)
+		{
+			buf[len + 3] = '\0';
+		}
 		wprint(menu_win, buf);
 		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
 	}
