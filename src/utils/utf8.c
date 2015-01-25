@@ -68,15 +68,19 @@ get_real_string_width(const char str[], size_t max_screen_width)
 size_t
 get_normal_utf8_string_length(const char str[])
 {
+	size_t length_left = strlen(str);
 	size_t length = 0;
-	while(*str != '\0')
+	while(length_left != '\0')
 	{
 		size_t char_width = guess_char_width(*str);
-		if(char_width <= strlen(str))
-			length++;
-		else
+		if(char_width > length_left)
+		{
 			break;
+		}
+
+		++length;
 		str += char_width;
+		length_left -= char_width;
 	}
 	return length;
 }
@@ -84,12 +88,13 @@ get_normal_utf8_string_length(const char str[])
 size_t
 get_normal_utf8_string_widthn(const char str[], size_t max_screen_width)
 {
+	size_t length_left = strlen(str);
 	size_t length = 0;
-	while(*str != '\0' && max_screen_width > 0)
+	while(length_left != 0 && max_screen_width > 0)
 	{
 		size_t char_screen_width;
 		const size_t char_width = guess_char_width(*str);
-		if(char_width > strlen(str))
+		if(char_width > length_left)
 		{
 			break;
 		}
@@ -103,6 +108,7 @@ get_normal_utf8_string_widthn(const char str[], size_t max_screen_width)
 		length += char_width;
 		max_screen_width -= char_screen_width;
 		str += char_width;
+		length_left -= char_width;
 	}
 	return length;
 }
