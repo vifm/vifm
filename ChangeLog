@@ -37,6 +37,9 @@
 	Added 'mintimeout' option.  It enables controlling responsiveness on
 	external events by Vifm.  Thanks to hofheinz.
 
+	Added Ctrl-X / (slash) key to command-line mode that inserts last search
+	pattern into current cursor position.  Thanks to filterfalse.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
@@ -63,6 +66,9 @@
 
 	Made message dialogs interact better with everything else on the screen.
 	E.g. redraw properly after terminal resize.
+
+	United last pattern of :substitute command with search history.  Thanks to
+	filterfalse.
 
 	Fixed search messages in menus (nth time...).
 

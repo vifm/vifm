@@ -1,4 +1,4 @@
-.TH vifm 1 "January 20, 2015" "" "Vifm"
+.TH vifm 1 "January 25, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1052,6 +1052,10 @@ value of manual filter of the active pane.
 .TP
 .BI "Ctrl-X ="
 value of local filter of the active pane.
+
+.TP
+.BI "Ctrl-X /"
+last pattern from search history.
 .\" ---------------------------------------------------------------------------
 .SH Command line editing
 .\" ---------------------------------------------------------------------------
@@ -2162,6 +2166,8 @@ for each file in range replace a match of pattern with string.
 String can contain \\0...\\9 to link to capture groups (\\0 \- all match, \\1 \-
 first group, etc.).
 
+Pattern is stored in search history.
+
 Available flags:
 .IP \- 2
 i \- ignore case (the 'ignorecase' and 'smartcase' options are not used)
@@ -2170,8 +2176,11 @@ I \- don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
 .IP \- 2
 g \- substitute all matches in each file name (each g toggles this)
 .TP
+.BI :[range]s[ubstitute]/pattern
+will substitute pattern with an empty string.
+.TP
 .BI :[range]s[ubstitute]//string/[flags]
-will use previous pattern.
+will use last pattern from search history.
 .TP
 .BI :[range]s[ubstitute]
 will repeat previous substitution command.

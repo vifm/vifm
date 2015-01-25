@@ -3672,12 +3672,17 @@ split_cmd(const cmd_info_t *cmd_info)
 	return do_split(cmd_info, HSPLIT);
 }
 
-/* Replaces matches of regular expression in names of files. */
+/* :s[ubstitute]/[pat]/[subs]/[flags].  Replaces matches of regular expression
+ * in names of files.  Empty pattern is replaced with the latest search pattern.
+ * New pattern is saved in search pattern history.  Empty substitution part is
+ * replaced with the previously used one. */
 static int
 substitute_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: Vim preserves these two values across sessions. */
 	static char *last_pattern;
 	static char *last_sub;
+
 	int ic = 0;
 	int glob = cfg.gdefault;
 
@@ -3703,9 +3708,17 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
-	if(cmd_info->argc >= 1 && cmd_info->argv[0][0] != '\0')
+	if(cmd_info->argc >= 1)
 	{
-		(void)replace_string(&last_pattern, cmd_info->argv[0]);
+		if(cmd_info->argv[0][0] == '\0')
+		{
+			(void)replace_string(&last_pattern, cfg_get_last_search_pattern());
+		}
+		else
+		{
+			(void)replace_string(&last_pattern, cmd_info->argv[0]);
+			cfg_save_search_history(last_pattern);
+		}
 	}
 
 	if(cmd_info->argc >= 2)
@@ -3717,7 +3730,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		(void)replace_string(&last_sub, "");
 	}
 
-	if(last_pattern == NULL)
+	if(is_null_or_empty(last_pattern))
 	{
 		status_bar_error("No previous pattern");
 		return 1;
