@@ -64,6 +64,9 @@
 	Made message dialogs interact better with everything else on the screen.
 	E.g. redraw properly after terminal resize.
 
+	United last pattern of :substitute command with search history.  Thanks to
+	filterfalse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

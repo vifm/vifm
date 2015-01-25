@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 20
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Jan 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1822,13 +1822,16 @@ particular the second column of the view will be changed).
 :[range]s[ubstitute]/pattern/string/[flags] - for each file in range
     replace a match of pattern with string.  String can contain \0...\9
     to link to capture groups (0 - all match, 1 - first group, etc.).
-    Flags can be used
+    Pattern is stored in search history.
+    Available flags:
         i - ignore case (the |vifm-'ignorecase'| and |vifm-'smartcase'|
             options are not used)
         I - don't ignore case (the |vifm-'ignorecase'| and
             |vifm-'smartcase'| options are not used)
         g - substitute all matches in each file name (each g toggles this)
-:[range]s[ubstitute]//string/[flags] - will use previous pattern.
+:[range]s[ubstitute]/pattern - will substitute pattern with an empty string.
+:[range]s[ubstitute]//string/[flags] - will use last pattern from search
+    history.
 :[range]s[ubstitute] - will repeat previous substitution command.
 
                                                *vifm-:touch*
