@@ -150,6 +150,7 @@ TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
+static void free_direntries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
@@ -2630,7 +2631,6 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 static int
 populate_dir_list_internal(FileView *view, int reload)
 {
-	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
@@ -2668,14 +2668,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(view->dir_entry != NULL)
 	{
-		int i;
-		for(i = 0; i < old_list; ++i)
-		{
-			free(view->dir_entry[i].name);
-		}
-
-		free(view->dir_entry);
-		view->dir_entry = NULL;
+		free_direntries(view);
 	}
 	view->dir_entry = malloc(sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
@@ -2752,6 +2745,27 @@ is_dir_big(const char path[])
 #else
 	return 1;
 #endif
+}
+
+/* Frees list of directory entries of the view. */
+static void
+free_direntries(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		free(entry->name);
+		if(entry->origin != &view->curr_dir[0])
+		{
+			free(entry->origin);
+		}
+	}
+
+	free(view->dir_entry);
+	view->dir_entry = NULL;
+	view->list_rows = 0;
 }
 
 void
