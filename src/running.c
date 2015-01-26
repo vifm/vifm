@@ -96,7 +96,7 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
-handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
+open_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
 	int executable;

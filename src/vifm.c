@@ -290,7 +290,7 @@ check_path_for_file(FileView *view, const char *path, int handle)
 		{
 			if(handle)
 			{
-				handle_file(view, FHE_RUN, FHL_NO_FOLLOW);
+				open_file(view, FHE_RUN, FHL_NO_FOLLOW);
 			}
 		}
 	}
