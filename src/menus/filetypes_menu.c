@@ -133,7 +133,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 {
 	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
 	{
-		handle_dir(view);
+		open_dir(view);
 	}
 	else
 	{

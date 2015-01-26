@@ -109,7 +109,7 @@ open_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		if(!curr->selected && (curr->type != LINK || follow == FHL_NO_FOLLOW))
 		{
-			handle_dir(view);
+			open_dir(view);
 			return;
 		}
 	}
@@ -431,7 +431,7 @@ run_with_defaults(FileView *view)
 {
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
 	{
-		handle_dir(view);
+		open_dir(view);
 	}
 	else if(view->selected_files <= 1)
 	{
@@ -521,7 +521,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 	}
 	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
 	{
-		handle_dir(view);
+		open_dir(view);
 	}
 	else if(strchr(program, '%') != NULL)
 	{
@@ -636,7 +636,7 @@ follow_link(FileView *view, int follow_dirs)
 }
 
 void
-handle_dir(FileView *view)
+open_dir(FileView *view)
 {
 	char full_path[PATH_MAX];
 	const char *filename;

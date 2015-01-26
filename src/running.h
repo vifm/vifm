@@ -45,7 +45,8 @@ void open_file(FileView *view, FileHandleExec exec, FileHandleLink follow);
 void run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background);
 
-void handle_dir(FileView *view);
+/* Handles opening of current file of the view as directory. */
+void open_dir(FileView *view);
 
 void cd_updir(FileView *view);
 
