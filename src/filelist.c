@@ -2027,6 +2027,12 @@ navigate_to(FileView *view, const char path[])
 	}
 }
 
+void
+navigate_back(FileView *view)
+{
+	navigate_to(view, view->last_dir);
+}
+
 int
 change_directory(FileView *view, const char directory[])
 {

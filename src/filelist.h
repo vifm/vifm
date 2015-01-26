@@ -152,6 +152,9 @@ size_t calculate_columns_count(FileView *view);
  * case of success reloads filelist of the view and sets its cursor position
  * according to directory history of the view. */
 void navigate_to(FileView *view, const char path[]);
+/* Changes current directory of the view to location the view was before last
+ * directory change. */
+void navigate_back(FileView *view);
 /* The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share

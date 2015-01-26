@@ -278,7 +278,7 @@ goto_bookmark(FileView *view, char mark)
 	switch(mark)
 	{
 		case '\'':
-			navigate_to(view, view->last_dir);
+			navigate_back(view);
 			return 0;
 		case '\x03': /* Ctrl-C. */
 		case '\x1b': /* Escape. */
