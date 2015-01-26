@@ -130,16 +130,20 @@ redraw_file_info_dialog(void)
 
 	werase(menu_win);
 
-	snprintf(name_buf, sizeof(name_buf), "%s",
-			view->dir_entry[view->list_pos].name);
+	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
 
 	size = 0;
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		tree_get_data(curr_stats.dirsize_cache,
-				view->dir_entry[view->list_pos].name, &size);
+	{
+		char full_path[PATH_MAX];
+		get_current_full_path(view, sizeof(full_path), full_path);
+		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
+	}
 
 	if(size == 0)
+	{
 		size = view->dir_entry[view->list_pos].size;
+	}
 
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
@@ -240,14 +244,16 @@ show_file_type(FileView *view, int curr_y)
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(view->dir_entry[view->list_pos].type == LINK)
 	{
+		char full_path[PATH_MAX];
 		char linkto[PATH_MAX + NAME_MAX];
-		char *filename = view->dir_entry[view->list_pos].name;
+
+		get_current_full_path(view, sizeof(full_path), full_path);
 
 		mvwaddstr(menu_win, curr_y, 8, "Link");
 		curr_y += 2;
 		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
 
-		if(get_link_target(filename, linkto, sizeof(linkto)) == 0)
+		if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
 		{
 			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
 
@@ -265,13 +271,15 @@ show_file_type(FileView *view, int curr_y)
 			view->dir_entry[view->list_pos].type == REGULAR)
 	{
 #ifdef HAVE_FILE_PROG
+		char full_path[PATH_MAX];
 		FILE *pipe;
 		char command[1024];
 		char buf[NAME_MAX];
 
-		/* Use the file command to get file information */
-		snprintf(command, sizeof(command), "file \"%s\" -b",
-				view->dir_entry[view->list_pos].name);
+		get_current_full_path(view, sizeof(full_path), full_path);
+
+		/* Use the file command to get file information. */
+		snprintf(command, sizeof(command), "file \"%s\" -b", full_path);
 
 		if((pipe = popen(command, "r")) == NULL)
 		{
@@ -331,9 +339,11 @@ show_file_type(FileView *view, int curr_y)
 static int
 show_mime_type(FileView *view, int curr_y)
 {
+	char full_path[PATH_MAX];
 	const char* mimetype = NULL;
 
-	mimetype = get_mimetype(get_current_file_name(view));
+	get_current_full_path(view, sizeof(full_path), full_path);
+	mimetype = get_mimetype(full_path);
 
 	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
 
