@@ -46,7 +46,6 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -61,7 +60,6 @@
 #include "../status.h"
 #include "../vim.h"
 
-TSTATIC char * parse_spec(const char spec[], int *line_num);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
@@ -362,7 +360,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	char *path_buf;
 	int line_num;
 
-	path_buf = parse_spec(spec, &line_num);
+	path_buf = parse_file_spec(spec, &line_num);
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -388,11 +386,8 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	free(path_buf);
 }
 
-/* Extracts path and line number from the spec (1 when absent from the spec).
- * Returns path and sets *line_num to line number, otherwise NULL is
- * returned. */
-TSTATIC char *
-parse_spec(const char spec[], int *line_num)
+char *
+parse_file_spec(const char spec[], int *line_num)
 {
 	char *path_buf;
 	const char *colon;

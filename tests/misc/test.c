@@ -40,7 +40,7 @@ void external_command_exists_tests(void);
 void read_file_lines_tests(void);
 void if_else_tests(void);
 void split_ext_tests(void);
-void parse_spec_tests(void);
+void parse_file_spec_tests(void);
 void minmax_tests(void);
 void ui_view_schedule_tests(void);
 void string_escape_tests(void);
@@ -99,7 +99,7 @@ all_tests(void)
 	read_file_lines_tests();
 	if_else_tests();
 	split_ext_tests();
-	parse_spec_tests();
+	parse_file_spec_tests();
 	minmax_tests();
 	ui_view_schedule_tests();
 	string_escape_tests();

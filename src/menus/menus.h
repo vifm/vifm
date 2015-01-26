@@ -23,7 +23,6 @@
 #include <stddef.h> /* wchar_t */
 
 #include "../ui/ui.h"
-#include "../utils/test_helpers.h"
 
 enum
 {
@@ -133,6 +132,11 @@ void draw_menu(menu_info *m);
  * followed by a line number when try_open is not zero. */
 void goto_selected_file(FileView *view, const char spec[], int try_open);
 
+/* Extracts path and line number from the spec (default line number is 1).
+ * Returns path in as newly allocated string and sets *line_num to line number,
+ * otherwise NULL is returned. */
+char * parse_file_spec(const char spec[], int *line_num);
+
 /* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
 
@@ -153,10 +157,6 @@ int display_menu(menu_info *m, FileView *view);
  * Returns code that specifies both taken actions and what should be done
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
-
-TSTATIC_DEFS(
-	char * parse_spec(const char spec[], int *line_num);
-)
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

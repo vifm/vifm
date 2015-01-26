@@ -10,7 +10,7 @@ static void
 test_empty_path_without_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("", &line_num);
+	char *const path = parse_file_spec("", &line_num);
 
 	assert_string_equal("./", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -22,7 +22,7 @@ static void
 test_empty_path_with_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec(":78", &line_num);
+	char *const path = parse_file_spec(":78", &line_num);
 
 	assert_string_equal("./", path);
 	assert_int_equal(78, line_num);
@@ -34,7 +34,7 @@ static void
 test_absolute_path_without_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("/home/user", &line_num);
+	char *const path = parse_file_spec("/home/user", &line_num);
 
 	assert_string_equal("/home/user", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -46,7 +46,7 @@ static void
 test_absolute_path_with_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("/home/user:1234", &line_num);
+	char *const path = parse_file_spec("/home/user:1234", &line_num);
 
 	assert_string_equal("/home/user", path);
 	assert_int_equal(1234, line_num);
@@ -58,7 +58,7 @@ static void
 test_relative_path_without_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("repos/repo", &line_num);
+	char *const path = parse_file_spec("repos/repo", &line_num);
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -70,7 +70,7 @@ static void
 test_relative_path_with_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("repos/repo:9876", &line_num);
+	char *const path = parse_file_spec("repos/repo:9876", &line_num);
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(9876, line_num);
@@ -84,7 +84,7 @@ static void
 test_win_absolute_path_without_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("c:/home/user", &line_num);
+	char *const path = parse_file_spec("c:/home/user", &line_num);
 
 	assert_string_equal("c:/home/user", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -96,7 +96,7 @@ static void
 test_win_absolute_path_with_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("c:/home/user:1234", &line_num);
+	char *const path = parse_file_spec("c:/home/user:1234", &line_num);
 
 	assert_string_equal("c:/home/user", path);
 	assert_int_equal(1234, line_num);
@@ -108,7 +108,7 @@ static void
 test_win_relative_path_without_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("repos\\repo", &line_num);
+	char *const path = parse_file_spec("repos\\repo", &line_num);
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -120,7 +120,7 @@ static void
 test_win_relative_path_with_linenum(void)
 {
 	int line_num;
-	char *const path = parse_spec("repos\\repo:9876", &line_num);
+	char *const path = parse_file_spec("repos\\repo:9876", &line_num);
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(9876, line_num);
@@ -131,7 +131,7 @@ test_win_relative_path_with_linenum(void)
 #endif
 
 void
-parse_spec_tests(void)
+parse_file_spec_tests(void)
 {
 	test_fixture_start();
 
