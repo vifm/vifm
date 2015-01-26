@@ -584,7 +584,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	open_file(curr_view, FHE_RUN, FHL_NO_FOLLOW);
+	open_file(curr_view, FHE_RUN);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1044,7 +1044,7 @@ static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	clean_selected_files(curr_view);
-	open_file(curr_view, FHE_RUN, FHL_FOLLOW);
+	follow_file(curr_view);
 	redraw_current_view();
 }
 
@@ -1547,7 +1547,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	open_file(curr_view, FHE_NO_RUN, FHL_NO_FOLLOW);
+	open_file(curr_view, FHE_NO_RUN);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }

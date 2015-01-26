@@ -66,6 +66,16 @@
 #include "types.h"
 #include "vim.h"
 
+/* Kinds of symbolic link file treatment on file handling. */
+typedef enum
+{
+	FHL_NO_FOLLOW, /* Don't follow (navigate to instead of navigation inside). */
+	FHL_FOLLOW,    /* Follow (end up on the link target, not inside it). */
+}
+FileHandleLink;
+
+static void handle_file(FileView *view, FileHandleExec exec,
+		FileHandleLink follow);
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
@@ -96,7 +106,19 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
-open_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
+open_file(FileView *view, FileHandleExec exec)
+{
+	handle_file(view, exec, FHL_NO_FOLLOW);
+}
+
+void
+follow_file(FileView *view)
+{
+	handle_file(view, FHE_RUN, FHL_FOLLOW);
+}
+
+static void
+handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
 	int executable;
