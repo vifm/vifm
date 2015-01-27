@@ -82,6 +82,10 @@ int is_path_well_formed(const char *path);
  * something meaningful if the check failed. */
 void ensure_path_well_formed(char *path);
 
+/* Ensures that path to a file is of canonic absolute form.  No trailing slash
+ * in the buffer.  Returns zero on success, otherwise non-zero is returned. */
+int to_canonic_path(const char path[], char buf[], size_t buf_len);
+
 /* Checks if path contains slash (also checks for backward slash on Windows). */
 int contains_slash(const char *path);
 
