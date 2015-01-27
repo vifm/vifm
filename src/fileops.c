@@ -2958,13 +2958,16 @@ can_read_selected_files(FileView *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		if(os_access(entry->name, R_OK) == 0)
+		char full_path[PATH_MAX];
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(os_access(full_path, R_OK) == 0)
 		{
 			continue;
 		}
 
 		show_error_msgf("Access denied",
-				"You don't have read permissions on \"%s\"", entry->name);
+				"You don't have read permissions on \"%s\"", full_path);
 		clean_selected_files(view);
 		redraw_view(view);
 		return 0;
