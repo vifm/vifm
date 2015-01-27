@@ -1238,9 +1238,9 @@ ui_view_title_update(FileView *view)
 
 	if(view->explore_mode)
 	{
-		if(!is_root_dir(buf))
-			strcat(buf, "/");
-		strcat(buf, get_current_file_name(view));
+		char full_path[PATH_MAX];
+		get_current_full_path(view, sizeof(full_path), full_path);
+		buf = replace_home_part(full_path);
 	}
 	else if(curr_stats.view && view == other_view)
 	{
