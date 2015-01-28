@@ -2333,7 +2333,8 @@ fill_dir_list(FileView *view)
 		return -1;
 	}
 
-	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
+	view->list_rows = 0;
+	while((d = os_readdir(dir)) != NULL)
 	{
 		dir_entry_t *dir_entry;
 		FileType type_hint;
@@ -2341,14 +2342,12 @@ fill_dir_list(FileView *view)
 		/* Ignore the "." directory. */
 		if(stroscmp(d->d_name, ".") == 0)
 		{
-			view->list_rows--;
 			continue;
 		}
 		if(stroscmp(d->d_name, "..") == 0)
 		{
 			if(!parent_dir_is_visible(is_root))
 			{
-				view->list_rows--;
 				continue;
 			}
 			with_parent_dir = 1;
@@ -2356,13 +2355,11 @@ fill_dir_list(FileView *view)
 		else if(!file_is_visible(view, d->d_name, is_dirent_targets_dir(d)))
 		{
 			view->filtered++;
-			view->list_rows--;
 			continue;
 		}
 		else if(view->hide_dot && d->d_name[0] == '.')
 		{
 			view->filtered++;
-			view->list_rows--;
 			continue;
 		}
 
@@ -2379,10 +2376,9 @@ fill_dir_list(FileView *view)
 
 		init_dir_entry(view, dir_entry, d->d_name);
 		type_hint = type_from_dir_entry(d);
-		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) != 0)
+		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) == 0)
 		{
-			--view->list_rows;
-			continue;
+			++view->list_rows;
 		}
 	}
 	os_closedir(dir);
