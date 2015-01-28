@@ -2326,62 +2326,6 @@ fill_dir_list(FileView *view)
 #ifndef _WIN32
 	DIR *dir;
 	struct dirent *d;
-
-	if((dir = os_opendir(view->curr_dir)) == NULL)
-	{
-		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
-		return -1;
-	}
-
-	view->list_rows = 0;
-	while((d = os_readdir(dir)) != NULL)
-	{
-		dir_entry_t *dir_entry;
-		FileType type_hint;
-
-		/* Ignore the "." directory. */
-		if(stroscmp(d->d_name, ".") == 0)
-		{
-			continue;
-		}
-		if(stroscmp(d->d_name, "..") == 0)
-		{
-			if(!parent_dir_is_visible(is_root))
-			{
-				continue;
-			}
-			with_parent_dir = 1;
-		}
-		else if(!file_is_visible(view, d->d_name, is_dirent_targets_dir(d)))
-		{
-			view->filtered++;
-			continue;
-		}
-		else if(view->hide_dot && d->d_name[0] == '.')
-		{
-			view->filtered++;
-			continue;
-		}
-
-		view->dir_entry = realloc(view->dir_entry,
-				(view->list_rows + 1)*sizeof(dir_entry_t));
-		if(view->dir_entry == NULL)
-		{
-			os_closedir(dir);
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return -1;
-		}
-
-		dir_entry = &view->dir_entry[view->list_rows];
-
-		init_dir_entry(view, dir_entry, d->d_name);
-		type_hint = type_from_dir_entry(d);
-		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) == 0)
-		{
-			++view->list_rows;
-		}
-	}
-	os_closedir(dir);
 #else
 	char find_pat[PATH_MAX];
 	wchar_t *utf16_path;
@@ -2393,11 +2337,18 @@ fill_dir_list(FileView *view)
 		fill_with_shared(view);
 		return 0;
 	}
-
-	snprintf(find_pat, sizeof(find_pat), "%s/*", view->curr_dir);
+#endif
 
 	view->list_rows = 0;
 
+#ifndef _WIN32
+	if((dir = os_opendir(view->curr_dir)) == NULL)
+	{
+		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
+		return -1;
+	}
+#else
+	snprintf(find_pat, sizeof(find_pat), "%s/""*", view->curr_dir);
 	utf16_path = utf8_to_utf16(find_pat);
 	hfind = FindFirstFileW(utf16_path, &ffd);
 	free(utf16_path);
@@ -2406,21 +2357,32 @@ fill_dir_list(FileView *view)
 	{
 		return -1;
 	}
+#endif
 
+#ifndef _WIN32
+	while((d = os_readdir(dir)) != NULL)
+#else
 	do
+#endif
 	{
 		dir_entry_t *dir_entry;
 
+#ifndef _WIN32
+		FileType type_hint;
+		const char *const name = d->d_name;
+#else
 		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
 		char name[strlen(utf8_name) + 1];
 		strcpy(name, utf8_name);
 		free(utf8_name);
+#endif
 
 		/* Ignore the "." directory. */
 		if(strcmp(name, ".") == 0)
 		{
 			continue;
 		}
+
 		/* Always include the ../ directory unless it is the root directory. */
 		if(strcmp(name, "..") == 0)
 		{
@@ -2430,45 +2392,65 @@ fill_dir_list(FileView *view)
 			}
 			with_parent_dir = 1;
 		}
-		else if(!file_is_visible(view, name,
-				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			view->filtered++;
-			continue;
-		}
 		else if(view->hide_dot && name[0] == '.')
 		{
 			view->filtered++;
 			continue;
+		}
+		else
+		{
+#ifndef _WIN32
+			const int is_dir = is_dirent_targets_dir(d);
+#else
+			const int is_dir = ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+#endif
+			if(!file_is_visible(view, name, is_dir))
+			{
+				view->filtered++;
+				continue;
+			}
 		}
 
 		view->dir_entry = realloc(view->dir_entry,
 				(view->list_rows + 1)*sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+#ifndef _WIN32
+			os_closedir(dir);
+#else
 			FindClose(hfind);
+#endif
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
 
 		dir_entry = &view->dir_entry[view->list_rows];
 
 		init_dir_entry(view, dir_entry, name);
+#ifndef _WIN32
+		type_hint = type_from_dir_entry(d);
+		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) == 0)
+#else
 		if(fill_dir_entry_from_ffd(dir_entry, entry->name, &ffd) == 0)
+#endif
 		{
 			++view->list_rows;
 		}
+#ifndef _WIN32
 	}
+	os_closedir(dir);
+#else
 	while(FindNextFileW(hfind, &ffd));
 	FindClose(hfind);
+#endif
 
+#ifdef _WIN32
 	/* Not all Windows file systems contain or show dot directories. */
 	if(!with_parent_dir && parent_dir_is_visible(is_root))
 	{
 		add_parent_dir(view);
 		with_parent_dir = 1;
 	}
-
 #endif
 
 	if(!with_parent_dir && !is_root)
