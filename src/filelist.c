@@ -147,6 +147,13 @@ static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
+#ifndef _WIN32
+static int fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
+		FileType type_hint);
+#else
+static int fill_dir_entry_from_ffd(dir_entry_t *entry, const char path[],
+		const WIN32_FIND_DATAW *ffd);
+#endif
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -2329,7 +2336,7 @@ fill_dir_list(FileView *view)
 	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
 	{
 		dir_entry_t *dir_entry;
-		struct stat s;
+		FileType type_hint;
 
 		/* Ignore the "." directory. */
 		if(stroscmp(d->d_name, ".") == 0)
@@ -2371,40 +2378,11 @@ fill_dir_list(FileView *view)
 		dir_entry = &view->dir_entry[view->list_rows];
 
 		init_dir_entry(view, dir_entry, d->d_name);
-
-		/* Load the inode info or leave blank values in dir_entry. */
-		if(os_lstat(dir_entry->name, &s) == 0)
+		type_hint = type_from_dir_entry(d);
+		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) != 0)
 		{
-			dir_entry->type = get_type_from_mode(s.st_mode);
-			dir_entry->size = (uintmax_t)s.st_size;
-			dir_entry->mode = s.st_mode;
-			dir_entry->uid = s.st_uid;
-			dir_entry->gid = s.st_gid;
-			dir_entry->mtime = s.st_mtime;
-			dir_entry->atime = s.st_atime;
-			dir_entry->ctime = s.st_ctime;
-		}
-		else
-		{
-			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-					dir_entry->name);
-			log_cwd();
-		}
-
-		if(dir_entry->type == UNKNOWN)
-		{
-			dir_entry->type = type_from_dir_entry(d);
-		}
-
-		if(dir_entry->type == LINK)
-		{
-			struct stat st;
-
-			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
-			if(symlink_type != SLT_SLOW && os_stat(dir_entry->name, &st) == 0)
-			{
-				dir_entry->mode = st.st_mode;
-			}
+			--view->list_rows;
+			continue;
 		}
 	}
 	os_closedir(dir);
@@ -2480,31 +2458,10 @@ fill_dir_list(FileView *view)
 		dir_entry = &view->dir_entry[view->list_rows];
 
 		init_dir_entry(view, dir_entry, name);
-
-		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
-		dir_entry->attrs = ffd.dwFileAttributes;
-		dir_entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
-		dir_entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
-		dir_entry->ctime = win_to_unix_time(ffd.ftCreationTime);
-
-		if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
+		if(fill_dir_entry_from_ffd(dir_entry, entry->name, &ffd) == 0)
 		{
-			dir_entry->type = LINK;
+			++view->list_rows;
 		}
-		else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			dir_entry->type = DIRECTORY;
-		}
-		else if(is_win_executable(dir_entry->name))
-		{
-			dir_entry->type = EXECUTABLE;
-		}
-		else
-		{
-			dir_entry->type = REGULAR;
-		}
-
-		++view->list_rows;
 	}
 	while(FindNextFileW(hfind, &ffd));
 	FindClose(hfind);
@@ -2588,6 +2545,96 @@ get_typed_fname(const char path[])
 	const char *const last_part = get_last_path_component(path);
 	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
 }
+
+#ifndef _WIN32
+
+/* Fills fields of the entry from stat information of the file specified by its
+ * path.  type_hint is additional source of file type.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
+		FileType type_hint)
+{
+	struct stat s;
+
+	/* Load the inode information or leave blank values in the entry. */
+	if(os_lstat(path, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
+		return 1;
+	}
+
+	entry->type = get_type_from_mode(s.st_mode);
+	if(entry->type == UNKNOWN)
+	{
+		entry->type = type_hint;
+	}
+	if(entry->type == UNKNOWN)
+	{
+		LOG_ERROR_MSG("Can't determine type of \"%s\"", path);
+		return 1;
+	}
+
+	entry->size = (uintmax_t)s.st_size;
+	entry->mode = s.st_mode;
+	entry->uid = s.st_uid;
+	entry->gid = s.st_gid;
+	entry->mtime = s.st_mtime;
+	entry->atime = s.st_atime;
+	entry->ctime = s.st_ctime;
+
+	if(entry->type == LINK)
+	{
+		/* Query mode of symbolic link target. */
+
+		struct stat s;
+
+		const SymLinkType symlink_type = get_symlink_type(entry->name);
+		if(symlink_type != SLT_SLOW && os_stat(entry->name, &s) == 0)
+		{
+			entry->mode = s.st_mode;
+		}
+	}
+
+	return 0;
+}
+
+#else
+
+/* Fills fields of the entry from *ffd fields for the file specified by its
+ * path.  type_hint is additional source of file type.  Returns zero on success,
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+fill_dir_entry_from_ffd(dir_entry_t *entry, const char path[],
+		const WIN32_FIND_DATAW *ffd)
+{
+	entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
+	entry->attrs = ffd.dwFileAttributes;
+	entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
+	entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
+	entry->ctime = win_to_unix_time(ffd.ftCreationTime);
+
+	if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
+	{
+		entry->type = LINK;
+	}
+	else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		entry->type = DIRECTORY;
+	}
+	else if(is_win_executable(path))
+	{
+		entry->type = EXECUTABLE;
+	}
+	else
+	{
+		entry->type = REGULAR;
+	}
+
+	return 0;
+}
+
+#endif
 
 void
 populate_dir_list(FileView *view, int reload)
