@@ -257,6 +257,12 @@ char * get_typed_entry_fname(const dir_entry_t *entry);
  * freed by the caller. */
 char * get_typed_fname(const char path[]);
 
+/* Custom file list functions. */
+
+/* Checks whether view displays custom list of files.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int flist_custom_active(const FileView *view);
+
 /* Other functions. */
 
 FILE * use_info_prog(const char *viewer);

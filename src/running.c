@@ -114,7 +114,14 @@ open_file(FileView *view, FileHandleExec exec)
 void
 follow_file(FileView *view)
 {
-	handle_file(view, FHE_RUN, FHL_FOLLOW);
+	if(flist_custom_active(view))
+	{
+		navigate_to(view, view->dir_entry[view->list_pos].origin);
+	}
+	else
+	{
+		handle_file(view, FHE_RUN, FHL_FOLLOW);
+	}
 }
 
 static void
@@ -675,7 +682,7 @@ open_dir(FileView *view)
 
 	if(cd_is_possible(full_path))
 	{
-		navigate_to(view, filename);
+		navigate_to(view, full_path);
 	}
 }
 
@@ -683,6 +690,12 @@ void
 cd_updir(FileView *view)
 {
 	char dir_name[strlen(view->curr_dir) + 1];
+
+	if(flist_custom_active(view))
+	{
+		navigate_to(view, view->orig_dir);
+		return;
+	}
 
 	dir_name[0] = '\0';
 

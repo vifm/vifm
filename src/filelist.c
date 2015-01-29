@@ -2055,7 +2055,8 @@ navigate_to(FileView *view, const char path[])
 void
 navigate_back(FileView *view)
 {
-	navigate_to(view, view->last_dir);
+	char *dest = flist_custom_active(view) ? view->orig_dir : view->last_dir;
+	navigate_to(view, dest);
 }
 
 int
@@ -2490,6 +2491,12 @@ get_typed_fname(const char path[])
 {
 	const char *const last_part = get_last_path_component(path);
 	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
+}
+
+int
+flist_custom_active(const FileView *view)
+{
+	return view->curr_dir[0] == '\0';
 }
 
 #ifndef _WIN32
@@ -3422,7 +3429,7 @@ reload_window(FileView *view)
 void
 check_if_filelist_have_changed(FileView *view)
 {
-	if(view->on_slow_fs)
+	if(view->on_slow_fs || flist_custom_active(view))
 	{
 		return;
 	}
