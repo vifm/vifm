@@ -161,7 +161,14 @@ typedef struct
 {
 	WINDOW *win;
 	WINDOW *title;
+
+	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX];
+	/* Directory we were in before custom view activation. */
+	char *orig_dir;
+	/* Title for the custom view. */
+	char *custom_title;
+
 #ifndef _WIN32
 	/* Monitor that checks for directory changes. */
 	filemon_t mon;

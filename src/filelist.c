@@ -483,6 +483,9 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
+	view->orig_dir = NULL;
+	view->custom_title = NULL;
+
 	reset_view(view);
 
 	init_view_history(view);
