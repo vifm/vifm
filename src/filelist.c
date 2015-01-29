@@ -171,6 +171,7 @@ static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
 static void free_direntries(FileView *view);
+static void free_direntry(const FileView *view, dir_entry_t *entry);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
@@ -2753,18 +2754,26 @@ free_direntries(FileView *view)
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		dir_entry_t *const entry = &view->dir_entry[i];
-
-		free(entry->name);
-		if(entry->origin != &view->curr_dir[0])
-		{
-			free(entry->origin);
-		}
+		free_direntry(view, &view->dir_entry[i]);
 	}
 
 	free(view->dir_entry);
 	view->dir_entry = NULL;
 	view->list_rows = 0;
+}
+
+/* Frees single directory entry. */
+static void
+free_direntry(const FileView *view, dir_entry_t *entry)
+{
+	free(entry->name);
+	entry->name = NULL;
+
+	if(entry->origin != &view->curr_dir[0])
+	{
+		free(entry->origin);
+		entry->origin = NULL;
+	}
 }
 
 void
