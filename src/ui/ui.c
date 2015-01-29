@@ -1227,14 +1227,7 @@ ui_view_title_update(FileView *view)
 	}
 	werase(view->title);
 
-	if(curr_stats.load_stage < 2)
-		return;
-
 	buf = replace_home_part(view->curr_dir);
-	if(view == selected)
-	{
-		set_term_title(replace_home_part(view->curr_dir));
-	}
 
 	if(view->explore_mode)
 	{
@@ -1246,6 +1239,17 @@ ui_view_title_update(FileView *view)
 	{
 		strcpy(buf, "File: ");
 		strcat(buf, get_current_file_name(curr_view));
+	}
+	else if(flist_custom_active(view))
+	{
+		strcpy(buf, "[");
+		strcat(buf, view->custom_title);
+		strcat(buf, "]");
+	}
+
+	if(view == selected)
+	{
+		set_term_title(buf);
 	}
 
 	len = get_screen_string_length(buf);
