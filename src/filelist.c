@@ -94,6 +94,15 @@ typedef struct
 }
 column_data_t;
 
+/* Structure to communicate data during filling view with list files. */
+typedef struct
+{
+	FileView *const view;
+	const int is_root;
+	int with_parent_dir;
+}
+dir_fill_info_t;
+
 typedef int (*predicate_func)(const dir_entry_t *entry);
 
 static void column_line_print(const void *data, int column_id, const char *buf,
@@ -146,13 +155,17 @@ static void navigate_to_history_pos(FileView *view, int pos);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
+static int add_file_entry_to_view(const char name[], const void *data,
+		void *param);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const struct dirent *d);
+static int param_is_dir_entry(const struct dirent *d);
 #else
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
+static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
@@ -2257,7 +2270,6 @@ fill_with_shared(FileView *view)
 		return;
 	}
 
-	view->list_rows = 0;
 	do
 	{
 		PSHARE_INFO_0 buf_ptr;
@@ -2316,22 +2328,18 @@ win_to_unix_time(FILETIME ft)
 #endif
 
 static int
-fill_dir_list(FileView *view)
+refill_dir_list(FileView *view)
 {
-	int with_parent_dir = 0;
-	const int is_root = is_root_dir(view->curr_dir);
+	dir_fill_info_t info = {
+		.view = view,
+		.is_root = is_root_dir(view->curr_dir),
+		.with_parent_dir = 0,
+	};
 
 	view->matches = 0;
+	free_direntries(view);
 
-#ifndef _WIN32
-	DIR *dir;
-	struct dirent *d;
-#else
-	char find_pat[PATH_MAX];
-	wchar_t *utf16_path;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-
+#ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
 	{
 		fill_with_shared(view);
@@ -2339,124 +2347,83 @@ fill_dir_list(FileView *view)
 	}
 #endif
 
-	view->list_rows = 0;
-
-#ifndef _WIN32
-	if((dir = os_opendir(view->curr_dir)) == NULL)
+	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
-		return -1;
+		return 1;
 	}
-#else
-	snprintf(find_pat, sizeof(find_pat), "%s/""*", view->curr_dir);
-	utf16_path = utf8_to_utf16(find_pat);
-	hfind = FindFirstFileW(utf16_path, &ffd);
-	free(utf16_path);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		return -1;
-	}
-#endif
-
-#ifndef _WIN32
-	while((d = os_readdir(dir)) != NULL)
-#else
-	do
-#endif
-	{
-		dir_entry_t *dir_entry;
-
-#ifndef _WIN32
-		const char *const name = d->d_name;
-#else
-		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
-		char name[strlen(utf8_name) + 1];
-		strcpy(name, utf8_name);
-		free(utf8_name);
-#endif
-
-		/* Ignore the "." directory. */
-		if(strcmp(name, ".") == 0)
-		{
-			continue;
-		}
-
-		/* Always include the ../ directory unless it is the root directory. */
-		if(strcmp(name, "..") == 0)
-		{
-			if(!parent_dir_is_visible(is_root))
-			{
-				continue;
-			}
-			with_parent_dir = 1;
-		}
-		else if(view->hide_dot && name[0] == '.')
-		{
-			view->filtered++;
-			continue;
-		}
-		else
-		{
-#ifndef _WIN32
-			const int is_dir = is_dirent_targets_dir(d);
-#else
-			const int is_dir = ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-#endif
-			if(!file_is_visible(view, name, is_dir))
-			{
-				view->filtered++;
-				continue;
-			}
-		}
-
-		view->dir_entry = realloc(view->dir_entry,
-				(view->list_rows + 1)*sizeof(dir_entry_t));
-		if(view->dir_entry == NULL)
-		{
-#ifndef _WIN32
-			os_closedir(dir);
-#else
-			FindClose(hfind);
-#endif
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return -1;
-		}
-
-		dir_entry = &view->dir_entry[view->list_rows];
-
-		init_dir_entry(view, dir_entry, name);
-#ifndef _WIN32
-		if(fill_dir_entry(dir_entry, dir_entry->name, d) == 0)
-#else
-		if(fill_dir_entry(dir_entry, entry->name, &ffd) == 0)
-#endif
-		{
-			++view->list_rows;
-		}
-#ifndef _WIN32
-	}
-	os_closedir(dir);
-#else
-	while(FindNextFileW(hfind, &ffd));
-	FindClose(hfind);
-#endif
 
 #ifdef _WIN32
-	/* Not all Windows file systems contain or show dot directories. */
-	if(!with_parent_dir && parent_dir_is_visible(is_root))
+	/* Not all Windows file systems provide standard dot directories. */
+	if(!info.with_parent_dir && parent_dir_is_visible(info.is_root))
 	{
 		add_parent_dir(view);
-		with_parent_dir = 1;
+		info.with_parent_dir = 1;
 	}
 #endif
 
-	if(!with_parent_dir && !is_root)
+	if(!info.with_parent_dir && !info.is_root)
 	{
 		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
 		{
 			add_parent_dir(view);
 		}
+	}
+
+	return 0;
+}
+
+/* enum_dir_content() callback that appends files to file list.  Returns zero on
+ * success or non-zero to indicate failure and stop enumeration. */
+static int
+add_file_entry_to_view(const char name[], const void *data, void *param)
+{
+	dir_fill_info_t *const info = param;
+	FileView *view = info->view;
+	dir_entry_t *entry;
+
+	/* Always ignore the "." directory. */
+	if(strcmp(name, ".") == 0)
+	{
+		return 0;
+	}
+
+	/* Always include the ".." directory unless it is the root directory. */
+	if(strcmp(name, "..") == 0)
+	{
+		if(!parent_dir_is_visible(info->is_root))
+		{
+			return 0;
+		}
+
+		info->with_parent_dir = 1;
+	}
+	else if(view->hide_dot && name[0] == '.')
+	{
+		++view->filtered;
+		return 0;
+	}
+	else if(!file_is_visible(view, name, param_is_dir_entry(param)))
+	{
+		++view->filtered;
+		return 0;
+	}
+
+	view->dir_entry = realloc(view->dir_entry,
+			(view->list_rows + 1)*sizeof(dir_entry_t));
+	if(view->dir_entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 1;
+	}
+
+	entry = &view->dir_entry[view->list_rows];
+
+	init_dir_entry(view, entry, name);
+
+	if(fill_dir_entry(entry, entry->name, param) == 0)
+	{
+		++view->list_rows;
 	}
 
 	return 0;
@@ -2574,6 +2541,14 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	return 0;
 }
 
+/* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+param_is_dir_entry(const struct dirent *d)
+{
+	return is_dirent_targets_dir(d);
+}
+
 #else
 
 /* Fills fields of the entry from *ffd fields for the file specified by its
@@ -2607,6 +2582,14 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 	}
 
 	return 0;
+}
+
+/* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
+{
+	return fdd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
 #endif
@@ -2694,22 +2677,10 @@ populate_dir_list_internal(FileView *view, int reload)
 		capture_selection(view);
 	}
 
-	if(view->dir_entry != NULL)
+	if(refill_dir_list(view) != 0)
 	{
+		/* We don't have read access, only execute, or there were other problems. */
 		free_direntries(view);
-	}
-	view->dir_entry = malloc(sizeof(dir_entry_t));
-	if(view->dir_entry == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory.");
-		return 1;
-	}
-
-	if(fill_dir_list(view) != 0)
-	{
-		/* we don't have read access, only execute, or there were other problems */
-		/* all memory from file names was released in a loop above */
-		view->list_rows = 0;
 		add_parent_dir(view);
 	}
 
