@@ -667,6 +667,57 @@ is_case_change(const char src[], const char dst[])
 	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
 }
 
+int
+enum_dir_content(const char path[], dir_content_client_func client, void *param)
+{
+#ifndef _WIN32
+	DIR *dir;
+	struct dirent *d;
+
+	if((dir = os_opendir(path)) == NULL)
+	{
+		return -1;
+	}
+
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(client(d->d_name, d, param) != 0)
+		{
+			break;
+		}
+	}
+	os_closedir(dir);
+
+	return 0;
+#else
+	char find_pat[PATH_MAX];
+	wchar_t *utf16_path;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+
+	snprintf(find_pat, sizeof(find_pat), "%s/""*", path);
+	utf16_path = utf8_to_utf16(find_pat);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+	free(utf16_path);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		return -1;
+	}
+
+	do
+	{
+		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
+		client(utf8_name, &ffd, param);
+		free(utf8_name);
+	}
+	while(FindNextFileW(hfind, &ffd));
+	FindClose(hfind);
+
+	return 0;
+#endif
+}
+
 #ifndef _WIN32
 
 /* Checks if path (dereferencer or not symbolic link) is an existing directory.

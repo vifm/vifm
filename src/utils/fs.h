@@ -43,6 +43,12 @@ typedef enum
 }
 SymLinkType;
 
+/* Per-entry callback type for enum_dir_content().  Should return zero on
+ * success or non-zero to indicate failure which will lead to stopping of
+ * directory content enumeration. */
+typedef int (*dir_content_client_func)(const char name[], const void *data,
+		void *param);
+
 /* Checks if path is an existing directory.  Automatically deferences symbolic
  * links. */
 int is_dir(const char path[]);
@@ -152,6 +158,11 @@ int are_on_the_same_fs(const char s[], const char t[]);
  * just changes case of file name on case insensitive file system.  Returns
  * non-zero if so, otherwise zero is returned. */
 int is_case_change(const char src[], const char dst[]);
+
+/* Calls the client callback for each entry of the directory.  Returns zero on
+ * success, otherwise non-zero is returned. */
+int enum_dir_content(const char path[], dir_content_client_func client,
+		void *param);
 
 #ifdef _WIN32
 
