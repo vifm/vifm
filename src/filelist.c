@@ -2421,6 +2421,10 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	{
 		++view->list_rows;
 	}
+	else
+	{
+		free_direntry(view, entry);
+	}
 
 	return 0;
 }
@@ -2857,6 +2861,7 @@ add_parent_dir(FileView *view)
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(os_lstat(dir_entry->name, &s) != 0)
 	{
+		free_direntry(view, dir_entry);
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);
 		log_cwd();
