@@ -40,7 +40,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* abs() calloc() free() malloc() */
+#include <stdlib.h> /* abs() calloc() free() malloc() realloc() */
 #include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
 #include <time.h> /* localtime() */
 
@@ -191,6 +191,7 @@ static void clear_local_filter_hist_after(FileView *const view, int pos);
 static int find_nearest_neighour(const FileView *const view);
 static int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
+static dir_entry_t * alloc_dir_entry(dir_entry_t **list, size_t list_size);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
@@ -2287,15 +2288,12 @@ fill_with_shared(FileView *view)
 				dir_entry_t *dir_entry;
 				char *utf8_name;
 
-				view->dir_entry = realloc(view->dir_entry,
-						(view->list_rows + 1)*sizeof(dir_entry_t));
-				if(view->dir_entry == NULL)
+				dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+				if(dir_entry == NULL)
 				{
 					show_error_msg("Memory Error", "Unable to allocate enough memory");
 					continue;
 				}
-
-				dir_entry = &view->dir_entry[view->list_rows];
 
 				utf8_name = utf8_from_utf16((wchar_t *)p->shi0_netname);
 
@@ -2410,15 +2408,12 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	view->dir_entry = realloc(view->dir_entry,
-			(view->list_rows + 1)*sizeof(dir_entry_t));
-	if(view->dir_entry == NULL)
+	entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 1;
 	}
-
-	entry = &view->dir_entry[view->list_rows];
 
 	init_dir_entry(view, entry, name);
 
@@ -2849,20 +2844,15 @@ add_parent_dir(FileView *view)
 	dir_entry_t *dir_entry;
 	struct stat s;
 
-	view->dir_entry = realloc(view->dir_entry,
-			sizeof(dir_entry_t)*(view->list_rows + 1));
-	if(view->dir_entry == NULL)
+	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	dir_entry = &view->dir_entry[view->list_rows];
-
 	init_dir_entry(view, dir_entry, "..");
 	dir_entry->type = DIRECTORY;
-
-	++view->list_rows;
 
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(os_lstat(dir_entry->name, &s) != 0)
@@ -2882,6 +2872,8 @@ add_parent_dir(FileView *view)
 	dir_entry->mtime = s.st_mtime;
 	dir_entry->atime = s.st_atime;
 	dir_entry->ctime = s.st_ctime;
+
+	++view->list_rows;
 }
 
 /* Initializes dir_entry_t with name and all other fields with default
@@ -3341,17 +3333,31 @@ local_filter_restore(FileView *view)
 static int
 add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 {
-	dir_entry_t *const new_entry_list = realloc(*list,
-			sizeof(dir_entry_t)*(*list_size + 1));
-	if(new_entry_list == NULL)
+	dir_entry_t *const new_entry = alloc_dir_entry(list, *list_size);
+	if(new_entry == NULL)
 	{
 		return 1;
 	}
 
-	*list = new_entry_list;
-	new_entry_list[*list_size] = *entry;
+	*new_entry = *entry;
 	++*list_size;
 	return 0;
+}
+
+/* Allocates one more directory entry for the *list of size list_size by
+ * extending it.  Returns pointer to new entry or NULL on failure. */
+static dir_entry_t *
+alloc_dir_entry(dir_entry_t **list, size_t list_size)
+{
+	dir_entry_t *const new_entry_list = realloc(*list,
+			sizeof(dir_entry_t)*(list_size + 1));
+	if(new_entry_list == NULL)
+	{
+		return NULL;
+	}
+
+	*list = new_entry_list;
+	return &new_entry_list[list_size];
 }
 
 void
