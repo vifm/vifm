@@ -158,6 +158,7 @@ static void free_saved_selection(FileView *view);
 static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
+static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const struct dirent *d);
@@ -167,6 +168,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static dir_entry_t * entry_from_path(FileView *view, const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -2499,7 +2501,59 @@ flist_custom_active(const FileView *view)
 	return view->curr_dir[0] == '\0';
 }
 
+void
+flist_custom_start(FileView *view, const char title[])
+{
+	free_dir_entries(view);
+	(void)replace_string(&view->custom_title, title);
+}
+
+void
+flist_custom_add(FileView *view, const char path[])
+{
+	char canonic_path[PATH_MAX];
+	dir_entry_t *dir_entry;
+
+	/* Don't add duplicates. */
+	if(entry_from_path(view, path) != NULL)
+	{
+		return;
+	}
+
+	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(dir_entry == NULL)
+	{
+		return;
+	}
+
+	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
+	{
+		return;
+	}
+
+	init_dir_entry(view, dir_entry, get_last_path_component(canonic_path));
+
+	dir_entry->origin = strdup(canonic_path);
+	remove_last_path_component(dir_entry->origin);
+
+	if(fill_dir_entry_by_path(dir_entry, canonic_path) != 0)
+	{
+		free_dir_entry(view, dir_entry);
+		return;
+	}
+
+	++view->list_rows;
+}
+
 #ifndef _WIN32
+
+/* Fills directory entry with information about file specified by the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+fill_dir_entry_by_path(dir_entry_t *entry, const char path[])
+{
+	return fill_dir_entry(entry, path, NULL);
+}
 
 /* Fills fields of the entry from stat information of the file specified by its
  * path.  d is optional source of file type.  Returns zero on success, otherwise
@@ -2561,6 +2615,32 @@ param_is_dir_entry(const struct dirent *d)
 
 #else
 
+/* Fills directory entry with information about file specified by the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+fill_dir_entry_by_path(dir_entry_t *entry, const char path[])
+{
+	wchar_t *utf16_path;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+	int result;
+
+	utf16_path = utf8_to_utf16(path);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+	free(utf16_path);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	fill_dir_entry(entry, path, &ffd);
+
+	FindClose(hfind);
+
+	return 0;
+}
+
 /* Fills fields of the entry from *ffd fields for the file specified by its
  * path.  type_hint is additional source of file type.  Returns zero on success,
  * Returns zero on success, otherwise non-zero is returned. */
@@ -2603,6 +2683,73 @@ param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 }
 
 #endif
+
+void
+flist_custom_finish(FileView *view)
+{
+	if(view->list_rows == 0)
+	{
+		add_parent_dir(view);
+		return;
+	}
+
+	(void)replace_string(&view->orig_dir, view->curr_dir);
+	view->curr_dir[0] = '\0';
+
+	sort_dir_list(0, view);
+
+	ui_view_schedule_redraw(view);
+
+	if(view->list_pos >= view->list_rows)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+}
+
+void
+flist_custom_goto(FileView *view, const char path[])
+{
+	dir_entry_t *const entry = entry_from_path(view, path);
+	if(entry != NULL)
+	{
+		view->list_pos = entry_to_pos(view, entry);
+	}
+}
+
+/* Finds directory entry in the view by the path.  Returns pointer to the found
+ * entry or NULL. */
+static dir_entry_t *
+entry_from_path(FileView *view, const char path[])
+{
+	char canonic_path[PATH_MAX];
+	const char *fname;
+	int i;
+
+	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
+	{
+		return NULL;
+	}
+
+	fname = get_last_path_component(canonic_path);
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		char full_path[PATH_MAX];
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		if(stroscmp(entry->name, fname) != 0)
+		{
+			continue;
+		}
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(stroscmp(full_path, canonic_path) == 0)
+		{
+			return entry;
+		}
+	}
+
+	return NULL;
+}
 
 void
 populate_dir_list(FileView *view, int reload)
@@ -3676,7 +3823,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 			snprintf(dir, sizeof(dir), "%c:%s", base_dir[0], arg);
 #endif
 		else if(strcmp(arg, "-") == 0)
-			snprintf(dir, sizeof(dir), "%s", view->last_dir);
+			copy_str(dir, sizeof(dir), view->last_dir);
 		else
 			find_dir_in_cdpath(base_dir, arg, dir, sizeof(dir));
 		updir = is_parent_dir(arg);

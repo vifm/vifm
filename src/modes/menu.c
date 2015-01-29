@@ -81,6 +81,7 @@ static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static int pass_combination_to_khandler(const wchar_t keys[]);
@@ -137,6 +138,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
 	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
@@ -606,6 +608,51 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		search(!last_search_backward);
+}
+
+/* Populate view with list of files. */
+static void
+cmd_b(key_info_t key_info, keys_info_t *keys_info)
+{
+	int i;
+	char *current = NULL;
+
+	flist_custom_start(view, menu->title);
+
+	for(i = 0; i < menu->len; ++i)
+	{
+		char *path;
+		int line_num;
+
+		/* Skip empty lines. */
+		if(menu->items[i][0] == '\0')
+		{
+			continue;
+		}
+
+		path = parse_file_spec(menu->items[i], &line_num);
+		if(path == NULL)
+		{
+			continue;
+		}
+
+		flist_custom_add(view, path);
+
+		if(i == menu->pos)
+		{
+			current = path;
+			continue;
+		}
+
+		free(path);
+	}
+
+	flist_custom_finish(view);
+
+	flist_custom_goto(view, current);
+	free(current);
+
+	leave_menu_mode();
 }
 
 static void
