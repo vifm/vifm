@@ -77,9 +77,9 @@ KHandlerResponse;
 typedef struct menu_info
 {
 	int top;
-	int current;
+	int current; /* Cursor position on the menu_win. */
 	int len;
-	int pos;
+	int pos; /* Menu item under the cursor. */
 	int hor_pos;
 	int win_rows;
 	int type;
