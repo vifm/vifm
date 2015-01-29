@@ -170,8 +170,8 @@ static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
-static void free_direntries(FileView *view);
-static void free_direntry(const FileView *view, dir_entry_t *entry);
+static void free_dir_entries(FileView *view);
+static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
@@ -2336,7 +2336,7 @@ refill_dir_list(FileView *view)
 	};
 
 	view->matches = 0;
-	free_direntries(view);
+	free_dir_entries(view);
 
 #ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
@@ -2423,7 +2423,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	}
 	else
 	{
-		free_direntry(view, entry);
+		free_dir_entry(view, entry);
 	}
 
 	return 0;
@@ -2680,7 +2680,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	if(refill_dir_list(view) != 0)
 	{
 		/* We don't have read access, only execute, or there were other problems. */
-		free_direntries(view);
+		free_dir_entries(view);
 		add_parent_dir(view);
 	}
 
@@ -2748,12 +2748,12 @@ is_dir_big(const char path[])
 
 /* Frees list of directory entries of the view. */
 static void
-free_direntries(FileView *view)
+free_dir_entries(FileView *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		free_direntry(view, &view->dir_entry[i]);
+		free_dir_entry(view, &view->dir_entry[i]);
 	}
 
 	free(view->dir_entry);
@@ -2763,7 +2763,7 @@ free_direntries(FileView *view)
 
 /* Frees single directory entry. */
 static void
-free_direntry(const FileView *view, dir_entry_t *entry)
+free_dir_entry(const FileView *view, dir_entry_t *entry)
 {
 	free(entry->name);
 	entry->name = NULL;
@@ -2861,7 +2861,7 @@ add_parent_dir(FileView *view)
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(os_lstat(dir_entry->name, &s) != 0)
 	{
-		free_direntry(view, dir_entry);
+		free_dir_entry(view, dir_entry);
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);
 		log_cwd();
