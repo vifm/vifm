@@ -148,10 +148,10 @@ static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 #ifndef _WIN32
-static int fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
-		FileType type_hint);
+static int fill_dir_entry(dir_entry_t *entry, const char path[],
+		const struct dirent *d);
 #else
-static int fill_dir_entry_from_ffd(dir_entry_t *entry, const char path[],
+static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 #endif
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
@@ -2368,7 +2368,6 @@ fill_dir_list(FileView *view)
 		dir_entry_t *dir_entry;
 
 #ifndef _WIN32
-		FileType type_hint;
 		const char *const name = d->d_name;
 #else
 		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
@@ -2428,10 +2427,9 @@ fill_dir_list(FileView *view)
 
 		init_dir_entry(view, dir_entry, name);
 #ifndef _WIN32
-		type_hint = type_from_dir_entry(d);
-		if(fill_dir_entry_from_stat(dir_entry, dir_entry->name, type_hint) == 0)
+		if(fill_dir_entry(dir_entry, dir_entry->name, d) == 0)
 #else
-		if(fill_dir_entry_from_ffd(dir_entry, entry->name, &ffd) == 0)
+		if(fill_dir_entry(dir_entry, entry->name, &ffd) == 0)
 #endif
 		{
 			++view->list_rows;
@@ -2527,11 +2525,10 @@ get_typed_fname(const char path[])
 #ifndef _WIN32
 
 /* Fills fields of the entry from stat information of the file specified by its
- * path.  type_hint is additional source of file type.  Returns zero on success,
- * otherwise non-zero is returned. */
+ * path.  d is optional source of file type.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
-fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
-		FileType type_hint)
+fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 {
 	struct stat s;
 
@@ -2545,7 +2542,7 @@ fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
 	entry->type = get_type_from_mode(s.st_mode);
 	if(entry->type == UNKNOWN)
 	{
-		entry->type = type_hint;
+		entry->type = (d == NULL) ? UNKNOWN : type_from_dir_entry(d);
 	}
 	if(entry->type == UNKNOWN)
 	{
@@ -2583,7 +2580,7 @@ fill_dir_entry_from_stat(dir_entry_t *entry, const char path[],
  * path.  type_hint is additional source of file type.  Returns zero on success,
  * Returns zero on success, otherwise non-zero is returned. */
 static int
-fill_dir_entry_from_ffd(dir_entry_t *entry, const char path[],
+fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd)
 {
 	entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
