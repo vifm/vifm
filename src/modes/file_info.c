@@ -21,10 +21,6 @@
 
 #include <curses.h>
 
-#ifndef _WIN32
-#include <grp.h>
-#include <pwd.h>
-#endif
 #include <sys/stat.h>
 
 #include <assert.h> /* assert() */
@@ -118,8 +114,6 @@ redraw_file_info_dialog(void)
 	char buf[256];
 #ifndef _WIN32
 	char id_buf[26];
-	struct passwd *pwd_buf;
-	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
 	int curr_y;
@@ -150,15 +144,6 @@ redraw_file_info_dialog(void)
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 #ifndef _WIN32
-	pwd_buf = getpwuid(entry->uid);
-	if(pwd_buf == NULL)
-	{
-		snprintf(id_buf, sizeof(id_buf), "%d", (int)entry->uid);
-	}
-	else
-	{
-		copy_str(id_buf, sizeof(id_buf), pwd_buf->pw_name);
-	}
 	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
 #else
 	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
@@ -227,19 +212,13 @@ redraw_file_info_dialog(void)
 
 #ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
+	get_uid_string(view, sizeof(id_buf), id_buf);
 	mvwaddstr(menu_win, curr_y, 10, id_buf);
+
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
-	grp_buf = getgrgid(entry->gid);
-	if(grp_buf == NULL)
-	{
-		snprintf(id_buf, sizeof(id_buf), "%d", (int)entry->gid);
-	}
-	else
-	{
-		copy_str(id_buf, sizeof(id_buf), grp_buf->gr_name);
-	}
+	get_gid_string(view, sizeof(id_buf), id_buf);
 	mvwaddstr(menu_win, curr_y, 10, id_buf);
 #endif
 
