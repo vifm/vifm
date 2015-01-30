@@ -41,6 +41,7 @@
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../utils/tree.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -111,11 +112,12 @@ void
 redraw_file_info_dialog(void)
 {
 	char name_buf[NAME_MAX];
+	const dir_entry_t *entry;
 	char perm_buf[26];
 	char size_buf[56];
 	char buf[256];
 #ifndef _WIN32
-	char uid_buf[26];
+	char id_buf[26];
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
 #endif
@@ -130,10 +132,11 @@ redraw_file_info_dialog(void)
 
 	werase(menu_win);
 
-	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
+	copy_str(name_buf, sizeof(name_buf), get_current_file_name(view));
+	entry = &view->dir_entry[view->list_pos];
 
 	size = 0;
-	if(view->dir_entry[view->list_pos].type == FT_DIR)
+	if(entry->type == FT_DIR)
 	{
 		char full_path[PATH_MAX];
 		get_current_full_path(view, sizeof(full_path), full_path);
@@ -142,26 +145,24 @@ redraw_file_info_dialog(void)
 
 	if(size == 0)
 	{
-		size = view->dir_entry[view->list_pos].size;
+		size = entry->size;
 	}
 
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 #ifndef _WIN32
-	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
+	pwd_buf = getpwuid(entry->uid);
+	if(pwd_buf == NULL)
 	{
-		snprintf(uid_buf, sizeof(uid_buf), "%d",
-				(int) view->dir_entry[view->list_pos].uid);
+		snprintf(id_buf, sizeof(id_buf), "%d", (int)entry->uid);
 	}
 	else
 	{
-		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
+		copy_str(id_buf, sizeof(id_buf), pwd_buf->pw_name);
 	}
-	get_perm_string(perm_buf, sizeof(perm_buf),
-			view->dir_entry[view->list_pos].mode);
+	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
 #else
-	snprintf(perm_buf, sizeof(perm_buf), "%s",
-			attr_str_long(view->dir_entry[view->list_pos].attrs));
+	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
 #endif
 
 	curr_y = 2;
@@ -191,14 +192,14 @@ redraw_file_info_dialog(void)
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
+	tm_ptr = localtime(&entry->mtime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
+	tm_ptr = localtime(&entry->atime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
@@ -209,7 +210,7 @@ redraw_file_info_dialog(void)
 #else
 	mvwaddstr(menu_win, curr_y, 2, "Created: ");
 #endif
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
+	tm_ptr = localtime(&entry->ctime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	checked_wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
@@ -217,12 +218,20 @@ redraw_file_info_dialog(void)
 
 #ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
-	mvwaddstr(menu_win, curr_y, 10, uid_buf);
+	mvwaddstr(menu_win, curr_y, 10, id_buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
-	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
-		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
+	grp_buf = getgrgid(entry->gid);
+	if(grp_buf == NULL)
+	{
+		snprintf(id_buf, sizeof(id_buf), "%d", (int)entry->gid);
+	}
+	else
+	{
+		copy_str(id_buf, sizeof(id_buf), grp_buf->gr_name);
+	}
+	mvwaddstr(menu_win, curr_y, 10, id_buf);
 #endif
 
 	box(menu_win, 0, 0);
@@ -237,12 +246,15 @@ redraw_file_info_dialog(void)
 static int
 show_file_type(FileView *view, int curr_y)
 {
+	const dir_entry_t *entry;
 	int x;
 	int old_curr_y = curr_y;
 	x = getmaxx(menu_win);
 
+	entry = &view->dir_entry[view->list_pos];
+
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(view->dir_entry[view->list_pos].type == FT_LINK)
+	if(entry->type == FT_LINK)
 	{
 		char full_path[PATH_MAX];
 		char linkto[PATH_MAX + NAME_MAX];
@@ -267,8 +279,7 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 		}
 	}
-	else if(view->dir_entry[view->list_pos].type == FT_EXEC ||
-			view->dir_entry[view->list_pos].type == FT_REG)
+	else if(entry->type == FT_EXEC || entry->type == FT_REG)
 	{
 #ifdef HAVE_FILE_PROG
 		char full_path[PATH_MAX];
@@ -298,30 +309,30 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 		}
 #else /* #ifdef HAVE_FILE_PROG */
-		if(view->dir_entry[view->list_pos].type == FT_EXEC)
+		if(entry->type == FT_EXEC)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
 			mvwaddstr(menu_win, curr_y, 8, "Regular File");
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
-	else if(view->dir_entry[view->list_pos].type == FT_DIR)
+	else if(entry->type == FT_DIR)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
-	else if(S_ISCHR(view->dir_entry[view->list_pos].mode))
+	else if(S_ISCHR(entry->mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
 	}
-	else if(S_ISBLK(view->dir_entry[view->list_pos].mode))
+	else if(S_ISBLK(entry->mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
-	else if(view->dir_entry[view->list_pos].type == FT_FIFO)
+	else if(entry->type == FT_FIFO)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
-	else if(S_ISSOCK(view->dir_entry[view->list_pos].mode))
+	else if(S_ISSOCK(entry->mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
