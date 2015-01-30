@@ -111,7 +111,7 @@ leave_file_info_mode(void)
 void
 redraw_file_info_dialog(void)
 {
-	char name_buf[NAME_MAX];
+	char path_buf[PATH_MAX];
 	const dir_entry_t *entry;
 	char perm_buf[26];
 	char size_buf[56];
@@ -132,7 +132,6 @@ redraw_file_info_dialog(void)
 
 	werase(menu_win);
 
-	copy_str(name_buf, sizeof(name_buf), get_current_file_name(view));
 	entry = &view->dir_entry[view->list_pos];
 
 	size = 0;
@@ -166,11 +165,21 @@ redraw_file_info_dialog(void)
 #endif
 
 	curr_y = 2;
-	mvwaddstr(menu_win, curr_y, 2, "File: ");
-	name_buf[getmaxx(menu_win) - 8] = '\0';
+
+	mvwaddstr(menu_win, curr_y, 2, "Path: ");
+	copy_str(path_buf, sizeof(path_buf), entry->origin);
+	path_buf[getmaxx(menu_win) - 8] = '\0';
 	checked_wmove(menu_win, curr_y, 8);
-	wprint(menu_win, name_buf);
+	wprint(menu_win, path_buf);
 	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Name: ");
+	copy_str(path_buf, sizeof(path_buf), entry->name);
+	path_buf[getmaxx(menu_win) - 8] = '\0';
+	checked_wmove(menu_win, curr_y, 8);
+	wprint(menu_win, path_buf);
+	curr_y += 2;
+
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
 	if(size_not_precise)
