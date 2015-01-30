@@ -136,7 +136,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->selected && (curr->type != LINK || follow == FHL_NO_FOLLOW))
+		if(!curr->selected && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
 			open_dir(view);
 			return;
@@ -160,7 +160,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		run_selection(view, exec == FHE_NO_RUN);
 	}
-	else if(curr->type == LINK)
+	else if(curr->type == FT_LINK)
 	{
 		follow_link(view, follow == FHL_FOLLOW);
 	}
@@ -172,7 +172,7 @@ static int
 is_runnable(const FileView *const view, const char full_path[], int type,
 		int force_follow)
 {
-	int runnable = !cfg.follow_links && type == LINK &&
+	int runnable = !cfg.follow_links && type == FT_LINK &&
 		get_symlink_type(full_path) != SLT_DIR;
 	if(runnable && force_follow)
 	{
@@ -184,7 +184,7 @@ is_runnable(const FileView *const view, const char full_path[], int type,
 	}
 	if(!runnable)
 	{
-		runnable = type == REGULAR || type == EXECUTABLE || type == DIRECTORY;
+		runnable = type == FT_REG || type == FT_EXEC || type == FT_DIR;
 	}
 	return runnable;
 }
@@ -196,10 +196,10 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 {
 	int executable;
 #ifndef _WIN32
-	executable = curr->type == EXECUTABLE ||
+	executable = curr->type == FT_EXEC ||
 			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
-	executable = curr->type == EXECUTABLE;
+	executable = curr->type == FT_EXEC;
 #endif
 	return executable && !dont_execute && cfg.auto_execute;
 }
@@ -209,7 +209,7 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 static int
 is_dir_entry(const char full_path[], int type)
 {
-	return type == DIRECTORY || (type == LINK && is_dir(full_path));
+	return type == FT_DIR || (type == FT_LINK && is_dir(full_path));
 }
 
 #ifdef _WIN32
@@ -458,7 +458,7 @@ run_file(FileView *view, int dont_execute)
 static void
 run_with_defaults(FileView *view)
 {
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+	if(view->dir_entry[view->list_pos].type == FT_DIR)
 	{
 		open_dir(view);
 	}

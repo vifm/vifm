@@ -28,18 +28,18 @@ struct dirent;
 /* List of types of file system objects. */
 typedef enum
 {
-	LINK,             /* Symbolic link. */
-	DIRECTORY,        /* Directory. */
-	CHARACTER_DEVICE, /* Character device file. */
-	BLOCK_DEVICE,     /* Block device file. */
+	FT_LINK,      /* Symbolic link. */
+	FT_DIR,       /* Directory. */
+	FT_CHAR_DEV,  /* Character device file. */
+	FT_BLOCK_DEV, /* Block device file. */
 #ifndef _WIN32
-	SOCKET,           /* Socket file. */
+	FT_SOCK,      /* Socket file. */
 #endif
-	EXECUTABLE,       /* Executable file. */
-	REGULAR,          /* Regular (non-executable) file. */
-	FIFO,             /* Named pipe. */
-	UNKNOWN,          /* Unknown object (shouldn't occur in file list). */
-	FILE_TYPE_COUNT   /* Number of types. */
+	FT_EXEC,      /* Executable file. */
+	FT_REG,       /* Regular (non-executable) file. */
+	FT_FIFO,      /* Named pipe. */
+	FT_UNK,       /* Unknown object (shouldn't occur in file list). */
+	FT_COUNT      /* Number of types. */
 }
 FileType;
 

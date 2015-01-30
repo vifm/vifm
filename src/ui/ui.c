@@ -1361,12 +1361,12 @@ ui_view_entry_target_type(const FileView *const view, size_t pos)
 {
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
-	if(entry->type == LINK)
+	if(entry->type == FT_LINK)
 	{
 		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
 		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
-		                    ? DIRECTORY
-		                    : LINK;
+		                    ? FT_DIR
+		                    : FT_LINK;
 		free(full_path);
 		return type;
 	}

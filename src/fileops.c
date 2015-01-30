@@ -1389,7 +1389,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	if(view->dir_entry[view->list_pos].type != LINK)
+	if(view->dir_entry[view->list_pos].type != FT_LINK)
 	{
 		status_bar_error("File isn't a symbolic link");
 		return 1;
@@ -3517,7 +3517,7 @@ calculate_size(const FileView *view, int force)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(entry->selected && entry->type == DIRECTORY)
+		if(entry->selected && entry->type == FT_DIR)
 		{
 			update_dir_entry_size(view, i, force);
 		}

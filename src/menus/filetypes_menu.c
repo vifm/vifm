@@ -131,7 +131,7 @@ form_filetype_data_entry(assoc_record_t prog)
 int
 execute_filetype_cb(FileView *view, menu_info *m)
 {
-	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
+	if(view->dir_entry[view->list_pos].type == FT_DIR && m->pos == 0)
 	{
 		open_dir(view);
 	}

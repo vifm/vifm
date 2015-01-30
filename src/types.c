@@ -38,18 +38,19 @@ const char *
 get_type_str(FileType type)
 {
 	static const char *str[] = {
-		[LINK]             = "link",
-		[DIRECTORY]        = "dir",
-		[CHARACTER_DEVICE] = "char",
-		[BLOCK_DEVICE]     = "block",
+		[FT_LINK]      = "link",
+		[FT_DIR]       = "dir",
+		[FT_CHAR_DEV]  = "char",
+		[FT_BLOCK_DEV] = "block",
 #ifndef _WIN32
-		[SOCKET]           = "sock",
+		[FT_SOCK]      = "sock",
 #endif
-		[EXECUTABLE]       = "exe",
-		[REGULAR]          = "reg",
-		[FIFO]             = "fifo",
-		[UNKNOWN]          = "?",
+		[FT_EXEC]      = "exe",
+		[FT_REG]       = "reg",
+		[FT_FIFO]      = "fifo",
+		[FT_UNK]       = "?",
 	};
+	ARRAY_GUARD(str, FT_COUNT);
 
 	assert(type >= 0 && "FileType numeration value invalid");
 	assert(type < ARRAY_LEN(str) && "FileType numeration value invalid");
@@ -63,29 +64,29 @@ get_type_from_mode(mode_t mode)
 	{
 #ifndef _WIN32
 		case S_IFLNK:
-			return LINK;
+			return FT_LINK;
 #endif
 		case S_IFDIR:
-			return DIRECTORY;
+			return FT_DIR;
 		case S_IFCHR:
-			return CHARACTER_DEVICE;
+			return FT_CHAR_DEV;
 		case S_IFBLK:
-			return BLOCK_DEVICE;
+			return FT_BLOCK_DEV;
 #ifndef _WIN32
 		case S_IFSOCK:
-			return SOCKET;
+			return FT_SOCK;
 #endif
 		case S_IFREG:
 #ifndef _WIN32
-			return S_ISEXE(mode) ? EXECUTABLE : REGULAR;
+			return S_ISEXE(mode) ? FT_EXEC : FT_REG;
 #else
-			return REGULAR;
+			return FT_REG;
 #endif
 		case S_IFIFO:
-			return FIFO;
+			return FT_FIFO;
 
 		default:
-			return UNKNOWN;
+			return FT_UNK;
 	}
 }
 
@@ -96,22 +97,22 @@ type_from_dir_entry(const struct dirent *d)
 	switch(d->d_type)
 	{
 		case DT_CHR:
-			return CHARACTER_DEVICE;
+			return FT_CHAR_DEV;
 		case DT_BLK:
-			return BLOCK_DEVICE;
+			return FT_BLOCK_DEV;
 		case DT_DIR:
-			return DIRECTORY;
+			return FT_DIR;
 		case DT_LNK:
-			return LINK;
+			return FT_LINK;
 		case DT_REG:
-			return REGULAR;
+			return FT_REG;
 		case DT_SOCK:
-			return SOCKET;
+			return FT_SOCK;
 		case DT_FIFO:
-			return FIFO;
+			return FT_FIFO;
 
 		default:
-			return UNKNOWN;
+			return FT_UNK;
 	}
 }
 #endif

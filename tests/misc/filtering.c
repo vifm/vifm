@@ -146,7 +146,7 @@ static void
 test_filtering_dir_does_not_filter_file(void)
 {
 	rwin.dir_entry[6].selected = 1;
-	rwin.dir_entry[6].type = DIRECTORY;
+	rwin.dir_entry[6].type = FT_DIR;
 	rwin.selected_files = 1;
 
 	filter_selected_files(&rwin);

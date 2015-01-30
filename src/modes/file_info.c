@@ -133,7 +133,7 @@ redraw_file_info_dialog(void)
 	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
 
 	size = 0;
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+	if(view->dir_entry[view->list_pos].type == FT_DIR)
 	{
 		char full_path[PATH_MAX];
 		get_current_full_path(view, sizeof(full_path), full_path);
@@ -242,7 +242,7 @@ show_file_type(FileView *view, int curr_y)
 	x = getmaxx(menu_win);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(view->dir_entry[view->list_pos].type == LINK)
+	if(view->dir_entry[view->list_pos].type == FT_LINK)
 	{
 		char full_path[PATH_MAX];
 		char linkto[PATH_MAX + NAME_MAX];
@@ -267,8 +267,8 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 		}
 	}
-	else if(view->dir_entry[view->list_pos].type == EXECUTABLE ||
-			view->dir_entry[view->list_pos].type == REGULAR)
+	else if(view->dir_entry[view->list_pos].type == FT_EXEC ||
+			view->dir_entry[view->list_pos].type == FT_REG)
 	{
 #ifdef HAVE_FILE_PROG
 		char full_path[PATH_MAX];
@@ -298,13 +298,13 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 		}
 #else /* #ifdef HAVE_FILE_PROG */
-		if(view->dir_entry[view->list_pos].type == EXECUTABLE)
+		if(view->dir_entry[view->list_pos].type == FT_EXEC)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
 			mvwaddstr(menu_win, curr_y, 8, "Regular File");
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
-	else if(view->dir_entry[view->list_pos].type == DIRECTORY)
+	else if(view->dir_entry[view->list_pos].type == FT_DIR)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
@@ -317,7 +317,7 @@ show_file_type(FileView *view, int curr_y)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
-	else if(view->dir_entry[view->list_pos].type == FIFO)
+	else if(view->dir_entry[view->list_pos].type == FT_FIFO)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}

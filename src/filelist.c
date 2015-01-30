@@ -579,7 +579,7 @@ load_initial_directory(FileView *view, const char *dir)
 	view->dir_entry = calloc(1, sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = strdup("");
-	view->dir_entry[0].type = DIRECTORY;
+	view->dir_entry[0].type = FT_DIR;
 	view->dir_entry[0].hi_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 
@@ -1443,11 +1443,11 @@ get_line_color(const FileView *view, int pos)
 {
 	switch(view->dir_entry[pos].type)
 	{
-		case DIRECTORY:
+		case FT_DIR:
 			return DIRECTORY_COLOR;
-		case FIFO:
+		case FT_FIFO:
 			return FIFO_COLOR;
-		case LINK:
+		case FT_LINK:
 			if(view->on_slow_fs)
 			{
 				return LINK_COLOR;
@@ -1471,13 +1471,13 @@ get_line_color(const FileView *view, int pos)
 				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
-		case SOCKET:
+		case FT_SOCK:
 			return SOCKET_COLOR;
 #endif
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
+		case FT_CHAR_DEV:
+		case FT_BLOCK_DEV:
 			return DEVICE_COLOR;
-		case EXECUTABLE:
+		case FT_EXEC:
 			return EXECUTABLE_COLOR;
 		default:
 			return WIN_COLOR;
@@ -2304,7 +2304,7 @@ fill_with_shared(FileView *view)
 				utf8_name = utf8_from_utf16((wchar_t *)p->shi0_netname);
 
 				init_dir_entry(view, dir_entry, utf8_name);
-				dir_entry->type = DIRECTORY;
+				dir_entry->type = FT_DIR;
 
 				free(utf8_name);
 
@@ -2571,11 +2571,11 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	}
 
 	entry->type = get_type_from_mode(s.st_mode);
-	if(entry->type == UNKNOWN)
+	if(entry->type == FT_UNK)
 	{
-		entry->type = (d == NULL) ? UNKNOWN : type_from_dir_entry(d);
+		entry->type = (d == NULL) ? FT_UNK : type_from_dir_entry(d);
 	}
-	if(entry->type == UNKNOWN)
+	if(entry->type == FT_UNK)
 	{
 		LOG_ERROR_MSG("Can't determine type of \"%s\"", path);
 		return 1;
@@ -2589,7 +2589,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	entry->atime = s.st_atime;
 	entry->ctime = s.st_ctime;
 
-	if(entry->type == LINK)
+	if(entry->type == FT_LINK)
 	{
 		/* Query mode of symbolic link target. */
 
@@ -2656,19 +2656,19 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 
 	if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
 	{
-		entry->type = LINK;
+		entry->type = FT_LINK;
 	}
 	else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 	{
-		entry->type = DIRECTORY;
+		entry->type = FT_DIR;
 	}
 	else if(is_win_executable(path))
 	{
-		entry->type = EXECUTABLE;
+		entry->type = FT_EXEC;
 	}
 	else
 	{
-		entry->type = REGULAR;
+		entry->type = FT_REG;
 	}
 
 	return 0;
@@ -3013,7 +3013,7 @@ add_parent_dir(FileView *view)
 	}
 
 	init_dir_entry(view, dir_entry, "..");
-	dir_entry->type = DIRECTORY;
+	dir_entry->type = FT_DIR;
 
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(os_lstat(dir_entry->name, &s) != 0)
@@ -3059,7 +3059,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->atime = (time_t)0;
 	entry->ctime = (time_t)0;
 
-	entry->type = UNKNOWN;
+	entry->type = FT_UNK;
 	entry->hi_num = -1;
 
 	/* All files start as unselected, unmatched and unmarked. */
@@ -3919,7 +3919,7 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	uint64_t size = 0;
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
-	if(entry->type == DIRECTORY)
+	if(entry->type == FT_DIR)
 	{
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
@@ -3932,8 +3932,9 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 int
 is_directory_entry(const dir_entry_t *entry)
 {
-	return (entry->type == DIRECTORY)
-	    || (entry->type == LINK && get_symlink_type(entry->name) != SLT_UNKNOWN);
+	return (entry->type == FT_DIR)
+	    || (entry->type == FT_LINK &&
+	        get_symlink_type(entry->name) != SLT_UNKNOWN);
 }
 
 int

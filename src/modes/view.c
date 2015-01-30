@@ -1455,14 +1455,14 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 
 	switch(entry->type)
 	{
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
-		case FIFO:
+		case FT_CHAR_DEV:
+		case FT_BLOCK_DEV:
+		case FT_FIFO:
 #ifndef _WIN32
-		case SOCKET:
+		case FT_SOCK:
 #endif
 			return 1;
-		case LINK:
+		case FT_LINK:
 			if(get_link_target_abs(buf, entry->origin, buf, buf_len) != 0)
 			{
 				return 1;
