@@ -664,5 +664,63 @@ update_terminal_settings(void)
 	/* Do nothing. */
 }
 
+void
+get_uid_string(const FileView *view, size_t buf_len, char buf[])
+{
+	/* Cache for the last requested user id. */
+	static uid_t last_uid = (uid_t)-1;
+	static char uid_buf[26];
+
+	if(view->dir_entry[view->list_pos].uid != last_uid)
+	{
+		char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
+		struct passwd pwd_b;
+		struct passwd *pwd_buf;
+
+		last_uid = view->dir_entry[view->list_pos].uid;
+
+		if(getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
+				pwd_buf == NULL)
+		{
+			snprintf(uid_buf, sizeof(uid_buf), "%d", (int)last_uid);
+		}
+		else
+		{
+			copy_str(uid_buf, sizeof(uid_buf), pwd_buf->pw_name);
+		}
+	}
+
+	copy_str(buf, buf_len, uid_buf);
+}
+
+void
+get_gid_string(const FileView *view, size_t buf_len, char buf[])
+{
+	/* Cache for the last requested group id. */
+	static gid_t last_gid = (gid_t)-1;
+	static char gid_buf[26];
+
+	if(view->dir_entry[view->list_pos].gid != last_gid)
+	{
+		char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
+		struct group group_b;
+		struct group *group_buf;
+
+		last_gid = view->dir_entry[view->list_pos].gid;
+
+		if(getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
+				group_buf == NULL)
+		{
+			snprintf(gid_buf, sizeof(gid_buf), "%d", (int)last_gid);
+		}
+		else
+		{
+			copy_str(gid_buf, sizeof(gid_buf), group_buf->gr_name);
+		}
+	}
+
+	copy_str(buf, buf_len, gid_buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

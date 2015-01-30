@@ -716,5 +716,19 @@ update_terminal_settings(void)
 			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
 }
 
+void
+get_uid_string(const FileView *view, size_t buf_len, char buf[])
+{
+	/* Simply return empty buffer. */
+	buf[0] = '\0';
+}
+
+void
+get_gid_string(const FileView *view, size_t buf_len, char buf[])
+{
+	/* Simply return empty buffer. */
+	buf[0] = '\0';
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

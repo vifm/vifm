@@ -48,8 +48,6 @@ char * expand_view_macros(FileView *view, const char format[],
 		const char macros[]);
 static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
-static void get_uid_string(FileView *view, size_t len, char out_buf[]);
-static void get_gid_string(FileView *view, size_t len, char out_buf[]);
 static int expand_num(char buf[], size_t buf_len, int val);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 
@@ -344,76 +342,6 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 	}
 
 	return result;
-}
-
-/* Fills the buffer with string representation of owner user for current file of
- * the view. */
-static void
-get_uid_string(FileView *view, size_t len, char out_buf[])
-{
-#ifndef _WIN32
-	/* Cache for the last requested user id. */
-	static uid_t last_uid = (uid_t)-1;
-	static char uid_buf[26];
-
-	if(view->dir_entry[view->list_pos].uid != last_uid)
-	{
-		char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
-		struct passwd pwd_b;
-		struct passwd *pwd_buf;
-
-		last_uid = view->dir_entry[view->list_pos].uid;
-
-		if(getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
-				pwd_buf == NULL)
-		{
-			snprintf(uid_buf, sizeof(uid_buf), "%d", (int)last_uid);
-		}
-		else
-		{
-			copy_str(uid_buf, sizeof(uid_buf), pwd_buf->pw_name);
-		}
-	}
-
-	copy_str(out_buf, len, uid_buf);
-#else
-	out_buf[0] = '\0';
-#endif
-}
-
-/* Fills the buffer with string representation of owner group for current file
- * of the view. */
-static void
-get_gid_string(FileView *view, size_t len, char out_buf[])
-{
-#ifndef _WIN32
-	/* Cache for the last requested group id. */
-	static gid_t last_gid = (gid_t)-1;
-	static char gid_buf[26];
-
-	if(view->dir_entry[view->list_pos].gid != last_gid)
-	{
-		char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
-		struct group group_b;
-		struct group *group_buf;
-
-		last_gid = view->dir_entry[view->list_pos].gid;
-
-		if(getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
-				group_buf == NULL)
-		{
-			snprintf(gid_buf, sizeof(gid_buf), "%d", (int)last_gid);
-		}
-		else
-		{
-			copy_str(gid_buf, sizeof(gid_buf), group_buf->gr_name);
-		}
-	}
-
-	copy_str(out_buf, len, gid_buf);
-#else
-	out_buf[0] = '\0';
-#endif
 }
 
 /* Prints number into the buffer.  Returns non-zero if numeric value is
