@@ -610,48 +610,11 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 		search(!last_search_backward);
 }
 
-/* Populate view with list of files. */
+/* Populates view with list of files. */
 static void
 cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	int i;
-	char *current = NULL;
-
-	flist_custom_start(view, menu->title);
-
-	for(i = 0; i < menu->len; ++i)
-	{
-		char *path;
-		int line_num;
-
-		/* Skip empty lines. */
-		if(menu->items[i][0] == '\0')
-		{
-			continue;
-		}
-
-		path = parse_file_spec(menu->items[i], &line_num);
-		if(path == NULL)
-		{
-			continue;
-		}
-
-		flist_custom_add(view, path);
-
-		if(i == menu->pos)
-		{
-			current = path;
-			continue;
-		}
-
-		free(path);
-	}
-
-	flist_custom_finish(view);
-
-	flist_custom_goto(view, current);
-	free(current);
-
+	menu_to_custom_view(menu, view);
 	leave_menu_mode();
 }
 

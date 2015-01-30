@@ -46,6 +46,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -66,6 +67,7 @@ static void normalize_top(menu_info *m);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
+TSTATIC char * parse_file_spec(const char spec[], int *line_num);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -386,57 +388,6 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	free(path_buf);
 }
 
-char *
-parse_file_spec(const char spec[], int *line_num)
-{
-	char *path_buf;
-	const char *colon;
-	int colon_lookup_offset = 0;
-	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
-
-	path_buf = malloc(bufs_len);
-	if(path_buf == NULL)
-	{
-		return NULL;
-	}
-
-	if(is_path_absolute(spec))
-	{
-		path_buf[0] = '\0';
-	}
-	else
-	{
-		copy_str(path_buf, bufs_len, "./");
-	}
-
-#ifdef _WIN32
-	if(is_path_absolute(spec))
-	{
-		colon_lookup_offset = 2;
-	}
-#endif
-
-	colon = strchr(spec + colon_lookup_offset, ':');
-	if(colon != NULL)
-	{
-		strncat(path_buf, spec, colon - spec);
-		*line_num = atoi(colon + 1);
-	}
-	else
-	{
-		strcat(path_buf, spec);
-		*line_num = 1;
-	}
-
-	chomp(path_buf);
-
-#ifdef _WIN32
-	to_forward_slash(path_buf);
-#endif
-
-	return path_buf;
-}
-
 /* Opens file specified by its path on the given line number. */
 static void
 open_selected_file(const char path[], int line_num)
@@ -733,6 +684,102 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;
+}
+
+void
+menu_to_custom_view(menu_info *m, FileView *view)
+{
+	int i;
+	char *current = NULL;
+
+	flist_custom_start(view, m->title);
+
+	for(i = 0; i < m->len; ++i)
+	{
+		char *path;
+		int line_num;
+
+		/* Skip empty lines. */
+		if(m->items[i][0] == '\0')
+		{
+			continue;
+		}
+
+		path = parse_file_spec(m->items[i], &line_num);
+		if(path == NULL)
+		{
+			continue;
+		}
+
+		flist_custom_add(view, path);
+
+		if(i == m->pos)
+		{
+			current = path;
+			continue;
+		}
+
+		free(path);
+	}
+
+	flist_custom_finish(view);
+
+	flist_custom_goto(view, current);
+	free(current);
+}
+
+/* Extracts path and line number from the spec (default line number is 1).
+ * Returns path in as newly allocated string and sets *line_num to line number,
+ * otherwise NULL is returned. */
+TSTATIC char *
+parse_file_spec(const char spec[], int *line_num)
+{
+	char *path_buf;
+	const char *colon;
+	int colon_lookup_offset = 0;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
+	{
+		return NULL;
+	}
+
+	if(is_path_absolute(spec))
+	{
+		path_buf[0] = '\0';
+	}
+	else
+	{
+		copy_str(path_buf, bufs_len, "./");
+	}
+
+#ifdef _WIN32
+	if(is_path_absolute(spec))
+	{
+		colon_lookup_offset = 2;
+	}
+#endif
+
+	colon = strchr(spec + colon_lookup_offset, ':');
+	if(colon != NULL)
+	{
+		strncat(path_buf, spec, colon - spec);
+		*line_num = atoi(colon + 1);
+	}
+	else
+	{
+		strcat(path_buf, spec);
+		*line_num = 1;
+	}
+
+	chomp(path_buf);
+
+#ifdef _WIN32
+	to_forward_slash(path_buf);
+#endif
+
+	return path_buf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
