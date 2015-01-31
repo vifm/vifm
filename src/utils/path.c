@@ -69,17 +69,17 @@ ends_with_slash(const char *str)
 }
 
 int
-path_starts_with(const char *path, const char *begin)
+path_starts_with(const char path[], const char prefix[])
 {
-	size_t len = strlen(begin);
+	size_t len = strlen(prefix);
 
-	if(len > 0 && begin[len - 1] == '/')
+	if(len > 0 && prefix[len - 1] == '/')
+	{
 		len--;
+	}
 
-	if(strnoscmp(path, begin, len) != 0)
-		return 0;
-
-	return (path[len] == '\0' || path[len] == '/');
+	return strnoscmp(path, prefix, len) == 0
+	    && (path[len] == '\0' || path[len] == '/');
 }
 
 int
@@ -213,7 +213,7 @@ skip_dotdir_if_any(const char *path[], int fully)
 }
 
 const char *
-make_rel_path(const char *path, const char *base)
+make_rel_path(const char path[], const char base[])
 {
 	static char buf[PATH_MAX];
 

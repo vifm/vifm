@@ -35,8 +35,8 @@ void chosp(char *path);
 
 int ends_with_slash(const char *path);
 
-/* Checks if path starts with given base path. */
-int path_starts_with(const char *path, const char *begin);
+/* Checks if the path starts with given prefix. */
+int path_starts_with(const char path[], const char prefix[]);
 
 /* Checks if two paths are equal, nothing is dereferenced.  Returns non-zero for
  * same paths, otherwise zero is returned. */
@@ -46,7 +46,9 @@ int paths_are_equal(const char s[], const char t[]);
  * contain trailing forward slash. */
 void canonicalize_path(const char directory[], char buf[], size_t buf_size);
 
-const char * make_rel_path(const char *path, const char *base);
+/* Converts the path to make it relative to the base path.  Returns pointer to a
+ * statically allocated buffer. */
+const char * make_rel_path(const char path[], const char base[]);
 
 int is_path_absolute(const char *path);
 
