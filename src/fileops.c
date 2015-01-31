@@ -202,6 +202,7 @@ static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
+static void redraw_after_path_change(FileView *view, const char path[]);
 
 void
 init_fileops(void)
@@ -3566,14 +3567,9 @@ dir_size_bg(void *arg)
 	(void)calc_dirsize(dir_size->path, dir_size->force);
 
 	remove_last_path_component(dir_size->path);
-	if(path_starts_with(lwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&lwin);
-	}
-	if(path_starts_with(rwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&rwin);
-	}
+
+	redraw_after_path_change(&lwin, dir_size->path);
+	redraw_after_path_change(&rwin, dir_size->path);
 
 	free(dir_size->path);
 	free(dir_size);
@@ -3640,6 +3636,17 @@ set_dir_size(const char path[], uint64_t size)
 	pthread_mutex_lock(&mutex);
 	tree_set_data(curr_stats.dirsize_cache, path, size);
 	pthread_mutex_unlock(&mutex);
+}
+
+/* Schedules view redraw in case path change might have affected it. */
+static void
+redraw_after_path_change(FileView *view, const char path[])
+{
+	if(path_starts_with(view->curr_dir, path) ||
+			flist_custom_active(view))
+	{
+		ui_view_schedule_redraw(view);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

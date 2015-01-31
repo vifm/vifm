@@ -1437,7 +1437,7 @@ mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 }
 
 /* Calculates highlight group for the line specified by its position.  Returns
- * grouop number. */
+ * highlight group number. */
 static int
 get_line_color(const FileView *view, int pos)
 {
@@ -1456,7 +1456,8 @@ get_line_color(const FileView *view, int pos)
 			{
 				char full[PATH_MAX];
 				get_full_path_at(view, pos, sizeof(full), full);
-				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
+				if(get_link_target_abs(full, view->dir_entry[pos].origin, full,
+							sizeof(full)) != 0)
 				{
 					return BROKEN_LINK_COLOR;
 				}
@@ -1479,6 +1480,7 @@ get_line_color(const FileView *view, int pos)
 			return DEVICE_COLOR;
 		case FT_EXEC:
 			return EXECUTABLE_COLOR;
+
 		default:
 			return WIN_COLOR;
 	}
@@ -1639,15 +1641,18 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 {
 	int x;
 
-	/* this could happen on FUSE error */
+	/* This could happen on FUSE error. */
 	if(view->list_rows <= 0)
 		return;
 
 	if(cfg.history_len <= 0)
 		return;
 
+	if(flist_custom_active(view))
+		return;
+
 	if(path == NULL)
-		path = view->dir_entry[view->list_pos].origin;
+		path = view->curr_dir;
 	if(file == NULL)
 		file = view->dir_entry[view->list_pos].name;
 	if(pos < 0)
@@ -2807,6 +2812,12 @@ populate_dir_list_internal(FileView *view, int reload)
 	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
+
+	if(flist_custom_active(view))
+	{
+		sort_dir_list(!reload, view);
+		return 0;
+	}
 
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
