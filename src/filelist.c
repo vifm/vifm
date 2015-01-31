@@ -338,7 +338,15 @@ static void
 format_name(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	format_entry_name(cdt->view, cdt->line_pos, buf_len + 1, buf);
+	const FileView *view = cdt->view;
+	if(flist_custom_active(view))
+	{
+		get_short_path_of(view, &view->dir_entry[cdt->line_pos], buf_len + 1, buf);
+	}
+	else
+	{
+		format_entry_name(view, cdt->line_pos, buf_len + 1, buf);
+	}
 }
 
 /* File size format callback for column_view unit. */
@@ -4013,6 +4021,34 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len, "%s%s%s", entry->origin,
 			ends_with_slash(entry->origin) ? "" : "/", entry->name);
+}
+
+void
+get_short_path_of(const FileView *view, const dir_entry_t *entry,
+		size_t buf_len, char buf[])
+{
+	char name[NAME_MAX];
+	char full_path[PATH_MAX];
+	const char *path = entry->origin;
+
+	format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
+	snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
+	if(!path_starts_with(full_path, view->orig_dir))
+	{
+		copy_str(buf, buf_len, full_path);
+		return;
+	}
+
+	path += strlen(view->orig_dir);
+	path = skip_char(path, '/');
+	if(path[0] == '\0')
+	{
+		copy_str(buf, buf_len, name);
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s", path, name);
+	}
 }
 
 void

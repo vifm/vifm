@@ -36,7 +36,10 @@
 #include "status.h"
 #include "types.h"
 
+/* View which is being sorted. */
 static FileView* view;
+/* Whether the view displays custom file list. */
+static int custom_view;
 static int sort_descending;
 static int sort_type;
 
@@ -48,6 +51,8 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
+static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
+		int ignore_case);
 static int compare_full_file_names(const char s[], const char t[],
 		int ignore_case);
 static int compare_file_names(const char s[], const char t[], int ignore_case);
@@ -58,6 +63,8 @@ sort_view(FileView *v)
 	int i;
 
 	view = v;
+	custom_view = flist_custom_active(v);
+
 	i = SK_COUNT;
 	while(--i >= 0)
 	{
@@ -182,8 +189,15 @@ sort_dir_list(const void *one, const void *two)
 	{
 		case SK_BY_NAME:
 		case SK_BY_INAME:
-			retval = compare_full_file_names(first->name, second->name,
-					sort_type == SK_BY_INAME);
+			if(custom_view)
+			{
+				retval = compare_entry_names(first, second, sort_type == SK_BY_INAME);
+			}
+			else
+			{
+				retval = compare_full_file_names(first->name, second->name,
+						sort_type == SK_BY_INAME);
+			}
 			break;
 
 		case SK_BY_TYPE:
@@ -194,7 +208,7 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SK_BY_EXTENSION:
-			pfirst  = strrchr(first->name,  '.');
+			pfirst = strrchr(first->name,  '.');
 			psecond = strrchr(second->name, '.');
 
 			if(pfirst && psecond)
@@ -278,6 +292,20 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	return retval;
+}
+
+/* Compares names of two file entries.  Returns positive value if a is greater
+ * than b, zero if they are equal, otherwise negative value is returned. */
+static int
+compare_entry_names(const dir_entry_t *a, const dir_entry_t *b, int ignore_case)
+{
+	char a_short_path[PATH_MAX];
+	char b_short_path[PATH_MAX];
+
+	get_short_path_of(view, a, sizeof(a_short_path), a_short_path);
+	get_short_path_of(view, b, sizeof(b_short_path), b_short_path);
+
+	return compare_full_file_names(a_short_path, b_short_path, ignore_case);
 }
 
 /* Compares two full filenames and assumes that dot character is smaller than

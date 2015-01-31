@@ -1117,7 +1117,7 @@ only(void)
 }
 
 void
-format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[])
+format_entry_name(const FileView *view, size_t pos, size_t buf_len, char buf[])
 {
 	const FileType type = ui_view_entry_target_type(view, pos);
 	dir_entry_t *const entry = &view->dir_entry[pos];
