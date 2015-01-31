@@ -728,7 +728,7 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		return 1;
 	}
 
-	flist_custom_goto(view, current);
+	flist_goto_by_path(view, current);
 	free(current);
 	return 0;
 }

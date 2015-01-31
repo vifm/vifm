@@ -2712,7 +2712,7 @@ flist_custom_finish(FileView *view)
 }
 
 void
-flist_custom_goto(FileView *view, const char path[])
+flist_goto_by_path(FileView *view, const char path[])
 {
 	dir_entry_t *const entry = entry_from_path(view, path);
 	if(entry != NULL)
@@ -2940,22 +2940,19 @@ free_dir_entry(const FileView *view, dir_entry_t *entry)
 void
 resort_dir_list(int msg, FileView *view)
 {
-	/* Using this pointer after sorting is safe, because file entries are just
-	 * moved in the array. */
-	const char *const filename = (view->list_pos < view->list_rows) ?
-			view->dir_entry[view->list_pos].name : NULL;
+	char full_path[PATH_MAX];
 	const int top_delta = view->list_pos - view->top_line;
+	if(view->list_pos < view->list_rows)
+	{
+		get_current_full_path(view, sizeof(full_path), full_path);
+	}
 
 	sort_dir_list(msg, view);
 
-	if(filename != NULL)
+	if(view->list_pos < view->list_rows)
 	{
-		const int new_pos = find_file_pos_in_list(view, filename);
-		if(new_pos != -1)
-		{
-			view->top_line = new_pos - top_delta;
-			view->list_pos = new_pos;
-		}
+		flist_goto_by_path(view, full_path);
+		view->top_line = view->list_pos - top_delta;
 	}
 }
 
@@ -3645,8 +3642,7 @@ cd_is_possible(const char *path)
 void
 load_saving_pos(FileView *view, int reload)
 {
-	char filename[NAME_MAX];
-	int pos;
+	char full_path[PATH_MAX];
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -3659,23 +3655,19 @@ load_saving_pos(FileView *view, int reload)
 		return;
 	}
 
-	copy_str(filename, sizeof(filename), view->dir_entry[view->list_pos].name);
+	get_current_full_path(view, sizeof(full_path), full_path);
+
 	load_dir_list_internal(view, reload, 1);
 
-	pos = find_file_pos_in_list(view, filename);
-	if(pos < 0)
-	{
-		pos = view->list_pos;
-	}
+	flist_goto_by_path(view, full_path);
 
 	if(view == curr_view)
 	{
-		move_to_list_pos(view, pos);
+		move_to_list_pos(view, view->list_pos);
 	}
 	else
 	{
 		mvwaddstr(view->win, view->curr_line, 0, " ");
-		view->list_pos = pos;
 		if(move_curr_line(view))
 			draw_dir_list(view);
 		put_inactive_mark(view);

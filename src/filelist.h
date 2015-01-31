@@ -269,11 +269,11 @@ void flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise non-zero is returned. */
 int flist_custom_finish(FileView *view);
-/* Selects entry that corresponds to the path as the current one. */
-void flist_custom_goto(FileView *view, const char path[]);
 
 /* Other functions. */
 
+/* Selects entry that corresponds to the path as the current one. */
+void flist_goto_by_path(FileView *view, const char path[]);
 FILE * use_info_prog(const char *viewer);
 /* Loads filelist for the view, but doesn't redraw the view.  The reload
  * parameter should be set in case of view refresh operation. */
