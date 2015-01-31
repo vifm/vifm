@@ -614,7 +614,13 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	menu_to_custom_view(menu, view);
+	if(menu_to_custom_view(menu, view) != 0)
+	{
+		show_error_msg("Menu transformation",
+				"No valid paths discovered in menu content");
+		return;
+	}
+
 	leave_menu_mode();
 }
 
@@ -623,7 +629,7 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(pass_combination_to_khandler(L"dd") && menu->len == 0)
 	{
-		show_error_msg("No more items in the menu", "Menu will be closed");
+		show_error_msg("Menu is closing", "No more items in the menu");
 		leave_menu_mode();
 	}
 }

@@ -2684,13 +2684,16 @@ param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 
 #endif
 
-void
+int
 flist_custom_finish(FileView *view)
 {
 	if(view->list_rows == 0)
 	{
 		add_parent_dir(view);
-		return;
+		view->list_pos = 0;
+
+		ui_view_schedule_reload(view);
+		return 1;
 	}
 
 	(void)replace_string(&view->orig_dir, view->curr_dir);
@@ -2704,6 +2707,8 @@ flist_custom_finish(FileView *view)
 	{
 		view->list_pos = view->list_rows - 1;
 	}
+
+	return 0;
 }
 
 void

@@ -154,8 +154,9 @@ int display_menu(menu_info *m, FileView *view);
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
-/* Moves menu items into custom view. */
-void menu_to_custom_view(menu_info *m, FileView *view);
+/* Moves menu items into custom view.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int menu_to_custom_view(menu_info *m, FileView *view);
 
 TSTATIC_DEFS(
 	char * parse_file_spec(const char spec[], int *line_num);

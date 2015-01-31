@@ -686,7 +686,7 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 	return KHR_UNHANDLED;
 }
 
-void
+int
 menu_to_custom_view(menu_info *m, FileView *view)
 {
 	int i;
@@ -722,10 +722,15 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		free(path);
 	}
 
-	flist_custom_finish(view);
+	if(flist_custom_finish(view) != 0)
+	{
+		free(current);
+		return 1;
+	}
 
 	flist_custom_goto(view, current);
 	free(current);
+	return 0;
 }
 
 /* Extracts path and line number from the spec (default line number is 1).

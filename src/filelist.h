@@ -266,8 +266,9 @@ int flist_custom_active(const FileView *view);
 void flist_custom_start(FileView *view, const char title[]);
 /* Adds an entry to list of files. */
 void flist_custom_add(FileView *view, const char path[]);
-/* Finishes file list population, handles empty resulting list corner case. */
-void flist_custom_finish(FileView *view);
+/* Finishes file list population, handles empty resulting list corner case.
+ * Returns zero on success, otherwise non-zero is returned. */
+int flist_custom_finish(FileView *view);
 /* Selects entry that corresponds to the path as the current one. */
 void flist_custom_goto(FileView *view, const char path[]);
 
