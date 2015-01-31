@@ -48,8 +48,9 @@ static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
 #endif
-static int compare_file_names(const char s[], const char t[],
+static int compare_full_file_names(const char s[], const char t[],
 		int ignore_case);
+static int compare_file_names(const char s[], const char t[], int ignore_case);
 
 void
 sort_view(FileView *v)
@@ -181,13 +182,8 @@ sort_dir_list(const void *one, const void *two)
 	{
 		case SK_BY_NAME:
 		case SK_BY_INAME:
-			if(first->name[0] == '.' && second->name[0] != '.')
-				retval = -1;
-			else if(first->name[0] != '.' && second->name[0] == '.')
-				retval = 1;
-			else
-				retval = compare_file_names(first->name, second->name,
-						sort_type == SK_BY_INAME);
+			retval = compare_full_file_names(first->name, second->name,
+					sort_type == SK_BY_INAME);
 			break;
 
 		case SK_BY_TYPE:
@@ -284,8 +280,29 @@ sort_dir_list(const void *one, const void *two)
 	return retval;
 }
 
-/* Compares two filenames.  Returns positive value if s greater than t, zero if
+/* Compares two full filenames and assumes that dot character is smaller than
+ * any other character.  Returns positive value if s is greater than t, zero if
  * they are equal, otherwise negative value is returned. */
+static int
+compare_full_file_names(const char s[], const char t[], int ignore_case)
+{
+	if(s[0] == '.' && t[0] != '.')
+	{
+		return -1;
+	}
+	else if(s[0] != '.' && t[0] == '.')
+	{
+		return 1;
+	}
+	else
+	{
+		return compare_file_names(s, t, ignore_case);
+	}
+}
+
+/* Compares two file names or their parts (e.g. extensions).  Returns positive
+ * value if s is greater than t, zero if they are equal, otherwise negative
+ * value is returned. */
 static int
 compare_file_names(const char s[], const char t[], int ignore_case)
 {
