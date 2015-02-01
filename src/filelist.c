@@ -3029,6 +3029,7 @@ load_unfiltered_list(FileView *const view)
 
 	view->local_filter.unfiltered = view->dir_entry;
 	view->local_filter.unfiltered_count = view->list_rows;
+	view->local_filter.prefiltered_count = view->filtered;
 	view->dir_entry = NULL;
 
 	return current_file_pos;
@@ -3247,7 +3248,8 @@ update_filtering_lists(FileView *view, int add, int clear)
 	if(add)
 	{
 		view->list_rows = list_size;
-		view->filtered = view->local_filter.unfiltered_count - list_size;
+		view->filtered = view->local_filter.prefiltered_count
+		               + view->local_filter.unfiltered_count - list_size;
 
 		if(list_size == 0U)
 		{
