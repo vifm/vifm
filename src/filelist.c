@@ -2511,7 +2511,10 @@ get_typed_fname(const char path[])
 int
 flist_custom_active(const FileView *view)
 {
-	return view->curr_dir[0] == '\0';
+	/* First check isn't enough on startup, which leads to false positives.  Yet
+	 * this implicit condition seems to be preferable to omit introducing function
+	 * that would terminate custom view mode. */
+	return view->curr_dir[0] == '\0' && !is_null_or_empty(view->orig_dir);
 }
 
 void
