@@ -225,6 +225,8 @@ typedef struct
 		dir_entry_t *unfiltered;
 		/* Number of unfiltered entries. */
 		size_t unfiltered_count;
+		/* Number of entries filtered in other ways. */
+		size_t prefiltered_count;
 
 		/* List of previous cursor positions in the unfiltered array. */
 		int *poshist;
