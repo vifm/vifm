@@ -191,6 +191,11 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			case CPP_NONE:
 				/* Do nothing. */
 				break;
+			case CPP_PERCENT_UNESCAPE:
+				free_me = strdup(arg);
+				expand_percent_escaping(free_me);
+				arg = free_me;
+				break;
 			case CPP_SQUOTES_UNESCAPE:
 				arg = args + arg_pos + 1;
 				start = (slash == NULL) ? arg : (slash + 1);

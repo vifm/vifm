@@ -286,6 +286,54 @@ test_function_name_completion(void)
 	free(match);
 }
 
+static void
+test_percent_completion(void)
+{
+	char *match;
+
+	/* One percent symbol. */
+
+	prepare_for_line_completion(L"cd %");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"cd %%"));
+
+	match = vle_compl_next();
+	assert_string_equal("%%", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("%%", match);
+	free(match);
+
+	/* Two percent symbols. */
+
+	prepare_for_line_completion(L"cd %%");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"cd %%"));
+
+	match = vle_compl_next();
+	assert_string_equal("%%", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("%%", match);
+	free(match);
+
+	/* Three percent symbols. */
+
+	prepare_for_line_completion(L"cd %%%");
+	assert_int_equal(0, line_completion(&stats));
+	assert_int_equal(0, wcscmp(stats.line, L"cd %%%%"));
+
+	match = vle_compl_next();
+	assert_string_equal("%%%%", match);
+	free(match);
+
+	match = vle_compl_next();
+	assert_string_equal("%%%%", match);
+	free(match);
+}
+
 void
 test_cmdline_completion(void)
 {
@@ -309,6 +357,7 @@ test_cmdline_completion(void)
 	run_test(test_help_cmd_escaping);
 	run_test(test_dirs_are_completed_with_trailing_slash);
 	run_test(test_function_name_completion);
+	run_test(test_percent_completion);
 #if !defined(__CYGWIN__) && !defined(_WIN32)
 	/* Cygwin and Windows fail to create files with double quotes in names. */
 	run_test(test_dquoted_completion_escaping);
