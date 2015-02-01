@@ -2154,11 +2154,9 @@ line_completion(line_stats_t *stat)
 			switch(ipt)
 			{
 				case CLL_OUT_OF_ARG:
-					/* Do nothing. */
-					break;
-
 				case CLL_NO_QUOTING:
 					vle_compl_set_add_path_hook(&escaped_arg_hook);
+					compl_func_arg = CPP_PERCENT_UNESCAPE;
 					break;
 
 				case CLL_S_QUOTING:

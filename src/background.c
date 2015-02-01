@@ -162,8 +162,8 @@ check_background_jobs(void)
 		}
 	}
 
-	jobs = head;
 	assert(jobs == NULL && "Job list shouldn't be used by anyone.");
+	jobs = head;
 
 	bg_jobs_unfreeze();
 }

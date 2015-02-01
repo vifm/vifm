@@ -75,11 +75,13 @@ typedef enum
 }
 CompletionType;
 
+/* Possible values for the extra argument of complete_args(). */
 typedef enum
 {
-	CPP_NONE,
-	CPP_SQUOTES_UNESCAPE,
-	CPP_DQUOTES_UNESCAPE,
+	CPP_NONE,             /* Do not pre-process input completion arg. */
+	CPP_PERCENT_UNESCAPE, /* Replace "%%" with "%" in the arg. */
+	CPP_SQUOTES_UNESCAPE, /* Perform single quotes expansion on the arg. */
+	CPP_DQUOTES_UNESCAPE, /* Perform double quotes expansion on the arg. */
 }
 CompletionPreProcessing;
 

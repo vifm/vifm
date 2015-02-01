@@ -416,6 +416,23 @@ escape_for_dquotes(const char string[], size_t offset)
 }
 
 void
+expand_percent_escaping(char s[])
+{
+	char *p;
+
+	p = s;
+	while(s[0] != '\0')
+	{
+		if(s[0] == '%' && s[1] == '%')
+		{
+			++s;
+		}
+		*p++ = *s++;
+	}
+	*p = '\0';
+}
+
+void
 expand_squotes_escaping(char s[])
 {
 	char *p;

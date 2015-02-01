@@ -34,6 +34,7 @@
 #include <pwd.h> /* getpwent setpwent */
 #endif
 
+#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* snprintf() */
@@ -94,6 +95,7 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 {
 	/* TODO: Refactor this function complete_args() */
 
+	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
 	const char *arg;
 	const char *start;
 	const char *slash;
@@ -186,28 +188,29 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 			arg = argv[arg_num];
 		}
 
-		switch((CompletionPreProcessing)extra_arg)
+		/* Pre-process input with requested method. */
+		if(cpp != CPP_NONE)
 		{
-			case CPP_NONE:
-				/* Do nothing. */
-				break;
-			case CPP_SQUOTES_UNESCAPE:
+			if(cpp != CPP_PERCENT_UNESCAPE)
+			{
 				arg = args + arg_pos + 1;
 				start = (slash == NULL) ? arg : (slash + 1);
+			}
 
-				free_me = strdup(arg);
-				expand_squotes_escaping(free_me);
-				arg = free_me;
-				break;
-			case CPP_DQUOTES_UNESCAPE:
-				arg = args + arg_pos + 1;
-				start = (slash == NULL) ? arg : (slash + 1);
+			free_me = strdup(arg);
+			arg = free_me;
 
-				free_me = strdup(arg);
-				expand_dquotes_escaping(free_me);
-				arg = free_me;
-				break;
-		};
+			switch(cpp)
+			{
+				case CPP_PERCENT_UNESCAPE: expand_percent_escaping(free_me); break;
+				case CPP_SQUOTES_UNESCAPE: expand_squotes_escaping(free_me); break;
+				case CPP_DQUOTES_UNESCAPE: expand_dquotes_escaping(free_me); break;
+
+				default:
+					assert(0 && "Unhandled preprocessing type.");
+					break;
+			};
+		}
 
 		if(id == COM_COLORSCHEME)
 		{
