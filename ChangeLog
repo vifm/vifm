@@ -135,6 +135,8 @@
 	Fixed exponential percent sign escaping on command line completion.
 	Thanks to filterfalse.
 
+	Fixed percent sign escaping on completion with no input (e.g. :cd <tab>).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
