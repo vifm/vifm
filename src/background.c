@@ -118,10 +118,13 @@ add_finished_job(pid_t pid, int status)
 void
 check_background_jobs(void)
 {
-	job_t *p = jobs;
-	job_t *prev = NULL;
+	job_t *head = jobs;
+	job_t *prev;
+	job_t *p;
 
-	if(p == NULL)
+	/* Quit if there is no jobs or list is unavailable (e.g. used by another
+	 * invocation of this function). */
+	if(head == NULL)
 	{
 		return;
 	}
@@ -131,6 +134,11 @@ check_background_jobs(void)
 		return;
 	}
 
+	head = jobs;
+	jobs = NULL;
+
+	p = head;
+	prev = NULL;
 	while(p != NULL)
 	{
 		job_check(p);
@@ -142,7 +150,7 @@ check_background_jobs(void)
 			if(prev != NULL)
 				prev->next = p->next;
 			else
-				jobs = p->next;
+				head = p->next;
 
 			p = p->next;
 			job_free(j);
@@ -153,6 +161,9 @@ check_background_jobs(void)
 			p = p->next;
 		}
 	}
+
+	jobs = head;
+	assert(jobs == NULL && "Job list shouldn't be used by anyone.");
 
 	bg_jobs_unfreeze();
 }
