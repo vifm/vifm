@@ -494,8 +494,10 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
-	view->orig_dir = NULL;
-	view->custom_title = NULL;
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
+	view->custom.orig_dir = NULL;
+	view->custom.title = NULL;
 
 	reset_view(view);
 
@@ -2071,7 +2073,9 @@ navigate_to(FileView *view, const char path[])
 void
 navigate_back(FileView *view)
 {
-	char *dest = flist_custom_active(view) ? view->orig_dir : view->last_dir;
+	const char *const dest = flist_custom_active(view)
+	                       ? view->custom.orig_dir
+	                       : view->last_dir;
 	navigate_to(view, dest);
 }
 
@@ -2515,14 +2519,14 @@ flist_custom_active(const FileView *view)
 	/* First check isn't enough on startup, which leads to false positives.  Yet
 	 * this implicit condition seems to be preferable to omit introducing function
 	 * that would terminate custom view mode. */
-	return view->curr_dir[0] == '\0' && !is_null_or_empty(view->orig_dir);
+	return view->curr_dir[0] == '\0' && !is_null_or_empty(view->custom.orig_dir);
 }
 
 void
 flist_custom_start(FileView *view, const char title[])
 {
 	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
-	(void)replace_string(&view->custom_title, title);
+	(void)replace_string(&view->custom.title, title);
 }
 
 void
@@ -2710,7 +2714,7 @@ flist_custom_finish(FileView *view)
 		return 1;
 	}
 
-	(void)replace_string(&view->orig_dir, view->curr_dir);
+	(void)replace_string(&view->custom.orig_dir, view->curr_dir);
 	view->curr_dir[0] = '\0';
 
 	sort_dir_list(0, view);
@@ -4058,13 +4062,13 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry,
 
 	format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
 	snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
-	if(!path_starts_with(full_path, view->orig_dir))
+	if(!path_starts_with(full_path, view->custom.orig_dir))
 	{
 		copy_str(buf, buf_len, full_path);
 		return;
 	}
 
-	path += strlen(view->orig_dir);
+	path += strlen(view->custom.orig_dir);
 	path = skip_char(path, '/');
 	if(path[0] == '\0')
 	{

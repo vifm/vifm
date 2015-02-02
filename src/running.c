@@ -693,7 +693,7 @@ cd_updir(FileView *view)
 
 	if(flist_custom_active(view))
 	{
-		navigate_to(view, view->orig_dir);
+		navigate_to(view, view->custom.orig_dir);
 		return;
 	}
 

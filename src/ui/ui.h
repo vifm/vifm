@@ -164,10 +164,6 @@ typedef struct
 
 	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX];
-	/* Directory we were in before custom view activation. */
-	char *orig_dir;
-	/* Title for the custom view. */
-	char *custom_title;
 
 	/* Parameters related to custom filling. */
 	struct
@@ -176,6 +172,11 @@ typedef struct
 		dir_entry_t *entries;
 		/* Number of file entries. */
 		int entry_count;
+
+		/* Directory we were in before custom view activation. */
+		char *orig_dir;
+		/* Title for the custom view. */
+		char *title;
 	}
 	custom;
 

@@ -1243,7 +1243,7 @@ ui_view_title_update(FileView *view)
 	else if(flist_custom_active(view))
 	{
 		strcpy(buf, "[");
-		strcat(buf, view->custom_title);
+		strcat(buf, view->custom.title);
 		strcat(buf, "]");
 	}
 
