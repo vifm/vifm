@@ -169,6 +169,16 @@ typedef struct
 	/* Title for the custom view. */
 	char *custom_title;
 
+	/* Parameters related to custom filling. */
+	struct
+	{
+		/* File entries. */
+		dir_entry_t *entries;
+		/* Number of file entries. */
+		int entry_count;
+	}
+	custom;
+
 #ifndef _WIN32
 	/* Monitor that checks for directory changes. */
 	filemon_t mon;

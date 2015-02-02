@@ -172,7 +172,8 @@ static dir_entry_t * entry_from_path(FileView *view, const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
-static void free_dir_entries(FileView *view);
+static void free_view_entries(FileView *view);
+static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
@@ -193,7 +194,7 @@ static void clear_local_filter_hist_after(FileView *const view, int pos);
 static int find_nearest_neighour(const FileView *const view);
 static int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
-static dir_entry_t * alloc_dir_entry(dir_entry_t **list, size_t list_size);
+static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
@@ -2355,7 +2356,7 @@ refill_dir_list(FileView *view)
 	};
 
 	view->matches = 0;
-	free_dir_entries(view);
+	free_view_entries(view);
 
 #ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
@@ -2520,7 +2521,7 @@ flist_custom_active(const FileView *view)
 void
 flist_custom_start(FileView *view, const char title[])
 {
-	free_dir_entries(view);
+	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 	(void)replace_string(&view->custom_title, title);
 }
 
@@ -2536,7 +2537,7 @@ flist_custom_add(FileView *view, const char path[])
 		return;
 	}
 
-	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	dir_entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
 	if(dir_entry == NULL)
 	{
 		return;
@@ -2558,7 +2559,7 @@ flist_custom_add(FileView *view, const char path[])
 		return;
 	}
 
-	++view->list_rows;
+	++view->custom.entry_count;
 }
 
 #ifndef _WIN32
@@ -2703,12 +2704,9 @@ param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view)
 {
-	if(view->list_rows == 0)
+	if(view->custom.entry_count == 0)
 	{
-		add_parent_dir(view);
-		view->list_pos = 0;
-
-		ui_view_schedule_reload(view);
+		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 		return 1;
 	}
 
@@ -2723,6 +2721,12 @@ flist_custom_finish(FileView *view)
 	{
 		view->list_pos = view->list_rows - 1;
 	}
+
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	view->dir_entry = view->custom.entries;
+	view->list_rows = view->custom.entry_count;
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
 
 	return 0;
 }
@@ -2864,7 +2868,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	if(refill_dir_list(view) != 0)
 	{
 		/* We don't have read access, only execute, or there were other problems. */
-		free_dir_entries(view);
+		free_view_entries(view);
 		add_parent_dir(view);
 	}
 
@@ -2932,17 +2936,24 @@ is_dir_big(const char path[])
 
 /* Frees list of directory entries of the view. */
 static void
-free_dir_entries(FileView *view)
+free_view_entries(FileView *view)
+{
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+}
+
+/* Frees list of directory entries related to the view. */
+static void
+free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 {
 	int i;
-	for(i = 0; i < view->list_rows; ++i)
+	for(i = 0; i < *count; ++i)
 	{
-		free_dir_entry(view, &view->dir_entry[i]);
+		free_dir_entry(view, &(*entries)[i]);
 	}
 
-	free(view->dir_entry);
-	view->dir_entry = NULL;
-	view->list_rows = 0;
+	free(*entries);
+	*entries = NULL;
+	*count = 0;
 }
 
 /* Frees single directory entry. */
@@ -3533,7 +3544,7 @@ add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 /* Allocates one more directory entry for the *list of size list_size by
  * extending it.  Returns pointer to new entry or NULL on failure. */
 static dir_entry_t *
-alloc_dir_entry(dir_entry_t **list, size_t list_size)
+alloc_dir_entry(dir_entry_t **list, int list_size)
 {
 	dir_entry_t *const new_entry_list = realloc(*list,
 			sizeof(dir_entry_t)*(list_size + 1));
