@@ -4060,6 +4060,12 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry,
 	char full_path[PATH_MAX];
 	const char *path = entry->origin;
 
+	if(is_parent_dir(entry->name))
+	{
+		format_entry_name(view, entry - view->dir_entry, buf_len, buf);
+		return;
+	}
+
 	format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
 	snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
 	if(!path_starts_with(full_path, view->custom.orig_dir))
