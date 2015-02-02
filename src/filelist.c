@@ -3442,7 +3442,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		 * regexps. */
 		char name_with_slash[NAME_MAX + 1 + 1];
 
-		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
+		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
 		const char *name = entry->name;
 
 		if(is_parent_dir(name))
@@ -3471,7 +3471,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		{
 			if(clear)
 			{
-				free(entry->name);
+				free_dir_entry(view, entry);
 			}
 		}
 	}
