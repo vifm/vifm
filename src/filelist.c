@@ -3248,14 +3248,25 @@ load_unfiltered_list(FileView *const view)
 
 	if(view->filtered > 0)
 	{
-		char *const filename = strdup(view->dir_entry[view->list_pos].name);
+		char full_path[PATH_MAX];
+		dir_entry_t *entry;
+
+		get_current_full_path(view, sizeof(full_path), full_path);
 
 		filter_clear(&view->local_filter.filter);
 		populate_dir_list(view, 1);
 
 		/* Resolve current file position in updated list. */
-		current_file_pos = find_file_pos_in_list(view, filename);
-		free(filename);
+		entry = entry_from_path(view, full_path);
+		if(entry != NULL)
+		{
+			current_file_pos = entry_to_pos(view, entry);
+		}
+
+		if(current_file_pos >= view->list_rows)
+		{
+			current_file_pos = view->list_rows - 1;
+		}
 	}
 
 	view->local_filter.unfiltered = view->dir_entry;
