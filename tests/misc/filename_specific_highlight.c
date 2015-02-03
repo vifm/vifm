@@ -13,6 +13,14 @@ setup(void)
 }
 
 static void
+test_empty_curly_braces(void)
+{
+	const char *const COMMANDS = "highlight {} ctermfg=red";
+
+	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+}
+
+static void
 test_pattern_is_not_unescaped(void)
 {
 	const char *const COMMANDS = "highlight /^\\./ ctermfg=red";
@@ -70,6 +78,7 @@ filename_specific_highlight_tests(void)
 
 	fixture_setup(setup);
 
+	run_test(test_empty_curly_braces);
 	run_test(test_pattern_is_not_unescaped);
 	run_test(test_pattern_length_is_not_limited);
 
