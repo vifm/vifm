@@ -249,7 +249,6 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 					errors_file);
 		}
 		print_errors(ef);
-		unlink(errors_file);
 
 		werase(status_bar);
 
@@ -261,6 +260,11 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		else
 		{
 			show_error_msg("FUSE MOUNT ERROR", file_full_path);
+		}
+
+		if(unlink(errors_file) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Error file deletion failure: %d", errors_file);
 		}
 
 		/* Remove the directory we created for the mount. */
