@@ -567,7 +567,7 @@
 
 	Made bookmarks merging smarter by storing timestamps.  Removing bookmarks
 	now works as expected.  Bookmarks overwriting by another instance
-	shouldn't happen anymore. Thanks to Michael Maddern, a.k.a. madders.
+	shouldn't happen anymore.  Thanks to Michael Maddern, a.k.a. madders.
 
 	Disabled command-line commands auto-completion in local filter prompt.
 

@@ -2581,6 +2581,7 @@ is_re_arg(const char arg[])
 	const char *e = strrchr(arg, '/');
 	return arg[0] == '/'                         /* Starts with slash. */
 	    && e != NULL && e != arg                 /* Has second slash. */
+	    && e - arg > 1                           /* Not empty pattern. */
 	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
 }
 
@@ -2591,20 +2592,27 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 {
 	char pattern[strlen(cmd_info->args) + 1];
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
-	char *flags;
 	int case_sensitive = 0;
 	int result;
 
 	(void)extract_part(cmd_info->args + 1, ' ', pattern);
 
-	flags = strrchr(pattern, '/') + 1;
-	if(parse_case_flag(flags, &case_sensitive) != 0)
+	if(global)
 	{
-		return CMDS_ERR_TRAILING_CHARS;
+		/* Cut off trailing '}'. */
+		pattern[strlen(pattern) - 1] = '\0';
 	}
+	else
+	{
+		char *const flags = strrchr(pattern, '/') + 1;
+		if(parse_case_flag(flags, &case_sensitive) != 0)
+		{
+			return CMDS_ERR_TRAILING_CHARS;
+		}
 
-	/* Cut the flags off by replacing slash with null-character. */
-	flags[-1] = '\0';
+		/* Cut the flags off by replacing slash with null-character. */
+		flags[-1] = '\0';
+	}
 
 	if(cmd_info->argc == 1)
 	{
