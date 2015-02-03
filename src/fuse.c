@@ -241,11 +241,6 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		unlink(errors_file);
 
 		werase(status_bar);
-		/* Remove the directory we created for the mount. */
-		if(path_exists(mount_point, DEREF))
-		{
-			rmdir(mount_point);
-		}
 
 		if(cancelled)
 		{
@@ -256,6 +251,9 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		{
 			show_error_msg("FUSE MOUNT ERROR", file_full_path);
 		}
+
+		/* Remove the directory we created for the mount. */
+		(void)rmdir(mount_point);
 
 		(void)vifm_chdir(view->curr_dir);
 		return -1;
