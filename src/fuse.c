@@ -27,7 +27,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() fclose() */
-#include <stdlib.h> /* WIFEXITED free() */
+#include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
@@ -229,9 +229,20 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	clean_status_bar();
 
 	/* check child status */
-	if(!WIFEXITED(status) || WEXITSTATUS(status))
+	if(!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
 	{
-		FILE *ef = os_fopen(errors_file, "r");
+		FILE *ef;
+
+		if(!WIFEXITED(status))
+		{
+			LOG_ERROR_MSG("FUSE mounter didn't exit!");
+		}
+		else
+		{
+			LOG_ERROR_MSG("FUSE mount command exit status: %d", WEXITSTATUS(status));
+		}
+
+		ef = os_fopen(errors_file, "r");
 		if(ef == NULL)
 		{
 			LOG_SERROR_MSG(errno, "Failed to open temporary stderr file: %s",
