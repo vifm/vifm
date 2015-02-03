@@ -208,8 +208,8 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		return -1;
 	}
 
-	format_mount_command(mount_point, file_full_path, param,
-			program, sizeof(buf), buf, &foreground);
+	format_mount_command(mount_point, file_full_path, param, program, sizeof(buf),
+			buf, &foreground);
 
 	status_bar_message("FUSE mounting selected file, please stand by..");
 
@@ -228,7 +228,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 
 	clean_status_bar();
 
-	/* check child status */
+	/* Check child process exit status. */
 	if(!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
 	{
 		FILE *ef;
