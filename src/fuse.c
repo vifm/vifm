@@ -24,6 +24,7 @@
 #include <sys/stat.h> /* S_IRWXU */
 #include <unistd.h> /* rmdir() unlink() */
 
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* WIFEXITED free() */
@@ -231,6 +232,11 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{
 		FILE *ef = os_fopen(errors_file, "r");
+		if(ef == NULL)
+		{
+			LOG_SERROR_MSG(errno, "Failed to open temporary stderr file: %s",
+					errors_file);
+		}
 		print_errors(ef);
 		unlink(errors_file);
 
