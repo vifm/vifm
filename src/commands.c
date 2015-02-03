@@ -2581,6 +2581,7 @@ is_re_arg(const char arg[])
 	const char *e = strrchr(arg, '/');
 	return arg[0] == '/'                         /* Starts with slash. */
 	    && e != NULL && e != arg                 /* Has second slash. */
+	    && e - arg > 1                           /* Not empty pattern. */
 	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
 }
 

@@ -21,6 +21,39 @@ test_empty_curly_braces(void)
 }
 
 static void
+test_curly_braces_pattern_transform(void)
+{
+	const char *const COMMANDS = "highlight {*.sh} ctermfg=red";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal("*.sh", cfg.cs.file_hi[0].pattern);
+}
+
+static void
+test_curly_braces_no_flags_allowed(void)
+{
+	const char *const COMMANDS = "highlight {*.sh}i ctermfg=red";
+
+	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+}
+
+static void
+test_empty_re_without_flags(void)
+{
+	const char *const COMMANDS = "highlight // ctermfg=red";
+
+	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+}
+
+static void
+test_empty_re_with_flags(void)
+{
+	const char *const COMMANDS = "highlight //i ctermfg=red";
+
+	assert_false(exec_commands(COMMANDS, &lwin, CIT_COMMAND) == 0);
+}
+
+static void
 test_pattern_is_not_unescaped(void)
 {
 	const char *const COMMANDS = "highlight /^\\./ ctermfg=red";
@@ -79,6 +112,10 @@ filename_specific_highlight_tests(void)
 	fixture_setup(setup);
 
 	run_test(test_empty_curly_braces);
+	run_test(test_curly_braces_pattern_transform);
+	run_test(test_curly_braces_no_flags_allowed);
+	run_test(test_empty_re_without_flags);
+	run_test(test_empty_re_with_flags);
 	run_test(test_pattern_is_not_unescaped);
 	run_test(test_pattern_length_is_not_limited);
 
