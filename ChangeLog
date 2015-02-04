@@ -70,6 +70,8 @@
 	United last pattern of :substitute command with search history.  Thanks to
 	filterfalse.
 
+	Made configure script lookup curs_set in libtinfo.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

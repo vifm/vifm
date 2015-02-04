@@ -335,7 +335,9 @@ AC_CHECK_LIB(${curses_lib_name}, initscr,
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
 	fi
-	ncurses_found=yes])
+	ncurses_found=yes]
+	AC_SEARCH_LIBS([curs_set], [tinfo],,
+		AC_MSG_ERROR(could not find a library providing curs_set)))
 dnl If libncursesw is not found on OS X, check for libncurses.  On OS X it has
 dnl support of wide characters.
 if test -n "$OSX_HOST" -a "x$ncurses_found" != "xyes"; then
