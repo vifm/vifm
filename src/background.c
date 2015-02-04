@@ -268,9 +268,12 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		return 1;
 	}
 
+	(void)set_sigchld(1);
+
 	pid = fork();
 	if(pid == (pid_t)-1)
 	{
+		(void)set_sigchld(0);
 		LOG_SERROR_MSG(errno, "Forking has failed.");
 		return -1;
 	}
@@ -280,6 +283,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		extern char **environ;
 
 		char *args[4];
+
+		(void)set_sigchld(0);
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
@@ -313,6 +318,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		}
 		ui_cancellation_disable();
 	}
+
+	(void)set_sigchld(0);
 
 	return status;
 

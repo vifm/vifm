@@ -142,6 +142,9 @@
 	Fixed absence of "Z" drive in :volumes menu on Windows.  Thanks to
 	obtroston.
 
+	Fixed invalid FUSE mounter exit code for OS X.  Thanks to Michael Maddern,
+	a.k.a. madders.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
