@@ -37,23 +37,22 @@ static int execute_volumes_cb(FileView *view, menu_info *m);
 int
 show_volumes_menu(FileView *view)
 {
-	TCHAR c;
-	TCHAR vol_name[MAX_PATH];
-	TCHAR file_buf[MAX_PATH];
+	char c;
+	char vol_name[MAX_PATH];
+	char file_buf[MAX_PATH];
 
 	static menu_info m;
 	init_menu_info(&m, VOLUMES_MENU, strdup("No volumes mounted"));
 	m.title = strdup(" Mounted Volumes ");
 	m.execute_handler = &execute_volumes_cb;
 
-	for(c = TEXT('a'); c < TEXT('z'); c++)
+	for(c = 'a'; c <= 'z'; ++c)
 	{
 		if(drive_exists(c))
 		{
-			TCHAR drive[] = TEXT("?:\\");
-			drive[0] = c;
-			if(GetVolumeInformation(drive, vol_name, MAX_PATH, NULL, NULL, NULL,
-					file_buf, MAX_PATH))
+			const char drive[] = { c, ':', '\\', '\0' };
+			if(GetVolumeInformationA(drive, vol_name, sizeof(vol_name), NULL, NULL,
+					NULL, file_buf, sizeof(file_buf)))
 			{
 				char item_buf[MAX_PATH + 5];
 				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);

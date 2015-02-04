@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "utils_win.h"
+#include "utils.h"
 #include "utils_int.h"
 
 #include <ntdef.h>

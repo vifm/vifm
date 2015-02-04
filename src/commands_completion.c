@@ -49,6 +49,7 @@
 #ifdef _WIN32
 #include "menus/menus.h"
 #endif
+#include "modes/dialogs/msg_dialog.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
