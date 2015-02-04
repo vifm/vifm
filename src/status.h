@@ -138,6 +138,8 @@ typedef struct
 
 	int file_picker_mode; /* Whether vifm was started in file picking mode. */
 
+	const char *fuse_umount_cmd; /* Command to use for fuse unmounting. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

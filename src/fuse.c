@@ -392,7 +392,8 @@ fuse_unmount_all(void)
 		char *escaped_filename;
 
 		escaped_filename = escape_filename(runner->mount_point, 0);
-		snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_filename);
+		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
+				escaped_filename);
 		free(escaped_filename);
 
 		(void)vifm_system(buf);
@@ -469,7 +470,7 @@ fuse_try_unmount(FileView *view)
 
 	/* we are exiting a top level dir */
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
-	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
+	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
 			escaped_mount_point);
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
 	free(escaped_mount_point);

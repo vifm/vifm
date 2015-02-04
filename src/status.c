@@ -40,6 +40,7 @@
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "colors.h"
+#include "commands_completion.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -47,6 +48,7 @@
 #define TMUX_ENVVAR "TMUX"
 
 static void load_def_values(status_t *stats, config_t *config);
+static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(status_t *stats);
 static void set_last_cmdline_command(const char cmd[]);
@@ -64,6 +66,7 @@ init_status(config_t *config)
 	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
 
 	load_def_values(&curr_stats, config);
+	determine_fuse_umount_cmd(&curr_stats);
 	set_gtk_available(&curr_stats);
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
@@ -120,9 +123,30 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->file_picker_mode = 0;
 
+	stats->fuse_umount_cmd = "";
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif
+}
+
+/* Initializes stats->fuse_umount_cmd field of the stats. */
+static void
+determine_fuse_umount_cmd(status_t *stats)
+{
+	if(external_command_exists("fusermount"))
+	{
+		stats->fuse_umount_cmd = "fusermount -u";
+	}
+	else if(external_command_exists("umount"))
+	{
+		/* Some systems use regular umount command for FUSE. */
+		stats->fuse_umount_cmd = "umount";
+	}
+	else
+	{
+		/* Leave default value. */
+	}
 }
 
 static void
