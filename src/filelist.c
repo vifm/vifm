@@ -2314,7 +2314,10 @@ fill_dir_list(FileView *view)
 	struct dirent *d;
 
 	if((dir = os_opendir(view->curr_dir)) == NULL)
+	{
+		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
 		return -1;
+	}
 
 	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
 	{
