@@ -25,9 +25,6 @@
 #include <stddef.h> /* size_t */
 
 #include "utils/fs_limits.h"
-#ifdef _WIN32
-#include "utils/utils.h"
-#endif
 #include "colors.h"
 
 /* Pseudo name of the default built-in color scheme. */
