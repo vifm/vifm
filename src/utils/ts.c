@@ -35,10 +35,12 @@ ts_get_file_mtime(const char path[], timestamp_t *timestamp)
 	}
 
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
-	memcpy(timestamp, &s.st_mtim, sizeof(s.st_mtim));
+	memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
 #else
-	memcpy(timestamp, &s.st_mtime, sizeof(s.st_mtime));
+	memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
 #endif
+	timestamp->dev = s.st_dev;
+	timestamp->inode = s.st_ino;
 
 	return 0;
 }

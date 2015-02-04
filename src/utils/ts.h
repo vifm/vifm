@@ -19,16 +19,24 @@
 #ifndef VIFM__UTILS__TS_H__
 #define VIFM__UTILS__TS_H__
 
+#include <sys/types.h> /* dev_t ino_t */
+
 #include <time.h> /* time_t timespec */
 
 /* Various time stamp service functions. */
 
 /* Data type of timestamp storage. */
+typedef struct
+{
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
-typedef struct timespec timestamp_t;
+	struct timespec ts;
 #else
-typedef time_t timestamp_t;
+	time_t ts;
 #endif
+	dev_t dev;
+	ino_t inode;
+}
+timestamp_t;
 
 /* Gets last file modification timestamp.  Returns zero on success, otherwise
  * non-zero is returned. */
