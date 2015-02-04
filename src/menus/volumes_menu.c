@@ -46,7 +46,7 @@ show_volumes_menu(FileView *view)
 	m.title = strdup(" Mounted Volumes ");
 	m.execute_handler = &execute_volumes_cb;
 
-	for(c = TEXT('a'); c < TEXT('z'); c++)
+	for(c = TEXT('a'); c <= TEXT('z'); c++)
 	{
 		if(drive_exists(c))
 		{
