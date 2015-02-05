@@ -171,13 +171,11 @@ static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
-static void go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def,
-		int step);
+static void go_to_prev(key_info_t key_info, keys_info_t *keys_info, int step);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
-static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int def,
-		int step);
+static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int step);
 static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void put_files(key_info_t key_info, int move);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
@@ -1538,7 +1536,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view->ls_view)
 	{
-		go_to_prev(key_info, keys_info, 1, 1);
+		go_to_prev(key_info, keys_info, 1);
 	}
 	else
 	{
@@ -1560,7 +1558,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!at_last_line(curr_view))
 	{
-		go_to_next(key_info, keys_info, 1, curr_view->column_count);
+		go_to_next(key_info, keys_info, curr_view->column_count);
 	}
 }
 
@@ -1570,19 +1568,16 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!at_first_line(curr_view))
 	{
-		go_to_prev(key_info, keys_info, 1, curr_view->column_count);
+		go_to_prev(key_info, keys_info, curr_view->column_count);
 	}
 }
 
 /* Moves cursor to one of previous files in the list. */
 static void
-go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+go_to_prev(key_info_t key_info, keys_info_t *keys_info, int step)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = def;
-	key_info.count *= step;
-
-	pick_or_move(keys_info, curr_view->list_pos - key_info.count);
+	const int distance = def_count(key_info.count)*step;
+	pick_or_move(keys_info, curr_view->list_pos - distance);
 }
 
 static void
@@ -1590,7 +1585,7 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view->ls_view)
 	{
-		go_to_next(key_info, keys_info, 1, 1);
+		go_to_next(key_info, keys_info, 1);
 	}
 	else
 	{
@@ -1600,13 +1595,10 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 
 /* Moves cursor to one of next files in the list. */
 static void
-go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+go_to_next(key_info_t key_info, keys_info_t *keys_info, int step)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = def;
-	key_info.count *= step;
-
-	pick_or_move(keys_info, curr_view->list_pos + key_info.count);
+	const int distance = def_count(key_info.count)*step;
+	pick_or_move(keys_info, curr_view->list_pos + distance);
 }
 
 /* Set mark. */
@@ -2112,8 +2104,7 @@ pick_files(FileView *view, int end, keys_info_t *keys_info)
 
 	if(end < view->list_pos)
 	{
-		ui_view_schedule_reload(view);
-		view->list_pos = end;
+		move_to_list_pos(view, end);
 	}
 }
 

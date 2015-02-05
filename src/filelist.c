@@ -3501,6 +3501,12 @@ window_shows_dirlist(const FileView *const view)
 		return 0;
 	}
 
+	/* Don't redraw view when message dialog is drawn over it. */
+	if(vle_mode_is(MSG_MODE))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 
