@@ -2104,8 +2104,7 @@ pick_files(FileView *view, int end, keys_info_t *keys_info)
 
 	if(end < view->list_pos)
 	{
-		ui_view_schedule_reload(view);
-		view->list_pos = end;
+		move_to_list_pos(view, end);
 	}
 }
 
