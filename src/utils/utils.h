@@ -137,7 +137,8 @@ void expand_dquotes_escaping(char s[]);
  * Returns register name. */
 int def_reg(int reg);
 
-/* Gets correct count (user choice or the default one).  Returns the count. */
+/* Gets correct count (user choice or the default one (1)).  Returns the
+ * count. */
 int def_count(int count);
 
 /* Fills buf of the length buf_len with path to mount point of the path.
