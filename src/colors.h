@@ -33,7 +33,7 @@ col_attr_t;
  * color scheme. */
 enum
 {
-	WIN_COLOR,          /* Pane background. */
+	WIN_COLOR,          /* Pane background and default file highlight. */
 	DIRECTORY_COLOR,    /* Directory. */
 	LINK_COLOR,         /* Symbolic link. */
 	BROKEN_LINK_COLOR,  /* Dangling symbolic link. */
