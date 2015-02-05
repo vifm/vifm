@@ -283,8 +283,11 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 	 * and whole line for the current line. */
 	if(primary || current)
 	{
-		mix_colors(&col, &cs->color[line_color]);
 		mix_in_hi(view, entry, &col);
+		if(line_color != WIN_COLOR)
+		{
+			mix_colors(&col, &cs->color[line_color]);
+		}
 	}
 
 	if(entry->selected)
@@ -1363,8 +1366,11 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
-	mix_colors(&col, &cs->color[line_color]);
 	mix_in_hi(view, entry, &col);
+	if(line_color != WIN_COLOR)
+	{
+		mix_colors(&col, &cs->color[line_color]);
+	}
 
 	if(entry->selected)
 	{
