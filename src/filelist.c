@@ -132,7 +132,9 @@ static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
-static void mix_in_hi(const FileView *view, dir_entry_t *entry,
+static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
+		int type_hi, col_attr_t *col);
+static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
 static int get_line_color(const FileView *view, int pos);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
@@ -283,8 +285,7 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 	 * and whole line for the current line. */
 	if(primary || current)
 	{
-		mix_colors(&col, &cs->color[line_color]);
-		mix_in_hi(view, entry, &col);
+		mix_in_file_hi(view, entry, line_color, &col);
 	}
 
 	if(entry->selected)
@@ -1363,8 +1364,7 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
-	mix_colors(&col, &cs->color[line_color]);
-	mix_in_hi(view, entry, &col);
+	mix_in_file_hi(view, entry, line_color, &col);
 
 	if(entry->selected)
 	{
@@ -1379,9 +1379,26 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
-/* Applies filetype specific highlight for the entry. */
+/* Applies file name and file type specific highlights for the entry. */
 static void
-mix_in_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
+mix_in_file_hi(const FileView *view, dir_entry_t *entry, int type_hi,
+		col_attr_t *col)
+{
+	/* Apply file name specific highlights. */
+	mix_in_file_name_hi(view, entry, col);
+
+	/* Apply file type specific highlights for non-regular files (regular files
+	 * are colored the same way window is). */
+	if(type_hi != WIN_COLOR)
+	{
+		const col_scheme_t *cs = ui_view_get_cs(view);
+		mix_colors(col, &cs->color[type_hi]);
+	}
+}
+
+/* Applies file name specific highlight for the entry. */
+static void
+mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	const col_attr_t *color = get_file_hi(cs, entry->name, &entry->hi_num);

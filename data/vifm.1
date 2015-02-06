@@ -1,4 +1,4 @@
-.TH vifm 1 "January 25, 2015" "" "Vifm"
+.TH vifm 1 "February 06, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1673,7 +1673,8 @@ Available style values (some of them can be combined):
  \- none
 
 Available group-name values:
- \- Win \- color of all windows (views, dialogs, menus)
+ \- Win \- color of all windows (views, dialogs, menus) and default color for \
+their content (e.g. regular files in views)
  \- Border \- color of vertical parts of the border
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
@@ -1826,21 +1827,27 @@ transparency:
   CmdLine
     ErrorMsg
   Win
-    Directory
-    Link
-    BrokenLink
-    Socket
-    Device
-    Fifo
-    Executable
-      Selected
-        CurrLine
-        OtherLine
+    File name specific highlights
+      Directory
+      Link
+      BrokenLink
+      Socket
+      Device
+      Fifo
+      Executable
+        Selected
+          CurrLine
+          OtherLine
   TopLine
     TopLineSel
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
+
+Here file name specific highlights mean those configured via globs ({}) or
+regular expressions (//).  At most one of them is applied per file entry, namely
+the first that matches file name, hence order of :highlight commands might be
+important in certain cases.
 .TP
 .BI "                                         :history"
 .TP
