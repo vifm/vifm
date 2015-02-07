@@ -412,5 +412,35 @@ confirm_deletion(int use_trash)
 	return 1;
 }
 
+void
+show_errors_from_file(FILE *ef)
+{
+	char linebuf[160];
+	char buf[sizeof(linebuf)*5];
+
+	if(ef == NULL)
+		return;
+
+	buf[0] = '\0';
+	while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
+	{
+		if(linebuf[0] == '\n')
+			continue;
+		if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
+		{
+			int skip = (prompt_error_msg("Background Process Error", buf) != 0);
+			buf[0] = '\0';
+			if(skip)
+				break;
+		}
+		strcat(buf, linebuf);
+	}
+
+	if(buf[0] != '\0')
+		show_error_msg("Background Process Error", buf);
+
+	fclose(ef);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

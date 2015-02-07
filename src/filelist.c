@@ -53,6 +53,7 @@
 #include "ui/statusline.h"
 #include "ui/ui.h"
 #include "utils/env.h"
+#include "utils/filemon.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -63,7 +64,6 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
-#include "utils/ts.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_manager.h"
@@ -2314,7 +2314,10 @@ fill_dir_list(FileView *view)
 	struct dirent *d;
 
 	if((dir = os_opendir(view->curr_dir)) == NULL)
+	{
+		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
 		return -1;
+	}
 
 	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
 	{
@@ -3389,8 +3392,8 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	timestamp_t dir_mtime;
-	if(ts_get_file_mtime(view->curr_dir, &dir_mtime) != 0)
+	filemon_t mon;
+	if(filemon_from_file(view->curr_dir, &mon) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))
@@ -3412,7 +3415,7 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	if(!ts_equal(&dir_mtime, &view->dir_mtime))
+	if(!filemon_equal(&mon, &view->mon))
 #else
 	if(r > 0)
 #endif

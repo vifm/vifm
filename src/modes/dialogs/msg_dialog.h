@@ -22,6 +22,8 @@
 
 #include "../../ui/ui.h"
 
+#include <stdio.h> /* FILE */
+
 /* Initializes message dialog mode. */
 void init_msg_dialog_mode(void);
 
@@ -49,6 +51,10 @@ int query_user_menu(const char title[], const char message[]);
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */
 int confirm_deletion(int use_trash);
+
+/* Reads contents of the file and displays it in series of dialog messages.  ef
+ * can be NULL.  Closes ef. */
+void show_errors_from_file(FILE *ef);
 
 #endif /* VIFM__MODES__DIALOGS__MSG_DIALOG_H__ */
 

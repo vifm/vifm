@@ -24,9 +24,10 @@
 #include <sys/stat.h> /* S_IRWXU */
 #include <unistd.h> /* rmdir() unlink() */
 
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() fclose() */
-#include <stdlib.h> /* WIFEXITED free() */
+#include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
@@ -207,8 +208,8 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		return -1;
 	}
 
-	format_mount_command(mount_point, file_full_path, param,
-			program, sizeof(buf), buf, &foreground);
+	format_mount_command(mount_point, file_full_path, param, program, sizeof(buf),
+			buf, &foreground);
 
 	status_bar_message("FUSE mounting selected file, please stand by..");
 
@@ -227,19 +228,29 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 
 	clean_status_bar();
 
-	/* check child status */
-	if(!WIFEXITED(status) || WEXITSTATUS(status))
+	/* Check child process exit status. */
+	if(!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
 	{
-		FILE *ef = os_fopen(errors_file, "r");
-		print_errors(ef);
-		unlink(errors_file);
+		FILE *ef;
+
+		if(!WIFEXITED(status))
+		{
+			LOG_ERROR_MSG("FUSE mounter didn't exit!");
+		}
+		else
+		{
+			LOG_ERROR_MSG("FUSE mount command exit status: %d", WEXITSTATUS(status));
+		}
+
+		ef = os_fopen(errors_file, "r");
+		if(ef == NULL)
+		{
+			LOG_SERROR_MSG(errno, "Failed to open temporary stderr file: %s",
+					errors_file);
+		}
+		show_errors_from_file(ef);
 
 		werase(status_bar);
-		/* Remove the directory we created for the mount. */
-		if(path_exists(mount_point, DEREF))
-		{
-			rmdir(mount_point);
-		}
 
 		if(cancelled)
 		{
@@ -250,6 +261,14 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		{
 			show_error_msg("FUSE MOUNT ERROR", file_full_path);
 		}
+
+		if(unlink(errors_file) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Error file deletion failure: %d", errors_file);
+		}
+
+		/* Remove the directory we created for the mount. */
+		(void)rmdir(mount_point);
 
 		(void)vifm_chdir(view->curr_dir);
 		return -1;
@@ -373,7 +392,8 @@ fuse_unmount_all(void)
 		char *escaped_filename;
 
 		escaped_filename = escape_filename(runner->mount_point, 0);
-		snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_filename);
+		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
+				escaped_filename);
 		free(escaped_filename);
 
 		(void)vifm_system(buf);
@@ -450,7 +470,7 @@ fuse_try_unmount(FileView *view)
 
 	/* we are exiting a top level dir */
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
-	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
+	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
 			escaped_mount_point);
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
 	free(escaped_mount_point);

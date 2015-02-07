@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include <assert.h>
-#include <errno.h>
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
@@ -44,6 +44,7 @@
 #include "cfg/config.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
+#include "utils/log.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
@@ -267,9 +268,13 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		return 1;
 	}
 
+	(void)set_sigchld(1);
+
 	pid = fork();
 	if(pid == (pid_t)-1)
 	{
+		(void)set_sigchld(0);
+		LOG_SERROR_MSG(errno, "Forking has failed.");
 		return -1;
 	}
 
@@ -278,6 +283,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		extern char **environ;
 
 		char *args[4];
+
+		(void)set_sigchld(0);
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
@@ -296,6 +303,7 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 	{
 		if(errno != EINTR)
 		{
+			LOG_SERROR_MSG(errno, "Failed waiting for process: "PRINTF_PID_T, pid);
 			status = -1;
 			break;
 		}
@@ -310,6 +318,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		}
 		ui_cancellation_disable();
 	}
+
+	(void)set_sigchld(0);
 
 	return status;
 

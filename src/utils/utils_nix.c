@@ -47,6 +47,7 @@
 #include "../running.h"
 #include "../status.h"
 #include "env.h"
+#include "filemon.h"
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -54,7 +55,6 @@
 #include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
 #include "str.h"
-#include "ts.h"
 #include "utils.h"
 
 /* Types of mount point information for get_mount_point_traverser_state. */
@@ -377,18 +377,18 @@ int
 traverse_mount_points(mptraverser client, void *arg)
 {
 	/* Cached mount entries, updated only when /etc/mtab changes. */
-	static timestamp_t mtab_mtime;
+	static filemon_t mtab_mon;
 	static struct mntent *entries;
 	static unsigned int nentries;
 
-	timestamp_t mtime;
+	filemon_t mon;
 	unsigned int i;
 
 	/* Check for cache validity. */
-	if(ts_get_file_mtime("/etc/mtab", &mtime) != 0 ||
-			!ts_equal(&mtime, &mtab_mtime))
+	if(filemon_from_file("/etc/mtab", &mon) != 0 ||
+			!filemon_equal(&mon, &mtab_mon))
 	{
-		ts_assign(&mtab_mtime, &mtime);
+		filemon_assign(&mtab_mon, &mon);
 		free_mnt_entries(entries, nentries);
 		entries = read_mnt_entries(&nentries);
 	}
@@ -641,7 +641,7 @@ display_help(const char cmd[])
 int
 update_dir_mtime(FileView *view)
 {
-	return ts_get_file_mtime(view->curr_dir, &view->dir_mtime);
+	return filemon_from_file(view->curr_dir, &view->mon);
 }
 
 void

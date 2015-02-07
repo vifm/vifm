@@ -21,7 +21,6 @@
 #define VIFM__MENUS__MENUS_H__
 
 #include <stddef.h> /* wchar_t */
-#include <stdio.h> /* FILE */
 
 #include "../ui/ui.h"
 #include "../utils/test_helpers.h"
@@ -136,9 +135,6 @@ void goto_selected_file(FileView *view, const char spec[], int try_open);
 
 /* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
-
-/* Closes ef. */
-void print_errors(FILE *ef);
 
 /* Gets list of target files/directories in the current view.  On success
  * returns newly allocated string, which should be freed by the caller,

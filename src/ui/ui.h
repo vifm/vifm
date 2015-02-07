@@ -31,9 +31,9 @@
 #include <sys/types.h>
 #include <time.h> /* time_t */
 
+#include "../utils/filemon.h"
 #include "../utils/filter.h"
 #include "../utils/fs_limits.h"
-#include "../utils/ts.h"
 #include "../color_scheme.h"
 #include "../column_view.h"
 #include "../status.h"
@@ -163,7 +163,8 @@ typedef struct
 	WINDOW *title;
 	char curr_dir[PATH_MAX];
 #ifndef _WIN32
-	timestamp_t dir_mtime;
+	/* Monitor that checks for directory changes. */
+	filemon_t mon;
 #else
 	FILETIME dir_mtime;
 	HANDLE dir_watcher;

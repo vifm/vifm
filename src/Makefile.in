@@ -101,29 +101,29 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
 	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
 	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
-	utils/file_streams.$(OBJEXT) utils/filter.$(OBJEXT) \
-	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
-	utils/log.$(OBJEXT) utils/mntent.$(OBJEXT) \
-	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
-	utils/ts.$(OBJEXT) utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) background.$(OBJEXT) \
-	bookmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
-	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
-	event_loop.$(OBJEXT) globals.$(OBJEXT) file_magic.$(OBJEXT) \
-	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
-	fileops.$(OBJEXT) filetype.$(OBJEXT) fuse.$(OBJEXT) \
-	ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
-	vifm.$(OBJEXT) vim.$(OBJEXT)
+	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
+	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
+	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) \
+	background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
+	color_manager.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
+	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
+	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
+	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
+	macros.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	path_env.$(OBJEXT) quickview.$(OBJEXT) registers.$(OBJEXT) \
+	running.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	sort.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) \
+	term_title.$(OBJEXT) trash.$(OBJEXT) types.$(OBJEXT) \
+	undo.$(OBJEXT) version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) \
+	compile_info.$(OBJEXT) vifm.$(OBJEXT) vim.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -398,6 +398,7 @@ vifm_SOURCES = \
 	\
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
+	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
 	utils/int_stack.c utils/int_stack.h \
@@ -408,7 +409,6 @@ vifm_SOURCES = \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
-	utils/ts.c utils/ts.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \
@@ -707,6 +707,8 @@ utils/env.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/file_streams.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/filemon.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/filter.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
@@ -724,8 +726,6 @@ utils/str.$(OBJEXT): utils/$(am__dirstamp) \
 utils/string_array.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/tree.$(OBJEXT): utils/$(am__dirstamp) \
-	utils/$(DEPDIR)/$(am__dirstamp)
-utils/ts.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/utf8.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -834,6 +834,7 @@ mostlyclean-compile:
 	-rm -f ui/ui.$(OBJEXT)
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
+	-rm -f utils/filemon.$(OBJEXT)
 	-rm -f utils/filter.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
@@ -843,7 +844,6 @@ mostlyclean-compile:
 	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
 	-rm -f utils/tree.$(OBJEXT)
-	-rm -f utils/ts.$(OBJEXT)
 	-rm -f utils/utf8.$(OBJEXT)
 	-rm -f utils/utils.$(OBJEXT)
 	-rm -f utils/utils_nix.$(OBJEXT)
@@ -951,6 +951,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
@@ -960,7 +961,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/ts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utf8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils_nix.Po@am__quote@

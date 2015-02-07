@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 20 January, 2015
+Updated: 07 February, 2015
 Version: 0.7.8
 
 Brief Description
@@ -144,6 +144,7 @@ Package content
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
     |  |  |-- file_streams.c - file stream reading related functions
+    |  |  |-- filemon.c - file monitoring "object"
     |  |  |-- filter.c - small abstraction over filter driven by a regexp
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
@@ -152,7 +153,6 @@ Package content
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- tree.c - cache for ga command results
-    |  |  |-- ts.c - various time stamp service functions
     |  |  |-- utf8.c - functions to handle utf8 strings
     |  |  |-- utils.c - various utilities
     |  |  |-- utils_nix.c - various utilities for *nix systems
