@@ -248,7 +248,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 			LOG_SERROR_MSG(errno, "Failed to open temporary stderr file: %s",
 					errors_file);
 		}
-		print_errors(ef);
+		show_errors_from_file(ef);
 
 		werase(status_bar);
 

@@ -23,6 +23,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
+#include <stdio.h> /* FILE */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memmove() memset() strdup() strcat() strncat() strchr()
                        strlen() strrchr() */
@@ -634,7 +635,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	ui_cancellation_disable();
 
 	fclose(file);
-	print_errors(err);
+	show_errors_from_file(err);
 
 	if(ui_cancellation_requested())
 	{
@@ -714,36 +715,6 @@ display_menu(menu_info *m, FileView *view)
 		enter_menu_mode(m, view);
 		return 0;
 	}
-}
-
-void
-print_errors(FILE *ef)
-{
-	char linebuf[160];
-	char buf[sizeof(linebuf)*5];
-
-	if(ef == NULL)
-		return;
-
-	buf[0] = '\0';
-	while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
-	{
-		if(linebuf[0] == '\n')
-			continue;
-		if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
-		{
-			int skip = (prompt_error_msg("Background Process Error", buf) != 0);
-			buf[0] = '\0';
-			if(skip)
-				break;
-		}
-		strcat(buf, linebuf);
-	}
-
-	if(buf[0] != '\0')
-		show_error_msg("Background Process Error", buf);
-
-	fclose(ef);
 }
 
 char *
