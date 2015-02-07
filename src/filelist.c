@@ -3392,8 +3392,8 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	filemon_t dir_mtime;
-	if(filemon_from_file(view->curr_dir, &dir_mtime) != 0)
+	filemon_t mon;
+	if(filemon_from_file(view->curr_dir, &mon) != 0)
 #else
 	int r;
 	if(is_unc_root(view->curr_dir))
@@ -3415,7 +3415,7 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
-	if(!filemon_equal(&dir_mtime, &view->dir_mtime))
+	if(!filemon_equal(&mon, &view->mon))
 #else
 	if(r > 0)
 #endif

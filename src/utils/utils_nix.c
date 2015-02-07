@@ -641,7 +641,7 @@ display_help(const char cmd[])
 int
 update_dir_mtime(FileView *view)
 {
-	return filemon_from_file(view->curr_dir, &view->dir_mtime);
+	return filemon_from_file(view->curr_dir, &view->mon);
 }
 
 void

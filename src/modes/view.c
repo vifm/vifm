@@ -87,8 +87,8 @@ typedef struct
 	int abandoned; /* Shows whether view mode was abandoned. */
 	char *filename;
 
-	int auto_forward;       /* Whether auto forwarding (tail -F) is enabled. */
-	filemon_t file_mtime; /* Time stamp for auto forwarding mode. */
+	int auto_forward;   /* Whether auto forwarding (tail -F) is enabled. */
+	filemon_t file_mon; /* File monitor for auto forwarding mode. */
 }
 view_info_t;
 
@@ -1064,7 +1064,7 @@ replace_vi(view_info_t *const orig, view_info_t *const new)
 	new->linev = orig->linev;
 	new->view = orig->view;
 	new->auto_forward = orig->auto_forward;
-	filemon_assign(&new->file_mtime, &orig->file_mtime);
+	filemon_assign(&new->file_mon, &orig->file_mon);
 
 	free_view_info(orig);
 	*orig = *new;
@@ -1494,24 +1494,24 @@ view_check_for_updates(void)
 static int
 forward_if_changed(view_info_t *vi)
 {
-	filemon_t mtime;
+	filemon_t mon;
 
 	if(!vi->auto_forward)
 	{
 		return 0;
 	}
 
-	if(filemon_from_file(vi->filename, &mtime) != 0)
+	if(filemon_from_file(vi->filename, &mon) != 0)
 	{
 		return 0;
 	}
 
-	if(filemon_equal(&mtime, &vi->file_mtime))
+	if(filemon_equal(&mon, &vi->file_mon))
 	{
 		return 0;
 	}
 
-	filemon_assign(&vi->file_mtime, &mtime);
+	filemon_assign(&vi->file_mon, &mon);
 	reload_view(vi, SILENT);
 	return scroll_to_bottom(vi);
 }

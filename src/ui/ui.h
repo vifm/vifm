@@ -163,7 +163,8 @@ typedef struct
 	WINDOW *title;
 	char curr_dir[PATH_MAX];
 #ifndef _WIN32
-	filemon_t dir_mtime;
+	/* Monitor that checks for directory changes. */
+	filemon_t mon;
 #else
 	FILETIME dir_mtime;
 	HANDLE dir_watcher;
