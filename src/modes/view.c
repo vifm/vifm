@@ -35,13 +35,13 @@
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
+#include "../utils/filemon.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/ts.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../color_manager.h"
@@ -88,7 +88,7 @@ typedef struct
 	char *filename;
 
 	int auto_forward;       /* Whether auto forwarding (tail -F) is enabled. */
-	timestamp_t file_mtime; /* Time stamp for auto forwarding mode. */
+	filemon_t file_mtime; /* Time stamp for auto forwarding mode. */
 }
 view_info_t;
 
@@ -1064,7 +1064,7 @@ replace_vi(view_info_t *const orig, view_info_t *const new)
 	new->linev = orig->linev;
 	new->view = orig->view;
 	new->auto_forward = orig->auto_forward;
-	ts_assign(&new->file_mtime, &orig->file_mtime);
+	filemon_assign(&new->file_mtime, &orig->file_mtime);
 
 	free_view_info(orig);
 	*orig = *new;
@@ -1494,24 +1494,24 @@ view_check_for_updates(void)
 static int
 forward_if_changed(view_info_t *vi)
 {
-	timestamp_t mtime;
+	filemon_t mtime;
 
 	if(!vi->auto_forward)
 	{
 		return 0;
 	}
 
-	if(ts_get_file_mtime(vi->filename, &mtime) != 0)
+	if(filemon_from_file(vi->filename, &mtime) != 0)
 	{
 		return 0;
 	}
 
-	if(ts_equal(&mtime, &vi->file_mtime))
+	if(filemon_equal(&mtime, &vi->file_mtime))
 	{
 		return 0;
 	}
 
-	ts_assign(&vi->file_mtime, &mtime);
+	filemon_assign(&vi->file_mtime, &mtime);
 	reload_view(vi, SILENT);
 	return scroll_to_bottom(vi);
 }

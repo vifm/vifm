@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__TS_H__
-#define VIFM__UTILS__TS_H__
+#ifndef VIFM__UTILS__FILEMON_H__
+#define VIFM__UTILS__FILEMON_H__
 
 #include <sys/types.h> /* dev_t ino_t */
 
@@ -25,7 +25,7 @@
 
 /* Various time stamp service functions. */
 
-/* Data type of timestamp storage. */
+/* Storage for file monitoring information. */
 typedef struct
 {
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
@@ -36,20 +36,20 @@ typedef struct
 	dev_t dev;
 	ino_t inode;
 }
-timestamp_t;
+filemon_t;
 
-/* Gets last file modification timestamp.  Returns zero on success, otherwise
- * non-zero is returned. */
-int ts_get_file_mtime(const char path[], timestamp_t *timestamp);
+/* Sets file monitor from a file.  Returns zero on success, otherwise non-zero
+ * is returned. */
+int filemon_from_file(const char path[], filemon_t *timestamp);
 
 /* Checks whether two timestamps are equal.  Returns non-zero if so, otherwise
  * zero is returned. */
-int ts_equal(const timestamp_t *a, const timestamp_t *b);
+int filemon_equal(const filemon_t *a, const filemon_t *b);
 
 /* Assigns value of the *rhs to *lhs. */
-void ts_assign(timestamp_t *lhs, const timestamp_t *rhs);
+void filemon_assign(filemon_t *lhs, const filemon_t *rhs);
 
-#endif /* VIFM__UTILS__TS_H__ */
+#endif /* VIFM__UTILS__FILEMON_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -128,6 +128,7 @@ vifm_SOURCES = \
 	\
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
+	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
 	utils/int_stack.c utils/int_stack.h \
@@ -138,7 +139,6 @@ vifm_SOURCES = \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
-	utils/ts.c utils/ts.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \

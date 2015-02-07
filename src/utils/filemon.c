@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "ts.h"
+#include "filemon.h"
 
 #include <sys/stat.h> /* stat */
 
@@ -25,7 +25,7 @@
 #include "../compat/os.h"
 
 int
-ts_get_file_mtime(const char path[], timestamp_t *timestamp)
+filemon_from_file(const char path[], filemon_t *timestamp)
 {
 	struct stat s;
 
@@ -46,13 +46,13 @@ ts_get_file_mtime(const char path[], timestamp_t *timestamp)
 }
 
 int
-ts_equal(const timestamp_t *a, const timestamp_t *b)
+filemon_equal(const filemon_t *a, const filemon_t *b)
 {
 	return memcmp(a, b, sizeof(*a)) == 0;
 }
 
 void
-ts_assign(timestamp_t *lhs, const timestamp_t *rhs)
+filemon_assign(filemon_t *lhs, const filemon_t *rhs)
 {
 	memcpy(lhs, rhs, sizeof(*rhs));
 }
