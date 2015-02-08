@@ -55,6 +55,7 @@ void expand_status_line_macros_tests(void);
 void surrounded_with_tests(void);
 void is_in_str_list_tests(void);
 void filename_specific_highlight_tests(void);
+void flist_custom_tests(void);
 
 void
 all_tests(void)
@@ -114,6 +115,7 @@ all_tests(void)
 	surrounded_with_tests();
 	is_in_str_list_tests();
 	filename_specific_highlight_tests();
+	flist_custom_tests();
 }
 
 int

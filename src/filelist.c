@@ -168,7 +168,8 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
-static dir_entry_t * entry_from_path(FileView *view, const char path[]);
+static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
+		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
@@ -2536,7 +2537,8 @@ flist_custom_add(FileView *view, const char path[])
 	dir_entry_t *dir_entry;
 
 	/* Don't add duplicates. */
-	if(entry_from_path(view, path) != NULL)
+	if(entry_from_path(view->custom.entries, view->custom.entry_count,
+				path) != NULL)
 	{
 		return;
 	}
@@ -2738,17 +2740,17 @@ flist_custom_finish(FileView *view)
 void
 flist_goto_by_path(FileView *view, const char path[])
 {
-	dir_entry_t *const entry = entry_from_path(view, path);
+	dir_entry_t *entry = entry_from_path(view->dir_entry, view->list_rows, path);
 	if(entry != NULL)
 	{
 		view->list_pos = entry_to_pos(view, entry);
 	}
 }
 
-/* Finds directory entry in the view by the path.  Returns pointer to the found
- * entry or NULL. */
+/* Finds directory entry in the list of entries by the path.  Returns pointer to
+ * the found entry or NULL. */
 static dir_entry_t *
-entry_from_path(FileView *view, const char path[])
+entry_from_path(dir_entry_t *entries, int count, const char path[])
 {
 	char canonic_path[PATH_MAX];
 	const char *fname;
@@ -2760,10 +2762,10 @@ entry_from_path(FileView *view, const char path[])
 	}
 
 	fname = get_last_path_component(canonic_path);
-	for(i = 0; i < view->list_rows; ++i)
+	for(i = 0; i < count; ++i)
 	{
 		char full_path[PATH_MAX];
-		dir_entry_t *const entry = &view->dir_entry[i];
+		dir_entry_t *const entry = &entries[i];
 
 		if(stroscmp(entry->name, fname) != 0)
 		{
@@ -3261,7 +3263,7 @@ load_unfiltered_list(FileView *const view)
 		populate_dir_list(view, 1);
 
 		/* Resolve current file position in updated list. */
-		entry = entry_from_path(view, full_path);
+		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
 		if(entry != NULL)
 		{
 			current_file_pos = entry_to_pos(view, entry);
