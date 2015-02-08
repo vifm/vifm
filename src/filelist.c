@@ -41,7 +41,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() calloc() free() malloc() realloc() */
-#include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
+#include <string.h> /* memcpy() memset() strcat() strcmp() strcpy() strdup()
+                       strlen() */
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
@@ -186,6 +187,8 @@ static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
 static int load_unfiltered_list(FileView *const view);
+static void replace_dir_entries(FileView *view, dir_entry_t **entries,
+		int *count, const dir_entry_t *with_entries, int with_count);
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static int get_unfiltered_pos(const FileView *const view, int pos);
@@ -2836,6 +2839,13 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
+		if(view->custom.entry_count != 0)
+		{
+			/* Load initial list of custom entries if it's available. */
+			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
+					view->custom.entries, view->custom.entry_count);
+		}
+
 		sort_dir_list(!reload, view);
 		return 0;
 	}
@@ -3245,6 +3255,12 @@ load_unfiltered_list(FileView *const view)
 			current_file_pos = view->list_rows - 1;
 		}
 	}
+	else
+	{
+		/* Save unfiltered (by local filter) list for further use. */
+		replace_dir_entries(view, &view->custom.entries,
+				&view->custom.entry_count, view->dir_entry, view->list_rows);
+	}
 
 	view->local_filter.unfiltered = view->dir_entry;
 	view->local_filter.unfiltered_count = view->list_rows;
@@ -3252,6 +3268,41 @@ load_unfiltered_list(FileView *const view)
 	view->dir_entry = NULL;
 
 	return current_file_pos;
+}
+
+/* Replaces all entries of the *entries with copy of with_entries elements. */
+static void
+replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
+		const dir_entry_t *with_entries, int with_count)
+{
+	dir_entry_t *new;
+	int i;
+
+	new = malloc(sizeof(*new)*with_count);
+	if(new == NULL)
+	{
+		return;
+	}
+
+	memcpy(new, with_entries, sizeof(*new)*with_count);
+
+	for(i = 0; i < with_count; ++i)
+	{
+		dir_entry_t *const entry = &new[i];
+		entry->name = strdup(entry->name);
+		entry->origin = strdup(entry->origin);
+
+		if(entry->name == NULL || entry->origin == NULL)
+		{
+			int count_so_far = i + 1;
+			free_dir_entries(view, &new, &count_so_far);
+			return;
+		}
+	}
+
+	free_dir_entries(view, entries, count);
+	*entries = new;
+	*count = with_count;
 }
 
 /* Frees list of directory entries related to the view.  Sets *entries and
