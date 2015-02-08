@@ -174,8 +174,6 @@ static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
-static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
-static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
@@ -188,6 +186,8 @@ static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
 static int load_unfiltered_list(FileView *const view);
+static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
+static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
 static int extract_previously_selected_pos(FileView *const view);
@@ -2947,35 +2947,6 @@ free_view_entries(FileView *view)
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 }
 
-/* Frees list of directory entries related to the view. */
-static void
-free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
-{
-	int i;
-	for(i = 0; i < *count; ++i)
-	{
-		free_dir_entry(view, &(*entries)[i]);
-	}
-
-	free(*entries);
-	*entries = NULL;
-	*count = 0;
-}
-
-/* Frees single directory entry. */
-static void
-free_dir_entry(const FileView *view, dir_entry_t *entry)
-{
-	free(entry->name);
-	entry->name = NULL;
-
-	if(entry->origin != &view->curr_dir[0])
-	{
-		free(entry->origin);
-		entry->origin = NULL;
-	}
-}
-
 void
 resort_dir_list(int msg, FileView *view)
 {
@@ -3281,6 +3252,36 @@ load_unfiltered_list(FileView *const view)
 	view->dir_entry = NULL;
 
 	return current_file_pos;
+}
+
+/* Frees list of directory entries related to the view.  Sets *entries and
+ * *count to safe values. */
+static void
+free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
+{
+	int i;
+	for(i = 0; i < *count; ++i)
+	{
+		free_dir_entry(view, &(*entries)[i]);
+	}
+
+	free(*entries);
+	*entries = NULL;
+	*count = 0;
+}
+
+/* Frees single directory entry. */
+static void
+free_dir_entry(const FileView *view, dir_entry_t *entry)
+{
+	free(entry->name);
+	entry->name = NULL;
+
+	if(entry->origin != &view->curr_dir[0])
+	{
+		free(entry->origin);
+		entry->origin = NULL;
+	}
 }
 
 /* Gets position of an item in dir_entry list at position pos in the unfiltered
