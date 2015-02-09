@@ -223,7 +223,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 		switch(c)
 		{
 			case 't':
-				format_entry_name(curr_view, view->list_pos, sizeof(buf), buf);
+				format_entry_name(view, view->list_pos, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32
