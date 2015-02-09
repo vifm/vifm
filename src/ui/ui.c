@@ -1194,7 +1194,7 @@ ui_views_update_titles(void)
 void
 ui_view_title_update(FileView *view)
 {
-	char *buf;
+	char *title;
 	size_t len;
 	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
 	FileView *selected = gen_view ? other_view : curr_view;
@@ -1227,37 +1227,37 @@ ui_view_title_update(FileView *view)
 	}
 	werase(view->title);
 
-	buf = replace_home_part(view->curr_dir);
-
 	if(view->explore_mode)
 	{
 		char full_path[PATH_MAX];
 		get_current_full_path(view, sizeof(full_path), full_path);
-		buf = replace_home_part(full_path);
+		title = strdup(replace_home_part(full_path));
 	}
 	else if(curr_stats.view && view == other_view)
 	{
-		strcpy(buf, "File: ");
-		strcat(buf, get_current_file_name(curr_view));
+		title = format_str("File: %s", get_current_file_name(curr_view));
 	}
 	else if(flist_custom_active(view))
 	{
-		strcpy(buf, "[");
-		strcat(buf, view->custom.title);
-		strcat(buf, "]");
+		title = format_str("[%s] @ %s", view->custom.title,
+				replace_home_part(view->custom.orig_dir));
+	}
+	else
+	{
+		title = strdup(replace_home_part(view->curr_dir));
 	}
 
 	if(view == selected)
 	{
-		set_term_title(buf);
+		set_term_title(title);
 	}
 
-	len = get_screen_string_length(buf);
+	len = get_screen_string_length(title);
 	if(len > view->window_width + 1 && view == selected)
 	{ /* Truncate long directory names */
 		const char *ptr;
 
-		ptr = buf;
+		ptr = title;
 		while(len > view->window_width - 2)
 		{
 			len--;
@@ -1269,17 +1269,20 @@ ui_view_title_update(FileView *view)
 	}
 	else if(len > view->window_width + 1 && view != selected)
 	{
-		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
-		buf[len] = '\0';
-		wprint(view->title, buf);
+		size_t len = get_normal_utf8_string_widthn(title,
+				view->window_width - 3 + 1);
+		title[len] = '\0';
+		wprint(view->title, title);
 		wprintw(view->title, "...");
 	}
 	else
 	{
-		wprint(view->title, buf);
+		wprint(view->title, title);
 	}
 
 	wnoutrefresh(view->title);
+
+	free(title);
 }
 
 int
