@@ -1435,7 +1435,7 @@ delete(key_info_t key_info, int use_trash)
 {
 	keys_info_t keys_info = {};
 
-	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	if(!is_view_dir_writable(curr_view))
 	{
 		return;
 	}
@@ -1462,7 +1462,7 @@ delete(key_info_t key_info, int use_trash)
 static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	if(!is_view_dir_writable(curr_view))
 	{
 		return;
 	}

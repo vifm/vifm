@@ -84,6 +84,14 @@ typedef enum
 }
 RenameAction;
 
+/* Path roles for check_if_dir_writable() function. */
+typedef enum
+{
+	DR_CURRENT,     /* Current (source) path. */
+	DR_DESTINATION, /* Destination path. */
+}
+DirRole;
+
 static char rename_file_ext[NAME_MAX];
 
 static struct
@@ -197,6 +205,7 @@ static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
+static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(void *arg);
@@ -361,7 +370,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	int nmarked_files;
 	ops_t *ops;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -500,7 +509,7 @@ delete_files_bg(FileView *view, int use_trash)
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -635,7 +644,7 @@ rename_current_file(FileView *view, int name_only)
 	const char *const old = get_current_file_name(view);
 	char filename[strlen(old) + 1];
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return;
 	}
@@ -876,7 +885,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -1385,7 +1394,7 @@ change_link(FileView *view)
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -2015,7 +2024,7 @@ initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
 	registers_t *reg;
 	int i;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -2253,7 +2262,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	dir_entry_t *entry;
 	int err, save_msg;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -2366,7 +2375,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 
 	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -2461,7 +2470,7 @@ change_case(FileView *view, int toupper)
 	int save_msg;
 	int err;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -2866,7 +2875,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+		if(!is_view_dir_writable(view))
 		{
 			return -1;
 		}
@@ -3281,7 +3290,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int n;
 	void *cp;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return;
 	}
@@ -3356,7 +3365,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!is_view_dir_writable(view))
 	{
 		return 0;
 	}
@@ -3491,7 +3500,16 @@ get_cancellation_suffix(void)
 }
 
 int
-check_if_dir_writable(DirRole dir_role, const char *path)
+is_view_dir_writable(const FileView *view)
+{
+	return check_if_dir_writable(DR_CURRENT, view->curr_dir);
+}
+
+/* This is a wrapper for is_dir_writable() function, which adds message
+ * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
+ * returned. */
+static int
+check_if_dir_writable(DirRole dir_role, const char path[])
 {
 	if(is_dir_writable(path))
 		return 1;
