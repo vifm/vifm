@@ -3502,7 +3502,8 @@ get_cancellation_suffix(void)
 int
 is_view_dir_writable(const FileView *view)
 {
-	return check_if_dir_writable(DR_CURRENT, view->curr_dir);
+	return flist_custom_active(view)
+	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
 }
 
 /* This is a wrapper for is_dir_writable() function, which adds message
