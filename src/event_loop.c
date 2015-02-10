@@ -43,6 +43,7 @@
 #include "ipc.h"
 #include "status.h"
 
+static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
 static void process_scheduled_updates_of_view(FileView *view);
@@ -82,32 +83,14 @@ event_loop(const int *quit)
 		size_t counter;
 		int got_input;
 
-		is_term_working();
-
-		update_terminal_settings();
-
-		lwin.user_selection = 1;
-		rwin.user_selection = 1;
-
-		if(curr_stats.term_state == TS_TOO_SMALL)
+		if(!ensure_term_is_ready())
 		{
-			ui_display_too_small_term_msg();
-			wait_for_signal();
+			wait_for_enter = 0;
 			continue;
 		}
 
-		if(curr_stats.term_state == TS_BACK_TO_NORMAL)
-		{
-			wtimeout(status_bar, 0);
-			while(wget_wch(status_bar, &c) != ERR);
-			curr_stats.term_state = TS_NORMAL;
-			modes_redraw();
-			wtimeout(status_bar, cfg.timeout_len);
-
-			wait_for_enter = 0;
-			curr_stats.save_msg = 0;
-			status_bar_message("");
-		}
+		lwin.user_selection = 1;
+		rwin.user_selection = 1;
 
 		modes_pre();
 
@@ -239,6 +222,39 @@ event_loop(const int *quit)
 
 	curr_input_buf = prev_input_buf;
 	curr_input_buf_pos = prev_input_buf_pos;
+}
+
+/* Ensures that terminal is in proper state for a loop iteration.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+ensure_term_is_ready(void)
+{
+	is_term_working();
+
+	update_terminal_settings();
+
+	if(curr_stats.term_state == TS_TOO_SMALL)
+	{
+		ui_display_too_small_term_msg();
+		wait_for_signal();
+		return 0;
+	}
+
+	if(curr_stats.term_state == TS_BACK_TO_NORMAL)
+	{
+		wint_t c;
+
+		wtimeout(status_bar, 0);
+		while(wget_wch(status_bar, &c) != ERR);
+		curr_stats.term_state = TS_NORMAL;
+		modes_redraw();
+		wtimeout(status_bar, cfg.timeout_len);
+
+		curr_stats.save_msg = 0;
+		status_bar_message("");
+	}
+
+	return 1;
 }
 
 /* Sub-loop of the main loop that "asynchronously" queries for the input
