@@ -68,6 +68,15 @@ typedef enum
 }
 UpdateType;
 
+/* Possible states of terminal with regard to its size. */
+typedef enum
+{
+	TS_NORMAL,         /* OK to draw UI. */
+	TS_TOO_SMALL,      /* Too small terminal. */
+	TS_BACK_TO_NORMAL, /* Was too small some moments ago, need to restore UI. */
+}
+TermState;
+
 typedef enum
 {
 	/* Shell that is aware of command escaping and backslashes in paths. */
@@ -91,7 +100,8 @@ typedef struct
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
-	int too_small_term;
+	/* Describes terminal state with regard to its dimentions. */
+	TermState term_state;
 
 	tree_t dirsize_cache; /* ga command results */
 

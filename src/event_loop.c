@@ -89,17 +89,18 @@ event_loop(const int *quit)
 		lwin.user_selection = 1;
 		rwin.user_selection = 1;
 
-		if(curr_stats.too_small_term > 0)
+		if(curr_stats.term_state == TS_TOO_SMALL)
 		{
 			ui_display_too_small_term_msg();
 			wait_for_signal();
 			continue;
 		}
-		else if(curr_stats.too_small_term < 0)
+
+		if(curr_stats.term_state == TS_BACK_TO_NORMAL)
 		{
 			wtimeout(status_bar, 0);
 			while(wget_wch(status_bar, &c) != ERR);
-			curr_stats.too_small_term = 0;
+			curr_stats.term_state = TS_NORMAL;
 			modes_redraw();
 			wtimeout(status_bar, cfg.timeout_len);
 

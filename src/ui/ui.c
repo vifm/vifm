@@ -205,11 +205,11 @@ is_term_working(void)
 
 	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
 	{
-		curr_stats.too_small_term = 1;
+		curr_stats.term_state = TS_TOO_SMALL;
 	}
-	else if(curr_stats.too_small_term)
+	else if(curr_stats.term_state != TS_NORMAL)
 	{
-		curr_stats.too_small_term = -1;
+		curr_stats.term_state = TS_BACK_TO_NORMAL;
 	}
 }
 
@@ -364,12 +364,12 @@ resize_all(void)
 
 	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
 	{
-		curr_stats.too_small_term = 1;
+		curr_stats.term_state = TS_TOO_SMALL;
 		return;
 	}
-	else if(curr_stats.too_small_term)
+	else if(curr_stats.term_state != TS_NORMAL)
 	{
-		curr_stats.too_small_term = -1;
+		curr_stats.term_state = TS_BACK_TO_NORMAL;
 		return;
 	}
 
@@ -489,7 +489,7 @@ update_screen(UpdateType update_kind)
 	}
 	clear_border(mborder);
 
-	if(curr_stats.too_small_term)
+	if(curr_stats.term_state != TS_NORMAL)
 	{
 		return;
 	}

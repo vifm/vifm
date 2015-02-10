@@ -91,7 +91,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->view = 0;
 	stats->use_input_bar = 1;
 	stats->load_stage = 0;
-	stats->too_small_term = 0;
+	stats->term_state = TS_NORMAL;
 	stats->dirsize_cache = NULL_TREE;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
