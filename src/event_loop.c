@@ -78,7 +78,7 @@ event_loop(const int *quit)
 
 	while(!*quit)
 	{
-		wchar_t c;
+		wint_t c;
 		size_t counter;
 		int ret;
 
@@ -107,7 +107,7 @@ event_loop(const int *quit)
 		else if(curr_stats.too_small_term < 0)
 		{
 			wtimeout(status_bar, 0);
-			while(wget_wch(status_bar, (wint_t*)&c) != ERR);
+			while(wget_wch(status_bar, &c) != ERR);
 			curr_stats.too_small_term = 0;
 			modes_redraw();
 			wtimeout(status_bar, cfg.timeout_len);
@@ -125,7 +125,7 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
-			ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
+			ret = get_char_async_loop(status_bar, &c, timeout);
 			if(ret == ERR && input_buf_pos == 0)
 			{
 				timeout = cfg.timeout_len;
