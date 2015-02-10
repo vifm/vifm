@@ -173,6 +173,7 @@ static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static void zap_dead_entries(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
@@ -2846,6 +2847,7 @@ populate_dir_list_internal(FileView *view, int reload)
 					view->custom.entries, view->custom.entry_count);
 		}
 
+		zap_dead_entries(view);
 		sort_dir_list(!reload, view);
 		return 0;
 	}
@@ -2929,6 +2931,39 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	return 0;
+}
+
+/* Removes dead entries (those that refer to non-existing files) from the
+ * view. */
+static void
+zap_dead_entries(FileView *view)
+{
+	int i, j;
+
+	j = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(!path_exists_at(entry->origin, entry->name, DEREF))
+		{
+			free_dir_entry(view, entry);
+			continue;
+		}
+
+		if(i != j)
+		{
+			view->dir_entry[j] = view->dir_entry[i];
+		}
+
+		++j;
+	}
+
+	view->list_rows = j;
+
+	if(view->list_rows == 0)
+	{
+		add_parent_dir(view);
+	}
 }
 
 /* Checks for subjectively relative size of a directory specified by the path
