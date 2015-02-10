@@ -202,15 +202,7 @@ is_term_working(void)
 
 	update_term_size();
 	getmaxyx(stdscr, screen_y, screen_x);
-
-	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
-	{
-		curr_stats.term_state = TS_TOO_SMALL;
-	}
-	else if(curr_stats.term_state != TS_NORMAL)
-	{
-		curr_stats.term_state = TS_BACK_TO_NORMAL;
-	}
+	(void)stats_update_term_state(screen_x, screen_y);
 }
 
 static void
@@ -362,14 +354,8 @@ resize_all(void)
 
 	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 
-	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
+	if(stats_update_term_state(screen_x, screen_y) != TS_NORMAL)
 	{
-		curr_stats.term_state = TS_TOO_SMALL;
-		return;
-	}
-	else if(curr_stats.term_state != TS_NORMAL)
-	{
-		curr_stats.term_state = TS_BACK_TO_NORMAL;
 		return;
 	}
 

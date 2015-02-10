@@ -100,7 +100,7 @@ typedef struct
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
-	/* Describes terminal state with regard to its dimentions. */
+	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
 
 	tree_t dirsize_cache; /* ga command results */
@@ -181,6 +181,10 @@ void update_last_cmdline_command(const char cmd[]);
 
 /* Updates curr_stats.shell_type field according to passed shell command. */
 void stats_update_shell_type(const char shell_cmd[]);
+
+/* Updates curr_stats.term_state field according to specified terminal
+ * dimensions.  Returns new state. */
+TermState stats_update_term_state(int screen_x, int screen_y);
 
 #endif /* VIFM__STATUS_H__ */
 
