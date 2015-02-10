@@ -2084,6 +2084,24 @@ navigate_back(FileView *view)
 	navigate_to(view, dest);
 }
 
+void
+navigate_to_file(FileView *view, const char dir[], const char file[])
+{
+	/* Do not change directory if we already there. */
+	if(!paths_are_equal(view->curr_dir, dir))
+	{
+		if(change_directory(view, dir) >= 0)
+		{
+			load_dir_list(view, 1);
+		}
+	}
+
+	if(paths_are_equal(view->curr_dir, dir))
+	{
+		(void)ensure_file_is_selected(view, file);
+	}
+}
+
 int
 change_directory(FileView *view, const char directory[])
 {

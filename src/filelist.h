@@ -155,6 +155,10 @@ void navigate_to(FileView *view, const char path[]);
 /* Changes current directory of the view to location the view was before last
  * directory change. */
 void navigate_back(FileView *view);
+/* Changes current directory of the view to the dir if it's possible and in case
+ * of success reloads filelist of the view and sets its cursor position on the
+ * file trying to ensure that it's visible. */
+void navigate_to_file(FileView *view, const char dir[], const char file[]);
 /* The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share

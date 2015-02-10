@@ -299,33 +299,25 @@ navigate_to_bookmark(FileView *view, char mark)
 
 	if(is_bmark_valid(bmark))
 	{
-		/* Do not change directory if we already there. */
-		if(!paths_are_equal(view->curr_dir, bmark->directory))
-		{
-			if(change_directory(view, bmark->directory) >= 0)
-			{
-				load_dir_list(view, 1);
-			}
-		}
+		navigate_to_file(view, bmark->directory, bmark->file);
+		return 0;
+	}
 
-		if(paths_are_equal(view->curr_dir, bmark->directory))
-		{
-			(void)ensure_file_is_selected(view, bmark->file);
-		}
+	if(!char_is_one_of(valid_bookmarks, mark))
+	{
+		status_bar_message("Invalid mark name");
+	}
+	else if(is_bmark_empty(bmark))
+	{
+		status_bar_message("Mark is not set");
 	}
 	else
 	{
-		if(!char_is_one_of(valid_bookmarks, mark))
-			status_bar_message("Invalid mark name");
-		else if(is_bmark_empty(bmark))
-			status_bar_message("Mark is not set");
-		else
-			status_bar_message("Mark is invalid");
-
-		move_to_list_pos(view, view->list_pos);
-		return 1;
+		status_bar_message("Mark is invalid");
 	}
-	return 0;
+
+	move_to_list_pos(view, view->list_pos);
+	return 1;
 }
 
 /* Gets bookmark data structure by name of a bookmark.  Returns pointer to
