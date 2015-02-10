@@ -68,7 +68,7 @@ event_loop(const int *quit)
 	int input_buf_pos;
 
 	int last_result = 0;
-	int wait_enter = 0;
+	int wait_for_enter = 0;
 	int timeout = cfg.timeout_len;
 
 	input_buf[0] = L'\0';
@@ -103,7 +103,7 @@ event_loop(const int *quit)
 			modes_redraw();
 			wtimeout(status_bar, cfg.timeout_len);
 
-			wait_enter = 0;
+			wait_for_enter = 0;
 			curr_stats.save_msg = 0;
 			status_bar_message("");
 		}
@@ -140,9 +140,9 @@ event_loop(const int *quit)
 				continue;
 			}
 
-			if(wait_enter)
+			if(wait_for_enter)
 			{
-				wait_enter = 0;
+				wait_for_enter = 0;
 				curr_stats.save_msg = 0;
 				clean_status_bar();
 				if(c == L'\x0d')
@@ -153,7 +153,7 @@ event_loop(const int *quit)
 			input_buf[input_buf_pos] = L'\0';
 		}
 
-		if(wait_enter && !got_input)
+		if(wait_for_enter && !got_input)
 		{
 			continue;
 		}
@@ -224,7 +224,7 @@ event_loop(const int *quit)
 
 		if(is_status_bar_multiline())
 		{
-			wait_enter = 1;
+			wait_for_enter = 1;
 			update_all_windows();
 			continue;
 		}
