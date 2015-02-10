@@ -80,7 +80,7 @@ event_loop(const int *quit)
 	{
 		wint_t c;
 		size_t counter;
-		int ret;
+		int got_input;
 
 		is_term_working();
 
@@ -116,8 +116,8 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
-			ret = get_char_async_loop(status_bar, &c, timeout);
-			if(ret == ERR && input_buf_pos == 0)
+			got_input = get_char_async_loop(status_bar, &c, timeout) != ERR;
+			if(!got_input && input_buf_pos == 0)
 			{
 				timeout = cfg.timeout_len;
 				continue;
@@ -130,7 +130,7 @@ event_loop(const int *quit)
 		 * code rely on this). */
 		(void)vifm_chdir(curr_view->curr_dir);
 
-		if(ret != ERR && input_buf_pos != ARRAY_LEN(input_buf) - 2)
+		if(got_input && input_buf_pos != ARRAY_LEN(input_buf) - 2)
 		{
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
@@ -153,11 +153,13 @@ event_loop(const int *quit)
 			input_buf[input_buf_pos] = L'\0';
 		}
 
-		if(wait_enter && ret == ERR)
+		if(wait_enter && !got_input)
+		{
 			continue;
+		}
 
 		counter = get_key_counter();
-		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
+		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
 			last_result = execute_keys_timed_out(input_buf);
 			counter = get_key_counter() - counter;
@@ -170,7 +172,7 @@ event_loop(const int *quit)
 		}
 		else
 		{
-			if(ret != ERR)
+			if(got_input)
 			{
 				curr_stats.save_msg = 0;
 			}
@@ -188,7 +190,7 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				if(ret != ERR)
+				if(got_input)
 				{
 					modupd_input_bar(input_buf);
 				}
