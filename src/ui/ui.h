@@ -372,6 +372,9 @@ void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
  * movement. */
 void checked_wmove(WINDOW *win, int y, int x);
 
+/* Displays "Terminal is too small" kind of message instead of UI. */
+void ui_display_too_small_term_msg(void);
+
 /* Notifies TUI module about updated window of the view. */
 void ui_view_win_changed(FileView *view);
 

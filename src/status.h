@@ -68,6 +68,15 @@ typedef enum
 }
 UpdateType;
 
+/* Possible states of terminal with regard to its size. */
+typedef enum
+{
+	TS_NORMAL,         /* OK to draw UI. */
+	TS_TOO_SMALL,      /* Too small terminal. */
+	TS_BACK_TO_NORMAL, /* Was too small some moments ago, need to restore UI. */
+}
+TermState;
+
 typedef enum
 {
 	/* Shell that is aware of command escaping and backslashes in paths. */
@@ -91,7 +100,8 @@ typedef struct
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
-	int too_small_term;
+	/* Describes terminal state with regard to its dimensions. */
+	TermState term_state;
 
 	tree_t dirsize_cache; /* ga command results */
 
@@ -171,6 +181,10 @@ void update_last_cmdline_command(const char cmd[]);
 
 /* Updates curr_stats.shell_type field according to passed shell command. */
 void stats_update_shell_type(const char shell_cmd[]);
+
+/* Updates curr_stats.term_state field according to specified terminal
+ * dimensions.  Returns new state. */
+TermState stats_update_term_state(int screen_x, int screen_y);
 
 #endif /* VIFM__STATUS_H__ */
 

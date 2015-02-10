@@ -214,7 +214,7 @@ modes_redraw(void)
 		return;
 	}
 
-	if(curr_stats.too_small_term)
+	if(curr_stats.term_state != TS_NORMAL)
 	{
 		update_screen(UT_REDRAW);
 		goto finish;

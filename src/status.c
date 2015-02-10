@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
@@ -91,7 +92,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->view = 0;
 	stats->use_input_bar = 1;
 	stats->load_stage = 0;
-	stats->too_small_term = 0;
+	stats->term_state = TS_NORMAL;
 	stats->dirsize_cache = NULL_TREE;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
@@ -244,6 +245,21 @@ void
 stats_update_shell_type(const char shell_cmd[])
 {
 	curr_stats.shell_type = get_shell_type(shell_cmd);
+}
+
+TermState
+stats_update_term_state(int screen_x, int screen_y)
+{
+	if(screen_x < MIN_TERM_WIDTH || screen_y < MIN_TERM_HEIGHT)
+	{
+		curr_stats.term_state = TS_TOO_SMALL;
+	}
+	else if(curr_stats.term_state != TS_NORMAL)
+	{
+		curr_stats.term_state = TS_BACK_TO_NORMAL;
+	}
+
+	return curr_stats.term_state;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

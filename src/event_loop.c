@@ -43,6 +43,7 @@
 #include "ipc.h"
 #include "status.h"
 
+static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
 static void process_scheduled_updates_of_view(FileView *view);
@@ -68,7 +69,7 @@ event_loop(const int *quit)
 	int input_buf_pos;
 
 	int last_result = 0;
-	int wait_enter = 0;
+	int wait_for_enter = 0;
 	int timeout = cfg.timeout_len;
 
 	input_buf[0] = L'\0';
@@ -78,44 +79,18 @@ event_loop(const int *quit)
 
 	while(!*quit)
 	{
-		wchar_t c;
+		wint_t c;
 		size_t counter;
-		int ret;
+		int got_input;
 
-		is_term_working();
-
-		update_terminal_settings();
+		if(!ensure_term_is_ready())
+		{
+			wait_for_enter = 0;
+			continue;
+		}
 
 		lwin.user_selection = 1;
 		rwin.user_selection = 1;
-
-		if(curr_stats.too_small_term > 0)
-		{
-			touchwin(stdscr);
-			wrefresh(stdscr);
-
-			mvwin(status_bar, 0, 0);
-			wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
-			werase(status_bar);
-			waddstr(status_bar, "Terminal is too small for vifm");
-			touchwin(status_bar);
-			wrefresh(status_bar);
-
-			wait_for_signal();
-			continue;
-		}
-		else if(curr_stats.too_small_term < 0)
-		{
-			wtimeout(status_bar, 0);
-			while(wget_wch(status_bar, (wint_t*)&c) != ERR);
-			curr_stats.too_small_term = 0;
-			modes_redraw();
-			wtimeout(status_bar, cfg.timeout_len);
-
-			wait_enter = 0;
-			curr_stats.save_msg = 0;
-			status_bar_message("");
-		}
 
 		modes_pre();
 
@@ -125,8 +100,8 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
-			ret = get_char_async_loop(status_bar, (wint_t*)&c, timeout);
-			if(ret == ERR && input_buf_pos == 0)
+			got_input = get_char_async_loop(status_bar, &c, timeout) != ERR;
+			if(!got_input && input_buf_pos == 0)
 			{
 				timeout = cfg.timeout_len;
 				continue;
@@ -139,7 +114,7 @@ event_loop(const int *quit)
 		 * code rely on this). */
 		(void)vifm_chdir(curr_view->curr_dir);
 
-		if(ret != ERR && input_buf_pos != ARRAY_LEN(input_buf) - 2)
+		if(got_input && input_buf_pos != ARRAY_LEN(input_buf) - 2)
 		{
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
@@ -149,9 +124,9 @@ event_loop(const int *quit)
 				continue;
 			}
 
-			if(wait_enter)
+			if(wait_for_enter)
 			{
-				wait_enter = 0;
+				wait_for_enter = 0;
 				curr_stats.save_msg = 0;
 				clean_status_bar();
 				if(c == L'\x0d')
@@ -162,11 +137,13 @@ event_loop(const int *quit)
 			input_buf[input_buf_pos] = L'\0';
 		}
 
-		if(wait_enter && ret == ERR)
+		if(wait_for_enter && !got_input)
+		{
 			continue;
+		}
 
 		counter = get_key_counter();
-		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
+		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
 			last_result = execute_keys_timed_out(input_buf);
 			counter = get_key_counter() - counter;
@@ -179,7 +156,7 @@ event_loop(const int *quit)
 		}
 		else
 		{
-			if(ret != ERR)
+			if(got_input)
 			{
 				curr_stats.save_msg = 0;
 			}
@@ -197,7 +174,7 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				if(ret != ERR)
+				if(got_input)
 				{
 					modupd_input_bar(input_buf);
 				}
@@ -231,7 +208,7 @@ event_loop(const int *quit)
 
 		if(is_status_bar_multiline())
 		{
-			wait_enter = 1;
+			wait_for_enter = 1;
 			update_all_windows();
 			continue;
 		}
@@ -245,6 +222,39 @@ event_loop(const int *quit)
 
 	curr_input_buf = prev_input_buf;
 	curr_input_buf_pos = prev_input_buf_pos;
+}
+
+/* Ensures that terminal is in proper state for a loop iteration.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+ensure_term_is_ready(void)
+{
+	is_term_working();
+
+	update_terminal_settings();
+
+	if(curr_stats.term_state == TS_TOO_SMALL)
+	{
+		ui_display_too_small_term_msg();
+		wait_for_signal();
+		return 0;
+	}
+
+	if(curr_stats.term_state == TS_BACK_TO_NORMAL)
+	{
+		wint_t c;
+
+		wtimeout(status_bar, 0);
+		while(wget_wch(status_bar, &c) != ERR);
+		curr_stats.term_state = TS_NORMAL;
+		modes_redraw();
+		wtimeout(status_bar, cfg.timeout_len);
+
+		curr_stats.save_msg = 0;
+		status_bar_message("");
+	}
+
+	return 1;
 }
 
 /* Sub-loop of the main loop that "asynchronously" queries for the input

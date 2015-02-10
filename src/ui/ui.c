@@ -202,15 +202,7 @@ is_term_working(void)
 
 	update_term_size();
 	getmaxyx(stdscr, screen_y, screen_x);
-
-	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
-	{
-		curr_stats.too_small_term = 1;
-	}
-	else if(curr_stats.too_small_term)
-	{
-		curr_stats.too_small_term = -1;
-	}
+	(void)stats_update_term_state(screen_x, screen_y);
 }
 
 static void
@@ -362,14 +354,8 @@ resize_all(void)
 
 	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 
-	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
+	if(stats_update_term_state(screen_x, screen_y) != TS_NORMAL)
 	{
-		curr_stats.too_small_term = 1;
-		return;
-	}
-	else if(curr_stats.too_small_term)
-	{
-		curr_stats.too_small_term = -1;
 		return;
 	}
 
@@ -489,7 +475,7 @@ update_screen(UpdateType update_kind)
 	}
 	clear_border(mborder);
 
-	if(curr_stats.too_small_term)
+	if(curr_stats.term_state != TS_NORMAL)
 	{
 		return;
 	}
@@ -1149,6 +1135,20 @@ checked_wmove(WINDOW *win, int y, int x)
 	{
 		LOG_INFO_MSG("Error moving cursor on a window to (x=%d, y=%d).", x, y);
 	}
+}
+
+void
+ui_display_too_small_term_msg(void)
+{
+	touchwin(stdscr);
+	wrefresh(stdscr);
+
+	mvwin(status_bar, 0, 0);
+	wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
+	werase(status_bar);
+	waddstr(status_bar, "Terminal is too small for vifm");
+	touchwin(status_bar);
+	wrefresh(status_bar);
 }
 
 void
