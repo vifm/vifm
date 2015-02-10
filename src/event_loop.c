@@ -91,16 +91,7 @@ event_loop(const int *quit)
 
 		if(curr_stats.too_small_term > 0)
 		{
-			touchwin(stdscr);
-			wrefresh(stdscr);
-
-			mvwin(status_bar, 0, 0);
-			wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
-			werase(status_bar);
-			waddstr(status_bar, "Terminal is too small for vifm");
-			touchwin(status_bar);
-			wrefresh(status_bar);
-
+			ui_display_too_small_term_msg();
 			wait_for_signal();
 			continue;
 		}

@@ -1152,6 +1152,20 @@ checked_wmove(WINDOW *win, int y, int x)
 }
 
 void
+ui_display_too_small_term_msg(void)
+{
+	touchwin(stdscr);
+	wrefresh(stdscr);
+
+	mvwin(status_bar, 0, 0);
+	wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
+	werase(status_bar);
+	waddstr(status_bar, "Terminal is too small for vifm");
+	touchwin(status_bar);
+	wrefresh(status_bar);
+}
+
+void
 ui_view_win_changed(FileView *view)
 {
 	wnoutrefresh(view->win);
