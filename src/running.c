@@ -116,7 +116,12 @@ follow_file(FileView *view)
 {
 	if(flist_custom_active(view))
 	{
-		navigate_to(view, view->dir_entry[view->list_pos].origin);
+		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+		char *const name = strdup(entry->name);
+		char *const origin = strdup(entry->origin);
+		navigate_to_file(view, origin, name);
+		free(origin);
+		free(name);
 	}
 	else
 	{
