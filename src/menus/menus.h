@@ -136,10 +136,11 @@ void goto_selected_file(FileView *view, const char spec[], int try_open);
 /* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
 
-/* Gets list of target files/directories in the current view.  On success
- * returns newly allocated string, which should be freed by the caller,
- * otherwise NULL is returned. */
-char * get_cmd_target(void);
+/* Forms list of target files/directories in the current view and possibly
+ * changes working directory to use relative paths.  On success returns newly
+ * allocated string, which should be freed by the caller, otherwise NULL is
+ * returned. */
+char * prepare_targets(FileView *view);
 
 /* Runs external command and puts its output to the m menu.  Returns non-zero if
  * status bar message should be saved. */

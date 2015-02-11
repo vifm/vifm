@@ -664,10 +664,19 @@ display_menu(menu_info *m, FileView *view)
 }
 
 char *
-get_cmd_target(void)
+prepare_targets(FileView *view)
 {
-	return (curr_view->selected_files > 0) ?
-		expand_macros("%f", NULL, NULL, 1) : strdup(".");
+	if(view->selected_files > 0)
+	{
+		return expand_macros("%f", NULL, NULL, 1);
+	}
+
+	if(!flist_custom_active(view))
+	{
+		return strdup(".");
+	}
+
+	return (vifm_chdir(view->custom.orig_dir) == 0) ? strdup(".") : NULL;
 }
 
 KHandlerResponse
