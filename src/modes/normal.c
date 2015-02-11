@@ -1430,12 +1430,14 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 	delete(key_info, 1);
 }
 
+/* Performs file deletion either by moving them to trash or removing
+ * permanently. */
 static void
 delete(key_info_t key_info, int use_trash)
 {
 	keys_info_t keys_info = {};
 
-	if(!is_view_dir_writable(curr_view))
+	if(!can_change_view_files(curr_view))
 	{
 		return;
 	}
@@ -1459,10 +1461,11 @@ delete(key_info_t key_info, int use_trash)
 	call_delete(key_info, &keys_info, use_trash);
 }
 
+/* Permanently removes files defined by selector. */
 static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!is_view_dir_writable(curr_view))
+	if(!can_change_view_files(curr_view))
 	{
 		return;
 	}

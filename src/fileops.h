@@ -96,7 +96,7 @@ int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs and treats custom directories right.  Returns non-zero if directory
  * can be changed, otherwise zero is returned. */
-int is_view_dir_writable(const FileView *view);
+int can_change_view_files(const FileView *view);
 
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);

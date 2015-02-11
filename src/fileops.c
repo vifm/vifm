@@ -370,7 +370,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	int nmarked_files;
 	ops_t *ops;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -509,7 +509,7 @@ delete_files_bg(FileView *view, int use_trash)
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -644,7 +644,7 @@ rename_current_file(FileView *view, int name_only)
 	const char *const old = get_current_file_name(view);
 	char filename[strlen(old) + 1];
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return;
 	}
@@ -885,7 +885,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -1394,7 +1394,7 @@ change_link(FileView *view)
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2024,7 +2024,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	registers_t *reg;
 	int i;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2262,7 +2262,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	dir_entry_t *entry;
 	int err, save_msg;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2375,7 +2375,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 
 	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2470,7 +2470,7 @@ change_case(FileView *view, int toupper)
 	int save_msg;
 	int err;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2875,7 +2875,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		if(!is_view_dir_writable(view))
+		if(!can_change_view_files(view))
 		{
 			return -1;
 		}
@@ -3290,7 +3290,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int n;
 	void *cp;
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return;
 	}
@@ -3365,7 +3365,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!is_view_dir_writable(view))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -3500,7 +3500,7 @@ get_cancellation_suffix(void)
 }
 
 int
-is_view_dir_writable(const FileView *view)
+can_change_view_files(const FileView *view)
 {
 	return flist_custom_active(view)
 	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
