@@ -2738,8 +2738,11 @@ flist_custom_finish(FileView *view)
 		return 1;
 	}
 
-	(void)replace_string(&view->custom.orig_dir, view->curr_dir);
-	view->curr_dir[0] = '\0';
+	if(view->curr_dir[0] != '\0')
+	{
+		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
+		view->curr_dir[0] = '\0';
+	}
 
 	sort_dir_list(0, view);
 

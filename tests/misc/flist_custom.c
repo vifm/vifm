@@ -1,4 +1,5 @@
 #include <stdlib.h> /* free() */
+#include <string.h> /* strcpy() */
 
 #include "seatest.h"
 
@@ -11,6 +12,10 @@ setup(void)
 	lwin.list_rows = 0;
 	lwin.list_pos = 0;
 	lwin.dir_entry = NULL;
+
+	strcpy(lwin.curr_dir, "/path");
+	free(lwin.custom.orig_dir);
+	lwin.custom.orig_dir = NULL;
 }
 
 static void
@@ -48,6 +53,26 @@ test_duplicates_are_not_added(void)
 	assert_int_equal(1, lwin.list_rows);
 }
 
+static void
+test_custom_view_replaces_custom_view_fine(void)
+{
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "test-data/existing-files/a");
+	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_true(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "test-data/existing-files/b");
+	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_true(flist_custom_active(&lwin));
+}
+
 void
 flist_custom_tests(void)
 {
@@ -58,6 +83,7 @@ flist_custom_tests(void)
 
 	run_test(test_empty_list_is_not_accepted);
 	run_test(test_duplicates_are_not_added);
+	run_test(test_custom_view_replaces_custom_view_fine);
 
 	test_fixture_end();
 }
