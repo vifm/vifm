@@ -177,7 +177,7 @@ static void search(key_info_t key_info, int backward);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int step);
 static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
-static void put_files(key_info_t key_info, int move);
+static void call_put_files(key_info_t key_info, int move);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_colon(key_info_t key_info, keys_info_t *keys_info);
@@ -1202,7 +1202,7 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_P(key_info_t key_info, keys_info_t *keys_info)
 {
-	put_files(key_info, 1);
+	call_put_files(key_info, 1);
 }
 
 /* Visual selection of files. */
@@ -1662,15 +1662,14 @@ search(key_info_t key_info, int backward)
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
-	put_files(key_info, 0);
+	call_put_files(key_info, 0);
 }
 
+/* Invokes file putting procedure. */
 static void
-put_files(key_info_t key_info, int move)
+call_put_files(key_info_t key_info, int move)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, move);
+	curr_stats.save_msg = put_files(curr_view, def_reg(key_info.reg), move);
 	ui_views_reload_filelists();
 }
 
