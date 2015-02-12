@@ -93,9 +93,8 @@ int put_files(FileView *view, int reg_name, int move);
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 
-/* This is a wrapper for is_dir_writable() function, which adds message
- * dialogs and treats custom directories right.  Returns non-zero if directory
- * can be changed, otherwise zero is returned. */
+/* Whether set of view files can be altered (renamed, deleted, but not added).
+ * Returns non-zero if so, otherwise zero is returned. */
 int can_change_view_files(const FileView *view);
 
 /* Returns new value for save_msg flag. */

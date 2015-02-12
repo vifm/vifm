@@ -205,6 +205,7 @@ static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
+static int can_add_files_to_view(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -2024,7 +2025,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	registers_t *reg;
 	int i;
 
-	if(!can_change_view_files(view))
+	if(!can_add_files_to_view(view))
 	{
 		return 0;
 	}
@@ -3506,6 +3507,21 @@ can_change_view_files(const FileView *view)
 	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
 }
 
+/* Whether set of view files can be extended via addition of new elements.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+can_add_files_to_view(const FileView *view)
+{
+	if(flist_custom_active(view))
+	{
+		show_error_msg("Operation error",
+				"Custom file list is not a valid destination.");
+		return 0;
+	}
+
+	return check_if_dir_writable(DR_DESTINATION, view->curr_dir);
+}
+
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
  * returned. */
@@ -3513,12 +3529,18 @@ static int
 check_if_dir_writable(DirRole dir_role, const char path[])
 {
 	if(is_dir_writable(path))
+	{
 		return 1;
+	}
 
 	if(dir_role == DR_DESTINATION)
+	{
 		show_error_msg("Operation error", "Destination directory is not writable");
+	}
 	else
+	{
 		show_error_msg("Operation error", "Current directory is not writable");
+	}
 	return 0;
 }
 
