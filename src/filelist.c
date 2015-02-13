@@ -173,7 +173,7 @@ static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
-static void zap_dead_entries(FileView *view);
+static void zap_entries(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
@@ -2869,7 +2869,7 @@ populate_dir_list_internal(FileView *view, int reload)
 					view->custom.entries, view->custom.entry_count);
 		}
 
-		zap_dead_entries(view);
+		zap_entries(view);
 		sort_dir_list(!reload, view);
 		return 0;
 	}
@@ -2955,10 +2955,10 @@ populate_dir_list_internal(FileView *view, int reload)
 	return 0;
 }
 
-/* Removes dead entries (those that refer to non-existing files) from the
- * view. */
+/* Removes dead entries (those that refer to non-existing files) or those that
+ * do not match local filter from the view. */
 static void
-zap_dead_entries(FileView *view)
+zap_entries(FileView *view)
 {
 	int i, j;
 
@@ -2966,7 +2966,19 @@ zap_dead_entries(FileView *view)
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		dir_entry_t *const entry = &view->dir_entry[i];
-		if(!path_exists_at(entry->origin, entry->name, DEREF))
+
+		/* FIXME: some very long file names won't be matched against some
+		 * regexps. */
+		char name_with_slash[NAME_MAX + 1 + 1];
+		const char *filename = entry->name;
+		if(is_directory_entry(entry))
+		{
+			append_slash(filename, name_with_slash, sizeof(name_with_slash));
+			filename = name_with_slash;
+		}
+
+		if(!path_exists_at(entry->origin, entry->name, DEREF) ||
+			filter_matches(&view->local_filter.filter, filename) == 0)
 		{
 			free_dir_entry(view, entry);
 			continue;
