@@ -742,12 +742,6 @@ free_file_capture(FileView *view)
 	}
 }
 
-void
-capture_target_files(FileView *view)
-{
-	capture_file_or_selection(view, 0);
-}
-
 /* Collects currently selected files in view->selected_filelist array.  Use
  * free_file_capture() to clean up memory allocated by this function. */
 static void
@@ -814,41 +808,6 @@ capture_file_or_selection(FileView *view, int skip_if_no_selection)
 		}
 		y++;
 	}
-	view->selected_files = y;
-}
-
-void
-capture_files_at(FileView *view, int count, const int indexes[])
-{
-	int x;
-	int y = 0;
-
-	if(view->selected_filelist != NULL)
-	{
-		free_file_capture(view);
-	}
-	view->selected_filelist = (char **)calloc(count, sizeof(char *));
-	if(view->selected_filelist == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	y = 0;
-	for(x = 0; x < count; x++)
-	{
-		if(is_parent_dir(view->dir_entry[indexes[x]].name))
-			continue;
-
-		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
-		if(view->selected_filelist[y] == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			break;
-		}
-		y++;
-	}
-
 	view->selected_files = y;
 }
 
