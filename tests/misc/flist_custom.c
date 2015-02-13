@@ -4,6 +4,7 @@
 #include "seatest.h"
 
 #include "../../src/ui/ui.h"
+#include "../../src/utils/filter.h"
 #include "../../src/filelist.h"
 
 static void
@@ -12,6 +13,7 @@ setup(void)
 	lwin.list_rows = 0;
 	lwin.list_pos = 0;
 	lwin.dir_entry = NULL;
+	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
 
 	strcpy(lwin.curr_dir, "/path");
 	free(lwin.custom.orig_dir);
@@ -28,6 +30,8 @@ cleanup_view(FileView *view)
 		free(view->dir_entry[i].name);
 	}
 	free(view->dir_entry);
+
+	filter_dispose(&lwin.local_filter.filter);
 }
 
 static void

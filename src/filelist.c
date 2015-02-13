@@ -2758,6 +2758,7 @@ flist_custom_finish(FileView *view)
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
+	filter_clear(&view->local_filter.filter);
 
 	return 0;
 }
