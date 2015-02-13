@@ -1835,6 +1835,11 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	}
 	else
 	{
+		if(!can_add_files_to_view(view))
+		{
+			return 0;
+		}
+
 		strcpy(path, view->curr_dir);
 	}
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
