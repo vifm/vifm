@@ -3472,6 +3472,12 @@ restore_files(FileView *view)
 	int m = 0;
 	int n = view->selected_files;
 
+	if(!is_trash_directory(view->curr_dir))
+	{
+		show_error_msg("Restore error", "Not a top-level trash directory.");
+		return 0;
+	}
+
 	move_cursor_out_of(view, FLS_SELECTION);
 
 	ui_cancellation_reset();
