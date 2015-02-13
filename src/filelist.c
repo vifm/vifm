@@ -180,6 +180,8 @@ static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
+static void ensure_filtered_list_not_empty(FileView *view,
+		dir_entry_t *parent_entry);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
@@ -3573,6 +3575,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 {
 	size_t i;
 	size_t list_size = 0U;
+	dir_entry_t *parent_entry = NULL;
 
 	for(i = 0; i < view->local_filter.unfiltered_count; i++)
 	{
@@ -3585,6 +3588,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 
 		if(is_parent_dir(name))
 		{
+			parent_entry = entry;
 			if(add && parent_dir_is_visible(is_root_dir(view->curr_dir)))
 			{
 				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
@@ -3619,11 +3623,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		view->list_rows = list_size;
 		view->filtered = view->local_filter.prefiltered_count
 		               + view->local_filter.unfiltered_count - list_size;
-
-		if(list_size == 0U)
-		{
-			add_parent_dir(view);
-		}
+		ensure_filtered_list_not_empty(view, parent_entry);
 	}
 }
 
@@ -3634,6 +3634,34 @@ append_slash(const char name[], char buf[], size_t buf_size)
 	const size_t nchars = copy_str(buf, buf_size - 1, name);
 	buf[nchars - 1] = '/';
 	buf[nchars] = '\0';
+}
+
+/* Use parent_entry to make filtered list not empty, or create such entry (if
+ * parent_entry is NULL) and put it to original list. */
+static void
+ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
+{
+	if(view->list_rows != 0U)
+	{
+		return;
+	}
+
+	if(parent_entry == NULL)
+	{
+		add_parent_dir(view);
+		if(view->list_rows > 0)
+		{
+			(void)add_dir_entry(&view->local_filter.unfiltered,
+					&view->local_filter.unfiltered_count,
+					&view->dir_entry[view->list_rows - 1]);
+		}
+	}
+	else
+	{
+		size_t list_size = 0U;
+		(void)add_dir_entry(&view->dir_entry, &list_size, parent_entry);
+		view->list_rows = list_size;
+	}
 }
 
 /* Finishes filtering process and frees associated resources. */
