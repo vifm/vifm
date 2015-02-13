@@ -94,12 +94,12 @@ event_loop(const int *quit)
 
 		modes_pre();
 
-		check_background_jobs();
-
 		/* Waits for timeout then skips if no keypress.  Short-circuit if we're not
 		 * waiting for the next key after timeout. */
 		do
 		{
+			check_background_jobs();
+
 			got_input = get_char_async_loop(status_bar, &c, timeout) != ERR;
 			if(!got_input && input_buf_pos == 0)
 			{
