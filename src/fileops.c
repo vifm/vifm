@@ -174,7 +174,7 @@ static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
-static void fixup_current_fname(FileView *view, dir_entry_t *entry,
+static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
@@ -1073,7 +1073,7 @@ incdec_names(FileView *view, int k)
 			err = 1;
 			break;
 		}
-		fixup_current_fname(view, entry, new_fname);
+		fixup_entry_after_rename(view, entry, new_fname);
 		++nrenames;
 		++nrenamed;
 	}
@@ -1922,7 +1922,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 			err += clone_file(entry, path, clone_name, ops);
 		}
 
-		fixup_current_fname(view, entry, clone_name);
+		fixup_entry_after_rename(view, entry, clone_name);
 		ops_advance(ops, err == 0);
 
 		++i;
@@ -2565,7 +2565,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
 					NULL) == 0)
 		{
-			fixup_current_fname(view, entry, new_fname);
+			fixup_entry_after_rename(view, entry, new_fname);
 			++nrenamed;
 		}
 	}
@@ -2577,12 +2577,13 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 	return 1;
 }
 
-/* Updates entry if it corresponds to file under cursor to allow correct cursor
- * positioning on view reload. */
+/* Updates renamed entry name when it makes sense.  This is besically to allow
+ * correct cursor positioning on view reload or correct custom view update. */
 static void
-fixup_current_fname(FileView *view, dir_entry_t *entry, const char new_fname[])
+fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
+		const char new_fname[])
 {
-	if(entry_to_pos(view, entry) == view->list_pos)
+	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
 	{
 		/* Rename file in internal structures for correct positioning of cursor
 		 * after reloading, as cursor will be positioned on the file with the same
