@@ -3297,7 +3297,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int n;
 	void *cp;
 
-	if(!can_change_view_files(view))
+	if(!can_add_files_to_view(view))
 	{
 		return;
 	}
@@ -3372,7 +3372,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!can_change_view_files(view))
+	if(!can_add_files_to_view(view))
 	{
 		return 0;
 	}
@@ -3527,7 +3527,7 @@ can_add_files_to_view(const FileView *view)
 	if(flist_custom_active(view))
 	{
 		show_error_msg("Operation error",
-				"Custom file list is not a valid destination.");
+				"Custom view can't handle this operation.");
 		return 0;
 	}
 
