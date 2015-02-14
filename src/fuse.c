@@ -280,7 +280,8 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	copy_str(fuse_item->source_file_name, sizeof(fuse_item->source_file_name),
 			file_full_path);
 	copy_str(fuse_item->source_file_dir, sizeof(fuse_item->source_file_dir),
-			view->curr_dir);
+			file_full_path);
+	remove_last_path_component(fuse_item->source_file_dir);
 	canonicalize_path(mount_point, fuse_item->mount_point,
 			sizeof(fuse_item->mount_point));
 	fuse_item->mount_point_id = mount_point_id;
