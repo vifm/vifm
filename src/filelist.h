@@ -268,6 +268,8 @@ int flist_custom_finish(FileView *view);
 
 /* Other functions. */
 
+/* Gets path to current directory of the view.  Returns the path. */
+const char * flist_get_dir(const FileView *view);
 /* Selects entry that corresponds to the path as the current one. */
 void flist_goto_by_path(FileView *view, const char path[]);
 FILE * use_info_prog(const char *viewer);
@@ -322,7 +324,7 @@ void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 /* Fills the buffer with short path of specified file list entry.  The
  * shortening occurs for files under original directory of custom views. */
 void get_short_path_of(const FileView *view, const dir_entry_t *entry,
-		size_t buf_len, char buf[]);
+		int format, size_t buf_len, char buf[]);
 /* Ensures that either entries at specified positions, selected entries or file
  * under cursor is marked. */
 void check_marking(FileView *view, int count, const int indexes[]);

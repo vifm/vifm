@@ -302,8 +302,8 @@ compare_entry_names(const dir_entry_t *a, const dir_entry_t *b, int ignore_case)
 	char a_short_path[PATH_MAX];
 	char b_short_path[PATH_MAX];
 
-	get_short_path_of(view, a, sizeof(a_short_path), a_short_path);
-	get_short_path_of(view, b, sizeof(b_short_path), b_short_path);
+	get_short_path_of(view, a, 1, sizeof(a_short_path), a_short_path);
+	get_short_path_of(view, b, 1, sizeof(b_short_path), b_short_path);
 
 	return compare_full_file_names(a_short_path, b_short_path, ignore_case);
 }

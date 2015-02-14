@@ -349,7 +349,8 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 	const FileView *view = cdt->view;
 	if(flist_custom_active(view))
 	{
-		get_short_path_of(view, &view->dir_entry[cdt->line_pos], buf_len + 1, buf);
+		get_short_path_of(view, &view->dir_entry[cdt->line_pos], 1, buf_len + 1,
+				buf);
 	}
 	else
 	{
@@ -2724,6 +2725,12 @@ flist_custom_finish(FileView *view)
 	return 0;
 }
 
+const char *
+flist_get_dir(const FileView *view)
+{
+	return flist_custom_active(view) ? view->custom.orig_dir : view->curr_dir;
+}
+
 void
 flist_goto_by_path(FileView *view, const char path[])
 {
@@ -4163,20 +4170,28 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 }
 
 void
-get_short_path_of(const FileView *view, const dir_entry_t *entry,
+get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		size_t buf_len, char buf[])
 {
 	char name[NAME_MAX];
 	const char *path = entry->origin;
 
+	if(format)
+	{
+		format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
+	}
+	else
+	{
+		copy_str(name, sizeof(name), entry->name);
+	}
+
 	if(is_parent_dir(entry->name))
 	{
-		format_entry_name(view, entry - view->dir_entry, buf_len, buf);
+		copy_str(buf, buf_len, name);
 		return;
 	}
 
-	format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
-	if(!path_starts_with(path, view->custom.orig_dir))
+	if(!path_starts_with(path, flist_get_dir(view)))
 	{
 		char full_path[PATH_MAX];
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
@@ -4184,9 +4199,9 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry,
 		return;
 	}
 
-	assert(strlen(path) >= strlen(view->custom.orig_dir) && "Path is too short.");
+	assert(strlen(path) >= strlen(flist_get_dir(view)) && "Path is too short.");
 
-	path += strlen(view->custom.orig_dir);
+	path += strlen(flist_get_dir(view));
 	path = skip_char(path, '/');
 	if(path[0] == '\0')
 	{
