@@ -725,6 +725,17 @@ get_viewer_command(const char *viewer)
 	return result;
 }
 
+dir_entry_t *
+get_current_entry(FileView *view)
+{
+	if(view->list_pos < 0 || view->list_pos > view->list_rows)
+	{
+		return NULL;
+	}
+
+	return &view->dir_entry[view->list_pos];
+}
+
 char *
 get_current_file_name(FileView *view)
 {

@@ -153,6 +153,7 @@ static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
+static void paste_short_path(FileView *view);
 static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
@@ -1476,7 +1477,7 @@ cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_current_file_name(curr_view), 1);
+	paste_short_path(curr_view);
 }
 
 /* Inserts name of the current file of inactive pane into current cursor
@@ -1484,7 +1485,18 @@ cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_current_file_name(other_view), 1);
+	paste_short_path(other_view);
+}
+
+/* Pastes short path of the current entry of the view into current cursor
+ * position. */
+static void
+paste_short_path(FileView *view)
+{
+	char short_path[PATH_MAX];
+	get_short_path_of(view, get_current_entry(view), 0, sizeof(short_path),
+			short_path);
+	paste_str(short_path, 1);
 }
 
 /* Inserts path to the current directory of active pane into current cursor
@@ -1492,7 +1504,7 @@ cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(curr_view->curr_dir, 1);
+	paste_str(flist_get_dir(curr_view), 1);
 }
 
 /* Inserts path to the current directory of inactive pane into current cursor
@@ -1500,7 +1512,7 @@ cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(other_view->curr_dir, 1);
+	paste_str(flist_get_dir(other_view), 1);
 }
 
 /* Inserts extension of the current file of active pane into current cursor
@@ -1548,7 +1560,7 @@ cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xt(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_last_path_component(curr_view->curr_dir), 1);
+	paste_str(get_last_path_component(flist_get_dir(curr_view)), 1);
 }
 
 /* Inserts last component of path to the current directory of inactive pane into
@@ -1556,7 +1568,7 @@ cmd_ctrl_xt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xxt(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(get_last_path_component(other_view->curr_dir), 1);
+	paste_str(get_last_path_component(flist_get_dir(other_view)), 1);
 }
 
 /* Inserts value of local filter of active pane into current cursor position. */

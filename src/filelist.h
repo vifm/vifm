@@ -285,6 +285,9 @@ void load_dir_list(FileView *view, int reload);
 void resort_dir_list(int msg, FileView *view);
 void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
+/* Gets current entry of the view.  Returns the entry or NULL if view doesn't
+ * contain any. */
+dir_entry_t * get_current_entry(FileView *view);
 /* Checks whether content in the current directory of the view changed and
  * reloads the view if so. */
 void check_if_filelist_have_changed(FileView *view);
