@@ -27,7 +27,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() fclose() */
-#include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() */
+#include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() malloc() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
@@ -62,6 +62,9 @@ static fuse_mount_t *fuse_mounts;
 
 static int fuse_mount(FileView *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[]);
+static int get_last_mount_point_id(const fuse_mount_t *mounts);
+static void register_mount(fuse_mount_t **mounts, const char file_full_path[],
+		const char mount_point[], int id);
 TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
 		size_t buf_size, char buf[], int *foreground);
@@ -162,9 +165,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 {
 	/* TODO: refactor this function fuse_mount(). */
 
-	fuse_mount_t *runner = NULL;
-	int mount_point_id = 0;
-	fuse_mount_t *fuse_item = NULL;
+	int mount_point_id;
 	char buf[2*PATH_MAX];
 	char *escaped_filename;
 	int foreground;
@@ -174,15 +175,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 
 	escaped_filename = escape_filename(get_current_file_name(view), 0);
 
-	/* get mount_point_id + mount_point and set runner pointing to the list's
-	 * tail */
-	if(fuse_mounts != NULL)
-	{
-		runner = fuse_mounts;
-		while(runner->next != NULL)
-			runner = runner->next;
-		mount_point_id = runner->mount_point_id;
-	}
+	mount_point_id = get_last_mount_point_id(fuse_mounts);
 	do
 	{
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
@@ -276,22 +269,42 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	unlink(errors_file);
 	status_bar_message("FUSE mount success");
 
-	fuse_item = malloc(sizeof(*fuse_item));
-	copy_str(fuse_item->source_file_name, sizeof(fuse_item->source_file_name),
-			file_full_path);
-	copy_str(fuse_item->source_file_dir, sizeof(fuse_item->source_file_dir),
-			file_full_path);
-	remove_last_path_component(fuse_item->source_file_dir);
-	canonicalize_path(mount_point, fuse_item->mount_point,
-			sizeof(fuse_item->mount_point));
-	fuse_item->mount_point_id = mount_point_id;
-	fuse_item->next = NULL;
-	if(fuse_mounts == NULL)
-		fuse_mounts = fuse_item;
-	else
-		runner->next = fuse_item;
+	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id);
 
 	return 0;
+}
+
+/* Gets last mount point id used.  Returns the id or 0 if list of mounts is
+ * empty. */
+static int
+get_last_mount_point_id(const fuse_mount_t *mounts)
+{
+	/* As new entries are added at the front, first entry must have the largest
+	 * value of the id. */
+	return (mounts == NULL) ? 0 : mounts->mount_point_id;
+}
+
+/* Adds new entry to the list of *mounts. */
+static void
+register_mount(fuse_mount_t **mounts, const char file_full_path[],
+		const char mount_point[], int id)
+{
+	fuse_mount_t *fuse_mount = malloc(sizeof(*fuse_mount));
+
+	copy_str(fuse_mount->source_file_name, sizeof(fuse_mount->source_file_name),
+			file_full_path);
+
+	copy_str(fuse_mount->source_file_dir, sizeof(fuse_mount->source_file_dir),
+			file_full_path);
+	remove_last_path_component(fuse_mount->source_file_dir);
+
+	canonicalize_path(mount_point, fuse_mount->mount_point,
+			sizeof(fuse_mount->mount_point));
+
+	fuse_mount->mount_point_id = id;
+
+	fuse_mount->next = *mounts;
+	*mounts = fuse_mount;
 }
 
 /* Builds the mount command based on the file type program.
