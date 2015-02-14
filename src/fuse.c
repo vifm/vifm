@@ -270,7 +270,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 		/* Remove the directory we created for the mount. */
 		(void)rmdir(mount_point);
 
-		(void)vifm_chdir(view->curr_dir);
+		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
 	}
 	unlink(errors_file);
@@ -491,7 +491,7 @@ fuse_try_unmount(FileView *view)
 		werase(status_bar);
 		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
 				runner->source_file_name);
-		(void)vifm_chdir(view->curr_dir);
+		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
 	}
 

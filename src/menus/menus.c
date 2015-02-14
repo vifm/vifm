@@ -676,7 +676,7 @@ prepare_targets(FileView *view)
 		return strdup(".");
 	}
 
-	return (vifm_chdir(view->custom.orig_dir) == 0) ? strdup(".") : NULL;
+	return (vifm_chdir(flist_get_dir(view)) == 0) ? strdup(".") : NULL;
 }
 
 KHandlerResponse
