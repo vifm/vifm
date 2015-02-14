@@ -1621,6 +1621,10 @@ static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
+
+	const char *curr_dir = flist_get_dir(curr_view);
+	const char *other_dir = flist_get_dir(other_view);
+
 	if(!cfg.auto_ch_pos)
 	{
 		clean_positions_in_history(curr_view);
@@ -1628,47 +1632,45 @@ cd_cmd(const cmd_info_t *cmd_info)
 	}
 	if(cmd_info->argc == 0)
 	{
-		result = cd(curr_view, curr_view->curr_dir, cfg.home_dir);
+		result = cd(curr_view, curr_dir, cfg.home_dir);
 		if(cmd_info->emark)
-			result += cd(other_view, other_view->curr_dir, cfg.home_dir);
+			result += cd(other_view, other_dir, cfg.home_dir);
 	}
 	else if(cmd_info->argc == 1)
 	{
-		result = cd(curr_view, curr_view->curr_dir, cmd_info->argv[0]);
+		result = cd(curr_view, curr_dir, cmd_info->argv[0]);
 		if(cmd_info->emark)
 		{
 			if(!is_path_absolute(cmd_info->argv[0]) && cmd_info->argv[0][0] != '~' &&
 					strcmp(cmd_info->argv[0], "-") != 0)
 			{
 				char dir[PATH_MAX];
-				snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir,
-						cmd_info->argv[0]);
-				result += cd(other_view, other_view->curr_dir, dir);
+				snprintf(dir, sizeof(dir), "%s/%s", curr_dir, cmd_info->argv[0]);
+				result += cd(other_view, other_dir, dir);
 			}
 			else if(strcmp(cmd_info->argv[0], "-") == 0)
 			{
-				result += cd(other_view, other_view->curr_dir, curr_view->curr_dir);
+				result += cd(other_view, other_dir, curr_dir);
 			}
 			else
 			{
-				result += cd(other_view, other_view->curr_dir, cmd_info->argv[0]);
+				result += cd(other_view, other_dir, cmd_info->argv[0]);
 			}
 			refresh_view_win(other_view);
 		}
 	}
 	else
 	{
-		result = cd(curr_view, curr_view->curr_dir, cmd_info->argv[0]);
+		result = cd(curr_view, curr_dir, cmd_info->argv[0]);
 		if(!is_path_absolute(cmd_info->argv[1]) && cmd_info->argv[1][0] != '~')
 		{
 			char dir[PATH_MAX];
-			snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir,
-					cmd_info->argv[1]);
-			result += cd(other_view, other_view->curr_dir, dir);
+			snprintf(dir, sizeof(dir), "%s/%s", curr_dir, cmd_info->argv[1]);
+			result += cd(other_view, other_dir, dir);
 		}
 		else
 		{
-			result += cd(other_view, other_view->curr_dir, cmd_info->argv[1]);
+			result += cd(other_view, other_dir, cmd_info->argv[1]);
 		}
 		refresh_view_win(other_view);
 	}
