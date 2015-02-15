@@ -2715,6 +2715,18 @@ flist_custom_finish(FileView *view)
 		return 1;
 	}
 
+	if(parent_dir_is_visible(0))
+	{
+		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
+				view->custom.entry_count);
+		if(dir_entry != NULL)
+		{
+			init_dir_entry(view, dir_entry, "..");
+			dir_entry->type = FT_DIR;
+			++view->custom.entry_count;
+		}
+	}
+
 	if(view->curr_dir[0] != '\0')
 	{
 		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
