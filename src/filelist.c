@@ -3185,8 +3185,18 @@ static size_t
 get_filename_width(const FileView *view, int i)
 {
 	const FileType target_type = ui_view_entry_target_type(view, i);
-	return get_screen_string_length(view->dir_entry[i].name)
-	     + get_filetype_decoration_width(target_type);
+	size_t name_len;
+	if(flist_custom_active(view))
+	{
+		char name[NAME_MAX];
+		get_short_path_of(view, &view->dir_entry[i], 0, sizeof(name), name);
+		name_len = get_screen_string_length(name);
+	}
+	else
+	{
+		name_len = get_screen_string_length(view->dir_entry[i].name);
+	}
+	return name_len + get_filetype_decoration_width(target_type);
 }
 
 /* Returns additional number of characters which are needed to display names of
