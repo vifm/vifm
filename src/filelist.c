@@ -173,6 +173,7 @@ static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static void update_entries_data(FileView *view);
 static void zap_entries(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
@@ -2849,6 +2850,7 @@ populate_dir_list_internal(FileView *view, int reload)
 		}
 
 		zap_entries(view);
+		update_entries_data(view);
 		sort_dir_list(!reload, view);
 		return 0;
 	}
@@ -2932,6 +2934,24 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	return 0;
+}
+
+/* Re-read meta-data for each entry (does nothing for entries on which querying
+ * fails). */
+static void
+update_entries_data(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		/* Do not care about possible failure, just use previous meta-data. */
+		(void)fill_dir_entry_by_path(entry, full_path);
+	}
 }
 
 /* Removes dead entries (those that refer to non-existing files) or those that
@@ -3337,6 +3357,7 @@ replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 	for(i = 0; i < with_count; ++i)
 	{
 		dir_entry_t *const entry = &new[i];
+
 		entry->name = strdup(entry->name);
 		entry->origin = strdup(entry->origin);
 
