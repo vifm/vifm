@@ -1264,7 +1264,10 @@ move_to_list_pos(FileView *view, int pos)
 		return;
 
 	if(redraw)
+	{
 		draw_dir_list(view);
+		clear_current_line_bar(view, 0);
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 	print_width = calculate_print_width(view, view->list_pos, col_width);

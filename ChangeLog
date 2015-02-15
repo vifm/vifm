@@ -152,6 +152,8 @@
 	Fixed missing "r" characters on generating vifm-help.txt file on some
 	systems.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
 
+	Fixed current line highlight glitch on scrolling in ls-like view.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
