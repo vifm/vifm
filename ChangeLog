@@ -146,6 +146,9 @@
 	`fusermount` command availability (should use `umount` on OS X).  Thanks to
 	Michael Maddern, a.k.a. madders.
 
+	Fixed compilation on systems where __USE_BSD is defined and WEXITSTATUS()
+	uses compound literals.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
