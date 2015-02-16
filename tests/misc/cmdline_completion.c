@@ -1,7 +1,7 @@
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h>
 #include <wchar.h> /* wcsdup() */
 
@@ -13,6 +13,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
@@ -130,6 +131,66 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.index = stats.len;
 
 	vle_compl_reset();
+}
+
+static void
+test_spaces_escaping_leading(void)
+{
+	char *mb;
+
+	assert_int_equal(0, chdir("../spaces-in-names"));
+
+	prepare_for_line_completion(L"touch \\ ");
+	assert_int_equal(0, line_completion(&stats));
+
+	mb = to_multibyte(stats.line);
+	assert_string_equal("touch \\ begins-with-space", mb);
+	free(mb);
+}
+
+static void
+test_spaces_escaping_everywhere(void)
+{
+	char *mb;
+
+	assert_int_equal(0, chdir("../spaces-in-names"));
+
+	prepare_for_line_completion(L"touch \\ s");
+	assert_int_equal(0, line_completion(&stats));
+
+	mb = to_multibyte(stats.line);
+	assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
+	free(mb);
+}
+
+static void
+test_spaces_escaping_trailing(void)
+{
+	char *mb;
+
+	assert_int_equal(0, chdir("../spaces-in-names"));
+
+	prepare_for_line_completion(L"touch e");
+	assert_int_equal(0, line_completion(&stats));
+
+	mb = to_multibyte(stats.line);
+	assert_string_equal("touch ends-with-space\\ ", mb);
+	free(mb);
+}
+
+static void
+test_spaces_escaping_middle(void)
+{
+	char *mb;
+
+	assert_int_equal(0, chdir("../spaces-in-names"));
+
+	prepare_for_line_completion(L"touch s");
+	assert_int_equal(0, line_completion(&stats));
+
+	mb = to_multibyte(stats.line);
+	assert_string_equal("touch spaces\\ in\\ the\\ middle", mb);
+	free(mb);
 }
 
 static void
@@ -348,6 +409,12 @@ test_cmdline_completion(void)
 	run_test(only_user);
 	run_test(test_set_completion);
 	run_test(test_no_sdquoted_completion_does_nothing);
+
+	run_test(test_spaces_escaping_leading);
+	run_test(test_spaces_escaping_everywhere);
+	run_test(test_spaces_escaping_trailing);
+	run_test(test_spaces_escaping_middle);
+
 	run_test(test_squoted_completion);
 	run_test(test_squoted_completion_escaping);
 	run_test(test_dquoted_completion);

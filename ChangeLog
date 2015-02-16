@@ -160,6 +160,8 @@
 
 	Fixed current line highlight glitch on scrolling in ls-like view.
 
+	Fixed completion of file names which start with a space.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

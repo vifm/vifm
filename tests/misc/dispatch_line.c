@@ -27,6 +27,22 @@ test_no_quotes(void)
 }
 
 static void
+test_no_quotes_start_at_the_start(void)
+{
+	int count;
+	char **args;
+
+	args = dispatch("\\ non-space", &count, ' ', 0, 1);
+	assert_int_equal(1, count);
+	if(count == 1)
+	{
+		assert_string_equal(" non-space", args[0]);
+	}
+
+	free_string_array(args, count);
+}
+
+static void
 test_single_quotes(void)
 {
 	int count;
@@ -244,6 +260,7 @@ test_dispatch_line(void)
 	test_fixture_start();
 
 	run_test(test_no_quotes);
+	run_test(test_no_quotes_start_at_the_start);
 	run_test(test_single_quotes);
 	run_test(test_double_quotes);
 	run_test(test_regexp_quotes);
