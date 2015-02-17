@@ -147,46 +147,45 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 		switch(c)
 		{
-			case 'f':
+			case 'f': /* -f */
 				curr_stats.file_picker_mode = 1;
 				break;
-			case 'h':
+			case 'h': /* -h, --help */
 				show_help_msg(NULL);
 				quit_on_arg_parsing();
 				break;
-			case 'r':
+			case 'r': /* --remote <args>... */
 				if(!ipc_server())
 				{
 					ipc_send(argv + optind);
 					quit_on_arg_parsing();
 				}
 				break;
-			case 's':
+			case 's': /* --select <path> */
 				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
 						rwin_handle);
 				break;
-			case 'v':
+			case 'v': /* -v, --version */
 				show_version_msg();
 				quit_on_arg_parsing();
 				break;
 
-			case 'c':
-				/* Do nothing on -c <arg> here.  Handled in exec_startup_commands(). */
+			case 'c': /* -c <cmd> */
+				/* Do nothing.  Handled in exec_startup_commands(). */
 				break;
-			case 'l':
-				/* Do nothing on --logging here.  Handled in main(). */
+			case 'l': /* --logging */
+				/* Do nothing.  Handled in main(). */
 				break;
-			case 'n':
-				/* Do nothing on --no-configs here.  Handled in main(). */
+			case 'n': /* --no-configs */
+				/* Do nothing.  Handled in main(). */
 				break;
 
-			case 1:
-				/* Handle positional argument. */
+			case 1: /* Positional argument. */
 				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
 						lwin_handle, rwin_handle);
 				break;
 
-			case '?':
+			case '?': /* Parsing error. */
 				/* getopt_long() already printed error message. */
 				quit_on_arg_parsing();
 				break;
