@@ -31,11 +31,12 @@
 #include <locale.h> /* setlocale */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() malloc() system() */
 #include <string.h>
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/getopt.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -91,12 +92,21 @@
 #endif
 
 static void quit_on_arg_parsing(void);
+static int is_path_arg(const char arg[]);
+static void handle_arg_or_fail(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static int handle_path_arg(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void parse_path(const char dir[], const char path[], char buf[]);
+static void show_help_msg(const char wrong_arg[]);
+static void show_version_msg(void);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
+static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
 		const char rwin_path[]);
 static void load_scheme(void);
@@ -104,24 +114,203 @@ static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
 
 static void
-show_version_msg(void)
+parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
+		char rwin_path[], int *lwin_handle, int *rwin_handle)
 {
-	int i, len;
-	char **list;
-	list = malloc(sizeof(char*)*fill_version_info(NULL));
+	static struct option long_opts[] = {
+		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
+		{ "no-configs", no_argument,       .flag = NULL, .val = 'n' },
+		{ "select",     required_argument, .flag = NULL, .val = 's' },
 
-	len = fill_version_info(list);
-	for(i = 0; i < len; i++)
+#ifdef ENABLE_REMOTE_CMDS
+		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
+#endif
+
+		{ "help",       no_argument,       .flag = NULL, .val = 'h' },
+		{ "version",    no_argument,       .flag = NULL, .val = 'v' },
+
+		{ }
+	};
+
+	(void)vifm_chdir(dir);
+
+	while(1)
 	{
-		puts(list[i]);
-	}
+		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
+		if(c == -1)
+		{
+			break;
+		}
 
-	free_string_array(list, len);
+		switch(c)
+		{
+			case 'f':
+				curr_stats.file_picker_mode = 1;
+				break;
+			case 'h':
+				show_help_msg(NULL);
+				quit_on_arg_parsing();
+				break;
+			case 'r':
+				if(!ipc_server())
+				{
+					ipc_send(argv + optind);
+					quit_on_arg_parsing();
+				}
+				break;
+			case 's':
+				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
+						rwin_handle);
+				break;
+			case 'v':
+				show_version_msg();
+				quit_on_arg_parsing();
+				break;
+
+			case 'c':
+				/* Do nothing on -c <arg> here.  Handled in exec_startup_commands(). */
+				break;
+			case 'l':
+				/* Do nothing on --logging here.  Handled in main(). */
+				break;
+			case 'n':
+				/* Do nothing on --no-configs here.  Handled in main(). */
+				break;
+
+			case 1:
+				/* Handle positional argument. */
+				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
+						lwin_handle, rwin_handle);
+				break;
+
+			case '?':
+				/* getopt_long() already printed error message. */
+				quit_on_arg_parsing();
+				break;
+		}
+	}
 }
 
+/* Quits during argument parsing when it's allowed (e.g. not for remote
+ * commands). */
 static void
-show_help_msg(void)
+quit_on_arg_parsing(void)
 {
+	if(curr_stats.load_stage == 0)
+	{
+		exit(1);
+	}
+}
+
+/* Checks whether argument mentions a valid path.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_path_arg(const char arg[])
+{
+	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg);
+}
+
+/* Handles path command-line argument or fails with appropriate message.
+ * Returns zero on successful handling, otherwise non-zero is returned. */
+static void
+handle_arg_or_fail(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+{
+	if(arg[0] == '+')
+	{
+		/* Do nothing.  Handled in exec_startup_commands(). */
+		return;
+	}
+
+	if(handle_path_arg(arg, select, dir, lwin_path, rwin_path, lwin_handle,
+				rwin_handle) == 0)
+	{
+		return;
+	}
+
+	if(curr_stats.load_stage == 0)
+	{
+		show_help_msg(arg);
+		quit_on_arg_parsing();
+	}
+#ifdef ENABLE_REMOTE_CMDS
+	else
+	{
+		show_error_msgf("--remote error", "Invalid argument: %s", arg);
+	}
+#endif
+}
+
+/* Handles path command-line argument.  Returns zero on successful handling,
+ * otherwise non-zero is returned. */
+static int
+handle_path_arg(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+{
+	if(!is_path_arg(arg))
+	{
+		return 1;
+	}
+
+	if(lwin_path[0] != '\0')
+	{
+		parse_path(dir, arg, rwin_path);
+		*rwin_handle = !select;
+	}
+	else
+	{
+		parse_path(dir, arg, lwin_path);
+		*lwin_handle = !select;
+	}
+
+	return 0;
+}
+
+/* Ensures that path is in suitable form for processing.  buf should be at least
+ * PATH_MAX characters length */
+static void
+parse_path(const char dir[], const char path[], char buf[])
+{
+	strcpy(buf, path);
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	if(is_path_absolute(buf))
+	{
+		snprintf(buf, PATH_MAX, "%s", path);
+	}
+#ifdef _WIN32
+	else if(buf[0] == '/')
+	{
+		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
+	}
+#endif
+	else
+	{
+		char new_path[PATH_MAX];
+		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
+		canonicalize_path(new_path, buf, PATH_MAX);
+	}
+	if(!is_root_dir(buf))
+	{
+		chosp(buf);
+	}
+
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+}
+
+/* Prints brief help to the screen.  If wrong_arg is not NULL, it's reported as
+ * wrong. */
+static void
+show_help_msg(const char wrong_arg[])
+{
+	if(wrong_arg != NULL)
+	{
+		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
+	}
+
 	puts("vifm usage:\n");
 	puts("  To start in a specific directory give the directory path.\n");
 	puts("    vifm /path/to/start/dir/one");
@@ -146,154 +335,22 @@ show_help_msg(void)
 	puts("    don't read vifmrc and vifminfo.");
 }
 
-/* buf should be at least PATH_MAX characters length */
+/* Prints detailed version information to the screen. */
 static void
-parse_path(const char *dir, const char *path, char *buf)
+show_version_msg(void)
 {
-	strcpy(buf, path);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-	if(is_path_absolute(buf))
-	{
-		snprintf(buf, PATH_MAX, "%s", path);
-	}
-#ifdef _WIN32
-	else if(buf[0] == '/')
-	{
-		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
-	}
-#endif
-	else
-	{
-		char new_path[PATH_MAX];
-		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
-		canonicalize_path(new_path, buf, PATH_MAX);
-	}
-	if(!is_root_dir(buf))
-		chosp(buf);
+	int i, len;
+	char **list;
 
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-}
+	list = malloc(sizeof(char *)*fill_version_info(NULL));
+	len = fill_version_info(list);
 
-static void
-parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
-		char *rwin_path, int *lwin_handle, int *rwin_handle)
-{
-	int x;
-	int select = 0;
-
-	(void)vifm_chdir(dir);
-
-	/* Get Command Line Arguments */
-	for(x = 1; x < argc; x++)
+	for(i = 0; i < len; ++i)
 	{
-		if(!strcmp(argv[x], "--select"))
-		{
-			select = 1;
-		}
-#ifdef ENABLE_REMOTE_CMDS
-		else if(!strcmp(argv[x], "--remote"))
-		{
-			if(!ipc_server())
-			{
-				ipc_send(argv + x + 1);
-				quit_on_arg_parsing();
-			}
-		}
-#endif
-		else if(!strcmp(argv[x], "-f"))
-		{
-			curr_stats.file_picker_mode = 1;
-		}
-		else if(!strcmp(argv[x], "--no-configs"))
-		{
-			/* Do nothing. */
-		}
-		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
-		{
-			show_version_msg();
-			quit_on_arg_parsing();
-		}
-		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
-		{
-			show_help_msg();
-			quit_on_arg_parsing();
-		}
-		else if(!strcmp(argv[x], "--logging"))
-		{
-			/* do nothing, it's handeled in main() */
-		}
-		else if(!strcmp(argv[x], "-c"))
-		{
-			if(x == argc - 1)
-			{
-				puts("Argument missing after \"-c\"");
-				quit_on_arg_parsing();
-			}
-			/* do nothing, it's handeled in exec_startup_commands() */
-			x++;
-		}
-		else if(argv[x][0] == '+')
-		{
-			/* do nothing, it's handeled in exec_startup_commands() */
-		}
-		else if(path_exists(argv[x], DEREF) || is_path_absolute(argv[x]) ||
-				is_root_dir(argv[x]))
-		{
-			if(lwin_path[0] != '\0')
-			{
-				parse_path(dir, argv[x], rwin_path);
-				*rwin_handle = !select;
-			}
-			else
-			{
-				parse_path(dir, argv[x], lwin_path);
-				*lwin_handle = !select;
-			}
-			select = 0;
-		}
-		else if(curr_stats.load_stage == 0)
-		{
-			show_help_msg();
-			quit_on_arg_parsing();
-		}
-#ifdef ENABLE_REMOTE_CMDS
-		else
-		{
-			show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
-		}
-#endif
+		puts(list[i]);
 	}
-}
 
-/* Quits during argument parsing when it's allowed (e.g. not for remote
- * commands). */
-static void
-quit_on_arg_parsing(void)
-{
-	if(curr_stats.load_stage == 0)
-	{
-		exit(1);
-	}
-}
-
-static void
-check_path_for_file(FileView *view, const char *path, int handle)
-{
-	if(path[0] != '\0' && !is_dir(path))
-	{
-		load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-		if(ensure_file_is_selected(view, after_last(path, '/')))
-		{
-			if(handle)
-			{
-				open_file(view, FHE_RUN);
-			}
-		}
-	}
+	free_string_array(list, len);
 }
 
 int
@@ -583,6 +640,26 @@ remote_cd(FileView *view, const char *path, int handle)
 
 	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
+}
+
+/* Navigates to/opens (handles) file specified by the path (and file only, no
+ * directories). */
+static void
+check_path_for_file(FileView *view, const char path[], int handle)
+{
+	if(path[0] == '\0' || is_dir(path))
+	{
+		return;
+	}
+
+	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
+	if(ensure_file_is_selected(view, after_last(path, '/')))
+	{
+		if(handle)
+		{
+			open_file(view, FHE_RUN);
+		}
+	}
 }
 
 /* Decides whether active view should be switched based on paths provided for

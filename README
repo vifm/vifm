@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 07 February, 2015
+Updated: 17 February, 2015
 Version: 0.7.8
 
 Brief Description
@@ -58,6 +58,8 @@ Package content
     |  |
     |  |-- compat/ - implementation of features that are missing on some OSes
     |  |  |
+    |  |  |-- getopt.c - part of glibc to have getopt_long() everywhere
+    |  |  |-- getopt1.c - getopt.c public interface implementation.
     |  |  |-- os.c - very thin abstraction layer over basic OS facilities
     |  |  `-- wcwidth.c - wcwidth() and wcswidth() implementation for Windows
     |  |
