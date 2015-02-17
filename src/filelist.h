@@ -152,6 +152,13 @@ size_t calculate_columns_count(FileView *view);
  * case of success reloads filelist of the view and sets its cursor position
  * according to directory history of the view. */
 void navigate_to(FileView *view, const char path[]);
+/* Changes current directory of the view to location the view was before last
+ * directory change. */
+void navigate_back(FileView *view);
+/* Changes current directory of the view to the dir if it's possible and in case
+ * of success reloads filelist of the view and sets its cursor position on the
+ * file trying to ensure that it's visible. */
+void navigate_to_file(FileView *view, const char dir[], const char file[]);
 /* The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share
@@ -181,14 +188,6 @@ void clean_selected_files(FileView *view);
 void erase_selection(FileView *view);
 /* Inverts selection of files in the view. */
 void invert_selection(FileView *view);
-/* Collects currently selected files (or current file only if no selection
- * present) in view->selected_filelist array.  Use free_file_capture() to clean
- * up memory allocated by this function. */
-void capture_target_files(FileView *view);
-/* Collects count items located at specified indices in view->selected_filelist
- * array.  Use free_file_capture() to clean up memory allocated by this
- * function. */
-void capture_files_at(FileView *view, int count, const int indexes[]);
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */
 void recount_selected_files(FileView *view);
@@ -254,8 +253,25 @@ char * get_typed_entry_fname(const dir_entry_t *entry);
  * freed by the caller. */
 char * get_typed_fname(const char path[]);
 
+/* Custom file list functions. */
+
+/* Checks whether view displays custom list of files.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int flist_custom_active(const FileView *view);
+/* Prepares list of files for it to be filled with entries. */
+void flist_custom_start(FileView *view, const char title[]);
+/* Adds an entry to list of files. */
+void flist_custom_add(FileView *view, const char path[]);
+/* Finishes file list population, handles empty resulting list corner case.
+ * Returns zero on success, otherwise non-zero is returned. */
+int flist_custom_finish(FileView *view);
+
 /* Other functions. */
 
+/* Gets path to current directory of the view.  Returns the path. */
+const char * flist_get_dir(const FileView *view);
+/* Selects entry that corresponds to the path as the current one. */
+void flist_goto_by_path(FileView *view, const char path[]);
 FILE * use_info_prog(const char *viewer);
 /* Loads filelist for the view, but doesn't redraw the view.  The reload
  * parameter should be set in case of view refresh operation. */
@@ -269,6 +285,9 @@ void load_dir_list(FileView *view, int reload);
 void resort_dir_list(int msg, FileView *view);
 void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
+/* Gets current entry of the view.  Returns the entry or NULL if view doesn't
+ * contain any. */
+dir_entry_t * get_current_entry(FileView *view);
 /* Checks whether content in the current directory of the view changed and
  * reloads the view if so. */
 void check_if_filelist_have_changed(FileView *view);
@@ -305,6 +324,10 @@ void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 		char buf[]);
 /* Fills the buffer with the full path to file of specified file list entry. */
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
+/* Fills the buffer with short path of specified file list entry.  The
+ * shortening occurs for files under original directory of custom views. */
+void get_short_path_of(const FileView *view, const dir_entry_t *entry,
+		int format, size_t buf_len, char buf[]);
 /* Ensures that either entries at specified positions, selected entries or file
  * under cursor is marked. */
 void check_marking(FileView *view, int count, const int indexes[]);

@@ -112,21 +112,21 @@ quick_view_file(FileView *view)
 
 	switch(view->dir_entry[view->list_pos].type)
 	{
-		case CHARACTER_DEVICE:
+		case FT_CHAR_DEV:
 			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
 			break;
-		case BLOCK_DEVICE:
+		case FT_BLOCK_DEV:
 			mvwaddstr(other_view->win, LINE, COL, "File is a Block Device");
 			break;
 #ifndef _WIN32
-		case SOCKET:
+		case FT_SOCK:
 			mvwaddstr(other_view->win, LINE, COL, "File is a Socket");
 			break;
 #endif
-		case FIFO:
+		case FT_FIFO:
 			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
 			break;
-		case LINK:
+		case FT_LINK:
 			if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0)
 			{
 				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
@@ -137,7 +137,7 @@ quick_view_file(FileView *view)
 				strncat(path, "/", sizeof(path) - strlen(path) - 1);
 			}
 			/* break intensionally omitted */
-		case UNKNOWN:
+		case FT_UNK:
 		default:
 			{
 				const char *viewer;

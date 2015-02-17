@@ -38,18 +38,19 @@ const char *
 get_type_str(FileType type)
 {
 	static const char *str[] = {
-		[LINK]             = "link",
-		[DIRECTORY]        = "dir",
-		[CHARACTER_DEVICE] = "char",
-		[BLOCK_DEVICE]     = "block",
+		[FT_LINK]      = "link",
+		[FT_DIR]       = "dir",
+		[FT_CHAR_DEV]  = "char",
+		[FT_BLOCK_DEV] = "block",
 #ifndef _WIN32
-		[SOCKET]           = "sock",
+		[FT_SOCK]      = "sock",
 #endif
-		[EXECUTABLE]       = "exe",
-		[REGULAR]          = "reg",
-		[FIFO]             = "fifo",
-		[UNKNOWN]          = "?",
+		[FT_EXEC]      = "exe",
+		[FT_REG]       = "reg",
+		[FT_FIFO]      = "fifo",
+		[FT_UNK]       = "?",
 	};
+	ARRAY_GUARD(str, FT_COUNT);
 
 	assert(type >= 0 && "FileType numeration value invalid");
 	assert(type < ARRAY_LEN(str) && "FileType numeration value invalid");
@@ -61,59 +62,43 @@ get_type_from_mode(mode_t mode)
 {
 	switch(mode & S_IFMT)
 	{
+		case S_IFDIR:  return FT_DIR;
+		case S_IFCHR:  return FT_CHAR_DEV;
+		case S_IFBLK:  return FT_BLOCK_DEV;
+		case S_IFIFO:  return FT_FIFO;
 #ifndef _WIN32
-		case S_IFLNK:
-			return LINK;
-#endif
-		case S_IFDIR:
-			return DIRECTORY;
-		case S_IFCHR:
-			return CHARACTER_DEVICE;
-		case S_IFBLK:
-			return BLOCK_DEVICE;
-#ifndef _WIN32
-		case S_IFSOCK:
-			return SOCKET;
-#endif
-		case S_IFREG:
-#ifndef _WIN32
-			return S_ISEXE(mode) ? EXECUTABLE : REGULAR;
+		case S_IFLNK:  return FT_LINK;
+		case S_IFSOCK: return FT_SOCK;
+		case S_IFREG:  return S_ISEXE(mode) ? FT_EXEC : FT_REG;
 #else
-			return REGULAR;
+		case S_IFREG:  return FT_REG;
 #endif
-		case S_IFIFO:
-			return FIFO;
 
 		default:
-			return UNKNOWN;
+			return FT_UNK;
 	}
 }
 
 #ifndef _WIN32
+
 FileType
 type_from_dir_entry(const struct dirent *d)
 {
 	switch(d->d_type)
 	{
-		case DT_CHR:
-			return CHARACTER_DEVICE;
-		case DT_BLK:
-			return BLOCK_DEVICE;
-		case DT_DIR:
-			return DIRECTORY;
-		case DT_LNK:
-			return LINK;
-		case DT_REG:
-			return REGULAR;
-		case DT_SOCK:
-			return SOCKET;
-		case DT_FIFO:
-			return FIFO;
+		case DT_LNK:  return FT_LINK;
+		case DT_DIR:  return FT_DIR;
+		case DT_CHR:  return FT_CHAR_DEV;
+		case DT_BLK:  return FT_BLOCK_DEV;
+		case DT_SOCK: return FT_SOCK;
+		case DT_REG:  return FT_REG;
+		case DT_FIFO: return FT_FIFO;
 
 		default:
-			return UNKNOWN;
+			return FT_UNK;
 	}
 }
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

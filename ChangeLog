@@ -40,6 +40,12 @@
 	Added Ctrl-X / (slash) key to command-line mode that inserts last search
 	pattern into current cursor position.  Thanks to filterfalse.
 
+	Added custom views, which contrary to regular views can contain files that
+	do not belong to the same directory.
+
+	Added b key to menu mode that creates custom view filled with menu items
+	filtering out those that are not paths.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
@@ -151,6 +157,10 @@
 
 	Fixed missing "r" characters on generating vifm-help.txt file on some
 	systems.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
+
+	Fixed current line highlight glitch on scrolling in ls-like view.
+
+	Fixed completion of file names which start with a space.
 
 0.7.8-beta to 0.7.8
 

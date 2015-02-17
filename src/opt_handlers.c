@@ -93,8 +93,7 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static int str_to_classify(const char str[],
-		char decorations[FILE_TYPE_COUNT][2]);
+static int str_to_classify(const char str[], char decorations[FT_COUNT][2]);
 static const char * pick_out_decoration(const char classify_item[],
 		FileType *type);
 static void columns_handler(OPT_OP op, optval_t val);
@@ -533,7 +532,7 @@ classify_to_str(void)
 	size_t len = 0;
 	int filetype;
 	buf[0] = '\0';
-	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
+	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
 		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX] };
 		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX] };
@@ -801,7 +800,7 @@ chaselinks_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
-	char decorations[FILE_TYPE_COUNT][2] = {};
+	char decorations[FT_COUNT][2] = {};
 
 	if(str_to_classify(val.str_val, decorations) == 0)
 	{
@@ -826,7 +825,7 @@ classify_handler(OPT_OP op, optval_t val)
  * It's assumed that decorations array is zeroed.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-str_to_classify(const char str[], char decorations[FILE_TYPE_COUNT][2])
+str_to_classify(const char str[], char decorations[FT_COUNT][2])
 {
 	char *saveptr;
 	char *str_copy;
@@ -881,7 +880,7 @@ static const char *
 pick_out_decoration(const char classify_item[], FileType *type)
 {
 	int filetype;
-	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
+	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
 		char name[16];
 		char *item_name;

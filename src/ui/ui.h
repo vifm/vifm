@@ -161,7 +161,25 @@ typedef struct
 {
 	WINDOW *win;
 	WINDOW *title;
+
+	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX];
+
+	/* Parameters related to custom filling. */
+	struct
+	{
+		/* File entries. */
+		dir_entry_t *entries;
+		/* Number of file entries. */
+		int entry_count;
+
+		/* Directory we were in before custom view activation. */
+		char *orig_dir;
+		/* Title for the custom view. */
+		char *title;
+	}
+	custom;
+
 #ifndef _WIN32
 	/* Monitor that checks for directory changes. */
 	filemon_t mon;
@@ -366,7 +384,8 @@ void only(void);
 
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
-void format_entry_name(FileView *view, size_t pos, size_t buf_len, char buf[]);
+void format_entry_name(const FileView *view, size_t pos, size_t buf_len,
+		char buf[]);
 
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */

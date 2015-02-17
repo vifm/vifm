@@ -84,6 +84,14 @@ typedef enum
 }
 RenameAction;
 
+/* Path roles for check_if_dir_writable() function. */
+typedef enum
+{
+	DR_CURRENT,     /* Current (source) path. */
+	DR_DESTINATION, /* Destination path. */
+}
+DirRole;
+
 static char rename_file_ext[NAME_MAX];
 
 static struct
@@ -156,17 +164,17 @@ static int clone_file(const dir_entry_t *entry, const char path[],
 static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static int initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
+static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
 				const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[]);
-static int put_files_from_register_i(FileView *view, int start);
+static int put_files_i(FileView *view, int start);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
-static void fixup_current_fname(FileView *view, dir_entry_t *entry,
+static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
@@ -197,11 +205,14 @@ static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
+static int can_add_files_to_view(const FileView *view);
+static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
+static void redraw_after_path_change(FileView *view, const char path[]);
 
 void
 init_fileops(void)
@@ -360,7 +371,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	int nmarked_files;
 	ops_t *ops;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -499,7 +510,7 @@ delete_files_bg(FileView *view, int use_trash)
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -634,7 +645,7 @@ rename_current_file(FileView *view, int name_only)
 	const char *const old = get_current_file_name(view);
 	char filename[strlen(old) + 1];
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return;
 	}
@@ -875,7 +886,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -1062,7 +1073,7 @@ incdec_names(FileView *view, int k)
 			err = 1;
 			break;
 		}
-		fixup_current_fname(view, entry, new_fname);
+		fixup_entry_after_rename(view, entry, new_fname);
 		++nrenames;
 		++nrenamed;
 	}
@@ -1384,12 +1395,12 @@ change_link(FileView *view)
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
 
-	if(view->dir_entry[view->list_pos].type != LINK)
+	if(view->dir_entry[view->list_pos].type != FT_LINK)
 	{
 		status_bar_error("File isn't a symbolic link");
 		return 1;
@@ -1652,7 +1663,7 @@ put_confirm_cb(const char dest_name[])
 	if(!is_null_or_empty(dest_name) && put_next(dest_name, 0) == 0)
 	{
 		put_confirm.x++;
-		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
 
@@ -1671,7 +1682,7 @@ put_decide_cb(const char choice[])
 		}
 
 		put_confirm.x++;
-		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 	else if(strcmp(choice, "o") == 0)
 	{
@@ -1711,7 +1722,7 @@ put_continue(int force)
 	if(put_next("", force) == 0)
 	{
 		++put_confirm.x;
-		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
 
@@ -1734,11 +1745,11 @@ prompt_what_to_do(const char src_name[])
 }
 
 int
-put_files_from_register(FileView *view, int reg_name, int move)
+put_files(FileView *view, int reg_name, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
-	return initiate_put_files_from_register(view, op, descr, reg_name);
+	return initiate_put_files(view, op, descr, reg_name);
 }
 
 TSTATIC const char *
@@ -1824,6 +1835,11 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	}
 	else
 	{
+		if(!can_add_files_to_view(view))
+		{
+			return 0;
+		}
+
 		strcpy(path, view->curr_dir);
 	}
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
@@ -1911,7 +1927,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 			err += clone_file(entry, path, clone_name, ops);
 		}
 
-		fixup_current_fname(view, entry, clone_name);
+		fixup_entry_after_rename(view, entry, clone_name);
 		ops_advance(ops, err == 0);
 
 		++i;
@@ -2002,19 +2018,19 @@ int
 put_links(FileView *view, int reg_name, int relative)
 {
 	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
-	return initiate_put_files_from_register(view, op, "Symlinking", reg_name);
+	return initiate_put_files(view, op, "Symlinking", reg_name);
 }
 
 /* Performs preparations necessary for putting files/links.  Returns new value
  * for save_msg flag. */
 static int
-initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
-		const char descr[], int reg_name)
+initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
+		int reg_name)
 {
 	registers_t *reg;
 	int i;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_add_files_to_view(view))
 	{
 		return 0;
 	}
@@ -2038,7 +2054,7 @@ initiate_put_files_from_register(FileView *view, CopyMoveLikeOp op,
 		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
 	}
 
-	return put_files_from_register_i(view, 1);
+	return put_files_i(view, 1);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns
@@ -2075,7 +2091,7 @@ reset_put_confirm(OPS main_op, const char descr[], const char base_dir[])
 
 /* Returns new value for save_msg flag. */
 static int
-put_files_from_register_i(FileView *view, int start)
+put_files_i(FileView *view, int start)
 {
 	if(start)
 	{
@@ -2252,7 +2268,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	dir_entry_t *entry;
 	int err, save_msg;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2365,7 +2381,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 
 	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2460,7 +2476,7 @@ change_case(FileView *view, int toupper)
 	int save_msg;
 	int err;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_change_view_files(view))
 	{
 		return 0;
 	}
@@ -2554,7 +2570,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
 					NULL) == 0)
 		{
-			fixup_current_fname(view, entry, new_fname);
+			fixup_entry_after_rename(view, entry, new_fname);
 			++nrenamed;
 		}
 	}
@@ -2566,12 +2582,13 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 	return 1;
 }
 
-/* Updates entry if it corresponds to file under cursor to allow correct cursor
- * positioning on view reload. */
+/* Updates renamed entry name when it makes sense.  This is besically to allow
+ * correct cursor positioning on view reload or correct custom view update. */
 static void
-fixup_current_fname(FileView *view, dir_entry_t *entry, const char new_fname[])
+fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
+		const char new_fname[])
 {
-	if(entry_to_pos(view, entry) == view->list_pos)
+	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
 	{
 		/* Rename file in internal structures for correct positioning of cursor
 		 * after reloading, as cursor will be positioned on the file with the same
@@ -2865,7 +2882,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+		if(!can_change_view_files(view))
 		{
 			return -1;
 		}
@@ -2958,13 +2975,16 @@ can_read_selected_files(FileView *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		if(os_access(entry->name, R_OK) == 0)
+		char full_path[PATH_MAX];
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(os_access(full_path, R_OK) == 0)
 		{
 			continue;
 		}
 
 		show_error_msgf("Access denied",
-				"You don't have read permissions on \"%s\"", entry->name);
+				"You don't have read permissions on \"%s\"", full_path);
 		clean_selected_files(view);
 		redraw_view(view);
 		return 0;
@@ -3277,7 +3297,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int n;
 	void *cp;
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_add_files_to_view(view))
 	{
 		return;
 	}
@@ -3352,7 +3372,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
+	if(!can_add_files_to_view(view))
 	{
 		return 0;
 	}
@@ -3452,6 +3472,12 @@ restore_files(FileView *view)
 	int m = 0;
 	int n = view->selected_files;
 
+	if(!is_trash_directory(view->curr_dir))
+	{
+		show_error_msg("Restore error", "Not a top-level trash directory.");
+		return 0;
+	}
+
 	move_cursor_out_of(view, FLS_SELECTION);
 
 	ui_cancellation_reset();
@@ -3487,15 +3513,46 @@ get_cancellation_suffix(void)
 }
 
 int
-check_if_dir_writable(DirRole dir_role, const char *path)
+can_change_view_files(const FileView *view)
+{
+	return flist_custom_active(view)
+	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
+}
+
+/* Whether set of view files can be extended via addition of new elements.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+can_add_files_to_view(const FileView *view)
+{
+	if(flist_custom_active(view))
+	{
+		show_error_msg("Operation error",
+				"Custom view can't handle this operation.");
+		return 0;
+	}
+
+	return check_if_dir_writable(DR_DESTINATION, view->curr_dir);
+}
+
+/* This is a wrapper for is_dir_writable() function, which adds message
+ * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
+ * returned. */
+static int
+check_if_dir_writable(DirRole dir_role, const char path[])
 {
 	if(is_dir_writable(path))
+	{
 		return 1;
+	}
 
 	if(dir_role == DR_DESTINATION)
+	{
 		show_error_msg("Operation error", "Destination directory is not writable");
+	}
 	else
+	{
 		show_error_msg("Operation error", "Current directory is not writable");
+	}
 	return 0;
 }
 
@@ -3514,7 +3571,7 @@ calculate_size(const FileView *view, int force)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(entry->selected && entry->type == DIRECTORY)
+		if(entry->selected && entry->type == FT_DIR)
 		{
 			update_dir_entry_size(view, i, force);
 		}
@@ -3563,14 +3620,9 @@ dir_size_bg(void *arg)
 	(void)calc_dirsize(dir_size->path, dir_size->force);
 
 	remove_last_path_component(dir_size->path);
-	if(path_starts_with(lwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&lwin);
-	}
-	if(path_starts_with(rwin.curr_dir, dir_size->path))
-	{
-		ui_view_schedule_redraw(&rwin);
-	}
+
+	redraw_after_path_change(&lwin, dir_size->path);
+	redraw_after_path_change(&rwin, dir_size->path);
 
 	free(dir_size->path);
 	free(dir_size);
@@ -3637,6 +3689,17 @@ set_dir_size(const char path[], uint64_t size)
 	pthread_mutex_lock(&mutex);
 	tree_set_data(curr_stats.dirsize_cache, path, size);
 	pthread_mutex_unlock(&mutex);
+}
+
+/* Schedules view redraw in case path change might have affected it. */
+static void
+redraw_after_path_change(FileView *view, const char path[])
+{
+	if(path_starts_with(view->curr_dir, path) ||
+			flist_custom_active(view))
+	{
+		ui_view_schedule_redraw(view);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

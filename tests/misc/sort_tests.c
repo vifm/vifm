@@ -21,11 +21,11 @@ setup(void)
 	lwin.list_rows = 3;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("a");
-	lwin.dir_entry[0].type = REGULAR;
+	lwin.dir_entry[0].type = FT_REG;
 	lwin.dir_entry[1].name = strdup("_");
-	lwin.dir_entry[1].type = REGULAR;
+	lwin.dir_entry[1].type = FT_REG;
 	lwin.dir_entry[2].name = strdup("A");
-	lwin.dir_entry[2].type = REGULAR;
+	lwin.dir_entry[2].type = FT_REG;
 }
 
 static void
@@ -66,7 +66,7 @@ test_symlink_to_dir(void)
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
 	replace_string(&lwin.dir_entry[2].name, "self");
-	lwin.dir_entry[2].type = LINK;
+	lwin.dir_entry[2].type = FT_LINK;
 
 	cfg.slow_fs_list = strdup("");
 

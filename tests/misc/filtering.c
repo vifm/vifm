@@ -14,9 +14,9 @@
 	assert_true(file_is_visible(&view, name, dir))
 
 #ifdef _WIN32
-#define CASE_SENSATIVE_FILTER 0
+#define CASE_SENSITIVE_FILTER 0
 #else
-#define CASE_SENSATIVE_FILTER 1
+#define CASE_SENSITIVE_FILTER 1
 #endif
 
 static void
@@ -53,8 +53,8 @@ setup(void)
 	lwin.dir_entry[6].selected = 0;
 	lwin.selected_files = 6;
 
-	filter_init(&lwin.manual_filter, CASE_SENSATIVE_FILTER);
-	filter_init(&lwin.auto_filter, CASE_SENSATIVE_FILTER);
+	filter_init(&lwin.manual_filter, CASE_SENSITIVE_FILTER);
+	filter_init(&lwin.auto_filter, CASE_SENSITIVE_FILTER);
 	lwin.invert = cfg.filter_inverted_by_default;
 
 	lwin.column_count = 1;
@@ -89,8 +89,8 @@ setup(void)
 	rwin.dir_entry[7].selected = 0;
 	rwin.selected_files = 0;
 
-	filter_init(&rwin.manual_filter, CASE_SENSATIVE_FILTER);
-	filter_init(&rwin.auto_filter, CASE_SENSATIVE_FILTER);
+	filter_init(&rwin.manual_filter, CASE_SENSITIVE_FILTER);
+	filter_init(&rwin.auto_filter, CASE_SENSITIVE_FILTER);
 	rwin.invert = cfg.filter_inverted_by_default;
 
 	rwin.column_count = 1;
@@ -146,7 +146,7 @@ static void
 test_filtering_dir_does_not_filter_file(void)
 {
 	rwin.dir_entry[6].selected = 1;
-	rwin.dir_entry[6].type = DIRECTORY;
+	rwin.dir_entry[6].type = FT_DIR;
 	rwin.selected_files = 1;
 
 	filter_selected_files(&rwin);

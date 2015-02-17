@@ -29,13 +29,6 @@
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
 
-typedef enum
-{
-	DR_CURRENT,
-	DR_DESTINATION,
-}
-DirRole;
-
 /* Type of reaction on an error. */
 typedef enum
 {
@@ -95,14 +88,14 @@ void change_group(void);
 int change_link(FileView *view);
 
 /* Returns new value for save_msg flag. */
-int put_files_from_register(FileView *view, int reg_name, int move);
+int put_files(FileView *view, int reg_name, int move);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 
-/* This is a wrapper for is_dir_writable() function, which adds message
- * dialogs. */
-int check_if_dir_writable(DirRole dir_role, const char *path);
+/* Whether set of view files can be altered (renamed, deleted, but not added).
+ * Returns non-zero if so, otherwise zero is returned. */
+int can_change_view_files(const FileView *view);
 
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);

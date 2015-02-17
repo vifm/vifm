@@ -78,9 +78,9 @@ KHandlerResponse;
 typedef struct menu_info
 {
 	int top;
-	int current;
+	int current; /* Cursor position on the menu_win. */
 	int len;
-	int pos;
+	int pos; /* Menu item under the cursor. */
 	int hor_pos;
 	int win_rows;
 	int type;
@@ -136,10 +136,11 @@ void goto_selected_file(FileView *view, const char spec[], int try_open);
 /* Navigates to selected menu item. */
 void goto_selected_directory(FileView *view, menu_info *m);
 
-/* Gets list of target files/directories in the current view.  On success
- * returns newly allocated string, which should be freed by the caller,
- * otherwise NULL is returned. */
-char * get_cmd_target(void);
+/* Forms list of target files/directories in the current view and possibly
+ * changes working directory to use relative paths.  On success returns newly
+ * allocated string, which should be freed by the caller, otherwise NULL is
+ * returned. */
+char * prepare_targets(FileView *view);
 
 /* Runs external command and puts its output to the m menu.  Returns non-zero if
  * status bar message should be saved. */
@@ -154,8 +155,12 @@ int display_menu(menu_info *m, FileView *view);
  * next. */
 KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
+/* Moves menu items into custom view.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int menu_to_custom_view(menu_info *m, FileView *view);
+
 TSTATIC_DEFS(
-	char * parse_spec(const char spec[], int *line_num);
+	char * parse_file_spec(const char spec[], int *line_num);
 )
 
 #endif /* VIFM__MENUS__MENUS_H__ */

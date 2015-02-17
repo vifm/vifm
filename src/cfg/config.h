@@ -116,7 +116,7 @@ typedef struct config_t
 	int columns; /* Terminal width in characters. */
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
-	char decorations[FILE_TYPE_COUNT][2]; /* Prefixes and suffixes of files. */
+	char decorations[FT_COUNT][2]; /* File type specific refixes and suffixes. */
 	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
 	char *apropos_prg; /* apropos tool calling pattern. */

@@ -66,6 +66,16 @@
 #include "types.h"
 #include "vim.h"
 
+/* Kinds of symbolic link file treatment on file handling. */
+typedef enum
+{
+	FHL_NO_FOLLOW, /* Don't follow (navigate to instead of navigation inside). */
+	FHL_FOLLOW,    /* Follow (end up on the link target, not inside it). */
+}
+FileHandleLink;
+
+static void handle_file(FileView *view, FileHandleExec exec,
+		FileHandleLink follow);
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
@@ -96,6 +106,30 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 
 void
+open_file(FileView *view, FileHandleExec exec)
+{
+	handle_file(view, exec, FHL_NO_FOLLOW);
+}
+
+void
+follow_file(FileView *view)
+{
+	if(flist_custom_active(view))
+	{
+		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+		char *const name = strdup(entry->name);
+		char *const origin = strdup(entry->origin);
+		navigate_to_file(view, origin, name);
+		free(origin);
+		free(name);
+	}
+	else
+	{
+		handle_file(view, FHE_RUN, FHL_FOLLOW);
+	}
+}
+
+static void
 handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
@@ -107,9 +141,9 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->selected && (curr->type != LINK || follow == FHL_NO_FOLLOW))
+		if(!curr->selected && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
-			handle_dir(view);
+			open_dir(view);
 			return;
 		}
 	}
@@ -131,7 +165,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		run_selection(view, exec == FHE_NO_RUN);
 	}
-	else if(curr->type == LINK)
+	else if(curr->type == FT_LINK)
 	{
 		follow_link(view, follow == FHL_FOLLOW);
 	}
@@ -143,7 +177,7 @@ static int
 is_runnable(const FileView *const view, const char full_path[], int type,
 		int force_follow)
 {
-	int runnable = !cfg.follow_links && type == LINK &&
+	int runnable = !cfg.follow_links && type == FT_LINK &&
 		get_symlink_type(full_path) != SLT_DIR;
 	if(runnable && force_follow)
 	{
@@ -155,7 +189,7 @@ is_runnable(const FileView *const view, const char full_path[], int type,
 	}
 	if(!runnable)
 	{
-		runnable = type == REGULAR || type == EXECUTABLE || type == DIRECTORY;
+		runnable = type == FT_REG || type == FT_EXEC || type == FT_DIR;
 	}
 	return runnable;
 }
@@ -167,10 +201,10 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 {
 	int executable;
 #ifndef _WIN32
-	executable = curr->type == EXECUTABLE ||
+	executable = curr->type == FT_EXEC ||
 			(runnable && os_access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
-	executable = curr->type == EXECUTABLE;
+	executable = curr->type == FT_EXEC;
 #endif
 	return executable && !dont_execute && cfg.auto_execute;
 }
@@ -180,7 +214,7 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 static int
 is_dir_entry(const char full_path[], int type)
 {
-	return type == DIRECTORY || (type == LINK && is_dir(full_path));
+	return type == FT_DIR || (type == FT_LINK && is_dir(full_path));
 }
 
 #ifdef _WIN32
@@ -429,9 +463,9 @@ run_file(FileView *view, int dont_execute)
 static void
 run_with_defaults(FileView *view)
 {
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+	if(view->dir_entry[view->list_pos].type == FT_DIR)
 	{
-		handle_dir(view);
+		open_dir(view);
 	}
 	else if(view->selected_files <= 1)
 	{
@@ -521,7 +555,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 	}
 	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
 	{
-		handle_dir(view);
+		open_dir(view);
 	}
 	else if(strchr(program, '%') != NULL)
 	{
@@ -636,7 +670,7 @@ follow_link(FileView *view, int follow_dirs)
 }
 
 void
-handle_dir(FileView *view)
+open_dir(FileView *view)
 {
 	char full_path[PATH_MAX];
 	const char *filename;
@@ -653,7 +687,7 @@ handle_dir(FileView *view)
 
 	if(cd_is_possible(full_path))
 	{
-		navigate_to(view, filename);
+		navigate_to(view, full_path);
 	}
 }
 
@@ -661,6 +695,12 @@ void
 cd_updir(FileView *view)
 {
 	char dir_name[strlen(view->curr_dir) + 1];
+
+	if(flist_custom_active(view))
+	{
+		navigate_to(view, view->custom.orig_dir);
+		return;
+	}
 
 	dir_name[0] = '\0';
 

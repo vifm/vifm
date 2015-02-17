@@ -112,7 +112,7 @@ event_loop(const int *quit)
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
-		(void)vifm_chdir(curr_view->curr_dir);
+		(void)vifm_chdir(flist_get_dir(curr_view));
 
 		if(got_input && input_buf_pos != ARRAY_LEN(input_buf) - 2)
 		{
@@ -216,7 +216,7 @@ event_loop(const int *quit)
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this).  PWD could be changed during command execution, but
 		 * it should be correct for modes_post() in case of preview modes. */
-		(void)vifm_chdir(curr_view->curr_dir);
+		(void)vifm_chdir(flist_get_dir(curr_view));
 		modes_post();
 	}
 

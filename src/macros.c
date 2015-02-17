@@ -246,7 +246,7 @@ TSTATIC char *
 append_selected_files(FileView *view, char expanded[], int under_cursor,
 		int quotes, const char mod[], int for_shell)
 {
-	const int full_path = (view == other_view);
+	const int full_path = (view == other_view || flist_custom_active(view));
 #ifdef _WIN32
 	size_t old_len = strlen(expanded);
 #endif

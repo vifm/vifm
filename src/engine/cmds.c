@@ -1117,6 +1117,13 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				{
 					st = i;
 					state = NO_QUOTING;
+
+					/* Skip escaped character.  If not and it's a separator, beginning of
+					 * the argument will be skipped. */
+					if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+					{
+						++i;
+					}
 				}
 				else if(sep != ' ' && i > 0 && is_separator(cmdstr[i - 1], sep))
 				{

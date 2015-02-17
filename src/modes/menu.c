@@ -81,6 +81,7 @@ static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static int pass_combination_to_khandler(const wchar_t keys[]);
@@ -137,6 +138,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
 	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
@@ -608,12 +610,26 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 		search(!last_search_backward);
 }
 
+/* Populates view with list of files. */
+static void
+cmd_b(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(menu_to_custom_view(menu, view) != 0)
+	{
+		show_error_msg("Menu transformation",
+				"No valid paths discovered in menu content");
+		return;
+	}
+
+	leave_menu_mode();
+}
+
 static void
 cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(pass_combination_to_khandler(L"dd") && menu->len == 0)
 	{
-		show_error_msg("No more items in the menu", "Menu will be closed");
+		show_error_msg("Menu is closing", "No more items in the menu");
 		leave_menu_mode();
 	}
 }

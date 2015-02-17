@@ -742,7 +742,7 @@ filename_completion(const char *str, CompletionType type)
 	else
 	{
 		filename_completion_internal(dir, dirname, filename, type);
-		(void)vifm_chdir(curr_view->curr_dir);
+		(void)vifm_chdir(flist_get_dir(curr_view));
 	}
 
 	free(filename);

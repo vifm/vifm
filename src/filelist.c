@@ -40,8 +40,9 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* abs() calloc() free() malloc() */
-#include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
+#include <stdlib.h> /* abs() calloc() free() malloc() realloc() */
+#include <string.h> /* memcpy() memset() strcat() strcmp() strcpy() strdup()
+                       strlen() */
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
@@ -93,6 +94,15 @@ typedef struct
 	size_t column_offset; /* Offset in characters of the column. */
 }
 column_data_t;
+
+/* Structure to communicate data during filling view with list files. */
+typedef struct
+{
+	FileView *const view;
+	const int is_root;
+	int with_parent_dir;
+}
+dir_fill_info_t;
 
 typedef int (*predicate_func)(const dir_entry_t *entry);
 
@@ -146,14 +156,33 @@ static void navigate_to_history_pos(FileView *view, int pos);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
+static int add_file_entry_to_view(const char name[], const void *data,
+		void *param);
 TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
+static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
+#ifndef _WIN32
+static int fill_dir_entry(dir_entry_t *entry, const char path[],
+		const struct dirent *d);
+static int param_is_dir_entry(const struct dirent *d);
+#else
+static int fill_dir_entry(dir_entry_t *entry, const char path[],
+		const WIN32_FIND_DATAW *ffd);
+static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
+#endif
+static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
+		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static void update_entries_data(FileView *view);
+static void zap_entries(FileView *view);
 static int is_dir_big(const char path[]);
+static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
+static void ensure_filtered_list_not_empty(FileView *view,
+		dir_entry_t *parent_entry);
 static void local_filter_finish(FileView *view);
 static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
@@ -162,6 +191,10 @@ static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
 static int load_unfiltered_list(FileView *const view);
+static void replace_dir_entries(FileView *view, dir_entry_t **entries,
+		int *count, const dir_entry_t *with_entries, int with_count);
+static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
+static void free_dir_entry(const FileView *view, dir_entry_t *entry);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static void store_local_filter_position(FileView *const view, int pos);
 static int extract_previously_selected_pos(FileView *const view);
@@ -169,6 +202,7 @@ static void clear_local_filter_hist_after(FileView *const view, int pos);
 static int find_nearest_neighour(const FileView *const view);
 static int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
+static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
@@ -313,7 +347,16 @@ static void
 format_name(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
-	format_entry_name(cdt->view, cdt->line_pos, buf_len + 1, buf);
+	const FileView *view = cdt->view;
+	if(flist_custom_active(view))
+	{
+		get_short_path_of(view, &view->dir_entry[cdt->line_pos], 1, buf_len + 1,
+				buf);
+	}
+	else
+	{
+		format_entry_name(view, cdt->line_pos, buf_len + 1, buf);
+	}
 }
 
 /* File size format callback for column_view unit. */
@@ -460,6 +503,11 @@ init_view(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
+	view->custom.orig_dir = NULL;
+	view->custom.title = NULL;
+
 	reset_view(view);
 
 	init_view_history(view);
@@ -551,7 +599,7 @@ load_initial_directory(FileView *view, const char *dir)
 	view->dir_entry = calloc(1, sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = strdup("");
-	view->dir_entry[0].type = DIRECTORY;
+	view->dir_entry[0].type = FT_DIR;
 	view->dir_entry[0].hi_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 
@@ -678,6 +726,17 @@ get_viewer_command(const char *viewer)
 	return result;
 }
 
+dir_entry_t *
+get_current_entry(FileView *view)
+{
+	if(view->list_pos < 0 || view->list_pos > view->list_rows)
+	{
+		return NULL;
+	}
+
+	return &view->dir_entry[view->list_pos];
+}
+
 char *
 get_current_file_name(FileView *view)
 {
@@ -694,12 +753,6 @@ free_file_capture(FileView *view)
 		free_string_array(view->selected_filelist, view->selected_files);
 		view->selected_filelist = NULL;
 	}
-}
-
-void
-capture_target_files(FileView *view)
-{
-	capture_file_or_selection(view, 0);
 }
 
 /* Collects currently selected files in view->selected_filelist array.  Use
@@ -768,41 +821,6 @@ capture_file_or_selection(FileView *view, int skip_if_no_selection)
 		}
 		y++;
 	}
-	view->selected_files = y;
-}
-
-void
-capture_files_at(FileView *view, int count, const int indexes[])
-{
-	int x;
-	int y = 0;
-
-	if(view->selected_filelist != NULL)
-	{
-		free_file_capture(view);
-	}
-	view->selected_filelist = (char **)calloc(count, sizeof(char *));
-	if(view->selected_filelist == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	y = 0;
-	for(x = 0; x < count; x++)
-	{
-		if(is_parent_dir(view->dir_entry[indexes[x]].name))
-			continue;
-
-		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
-		if(view->selected_filelist[y] == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			break;
-		}
-		y++;
-	}
-
 	view->selected_files = y;
 }
 
@@ -1246,7 +1264,10 @@ move_to_list_pos(FileView *view, int pos)
 		return;
 
 	if(redraw)
+	{
 		draw_dir_list(view);
+		clear_current_line_bar(view, 0);
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 	print_width = calculate_print_width(view, view->list_pos, col_width);
@@ -1409,17 +1430,17 @@ mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 }
 
 /* Calculates highlight group for the line specified by its position.  Returns
- * grouop number. */
+ * highlight group number. */
 static int
 get_line_color(const FileView *view, int pos)
 {
 	switch(view->dir_entry[pos].type)
 	{
-		case DIRECTORY:
+		case FT_DIR:
 			return DIRECTORY_COLOR;
-		case FIFO:
+		case FT_FIFO:
 			return FIFO_COLOR;
-		case LINK:
+		case FT_LINK:
 			if(view->on_slow_fs)
 			{
 				return LINK_COLOR;
@@ -1428,7 +1449,8 @@ get_line_color(const FileView *view, int pos)
 			{
 				char full[PATH_MAX];
 				get_full_path_at(view, pos, sizeof(full), full);
-				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
+				if(get_link_target_abs(full, view->dir_entry[pos].origin, full,
+							sizeof(full)) != 0)
 				{
 					return BROKEN_LINK_COLOR;
 				}
@@ -1443,14 +1465,15 @@ get_line_color(const FileView *view, int pos)
 				return path_exists(full, DEREF) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
-		case SOCKET:
+		case FT_SOCK:
 			return SOCKET_COLOR;
 #endif
-		case CHARACTER_DEVICE:
-		case BLOCK_DEVICE:
+		case FT_CHAR_DEV:
+		case FT_BLOCK_DEV:
 			return DEVICE_COLOR;
-		case EXECUTABLE:
+		case FT_EXEC:
 			return EXECUTABLE_COLOR;
+
 		default:
 			return WIN_COLOR;
 	}
@@ -1611,15 +1634,18 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 {
 	int x;
 
-	/* this could happen on FUSE error */
+	/* This could happen on FUSE error. */
 	if(view->list_rows <= 0)
 		return;
 
 	if(cfg.history_len <= 0)
 		return;
 
+	if(flist_custom_active(view))
+		return;
+
 	if(path == NULL)
-		path = view->dir_entry[view->list_pos].origin;
+		path = view->curr_dir;
 	if(file == NULL)
 		file = view->dir_entry[view->list_pos].name;
 	if(pos < 0)
@@ -2026,6 +2052,33 @@ navigate_to(FileView *view, const char path[])
 	}
 }
 
+void
+navigate_back(FileView *view)
+{
+	const char *const dest = flist_custom_active(view)
+	                       ? view->custom.orig_dir
+	                       : view->last_dir;
+	navigate_to(view, dest);
+}
+
+void
+navigate_to_file(FileView *view, const char dir[], const char file[])
+{
+	/* Do not change directory if we already there. */
+	if(!paths_are_equal(view->curr_dir, dir))
+	{
+		if(change_directory(view, dir) >= 0)
+		{
+			load_dir_list(view, 1);
+		}
+	}
+
+	if(paths_are_equal(view->curr_dir, dir))
+	{
+		(void)ensure_file_is_selected(view, file);
+	}
+}
+
 int
 change_directory(FileView *view, const char directory[])
 {
@@ -2243,7 +2296,6 @@ fill_with_shared(FileView *view)
 		return;
 	}
 
-	view->list_rows = 0;
 	do
 	{
 		PSHARE_INFO_0 buf_ptr;
@@ -2260,20 +2312,17 @@ fill_with_shared(FileView *view)
 				dir_entry_t *dir_entry;
 				char *utf8_name;
 
-				view->dir_entry = realloc(view->dir_entry,
-						(view->list_rows + 1)*sizeof(dir_entry_t));
-				if(view->dir_entry == NULL)
+				dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+				if(dir_entry == NULL)
 				{
 					show_error_msg("Memory Error", "Unable to allocate enough memory");
 					continue;
 				}
 
-				dir_entry = &view->dir_entry[view->list_rows];
-
 				utf8_name = utf8_from_utf16((wchar_t *)p->shi0_netname);
 
 				init_dir_entry(view, dir_entry, utf8_name);
-				dir_entry->type = DIRECTORY;
+				dir_entry->type = FT_DIR;
 
 				free(utf8_name);
 
@@ -2302,221 +2351,103 @@ win_to_unix_time(FILETIME ft)
 #endif
 
 static int
-fill_dir_list(FileView *view)
+refill_dir_list(FileView *view)
 {
-	int with_parent_dir = 0;
-	const int is_root = is_root_dir(view->curr_dir);
+	dir_fill_info_t info = {
+		.view = view,
+		.is_root = is_root_dir(view->curr_dir),
+		.with_parent_dir = 0,
+	};
 
 	view->matches = 0;
+	free_view_entries(view);
 
-#ifndef _WIN32
-	DIR *dir;
-	struct dirent *d;
-
-	if((dir = os_opendir(view->curr_dir)) == NULL)
-	{
-		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
-		return -1;
-	}
-
-	for(view->list_rows = 0; (d = os_readdir(dir)); view->list_rows++)
-	{
-		dir_entry_t *dir_entry;
-		struct stat s;
-
-		/* Ignore the "." directory. */
-		if(stroscmp(d->d_name, ".") == 0)
-		{
-			view->list_rows--;
-			continue;
-		}
-		if(stroscmp(d->d_name, "..") == 0)
-		{
-			if(!parent_dir_is_visible(is_root))
-			{
-				view->list_rows--;
-				continue;
-			}
-			with_parent_dir = 1;
-		}
-		else if(!file_is_visible(view, d->d_name, is_dirent_targets_dir(d)))
-		{
-			view->filtered++;
-			view->list_rows--;
-			continue;
-		}
-		else if(view->hide_dot && d->d_name[0] == '.')
-		{
-			view->filtered++;
-			view->list_rows--;
-			continue;
-		}
-
-		view->dir_entry = realloc(view->dir_entry,
-				(view->list_rows + 1)*sizeof(dir_entry_t));
-		if(view->dir_entry == NULL)
-		{
-			os_closedir(dir);
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return -1;
-		}
-
-		dir_entry = &view->dir_entry[view->list_rows];
-
-		init_dir_entry(view, dir_entry, d->d_name);
-
-		/* Load the inode info or leave blank values in dir_entry. */
-		if(os_lstat(dir_entry->name, &s) == 0)
-		{
-			dir_entry->type = get_type_from_mode(s.st_mode);
-			dir_entry->size = (uintmax_t)s.st_size;
-			dir_entry->mode = s.st_mode;
-			dir_entry->uid = s.st_uid;
-			dir_entry->gid = s.st_gid;
-			dir_entry->mtime = s.st_mtime;
-			dir_entry->atime = s.st_atime;
-			dir_entry->ctime = s.st_ctime;
-		}
-		else
-		{
-			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-					dir_entry->name);
-			log_cwd();
-		}
-
-		if(dir_entry->type == UNKNOWN)
-		{
-			dir_entry->type = type_from_dir_entry(d);
-		}
-
-		if(dir_entry->type == LINK)
-		{
-			struct stat st;
-
-			const SymLinkType symlink_type = get_symlink_type(dir_entry->name);
-			if(symlink_type != SLT_SLOW && os_stat(dir_entry->name, &st) == 0)
-			{
-				dir_entry->mode = st.st_mode;
-			}
-		}
-	}
-	os_closedir(dir);
-#else
-	char find_pat[PATH_MAX];
-	wchar_t *utf16_path;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-
+#ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
 	{
 		fill_with_shared(view);
 		return 0;
 	}
-
-	snprintf(find_pat, sizeof(find_pat), "%s/*", view->curr_dir);
-
-	view->list_rows = 0;
-
-	utf16_path = utf8_to_utf16(find_pat);
-	hfind = FindFirstFileW(utf16_path, &ffd);
-	free(utf16_path);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		return -1;
-	}
-
-	do
-	{
-		dir_entry_t *dir_entry;
-
-		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
-		char name[strlen(utf8_name) + 1];
-		strcpy(name, utf8_name);
-		free(utf8_name);
-
-		/* Ignore the "." directory. */
-		if(strcmp(name, ".") == 0)
-		{
-			continue;
-		}
-		/* Always include the ../ directory unless it is the root directory. */
-		if(strcmp(name, "..") == 0)
-		{
-			if(!parent_dir_is_visible(is_root))
-			{
-				continue;
-			}
-			with_parent_dir = 1;
-		}
-		else if(!file_is_visible(view, name,
-				ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			view->filtered++;
-			continue;
-		}
-		else if(view->hide_dot && name[0] == '.')
-		{
-			view->filtered++;
-			continue;
-		}
-
-		view->dir_entry = realloc(view->dir_entry,
-				(view->list_rows + 1)*sizeof(dir_entry_t));
-		if(view->dir_entry == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			FindClose(hfind);
-			return -1;
-		}
-
-		dir_entry = &view->dir_entry[view->list_rows];
-
-		init_dir_entry(view, dir_entry, name);
-
-		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
-		dir_entry->attrs = ffd.dwFileAttributes;
-		dir_entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
-		dir_entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
-		dir_entry->ctime = win_to_unix_time(ffd.ftCreationTime);
-
-		if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
-		{
-			dir_entry->type = LINK;
-		}
-		else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			dir_entry->type = DIRECTORY;
-		}
-		else if(is_win_executable(dir_entry->name))
-		{
-			dir_entry->type = EXECUTABLE;
-		}
-		else
-		{
-			dir_entry->type = REGULAR;
-		}
-
-		++view->list_rows;
-	}
-	while(FindNextFileW(hfind, &ffd));
-	FindClose(hfind);
-
-	/* Not all Windows file systems contain or show dot directories. */
-	if(!with_parent_dir && parent_dir_is_visible(is_root))
-	{
-		add_parent_dir(view);
-		with_parent_dir = 1;
-	}
-
 #endif
 
-	if(!with_parent_dir && !is_root)
+	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
+		return 1;
+	}
+
+#ifdef _WIN32
+	/* Not all Windows file systems provide standard dot directories. */
+	if(!info.with_parent_dir && parent_dir_is_visible(info.is_root))
+	{
+		add_parent_dir(view);
+		info.with_parent_dir = 1;
+	}
+#endif
+
+	if(!info.with_parent_dir && !info.is_root)
 	{
 		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
 		{
 			add_parent_dir(view);
 		}
+	}
+
+	return 0;
+}
+
+/* enum_dir_content() callback that appends files to file list.  Returns zero on
+ * success or non-zero to indicate failure and stop enumeration. */
+static int
+add_file_entry_to_view(const char name[], const void *data, void *param)
+{
+	dir_fill_info_t *const info = param;
+	FileView *view = info->view;
+	dir_entry_t *entry;
+
+	/* Always ignore the "." directory. */
+	if(strcmp(name, ".") == 0)
+	{
+		return 0;
+	}
+
+	/* Always include the ".." directory unless it is the root directory. */
+	if(strcmp(name, "..") == 0)
+	{
+		if(!parent_dir_is_visible(info->is_root))
+		{
+			return 0;
+		}
+
+		info->with_parent_dir = 1;
+	}
+	else if(view->hide_dot && name[0] == '.')
+	{
+		++view->filtered;
+		return 0;
+	}
+	else if(!file_is_visible(view, name, param_is_dir_entry(param)))
+	{
+		++view->filtered;
+		return 0;
+	}
+
+	entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 1;
+	}
+
+	init_dir_entry(view, entry, name);
+
+	if(fill_dir_entry(entry, entry->name, param) == 0)
+	{
+		++view->list_rows;
+	}
+	else
+	{
+		free_dir_entry(view, entry);
 	}
 
 	return 0;
@@ -2582,6 +2513,296 @@ get_typed_fname(const char path[])
 	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
 }
 
+int
+flist_custom_active(const FileView *view)
+{
+	/* First check isn't enough on startup, which leads to false positives.  Yet
+	 * this implicit condition seems to be preferable to omit introducing function
+	 * that would terminate custom view mode. */
+	return view->curr_dir[0] == '\0' && !is_null_or_empty(view->custom.orig_dir);
+}
+
+void
+flist_custom_start(FileView *view, const char title[])
+{
+	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+	(void)replace_string(&view->custom.title, title);
+}
+
+void
+flist_custom_add(FileView *view, const char path[])
+{
+	char canonic_path[PATH_MAX];
+	dir_entry_t *dir_entry;
+
+	/* Don't add duplicates. */
+	if(entry_from_path(view->custom.entries, view->custom.entry_count,
+				path) != NULL)
+	{
+		return;
+	}
+
+	dir_entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
+	if(dir_entry == NULL)
+	{
+		return;
+	}
+
+	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
+	{
+		return;
+	}
+
+	init_dir_entry(view, dir_entry, get_last_path_component(canonic_path));
+
+	dir_entry->origin = strdup(canonic_path);
+	remove_last_path_component(dir_entry->origin);
+
+	if(fill_dir_entry_by_path(dir_entry, canonic_path) != 0)
+	{
+		free_dir_entry(view, dir_entry);
+		return;
+	}
+
+	++view->custom.entry_count;
+}
+
+#ifndef _WIN32
+
+/* Fills directory entry with information about file specified by the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+fill_dir_entry_by_path(dir_entry_t *entry, const char path[])
+{
+	return fill_dir_entry(entry, path, NULL);
+}
+
+/* Fills fields of the entry from stat information of the file specified by its
+ * path.  d is optional source of file type.  Returns zero on success, otherwise
+ * non-zero is returned. */
+static int
+fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
+{
+	struct stat s;
+
+	/* Load the inode information or leave blank values in the entry. */
+	if(os_lstat(path, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
+		return 1;
+	}
+
+	entry->type = get_type_from_mode(s.st_mode);
+	if(entry->type == FT_UNK)
+	{
+		entry->type = (d == NULL) ? FT_UNK : type_from_dir_entry(d);
+	}
+	if(entry->type == FT_UNK)
+	{
+		LOG_ERROR_MSG("Can't determine type of \"%s\"", path);
+		return 1;
+	}
+
+	entry->size = (uintmax_t)s.st_size;
+	entry->mode = s.st_mode;
+	entry->uid = s.st_uid;
+	entry->gid = s.st_gid;
+	entry->mtime = s.st_mtime;
+	entry->atime = s.st_atime;
+	entry->ctime = s.st_ctime;
+
+	if(entry->type == FT_LINK)
+	{
+		/* Query mode of symbolic link target. */
+
+		struct stat s;
+
+		const SymLinkType symlink_type = get_symlink_type(entry->name);
+		if(symlink_type != SLT_SLOW && os_stat(entry->name, &s) == 0)
+		{
+			entry->mode = s.st_mode;
+		}
+	}
+
+	return 0;
+}
+
+/* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+param_is_dir_entry(const struct dirent *d)
+{
+	return is_dirent_targets_dir(d);
+}
+
+#else
+
+/* Fills directory entry with information about file specified by the path.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+fill_dir_entry_by_path(dir_entry_t *entry, const char path[])
+{
+	wchar_t *utf16_path;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+	int result;
+
+	utf16_path = utf8_to_utf16(path);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+	free(utf16_path);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	fill_dir_entry(entry, path, &ffd);
+
+	FindClose(hfind);
+
+	return 0;
+}
+
+/* Fills fields of the entry from *ffd fields for the file specified by its
+ * path.  type_hint is additional source of file type.  Returns zero on success,
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+fill_dir_entry(dir_entry_t *entry, const char path[],
+		const WIN32_FIND_DATAW *ffd)
+{
+	entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
+	entry->attrs = ffd.dwFileAttributes;
+	entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
+	entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
+	entry->ctime = win_to_unix_time(ffd.ftCreationTime);
+
+	if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
+	{
+		entry->type = FT_LINK;
+	}
+	else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		entry->type = FT_DIR;
+	}
+	else if(is_win_executable(path))
+	{
+		entry->type = FT_EXEC;
+	}
+	else
+	{
+		entry->type = FT_REG;
+	}
+
+	return 0;
+}
+
+/* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
+{
+	return fdd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+}
+
+#endif
+
+int
+flist_custom_finish(FileView *view)
+{
+	if(view->custom.entry_count == 0)
+	{
+		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+		return 1;
+	}
+
+	if(parent_dir_is_visible(0))
+	{
+		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
+				view->custom.entry_count);
+		if(dir_entry != NULL)
+		{
+			init_dir_entry(view, dir_entry, "..");
+			dir_entry->type = FT_DIR;
+			++view->custom.entry_count;
+		}
+	}
+
+	if(view->curr_dir[0] != '\0')
+	{
+		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
+		view->curr_dir[0] = '\0';
+	}
+
+	sort_dir_list(0, view);
+
+	ui_view_schedule_redraw(view);
+
+	if(view->list_pos >= view->list_rows)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+	view->dir_entry = view->custom.entries;
+	view->list_rows = view->custom.entry_count;
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
+	filter_clear(&view->local_filter.filter);
+
+	return 0;
+}
+
+const char *
+flist_get_dir(const FileView *view)
+{
+	return flist_custom_active(view) ? view->custom.orig_dir : view->curr_dir;
+}
+
+void
+flist_goto_by_path(FileView *view, const char path[])
+{
+	dir_entry_t *entry = entry_from_path(view->dir_entry, view->list_rows, path);
+	if(entry != NULL)
+	{
+		view->list_pos = entry_to_pos(view, entry);
+	}
+}
+
+/* Finds directory entry in the list of entries by the path.  Returns pointer to
+ * the found entry or NULL. */
+static dir_entry_t *
+entry_from_path(dir_entry_t *entries, int count, const char path[])
+{
+	char canonic_path[PATH_MAX];
+	const char *fname;
+	int i;
+
+	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
+	{
+		return NULL;
+	}
+
+	fname = get_last_path_component(canonic_path);
+	for(i = 0; i < count; ++i)
+	{
+		char full_path[PATH_MAX];
+		dir_entry_t *const entry = &entries[i];
+
+		if(stroscmp(entry->name, fname) != 0)
+		{
+			continue;
+		}
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(stroscmp(full_path, canonic_path) == 0)
+		{
+			return entry;
+		}
+	}
+
+	return NULL;
+}
+
 void
 populate_dir_list(FileView *view, int reload)
 {
@@ -2630,10 +2851,24 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 static int
 populate_dir_list_internal(FileView *view, int reload)
 {
-	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
+
+	if(flist_custom_active(view))
+	{
+		if(view->custom.entry_count != 0)
+		{
+			/* Load initial list of custom entries if it's available. */
+			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
+					view->custom.entries, view->custom.entry_count);
+		}
+
+		zap_entries(view);
+		update_entries_data(view);
+		sort_dir_list(!reload, view);
+		return 0;
+	}
 
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
@@ -2666,29 +2901,10 @@ populate_dir_list_internal(FileView *view, int reload)
 		capture_selection(view);
 	}
 
-	if(view->dir_entry != NULL)
+	if(refill_dir_list(view) != 0)
 	{
-		int i;
-		for(i = 0; i < old_list; ++i)
-		{
-			free(view->dir_entry[i].name);
-		}
-
-		free(view->dir_entry);
-		view->dir_entry = NULL;
-	}
-	view->dir_entry = malloc(sizeof(dir_entry_t));
-	if(view->dir_entry == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory.");
-		return 1;
-	}
-
-	if(fill_dir_list(view) != 0)
-	{
-		/* we don't have read access, only execute, or there were other problems */
-		/* all memory from file names was released in a loop above */
-		view->list_rows = 0;
+		/* We don't have read access, only execute, or there were other problems. */
+		free_view_entries(view);
 		add_parent_dir(view);
 	}
 
@@ -2735,6 +2951,69 @@ populate_dir_list_internal(FileView *view, int reload)
 	return 0;
 }
 
+/* Re-read meta-data for each entry (does nothing for entries on which querying
+ * fails). */
+static void
+update_entries_data(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		/* Do not care about possible failure, just use previous meta-data. */
+		(void)fill_dir_entry_by_path(entry, full_path);
+	}
+}
+
+/* Removes dead entries (those that refer to non-existing files) or those that
+ * do not match local filter from the view. */
+static void
+zap_entries(FileView *view)
+{
+	int i, j;
+
+	j = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		/* FIXME: some very long file names won't be matched against some
+		 * regexps. */
+		char name_with_slash[NAME_MAX + 1 + 1];
+		const char *filename = entry->name;
+		if(is_directory_entry(entry))
+		{
+			append_slash(filename, name_with_slash, sizeof(name_with_slash));
+			filename = name_with_slash;
+		}
+
+		if(!path_exists_at(entry->origin, entry->name, DEREF) ||
+			filter_matches(&view->local_filter.filter, filename) == 0)
+		{
+			free_dir_entry(view, entry);
+			continue;
+		}
+
+		if(i != j)
+		{
+			view->dir_entry[j] = view->dir_entry[i];
+		}
+
+		++j;
+	}
+
+	view->list_rows = j;
+
+	if(view->list_rows == 0)
+	{
+		add_parent_dir(view);
+	}
+}
+
 /* Checks for subjectively relative size of a directory specified by the path
  * parameter.  Returns non-zero if size of the directory in question is
  * considered to be big. */
@@ -2754,25 +3033,29 @@ is_dir_big(const char path[])
 #endif
 }
 
+/* Frees list of directory entries of the view. */
+static void
+free_view_entries(FileView *view)
+{
+	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+}
+
 void
 resort_dir_list(int msg, FileView *view)
 {
-	/* Using this pointer after sorting is safe, because file entries are just
-	 * moved in the array. */
-	const char *const filename = (view->list_pos < view->list_rows) ?
-			view->dir_entry[view->list_pos].name : NULL;
+	char full_path[PATH_MAX];
 	const int top_delta = view->list_pos - view->top_line;
+	if(view->list_pos < view->list_rows)
+	{
+		get_current_full_path(view, sizeof(full_path), full_path);
+	}
 
 	sort_dir_list(msg, view);
 
-	if(filename != NULL)
+	if(view->list_pos < view->list_rows)
 	{
-		const int new_pos = find_file_pos_in_list(view, filename);
-		if(new_pos != -1)
-		{
-			view->top_line = new_pos - top_delta;
-			view->list_pos = new_pos;
-		}
+		flist_goto_by_path(view, full_path);
+		view->top_line = view->list_pos - top_delta;
 	}
 }
 
@@ -2827,24 +3110,20 @@ add_parent_dir(FileView *view)
 	dir_entry_t *dir_entry;
 	struct stat s;
 
-	view->dir_entry = realloc(view->dir_entry,
-			sizeof(dir_entry_t)*(view->list_rows + 1));
-	if(view->dir_entry == NULL)
+	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	dir_entry = &view->dir_entry[view->list_rows];
-
 	init_dir_entry(view, dir_entry, "..");
-	dir_entry->type = DIRECTORY;
-
-	++view->list_rows;
+	dir_entry->type = FT_DIR;
 
 	/* Load the inode info or leave blank values in dir_entry. */
 	if(os_lstat(dir_entry->name, &s) != 0)
 	{
+		free_dir_entry(view, dir_entry);
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
 				dir_entry->name);
 		log_cwd();
@@ -2860,6 +3139,8 @@ add_parent_dir(FileView *view)
 	dir_entry->mtime = s.st_mtime;
 	dir_entry->atime = s.st_atime;
 	dir_entry->ctime = s.st_ctime;
+
+	++view->list_rows;
 }
 
 /* Initializes dir_entry_t with name and all other fields with default
@@ -2883,7 +3164,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->atime = (time_t)0;
 	entry->ctime = (time_t)0;
 
-	entry->type = UNKNOWN;
+	entry->type = FT_UNK;
 	entry->hi_num = -1;
 
 	/* All files start as unselected, unmatched and unmarked. */
@@ -2919,8 +3200,18 @@ static size_t
 get_filename_width(const FileView *view, int i)
 {
 	const FileType target_type = ui_view_entry_target_type(view, i);
-	return get_screen_string_length(view->dir_entry[i].name)
-	     + get_filetype_decoration_width(target_type);
+	size_t name_len;
+	if(flist_custom_active(view))
+	{
+		char name[NAME_MAX];
+		get_short_path_of(view, &view->dir_entry[i], 0, sizeof(name), name);
+		name_len = get_screen_string_length(name);
+	}
+	else
+	{
+		name_len = get_screen_string_length(view->dir_entry[i].name);
+	}
+	return name_len + get_filetype_decoration_width(target_type);
 }
 
 /* Returns additional number of characters which are needed to display names of
@@ -3037,14 +3328,31 @@ load_unfiltered_list(FileView *const view)
 
 	if(view->filtered > 0)
 	{
-		char *const filename = strdup(view->dir_entry[view->list_pos].name);
+		char full_path[PATH_MAX];
+		dir_entry_t *entry;
+
+		get_current_full_path(view, sizeof(full_path), full_path);
 
 		filter_clear(&view->local_filter.filter);
 		populate_dir_list(view, 1);
 
 		/* Resolve current file position in updated list. */
-		current_file_pos = find_file_pos_in_list(view, filename);
-		free(filename);
+		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+		if(entry != NULL)
+		{
+			current_file_pos = entry_to_pos(view, entry);
+		}
+
+		if(current_file_pos >= view->list_rows)
+		{
+			current_file_pos = view->list_rows - 1;
+		}
+	}
+	else
+	{
+		/* Save unfiltered (by local filter) list for further use. */
+		replace_dir_entries(view, &view->custom.entries,
+				&view->custom.entry_count, view->dir_entry, view->list_rows);
 	}
 
 	view->local_filter.unfiltered = view->dir_entry;
@@ -3053,6 +3361,72 @@ load_unfiltered_list(FileView *const view)
 	view->dir_entry = NULL;
 
 	return current_file_pos;
+}
+
+/* Replaces all entries of the *entries with copy of with_entries elements. */
+static void
+replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
+		const dir_entry_t *with_entries, int with_count)
+{
+	dir_entry_t *new;
+	int i;
+
+	new = malloc(sizeof(*new)*with_count);
+	if(new == NULL)
+	{
+		return;
+	}
+
+	memcpy(new, with_entries, sizeof(*new)*with_count);
+
+	for(i = 0; i < with_count; ++i)
+	{
+		dir_entry_t *const entry = &new[i];
+
+		entry->name = strdup(entry->name);
+		entry->origin = strdup(entry->origin);
+
+		if(entry->name == NULL || entry->origin == NULL)
+		{
+			int count_so_far = i + 1;
+			free_dir_entries(view, &new, &count_so_far);
+			return;
+		}
+	}
+
+	free_dir_entries(view, entries, count);
+	*entries = new;
+	*count = with_count;
+}
+
+/* Frees list of directory entries related to the view.  Sets *entries and
+ * *count to safe values. */
+static void
+free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
+{
+	int i;
+	for(i = 0; i < *count; ++i)
+	{
+		free_dir_entry(view, &(*entries)[i]);
+	}
+
+	free(*entries);
+	*entries = NULL;
+	*count = 0;
+}
+
+/* Frees single directory entry. */
+static void
+free_dir_entry(const FileView *view, dir_entry_t *entry)
+{
+	free(entry->name);
+	entry->name = NULL;
+
+	if(entry->origin != &view->curr_dir[0])
+	{
+		free(entry->origin);
+		entry->origin = NULL;
+	}
 }
 
 /* Gets position of an item in dir_entry list at position pos in the unfiltered
@@ -3224,6 +3598,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 {
 	size_t i;
 	size_t list_size = 0U;
+	dir_entry_t *parent_entry = NULL;
 
 	for(i = 0; i < view->local_filter.unfiltered_count; i++)
 	{
@@ -3231,11 +3606,12 @@ update_filtering_lists(FileView *view, int add, int clear)
 		 * regexps. */
 		char name_with_slash[NAME_MAX + 1 + 1];
 
-		const dir_entry_t *const entry = &view->local_filter.unfiltered[i];
+		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
 		const char *name = entry->name;
 
 		if(is_parent_dir(name))
 		{
+			parent_entry = entry;
 			if(add && parent_dir_is_visible(is_root_dir(view->curr_dir)))
 			{
 				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
@@ -3260,7 +3636,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		{
 			if(clear)
 			{
-				free(entry->name);
+				free_dir_entry(view, entry);
 			}
 		}
 	}
@@ -3270,11 +3646,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		view->list_rows = list_size;
 		view->filtered = view->local_filter.prefiltered_count
 		               + view->local_filter.unfiltered_count - list_size;
-
-		if(list_size == 0U)
-		{
-			add_parent_dir(view);
-		}
+		ensure_filtered_list_not_empty(view, parent_entry);
 	}
 }
 
@@ -3285,6 +3657,34 @@ append_slash(const char name[], char buf[], size_t buf_size)
 	const size_t nchars = copy_str(buf, buf_size - 1, name);
 	buf[nchars - 1] = '/';
 	buf[nchars] = '\0';
+}
+
+/* Use parent_entry to make filtered list not empty, or create such entry (if
+ * parent_entry is NULL) and put it to original list. */
+static void
+ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
+{
+	if(view->list_rows != 0U)
+	{
+		return;
+	}
+
+	if(parent_entry == NULL)
+	{
+		add_parent_dir(view);
+		if(view->list_rows > 0)
+		{
+			(void)add_dir_entry(&view->local_filter.unfiltered,
+					&view->local_filter.unfiltered_count,
+					&view->dir_entry[view->list_rows - 1]);
+		}
+	}
+	else
+	{
+		size_t list_size = 0U;
+		(void)add_dir_entry(&view->dir_entry, &list_size, parent_entry);
+		view->list_rows = list_size;
+	}
 }
 
 /* Finishes filtering process and frees associated resources. */
@@ -3319,17 +3719,31 @@ local_filter_restore(FileView *view)
 static int
 add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 {
-	dir_entry_t *const new_entry_list = realloc(*list,
-			sizeof(dir_entry_t)*(*list_size + 1));
-	if(new_entry_list == NULL)
+	dir_entry_t *const new_entry = alloc_dir_entry(list, *list_size);
+	if(new_entry == NULL)
 	{
 		return 1;
 	}
 
-	*list = new_entry_list;
-	new_entry_list[*list_size] = *entry;
+	*new_entry = *entry;
 	++*list_size;
 	return 0;
+}
+
+/* Allocates one more directory entry for the *list of size list_size by
+ * extending it.  Returns pointer to new entry or NULL on failure. */
+static dir_entry_t *
+alloc_dir_entry(dir_entry_t **list, int list_size)
+{
+	dir_entry_t *const new_entry_list = realloc(*list,
+			sizeof(dir_entry_t)*(list_size + 1));
+	if(new_entry_list == NULL)
+	{
+		return NULL;
+	}
+
+	*list = new_entry_list;
+	return &new_entry_list[list_size];
 }
 
 void
@@ -3386,7 +3800,7 @@ reload_window(FileView *view)
 void
 check_if_filelist_have_changed(FileView *view)
 {
-	if(view->on_slow_fs)
+	if(view->on_slow_fs || flist_custom_active(view))
 	{
 		return;
 	}
@@ -3450,8 +3864,7 @@ cd_is_possible(const char *path)
 void
 load_saving_pos(FileView *view, int reload)
 {
-	char filename[NAME_MAX];
-	int pos;
+	char full_path[PATH_MAX];
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -3464,23 +3877,19 @@ load_saving_pos(FileView *view, int reload)
 		return;
 	}
 
-	copy_str(filename, sizeof(filename), view->dir_entry[view->list_pos].name);
+	get_current_full_path(view, sizeof(full_path), full_path);
+
 	load_dir_list_internal(view, reload, 1);
 
-	pos = find_file_pos_in_list(view, filename);
-	if(pos < 0)
-	{
-		pos = view->list_pos;
-	}
+	flist_goto_by_path(view, full_path);
 
 	if(view == curr_view)
 	{
-		move_to_list_pos(view, pos);
+		move_to_list_pos(view, view->list_pos);
 	}
 	else
 	{
 		mvwaddstr(view->win, view->curr_line, 0, " ");
-		view->list_pos = pos;
 		if(move_curr_line(view))
 			draw_dir_list(view);
 		put_inactive_mark(view);
@@ -3633,7 +4042,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 			snprintf(dir, sizeof(dir), "%c:%s", base_dir[0], arg);
 #endif
 		else if(strcmp(arg, "-") == 0)
-			snprintf(dir, sizeof(dir), "%s", view->last_dir);
+			copy_str(dir, sizeof(dir), view->last_dir);
 		else
 			find_dir_in_cdpath(base_dir, arg, dir, sizeof(dir));
 		updir = is_parent_dir(arg);
@@ -3729,7 +4138,7 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	uint64_t size = 0;
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
-	if(entry->type == DIRECTORY)
+	if(entry->type == FT_DIR)
 	{
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
@@ -3742,8 +4151,9 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 int
 is_directory_entry(const dir_entry_t *entry)
 {
-	return (entry->type == DIRECTORY)
-	    || (entry->type == LINK && get_symlink_type(entry->name) != SLT_UNKNOWN);
+	return (entry->type == FT_DIR)
+	    || (entry->type == FT_LINK &&
+	        get_symlink_type(entry->name) != SLT_UNKNOWN);
 }
 
 int
@@ -3814,6 +4224,50 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len, "%s%s%s", entry->origin,
 			ends_with_slash(entry->origin) ? "" : "/", entry->name);
+}
+
+void
+get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
+		size_t buf_len, char buf[])
+{
+	char name[NAME_MAX];
+	const char *path = entry->origin;
+
+	if(format)
+	{
+		format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
+	}
+	else
+	{
+		copy_str(name, sizeof(name), entry->name);
+	}
+
+	if(is_parent_dir(entry->name))
+	{
+		copy_str(buf, buf_len, name);
+		return;
+	}
+
+	if(!path_starts_with(path, flist_get_dir(view)))
+	{
+		char full_path[PATH_MAX];
+		snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
+		copy_str(buf, buf_len, full_path);
+		return;
+	}
+
+	assert(strlen(path) >= strlen(flist_get_dir(view)) && "Path is too short.");
+
+	path += strlen(flist_get_dir(view));
+	path = skip_char(path, '/');
+	if(path[0] == '\0')
+	{
+		copy_str(buf, buf_len, name);
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s", path, name);
+	}
 }
 
 void

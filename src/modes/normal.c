@@ -177,9 +177,10 @@ static void search(key_info_t key_info, int backward);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int step);
 static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
-static void put_files(key_info_t key_info, int move);
+static void call_put_files(key_info_t key_info, int move);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
+static void call_put_links(key_info_t key_info, int relative);
 static void cmd_q_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_q_question(key_info_t key_info, keys_info_t *keys_info);
@@ -584,7 +585,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, FHE_RUN, FHL_NO_FOLLOW);
+	open_file(curr_view, FHE_RUN);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1044,7 +1045,7 @@ static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	clean_selected_files(curr_view);
-	handle_file(curr_view, FHE_RUN, FHL_FOLLOW);
+	follow_file(curr_view);
 	redraw_current_view();
 }
 
@@ -1069,7 +1070,7 @@ cmd_gh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, FHE_ELEVATE_AND_RUN, FHL_NO_FOLLOW);
+	open_file(curr_view, FHE_ELEVATE_AND_RUN, FHL_NO_FOLLOW);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1202,7 +1203,7 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_P(key_info_t key_info, keys_info_t *keys_info)
 {
-	put_files(key_info, 1);
+	call_put_files(key_info, 1);
 }
 
 /* Visual selection of files. */
@@ -1346,14 +1347,11 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	activate_search(key_info.count, 1, 0);
 }
 
-/* Create link with absolute path */
+/* Creates link with absolute path. */
 static void
 cmd_al(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
-	ui_views_reload_filelists();
+	call_put_links(key_info, 0);
 }
 
 /* Enters selection amending submode of visual mode. */
@@ -1430,12 +1428,14 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 	delete(key_info, 1);
 }
 
+/* Performs file deletion either by moving them to trash or removing
+ * permanently. */
 static void
 delete(key_info_t key_info, int use_trash)
 {
 	keys_info_t keys_info = {};
 
-	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	if(!can_change_view_files(curr_view))
 	{
 		return;
 	}
@@ -1459,10 +1459,11 @@ delete(key_info_t key_info, int use_trash)
 	call_delete(key_info, &keys_info, use_trash);
 }
 
+/* Permanently removes files defined by selector. */
 static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
+	if(!can_change_view_files(curr_view))
 	{
 		return;
 	}
@@ -1547,7 +1548,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, FHE_NO_RUN, FHL_NO_FOLLOW);
+	open_file(curr_view, FHE_NO_RUN);
 	clean_selected_files(curr_view);
 	redraw_current_view();
 }
@@ -1662,25 +1663,29 @@ search(key_info_t key_info, int backward)
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
-	put_files(key_info, 0);
+	call_put_files(key_info, 0);
 }
 
+/* Invokes file putting procedure. */
 static void
-put_files(key_info_t key_info, int move)
+call_put_files(key_info_t key_info, int move)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, move);
+	curr_stats.save_msg = put_files(curr_view, def_reg(key_info.reg), move);
 	ui_views_reload_filelists();
 }
 
-/* Create link with absolute path */
+/* Creates link with absolute path. */
 static void
 cmd_rl(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_links(curr_view, key_info.reg, 1);
+	call_put_links(key_info, 1);
+}
+
+/* Invokes links putting procedure. */
+static void
+call_put_links(key_info_t key_info, int relative)
+{
+	curr_stats.save_msg = put_links(curr_view, def_reg(key_info.reg), relative);
 	ui_views_reload_filelists();
 }
 

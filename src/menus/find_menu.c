@@ -23,6 +23,7 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
@@ -55,11 +56,6 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	};
 
 	static menu_info m;
-	init_menu_info(&m, FIND_MENU, strdup("No files found"));
-
-	m.title = format_str(" Find %s ", args);
-	m.execute_handler = &execute_find_cb;
-	m.key_handler = &filelist_khandler;
 
 	if(with_path)
 	{
@@ -69,7 +65,13 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	}
 	else
 	{
-		targets = get_cmd_target();
+		targets = prepare_targets(view);
+		if(targets == NULL)
+		{
+			show_error_msg("Find", "Failed to setup target directory.");
+			return 0;
+		}
+
 		macros[0].value = targets;
 		macros[2].value = args;
 
@@ -85,6 +87,12 @@ show_find_menu(FileView *view, int with_path, const char args[])
 			free(escaped_args);
 		}
 	}
+
+	init_menu_info(&m, FIND_MENU, strdup("No files found"));
+
+	m.title = format_str(" Find %s ", args);
+	m.execute_handler = &execute_find_cb;
+	m.key_handler = &filelist_khandler;
 
 	status_bar_message("find...");
 

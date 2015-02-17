@@ -31,21 +31,18 @@ typedef enum
 }
 FileHandleExec;
 
-/* Kinds of symbolic link file treatment on file handling. */
-typedef enum
-{
-	FHL_NO_FOLLOW, /* Don't follow (navigate to instead of navigation inside). */
-	FHL_FOLLOW,    /* Follow (end up on the link target, not inside it). */
-}
-FileHandleLink;
-
 /* Handles opening of current file/selection of the view. */
-void handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow);
+void open_file(FileView *view, FileHandleExec exec);
+
+/* Follows file to find its true location (e.g. target of symbolic link) or just
+ * opens it. */
+void follow_file(FileView *view);
 
 void run_using_prog(FileView *view, const char program[], int dont_execute,
 		int force_background);
 
-void handle_dir(FileView *view);
+/* Handles opening of current file of the view as directory. */
+void open_dir(FileView *view);
 
 void cd_updir(FileView *view);
 

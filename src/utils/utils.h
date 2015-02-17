@@ -200,6 +200,14 @@ void stop_process(void);
  * by Vifm messed it up. */
 void update_terminal_settings(void);
 
+/* Fills the buffer with string representation of owner user for current file of
+ * the view. */
+void get_uid_string(const FileView *view, size_t buf_len, char buf[]);
+
+/* Fills the buffer with string representation of owner group for current file
+ * of the view. */
+void get_gid_string(const FileView *view, size_t buf_len, char buf[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

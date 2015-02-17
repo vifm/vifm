@@ -23,6 +23,7 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
@@ -50,13 +51,20 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	};
 
 	static menu_info m;
+
+	targets = prepare_targets(view);
+	if(targets == NULL)
+	{
+		show_error_msg("Grep", "Failed to setup target directory.");
+		return 0;
+	}
+
 	init_menu_info(&m, GREP_MENU, strdup("No matches found"));
 
 	m.title = format_str(" Grep %s ", args);
 	m.execute_handler = &execute_grep_cb;
 	m.key_handler = &filelist_khandler;
 
-	targets = get_cmd_target();
 	macros[0].value = invert ? "-v" : "";
 	macros[1].value = args;
 	macros[2].value = targets;

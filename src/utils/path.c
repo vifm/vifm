@@ -19,9 +19,15 @@
 
 #include "path.h"
 
+#ifndef _WIN32
+#include <pwd.h> /* getpwnam() */
+#endif
+#include <unistd.h> /* getcwd() */
+
 #ifdef _WIN32
 #include <ctype.h>
 #endif
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
@@ -29,15 +35,12 @@
                        strncasecmp() strncat() strchr() strcpy() strlen()
                        strrchr() */
 
-#ifndef _WIN32
-#include <pwd.h> /* getpwnam() */
-#endif
-
 #include "../cfg/config.h"
 #include "../path_env.h"
 #include "env.h"
 #include "fs.h"
 #include "fs_limits.h"
+#include "log.h"
 #include "str.h"
 #include "utils.h"
 
@@ -66,17 +69,17 @@ ends_with_slash(const char *str)
 }
 
 int
-path_starts_with(const char *path, const char *begin)
+path_starts_with(const char path[], const char prefix[])
 {
-	size_t len = strlen(begin);
+	size_t len = strlen(prefix);
 
-	if(len > 0 && begin[len - 1] == '/')
+	if(len > 0 && prefix[len - 1] == '/')
+	{
 		len--;
+	}
 
-	if(strnoscmp(path, begin, len) != 0)
-		return 0;
-
-	return (path[len] == '\0' || path[len] == '/');
+	return strnoscmp(path, prefix, len) == 0
+	    && (path[len] == '\0' || path[len] == '/');
 }
 
 int
@@ -210,7 +213,7 @@ skip_dotdir_if_any(const char *path[], int fully)
 }
 
 const char *
-make_rel_path(const char *path, const char *base)
+make_rel_path(const char path[], const char base[])
 {
 	static char buf[PATH_MAX];
 
@@ -545,6 +548,33 @@ ensure_path_well_formed(char *path)
 	strcpy(path, env_get("SYSTEMDRIVE"));
 	strcat(path, "/");
 #endif
+}
+
+int
+to_canonic_path(const char path[], char buf[], size_t buf_len)
+{
+	if(!is_path_absolute(path))
+	{
+		char cwd[PATH_MAX];
+		char full_path[PATH_MAX];
+
+		if(getcwd(cwd, sizeof(cwd)) == NULL)
+		{
+			/* getcwd() failed, we can't use relative path, so fail. */
+			LOG_SERROR_MSG(errno, "Can't get CWD");
+			return 1;
+		}
+
+		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, path);
+		canonicalize_path(full_path, buf, buf_len);
+	}
+	else
+	{
+		canonicalize_path(path, buf, buf_len);
+	}
+
+	chosp(buf);
+	return 0;
 }
 
 int

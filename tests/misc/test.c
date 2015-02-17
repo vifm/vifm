@@ -40,7 +40,7 @@ void external_command_exists_tests(void);
 void read_file_lines_tests(void);
 void if_else_tests(void);
 void split_ext_tests(void);
-void parse_spec_tests(void);
+void parse_file_spec_tests(void);
 void minmax_tests(void);
 void ui_view_schedule_tests(void);
 void string_escape_tests(void);
@@ -55,6 +55,7 @@ void expand_status_line_macros_tests(void);
 void surrounded_with_tests(void);
 void is_in_str_list_tests(void);
 void filename_specific_highlight_tests(void);
+void flist_custom_tests(void);
 
 void
 all_tests(void)
@@ -99,7 +100,7 @@ all_tests(void)
 	read_file_lines_tests();
 	if_else_tests();
 	split_ext_tests();
-	parse_spec_tests();
+	parse_file_spec_tests();
 	minmax_tests();
 	ui_view_schedule_tests();
 	string_escape_tests();
@@ -114,6 +115,7 @@ all_tests(void)
 	surrounded_with_tests();
 	is_in_str_list_tests();
 	filename_specific_highlight_tests();
+	flist_custom_tests();
 }
 
 int

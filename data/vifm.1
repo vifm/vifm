@@ -1,4 +1,4 @@
-.TH vifm 1 "February 06, 2015" "" "Vifm"
+.TH vifm 1 "February 17, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3909,6 +3909,9 @@ menu).
 : \- enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
 and :{range} are supported).
 
+b \- interpret content of the menu as list of paths and uses it to create custom
+view in place of previously active pane.  See Custom views section below.
+
 
 Below is description of additional commands and reaction on selection in some
 menus and dialogs.
@@ -4008,6 +4011,85 @@ d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X argumen
 for the chmod program.  If you want to remove execute right from all files, \
 but preserve it for directories, set all execute flags to 'd' and check \
 \'Set Recursively' flag.
+.\" ---------------------------------------------------------------------------
+.SH Custom views
+.\" ---------------------------------------------------------------------------
+.B Definition
+
+Normally file views contain list of files from a single directory, but
+sometimes it's useful to populate them with list of files that do not belong
+to the same directory, which is what custom views are for.
+
+.B Presentation
+
+Custom views are still related to directory they were in before custom list
+was loaded.  Path to that directory (original directory) can be seen in the
+title of a custom view.
+
+Files in same directory have to be named differently, this doesn't hold for
+custom views thus seeing just file names might be rather confusing.  In order
+to give an idea where files come from and when possible, relative paths to
+original directory of the view is displayed, otherwise full path is used
+instead.
+
+Custom views normally don't contain any inexistent files.
+
+.B Navigation
+
+Custom views have some differences related to navigation in regular views.
+
+gf - acts similar to gf on symbolic links and navigates to the file at its real
+    location.
+
+h or gh - return to the original directory.
+
+Opening ".." entry also causes return to the original directory.
+
+.B History
+
+Custom list exists only while it's visible, once left one can't return to it,
+so there is no appearances of it in any history.
+
+.B Filters
+
+Only local filter affects content of the view.  This is intentional,
+presumably if one loads list, precisely that list should be displayed (except
+for inexistent paths, which are ignored).
+
+.B Search
+
+Although directory names are visible in listing, they are not searchable.  Only
+file names are taken into account (might be changed in future, searching whole
+lines seems quite reasonable).
+
+.B Sorting
+
+Contrary to search sorting by name works on whole visible part of file path.
+
+.B Highlight
+
+Whole file name is highlighted as one entity, even if there are directory
+elements.
+
+.B Updates
+
+Reloads can occur, though they are not automatic due to files being scattered
+among different places.  On a reload, inexistent files are removed and meta-data
+of all other files is updated.
+
+Once custom view forgets about the file, it won't add it back even if it's
+created again.  So not seeing file previously affected by an operation, which
+was undone is normal.
+
+.B Operations
+
+All operations that add files are forbidden for custom views.  For example,
+moving/copying/putting files into a custom view doesn't work, because it doesn't
+make much sense.
+
+On the other hand, operations that use files of a custom view as a source
+(e.g. yanking, copying, moving file from custom view, deletion) and operations
+that modify names are all allowed.
 .\" ---------------------------------------------------------------------------
 .SH Startup
 .\" ---------------------------------------------------------------------------
