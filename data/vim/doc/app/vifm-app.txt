@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 16
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3352,6 +3352,10 @@ Search~
 Although directory names are visible in listing, they are not searchable.  Only
 file names are taken into account (might be changed in future, searching whole
 lines seems quite reasonable).
+
+Sorting~
+
+Contrary to search sorting by name works on whole visible part of file path.
 
 Highlight~
 
