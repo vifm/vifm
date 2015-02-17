@@ -134,6 +134,9 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 	(void)vifm_chdir(dir);
 
+	/* Request getopt() reinitialization. */
+	optind = 0;
+
 	while(1)
 	{
 		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
