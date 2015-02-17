@@ -97,6 +97,7 @@ static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void parse_path(const char dir[], const char path[], char buf[]);
 static void show_help_msg(const char wrong_arg[]);
 static void show_version_msg(void);
 static int pair_in_use(short int pair);
@@ -111,38 +112,6 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
-
-/* buf should be at least PATH_MAX characters length */
-static void
-parse_path(const char *dir, const char *path, char *buf)
-{
-	strcpy(buf, path);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-	if(is_path_absolute(buf))
-	{
-		snprintf(buf, PATH_MAX, "%s", path);
-	}
-#ifdef _WIN32
-	else if(buf[0] == '/')
-	{
-		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
-	}
-#endif
-	else
-	{
-		char new_path[PATH_MAX];
-		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
-		canonicalize_path(new_path, buf, PATH_MAX);
-	}
-	if(!is_root_dir(buf))
-		chosp(buf);
-
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-}
 
 static void
 parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
@@ -295,6 +264,41 @@ handle_path_arg(const char arg[], int select, const char dir[],
 	}
 
 	return 0;
+}
+
+/* Ensures that path is in suitable form for processing.  buf should be at least
+ * PATH_MAX characters length */
+static void
+parse_path(const char dir[], const char path[], char buf[])
+{
+	strcpy(buf, path);
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	if(is_path_absolute(buf))
+	{
+		snprintf(buf, PATH_MAX, "%s", path);
+	}
+#ifdef _WIN32
+	else if(buf[0] == '/')
+	{
+		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
+	}
+#endif
+	else
+	{
+		char new_path[PATH_MAX];
+		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
+		canonicalize_path(new_path, buf, PATH_MAX);
+	}
+	if(!is_root_dir(buf))
+	{
+		chosp(buf);
+	}
+
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
 }
 
 /* Prints brief help to the screen.  If wrong_arg is not NULL, it's reported as
