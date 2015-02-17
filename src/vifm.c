@@ -105,6 +105,7 @@ static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
+static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
 		const char rwin_path[]);
 static void load_scheme(void);
@@ -346,22 +347,6 @@ show_version_msg(void)
 	}
 
 	free_string_array(list, len);
-}
-
-static void
-check_path_for_file(FileView *view, const char *path, int handle)
-{
-	if(path[0] != '\0' && !is_dir(path))
-	{
-		load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-		if(ensure_file_is_selected(view, after_last(path, '/')))
-		{
-			if(handle)
-			{
-				open_file(view, FHE_RUN);
-			}
-		}
-	}
 }
 
 int
@@ -651,6 +636,26 @@ remote_cd(FileView *view, const char *path, int handle)
 
 	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
+}
+
+/* Navigates to/opens (handles) file specified by the path (and file only, no
+ * directories). */
+static void
+check_path_for_file(FileView *view, const char path[], int handle)
+{
+	if(path[0] == '\0' || is_dir(path))
+	{
+		return;
+	}
+
+	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
+	if(ensure_file_is_selected(view, after_last(path, '/')))
+	{
+		if(handle)
+		{
+			open_file(view, FHE_RUN);
+		}
+	}
 }
 
 /* Decides whether active view should be switched based on paths provided for
