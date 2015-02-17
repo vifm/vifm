@@ -97,6 +97,7 @@ static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void show_help_msg(const char wrong_arg[]);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
@@ -123,38 +124,6 @@ show_version_msg(void)
 	}
 
 	free_string_array(list, len);
-}
-
-static void
-show_help_msg(const char wrong_arg[])
-{
-	if(wrong_arg != NULL)
-	{
-		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
-	}
-
-	puts("vifm usage:\n");
-	puts("  To start in a specific directory give the directory path.\n");
-	puts("    vifm /path/to/start/dir/one");
-	puts("    or");
-	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
-	puts("  To open file using associated program pass to vifm it's path.\n");
-	puts("  To select file prepend its path with --select.\n");
-	puts("  If no path is given vifm will start in the current working directory.\n");
-	puts("  vifm --logging");
-	puts("    log some errors to " CONF_DIR "/log.\n");
-#ifdef ENABLE_REMOTE_CMDS
-	puts("  vifm --remote");
-	puts("    passes all arguments that left in command line to active vifm server.\n");
-#endif
-	puts("  vifm -c <command> | +<command>");
-	puts("    run <command> on startup.\n");
-	puts("  vifm --version | -v");
-	puts("    show version number and quit.\n");
-	puts("  vifm --help | -h");
-	puts("    show this help message and quit.\n");
-	puts("  vifm --no-configs");
-	puts("    don't read vifmrc and vifminfo.");
 }
 
 /* buf should be at least PATH_MAX characters length */
@@ -340,6 +309,40 @@ handle_path_arg(const char arg[], int select, const char dir[],
 	}
 
 	return 0;
+}
+
+/* Prints brief help to the screen.  If wrong_arg is not NULL, it's reported as
+ * wrong. */
+static void
+show_help_msg(const char wrong_arg[])
+{
+	if(wrong_arg != NULL)
+	{
+		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
+	}
+
+	puts("vifm usage:\n");
+	puts("  To start in a specific directory give the directory path.\n");
+	puts("    vifm /path/to/start/dir/one");
+	puts("    or");
+	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
+	puts("  To open file using associated program pass to vifm it's path.\n");
+	puts("  To select file prepend its path with --select.\n");
+	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm --logging");
+	puts("    log some errors to " CONF_DIR "/log.\n");
+#ifdef ENABLE_REMOTE_CMDS
+	puts("  vifm --remote");
+	puts("    passes all arguments that left in command line to active vifm server.\n");
+#endif
+	puts("  vifm -c <command> | +<command>");
+	puts("    run <command> on startup.\n");
+	puts("  vifm --version | -v");
+	puts("    show version number and quit.\n");
+	puts("  vifm --help | -h");
+	puts("    show this help message and quit.\n");
+	puts("  vifm --no-configs");
+	puts("    don't read vifmrc and vifminfo.");
 }
 
 static void
