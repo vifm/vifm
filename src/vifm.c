@@ -91,6 +91,7 @@
 #endif
 
 static void quit_on_arg_parsing(void);
+static int is_path_arg(const char arg[]);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
@@ -240,8 +241,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			/* do nothing, it's handeled in exec_startup_commands() */
 		}
-		else if(path_exists(argv[x], DEREF) || is_path_absolute(argv[x]) ||
-				is_root_dir(argv[x]))
+		else if(is_path_arg(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
 			{
@@ -278,6 +278,14 @@ quit_on_arg_parsing(void)
 	{
 		exit(1);
 	}
+}
+
+/* Checks whether argument mentions a valid path.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_path_arg(const char arg[])
+{
+	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg);
 }
 
 static void
