@@ -114,8 +114,8 @@ static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
 
 static void
-parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
-		char *rwin_path, int *lwin_handle, int *rwin_handle)
+parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
+		char rwin_path[], int *lwin_handle, int *rwin_handle)
 {
 	static struct option long_opts[] = {
 		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
