@@ -214,9 +214,9 @@ update_compile_info:
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(which groff 2> /dev/null)" != "x" -a "x$$(which sed 2> /dev/null)" != "x" ]; then \
 		if [ "x$$(which col 2> /dev/null)" != "x" ]; then \
-			groff -Tutf8 -man ../data/vifm.1 | col -b | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | col -b >| '$@'; \
 		else \
-			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
