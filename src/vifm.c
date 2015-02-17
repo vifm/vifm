@@ -150,10 +150,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 			case 'f': /* -f */
 				curr_stats.file_picker_mode = 1;
 				break;
-			case 'h': /* -h, --help */
-				show_help_msg(NULL);
-				quit_on_arg_parsing();
-				break;
+
 			case 'r': /* --remote <args>... */
 				if(!ipc_server())
 				{
@@ -161,9 +158,10 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 					quit_on_arg_parsing();
 				}
 				break;
-			case 's': /* --select <path> */
-				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
-						rwin_handle);
+
+			case 'h': /* -h, --help */
+				show_help_msg(NULL);
+				quit_on_arg_parsing();
 				break;
 			case 'v': /* -v, --version */
 				show_version_msg();
@@ -180,6 +178,10 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 				/* Do nothing.  Handled in main(). */
 				break;
 
+			case 's': /* --select <path> */
+				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
+						rwin_handle);
+				break;
 			case 1: /* Positional argument. */
 				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
 						lwin_handle, rwin_handle);
