@@ -36,6 +36,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/getopt.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -92,6 +93,10 @@
 
 static void quit_on_arg_parsing(void);
 static int is_path_arg(const char arg[]);
+static void handle_arg_or_fail(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static int handle_path_arg(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
@@ -121,8 +126,13 @@ show_version_msg(void)
 }
 
 static void
-show_help_msg(void)
+show_help_msg(const char wrong_arg[])
 {
+	if(wrong_arg != NULL)
+	{
+		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
+	}
+
 	puts("vifm usage:\n");
 	puts("  To start in a specific directory give the directory path.\n");
 	puts("    vifm /path/to/start/dir/one");
@@ -183,89 +193,77 @@ static void
 parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		char *rwin_path, int *lwin_handle, int *rwin_handle)
 {
-	int i;
-	int select = 0;
+	static struct option long_opts[] = {
+		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
+		{ "no-configs", no_argument,       .flag = NULL, .val = 'n' },
+		{ "select",     required_argument, .flag = NULL, .val = 's' },
+
+#ifdef ENABLE_REMOTE_CMDS
+		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
+#endif
+
+		{ "help",       no_argument,       .flag = NULL, .val = 'h' },
+		{ "version",    no_argument,       .flag = NULL, .val = 'v' },
+
+		{ }
+	};
 
 	(void)vifm_chdir(dir);
 
-	/* Get Command Line Arguments */
-	for(i = 1; i < argc; ++i)
+	while(1)
 	{
-		if(!strcmp(argv[i], "--select"))
+		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
+		if(c == -1)
 		{
-			select = 1;
+			break;
 		}
-#ifdef ENABLE_REMOTE_CMDS
-		else if(!strcmp(argv[i], "--remote"))
+
+		switch(c)
 		{
-			if(!ipc_server())
-			{
-				ipc_send(argv + i + 1);
+			case 'f':
+				curr_stats.file_picker_mode = 1;
+				break;
+			case 'h':
+				show_help_msg(NULL);
 				quit_on_arg_parsing();
-			}
-		}
-#endif
-		else if(!strcmp(argv[i], "-f"))
-		{
-			curr_stats.file_picker_mode = 1;
-		}
-		else if(!strcmp(argv[i], "--no-configs"))
-		{
-			/* Do nothing. */
-		}
-		else if(!strcmp(argv[i], "--version") || !strcmp(argv[i], "-v"))
-		{
-			show_version_msg();
-			quit_on_arg_parsing();
-		}
-		else if(!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
-		{
-			show_help_msg();
-			quit_on_arg_parsing();
-		}
-		else if(!strcmp(argv[i], "--logging"))
-		{
-			/* do nothing, it's handeled in main() */
-		}
-		else if(!strcmp(argv[i], "-c"))
-		{
-			if(i == argc - 1)
-			{
-				puts("Argument missing after \"-c\"");
+				break;
+			case 'r':
+				if(!ipc_server())
+				{
+					ipc_send(argv + optind);
+					quit_on_arg_parsing();
+				}
+				break;
+			case 's':
+				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
+						rwin_handle);
+				break;
+			case 'v':
+				show_version_msg();
 				quit_on_arg_parsing();
-			}
-			/* do nothing, it's handeled in exec_startup_commands() */
-			++i;
+				break;
+
+			case 'c':
+				/* Do nothing on -c <arg> here.  Handled in exec_startup_commands(). */
+				break;
+			case 'l':
+				/* Do nothing on --logging here.  Handled in main(). */
+				break;
+			case 'n':
+				/* Do nothing on --no-configs here.  Handled in main(). */
+				break;
+
+			case 1:
+				/* Handle positional argument. */
+				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
+						lwin_handle, rwin_handle);
+				break;
+
+			case '?':
+				/* getopt_long() already printed error message. */
+				quit_on_arg_parsing();
+				break;
 		}
-		else if(argv[i][0] == '+')
-		{
-			/* do nothing, it's handeled in exec_startup_commands() */
-		}
-		else if(is_path_arg(argv[i]))
-		{
-			if(lwin_path[0] != '\0')
-			{
-				parse_path(dir, argv[i], rwin_path);
-				*rwin_handle = !select;
-			}
-			else
-			{
-				parse_path(dir, argv[i], lwin_path);
-				*lwin_handle = !select;
-			}
-			select = 0;
-		}
-		else if(curr_stats.load_stage == 0)
-		{
-			show_help_msg();
-			quit_on_arg_parsing();
-		}
-#ifdef ENABLE_REMOTE_CMDS
-		else
-		{
-			show_error_msgf("--remote error", "Invalid argument: %s", argv[i]);
-		}
-#endif
 	}
 }
 
@@ -286,6 +284,62 @@ static int
 is_path_arg(const char arg[])
 {
 	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg);
+}
+
+/* Handles path command-line argument or fails with appropriate message.
+ * Returns zero on successful handling, otherwise non-zero is returned. */
+static void
+handle_arg_or_fail(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+{
+	if(arg[0] == '+')
+	{
+		/* Do nothing.  Handled in exec_startup_commands(). */
+		return;
+	}
+
+	if(handle_path_arg(arg, select, dir, lwin_path, rwin_path, lwin_handle,
+				rwin_handle) == 0)
+	{
+		return;
+	}
+
+	if(curr_stats.load_stage == 0)
+	{
+		show_help_msg(arg);
+		quit_on_arg_parsing();
+	}
+#ifdef ENABLE_REMOTE_CMDS
+	else
+	{
+		show_error_msgf("--remote error", "Invalid argument: %s", arg);
+	}
+#endif
+}
+
+/* Handles path command-line argument.  Returns zero on successful handling,
+ * otherwise non-zero is returned. */
+static int
+handle_path_arg(const char arg[], int select, const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+{
+	if(!is_path_arg(arg))
+	{
+		return 1;
+	}
+
+	if(lwin_path[0] != '\0')
+	{
+		parse_path(dir, arg, rwin_path);
+		*rwin_handle = !select;
+	}
+	else
+	{
+		parse_path(dir, arg, lwin_path);
+		*lwin_handle = !select;
+	}
+
+	return 0;
 }
 
 static void
