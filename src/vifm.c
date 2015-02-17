@@ -31,7 +31,7 @@
 #include <locale.h> /* setlocale */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() malloc() system() */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -98,6 +98,7 @@ static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static void show_help_msg(const char wrong_arg[]);
+static void show_version_msg(void);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
@@ -109,22 +110,6 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
-
-static void
-show_version_msg(void)
-{
-	int i, len;
-	char **list;
-	list = malloc(sizeof(char*)*fill_version_info(NULL));
-
-	len = fill_version_info(list);
-	for(i = 0; i < len; i++)
-	{
-		puts(list[i]);
-	}
-
-	free_string_array(list, len);
-}
 
 /* buf should be at least PATH_MAX characters length */
 static void
@@ -343,6 +328,24 @@ show_help_msg(const char wrong_arg[])
 	puts("    show this help message and quit.\n");
 	puts("  vifm --no-configs");
 	puts("    don't read vifmrc and vifminfo.");
+}
+
+/* Prints detailed version information to the screen. */
+static void
+show_version_msg(void)
+{
+	int i, len;
+	char **list;
+
+	list = malloc(sizeof(char *)*fill_version_info(NULL));
+	len = fill_version_info(list);
+
+	for(i = 0; i < len; ++i)
+	{
+		puts(list[i]);
+	}
+
+	free_string_array(list, len);
 }
 
 static void
