@@ -183,74 +183,74 @@ static void
 parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		char *rwin_path, int *lwin_handle, int *rwin_handle)
 {
-	int x;
+	int i;
 	int select = 0;
 
 	(void)vifm_chdir(dir);
 
 	/* Get Command Line Arguments */
-	for(x = 1; x < argc; x++)
+	for(i = 1; i < argc; ++i)
 	{
-		if(!strcmp(argv[x], "--select"))
+		if(!strcmp(argv[i], "--select"))
 		{
 			select = 1;
 		}
 #ifdef ENABLE_REMOTE_CMDS
-		else if(!strcmp(argv[x], "--remote"))
+		else if(!strcmp(argv[i], "--remote"))
 		{
 			if(!ipc_server())
 			{
-				ipc_send(argv + x + 1);
+				ipc_send(argv + i + 1);
 				quit_on_arg_parsing();
 			}
 		}
 #endif
-		else if(!strcmp(argv[x], "-f"))
+		else if(!strcmp(argv[i], "-f"))
 		{
 			curr_stats.file_picker_mode = 1;
 		}
-		else if(!strcmp(argv[x], "--no-configs"))
+		else if(!strcmp(argv[i], "--no-configs"))
 		{
 			/* Do nothing. */
 		}
-		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
+		else if(!strcmp(argv[i], "--version") || !strcmp(argv[i], "-v"))
 		{
 			show_version_msg();
 			quit_on_arg_parsing();
 		}
-		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
+		else if(!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
 		{
 			show_help_msg();
 			quit_on_arg_parsing();
 		}
-		else if(!strcmp(argv[x], "--logging"))
+		else if(!strcmp(argv[i], "--logging"))
 		{
 			/* do nothing, it's handeled in main() */
 		}
-		else if(!strcmp(argv[x], "-c"))
+		else if(!strcmp(argv[i], "-c"))
 		{
-			if(x == argc - 1)
+			if(i == argc - 1)
 			{
 				puts("Argument missing after \"-c\"");
 				quit_on_arg_parsing();
 			}
 			/* do nothing, it's handeled in exec_startup_commands() */
-			x++;
+			++i;
 		}
-		else if(argv[x][0] == '+')
+		else if(argv[i][0] == '+')
 		{
 			/* do nothing, it's handeled in exec_startup_commands() */
 		}
-		else if(is_path_arg(argv[x]))
+		else if(is_path_arg(argv[i]))
 		{
 			if(lwin_path[0] != '\0')
 			{
-				parse_path(dir, argv[x], rwin_path);
+				parse_path(dir, argv[i], rwin_path);
 				*rwin_handle = !select;
 			}
 			else
 			{
-				parse_path(dir, argv[x], lwin_path);
+				parse_path(dir, argv[i], lwin_path);
 				*lwin_handle = !select;
 			}
 			select = 0;
@@ -263,7 +263,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 #ifdef ENABLE_REMOTE_CMDS
 		else
 		{
-			show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
+			show_error_msgf("--remote error", "Invalid argument: %s", argv[i]);
 		}
 #endif
 	}
