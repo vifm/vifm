@@ -129,6 +129,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->original_stdout = NULL;
 
+	(void)replace_string(&stats->output_delimiter, "\n");
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif
@@ -263,6 +265,12 @@ stats_update_term_state(int screen_x, int screen_y)
 	}
 
 	return curr_stats.term_state;
+}
+
+void
+stats_set_output_delimiter(const char delimiter[])
+{
+	(void)replace_string(&curr_stats.output_delimiter, delimiter);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

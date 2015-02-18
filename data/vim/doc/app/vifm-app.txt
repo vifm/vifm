@@ -74,6 +74,9 @@ The other command line arguments are:
 -f                                             *vifm--f*
     makes vifm instead of opening files write selection to $VIFM/vimfiles and
     quit.
+--delimiter <delimiter>                        *vifm---delimiter*
+    sets separator for list of file paths written out by vifm.  Empty value
+    means null character.  Default is new line character.
 --logging                                      *vifm---logging*
     log some errors to $VIFM/log.
     Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory

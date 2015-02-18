@@ -231,12 +231,19 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 static void
 dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 {
+	/* Break delimiter in it's first character and the rest to be able to insert
+	 * null character via "%c%s" format string. */
+	const char delim_c = curr_stats.output_delimiter[0];
+	const char *const delim_str = curr_stats.output_delimiter[0] == '\0'
+	                            ? ""
+	                            : curr_stats.output_delimiter + 1;
+
 	if(nfiles == 0)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 		if(!entry->selected)
 		{
-			fprintf(fp, "%s/%s\n", entry->origin, entry->name);
+			fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c, delim_str);
 		}
 		else
 		{
@@ -246,7 +253,8 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 				const dir_entry_t *const entry = &view->dir_entry[i];
 				if(entry->selected)
 				{
-					fprintf(fp, "%s/%s\n", entry->origin, entry->name);
+					fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c,
+							delim_str);
 				}
 			}
 		}
@@ -258,11 +266,11 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 		{
 			if(is_path_absolute(files[i]))
 			{
-				fprintf(fp, "%s\n", files[i]);
+				fprintf(fp, "%s%c%s", files[i], delim_c, delim_str);
 			}
 			else
 			{
-				fprintf(fp, "%s/%s\n", view->curr_dir, files[i]);
+				fprintf(fp, "%s/%s%c%s", view->curr_dir, files[i], delim_c, delim_str);
 			}
 		}
 	}

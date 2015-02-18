@@ -121,6 +121,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
 		{ "no-configs", no_argument,       .flag = NULL, .val = 'n' },
 		{ "select",     required_argument, .flag = NULL, .val = 's' },
+		{ "delimiter",  required_argument, .flag = NULL, .val = 'd' },
 
 #ifdef ENABLE_REMOTE_CMDS
 		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
@@ -149,6 +150,9 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		{
 			case 'f': /* -f */
 				curr_stats.file_picker_mode = 1;
+				break;
+			case 'd': /* --delimiter <delimiter> */
+				stats_set_output_delimiter(optarg);
 				break;
 
 			case 'r': /* --remote <args>... */
@@ -326,6 +330,8 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm -f");
 	puts("    makes vifm instead of opening files write selection to ");
 	puts("    $VIFM/vimfiles and quit.\n");
+	puts("  --delimiter <delimiter>");
+	puts("    sets separator for list of file paths written out by vifm.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS

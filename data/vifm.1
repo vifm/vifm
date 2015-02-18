@@ -40,7 +40,11 @@ Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with \-\-select.
 .TP
 .BI \-f
-makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
+Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
+.TP
+.BI "\-\-delimiter <delimiter>"
+Sets separator for list of file paths written out by vifm.  Empty value means
+null character.  Default is new line character.
 .TP
 .BI "\-\-logging"
 Log some errors to $VIFM/log.

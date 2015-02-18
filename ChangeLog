@@ -49,6 +49,10 @@
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
+	Added --delimiter command-line option.  Configures delimiter string on
+	writing out list of paths (like on `-f` switch).  Thanks to Jeet
+	Sukumaran (a.k.a. jeetsukumaran).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

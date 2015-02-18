@@ -154,6 +154,8 @@ typedef struct
 
 	FILE *original_stdout; /* Saved original standard output. */
 
+	char *output_delimiter; /* Delimiter for writing out list of paths. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
@@ -189,6 +191,10 @@ void stats_update_shell_type(const char shell_cmd[]);
 /* Updates curr_stats.term_state field according to specified terminal
  * dimensions.  Returns new state. */
 TermState stats_update_term_state(int screen_x, int screen_y);
+
+/* Sets delimiter (curr_stats.output_delimiter) for separating multiple paths in
+ * output. */
+void stats_set_output_delimiter(const char delimiter[]);
 
 #endif /* VIFM__STATUS_H__ */
 

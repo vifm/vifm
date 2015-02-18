@@ -109,6 +109,7 @@ const char *tags[] = {
 	"vifm-)",
 	"vifm-,",
 	"vifm--+c",
+	"vifm---delimiter",
 	"vifm---help",
 	"vifm---logging",
 	"vifm---no-configs",
