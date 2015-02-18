@@ -52,6 +52,10 @@ void _gnuc_noreturn vim_return_file_list(const FileView *view, int nfiles,
 /* Writes empty output file list meaning that user choice is empty. */
 void vim_write_empty_file_list(void);
 
+/* Fills the buffer of length buf_size with path to default file list location
+ * for the plugin. */
+void vim_get_list_file_path(char buf[], size_t buf_size);
+
 TSTATIC_DEFS(
 	char * format_edit_selection_cmd(int *bg);
 )

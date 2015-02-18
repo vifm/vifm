@@ -123,8 +123,6 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->shell_type = ST_NORMAL;
 
-	stats->file_picker_mode = 0;
-
 	stats->fuse_umount_cmd = "";
 
 	stats->original_stdout = NULL;
@@ -268,6 +266,12 @@ stats_update_term_state(int screen_x, int screen_y)
 }
 
 void
+stats_set_chosen_files_out(const char output[])
+{
+	(void)replace_string(&curr_stats.chosen_files_out, output);
+}
+
+void
 stats_set_output_delimiter(const char delimiter[])
 {
 	(void)replace_string(&curr_stats.output_delimiter, delimiter);
@@ -276,7 +280,7 @@ stats_set_output_delimiter(const char delimiter[])
 int
 stats_file_choose_action_set(void)
 {
-	return curr_stats.file_picker_mode;
+	return (curr_stats.chosen_files_out != NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

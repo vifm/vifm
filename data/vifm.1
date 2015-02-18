@@ -42,6 +42,10 @@ archive opened.  If you want to select file, prepend its path with \-\-select.
 .BI \-f
 Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
 .TP
+.BI "\-\-choose-files <path>|\-"
+Sets output file to write selection into on exit instead of opening files.
+"\-" means standard output.
+.TP
 .BI "\-\-delimiter <delimiter>"
 Sets separator for list of file paths written out by vifm.  Empty value means
 null character.  Default is new line character.

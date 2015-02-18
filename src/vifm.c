@@ -97,6 +97,7 @@ static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void get_path_or_std(const char dir[], const char arg[], char output[]);
 static void parse_path(const char dir[], const char path[], char buf[]);
 static void show_help_msg(const char wrong_arg[]);
 static void show_version_msg(void);
@@ -118,10 +119,11 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		char rwin_path[], int *lwin_handle, int *rwin_handle)
 {
 	static struct option long_opts[] = {
-		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
-		{ "no-configs", no_argument,       .flag = NULL, .val = 'n' },
-		{ "select",     required_argument, .flag = NULL, .val = 's' },
-		{ "delimiter",  required_argument, .flag = NULL, .val = 'd' },
+		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
+		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
+		{ "select",       required_argument, .flag = NULL, .val = 's' },
+		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
+		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
 
 #ifdef ENABLE_REMOTE_CMDS
 		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
@@ -149,8 +151,19 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		switch(c)
 		{
 			case 'f': /* -f */
-				curr_stats.file_picker_mode = 1;
-				break;
+				{
+					char path[PATH_MAX];
+					vim_get_list_file_path(path, sizeof(path));
+					stats_set_chosen_files_out(path);
+					break;
+				}
+			case 'F': /* --choose-files <path|-> */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_files_out(output);
+					break;
+				}
 			case 'd': /* --delimiter <delimiter> */
 				stats_set_output_delimiter(optarg);
 				break;
@@ -274,6 +287,21 @@ handle_path_arg(const char arg[], int select, const char dir[],
 	return 0;
 }
 
+/* Parses the arg as absolute or relative path (to the dir), unless it's equal
+ * to "-".  output should be at least PATH_MAX characters length */
+static void
+get_path_or_std(const char dir[], const char arg[], char output[])
+{
+	if(strcmp(arg, "-") == 0)
+	{
+		strcpy(output, "-");
+	}
+	else
+	{
+		parse_path(dir, arg, output);
+	}
+}
+
 /* Ensures that path is in suitable form for processing.  buf should be at least
  * PATH_MAX characters length */
 static void
@@ -330,6 +358,9 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm -f");
 	puts("    makes vifm instead of opening files write selection to ");
 	puts("    $VIFM/vimfiles and quit.\n");
+	puts("  --choose-files <path>|-");
+	puts("    sets output file to write selection into on exit instead of ");
+	puts("    opening files.  \"-\" means standard output.\n");
 	puts("  --delimiter <delimiter>");
 	puts("    sets separator for list of file paths written out by vifm.\n");
 	puts("  vifm --logging");

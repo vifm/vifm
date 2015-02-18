@@ -143,17 +143,16 @@ typedef struct
 	 * (e.g. right after startup or :restart command). */
 	char *last_cmdline_command;
 
-	int initial_lines; /* Initial terminal height in lines. */
+	int initial_lines;   /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
 
 	ShellType shell_type; /* Specifies type of shell. */
-
-	int file_picker_mode; /* Whether vifm was started in file picking mode. */
 
 	const char *fuse_umount_cmd; /* Command to use for fuse unmounting. */
 
 	FILE *original_stdout; /* Saved original standard output. */
 
+	char *chosen_files_out; /* Destination for writing chosen files. */
 	char *output_delimiter; /* Delimiter for writing out list of paths. */
 
 #ifdef HAVE_LIBGTK
@@ -191,6 +190,10 @@ void stats_update_shell_type(const char shell_cmd[]);
 /* Updates curr_stats.term_state field according to specified terminal
  * dimensions.  Returns new state. */
 TermState stats_update_term_state(int screen_x, int screen_y);
+
+/* Sets output location (curr_stats.chosen_files_out) for list of chosen
+ * files. */
+void stats_set_chosen_files_out(const char output[]);
 
 /* Sets delimiter (curr_stats.output_delimiter) for separating multiple paths in
  * output. */

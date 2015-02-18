@@ -74,6 +74,9 @@ The other command line arguments are:
 -f                                             *vifm--f*
     makes vifm instead of opening files write selection to $VIFM/vimfiles and
     quit.
+--choose-files <path>|-                        *vifm---choose-files*
+    sets output file to write selection into on exit instead of opening files.
+    "-" means standard output.
 --delimiter <delimiter>                        *vifm---delimiter*
     sets separator for list of file paths written out by vifm.  Empty value
     means null character.  Default is new line character.

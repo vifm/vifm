@@ -23,7 +23,7 @@
 #include <errno.h> /* errno */
 #include <stdio.h> /* FILE fclose() fprintf() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
-#include <string.h> /* strrchr() strstr() */
+#include <string.h> /* strcmp() strrchr() strstr() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -40,6 +40,7 @@
 #include "background.h"
 #include "macros.h"
 #include "running.h"
+#include "status.h"
 
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
@@ -200,25 +201,32 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 void _gnuc_noreturn
 vim_return_file_list(const FileView *view, int nfiles, char *files[])
 {
-	FILE *fp;
-	char filepath[PATH_MAX];
 	int exit_code = EXIT_SUCCESS;
 
 	/* As curses can do something with terminal on shutting down, disable it
 	 * before writing anything to the screen. */
 	endwin();
 
-	snprintf(filepath, sizeof(filepath), "%s/" LIST_FILE, cfg.config_dir);
-	fp = os_fopen(filepath, "w");
-	if(fp != NULL)
+	if(strcmp(curr_stats.chosen_files_out, "-") == 0)
 	{
-		dump_filenames(view, fp, nfiles, files);
-		fclose(fp);
+		dump_filenames(view, curr_stats.original_stdout, nfiles, files);
 	}
 	else
 	{
-		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
-		exit_code = EXIT_FAILURE;
+		FILE *fp;
+
+		fp = os_fopen(curr_stats.chosen_files_out, "w");
+		if(fp != NULL)
+		{
+			dump_filenames(view, fp, nfiles, files);
+			fclose(fp);
+		}
+		else
+		{
+			LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"",
+					curr_stats.chosen_files_out);
+			exit_code = EXIT_FAILURE;
+		}
 	}
 
 	write_info_file();
@@ -282,19 +290,29 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 void
 vim_write_empty_file_list(void)
 {
-	char path[PATH_MAX];
 	FILE *fp;
 
-	snprintf(path, sizeof(path), "%s/" LIST_FILE, cfg.config_dir);
-	fp = os_fopen(path, "w");
+	if(strcmp(curr_stats.chosen_files_out, "-") == 0)
+	{
+		return;
+	}
+
+	fp = os_fopen(curr_stats.chosen_files_out, "w");
 	if(fp != NULL)
 	{
 		fclose(fp);
 	}
 	else
 	{
-		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", path);
+		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"",
+				curr_stats.chosen_files_out);
 	}
+}
+
+void
+vim_get_list_file_path(char buf[], size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/" LIST_FILE, cfg.config_dir);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
