@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 17
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -71,10 +71,9 @@ Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with --select.
 
 The other command line arguments are:
-                                               *vifm--f*
--f - only used from the vifm.vim script.  The selected files are written
-    to $VIFM/vimfiles and vifm exits.
-
+-f                                             *vifm--f*
+    makes vifm instead of opening files write selection to $VIFM/vimfiles and
+    quit.
 --logging                                      *vifm---logging*
     log some errors to $VIFM/log.
     Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory

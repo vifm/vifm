@@ -323,6 +323,9 @@ show_help_msg(const char wrong_arg[])
 	puts("  To open file using associated program pass to vifm it's path.\n");
 	puts("  To select file prepend its path with --select.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm -f");
+	puts("    makes vifm instead of opening files write selection to ");
+	puts("    $VIFM/vimfiles and quit.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS
