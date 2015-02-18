@@ -196,6 +196,10 @@ TermState stats_update_term_state(int screen_x, int screen_y);
  * output. */
 void stats_set_output_delimiter(const char delimiter[]);
 
+/* Checks whether custom actions on file choosing is set.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int stats_file_choose_action_set(void);
+
 #endif /* VIFM__STATUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

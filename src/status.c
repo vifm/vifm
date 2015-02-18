@@ -273,5 +273,11 @@ stats_set_output_delimiter(const char delimiter[])
 	(void)replace_string(&curr_stats.output_delimiter, delimiter);
 }
 
+int
+stats_file_choose_action_set(void)
+{
+	return curr_stats.file_picker_mode;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

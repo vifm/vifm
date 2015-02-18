@@ -151,7 +151,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
 	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
-	if(curr_stats.file_picker_mode && (executable || runnable))
+	if(stats_file_choose_action_set() && (executable || runnable))
 	{
 		/* The call below does not return. */
 		vim_return_file_list(view, 0, NULL);

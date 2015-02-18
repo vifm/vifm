@@ -906,7 +906,7 @@ vifm_try_leave(int write_info, int force)
 		write_info_file();
 	}
 
-	if(curr_stats.file_picker_mode)
+	if(stats_file_choose_action_set())
 	{
 		vim_write_empty_file_list();
 	}

@@ -2002,7 +2002,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc != 0)
 	{
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
 			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
@@ -2017,7 +2017,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 	{
 		char file_to_view[PATH_MAX];
 
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
 			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
@@ -2045,7 +2045,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			}
 		}
 
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
 			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
