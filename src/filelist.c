@@ -2645,7 +2645,6 @@ fill_dir_entry_by_path(dir_entry_t *entry, const char path[])
 	wchar_t *utf16_path;
 	HANDLE hfind;
 	WIN32_FIND_DATAW ffd;
-	int result;
 
 	utf16_path = utf8_to_utf16(path);
 	hfind = FindFirstFileW(utf16_path, &ffd);
