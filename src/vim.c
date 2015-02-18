@@ -252,19 +252,10 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 
 	if(nfiles == 0)
 	{
-		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-		if(!entry->selected)
+		dir_entry_t *entry = NULL;
+		while(iter_selection_or_current((FileView *)view, &entry))
 		{
 			fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c, delim_str);
-		}
-		else
-		{
-			dir_entry_t *entry = NULL;
-			while(iter_selected_entries((FileView *)view, &entry))
-			{
-				fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c,
-						delim_str);
-			}
 		}
 	}
 	else

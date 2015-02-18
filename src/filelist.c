@@ -4162,6 +4162,21 @@ iter_selected_entries(FileView *view, dir_entry_t **entry)
 }
 
 int
+iter_selection_or_current(FileView *view, dir_entry_t **entry)
+{
+	dir_entry_t *const current = &view->dir_entry[view->list_pos];
+	if(current->selected)
+	{
+		return iter_selected_entries(view, entry);
+	}
+	else
+	{
+		*entry = (*entry == NULL) ? current : NULL;
+		return *entry != NULL;
+	}
+}
+
+int
 iter_marked_entries(FileView *view, dir_entry_t **entry)
 {
 	return iter_entries(view, entry, &is_entry_marked);
