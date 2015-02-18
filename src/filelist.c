@@ -163,11 +163,11 @@ static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const struct dirent *d);
-static int param_is_dir_entry(const struct dirent *d);
+static int data_is_dir_entry(const struct dirent *d);
 #else
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
-static int param_is_dir_entry(const WIN32_FIND_DATAW *ffd);
+static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
 static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
@@ -2426,7 +2426,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		++view->filtered;
 		return 0;
 	}
-	else if(!file_is_visible(view, name, param_is_dir_entry(param)))
+	else if(!file_is_visible(view, name, data_is_dir_entry(data)))
 	{
 		++view->filtered;
 		return 0;
@@ -2441,7 +2441,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 
 	init_dir_entry(view, entry, name);
 
-	if(fill_dir_entry(entry, entry->name, param) == 0)
+	if(fill_dir_entry(entry, entry->name, data) == 0)
 	{
 		++view->list_rows;
 	}
@@ -2630,7 +2630,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 /* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
  * is returned. */
 static int
-param_is_dir_entry(const struct dirent *d)
+data_is_dir_entry(const struct dirent *d)
 {
 	return is_dirent_targets_dir(d);
 }
@@ -2699,9 +2699,9 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 /* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
  * is returned. */
 static int
-param_is_dir_entry(const WIN32_FIND_DATAW *ffd)
+data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 {
-	return fdd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+	return (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
 #endif
