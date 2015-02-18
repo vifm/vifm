@@ -2669,17 +2669,17 @@ static int
 fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd)
 {
-	entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
-	entry->attrs = ffd.dwFileAttributes;
-	entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
-	entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
-	entry->ctime = win_to_unix_time(ffd.ftCreationTime);
+	entry->size = ((uintmax_t)ffd->nFileSizeHigh << 32) + ffd->nFileSizeLow;
+	entry->attrs = ffd->dwFileAttributes;
+	entry->mtime = win_to_unix_time(ffd->ftLastWriteTime);
+	entry->atime = win_to_unix_time(ffd->ftLastAccessTime);
+	entry->ctime = win_to_unix_time(ffd->ftCreationTime);
 
-	if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
+	if(is_win_symlink(ffd->dwFileAttributes, ffd->dwReserved0))
 	{
 		entry->type = FT_LINK;
 	}
-	else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	else if(ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 	{
 		entry->type = FT_DIR;
 	}
