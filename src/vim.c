@@ -204,6 +204,10 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 	char filepath[PATH_MAX];
 	int exit_code = EXIT_SUCCESS;
 
+	/* As curses can do something with terminal on shutting down, disable it
+	 * before writing anything to the screen. */
+	endwin();
+
 	snprintf(filepath, sizeof(filepath), "%s/" LIST_FILE, cfg.config_dir);
 	fp = os_fopen(filepath, "w");
 	if(fp != NULL)
@@ -219,12 +223,11 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 
 	write_info_file();
 
-	endwin();
 	exit(exit_code);
 }
 
 /* Writes list of full paths to files into the file pointed to by fp.  files and
- * nfiles parameters can be used to supply list of file names in the currecnt
+ * nfiles parameters can be used to supply list of file names in the current
  * directory of the view.  Otherwise current selection is used if current files
  * is selected, if current file is not selected it's the only one that is
  * stored. */
