@@ -38,6 +38,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "filelist.h"
 #include "macros.h"
 #include "running.h"
 #include "status.h"
@@ -258,15 +259,11 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 		}
 		else
 		{
-			int i;
-			for(i = 0; i < view->list_rows; ++i)
+			dir_entry_t *entry = NULL;
+			while(iter_selected_entries((FileView *)view, &entry))
 			{
-				const dir_entry_t *const entry = &view->dir_entry[i];
-				if(entry->selected)
-				{
-					fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c,
-							delim_str);
-				}
+				fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c,
+						delim_str);
 			}
 		}
 	}
