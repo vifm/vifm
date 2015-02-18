@@ -59,6 +59,7 @@
 # include <unistd.h>
 #endif	/* GNU C library.  */
 
+#include <malloc.h> /* alloca() */
 #include <string.h>
 
 #ifdef VMS
@@ -68,8 +69,7 @@
 #ifdef _LIBC
 # include <libintl.h>
 #else
-# include "gettext.h"
-# define _(msgid) gettext (msgid)
+# define _(msgid) (msgid)
 #endif
 
 #if defined _LIBC
