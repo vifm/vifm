@@ -28,6 +28,7 @@
 
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
+#include <stddef.h> /* NULL */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -125,6 +126,8 @@ load_def_values(status_t *stats, config_t *config)
 	stats->file_picker_mode = 0;
 
 	stats->fuse_umount_cmd = "";
+
+	stats->original_stdout = NULL;
 
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;

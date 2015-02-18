@@ -20,6 +20,8 @@
 #ifndef VIFM__STATUS_H__
 #define VIFM__STATUS_H__
 
+#include <stdio.h> /* FILE */
+
 #include "utils/tree.h"
 #include "utils/fs_limits.h"
 
@@ -149,6 +151,8 @@ typedef struct
 	int file_picker_mode; /* Whether vifm was started in file picking mode. */
 
 	const char *fuse_umount_cmd; /* Command to use for fuse unmounting. */
+
+	FILE *original_stdout; /* Saved original standard output. */
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */

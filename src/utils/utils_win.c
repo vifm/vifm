@@ -730,5 +730,45 @@ get_gid_string(const FileView *view, size_t buf_len, char buf[])
 	buf[0] = '\0';
 }
 
+FILE *
+reopen_terminal(void)
+{
+	int outfd;
+	FILE *fp;
+	HANDLE handle_out;
+
+	outfd = dup(STDOUT_FILENO);
+	if(outfd == -1)
+	{
+		fprintf(stderr, "Failed to store original output stream.");
+		return NULL;
+	}
+
+	fp = fdopen(outfd, "w");
+	if(fp == NULL)
+	{
+		fprintf(stderr, "Failed to open original output stream.");
+		return NULL;
+	}
+
+	handle_out = CreateFileW(L"CONOUT$", GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, 0, 0, 0);
+	if(handle_out == NULL)
+	{
+		fclose(fp);
+		fprintf(stderr, "Failed to open CONOUT$.");
+		return NULL;
+	}
+
+	if(SetStdHandle(STD_OUTPUT_HANDLE, handle_out) == FALSE)
+	{
+		fclose(fp);
+		fprintf(stderr, "Failed to set CONOUT$ as standard output.");
+		return NULL;
+	}
+
+	return fp;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

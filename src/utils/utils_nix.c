@@ -21,14 +21,14 @@
 #include "utils_int.h"
 
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
-#include <sys/stat.h> /* S_* */
+#include <sys/stat.h> /* O_RDONLY O_WRONLY S_* */
 #include <sys/time.h> /* timeval */
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
-#include <fcntl.h> /* O_RDONLY open() close() */
+#include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <unistd.h> /* X_OK dup2() getpid() pause() */
+#include <unistd.h> /* X_OK dup() dup2() getpid() pause() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -37,7 +37,7 @@
                        sigset_t kill() sigaddset() sigemptyset() signal()
                        sigprocmask() */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
 #include <stdlib.h> /* atoi() free() */
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
@@ -720,6 +720,43 @@ get_gid_string(const FileView *view, size_t buf_len, char buf[])
 	}
 
 	copy_str(buf, buf_len, gid_buf);
+}
+
+FILE *
+reopen_terminal(void)
+{
+	FILE *fp;
+	int outfd, ttyfd;
+
+	outfd = dup(STDOUT_FILENO);
+	if(outfd == -1)
+	{
+		fprintf(stderr, "Failed to store original output stream.");
+		return NULL;
+	}
+
+	fp = fdopen(outfd, "w");
+	if(fp == NULL)
+	{
+		fprintf(stderr, "Failed to open original output stream.");
+		return NULL;
+	}
+
+	ttyfd = open("/dev/tty", O_WRONLY);
+	if(ttyfd == -1)
+	{
+		fclose(fp);
+		fprintf(stderr, "Failed to open terminal for output.");
+		return NULL;
+	}
+	if(dup2(ttyfd, STDOUT_FILENO) == -1)
+	{
+		fclose(fp);
+		fprintf(stderr, "Failed to setup terminal as standard output stream.");
+		return NULL;
+	}
+
+	return fp;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

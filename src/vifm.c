@@ -25,7 +25,7 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* getcwd sysconf */
+#include <unistd.h> /* getcwd() */
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
@@ -446,13 +446,21 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 2;
 	}
 
+	/* Prepare terminal for further operations. */
+	curr_stats.original_stdout = reopen_terminal();
+	if(curr_stats.original_stdout == NULL)
+	{
+		return -1;
+	}
+
 	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())
+	{
 		return -1;
+	}
 
 	{
-		const colmgr_conf_t colmgr_conf =
-		{
+		const colmgr_conf_t colmgr_conf = {
 			.max_color_pairs = COLOR_PAIRS,
 			.max_colors = COLORS,
 			.init_pair = &init_pair,
