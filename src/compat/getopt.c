@@ -59,7 +59,12 @@
 # include <unistd.h>
 #endif	/* GNU C library.  */
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h> /* alloca() */
+#else
 #include <malloc.h> /* alloca() */
+#endif
+
 #include <string.h>
 
 #ifdef VMS

@@ -40,6 +40,7 @@ if test -n "$OSX_HOST" ; then
 fi
 
 dnl Check for system headers.
+AC_CHECK_HEADERS([alloca.h], [AC_DEFINE([HAVE_ALLOCA_H], [1], [alloca.h header is available.])])
 AC_CHECK_HEADER([assert.h], [], [AC_MSG_ERROR([assert.h header not found.])])
 AC_CHECK_HEADER([ctype.h], [], [AC_MSG_ERROR([ctype.h header not found.])])
 AC_CHECK_HEADER([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found.])])
