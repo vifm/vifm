@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-#include <fcntl.h>
+#include <fcntl.h> /* open() */
 #include <unistd.h>
 
 #include <assert.h>
@@ -33,7 +33,7 @@
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
-#include <sys/stat.h>
+#include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
 #include <sys/select.h> /* FD_* select */
