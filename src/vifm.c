@@ -93,10 +93,10 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
-static void quit_on_arg_parsing(int code);
 static int is_path_arg(const char arg[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void quit_on_arg_parsing(int code);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
@@ -214,17 +214,6 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 	}
 }
 
-/* Quits during argument parsing when it's allowed (e.g. not for remote
- * commands). */
-static void
-quit_on_arg_parsing(int code)
-{
-	if(curr_stats.load_stage == 0)
-	{
-		exit(code);
-	}
-}
-
 /* Checks whether argument mentions a valid path.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
@@ -262,6 +251,17 @@ handle_arg_or_fail(const char arg[], int select, const char dir[],
 		show_error_msgf("--remote error", "Invalid argument: %s", arg);
 	}
 #endif
+}
+
+/* Quits during argument parsing when it's allowed (e.g. not for remote
+ * commands). */
+static void
+quit_on_arg_parsing(int code)
+{
+	if(curr_stats.load_stage == 0)
+	{
+		exit(code);
+	}
 }
 
 /* Handles path command-line argument.  Returns zero on successful handling,
