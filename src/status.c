@@ -127,6 +127,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->original_stdout = NULL;
 
+	stats->chosen_files_out = NULL;
 	(void)replace_string(&stats->output_delimiter, "\n");
 
 #ifdef HAVE_LIBGTK
@@ -280,7 +281,7 @@ stats_set_output_delimiter(const char delimiter[])
 int
 stats_file_choose_action_set(void)
 {
-	return (curr_stats.chosen_files_out != NULL);
+	return !is_null_or_empty(curr_stats.chosen_files_out);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

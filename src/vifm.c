@@ -159,7 +159,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 					stats_set_chosen_files_out(path);
 					break;
 				}
-			case 'F': /* --choose-files <path|-> */
+			case 'F': /* --choose-files <path>|- */
 				{
 					char output[PATH_MAX];
 					get_path_or_std(dir, optarg, output);
@@ -290,11 +290,15 @@ handle_path_arg(const char arg[], int select, const char dir[],
 }
 
 /* Parses the arg as absolute or relative path (to the dir), unless it's equal
- * to "-".  output should be at least PATH_MAX characters length */
+ * to "-".  output should be at least PATH_MAX characters length. */
 static void
 get_path_or_std(const char dir[], const char arg[], char output[])
 {
-	if(strcmp(arg, "-") == 0)
+	if(arg[0] == '\0')
+	{
+		output[0] = '\0';
+	}
+	else if(strcmp(arg, "-") == 0)
 	{
 		strcpy(output, "-");
 	}
