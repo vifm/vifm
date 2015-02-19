@@ -64,6 +64,7 @@
 #include "macros.h"
 #include "status.h"
 #include "types.h"
+#include "vifm.h"
 #include "vim.h"
 
 /* Kinds of symbolic link file treatment on file handling. */
@@ -154,7 +155,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	if(stats_file_choose_action_set() && (executable || runnable))
 	{
 		/* The call below does not return. */
-		vim_return_file_list(view, 0, NULL);
+		vifm_choose_files(view, 0, NULL);
 	}
 
 	if(executable && !is_dir_entry(full_path, curr->type))

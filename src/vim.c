@@ -26,13 +26,11 @@
 #include <string.h> /* strcmp() strrchr() strstr() */
 
 #include "cfg/config.h"
-#include "cfg/info.h"
 #include "compat/os.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/log.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
@@ -200,40 +198,33 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 	return shellout(cmd, -1, use_term_multiplexer);
 }
 
-void _gnuc_noreturn
-vim_return_file_list(const FileView *view, int nfiles, char *files[])
+int
+vim_write_file_list(const FileView *view, int nfiles, char *files[])
 {
-	int exit_code = EXIT_SUCCESS;
+	FILE *fp;
+	const char *const files_out = curr_stats.chosen_files_out;
 
-	/* As curses can do something with terminal on shutting down, disable it
-	 * before writing anything to the screen. */
-	endwin();
+	if(is_null_or_empty(files_out))
+	{
+		return 0;
+	}
 
-	if(strcmp(curr_stats.chosen_files_out, "-") == 0)
+	if(strcmp(files_out, "-") == 0)
 	{
 		dump_filenames(view, curr_stats.original_stdout, nfiles, files);
+		return 0;
 	}
-	else
+
+	fp = os_fopen(files_out, "w");
+	if(fp == NULL)
 	{
-		FILE *fp;
-
-		fp = os_fopen(curr_stats.chosen_files_out, "w");
-		if(fp != NULL)
-		{
-			dump_filenames(view, fp, nfiles, files);
-			fclose(fp);
-		}
-		else
-		{
-			LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"",
-					curr_stats.chosen_files_out);
-			exit_code = EXIT_FAILURE;
-		}
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", files_out);
+		return 1;
 	}
 
-	write_info_file();
-
-	vifm_leave(exit_code, 0);
+	dump_filenames(view, fp, nfiles, files);
+	fclose(fp);
+	return 0;
 }
 
 /* Writes list of full paths to files into the file pointed to by fp.  files and
@@ -280,21 +271,21 @@ void
 vim_write_empty_file_list(void)
 {
 	FILE *fp;
+	const char *const files_out = curr_stats.chosen_files_out;
 
-	if(strcmp(curr_stats.chosen_files_out, "-") == 0)
+	if(strcmp(files_out, "-") == 0)
 	{
 		return;
 	}
 
-	fp = os_fopen(curr_stats.chosen_files_out, "w");
+	fp = os_fopen(files_out, "w");
 	if(fp != NULL)
 	{
 		fclose(fp);
 	}
 	else
 	{
-		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"",
-				curr_stats.chosen_files_out);
+		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", files_out);
 	}
 }
 
@@ -304,33 +295,28 @@ vim_write_dir(const char path[])
 	/* TODO: move this and other non-Vim related code to extern.c unit. */
 
 	FILE *fp;
+	const char *const dir_out = curr_stats.chosen_dir_out;
 
-	if(is_null_or_empty(curr_stats.chosen_dir_out))
+	if(is_null_or_empty(dir_out))
 	{
 		return;
 	}
 
-	if(strcmp(curr_stats.chosen_dir_out, "-") == 0)
+	if(strcmp(dir_out, "-") == 0)
 	{
-		fp = curr_stats.original_stdout;
+		fputs(path, curr_stats.original_stdout);
+		return;
 	}
-	else
+
+	fp = os_fopen(dir_out, "w");
+	if(fp == NULL)
 	{
-		fp = os_fopen(curr_stats.chosen_dir_out, "w");
-		if(fp == NULL)
-		{
-			LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"",
-					curr_stats.chosen_files_out);
-			return;
-		}
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", dir_out);
+		return;
 	}
 
 	fputs(path, fp);
-
-	if(fp != curr_stats.original_stdout)
-	{
-		fclose(fp);
-	}
+	fclose(fp);
 }
 
 void

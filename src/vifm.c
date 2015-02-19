@@ -115,6 +115,7 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
 static void
 parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
@@ -968,6 +969,28 @@ vifm_try_leave(int write_info, int cquit, int force)
 }
 
 void _gnuc_noreturn
+vifm_choose_files(const FileView *view, int nfiles, char *files[])
+{
+	int exit_code;
+
+	/* As curses can do something with terminal on shutting down, disable it
+	 * before writing anything to the screen. */
+	endwin();
+
+	exit_code = EXIT_SUCCESS;
+	if(vim_write_file_list(view, nfiles, files) != 0)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	vifm_leave(exit_code, 0);
+}
+
+/* Single exit point for leaving vifm, performs only minimum common
+ * deinitialization steps. */
+static void _gnuc_noreturn
 vifm_leave(int exit_code, int cquit)
 {
 	vim_write_dir(cquit ? "" : flist_get_dir(curr_view));

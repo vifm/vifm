@@ -2017,7 +2017,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		vim_edit_files(cmd_info->argc, cmd_info->argv);
@@ -2032,7 +2032,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
@@ -2060,7 +2060,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		if(vim_edit_selection() != 0)

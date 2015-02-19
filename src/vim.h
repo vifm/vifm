@@ -22,7 +22,6 @@
 #include <stddef.h> /* size_t */
 
 #include "ui/ui.h"
-#include "utils/macros.h"
 #include "utils/test_helpers.h"
 
 /* Formats command to display documentation on the topic in Vim-help format.
@@ -44,10 +43,10 @@ int vim_edit_selection(void);
 int vim_view_file(const char filename[], int line, int column,
 		int allow_forking);
 
-/* Leaves vifm storing list of file names (taken from the view or the files) in
- * a special file for use by an external application. */
-void _gnuc_noreturn vim_return_file_list(const FileView *view, int nfiles,
-		char *files[]);
+/* Stores list of file names (taken from the view or the files) in a special
+ * file for use by an external application.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int vim_write_file_list(const FileView *view, int nfiles, char *files[]);
 
 /* Writes empty output file list meaning that user choice is empty. */
 void vim_write_empty_file_list(void);

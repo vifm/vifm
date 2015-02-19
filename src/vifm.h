@@ -20,6 +20,7 @@
 #define VIFM__VIFM_H__
 
 #include "utils/macros.h"
+#include "ui/ui.h"
 
 /* Resets internal state and reloads configuration files. */
 void vifm_restart(void);
@@ -28,9 +29,9 @@ void vifm_restart(void);
  * present and user chooses not to stop them. */
 void vifm_try_leave(int write_info, int cquit, int force);
 
-/* Single exit point for leaving vifm, performs only minimum common
- * deinitialization steps. */
-void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
+/* Communicates chosen files to something external. */
+void _gnuc_noreturn vifm_choose_files(const FileView *view, int nfiles,
+		char *files[]);
 
 /* Quits vifm with error after deinitializing ncurses, saving state to vifminfo
  * and displaying the message. */
