@@ -128,6 +128,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->original_stdout = NULL;
 
 	stats->chosen_files_out = NULL;
+	stats->chosen_dir_out = NULL;
 	(void)replace_string(&stats->output_delimiter, "\n");
 
 #ifdef HAVE_LIBGTK
@@ -270,6 +271,12 @@ void
 stats_set_chosen_files_out(const char output[])
 {
 	(void)replace_string(&curr_stats.chosen_files_out, output);
+}
+
+void
+stats_set_chosen_dir_out(const char output[])
+{
+	(void)replace_string(&curr_stats.chosen_dir_out, output);
 }
 
 void

@@ -125,6 +125,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
 		{ "select",       required_argument, .flag = NULL, .val = 's' },
 		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
+		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
 		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
 
 #ifdef ENABLE_REMOTE_CMDS
@@ -164,6 +165,13 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 					char output[PATH_MAX];
 					get_path_or_std(dir, optarg, output);
 					stats_set_chosen_files_out(output);
+					break;
+				}
+			case 'D': /* --choose-dir <path>|- */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_dir_out(output);
 					break;
 				}
 			case 'd': /* --delimiter <delimiter> */
@@ -362,11 +370,14 @@ show_help_msg(const char wrong_arg[])
 	puts("  To select file prepend its path with --select.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm -f");
-	puts("    makes vifm instead of opening files write selection to ");
+	puts("    makes vifm instead of opening files write selection to");
 	puts("    $VIFM/vimfiles and quit.\n");
 	puts("  --choose-files <path>|-");
-	puts("    sets output file to write selection into on exit instead of ");
+	puts("    sets output file to write selection into on exit instead of");
 	puts("    opening files.  \"-\" means standard output.\n");
+	puts("  --choose-dir <path>|-");
+	puts("    sets output file to write last visited directory into on exit.");
+	puts("    \"-\" means standard output.\n");
 	puts("  --delimiter <delimiter>");
 	puts("    sets separator for list of file paths written out by vifm.\n");
 	puts("  vifm --logging");
@@ -959,6 +970,7 @@ vifm_try_leave(int write_info, int force)
 void _gnuc_noreturn
 vifm_leave(int exit_code)
 {
+	vim_write_dir(curr_view);
 	set_term_title(NULL);
 	exit(exit_code);
 }

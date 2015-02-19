@@ -1,4 +1,4 @@
-.TH vifm 1 "February 18, 2015" "" "Vifm"
+.TH vifm 1 "February 19, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -44,7 +44,11 @@ Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
 .TP
 .BI "\-\-choose-files <path>|\-"
 Sets output file to write selection into on exit instead of opening files.
-"\-" means standard output.
+"\-" means standard output.  Use empty value to disable it.
+.TP
+.BI "\-\-choose-dir <path>|\-"
+Sets output file to write last visited directory into on exit.  "\-" means
+standard output.  Use empty value to disable it.
 .TP
 .BI "\-\-delimiter <delimiter>"
 Sets separator for list of file paths written out by vifm.  Empty value means

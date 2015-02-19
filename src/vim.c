@@ -21,7 +21,7 @@
 #include <curses.h> /* FALSE curs_set() */
 
 #include <errno.h> /* errno */
-#include <stdio.h> /* FILE fclose() fprintf() snprintf() */
+#include <stdio.h> /* FILE fclose() fprintf() fputs() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
 #include <string.h> /* strcmp() strrchr() strstr() */
 
@@ -295,6 +295,41 @@ vim_write_empty_file_list(void)
 	{
 		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"",
 				curr_stats.chosen_files_out);
+	}
+}
+
+void
+vim_write_dir(const FileView *view)
+{
+	/* TODO: move this and other non-Vim related code to extern.c unit. */
+
+	FILE *fp;
+
+	if(curr_stats.chosen_dir_out == NULL)
+	{
+		return;
+	}
+
+	if(strcmp(curr_stats.chosen_dir_out, "-") == 0)
+	{
+		fp = curr_stats.original_stdout;
+	}
+	else
+	{
+		fp = os_fopen(curr_stats.chosen_dir_out, "w");
+		if(fp == NULL)
+		{
+			LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"",
+					curr_stats.chosen_files_out);
+			return;
+		}
+	}
+
+	fputs(flist_get_dir(view), fp);
+
+	if(fp != curr_stats.original_stdout)
+	{
+		fclose(fp);
 	}
 }
 

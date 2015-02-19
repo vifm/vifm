@@ -153,6 +153,7 @@ typedef struct
 	FILE *original_stdout; /* Saved original standard output. */
 
 	char *chosen_files_out; /* Destination for writing chosen files. */
+	char *chosen_dir_out;   /* Destination for writing chosen directory. */
 	char *output_delimiter; /* Delimiter for writing out list of paths. */
 
 #ifdef HAVE_LIBGTK
@@ -194,6 +195,10 @@ TermState stats_update_term_state(int screen_x, int screen_y);
 /* Sets output location (curr_stats.chosen_files_out) for list of chosen
  * files. */
 void stats_set_chosen_files_out(const char output[]);
+
+/* Sets output location (curr_stats.chosen_dir_out) for last visited
+ * directory. */
+void stats_set_chosen_dir_out(const char output[]);
 
 /* Sets delimiter (curr_stats.output_delimiter) for separating multiple paths in
  * output. */

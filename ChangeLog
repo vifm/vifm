@@ -53,9 +53,9 @@
 	writing out list of paths (like on `-f` switch).  Thanks to Jeet
 	Sukumaran (a.k.a. jeetsukumaran).
 
-	Added --choose-files command-line switch to specify output location for
-	names of files chosen via vifm.  Thanks to Jeet Sukumaran (a.k.a.
-	jeetsukumaran).
+	Added --choose-files and --choose-dir command-line switches to specify
+	output location for names of selected files or last visited directory
+	respectively.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
 
 	Made calculation of directory size visible in :jobs menu.
 
