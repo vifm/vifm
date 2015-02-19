@@ -26,11 +26,11 @@ void vifm_restart(void);
 
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
-void vifm_try_leave(int write_info, int force);
+void vifm_try_leave(int write_info, int cquit, int force);
 
 /* Single exit point for leaving vifm, performs only minimum common
  * deinitialization steps. */
-void _gnuc_noreturn vifm_leave(int exit_code);
+void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
 /* Quits vifm with error after deinitializing ncurses, saving state to vifminfo
  * and displaying the message. */

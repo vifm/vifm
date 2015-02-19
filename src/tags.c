@@ -149,6 +149,8 @@ const char *tags[] = {
 	"vifm-:comclear",
 	"vifm-:command",
 	"vifm-:copy",
+	"vifm-:cq",
+	"vifm-:cquit",
 	"vifm-:cu",
 	"vifm-:cunmap",
 	"vifm-:d",

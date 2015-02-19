@@ -1378,6 +1378,11 @@ directory of other view).  "!" forces overwrite.
 .BI ":[range]co[py][!] name1 name2...[ &]"
 copies files to directory of other view giving each next file a corresponding
 name from the argument list.  "!" forces overwrite.
+.BI "                                         :cquit"
+.TP
+.BI ":cq[uit][!]"
+same as :quit, but also aborts directory choosing via \-\-choose\-dir (empties
+output file).
 .TP
 .BI "                                         :delete"
 .TP
@@ -2026,7 +2031,7 @@ show the present working directory.
 .TP
 .BI :q[uit][!]
 will exit vifm (add ! if you don't want to save changes or check if there are
-any of backgrounded commands still running).
+any backgrounded commands still running).
 .TP
 .BI "                                         :yank"
 .TP

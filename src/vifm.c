@@ -936,7 +936,7 @@ vifm_restart(void)
 }
 
 void
-vifm_try_leave(int write_info, int force)
+vifm_try_leave(int write_info, int cquit, int force)
 {
 	if(!force && bg_has_active_jobs())
 	{
@@ -964,13 +964,19 @@ vifm_try_leave(int write_info, int force)
 #endif
 
 	endwin();
-	vifm_leave(EXIT_SUCCESS);
+	vifm_leave(EXIT_SUCCESS, cquit);
 }
 
 void _gnuc_noreturn
-vifm_leave(int exit_code)
+vifm_leave(int exit_code, int cquit)
 {
-	vim_write_dir(curr_view);
+	vim_write_dir(cquit ? "" : flist_get_dir(curr_view));
+
+	if(cquit && exit_code == EXIT_SUCCESS)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+
 	set_term_title(NULL);
 	exit(exit_code);
 }

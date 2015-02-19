@@ -1201,7 +1201,7 @@ The builtin commands are:
 <   equals >
       :%copy
 <
-                                               *vifm-:copy*  *vifm-:co*
+                                               *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &] - copies files to directory of other view.  With
     "?" vifm will open vi to edit filenames.  "!" forces overwrite.
 :[range]co[py][!] path[ &] - copies files to directory specified with the
@@ -1210,6 +1210,11 @@ The builtin commands are:
 :[range]co[py][!] name1 name2...[ &] - copies files to directory of other
     view giving each next file a corresponding name from the argument list.
     "!" forces overwrite.
+
+                                               *vifm-:cquit* *vifm-:cq*
+:cq[uit][!]
+    same as |vifm-:quit|, but also aborts directory choosing via
+    |vifm---choose-dir| (empties output file).
 
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][!][count][ &] - delete selected file or files.  "!" means
@@ -1730,7 +1735,7 @@ order using the '.' operator.  Any whitespace is ignored.
 
                                                *vifm-:quit* *vifm-:q*
 :q[uit][!] - will exit vifm (add ! if you don't want to save changes or
-    check if there are any of backgrounded commands still running).
+    check if there are any backgrounded commands still running).
 
                                                *vifm-:ls*
 :ls - lists windows of active terminal multiplexer (only when terminal

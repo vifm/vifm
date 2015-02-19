@@ -233,7 +233,7 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 
 	write_info_file();
 
-	vifm_leave(exit_code);
+	vifm_leave(exit_code, 0);
 }
 
 /* Writes list of full paths to files into the file pointed to by fp.  files and
@@ -299,13 +299,13 @@ vim_write_empty_file_list(void)
 }
 
 void
-vim_write_dir(const FileView *view)
+vim_write_dir(const char path[])
 {
 	/* TODO: move this and other non-Vim related code to extern.c unit. */
 
 	FILE *fp;
 
-	if(curr_stats.chosen_dir_out == NULL)
+	if(is_null_or_empty(curr_stats.chosen_dir_out))
 	{
 		return;
 	}
@@ -325,7 +325,7 @@ vim_write_dir(const FileView *view)
 		}
 	}
 
-	fputs(flist_get_dir(view), fp);
+	fputs(path, fp);
 
 	if(fp != curr_stats.original_stdout)
 	{

@@ -57,6 +57,9 @@
 	output location for names of selected files or last visited directory
 	respectively.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
 
+	Added :cq[uit] command to exit with non-zero exit code and also abort
+	directory choosing.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
