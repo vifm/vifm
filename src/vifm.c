@@ -93,7 +93,7 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
-static void quit_on_arg_parsing(void);
+static void quit_on_arg_parsing(int code);
 static int is_path_arg(const char arg[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
@@ -174,17 +174,17 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 				if(!ipc_server())
 				{
 					ipc_send(argv + optind);
-					quit_on_arg_parsing();
+					quit_on_arg_parsing(EXIT_SUCCESS);
 				}
 				break;
 
 			case 'h': /* -h, --help */
 				show_help_msg(NULL);
-				quit_on_arg_parsing();
+				quit_on_arg_parsing(EXIT_SUCCESS);
 				break;
 			case 'v': /* -v, --version */
 				show_version_msg();
-				quit_on_arg_parsing();
+				quit_on_arg_parsing(EXIT_SUCCESS);
 				break;
 
 			case 'c': /* -c <cmd> */
@@ -208,7 +208,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 			case '?': /* Parsing error. */
 				/* getopt_long() already printed error message. */
-				quit_on_arg_parsing();
+				quit_on_arg_parsing(EXIT_FAILURE);
 				break;
 		}
 	}
@@ -217,11 +217,11 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 /* Quits during argument parsing when it's allowed (e.g. not for remote
  * commands). */
 static void
-quit_on_arg_parsing(void)
+quit_on_arg_parsing(int code)
 {
 	if(curr_stats.load_stage == 0)
 	{
-		exit(1);
+		exit(code);
 	}
 }
 
@@ -254,7 +254,7 @@ handle_arg_or_fail(const char arg[], int select, const char dir[],
 	if(curr_stats.load_stage == 0)
 	{
 		show_help_msg(arg);
-		quit_on_arg_parsing();
+		quit_on_arg_parsing(EXIT_FAILURE);
 	}
 #ifdef ENABLE_REMOTE_CMDS
 	else
