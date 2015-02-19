@@ -23,6 +23,8 @@
 #include <windows.h>
 #endif
 
+#include "vifm.h"
+
 #include <curses.h>
 
 #include <unistd.h> /* getcwd() */
@@ -946,9 +948,15 @@ vifm_try_leave(int write_info, int force)
 	system("cls");
 #endif
 
-	set_term_title(NULL);
 	endwin();
-	exit(0);
+	vifm_leave(EXIT_SUCCESS);
+}
+
+void _gnuc_noreturn
+vifm_leave(int exit_code)
+{
+	set_term_title(NULL);
+	exit(exit_code);
 }
 
 void _gnuc_noreturn

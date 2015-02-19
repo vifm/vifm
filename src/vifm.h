@@ -28,6 +28,10 @@ void vifm_restart(void);
  * present and user chooses not to stop them. */
 void vifm_try_leave(int write_info, int force);
 
+/* Single exit point for leaving vifm, performs only minimum common
+ * deinitialization steps. */
+void _gnuc_noreturn vifm_leave(int exit_code);
+
 /* Quits vifm with error after deinitializing ncurses, saving state to vifminfo
  * and displaying the message. */
 void _gnuc_noreturn vifm_finish(const char message[]);

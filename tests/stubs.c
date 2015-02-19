@@ -8,6 +8,12 @@ vifm_restart(void)
 }
 
 void
+vifm_leave(int exit_code)
+{
+	/* Do nothing. */
+}
+
+void
 vifm_try_leave(int write_info, int force)
 {
 	/* Do nothing. */

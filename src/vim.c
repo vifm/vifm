@@ -42,6 +42,7 @@
 #include "macros.h"
 #include "running.h"
 #include "status.h"
+#include "vifm.h"
 
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
@@ -232,7 +233,7 @@ vim_return_file_list(const FileView *view, int nfiles, char *files[])
 
 	write_info_file();
 
-	exit(exit_code);
+	vifm_leave(exit_code);
 }
 
 /* Writes list of full paths to files into the file pointed to by fp.  files and
