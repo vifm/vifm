@@ -575,7 +575,7 @@ static char *
 cmds_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
 {
 	char *result;
-	MacroFlags flags = MACRO_NONE;
+	MacroFlags flags = MF_NONE;
 
 	result = expand_macros(str, NULL, &flags, for_shell);
 
@@ -1568,7 +1568,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		const int use_term_mux = flags != MACRO_NO_TERM_MUX;
+		const int use_term_mux = flags != MF_NO_TERM_MUX;
 
 		clean_selected_files(curr_view);
 		if(cfg.fast_run)
@@ -4272,7 +4272,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
+			shellout(com_beginning, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4294,7 +4294,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1, flags != MACRO_NO_TERM_MUX);
+		shellout(expanded_com, -1, flags != MF_NO_TERM_MUX);
 	}
 
 	if(external)
@@ -4316,24 +4316,24 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 static int
 try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
 {
-	if(flags == MACRO_STATUSBAR_OUTPUT)
+	if(flags == MF_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(cmd);
 		*save_msg = 1;
 		return -1;
 	}
-	else if(flags == MACRO_IGNORE)
+	else if(flags == MF_IGNORE)
 	{
 		output_to_nowhere(cmd);
 		*save_msg = 0;
 		return -1;
 	}
-	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
+	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
 	{
-		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
+		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
+	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
 		run_in_split(curr_view, cmd);
 	}

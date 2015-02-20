@@ -55,7 +55,7 @@ static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
 char *
-expand_macros(const char *command, const char *args, MacroFlags *flags,
+expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell)
 {
 	/* TODO: refactor this function expand_macros() */
@@ -70,7 +70,7 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 
 	if(flags != NULL)
 	{
-		*flags = MACRO_NONE;
+		*flags = MF_NONE;
 	}
 
 	cmd_len = strlen(command);
@@ -154,37 +154,37 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 			case 'n': /* Forbid using of terminal multiplexer, even if active. */
 				if(flags != NULL)
 				{
-					*flags = MACRO_NO_TERM_MUX;
+					*flags = MF_NO_TERM_MUX;
 				}
 				break;
 			case 'm': /* use menu */
 				if(flags != NULL)
 				{
-					*flags = MACRO_MENU_OUTPUT;
+					*flags = MF_MENU_OUTPUT;
 				}
 				break;
 			case 'M': /* use menu like with :locate and :find */
 				if(flags != NULL)
 				{
-					*flags = MACRO_MENU_NAV_OUTPUT;
+					*flags = MF_MENU_NAV_OUTPUT;
 				}
 				break;
 			case 'S': /* show command output in the status bar */
 				if(flags != NULL)
 				{
-					*flags = MACRO_STATUSBAR_OUTPUT;
+					*flags = MF_STATUSBAR_OUTPUT;
 				}
 				break;
 			case 's': /* split in new screen region */
 				if(flags != NULL)
 				{
-					*flags = MACRO_SPLIT;
+					*flags = MF_SPLIT;
 				}
 				break;
 			case 'i': /* ignore output */
 				if(flags != NULL)
 				{
-					*flags = MACRO_IGNORE;
+					*flags = MF_IGNORE;
 				}
 				break;
 			case 'r': /* register's content */

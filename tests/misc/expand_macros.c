@@ -220,7 +220,7 @@ test_m(void)
 	other_view = &lwin;
 	expanded = expand_macros("%M echo log", "", &flags, 0);
 	assert_string_equal(" echo log", expanded);
-	assert_int_equal(MACRO_MENU_NAV_OUTPUT, flags);
+	assert_int_equal(MF_MENU_NAV_OUTPUT, flags);
 	free(expanded);
 }
 

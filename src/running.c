@@ -569,11 +569,11 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 			command[strlen(command) - 2] = '\0';
 
 		if(!pause && (background || force_background))
-			start_background_job(command, flags == MACRO_IGNORE);
-		else if(flags == MACRO_IGNORE)
+			start_background_job(command, flags == MF_IGNORE);
+		else if(flags == MF_IGNORE)
 			output_to_nowhere(command);
 		else
-			shellout(command, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
+			shellout(command, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
 
 		free(command);
 	}
