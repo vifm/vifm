@@ -60,6 +60,9 @@
 	Added :cq[uit] command to exit with non-zero exit code and also abort
 	directory choosing.  Thanks to Jeet Sukumaran (a.k.a. jeetsukumaran).
 
+	Added --on-choose command-line switch to execute a command on selection
+	rather than opening it.  Thanks to Ross Hadden (a.k.a. rosshadden).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

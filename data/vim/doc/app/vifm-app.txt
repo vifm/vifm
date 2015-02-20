@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 19
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -83,6 +83,10 @@ The other command line arguments are:
 --delimiter <delimiter>                        *vifm---delimiter*
     sets separator for list of file paths written out by vifm.  Empty value
     means null character.  Default is new line character.
+--on-choose <command>                          *vifm---on-choose*
+    sets command to be executed on selected files instead of opening them.
+    The command may use any of |vifm-macros|.  The command is executed once for
+    whole selection.
 --logging                                      *vifm---logging*
     log some errors to $VIFM/log.
     Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory

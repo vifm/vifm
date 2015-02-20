@@ -131,6 +131,8 @@ load_def_values(status_t *stats, config_t *config)
 	stats->chosen_dir_out = NULL;
 	(void)replace_string(&stats->output_delimiter, "\n");
 
+	stats->on_choose = NULL;
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif
@@ -285,10 +287,17 @@ stats_set_output_delimiter(const char delimiter[])
 	(void)replace_string(&curr_stats.output_delimiter, delimiter);
 }
 
+void
+stats_set_on_choose(const char command[])
+{
+	(void)replace_string(&curr_stats.on_choose, command);
+}
+
 int
 stats_file_choose_action_set(void)
 {
-	return !is_null_or_empty(curr_stats.chosen_files_out);
+	return !is_null_or_empty(curr_stats.chosen_files_out)
+	    || !is_null_or_empty(curr_stats.on_choose);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

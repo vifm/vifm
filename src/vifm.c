@@ -128,6 +128,7 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
 		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
 		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
+		{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
 
 #ifdef ENABLE_REMOTE_CMDS
 		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
@@ -177,6 +178,9 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 				}
 			case 'd': /* --delimiter <delimiter> */
 				stats_set_output_delimiter(optarg);
+				break;
+			case 'o': /* --on-choose <cmd> */
+				stats_set_on_choose(optarg);
 				break;
 
 			case 'r': /* --remote <args>... */
@@ -373,14 +377,17 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm -f");
 	puts("    makes vifm instead of opening files write selection to");
 	puts("    $VIFM/vimfiles and quit.\n");
-	puts("  --choose-files <path>|-");
+	puts("  vifm --choose-files <path>|-");
 	puts("    sets output file to write selection into on exit instead of");
 	puts("    opening files.  \"-\" means standard output.\n");
-	puts("  --choose-dir <path>|-");
+	puts("  vifm --choose-dir <path>|-");
 	puts("    sets output file to write last visited directory into on exit.");
 	puts("    \"-\" means standard output.\n");
-	puts("  --delimiter <delimiter>");
+	puts("  vifm --delimiter <delimiter>");
 	puts("    sets separator for list of file paths written out by vifm.\n");
+	puts("  vifm --on-choose <command>");
+	puts("    sets command to be executed on selected files instead of opening");
+	puts("    them.  Command can use any of command macros.");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS
@@ -979,6 +986,11 @@ vifm_choose_files(const FileView *view, int nfiles, char *files[])
 
 	exit_code = EXIT_SUCCESS;
 	if(vim_write_file_list(view, nfiles, files) != 0)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+	/* XXX: this ignores nfiles+files. */
+	if(vim_run_choose_cmd(view) != 0)
 	{
 		exit_code = EXIT_FAILURE;
 	}

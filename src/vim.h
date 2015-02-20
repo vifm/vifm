@@ -55,6 +55,10 @@ void vim_write_empty_file_list(void);
  * command-line. */
 void vim_write_dir(const char path[]);
 
+/* Runs user-specified command on selection.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int vim_run_choose_cmd(const FileView *view);
+
 /* Fills the buffer of length buf_size with path to default file list location
  * for the plugin. */
 void vim_get_list_file_path(char buf[], size_t buf_size);

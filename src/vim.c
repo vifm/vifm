@@ -273,7 +273,7 @@ vim_write_empty_file_list(void)
 	FILE *fp;
 	const char *const files_out = curr_stats.chosen_files_out;
 
-	if(strcmp(files_out, "-") == 0)
+	if(is_null_or_empty(files_out) || strcmp(files_out, "-") == 0)
 	{
 		return;
 	}
@@ -317,6 +317,31 @@ vim_write_dir(const char path[])
 
 	fputs(path, fp);
 	fclose(fp);
+}
+
+int
+vim_run_choose_cmd(const FileView *view)
+{
+	char *expanded_cmd;
+
+	if(is_null_or_empty(curr_stats.on_choose))
+	{
+		return 0;
+	}
+
+	if(!view->dir_entry[view->list_pos].selected)
+	{
+		erase_selection(curr_view);
+	}
+
+	expanded_cmd = expand_macros(curr_stats.on_choose, NULL, NULL, 1);
+	if(vifm_system(expanded_cmd) != EXIT_SUCCESS)
+	{
+		free(expanded_cmd);
+		return 1;
+	}
+
+	return 0;
 }
 
 void

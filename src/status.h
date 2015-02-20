@@ -156,6 +156,8 @@ typedef struct
 	char *chosen_dir_out;   /* Destination for writing chosen directory. */
 	char *output_delimiter; /* Delimiter for writing out list of paths. */
 
+	char *on_choose; /* Command to execute on picking files. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
@@ -203,6 +205,10 @@ void stats_set_chosen_dir_out(const char output[]);
 /* Sets delimiter (curr_stats.output_delimiter) for separating multiple paths in
  * output. */
 void stats_set_output_delimiter(const char delimiter[]);
+
+/* Sets command to run on file selection right before exiting
+ * exit (curr_stats.on_choose). */
+void stats_set_on_choose(const char command[]);
 
 /* Checks whether custom actions on file choosing is set.  Returns non-zero if
  * so, otherwise zero is returned. */
