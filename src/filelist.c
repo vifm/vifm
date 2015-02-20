@@ -769,8 +769,8 @@ capture_selection(FileView *view)
 static void
 capture_file_or_selection(FileView *view, int skip_if_no_selection)
 {
-	int x;
 	int y;
+	dir_entry_t *entry;
 
 	recount_selected_files(view);
 
@@ -803,23 +803,22 @@ capture_file_or_selection(FileView *view, int skip_if_no_selection)
 	}
 
 	y = 0;
-	for(x = 0; x < view->list_rows; x++)
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
 	{
-		if(!view->dir_entry[x].selected)
-			continue;
-		if(is_parent_dir(view->dir_entry[x].name))
+		if(is_parent_dir(entry->name))
 		{
-			view->dir_entry[x].selected = 0;
+			entry->selected = 0;
 			continue;
 		}
 
-		view->selected_filelist[y] = strdup(view->dir_entry[x].name);
+		view->selected_filelist[y] = strdup(entry->name);
 		if(view->selected_filelist[y] == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			break;
 		}
-		y++;
+		++y;
 	}
 	view->selected_files = y;
 }
