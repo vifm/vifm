@@ -28,6 +28,7 @@
 
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
+#include <stddef.h> /* NULL */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -122,9 +123,15 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->shell_type = ST_NORMAL;
 
-	stats->file_picker_mode = 0;
-
 	stats->fuse_umount_cmd = "";
+
+	stats->original_stdout = NULL;
+
+	stats->chosen_files_out = NULL;
+	stats->chosen_dir_out = NULL;
+	(void)replace_string(&stats->output_delimiter, "\n");
+
+	stats->on_choose = NULL;
 
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
@@ -260,6 +267,37 @@ stats_update_term_state(int screen_x, int screen_y)
 	}
 
 	return curr_stats.term_state;
+}
+
+void
+stats_set_chosen_files_out(const char output[])
+{
+	(void)replace_string(&curr_stats.chosen_files_out, output);
+}
+
+void
+stats_set_chosen_dir_out(const char output[])
+{
+	(void)replace_string(&curr_stats.chosen_dir_out, output);
+}
+
+void
+stats_set_output_delimiter(const char delimiter[])
+{
+	(void)replace_string(&curr_stats.output_delimiter, delimiter);
+}
+
+void
+stats_set_on_choose(const char command[])
+{
+	(void)replace_string(&curr_stats.on_choose, command);
+}
+
+int
+stats_file_choose_action_set(void)
+{
+	return !is_null_or_empty(curr_stats.chosen_files_out)
+	    || !is_null_or_empty(curr_stats.on_choose);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

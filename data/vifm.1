@@ -1,4 +1,4 @@
-.TH vifm 1 "February 17, 2015" "" "Vifm"
+.TH vifm 1 "February 20, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -40,8 +40,24 @@ Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with \-\-select.
 .TP
 .BI \-f
-only used from the vifm.vim script.  The selected files are written
-to $VIFM/vimfiles and vifm exits.
+Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
+.TP
+.BI "\-\-choose-files <path>|\-"
+Sets output file to write selection into on exit instead of opening files.
+"\-" means standard output.  Use empty value to disable it.
+.TP
+.BI "\-\-choose-dir <path>|\-"
+Sets output file to write last visited directory into on exit.  "\-" means
+standard output.  Use empty value to disable it.
+.TP
+.BI "\-\-delimiter <delimiter>"
+Sets separator for list of file paths written out by vifm.  Empty value means
+null character.  Default is new line character.
+.TP
+.BI "\-\-on\-choose-dir <command>"
+Sets command to be executed on selected files instead of opening them.  The
+command may use any of macros described in Command macros section below.  The
+command is executed once for whole selection.
 .TP
 .BI "\-\-logging"
 Log some errors to $VIFM/log.
@@ -1367,6 +1383,11 @@ directory of other view).  "!" forces overwrite.
 .BI ":[range]co[py][!] name1 name2...[ &]"
 copies files to directory of other view giving each next file a corresponding
 name from the argument list.  "!" forces overwrite.
+.BI "                                         :cquit"
+.TP
+.BI ":cq[uit][!]"
+same as :quit, but also aborts directory choosing via \-\-choose\-dir (empties
+output file).
 .TP
 .BI "                                         :delete"
 .TP
@@ -2015,7 +2036,7 @@ show the present working directory.
 .TP
 .BI :q[uit][!]
 will exit vifm (add ! if you don't want to save changes or check if there are
-any of backgrounded commands still running).
+any backgrounded commands still running).
 .TP
 .BI "                                         :yank"
 .TP

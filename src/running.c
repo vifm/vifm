@@ -64,6 +64,7 @@
 #include "macros.h"
 #include "status.h"
 #include "types.h"
+#include "vifm.h"
 #include "vim.h"
 
 /* Kinds of symbolic link file treatment on file handling. */
@@ -151,10 +152,10 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
 	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
-	if(curr_stats.file_picker_mode && (executable || runnable))
+	if(stats_file_choose_action_set() && (executable || runnable))
 	{
 		/* The call below does not return. */
-		vim_return_file_list(view, 0, NULL);
+		vifm_choose_files(view, 0, NULL);
 	}
 
 	if(executable && !is_dir_entry(full_path, curr->type))
@@ -568,11 +569,11 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 			command[strlen(command) - 2] = '\0';
 
 		if(!pause && (background || force_background))
-			start_background_job(command, flags == MACRO_IGNORE);
-		else if(flags == MACRO_IGNORE)
+			start_background_job(command, flags == MF_IGNORE);
+		else if(flags == MF_IGNORE)
 			output_to_nowhere(command);
 		else
-			shellout(command, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
+			shellout(command, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
 
 		free(command);
 	}

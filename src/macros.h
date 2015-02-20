@@ -28,13 +28,13 @@
 /* Macros that affect running of commands and processing their output. */
 typedef enum
 {
-	MACRO_NONE, /* no special macro specified */
-	MACRO_MENU_OUTPUT, /* redirect output to the menu */
-	MACRO_MENU_NAV_OUTPUT, /* redirect output to the navigation menu */
-	MACRO_STATUSBAR_OUTPUT, /* redirect output to the status bar */
-	MACRO_SPLIT, /* run command in a new screen region */
-	MACRO_IGNORE, /* completely ignore command output */
-	MACRO_NO_TERM_MUX, /* Forbid using of terminal multiplexer, even if active. */
+	MF_NONE,             /* No special macro specified. */
+	MF_MENU_OUTPUT,      /* Redirect output to the menu. */
+	MF_MENU_NAV_OUTPUT,  /* Redirect output to the navigation menu. */
+	MF_STATUSBAR_OUTPUT, /* Redirect output to the status bar. */
+	MF_SPLIT,            /* Run command in a new screen region. */
+	MF_IGNORE,           /* Completely ignore command output. */
+	MF_NO_TERM_MUX,      /* Forbid using terminal multiplexer, even if active. */
 }
 MacroFlags;
 
@@ -49,9 +49,9 @@ typedef struct
 custom_macro_t;
 
 /* args and flags parameters can equal NULL. The string returned needs to be
- * freed in the calling function. After executing flags is one of MACRO_*
+ * freed in the calling function. After executing flags is one of MF_*
  * values. */
-char * expand_macros(const char *command, const char *args, MacroFlags *flags,
+char * expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to

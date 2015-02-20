@@ -23,9 +23,11 @@
 #include <windows.h>
 #endif
 
+#include "vifm.h"
+
 #include <curses.h>
 
-#include <unistd.h> /* getcwd sysconf */
+#include <unistd.h> /* getcwd() */
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
@@ -91,12 +93,13 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
-static void quit_on_arg_parsing(void);
 static int is_path_arg(const char arg[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void quit_on_arg_parsing(int code);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+static void get_path_or_std(const char dir[], const char arg[], char output[]);
 static void parse_path(const char dir[], const char path[], char buf[]);
 static void show_help_msg(const char wrong_arg[]);
 static void show_version_msg(void);
@@ -112,15 +115,20 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
 static void
 parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 		char rwin_path[], int *lwin_handle, int *rwin_handle)
 {
 	static struct option long_opts[] = {
-		{ "logging",    no_argument,       .flag = NULL, .val = 'l' },
-		{ "no-configs", no_argument,       .flag = NULL, .val = 'n' },
-		{ "select",     required_argument, .flag = NULL, .val = 's' },
+		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
+		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
+		{ "select",       required_argument, .flag = NULL, .val = 's' },
+		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
+		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
+		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
+		{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
 
 #ifdef ENABLE_REMOTE_CMDS
 		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
@@ -134,6 +142,9 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 	(void)vifm_chdir(dir);
 
+	/* Request getopt() reinitialization. */
+	optind = 0;
+
 	while(1)
 	{
 		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
@@ -144,61 +155,75 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 		switch(c)
 		{
-			case 'f':
-				curr_stats.file_picker_mode = 1;
+			case 'f': /* -f */
+				{
+					char path[PATH_MAX];
+					vim_get_list_file_path(path, sizeof(path));
+					stats_set_chosen_files_out(path);
+					break;
+				}
+			case 'F': /* --choose-files <path>|- */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_files_out(output);
+					break;
+				}
+			case 'D': /* --choose-dir <path>|- */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_dir_out(output);
+					break;
+				}
+			case 'd': /* --delimiter <delimiter> */
+				stats_set_output_delimiter(optarg);
 				break;
-			case 'h':
-				show_help_msg(NULL);
-				quit_on_arg_parsing();
+			case 'o': /* --on-choose <cmd> */
+				stats_set_on_choose(optarg);
 				break;
-			case 'r':
+
+			case 'r': /* --remote <args>... */
 				if(!ipc_server())
 				{
 					ipc_send(argv + optind);
-					quit_on_arg_parsing();
+					quit_on_arg_parsing(EXIT_SUCCESS);
 				}
 				break;
-			case 's':
+
+			case 'h': /* -h, --help */
+				show_help_msg(NULL);
+				quit_on_arg_parsing(EXIT_SUCCESS);
+				break;
+			case 'v': /* -v, --version */
+				show_version_msg();
+				quit_on_arg_parsing(EXIT_SUCCESS);
+				break;
+
+			case 'c': /* -c <cmd> */
+				/* Do nothing.  Handled in exec_startup_commands(). */
+				break;
+			case 'l': /* --logging */
+				/* Do nothing.  Handled in main(). */
+				break;
+			case 'n': /* --no-configs */
+				/* Do nothing.  Handled in main(). */
+				break;
+
+			case 's': /* --select <path> */
 				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
 						rwin_handle);
 				break;
-			case 'v':
-				show_version_msg();
-				quit_on_arg_parsing();
-				break;
-
-			case 'c':
-				/* Do nothing on -c <arg> here.  Handled in exec_startup_commands(). */
-				break;
-			case 'l':
-				/* Do nothing on --logging here.  Handled in main(). */
-				break;
-			case 'n':
-				/* Do nothing on --no-configs here.  Handled in main(). */
-				break;
-
-			case 1:
-				/* Handle positional argument. */
+			case 1: /* Positional argument. */
 				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
 						lwin_handle, rwin_handle);
 				break;
 
-			case '?':
+			case '?': /* Parsing error. */
 				/* getopt_long() already printed error message. */
-				quit_on_arg_parsing();
+				quit_on_arg_parsing(EXIT_FAILURE);
 				break;
 		}
-	}
-}
-
-/* Quits during argument parsing when it's allowed (e.g. not for remote
- * commands). */
-static void
-quit_on_arg_parsing(void)
-{
-	if(curr_stats.load_stage == 0)
-	{
-		exit(1);
 	}
 }
 
@@ -231,7 +256,7 @@ handle_arg_or_fail(const char arg[], int select, const char dir[],
 	if(curr_stats.load_stage == 0)
 	{
 		show_help_msg(arg);
-		quit_on_arg_parsing();
+		quit_on_arg_parsing(EXIT_FAILURE);
 	}
 #ifdef ENABLE_REMOTE_CMDS
 	else
@@ -239,6 +264,17 @@ handle_arg_or_fail(const char arg[], int select, const char dir[],
 		show_error_msgf("--remote error", "Invalid argument: %s", arg);
 	}
 #endif
+}
+
+/* Quits during argument parsing when it's allowed (e.g. not for remote
+ * commands). */
+static void
+quit_on_arg_parsing(int code)
+{
+	if(curr_stats.load_stage == 0)
+	{
+		exit(code);
+	}
 }
 
 /* Handles path command-line argument.  Returns zero on successful handling,
@@ -264,6 +300,25 @@ handle_path_arg(const char arg[], int select, const char dir[],
 	}
 
 	return 0;
+}
+
+/* Parses the arg as absolute or relative path (to the dir), unless it's equal
+ * to "-".  output should be at least PATH_MAX characters length. */
+static void
+get_path_or_std(const char dir[], const char arg[], char output[])
+{
+	if(arg[0] == '\0')
+	{
+		output[0] = '\0';
+	}
+	else if(strcmp(arg, "-") == 0)
+	{
+		strcpy(output, "-");
+	}
+	else
+	{
+		parse_path(dir, arg, output);
+	}
 }
 
 /* Ensures that path is in suitable form for processing.  buf should be at least
@@ -319,6 +374,20 @@ show_help_msg(const char wrong_arg[])
 	puts("  To open file using associated program pass to vifm it's path.\n");
 	puts("  To select file prepend its path with --select.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm -f");
+	puts("    makes vifm instead of opening files write selection to");
+	puts("    $VIFM/vimfiles and quit.\n");
+	puts("  vifm --choose-files <path>|-");
+	puts("    sets output file to write selection into on exit instead of");
+	puts("    opening files.  \"-\" means standard output.\n");
+	puts("  vifm --choose-dir <path>|-");
+	puts("    sets output file to write last visited directory into on exit.");
+	puts("    \"-\" means standard output.\n");
+	puts("  vifm --delimiter <delimiter>");
+	puts("    sets separator for list of file paths written out by vifm.\n");
+	puts("  vifm --on-choose <command>");
+	puts("    sets command to be executed on selected files instead of opening");
+	puts("    them.  Command can use any of command macros.");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS
@@ -442,13 +511,21 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 2;
 	}
 
+	/* Prepare terminal for further operations. */
+	curr_stats.original_stdout = reopen_terminal();
+	if(curr_stats.original_stdout == NULL)
+	{
+		return -1;
+	}
+
 	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())
+	{
 		return -1;
+	}
 
 	{
-		const colmgr_conf_t colmgr_conf =
-		{
+		const colmgr_conf_t colmgr_conf = {
 			.max_color_pairs = COLOR_PAIRS,
 			.max_colors = COLORS,
 			.init_pair = &init_pair,
@@ -867,7 +944,7 @@ vifm_restart(void)
 }
 
 void
-vifm_try_leave(int write_info, int force)
+vifm_try_leave(int write_info, int cquit, int force)
 {
 	if(!force && bg_has_active_jobs())
 	{
@@ -885,7 +962,7 @@ vifm_try_leave(int write_info, int force)
 		write_info_file();
 	}
 
-	if(curr_stats.file_picker_mode)
+	if(stats_file_choose_action_set())
 	{
 		vim_write_empty_file_list();
 	}
@@ -894,9 +971,49 @@ vifm_try_leave(int write_info, int force)
 	system("cls");
 #endif
 
-	set_term_title(NULL);
 	endwin();
-	exit(0);
+	vifm_leave(EXIT_SUCCESS, cquit);
+}
+
+void _gnuc_noreturn
+vifm_choose_files(const FileView *view, int nfiles, char *files[])
+{
+	int exit_code;
+
+	/* As curses can do something with terminal on shutting down, disable it
+	 * before writing anything to the screen. */
+	endwin();
+
+	exit_code = EXIT_SUCCESS;
+	if(vim_write_file_list(view, nfiles, files) != 0)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+	/* XXX: this ignores nfiles+files. */
+	if(vim_run_choose_cmd(view) != 0)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+
+	write_info_file();
+
+	vifm_leave(exit_code, 0);
+}
+
+/* Single exit point for leaving vifm, performs only minimum common
+ * deinitialization steps. */
+static void _gnuc_noreturn
+vifm_leave(int exit_code, int cquit)
+{
+	vim_write_dir(cquit ? "" : flist_get_dir(curr_view));
+
+	if(cquit && exit_code == EXIT_SUCCESS)
+	{
+		exit_code = EXIT_FAILURE;
+	}
+
+	set_term_title(NULL);
+	exit(exit_code);
 }
 
 void _gnuc_noreturn

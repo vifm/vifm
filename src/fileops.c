@@ -3468,9 +3468,9 @@ append_fname(char buf[], size_t len, const char fname[])
 int
 restore_files(FileView *view)
 {
-	int i;
-	int m = 0;
-	int n = view->selected_files;
+	int m;
+	int n;
+	dir_entry_t *entry;
 
 	if(!is_trash_directory(view->curr_dir))
 	{
@@ -3484,18 +3484,20 @@ restore_files(FileView *view)
 
 	cmd_group_begin("restore: ");
 	cmd_group_end();
-	for(i = 0; i < view->list_rows && !ui_cancellation_requested(); i++)
-	{
-		if(view->dir_entry[i].selected)
-		{
-			char full_path[PATH_MAX];
-			get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
 
-			if(restore_from_trash(full_path) == 0)
-			{
-				++m;
-			}
+	m = 0;
+	n = 0;
+	entry = NULL;
+	while(iter_selected_entries(view, &entry) && !ui_cancellation_requested())
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		if(restore_from_trash(full_path) == 0)
+		{
+			++m;
 		}
+		++n;
 	}
 
 	ui_view_schedule_reload(view);

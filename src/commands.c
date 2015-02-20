@@ -163,6 +163,7 @@ static int clone_cmd(const cmd_info_t *cmd_info);
 static int cmap_cmd(const cmd_info_t *cmd_info);
 static int cnoremap_cmd(const cmd_info_t *cmd_info);
 static int copy_cmd(const cmd_info_t *cmd_info);
+static int cquit_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
@@ -327,6 +328,8 @@ static const cmd_add_t commands[] = {
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "copy",             .abbr = "co",    .emark = 1,  .id = COM_COPY,        .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = copy_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "cquit",            .abbr = "cq",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cquit_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cunmap",           .abbr = "cu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 1,  .id = -1,              .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
@@ -572,7 +575,7 @@ static char *
 cmds_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
 {
 	char *result;
-	MacroFlags flags = MACRO_NONE;
+	MacroFlags flags = MF_NONE;
 
 	result = expand_macros(str, NULL, &flags, for_shell);
 
@@ -1565,7 +1568,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		const int use_term_mux = flags != MACRO_NO_TERM_MUX;
+		const int use_term_mux = flags != MF_NO_TERM_MUX;
 
 		clean_selected_files(curr_view);
 		if(cfg.fast_run)
@@ -1902,6 +1905,15 @@ copy_cmd(const cmd_info_t *cmd_info)
 	return cpmv_cmd(cmd_info, 0);
 }
 
+/* Same as :quit, but also aborts directory choosing and mandatory returns
+ * non-zero exit code. */
+static int
+cquit_cmd(const cmd_info_t *cmd_info)
+{
+	vifm_try_leave(!cmd_info->emark, 1, cmd_info->emark);
+	return 0;
+}
+
 static int
 cunmap_cmd(const cmd_info_t *cmd_info)
 {
@@ -2002,10 +2014,10 @@ edit_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc != 0)
 	{
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		vim_edit_files(cmd_info->argc, cmd_info->argv);
@@ -2017,10 +2029,10 @@ edit_cmd(const cmd_info_t *cmd_info)
 	{
 		char file_to_view[PATH_MAX];
 
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
@@ -2045,10 +2057,10 @@ edit_cmd(const cmd_info_t *cmd_info)
 			}
 		}
 
-		if(curr_stats.file_picker_mode)
+		if(stats_file_choose_action_set())
 		{
 			/* The call below does not return. */
-			vim_return_file_list(curr_view, cmd_info->argc, cmd_info->argv);
+			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
 		}
 
 		if(vim_edit_selection() != 0)
@@ -4116,17 +4128,19 @@ write_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Possibly exits vifm normally with or without saving state to vifminfo
+ * file. */
 static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_try_leave(!cmd_info->emark, cmd_info->emark);
+	vifm_try_leave(!cmd_info->emark, 0, cmd_info->emark);
 	return 0;
 }
 
 static int
 wq_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_try_leave(1, cmd_info->emark);
+	vifm_try_leave(1, 0, cmd_info->emark);
 	return 0;
 }
 
@@ -4258,7 +4272,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? 1 : -1, flags != MACRO_NO_TERM_MUX);
+			shellout(com_beginning, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4280,7 +4294,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1, flags != MACRO_NO_TERM_MUX);
+		shellout(expanded_com, -1, flags != MF_NO_TERM_MUX);
 	}
 
 	if(external)
@@ -4302,24 +4316,24 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 static int
 try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
 {
-	if(flags == MACRO_STATUSBAR_OUTPUT)
+	if(flags == MF_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(cmd);
 		*save_msg = 1;
 		return -1;
 	}
-	else if(flags == MACRO_IGNORE)
+	else if(flags == MF_IGNORE)
 	{
 		output_to_nowhere(cmd);
 		*save_msg = 0;
 		return -1;
 	}
-	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
+	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
 	{
-		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
+		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT && curr_stats.term_multiplexer != TM_NONE)
+	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
 		run_in_split(curr_view, cmd);
 	}

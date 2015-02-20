@@ -8,7 +8,13 @@ vifm_restart(void)
 }
 
 void
-vifm_try_leave(int write_info, int force)
+vifm_try_leave(int write_info, int cquit, int force)
+{
+	/* Do nothing. */
+}
+
+void
+vifm_choose_files(const FileView *view, int nfiles, char *files[])
 {
 	/* Do nothing. */
 }

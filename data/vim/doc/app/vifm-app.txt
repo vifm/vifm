@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 17
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -71,10 +71,22 @@ Paths to files are also allowed in case you want vifm to start with some
 archive opened.  If you want to select file, prepend its path with --select.
 
 The other command line arguments are:
-                                               *vifm--f*
--f - only used from the vifm.vim script.  The selected files are written
-    to $VIFM/vimfiles and vifm exits.
-
+-f                                             *vifm--f*
+    makes vifm instead of opening files write selection to $VIFM/vimfiles and
+    quit.
+--choose-files <path>|-                        *vifm---choose-files*
+    sets output file to write selection into on exit instead of opening files.
+    "-" means standard output.  Use empty value to disable it.
+--choose-dir <path>|-                          *vifm---choose-dir*
+    sets output file to write last visited directory into on exit.  "-" means
+    standard output.  Use empty value to disable it.
+--delimiter <delimiter>                        *vifm---delimiter*
+    sets separator for list of file paths written out by vifm.  Empty value
+    means null character.  Default is new line character.
+--on-choose <command>                          *vifm---on-choose*
+    sets command to be executed on selected files instead of opening them.
+    The command may use any of |vifm-macros|.  The command is executed once for
+    whole selection.
 --logging                                      *vifm---logging*
     log some errors to $VIFM/log.
     Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory
@@ -1193,7 +1205,7 @@ The builtin commands are:
 <   equals >
       :%copy
 <
-                                               *vifm-:copy*  *vifm-:co*
+                                               *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &] - copies files to directory of other view.  With
     "?" vifm will open vi to edit filenames.  "!" forces overwrite.
 :[range]co[py][!] path[ &] - copies files to directory specified with the
@@ -1202,6 +1214,11 @@ The builtin commands are:
 :[range]co[py][!] name1 name2...[ &] - copies files to directory of other
     view giving each next file a corresponding name from the argument list.
     "!" forces overwrite.
+
+                                               *vifm-:cquit* *vifm-:cq*
+:cq[uit][!]
+    same as |vifm-:quit|, but also aborts directory choosing via
+    |vifm---choose-dir| (empties output file).
 
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][!][count][ &] - delete selected file or files.  "!" means
@@ -1722,7 +1739,7 @@ order using the '.' operator.  Any whitespace is ignored.
 
                                                *vifm-:quit* *vifm-:q*
 :q[uit][!] - will exit vifm (add ! if you don't want to save changes or
-    check if there are any of backgrounded commands still running).
+    check if there are any backgrounded commands still running).
 
                                                *vifm-:ls*
 :ls - lists windows of active terminal multiplexer (only when terminal

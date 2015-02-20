@@ -21,25 +21,26 @@
 #include <curses.h> /* FALSE curs_set() */
 
 #include <errno.h> /* errno */
-#include <stdio.h> /* FILE fclose() fprintf() snprintf() */
+#include <stdio.h> /* FILE fclose() fprintf() fputs() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
-#include <string.h> /* strrchr() strstr() */
+#include <string.h> /* strcmp() strrchr() strstr() */
 
 #include "cfg/config.h"
-#include "cfg/info.h"
 #include "compat/os.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/log.h"
-#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "filelist.h"
 #include "macros.h"
 #include "running.h"
+#include "status.h"
+#include "vifm.h"
 
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
@@ -197,58 +198,56 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 	return shellout(cmd, -1, use_term_multiplexer);
 }
 
-void _gnuc_noreturn
-vim_return_file_list(const FileView *view, int nfiles, char *files[])
+int
+vim_write_file_list(const FileView *view, int nfiles, char *files[])
 {
 	FILE *fp;
-	char filepath[PATH_MAX];
-	int exit_code = EXIT_SUCCESS;
+	const char *const files_out = curr_stats.chosen_files_out;
 
-	snprintf(filepath, sizeof(filepath), "%s/" LIST_FILE, cfg.config_dir);
-	fp = os_fopen(filepath, "w");
-	if(fp != NULL)
+	if(is_null_or_empty(files_out))
 	{
-		dump_filenames(view, fp, nfiles, files);
-		fclose(fp);
-	}
-	else
-	{
-		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", filepath);
-		exit_code = EXIT_FAILURE;
+		return 0;
 	}
 
-	write_info_file();
+	if(strcmp(files_out, "-") == 0)
+	{
+		dump_filenames(view, curr_stats.original_stdout, nfiles, files);
+		return 0;
+	}
 
-	endwin();
-	exit(exit_code);
+	fp = os_fopen(files_out, "w");
+	if(fp == NULL)
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", files_out);
+		return 1;
+	}
+
+	dump_filenames(view, fp, nfiles, files);
+	fclose(fp);
+	return 0;
 }
 
 /* Writes list of full paths to files into the file pointed to by fp.  files and
- * nfiles parameters can be used to supply list of file names in the currecnt
+ * nfiles parameters can be used to supply list of file names in the current
  * directory of the view.  Otherwise current selection is used if current files
  * is selected, if current file is not selected it's the only one that is
  * stored. */
 static void
 dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 {
+	/* Break delimiter in it's first character and the rest to be able to insert
+	 * null character via "%c%s" format string. */
+	const char delim_c = curr_stats.output_delimiter[0];
+	const char *const delim_str = curr_stats.output_delimiter[0] == '\0'
+	                            ? ""
+	                            : curr_stats.output_delimiter + 1;
+
 	if(nfiles == 0)
 	{
-		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-		if(!entry->selected)
+		dir_entry_t *entry = NULL;
+		while(iter_selection_or_current((FileView *)view, &entry))
 		{
-			fprintf(fp, "%s/%s\n", entry->origin, entry->name);
-		}
-		else
-		{
-			int i;
-			for(i = 0; i < view->list_rows; ++i)
-			{
-				const dir_entry_t *const entry = &view->dir_entry[i];
-				if(entry->selected)
-				{
-					fprintf(fp, "%s/%s\n", entry->origin, entry->name);
-				}
-			}
+			fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c, delim_str);
 		}
 	}
 	else
@@ -258,11 +257,11 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 		{
 			if(is_path_absolute(files[i]))
 			{
-				fprintf(fp, "%s\n", files[i]);
+				fprintf(fp, "%s%c%s", files[i], delim_c, delim_str);
 			}
 			else
 			{
-				fprintf(fp, "%s/%s\n", view->curr_dir, files[i]);
+				fprintf(fp, "%s/%s%c%s", view->curr_dir, files[i], delim_c, delim_str);
 			}
 		}
 	}
@@ -271,19 +270,84 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 void
 vim_write_empty_file_list(void)
 {
-	char path[PATH_MAX];
 	FILE *fp;
+	const char *const files_out = curr_stats.chosen_files_out;
 
-	snprintf(path, sizeof(path), "%s/" LIST_FILE, cfg.config_dir);
-	fp = os_fopen(path, "w");
+	if(is_null_or_empty(files_out) || strcmp(files_out, "-") == 0)
+	{
+		return;
+	}
+
+	fp = os_fopen(files_out, "w");
 	if(fp != NULL)
 	{
 		fclose(fp);
 	}
 	else
 	{
-		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", path);
+		LOG_SERROR_MSG(errno, "Can't truncate file: \"%s\"", files_out);
 	}
+}
+
+void
+vim_write_dir(const char path[])
+{
+	/* TODO: move this and other non-Vim related code to extern.c unit. */
+
+	FILE *fp;
+	const char *const dir_out = curr_stats.chosen_dir_out;
+
+	if(is_null_or_empty(dir_out))
+	{
+		return;
+	}
+
+	if(strcmp(dir_out, "-") == 0)
+	{
+		fputs(path, curr_stats.original_stdout);
+		return;
+	}
+
+	fp = os_fopen(dir_out, "w");
+	if(fp == NULL)
+	{
+		LOG_SERROR_MSG(errno, "Can't open file for writing: \"%s\"", dir_out);
+		return;
+	}
+
+	fputs(path, fp);
+	fclose(fp);
+}
+
+int
+vim_run_choose_cmd(const FileView *view)
+{
+	char *expanded_cmd;
+
+	if(is_null_or_empty(curr_stats.on_choose))
+	{
+		return 0;
+	}
+
+	if(!view->dir_entry[view->list_pos].selected)
+	{
+		erase_selection(curr_view);
+	}
+
+	expanded_cmd = expand_macros(curr_stats.on_choose, NULL, NULL, 1);
+	if(vifm_system(expanded_cmd) != EXIT_SUCCESS)
+	{
+		free(expanded_cmd);
+		return 1;
+	}
+
+	return 0;
+}
+
+void
+vim_get_list_file_path(char buf[], size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/" LIST_FILE, cfg.config_dir);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

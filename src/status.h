@@ -20,6 +20,8 @@
 #ifndef VIFM__STATUS_H__
 #define VIFM__STATUS_H__
 
+#include <stdio.h> /* FILE */
+
 #include "utils/tree.h"
 #include "utils/fs_limits.h"
 
@@ -141,14 +143,20 @@ typedef struct
 	 * (e.g. right after startup or :restart command). */
 	char *last_cmdline_command;
 
-	int initial_lines; /* Initial terminal height in lines. */
+	int initial_lines;   /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
 
 	ShellType shell_type; /* Specifies type of shell. */
 
-	int file_picker_mode; /* Whether vifm was started in file picking mode. */
-
 	const char *fuse_umount_cmd; /* Command to use for fuse unmounting. */
+
+	FILE *original_stdout; /* Saved original standard output. */
+
+	char *chosen_files_out; /* Destination for writing chosen files. */
+	char *chosen_dir_out;   /* Destination for writing chosen directory. */
+	char *output_delimiter; /* Delimiter for writing out list of paths. */
+
+	char *on_choose; /* Command to execute on picking files. */
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
@@ -185,6 +193,26 @@ void stats_update_shell_type(const char shell_cmd[]);
 /* Updates curr_stats.term_state field according to specified terminal
  * dimensions.  Returns new state. */
 TermState stats_update_term_state(int screen_x, int screen_y);
+
+/* Sets output location (curr_stats.chosen_files_out) for list of chosen
+ * files. */
+void stats_set_chosen_files_out(const char output[]);
+
+/* Sets output location (curr_stats.chosen_dir_out) for last visited
+ * directory. */
+void stats_set_chosen_dir_out(const char output[]);
+
+/* Sets delimiter (curr_stats.output_delimiter) for separating multiple paths in
+ * output. */
+void stats_set_output_delimiter(const char delimiter[]);
+
+/* Sets command to run on file selection right before exiting
+ * exit (curr_stats.on_choose). */
+void stats_set_on_choose(const char command[]);
+
+/* Checks whether custom actions on file choosing is set.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int stats_file_choose_action_set(void);
 
 #endif /* VIFM__STATUS_H__ */
 
