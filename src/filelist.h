@@ -315,7 +315,7 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but traverses selected items only
  * if current element is selected, otherwise only current element is
  * processed. */
-int iter_selection_or_current(FileView *view, dir_entry_t **entry);
+int iter_active_area(FileView *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but checks for marks. */
 int iter_marked_entries(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the

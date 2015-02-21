@@ -4161,7 +4161,7 @@ iter_selected_entries(FileView *view, dir_entry_t **entry)
 }
 
 int
-iter_selection_or_current(FileView *view, dir_entry_t **entry)
+iter_active_area(FileView *view, dir_entry_t **entry)
 {
 	dir_entry_t *const current = &view->dir_entry[view->list_pos];
 	if(current->selected)
