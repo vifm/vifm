@@ -207,6 +207,7 @@ static int file_can_be_displayed(const char directory[], const char filename[]);
 static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
+static int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 static int iter_entries(FileView *view, dir_entry_t **entry,
 		predicate_func pred);
 static int is_entry_selected(const dir_entry_t *entry);
@@ -3227,11 +3228,8 @@ filter_selected_files(FileView *view)
 {
 	dir_entry_t *entry;
 
-	if(!view->selected_files)
-		view->dir_entry[view->list_pos].selected = 1;
-
 	entry = NULL;
-	while(iter_selected_entries(view, &entry))
+	while(iter_selection_or_current(view, &entry))
 	{
 		const char *name = entry->name;
 		char name_with_slash[NAME_MAX + 1 + 1];
@@ -3249,7 +3247,6 @@ filter_selected_files(FileView *view)
 	clean_status_bar();
 	load_dir_list(view, 1);
 	move_to_list_pos(view, view->list_pos);
-	view->selected_files = 0;
 }
 
 void
@@ -4172,6 +4169,23 @@ iter_active_area(FileView *view, dir_entry_t **entry)
 	{
 		*entry = (*entry == NULL) ? current : NULL;
 		return *entry != NULL;
+	}
+}
+
+/* Same as iter_selected_entries() function, but when selection is absent
+ * current file is processed. */
+static int
+iter_selection_or_current(FileView *view, dir_entry_t **entry)
+{
+	if(view->selected_files == 0)
+	{
+		dir_entry_t *const current = &view->dir_entry[view->list_pos];
+		*entry = (*entry == NULL) ? current : NULL;
+		return *entry != NULL;
+	}
+	else
+	{
+		return iter_selected_entries(view, entry);
 	}
 }
 
