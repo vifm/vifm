@@ -3244,7 +3244,6 @@ filter_selected_files(FileView *view)
 	}
 
 	/* Reload view. */
-	clean_status_bar();
 	load_dir_list(view, 1);
 	move_to_list_pos(view, view->list_pos);
 }
