@@ -108,6 +108,10 @@ dir_fill_info_t;
  * if particular property holds and zero otherwise. */
 typedef int (*predicate_func)(const dir_entry_t *entry);
 
+/* Type of filter function for zapping list of entries.  Should return non-zero
+ * if entry is to be keeped and zero otherwise. */
+typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
+
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
 static int prepare_col_color(const FileView *view, dir_entry_t *entry,
@@ -175,8 +179,11 @@ static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
+		void *arg);
 static void update_entries_data(FileView *view);
-static void zap_entries(FileView *view);
+static int zap_entries(FileView *view, dir_entry_t *entries, int *count,
+		zap_filter filter, void *arg, int allow_empty_list);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
@@ -2865,7 +2872,8 @@ populate_dir_list_internal(FileView *view, int reload)
 					view->custom.entries, view->custom.entry_count);
 		}
 
-		zap_entries(view);
+		(void)zap_entries(view, view->dir_entry, &view->list_rows,
+				&is_dead_or_filtered, NULL, 0);
 		update_entries_data(view);
 		sort_dir_list(!reload, view);
 		return 0;
@@ -2952,6 +2960,25 @@ populate_dir_list_internal(FileView *view, int reload)
 	return 0;
 }
 
+/* zap_entries() filter to filter-out inexistent files or files which names
+ * match local filter. */
+static int
+is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	/* FIXME: some very long file names won't be matched against some
+		* regexps. */
+	char name_with_slash[NAME_MAX + 1 + 1];
+	const char *filename = entry->name;
+	if(is_directory_entry(entry))
+	{
+		append_slash(filename, name_with_slash, sizeof(name_with_slash));
+		filename = name_with_slash;
+	}
+
+	return path_exists_at(entry->origin, entry->name, DEREF)
+	    && filter_matches(&view->local_filter.filter, filename) != 0;
+}
+
 /* Re-read meta-data for each entry (does nothing for entries on which querying
  * fails). */
 static void
@@ -2971,29 +2998,19 @@ update_entries_data(FileView *view)
 }
 
 /* Removes dead entries (those that refer to non-existing files) or those that
- * do not match local filter from the view. */
-static void
-zap_entries(FileView *view)
+ * do not match local filter from the view.  Returns number of erased
+ * entries. */
+static int
+zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
+		void *arg, int allow_empty_list)
 {
 	int i, j;
 
 	j = 0;
-	for(i = 0; i < view->list_rows; ++i)
+	for(i = 0; i < *count; ++i)
 	{
-		dir_entry_t *const entry = &view->dir_entry[i];
-
-		/* FIXME: some very long file names won't be matched against some
-		 * regexps. */
-		char name_with_slash[NAME_MAX + 1 + 1];
-		const char *filename = entry->name;
-		if(is_directory_entry(entry))
-		{
-			append_slash(filename, name_with_slash, sizeof(name_with_slash));
-			filename = name_with_slash;
-		}
-
-		if(!path_exists_at(entry->origin, entry->name, DEREF) ||
-			filter_matches(&view->local_filter.filter, filename) == 0)
+		dir_entry_t *const entry = &entries[i];
+		if(!filter(view, entry, arg))
 		{
 			free_dir_entry(view, entry);
 			continue;
@@ -3001,18 +3018,20 @@ zap_entries(FileView *view)
 
 		if(i != j)
 		{
-			view->dir_entry[j] = view->dir_entry[i];
+			entries[j] = entries[i];
 		}
 
 		++j;
 	}
 
-	view->list_rows = j;
+	*count = j;
 
-	if(view->list_rows == 0)
+	if(*count == 0 && !allow_empty_list)
 	{
 		add_parent_dir(view);
 	}
+
+	return i - j;
 }
 
 /* Checks for subjectively relative size of a directory specified by the path
