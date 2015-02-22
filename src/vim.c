@@ -245,7 +245,7 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 	if(nfiles == 0)
 	{
 		dir_entry_t *entry = NULL;
-		while(iter_selection_or_current((FileView *)view, &entry))
+		while(iter_active_area((FileView *)view, &entry))
 		{
 			fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c, delim_str);
 		}
