@@ -214,29 +214,45 @@ get_proc_exit_status(pid_t pid)
 	while(1);
 }
 
-/* if err == 1 then use stderr and close stdin and stdout */
 void _gnuc_noreturn
-run_from_fork(int pipe[2], int err, char *cmd)
+run_from_fork(int pipe[2], int err_only, char cmd[])
 {
 	char *args[4];
 	int nullfd;
 
-	/* Redirect stderr or stdout to write end of pipe. */
-	if(dup2(pipe[1], err ? STDERR_FILENO : STDOUT_FILENO) == -1)
+	/* Redirect stderr and maybe stdout to write end of the pipe. */
+	if(dup2(pipe[1], STDERR_FILENO) == -1)
 	{
 		exit(1);
 	}
-	close(pipe[0]);        /* Close read end of pipe. */
+	if(err_only)
+	{
+		close(STDOUT_FILENO);
+	}
+	else
+	{
+		if(dup2(pipe[1], STDOUT_FILENO) == -1)
+		{
+			exit(1);
+		}
+	}
+
+	/* Close read end of pipe. */
+	close(pipe[0]);
+
 	close(STDIN_FILENO);
-	close(err ? STDOUT_FILENO : STDERR_FILENO);
 
 	/* Send stdout, stdin to /dev/null */
 	if((nullfd = open("/dev/null", O_RDONLY)) != -1)
 	{
 		if(dup2(nullfd, STDIN_FILENO) == -1)
+		{
 			exit(1);
-		if(dup2(nullfd, err ? STDOUT_FILENO : STDERR_FILENO) == -1)
+		}
+		if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
+		{
 			exit(1);
+		}
 	}
 
 	args[0] = cfg.shell;
@@ -764,9 +780,9 @@ read_cmd_output(const char cmd[])
 {
 	FILE *fp;
 	pid_t pid;
-	int error_pipe[2];
+	int out_pipe[2];
 
-	if(pipe(error_pipe) != 0)
+	if(pipe(out_pipe) != 0)
 	{
 		return NULL;
 	}
@@ -779,17 +795,17 @@ read_cmd_output(const char cmd[])
 
 	if(pid == 0)
 	{
-		run_from_fork(error_pipe, 0, (char *)cmd);
+		run_from_fork(out_pipe, 0, (char *)cmd);
 		return NULL;
 	}
 
 	/* Close write end of pipe. */
-	close(error_pipe[1]);
+	close(out_pipe[1]);
 
-	fp = fdopen(error_pipe[0], "r");
+	fp = fdopen(out_pipe[0], "r");
 	if(fp == NULL)
 	{
-		close(error_pipe[0]);
+		close(out_pipe[0]);
 	}
 	return fp;
 }

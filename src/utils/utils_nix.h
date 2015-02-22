@@ -36,7 +36,9 @@ void process_cancel_request(pid_t pid);
  * status of the process specified by its identifier. */
 int get_proc_exit_status(pid_t pid);
 
-void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
+/* If err_only then use stderr and close stdin and stdout, otherwise both stdout
+ * and stderr are redirected to the pipe. */
+void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, char cmd[]);
 
 /* Converts the mode to string representation of permissions. */
 void get_perm_string(char buf[], int len, mode_t mode);

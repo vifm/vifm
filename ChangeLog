@@ -92,6 +92,9 @@
 
 	Made configure script lookup curs_set in libtinfo.
 
+	Redirect both standard output and error streams from viewers (already was
+	the case for Windows).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
