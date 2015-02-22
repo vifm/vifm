@@ -98,12 +98,14 @@ column_data_t;
 /* Structure to communicate data during filling view with list files. */
 typedef struct
 {
-	FileView *const view;
-	const int is_root;
-	int with_parent_dir;
+	FileView *const view; /* View being filled. */
+	const int is_root;    /* Whether we're at file system root. */
+	int with_parent_dir;  /* Whether parent direcotory was seen during filling. */
 }
 dir_fill_info_t;
 
+/* Type of predicate functions to reason about entries.  Should return non-zero
+ * if particular property holds and zero otherwise. */
 typedef int (*predicate_func)(const dir_entry_t *entry);
 
 static void column_line_print(const void *data, int column_id, const char *buf,
