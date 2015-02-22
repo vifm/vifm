@@ -199,6 +199,8 @@ static void init_dir_entry(FileView *view, dir_entry_t *entry,
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
+static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
+		void *arg);
 static int load_unfiltered_list(FileView *const view);
 static void replace_dir_entries(FileView *view, dir_entry_t **entries,
 		int *count, const dir_entry_t *with_entries, int with_count);
@@ -571,7 +573,7 @@ reset_filter(filter_t *filter)
 {
 	if(filter->raw == NULL)
 	{
-		filter_init(filter, FILTER_DEF_CASE_SENSITIVITY);
+		(void)filter_init(filter, FILTER_DEF_CASE_SENSITIVITY);
 	}
 	else
 	{
@@ -3248,7 +3250,12 @@ void
 filter_selected_files(FileView *view)
 {
 	dir_entry_t *entry;
+	filter_t filter;
+	int filtered;
 
+	(void)filter_init(&filter, FILTER_DEF_CASE_SENSITIVITY);
+
+	/* Traverse items and update/create filter values. */
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry))
 	{
@@ -3261,12 +3268,53 @@ filter_selected_files(FileView *view)
 			name = name_with_slash;
 		}
 
-		filter_append(&view->auto_filter, name);
+		(void)filter_append(&view->auto_filter, name);
+		(void)filter_append(&filter, name);
 	}
 
-	/* Reload view. */
-	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
+	/* Update entry lists to remove entries that must be filtered out now.  No
+	 * view reload is needed. */
+	filtered = zap_entries(view, view->dir_entry, &view->list_rows,
+			&is_newly_filtered, &filter, 0);
+	if(flist_custom_active(view))
+	{
+		(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
+				&is_newly_filtered, &filter, 1);
+	}
+	else
+	{
+		view->filtered += filtered;
+	}
+
+	filter_dispose(&filter);
+
+	if(view->list_pos >= view->list_rows)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+
+	ui_view_schedule_redraw(view);
+}
+
+/* zap_entries() filter to filter-out files that match filter passed in the
+ * arg. */
+static int
+is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	filter_t *const filter = arg;
+
+	/* FIXME: some very long file names won't be matched against some
+	 * regexps. */
+	char name_with_slash[NAME_MAX + 1 + 1];
+	const char *filename = entry->name;
+
+	if(is_directory_entry(entry))
+	{
+		append_slash(filename, name_with_slash, sizeof(name_with_slash));
+		filename = name_with_slash;
+	}
+
+	return filter_matches(filter, filename) == 0;
 }
 
 void

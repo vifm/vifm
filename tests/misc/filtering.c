@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "seatest.h"
 
@@ -121,38 +121,49 @@ teardown(void)
 static void
 test_filtering(void)
 {
-	int i;
-
+	assert_int_equal(7, lwin.list_rows);
 	filter_selected_files(&lwin);
+	assert_int_equal(1, lwin.list_rows);
 
-	for(i = 0; i < lwin.list_rows - 1; i++)
-		assert_hidden(lwin, lwin.dir_entry[i].name, 0);
-	assert_visible(lwin, lwin.dir_entry[i].name, 0);
+	assert_string_equal("withnonodots", lwin.dir_entry[0].name);
+	assert_visible(lwin, lwin.dir_entry[0].name, 0);
 }
 
 static void
 test_filtering_file_does_not_filter_dir(void)
 {
+	char *const name = strdup(rwin.dir_entry[6].name);
+
 	rwin.dir_entry[6].selected = 1;
 	rwin.selected_files = 1;
 
+	assert_int_equal(8, rwin.list_rows);
 	filter_selected_files(&rwin);
+	assert_int_equal(7, rwin.list_rows);
 
-	assert_hidden(rwin, rwin.dir_entry[6].name, 0);
-	assert_visible(rwin, rwin.dir_entry[6].name, 1);
+	assert_hidden(rwin, name, 0);
+	assert_visible(rwin, name, 1);
+
+	free(name);
 }
 
 static void
 test_filtering_dir_does_not_filter_file(void)
 {
+	char *const name = strdup(rwin.dir_entry[6].name);
+
 	rwin.dir_entry[6].selected = 1;
 	rwin.dir_entry[6].type = FT_DIR;
 	rwin.selected_files = 1;
 
+	assert_int_equal(8, rwin.list_rows);
 	filter_selected_files(&rwin);
+	assert_int_equal(7, rwin.list_rows);
 
-	assert_hidden(rwin, rwin.dir_entry[6].name, 1);
-	assert_visible(rwin, rwin.dir_entry[6].name, 0);
+	assert_hidden(rwin, name, 1);
+	assert_visible(rwin, name, 0);
+
+	free(name);
 }
 
 static void
