@@ -1,13 +1,14 @@
 #include <stdlib.h> /* free() */
-#include <string.h>
+#include <string.h> /* strdup() */
 
 #include "seatest.h"
 
-#include "../parsing/asserts.h"
+#include "../../src/cfg/config.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/utils/env.h"
 #include "../../src/builtin_functions.h"
+#include "../parsing/asserts.h"
 
 static void
 test_executable_true_for_executable(void)
@@ -34,11 +35,30 @@ test_expand_expands_environment_variables(void)
 	ASSERT_OK("expand('$OPEN_ME')", "Found something interesting?");
 }
 
+static void
+test_system_catches_stdout(void)
+{
+	ASSERT_OK("system('echo a')", "a");
+}
+
+static void
+test_system_catches_stderr(void)
+{
+	ASSERT_OK("system('echo a 1>&2')", "a");
+}
+
+static void
+test_system_catches_stdout_and_err(void)
+{
+	ASSERT_OK("system('echo a && echo b 1>&2')", "a\nb");
+}
+
 void
 builtin_functions_tests(void)
 {
 	test_fixture_start();
 
+	cfg.shell = strdup("sh");
 	init_builtin_functions();
 
 	run_test(test_executable_true_for_executable);
@@ -47,7 +67,12 @@ builtin_functions_tests(void)
 
 	run_test(test_expand_expands_environment_variables);
 
+	run_test(test_system_catches_stdout);
+	run_test(test_system_catches_stderr);
+	run_test(test_system_catches_stdout_and_err);
+
 	function_reset_all();
+	free(cfg.shell);
 
 	test_fixture_end();
 }

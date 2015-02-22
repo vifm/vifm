@@ -629,6 +629,7 @@ const char *tags[] = {
 	"vifm-selectors",
 	"vifm-set-options",
 	"vifm-startup",
+	"vifm-system()",
 	"vifm-t",
 	"vifm-to-p",
 	"vifm-to-s",

@@ -63,6 +63,9 @@
 	Added --on-choose command-line switch to execute a command on selection
 	rather than opening it.  Thanks to Ross Hadden (a.k.a. rosshadden).
 
+	Added system() builtin function that executes command via shell and returns
+	its output.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
