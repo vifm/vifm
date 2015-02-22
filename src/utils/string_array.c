@@ -30,7 +30,6 @@
 #include "fs_limits.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
-static char * read_nonseekable_stream(FILE *const fp, size_t *read);
 static char * read_seekable_stream(FILE *const fp, size_t *read);
 static size_t get_remaining_stream_size(FILE *const fp);
 static char ** text_to_lines(char text[], size_t text_len, int *nlines);
@@ -225,12 +224,8 @@ read_stream_lines(FILE *f, int *nlines)
 	return (text == NULL) ? NULL : text_to_lines(text, text_len, nlines);
 }
 
-/* Reads content of the fp stream that doesn't support seek operation (e.g. it
- * points to a pipe) until end-of-file into null terminated string.  Returns
- * string of length *read to be freed by caller on success, otherwise NULL is
- * returned. */
-static char *
-read_nonseekable_stream(FILE *const fp, size_t *read)
+char *
+read_nonseekable_stream(FILE *fp, size_t *read)
 {
 	enum { PIECE_LEN = 4096 };
 	char *content = malloc(PIECE_LEN + 1);
