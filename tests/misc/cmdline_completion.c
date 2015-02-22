@@ -159,7 +159,12 @@ test_spaces_escaping_everywhere(void)
 	assert_int_equal(0, line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
+#ifndef _WIN32
 	assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
+#else
+	/* Files can't have trailing whitespace on Windows. */
+	assert_string_equal("touch \\ spaces\\ everywhere", mb);
+#endif
 	free(mb);
 }
 
@@ -174,7 +179,12 @@ test_spaces_escaping_trailing(void)
 	assert_int_equal(0, line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
+#ifndef _WIN32
 	assert_string_equal("touch ends-with-space\\ ", mb);
+#else
+	/* Files can't have trailing whitespace on Windows. */
+	assert_string_equal("touch ends-with-space", mb);
+#endif
 	free(mb);
 }
 

@@ -44,13 +44,25 @@ test_system_catches_stdout(void)
 static void
 test_system_catches_stderr(void)
 {
+#ifndef _WIN32
 	ASSERT_OK("system('echo a 1>&2')", "a");
+#else
+	/* "echo" implemented by cmd.exe is kinda disabled, and doesn't ignore
+	 * spaces. */
+	ASSERT_OK("system('echo a 1>&2')", "a ");
+#endif
 }
 
 static void
 test_system_catches_stdout_and_err(void)
 {
+#ifndef _WIN32
 	ASSERT_OK("system('echo a && echo b 1>&2')", "a\nb");
+#else
+	/* "echo" implemented by cmd.exe is kinda disabled, and doesn't ignore
+	 * spaces. */
+	ASSERT_OK("system('echo a && echo b 1>&2')", "a \nb ");
+#endif
 }
 
 void

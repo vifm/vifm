@@ -62,9 +62,15 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 int
 iop_mkfile(io_args_t *const args)
 {
+	FILE *f;
 	const char *const path = args->arg1.path;
 
-	FILE *const f = os_fopen(path, "wb");
+	if(path_exists(path, DEREF))
+	{
+		return -1;
+	}
+
+	f = os_fopen(path, "wb");
 	return (f == NULL) ? -1 : fclose(f);
 }
 
