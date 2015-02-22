@@ -22,13 +22,14 @@
 #include <curses.h> /* mvwaddstr() werase() wattrset() */
 
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() feof() */
+#include <stdio.h> /* FILE fclose() fdopen() feof() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
 #include "engine/mode.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/view.h"
 #include "ui/ui.h"
@@ -38,12 +39,14 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
+#include "utils/utils.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
 #include "escape.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "macros.h"
 #include "status.h"
 #include "types.h"
 
@@ -58,6 +61,7 @@
 static void view_file(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
+static char * get_viewer_command(const char viewer[]);
 
 void
 toggle_quick_view(void)
@@ -269,6 +273,38 @@ preview_close(void)
 	{
 		view_explore_mode_quit(&rwin);
 	}
+}
+
+FILE *
+use_info_prog(const char viewer[])
+{
+	FILE *fp;
+	char *cmd;
+
+	cmd = get_viewer_command(viewer);
+	fp = read_cmd_output(cmd);
+	free(cmd);
+
+	return fp;
+}
+
+/* Returns a pointer to newly allocated memory, which should be released by the
+ * caller. */
+static char *
+get_viewer_command(const char viewer[])
+{
+	char *result;
+	if(strchr(viewer, '%') == NULL)
+	{
+		char *const escaped = escape_filename(get_current_file_name(curr_view), 0);
+		result = format_str("%s %s", viewer, escaped);
+		free(escaped);
+	}
+	else
+	{
+		result = expand_macros(viewer, NULL, NULL, 1);
+	}
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

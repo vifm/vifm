@@ -213,6 +213,10 @@ void get_gid_string(const FileView *view, size_t buf_len, char buf[]);
  * returned. */
 FILE * reopen_terminal(void);
 
+/* Executes the command via shell and opens its output for reading.  Returns
+ * NULL on error, otherwise stream valid for reading is returned. */
+FILE * read_cmd_output(const char cmd[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

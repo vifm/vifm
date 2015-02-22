@@ -132,7 +132,6 @@ static void init_view(FileView *view);
 static void reset_view(FileView *view);
 static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
-static char * get_viewer_command(const char *viewer);
 static void capture_selection(FileView *view);
 static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
 static void draw_dir_list_only(FileView *view);
@@ -621,121 +620,6 @@ load_initial_directory(FileView *view, const char *dir)
 		chosp(view->curr_dir);
 	}
 	(void)change_directory(view, dir);
-}
-
-#ifndef _WIN32
-FILE *
-use_info_prog(const char *viewer)
-{
-	pid_t pid;
-	int error_pipe[2];
-	char *cmd;
-
-	cmd = get_viewer_command(viewer);
-
-	if(pipe(error_pipe) != 0)
-	{
-		show_error_msg("File pipe error", "Error creating pipe");
-		free(cmd);
-		return NULL;
-	}
-
-	if((pid = fork()) == -1)
-	{
-		show_error_msg("Fork error", "Error forking process");
-		free(cmd);
-		return NULL;
-	}
-
-	if(pid == 0)
-	{
-		run_from_fork(error_pipe, 0, cmd);
-		free(cmd);
-		return NULL;
-	}
-	else
-	{
-		FILE * f;
-		close(error_pipe[1]); /* Close write end of pipe. */
-		free(cmd);
-		f = fdopen(error_pipe[0], "r");
-		if(f == NULL)
-			close(error_pipe[0]);
-		return f;
-	}
-}
-#else
-static FILE *
-use_info_prog_internal(const char *viewer, int out_pipe[2])
-{
-	char *cmd;
-	char *args[4];
-	int retcode;
-
-	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
-		return NULL;
-	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
-		return NULL;
-
-	cmd = get_viewer_command(viewer);
-
-	args[0] = "cmd";
-	args[1] = "/C";
-	args[2] = cmd;
-	args[3] = NULL;
-
-	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
-	free(cmd);
-
-	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
-}
-
-FILE *
-use_info_prog(const char *viewer)
-{
-	int out_fd, err_fd;
-	int out_pipe[2];
-	FILE *result;
-
-	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
-	{
-		show_error_msg("File pipe error", "Error creating pipe");
-		return NULL;
-	}
-
-	out_fd = dup(_fileno(stdout));
-	err_fd = dup(_fileno(stderr));
-
-	result = use_info_prog_internal(viewer, out_pipe);
-
-	_dup2(out_fd, _fileno(stdout));
-	_dup2(err_fd, _fileno(stderr));
-
-	if(result == NULL)
-		close(out_pipe[0]);
-	close(out_pipe[1]);
-
-	return result;
-}
-#endif
-
-/* Returns a pointer to newly allocated memory, which should be released by the
- * caller. */
-static char *
-get_viewer_command(const char *viewer)
-{
-	char *result;
-	if(strchr(viewer, '%') == NULL)
-	{
-		char *const escaped = escape_filename(get_current_file_name(curr_view), 0);
-		result = format_str("%s %s", viewer, escaped);
-		free(escaped);
-	}
-	else
-	{
-		result = expand_macros(viewer, NULL, NULL, 1);
-	}
-	return result;
 }
 
 dir_entry_t *

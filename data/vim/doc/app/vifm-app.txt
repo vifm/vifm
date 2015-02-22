@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 20
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 22
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3109,6 +3109,7 @@ executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
 has({property})     Integer       Checks whether instance has {property}.
+system({command})   String        Executes shell command and returns its output.
 
 executable({expr})                             *vifm-executable()*
 If {expr} is absolute or relative path, checks whether path destination exists
@@ -3169,6 +3170,15 @@ Usage example: >
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 <
+system({command})                              *vifm-system()*
+Runs the command in shell and returns its output (joined standard output and
+standard error streams).  All trailing newline characters are stripped to
+allow easy appending to command output.  CTRL-C should interrupt the command.
+
+Usage example: >
+  " command to enter .git/ directory of git-repository (when ran inside one)
+  command! cdgit :execute 'cd' system('git rev-parse --git-dir')
+
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
 

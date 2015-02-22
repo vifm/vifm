@@ -24,7 +24,6 @@
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdio.h> /* FILE */
 
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
@@ -272,7 +271,6 @@ int flist_custom_finish(FileView *view);
 const char * flist_get_dir(const FileView *view);
 /* Selects entry that corresponds to the path as the current one. */
 void flist_goto_by_path(FileView *view, const char path[]);
-FILE * use_info_prog(const char *viewer);
 /* Loads filelist for the view, but doesn't redraw the view.  The reload
  * parameter should be set in case of view refresh operation. */
 void populate_dir_list(FileView *view, int reload);

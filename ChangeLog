@@ -63,6 +63,9 @@
 	Added --on-choose command-line switch to execute a command on selection
 	rather than opening it.  Thanks to Ross Hadden (a.k.a. rosshadden).
 
+	Added system() builtin function that executes command via shell and returns
+	its output.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
@@ -91,6 +94,9 @@
 	filterfalse.
 
 	Made configure script lookup curs_set in libtinfo.
+
+	Redirect both standard output and error streams from viewers (already was
+	the case for Windows).
 
 	Fixed search messages in menus (nth time...).
 

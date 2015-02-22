@@ -20,14 +20,18 @@
 #ifndef VIFM__QUICKVIEW_H__
 #define VIFM__QUICKVIEW_H__
 
+#include <stdio.h> /* FILE */
+
 #include "ui/ui.h"
 
-void quick_view_file(FileView * view);
+void quick_view_file(FileView *view);
 
 void toggle_quick_view(void);
 
 /* Quits preview pane or view modes. */
 void preview_close(void);
+
+FILE * use_info_prog(const char viewer[]);
 
 #endif /* VIFM__QUICKVIEW_H__ */
 

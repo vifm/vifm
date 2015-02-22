@@ -21,14 +21,14 @@
 
 /* This unit provides all necessary to work with variables. */
 
-
 /* Enumeration of variable types. */
 typedef enum
 {
 	VTYPE_STRING, /* Regular string value. */
 	VTYPE_INT, /* Integer, which is also used for boolean. */
 	VTYPE_ERROR, /* Signals about fail. */
-}VarType;
+}
+VarType;
 
 /* Union of possible variable contents. */
 typedef union
@@ -37,15 +37,16 @@ typedef union
 	int integer; /* VTYPE_INT value. */
 
 	const char *const_string; /* Convenience field handy to create variables. */
-}var_val_t;
+}
+var_val_t;
 
 /* Structure for script variable. */
 typedef struct
 {
 	VarType type; /* Variable type. */
 	var_val_t value; /* Value depending on type. */
-}var_t;
-
+}
+var_t;
 
 /* Gets variable, which evaluates to true.  Returns the variable. */
 var_t var_true(void);

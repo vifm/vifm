@@ -27,9 +27,11 @@
 
 #include "engine/functions.h"
 #include "engine/var.h"
+#include "ui/cancellation.h"
 #include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "macros.h"
 #include "types.h"
@@ -39,20 +41,21 @@ static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
 static var_t has_builtin(const call_info_t *call_info);
+static var_t system_builtin(const call_info_t *call_info);
 
-static const function_t functions[] =
-{
+static const function_t functions[] = {
 	{ "executable", 1, &executable_builtin },
 	{ "expand",     1, &expand_builtin },
 	{ "filetype",   1, &filetype_builtin },
 	{ "has",        1, &has_builtin },
+	{ "system",     1, &system_builtin },
 };
 
 void
 init_builtin_functions(void)
 {
 	size_t i;
-	for(i = 0; i < ARRAY_LEN(functions); i++)
+	for(i = 0; i < ARRAY_LEN(functions); ++i)
 	{
 		int result = function_register(&functions[i]);
 		assert(result == 0 && "Builtin function registration error");
@@ -160,6 +163,45 @@ has_builtin(const call_info_t *call_info)
 
 	free(str_val);
 
+	return result;
+}
+
+/* Runs the command in shell and returns its output (joined standard output and
+ * standard error streams).  All trailing newline characters are stripped to
+ * allow easy appending to command output.  Returns the output. */
+static var_t
+system_builtin(const call_info_t *call_info)
+{
+	var_t result;
+	char *cmd;
+	FILE *cmd_stream;
+	size_t cmd_out_len;
+	var_val_t var_val;
+
+	cmd = var_to_string(call_info->argv[0]);
+	cmd_stream = read_cmd_output(cmd);
+	free(cmd);
+
+	ui_cancellation_enable();
+	var_val.string = read_nonseekable_stream(cmd_stream, &cmd_out_len);
+	ui_cancellation_disable();
+	fclose(cmd_stream);
+
+	if(var_val.string == NULL)
+	{
+		var_val.string = "";
+		return var_new(VTYPE_STRING, var_val);
+	}
+
+	/* Remove trailing new line characters. */
+	while(cmd_out_len != 0U && var_val.string[cmd_out_len - 1] == '\n')
+	{
+		var_val.string[cmd_out_len - 1] = '\0';
+		--cmd_out_len;
+	}
+
+	result = var_new(VTYPE_STRING, var_val);
+	free(var_val.string);
 	return result;
 }
 

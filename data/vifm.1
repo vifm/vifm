@@ -1,4 +1,4 @@
-.TH vifm 1 "February 20, 2015" "" "Vifm"
+.TH vifm 1 "February 22, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3813,6 +3813,8 @@ expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
 .br
 has({property})     Integer       Checks whether instance has {property}.
+.br
+system({command})   String        Executes shell command and returns its output.
 
 executable({expr})
 .br
@@ -3884,6 +3886,18 @@ Usage example:
   endif
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
+.EE
+
+system({command})
+.br
+Runs the command in shell and returns its output (joined standard output and
+standard error streams).  All trailing newline characters are stripped to
+allow easy appending to command output.  CTRL-C should interrupt the command.
+
+Usage example:
+.EX
+  " command to enter .git/ directory of git-repository (when ran inside one)
+  command! cdgit :execute 'cd' system('git rev-parse \-\-git-dir')
 .EE
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
