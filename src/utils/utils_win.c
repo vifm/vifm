@@ -27,6 +27,7 @@
 #include <curses.h>
 
 #include <fcntl.h>
+#include <unistd.h> /* _dup2() _pipe() _spawnvp() close() dup() pipe() */
 
 #include <ctype.h> /* toupper() */
 #include <stddef.h> /* NULL size_t */
@@ -63,6 +64,7 @@ static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 static int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
+static FILE * use_info_prog_internal(const char cmd[], int out_pipe[2]);
 
 void
 pause_shell(void)
@@ -768,6 +770,58 @@ reopen_terminal(void)
 	}
 
 	return fp;
+}
+
+FILE *
+read_cmd_output(const char cmd[])
+{
+	int out_fd, err_fd;
+	int out_pipe[2];
+	FILE *result;
+
+	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
+	{
+		return NULL;
+	}
+
+	out_fd = dup(_fileno(stdout));
+	err_fd = dup(_fileno(stderr));
+
+	result = use_info_prog_internal(cmd, out_pipe);
+
+	_dup2(out_fd, _fileno(stdout));
+	_dup2(err_fd, _fileno(stderr));
+
+	if(result == NULL)
+		close(out_pipe[0]);
+	close(out_pipe[1]);
+
+	return result;
+}
+
+static FILE *
+use_info_prog_internal(const char cmd[], int out_pipe[2])
+{
+	char *args[4];
+	int retcode;
+
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+	{
+		return NULL;
+	}
+	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
+	{
+		return NULL;
+	}
+
+	args[0] = "cmd";
+	args[1] = "/C";
+	args[2] = (char *)cmd;
+	args[3] = NULL;
+
+	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+
+	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

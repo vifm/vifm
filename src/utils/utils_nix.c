@@ -759,5 +759,40 @@ reopen_terminal(void)
 	return fp;
 }
 
+FILE *
+read_cmd_output(const char cmd[])
+{
+	FILE *fp;
+	pid_t pid;
+	int error_pipe[2];
+
+	if(pipe(error_pipe) != 0)
+	{
+		return NULL;
+	}
+
+	pid = fork();
+	if(pid == (pid_t)-1)
+	{
+		return NULL;
+	}
+
+	if(pid == 0)
+	{
+		run_from_fork(error_pipe, 0, (char *)cmd);
+		return NULL;
+	}
+
+	/* Close write end of pipe. */
+	close(error_pipe[1]);
+
+	fp = fdopen(error_pipe[0], "r");
+	if(fp == NULL)
+	{
+		close(error_pipe[0]);
+	}
+	return fp;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
