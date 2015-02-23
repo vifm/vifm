@@ -269,9 +269,8 @@ static struct
 	optinit_t initializer;
 	optval_t val;
 }
-options[] =
-{
-	/* global options */
+options[] = {
+	/* Global options. */
 	{ "aproposprg", "",
 	  OPT_STR, 0, NULL, &aproposprg_handler,
 	  { .ref.str_val = &cfg.apropos_prg },
@@ -476,7 +475,6 @@ options[] =
 	},
 
 	/* Local options. */
-
 	{ "lsview", "",
 	  OPT_BOOL, 0, NULL, &lsview_handler,
 	  { .init = &init_lsview },
