@@ -28,6 +28,7 @@
 
 #include "../compat/os.h"
 #include "../engine/cmds.h"
+#include "../engine/options.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/filter.h"
@@ -900,6 +901,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
 	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
+	fprintf(fp, "=iskeyword=%s\n", escape_spaces(get_option_value("iskeyword")));
 	fprintf(fp, "=%slaststatus\n", cfg.display_statusline ? "" : "no");
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));

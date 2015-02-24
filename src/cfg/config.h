@@ -20,7 +20,7 @@
 #ifndef VIFM__CFG__CONFIG_H__
 #define VIFM__CFG__CONFIG_H__
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t wchar_t */
 
 #include "../ui/ui.h"
 #include "../utils/fs_limits.h"
@@ -150,6 +150,8 @@ typedef struct config_t
 
 	int timeout_len;     /* Maximum period on waiting for the input. */
 	int min_timeout_len; /* Minimum period on waiting for the input. */
+
+	char is_keyword[256]; /* Whether corresponding character is keyword char. */
 }
 config_t;
 
@@ -214,6 +216,11 @@ const char * cfg_get_last_search_pattern(void);
 
 /* Sets shell invocation command. */
 void cfg_set_shell(const char shell[]);
+
+/* Checks whether given wide character should be considered as part of a word
+ * according to current settings.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int cfg_is_keyword_wchar(wchar_t c);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 
