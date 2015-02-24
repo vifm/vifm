@@ -84,6 +84,11 @@ void set_option(const char name[], optval_t val);
 /* Processes :set command arguments.  Returns non-zero on error. */
 int set_options(const char args[]);
 
+/* Converts option value to string representation.  Returns pointer to a
+ * statically allocated buffer.  Asserts for correct option name or returns NULL
+ * on it.  For boolean options empty string is returned. */
+const char * get_option_value(const char name[]);
+
 /* Completes set arguments list. */
 void complete_options(const char args[], const char **start);
 

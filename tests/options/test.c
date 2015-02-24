@@ -49,6 +49,7 @@ void input_tests(void);
 void set_tests(void);
 void charset_tests(void);
 void reset_tests(void);
+void output_tests(void);
 
 void
 all_tests(void)
@@ -60,6 +61,7 @@ all_tests(void)
 	set_tests();
 	charset_tests();
 	reset_tests();
+	output_tests();
 }
 
 static void
