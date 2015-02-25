@@ -185,6 +185,10 @@
 
 	Fixed completion of file names which start with a space.
 
+	Fixed command execution in network share on Windows.  cmd.exe fails for
+	UNC paths, trick it by running command in temporary directory.  Thanks to
+	Robert Sarkozi.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
