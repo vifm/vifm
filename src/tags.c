@@ -52,6 +52,8 @@ const char *tags[] = {
 	"vifm-'ignorecase'",
 	"vifm-'incsearch'",
 	"vifm-'is'",
+	"vifm-'isk'",
+	"vifm-'iskeyword'",
 	"vifm-'laststatus'",
 	"vifm-'lines'",
 	"vifm-'locateprg'",

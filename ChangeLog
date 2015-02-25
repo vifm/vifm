@@ -66,6 +66,9 @@
 	Added system() builtin function that executes command via shell and returns
 	its output.
 
+	Added 'iskeyword' option to specify which characters in command-line mode
+	should be considered as part of a word.  Thanks to filterfalse.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

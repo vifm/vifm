@@ -49,6 +49,7 @@ void input_tests(void);
 void set_tests(void);
 void charset_tests(void);
 void reset_tests(void);
+void output_tests(void);
 
 void
 all_tests(void)
@@ -60,6 +61,7 @@ all_tests(void)
 	set_tests();
 	charset_tests();
 	reset_tests();
+	output_tests();
 }
 
 static void
@@ -111,16 +113,26 @@ setup(void)
 	val.str_val = "";
 	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset),
 			&cpoptions_vals, cpoptions_handler, val);
+
+	val.str_val = "";
+	add_option("cdpath", "cd", OPT_STRLIST, 0, NULL, dummy_handler, val);
+
 	val.bool_val = 0;
 	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);
+
 	val.str_val = "fusehome-default";
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, val);
+
 	val.enum_item = 1;
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
 			&dummy_handler, val);
+
+	val.bool_val = 1;
 	add_option("sortorder", "", OPT_BOOL, 0, NULL, &dummy_handler, val);
+
 	val.int_val = 8;
 	add_option("tabstop", "ts", OPT_INT, 0, NULL, &tabstop_handler, val);
+
 	val.set_items = 0;
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
 			&vifminfo_handler, val);

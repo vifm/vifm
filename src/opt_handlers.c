@@ -21,8 +21,9 @@
 #include <curses.h> /* stdscr wnoutrefresh() */
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* isdigit() */
 #include <limits.h> /* INT_MIN */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memcpy() memmove() strchr() strdup() strlen() strncat()
@@ -75,6 +76,8 @@ optinit_t;
 
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
+static void init_iskeyword(optval_t *val);
+static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
@@ -113,6 +116,9 @@ static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
+static void iskeyword_handler(OPT_OP op, optval_t val);
+static int parse_range(const char range[], int *from, int *to);
+static int parse_endpoint(const char **str, int *endpoint);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
@@ -269,9 +275,8 @@ static struct
 	optinit_t initializer;
 	optval_t val;
 }
-options[] =
-{
-	/* global options */
+options[] = {
+	/* Global options. */
 	{ "aproposprg", "",
 	  OPT_STR, 0, NULL, &aproposprg_handler,
 	  { .ref.str_val = &cfg.apropos_prg },
@@ -355,6 +360,10 @@ options[] =
 	{ "incsearch", "is",
 	  OPT_BOOL, 0, NULL, &incsearch_handler ,
 	  { .ref.bool_val = &cfg.inc_search },
+	},
+	{ "iskeyword", "isk",
+	  OPT_STRLIST, 0, NULL, &iskeyword_handler,
+	  { .init = &init_iskeyword },
 	},
 	{ "laststatus", "ls",
 	  OPT_BOOL, 0, NULL, &laststatus_handler,
@@ -476,7 +485,6 @@ options[] =
 	},
 
 	/* Local options. */
-
 	{ "lsview", "",
 	  OPT_BOOL, 0, NULL, &lsview_handler,
 	  { .init = &init_lsview },
@@ -564,6 +572,68 @@ init_cpoptions(optval_t *val)
 			cfg.selection_is_primary       ? "s" : "",
 			cfg.tab_switches_pane          ? "t" : "");
 	val->str_val = buf;
+}
+
+/* Formats 'iskeyword' initial value from cfg.is_keyword array. */
+static void
+init_iskeyword(optval_t *val)
+{
+	static char *str;
+
+	int i;
+	size_t len;
+
+	len = 0U;
+	i = 0;
+	while(i < sizeof(cfg.is_keyword))
+	{
+		int l, r;
+
+		while(i < sizeof(cfg.is_keyword) && !cfg.is_keyword[i])
+		{
+			++i;
+		}
+		l = i;
+		while(i < sizeof(cfg.is_keyword) && cfg.is_keyword[i])
+		{
+			++i;
+		}
+		r = i - 1;
+
+		if(l < sizeof(cfg.is_keyword))
+		{
+			char left[16];
+			char right[16];
+			char range[32];
+
+			if(len != 0U)
+			{
+				(void)strappendch(&str, &len, ',');
+			}
+
+			if(r == l)
+			{
+				snprintf(range, sizeof(range), "%s", to_endpoint(l, left));
+			}
+			else
+			{
+				snprintf(range, sizeof(range), "%s-%s", to_endpoint(l, left),
+						to_endpoint(r, right));
+			}
+			(void)strappend(&str, &len, range);
+		}
+	}
+
+	val->str_val = str;
+}
+
+/* Convenience function to format an endpoint inside the buffer, which should be
+ * large enough.  Returns the buffer. */
+static const char *
+to_endpoint(int i, char buffer[])
+{
+	sprintf(buffer, "%d", i);
+	return buffer;
 }
 
 static void
@@ -1104,6 +1174,103 @@ static void
 incsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.inc_search = val.bool_val;
+}
+
+/* Handles setting value of 'iskeyword' by parsing list of ranges into character
+ * array. */
+static void
+iskeyword_handler(OPT_OP op, optval_t val)
+{
+	char is_keyword[256] = { };
+
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		int from, to;
+		if(parse_range(part, &from, &to) != 0)
+		{
+			error = 1;
+			break;
+		}
+
+		while(from < to)
+		{
+			is_keyword[from++] = 1;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		memcpy(&cfg.is_keyword, &is_keyword, sizeof(cfg.is_keyword));
+	}
+}
+
+/* Parses range, which can be shortened to single endpoint if first element
+ * matches last one.  Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_range(const char range[], int *from, int *to)
+{
+	const char *p = range;
+
+	if(parse_endpoint(&p, from) != 0)
+	{
+		text_buffer_addf("Wrong range: %s", range);
+		return 1;
+	}
+	if(*p == '-')
+	{
+		++p;
+		if(parse_endpoint(&p, to) != 0)
+		{
+			text_buffer_addf("Wrong range: %s", range);
+			return 1;
+		}
+	}
+	else
+	{
+		*to = *from;
+	}
+
+	if(*p != '\0')
+	{
+		text_buffer_addf("Wrong range: %s", range);
+		return 1;
+	}
+
+	if(*from > *to)
+	{
+		text_buffer_addf("Inversed range: %s", range);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Parses single endpoint of a range.  It's either a number or a character.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_endpoint(const char **str, int *endpoint)
+{
+	if(isdigit(**str))
+	{
+		char *endptr;
+		const long int val = strtol(*str, &endptr, 10);
+		if(val < 0 || val >= 256)
+		{
+			text_buffer_addf("Wrong value: %ld", val);
+			return 1;
+		}
+		*str = endptr;
+		*endpoint = val;
+	}
+	else
+	{
+		*endpoint = **str;
+		++*str;
+	}
+	return 0;
 }
 
 static void

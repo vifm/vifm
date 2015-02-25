@@ -189,6 +189,13 @@ cfg_init(void)
 	cfg.timeout_len = 1000;
 	cfg.min_timeout_len = 150;
 
+	/* Fill cfg.is_keyword as if it was initialized from isspace() fuction. */
+	memset(&cfg.is_keyword, 1, sizeof(cfg.is_keyword));
+	cfg.is_keyword['\x00'] = 0; cfg.is_keyword['\x09'] = 0;
+	cfg.is_keyword['\x0a'] = 0; cfg.is_keyword['\x0b'] = 0;
+	cfg.is_keyword['\x0c'] = 0; cfg.is_keyword['\x0d'] = 0;
+	cfg.is_keyword['\x20'] = 0;
+
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else
@@ -907,6 +914,12 @@ cfg_set_shell(const char shell[])
 	{
 		stats_update_shell_type(cfg.shell);
 	}
+}
+
+int
+cfg_is_keyword_wchar(wchar_t c)
+{
+	return c >= 256 || cfg.is_keyword[c];
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

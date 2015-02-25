@@ -25,6 +25,10 @@ test_space_at_the_end(void)
 	free(completed);
 
 	completed = vle_compl_next();
+	assert_string_equal("cdpath", completed);
+	free(completed);
+
+	completed = vle_compl_next();
 	assert_string_equal("cpoptions", completed);
 	free(completed);
 
@@ -103,6 +107,10 @@ test_skip_abbreviations(void)
 
 	completed = vle_compl_next();
 	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("cdpath", completed);
 	free(completed);
 
 	completed = vle_compl_next();
@@ -257,6 +265,10 @@ test_colon(void)
 
 	completed = vle_compl_next();
 	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("cdpath", completed);
 	free(completed);
 
 	completed = vle_compl_next();

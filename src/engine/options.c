@@ -876,6 +876,19 @@ set_print(const opt_t *opt)
 }
 
 const char *
+get_option_value(const char name[])
+{
+	opt_t *opt = find_option(name);
+	assert(opt != NULL && "Wrong option name.");
+	if(opt == NULL)
+	{
+		return NULL;
+	}
+
+	return get_value(opt);
+}
+
+const char *
 get_value(const opt_t *opt)
 {
 	static char buf[1024];

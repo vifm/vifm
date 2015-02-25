@@ -1,4 +1,4 @@
-.TH vifm 1 "February 22, 2015" "" "Vifm"
+.TH vifm 1 "February 24, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3002,6 +3002,31 @@ default: false
 When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
+.TP
+.BI "iskeyword isk"
+type: string list
+.br
+default: "1-8,14-31,33-255" (that is all non-whitespace characters)
+.br
+Specifies which characters in command-line mode should be considered as part
+of a word.  Value of the option is comma-separated list of ranges.  If both
+endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
+Both endpoints are inclusive.  There are two accepted forms: character
+representing itself or number encoding character according to ASCII table.
+In case of ambiguous characters (dash, comma, digit) use numeric form.
+Accepted characters are in the range from 0 to 255.  Any Unicode character
+with code greater than 255 is considered to be part of a word.
+
+The option affects Alt-D, Alt-B and Alt-F, but not Ctrl-W.  This is
+intensionaly to allow two use cases:
+
+ \- Moving by WORDS and deletion by words.
+ \- Moving by words and deletion by WORDS.
+
+To get the latter use the following mapping:
+.EX
+    cnoremap <c-w> <a-b><a-d>
+.EE
 .TP
 .BI "laststatus ls"
 type: boolean

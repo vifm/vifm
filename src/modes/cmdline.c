@@ -1674,13 +1674,14 @@ cmd_meta_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 find_prev_word(void)
 {
-	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
+	while(input_stat.index > 0 &&
+			!cfg_is_keyword_wchar(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	while(input_stat.index > 0 &&
-			!iswspace(input_stat.line[input_stat.index - 1]))
+			cfg_is_keyword_wchar(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
@@ -1841,13 +1842,13 @@ static void
 find_next_word(void)
 {
 	while(input_stat.index < input_stat.len
-			&& iswspace(input_stat.line[input_stat.index]))
+			&& !cfg_is_keyword_wchar(input_stat.line[input_stat.index]))
 	{
 		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 	while(input_stat.index < input_stat.len
-			&& !iswspace(input_stat.line[input_stat.index]))
+			&& cfg_is_keyword_wchar(input_stat.line[input_stat.index]))
 	{
 		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
