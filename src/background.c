@@ -28,9 +28,9 @@
 #include <fcntl.h> /* open() */
 #include <unistd.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <errno.h> /* errno */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* wchar_t NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
 #include <sys/stat.h> /* O_RDONLY */
@@ -44,7 +44,9 @@
 #include "cfg/config.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
+#include "utils/env.h"
 #include "utils/log.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
@@ -494,20 +496,47 @@ static pid_t
 background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
-	char *args[4];
+	wchar_t *args[5];
+	char cwd[PATH_MAX];
+	int code;
+	wchar_t *final_wide_cmd;
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
 		return (pid_t)-1;
 
-	args[0] = "cmd";
-	args[1] = "/C";
-	args[2] = cmd;
-	args[3] = NULL;
+	cwd[0] = '\0';
+	if(getcwd(cwd, sizeof(cwd)) != NULL)
+	{
+		to_forward_slash(cwd);
+		if(is_unc_path(cwd))
+		{
+			(void)chdir(get_tmpdir());
+		}
+	}
 
-	if(_spawnvp(P_NOWAIT, args[0], (const char **)args) == 0)
+	final_wide_cmd = to_wide(cmd);
+
+	args[0] = L"cmd";
+	args[1] = L"/U";
+	args[2] = L"/C";
+	args[3] = final_wide_cmd;
+	args[4] = NULL;
+
+	code = _wspawnvp(P_NOWAIT, args[0], (const wchar_t **)args);
+
+	free(final_wide_cmd);
+
+	if(is_unc_path(cwd))
+	{
+		(void)chdir(cwd);
+	}
+
+	if(code == 0)
+	{
 		return (pid_t)-1;
+	}
 
 	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
 		return (pid_t)-1;
