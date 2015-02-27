@@ -33,8 +33,12 @@ ifndef win_env
     vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
+ifdef DEBUG
+BINSUBDIR := debug
+endif
+
 vifm_bin := ../src/vifm$(exe_suffix)
-vifm_obj := $(vifm_src:.c=.o) bin/build/stubs.o
+vifm_obj := $(vifm_src:.c=.o) bin/build/$(BINSUBDIR)/stubs.o
 
 ifdef win_env
     make_arg   := -f Makefile.win
@@ -42,9 +46,9 @@ ifdef win_env
 endif
 
 # setup compile and link flags (partially depends on OS)
-CFLAGS := -MMD -g -Wall -Werror -Istic/ -DTEST -include ../config.h
-CFLAGS += -Wno-char-subscripts
-LDFLAGS := -lpthread -g
+CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include ../config.h
+CFLAGS += -D_XOPEN_SOURCE -Wno-char-subscripts
+LDFLAGS := -lpthread
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
@@ -53,6 +57,11 @@ ifdef unix_env
 endif
 ifdef win_env
     LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+endif
+
+ifdef DEBUG
+CFLAGS += -g
+LDFLAGS += -g
 endif
 
 .PHONY: check build clean $(suites)
@@ -68,11 +77,14 @@ $(vifm_src:.c=.o): | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
-bin/build/stubs.o: stubs.c
+bin/build/$(BINSUBDIR)/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
 
-bin/build/stic.o: stic/stic.c
+bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
 	gcc -c -o $@ $(CFLAGS) $<
+
+bin/$(BINSUBDIR)/:
+	mkdir -p $$@
 
 # this function of two arguments (array and element) returns index of the
 # element in the array
@@ -88,24 +100,25 @@ pos = $(strip $(eval T := ) \
 define suite_template
 
 $1.src := $$(wildcard $1/*.c)
-$1.obj := $$($1.src:%.c=bin/build/%.o)
+$1.obj := $$($1.src:%.c=bin/build/$(BINSUBDIR)/%.o)
 
 deps += $$($1.obj:.o=.d)
 
-bin/$1$(exe_suffix): $$($1.obj) bin/build/stic.o $(vifm_obj) | $(vifm_bin)
+bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
+                                  $(vifm_obj) | $(vifm_bin) bin/$(BINSUBDIR)/
 	gcc -o $$@ $$^ $(LDFLAGS)
 
-bin/build/$1/%.o: $1/%.c $1/. | bin/build/$1
+bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. | bin/build/$(BINSUBDIR)/$1
 	gcc -c -o $$@ $(CFLAGS) -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                        -DMAXTESTID=$$(words $$($1.obj)) $$<
 
-bin/build/$1:
+bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
 
-$1 $1.run: bin/$1$(exe_suffix)
+$1 $1.run: bin/$(BINSUBDIR)/$1$(exe_suffix)
 	@$$^
 
-build: bin/$1$(exe_suffix)
+build: bin/$(BINSUBDIR)/$1$(exe_suffix)
 
 check: $1.run
 
