@@ -9,10 +9,14 @@ else
     unix_env := true
 endif
 
-# enumerate test suites
-suites := colmgr commands column_view completion env escape fileops filetype
-suites += filter keys misc options parsing undo variables viewcolumns_parser
+# engine
+suites += commands completion keys options parsing variables
+# io
 suites += ioeta ionotif iop ior
+# ui
+suites += colmgr column_view viewcolumns_parser
+# everything else
+suites += env escape fileops filetype filter misc undo
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
