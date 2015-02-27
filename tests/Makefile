@@ -38,7 +38,7 @@ ifdef win_env
 endif
 
 # setup compile and link flags (partially depends on OS)
-CFLAGS := -MMD -g -Wall -Werror -Iseatest -DTEST -include ../config.h
+CFLAGS := -MMD -g -Wall -Werror -Istic/ -DTEST -include ../config.h
 CFLAGS += -Wno-char-subscripts
 LDFLAGS := -lpthread -g
 ifdef unix_env
@@ -67,7 +67,7 @@ $(vifm_bin): $(vifm_src)
 bin/build/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
 
-bin/build/seatest.o: seatest/seatest.c
+bin/build/stic.o: stic/stic.c
 	gcc -c -o $@ $(CFLAGS) $<
 
 # suite definition template, takes single argument: name of the suite
@@ -78,7 +78,7 @@ $1.obj := $$($1.src:%.c=bin/build/%.o)
 
 deps += $$($1.obj:.o=.d)
 
-bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj) | $(vifm_bin)
+bin/$1$(exe_suffix): $$($1.obj) bin/build/stic.o $(vifm_obj) | $(vifm_bin)
 	gcc -o $$@ $$^ $(LDFLAGS)
 
 bin/build/$1/%.o: $1/%.c | bin/build/$1
@@ -100,4 +100,4 @@ endef
 $(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
 
 # import dependencies calculated by the compiler
-include $(wildcard $(deps) bin/build/seatest.d bin/build/stubs.d)
+include $(wildcard $(deps) bin/build/stic.d bin/build/stubs.d)
