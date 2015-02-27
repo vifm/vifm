@@ -1,12 +1,11 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 
-static void
-test_enumeration(void)
+TEST(enumeration)
 {
 	const char *prog_cmd;
 
@@ -22,8 +21,7 @@ test_enumeration(void)
 	assert_string_equal("c file", prog_cmd);
 }
 
-static void
-test_negotiation_with_emark(void)
+TEST(negotiation_with_emark)
 {
 	const char *prog_cmd;
 
@@ -36,8 +34,7 @@ test_negotiation_with_emark(void)
 	assert_string_equal("not c file", prog_cmd);
 }
 
-static void
-test_negotiation_with_hat(void)
+TEST(negotiation_with_hat)
 {
 	const char *prog_cmd;
 
@@ -50,8 +47,7 @@ test_negotiation_with_hat(void)
 	assert_string_equal("not c file", prog_cmd);
 }
 
-static void
-test_ranges(void)
+TEST(ranges)
 {
 	const char *prog_cmd;
 
@@ -64,19 +60,6 @@ test_ranges(void)
 
 	assert_true((prog_cmd = ft_get_program("main.8")) != NULL);
 	assert_string_equal("part file", prog_cmd);
-}
-
-void
-classes_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_enumeration);
-	run_test(test_negotiation_with_emark);
-	run_test(test_negotiation_with_hat);
-	run_test(test_ranges);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

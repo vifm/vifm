@@ -1,9 +1,8 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/string_array.h"
 
-static void
-test_dos_line_endings(void)
+TEST(dos_line_endings)
 {
 	int nlines;
 	char **lines = read_file_of_lines("test-data/read/dos-line-endings", &nlines);
@@ -17,8 +16,7 @@ test_dos_line_endings(void)
 	free_string_array(lines, nlines);
 }
 
-static void
-test_dos_end_of_file(void)
+TEST(dos_end_of_file)
 {
 	int nlines;
 	char **lines = read_file_of_lines("test-data/read/dos-eof", &nlines);
@@ -32,8 +30,7 @@ test_dos_end_of_file(void)
 	free_string_array(lines, nlines);
 }
 
-static void
-test_binary_data_is_fully_read(void)
+TEST(binary_data_is_fully_read)
 {
 	int nlines;
 	char **lines = read_file_of_lines("test-data/read/binary-data", &nlines);
@@ -42,18 +39,6 @@ test_binary_data_is_fully_read(void)
 	assert_int_equal(12, nlines);
 
 	free_string_array(lines, nlines);
-}
-
-void
-read_file_lines_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_dos_line_endings);
-	run_test(test_dos_end_of_file);
-	run_test(test_binary_data_is_fully_read);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

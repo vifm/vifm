@@ -1,9 +1,8 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/filter.h"
 
-static void
-test_filter_empty_after_clear(void)
+TEST(filter_empty_after_clear)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -17,8 +16,7 @@ test_filter_empty_after_clear(void)
 	filter_dispose(&filter);
 }
 
-static void
-test_double_clear_is_ok(void)
+TEST(double_clear_is_ok)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -33,17 +31,6 @@ test_double_clear_is_ok(void)
 	assert_true(filter_is_empty(&filter));
 
 	filter_dispose(&filter);
-}
-
-void
-clear_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_filter_empty_after_clear);
-	run_test(test_double_clear_is_ok);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

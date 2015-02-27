@@ -1,6 +1,6 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/undo.h"
 
@@ -12,8 +12,7 @@ execute_dummy(OPS op, void *data, const char *src, const char *dst)
 	return 0;
 }
 
-static void
-test_undolevel_change_to_smaller(void)
+TEST(undolevel_change_to_smaller)
 {
 	static int undo_levels = 4;
 
@@ -30,8 +29,7 @@ test_undolevel_change_to_smaller(void)
 	assert_int_equal(-1, undo_group());
 }
 
-static void
-test_zero_undolevel(void)
+TEST(zero_undolevel)
 {
 	static int undo_levels = 0;
 
@@ -45,8 +43,7 @@ test_zero_undolevel(void)
 	assert_int_equal(-1, undo_group());
 }
 
-static void
-test_negative_undolevel(void)
+TEST(negative_undolevel)
 {
 	static int undo_levels = -1;
 
@@ -60,8 +57,7 @@ test_negative_undolevel(void)
 	assert_int_equal(-1, undo_group());
 }
 
-static void
-test_too_many_commands(void)
+TEST(too_many_commands)
 {
 	cmd_group_begin("msg4");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg40",
@@ -89,19 +85,6 @@ test_too_many_commands(void)
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4b",
 				"undo_msg4b"));
 	cmd_group_end();
-}
-
-void
-undolevels_test(void)
-{
-	test_fixture_start();
-
-	run_test(test_undolevel_change_to_smaller);
-	run_test(test_zero_undolevel);
-	run_test(test_negative_undolevel);
-	run_test(test_too_many_commands);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

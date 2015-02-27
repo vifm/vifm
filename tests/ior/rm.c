@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdio.h> /* FILE fopen() fclose() */
 
@@ -10,8 +10,7 @@
 static const char *const FILE_NAME = "file-to-remove";
 static const char *const DIRECTORY_NAME = "directory-to-remove";
 
-static void
-test_file_is_removed(void)
+TEST(file_is_removed)
 {
 	{
 		FILE *const f = fopen(FILE_NAME, "w");
@@ -30,8 +29,7 @@ test_file_is_removed(void)
 	assert_int_equal(-1, access(FILE_NAME, F_OK));
 }
 
-static void
-test_empty_directory_is_removed(void)
+TEST(empty_directory_is_removed)
 {
 	make_dir(DIRECTORY_NAME, 0700);
 	assert_int_equal(0, access(DIRECTORY_NAME, F_OK));
@@ -47,8 +45,7 @@ test_empty_directory_is_removed(void)
 	assert_int_equal(-1, access(DIRECTORY_NAME, F_OK));
 }
 
-static void
-test_non_empty_directory_is_removed(void)
+TEST(non_empty_directory_is_removed)
 {
 	make_dir(DIRECTORY_NAME, 0700);
 	assert_int_equal(0, access(DIRECTORY_NAME, F_OK));
@@ -70,18 +67,6 @@ test_non_empty_directory_is_removed(void)
 	}
 
 	assert_int_equal(-1, access(DIRECTORY_NAME, F_OK));
-}
-
-void
-rm_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_file_is_removed);
-	run_test(test_empty_directory_is_removed);
-	run_test(test_non_empty_directory_is_removed);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

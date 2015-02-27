@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdlib.h> /* free() */
 
@@ -6,14 +6,21 @@
 #include "../../src/engine/var.h"
 #include "../../src/commands.h"
 
+static var_t echo_builtin(const call_info_t *call_info);
+
+SETUP_ONCE()
+{
+	static const function_t echo_function = { "a", 1, &echo_builtin };
+	assert_int_equal(0, function_register(&echo_function));
+}
+
 static var_t
 echo_builtin(const call_info_t *call_info)
 {
 	return var_clone(call_info->argv[0]);
 }
 
-static void
-test_one_arg(void)
+TEST(one_arg)
 {
 	const char *args = "'a'";
 	const char *stop_ptr;
@@ -25,8 +32,7 @@ test_one_arg(void)
 	free(result);
 }
 
-static void
-test_two_space_separated_args(void)
+TEST(two_space_separated_args)
 {
 	const char *args = "'a'     'b'";
 	const char *stop_ptr;
@@ -38,8 +44,7 @@ test_two_space_separated_args(void)
 	free(result);
 }
 
-static void
-test_two_dot_separated_args(void)
+TEST(two_dot_separated_args)
 {
 	const char *args = "'a'  .  'b'";
 	const char *stop_ptr;
@@ -51,8 +56,7 @@ test_two_dot_separated_args(void)
 	free(result);
 }
 
-static void
-test_double_single_quote(void)
+TEST(double_single_quote)
 {
 	const char *args = "'a''b'";
 	const char *stop_ptr;
@@ -64,8 +68,7 @@ test_double_single_quote(void)
 	free(result);
 }
 
-static void
-test_wrong_expression_position(void)
+TEST(wrong_expression_position)
 {
 	const char *args = "'a' , some text";
 	const char *stop_ptr;
@@ -77,8 +80,7 @@ test_wrong_expression_position(void)
 	free(result);
 }
 
-static void
-test_empty_parens_fail(void)
+TEST(empty_parens_fail)
 {
 	const char *args = "()";
 	const char *stop_ptr;
@@ -89,8 +91,7 @@ test_empty_parens_fail(void)
 	free(result);
 }
 
-static void
-test_chars_after_function_call_fail(void)
+TEST(chars_after_function_call_fail)
 {
 	const char *args = "a()a";
 	const char *stop_ptr;
@@ -101,8 +102,7 @@ test_chars_after_function_call_fail(void)
 	free(result);
 }
 
-static void
-test_statement(void)
+TEST(statement)
 {
 	const char *args = "'a'=='a'";
 	const char *stop_ptr;
@@ -114,8 +114,7 @@ test_statement(void)
 	free(result);
 }
 
-static void
-test_statement_and_not_statement(void)
+TEST(statement_and_not_statement)
 {
 	const char *args = "'a'=='a' 'b'";
 	const char *stop_ptr;
@@ -127,8 +126,7 @@ test_statement_and_not_statement(void)
 	free(result);
 }
 
-static void
-test_function_call(void)
+TEST(call_function)
 {
 	const char *args = "a('hello')";
 	const char *stop_ptr;
@@ -140,8 +138,7 @@ test_function_call(void)
 	free(result);
 }
 
-static void
-test_broken_comparison_operator(void)
+TEST(broken_comparison_operator)
 {
 	const char *args = "'a' < = 'b'";
 	const char *stop_ptr;
@@ -150,30 +147,6 @@ test_broken_comparison_operator(void)
 	result = eval_arglist(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
-}
-
-void
-echo_tests(void)
-{
-	static const function_t echo_function = { "a", 1, &echo_builtin };
-
-	test_fixture_start();
-
-	assert_int_equal(0, function_register(&echo_function));
-
-	run_test(test_one_arg);
-	run_test(test_two_space_separated_args);
-	run_test(test_two_dot_separated_args);
-	run_test(test_double_single_quote);
-	run_test(test_wrong_expression_position);
-	run_test(test_empty_parens_fail);
-	run_test(test_chars_after_function_call_fail);
-	run_test(test_statement);
-	run_test(test_statement_and_not_statement);
-	run_test(test_function_call);
-	run_test(test_broken_comparison_operator);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

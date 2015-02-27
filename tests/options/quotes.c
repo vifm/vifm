@@ -1,11 +1,10 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern const char *value;
 
-static void
-test_no_quotes(void)
+TEST(no_quotes)
 {
 	value = NULL;
 	set_options("fusehome=a\\ b");
@@ -18,15 +17,13 @@ test_no_quotes(void)
 	set_options("so=name");
 }
 
-static void
-test_single_quotes(void)
+TEST(single_quotes)
 {
 	set_options("fusehome='a b'");
 	assert_string_equal("a b", value);
 }
 
-static void
-test_double_quotes(void)
+TEST(double_quotes)
 {
 	set_options("fusehome=\"a b\"");
 	assert_string_equal("a b", value);
@@ -35,16 +32,5 @@ test_double_quotes(void)
 	assert_string_equal("a \" b", value);
 }
 
-void
-test_quotes(void)
-{
-	test_fixture_start();
-
-	run_test(test_no_quotes);
-	run_test(test_single_quotes);
-	run_test(test_double_quotes);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
+/* vim: set cinoptions+=t0 : */

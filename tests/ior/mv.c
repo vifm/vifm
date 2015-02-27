@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
@@ -8,10 +8,14 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/utils.h"
+
 #include "utils.h"
 
-static void
-test_file_is_moved(void)
+static int not_windows(void);
+static int windows(void);
+
+TEST(file_is_moved)
 {
 	create_empty_file("binary-data");
 
@@ -30,8 +34,7 @@ test_file_is_moved(void)
 	remove("moved-binary-data");
 }
 
-static void
-test_empty_directory_is_moved(void)
+TEST(empty_directory_is_moved)
 {
 	create_empty_dir("empty-dir");
 
@@ -56,8 +59,7 @@ test_empty_directory_is_moved(void)
 	}
 }
 
-static void
-test_non_empty_directory_is_moved(void)
+TEST(non_empty_directory_is_moved)
 {
 	create_non_empty_dir("non-empty-dir", "a-file");
 
@@ -81,8 +83,7 @@ test_non_empty_directory_is_moved(void)
 	}
 }
 
-static void
-test_empty_nested_directory_is_moved(void)
+TEST(empty_nested_directory_is_moved)
 {
 	create_empty_nested_dir("non-empty-dir", "empty-nested-dir");
 
@@ -106,8 +107,7 @@ test_empty_nested_directory_is_moved(void)
 	}
 }
 
-static void
-test_non_empty_nested_directory_is_moved(void)
+TEST(non_empty_nested_directory_is_moved)
 {
 	create_non_empty_nested_dir("non-empty-dir", "nested-dir", "a-file");
 
@@ -132,8 +132,7 @@ test_non_empty_nested_directory_is_moved(void)
 	}
 }
 
-static void
-test_fails_to_overwrite_file_by_default(void)
+TEST(fails_to_overwrite_file_by_default)
 {
 	create_empty_file("a-file");
 
@@ -155,8 +154,7 @@ test_fails_to_overwrite_file_by_default(void)
 	}
 }
 
-static void
-test_fails_to_overwrite_dir_by_default(void)
+TEST(fails_to_overwrite_dir_by_default)
 {
 	create_empty_dir("empty-dir");
 
@@ -178,8 +176,7 @@ test_fails_to_overwrite_dir_by_default(void)
 	}
 }
 
-static void
-test_overwrites_file_when_asked(void)
+TEST(overwrites_file_when_asked)
 {
 	create_empty_file("a-file");
 
@@ -211,8 +208,7 @@ test_overwrites_file_when_asked(void)
 	}
 }
 
-static void
-test_overwrites_dir_when_asked(void)
+TEST(overwrites_dir_when_asked)
 {
 	create_empty_dir("dir");
 
@@ -252,8 +248,7 @@ test_overwrites_dir_when_asked(void)
 	}
 }
 
-static void
-test_appending_fails_for_directories(void)
+TEST(appending_fails_for_directories)
 {
 	create_empty_dir("dir");
 
@@ -293,8 +288,7 @@ test_appending_fails_for_directories(void)
 	}
 }
 
-static void
-test_appending_works_for_files(void)
+TEST(appending_works_for_files)
 {
 	uint64_t size;
 
@@ -339,8 +333,7 @@ test_appending_works_for_files(void)
 	}
 }
 
-static void
-test_directories_can_be_merged(void)
+TEST(directories_can_be_merged)
 {
 	create_empty_dir("first");
 
@@ -384,8 +377,7 @@ test_directories_can_be_merged(void)
 	}
 }
 
-static void
-test_fails_to_move_directory_inside_itself(void)
+TEST(fails_to_move_directory_inside_itself)
 {
 	create_empty_dir("empty-dir");
 
@@ -407,10 +399,8 @@ test_fails_to_move_directory_inside_itself(void)
 	}
 }
 
-#ifndef _WIN32
-
-static void
-test_symlink_is_symlink_after_move(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(symlink_is_symlink_after_move, IF(not_windows))
 {
 	{
 		io_args_t args =
@@ -444,10 +434,8 @@ test_symlink_is_symlink_after_move(void)
 	}
 }
 
-#else
-
-static void
-test_case_insensitive_rename(void)
+/* Case insensitive renames are easier to check on Windows. */
+TEST(case_insensitive_rename, IF(windows))
 {
 	create_empty_file("a-file");
 
@@ -469,36 +457,16 @@ test_case_insensitive_rename(void)
 	}
 }
 
-#endif
-
-void
-mv_tests(void)
+static int
+not_windows(void)
 {
-	test_fixture_start();
+	return get_env_type() != ET_WIN;
+}
 
-	run_test(test_file_is_moved);
-	run_test(test_empty_directory_is_moved);
-	run_test(test_non_empty_directory_is_moved);
-	run_test(test_empty_nested_directory_is_moved);
-	run_test(test_non_empty_nested_directory_is_moved);
-	run_test(test_fails_to_overwrite_file_by_default);
-	run_test(test_fails_to_overwrite_dir_by_default);
-	run_test(test_overwrites_file_when_asked);
-	run_test(test_overwrites_dir_when_asked);
-	run_test(test_appending_fails_for_directories);
-	run_test(test_appending_works_for_files);
-	run_test(test_directories_can_be_merged);
-	run_test(test_fails_to_move_directory_inside_itself);
-
-#ifndef _WIN32
-	/* Creating symbolic links on Windows requires administrator rights. */
-	run_test(test_symlink_is_symlink_after_move);
-#else
-	/* Case insensitive renames are easier to check on Windows. */
-	run_test(test_case_insensitive_rename);
-#endif
-
-	test_fixture_end();
+static int
+windows(void)
+{
+	return get_env_type() == ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,13 +1,12 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/undo.h"
 
 #include "test.h"
 
-static void
-test_detail(void)
+TEST(detail)
 {
 	char **list;
 	char **p;
@@ -37,8 +36,7 @@ test_detail(void)
 	free(list);
 }
 
-static void
-test_detail_after_reset(void)
+TEST(detail_after_reset)
 {
 	char ** list;
 
@@ -57,8 +55,7 @@ exec_func(OPS op, void *data, const char *src, const char *dst)
 	return 0;
 }
 
-static void
-test_detail_smaller_limit(void)
+TEST(detail_smaller_limit)
 {
 	static int undo_levels = 2;
 
@@ -86,8 +83,7 @@ test_detail_smaller_limit(void)
 	free(list);
 }
 
-static void
-test_nondetail(void)
+TEST(nondetail)
 {
 	char ** list;
 	char ** p;
@@ -107,8 +103,7 @@ test_nondetail(void)
 	free(list);
 }
 
-static void
-test_nondetail_after_reset(void)
+TEST(nondetail_after_reset)
 {
 	char ** list;
 
@@ -121,8 +116,7 @@ test_nondetail_after_reset(void)
 	free(list);
 }
 
-static void
-test_nondetail_smaller_limit(void)
+TEST(nondetail_smaller_limit)
 {
 	static int undo_levels = 2;
 
@@ -145,8 +139,7 @@ test_nondetail_smaller_limit(void)
 	free(list);
 }
 
-static void
-test_pos(void)
+TEST(pos)
 {
 	assert_int_equal(0, get_undolist_pos(0));
 	assert_int_equal(0, undo_group());
@@ -162,23 +155,6 @@ test_pos(void)
 	assert_int_equal(-1, undo_group());
 	assert_int_equal(3, get_undolist_pos(0));
 	assert_int_equal(-1, undo_group());
-}
-
-void
-undolist_test(void)
-{
-	test_fixture_start();
-
-	run_test(test_detail);
-	run_test(test_detail_after_reset);
-	run_test(test_detail_smaller_limit);
-	run_test(test_nondetail);
-	run_test(test_nondetail_after_reset);
-	run_test(test_nondetail_smaller_limit);
-
-	run_test(test_pos);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

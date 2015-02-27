@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 #include <string.h> /* strlen() */
@@ -7,14 +7,23 @@
 #include "../../src/ui/ui.h"
 #include "../../src/bookmarks.h"
 
-static void
-test_unexistant_bookmark(void)
+SETUP()
+{
+	cfg.slow_fs_list = strdup("");
+}
+
+TEARDOWN()
+{
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = NULL;
+}
+
+TEST(unexistant_bookmark)
 {
 	assert_int_equal(1, goto_bookmark(&lwin, 'b'));
 }
 
-static void
-test_all_valid_bookmarks_can_be_queried(void)
+TEST(all_valid_bookmarks_can_be_queried)
 {
 	const int bookmark_count = strlen(valid_bookmarks);
 	int i;
@@ -24,8 +33,7 @@ test_all_valid_bookmarks_can_be_queried(void)
 	}
 }
 
-static void
-test_regular_bmarks_are_global(void)
+TEST(regular_bmarks_are_global)
 {
 	const bookmark_t *bmark;
 
@@ -46,8 +54,7 @@ test_regular_bmarks_are_global(void)
 	assert_string_equal("rfile", bmark->file);
 }
 
-static void
-test_sel_bmarks_are_local(void)
+TEST(sel_bmarks_are_local)
 {
 	const bookmark_t *bmark;
 
@@ -74,24 +81,6 @@ test_sel_bmarks_are_local(void)
 	bmark = get_bmark_by_name('>');
 	assert_string_equal("rpath", bmark->directory);
 	assert_string_equal("rfile>", bmark->file);
-}
-
-void
-bookmarks_tests(void)
-{
-	test_fixture_start();
-
-	cfg.slow_fs_list = strdup("");
-
-	run_test(test_unexistant_bookmark);
-	run_test(test_all_valid_bookmarks_can_be_queried);
-	run_test(test_regular_bmarks_are_global);
-	run_test(test_sel_bmarks_are_local);
-
-	free(cfg.slow_fs_list);
-	cfg.slow_fs_list = NULL;
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

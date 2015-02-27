@@ -1,12 +1,11 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/engine/completion.h"
 #include "../../src/engine/options.h"
 
-static void
-test_space_at_the_end(void)
+TEST(space_at_the_end)
 {
 	const char *start;
 	char *completed;
@@ -37,8 +36,7 @@ test_space_at_the_end(void)
 	free(completed);
 }
 
-static void
-test_one_choice_opt(void)
+TEST(one_choice_opt)
 {
 	const char *start;
 	char *completed;
@@ -59,8 +57,7 @@ test_one_choice_opt(void)
 	free(completed);
 }
 
-static void
-test_one_choice_val(void)
+TEST(one_choice_val)
 {
 	char buf[] = "sort=n";
 	const char *start;
@@ -83,8 +80,7 @@ test_one_choice_val(void)
 	free(completed);
 }
 
-static void
-test_invalid_input(void)
+TEST(invalid_input)
 {
 	const char *start;
 	char *completed;
@@ -96,8 +92,7 @@ test_invalid_input(void)
 	free(completed);
 }
 
-static void
-test_skip_abbreviations(void)
+TEST(skip_abbreviations)
 {
 	const char *start;
 	char *completed;
@@ -146,8 +141,7 @@ test_skip_abbreviations(void)
 	free(completed);
 }
 
-static void
-test_expand_abbreviations(void)
+TEST(expand_abbreviations)
 {
 	const char *start;
 	char *completed;
@@ -164,8 +158,7 @@ test_expand_abbreviations(void)
 	free(completed);
 }
 
-static void
-test_after_eq_value_completion(void)
+TEST(after_eq_value_completion)
 {
 	char buf[] = "vifminfo=op";
 	const char *start;
@@ -184,8 +177,7 @@ test_after_eq_value_completion(void)
 	free(completed);
 }
 
-static void
-test_after_meq_value_completion(void)
+TEST(after_meq_value_completion)
 {
 	char buf[] = "vifminfo-=op";
 	const char *start;
@@ -204,8 +196,7 @@ test_after_meq_value_completion(void)
 	free(completed);
 }
 
-static void
-test_after_peq_value_completion(void)
+TEST(after_peq_value_completion)
 {
 	char buf[] = "vifminfo+=op";
 	const char *start;
@@ -224,8 +215,7 @@ test_after_peq_value_completion(void)
 	free(completed);
 }
 
-static void
-test_set_values_completion(void)
+TEST(set_values_completion)
 {
 	char buf[] = "vifminfo=tui,c";
 	const char *start;
@@ -248,8 +238,7 @@ test_set_values_completion(void)
 	free(completed);
 }
 
-static void
-test_colon(void)
+TEST(colon)
 {
 	const char *start;
 	char *completed;
@@ -280,8 +269,7 @@ test_colon(void)
 	free(completed);
 }
 
-static void
-test_umbiguous_beginning(void)
+TEST(umbiguous_beginning)
 {
 	const char *start;
 	char *completed;
@@ -298,8 +286,7 @@ test_umbiguous_beginning(void)
 	free(completed);
 }
 
-static void
-test_matching_short_full(void)
+TEST(matching_short_full)
 {
 	const char *start;
 	char *completed;
@@ -320,8 +307,7 @@ test_matching_short_full(void)
 	free(completed);
 }
 
-static void
-test_after_equal_sign_completion_ok(void)
+TEST(after_equal_sign_completion_ok)
 {
 	const char *start;
 	char *completed;
@@ -337,8 +323,7 @@ test_after_equal_sign_completion_ok(void)
 	free(completed);
 }
 
-static void
-test_after_equal_sign_completion_spaces_ok(void)
+TEST(after_equal_sign_completion_spaces_ok)
 {
 	const char *start;
 	char *completed;
@@ -354,8 +339,7 @@ test_after_equal_sign_completion_spaces_ok(void)
 	free(completed);
 }
 
-static void
-test_after_fake_equal_sign_completion_fail(void)
+TEST(after_fake_equal_sign_completion_fail)
 {
 	const char *start;
 	char *completed;
@@ -371,8 +355,7 @@ test_after_fake_equal_sign_completion_fail(void)
 	free(completed);
 }
 
-static void
-test_all_completion_ok(void)
+TEST(all_completion_ok)
 {
 	const char *start;
 	char *completed;
@@ -385,8 +368,7 @@ test_all_completion_ok(void)
 	free(completed);
 }
 
-static void
-test_charset_completion_skips_entered_elements(void)
+TEST(charset_completion_skips_entered_elements)
 {
 	const char *start;
 	char *completed;
@@ -411,31 +393,5 @@ test_charset_completion_skips_entered_elements(void)
 	free(completed);
 }
 
-void
-opt_completion(void)
-{
-	test_fixture_start();
-
-	run_test(test_space_at_the_end);
-	run_test(test_one_choice_opt);
-	run_test(test_one_choice_val);
-	run_test(test_invalid_input);
-	run_test(test_skip_abbreviations);
-	run_test(test_expand_abbreviations);
-	run_test(test_after_eq_value_completion);
-	run_test(test_after_meq_value_completion);
-	run_test(test_after_peq_value_completion);
-	run_test(test_set_values_completion);
-	run_test(test_colon);
-	run_test(test_umbiguous_beginning);
-	run_test(test_matching_short_full);
-	run_test(test_after_equal_sign_completion_ok);
-	run_test(test_after_equal_sign_completion_spaces_ok);
-	run_test(test_after_fake_equal_sign_completion_fail);
-	run_test(test_all_completion_ok);
-	run_test(test_charset_completion_skips_entered_elements);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

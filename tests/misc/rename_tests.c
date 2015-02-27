@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <unistd.h> /* chdir() */
 
@@ -6,24 +6,21 @@
 #include "../../src/utils/macros.h"
 #include "../../src/fileops.h"
 
-static void
-test_names_less_than_files(void)
+TEST(names_less_than_files)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "a" };
 	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 }
 
-static void
-test_names_greater_that_files_fail(void)
+TEST(names_greater_that_files_fail)
 {
 	char *src[] = { "a" };
 	char *dst[] = { "a", "b" };
 	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 }
 
-static void
-test_move_fail(void)
+TEST(move_fail)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "../a", "b" };
@@ -35,8 +32,7 @@ test_move_fail(void)
 #endif
 }
 
-static void
-test_rename_inside_subdir_ok(void)
+TEST(rename_inside_subdir_ok)
 {
 	char *src[] = { "../a", "b" };
 	char *dst[] = { "../a_a", "b" };
@@ -49,8 +45,7 @@ test_rename_inside_subdir_ok(void)
 #endif
 }
 
-static void
-test_incdec_leaves_zeros(void)
+TEST(incdec_leaves_zeros)
 {
 	assert_string_equal("1", incdec_name("0", 1));
 	assert_string_equal("01", incdec_name("00", 1));
@@ -67,8 +62,7 @@ test_incdec_leaves_zeros(void)
 	assert_string_equal("a01.", incdec_name("a00.", 1));
 }
 
-static void
-test_single_file_rename(void)
+TEST(single_file_rename)
 {
 	chdir("test-data/rename");
 	assert_true(check_file_rename(".", "a", "a", ST_NONE) < 0);
@@ -81,8 +75,7 @@ test_single_file_rename(void)
 	chdir("../..");
 }
 
-static void
-test_rename_list_checks(void)
+TEST(rename_list_checks)
 {
 	int i;
 	char *list[] = { "a", "aa", "aaa" };
@@ -95,22 +88,6 @@ test_rename_list_checks(void)
 	{
 		assert_false(dup[i]);
 	}
-}
-
-void
-rename_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_names_less_than_files);
-	run_test(test_names_greater_that_files_fail);
-	run_test(test_move_fail);
-	run_test(test_rename_inside_subdir_ok);
-	run_test(test_incdec_leaves_zeros);
-	run_test(test_single_file_rename);
-	run_test(test_rename_list_checks);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

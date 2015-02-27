@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdlib.h> /* free() */
 
@@ -6,8 +6,7 @@
 
 #define DEFAULT_LINENUM 1
 
-static void
-test_empty_path_without_linenum(void)
+TEST(empty_path_without_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("", &line_num);
@@ -18,8 +17,7 @@ test_empty_path_without_linenum(void)
 	free(path);
 }
 
-static void
-test_empty_path_with_linenum(void)
+TEST(empty_path_with_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec(":78", &line_num);
@@ -30,8 +28,7 @@ test_empty_path_with_linenum(void)
 	free(path);
 }
 
-static void
-test_absolute_path_without_linenum(void)
+TEST(absolute_path_without_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("/home/user", &line_num);
@@ -42,8 +39,7 @@ test_absolute_path_without_linenum(void)
 	free(path);
 }
 
-static void
-test_absolute_path_with_linenum(void)
+TEST(absolute_path_with_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("/home/user:1234", &line_num);
@@ -54,8 +50,7 @@ test_absolute_path_with_linenum(void)
 	free(path);
 }
 
-static void
-test_relative_path_without_linenum(void)
+TEST(relative_path_without_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("repos/repo", &line_num);
@@ -66,8 +61,7 @@ test_relative_path_without_linenum(void)
 	free(path);
 }
 
-static void
-test_relative_path_with_linenum(void)
+TEST(relative_path_with_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("repos/repo:9876", &line_num);
@@ -80,8 +74,7 @@ test_relative_path_with_linenum(void)
 
 #ifdef _WIN32
 
-static void
-test_win_absolute_path_without_linenum(void)
+TEST(win_absolute_path_without_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("c:/home/user", &line_num);
@@ -92,8 +85,7 @@ test_win_absolute_path_without_linenum(void)
 	free(path);
 }
 
-static void
-test_win_absolute_path_with_linenum(void)
+TEST(win_absolute_path_with_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("c:/home/user:1234", &line_num);
@@ -104,8 +96,7 @@ test_win_absolute_path_with_linenum(void)
 	free(path);
 }
 
-static void
-test_win_relative_path_without_linenum(void)
+TEST(win_relative_path_without_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("repos\\repo", &line_num);
@@ -116,8 +107,7 @@ test_win_relative_path_without_linenum(void)
 	free(path);
 }
 
-static void
-test_win_relative_path_with_linenum(void)
+TEST(win_relative_path_with_linenum)
 {
 	int line_num;
 	char *const path = parse_file_spec("repos\\repo:9876", &line_num);
@@ -129,27 +119,6 @@ test_win_relative_path_with_linenum(void)
 }
 
 #endif
-
-void
-parse_file_spec_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_empty_path_without_linenum);
-	run_test(test_empty_path_with_linenum);
-	run_test(test_absolute_path_without_linenum);
-	run_test(test_absolute_path_with_linenum);
-	run_test(test_relative_path_without_linenum);
-	run_test(test_relative_path_with_linenum);
-#ifdef _WIN32
-	run_test(test_win_absolute_path_without_linenum);
-	run_test(test_win_absolute_path_with_linenum);
-	run_test(test_win_relative_path_without_linenum);
-	run_test(test_win_relative_path_with_linenum);
-#endif
-
-	test_fixture_end();
-}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

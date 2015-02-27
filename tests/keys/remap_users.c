@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
 static int counter;
 
-static void
-allow_user_key_remap(void)
+TEST(allow_user_key_remap)
 {
 	assert_int_equal(0, add_user_keys(L"jo", L":do movement", NORMAL_MODE, 0));
 	assert_int_equal(0,
@@ -25,8 +24,7 @@ handler(wchar_t key)
 	return 0;
 }
 
-static void
-prevent_stack_overflow(void)
+TEST(prevent_stack_overflow)
 {
 	assert_int_equal(0, add_user_keys(L"j", L"j", NORMAL_MODE, 0));
 	assert_false(IS_KEYS_RET_CODE(execute_keys(L"j")));
@@ -44,15 +42,5 @@ prevent_stack_overflow(void)
 	set_def_handler(NORMAL_MODE, NULL);
 }
 
-void
-remap_users(void)
-{
-	test_fixture_start();
-
-	run_test(allow_user_key_remap);
-	run_test(prevent_stack_overflow);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
+/* vim: set cinoptions+=t0 : */

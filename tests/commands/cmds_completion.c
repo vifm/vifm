@@ -1,22 +1,22 @@
+#include <stic.h>
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 #include "../../src/utils/macros.h"
 
-extern cmds_conf_t cmds_conf;
-
-static cmd_info_t cmdi;
+enum { COM_WINDO };
 
 static int dummy_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 
-enum { COM_WINDO };
+extern cmds_conf_t cmds_conf;
+
+static cmd_info_t cmdi;
 
 static const cmd_add_t commands[] = {
 	{ .name = "",       .abbr = NULL, .handler = dummy_cmd,  .id = -1,    .range = 1,    .cust_sep = 0,
@@ -52,20 +52,13 @@ skip_at_beginning(int id, const char *args)
 	return -1;
 }
 
-static void
-setup(void)
+SETUP()
 {
 	add_builtin_commands(commands, ARRAY_LEN(commands));
 	cmds_conf.skip_at_beginning = &skip_at_beginning;
 }
 
-static void
-teardown(void)
-{
-}
-
-static void
-test_skip_goto(void)
+TEST(skip_goto)
 {
 	char *completion;
 
@@ -85,8 +78,7 @@ test_skip_goto(void)
 	free(completion);
 }
 
-static void
-test_skip_abbreviations(void)
+TEST(skip_abbreviations)
 {
 	char *completion;
 
@@ -103,8 +95,7 @@ test_skip_abbreviations(void)
 	free(completion);
 }
 
-static void
-test_dont_remove_range(void)
+TEST(dont_remove_range)
 {
 	char *completion;
 
@@ -127,8 +118,7 @@ test_dont_remove_range(void)
 	free(completion);
 }
 
-static void
-test_dont_remove_cmd(void)
+TEST(dont_remove_cmd)
 {
 	char *completion;
 
@@ -145,8 +135,7 @@ test_dont_remove_cmd(void)
 	free(completion);
 }
 
-static void
-test_skip_complete_args(void)
+TEST(skip_complete_args)
 {
 	char *completion;
 
@@ -163,8 +152,7 @@ test_skip_complete_args(void)
 	free(completion);
 }
 
-static void
-test_com_completion(void)
+TEST(com_completion)
 {
 	char *completion;
 
@@ -180,8 +168,7 @@ test_com_completion(void)
 	free(completion);
 }
 
-static void
-test_delc_completion(void)
+TEST(delc_completion)
 {
 	char *completion;
 
@@ -197,8 +184,7 @@ test_delc_completion(void)
 	free(completion);
 }
 
-static void
-test_windo_completion(void)
+TEST(windo_completion)
 {
 	char *completion;
 
@@ -212,8 +198,7 @@ test_windo_completion(void)
 	free(completion);
 }
 
-static void
-test_windo_windo_completion(void)
+TEST(windo_windo_completion)
 {
 	char *completion;
 
@@ -227,8 +212,7 @@ test_windo_windo_completion(void)
 	free(completion);
 }
 
-static void
-test_windo_args_completion(void)
+TEST(windo_args_completion)
 {
 	char *completion;
 
@@ -245,16 +229,14 @@ test_windo_args_completion(void)
 	free(completion);
 }
 
-static void
-test_no_completion_for_negative_ids(void)
+TEST(no_completion_for_negative_ids)
 {
 	vle_compl_reset();
 	assert_int_equal(4, complete_cmd("yank ", NULL));
 	assert_int_equal(0, vle_compl_get_count());
 }
 
-static void
-test_udf_completion(void)
+TEST(udf_completion)
 {
 	char *buf;
 
@@ -293,28 +275,5 @@ test_udf_completion(void)
 	free(buf);
 }
 
-void
-completion_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_skip_goto);
-	run_test(test_skip_abbreviations);
-	run_test(test_dont_remove_range);
-	run_test(test_dont_remove_cmd);
-	run_test(test_skip_complete_args);
-	run_test(test_com_completion);
-	run_test(test_delc_completion);
-	run_test(test_windo_completion);
-	run_test(test_windo_windo_completion);
-	run_test(test_windo_args_completion);
-	run_test(test_no_completion_for_negative_ids);
-	run_test(test_udf_completion);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

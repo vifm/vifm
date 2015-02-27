@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdio.h> /* EOF FILE fclose() fopen() fread() */
 
@@ -9,6 +9,9 @@
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fs_limits.h"
+#include "../../src/utils/utils.h"
+
+static int not_windows(void);
 
 static int
 files_are_identical(const char a[], const char b[])
@@ -30,8 +33,7 @@ files_are_identical(const char a[], const char b[])
 	return a_data == b_data && a_data == EOF;
 }
 
-static void
-test_dir_is_not_copied(void)
+TEST(dir_is_not_copied)
 {
 	io_args_t args =
 	{
@@ -41,8 +43,7 @@ test_dir_is_not_copied(void)
 	assert_false(iop_cp(&args) == 0);
 }
 
-static void
-test_empty_file_is_copied(void)
+TEST(empty_file_is_copied)
 {
 	{
 		io_args_t args =
@@ -80,8 +81,7 @@ test_empty_file_is_copied(void)
 	}
 }
 
-static void
-test_file_is_not_overwritten_if_not_asked(void)
+TEST(file_is_not_overwritten_if_not_asked)
 {
 	{
 		io_args_t args =
@@ -130,8 +130,7 @@ test_file_is_not_overwritten_if_not_asked(void)
 	}
 }
 
-static void
-test_file_is_overwritten_if_asked(void)
+TEST(file_is_overwritten_if_asked)
 {
 	{
 		io_args_t args =
@@ -189,44 +188,37 @@ file_is_copied(const char original[])
 	}
 }
 
-static void
-test_block_size_file_is_copied(void)
+TEST(block_size_file_is_copied)
 {
 	file_is_copied("../various-sizes/block-size-file");
 }
 
-static void
-test_block_size_minus_one_file_is_copied(void)
+TEST(block_size_minus_one_file_is_copied)
 {
 	file_is_copied("../various-sizes/block-size-minus-one-file");
 }
 
-static void
-test_block_size_plus_one_file_is_copied(void)
+TEST(block_size_plus_one_file_is_copied)
 {
 	file_is_copied("../various-sizes/block-size-plus-one-file");
 }
 
-static void
-test_double_block_size_file_is_copied(void)
+TEST(double_block_size_file_is_copied)
 {
 	file_is_copied("../various-sizes/double-block-size-file");
 }
 
-static void
-test_double_block_size_minus_one_file_is_copied(void)
+TEST(double_block_size_minus_one_file_is_copied)
 {
 	file_is_copied("../various-sizes/double-block-size-minus-one-file");
 }
 
-static void
-test_double_block_size_plus_one_file_is_copied(void)
+TEST(double_block_size_plus_one_file_is_copied)
 {
 	file_is_copied("../various-sizes/double-block-size-plus-one-file");
 }
 
-static void
-test_appending_works_for_files(void)
+TEST(appending_works_for_files)
 {
 	uint64_t size;
 
@@ -274,8 +266,7 @@ test_appending_works_for_files(void)
 	}
 }
 
-static void
-test_appending_does_not_shrink_files(void)
+TEST(appending_does_not_shrink_files)
 {
 	uint64_t size;
 
@@ -311,10 +302,8 @@ test_appending_does_not_shrink_files(void)
 	}
 }
 
-#ifndef WIN32
-
-static void
-test_file_permissions_are_preserved(void)
+/* Windows doesn't support Unix-style permissions. */
+TEST(file_permissions_are_preserved, IF(not_windows))
 {
 	struct stat src;
 	struct stat dst;
@@ -364,8 +353,8 @@ test_file_permissions_are_preserved(void)
 	}
 }
 
-static void
-test_file_symlink_copy_is_symlink(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(file_symlink_copy_is_symlink, IF(not_windows))
 {
 	char old_target[PATH_MAX];
 	char new_target[PATH_MAX];
@@ -417,8 +406,8 @@ test_file_symlink_copy_is_symlink(void)
 	}
 }
 
-static void
-test_dir_symlink_copy_is_symlink(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 {
 	make_dir("dir", 0700);
 	assert_true(is_dir("dir"));
@@ -474,35 +463,10 @@ test_dir_symlink_copy_is_symlink(void)
 	}
 }
 
-#endif
-
-void
-cp_tests(void)
+static int
+not_windows(void)
 {
-	test_fixture_start();
-
-	run_test(test_dir_is_not_copied);
-	run_test(test_empty_file_is_copied);
-	run_test(test_file_is_not_overwritten_if_not_asked);
-	run_test(test_file_is_overwritten_if_asked);
-	run_test(test_block_size_file_is_copied);
-	run_test(test_block_size_minus_one_file_is_copied);
-	run_test(test_block_size_plus_one_file_is_copied);
-	run_test(test_double_block_size_file_is_copied);
-	run_test(test_double_block_size_minus_one_file_is_copied);
-	run_test(test_double_block_size_plus_one_file_is_copied);
-	run_test(test_appending_works_for_files);
-	run_test(test_appending_does_not_shrink_files);
-
-#ifndef _WIN32
-	run_test(test_file_permissions_are_preserved);
-
-	/* Creating symbolic links on Windows requires administrator rights. */
-	run_test(test_file_symlink_copy_is_symlink);
-	run_test(test_dir_symlink_copy_is_symlink);
-#endif
-
-	test_fixture_end();
+	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

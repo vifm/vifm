@@ -1,12 +1,34 @@
-#include <string.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <string.h>
 
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/commands.h"
 
+static void setup_lwin(void);
+static void setup_rwin(void);
+
 extern cmds_conf_t cmds_conf;
+
+SETUP()
+{
+	setup_lwin();
+	setup_rwin();
+}
+
+TEARDOWN()
+{
+	int i;
+
+	for(i = 0; i < lwin.list_rows; i++)
+		free(lwin.dir_entry[i].name);
+	free(lwin.dir_entry);
+
+	for(i = 0; i < rwin.list_rows; i++)
+		free(rwin.dir_entry[i].name);
+	free(rwin.dir_entry);
+}
 
 static void
 setup_lwin(void)
@@ -49,29 +71,7 @@ setup_rwin(void)
 	rwin.selected_files = 3;
 }
 
-static void
-setup(void)
-{
-	setup_lwin();
-	setup_rwin();
-}
-
-static void
-teardown(void)
-{
-	int i;
-
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	free(rwin.dir_entry);
-}
-
-static void
-one_number_range_test(void)
+TEST(one_number_range)
 {
 	cmd_info_t cmd_info = {
 		.begin = -1, .end = -1
@@ -92,8 +92,7 @@ one_number_range_test(void)
 	assert_int_equal(3, rwin.selected_files);
 }
 
-static void
-test_one_in_the_range(void)
+TEST(one_in_the_range)
 {
 	cmd_info_t cmd_info = {
 		.begin = 0, .end = 0
@@ -116,18 +115,5 @@ test_one_in_the_range(void)
 	assert_int_equal(1, rwin.dir_entry[0].selected);
 }
 
-void
-one_number_range(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(one_number_range_test);
-	run_test(test_one_in_the_range);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

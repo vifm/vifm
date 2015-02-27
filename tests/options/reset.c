@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern int fusehome_handler_calls;
 extern const char *value;
 
-static void
-test_reset_of_str_option_not_differ_no_callback(void)
+TEST(reset_of_str_option_not_differ_no_callback)
 {
 	int res;
 
@@ -16,8 +15,7 @@ test_reset_of_str_option_not_differ_no_callback(void)
 	assert_int_equal(0, fusehome_handler_calls);
 }
 
-static void
-test_reset_of_str_option_differ_callback(void)
+TEST(reset_of_str_option_differ_callback)
 {
 	int res;
 
@@ -30,17 +28,6 @@ test_reset_of_str_option_differ_callback(void)
 	assert_int_equal(0, res);
 	assert_int_equal(1, fusehome_handler_calls);
 	assert_string_equal("fusehome-default", value);
-}
-
-void
-reset_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_reset_of_str_option_not_differ_no_callback);
-	run_test(test_reset_of_str_option_differ_callback);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

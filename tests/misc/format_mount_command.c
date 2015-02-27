@@ -1,9 +1,8 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/fuse.h"
 
-static void
-test_no_macro_string_unchanged(void)
+TEST(no_macro_string_unchanged)
 {
 	int foreground;
 	char buf[256];
@@ -16,8 +15,7 @@ test_no_macro_string_unchanged(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_wrong_macro_expanded_to_empty_string(void)
+TEST(wrong_macro_expanded_to_empty_string)
 {
 	int foreground;
 	char buf[256];
@@ -30,8 +28,7 @@ test_wrong_macro_expanded_to_empty_string(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_foreground_macro_returns_non_zero(void)
+TEST(foreground_macro_returns_non_zero)
 {
 	int foreground;
 	char buf[256];
@@ -44,8 +41,7 @@ test_foreground_macro_returns_non_zero(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_clear_macro_returns_non_zero(void)
+TEST(clear_macro_returns_non_zero)
 {
 	int foreground;
 	char buf[256];
@@ -58,8 +54,7 @@ test_clear_macro_returns_non_zero(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_options_before_macros(void)
+TEST(options_before_macros)
 {
 	int foreground;
 	char buf[256];
@@ -73,8 +68,7 @@ test_options_before_macros(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_too_long_param(void)
+TEST(too_long_param)
 {
 	int foreground;
 	char buf[10];
@@ -88,8 +82,7 @@ test_too_long_param(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_too_long_dest(void)
+TEST(too_long_dest)
 {
 	int foreground;
 	char buf[10];
@@ -103,8 +96,7 @@ test_too_long_dest(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_too_long_source(void)
+TEST(too_long_source)
 {
 	int foreground;
 	char buf[10];
@@ -118,8 +110,7 @@ test_too_long_source(void)
 	assert_string_equal(expected, buf);
 }
 
-static void
-test_no_bar_symbol(void)
+TEST(no_bar_symbol)
 {
 	int foreground;
 	char buf[10];
@@ -130,24 +121,6 @@ test_no_bar_symbol(void)
 
 	assert_int_equal(0, foreground);
 	assert_string_equal(expected, buf);
-}
-
-void
-format_mount_command_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_no_macro_string_unchanged);
-	run_test(test_wrong_macro_expanded_to_empty_string);
-	run_test(test_foreground_macro_returns_non_zero);
-	run_test(test_clear_macro_returns_non_zero);
-	run_test(test_options_before_macros);
-	run_test(test_too_long_param);
-	run_test(test_too_long_dest);
-	run_test(test_too_long_source);
-	run_test(test_no_bar_symbol);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

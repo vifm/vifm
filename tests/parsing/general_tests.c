@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdlib.h> /* free() */
 
@@ -7,44 +7,37 @@
 
 #include "asserts.h"
 
-static void
-setup(void)
+SETUP()
 {
 	init_parser(NULL);
 }
 
-static void
-test_empty_fail(void)
+TEST(empty_fail)
 {
 	ASSERT_FAIL("", PE_INVALID_EXPRESSION);
 }
 
-static void
-test_non_quoted_fail(void)
+TEST(non_quoted_fail)
 {
 	ASSERT_FAIL("b", PE_INVALID_EXPRESSION);
 }
 
-static void
-test_double_dot_fail(void)
+TEST(double_dot_fail)
 {
 	ASSERT_FAIL("'a'..'b'", PE_INVALID_EXPRESSION);
 }
 
-static void
-test_starts_with_dot_fail(void)
+TEST(starts_with_dot_fail)
 {
 	ASSERT_FAIL(".'b'", PE_INVALID_EXPRESSION);
 }
 
-static void
-test_ends_with_dot_fail(void)
+TEST(ends_with_dot_fail)
 {
 	ASSERT_FAIL("'a'.", PE_INVALID_EXPRESSION);
 }
 
-static void
-test_fail_position_correct(void)
+TEST(fail_position_correct)
 {
 	ASSERT_FAIL("'b' c", PE_INVALID_EXPRESSION)
 	assert_string_equal("'b' c", get_last_position());
@@ -53,32 +46,13 @@ test_fail_position_correct(void)
 	assert_string_equal("a b", get_last_position());
 }
 
-static void
-test_spaces_and_fail_position_correct(void)
+TEST(spaces_and_fail_position_correct)
 {
 	ASSERT_FAIL("  'b' c", PE_INVALID_EXPRESSION)
 	assert_string_equal("'b' c", get_last_position());
 
 	ASSERT_FAIL("  a b", PE_INVALID_EXPRESSION)
 	assert_string_equal("a b", get_last_position());
-}
-
-void
-general_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(&setup);
-
-	run_test(test_empty_fail);
-	run_test(test_non_quoted_fail);
-	run_test(test_double_dot_fail);
-	run_test(test_starts_with_dot_fail);
-	run_test(test_ends_with_dot_fail);
-	run_test(test_fail_position_correct);
-	run_test(test_spaces_and_fail_position_correct);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

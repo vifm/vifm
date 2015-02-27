@@ -1,8 +1,8 @@
+#include <stic.h>
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
@@ -10,20 +10,13 @@
 
 extern struct cmds_conf cmds_conf;
 
-static void
-setup(void)
+SETUP()
 {
 	reset_cmds();
 	init_commands();
 }
 
-static void
-teardown(void)
-{
-}
-
-static void
-test_empty_line_completion(void)
+TEST(empty_line_completion)
 {
 	char *buf;
 
@@ -39,8 +32,7 @@ test_empty_line_completion(void)
 	free(buf);
 }
 
-static void
-test_set(void)
+TEST(set)
 {
 	char *buf;
 
@@ -52,18 +44,5 @@ test_set(void)
 	free(buf);
 }
 
-void
-builtin_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_empty_line_completion);
-	run_test(test_set);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

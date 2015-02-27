@@ -1,14 +1,30 @@
-#include <string.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <string.h>
 
 #include "../../src/column_view.h"
 #include "test.h"
+
+static void column_line_print(const void *data, int column_id, const char *buf,
+		size_t offset);
+static void column1_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
 
 static size_t print_offset;
 static char print_buffer[800 + 1];
+
+SETUP()
+{
+	print_next = column_line_print;
+	col1_next = column1_func;
+}
+
+TEARDOWN()
+{
+	print_next = NULL;
+	col1_next = NULL;
+}
 
 static void
 column_line_print(const void *data, int column_id, const char *buf,
@@ -33,20 +49,6 @@ column1_func2(int id, const void *data, size_t buf_len, char *buf)
 }
 
 static void
-setup(void)
-{
-	print_next = column_line_print;
-	col1_next = column1_func;
-}
-
-static void
-teardown(void)
-{
-	print_next = NULL;
-	col1_next = NULL;
-}
-
-static void
 perform_test(column_info_t column_info)
 {
 	columns_t cols = columns_create();
@@ -57,8 +59,7 @@ perform_test(column_info_t column_info)
 	columns_free(cols);
 }
 
-static void
-test_right_align(void)
+TEST(right_align)
 {
 	static column_info_t column_info =
 	{
@@ -71,8 +72,7 @@ test_right_align(void)
 	assert_int_equal(0, print_offset);
 }
 
-static void
-test_left_align(void)
+TEST(left_align)
 {
 	static column_info_t column_info =
 	{
@@ -85,8 +85,7 @@ test_left_align(void)
 	assert_int_equal(0, print_offset);
 }
 
-static void
-test_very_long_line_right_align(void)
+TEST(very_long_line_right_align)
 {
 	static column_info_t column_info =
 	{
@@ -102,8 +101,7 @@ test_very_long_line_right_align(void)
 	assert_string_equal(expected, print_buffer);
 }
 
-static void
-test_truncation_on_right_align(void)
+TEST(truncation_on_right_align)
 {
 	static column_info_t column_info =
 	{
@@ -123,22 +121,6 @@ test_truncation_on_right_align(void)
 	columns_free(cols);
 
 	assert_string_equal(expected, print_buffer);
-}
-
-void
-align_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_right_align);
-	run_test(test_left_align);
-	run_test(test_very_long_line_right_align);
-	run_test(test_truncation_on_right_align);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

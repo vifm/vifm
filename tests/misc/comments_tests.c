@@ -1,23 +1,12 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/commands.h"
 
-static void
-test_whole_line_comments(void)
+TEST(test_whole_line_comments)
 {
 	assert_int_equal(0, exec_command("\"", NULL, CIT_COMMAND));
 	assert_int_equal(0, exec_command(" \"", NULL, CIT_COMMAND));
 	assert_int_equal(0, exec_command("  \"", NULL, CIT_COMMAND));
-}
-
-void
-comments_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_whole_line_comments);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

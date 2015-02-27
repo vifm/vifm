@@ -1,9 +1,8 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/path.h"
 
-static void
-test_in_one_dir(void)
+TEST(in_one_dir)
 {
 	const char *buf;
 
@@ -23,8 +22,7 @@ test_in_one_dir(void)
 	assert_string_equal(".", buf);
 }
 
-static void
-test_slashes(void)
+TEST(slashes)
 {
 	const char *buf;
 
@@ -41,8 +39,7 @@ test_slashes(void)
 	assert_string_equal("a", buf);
 }
 
-static void
-test_under_dir(void)
+TEST(under_dir)
 {
 	const char *buf;
 
@@ -53,8 +50,7 @@ test_under_dir(void)
 	assert_string_equal("a/b/c", buf);
 }
 
-static void
-test_parent_dir(void)
+TEST(parent_dir)
 {
 	const char *buf;
 
@@ -68,8 +64,7 @@ test_parent_dir(void)
 	assert_string_equal("../../..", buf);
 }
 
-static void
-test_different_subtree(void)
+TEST(different_subtree)
 {
 	const char *buf;
 
@@ -81,8 +76,8 @@ test_different_subtree(void)
 }
 
 #ifdef _WIN32
-static void
-test_windows_specific(void)
+
+TEST(windows_specific)
 {
 	const char *buf;
 
@@ -92,23 +87,8 @@ test_windows_specific(void)
 	buf = make_rel_path("c:/home/user1/", "d:/home/user1/dir1");
 	assert_string_equal("c:/home/user1/", buf);
 }
+
 #endif
 
-void
-rel_symlinks_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_in_one_dir);
-	run_test(test_slashes);
-	run_test(test_under_dir);
-	run_test(test_parent_dir);
-	run_test(test_different_subtree);
-#ifdef _WIN32
-	run_test(test_windows_specific);
-#endif
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

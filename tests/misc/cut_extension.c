@@ -1,17 +1,15 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/path.h"
 
-static void
-test_no_extension(void)
+TEST(no_extension)
 {
 	char buf[] = "file";
 	assert_string_equal("", cut_extension(buf));
 	assert_string_equal("file", buf);
 }
 
-static void
-test_unary_extensions(void)
+TEST(unary_extensions)
 {
 	char buf[][20] =
 	{
@@ -27,8 +25,7 @@ test_unary_extensions(void)
 	assert_string_equal("tar", buf[2]);
 }
 
-static void
-test_binary_extensions(void)
+TEST(binary_extensions)
 {
 	char buf[][20] =
 	{
@@ -39,18 +36,6 @@ test_binary_extensions(void)
 	assert_string_equal("archive", buf[0]);
 	assert_string_equal("tar.bz2", cut_extension(buf[1]));
 	assert_string_equal("photos", buf[1]);
-}
-
-void
-cut_extension_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_no_extension);
-	run_test(test_unary_extensions);
-	run_test(test_binary_extensions);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

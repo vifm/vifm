@@ -74,6 +74,16 @@ bin/build/stubs.o: stubs.c
 bin/build/stic.o: stic/stic.c
 	gcc -c -o $@ $(CFLAGS) $<
 
+# this function of two arguments (array and element) returns index of the
+# element in the array
+pos = $(strip $(eval T := ) \
+              $(eval i := 0) \
+              $(foreach elem, $1, \
+                        $(if $(filter $2,$(elem)), \
+                             $(eval i := $(words $T)), \
+                             $(eval T := $T $(elem)))) \
+              $i)
+
 # suite definition template, takes single argument: name of the suite
 define suite_template
 
@@ -85,8 +95,9 @@ deps += $$($1.obj:.o=.d)
 bin/$1$(exe_suffix): $$($1.obj) bin/build/stic.o $(vifm_obj) | $(vifm_bin)
 	gcc -o $$@ $$^ $(LDFLAGS)
 
-bin/build/$1/%.o: $1/%.c | bin/build/$1
-	gcc -c -o $$@ $(CFLAGS) $$<
+bin/build/$1/%.o: $1/%.c $1/. | bin/build/$1
+	gcc -c -o $$@ $(CFLAGS) -DTESTID=$$(call pos, $$($1.obj), $$@) \
+	                        -DMAXTESTID=$$(words $$($1.obj)) $$<
 
 bin/build/$1:
 	mkdir -p $$@

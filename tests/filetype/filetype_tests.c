@@ -1,12 +1,11 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 
-static void
-test_one_pattern(void)
+TEST(one_pattern)
 {
 	const char *prog_cmd;
 
@@ -16,8 +15,7 @@ test_one_pattern(void)
 	assert_string_equal("tar prog", prog_cmd);
 }
 
-static void
-test_many_pattern(void)
+TEST(many_pattern)
 {
 	const char *prog_cmd;
 
@@ -28,8 +26,7 @@ test_many_pattern(void)
 	assert_string_equal("tar.gz prog", prog_cmd);
 }
 
-static void
-test_many_filepattern(void)
+TEST(many_filepattern)
 {
 	const char *prog_cmd;
 
@@ -39,8 +36,7 @@ test_many_filepattern(void)
 	assert_string_equal("tar.gz prog", prog_cmd);
 }
 
-static void
-test_dont_match_hidden(void)
+TEST(dont_match_hidden)
 {
 	const char *prog_cmd;
 
@@ -49,8 +45,7 @@ test_dont_match_hidden(void)
 	assert_true((prog_cmd = ft_get_program(".file.version.tar.gz")) == NULL);
 }
 
-static void
-test_match_empty(void)
+TEST(match_empty)
 {
 	const char *prog_cmd;
 
@@ -60,8 +55,7 @@ test_match_empty(void)
 	assert_string_equal("empty prog", prog_cmd);
 }
 
-static void
-test_match_full_line(void)
+TEST(match_full_line)
 {
 	const char *prog_cmd;
 
@@ -75,8 +69,7 @@ test_match_full_line(void)
 	assert_string_equal("full prog", prog_cmd);
 }
 
-static void
-test_match_qmark(void)
+TEST(match_qmark)
 {
 	const char *prog_cmd;
 
@@ -88,8 +81,7 @@ test_match_qmark(void)
 	assert_string_equal("full prog", prog_cmd);
 }
 
-static void
-test_qmark_escaping(void)
+TEST(qmark_escaping)
 {
 	const char *prog_cmd;
 
@@ -101,8 +93,7 @@ test_qmark_escaping(void)
 	assert_string_equal("qmark prog", prog_cmd);
 }
 
-static void
-test_star_escaping(void)
+TEST(star_escaping)
 {
 	const char *prog_cmd;
 
@@ -114,8 +105,7 @@ test_star_escaping(void)
 	assert_string_equal("star prog", prog_cmd);
 }
 
-static void
-test_star_and_dot(void)
+TEST(star_and_dot)
 {
 	const char *prog_cmd;
 
@@ -133,8 +123,7 @@ test_star_and_dot(void)
 	assert_string_equal("hlibreoffice", prog_cmd);
 }
 
-static void
-test_double_comma(void)
+TEST(double_comma)
 {
 	const char *prog_cmd;
 
@@ -147,27 +136,6 @@ test_double_comma(void)
 
 	assert_true((prog_cmd = ft_get_program("file.version.zip")) != NULL);
 	assert_string_equal("prog1 -o opt1", prog_cmd);
-}
-
-void
-filetype_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_one_pattern);
-	run_test(test_many_pattern);
-	run_test(test_many_filepattern);
-	run_test(test_dont_match_hidden);
-	run_test(test_match_empty);
-	run_test(test_match_full_line);
-	run_test(test_match_qmark);
-	run_test(test_qmark_escaping);
-	run_test(test_star_escaping);
-	run_test(test_double_comma);
-
-	run_test(test_star_and_dot);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

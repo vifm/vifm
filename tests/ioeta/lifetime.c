@@ -1,17 +1,15 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 
 #include "../../src/io/ioeta.h"
 
-static void
-test_free_of_null_is_ok(void)
+TEST(free_of_null_is_ok)
 {
 	ioeta_free(NULL);
 }
 
-static void
-test_alloc_initializes_all_fields(void)
+TEST(alloc_initializes_all_fields)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -22,17 +20,6 @@ test_alloc_initializes_all_fields(void)
 	assert_string_equal(NULL, estim->item);
 
 	ioeta_free(estim);
-}
-
-void
-lifetime_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_free_of_null_is_ok);
-	run_test(test_alloc_initializes_all_fields);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

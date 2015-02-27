@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strcmp() */
@@ -26,8 +26,7 @@
 	} \
 	while(0)
 
-static void
-setup(void)
+SETUP()
 {
 	cfg.time_format = strdup("");
 
@@ -41,8 +40,7 @@ setup(void)
 	other_view = &rwin;
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -55,8 +53,7 @@ teardown(void)
 	free(cfg.time_format);
 }
 
-static void
-test_empty_format(void)
+TEST(empty_format)
 {
 	const char *const format = "";
 	char *const expanded = expand_status_line_macros(&lwin, format);
@@ -64,8 +61,7 @@ test_empty_format(void)
 	free(expanded);
 }
 
-static void
-test_no_macros(void)
+TEST(no_macros)
 {
 	const char *const format = "No formatting here";
 	char *const expanded = expand_status_line_macros(&lwin, format);
@@ -73,62 +69,52 @@ test_no_macros(void)
 	free(expanded);
 }
 
-static void
-test_t_macro_expanded(void)
+TEST(t_macro_expanded)
 {
 	ASSERT_EXPANDED("%t");
 }
 
-static void
-test_A_macro_expanded(void)
+TEST(A_macro_expanded)
 {
 	ASSERT_EXPANDED("%A");
 }
 
-static void
-test_u_macro_expanded(void)
+TEST(u_macro_expanded)
 {
 	ASSERT_EXPANDED("%u");
 }
 
-static void
-test_g_macro_expanded(void)
+TEST(g_macro_expanded)
 {
 	ASSERT_EXPANDED("%g");
 }
 
-static void
-test_s_macro_expanded(void)
+TEST(s_macro_expanded)
 {
 	ASSERT_EXPANDED("%s");
 }
 
-static void
-test_E_macro_expanded(void)
+TEST(E_macro_expanded)
 {
 	ASSERT_EXPANDED("%E");
 }
 
-static void
-test_d_macro_expanded(void)
+TEST(d_macro_expanded)
 {
 	ASSERT_EXPANDED("%d");
 }
 
-static void
-test_l_macro_expanded(void)
+TEST(l_macro_expanded)
 {
 	ASSERT_EXPANDED("%l");
 }
 
-static void
-test_L_macro_expanded(void)
+TEST(L_macro_expanded)
 {
 	ASSERT_EXPANDED("%L");
 }
 
-static void
-test_dash_macro_expanded(void)
+TEST(dash_macro_expanded)
 {
 	ASSERT_EXPANDED("%-t");
 	ASSERT_EXPANDED("%-A");
@@ -143,20 +129,17 @@ test_dash_macro_expanded(void)
 	ASSERT_EXPANDED("%-%");
 }
 
-static void
-test_S_macro_expanded(void)
+TEST(S_macro_expanded)
 {
 	ASSERT_EXPANDED("%S");
 }
 
-static void
-test_percent_macro_expanded(void)
+TEST(percent_macro_expanded)
 {
 	ASSERT_EXPANDED_TO("%%", "%");
 }
 
-static void
-test_wrong_macros_ignored(void)
+TEST(wrong_macros_ignored)
 {
 	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]";
 	int i;
@@ -171,8 +154,7 @@ test_wrong_macros_ignored(void)
 	}
 }
 
-static void
-test_wrong_macros_with_width_field_ignored(void)
+TEST(wrong_macros_with_width_field_ignored)
 {
 	static const char STATUS_CHARS[] = "tAugsEd-lLS%[]";
 	int i;
@@ -187,81 +169,38 @@ test_wrong_macros_with_width_field_ignored(void)
 	}
 }
 
-static void
-test_optional_empty(void)
+TEST(optional_empty)
 {
 	lwin.filtered = 0;
 	ASSERT_EXPANDED_TO("%[%0-%]", "");
 }
 
-static void
-test_optional_non_empty(void)
+TEST(optional_non_empty)
 {
 	lwin.filtered = 1;
 	ASSERT_EXPANDED_TO("%[%0-%]", "1");
 }
 
-static void
-test_nested_optional_empty(void)
+TEST(nested_optional_empty)
 {
 	lwin.filtered = 0;
 	ASSERT_EXPANDED_TO("%[%[%0-%]%]", "");
 }
 
-static void
-test_nested_optional_non_empty(void)
+TEST(nested_optional_non_empty)
 {
 	lwin.filtered = 1;
 	ASSERT_EXPANDED_TO("%[%[%0-%]%]", "1");
 }
 
-static void
-test_ignore_mismatched_opening_bracket(void)
+TEST(ignore_mismatched_opening_bracket)
 {
 	ASSERT_EXPANDED_TO("%[", "%[");
 }
 
-static void
-test_ignore_mismatched_closing_bracket(void)
+TEST(ignore_mismatched_closing_bracket)
 {
 	ASSERT_EXPANDED_TO("%]", "%]");
-}
-
-void
-expand_status_line_macros_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_empty_format);
-	run_test(test_no_macros);
-
-	run_test(test_t_macro_expanded);
-	run_test(test_A_macro_expanded);
-	run_test(test_u_macro_expanded);
-	run_test(test_g_macro_expanded);
-	run_test(test_s_macro_expanded);
-	run_test(test_E_macro_expanded);
-	run_test(test_d_macro_expanded);
-	run_test(test_l_macro_expanded);
-	run_test(test_L_macro_expanded);
-	run_test(test_dash_macro_expanded);
-	run_test(test_S_macro_expanded);
-	run_test(test_percent_macro_expanded);
-
-	run_test(test_wrong_macros_ignored);
-	run_test(test_wrong_macros_with_width_field_ignored);
-
-	run_test(test_optional_empty);
-	run_test(test_optional_non_empty);
-	run_test(test_nested_optional_empty);
-	run_test(test_nested_optional_non_empty);
-	run_test(test_ignore_mismatched_opening_bracket);
-	run_test(test_ignore_mismatched_closing_bracket);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
 extern int last;
 
-static void
-test_without_noremap(void)
+TEST(without_noremap)
 {
 	assert_int_equal(0, execute_keys(L"k"));
 	assert_int_equal(1, last);
@@ -24,8 +23,7 @@ test_without_noremap(void)
 	assert_int_equal(1, last);
 }
 
-static void
-test_with_noremap(void)
+TEST(with_noremap)
 {
 	assert_int_equal(0, execute_keys(L"k"));
 	assert_int_equal(1, last);
@@ -43,8 +41,7 @@ test_with_noremap(void)
 	assert_int_equal(2, last);
 }
 
-static void
-test_noremap_functions(void)
+TEST(noremap_functions)
 {
 	assert_int_equal(0, add_user_keys(L"y", L"k", NORMAL_MODE, 0));
 
@@ -55,16 +52,5 @@ test_noremap_functions(void)
 	assert_true(IS_KEYS_RET_CODE(execute_keys_timed_out_no_remap(L"y")));
 }
 
-void
-noremap_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_without_noremap);
-	run_test(test_with_noremap);
-	run_test(test_noremap_functions);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
+/* vim: set cinoptions+=t0 : */

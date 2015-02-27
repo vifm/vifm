@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 
 #include "../../src/utils/str.h"
 
-static void
-test_empty_string_null_returned(void)
+TEST(empty_string_null_returned)
 {
 	char input[] = "";
 	char *part = input, *state = NULL;
@@ -14,8 +13,7 @@ test_empty_string_null_returned(void)
 	assert_string_equal(NULL, part = split_and_get(part, ',', &state));
 }
 
-static void
-test_all_empty_items_are_skipped(void)
+TEST(all_empty_items_are_skipped)
 {
 	char input[] = ",,,";
 	char *part = input, *state = NULL;
@@ -23,8 +21,7 @@ test_all_empty_items_are_skipped(void)
 	assert_string_equal(NULL, part = split_and_get(part, ',', &state));
 }
 
-static void
-test_empty_items_are_skipped(void)
+TEST(empty_items_are_skipped)
 {
 	char input[] = ",a,,b,";
 	char *part = input, *state = NULL;
@@ -34,8 +31,7 @@ test_empty_items_are_skipped(void)
 	assert_string_equal(NULL, part = split_and_get(part, ',', &state));
 }
 
-static void
-test_single_item_returned(void)
+TEST(single_item_returned)
 {
 	char input[] = "something";
 	char *part = input, *state = NULL;
@@ -44,8 +40,7 @@ test_single_item_returned(void)
 	assert_string_equal(NULL, part = split_and_get(part, ',', &state));
 }
 
-static void
-test_many_items(void)
+TEST(many_items)
 {
 	char input[] = "x,yy,zzz,abc";
 	char *part = input, *state = NULL;
@@ -57,8 +52,7 @@ test_many_items(void)
 	assert_string_equal(NULL, part = split_and_get(part, ',', &state));
 }
 
-static void
-test_usage_idiom(void)
+TEST(usage_idiom)
 {
 	char input[] = "a: bb,cc: d:d";
 	const char *element[] = { "a", " bb,cc", " d", "d", };
@@ -72,8 +66,7 @@ test_usage_idiom(void)
 	}
 }
 
-static void
-test_separators_are_restored(void)
+TEST(separators_are_restored)
 {
 	char input[] = "/x/yy/zzz/abc";
 	char *part = input, *state = NULL;
@@ -85,22 +78,6 @@ test_separators_are_restored(void)
 			(part = split_and_get(part, '/', &state), input));
 	assert_string_equal("/x/yy/zzz/abc",
 			(part = split_and_get(part, '/', &state), input));
-}
-
-void
-split_and_get_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_empty_string_null_returned);
-	run_test(test_all_empty_items_are_skipped);
-	run_test(test_empty_items_are_skipped);
-	run_test(test_single_item_returned);
-	run_test(test_many_items);
-	run_test(test_usage_idiom);
-	run_test(test_separators_are_restored);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

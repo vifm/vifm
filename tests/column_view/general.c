@@ -1,26 +1,18 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/column_view.h"
+
 #include "test.h"
+
+static void print_not_less_than_zero(const void *data, int column_id,
+		const char *buf, size_t offset);
+static void column12_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
 
 static columns_t columns;
 
-static void
-print_not_less_than_zero(const void *data, int column_id, const char *buf,
-		size_t offset)
-{
-	assert_true(offset <= MAX_WIDTH);
-}
-
-static void
-column12_func(int id, const void *data, size_t buf_len, char *buf)
-{
-}
-
-static void
-setup(void)
+SETUP()
 {
 	static column_info_t column_infos[2] =
 	{
@@ -39,8 +31,7 @@ setup(void)
 	columns_add_column(columns, column_infos[1]);
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	print_next = NULL;
 	col1_next = NULL;
@@ -50,26 +41,34 @@ teardown(void)
 }
 
 static void
-test_cant_add_columns_with_same_id(void)
+print_not_less_than_zero(const void *data, int column_id, const char *buf,
+		size_t offset)
+{
+	assert_true(offset <= MAX_WIDTH);
+}
+
+static void
+column12_func(int id, const void *data, size_t buf_len, char *buf)
+{
+}
+
+TEST(cant_add_columns_with_same_id)
 {
 	assert_false(columns_add_column_desc(COL1_ID, NULL) == 0);
 	assert_false(columns_add_column_desc(COL2_ID, NULL) == 0);
 }
 
-static void
-test_not_out_of_max_width(void)
+TEST(not_out_of_max_width)
 {
 	columns_format_line(columns, NULL, MAX_WIDTH);
 }
 
-static void
-test_free_null_columns_ok(void)
+TEST(free_null_columns_ok)
 {
 	columns_free(NULL_COLUMNS);
 }
 
-static void
-test_add_duplicate_columns_ok(void)
+TEST(add_duplicate_columns_ok)
 {
 	static column_info_t column_info =
 	{
@@ -78,22 +77,6 @@ test_add_duplicate_columns_ok(void)
 	};
 
 	columns_add_column(columns, column_info);
-}
-
-void
-general_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_cant_add_columns_with_same_id);
-	run_test(test_not_out_of_max_width);
-	run_test(test_free_null_columns_ok);
-	run_test(test_add_duplicate_columns_ok);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

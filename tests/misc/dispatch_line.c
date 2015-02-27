@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/string_array.h"
@@ -10,8 +10,7 @@ dispatch(const char cmd[], int *count, char separator, int regexp, int quotes)
 	return dispatch_line(cmd, count, separator, regexp, quotes, NULL, NULL, NULL);
 }
 
-static void
-test_no_quotes(void)
+TEST(no_quotes)
 {
 	int count;
 	char **args;
@@ -26,8 +25,7 @@ test_no_quotes(void)
 	free_string_array(args, count);
 }
 
-static void
-test_no_quotes_start_at_the_start(void)
+TEST(no_quotes_start_at_the_start)
 {
 	int count;
 	char **args;
@@ -42,8 +40,7 @@ test_no_quotes_start_at_the_start(void)
 	free_string_array(args, count);
 }
 
-static void
-test_single_quotes(void)
+TEST(single_quotes)
 {
 	int count;
 	char **args;
@@ -64,8 +61,7 @@ test_single_quotes(void)
 	assert_true(args == NULL);
 }
 
-static void
-test_double_quotes(void)
+TEST(double_quotes)
 {
 	int count;
 	char **args;
@@ -83,8 +79,7 @@ test_double_quotes(void)
 	assert_true(args == NULL);
 }
 
-static void
-test_regexp_quotes(void)
+TEST(regexp_quotes)
 {
 	int count;
 	char **args;
@@ -102,8 +97,7 @@ test_regexp_quotes(void)
 	assert_true(args == NULL);
 }
 
-static void
-test_no_quotes_escaping(void)
+TEST(no_quotes_escaping)
 {
 	int count;
 	char **args;
@@ -117,8 +111,7 @@ test_no_quotes_escaping(void)
 	free_string_array(args, count);
 }
 
-static void
-test_single_quotes_escaping(void)
+TEST(single_quotes_escaping)
 {
 	int count;
 	char **args;
@@ -132,8 +125,7 @@ test_single_quotes_escaping(void)
 	free_string_array(args, count);
 }
 
-static void
-test_double_quotes_escaping(void)
+TEST(double_quotes_escaping)
 {
 	int count;
 	char **args;
@@ -146,8 +138,7 @@ test_double_quotes_escaping(void)
 	free_string_array(args, count);
 }
 
-static void
-test_regexp_quotes_escaping(void)
+TEST(regexp_quotes_escaping)
 {
 	int count;
 	char **args;
@@ -167,8 +158,7 @@ test_regexp_quotes_escaping(void)
 	free_string_array(args, count);
 }
 
-static void
-test_start_and_end_spaces(void)
+TEST(start_and_end_spaces)
 {
 	int count;
 	char **args;
@@ -195,8 +185,7 @@ test_start_and_end_spaces(void)
 	free_string_array(args, count);
 }
 
-static void
-test_no_quoting(void)
+TEST(no_quoting)
 {
 	int count;
 	char **args;
@@ -223,8 +212,7 @@ test_no_quoting(void)
 	free_string_array(args, count);
 }
 
-static void
-test_cust_sep(void)
+TEST(cust_sep)
 {
 	int count;
 	char **args;
@@ -254,29 +242,5 @@ test_cust_sep(void)
 	free_string_array(args, count);
 }
 
-void
-test_dispatch_line(void)
-{
-	test_fixture_start();
-
-	run_test(test_no_quotes);
-	run_test(test_no_quotes_start_at_the_start);
-	run_test(test_single_quotes);
-	run_test(test_double_quotes);
-	run_test(test_regexp_quotes);
-
-	run_test(test_no_quotes_escaping);
-	run_test(test_single_quotes_escaping);
-	run_test(test_double_quotes_escaping);
-	run_test(test_regexp_quotes_escaping);
-
-	run_test(test_start_and_end_spaces);
-
-	run_test(test_no_quoting);
-
-	run_test(test_cust_sep);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

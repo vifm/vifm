@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -13,8 +13,7 @@
 #define SL "/"
 #endif
 
-static void
-setup(void)
+SETUP()
 {
 	cfg.shell = strdup("sh");
 
@@ -68,8 +67,7 @@ setup(void)
 	other_view = &rwin;
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -84,8 +82,7 @@ teardown(void)
 	free(rwin.dir_entry);
 }
 
-static void
-test_f(void)
+TEST(f)
 {
 	char *expanded;
 
@@ -112,8 +109,7 @@ test_f(void)
 	free(expanded);
 }
 
-static void
-test_c(void)
+TEST(c)
 {
 	char *expanded;
 
@@ -136,20 +132,6 @@ test_c(void)
 	expanded = append_selected_files(&rwin, expanded, 1, 0, "", 1);
 	assert_string_equal("/" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
-}
-
-void
-test_append_selected_files(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_f);
-	run_test(test_c);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

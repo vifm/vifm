@@ -1,12 +1,11 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 
-static void
-test_one_pattern(void)
+TEST(one_pattern)
 {
 	assoc_records_t ft;
 
@@ -21,8 +20,7 @@ test_one_pattern(void)
 	free(ft.list);
 }
 
-static void
-test_two_patterns(void)
+TEST(two_patterns)
 {
 	assoc_records_t ft;
 
@@ -49,8 +47,7 @@ test_two_patterns(void)
 	}
 }
 
-static void
-test_two_programs(void)
+TEST(two_programs)
 {
 	assoc_records_t ft;
 
@@ -67,18 +64,6 @@ test_two_programs(void)
 	assert_string_equal(ft.list[1].description, "zip");
 
 	free(ft.list);
-}
-
-void
-description_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_one_pattern);
-	run_test(test_two_patterns);
-	run_test(test_two_programs);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

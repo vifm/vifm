@@ -1,20 +1,14 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "seatest.h"
-
 #include "../../src/filetype.h"
-#include "../../src/status.h"
 #include "../../src/utils/str.h"
 
-static int
-prog_exists(const char name[])
-{
-	return stroscmp(name, "console") == 0;
-}
+static int prog_exists(const char name[]);
 
-static void
-test_find_program(void)
+TEST(find_program)
 {
 	const char *prog_cmd;
 
@@ -27,14 +21,10 @@ test_find_program(void)
 	assert_string_equal("console prog", prog_cmd);
 }
 
-void
-find_program_tests(void)
+static int
+prog_exists(const char name[])
 {
-	test_fixture_start();
-
-	run_test(test_find_program);
-
-	test_fixture_end();
+	return stroscmp(name, "console") == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -77,8 +77,7 @@ setup_registers(void)
 	append_to_register('z', "test-data/existing-files/c");
 }
 
-static void
-setup(void)
+SETUP()
 {
 	setup_lwin();
 	setup_rwin();
@@ -91,8 +90,7 @@ setup(void)
 	setup_registers();
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -107,8 +105,7 @@ teardown(void)
 	clear_registers();
 }
 
-static void
-test_colon_p(void)
+TEST(colon_p)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -150,8 +147,7 @@ test_colon_p(void)
 	free(expanded);
 }
 
-static void
-test_colon_p_in_root(void)
+TEST(colon_p_in_root)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -194,8 +190,7 @@ test_colon_p_in_root(void)
 	free(expanded);
 }
 
-static void
-test_colon_tilde(void)
+TEST(colon_tilde)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -250,8 +245,7 @@ test_colon_tilde(void)
 	free(expanded);
 }
 
-static void
-test_colon_dot(void)
+TEST(colon_dot)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -311,8 +305,7 @@ test_colon_dot(void)
 	free(expanded);
 }
 
-static void
-test_colon_h(void)
+TEST(colon_h)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -363,8 +356,7 @@ test_colon_h(void)
 	free(expanded);
 }
 
-static void
-test_colon_t(void)
+TEST(colon_t)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -414,8 +406,7 @@ test_colon_t(void)
 	free(expanded);
 }
 
-static void
-test_colon_r(void)
+TEST(colon_r)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -470,8 +461,7 @@ test_colon_r(void)
 	free(expanded);
 }
 
-static void
-test_colon_e(void)
+TEST(colon_e)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -528,8 +518,7 @@ test_colon_e(void)
 	free(expanded);
 }
 
-static void
-test_colon_s(void)
+TEST(colon_s)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -559,8 +548,7 @@ test_colon_s(void)
 	free(expanded);
 }
 
-static void
-test_colon_gs(void)
+TEST(colon_gs)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -599,8 +587,8 @@ test_colon_gs(void)
 }
 
 #ifdef _WIN32
-static void
-test_colon_u(void)
+
+TEST(colon_u)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -616,8 +604,7 @@ test_colon_u(void)
 	free(expanded);
 }
 
-static void
-test_windows_specific(void)
+TEST(windows_specific)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -642,10 +629,10 @@ test_windows_specific(void)
 	assert_string_equal(" \\\\\\\\ZX-Spectrum ", expanded);
 	free(expanded);
 }
+
 #endif
 
-static void
-test_modif_without_macros(void)
+TEST(modif_without_macros)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -657,8 +644,7 @@ test_modif_without_macros(void)
 	free(expanded);
 }
 
-static void
-test_with_quotes(void)
+TEST(with_quotes)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -667,36 +653,6 @@ test_with_quotes(void)
 	assert_string_equal(" cp \"" SL "lwin" SL "lfile0\" \"" SL "lwin" SL "lfile2\" ",
 			expanded);
 	free(expanded);
-}
-
-void
-fname_modif_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_colon_p);
-	run_test(test_colon_p_in_root);
-	run_test(test_colon_tilde);
-	run_test(test_colon_dot);
-	run_test(test_colon_h);
-	run_test(test_colon_t);
-	run_test(test_colon_r);
-	run_test(test_colon_e);
-	run_test(test_colon_s);
-	run_test(test_colon_gs);
-
-#ifdef _WIN32
-	run_test(test_colon_u);
-	run_test(test_windows_specific);
-#endif
-
-	run_test(test_modif_without_macros);
-	run_test(test_with_quotes);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

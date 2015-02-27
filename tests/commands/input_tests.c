@@ -1,15 +1,10 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "seatest.h"
-
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
-
-extern cmds_conf_t cmds_conf;
-
-static cmd_info_t cmdi;
-static char *arg;
 
 static int goto_cmd(const cmd_info_t* cmd_info);
 static int exec_cmd(const cmd_info_t* cmd_info);
@@ -24,8 +19,12 @@ static int invert_cmd(const cmd_info_t* cmd_info);
 static int substitute_cmd(const cmd_info_t* cmd_info);
 static int quit_cmd(const cmd_info_t* cmd_info);
 
-static const cmd_add_t commands[] =
-{
+extern cmds_conf_t cmds_conf;
+
+static cmd_info_t cmdi;
+static char *arg;
+
+static const cmd_add_t commands[] = {
 	{ .name = "",           .abbr = NULL,  .handler = goto_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 	{ .name = "!",          .abbr = NULL,  .handler = exec_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
@@ -51,6 +50,11 @@ static const cmd_add_t commands[] =
 	{ .name = "quit",       .abbr = "q",   .handler = quit_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 };
+
+SETUP()
+{
+	add_builtin_commands(commands, ARRAY_LEN(commands));
+}
 
 static int
 goto_cmd(const cmd_info_t* cmd_info)
@@ -167,14 +171,7 @@ quit_cmd(const cmd_info_t* cmd_info)
 	return 0;
 }
 
-static void
-setup(void)
-{
-	add_builtin_commands(commands, ARRAY_LEN(commands));
-}
-
-static void
-test_leading_whitespace_trimming(void)
+TEST(leading_whitespace_trimming)
 {
 	assert_int_equal(0, execute_cmd("q"));
 	assert_int_equal(0, execute_cmd(" q"));
@@ -186,8 +183,7 @@ test_leading_whitespace_trimming(void)
 	assert_int_equal(0, execute_cmd("\t \tq"));
 }
 
-static void
-test_range_acceptance(void)
+TEST(range_acceptance)
 {
 	assert_int_equal(0, execute_cmd("%delete"));
 	assert_int_equal(0, execute_cmd(",%delete"));
@@ -197,15 +193,13 @@ test_range_acceptance(void)
 	assert_int_equal(CMDS_ERR_NO_RANGE_ALLOWED, execute_cmd("%;history"));
 }
 
-static void
-test_single_quote_doubling(void)
+TEST(single_quote_doubling)
 {
 	assert_int_equal(0, execute_cmd("delete 'file''with''single''quotes'"));
 	assert_string_equal("file'with'single'quotes", arg);
 }
 
-static void
-test_range(void)
+TEST(range)
 {
 	cmds_conf.begin = 0;
 	cmds_conf.current = 50;
@@ -260,8 +254,7 @@ test_range(void)
 	assert_int_equal(0, cmdi.end);
 }
 
-static void
-test_semicolon_range(void)
+TEST(semicolon_range)
 {
 	cmds_conf.begin = 0;
 	cmds_conf.current = 50;
@@ -293,8 +286,7 @@ test_semicolon_range(void)
 	assert_true(cmdi.emark);
 }
 
-static void
-test_range_plus_minus(void)
+TEST(range_plus_minus)
 {
 	cmds_conf.begin = 0;
 	cmds_conf.current = 50;
@@ -333,8 +325,7 @@ test_range_plus_minus(void)
 	assert_int_equal(0, cmdi.end);
 }
 
-static void
-test_range_comma_vs_semicolon_bases(void)
+TEST(range_comma_vs_semicolon_bases)
 {
 	cmds_conf.begin = 0;
 	cmds_conf.current = 0;
@@ -349,8 +340,7 @@ test_range_comma_vs_semicolon_bases(void)
 	assert_int_equal(3, cmdi.end);
 }
 
-static void
-test_range_and_spaces(void)
+TEST(range_and_spaces)
 {
 	cmds_conf.begin = 10;
 	cmds_conf.current = 50;
@@ -367,8 +357,7 @@ test_range_and_spaces(void)
 	assert_true(cmdi.emark);
 }
 
-static void
-test_empty_range_empty_command_called(void)
+TEST(empty_range_empty_command_called)
 {
 	cmds_conf.begin = 10;
 	cmds_conf.current = 50;
@@ -387,15 +376,13 @@ test_empty_range_empty_command_called(void)
 	assert_int_equal(50, cmdi.end);
 }
 
-static void
-test_bang_acceptance(void)
+TEST(bang_acceptance)
 {
 	assert_int_equal(0, execute_cmd("q"));
 	assert_int_equal(CMDS_ERR_NO_BANG_ALLOWED, execute_cmd("history!"));
 }
 
-static void
-test_bang(void)
+TEST(bang)
 {
 	assert_int_equal(0, execute_cmd("q"));
 	assert_false(cmdi.emark);
@@ -412,15 +399,13 @@ test_bang(void)
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("q !"));
 }
 
-static void
-test_qmark_acceptance(void)
+TEST(qmark_acceptance)
 {
 	assert_int_equal(0, execute_cmd("invert?"));
 	assert_int_equal(CMDS_ERR_NO_QMARK_ALLOWED, execute_cmd("history?"));
 }
 
-static void
-test_qmark(void)
+TEST(qmark)
 {
 	assert_int_equal(0, execute_cmd("invert"));
 	assert_false(cmdi.qmark);
@@ -431,8 +416,7 @@ test_qmark(void)
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("invert ?"));
 }
 
-static void
-test_args(void)
+TEST(args)
 {
 	assert_int_equal(CMDS_ERR_TOO_FEW_ARGS, execute_cmd("call"));
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("call a b"));
@@ -447,8 +431,7 @@ test_args(void)
 	assert_int_equal(4, cmdi.argc);
 }
 
-static void
-test_count(void)
+TEST(count)
 {
 	assert_int_equal(0, execute_cmd("delete 10"));
 	assert_int_equal(1, cmdi.argc);
@@ -459,15 +442,13 @@ test_count(void)
 	assert_string_equal("10", arg);
 }
 
-static void
-test_end_characters(void)
+TEST(end_characters)
 {
 	assert_int_equal(0, execute_cmd("call a"));
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("call, a"));
 }
 
-static void
-test_custom_separator(void)
+TEST(custom_separator)
 {
 	assert_int_equal(0, execute_cmd("s"));
 	assert_int_equal(0, cmdi.argc);
@@ -480,8 +461,7 @@ test_custom_separator(void)
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("s/some/thing/g/j"));
 }
 
-static void
-test_custom_separator_and_arg_format(void)
+TEST(custom_separator_and_arg_format)
 {
 	assert_int_equal(0, execute_cmd("s/\"so\"me\"/thing/g"));
 	assert_int_equal(3, cmdi.argc);
@@ -492,8 +472,7 @@ test_custom_separator_and_arg_format(void)
 	assert_string_equal("'some'", arg);
 }
 
-static void
-test_custom_separator_and_emark(void)
+TEST(custom_separator_and_emark)
 {
 	assert_int_equal(0, execute_cmd("s!"));
 	assert_int_equal(0, cmdi.argc);
@@ -514,8 +493,7 @@ test_custom_separator_and_emark(void)
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("s!/some/thing/g/j"));
 }
 
-static void
-test_regexp_flag_strips_slashes(void)
+TEST(regexp_flag_strips_slashes)
 {
 	assert_int_equal(0, execute_cmd("e /te|xt/"));
 	assert_int_equal(1, cmdi.argc);
@@ -526,8 +504,7 @@ test_regexp_flag_strips_slashes(void)
 	assert_string_equal("te|xt", arg);
 }
 
-static void
-test_regexp_flag_slashes_and_spaces(void)
+TEST(regexp_flag_slashes_and_spaces)
 {
 	assert_int_equal(0, execute_cmd("filter /te|xt/i"));
 	assert_int_equal(2, cmdi.argc);
@@ -538,8 +515,7 @@ test_regexp_flag_slashes_and_spaces(void)
 	assert_string_equal("te|xt", arg);
 }
 
-static void
-test_regexp_flag_bang_slashes_and_spaces(void)
+TEST(regexp_flag_bang_slashes_and_spaces)
 {
 	assert_int_equal(0, execute_cmd("filter! /te|xt/i"));
 	assert_int_equal(2, cmdi.argc);
@@ -550,8 +526,7 @@ test_regexp_flag_bang_slashes_and_spaces(void)
 	assert_string_equal("te|xt", arg);
 }
 
-static void
-test_backgrounding(void)
+TEST(backgrounding)
 {
 	assert_int_equal(0, execute_cmd("e &"));
 	assert_int_equal(1, cmdi.argc);
@@ -567,23 +542,20 @@ test_backgrounding(void)
 	assert_int_equal(1, cmdi.bg);
 }
 
-static void
-test_no_args_after_qmark_1(void)
+TEST(no_args_after_qmark_1)
 {
 	assert_int_equal(0, execute_cmd("filter?"));
 	assert_int_equal(0, execute_cmd("filter?      "));
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("filter? some_thing"));
 }
 
-static void
-test_args_after_qmark_2(void)
+TEST(args_after_qmark_2)
 {
 	assert_int_equal(0, execute_cmd("call? arg"));
 	assert_int_equal(0, execute_cmd("call? some_thing"));
 }
 
-static void
-test_no_space_before_e_and_q_marks(void)
+TEST(no_space_before_e_and_q_marks)
 {
 	assert_int_equal(0, execute_cmd("filter?"));
 	assert_int_equal(cmdi.argc, 0);
@@ -594,8 +566,7 @@ test_no_space_before_e_and_q_marks(void)
 	assert_false(cmdi.qmark);
 }
 
-static void
-test_only_one_mark(void)
+TEST(only_one_mark)
 {
 	assert_int_equal(0, execute_cmd("filter?"));
 	assert_int_equal(cmdi.argc, 0);
@@ -618,8 +589,7 @@ test_only_one_mark(void)
 	assert_false(cmdi.qmark);
 }
 
-static void
-test_args_whitespace_trimming(void)
+TEST(args_whitespace_trimming)
 {
 	assert_int_equal(0, execute_cmd("call hi"));
 	assert_int_equal(1, cmdi.argc);
@@ -642,8 +612,7 @@ test_args_whitespace_trimming(void)
 	assert_string_equal("hi\\ ", arg);
 }
 
-static void
-test_bg_and_no_args(void)
+TEST(bg_and_no_args)
 {
 	assert_int_equal(0, execute_cmd("file"));
 	assert_false(cmdi.bg);
@@ -652,8 +621,7 @@ test_bg_and_no_args(void)
 	assert_true(cmdi.bg);
 }
 
-static void
-test_bg_followed_by_whitespace(void)
+TEST(bg_followed_by_whitespace)
 {
 	assert_int_equal(0, execute_cmd("file & "));
 	assert_true(cmdi.bg);
@@ -668,8 +636,7 @@ test_bg_followed_by_whitespace(void)
 	assert_true(cmdi.bg);
 }
 
-static void
-test_short_forms(void)
+TEST(short_forms)
 {
 	assert_int_equal(0, execute_cmd("e"));
 	assert_int_equal(2, cmdi.usr1);
@@ -687,8 +654,7 @@ test_short_forms(void)
 	assert_int_equal(1, cmdi.usr1);
 }
 
-static void
-test_qmark_and_bg(void)
+TEST(qmark_and_bg)
 {
 	assert_int_equal(0, execute_cmd("file &"));
 	assert_true(cmdi.bg);
@@ -701,8 +667,7 @@ test_qmark_and_bg(void)
 	assert_true(cmdi.qmark);
 }
 
-static void
-test_extra_long_command_name(void)
+TEST(extra_long_command_name)
 {
 	char cmd_name[1024];
 
@@ -712,69 +677,19 @@ test_extra_long_command_name(void)
 	assert_false(execute_cmd(cmd_name) == 0);
 }
 
-static void
-test_emark_is_checked_before_number_of_args(void)
+TEST(emark_is_checked_before_number_of_args)
 {
 	assert_int_equal(CMDS_ERR_NO_BANG_ALLOWED, execute_cmd("call!"));
 }
 
-static void
-test_qmark_is_checked_before_number_of_args(void)
+TEST(qmark_is_checked_before_number_of_args)
 {
 	assert_int_equal(CMDS_ERR_NO_QMARK_ALLOWED, execute_cmd("quit? from here"));
 }
 
-static void
-test_missing_quotes_are_allowed(void)
+TEST(missing_quotes_are_allowed)
 {
 	assert_int_equal(CMDS_ERR_INVALID_ARG, execute_cmd("call 'ismissing"));
-}
-
-void
-input_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-
-	run_test(test_leading_whitespace_trimming);
-	run_test(test_range_acceptance);
-	run_test(test_single_quote_doubling);
-	run_test(test_range);
-	run_test(test_semicolon_range);
-	run_test(test_range_plus_minus);
-	run_test(test_range_comma_vs_semicolon_bases);
-	run_test(test_range_and_spaces);
-	run_test(test_empty_range_empty_command_called);
-	run_test(test_bang_acceptance);
-	run_test(test_bang);
-	run_test(test_qmark_acceptance);
-	run_test(test_qmark);
-	run_test(test_args);
-	run_test(test_count);
-	run_test(test_end_characters);
-	run_test(test_custom_separator);
-	run_test(test_custom_separator_and_arg_format);
-	run_test(test_custom_separator_and_emark);
-	run_test(test_regexp_flag_strips_slashes);
-	run_test(test_regexp_flag_slashes_and_spaces);
-	run_test(test_regexp_flag_bang_slashes_and_spaces);
-	run_test(test_backgrounding);
-	run_test(test_no_args_after_qmark_1);
-	run_test(test_args_after_qmark_2);
-	run_test(test_no_space_before_e_and_q_marks);
-	run_test(test_only_one_mark);
-	run_test(test_args_whitespace_trimming);
-	run_test(test_bg_and_no_args);
-	run_test(test_bg_followed_by_whitespace);
-	run_test(test_short_forms);
-	run_test(test_qmark_and_bg);
-	run_test(test_extra_long_command_name);
-	run_test(test_emark_is_checked_before_number_of_args);
-	run_test(test_qmark_is_checked_before_number_of_args);
-	run_test(test_missing_quotes_are_allowed);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

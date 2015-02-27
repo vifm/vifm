@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern char cpoptions[10];
 extern int cpoptions_handler_calls;
 
-static void
-test_assignment_to_something_calls_handler_only_once(void)
+TEST(assignment_to_something_calls_handler_only_once)
 {
 	int res;
 
@@ -19,8 +18,7 @@ test_assignment_to_something_calls_handler_only_once(void)
 	assert_string_equal("abc", cpoptions);
 }
 
-static void
-test_assignment_to_something(void)
+TEST(assignment_to_something)
 {
 	int res;
 
@@ -31,8 +29,7 @@ test_assignment_to_something(void)
 	assert_string_equal("ac", cpoptions);
 }
 
-static void
-test_assignment_to_same_handler_not_called(void)
+TEST(assignment_to_same_handler_not_called)
 {
 	int res;
 
@@ -48,8 +45,7 @@ test_assignment_to_same_handler_not_called(void)
 	assert_int_equal(0, res);
 }
 
-static void
-test_assignment_to_empty(void)
+TEST(assignment_to_empty)
 {
 	int res;
 
@@ -62,8 +58,7 @@ test_assignment_to_empty(void)
 	assert_string_equal("", cpoptions);
 }
 
-static void
-test_char_addition(void)
+TEST(char_addition)
 {
 	int res;
 
@@ -76,8 +71,7 @@ test_char_addition(void)
 	assert_string_equal("acb", cpoptions);
 }
 
-static void
-test_char_removal(void)
+TEST(char_removal)
 {
 	int res;
 
@@ -90,8 +84,7 @@ test_char_removal(void)
 	assert_string_equal("c", cpoptions);
 }
 
-static void
-test_multiple_char_addition(void)
+TEST(multiple_char_addition)
 {
 	int res;
 
@@ -104,8 +97,7 @@ test_multiple_char_addition(void)
 	assert_string_equal("bac", cpoptions);
 }
 
-static void
-test_multiple_char_removal(void)
+TEST(multiple_char_removal)
 {
 	int res;
 
@@ -118,15 +110,13 @@ test_multiple_char_removal(void)
 	assert_string_equal("b", cpoptions);
 }
 
-static void
-test_chars_not_from_the_list_are_rejected_on_assignment(void)
+TEST(chars_not_from_the_list_are_rejected_on_assignment)
 {
 	const int res = set_options("cpoptions=yxz");
 	assert_false(res == 0);
 }
 
-static void
-test_chars_not_from_the_list_are_rejected_on_addition(void)
+TEST(chars_not_from_the_list_are_rejected_on_addition)
 {
 	int res;
 
@@ -138,8 +128,7 @@ test_chars_not_from_the_list_are_rejected_on_addition(void)
 	assert_false(res == 0);
 }
 
-static void
-test_chars_not_from_the_list_are_ignored_on_removal(void)
+TEST(chars_not_from_the_list_are_ignored_on_removal)
 {
 	int res;
 
@@ -152,8 +141,7 @@ test_chars_not_from_the_list_are_ignored_on_removal(void)
 	assert_string_equal("abc", cpoptions);
 }
 
-static void
-test_reset_compares_values_as_strings(void)
+TEST(reset_compares_values_as_strings)
 {
 	int res;
 
@@ -173,27 +161,6 @@ test_reset_compares_values_as_strings(void)
 	assert_int_equal(0, res);
 	assert_string_equal("", cpoptions);
 	assert_int_equal(0, cpoptions_handler_calls);
-}
-
-void
-charset_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_assignment_to_something_calls_handler_only_once);
-	run_test(test_assignment_to_something);
-	run_test(test_assignment_to_same_handler_not_called);
-	run_test(test_assignment_to_empty);
-	run_test(test_char_addition);
-	run_test(test_char_removal);
-	run_test(test_multiple_char_addition);
-	run_test(test_multiple_char_removal);
-	run_test(test_chars_not_from_the_list_are_rejected_on_assignment);
-	run_test(test_chars_not_from_the_list_are_rejected_on_addition);
-	run_test(test_chars_not_from_the_list_are_ignored_on_removal);
-	run_test(test_reset_compares_values_as_strings);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

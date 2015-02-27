@@ -1,6 +1,6 @@
-#include <string.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <string.h>
 
 #include "../../src/engine/cmds.h"
 
@@ -8,18 +8,7 @@ extern cmds_conf_t cmds_conf;
 
 cmd_info_t user_cmd_info;
 
-static void
-setup(void)
-{
-}
-
-static void
-teardown(void)
-{
-}
-
-static void
-test_empty_ok(void)
+TEST(empty_ok)
 {
 	const char cmd[] = "";
 	size_t len;
@@ -30,8 +19,7 @@ test_empty_ok(void)
 	assert_int_equal(0, len);
 }
 
-static void
-test_one_word_ok(void)
+TEST(one_word_ok)
 {
 	const char cmd[] = "a";
 	size_t len;
@@ -42,8 +30,7 @@ test_one_word_ok(void)
 	assert_int_equal(1, len);
 }
 
-static void
-test_two_words_ok(void)
+TEST(two_words_ok)
 {
 	const char cmd[] = "b a";
 	size_t len;
@@ -54,8 +41,7 @@ test_two_words_ok(void)
 	assert_int_equal(1, len);
 }
 
-static void
-test_trailing_spaces_ok(void)
+TEST(trailing_spaces_ok)
 {
 	const char cmd[] = "a    ";
 	size_t len;
@@ -66,8 +52,7 @@ test_trailing_spaces_ok(void)
 	assert_int_equal(1, len);
 }
 
-static void
-test_single_quotes_ok(void)
+TEST(single_quotes_ok)
 {
 	const char cmd[] = "b  'hello'";
 	size_t len;
@@ -78,8 +63,7 @@ test_single_quotes_ok(void)
 	assert_int_equal(7, len);
 }
 
-static void
-test_double_quotes_ok(void)
+TEST(double_quotes_ok)
 {
 	const char cmd[] = "b \"hi\"";
 	size_t len;
@@ -90,8 +74,7 @@ test_double_quotes_ok(void)
 	assert_int_equal(4, len);
 }
 
-static void
-test_ending_space_ok(void)
+TEST(ending_space_ok)
 {
 	const char cmd[] = "b a\\ ";
 	size_t len;
@@ -102,23 +85,5 @@ test_ending_space_ok(void)
 	assert_int_equal(3, len);
 }
 
-void
-last_argument_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_empty_ok);
-	run_test(test_one_word_ok);
-	run_test(test_two_words_ok);
-	run_test(test_trailing_spaces_ok);
-	run_test(test_single_quotes_ok);
-	run_test(test_double_quotes_ok);
-	run_test(test_ending_space_ok);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

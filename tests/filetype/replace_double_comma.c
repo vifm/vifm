@@ -1,11 +1,10 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/filetype.h"
 
-static void
-test_no_comma(void)
+TEST(no_comma)
 {
 	char buf1[] = "echo something";
 	char buf2[] = "echo something";
@@ -15,8 +14,7 @@ test_no_comma(void)
 	assert_string_equal("echo something", buf2);
 }
 
-static void
-test_one_command(void)
+TEST(one_command)
 {
 	char buf1[] = "echo tpattern,,with,,comma";
 	char buf2[] = "echo tpattern,,with,,comma";
@@ -26,8 +24,7 @@ test_one_command(void)
 	assert_string_equal("echo tpattern,with,comma", buf2);
 }
 
-static void
-test_many_commands(void)
+TEST(many_commands)
 {
 	char buf1[] = "echo first,,one,echo second,,one";
 	char buf2[] = "echo first,,one,echo second,,one";
@@ -37,16 +34,5 @@ test_many_commands(void)
 	assert_string_equal("echo first,one", buf2);
 }
 
-void
-replace_double_comma_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_no_comma);
-	run_test(test_one_command);
-	run_test(test_many_commands);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

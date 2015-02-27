@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern int fastrun;
 extern const char *value;
 
-static void
-test_colon(void)
+TEST(colon)
 {
 	optval_t val = { .str_val = "/home/tmp" };
 	fastrun = 0;
@@ -17,16 +16,6 @@ test_colon(void)
 
 	assert_true(set_options("fusehome:/var/fuse") == 0);
 	assert_string_equal("/var/fuse", value);
-}
-
-void
-input_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_colon);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

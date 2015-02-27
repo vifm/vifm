@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 
@@ -7,10 +7,29 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 
+static void progress_changed(const io_progress_t *const progress);
+
 static int invoked_eta;
 static int invoked_progress;
 
 static ioeta_estim_t *estim;
+
+SETUP()
+{
+	estim = ioeta_alloc(NULL);
+
+	invoked_eta = 0;
+	invoked_progress = 0;
+
+	ionotif_register(&progress_changed);
+}
+
+TEARDOWN()
+{
+	ionotif_register(NULL);
+
+	ioeta_free(estim);
+}
 
 static void
 progress_changed(const io_progress_t *const progress)
@@ -26,27 +45,7 @@ progress_changed(const io_progress_t *const progress)
 	}
 }
 
-static void
-setup(void)
-{
-	estim = ioeta_alloc(NULL);
-
-	invoked_eta = 0;
-	invoked_progress = 0;
-
-	ionotif_register(&progress_changed);
-}
-
-static void
-teardown(void)
-{
-	ionotif_register(NULL);
-
-	ioeta_free(estim);
-}
-
-static void
-test_cp_file_invokes_ionotif(void)
+TEST(cp_file_invokes_ionotif)
 {
 	ioeta_calculate(estim, "../read/binary-data", 0);
 
@@ -65,8 +64,8 @@ test_cp_file_invokes_ionotif(void)
 	assert_true(invoked_progress >= 1);
 }
 
-static void
-test_mv_file_invokes_ionotif(void)
+/* Relies on the previous test. */
+TEST(mv_file_invokes_ionotif)
 {
 	ioeta_calculate(estim, "copy-of-binary-data", 0);
 
@@ -85,8 +84,8 @@ test_mv_file_invokes_ionotif(void)
 	assert_true(invoked_progress >= 1);
 }
 
-static void
-test_rm_file_invokes_ionotif(void)
+/* Relies on the previous test. */
+TEST(rm_file_invokes_ionotif)
 {
 	ioeta_calculate(estim, "copy-of-binary-data", 0);
 
@@ -104,8 +103,7 @@ test_rm_file_invokes_ionotif(void)
 	assert_true(invoked_progress >= 1);
 }
 
-static void
-test_cp_dir_invokes_ionotif(void)
+TEST(cp_dir_invokes_ionotif)
 {
 	ioeta_calculate(estim, "../read", 0);
 
@@ -124,8 +122,8 @@ test_cp_dir_invokes_ionotif(void)
 	assert_true(invoked_progress >= 1);
 }
 
-static void
-test_mv_dir_invokes_ionotif(void)
+/* Relies on the previous test. */
+TEST(mv_dir_invokes_ionotif)
 {
 	ioeta_calculate(estim, "moved-read", 0);
 
@@ -144,8 +142,8 @@ test_mv_dir_invokes_ionotif(void)
 	assert_true(invoked_progress >= 1);
 }
 
-static void
-test_rm_dir_invokes_ionotif(void)
+/* Relies on the previous test. */
+TEST(rm_dir_invokes_ionotif)
 {
 	ioeta_calculate(estim, "moved-read", 0);
 
@@ -161,27 +159,6 @@ test_rm_dir_invokes_ionotif(void)
 
 	assert_int_equal(6, invoked_eta);
 	assert_true(invoked_progress >= 1);
-}
-
-void
-invoked_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	/* Each of the following tests rely on the previous one. */
-	run_test(test_cp_file_invokes_ionotif);
-	run_test(test_mv_file_invokes_ionotif);
-	run_test(test_rm_file_invokes_ionotif);
-
-	/* Each of the following tests rely on the previous one. */
-	run_test(test_cp_dir_invokes_ionotif);
-	run_test(test_mv_dir_invokes_ionotif);
-	run_test(test_rm_dir_invokes_ionotif);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
