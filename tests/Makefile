@@ -115,12 +115,12 @@ bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. | bin/build/$(BINSUBDIR)/$1
 bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
 
-$1 $1.run: bin/$(BINSUBDIR)/$1$(exe_suffix)
+$1: bin/$(BINSUBDIR)/$1$(exe_suffix)
 	@$$^
 
 build: bin/$(BINSUBDIR)/$1$(exe_suffix)
 
-check: $1.run
+check: $1
 
 endef
 
