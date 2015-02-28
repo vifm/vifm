@@ -1,8 +1,8 @@
+#include <stic.h>
+
 #include <unistd.h> /* chdir() unlink() */
 
 #include <string.h> /* memset() */
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -13,8 +13,7 @@
 #define ASSERT_STRCMP_EQUAL(a, b) \
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
 
-static void
-setup(void)
+SETUP()
 {
 	cfg.sort_numbers = 1;
 
@@ -28,8 +27,7 @@ setup(void)
 	lwin.dir_entry[2].type = FT_REG;
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -42,8 +40,7 @@ teardown(void)
 	lwin.list_rows = 0;
 }
 
-static void
-test_special_chars_ignore_case_sort(void)
+TEST(special_chars_ignore_case_sort)
 {
 	lwin.sort[0] = SK_BY_INAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
@@ -56,8 +53,7 @@ test_special_chars_ignore_case_sort(void)
 /* Windows is really bad at handling links. */
 #ifndef _WIN32
 
-static void
-test_symlink_to_dir(void)
+TEST(symlink_to_dir)
 {
 	assert_int_equal(0, chdir("test-data/sandbox"));
 	assert_int_equal(0, symlink(".", "self"));
@@ -83,8 +79,7 @@ test_symlink_to_dir(void)
 
 #endif
 
-static void
-test_versort_without_numbers(void)
+TEST(versort_without_numbers)
 {
 	const char *s, *t;
 
@@ -121,8 +116,7 @@ test_versort_without_numbers(void)
 	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 }
 
-static void
-test_versort_with_numbers(void)
+TEST(versort_with_numbers)
 {
 	const char *s, *t;
 
@@ -163,8 +157,7 @@ test_versort_with_numbers(void)
 	assert_true(strnumcmp(s, t) > 0);
 }
 
-static void
-test_versort_numbers_only(void)
+TEST(versort_numbers_only)
 {
 	const char *s, *t;
 
@@ -213,8 +206,7 @@ test_versort_numbers_only(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
-static void
-test_versort_numbers_only_and_letters_only(void)
+TEST(versort_numbers_only_and_letters_only)
 {
 	const char *s, *t;
 
@@ -227,8 +219,7 @@ test_versort_numbers_only_and_letters_only(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
-static void
-test_versort_zero_and_zerox(void)
+TEST(versort_zero_and_zerox)
 {
 	const char *s, *t;
 
@@ -237,8 +228,7 @@ test_versort_zero_and_zerox(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
-static void
-test_versort_zerox_and_one(void)
+TEST(versort_zerox_and_one)
 {
 	const char *s, *t;
 
@@ -247,8 +237,7 @@ test_versort_zerox_and_one(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
-static void
-test_versort_man_page_example(void)
+TEST(versort_man_page_example)
 {
 	/* According to the `man strverscmp`:
 	 *   000 < 00 < 01 < 010 < 09 < 0 < 1 < 9 < 10.
@@ -266,32 +255,6 @@ test_versort_man_page_example(void)
 	assert_true(strnumcmp("0", "1") < 0);
 	assert_true(strnumcmp("1", "9") < 0);
 	assert_true(strnumcmp("9", "10") < 0);
-}
-
-void
-sort_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_special_chars_ignore_case_sort);
-
-#ifndef _WIN32
-	/* Windows is really bad at handling links. */
-	run_test(test_symlink_to_dir);
-#endif
-
-	run_test(test_versort_without_numbers);
-	run_test(test_versort_with_numbers);
-	run_test(test_versort_numbers_only);
-	run_test(test_versort_numbers_only_and_letters_only);
-	run_test(test_versort_zero_and_zerox);
-	run_test(test_versort_zerox_and_one);
-	run_test(test_versort_man_page_example);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

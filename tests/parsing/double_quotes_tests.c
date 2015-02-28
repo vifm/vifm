@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdlib.h> /* free() */
 
@@ -7,32 +7,27 @@
 
 #include "asserts.h"
 
-static void
-setup(void)
+SETUP()
 {
 	init_parser(NULL);
 }
 
-static void
-test_empty_ok(void)
+TEST(empty_ok)
 {
 	ASSERT_OK("\"\"", "");
 }
 
-static void
-test_simple_ok(void)
+TEST(simple_ok)
 {
 	ASSERT_OK("\"test\"", "test");
 }
 
-static void
-test_not_closed_error(void)
+TEST(not_closed_error)
 {
 	ASSERT_FAIL("\"test", PE_MISSING_QUOTE);
 }
 
-static void
-test_concatenation(void)
+TEST(concatenation)
 {
 	ASSERT_OK("\"NV\".\"AR\"", "NVAR");
 	ASSERT_OK("\"NV\" .\"AR\"", "NVAR");
@@ -40,47 +35,24 @@ test_concatenation(void)
 	ASSERT_OK("\"NV\" . \"AR\"", "NVAR");
 }
 
-static void
-test_double_quote_escaping_ok(void)
+TEST(double_quote_escaping_ok)
 {
 	ASSERT_OK("\"\\\"\"", "\"");
 }
 
-static void
-test_special_chars_ok(void)
+TEST(special_chars_ok)
 {
 	ASSERT_OK("\"\\t\"", "\t");
 }
 
-static void
-test_spaces_ok(void)
+TEST(spaces_ok)
 {
 	ASSERT_OK("\" s y \"", " s y ");
 }
 
-static void
-test_dot_ok(void)
+TEST(dot_ok)
 {
 	ASSERT_OK("\"a . c\"", "a . c");
-}
-
-void
-double_quoted_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(&setup);
-
-	run_test(test_empty_ok);
-	run_test(test_simple_ok);
-	run_test(test_not_closed_error);
-	run_test(test_concatenation);
-	run_test(test_double_quote_escaping_ok);
-	run_test(test_special_chars_ok);
-	run_test(test_spaces_ok);
-	run_test(test_dot_ok);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

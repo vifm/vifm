@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stdio.h> /* FILE fopen() fclose() */
 
@@ -11,8 +11,7 @@
 static const char *const FILE_NAME = "file-to-remove";
 static const char *const DIRECTORY_NAME = "directory-to-remove";
 
-static void
-test_empty_directory_is_removed(void)
+TEST(empty_directory_is_removed)
 {
 	make_dir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
@@ -28,8 +27,7 @@ test_empty_directory_is_removed(void)
 	assert_int_equal(-1, access(DIRECTORY_NAME, F_OK));
 }
 
-static void
-test_non_empty_directory_is_not_removed(void)
+TEST(non_empty_directory_is_not_removed)
 {
 	make_dir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
@@ -61,17 +59,6 @@ test_non_empty_directory_is_not_removed(void)
 	}
 
 	assert_int_equal(-1, access(DIRECTORY_NAME, F_OK));
-}
-
-void
-rmdir_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_empty_directory_is_removed);
-	run_test(test_non_empty_directory_is_not_removed);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

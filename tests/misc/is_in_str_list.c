@@ -1,16 +1,14 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/str.h"
 
-static void
-test_empty_strings(void)
+TEST(empty_strings)
 {
 	assert_false(is_in_str_list("", '\0', ""));
 	assert_false(is_in_str_list("", ',', ""));
 }
 
-static void
-test_empty_element(void)
+TEST(empty_element)
 {
 	assert_false(is_in_str_list("a,b", ',', ""));
 
@@ -19,8 +17,7 @@ test_empty_element(void)
 	assert_false(is_in_str_list("a,b,", ',', ""));
 }
 
-static void
-test_singe_character_string(void)
+TEST(singe_character_string)
 {
 	assert_false(is_in_str_list("a,b,c", ',', "x"));
 
@@ -29,8 +26,7 @@ test_singe_character_string(void)
 	assert_true(is_in_str_list("a,b,c", ',', "c"));
 }
 
-static void
-test_multi_character_string(void)
+TEST(multi_character_string)
 {
 	assert_false(is_in_str_list("aa,bb,cc", ',', "xx"));
 
@@ -43,8 +39,7 @@ test_multi_character_string(void)
 	assert_true(is_in_str_list("aa,bb,cc", ',', "cc"));
 }
 
-static void
-test_non_comma_separator(void)
+TEST(non_comma_separator)
 {
 	assert_false(is_in_str_list("aa|bb|cc", '|', "xx"));
 	assert_true(is_in_str_list("aa|bb|cc", '|', "aa"));
@@ -56,27 +51,11 @@ test_non_comma_separator(void)
 	assert_true(is_in_str_list("aa*bb=cc", '*', "aa"));
 }
 
-static void
-test_case_insensitive(void)
+TEST(case_insensitive)
 {
 	assert_true(is_in_str_list("aA,BB,Cc", ',', "aa"));
 	assert_true(is_in_str_list("aA,BB,Cc", ',', "bb"));
 	assert_true(is_in_str_list("aA,BB,Cc", ',', "cc"));
-}
-
-void
-is_in_str_list_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_empty_strings);
-	run_test(test_empty_element);
-	run_test(test_singe_character_string);
-	run_test(test_multi_character_string);
-	run_test(test_non_comma_separator);
-	run_test(test_case_insensitive);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

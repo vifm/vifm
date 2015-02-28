@@ -1,18 +1,16 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/engine/variables.h"
 
-static void
-test_full_tree_args_ok(void)
+TEST(full_tree_args_ok)
 {
 	assert_true(let_variables("$VAR = 'VAL'") == 0);
 	assert_true(let_variables("$VAR .= 'VAL'") == 0);
 }
 
-static void
-test_full_two_args_ok(void)
+TEST(full_two_args_ok)
 {
 	assert_true(let_variables("$VAR ='VAL'") == 0);
 	assert_true(let_variables("$VAR .='VAL'") == 0);
@@ -20,50 +18,43 @@ test_full_two_args_ok(void)
 	assert_true(let_variables("$VAR.= 'VAL'") == 0);
 }
 
-static void
-test_full_one_arg_ok(void)
+TEST(full_one_arg_ok)
 {
 	assert_true(let_variables("$VAR='VAL'") == 0);
 	assert_true(let_variables("$VAR.='VAL'") == 0);
 }
 
-static void
-test_no_quotes_fail(void)
+TEST(no_quotes_fail)
 {
 	assert_false(let_variables("$VAR=VAL") == 0);
 	assert_false(let_variables("$VAR.=VAL") == 0);
 }
 
-static void
-test_single_quotes_ok(void)
+TEST(single_quotes_ok)
 {
 	assert_true(let_variables("$VAR='VAL'") == 0);
 	assert_true(let_variables("$VAR.='VAL'") == 0);
 }
 
-static void
-test_double_quotes_ok(void)
+TEST(double_quotes_ok)
 {
 	assert_true(let_variables("$VAR=\"VAL\"") == 0);
 	assert_true(let_variables("$VAR.=\"VAL\"") == 0);
 }
 
-static void
-test_trailing_spaces_ok(void)
+TEST(trailing_spaces_ok)
 {
 	assert_true(let_variables("$VAR = \"VAL\" ") == 0);
 	assert_true(let_variables("$VAR .= \"VAL\" ") == 0);
 }
 
-static void
-test_too_many_arguments_fail(void)
+TEST(too_many_arguments_fail)
 {
 	assert_false(let_variables("$VAR = \"VAL\" bbb") == 0);
 	assert_false(let_variables("$VAR .= \"VAL\" $aaa") == 0);
 }
 
-static void
-test_incomplete_two_args_fail(void)
+TEST(incomplete_two_args_fail)
 {
 	assert_false(let_variables("$VAR =") == 0);
 	assert_false(let_variables("$VAR .=") == 0);
@@ -71,8 +62,7 @@ test_incomplete_two_args_fail(void)
 	assert_false(let_variables(".= VAL") == 0);
 }
 
-static void
-test_incomplete_one_arg_fail(void)
+TEST(incomplete_one_arg_fail)
 {
 	assert_false(let_variables("$VAR") == 0);
 	assert_false(let_variables("=") == 0);
@@ -80,106 +70,60 @@ test_incomplete_one_arg_fail(void)
 	assert_false(let_variables("VAL") == 0);
 }
 
-static void
-test_no_dollar_sign_fail(void)
+TEST(no_dollar_sign_fail)
 {
 	assert_false(let_variables("VAR='VAL'") == 0);
 	assert_false(let_variables("VAR.='VAL'") == 0);
 }
 
-static void
-test_env_variable_empty_name_fail(void)
+TEST(env_variable_empty_name_fail)
 {
 	assert_false(let_variables("$='VAL'") == 0);
 	assert_false(let_variables("$.='VAL'") == 0);
 }
 
-static void
-test_spaces_in_single_quotes_ok(void)
+TEST(spaces_in_single_quotes_ok)
 {
 	assert_true(let_variables("$VAR='a b c'") == 0);
 	assert_true(let_variables("$VAR.='a b c'") == 0);
 }
 
-static void
-test_spaces_in_double_quotes_ok(void)
+TEST(spaces_in_double_quotes_ok)
 {
 	assert_true(let_variables("$VAR=\"a b c\"") == 0);
 	assert_true(let_variables("$VAR.=\"a b c\"") == 0);
 }
 
-static void
-test_unlet_with_dollar_sign_ok(void)
+TEST(unlet_with_dollar_sign_ok)
 {
 	assert_true(unlet_variables("$VAR_A") == 0);
 }
 
-static void
-test_unlet_no_name_fail(void)
+TEST(unlet_no_name_fail)
 {
 	assert_true(unlet_variables("$") != 0);
 }
 
-static void
-test_unlet_nonexistent_envvar_fail(void)
+TEST(unlet_nonexistent_envvar_fail)
 {
 	assert_true(getenv("VAR") == NULL);
 	assert_true(unlet_variables("$VAR") != 0);
 }
 
-static void
-test_unlet_without_dollar_sign_fail(void)
+TEST(unlet_without_dollar_sign_fail)
 {
 	assert_true(unlet_variables("VAR_A") != 0);
 }
 
-static void
-test_let_alnum_and_underscore_ok(void)
+TEST(let_alnum_and_underscore_ok)
 {
 	assert_true(let_variables("$1_aZzA_0 = 'VAL'") == 0);
 }
 
-static void
-test_let_wrong_symbols_fail(void)
+TEST(let_wrong_symbols_fail)
 {
 	assert_true(let_variables("$.|a = 'VAL'") != 0);
 }
-
-void
-format_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_full_tree_args_ok);
-	run_test(test_full_two_args_ok);
-	run_test(test_full_one_arg_ok);
-
-	run_test(test_no_quotes_fail);
-	run_test(test_single_quotes_ok);
-	run_test(test_double_quotes_ok);
-
-	run_test(test_trailing_spaces_ok);
-	run_test(test_too_many_arguments_fail);
-	run_test(test_incomplete_two_args_fail);
-	run_test(test_incomplete_one_arg_fail);
-
-	run_test(test_no_dollar_sign_fail);
-	run_test(test_env_variable_empty_name_fail);
-
-	run_test(test_spaces_in_single_quotes_ok);
-	run_test(test_spaces_in_double_quotes_ok);
-
-	run_test(test_unlet_with_dollar_sign_ok);
-	run_test(test_unlet_no_name_fail);
-	run_test(test_unlet_nonexistent_envvar_fail);
-	run_test(test_unlet_without_dollar_sign_fail);
-
-	run_test(test_let_alnum_and_underscore_ok);
-	run_test(test_let_wrong_symbols_fail);
-
-	test_fixture_end();
-}
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

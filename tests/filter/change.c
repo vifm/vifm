@@ -1,9 +1,8 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/filter.h"
 
-static void
-test_regexp_is_changed(void)
+TEST(regexp_is_changed)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -18,8 +17,7 @@ test_regexp_is_changed(void)
 	filter_dispose(&filter);
 }
 
-static void
-test_case_sensitivity_is_changed(void)
+TEST(case_sensitivity_is_changed)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -33,17 +31,6 @@ test_case_sensitivity_is_changed(void)
 	assert_true(filter_matches(&filter, "aBCd"));
 
 	filter_dispose(&filter);
-}
-
-void
-change_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_regexp_is_changed);
-	run_test(test_case_sensitivity_is_changed);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

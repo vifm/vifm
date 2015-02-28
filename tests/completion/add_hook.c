@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
-
-#include "seatest.h"
 
 #include "../../src/engine/completion.h"
 #include "../../src/utils/str.h"
@@ -12,8 +12,7 @@ add_dquotes(const char match[])
 	return format_str("\"%s\"", match);
 }
 
-static void
-test_set_add_path_hook_sets_hook(void)
+TEST(set_add_path_hook_sets_hook)
 {
 	char *match;
 
@@ -40,8 +39,7 @@ test_set_add_path_hook_sets_hook(void)
 	vle_compl_set_add_path_hook(NULL);
 }
 
-static void
-test_set_add_path_hook_resets_hook(void)
+TEST(set_add_path_hook_resets_hook)
 {
 	char *match;
 
@@ -68,8 +66,7 @@ test_set_add_path_hook_resets_hook(void)
 	free(match);
 }
 
-static void
-test_last_match_is_pre_processed(void)
+TEST(last_match_is_pre_processed)
 {
 	char *match;
 
@@ -94,8 +91,7 @@ test_last_match_is_pre_processed(void)
 	free(match);
 }
 
-static void
-test_set_add_path_hook_does_not_affect_non_path_functions(void)
+TEST(set_add_path_hook_does_not_affect_non_path_functions)
 {
 	char *match;
 
@@ -118,19 +114,6 @@ test_set_add_path_hook_does_not_affect_non_path_functions(void)
 	match = vle_compl_next();
 	assert_string_equal("a", match);
 	free(match);
-}
-
-void
-add_hook_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_set_add_path_hook_sets_hook);
-	run_test(test_set_add_path_hook_resets_hook);
-	run_test(test_last_match_is_pre_processed);
-	run_test(test_set_add_path_hook_does_not_affect_non_path_functions);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

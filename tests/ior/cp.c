@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <sys/stat.h> /* stat chmod() */
 #include <sys/types.h> /* stat */
@@ -8,10 +8,13 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/utils.h"
+
 #include "utils.h"
 
-static void
-test_file_is_copied(void)
+static int not_windows(void);
+
+TEST(file_is_copied)
 {
 	{
 		io_args_t args =
@@ -31,8 +34,7 @@ test_file_is_copied(void)
 	}
 }
 
-static void
-test_empty_directory_is_copied(void)
+TEST(empty_directory_is_copied)
 {
 	create_empty_dir("empty-dir");
 
@@ -62,8 +64,7 @@ test_empty_directory_is_copied(void)
 	}
 }
 
-static void
-test_non_empty_directory_is_copied(void)
+TEST(non_empty_directory_is_copied)
 {
 	create_non_empty_dir("non-empty-dir", "a-file");
 
@@ -95,8 +96,7 @@ test_non_empty_directory_is_copied(void)
 	}
 }
 
-static void
-test_empty_nested_directory_is_copied(void)
+TEST(empty_nested_directory_is_copied)
 {
 	create_empty_nested_dir("non-empty-dir", "empty-nested-dir");
 
@@ -129,8 +129,7 @@ test_empty_nested_directory_is_copied(void)
 	}
 }
 
-static void
-test_non_empty_nested_directory_is_copied(void)
+TEST(non_empty_nested_directory_is_copied)
 {
 	create_non_empty_nested_dir("non-empty-dir", "nested-dir", "a-file");
 
@@ -162,8 +161,7 @@ test_non_empty_nested_directory_is_copied(void)
 	}
 }
 
-static void
-test_fails_to_overwrite_file_by_default(void)
+TEST(fails_to_overwrite_file_by_default)
 {
 	create_empty_file("a-file");
 
@@ -185,8 +183,7 @@ test_fails_to_overwrite_file_by_default(void)
 	}
 }
 
-static void
-test_fails_to_overwrite_dir_by_default(void)
+TEST(fails_to_overwrite_dir_by_default)
 {
 	create_empty_dir("empty-dir");
 
@@ -208,8 +205,7 @@ test_fails_to_overwrite_dir_by_default(void)
 	}
 }
 
-static void
-test_overwrites_file_when_asked(void)
+TEST(overwrites_file_when_asked)
 {
 	create_empty_file("a-file");
 
@@ -232,8 +228,7 @@ test_overwrites_file_when_asked(void)
 	}
 }
 
-static void
-test_overwrites_dir_when_asked(void)
+TEST(overwrites_dir_when_asked)
 {
 	create_empty_dir("dir");
 
@@ -264,8 +259,7 @@ test_overwrites_dir_when_asked(void)
 	}
 }
 
-static void
-test_directories_can_be_merged(void)
+TEST(directories_can_be_merged)
 {
 	create_empty_dir("first");
 
@@ -309,8 +303,7 @@ test_directories_can_be_merged(void)
 	}
 }
 
-static void
-test_fails_to_copy_directory_inside_itself(void)
+TEST(fails_to_copy_directory_inside_itself)
 {
 	create_empty_dir("empty-dir");
 
@@ -332,8 +325,7 @@ test_fails_to_copy_directory_inside_itself(void)
 	}
 }
 
-static void
-test_dir_permissions_are_preserved(void)
+TEST(dir_permissions_are_preserved)
 {
 	struct stat src;
 	struct stat dst;
@@ -377,8 +369,7 @@ test_dir_permissions_are_preserved(void)
 	}
 }
 
-static void
-test_permissions_are_set_in_correct_order(void)
+TEST(permissions_are_set_in_correct_order)
 {
 	struct stat src;
 	struct stat dst;
@@ -428,10 +419,8 @@ test_permissions_are_set_in_correct_order(void)
 	}
 }
 
-#ifndef WIN32
-
-static void
-test_symlink_to_file_is_symlink_after_copy(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(symlink_to_file_is_symlink_after_copy, IF(not_windows))
 {
 	{
 		io_args_t args =
@@ -473,8 +462,8 @@ test_symlink_to_file_is_symlink_after_copy(void)
 	}
 }
 
-static void
-test_symlink_to_dir_is_symlink_after_copy(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 {
 	{
 		io_args_t args =
@@ -516,35 +505,10 @@ test_symlink_to_dir_is_symlink_after_copy(void)
 	}
 }
 
-#endif
-
-void
-cp_tests(void)
+static int
+not_windows(void)
 {
-	test_fixture_start();
-
-	run_test(test_file_is_copied);
-	run_test(test_empty_directory_is_copied);
-	run_test(test_non_empty_directory_is_copied);
-	run_test(test_empty_nested_directory_is_copied);
-	run_test(test_non_empty_nested_directory_is_copied);
-	run_test(test_fails_to_overwrite_file_by_default);
-	run_test(test_fails_to_overwrite_dir_by_default);
-	run_test(test_overwrites_file_when_asked);
-	run_test(test_overwrites_dir_when_asked);
-	run_test(test_directories_can_be_merged);
-	run_test(test_fails_to_copy_directory_inside_itself);
-
-	run_test(test_dir_permissions_are_preserved);
-	run_test(test_permissions_are_set_in_correct_order);
-
-#ifndef WIN32
-	/* Creating symbolic links on Windows requires administrator rights. */
-	run_test(test_symlink_to_file_is_symlink_after_copy);
-	run_test(test_symlink_to_dir_is_symlink_after_copy);
-#endif
-
-	test_fixture_end();
+	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

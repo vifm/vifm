@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stddef.h> /* NULL */
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
@@ -9,8 +9,7 @@
 
 #include "asserts.h"
 
-static void
-vim_like_completion(void)
+TEST(vim_like_completion)
 {
 	init_commands();
 
@@ -36,16 +35,6 @@ vim_like_completion(void)
 	ASSERT_NEXT_MATCH("jobs");
 
 	reset_cmds();
-}
-
-void
-test_reserved_commands(void)
-{
-	test_fixture_start();
-
-	run_test(vim_like_completion);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

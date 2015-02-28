@@ -1,10 +1,9 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
-static void
-test_unmap_users(void)
+TEST(unmap_users)
 {
 	assert_int_equal(KEYS_UNKNOWN, execute_keys(L","));
 	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"q"));
@@ -26,8 +25,7 @@ test_unmap_users(void)
 	assert_int_equal(KEYS_UNKNOWN, execute_keys(L","));
 }
 
-static void
-test_unmap_remapped(void)
+TEST(unmap_remapped)
 {
 	assert_int_equal(0, execute_keys(L"j"));
 
@@ -40,15 +38,5 @@ test_unmap_remapped(void)
 	assert_int_equal(0, execute_keys(L"j"));
 }
 
-void
-unmap_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_unmap_users);
-	run_test(test_unmap_remapped);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
+/* vim: set cinoptions+=t0 : */

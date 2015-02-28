@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/utils/fs_limits.h"
 #include "../../src/utils/path.h"
@@ -9,8 +9,7 @@
 #define ABS_PREFIX "c:"
 #endif
 
-static void
-root_updir(void)
+TEST(root_updir)
 {
 	char buf[PATH_MAX];
 
@@ -27,8 +26,7 @@ root_updir(void)
 	assert_string_equal(ABS_PREFIX "/", buf);
 }
 
-static void
-not_root_updir(void)
+TEST(not_root_updir)
 {
 	char buf[PATH_MAX];
 
@@ -39,8 +37,7 @@ not_root_updir(void)
 	assert_string_equal("../../", buf);
 }
 
-static void
-remove_dots(void)
+TEST(remove_dots)
 {
 	char buf[PATH_MAX];
 
@@ -54,8 +51,7 @@ remove_dots(void)
 	assert_string_equal("./", buf);
 }
 
-static void
-excess_slashes(void)
+TEST(excess_slashes)
 {
 	char buf[PATH_MAX];
 
@@ -66,8 +62,7 @@ excess_slashes(void)
 	assert_string_equal(ABS_PREFIX "/", buf);
 }
 
-static void
-complex_tests(void)
+TEST(complex_tests)
 {
 	char buf[PATH_MAX];
 
@@ -82,31 +77,7 @@ complex_tests(void)
 	assert_string_equal(ABS_PREFIX "/a/", buf);
 }
 
-#ifdef _WIN32
-static void
-allow_unc(void)
-{
-	char buf[PATH_MAX];
-
-	canonicalize_path("//server", buf, sizeof(buf));
-	assert_string_equal("//server/", buf);
-
-	canonicalize_path("//server//resource", buf, sizeof(buf));
-	assert_string_equal("//server/resource/", buf);
-
-	canonicalize_path("//server//..", buf, sizeof(buf));
-	assert_string_equal("//server/", buf);
-
-	canonicalize_path("//server/../", buf, sizeof(buf));
-	assert_string_equal("//server/", buf);
-
-	canonicalize_path("//server/resource/../", buf, sizeof(buf));
-	assert_string_equal("//server/", buf);
-}
-#endif
-
-static void
-treat_many_dots_right(void)
+TEST(treat_many_dots_right)
 {
 	char buf[PATH_MAX];
 
@@ -161,22 +132,27 @@ treat_many_dots_right(void)
 #endif
 }
 
-void
-canonical(void)
-{
-	test_fixture_start();
-
-	run_test(root_updir);
-	run_test(not_root_updir);
-	run_test(remove_dots);
-	run_test(excess_slashes);
-	run_test(complex_tests);
 #ifdef _WIN32
-	run_test(allow_unc);
-#endif
-	run_test(treat_many_dots_right);
+TEST(allow_unc)
+{
+	char buf[PATH_MAX];
 
-	test_fixture_end();
+	canonicalize_path("//server", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server//resource", buf, sizeof(buf));
+	assert_string_equal("//server/resource/", buf);
+
+	canonicalize_path("//server//..", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server/../", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server/resource/../", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
 }
+#endif
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

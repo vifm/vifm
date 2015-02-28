@@ -9,10 +9,14 @@ else
     unix_env := true
 endif
 
-# enumerate test suites
-suites := colmgr commands column_view completion env escape fileops filetype
-suites += filter keys misc options parsing undo variables viewcolumns_parser
+# engine
+suites += commands completion keys options parsing variables
+# io
 suites += ioeta ionotif iop ior
+# ui
+suites += colmgr column_view viewcolumns_parser
+# everything else
+suites += env escape fileops filetype filter misc undo
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
@@ -29,8 +33,12 @@ ifndef win_env
     vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
+ifdef DEBUG
+BINSUBDIR := debug
+endif
+
 vifm_bin := ../src/vifm$(exe_suffix)
-vifm_obj := $(vifm_src:.c=.o) bin/build/stubs.o
+vifm_obj := $(vifm_src:.c=.o) bin/build/$(BINSUBDIR)/stubs.o
 
 ifdef win_env
     make_arg   := -f Makefile.win
@@ -38,9 +46,9 @@ ifdef win_env
 endif
 
 # setup compile and link flags (partially depends on OS)
-CFLAGS := -MMD -g -Wall -Werror -Iseatest -DTEST -include ../config.h
-CFLAGS += -Wno-char-subscripts
-LDFLAGS := -lpthread -g
+CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include ../config.h
+CFLAGS += -D_XOPEN_SOURCE -Wno-char-subscripts
+LDFLAGS := -lpthread
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
@@ -49,6 +57,11 @@ ifdef unix_env
 endif
 ifdef win_env
     LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+endif
+
+ifdef DEBUG
+CFLAGS += -g
+LDFLAGS += -g
 endif
 
 .PHONY: check build clean $(suites)
@@ -64,35 +77,50 @@ $(vifm_src:.c=.o): | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
-bin/build/stubs.o: stubs.c
+bin/build/$(BINSUBDIR)/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
 
-bin/build/seatest.o: seatest/seatest.c
+bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
 	gcc -c -o $@ $(CFLAGS) $<
+
+bin/$(BINSUBDIR)/:
+	mkdir -p $$@
+
+# this function of two arguments (array and element) returns index of the
+# element in the array
+pos = $(strip $(eval T := ) \
+              $(eval i := 0) \
+              $(foreach elem, $1, \
+                        $(if $(filter $2,$(elem)), \
+                             $(eval i := $(words $T)), \
+                             $(eval T := $T $(elem)))) \
+              $i)
 
 # suite definition template, takes single argument: name of the suite
 define suite_template
 
 $1.src := $$(wildcard $1/*.c)
-$1.obj := $$($1.src:%.c=bin/build/%.o)
+$1.obj := $$($1.src:%.c=bin/build/$(BINSUBDIR)/%.o)
 
 deps += $$($1.obj:.o=.d)
 
-bin/$1$(exe_suffix): $$($1.obj) bin/build/seatest.o $(vifm_obj) | $(vifm_bin)
+bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
+                                  $(vifm_obj) | $(vifm_bin) bin/$(BINSUBDIR)/
 	gcc -o $$@ $$^ $(LDFLAGS)
 
-bin/build/$1/%.o: $1/%.c | bin/build/$1
-	gcc -c -o $$@ $(CFLAGS) $$<
+bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. | bin/build/$(BINSUBDIR)/$1
+	gcc -c -o $$@ $(CFLAGS) -DTESTID=$$(call pos, $$($1.obj), $$@) \
+	                        -DMAXTESTID=$$(words $$($1.obj)) $$<
 
-bin/build/$1:
+bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
 
-$1 $1.run: bin/$1$(exe_suffix)
+$1: bin/$(BINSUBDIR)/$1$(exe_suffix)
 	@$$^
 
-build: bin/$1$(exe_suffix)
+build: bin/$(BINSUBDIR)/$1$(exe_suffix)
 
-check: $1.run
+check: $1
 
 endef
 
@@ -100,4 +128,4 @@ endef
 $(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
 
 # import dependencies calculated by the compiler
-include $(wildcard $(deps) bin/build/seatest.d bin/build/stubs.d)
+include $(wildcard $(deps) bin/build/stic.d bin/build/stubs.d)

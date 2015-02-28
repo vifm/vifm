@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -19,8 +19,7 @@
 #define CASE_SENSITIVE_FILTER 1
 #endif
 
-static void
-setup(void)
+SETUP()
 {
 	cfg.slow_fs_list = strdup("");
 
@@ -108,8 +107,7 @@ cleanup_view(FileView *view)
 	filter_dispose(&view->auto_filter);
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
@@ -118,8 +116,7 @@ teardown(void)
 	cleanup_view(&rwin);
 }
 
-static void
-test_filtering(void)
+TEST(filtering)
 {
 	assert_int_equal(7, lwin.list_rows);
 	filter_selected_files(&lwin);
@@ -129,8 +126,7 @@ test_filtering(void)
 	assert_visible(lwin, lwin.dir_entry[0].name, 0);
 }
 
-static void
-test_filtering_file_does_not_filter_dir(void)
+TEST(filtering_file_does_not_filter_dir)
 {
 	char *const name = strdup(rwin.dir_entry[6].name);
 
@@ -147,8 +143,7 @@ test_filtering_file_does_not_filter_dir(void)
 	free(name);
 }
 
-static void
-test_filtering_dir_does_not_filter_file(void)
+TEST(filtering_dir_does_not_filter_file)
 {
 	char *const name = strdup(rwin.dir_entry[6].name);
 
@@ -166,8 +161,7 @@ test_filtering_dir_does_not_filter_file(void)
 	free(name);
 }
 
-static void
-test_filtering_files_does_not_filter_dirs(void)
+TEST(filtering_files_does_not_filter_dirs)
 {
 	(void)filter_set(&rwin.manual_filter, "^.*\\.d$");
 
@@ -182,8 +176,7 @@ test_filtering_files_does_not_filter_dirs(void)
 	assert_int_equal(8, rwin.list_rows);
 }
 
-static void
-test_filtering_dirs_does_not_filter_files(void)
+TEST(filtering_dirs_does_not_filter_files)
 {
 	(void)filter_set(&rwin.manual_filter, "^.*\\.d/$");
 
@@ -198,8 +191,7 @@ test_filtering_dirs_does_not_filter_files(void)
 	assert_int_equal(8, rwin.list_rows);
 }
 
-static void
-test_filtering_files_and_dirs(void)
+TEST(filtering_files_and_dirs)
 {
 	(void)filter_set(&rwin.manual_filter, "^.*\\.d/?$");
 
@@ -212,24 +204,6 @@ test_filtering_files_and_dirs(void)
 	assert_visible(rwin, rwin.dir_entry[6].name, 0);
 	assert_visible(rwin, rwin.dir_entry[7].name, 1);
 	assert_int_equal(8, rwin.list_rows);
-}
-
-void
-filtering_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_filtering);
-	run_test(test_filtering_file_does_not_filter_dir);
-	run_test(test_filtering_dir_does_not_filter_file);
-	run_test(test_filtering_files_does_not_filter_dirs);
-	run_test(test_filtering_dirs_does_not_filter_files);
-	run_test(test_filtering_files_and_dirs);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

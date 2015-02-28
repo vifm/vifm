@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -59,8 +59,7 @@ setup_rwin(void)
 	rwin.selected_files = 3;
 }
 
-static void
-setup(void)
+SETUP()
 {
 	setup_lwin();
 	setup_rwin();
@@ -72,8 +71,7 @@ setup(void)
 	cfg.vi_x_command = strdup("");
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	teardown_view(&lwin);
 	teardown_view(&rwin);
@@ -94,8 +92,7 @@ teardown_view(FileView *view)
 	view->selected_files = 0;
 }
 
-static void
-test_selection(void)
+TEST(selection)
 {
 	char *cmd;
 	int bg;
@@ -103,19 +100,6 @@ test_selection(void)
 	cmd = format_edit_selection_cmd(&bg);
 	assert_string_equal("vim -p lfile0 lfile2", cmd);
 	free(cmd);
-}
-
-void
-format_edit_selection_cmd_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_selection);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

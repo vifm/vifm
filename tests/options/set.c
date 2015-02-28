@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern int vifminfo;
 extern int vifminfo_handler_calls;
 
-static void
-test_assignment_to_something_calls_handler_only_once(void)
+TEST(assignment_to_something_calls_handler_only_once)
 {
 	int res;
 
@@ -19,8 +18,7 @@ test_assignment_to_something_calls_handler_only_once(void)
 	assert_int_equal(0x0f, vifminfo);
 }
 
-static void
-test_assignment_to_something(void)
+TEST(assignment_to_something)
 {
 	int res;
 
@@ -31,8 +29,7 @@ test_assignment_to_something(void)
 	assert_int_equal(0x0f, vifminfo);
 }
 
-static void
-test_assignment_to_empty(void)
+TEST(assignment_to_empty)
 {
 	int res;
 
@@ -43,18 +40,6 @@ test_assignment_to_empty(void)
 	res = set_options("vifminfo=");
 	assert_int_equal(0, res);
 	assert_int_equal(0x00, vifminfo);
-}
-
-void
-set_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_assignment_to_something_calls_handler_only_once);
-	run_test(test_assignment_to_something);
-	run_test(test_assignment_to_empty);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

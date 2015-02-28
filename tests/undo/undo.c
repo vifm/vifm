@@ -1,14 +1,25 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h> /* strcmp() */
-
-#include "seatest.h"
 
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
 #include "test.h"
 
+static int execute(OPS op, void *data, const char *src, const char *dst);
+
 static int i;
+
+SETUP()
+{
+	static int undo_levels = 10;
+
+	i = 0;
+
+	init_undo_list_for_tests(&execute, &undo_levels);
+}
 
 static int
 execute(OPS op, void *data, const char *src, const char *dst)
@@ -39,18 +50,7 @@ exec_dummy(OPS op, void *data, const char *src, const char *dst)
 	return 0;
 }
 
-static void
-setup(void)
-{
-	static int undo_levels = 10;
-
-	i = 0;
-
-	init_undo_list_for_tests(&execute, &undo_levels);
-}
-
-static void
-test_underflow(void)
+TEST(underflow)
 {
 	assert_int_equal(0, undo_group());
 	assert_int_equal(0, undo_group());
@@ -60,8 +60,7 @@ test_underflow(void)
 	assert_int_equal(4, i);
 }
 
-static void
-test_redo(void)
+TEST(redo)
 {
 	assert_int_equal(0, undo_group());
 	assert_int_equal(0, undo_group());
@@ -73,8 +72,7 @@ test_redo(void)
 	assert_int_equal(8, i);
 }
 
-static void
-test_list_truncating(void)
+TEST(list_truncating)
 {
 	assert_int_equal(0, undo_group());
 	assert_int_equal(0, undo_group());
@@ -95,8 +93,7 @@ test_list_truncating(void)
 	assert_int_equal(11, i);
 }
 
-static void
-test_cmd_1undo_1redo(void)
+TEST(cmd_1undo_1redo)
 {
 	static int undo_levels = 10;
 
@@ -120,8 +117,7 @@ execute_fail(OPS op, void *data, const char *src, const char *dst)
 	return !strcmp(src, "undo_msg0");
 }
 
-static void
-test_failed_operation(void)
+TEST(failed_operation)
 {
 	static int undo_levels = 10;
 
@@ -146,8 +142,7 @@ test_failed_operation(void)
 	assert_int_equal(-1, redo_group());
 }
 
-static void
-test_disbalance(void)
+TEST(disbalance)
 {
 	static int undo_levels = 10;
 
@@ -172,8 +167,7 @@ test_disbalance(void)
 	assert_int_equal(-1, redo_group());
 }
 
-static void
-test_cannot_be_undone(void)
+TEST(cannot_be_undone)
 {
 	cmd_group_begin("msg0");
 	assert_int_equal(0, add_operation(OP_REMOVE, NULL, NULL, "do_msg0", ""));
@@ -182,8 +176,7 @@ test_cannot_be_undone(void)
 	assert_int_equal(-5, undo_group());
 }
 
-static void
-test_removing_of_incomplete_groups(void)
+TEST(removing_of_incomplete_groups)
 {
 	static int undo_levels = 10;
 	int i;
@@ -211,8 +204,7 @@ exec_skip(OPS op, void *data, const char *src, const char *dst)
 	return SKIP_UNDO_REDO_OPERATION;
 }
 
-static void
-test_skipping(void)
+TEST(skipping)
 {
 	static int undo_levels = 10;
 	init_undo_list_for_tests(&exec_skip, &undo_levels);
@@ -226,8 +218,7 @@ test_skipping(void)
 	assert_int_equal(-4, redo_group());
 }
 
-static void
-test_to_many_commands_and_continue(void)
+TEST(to_many_commands_and_continue)
 {
 	static int undo_levels = 3;
 	init_undo_list_for_tests(&exec_skip, &undo_levels);
@@ -260,27 +251,6 @@ test_to_many_commands_and_continue(void)
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
 	cmd_group_end();
-}
-
-void
-undo_test(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-
-	run_test(test_underflow);
-	run_test(test_redo);
-	run_test(test_list_truncating);
-	run_test(test_cmd_1undo_1redo);
-	run_test(test_failed_operation);
-	run_test(test_disbalance);
-	run_test(test_cannot_be_undone);
-	run_test(test_removing_of_incomplete_groups);
-	run_test(test_skipping);
-	run_test(test_to_many_commands_and_continue);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

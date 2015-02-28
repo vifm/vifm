@@ -1,9 +1,9 @@
+#include <stic.h>
+
 #include <unistd.h> /* chdir() */
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -70,8 +70,7 @@ setup_rwin(void)
 	rwin.selected_files = 3;
 }
 
-static void
-setup(void)
+SETUP()
 {
 	setup_lwin();
 	setup_rwin();
@@ -80,8 +79,7 @@ setup(void)
 	other_view = &rwin;
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -94,8 +92,7 @@ teardown(void)
 	free(rwin.dir_entry);
 }
 
-static void
-test_b_both_have_selection(void)
+TEST(b_both_have_selection)
 {
 	char *expanded;
 
@@ -110,8 +107,7 @@ test_b_both_have_selection(void)
 	free(expanded);
 }
 
-static void
-test_f_both_have_selection(void)
+TEST(f_both_have_selection)
 {
 	char *expanded;
 
@@ -127,8 +123,7 @@ test_f_both_have_selection(void)
 	free(expanded);
 }
 
-static void
-test_b_only_lwin_has_selection(void)
+TEST(b_only_lwin_has_selection)
 {
 	char *expanded;
 
@@ -145,8 +140,7 @@ test_b_only_lwin_has_selection(void)
 	free(expanded);
 }
 
-static void
-test_b_only_rwin_has_selection(void)
+TEST(b_only_rwin_has_selection)
 {
 	char *expanded;
 
@@ -162,8 +156,7 @@ test_b_only_rwin_has_selection(void)
 	free(expanded);
 }
 
-static void
-test_b_noone_has_selection(void)
+TEST(b_noone_has_selection)
 {
 	char *expanded;
 
@@ -179,8 +172,7 @@ test_b_noone_has_selection(void)
 	free(expanded);
 }
 
-static void
-test_no_slash_after_dirname(void)
+TEST(no_slash_after_dirname)
 {
 	char *expanded;
 
@@ -192,8 +184,7 @@ test_no_slash_after_dirname(void)
 	free(expanded);
 }
 
-static void
-test_forward_slashes_on_win_for_non_shell(void)
+TEST(forward_slashes_on_win_for_non_shell)
 {
 	char *expanded;
 
@@ -209,8 +200,7 @@ test_forward_slashes_on_win_for_non_shell(void)
 	free(expanded);
 }
 
-static void
-test_m(void)
+TEST(m)
 {
 	MacroFlags flags;
 	char *expanded;
@@ -224,8 +214,7 @@ test_m(void)
 	free(expanded);
 }
 
-static void
-test_r_well_formed(void)
+TEST(r_well_formed)
 {
 	const char *p;
 
@@ -262,8 +251,7 @@ test_r_well_formed(void)
 	chdir("../..");
 }
 
-static void
-test_r_ill_formed(void)
+TEST(r_ill_formed)
 {
 	char key;
 	char expected[] = "a b cx";
@@ -297,8 +285,7 @@ test_r_ill_formed(void)
 	chdir("../..");
 }
 
-static void
-test_with_quotes(void)
+TEST(with_quotes)
 {
 	char *expanded;
 
@@ -352,8 +339,7 @@ test_with_quotes(void)
 	chdir("../..");
 }
 
-static void
-test_single_percent_sign(void)
+TEST(single_percent_sign)
 {
 	char *expanded;
 
@@ -362,8 +348,7 @@ test_single_percent_sign(void)
 	free(expanded);
 }
 
-static void
-test_percent_sign_and_double_quote(void)
+TEST(percent_sign_and_double_quote)
 {
 	char *expanded;
 
@@ -372,40 +357,13 @@ test_percent_sign_and_double_quote(void)
 	free(expanded);
 }
 
-static void
-test_empty_line_ok(void)
+TEST(empty_line_ok)
 {
 	char *expanded;
 
 	expanded = expand_macros("", "", NULL, 0);
 	assert_string_equal("", expanded);
 	free(expanded);
-}
-
-void
-test_expand_macros(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_b_both_have_selection);
-	run_test(test_f_both_have_selection);
-	run_test(test_b_only_lwin_has_selection);
-	run_test(test_b_only_rwin_has_selection);
-	run_test(test_b_noone_has_selection);
-	run_test(test_no_slash_after_dirname);
-	run_test(test_forward_slashes_on_win_for_non_shell);
-	run_test(test_m);
-	run_test(test_r_well_formed);
-	run_test(test_r_ill_formed);
-	run_test(test_with_quotes);
-	run_test(test_single_percent_sign);
-	run_test(test_percent_sign_and_double_quote);
-	run_test(test_empty_line_ok);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

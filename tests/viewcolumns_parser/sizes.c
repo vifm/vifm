@@ -1,21 +1,20 @@
-#include <string.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <string.h>
 
 #include "../../src/column_view.h"
 #include "../../src/viewcolumns_parser.h"
+
 #include "test.h"
 
-static void
-test_auto_ok(void)
+TEST(auto_ok)
 {
 	int result = do_parse("{name}");
 	assert_true(result == 0);
 	assert_true(info.sizing == ST_AUTO);
 }
 
-static void
-test_absolute_without_limitation_ok(void)
+TEST(absolute_without_limitation_ok)
 {
 	int result = do_parse("10{name}");
 	assert_true(result == 0);
@@ -24,8 +23,7 @@ test_absolute_without_limitation_ok(void)
 	assert_true(info.sizing == ST_ABSOLUTE);
 }
 
-static void
-test_absolute_with_limitation_ok(void)
+TEST(absolute_with_limitation_ok)
 {
 	int result = do_parse("10.8{name}");
 	assert_true(result == 0);
@@ -34,15 +32,13 @@ test_absolute_with_limitation_ok(void)
 	assert_true(info.sizing == ST_ABSOLUTE);
 }
 
-static void
-test_absolute_with_limitation_overflow_fail(void)
+TEST(absolute_with_limitation_overflow_fail)
 {
 	int result = do_parse("10.11{name}");
 	assert_false(result == 0);
 }
 
-static void
-test_percent_ok(void)
+TEST(percent_ok)
 {
 	int result = do_parse("50%{name}");
 	assert_true(result == 0);
@@ -51,42 +47,22 @@ test_percent_ok(void)
 	assert_true(info.sizing == ST_PERCENT);
 }
 
-static void
-test_percent_zero_fail(void)
+TEST(percent_zero_fail)
 {
 	int result = do_parse("0%{name}");
 	assert_false(result == 0);
 }
 
-static void
-test_percent_greater_than_hundred_fail(void)
+TEST(percent_greater_than_hundred_fail)
 {
 	int result = do_parse("110%{name}");
 	assert_false(result == 0);
 }
 
-static void
-test_percent_summ_greater_than_hundred_fail(void)
+TEST(percent_summ_greater_than_hundred_fail)
 {
 	int result = do_parse("50%{name},50%{name},50%{name}");
 	assert_false(result == 0);
-}
-
-void
-sizes_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_auto_ok);
-	run_test(test_absolute_without_limitation_ok);
-	run_test(test_absolute_with_limitation_ok);
-	run_test(test_absolute_with_limitation_overflow_fail);
-	run_test(test_percent_ok);
-	run_test(test_percent_zero_fail);
-	run_test(test_percent_greater_than_hundred_fail);
-	run_test(test_percent_summ_greater_than_hundred_fail);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

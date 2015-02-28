@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include "seatest.h"
+#include <stic.h>
 
 #include <unistd.h> /* F_OK access() chdir() */
 

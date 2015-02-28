@@ -1,16 +1,15 @@
+#include <stic.h>
+
 #include <unistd.h> /* unlink() */
 
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* strcpy() strdup() */
 
-#include "seatest.h"
-
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/fileops.h"
 
-static void
-setup(void)
+SETUP()
 {
 	assert_int_equal(0, chdir("test-data/sandbox"));
 
@@ -30,8 +29,7 @@ setup(void)
 	other_view = &rwin;
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	int i;
 
@@ -44,8 +42,7 @@ teardown(void)
 	assert_int_equal(0, chdir("../.."));
 }
 
-static void
-test_move_file(void)
+TEST(move_file)
 {
 	char new_fname[] = "new_name";
 	char *list[] = { &new_fname[0] };
@@ -62,19 +59,6 @@ test_move_file(void)
 	assert_true(path_exists(new_fname, DEREF));
 
 	(void)unlink(new_fname);
-}
-
-void
-generic_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_move_file);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

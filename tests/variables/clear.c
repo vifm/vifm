@@ -1,6 +1,6 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/engine/variables.h"
 #include "../../src/utils/env.h"
@@ -8,14 +8,12 @@
 
 #define VAR_NAME "VAR"
 
-static void
-setup(void)
+SETUP()
 {
 	env_remove(VAR_NAME);
 }
 
-static void
-test_envvar_remove_on_clear(void)
+TEST(envvar_remove_on_clear)
 {
 	assert_true(getenv(VAR_NAME) == NULL);
 	assert_int_equal(0, let_variables("$" VAR_NAME "='VAL'"));
@@ -26,8 +24,7 @@ test_envvar_remove_on_clear(void)
 	assert_true(getenv(VAR_NAME) == NULL);
 }
 
-static void
-test_envvar_reset_on_clear(void)
+TEST(envvar_reset_on_clear)
 {
 	assert_true(getenv("VAR_A") != NULL);
 	if(getenv("VAR_A") != NULL)
@@ -51,17 +48,5 @@ test_envvar_reset_on_clear(void)
 	}
 }
 
-void
-clear_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-
-	run_test(test_envvar_remove_on_clear);
-	run_test(test_envvar_reset_on_clear);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

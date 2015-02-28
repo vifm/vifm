@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <string.h>
 #include <stdlib.h>
 
 #include "../../src/utils/filter.h"
 
-static void
-test_append_produces_desired_effect(void)
+TEST(append_produces_desired_effect)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -22,8 +21,7 @@ test_append_produces_desired_effect(void)
 	filter_dispose(&filter);
 }
 
-static void
-test_append_escapes(void)
+TEST(append_escapes)
 {
 	filter_t filter;
 	assert_int_equal(0, filter_init(&filter, 1));
@@ -34,8 +32,7 @@ test_append_escapes(void)
 	filter_dispose(&filter);
 }
 
-static void
-test_empty_value_not_appended(void)
+TEST(empty_value_not_appended)
 {
 	char *initial_value;
 
@@ -50,18 +47,6 @@ test_empty_value_not_appended(void)
 
 	free(initial_value);
 	filter_dispose(&filter);
-}
-
-void
-append_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_append_produces_desired_effect);
-	run_test(test_append_escapes);
-	run_test(test_empty_value_not_appended);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

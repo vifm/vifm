@@ -1,11 +1,11 @@
+#include <stic.h>
+
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 #include <string.h>
 #include <wchar.h> /* wcsdup() */
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
@@ -24,11 +24,12 @@ fusehome_handler(OPT_OP op, optval_t val)
 {
 }
 
-static void
-setup(void)
+SETUP()
 {
 	static int option_changed;
 	optval_t def = { .str_val = "/tmp" };
+
+	init_builtin_functions();
 
 	stats.line = wcsdup(L"set ");
 	stats.index = wcslen(stats.line);
@@ -52,18 +53,18 @@ setup(void)
 	assert_int_equal(0, chdir("test-data/existing-files"));
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	assert_int_equal(0, chdir("../.."));
 
 	free(stats.line);
 	reset_cmds();
 	clear_options();
+
+	function_reset_all();
 }
 
-static void
-leave_spaces_at_begin(void)
+TEST(leave_spaces_at_begin)
 {
 	char *buf;
 
@@ -77,8 +78,7 @@ leave_spaces_at_begin(void)
 	free(buf);
 }
 
-static void
-only_user(void)
+TEST(only_user)
 {
 	char *buf;
 
@@ -101,16 +101,14 @@ only_user(void)
 	free(buf);
 }
 
-static void
-test_set_completion(void)
+TEST(test_set_completion)
 {
 	vle_compl_reset();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set all") == 0);
 }
 
-static void
-test_no_sdquoted_completion_does_nothing(void)
+TEST(no_sdquoted_completion_does_nothing)
 {
 	free(stats.line);
 	stats.line = wcsdup(L"command '");
@@ -133,8 +131,7 @@ prepare_for_line_completion(const wchar_t str[])
 	vle_compl_reset();
 }
 
-static void
-test_spaces_escaping_leading(void)
+TEST(spaces_escaping_leading)
 {
 	char *mb;
 
@@ -148,8 +145,7 @@ test_spaces_escaping_leading(void)
 	free(mb);
 }
 
-static void
-test_spaces_escaping_everywhere(void)
+TEST(spaces_escaping_everywhere)
 {
 	char *mb;
 
@@ -168,8 +164,7 @@ test_spaces_escaping_everywhere(void)
 	free(mb);
 }
 
-static void
-test_spaces_escaping_trailing(void)
+TEST(spaces_escaping_trailing)
 {
 	char *mb;
 
@@ -188,8 +183,7 @@ test_spaces_escaping_trailing(void)
 	free(mb);
 }
 
-static void
-test_spaces_escaping_middle(void)
+TEST(spaces_escaping_middle)
 {
 	char *mb;
 
@@ -203,16 +197,14 @@ test_spaces_escaping_middle(void)
 	free(mb);
 }
 
-static void
-test_squoted_completion(void)
+TEST(squoted_completion)
 {
 	prepare_for_line_completion(L"touch '");
 	assert_int_equal(0, line_completion(&stats));
 	assert_int_equal(0, wcscmp(stats.line, L"touch 'a"));
 }
 
-static void
-test_squoted_completion_escaping(void)
+TEST(squoted_completion_escaping)
 {
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
@@ -221,8 +213,7 @@ test_squoted_completion_escaping(void)
 	assert_int_equal(0, wcscmp(stats.line, L"touch 's-quote-''-in-name"));
 }
 
-static void
-test_dquoted_completion(void)
+TEST(dquoted_completion)
 {
 	prepare_for_line_completion(L"touch 'b");
 	assert_int_equal(0, line_completion(&stats));
@@ -231,8 +222,7 @@ test_dquoted_completion(void)
 
 #if !defined(__CYGWIN__) && !defined(_WIN32)
 
-static void
-test_dquoted_completion_escaping(void)
+TEST(dquoted_completion_escaping)
 {
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
@@ -243,8 +233,7 @@ test_dquoted_completion_escaping(void)
 
 #endif
 
-static void
-test_last_match_is_properly_escaped(void)
+TEST(last_match_is_properly_escaped)
 {
 	char *match;
 
@@ -263,8 +252,7 @@ test_last_match_is_properly_escaped(void)
 	free(match);
 }
 
-static void
-test_emark_cmd_escaping(void)
+TEST(emark_cmd_escaping)
 {
 	char *match;
 
@@ -277,8 +265,7 @@ test_emark_cmd_escaping(void)
 	free(match);
 }
 
-static void
-test_winrun_cmd_escaping(void)
+TEST(winrun_cmd_escaping)
 {
 	char *match;
 
@@ -303,8 +290,7 @@ test_winrun_cmd_escaping(void)
 	free(match);
 }
 
-static void
-test_help_cmd_escaping(void)
+TEST(help_cmd_escaping)
 {
 	cfg.use_vim_help = 1;
 
@@ -313,8 +299,7 @@ test_help_cmd_escaping(void)
 	assert_int_equal(0, wcscmp(stats.line, L"help vifm-!!"));
 }
 
-static void
-test_dirs_are_completed_with_trailing_slash(void)
+TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;
 
@@ -339,8 +324,7 @@ test_dirs_are_completed_with_trailing_slash(void)
 	assert_int_equal(0, chdir("read/"));
 }
 
-static void
-test_function_name_completion(void)
+TEST(function_name_completion)
 {
 	char *match;
 
@@ -357,8 +341,7 @@ test_function_name_completion(void)
 	free(match);
 }
 
-static void
-test_percent_completion(void)
+TEST(percent_completion)
 {
 	char *match;
 
@@ -403,46 +386,6 @@ test_percent_completion(void)
 	match = vle_compl_next();
 	assert_string_equal("%%%%", match);
 	free(match);
-}
-
-void
-test_cmdline_completion(void)
-{
-	test_fixture_start();
-
-	init_builtin_functions();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(leave_spaces_at_begin);
-	run_test(only_user);
-	run_test(test_set_completion);
-	run_test(test_no_sdquoted_completion_does_nothing);
-
-	run_test(test_spaces_escaping_leading);
-	run_test(test_spaces_escaping_everywhere);
-	run_test(test_spaces_escaping_trailing);
-	run_test(test_spaces_escaping_middle);
-
-	run_test(test_squoted_completion);
-	run_test(test_squoted_completion_escaping);
-	run_test(test_dquoted_completion);
-	run_test(test_last_match_is_properly_escaped);
-	run_test(test_emark_cmd_escaping);
-	run_test(test_winrun_cmd_escaping);
-	run_test(test_help_cmd_escaping);
-	run_test(test_dirs_are_completed_with_trailing_slash);
-	run_test(test_function_name_completion);
-	run_test(test_percent_completion);
-#if !defined(__CYGWIN__) && !defined(_WIN32)
-	/* Cygwin and Windows fail to create files with double quotes in names. */
-	run_test(test_dquoted_completion_escaping);
-#endif
-
-	function_reset_all();
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,11 +1,10 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/engine/completion.h"
 
-static void
-test_unite_removes_duplicates(void)
+TEST(unite_removes_duplicates)
 {
 	char *buf;
 
@@ -36,8 +35,7 @@ test_unite_removes_duplicates(void)
 	free(buf);
 }
 
-static void
-test_unite_sorts(void)
+TEST(unite_sorts)
 {
 	char *buf;
 
@@ -65,17 +63,6 @@ test_unite_sorts(void)
 	buf = vle_compl_next();
 	assert_string_equal("ecz", buf);
 	free(buf);
-}
-
-void
-groups_unite_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_unite_removes_duplicates);
-	run_test(test_unite_sorts);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

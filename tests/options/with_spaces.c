@@ -1,12 +1,11 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include "../../src/engine/options.h"
 
 extern int fastrun;
 extern int tabstop;
 
-static void
-test_bang(void)
+TEST(bang)
 {
 	optval_t val = { .bool_val = 0 };
 	fastrun = 0;
@@ -21,8 +20,7 @@ test_bang(void)
 	assert_false(set_options("fastrun !f") == 0);
 }
 
-static void
-test_qmark(void)
+TEST(qmark)
 {
 	optval_t val = { .bool_val = 0 };
 	fastrun = 8;
@@ -33,8 +31,7 @@ test_qmark(void)
 	assert_false(set_options("fastrun  !f") == 0);
 }
 
-static void
-test_ampersand(void)
+TEST(ampersand)
 {
 	optval_t val = { .bool_val = 1 };
 	fastrun = 1;
@@ -44,8 +41,7 @@ test_ampersand(void)
 	assert_false(fastrun);
 }
 
-static void
-test_assignment(void)
+TEST(assignment)
 {
 	optval_t val = { .int_val = 8 };
 	tabstop = 4;
@@ -63,19 +59,6 @@ test_assignment(void)
 
 	assert_true(set_options("tabstop -=1") == 0);
 	assert_int_equal(9, tabstop);
-}
-
-void
-with_spaces_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_bang);
-	run_test(test_qmark);
-	run_test(test_ampersand);
-	run_test(test_assignment);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

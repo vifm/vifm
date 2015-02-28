@@ -1,38 +1,19 @@
-#include "test.h"
+#include <stic.h>
 
 #include <assert.h>
 #include <stddef.h>
 
-#include "seatest.h"
-
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
-void undolist_test(void);
-void undo_test(void);
-void undolevels_test(void);
-void last_cmd_group_empty_tests(void);
+#include "test.h"
 
-static int
-exec_func(OPS op, void *data, const char *src, const char *dst)
-{
-	return 0;
-}
+static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static int op_avail(OPS op);
 
-static int
-op_avail(OPS op)
-{
-	return op == OP_MOVE;
-}
+DEFINE_SUITE();
 
-void
-init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
-{
-	init_undo_list(exec_func, &op_avail, NULL, max_levels);
-}
-
-static void
-setup(void)
+SETUP()
 {
 	static int undo_levels = 10;
 	int ret_code;
@@ -59,28 +40,27 @@ setup(void)
 	cmd_group_end();
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	reset_undo_list();
 }
 
-static void
-all_tests(void)
+static int
+exec_func(OPS op, void *data, const char *src, const char *dst)
 {
-	undolist_test();
-	undo_test();
-	undolevels_test();
-	last_cmd_group_empty_tests();
+	return 0;
 }
 
-int
-main(int argc, char **argv)
+static int
+op_avail(OPS op)
 {
-	suite_setup(setup);
-	suite_teardown(teardown);
+	return op == OP_MOVE;
+}
 
-	return run_tests(all_tests) == 0;
+void
+init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
+{
+	init_undo_list(exec_func, &op_avail, NULL, max_levels);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

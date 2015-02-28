@@ -1,19 +1,26 @@
-/* UTF-8 isn't used on Windows yet. */
+#include <stic.h>
 
 #include <locale.h> /* setlocale() */
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/utils.h"
 #include "../../src/escape.h"
 
-#ifndef _WIN32
-/* UTF-8 isn't used on Windows yet. */
+static int locale_works(void);
 
-static void
-test_chinese_character_width_is_determined_correctly(void)
+SETUP_ONCE()
+{
+	(void)setlocale(LC_ALL, "");
+	if(!locale_works())
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
+
+	cfg.tab_stop = 8;
+}
+
+TEST(chinese_character_width_is_determined_correctly, IF(locale_works))
 {
 	size_t screen_width;
 	const char *const str = strchar2str("师从刀", 0, &screen_width);
@@ -21,8 +28,7 @@ test_chinese_character_width_is_determined_correctly(void)
 	assert_int_equal(2, screen_width);
 }
 
-static void
-test_cyrillic_character_width_is_determined_correctly(void)
+TEST(cyrillic_character_width_is_determined_correctly, IF(locale_works))
 {
 	size_t screen_width;
 	const char *const str = strchar2str("йклм", 0, &screen_width);
@@ -30,10 +36,7 @@ test_cyrillic_character_width_is_determined_correctly(void)
 	assert_int_equal(1, screen_width);
 }
 
-#endif
-
-static void
-test_tabulation_is_expanded_properly(void)
+TEST(tabulation_is_expanded_properly)
 {
 	int pos;
 	for(pos = 0; pos < cfg.tab_stop; pos++)
@@ -50,8 +53,7 @@ test_tabulation_is_expanded_properly(void)
 	}
 }
 
-static void
-test_space_is_untouched_and_has_width_of_one_character(void)
+TEST(space_is_untouched_and_has_width_of_one_character)
 {
 	size_t screen_width;
 	const char *const str = strchar2str(" abc", 0, &screen_width);
@@ -59,8 +61,7 @@ test_space_is_untouched_and_has_width_of_one_character(void)
 	assert_int_equal(1, screen_width);
 }
 
-static void
-test_newline_is_ignored_and_has_zero_width(void)
+TEST(newline_is_ignored_and_has_zero_width)
 {
 	size_t screen_width;
 	const char *const str = strchar2str("\nabc", 0, &screen_width);
@@ -68,8 +69,7 @@ test_newline_is_ignored_and_has_zero_width(void)
 	assert_int_equal(0, screen_width);
 }
 
-static void
-test_caret_return_is_converted_to_cr_and_has_proper_width(void)
+TEST(caret_return_is_converted_to_cr_and_has_proper_width)
 {
 	size_t screen_width;
 	const char *const str = strchar2str("\rabc", 0, &screen_width);
@@ -77,8 +77,7 @@ test_caret_return_is_converted_to_cr_and_has_proper_width(void)
 	assert_int_equal(4, screen_width);
 }
 
-static void
-test_escape_sequences_are_untouched_and_have_proper_width(void)
+TEST(escape_sequences_are_untouched_and_have_proper_width)
 {
 	size_t screen_width;
 	const char *const str = strchar2str("\033[32m[", 0, &screen_width);
@@ -86,8 +85,7 @@ test_escape_sequences_are_untouched_and_have_proper_width(void)
 	assert_int_equal(0, screen_width);
 }
 
-static void
-test_ctrl_chars_are_converted_and_have_proper_width(void)
+TEST(ctrl_chars_are_converted_and_have_proper_width)
 {
 	const char* exceptions = "\b\t\r\n\033";
 	char c;
@@ -105,35 +103,10 @@ test_ctrl_chars_are_converted_and_have_proper_width(void)
 	}
 }
 
-void
-strchar2str_tests(void)
+static int
+locale_works(void)
 {
-	test_fixture_start();
-
-	(void)setlocale(LC_ALL, "");
-	if(vifm_wcwidth(L'丝') != 2)
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
-
-	cfg.tab_stop = 8;
-
-#ifndef _WIN32
-	/* UTF-8 isn't used on Windows yet. */
-	if(vifm_wcwidth(L'丝') == 2)
-	{
-		run_test(test_chinese_character_width_is_determined_correctly);
-		run_test(test_cyrillic_character_width_is_determined_correctly);
-	}
-#endif
-	run_test(test_tabulation_is_expanded_properly);
-	run_test(test_space_is_untouched_and_has_width_of_one_character);
-	run_test(test_newline_is_ignored_and_has_zero_width);
-	run_test(test_caret_return_is_converted_to_cr_and_has_proper_width);
-	run_test(test_escape_sequences_are_untouched_and_have_proper_width);
-	run_test(test_ctrl_chars_are_converted_and_have_proper_width);
-
-	test_fixture_end();
+	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

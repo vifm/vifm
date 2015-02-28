@@ -1,8 +1,8 @@
+#include <stic.h>
+
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcsdup() wcslen() */
-
-#include "seatest.h"
 
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
@@ -12,16 +12,14 @@
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
 
-static const cmd_add_t commands[] =
-{
+static const cmd_add_t commands[] = {
 	{ .name = "builtin", .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 0, .max_args = 0, .bg = 0, },
 };
 
 static int called;
 
-static void
-setup(void)
+SETUP()
 {
 	lwin.list_rows = 0;
 
@@ -32,8 +30,7 @@ setup(void)
 	add_builtin_commands(commands, ARRAY_LEN(commands));
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	reset_cmds();
 }
@@ -45,8 +42,7 @@ builtin_cmd(const cmd_info_t* cmd_info)
 	return 0;
 }
 
-static void
-test_repeat_of_no_command_prints_message(void)
+TEST(repeat_of_no_command_prints_message)
 {
 	called = 0;
 	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
@@ -59,8 +55,7 @@ test_repeat_of_no_command_prints_message(void)
 	assert_int_equal(0, called);
 }
 
-static void
-test_double_emark_repeats_last_command(void)
+TEST(double_emark_repeats_last_command)
 {
 	called = 0;
 	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
@@ -77,8 +72,7 @@ test_double_emark_repeats_last_command(void)
 	curr_stats.last_cmdline_command = NULL;
 }
 
-static void
-test_single_emark_without_args_fails(void)
+TEST(single_emark_without_args_fails)
 {
 	free(curr_stats.last_cmdline_command);
 	curr_stats.last_cmdline_command = strdup("builtin");
@@ -89,21 +83,6 @@ test_single_emark_without_args_fails(void)
 
 	free(curr_stats.last_cmdline_command);
 	curr_stats.last_cmdline_command = NULL;
-}
-
-void
-cmdline_emark_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_repeat_of_no_command_prints_message);
-	run_test(test_double_emark_repeats_last_command);
-	run_test(test_single_emark_without_args_fails);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

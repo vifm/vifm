@@ -1,16 +1,16 @@
-#include <string.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <string.h>
 
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
 
+static int goto_cmd(const cmd_info_t *cmd_info);
+static int delete_cmd(const cmd_info_t *cmd_info);
+
 extern cmds_conf_t cmds_conf;
 
 static cmd_info_t cmdi;
-
-static int goto_cmd(const cmd_info_t *cmd_info);
-static int delete_cmd(const cmd_info_t *cmd_info);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",       .abbr = NULL, .handler = goto_cmd,   .id = -1,    .range = 1,    .cust_sep = 0,
@@ -32,19 +32,12 @@ delete_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-static void
-setup(void)
+SETUP()
 {
 	add_builtin_commands(commands, ARRAY_LEN(commands));
 }
 
-static void
-teardown(void)
-{
-}
-
-static void
-test_builtin(void)
+TEST(builtin)
 {
 	cmd_add_t command = {
 		.name = "", .abbr = NULL, .id = -1,    .handler = goto_cmd, .range = 1,    .cust_sep = 0,
@@ -60,8 +53,7 @@ test_builtin(void)
 	assert_false(add_builtin_cmd("2", 0, &command) == 0);
 }
 
-static void
-test_user_add(void)
+TEST(user_add)
 {
 	assert_int_equal(0, execute_cmd("command comix a"));
 
@@ -82,8 +74,7 @@ test_user_add(void)
 	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command 0u0d1f2 a"));
 }
 
-static void
-test_user_exec(void)
+TEST(user_exec)
 {
 	assert_int_equal(0, execute_cmd("command udf a"));
 	assert_int_equal(0, execute_cmd("command udf! a"));
@@ -94,8 +85,7 @@ test_user_exec(void)
 	assert_int_equal(0, execute_cmd("udf?"));
 }
 
-static void
-test_abbreviations(void)
+TEST(abbreviations)
 {
 	assert_int_equal(0, execute_cmd("%d!"));
 	assert_int_equal(10, cmdi.begin);
@@ -103,8 +93,7 @@ test_abbreviations(void)
 	assert_true(cmdi.emark);
 }
 
-static void
-test_udf_bang_abbr(void)
+TEST(udf_bang_abbr)
 {
 	assert_int_equal(0, execute_cmd("command udf! a"));
 	assert_int_equal(0, execute_cmd("command UDF? a"));
@@ -118,21 +107,5 @@ test_udf_bang_abbr(void)
 	assert_int_equal(0, execute_cmd("U?"));
 }
 
-void
-command_name_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_builtin);
-	run_test(test_user_add);
-	run_test(test_user_exec);
-	run_test(test_abbreviations);
-	run_test(test_udf_bang_abbr);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

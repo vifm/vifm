@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcmp() */
@@ -21,16 +21,14 @@ remove_tmp_vars(void)
 	env_remove(VAR_D);
 }
 
-static void
-setup(void)
+SETUP()
 {
 	init_commands();
 	lwin.selected_files = 0;
 	remove_tmp_vars();
 }
 
-static void
-test_if_without_else_true_condition(void)
+TEST(if_without_else_true_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -40,8 +38,7 @@ test_if_without_else_true_condition(void)
 	assert_string_equal(VAR_A, env_get(VAR_A));
 }
 
-static void
-test_if_without_else_false_condition(void)
+TEST(if_without_else_false_condition)
 {
 	const char *const COMMANDS = " | if 1 == 0"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -51,8 +48,7 @@ test_if_without_else_false_condition(void)
 	assert_string_equal(NULL, env_get(VAR_A));
 }
 
-static void
-test_if_with_else_true_condition(void)
+TEST(if_with_else_true_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
 	                             " | else"
@@ -63,8 +59,7 @@ test_if_with_else_true_condition(void)
 	assert_string_equal(NULL, env_get(VAR_A));
 }
 
-static void
-test_if_with_else_false_condition(void)
+TEST(if_with_else_false_condition)
 {
 	const char *const COMMANDS = " | if 1 == 0"
 	                             " | else"
@@ -75,8 +70,7 @@ test_if_with_else_false_condition(void)
 	assert_string_equal(VAR_A, env_get(VAR_A));
 }
 
-static void
-test_if_true_if_true_condition(void)
+TEST(if_true_if_true_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -92,8 +86,7 @@ test_if_true_if_true_condition(void)
 	assert_string_equal(VAR_C, env_get(VAR_C));
 }
 
-static void
-test_if_true_if_false_condition(void)
+TEST(if_true_if_false_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -109,8 +102,7 @@ test_if_true_if_false_condition(void)
 	assert_string_equal(VAR_C, env_get(VAR_C));
 }
 
-static void
-test_if_false_if_true_condition(void)
+TEST(if_false_if_true_condition)
 {
 	const char *const COMMANDS = " | if 1 == 0"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -126,8 +118,7 @@ test_if_false_if_true_condition(void)
 	assert_string_equal(NULL, env_get(VAR_C));
 }
 
-static void
-test_if_false_else_if_true_condition(void)
+TEST(if_false_else_if_true_condition)
 {
 	const char *const COMMANDS = " | if 1 == 0"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -146,8 +137,7 @@ test_if_false_else_if_true_condition(void)
 	assert_string_equal(VAR_D, env_get(VAR_D));
 }
 
-static void
-test_if_false_if_else_condition(void)
+TEST(if_false_if_else_condition)
 {
 	const char *const COMMANDS = " | if 1 == 0"
 	                             " |     let $"VAR_A" = '"VAR_A"'"
@@ -166,8 +156,7 @@ test_if_false_if_else_condition(void)
 	assert_string_equal(NULL, env_get(VAR_D));
 }
 
-static void
-test_if_true_else_if_else_condition(void)
+TEST(if_true_else_if_else_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
 	                             " | else"
@@ -187,38 +176,13 @@ test_if_true_else_if_else_condition(void)
 	assert_string_equal(NULL, env_get(VAR_D));
 }
 
-static void
-test_sourcing_in_body(void)
+TEST(sourcing_in_body)
 {
 	const char *const CMDS = " | if 1 == 1"
 	                         " |     source test-data/scripts/set-env.vifm"
 	                         " | endif";
 
 	assert_int_equal(0, exec_commands(CMDS, &lwin, CIT_COMMAND));
-}
-
-void
-if_else_tests(void)
-{
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(remove_tmp_vars);
-
-	run_test(test_if_without_else_true_condition);
-	run_test(test_if_without_else_false_condition);
-	run_test(test_if_with_else_true_condition);
-	run_test(test_if_with_else_false_condition);
-	run_test(test_if_true_if_true_condition);
-	run_test(test_if_true_if_false_condition);
-	run_test(test_if_false_if_true_condition);
-	run_test(test_if_false_else_if_true_condition);
-	run_test(test_if_false_if_else_condition);
-	run_test(test_if_true_else_if_else_condition);
-
-	run_test(test_sourcing_in_body);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

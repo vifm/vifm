@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <unistd.h> /* F_OK access() getcwd() */
 
@@ -7,26 +7,24 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fs_limits.h"
 
-static void create_directory(const char path[], const char root[],
-		int create_parents);
-
 #define DIR_NAME "dir-to-create"
 #define NESTED_DIR_NAME "dir-to-create/dir-to-create"
 
-static void
-test_single_dir_is_created(void)
+static void create_directory(const char path[], const char root[],
+		int create_parents);
+static int has_unix_permissions(void);
+
+TEST(single_dir_is_created)
 {
 	create_directory(DIR_NAME, DIR_NAME, 0);
 }
 
-static void
-test_child_dir_and_parent_are_created(void)
+TEST(child_dir_and_parent_are_created)
 {
 	create_directory(NESTED_DIR_NAME, DIR_NAME, 1);
 }
 
-static void
-test_create_by_absolute_path(void)
+TEST(create_by_absolute_path)
 {
 	char cwd[PATH_MAX];
 	char full_path[PATH_MAX];
@@ -63,8 +61,7 @@ create_directory(const char path[], const char root[], int create_parents)
 	}
 }
 
-static void
-test_child_dir_is_not_created(void)
+TEST(child_dir_is_not_created)
 {
 	assert_int_equal(-1, access(NESTED_DIR_NAME, F_OK));
 
@@ -80,10 +77,7 @@ test_child_dir_is_not_created(void)
 	assert_int_equal(-1, access(NESTED_DIR_NAME, F_OK));
 }
 
-#if !defined(WIN32) && !defined(__CYGWIN__)
-
-static void
-test_permissions_are_taken_into_account(void)
+TEST(permissions_are_taken_into_account, IF(has_unix_permissions))
 {
 	{
 		io_args_t args =
@@ -113,8 +107,8 @@ test_permissions_are_taken_into_account(void)
 	}
 }
 
-static void
-test_permissions_are_taken_into_account_for_the_most_nested_only(void)
+TEST(permissions_are_taken_into_account_for_the_most_nested_only,
+     IF(has_unix_permissions))
 {
 	{
 		io_args_t args =
@@ -171,23 +165,14 @@ test_permissions_are_taken_into_account_for_the_most_nested_only(void)
 	}
 }
 
-#endif
-
-void
-mkdir_tests(void)
+static int
+has_unix_permissions(void)
 {
-	test_fixture_start();
-
-	run_test(test_single_dir_is_created);
-	run_test(test_child_dir_and_parent_are_created);
-	run_test(test_create_by_absolute_path);
-	run_test(test_child_dir_is_not_created);
-#if !defined(WIN32) && !defined(__CYGWIN__)
-	run_test(test_permissions_are_taken_into_account);
-	run_test(test_permissions_are_taken_into_account_for_the_most_nested_only);
+#if defined(_WIN32) || defined(__CYGWIN__)
+	return 0;
+#else
+	return 1;
 #endif
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

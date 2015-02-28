@@ -1,4 +1,4 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <stddef.h> /* NULL */
 
@@ -6,9 +6,7 @@
 #include "../../src/io/ioeta.h"
 #include "../../src/io/iop.h"
 
-
-static void
-test_non_existent_path_yields_zero_size(void)
+TEST(non_existent_path_yields_zero_size)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -22,8 +20,7 @@ test_non_existent_path_yields_zero_size(void)
 	ioeta_free(estim);
 }
 
-static void
-test_empty_files_are_ok(void)
+TEST(empty_files_are_ok)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -37,8 +34,7 @@ test_empty_files_are_ok(void)
 	ioeta_free(estim);
 }
 
-static void
-test_non_empty_files_are_ok(void)
+TEST(non_empty_files_are_ok)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -52,8 +48,7 @@ test_non_empty_files_are_ok(void)
 	ioeta_free(estim);
 }
 
-static void
-test_shallow_estimation_does_not_recur(void)
+TEST(shallow_estimation_does_not_recur)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -69,8 +64,7 @@ test_shallow_estimation_does_not_recur(void)
 
 #ifndef _WIN32
 
-static void
-test_symlink_calculated_as_zero_bytes(void)
+TEST(symlink_calculated_as_zero_bytes)
 {
 	ioeta_estim_t *const estim = ioeta_alloc(NULL);
 
@@ -102,24 +96,6 @@ test_symlink_calculated_as_zero_bytes(void)
 }
 
 #endif
-
-void
-calculate_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_non_existent_path_yields_zero_size);
-	run_test(test_empty_files_are_ok);
-	run_test(test_non_empty_files_are_ok);
-	run_test(test_shallow_estimation_does_not_recur);
-
-#ifndef _WIN32
-	/* Creating symbolic links on Windows requires administrator rights. */
-	run_test(test_symlink_calculated_as_zero_bytes);
-#endif
-
-	test_fixture_end();
-}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

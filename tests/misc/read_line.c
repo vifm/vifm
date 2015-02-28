@@ -1,12 +1,11 @@
-#include <stdio.h> /* FILE fopen() fclose() */
-#include <stdlib.h> /* malloc() free() */
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdio.h> /* FILE fclose() fopen() */
+#include <stdlib.h> /* free() malloc() */
 
 #include "../../src/utils/file_streams.h"
 
-static void
-test_buffer_can_be_null(void)
+TEST(buffer_can_be_null)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = NULL;
@@ -18,8 +17,7 @@ test_buffer_can_be_null(void)
 	fclose(fp);
 }
 
-static void
-test_buffer_can_be_not_null(void)
+TEST(buffer_can_be_not_null)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = malloc(10);
@@ -31,8 +29,7 @@ test_buffer_can_be_not_null(void)
 	fclose(fp);
 }
 
-static void
-test_very_long_line_can_be_read(void)
+TEST(very_long_line_can_be_read)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = NULL;
@@ -125,8 +122,7 @@ test_very_long_line_can_be_read(void)
 	fclose(fp);
 }
 
-static void
-test_empty_line_is_read_correctly(void)
+TEST(empty_line_is_read_correctly)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = NULL;
@@ -140,8 +136,7 @@ test_empty_line_is_read_correctly(void)
 	fclose(fp);
 }
 
-static void
-test_next_to_empty_line_is_read_correctly(void)
+TEST(next_to_empty_line_is_read_correctly)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = NULL;
@@ -156,8 +151,7 @@ test_next_to_empty_line_is_read_correctly(void)
 	fclose(fp);
 }
 
-static void
-test_the_last_line_is_read_correctly(void)
+TEST(the_last_line_is_read_correctly)
 {
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
 	char *line = NULL;
@@ -173,8 +167,7 @@ test_the_last_line_is_read_correctly(void)
 	fclose(fp);
 }
 
-static void
-test_reads_after_eof_return_null(void)
+TEST(reads_after_eof_return_null)
 {
 	const int READ_COUNT = 10;
 	FILE *const fp = fopen("test-data/read/very-long-line", "r");
@@ -195,22 +188,6 @@ test_reads_after_eof_return_null(void)
 
 	free(line);
 	fclose(fp);
-}
-
-void
-read_line_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_buffer_can_be_null);
-	run_test(test_buffer_can_be_not_null);
-	run_test(test_very_long_line_can_be_read);
-	run_test(test_empty_line_is_read_correctly);
-	run_test(test_next_to_empty_line_is_read_correctly);
-	run_test(test_the_last_line_is_read_correctly);
-	run_test(test_reads_after_eof_return_null);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,10 +1,13 @@
-#include "seatest.h"
+#include <stic.h>
 
 #include <unistd.h> /* F_OK access() */
 
 #include <stdio.h> /* remove() */
 
 #include "../../src/io/iop.h"
+#include "../../src/utils/utils.h"
+
+static int not_windows(void);
 
 static const char *const ORIG_FILE_NAME = "file";
 static const char *const NEW_ORIG_FILE_NAME = "new_file";
@@ -24,22 +27,19 @@ create_file(const char path[])
 	assert_int_equal(0, access(path, F_OK));
 }
 
-static void
-setup(void)
+SETUP()
 {
 	create_file(ORIG_FILE_NAME);
 }
 
-static void
-teardown(void)
+TEARDOWN()
 {
 	assert_int_equal(0, access(ORIG_FILE_NAME, F_OK));
 	assert_int_equal(0, remove(ORIG_FILE_NAME));
 	assert_int_equal(-1, access(ORIG_FILE_NAME, F_OK));
 }
 
-static void
-test_existent_file_is_not_overwritten_if_not_requested(void)
+TEST(existent_file_is_not_overwritten_if_not_requested)
 {
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 
@@ -65,8 +65,7 @@ test_existent_file_is_not_overwritten_if_not_requested(void)
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 }
 
-static void
-test_existent_non_symlink_is_not_overwritten(void)
+TEST(existent_non_symlink_is_not_overwritten)
 {
 	create_file(LINK_NAME);
 
@@ -82,10 +81,8 @@ test_existent_non_symlink_is_not_overwritten(void)
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 }
 
-#ifndef _WIN32
-
-static void
-test_nonexistent_symlink_is_created(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(nonexistent_symlink_is_created, IF(not_windows))
 {
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 
@@ -103,8 +100,8 @@ test_nonexistent_symlink_is_created(void)
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 }
 
-static void
-test_existent_symlink_is_changed(void)
+/* Creating symbolic links on Windows requires administrator rights. */
+TEST(existent_symlink_is_changed, IF(not_windows))
 {
 	assert_int_equal(-1, access(LINK_NAME, F_OK));
 
@@ -130,26 +127,10 @@ test_existent_symlink_is_changed(void)
 	assert_int_equal(-1, access(NEW_ORIG_FILE_NAME, F_OK));
 }
 
-#endif
-
-void
-ln_tests(void)
+static int
+not_windows(void)
 {
-	test_fixture_start();
-
-	fixture_setup(setup);
-	fixture_teardown(teardown);
-
-	run_test(test_existent_file_is_not_overwritten_if_not_requested);
-	run_test(test_existent_non_symlink_is_not_overwritten);
-
-#ifndef _WIN32
-	/* Creating symbolic links on Windows requires administrator rights. */
-	run_test(test_nonexistent_symlink_is_created);
-	run_test(test_existent_symlink_is_changed);
-#endif
-
-	test_fixture_end();
+	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

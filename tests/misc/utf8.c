@@ -1,22 +1,25 @@
-/* To get wcswidth() function. */
-#define _XOPEN_SOURCE
-
-#include "seatest.h"
+#include <stic.h>
 
 #include <locale.h> /* setlocale() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
-#include <wchar.h> /* wcswidth() */
+#include <wchar.h>
 
 #include "../../src/utils/utf8.h"
-
-/* For wcswidth(). */
-#ifdef _WIN32
 #include "../../src/utils/utils.h"
-#endif
 
-static void
-test_get_real_string_width_full(void)
+static int locale_works(void);
+
+SETUP_ONCE()
+{
+	(void)setlocale(LC_ALL, "");
+	if(!locale_works())
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
+}
+
+TEST(get_real_string_width_full)
 {
 	const char utf8_str[] = "师вгд";
 	const size_t expected_len = strlen(utf8_str);
@@ -24,8 +27,7 @@ test_get_real_string_width_full(void)
 	assert_int_equal(expected_len, calculated_len);
 }
 
-static void
-test_get_real_string_width_in_the_middle_a(void)
+TEST(get_real_string_width_in_the_middle_a, IF(locale_works))
 {
 #define ENDING "丝刀"
 	const char utf8_str[] = "师螺" ENDING;
@@ -36,8 +38,7 @@ test_get_real_string_width_in_the_middle_a(void)
 	assert_int_equal(expected_len, calculated_len);
 }
 
-static void
-test_get_real_string_width_in_the_middle_b(void)
+TEST(get_real_string_width_in_the_middle_b, IF(locale_works))
 {
 #define ENDING "丝刀"
 	const char utf8_str[] = "师从螺" ENDING;
@@ -48,25 +49,10 @@ test_get_real_string_width_in_the_middle_b(void)
 	assert_int_equal(expected_len, calculated_len);
 }
 
-void
-utf8_tests(void)
+static int
+locale_works(void)
 {
-	test_fixture_start();
-
-	(void)setlocale(LC_ALL, "");
-	if(wcwidth(L'丝') != 2)
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
-
-	run_test(test_get_real_string_width_full);
-	if(wcwidth(L'丝') == 2)
-	{
-		run_test(test_get_real_string_width_in_the_middle_a);
-		run_test(test_get_real_string_width_in_the_middle_b);
-	}
-
-	test_fixture_end();
+	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

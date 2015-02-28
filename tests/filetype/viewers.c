@@ -1,7 +1,7 @@
+#include <stic.h>
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "seatest.h"
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
@@ -25,14 +25,12 @@ nothing_available(const char name[])
 	return 0;
 }
 
-static void
-test_null_if_nothing_set(void)
+TEST(null_if_nothing_set)
 {
 	assert_true(ft_get_viewer("file.version.tar.bz2") == NULL);
 }
 
-static void
-test_multiple_choice_separated(void)
+TEST(multiple_choice_separated)
 {
 	const char *viewer;
 
@@ -60,8 +58,7 @@ test_multiple_choice_separated(void)
 	assert_true(viewer == NULL);
 }
 
-static void
-test_multiple_choice_joined(void)
+TEST(multiple_choice_joined)
 {
 	const char *viewer;
 
@@ -88,8 +85,7 @@ test_multiple_choice_joined(void)
 	assert_true(viewer == NULL);
 }
 
-static void
-test_description_is_not_allowed(void)
+TEST(description_is_not_allowed)
 {
 	const char *viewer;
 
@@ -100,8 +96,7 @@ test_description_is_not_allowed(void)
 	assert_true(viewer == NULL);
 }
 
-static void
-test_several_patterns(void)
+TEST(several_patterns)
 {
 	ft_set_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
 
@@ -110,20 +105,6 @@ test_several_patterns(void)
 	assert_true(ft_get_viewer("file.version.tbz") != NULL);
 	assert_true(ft_get_viewer("file.version.tbz2") != NULL);
 	assert_true(ft_get_viewer("file.version.tar.bz2") != NULL);
-}
-
-void
-viewers_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_null_if_nothing_set);
-	run_test(test_multiple_choice_separated);
-	run_test(test_multiple_choice_joined);
-	run_test(test_description_is_not_allowed);
-	run_test(test_several_patterns);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

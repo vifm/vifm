@@ -1,11 +1,10 @@
-#include <stdio.h> /* FILE fopen() fclose() */
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdio.h> /* FILE fclose() fopen() */
 
 #include "../../src/utils/file_streams.h"
 
-static void
-test_reads_line_chunk_by_chunk(void)
+TEST(reads_line_chunk_by_chunk)
 {
 	FILE *const fp = fopen("test-data/read/two-lines", "r");
 	char *line = NULL;
@@ -20,8 +19,7 @@ test_reads_line_chunk_by_chunk(void)
 	fclose(fp);
 }
 
-static void
-test_eol_is_preserved(void)
+TEST(eol_is_preserved)
 {
 	FILE *const fp = fopen("test-data/read/two-lines", "r");
 	char *line = NULL;
@@ -33,8 +31,7 @@ test_eol_is_preserved(void)
 	fclose(fp);
 }
 
-static void
-test_reads_more_than_one_line(void)
+TEST(reads_more_than_one_line)
 {
 	FILE *const fp = fopen("test-data/read/two-lines", "r");
 	char *line = NULL;
@@ -49,8 +46,7 @@ test_reads_more_than_one_line(void)
 	fclose(fp);
 }
 
-static void
-test_writes_nothing_and_returns_null_on_zero_size_buffer(void)
+TEST(writes_nothing_and_returns_null_on_zero_size_buffer)
 {
 	FILE *const fp = fopen("test-data/read/two-lines", "r");
 	char *line = NULL;
@@ -63,8 +59,7 @@ test_writes_nothing_and_returns_null_on_zero_size_buffer(void)
 	fclose(fp);
 }
 
-static void
-test_writes_nothing_and_returns_null_on_one_byte_buffer(void)
+TEST(writes_nothing_and_returns_null_on_one_byte_buffer)
 {
 	FILE *const fp = fopen("test-data/read/two-lines", "r");
 	char *line = NULL;
@@ -75,20 +70,6 @@ test_writes_nothing_and_returns_null_on_one_byte_buffer(void)
 	assert_string_equal("01", line_buf);
 
 	fclose(fp);
-}
-
-void
-get_line_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_reads_line_chunk_by_chunk);
-	run_test(test_eol_is_preserved);
-	run_test(test_reads_more_than_one_line);
-	run_test(test_writes_nothing_and_returns_null_on_zero_size_buffer);
-	run_test(test_writes_nothing_and_returns_null_on_one_byte_buffer);
-
-	test_fixture_end();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

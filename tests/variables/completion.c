@@ -1,12 +1,11 @@
-#include <stdlib.h>
+#include <stic.h>
 
-#include "seatest.h"
+#include <stdlib.h>
 
 #include "../../src/engine/completion.h"
 #include "../../src/engine/variables.h"
 
-static void
-test_vars_empty_completion(void)
+TEST(vars_empty_completion)
 {
 	char buf[] = "";
 	const char *start;
@@ -19,8 +18,7 @@ test_vars_empty_completion(void)
 	free(completed);
 }
 
-static void
-test_vars_completion(void)
+TEST(vars_completion)
 {
 	char buf[] = "abc";
 	const char *start;
@@ -33,8 +31,7 @@ test_vars_completion(void)
 	free(completed);
 }
 
-static void
-test_envvars_completion(void)
+TEST(envvars_completion)
 {
 	char buf[] = "$VAR_";
 	const char *start;
@@ -60,8 +57,7 @@ test_envvars_completion(void)
 	free(completed);
 }
 
-static void
-test_do_not_complete_removed_variables(void)
+TEST(do_not_complete_removed_variables)
 {
 	char buf[] = "$VAR_";
 	const char *start;
@@ -85,17 +81,5 @@ test_do_not_complete_removed_variables(void)
 	free(completed);
 }
 
-void
-completion_tests(void)
-{
-	test_fixture_start();
-
-	run_test(test_vars_empty_completion);
-	run_test(test_vars_completion);
-	run_test(test_envvars_completion);
-	run_test(test_do_not_complete_removed_variables);
-
-	test_fixture_end();
-}
-
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */
