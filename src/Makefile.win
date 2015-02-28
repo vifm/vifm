@@ -24,8 +24,8 @@ cfg := $(addprefix cfg/, $(cfg))
 compat := getopt.c getopt1.c os.c wcwidth.c
 compat := $(addprefix compat/, $(compat))
 
-engine := cmds.c functions.c completion.c keys.c mode.c options.c parsing.c \
-          text_buffer.c var.c variables.c
+engine := abbrevs.c cmds.c functions.c completion.c keys.c mode.c options.c \
+          parsing.c text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
 io := private/ioeta.c private/ionotif.c private/traverser.c

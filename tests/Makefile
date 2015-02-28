@@ -10,7 +10,7 @@ else
 endif
 
 # engine
-suites += commands completion keys options parsing variables
+suites += abbrevs commands completion keys options parsing variables
 # io
 suites += ioeta ionotif iop ior
 # ui

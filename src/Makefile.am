@@ -66,6 +66,7 @@ vifm_SOURCES = \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/os.c compat/os.h \
 	\
+	engine/abbrevs.c engine/abbrevs.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \

@@ -76,15 +76,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	cfg/info.$(OBJEXT) compat/getopt.$(OBJEXT) \
 	compat/getopt1.$(OBJEXT) compat/os.$(OBJEXT) \
-	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
-	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
-	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
-	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
-	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
-	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
-	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bookmarks_menu.$(OBJEXT) \
+	engine/abbrevs.$(OBJEXT) engine/cmds.$(OBJEXT) \
+	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
+	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
+	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
+	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
+	engine/variables.$(OBJEXT) io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) \
+	io/ior.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
+	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -338,6 +338,7 @@ vifm_SOURCES = \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/os.c compat/os.h \
 	\
+	engine/abbrevs.c engine/abbrevs.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
@@ -569,6 +570,8 @@ engine/$(am__dirstamp):
 engine/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) engine/$(DEPDIR)
 	@: > engine/$(DEPDIR)/$(am__dirstamp)
+engine/abbrevs.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
 engine/cmds.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/completion.$(OBJEXT): engine/$(am__dirstamp) \
@@ -790,6 +793,7 @@ mostlyclean-compile:
 	-rm -f compat/getopt.$(OBJEXT)
 	-rm -f compat/getopt1.$(OBJEXT)
 	-rm -f compat/os.$(OBJEXT)
+	-rm -f engine/abbrevs.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/functions.$(OBJEXT)
@@ -909,6 +913,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/os.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/abbrevs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/functions.Po@am__quote@
