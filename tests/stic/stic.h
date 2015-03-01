@@ -178,7 +178,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
 /* Test suite entry point macro. */
 
 #define DEFINE_SUITE() \
-    typedef void stic_ft(void); \
+    typedef void (*stic_ft)(void); \
     stic_ft t0  __attribute__((weak)), t1  __attribute__((weak)), \
             t2  __attribute__((weak)), t3  __attribute__((weak)), \
             t4  __attribute__((weak)), t5  __attribute__((weak)), \
@@ -232,7 +232,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
     \
     void stic_suite(void) \
     { \
-        stic_ft *fixtures[] = { \
+        stic_ft fixtures[] = { \
             t0,   t1,  t2,  t3,  t4,  t5,  t6,  t7,  t8,  t9, \
             t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, \
             t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, \
@@ -249,7 +249,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
         size_t i; \
         for(i = 0; i < STIC_ARRAY_LEN(fixtures); ++i) \
         { \
-            if(fixtures[i] != NULL) fixtures[i](); \
+            if(fixtures[i] != NULL) (*fixtures[i])(); \
         } \
     } \
     \
@@ -270,7 +270,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
 
 /* Test fixture body. */
 
-void STIC_CAT(t, TESTID)(void)
+static void stic_fixture(void)
 {
     const char *fixture_name = NULL;
     size_t i;
@@ -319,6 +319,7 @@ void STIC_CAT(t, TESTID)(void)
     }
     test_fixture_end();
 }
+void (*STIC_CAT(t, TESTID))(void) = &stic_fixture;
 
 #endif /* STIC__STIC_H__ */
 
