@@ -7,6 +7,7 @@
 
 #include "stic.h"
 #include <string.h>
+#include <wchar.h>
 #ifdef WIN32
 #include "windows.h"
 int stic_is_string_equal_i(const char* s1, const char* s2)
@@ -222,6 +223,35 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 	{
 	  comparison = strcmp(expected, actual) == 0;
 	  sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
+	}
+
+	stic_simple_test_result(comparison, s, function, line);
+}
+
+void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], unsigned int line)
+{
+	int comparison;
+	char s[STIC_PRINT_BUFFER_SIZE];
+
+	if ((expected == NULL) && (actual == NULL))
+	{
+		sprintf(s, "Expected <NULL> but was <NULL>");
+		comparison = 1;
+	}
+	else if (expected == NULL)
+	{
+		sprintf(s, "Expected <NULL> but was \"%ls\"", actual);
+		comparison = 0;
+	}
+	else if (actual == NULL)
+	{
+		sprintf(s, "Expected \"%ls\" but was <NULL>", expected);
+		comparison = 0;
+	}
+	else
+	{
+		comparison = wcscmp(expected, actual) == 0;
+		sprintf(s, "Expected \"%ls\" but was \"%ls\"", expected, actual);
 	}
 
 	stic_simple_test_result(comparison, s, function, line);
