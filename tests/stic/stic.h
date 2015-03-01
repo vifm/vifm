@@ -230,7 +230,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
             t96 __attribute__((weak)), t97 __attribute__((weak)), \
             t98 __attribute__((weak)), t99 __attribute__((weak)); \
     \
-    void stic_all_fixtures(void) \
+    void stic_suite(void) \
     { \
         stic_ft *fixtures[] = { \
             t0,   t1,  t2,  t3,  t4,  t5,  t6,  t7,  t8,  t9, \
@@ -260,7 +260,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
         { \
             stic_setup_once_func(); \
         } \
-        r = stic_testrunner(argc, argv, stic_all_fixtures, stic_setup_func, stic_teardown_func) == 0; \
+        r = stic_testrunner(argc, argv, stic_suite, stic_setup_func, stic_teardown_func) == 0; \
         if(stic_teardown_once_func != NULL) \
         { \
             stic_teardown_once_func(); \
