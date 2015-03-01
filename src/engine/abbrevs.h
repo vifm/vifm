@@ -19,16 +19,18 @@
 #ifndef VIFM__ENGINE__ABBREVS_H__
 #define VIFM__ENGINE__ABBREVS_H__
 
-int vle_abbr_add(const char lhs[], const char rhs[]);
+#include <stddef.h> /* wchar_t */
 
-int vle_abbr_add_no_remap(const char lhs[], const char rhs[]);
+int vle_abbr_add(const wchar_t lhs[], const wchar_t rhs[]);
+
+int vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[]);
 
 /* str is matched with lhs and, if none found, with rhs. */
-int vle_abbr_remove(const char str[]);
+int vle_abbr_remove(const wchar_t str[]);
 
 /* Returns NULL is str doesn't match any lhs, otherwise pointer to string
  * managed by the unit is returned. */
-const char * vle_abbr_expand(const char str[], int *no_remap);
+const wchar_t * vle_abbr_expand(const wchar_t str[], int *no_remap);
 
 /* Removes all registered abbreviations. */
 void vle_abbr_reset(void);
