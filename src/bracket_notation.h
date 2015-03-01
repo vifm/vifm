@@ -24,9 +24,13 @@
 /* Initializes internal notation description structures. */
 void init_bracket_notation(void);
 
-/* Substitures all bracket notation entries in cmd.  Returns newly allocated
- * wide string, which should be freed by the caller. */
+/* Substitutes all bracket notation entries in cmd passed in as narrow string.
+ * Returns newly allocated wide string, which should be freed by the caller. */
 wchar_t * substitute_specs(const char cmd[]);
+
+/* Substitutes all bracket notation entries in cmd passed in as wide string.
+ * Returns newly allocated wide string, which should be freed by the caller. */
+wchar_t * substitute_specsw(const wchar_t cmd[]);
 
 #endif /* VIFM__BRACKET_NOTATION_H__ */
 

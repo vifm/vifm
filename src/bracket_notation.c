@@ -517,15 +517,30 @@ notation_sorter(const void *first, const void *second)
 wchar_t *
 substitute_specs(const char cmd[])
 {
-	wchar_t *buf, *p;
-	const size_t len = strlen(cmd) + 1;
+	wchar_t *result;
+
 	wchar_t *const cmdw = to_wide(cmd);
-	wchar_t *s = cmdw;
+	if(cmdw == NULL)
+	{
+		return NULL;
+	}
+
+	result = substitute_specsw(cmdw);
+	free(cmdw);
+
+	return result;
+}
+
+wchar_t *
+substitute_specsw(const wchar_t cmd[])
+{
+	wchar_t *buf, *p;
+	const size_t len = wcslen(cmd) + 1;
+	const wchar_t *s = cmd;
 
 	buf = malloc(len*sizeof(wchar_t));
-	if(cmdw == NULL || buf == NULL)
+	if(cmd == NULL || buf == NULL)
 	{
-		free(cmdw);
 		free(buf);
 		return NULL;
 	}
@@ -548,7 +563,6 @@ substitute_specs(const char cmd[])
 	*p = L'\0';
 	assert(p + 1 - buf <= len && "Destination buffer was too small.");
 
-	free(cmdw);
 	return buf;
 }
 
