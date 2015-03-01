@@ -84,7 +84,7 @@ bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
 	gcc -c -o $@ $(CFLAGS) $<
 
 bin/$(BINSUBDIR)/:
-	mkdir -p $$@
+	mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
 # element in the array
