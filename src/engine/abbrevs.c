@@ -34,9 +34,10 @@ typedef struct
 abbrev_t;
 
 static int add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap);
-static void remove_abbrev(size_t idx);
-static size_t find_abbrev(const wchar_t lhs[]);
-static void free_abbrev(size_t idx);
+static abbrev_t * extend_abbrevs(void);
+static void remove_abbrev(abbrev_t *abbrev);
+static abbrev_t * find_abbrev(const wchar_t lhs[]);
+static void free_abbrev(abbrev_t *abbrev);
 
 static size_t abbrev_count;
 static abbrev_t *abbrevs;
@@ -56,32 +57,35 @@ vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[])
 static int
 add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap)
 {
-	size_t i;
-	abbrev_t *new_abbrev;
-	abbrev_t *new_abbrevs;
+	abbrev_t *abbrev;
 
-	i = find_abbrev(lhs);
-	if(i != (size_t)-1)
+	abbrev = find_abbrev(lhs);
+	if(abbrev != NULL)
 	{
-		return -1;
+		wchar_t *const rhs_copy = vifm_wcsdup(rhs);
+		if(rhs_copy == NULL)
+		{
+			return -1;
+		}
+
+		free(abbrev->rhs);
+		abbrev->rhs = rhs_copy;
+		return 0;
 	}
 
-	new_abbrevs = realloc(abbrevs, sizeof(*abbrevs)*(abbrev_count + 1));
-	if(new_abbrevs == NULL)
+	abbrev = extend_abbrevs();
+	if(abbrev == NULL)
 	{
 		return 1;
 	}
-	abbrevs = new_abbrevs;
 
-	new_abbrev = &new_abbrevs[abbrev_count];
-	new_abbrev->lhs = vifm_wcsdup(lhs);
-	new_abbrev->rhs = vifm_wcsdup(rhs);
-	new_abbrev->no_remap = no_remap;
+	abbrev->lhs = vifm_wcsdup(lhs);
+	abbrev->rhs = vifm_wcsdup(rhs);
+	abbrev->no_remap = no_remap;
 
-	if(new_abbrev->lhs == NULL || new_abbrev->rhs == NULL)
+	if(abbrev->lhs == NULL || abbrev->rhs == NULL)
 	{
-		free(new_abbrev->lhs);
-		free(new_abbrev->rhs);
+		free_abbrev(abbrev);
 		return 1;
 	}
 
@@ -89,15 +93,29 @@ add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap)
 	return 0;
 }
 
+static abbrev_t *
+extend_abbrevs(void)
+{
+	abbrev_t *new_abbrevs = realloc(abbrevs, sizeof(*abbrevs)*(abbrev_count + 1));
+	if(new_abbrevs == NULL)
+	{
+		return NULL;
+	}
+
+	abbrevs = new_abbrevs;
+	return &new_abbrevs[abbrev_count];
+}
+
 int
 vle_abbr_remove(const wchar_t str[])
 {
 	size_t i;
+	abbrev_t *abbrev;
 
-	i = find_abbrev(str);
-	if(i != (size_t)-1)
+	abbrev = find_abbrev(str);
+	if(abbrev != NULL)
 	{
-		remove_abbrev(i);
+		remove_abbrev(abbrev);
 		return 0;
 	}
 
@@ -106,7 +124,7 @@ vle_abbr_remove(const wchar_t str[])
 		abbrev_t *abbrev = &abbrevs[i];
 		if(wcscmp(abbrev->rhs, str) == 0)
 		{
-			remove_abbrev(i);
+			remove_abbrev(abbrev);
 			return 0;
 		}
 	}
@@ -115,30 +133,28 @@ vle_abbr_remove(const wchar_t str[])
 }
 
 static void
-remove_abbrev(size_t idx)
+remove_abbrev(abbrev_t *abbrev)
 {
-	memmove(&abbrevs[idx], &abbrevs[idx + 1],
-			(abbrev_count - 1 - idx)*sizeof(*abbrevs));
-	free_abbrev(idx);
+	free_abbrev(abbrev);
+	memmove(abbrev, abbrev + 1,
+			(&abbrevs[abbrev_count - 1] - abbrev)*sizeof(*abbrevs));
 	--abbrev_count;
 }
 
 const wchar_t *
 vle_abbr_expand(const wchar_t str[], int *no_remap)
 {
-	size_t i;
-
-	i = find_abbrev(str);
-	if(i == (size_t)-1)
+	abbrev_t *abbrev = find_abbrev(str);
+	if(abbrev == NULL)
 	{
 		return NULL;
 	}
 
-	*no_remap = abbrevs[i].no_remap;
-	return abbrevs[i].rhs;
+	*no_remap = abbrev->no_remap;
+	return abbrev->rhs;
 }
 
-static size_t
+static abbrev_t *
 find_abbrev(const wchar_t lhs[])
 {
 	size_t i;
@@ -148,11 +164,11 @@ find_abbrev(const wchar_t lhs[])
 		abbrev_t *abbrev = &abbrevs[i];
 		if(wcscmp(abbrev->lhs, lhs) == 0)
 		{
-			return i;
+			return abbrev;
 		}
 	}
 
-	return (size_t)-1;
+	return NULL;
 }
 
 void
@@ -161,7 +177,7 @@ vle_abbr_reset(void)
 	size_t i;
 	for(i = 0UL; i < abbrev_count; ++i)
 	{
-		free_abbrev(i);
+		free_abbrev(&abbrevs[i]);
 	}
 
 	free(abbrevs);
@@ -170,10 +186,10 @@ vle_abbr_reset(void)
 }
 
 static void
-free_abbrev(size_t idx)
+free_abbrev(abbrev_t *abbrev)
 {
-	free(abbrevs[idx].lhs);
-	free(abbrevs[idx].rhs);
+	free(abbrev->lhs);
+	free(abbrev->rhs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
