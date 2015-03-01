@@ -17,7 +17,7 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
-line_stats_t stats;
+static line_stats_t stats;
 
 static void
 fusehome_handler(OPT_OP op, optval_t val)
