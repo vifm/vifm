@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 24
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 01
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -922,6 +922,9 @@ Up - recall more recent command-line from history, that begins as the
                                                *vifm-c_Down*
 Down - recall older command-line from history, that begins as the current
     command-line.
+
+                                               *vifm-c_CTRL-]*
+Ctrl-] - trigger abbreviation expansion.
 
 Pasting special values~
 
@@ -2511,6 +2514,8 @@ The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
 To get the later use the following mapping: >
     cnoremap <c-w> <a-b><a-d>
 <
+Also used for abbreviations.
+
                                                *vifm-'laststatus'* *vifm-'ls'*
 laststatus ls
 type: boolean

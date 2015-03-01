@@ -126,6 +126,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col);
+static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
 static int no_initial_line(void);
@@ -224,6 +225,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x1b",         {BUILTIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape escape */
 	{L"\x1b\x1b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x1d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_rb}}},
 	/* ascii Delete */
 	{L"\x7f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
 #ifdef ENABLE_EXTENDED_KEYS
@@ -853,6 +855,14 @@ extedit_prompt(const char input[], int cursor_col)
 	}
 
 	free(ext_cmd);
+}
+
+/* Expands abbreviation to the left of current cursor position, if any
+ * present. */
+static void
+cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info)
+{
+	expand_abbrev();
 }
 
 /* Handles backspace. */

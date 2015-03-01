@@ -1,4 +1,4 @@
-.TH vifm 1 "February 24, 2015" "" "Vifm"
+.TH vifm 1 "March 01, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1007,6 +1007,9 @@ command-line.
 .TP
 .BI Down
 recall older command-line from history, that begins as the current command-line.
+.TP
+.BI Ctrl-]
+trigger abbreviation expansion.
 .\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------
@@ -3027,6 +3030,7 @@ To get the latter use the following mapping:
 .EX
     cnoremap <c-w> <a-b><a-d>
 .EE
+Also used for abbreviations.
 .TP
 .BI "laststatus ls"
 type: boolean

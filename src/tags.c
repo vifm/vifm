@@ -407,6 +407,7 @@ const char *tags[] = {
 	"vifm-c_CTRL-X_m",
 	"vifm-c_CTRL-X_r",
 	"vifm-c_CTRL-X_t",
+	"vifm-c_CTRL-]",
 	"vifm-c_CTRL-_",
 	"vifm-c_Delete",
 	"vifm-c_Down",
