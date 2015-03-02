@@ -32,5 +32,22 @@ TEST(overwriten_on_second_addition)
 	assert_wstring_equal(L"rhs2_3", vle_abbr_expand(L"lhs2", &no_remap));
 }
 
+TEST(overwrite_changes_mapping_type)
+{
+	int no_remap;
+
+	assert_success(vle_abbr_add(L"lhs", L"rhs"));
+	assert_non_null(vle_abbr_expand(L"lhs", &no_remap));
+	assert_int_equal(0, no_remap);
+
+	assert_success(vle_abbr_add_no_remap(L"lhs", L"rhs"));
+	assert_non_null(vle_abbr_expand(L"lhs", &no_remap));
+	assert_int_equal(1, no_remap);
+
+	assert_success(vle_abbr_add(L"lhs", L"rhs"));
+	assert_non_null(vle_abbr_expand(L"lhs", &no_remap));
+	assert_int_equal(0, no_remap);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

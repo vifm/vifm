@@ -70,6 +70,7 @@ add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap)
 
 		free(abbrev->rhs);
 		abbrev->rhs = rhs_copy;
+		abbrev->no_remap = no_remap;
 		return 0;
 	}
 
