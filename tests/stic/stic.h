@@ -32,6 +32,8 @@ void stic_assert_true(int test, const char* function, unsigned int line);
 void stic_assert_false(int test, const char* function, unsigned int line);
 void stic_assert_success(int test, const char function[], unsigned int line);
 void stic_assert_failure(int test, const char function[], unsigned int line);
+void stic_assert_null(const void *value, const char function[], unsigned int line);
+void stic_assert_non_null(const void *value, const char function[], unsigned int line);
 void stic_assert_int_equal(int expected, int actual, const char* function, unsigned int line);
 void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, unsigned int line);
 void stic_assert_float_equal(float expected, float actual, float delta, const char* function, unsigned int line);
@@ -57,6 +59,8 @@ int stic_positive_predicate( void );
 #define assert_false(test) do {  stic_assert_false(test, __FUNCTION__, __LINE__); } while (0)
 #define assert_success(test) do {  stic_assert_success(test, __FUNCTION__, __LINE__); } while (0)
 #define assert_failure(test) do {  stic_assert_failure(test, __FUNCTION__, __LINE__); } while (0)
+#define assert_null(value) do {  stic_assert_null(value, __FUNCTION__, __LINE__); } while (0)
+#define assert_non_null(value) do {  stic_assert_non_null(value, __FUNCTION__, __LINE__); } while (0)
 #define assert_int_equal(expected, actual) do {  stic_assert_int_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)
 #define assert_ulong_equal(expected, actual) do {  stic_assert_ulong_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)
 #define assert_string_equal(expected, actual) do {  stic_assert_string_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)

@@ -175,6 +175,16 @@ void stic_assert_failure(int test, const char function[], unsigned int line)
 	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, line);
 }
 
+void stic_assert_null(const void *value, const char function[], unsigned int line)
+{
+	stic_simple_test_result(value == NULL, "Should have been NULL", function, line);
+}
+
+void stic_assert_non_null(const void *value, const char function[], unsigned int line)
+{
+	stic_simple_test_result(value != NULL, "Should have been non-NULL", function, line);
+}
+
 void stic_assert_int_equal(int expected, int actual, const char* function, unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
