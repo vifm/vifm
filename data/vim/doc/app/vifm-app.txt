@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 01
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 03
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1125,6 +1125,17 @@ The builtin commands are:
     |vifm-'aproposprg'| option.
 :apropos - repeats last :apropos command.
 
+                                               *vifm-:cabbrev* *vifm-:ca*
+:ca[bbrev] lhs rhs - registers new or overwrites existing abbreviation for
+    command-line mode.  rhs can contain spaces and any special sequences
+    accepted in rhs of mappings (see |vifm-mappings|).  Abbreviations are
+    expanded non-recursively.
+
+                                               *vifm-:cnoreabbrev*
+                                               *vifm-:cnorea*
+:cnorea[bbrev] lhs rhs - same as :cabbrev, but mappings in rhs are ignored
+    during expansion.
+
                                                *vifm-:cd*
 :cd or :cd ~ or :cd $HOME - change to your home directory.
 :cd - - go to previous directory.
@@ -1222,6 +1233,11 @@ The builtin commands are:
 :cq[uit][!]
     same as |vifm-:quit|, but also aborts directory choosing via
     |vifm---choose-dir| (empties output file).
+
+                                               *vifm-:cunabbrev* *vifm-:cuna*
+:cuna[bbrev] lhs - unregisters command-line mode abbreviation by its lhs.
+:cuna[bbrev] rhs - unregisters command-line mode abbreviation by its rhs, so
+    that abbreviation could be removed even after expansion.
 
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][!][count][ &] - delete selected file or files.  "!" means

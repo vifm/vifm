@@ -40,10 +40,13 @@
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() strrchr() */
+#include <wctype.h> /* iswspace() */
+
 #include "cfg/config.h"
 #include "cfg/hist.h"
 #include "cfg/info.h"
 #include "compat/os.h"
+#include "engine/abbrevs.h"
 #include "engine/cmds.h"
 #include "engine/mode.h"
 #include "engine/options.h"
@@ -153,6 +156,9 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
+static int cabbrev_cmd(const cmd_info_t *cmd_info);
+static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
+static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
 static int chmod_cmd(const cmd_info_t *cmd_info);
@@ -164,6 +170,7 @@ static int cmap_cmd(const cmd_info_t *cmd_info);
 static int cnoremap_cmd(const cmd_info_t *cmd_info);
 static int copy_cmd(const cmd_info_t *cmd_info);
 static int cquit_cmd(const cmd_info_t *cmd_info);
+static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
@@ -303,6 +310,10 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 3, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -330,6 +341,8 @@ static const cmd_add_t commands[] = {
 		.handler = copy_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cquit",            .abbr = "cq",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cquit_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "cunabbrev",        .abbr = "cuna",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cunabbrev_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cunmap",           .abbr = "cu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 1,  .id = -1,              .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
@@ -1620,6 +1633,54 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	return show_apropos_menu(curr_view, last_args) != 0;
 }
 
+/* Registers command-line mode abbreviation. */
+static int
+cabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	return add_cabbrev(cmd_info, 0);
+}
+
+/* Registers command-line mode abbreviation of noremap kind. */
+static int
+cnoreabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	return add_cabbrev(cmd_info, 1);
+}
+
+/* Registers command-line mode.  Returns value to be returned by command
+ * handler. */
+static int
+add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
+{
+	int result;
+	wchar_t *subst;
+	wchar_t *wargs = to_wide(cmd_info->args);
+	wchar_t *rhs = wargs;
+
+	while(cfg_is_keyword_wchar(*rhs))
+	{
+		++rhs;
+	}
+	while(iswspace(*rhs))
+	{
+		*rhs++ = L'\0';
+	}
+
+	subst = substitute_specsw(rhs);
+	result = no_remap
+	       ? vle_abbr_add_no_remap(wargs, subst)
+	       : vle_abbr_add(wargs, subst);
+	free(subst);
+	free(wargs);
+
+	if(result != 0)
+	{
+		status_bar_error("Failed to register abbreviation");
+	}
+
+	return result;
+}
+
 static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
@@ -1911,6 +1972,20 @@ static int
 cquit_cmd(const cmd_info_t *cmd_info)
 {
 	vifm_try_leave(!cmd_info->emark, 1, cmd_info->emark);
+	return 0;
+}
+
+/* Unregisters command-line abbreviation either by its LHS or RHS. */
+static int
+cunabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	wchar_t *const wargs = to_wide(cmd_info->args);
+	const int result = vle_abbr_remove(wargs);
+	free(wargs);
+	if(result != 0)
+	{
+		status_bar_error("No such abbreviation");
+	}
 	return 0;
 }
 

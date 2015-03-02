@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: February 24, 2015
+" Last Change: March 03, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -13,13 +13,13 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 " General commands
-syntax keyword vifmCommand contained alink apropos change chmod chown clone
-		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
-		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] jobs locate ls
-		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
-		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
-		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
-		\ vifm vs[plit] w[rite] wq x[it] y[ank]
+syntax keyword vifmCommand contained alink apropos ca[bbrev] cnorea[bbrev]
+		\ change chmod chown clone co[py] cuna[bbrev] d[elete] delm[arks] di[splay]
+		\ dirs e[dit] el[se] empty en[dif] exi[t] file filter fin[d] fini[sh] gr[ep]
+		\ h[elp] his[tory] jobs locate ls lstrash marks mes[sages] mkdir m[ove]
+		\ noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename restart
+		\ restore rlink screen sh[ell] sor[t] sp[lit] s[ubstitute] touch tr trashes
+		\ sync undol[ist] ve[rsion] vie[w] vifm vs[plit] w[rite] wq x[it] y[ank]
 		\ nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else

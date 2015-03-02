@@ -1,4 +1,4 @@
-.TH vifm 1 "March 01, 2015" "" "Vifm"
+.TH vifm 1 "March 03, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1235,6 +1235,18 @@ the 'aproposprg' option.
 .BI :apropos
 repeats last :apropos command.
 .TP
+.BI "                                         :cabbrev"
+.TP
+.BI ":ca[bbrev] lhs rhs"
+registers new or overwrites existing abbreviation for command-line mode.  rhs
+can contain spaces and any special sequences accepted in rhs of mappings (see
+Mappings section below).  Abbreviations are expanded non-recursively.
+.TP
+.BI "                                         :cnoreabbrev"
+.TP
+.BI ":cnorea[bbrev] lhs rhs"
+same as :cabbrev, but mappings in rhs are ignored during expansion.
+.TP
 .BI "                                         :cd"
 .TP
 .BI ":cd or :cd ~ or :cd $HOME"
@@ -1391,6 +1403,15 @@ name from the argument list.  "!" forces overwrite.
 .BI ":cq[uit][!]"
 same as :quit, but also aborts directory choosing via \-\-choose\-dir (empties
 output file).
+.TP
+.BI "                                         :cunabbrev"
+.TP
+.BI ":cuna[bbrev] lhs"
+unregisters command-line mode abbreviation by its lhs.
+.TP
+.BI ":cuna[bbrev] rhs"
+unregisters command-line mode abbreviation by its rhs, so that abbreviation
+could be removed even after expansion.
 .TP
 .BI "                                         :delete"
 .TP
