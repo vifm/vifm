@@ -158,7 +158,6 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 void stic_assert_true(int test, const char* function, unsigned int line)
 {
 	stic_simple_test_result(test, "Should have been true", function, line);
-
 }
 
 void stic_assert_false(int test, const char* function, unsigned int line)
@@ -166,6 +165,15 @@ void stic_assert_false(int test, const char* function, unsigned int line)
 	stic_simple_test_result(!test, "Should have been false", function, line);
 }
 
+void stic_assert_success(int test, const char function[], unsigned int line)
+{
+	stic_simple_test_result(test == 0, "Should have been success (zero)", function, line);
+}
+
+void stic_assert_failure(int test, const char function[], unsigned int line)
+{
+	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, line);
+}
 
 void stic_assert_int_equal(int expected, int actual, const char* function, unsigned int line)
 {
