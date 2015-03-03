@@ -1235,13 +1235,13 @@ extract_abbrev(line_stats_t *stat, int *pos, int *no_remap)
 	wchar_t c;
 	const wchar_t *abbrev_rhs;
 
-	l = i - 1;
+	l = i;
 	while(l > 0 && cfg_is_keyword_wchar(line[l - 1]))
 	{
 		--l;
 	}
 
-	if(l == i - 1)
+	if(l == i)
 	{
 		return NULL;
 	}

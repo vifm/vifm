@@ -21,6 +21,7 @@ SETUP()
 		cfg.is_keyword[i] = !iswspace(i);
 	}
 
+	assert_int_equal(0, vle_abbr_add_no_remap(L"x", L"y"));
 	assert_int_equal(0, vle_abbr_add_no_remap(L"aa", L"bb"));
 }
 
@@ -30,6 +31,17 @@ TEARDOWN()
 	stats.line = NULL;
 
 	vle_abbr_reset();
+}
+
+TEST(single_character)
+{
+	int pos = -1, no_remap = -1;
+	const wchar_t *abbrev_rhs;
+
+	prepare_line(L"x");
+	abbrev_rhs = extract_abbrev(&stats, &pos, &no_remap);
+	assert_wstring_equal(L"y", abbrev_rhs);
+	assert_int_equal(0, pos);
 }
 
 TEST(at_beginning)

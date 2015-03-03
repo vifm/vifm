@@ -31,6 +31,17 @@ TEST(addition)
 	assert_wstring_equal(L"rhs2", vle_abbr_expand(L"lhs2", &no_remap));
 }
 
+TEST(single_character_abbrev)
+{
+	int no_remap;
+
+	assert_success(exec_commands("cabbrev x y", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"y", vle_abbr_expand(L"x", &no_remap));
+
+	assert_success(exec_commands("cnoreabbrev a b", &lwin, CIT_COMMAND));
+	assert_wstring_equal(L"b", vle_abbr_expand(L"a", &no_remap));
+}
+
 TEST(add_with_remap)
 {
 	int no_remap = -1;
