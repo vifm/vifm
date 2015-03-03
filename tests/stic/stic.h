@@ -118,6 +118,15 @@ static void (*stic_teardown_once_func)(void);
     l701,l702,l703,l704,l705,l706,l707,l708,l709,l710,l711,l712,l713,l714,l715,l716,l717,l718,l719,l720,l721,l722,l723,l724,l725,l726,l727,l728,l729,l730,l731,l732,l733,l734,l735,l736,l737,l738,l739,l740,l741,l742,l743,l744,l745,l746,l747,l748,l749,l750,\
     l751,l752,l753,l754,l755,l756,l757,l758,l759,l760,l761,l762,l763,l764,l765,l766,l767,l768,l769,l770,l771,l772,l773,l774,l775,l776,l777,l778,l779,l780,l781,l782,l783,l784,l785,l786,l787,l788,l789,l790,l791,l792,l793,l794,l795,l796,l797,l798,l799,l800
 
+/* Names of variables for fixture functions. */
+
+#define FIXTURES_VARIABLES \
+    t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,\
+    t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,\
+    t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,\
+    t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,\
+    t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99
+
 /* Test description. */
 
 struct stic_test_data
@@ -187,71 +196,11 @@ static stic_test_data_p TEST_DATA_STRUCTS;
 
 #define DEFINE_SUITE() \
     typedef void (*stic_ft)(void); \
-    stic_ft t0  __attribute__((weak)), t1  __attribute__((weak)), \
-            t2  __attribute__((weak)), t3  __attribute__((weak)), \
-            t4  __attribute__((weak)), t5  __attribute__((weak)), \
-            t6  __attribute__((weak)), t7  __attribute__((weak)), \
-            t8  __attribute__((weak)), t9  __attribute__((weak)), \
-            t10 __attribute__((weak)), t11 __attribute__((weak)), \
-            t12 __attribute__((weak)), t13 __attribute__((weak)), \
-            t14 __attribute__((weak)), t15 __attribute__((weak)), \
-            t16 __attribute__((weak)), t17 __attribute__((weak)), \
-            t18 __attribute__((weak)), t19 __attribute__((weak)), \
-            t20 __attribute__((weak)), t21 __attribute__((weak)), \
-            t22 __attribute__((weak)), t23 __attribute__((weak)), \
-            t24 __attribute__((weak)), t25 __attribute__((weak)), \
-            t26 __attribute__((weak)), t27 __attribute__((weak)), \
-            t28 __attribute__((weak)), t29 __attribute__((weak)), \
-            t30 __attribute__((weak)), t31 __attribute__((weak)), \
-            t32 __attribute__((weak)), t33 __attribute__((weak)), \
-            t34 __attribute__((weak)), t35 __attribute__((weak)), \
-            t36 __attribute__((weak)), t37 __attribute__((weak)), \
-            t38 __attribute__((weak)), t39 __attribute__((weak)), \
-            t40 __attribute__((weak)), t41 __attribute__((weak)), \
-            t42 __attribute__((weak)), t43 __attribute__((weak)), \
-            t44 __attribute__((weak)), t45 __attribute__((weak)), \
-            t46 __attribute__((weak)), t47 __attribute__((weak)), \
-            t48 __attribute__((weak)), t49 __attribute__((weak)), \
-            t50 __attribute__((weak)), t51 __attribute__((weak)), \
-            t52 __attribute__((weak)), t53 __attribute__((weak)), \
-            t54 __attribute__((weak)), t55 __attribute__((weak)), \
-            t56 __attribute__((weak)), t57 __attribute__((weak)), \
-            t58 __attribute__((weak)), t59 __attribute__((weak)), \
-            t60 __attribute__((weak)), t61 __attribute__((weak)), \
-            t62 __attribute__((weak)), t63 __attribute__((weak)), \
-            t64 __attribute__((weak)), t65 __attribute__((weak)), \
-            t66 __attribute__((weak)), t67 __attribute__((weak)), \
-            t68 __attribute__((weak)), t69 __attribute__((weak)), \
-            t70 __attribute__((weak)), t71 __attribute__((weak)), \
-            t72 __attribute__((weak)), t73 __attribute__((weak)), \
-            t74 __attribute__((weak)), t75 __attribute__((weak)), \
-            t76 __attribute__((weak)), t77 __attribute__((weak)), \
-            t78 __attribute__((weak)), t79 __attribute__((weak)), \
-            t80 __attribute__((weak)), t81 __attribute__((weak)), \
-            t82 __attribute__((weak)), t83 __attribute__((weak)), \
-            t84 __attribute__((weak)), t85 __attribute__((weak)), \
-            t86 __attribute__((weak)), t87 __attribute__((weak)), \
-            t88 __attribute__((weak)), t89 __attribute__((weak)), \
-            t90 __attribute__((weak)), t91 __attribute__((weak)), \
-            t92 __attribute__((weak)), t93 __attribute__((weak)), \
-            t94 __attribute__((weak)), t95 __attribute__((weak)), \
-            t96 __attribute__((weak)), t97 __attribute__((weak)), \
-            t98 __attribute__((weak)), t99 __attribute__((weak)); \
+    __attribute__((weak)) stic_ft FIXTURES_VARIABLES; \
     \
     void stic_suite(void) \
     { \
-        stic_ft fixtures[] = { \
-            t0,   t1,  t2,  t3,  t4,  t5,  t6,  t7,  t8,  t9, \
-            t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, \
-            t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, \
-            t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, \
-            t40, t41, t42, t43, t44, t45, t46, t47, t48, t49, \
-            t50, t51, t52, t53, t54, t55, t56, t57, t58, t59, \
-            t60, t61, t62, t63, t64, t65, t66, t67, t68, t69, \
-            t70, t71, t72, t73, t74, t75, t76, t77, t78, t79, \
-            t80, t81, t82, t83, t84, t85, t86, t87, t88, t89, \
-            t90, t91, t92, t93, t94, t95, t96, t97, t98, t99, \
-        }; \
+        stic_ft fixtures[] = { FIXTURES_VARIABLES }; \
         STIC_STATIC_ASSERT(too_many_fixtures, \
                            STIC_ARRAY_LEN(fixtures) >= MAXTESTID); \
         size_t i; \
