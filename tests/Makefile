@@ -70,7 +70,7 @@ endif
 check: build
 
 clean:
-	-$(RM) -r bin/
+	-$(RM) -r bin/ stic/stic.h.d stic/stic.h.gch
 
 $(vifm_src:.c=.o): | $(vifm_bin)
 
@@ -81,6 +81,9 @@ bin/build/$(BINSUBDIR)/stubs.o: stubs.c
 	gcc -c -o $@ $(CFLAGS) $<
 
 bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
+	gcc -c -o $@ $(CFLAGS) $<
+
+stic/stic.h.gch: stic/stic.h
 	gcc -c -o $@ $(CFLAGS) $<
 
 bin/$(BINSUBDIR)/:
@@ -108,8 +111,10 @@ bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
                                   $(vifm_obj) | $(vifm_bin) bin/$(BINSUBDIR)/
 	gcc -o $$@ $$^ $(LDFLAGS)
 
-bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. | bin/build/$(BINSUBDIR)/$1
-	gcc -c -o $$@ $(CFLAGS) -DTESTID=$$(call pos, $$($1.obj), $$@) \
+bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. stic/stic.h.gch \
+                             | bin/build/$(BINSUBDIR)/$1
+	gcc -c -o $$@ $(CFLAGS) -include stic/stic.h \
+	                        -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                        -DMAXTESTID=$$(words $$($1.obj)) $$<
 
 bin/build/$(BINSUBDIR)/$1:
@@ -128,4 +133,4 @@ endef
 $(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
 
 # import dependencies calculated by the compiler
-include $(wildcard $(deps) bin/build/stic.d bin/build/stubs.d)
+include $(wildcard $(deps) bin/build/stic.d stic/stic.h.d bin/build/stubs.d)
