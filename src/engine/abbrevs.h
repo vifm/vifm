@@ -21,15 +21,22 @@
 
 #include <stddef.h> /* wchar_t */
 
+/* Registers abbreviation from LHS to RHS.  Overwrites any previously existing
+ * abbreviations for LHS.  Returns zero on success or non-zero on memory
+ * allocation error. */
 int vle_abbr_add(const wchar_t lhs[], const wchar_t rhs[]);
 
+/* Same as vle_abbr_add(), but registers noremap kind of abbreviation. */
 int vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[]);
 
-/* str is matched with lhs and, if none found, with rhs. */
+/* Removes abbreviation by first matching matching str with LHS and, if no
+ * matches found, with RHS.  Returns zero on successful removal, otherwise
+ * (no abbreviation found) non-zero is returned. */
 int vle_abbr_remove(const wchar_t str[]);
 
-/* Returns NULL is str doesn't match any lhs, otherwise pointer to string
- * managed by the unit is returned. */
+/* Expands str if it's a full match for LHS of any of previously registered
+ * abbreviations.  Returns NULL is str doesn't match any LHS, otherwise pointer
+ * to string managed by the unit is returned. */
 const wchar_t * vle_abbr_expand(const wchar_t str[], int *no_remap);
 
 /* Removes all registered abbreviations. */

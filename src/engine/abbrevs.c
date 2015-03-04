@@ -25,11 +25,12 @@
 
 #include "../utils/str.h"
 
+/* Information about single abbreviation. */
 typedef struct
 {
-	wchar_t *lhs;
-	wchar_t *rhs;
-	int no_remap;
+	wchar_t *lhs; /* What is expanded. */
+	wchar_t *rhs; /* To what it's expanded. */
+	int no_remap; /* Whether user mappings should be processed on expansion. */
 }
 abbrev_t;
 
@@ -42,7 +43,9 @@ static void remove_abbrev(abbrev_t *abbrev);
 static abbrev_t * find_abbrev(const wchar_t lhs[], size_t field);
 static void free_abbrev(abbrev_t *abbrev);
 
+/* Number of registered abbreviations. */
 static size_t abbrev_count;
+/* Array of registered abbreviations. */
 static abbrev_t *abbrevs;
 
 int
@@ -57,6 +60,8 @@ vle_abbr_add_no_remap(const wchar_t lhs[], const wchar_t rhs[])
 	return add_abbrev(lhs, rhs, 1);
 }
 
+/* Adds new/updates existing abbreviation.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
 add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap)
 {
@@ -77,6 +82,8 @@ add_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap)
 	return setup_abbrev(abbrev, lhs, rhs, no_remap);
 }
 
+/* Overwrites properties of existing abbreviation.  Returns zero on success,
+ * otherwise non-zero is returned. */
 static int
 replace_abbrev(abbrev_t *abbrev, const wchar_t rhs[], int no_remap)
 {
@@ -92,6 +99,8 @@ replace_abbrev(abbrev_t *abbrev, const wchar_t rhs[], int no_remap)
 	return 0;
 }
 
+/* Reallocates array of abbreviations to get at least one new element.  Returns
+ * pointer to new element or NULL. */
 static abbrev_t *
 extend_abbrevs(void)
 {
@@ -105,6 +114,8 @@ extend_abbrevs(void)
 	return &new_abbrevs[abbrev_count];
 }
 
+/* Initializes properties of previously inexistent abbreviation.  Returns zero
+ * on success, otherwise non-zero is returned. */
 static int
 setup_abbrev(abbrev_t *abbrev, const wchar_t lhs[], const wchar_t rhs[],
 		int no_remap)
@@ -143,6 +154,7 @@ vle_abbr_remove(const wchar_t str[])
 	return 0;
 }
 
+/* Removes abbreviation from the array freeing all related data. */
 static void
 remove_abbrev(abbrev_t *abbrev)
 {
@@ -165,8 +177,11 @@ vle_abbr_expand(const wchar_t str[], int *no_remap)
 	return abbrev->rhs;
 }
 
+/* Looks for an abbreviation by one of its string fields specified via offset in
+ * the structure.  Returns pointer to the abbreviation if found, otherwise NULL
+ * is returned. */
 static abbrev_t *
-find_abbrev(const wchar_t lhs[], size_t field)
+find_abbrev(const wchar_t str[], size_t field)
 {
 #define f(abbrev) (*(wchar_t **)((char *)abbrev + field))
 
@@ -175,7 +190,7 @@ find_abbrev(const wchar_t lhs[], size_t field)
 	for(i = 0UL; i < abbrev_count; ++i)
 	{
 		abbrev_t *abbrev = &abbrevs[i];
-		if(wcscmp(f(abbrev), lhs) == 0)
+		if(wcscmp(f(abbrev), str) == 0)
 		{
 			return abbrev;
 		}
@@ -200,6 +215,7 @@ vle_abbr_reset(void)
 	abbrev_count = 0UL;
 }
 
+/* Frees resources allocated for the abbreviation. */
 static void
 free_abbrev(abbrev_t *abbrev)
 {
