@@ -1004,9 +1004,7 @@ complete_options(const char args[], const char **start)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			char *const escaped = escape_chars(get_value(opt), " |");
-			vle_compl_add_match(escaped);
-			free(escaped);
+			vle_compl_put_match(escape_chars(get_value(opt), " |"));
 		}
 	}
 

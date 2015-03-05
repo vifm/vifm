@@ -27,9 +27,18 @@ typedef char * (*vle_compl_add_path_hook_f)(const char match[]);
  * non-zero is returned. */
 int vle_compl_add_match(const char match[]);
 
+/* Puts raw match as completion match, takes ownership of the match string.
+ * Returns zero on success, otherwise non-zero is returned. */
+int vle_compl_put_match(char match[]);
+
 /* Adds path as completion match.  Path is preprocessed with path add hook.
  * Returns zero on success, otherwise non-zero is returned. */
 int vle_compl_add_path_match(const char path[]);
+
+/* Puts path as completion match, takes ownership of the match string.  Path is
+ * preprocessed with path add hook.  Returns zero on success, otherwise non-zero
+ * is returned. */
+int vle_compl_put_path_match(char path[]);
 
 /* Adds original input to the completion, should be called after all matches are
  * registered with vle_compl_add_match().  Returns zero on success, otherwise

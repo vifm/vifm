@@ -421,9 +421,7 @@ complete_progs(const char *str, assoc_records_t records)
 
 		if(strnoscmp(command, str, len) == 0)
 		{
-			char *const escaped = escape_chars(command, "|");
-			vle_compl_add_match(escaped);
-			free(escaped);
+			vle_compl_put_match(escape_chars(command, "|"));
 		}
 	}
 }
@@ -683,9 +681,7 @@ filename_completion(const char *str, CompletionType type)
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		char *const tilde_expanded = expand_tilde(str);
-		vle_compl_add_path_match(tilde_expanded);
-		free(tilde_expanded);
+		vle_compl_put_path_match(expand_tilde(str));
 		return;
 	}
 
@@ -786,9 +782,7 @@ filename_completion_internal(DIR *dir, const char dirname[],
 
 		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
 		{
-			char with_slash[strlen(d->d_name) + 1 + 1];
-			snprintf(with_slash, sizeof(with_slash), "%s/", d->d_name);
-			vle_compl_add_path_match(with_slash);
+			vle_compl_put_path_match(format_str("%s/", d->d_name));
 		}
 		else
 		{
@@ -894,9 +888,7 @@ complete_with_shared(const char *server, const char *file)
 				strcat(buf, "/");
 				if(strnoscmp(buf, file, len) == 0)
 				{
-					char *const escaped = escape_filename(buf, 1);
-					vle_compl_add_match(escaped);
-					free(escaped);
+					vle_compl_put_match(escape_filename(buf, 1));
 				}
 				p++;
 			}
