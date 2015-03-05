@@ -106,6 +106,9 @@
 	Redirect both standard output and error streams from viewers (already was
 	the case for Windows).
 
+	Don't lose previously saved filter on repeated resetting (pressing zO twice
+	in a row caused previous filter values to be lost).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
