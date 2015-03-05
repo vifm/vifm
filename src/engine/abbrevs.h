@@ -45,6 +45,13 @@ void vle_abbr_reset(void);
 /* Completes set arguments list. */
 void vle_abbr_complete(const char prefix[]);
 
+/* Enumerates registered abbreviations of specified type.  For the first call
+ * *state must be set to NULL.  Returns zero when end of the list is reached
+ * (and sets pointers to NULLs), otherwise zero is returned.  Do not modify
+ * abbreviations between calls. */
+int vle_abbr_iter(int no_remap, const wchar_t **lhs, const wchar_t **rhs,
+		void **param);
+
 #endif /* VIFM__ENGINE__ABBREVS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

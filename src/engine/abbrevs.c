@@ -243,5 +243,30 @@ vle_abbr_complete(const char prefix[])
 	vle_compl_add_last_match(prefix);
 }
 
+int
+vle_abbr_iter(int no_remap, const wchar_t **lhs, const wchar_t **rhs,
+		void **param)
+{
+	int i = (*param == NULL) ? 0 : ((abbrev_t *)*param - abbrevs + 1);
+
+	while(i < abbrev_count)
+	{
+		abbrev_t *const abbrev = &abbrevs[i];
+		if((abbrev->no_remap != 0) == (no_remap != 0))
+		{
+			*lhs = abbrev->lhs;
+			*rhs = abbrev->rhs;
+			*param = abbrev;
+			return 1;
+		}
+		++i;
+	}
+
+	*lhs = NULL;
+	*rhs = NULL;
+	*param = NULL;
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
