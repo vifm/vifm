@@ -1,4 +1,4 @@
-.TH vifm 1 "March 03, 2015" "" "Vifm"
+.TH vifm 1 "March 05, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1237,12 +1237,20 @@ repeats last :apropos command.
 .TP
 .BI "                                         :cabbrev"
 .TP
+.BI ":ca[bbrev] lhsprefix"
+displays command-line mode abbreviations registered via :cabbrev which left-hand
+side starts with specified prefix.
+.TP
 .BI ":ca[bbrev] lhs rhs"
 registers new or overwrites existing abbreviation for command-line mode.  rhs
 can contain spaces and any special sequences accepted in rhs of mappings (see
 Mappings section below).  Abbreviations are expanded non-recursively.
 .TP
 .BI "                                         :cnoreabbrev"
+.TP
+.BI ":cnorea[bbrev] lhsprefix"
+displays command-line mode abbreviations registered via :cnoreabbrev which
+left-hand side starts with specified prefix.
 .TP
 .BI ":cnorea[bbrev] lhs rhs"
 same as :cabbrev, but mappings in rhs are ignored during expansion.

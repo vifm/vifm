@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 03
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 05
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1126,6 +1126,8 @@ The builtin commands are:
 :apropos - repeats last :apropos command.
 
                                                *vifm-:cabbrev* *vifm-:ca*
+:ca[bbrev] lhsprefix - displays command-line mode abbreviations registered via
+    :cabbrev which left-hand side starts with specified prefix.
 :ca[bbrev] lhs rhs - registers new or overwrites existing abbreviation for
     command-line mode.  rhs can contain spaces and any special sequences
     accepted in rhs of mappings (see |vifm-mappings|).  Abbreviations are
@@ -1133,6 +1135,8 @@ The builtin commands are:
 
                                                *vifm-:cnoreabbrev*
                                                *vifm-:cnorea*
+:cnorea[bbrev] lhsprefix - displays command-line mode abbreviations registered
+    via :cnoreabbrev which left-hand side starts with specified prefix.
 :cnorea[bbrev] lhs rhs - same as :cabbrev, but mappings in rhs are ignored
     during expansion.
 

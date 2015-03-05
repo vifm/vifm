@@ -41,6 +41,7 @@
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() strrchr() */
 #include <wctype.h> /* iswspace() */
+#include <wchar.h> /* wcslen() wcsncmp() */
 
 #include "cfg/config.h"
 #include "cfg/hist.h"
@@ -158,6 +159,8 @@ static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
+static int handle_abbrevs(const cmd_info_t *cmd_info, int no_remap);
+static int list_abbrevs(const char prefix[], int no_remap);
 static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
@@ -311,9 +314,9 @@ static const cmd_add_t commands[] = {
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 3, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1637,18 +1640,70 @@ apropos_cmd(const cmd_info_t *cmd_info)
 static int
 cabbrev_cmd(const cmd_info_t *cmd_info)
 {
-	return add_cabbrev(cmd_info, 0);
+	return handle_abbrevs(cmd_info, 0);
 }
 
 /* Registers command-line mode abbreviation of noremap kind. */
 static int
 cnoreabbrev_cmd(const cmd_info_t *cmd_info)
 {
-	return add_cabbrev(cmd_info, 1);
+	return handle_abbrevs(cmd_info, 1);
 }
 
-/* Registers command-line mode.  Returns value to be returned by command
- * handler. */
+/* Handles command-line mode abbreviation of both kinds in one place.  Returns
+ * value to be returned by command handler. */
+static int
+handle_abbrevs(const cmd_info_t *cmd_info, int no_remap)
+{
+	if(cmd_info->argc == 1)
+	{
+		return list_abbrevs(cmd_info->argv[0], no_remap);
+	}
+	return add_cabbrev(cmd_info, no_remap);
+}
+
+/* List command-line mode abbreviations that start with specified prefix.
+ * Returns value to be returned by command handler. */
+static int
+list_abbrevs(const char prefix[], int no_remap)
+{
+	wchar_t *wide_prefix = to_wide(prefix);
+	size_t prefix_len = wcslen(wide_prefix);
+	void *state;
+	const wchar_t *lhs, *rhs;
+	vle_textbuf *msg = vle_tb_create();
+
+	vle_tb_append_line(msg, "Abbreviation -- Replacement");
+
+	state = NULL;
+	while(vle_abbr_iter(no_remap, &lhs, &rhs, &state))
+	{
+		if(wcsncmp(lhs, wide_prefix, prefix_len) == 0)
+		{
+			const size_t rhs_len = wcslen(rhs);
+			size_t seq_len;
+			size_t i;
+
+			vle_tb_appendf(msg, "%-15ls ", lhs);
+
+			for(i = 0U; i < rhs_len; i += seq_len)
+			{
+				vle_tb_append(msg, wchar_to_spec(&rhs[i], &seq_len));
+			}
+
+			vle_tb_append_line(msg, "");
+		}
+	}
+
+	status_bar_message(vle_tb_get_data(msg));
+	vle_tb_free(msg);
+
+	free(wide_prefix);
+	return 1;
+}
+
+/* Registers command-line mode abbreviation.  Returns value to be returned by
+ * command handler. */
 static int
 add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 {
