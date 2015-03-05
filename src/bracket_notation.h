@@ -19,7 +19,7 @@
 #ifndef VIFM__BRACKET_NOTATION_H__
 #define VIFM__BRACKET_NOTATION_H__
 
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* size_t wchar_t */
 
 /* Initializes internal notation description structures. */
 void init_bracket_notation(void);
@@ -31,6 +31,11 @@ wchar_t * substitute_specs(const char cmd[]);
 /* Substitutes all bracket notation entries in cmd passed in as wide string.
  * Returns newly allocated wide string, which should be freed by the caller. */
 wchar_t * substitute_specsw(const wchar_t cmd[]);
+
+/* Converts unicode character(s) starting at c into string form representing
+ * corresponding key.  Upon exit *len is set to number of used characters from
+ * the string.  Returns pointer to internal buffer. */
+const char * wchar_to_spec(const wchar_t c[], size_t *len);
 
 #endif /* VIFM__BRACKET_NOTATION_H__ */
 
