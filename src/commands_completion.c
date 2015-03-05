@@ -42,6 +42,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "engine/abbrevs.h"
 #include "engine/completion.h"
 #include "engine/functions.h"
 #include "engine/options.h"
@@ -110,7 +111,14 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 	ampersand = strrchr(arg, '&');
 
 	if(id == COM_SET)
+	{
 		complete_options(args, &start);
+	}
+	else if(id == COM_CABBR)
+	{
+		vle_abbr_complete(args);
+		start = args;
+	}
 	else if(command_accepts_expr(id))
 	{
 		if(ampersand > dollar)

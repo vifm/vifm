@@ -20,10 +20,11 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() realloc() */
-#include <string.h> /* memmove() */
+#include <string.h> /* memmove() strlen() strncmp() */
 #include <wchar.h> /* wcscmp() */
 
 #include "../utils/str.h"
+#include "completion.h"
 
 /* Information about single abbreviation. */
 typedef struct
@@ -221,6 +222,25 @@ free_abbrev(abbrev_t *abbrev)
 {
 	free(abbrev->lhs);
 	free(abbrev->rhs);
+}
+
+void
+vle_abbr_complete(const char prefix[])
+{
+	const size_t prefix_len = strlen(prefix);
+	size_t i;
+	for(i = 0UL; i < abbrev_count; ++i)
+	{
+		char *const mb_lhs = to_multibyte(abbrevs[i].lhs);
+		if(strncmp(mb_lhs, prefix, prefix_len) == 0)
+		{
+			(void)vle_compl_add_match(mb_lhs);
+		}
+		free(mb_lhs);
+	}
+
+	vle_compl_finish_group();
+	vle_compl_add_last_match(prefix);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

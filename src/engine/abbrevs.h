@@ -42,6 +42,9 @@ const wchar_t * vle_abbr_expand(const wchar_t str[], int *no_remap);
 /* Removes all registered abbreviations. */
 void vle_abbr_reset(void);
 
+/* Completes set arguments list. */
+void vle_abbr_complete(const char prefix[]);
+
 #endif /* VIFM__ENGINE__ABBREVS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

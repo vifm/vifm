@@ -8,6 +8,7 @@
 #include <wchar.h> /* wcsdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 #include "../../src/engine/functions.h"
@@ -104,8 +105,8 @@ TEST(only_user)
 TEST(test_set_completion)
 {
 	vle_compl_reset();
-	assert_int_equal(0, line_completion(&stats));
-	assert_true(wcscmp(stats.line, L"set all") == 0);
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"set all", stats.line);
 }
 
 TEST(no_sdquoted_completion_does_nothing)
@@ -116,8 +117,8 @@ TEST(no_sdquoted_completion_does_nothing)
 	stats.index = stats.len;
 
 	vle_compl_reset();
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"command '"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"command '", stats.line);
 }
 
 static void
@@ -127,6 +128,7 @@ prepare_for_line_completion(const wchar_t str[])
 	stats.line = wcsdup(str);
 	stats.len = wcslen(stats.line);
 	stats.index = stats.len;
+	stats.complete_continue = 0;
 
 	vle_compl_reset();
 }
@@ -138,7 +140,7 @@ TEST(spaces_escaping_leading)
 	assert_int_equal(0, chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch \\ ");
-	assert_int_equal(0, line_completion(&stats));
+	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
 	assert_string_equal("touch \\ begins-with-space", mb);
@@ -152,7 +154,7 @@ TEST(spaces_escaping_everywhere)
 	assert_int_equal(0, chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch \\ s");
-	assert_int_equal(0, line_completion(&stats));
+	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
 #ifndef _WIN32
@@ -171,7 +173,7 @@ TEST(spaces_escaping_trailing)
 	assert_int_equal(0, chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch e");
-	assert_int_equal(0, line_completion(&stats));
+	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
 #ifndef _WIN32
@@ -190,7 +192,7 @@ TEST(spaces_escaping_middle)
 	assert_int_equal(0, chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch s");
-	assert_int_equal(0, line_completion(&stats));
+	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
 	assert_string_equal("touch spaces\\ in\\ the\\ middle", mb);
@@ -200,8 +202,8 @@ TEST(spaces_escaping_middle)
 TEST(squoted_completion)
 {
 	prepare_for_line_completion(L"touch '");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch 'a"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"touch 'a", stats.line);
 }
 
 TEST(squoted_completion_escaping)
@@ -209,15 +211,15 @@ TEST(squoted_completion_escaping)
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch 's-quote");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch 's-quote-''-in-name"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"touch 's-quote-''-in-name", stats.line);
 }
 
 TEST(dquoted_completion)
 {
 	prepare_for_line_completion(L"touch 'b");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch 'b"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"touch 'b", stats.line);
 }
 
 #if !defined(__CYGWIN__) && !defined(_WIN32)
@@ -227,8 +229,8 @@ TEST(dquoted_completion_escaping)
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch \"d-quote");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch \"d-quote-\\\"-in-name"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"touch \"d-quote-\\\"-in-name", stats.line);
 }
 
 #endif
@@ -240,8 +242,8 @@ TEST(last_match_is_properly_escaped)
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch 's-quote-''-in");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"touch 's-quote-''-in-name"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"touch 's-quote-''-in-name", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("s-quote-''-in-name-2", match);
@@ -257,8 +259,8 @@ TEST(emark_cmd_escaping)
 	char *match;
 
 	prepare_for_line_completion(L"");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"!"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"!", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("alink", match);
@@ -270,8 +272,8 @@ TEST(winrun_cmd_escaping)
 	char *match;
 
 	prepare_for_line_completion(L"winrun ");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"winrun $"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"winrun $", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("%", match);
@@ -295,8 +297,8 @@ TEST(help_cmd_escaping)
 	cfg.use_vim_help = 1;
 
 	prepare_for_line_completion(L"help vifm-");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"help vifm-!!"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"help vifm-!!", stats.line);
 }
 
 TEST(dirs_are_completed_with_trailing_slash)
@@ -306,8 +308,8 @@ TEST(dirs_are_completed_with_trailing_slash)
 	assert_int_equal(0, chdir("../"));
 
 	prepare_for_line_completion(L"cd r");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"cd read/"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd read/", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("rename/", match);
@@ -329,8 +331,8 @@ TEST(function_name_completion)
 	char *match;
 
 	prepare_for_line_completion(L"echo e");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"echo executable("));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"echo executable(", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("expand(", match);
@@ -348,8 +350,8 @@ TEST(percent_completion)
 	/* One percent symbol. */
 
 	prepare_for_line_completion(L"cd %");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"cd %%"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd %%", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("%%", match);
@@ -362,8 +364,8 @@ TEST(percent_completion)
 	/* Two percent symbols. */
 
 	prepare_for_line_completion(L"cd %%");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"cd %%"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd %%", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("%%", match);
@@ -376,8 +378,8 @@ TEST(percent_completion)
 	/* Three percent symbols. */
 
 	prepare_for_line_completion(L"cd %%%");
-	assert_int_equal(0, line_completion(&stats));
-	assert_int_equal(0, wcscmp(stats.line, L"cd %%%%"));
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd %%%%", stats.line);
 
 	match = vle_compl_next();
 	assert_string_equal("%%%%", match);
@@ -386,6 +388,30 @@ TEST(percent_completion)
 	match = vle_compl_next();
 	assert_string_equal("%%%%", match);
 	free(match);
+}
+
+TEST(abbreviations)
+{
+	vle_abbr_reset();
+	assert_success(vle_abbr_add(L"lhs", L"rhs"));
+
+	prepare_for_line_completion(L"cabbrev l");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cabbrev lhs", stats.line);
+
+	prepare_for_line_completion(L"cnoreabbrev l");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cnoreabbrev lhs", stats.line);
+
+	prepare_for_line_completion(L"cunabbrev l");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cunabbrev lhs", stats.line);
+
+	prepare_for_line_completion(L"cabbrev l l");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cabbrev l l", stats.line);
+
+	vle_abbr_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
