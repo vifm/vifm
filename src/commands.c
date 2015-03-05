@@ -2218,13 +2218,13 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 		return NULL;
 	}
 
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	eval_result = eval_arglist(cmd_info->raw_args, &error_pos);
 
 	if(eval_result == NULL)
 	{
-		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
-		status_bar_error(text_buffer_get());
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression", error_pos);
+		status_bar_error(vle_tb_get_data(vle_err));
 	}
 
 	return eval_result;
@@ -3095,11 +3095,12 @@ static int
 if_cmd(const cmd_info_t *cmd_info)
 {
 	var_t condition;
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
 	{
-		text_buffer_addf("%s: %s", "Invalid expression", cmd_info->args);
-		status_bar_error(text_buffer_get());
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+				cmd_info->args);
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	(void)int_stack_push(&if_levels, var_to_boolean(condition));
@@ -3191,15 +3192,15 @@ jobs_cmd(const cmd_info_t *cmd_info)
 static int
 let_cmd(const cmd_info_t *cmd_info)
 {
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(let_variables(cmd_info->args) != 0)
 	{
-		status_bar_error(text_buffer_get());
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
-	else if(*text_buffer_get() != '\0')
+	else if(*vle_tb_get_data(vle_err) != '\0')
 	{
-		status_bar_message(text_buffer_get());
+		status_bar_message(vle_tb_get_data(vle_err));
 	}
 	update_path_env(0);
 	return 0;
@@ -3965,10 +3966,10 @@ unmap_cmd(const cmd_info_t *cmd_info)
 static int
 unlet_cmd(const cmd_info_t *cmd_info)
 {
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
 	{
-		status_bar_error(text_buffer_get());
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	return 0;

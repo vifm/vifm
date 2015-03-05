@@ -809,19 +809,19 @@ process_set_args(const char *args)
 	int set_options_error;
 	const char *text_buffer;
 
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 
 	/* Call of set_options() can change error. */
 	error = 0;
 	set_options_error = set_options(args) != 0;
 	error = error || set_options_error;
-	text_buffer = text_buffer_get();
+	text_buffer = vle_tb_get_data(vle_err);
 
 	if(error)
 	{
-		text_buffer_add("Invalid argument for :set command");
+		vle_tb_append_line(vle_err, "Invalid argument for :set command");
 		/* We just modified text buffer and can't use text_buffer variable. */
-		status_bar_error(text_buffer_get());
+		status_bar_error(vle_tb_get_data(vle_err));
 	}
 	else if(text_buffer[0] != '\0')
 	{
@@ -916,19 +916,19 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2])
 		const char *suffix = pick_out_decoration(token, &type);
 		if(suffix == NULL)
 		{
-			text_buffer_addf("Invalid filetype: %s", token);
+			vle_tb_append_linef(vle_err, "Invalid filetype: %s", token);
 			error_encountered = 1;
 		}
 		else
 		{
 			if(strlen(token) > 1)
 			{
-				text_buffer_addf("Invalid prefix: %s", token);
+				vle_tb_append_linef(vle_err, "Invalid prefix: %s", token);
 				error_encountered = 1;
 			}
 			if(strlen(suffix) > 1)
 			{
-				text_buffer_addf("Invalid suffix: %s", suffix);
+				vle_tb_append_linef(vle_err, "Invalid suffix: %s", suffix);
 				error_encountered = 1;
 			}
 		}
@@ -983,7 +983,7 @@ columns_handler(OPT_OP op, optval_t val)
 	if(val.int_val < MIN_TERM_WIDTH)
 	{
 		val.int_val = MIN_TERM_WIDTH;
-		text_buffer_addf("At least %d columns needed", MIN_TERM_WIDTH);
+		vle_tb_append_linef(vle_err, "At least %d columns needed", MIN_TERM_WIDTH);
 		error = 1;
 	}
 
@@ -1068,7 +1068,8 @@ fillchars_handler(OPT_OP op, optval_t val)
 		else
 		{
 			break_at(part, ':');
-			text_buffer_addf("Unknown key for 'fillchars' option: %s", part);
+			vle_tb_append_linef(vle_err, "Unknown key for 'fillchars' option: %s",
+					part);
 			break;
 		}
 	}
@@ -1216,7 +1217,7 @@ parse_range(const char range[], int *from, int *to)
 
 	if(parse_endpoint(&p, from) != 0)
 	{
-		text_buffer_addf("Wrong range: %s", range);
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
 		return 1;
 	}
 	if(*p == '-')
@@ -1224,7 +1225,7 @@ parse_range(const char range[], int *from, int *to)
 		++p;
 		if(parse_endpoint(&p, to) != 0)
 		{
-			text_buffer_addf("Wrong range: %s", range);
+			vle_tb_append_linef(vle_err, "Wrong range: %s", range);
 			return 1;
 		}
 	}
@@ -1235,13 +1236,13 @@ parse_range(const char range[], int *from, int *to)
 
 	if(*p != '\0')
 	{
-		text_buffer_addf("Wrong range: %s", range);
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
 		return 1;
 	}
 
 	if(*from > *to)
 	{
-		text_buffer_addf("Inversed range: %s", range);
+		vle_tb_append_linef(vle_err, "Inversed range: %s", range);
 		return 1;
 	}
 
@@ -1259,7 +1260,7 @@ parse_endpoint(const char **str, int *endpoint)
 		const long int val = strtol(*str, &endptr, 10);
 		if(val < 0 || val >= 256)
 		{
-			text_buffer_addf("Wrong value: %ld", val);
+			vle_tb_append_linef(vle_err, "Wrong value: %ld", val);
 			return 1;
 		}
 		*str = endptr;
@@ -1307,7 +1308,7 @@ lines_handler(OPT_OP op, optval_t val)
 	if(val.int_val < MIN_TERM_HEIGHT)
 	{
 		val.int_val = MIN_TERM_HEIGHT;
-		text_buffer_addf("At least %d lines needed", MIN_TERM_HEIGHT);
+		vle_tb_append_linef(vle_err, "At least %d lines needed", MIN_TERM_HEIGHT);
 		error = 1;
 	}
 
@@ -1336,7 +1337,7 @@ mintimeoutlen_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val <= 0)
 	{
-		text_buffer_addf("Argument must be > 0: %d", val.int_val);
+		vle_tb_append_linef(vle_err, "Argument must be > 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 1;
 		set_option("mintimeoutlen", val);
@@ -1383,7 +1384,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < 0)
 	{
-		text_buffer_addf("Invalid scroll size: %d", val.int_val);
+		vle_tb_append_linef(vle_err, "Invalid scroll size: %d", val.int_val);
 		error = 1;
 		reset_option_to_default("scrolloff");
 		return;
@@ -1534,7 +1535,7 @@ sort_handler(OPT_OP op, optval_t val)
 		{
 			if(name[0] != '\0')
 			{
-				text_buffer_addf("Skipped unknown 'sort' value: %s", name);
+				vle_tb_append_linef(vle_err, "Skipped unknown 'sort' value: %s", name);
 				error = 1;
 			}
 			continue;
@@ -1614,7 +1615,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 	{
 		optval_t val;
 
-		text_buffer_add("Invalid format of 'viewcolumns' option");
+		vle_tb_append_line(vle_err, "Invalid format of 'viewcolumns' option");
 		error = 1;
 
 		if(update_ui)
@@ -1700,7 +1701,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val <= 0)
 	{
-		text_buffer_addf("Argument must be positive: %d", val.int_val);
+		vle_tb_append_linef(vle_err, "Argument must be positive: %d", val.int_val);
 		error = 1;
 		reset_option_to_default("tabstop");
 		return;
@@ -1728,7 +1729,7 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < 0)
 	{
-		text_buffer_addf("Argument must be >= 0: %d", val.int_val);
+		vle_tb_append_linef(vle_err, "Argument must be >= 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 0;
 		set_option("timeoutlen", val);

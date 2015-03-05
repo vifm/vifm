@@ -19,76 +19,137 @@
 #include "text_buffer.h"
 
 #include <stdarg.h> /* va_list va_copy() va_start() va_end() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* vsnprintf() vsprintf() */
-#include <stdlib.h> /* realloc() */
+#include <stdlib.h> /* calloc() free() realloc() */
 #include <string.h> /* strcpy() */
 
-static void ensure_allocated(size_t extra);
+/* Text buffer type. */
+struct vle_textbuf
+{
+	size_t capacity;     /* Total amount of available space. */
+	size_t len;          /* Total amount of used space. */
+	char *data;          /* Allocated piece of memory. */
+	int need_line_break; /* Need to put line break before newly appended data. */
+};
 
-static size_t buffer_capacity;
-static size_t buffer_len;
-static char *buffer;
+static void appendfv(vle_textbuf *tb, int line, const char format[],
+		va_list ap);
+static void ensure_allocated(vle_textbuf *tb, size_t extra);
+
+/* Definition of predefined buffer for collecting errors of the engine. */
+static vle_textbuf vle_err_data;
+vle_textbuf *const vle_err = &vle_err_data;
+
+const char *
+text_buffer_get(void)
+{
+	return vle_tb_get_data(vle_err);
+}
+
+vle_textbuf *
+vle_tb_create()
+{
+	return calloc(1, sizeof(vle_textbuf));
+}
 
 void
-text_buffer_clear(void)
+vle_tb_free(vle_textbuf *tb)
 {
-	if(buffer != NULL)
+	if(tb != NULL)
 	{
-		buffer[0] = '\0';
-		buffer_len = 0;
+		vle_tb_clear(tb);
+		free(tb);
 	}
 }
 
 void
-text_buffer_add(const char msg[])
+vle_tb_clear(vle_textbuf *tb)
 {
-	text_buffer_addf("%s", msg);
+	if(tb->data != NULL)
+	{
+		free(tb->data);
+		tb->data = 0;
+		tb->capacity = 0;
+		tb->len = 0;
+		tb->need_line_break = 0;
+	}
 }
 
 void
-text_buffer_addf(const char format[], ...)
+vle_tb_append(vle_textbuf *tb, const char str[])
+{
+	vle_tb_appendf(tb, "%s", str);
+}
+
+void
+vle_tb_appendf(vle_textbuf *tb, const char format[], ...)
 {
 	va_list ap;
+	va_start(ap, format);
+	appendfv(tb, 0, format, ap);
+	va_end(ap);
+}
+
+void
+vle_tb_append_line(vle_textbuf *tb, const char str[])
+{
+	vle_tb_append_linef(tb, "%s", str);
+}
+
+void
+vle_tb_append_linef(vle_textbuf *tb, const char format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	appendfv(tb, 1, format, ap);
+	va_end(ap);
+}
+
+/* Appends formatted string to the buffer.  New data is either a string or a
+ * line (string that terminates with new line character).*/
+static void
+appendfv(vle_textbuf *tb, int line, const char format[], va_list ap)
+{
 	va_list aq;
 	size_t needed_size;
 
-	va_start(ap, format);
 	va_copy(aq, ap);
-	needed_size = (buffer_len != 0) + vsnprintf(buffer, 0, format, ap);
-	va_end(ap);
+	needed_size = (tb->len != 0) + vsnprintf(tb->data, 0, format, ap);
 
-	ensure_allocated(needed_size);
-	if(buffer_len != 0 && buffer_capacity > buffer_len)
+	ensure_allocated(tb, needed_size);
+	if(tb->need_line_break && tb->len != 0 && tb->capacity > tb->len)
 	{
-		strcpy(&buffer[buffer_len++], "\n");
+		strcpy(&tb->data[tb->len++], "\n");
+		tb->need_line_break = 0;
 	}
 
-	buffer_len += vsnprintf(buffer + buffer_len, buffer_capacity - buffer_len,
-			format, aq);
+	tb->len += vsnprintf(tb->data + tb->len, tb->capacity - tb->len, format, aq);
 	va_end(aq);
+
+	tb->need_line_break = line;
 }
 
-/* Ensures that buffer has needed amount of bytes after its end. */
+/* Ensures that buffer has at least specified amount of bytes after its end. */
 static void
-ensure_allocated(size_t extra)
+ensure_allocated(vle_textbuf *tb, size_t extra)
 {
-	size_t needed_size = buffer_len + extra + 1;
-	if(buffer_capacity < needed_size)
+	size_t needed_size = tb->len + extra + 1;
+	if(tb->capacity < needed_size)
 	{
-		char *ptr = realloc(buffer, needed_size);
+		char *ptr = realloc(tb->data, needed_size);
 		if(ptr != NULL)
 		{
-			buffer = ptr;
-			buffer_capacity = needed_size;
+			tb->data = ptr;
+			tb->capacity = needed_size;
 		}
 	}
 }
 
 const char *
-text_buffer_get(void)
+vle_tb_get_data(vle_textbuf *tb)
 {
-	return (buffer == NULL) ? "" : buffer;
+	return (tb->data == NULL) ? "" : tb->data;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

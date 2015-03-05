@@ -299,7 +299,7 @@ process_option(const char arg[])
 	opt = get_option(option);
 	if(opt == NULL)
 	{
-		text_buffer_addf("%s: %s", "Unknown option", arg);
+		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", arg);
 		return 1;
 	}
 
@@ -327,7 +327,7 @@ process_option(const char arg[])
 	{
 		if(*(p + 1) != '\0')
 		{
-			text_buffer_addf("%s: %s", "Trailing characters", arg);
+			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
 			return 1;
 		}
 		if(*p == '!')
@@ -351,12 +351,12 @@ process_option(const char arg[])
 	}
 	else
 	{
-		text_buffer_addf("%s: %s", "Trailing characters", arg);
+		vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
 	}
 
 	if(err)
 	{
-		text_buffer_addf("%s: %s", "Invalid argument", arg);
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid argument", arg);
 	}
 	return err;
 }
@@ -515,7 +515,7 @@ set_set(opt_t *opt, const char value[])
 		const size_t valid_len = strspn(value, *opt->vals);
 		if(valid_len != strlen(value))
 		{
-			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			vle_tb_append_linef(vle_err, "Illegal character: <%c>", value[valid_len]);
 			return -1;
 		}
 		if(charset_set(opt, value))
@@ -585,7 +585,7 @@ set_add(opt_t *opt, const char value[])
 		const size_t valid_len = strspn(value, *opt->vals);
 		if(valid_len != strlen(value))
 		{
-			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			vle_tb_append_linef(vle_err, "Illegal character: <%c>", value[valid_len]);
 			return -1;
 		}
 		if(charset_add_all(opt, value))
@@ -871,7 +871,7 @@ set_print(const opt_t *opt)
 	{
 		snprintf(buf, sizeof(buf), "  %s=%s", opt->name, get_value(opt));
 	}
-	text_buffer_add(buf);
+	vle_tb_append_line(vle_err, buf);
 	return 0;
 }
 

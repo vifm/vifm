@@ -170,7 +170,7 @@ let_variables(const char *cmd)
 	/* currently we support only environment variables */
 	if(*cmd != '$')
 	{
-		text_buffer_add("Incorrect variable type");
+		vle_tb_append_line(vle_err, "Incorrect variable type");
 		return -1;
 	}
 	cmd++;
@@ -182,7 +182,7 @@ let_variables(const char *cmd)
 	{
 		if(*cmd != '_' && !isalnum(*cmd))
 		{
-			text_buffer_add("Incorrect variable name");
+			vle_tb_append_line(vle_err, "Incorrect variable name");
 			return -1;
 		}
 		*p++ = *cmd++;
@@ -190,7 +190,8 @@ let_variables(const char *cmd)
 	/* test for empty variable name */
 	if(p == name)
 	{
-		text_buffer_addf("%s: %s", "Unsupported variable name", "empty name");
+		vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable name",
+				"empty name");
 		return -1;
 	}
 	*p = '\0';
@@ -207,7 +208,8 @@ let_variables(const char *cmd)
 	/* check for equal sign and skip it */
 	if(*cmd != '=')
 	{
-		text_buffer_addf("%s: %s", "Incorrect :let statement", "'=' expected");
+		vle_tb_append_linef(vle_err, "%s: %s", "Incorrect :let statement",
+				"'=' expected");
 		return -1;
 	}
 
@@ -220,7 +222,7 @@ let_variables(const char *cmd)
 
 	if(get_last_position() != NULL && *get_last_position() != '\0')
 	{
-		text_buffer_addf("%s: %s", "Incorrect :let statement",
+		vle_tb_append_linef(vle_err, "%s: %s", "Incorrect :let statement",
 				"trailing characters");
 		return -1;
 	}
@@ -243,12 +245,13 @@ report_parsing_error(ParsingErrors error)
 {
 	if(error == PE_INVALID_EXPRESSION)
 	{
-		text_buffer_addf("%s: %s", "Invalid expression", get_last_position());
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+				get_last_position());
 	}
 	else if(error == PE_MISSING_QUOTE)
 	{
-		text_buffer_addf("%s: %s", "Invalid :let expression (missing quote)",
-				get_last_position());
+		vle_tb_append_linef(vle_err, "%s: %s",
+				"Invalid :let expression (missing quote)", get_last_position());
 	}
 	else
 	{
@@ -272,7 +275,7 @@ append_envvar(const char *name, const char *val)
 	p = realloc(record->val, strlen(record->val) + strlen(val) + 1);
 	if(p == NULL)
 	{
-		text_buffer_add("Not enough memory");
+		vle_tb_append_line(vle_err, "Not enough memory");
 		return;
 	}
 	record->val = p;
@@ -290,14 +293,14 @@ set_envvar(const char *name, const char *val)
 	record = get_record(name);
 	if(record == NULL)
 	{
-		text_buffer_add("Not enough memory");
+		vle_tb_append_line(vle_err, "Not enough memory");
 		return;
 	}
 
 	p = strdup(val);
 	if(p == NULL)
 	{
-		text_buffer_add("Not enough memory");
+		vle_tb_append_line(vle_err, "Not enough memory");
 		return;
 	}
 	free(record->val);
@@ -375,7 +378,7 @@ unlet_variables(const char *cmd)
 
 		if(*cmd != '\0' && !isspace(*cmd))
 		{
-			text_buffer_add("Trailing characters");
+			vle_tb_append_line(vle_err, "Trailing characters");
 			error++;
 			break;
 		}
@@ -385,7 +388,7 @@ unlet_variables(const char *cmd)
 		/* currently we support only environment variables */
 		if(!envvar)
 		{
-			text_buffer_addf("%s: %s", "Unsupported variable type", name);
+			vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable type", name);
 
 			cmd = skip_non_whitespace(cmd);
 			error++;
@@ -395,7 +398,8 @@ unlet_variables(const char *cmd)
 		/* test for empty variable name */
 		if(name[0] == '\0')
 		{
-			text_buffer_addf("%s: %s", "Unsupported variable name", "empty name");
+			vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable name",
+					"empty name");
 			error++;
 			continue;
 		}
@@ -403,7 +407,7 @@ unlet_variables(const char *cmd)
 		record = find_record(name);
 		if(record == NULL || record->removed)
 		{
-			text_buffer_addf("%s: %s", "No such variable", name);
+			vle_tb_append_linef(vle_err, "%s: %s", "No such variable", name);
 			error++;
 			continue;
 		}
