@@ -244,28 +244,26 @@ vle_abbr_complete(const char prefix[])
 }
 
 int
-vle_abbr_iter(int no_remap, const wchar_t **lhs, const wchar_t **rhs,
+vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
 		void **param)
 {
 	int i = (*param == NULL) ? 0 : ((abbrev_t *)*param - abbrevs + 1);
+	abbrev_t *abbrev;
 
-	while(i < abbrev_count)
+	if(i >= abbrev_count)
 	{
-		abbrev_t *const abbrev = &abbrevs[i];
-		if((abbrev->no_remap != 0) == (no_remap != 0))
-		{
-			*lhs = abbrev->lhs;
-			*rhs = abbrev->rhs;
-			*param = abbrev;
-			return 1;
-		}
-		++i;
+		*lhs = NULL;
+		*rhs = NULL;
+		*param = NULL;
+		return 0;
 	}
 
-	*lhs = NULL;
-	*rhs = NULL;
-	*param = NULL;
-	return 0;
+	abbrev = &abbrevs[i];
+	*lhs = abbrev->lhs;
+	*rhs = abbrev->rhs;
+	*no_remap = abbrev->no_remap;
+	*param = abbrev;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

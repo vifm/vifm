@@ -160,7 +160,7 @@ static int apropos_cmd(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
 static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
-static int list_abbrevs(const char prefix[], int no_remap);
+static int list_abbrevs(const char prefix[]);
 static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
@@ -1657,7 +1657,7 @@ handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 {
 	if(cmd_info->argc == 1)
 	{
-		return list_abbrevs(cmd_info->argv[0], no_remap);
+		return list_abbrevs(cmd_info->argv[0]);
 	}
 	return add_cabbrev(cmd_info, no_remap);
 }
@@ -1665,18 +1665,19 @@ handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 /* List command-line mode abbreviations that start with specified prefix.
  * Returns value to be returned by command handler. */
 static int
-list_abbrevs(const char prefix[], int no_remap)
+list_abbrevs(const char prefix[])
 {
 	wchar_t *wide_prefix = to_wide(prefix);
 	size_t prefix_len = wcslen(wide_prefix);
 	void *state;
 	const wchar_t *lhs, *rhs;
+	int no_remap;
 	vle_textbuf *msg = vle_tb_create();
 
 	vle_tb_append_line(msg, "Abbreviation -- Replacement");
 
 	state = NULL;
-	while(vle_abbr_iter(no_remap, &lhs, &rhs, &state))
+	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
 	{
 		if(wcsncmp(lhs, wide_prefix, prefix_len) == 0)
 		{

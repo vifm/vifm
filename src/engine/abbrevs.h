@@ -45,11 +45,11 @@ void vle_abbr_reset(void);
 /* Completes set arguments list. */
 void vle_abbr_complete(const char prefix[]);
 
-/* Enumerates registered abbreviations of specified type.  For the first call
- * *state must be set to NULL.  Returns zero when end of the list is reached
- * (and sets pointers to NULLs), otherwise zero is returned.  Do not modify
- * abbreviations between calls. */
-int vle_abbr_iter(int no_remap, const wchar_t **lhs, const wchar_t **rhs,
+/* Enumerates registered abbreviations.  For the first call *state must be set
+ * to NULL.  Returns zero when end of the list is reached (and sets pointers to
+ * NULLs), otherwise zero is returned.  Do not modify abbreviations between
+ * calls. */
+int vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
 		void **param);
 
 #endif /* VIFM__ENGINE__ABBREVS_H__ */
