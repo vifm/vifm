@@ -66,8 +66,13 @@
 	Added system() builtin function that executes command via shell and returns
 	its output.
 
+	Added Ctrl-] command-line key to trigger abbreviation expansion.
+
 	Added 'iskeyword' option to specify which characters in command-line mode
 	should be considered as part of a word.  Thanks to filterfalse.
+
+	Added command-line mode abbreviations and :cabbrev, :cnoreabbrev and
+	:cunabbrev commands to manage them.  Thanks to filterfalse.
 
 	Made calculation of directory size visible in :jobs menu.
 
@@ -100,6 +105,9 @@
 
 	Redirect both standard output and error streams from viewers (already was
 	the case for Windows).
+
+	Don't lose previously saved filter on repeated resetting (pressing zO twice
+	in a row caused previous filter values to be lost).
 
 	Fixed search messages in menus (nth time...).
 

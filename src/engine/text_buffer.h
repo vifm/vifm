@@ -19,18 +19,45 @@
 #ifndef VIFM__ENGINE__TEXT_BUFFER_H__
 #define VIFM__ENGINE__TEXT_BUFFER_H__
 
-/* Makes buffer empty. */
-void text_buffer_clear(void);
+/* Opaque text buffer type. */
+typedef struct vle_textbuf vle_textbuf;
 
-/* Adds the string to buffer. */
-void text_buffer_add(const char msg[]);
+/* Predefined buffer for collecting errors of the engine. */
+extern vle_textbuf *const vle_err;
 
-/* Adds formated string to buffer. */
-void text_buffer_addf(const char format[], ...);
+/* Prepares the buffer for use.  Returns pointer to newly allocated text buffer
+ * or NULL on memory allocation error. */
+vle_textbuf * vle_tb_create(void);
+
+/* Frees the buffer.  tb can be NULL. */
+void vle_tb_free(vle_textbuf *tb);
+
+/* Releases data from buffer possession and frees the buffer.  tb can't be
+ * NULL.  Returns the data. */
+char * vle_tb_release(vle_textbuf *tb);
+
+/* Clears the buffer. */
+void vle_tb_clear(vle_textbuf *tb);
+
+/* Appends the string to specified buffer. */
+void vle_tb_append(vle_textbuf *tb, const char str[]);
+
+/* Appends formatted string to specified buffer. */
+void vle_tb_appendf(vle_textbuf *tb, const char format[], ...);
+
+/* Appends the string to specified buffer. */
+void vle_tb_append(vle_textbuf *tb, const char str[]);
+
+/* Appends the line (terminated with newline character) to specified buffer. */
+void vle_tb_append_line(vle_textbuf *tb, const char str[]);
+
+/* Appends formatted line (terminated with newline character) to specified
+ * buffer. */
+void vle_tb_append_linef(vle_textbuf *tb, const char format[], ...);
 
 /* Returns pointer to a read-only string, which may become invalid on any other
  * call of functions in this module.  Never returns NULL, only empty string. */
-const char * text_buffer_get(void);
+const char * vle_tb_get_data(vle_textbuf *tb);
 
 #endif /* VIFM__ENGINE__TEXT_BUFFER_H__ */
 

@@ -24,7 +24,7 @@
 #include <limits.h>
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* NULL size_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcslen() wcswidth() */
@@ -32,6 +32,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../engine/abbrevs.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
 #include "../engine/keys.h"
@@ -96,6 +97,7 @@ typedef struct
 	int old_pos;              /* for search_mode */
 	int line_edited;          /* Cache for whether input line changed flag. */
 	int entered_by_mapping;   /* The mode was entered by a mapping. */
+	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
 }
 line_stats_t;
 
@@ -124,6 +126,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info);
 static CmdInputType cls_to_editable_cit(CmdLineSubmode sub_mode);
 static void extedit_prompt(const char input[], int cursor_col);
+static void cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
 static int should_quit_on_backspace(void);
 static int no_initial_line(void);
@@ -134,6 +137,10 @@ static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
+static void expand_abbrev(void);
+TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
+		int *no_remap);
+static void exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos);
 static void save_input_to_history(const keys_info_t *keys_info,
 		const char input[]);
 static void finish_prompt_submode(const char input[]);
@@ -218,6 +225,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x1b",         {BUILTIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape escape */
 	{L"\x1b\x1b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x1d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_rb}}},
 	/* ascii Delete */
 	{L"\x7f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
 #ifdef ENABLE_EXTENDED_KEYS
@@ -304,6 +312,11 @@ def_handler(wchar_t key)
 
 	if(key != L'\r' && !iswprint(key))
 		return 0;
+
+	if(!cfg_is_keyword_wchar(key))
+	{
+		expand_abbrev();
+	}
 
 	p = realloc(input_stat.line, (input_stat.len + 2) * sizeof(wchar_t));
 	if(p == NULL)
@@ -844,6 +857,14 @@ extedit_prompt(const char input[], int cursor_col)
 	free(ext_cmd);
 }
 
+/* Expands abbreviation to the left of current cursor position, if any
+ * present. */
+static void
+cmd_ctrl_rb(key_info_t key_info, keys_info_t *keys_info)
+{
+	expand_abbrev();
+}
+
 /* Handles backspace. */
 static void
 cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
@@ -1072,6 +1093,8 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
+	expand_abbrev();
+
 	input = to_multibyte(input_stat.line);
 
 	leave_cmdline_mode();
@@ -1170,6 +1193,88 @@ static int
 is_input_line_empty(void)
 {
 	return input_stat.line[0] == L'\0';
+}
+
+/* Expands abbreviation to the left of current cursor position, if any
+ * present, otherwise does nothing. */
+static void
+expand_abbrev(void)
+{
+	int pos;
+	const wchar_t *abbrev_rhs;
+	int no_remap;
+
+	/* No recursion on expanding abbreviations. */
+	if(input_stat.expanding_abbrev)
+	{
+		return;
+	}
+
+	abbrev_rhs = extract_abbrev(&input_stat, &pos, &no_remap);
+	if(abbrev_rhs != NULL)
+	{
+		input_stat.expanding_abbrev = 1;
+		exec_abbrev(abbrev_rhs, no_remap, pos);
+		input_stat.expanding_abbrev = 0;
+
+		update_cmdline_size();
+		update_cmdline_text();
+	}
+}
+
+/* Lookups for an abbreviation to the left of cursor position.  Returns RHS for
+ * the abbreviation and fills pointer arguments if found, otherwise NULL is
+ * returned. */
+TSTATIC const wchar_t *
+extract_abbrev(line_stats_t *stat, int *pos, int *no_remap)
+{
+	const int i = stat->index;
+	wchar_t *const line = stat->line;
+
+	int l;
+	wchar_t c;
+	const wchar_t *abbrev_rhs;
+
+	l = i;
+	while(l > 0 && cfg_is_keyword_wchar(line[l - 1]))
+	{
+		--l;
+	}
+
+	if(l == i)
+	{
+		return NULL;
+	}
+
+	c = line[i];
+	line[i] = L'\0';
+	abbrev_rhs = vle_abbr_expand(&line[l], no_remap);
+	line[i] = c;
+
+	*pos = l;
+
+	return abbrev_rhs;
+}
+
+/* Runs RHS of an abbreviation after removing LHS that starts at the pos. */
+static void
+exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos)
+{
+	const size_t lhs_len = input_stat.index - pos;
+
+	input_stat.len -= lhs_len;
+	input_stat.index -= lhs_len;
+	input_stat.curs_pos -= wcswidth(&input_stat.line[pos], lhs_len);
+	(void)wcsdel(input_stat.line, pos + 1, lhs_len);
+
+	if(no_remap)
+	{
+		(void)execute_keys_timed_out_no_remap(abbrev_rhs);
+	}
+	else
+	{
+		(void)execute_keys_timed_out(abbrev_rhs);
+	}
 }
 
 /* Saves command-line input into appropriate history.  input can be NULL, in

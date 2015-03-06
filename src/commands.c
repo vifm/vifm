@@ -40,10 +40,14 @@
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strcat() strchr() strcmp() strcasecmp() strcpy() strdup()
                        strlen() strrchr() */
+#include <wctype.h> /* iswspace() */
+#include <wchar.h> /* wcslen() wcsncmp() */
+
 #include "cfg/config.h"
 #include "cfg/hist.h"
 #include "cfg/info.h"
 #include "compat/os.h"
+#include "engine/abbrevs.h"
 #include "engine/cmds.h"
 #include "engine/mode.h"
 #include "engine/options.h"
@@ -153,6 +157,11 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
+static int cabbrev_cmd(const cmd_info_t *cmd_info);
+static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
+static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
+static int list_abbrevs(const char prefix[]);
+static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
 static int chmod_cmd(const cmd_info_t *cmd_info);
@@ -164,6 +173,7 @@ static int cmap_cmd(const cmd_info_t *cmd_info);
 static int cnoremap_cmd(const cmd_info_t *cmd_info);
 static int copy_cmd(const cmd_info_t *cmd_info);
 static int cquit_cmd(const cmd_info_t *cmd_info);
+static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
@@ -303,6 +313,10 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 3, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -330,6 +344,8 @@ static const cmd_add_t commands[] = {
 		.handler = copy_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cquit",            .abbr = "cq",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cquit_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "cunabbrev",        .abbr = "cuna",  .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cunabbrev_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cunmap",           .abbr = "cu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 1,  .id = -1,              .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
@@ -1620,6 +1636,113 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	return show_apropos_menu(curr_view, last_args) != 0;
 }
 
+/* Registers command-line mode abbreviation. */
+static int
+cabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	return handle_cabbrevs(cmd_info, 0);
+}
+
+/* Registers command-line mode abbreviation of noremap kind. */
+static int
+cnoreabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	return handle_cabbrevs(cmd_info, 1);
+}
+
+/* Handles command-line mode abbreviation of both kinds in one place.  Returns
+ * value to be returned by command handler. */
+static int
+handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
+{
+	if(cmd_info->argc == 0)
+	{
+		return show_cabbrevs_menu(curr_view) != 0;
+	}
+	if(cmd_info->argc == 1)
+	{
+		return list_abbrevs(cmd_info->argv[0]);
+	}
+	return add_cabbrev(cmd_info, no_remap);
+}
+
+/* List command-line mode abbreviations that start with specified prefix.
+ * Returns value to be returned by command handler. */
+static int
+list_abbrevs(const char prefix[])
+{
+	wchar_t *wide_prefix;
+	size_t prefix_len;
+	void *state;
+	const wchar_t *lhs, *rhs;
+	int no_remap;
+	vle_textbuf *msg;
+
+	state = NULL;
+	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	{
+		status_bar_message("No abbreviation found");
+		return 1;
+	}
+
+	msg = vle_tb_create();
+	vle_tb_append_line(msg, "Abbreviation -- N -- Replacement");
+
+	wide_prefix = to_wide(prefix);
+	prefix_len = wcslen(wide_prefix);
+
+	state = NULL;
+	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	{
+		if(wcsncmp(lhs, wide_prefix, prefix_len) == 0)
+		{
+			char *const descr = describe_abbrev(lhs, rhs, no_remap, 0);
+			vle_tb_append_line(msg, descr);
+			free(descr);
+		}
+	}
+
+	status_bar_message(vle_tb_get_data(msg));
+	vle_tb_free(msg);
+
+	free(wide_prefix);
+	return 1;
+}
+
+/* Registers command-line mode abbreviation.  Returns value to be returned by
+ * command handler. */
+static int
+add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
+{
+	int result;
+	wchar_t *subst;
+	wchar_t *wargs = to_wide(cmd_info->args);
+	wchar_t *rhs = wargs;
+
+	while(cfg_is_keyword_wchar(*rhs))
+	{
+		++rhs;
+	}
+	while(iswspace(*rhs))
+	{
+		*rhs++ = L'\0';
+	}
+
+	subst = substitute_specsw(rhs);
+	result = no_remap
+	       ? vle_abbr_add_no_remap(wargs, subst)
+	       : vle_abbr_add(wargs, subst);
+	free(subst);
+	free(wargs);
+
+	if(result != 0)
+	{
+		status_bar_error("Failed to register abbreviation");
+	}
+
+	return result;
+}
+
 static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
@@ -1889,10 +2012,17 @@ command_cmd(const cmd_info_t *cmd_info)
 	char *desc;
 
 	if(cmd_info->argc == 0)
+	{
 		return show_commands_menu(curr_view) != 0;
+	}
 
-	if((desc = list_udf_content(cmd_info->argv[0])) == NULL)
-		return CMDS_ERR_NO_SUCH_UDF;
+	desc = list_udf_content(cmd_info->argv[0]);
+	if(desc == NULL)
+	{
+		status_bar_message("No user-defined commands found");
+		return 1;
+	}
+
 	status_bar_message(desc);
 	free(desc);
 	return 1;
@@ -1911,6 +2041,20 @@ static int
 cquit_cmd(const cmd_info_t *cmd_info)
 {
 	vifm_try_leave(!cmd_info->emark, 1, cmd_info->emark);
+	return 0;
+}
+
+/* Unregisters command-line abbreviation either by its LHS or RHS. */
+static int
+cunabbrev_cmd(const cmd_info_t *cmd_info)
+{
+	wchar_t *const wargs = to_wide(cmd_info->args);
+	const int result = vle_abbr_remove(wargs);
+	free(wargs);
+	if(result != 0)
+	{
+		status_bar_error("No such abbreviation");
+	}
 	return 0;
 }
 
@@ -2143,13 +2287,13 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 		return NULL;
 	}
 
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	eval_result = eval_arglist(cmd_info->raw_args, &error_pos);
 
 	if(eval_result == NULL)
 	{
-		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
-		status_bar_error(text_buffer_get());
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression", error_pos);
+		status_bar_error(vle_tb_get_data(vle_err));
 	}
 
 	return eval_result;
@@ -3020,11 +3164,12 @@ static int
 if_cmd(const cmd_info_t *cmd_info)
 {
 	var_t condition;
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
 	{
-		text_buffer_addf("%s: %s", "Invalid expression", cmd_info->args);
-		status_bar_error(text_buffer_get());
+		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+				cmd_info->args);
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	(void)int_stack_push(&if_levels, var_to_boolean(condition));
@@ -3116,15 +3261,15 @@ jobs_cmd(const cmd_info_t *cmd_info)
 static int
 let_cmd(const cmd_info_t *cmd_info)
 {
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(let_variables(cmd_info->args) != 0)
 	{
-		status_bar_error(text_buffer_get());
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
-	else if(*text_buffer_get() != '\0')
+	else if(*vle_tb_get_data(vle_err) != '\0')
 	{
-		status_bar_message(text_buffer_get());
+		status_bar_message(vle_tb_get_data(vle_err));
 	}
 	update_path_env(0);
 	return 0;
@@ -3890,10 +4035,10 @@ unmap_cmd(const cmd_info_t *cmd_info)
 static int
 unlet_cmd(const cmd_info_t *cmd_info)
 {
-	text_buffer_clear();
+	vle_tb_clear(vle_err);
 	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
 	{
-		status_bar_error(text_buffer_get());
+		status_bar_error(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	return 0;

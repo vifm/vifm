@@ -1,4 +1,4 @@
-.TH vifm 1 "February 24, 2015" "" "Vifm"
+.TH vifm 1 "March 06, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1007,6 +1007,9 @@ command-line.
 .TP
 .BI Down
 recall older command-line from history, that begins as the current command-line.
+.TP
+.BI Ctrl-]
+trigger abbreviation expansion.
 .\" ---------------------------------------------------------------------------
 .SH Pasting special values
 .\" ---------------------------------------------------------------------------
@@ -1232,6 +1235,32 @@ the 'aproposprg' option.
 .BI :apropos
 repeats last :apropos command.
 .TP
+.BI "                                         :cabbrev"
+.TP
+.BI ":ca[bbrev]"
+displays menu of command-line mode abbreviations.
+.TP
+.BI ":ca[bbrev] lhsprefix"
+displays command-line mode abbreviations which left-hand side starts with
+specified prefix.
+.TP
+.BI ":ca[bbrev] lhs rhs"
+registers new or overwrites existing abbreviation for command-line mode.  rhs
+can contain spaces and any special sequences accepted in rhs of mappings (see
+Mappings section below).  Abbreviations are expanded non-recursively.
+.TP
+.BI "                                         :cnoreabbrev"
+.TP
+.BI ":cnorea[bbrev]"
+displays menu of command-line mode abbreviations.
+.TP
+.BI ":cnorea[bbrev] lhsprefix"
+displays command-line mode abbreviations which left-hand side starts with
+specified prefix.
+.TP
+.BI ":cnorea[bbrev] lhs rhs"
+same as :cabbrev, but mappings in rhs are ignored during expansion.
+.TP
 .BI "                                         :cd"
 .TP
 .BI ":cd or :cd ~ or :cd $HOME"
@@ -1388,6 +1417,15 @@ name from the argument list.  "!" forces overwrite.
 .BI ":cq[uit][!]"
 same as :quit, but also aborts directory choosing via \-\-choose\-dir (empties
 output file).
+.TP
+.BI "                                         :cunabbrev"
+.TP
+.BI ":cuna[bbrev] lhs"
+unregisters command-line mode abbreviation by its lhs.
+.TP
+.BI ":cuna[bbrev] rhs"
+unregisters command-line mode abbreviation by its rhs, so that abbreviation
+could be removed even after expansion.
 .TP
 .BI "                                         :delete"
 .TP
@@ -3027,6 +3065,7 @@ To get the latter use the following mapping:
 .EX
     cnoremap <c-w> <a-b><a-d>
 .EE
+Also used for abbreviations.
 .TP
 .BI "laststatus ls"
 type: boolean
@@ -3980,6 +4019,10 @@ menus and dialogs.
 
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
+
+.B Command-line mode abbreviations menu
+
+Type dd on an abbreviation to remove it.
 
 .B Color scheme menu
 

@@ -59,6 +59,7 @@ enum
 	COM_EXE,
 	COM_INVERT,
 	COM_IF_STMT,
+	COM_CABBR,
 };
 
 /* Values of type argument for filename_completion() function. */

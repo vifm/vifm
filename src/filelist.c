@@ -3217,6 +3217,12 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
+	if(filter_is_empty(&view->manual_filter) &&
+			filter_is_empty(&view->auto_filter))
+	{
+		return;
+	}
+
 	(void)replace_string(&view->prev_manual_filter, view->manual_filter.raw);
 	filter_clear(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);

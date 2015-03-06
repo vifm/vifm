@@ -81,17 +81,19 @@ function_call(const char func_name[], const call_info_t *call_info)
 	function_t *function = find_function(func_name);
 	if(function == NULL)
 	{
-		text_buffer_addf("%s: %s", "Unknown function", func_name);
+		vle_tb_append_linef(vle_err, "%s: %s", "Unknown function", func_name);
 		return var_error();
 	}
 	if(call_info->argc < function->arg_count)
 	{
-		text_buffer_addf("%s: %s", "Not enough arguments for function", func_name);
+		vle_tb_append_linef(vle_err, "%s: %s", "Not enough arguments for function",
+				func_name);
 		return var_error();
 	}
 	if(call_info->argc > function->arg_count)
 	{
-		text_buffer_addf("%s: %s", "Too many arguments for function", func_name);
+		vle_tb_append_linef(vle_err, "%s: %s", "Too many arguments for function",
+				func_name);
 		return var_error();
 	}
 	return function->ptr(call_info);
@@ -135,9 +137,7 @@ function_complete_name(const char str[], const char **start)
 		const char *const name = functions[i].name;
 		if(starts_withn(name, str, len))
 		{
-			char name_with_quote[128];
-			snprintf(name_with_quote, sizeof(name_with_quote), "%s(", name);
-			vle_compl_add_match(name_with_quote);
+			vle_compl_put_match(format_str("%s(", name));
 		}
 	}
 	vle_compl_finish_group();

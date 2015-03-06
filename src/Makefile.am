@@ -66,6 +66,7 @@ vifm_SOURCES = \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/os.c compat/os.h \
 	\
+	engine/abbrevs.c engine/abbrevs.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
@@ -89,6 +90,7 @@ vifm_SOURCES = \
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
 	menus/dirhistory_menu.c menus/dirhistory_menu.h \

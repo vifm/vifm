@@ -100,11 +100,13 @@ typedef struct
 	int old_pos;              /* for search_mode */
 	int line_edited;          /* Cache for whether input line changed flag. */
 	int entered_by_mapping;   /* The mode was entered by a mapping. */
+	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
 }
 line_stats_t;
 #endif
 TSTATIC_DEFS(
 	int line_completion(line_stats_t *stat);
+	const wchar_t * extract_abbrev(line_stats_t *stat, int *pos, int *no_remap);
 )
 
 #endif /* VIFM__MODES__CMDLINE_H__ */

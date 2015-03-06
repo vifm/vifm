@@ -96,7 +96,7 @@ execute_commands_cb(FileView *view, menu_info *m)
 static KHandlerResponse
 commands_khandler(menu_info *m, const wchar_t keys[])
 {
-	if(wcscmp(keys, L"dd") == 0) /* remove element */
+	if(wcscmp(keys, L"dd") == 0) /* Remove element. */
 	{
 		char cmd_buf[512];
 

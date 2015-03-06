@@ -13,14 +13,6 @@ static const cmd_add_t commands[] = {
 static int called;
 static int bg;
 
-static int
-builtin_cmd(const cmd_info_t* cmd_info)
-{
-	called = 1;
-	bg = cmd_info->bg;
-	return 0;
-}
-
 SETUP()
 {
 	lwin.selected_files = 0;
@@ -36,6 +28,14 @@ SETUP()
 TEARDOWN()
 {
 	reset_cmds();
+}
+
+static int
+builtin_cmd(const cmd_info_t* cmd_info)
+{
+	called = 1;
+	bg = cmd_info->bg;
+	return 0;
 }
 
 TEST(space_amp)

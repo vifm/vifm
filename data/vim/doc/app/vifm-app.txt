@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Feb 24
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -923,6 +923,9 @@ Up - recall more recent command-line from history, that begins as the
 Down - recall older command-line from history, that begins as the current
     command-line.
 
+                                               *vifm-c_CTRL-]*
+Ctrl-] - trigger abbreviation expansion.
+
 Pasting special values~
 
 The shortcuts listed below insert specified values into current cursor
@@ -1122,6 +1125,23 @@ The builtin commands are:
     |vifm-'aproposprg'| option.
 :apropos - repeats last :apropos command.
 
+                                               *vifm-:cabbrev* *vifm-:ca*
+:ca[bbrev] - displays menu of command-line mode abbreviations.
+:ca[bbrev] lhsprefix - displays command-line mode abbreviations which
+    left-hand side starts with specified prefix.
+:ca[bbrev] lhs rhs - registers new or overwrites existing abbreviation for
+    command-line mode.  rhs can contain spaces and any special sequences
+    accepted in rhs of mappings (see |vifm-mappings|).  Abbreviations are
+    expanded non-recursively.
+
+                                               *vifm-:cnoreabbrev*
+                                               *vifm-:cnorea*
+:cnorea[bbrev] - displays menu of command-line mode abbreviations.
+:cnorea[bbrev] lhsprefix - displays command-line mode abbreviations which
+    left-hand side starts with specified prefix.
+:cnorea[bbrev] lhs rhs - same as :cabbrev, but mappings in rhs are ignored
+    during expansion.
+
                                                *vifm-:cd*
 :cd or :cd ~ or :cd $HOME - change to your home directory.
 :cd - - go to previous directory.
@@ -1219,6 +1239,11 @@ The builtin commands are:
 :cq[uit][!]
     same as |vifm-:quit|, but also aborts directory choosing via
     |vifm---choose-dir| (empties output file).
+
+                                               *vifm-:cunabbrev* *vifm-:cuna*
+:cuna[bbrev] lhs - unregisters command-line mode abbreviation by its lhs.
+:cuna[bbrev] rhs - unregisters command-line mode abbreviation by its rhs, so
+    that abbreviation could be removed even after expansion.
 
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][!][count][ &] - delete selected file or files.  "!" means
@@ -2511,6 +2536,8 @@ The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
 To get the later use the following mapping: >
     cnoremap <c-w> <a-b><a-d>
 <
+Also used for abbreviations.
+
                                                *vifm-'laststatus'* *vifm-'ls'*
 laststatus ls
 type: boolean
@@ -3262,6 +3289,10 @@ Apropos menu~
 
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
+
+Command-line mode abbreviations menu~
+
+Type dd on an abbreviation to remove it.
 
 Color scheme menu~
 

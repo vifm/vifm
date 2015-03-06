@@ -65,7 +65,13 @@ vle_compl_reset(void)
 int
 vle_compl_add_match(const char match[])
 {
-	return add_match(strdup(match));
+	return vle_compl_put_match(strdup(match));
+}
+
+int
+vle_compl_put_match(char match[])
+{
+	return add_match(match);
 }
 
 int
@@ -73,6 +79,21 @@ vle_compl_add_path_match(const char path[])
 {
 	char *const match = add_path_hook(path);
 	return add_match(match);
+}
+
+int
+vle_compl_put_path_match(char path[])
+{
+	if(add_path_hook == &strdup)
+	{
+		return add_match(path);
+	}
+	else
+	{
+		const int result = vle_compl_add_path_match(path);
+		free(path);
+		return result;
+	}
 }
 
 /* Adds new match to the list of matches.  Becomes an owner of memory pointed to

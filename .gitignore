@@ -27,6 +27,7 @@
 # compiler output
 *.o
 *.d
+*.gch
 
 # windows specific
 src/*.exe
