@@ -42,7 +42,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	const size_t start_len = wcslen(start);
 
 	static menu_info m;
-	init_menu_info(&m, MAP_MENU, strdup("No mapping found"));
+	init_menu_info(&m, MAP_MENU, strdup("No mappings found"));
 	m.title = format_str(" Mappings for %s mode ", mode_str);
 
 	x = 0;
@@ -62,8 +62,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		}
 		else if(m.len != 0)
 		{
-			add_to_string_array(&m.items, m.len, 1, "");
-			m.len++;
+			m.len = add_to_string_array(&m.items, m.len, 1, "");
 		}
 
 		free(list[x]);
