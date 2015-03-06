@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 03, 2015
+" Last Change: March 06, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -13,14 +13,13 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 " General commands
-syntax keyword vifmCommand contained alink apropos ca[bbrev] cnorea[bbrev]
-		\ change chmod chown clone co[py] cuna[bbrev] d[elete] delm[arks] di[splay]
-		\ dirs e[dit] el[se] empty en[dif] exi[t] file filter fin[d] fini[sh] gr[ep]
-		\ h[elp] his[tory] jobs locate ls lstrash marks mes[sages] mkdir m[ove]
-		\ noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename restart
-		\ restore rlink screen sh[ell] sor[t] sp[lit] s[ubstitute] touch tr trashes
-		\ sync undol[ist] ve[rsion] vie[w] vifm vs[plit] w[rite] wq x[it] y[ank]
-		\ nextgroup=vifmArgs
+syntax keyword vifmCommand contained alink apropos change chmod chown clone
+		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
+		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] his[tory] jobs locate ls
+		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
+		\ q[uit] reg[isters] rename restart restore rlink screen sh[ell] sor[t]
+		\ sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
+		\ vifm vs[plit] w[rite] wq x[it] y[ank] nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else
 syntax keyword vifmPrefixCommands contained windo winrun
@@ -29,7 +28,8 @@ syntax keyword vifmPrefixCommands contained windo winrun
 syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
 		\ nn[oremap] no[remap] nun[map] qm[ap] qn[oremap] qun[map] unm[ap] vm[ap]
 		\ vn[oremap] vu[nmap] skipwhite nextgroup=vifmMapArgs
-syntax keyword vifmCMap contained cm[ap] cno[remap] cu[nmap]
+syntax keyword vifmCMapAbbr contained ca[bbrev] cm[ap] cnorea[bbrev] cno[remap]
+		\ cuna[bbrev] cu[nmap]
 		\ skipwhite nextgroup=vifmCMapArgs
 
 " Other commands
@@ -136,14 +136,14 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invchaselinks
 syntax region vifmStatement start='^\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
-		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
+		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
-		\,vifmFtCommandStN,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
+		\,vifmFtCommandStN,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
 		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
 		\,vifmInvertCommand,vifmInvertCommandStN,vifmPrefixCommands
@@ -151,7 +151,7 @@ syntax region vifmStatementCN start='\(\s\|:\)*'
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
-		\,vifmFtCommandSt,vifmCMap,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
+		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
 		\,vifmInvertCommandSt,vifmPrefixCommands
@@ -196,7 +196,7 @@ syntax region vifmMapSt start='^\(\s\|:\)*\(map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nm
 syntax region vifmCMapSt
 		\ start='^\(\s\|:\)*\(cm\%[ap]\|cno\%[remap]\|cu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmCMap
+		\ contains=vifmCMapAbbr
 syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\ end='$\||'
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
@@ -357,7 +357,7 @@ highlight link vifmSoCommand Statement
 highlight link vifmBuiltinFunction Function
 highlight link vifmOperator Operator
 highlight link vifmMap Statement
-highlight link vifmCMap Statement
+highlight link vifmCMapAbbr Statement
 highlight link vifmHiArgs Type
 highlight link vifmHiGroups Identifier
 highlight link vifmPattern String
