@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 05
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1126,8 +1126,9 @@ The builtin commands are:
 :apropos - repeats last :apropos command.
 
                                                *vifm-:cabbrev* *vifm-:ca*
-:ca[bbrev] lhsprefix - displays command-line mode abbreviations registered via
-    :cabbrev which left-hand side starts with specified prefix.
+:ca[bbrev] - displays menu of command-line mode abbreviations.
+:ca[bbrev] lhsprefix - displays command-line mode abbreviations which
+    left-hand side starts with specified prefix.
 :ca[bbrev] lhs rhs - registers new or overwrites existing abbreviation for
     command-line mode.  rhs can contain spaces and any special sequences
     accepted in rhs of mappings (see |vifm-mappings|).  Abbreviations are
@@ -1135,8 +1136,9 @@ The builtin commands are:
 
                                                *vifm-:cnoreabbrev*
                                                *vifm-:cnorea*
-:cnorea[bbrev] lhsprefix - displays command-line mode abbreviations registered
-    via :cnoreabbrev which left-hand side starts with specified prefix.
+:cnorea[bbrev] - displays menu of command-line mode abbreviations.
+:cnorea[bbrev] lhsprefix - displays command-line mode abbreviations which
+    left-hand side starts with specified prefix.
 :cnorea[bbrev] lhs rhs - same as :cabbrev, but mappings in rhs are ignored
     during expansion.
 
@@ -3287,6 +3289,10 @@ Apropos menu~
 
 Selecting menu item run man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
+
+Command-line mode abbreviations menu~
+
+Type dd on an abbreviation to remove it.
 
 Color scheme menu~
 

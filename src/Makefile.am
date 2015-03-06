@@ -90,6 +90,7 @@ vifm_SOURCES = \
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
 	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
 	menus/dirhistory_menu.c menus/dirhistory_menu.h \

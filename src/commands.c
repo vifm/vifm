@@ -314,9 +314,9 @@ static const cmd_add_t commands[] = {
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = cnoreabbrev_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 3, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1655,6 +1655,10 @@ cnoreabbrev_cmd(const cmd_info_t *cmd_info)
 static int
 handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 {
+	if(cmd_info->argc == 0)
+	{
+		return show_cabbrevs_menu(curr_view) != 0;
+	}
 	if(cmd_info->argc == 1)
 	{
 		return list_abbrevs(cmd_info->argv[0]);
@@ -1667,32 +1671,34 @@ handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 static int
 list_abbrevs(const char prefix[])
 {
-	wchar_t *wide_prefix = to_wide(prefix);
-	size_t prefix_len = wcslen(wide_prefix);
+	wchar_t *wide_prefix;
+	size_t prefix_len;
 	void *state;
 	const wchar_t *lhs, *rhs;
 	int no_remap;
-	vle_textbuf *msg = vle_tb_create();
+	vle_textbuf *msg;
 
-	vle_tb_append_line(msg, "Abbreviation -- Replacement");
+	state = NULL;
+	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
+	{
+		status_bar_message("No abbreviation found");
+		return 1;
+	}
+
+	msg = vle_tb_create();
+	vle_tb_append_line(msg, "Abbreviation -- N -- Replacement");
+
+	wide_prefix = to_wide(prefix);
+	prefix_len = wcslen(wide_prefix);
 
 	state = NULL;
 	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
 	{
 		if(wcsncmp(lhs, wide_prefix, prefix_len) == 0)
 		{
-			const size_t rhs_len = wcslen(rhs);
-			size_t seq_len;
-			size_t i;
-
-			vle_tb_appendf(msg, "%-15ls ", lhs);
-
-			for(i = 0U; i < rhs_len; i += seq_len)
-			{
-				vle_tb_append(msg, wchar_to_spec(&rhs[i], &seq_len));
-			}
-
-			vle_tb_append_line(msg, "");
+			char *const descr = describe_abbrev(lhs, rhs, no_remap, 0);
+			vle_tb_append_line(msg, descr);
+			free(descr);
 		}
 	}
 
@@ -2006,10 +2012,17 @@ command_cmd(const cmd_info_t *cmd_info)
 	char *desc;
 
 	if(cmd_info->argc == 0)
+	{
 		return show_commands_menu(curr_view) != 0;
+	}
 
-	if((desc = list_udf_content(cmd_info->argv[0])) == NULL)
-		return CMDS_ERR_NO_SUCH_UDF;
+	desc = list_udf_content(cmd_info->argv[0]);
+	if(desc == NULL)
+	{
+		status_bar_message("No user-defined commands found");
+		return 1;
+	}
+
 	status_bar_message(desc);
 	free(desc);
 	return 1;
