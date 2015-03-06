@@ -159,7 +159,7 @@ static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
-static int handle_abbrevs(const cmd_info_t *cmd_info, int no_remap);
+static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
 static int list_abbrevs(const char prefix[], int no_remap);
 static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
@@ -1640,20 +1640,20 @@ apropos_cmd(const cmd_info_t *cmd_info)
 static int
 cabbrev_cmd(const cmd_info_t *cmd_info)
 {
-	return handle_abbrevs(cmd_info, 0);
+	return handle_cabbrevs(cmd_info, 0);
 }
 
 /* Registers command-line mode abbreviation of noremap kind. */
 static int
 cnoreabbrev_cmd(const cmd_info_t *cmd_info)
 {
-	return handle_abbrevs(cmd_info, 1);
+	return handle_cabbrevs(cmd_info, 1);
 }
 
 /* Handles command-line mode abbreviation of both kinds in one place.  Returns
  * value to be returned by command handler. */
 static int
-handle_abbrevs(const cmd_info_t *cmd_info, int no_remap)
+handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 {
 	if(cmd_info->argc == 1)
 	{
