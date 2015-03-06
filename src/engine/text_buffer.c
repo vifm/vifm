@@ -63,6 +63,14 @@ vle_tb_free(vle_textbuf *tb)
 	}
 }
 
+char *
+vle_tb_release(vle_textbuf *tb)
+{
+	char *const data = (tb->data != NULL) ? tb->data : strdup("");
+	free(tb);
+	return data;
+}
+
 void
 vle_tb_clear(vle_textbuf *tb)
 {

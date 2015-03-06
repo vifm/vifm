@@ -32,6 +32,10 @@ vle_textbuf * vle_tb_create(void);
 /* Frees the buffer.  tb can be NULL. */
 void vle_tb_free(vle_textbuf *tb);
 
+/* Releases data from buffer possession and frees the buffer.  tb can't be
+ * NULL.  Returns the data. */
+char * vle_tb_release(vle_textbuf *tb);
+
 /* Clears the buffer. */
 void vle_tb_clear(vle_textbuf *tb);
 
