@@ -69,6 +69,7 @@ static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
 
+/* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
@@ -113,7 +114,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	update_screen(UT_REDRAW);
+	schedule_redraw();
 }
 
 /* Agrees to the query. */
@@ -319,7 +320,12 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		ctrl_c = prompt_skip;
 	}
 
-	assert(message != NULL);
+	if(title == NULL || message == NULL)
+	{
+		assert(title != NULL && "Asked to redraw dialog, but no title is set.");
+		assert(message != NULL && "Asked to redraw dialog, but no message is set.");
+		return;
+	}
 
 	curs_set(FALSE);
 	werase(error_win);

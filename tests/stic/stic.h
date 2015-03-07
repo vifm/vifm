@@ -213,7 +213,7 @@ static stic_test_data_p TEST_DATA_STRUCTS;
 
 #define DEFINE_SUITE() \
     typedef void (*stic_ft)(void); \
-    __attribute__((weak)) stic_ft FIXTURES_VARIABLES; \
+    stic_ft FIXTURES_VARIABLES; \
     \
     void stic_suite(void) \
     { \
@@ -248,7 +248,9 @@ static void stic_fixture(void)
 {
     const char *fixture_name = NULL;
     size_t i;
-    static struct stic_test_data **test_data[] = { TEST_DATA_STRUCTS_REF };
+    static struct stic_test_data *const *const test_data[] = {
+        TEST_DATA_STRUCTS_REF
+    };
 
     for(i = 0; i < STIC_ARRAY_LEN(test_data); ++i)
     {
