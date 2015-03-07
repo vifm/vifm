@@ -173,11 +173,11 @@ int init_status(struct config_t *config);
  * Returns non-zero on error. */
 int reset_status(const struct config_t *config);
 
-/* Sets internal flag to schedule postponed redraw operation. */
+/* Sets internal flag to schedule postponed redraw operation of the UI. */
 void schedule_redraw(void);
 
-/* Checks for postponed redraw operations. Returns non-zero if redraw operation
- * was scheduled and resets internal flag. */
+/* Checks for postponed redraw operations of the UI. Returns non-zero if redraw
+ * operation was scheduled and resets internal flag. */
 int is_redraw_scheduled(void);
 
 /* Updates curr_stats to reflect whether terminal multiplexers support is
