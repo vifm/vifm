@@ -45,6 +45,13 @@ typedef enum
 }
 IoCrs;
 
+/* Forward declaration for io_confirm. */
+typedef struct io_args_t io_args_t;
+
+/* Type for file overwrite confirmation requests.  Should return non-zero on
+ * positive response and zero otherwise. */
+typedef int (*io_confirm)(io_args_t *args, const char src[], const char dst[]);
+
 typedef struct
 {
 	io_err_cb errors_cb;
@@ -52,7 +59,7 @@ typedef struct
 }
 io_result_t;
 
-typedef struct
+struct io_args_t
 {
 	union
 	{
@@ -86,12 +93,15 @@ typedef struct
 
 	int cancellable;
 
+	/* File overwrite confirmation callback.  Set to NULL to silently
+	 * overwrite. */
+	io_confirm confirm;
+
 	/* Set to NULL to do not use estimates. */
 	ioeta_estim_t *estim;
 
 	io_result_t result; /* TODO: use this. */
-}
-io_args_t;
+};
 
 #endif /* VIFM__IO__IOC_H__ */
 

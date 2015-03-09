@@ -151,6 +151,7 @@ ior_mv(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
+	const io_confirm confirm = args->confirm;
 
 	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
@@ -162,6 +163,14 @@ ior_mv(io_args_t *const args)
 		if(!is_file(src) || !is_file(dst))
 		{
 			return 1;
+		}
+	}
+	else if(crs == IO_CRS_REPLACE_FILES && path_exists(dst, DEREF))
+	{
+		/* Ask user whether to overwrite destination file. */
+		if(confirm != NULL && !confirm(args, src, dst))
+		{
+			return 0;
 		}
 	}
 
@@ -198,6 +207,7 @@ ior_mv(io_args_t *const args)
 		case EEXIST:
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
+				int error;
 				io_args_t rm_args =
 				{
 					.arg1.path = dst,
@@ -206,7 +216,13 @@ ior_mv(io_args_t *const args)
 					.estim = args->estim,
 				};
 
-				const int error = ior_rm(&rm_args);
+				/* Ask user whether to overwrite destination file. */
+				if(confirm != NULL && !confirm(args, src, dst))
+				{
+					return 0;
+				}
+
+				error = ior_rm(&rm_args);
 				if(error != 0)
 				{
 					return error;
@@ -314,6 +330,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.arg3.crs = cp_args->arg3.crs,
 
 					.cancellable = cp_args->cancellable,
+					.confirm = cp_args->confirm,
 					.estim = cp_args->estim,
 				};
 

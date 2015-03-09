@@ -180,6 +180,7 @@ iop_cp(io_args_t *const args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
+	const io_confirm confirm = args->confirm;
 	const int cancellable = args->cancellable;
 
 	char block[BLOCK_SIZE];
@@ -257,7 +258,19 @@ iop_cp(io_args_t *const args)
 	}
 	else if(crs != IO_CRS_FAIL)
 	{
-		const int ec = unlink(dst);
+		int ec;
+
+		if(path_exists(dst, DEREF))
+		{
+			/* Ask user whether to overwrite destination file. */
+			if(confirm != NULL && !confirm(args, src, dst))
+			{
+				fclose(in);
+				return 0;
+			}
+		}
+
+		ec = unlink(dst);
 		if(ec != 0 && errno != ENOENT)
 		{
 			fclose(in);
