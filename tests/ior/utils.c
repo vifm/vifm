@@ -100,5 +100,11 @@ delete_tree(const char name[])
 	assert_success(ior_rm(&args));
 }
 
+int
+file_exists(const char file[])
+{
+	return access(file, F_OK) == 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

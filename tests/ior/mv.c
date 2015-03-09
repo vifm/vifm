@@ -3,7 +3,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
 
-#include <unistd.h> /* F_OK access() */
+#include <unistd.h> /* chdir() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
@@ -27,8 +27,8 @@ TEST(file_is_moved)
 		assert_int_equal(0, ior_mv(&args));
 	}
 
-	assert_false(access("binary-data", F_OK) == 0);
-	assert_int_equal(0, access("moved-binary-data", F_OK));
+	assert_false(file_exists("binary-data"));
+	assert_true(file_exists("moved-binary-data"));
 
 	remove("moved-binary-data");
 }
@@ -63,7 +63,7 @@ TEST(non_empty_directory_is_moved)
 		assert_int_equal(0, ior_mv(&args));
 	}
 
-	assert_int_equal(0, access("moved-non-empty-dir/a-file", F_OK));
+	assert_true(file_exists("moved-non-empty-dir/a-file"));
 
 	delete_tree("moved-non-empty-dir");
 }
@@ -97,8 +97,8 @@ TEST(non_empty_nested_directory_is_moved)
 		assert_int_equal(0, ior_mv(&args));
 	}
 
-	assert_false(access("non-empty-dir/nested-dir/a-file", F_OK) == 0);
-	assert_int_equal(0, access("moved-non-empty-dir/nested-dir/a-file", F_OK));
+	assert_false(file_exists("non-empty-dir/nested-dir/a-file"));
+	assert_true(file_exists("moved-non-empty-dir/nested-dir/a-file"));
 
 	delete_tree("moved-non-empty-dir");
 }
@@ -254,8 +254,8 @@ TEST(directories_can_be_merged)
 		assert_int_equal(0, ior_mv(&args));
 	}
 
-	assert_int_equal(0, access("second/second-file", F_OK));
-	assert_int_equal(0, access("second/first-file", F_OK));
+	assert_true(file_exists("second/second-file"));
+	assert_true(file_exists("second/first-file"));
 
 	delete_tree("first");
 	delete_tree("second");

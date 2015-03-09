@@ -20,6 +20,8 @@ void delete_dir(const char name[]);
 
 void delete_tree(const char name[]);
 
+int file_exists(const char file[]);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
