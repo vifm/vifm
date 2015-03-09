@@ -102,6 +102,7 @@ pos = $(strip $(eval T := ) \
 # suite definition template, takes single argument: name of the suite
 define suite_template
 
+# $1.src := $$(sort $$(wildcard $1/*.c))
 $1.src := $$(wildcard $1/*.c)
 $1.obj := $$($1.src:%.c=bin/build/$(BINSUBDIR)/%.o)
 
