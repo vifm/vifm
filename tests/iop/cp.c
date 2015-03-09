@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <stdio.h> /* EOF FILE fclose() fopen() fread() */
-
 #include <sys/types.h> /* stat */
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat() */
@@ -11,30 +9,9 @@
 #include "../../src/utils/fs_limits.h"
 #include "../../src/utils/utils.h"
 
-static void create_test_file(const char name[]);
-static void clone_test_file(const char src[], const char dst[]);
-static void delete_test_file(const char name[]);
+#include "utils.h"
+
 static int not_windows(void);
-
-static int
-files_are_identical(const char a[], const char b[])
-{
-	FILE *const a_file = fopen(a, "rb");
-	FILE *const b_file = fopen(b, "rb");
-	int a_data, b_data;
-
-	do
-	{
-		a_data = fgetc(a_file);
-		b_data = fgetc(b_file);
-	}
-	while(a_data != EOF && b_data != EOF);
-
-	fclose(b_file);
-	fclose(a_file);
-
-	return a_data == b_data && a_data == EOF;
-}
 
 TEST(dir_is_not_copied)
 {
@@ -326,34 +303,6 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 		};
 		assert_int_equal(0, iop_rmdir(&args));
 	}
-}
-
-static void
-create_test_file(const char name[])
-{
-	io_args_t args = {
-		.arg1.path = name,
-	};
-	assert_success(iop_mkfile(&args));
-}
-
-static void
-clone_test_file(const char src[], const char dst[])
-{
-	io_args_t args = {
-		.arg1.src = src,
-		.arg2.dst = dst,
-	};
-	assert_success(iop_cp(&args));
-}
-
-static void
-delete_test_file(const char name[])
-{
-	io_args_t args = {
-		.arg1.path = name,
-	};
-	assert_success(iop_rmfile(&args));
 }
 
 static int
