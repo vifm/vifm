@@ -1471,7 +1471,7 @@ cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.confirmed = 0;
 	if(cfg.confirm)
 	{
-		if(!query_user_menu("Permanent deletion",
+		if(!prompt_msg("Permanent deletion",
 				"Are you sure you want to delete files permanently?"))
 			return;
 		curr_stats.confirmed = 1;

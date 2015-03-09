@@ -7,11 +7,6 @@
 
 #include "asserts.h"
 
-SETUP()
-{
-	init_parser(NULL);
-}
-
 TEST(logical_not_of_integers)
 {
 	ASSERT_INT_OK("!1", 0);

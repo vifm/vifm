@@ -91,13 +91,6 @@ void suite_setup(stic_void_void setup);
 int run_tests(stic_void_void tests);
 int stic_testrunner(int argc, char** argv, stic_void_void tests, stic_void_void setup, stic_void_void teardown);
 
-/* Definitions necessary for suite/fixture. */
-
-static void (*stic_setup_func)(void);
-static void (*stic_setup_once_func)(void);
-static void (*stic_teardown_func)(void);
-static void (*stic_teardown_once_func)(void);
-
 /* Names of variables for storing test descriptions. */
 
 #define TEST_DATA_STRUCTS \
@@ -153,9 +146,6 @@ struct stic_test_data
     void (*const t)(void);
     int (*const p)(void);
 };
-
-typedef struct stic_test_data *stic_test_data_p;
-static stic_test_data_p TEST_DATA_STRUCTS;
 
 /* Auxiliary macros for internal use. */
 
@@ -242,7 +232,17 @@ static stic_test_data_p TEST_DATA_STRUCTS;
         return r; \
     }
 
+#ifdef TESTID
+
 /* Test fixture body. */
+
+typedef struct stic_test_data *stic_test_data_p;
+static stic_test_data_p TEST_DATA_STRUCTS;
+
+static void (*stic_setup_func)(void);
+static void (*stic_setup_once_func)(void);
+static void (*stic_teardown_func)(void);
+static void (*stic_teardown_once_func)(void);
 
 static void stic_fixture(void)
 {
@@ -297,6 +297,8 @@ static void stic_fixture(void)
     test_fixture_end();
 }
 void (*STIC_CAT(t, TESTID))(void) = &stic_fixture;
+
+#endif /* TESTID */
 
 #endif /* STIC__STIC_H__ */
 

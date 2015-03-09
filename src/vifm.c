@@ -782,7 +782,7 @@ convert_configs(void)
 	int vifm_like_mode;
 	int err;
 
-	if(!query_user_menu("Configuration update", "Your vifmrc will be "
+	if(!prompt_msg("Configuration update", "Your vifmrc will be "
 			"upgraded to a new format.  Your current configuration will be copied "
 			"before performing any changes, but if you don't want to take the risk "
 			"and would like to make one more copy say No to exit vifm.  Continue?"))
@@ -794,7 +794,7 @@ convert_configs(void)
 		exit(0);
 	}
 
-	vifm_like_mode = !query_user_menu("Configuration update", "This version of "
+	vifm_like_mode = !prompt_msg("Configuration update", "This version of "
 			"vifm is able to save changes in the configuration files automatically "
 			"when quitting, as it was possible in older versions.  It is from now "
 			"on recommended though, to save permanent changes manually in the "
@@ -948,7 +948,7 @@ vifm_try_leave(int write_info, int cquit, int force)
 {
 	if(!force && bg_has_active_jobs())
 	{
-		if(!query_user_menu("Warning", "Some of backgrounded commands are still "
+		if(!prompt_msg("Warning", "Some of backgrounded commands are still "
 					"working.  Quit?"))
 		{
 			return;

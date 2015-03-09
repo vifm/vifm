@@ -31,7 +31,6 @@ int stic_is_string_equal_i(const char* s1, const char* s2)
 static int sea_test_last_passed = 0;
 #endif
 
-
 typedef enum
 {
 	STIC_DISPLAY_TESTS,
@@ -46,6 +45,7 @@ typedef struct
 	char** argv;
 	stic_action_t action;
 } stic_testrunner_t;
+
 static int stic_screen_width = 70;
 static int sea_tests_run = 0;
 static int sea_tests_passed = 0;
@@ -127,14 +127,13 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 {
 	if (!passed)
 	{
-
 		if(stic_machine_readable)
 		{
-			printf("%s%s,%s,%u,%s\r\n", stic_magic_marker, stic_current_fixture_path, function, line, reason );
+			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, function, line, reason );
 		}
 		else
 		{
-			printf("%-30s Line %-5d %s\r\n", function, line, reason );
+			printf("%-30s Line %-5d %s\n", function, line, reason );
 		}
 		sea_tests_failed++;
 	}
@@ -144,11 +143,11 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		{
 			if(stic_machine_readable)
 			{
-				printf("%s%s,%s,%u,Passed\r\n", stic_magic_marker, stic_current_fixture_path, function, line );
+				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, function, line );
 			}
 			else
 			{
-				printf("%-30s Line %-5d Passed\r\n", function, line);
+				printf("%-30s Line %-5d Passed\n", function, line);
 			}
 		}
 		sea_tests_passed++;
@@ -219,7 +218,7 @@ void stic_assert_double_equal( double expected, double actual, double delta, con
 
 void stic_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line)
 {
-        int comparison;
+	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
 
 	if ((expected == (char *)0) && (actual == (char *)0))
@@ -318,7 +317,7 @@ static void stic_header_printer(const char s[], int length, char f)
 	if(l==0) printf("%c%c", f, f);
 	else printf(" %s ", s);
 	for(i = (d+l+2); i<length; i++) printf("%c",f);
-	printf("\r\n");
+	printf("\n");
 }
 
 void stic_test_fixture_start(const char filepath[])
@@ -337,7 +336,7 @@ void stic_test_fixture_end()
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "%d run  %d failed", sea_tests_run-stic_fixture_tests_run, sea_tests_failed-stic_fixture_tests_failed);
 	stic_header_printer(s, stic_screen_width, ' ');
-	printf("\r\n");
+	printf("\n");
 }
 
 static char* stic_fixture_filter = 0;
@@ -347,7 +346,6 @@ void fixture_filter(char* filter)
 {
 	stic_fixture_filter = filter;
 }
-
 
 void test_filter(char* filter)
 {
@@ -363,7 +361,7 @@ void set_magic_marker(char* marker)
 static void stic_display_test(const char fixture_name[], const char test_name[])
 {
 	if(test_name == NULL) return;
-	printf("%s,%s\r\n", fixture_name, test_name);
+	printf("%s,%s\n", fixture_name, test_name);
 }
 
 int stic_should_run(const char fixture[], const char test[])
@@ -397,9 +395,9 @@ int run_tests(stic_void_void tests)
 
 	if(stic_is_display_only() || stic_machine_readable) return 1;
 	sprintf(version, "STIC v%s", STIC_VERSION);
-	printf("\r\n\r\n");
+	printf("\n\n");
 	stic_header_printer(version, stic_screen_width, '=');
-	printf("\r\n");
+	printf("\n");
 	if (sea_tests_failed > 0) {
 		stic_header_printer("Failed", stic_screen_width, ' ');
 	}
@@ -410,29 +408,27 @@ int run_tests(stic_void_void tests)
 	stic_header_printer(s, stic_screen_width, ' ');
 	sprintf(s,"in %lu ms",end - start);
 	stic_header_printer(s, stic_screen_width, ' ');
-	printf("\r\n");
+	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');
 
 	return sea_tests_failed == 0;
 }
 
-
 void stic_show_help( void )
 {
-	printf("Usage: [-t <testname>] [-f <fixturename>] [-d] [help] [-v] [-m] [-k <marker>\r\n");
-	printf("Flags:\r\n");
-	printf("\thelp:\twill display this help\r\n");
-	printf("\t-t:\twill only run tests that match <testname>\r\n");
-	printf("\t-f:\twill only run fixtures that match <fixturename>\r\n");
-	printf("\t-d:\twill just display test names and fixtures without\r\n");
-	printf("\t-d:\trunning the test\r\n");
-	printf("\t-v:\twill print a more verbose version of the test run\r\n");
-	printf("\t-m:\twill print a machine readable format of the test run, ie :- \r\n");
-	printf("\t   \t<textfixture>,<testname>,<linenumber>,<testresult><EOL>\r\n");
-	printf("\t-k:\twill prepend <marker> before machine readable output \r\n");
-	printf("\t   \t<marker> cannot start with a '-'\r\n");
+	printf("Usage: [-t <testname>] [-f <fixturename>] [-d] [help] [-v] [-m] [-k <marker>\n");
+	printf("Flags:\n");
+	printf("\thelp:\twill display this help\n");
+	printf("\t-t:\twill only run tests that match <testname>\n");
+	printf("\t-f:\twill only run fixtures that match <fixturename>\n");
+	printf("\t-d:\twill just display test names and fixtures without\n");
+	printf("\t-d:\trunning the test\n");
+	printf("\t-v:\twill print a more verbose version of the test run\n");
+	printf("\t-m:\twill print a machine readable format of the test run, ie :- \n");
+	printf("\t   \t<textfixture>,<testname>,<linenumber>,<testresult><EOL>\n");
+	printf("\t-k:\twill prepend <marker> before machine readable output \n");
+	printf("\t   \t<marker> cannot start with a '-'\n");
 }
-
 
 int stic_commandline_has_value_after(stic_testrunner_t* runner, int arg)
 {
@@ -447,7 +443,7 @@ int stic_parse_commandline_option_with_value(stic_testrunner_t* runner, int arg,
 	{
 		if(!stic_commandline_has_value_after(runner, arg))
 		{
-			printf("Error: The %s option expects to be followed by a value\r\n", option);
+			printf("Error: The %s option expects to be followed by a value\n", option);
 			runner->action = STIC_DO_ABORT;
 			return 0;
 		}

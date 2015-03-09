@@ -2649,7 +2649,13 @@ flist_custom_finish(FileView *view)
 const char *
 flist_get_dir(const FileView *view)
 {
-	return flist_custom_active(view) ? view->custom.orig_dir : view->curr_dir;
+	if(flist_custom_active(view))
+	{
+		assert(view->custom.orig_dir != NULL && "Wrong view dir state.");
+		return view->custom.orig_dir;
+	}
+
+	return view->curr_dir;
 }
 
 void

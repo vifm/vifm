@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
@@ -14,6 +15,7 @@ SETUP()
 {
 	cfg.shell = strdup("sh");
 	init_builtin_functions();
+	init_parser(NULL);
 }
 
 TEARDOWN()

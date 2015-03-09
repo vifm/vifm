@@ -74,6 +74,9 @@
 	Added command-line mode abbreviations and :cabbrev, :cnoreabbrev and
 	:cunabbrev commands to manage them.  Thanks to filterfalse.
 
+	Added per-file overwrite confirmation on directory merging.  Thanks to
+	willemw12.
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.

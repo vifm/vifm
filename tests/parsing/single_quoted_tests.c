@@ -7,11 +7,6 @@
 
 #include "asserts.h"
 
-SETUP()
-{
-	init_parser(NULL);
-}
-
 TEST(empty_ok)
 {
 	ASSERT_OK("''", "");

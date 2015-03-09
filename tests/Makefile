@@ -16,7 +16,7 @@ suites += ioeta ionotif iop ior
 # ui
 suites += colmgr column_view viewcolumns_parser
 # everything else
-suites += env escape fileops filetype filter misc undo
+suites += env escape fileops filetype filter misc undo utils
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
@@ -102,6 +102,7 @@ pos = $(strip $(eval T := ) \
 # suite definition template, takes single argument: name of the suite
 define suite_template
 
+# $1.src := $$(sort $$(wildcard $1/*.c))
 $1.src := $$(wildcard $1/*.c)
 $1.obj := $$($1.src:%.c=bin/build/$(BINSUBDIR)/%.o)
 

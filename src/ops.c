@@ -25,6 +25,8 @@
 #include "utils/utf8.h"
 #endif
 
+#include <curses.h> /* noraw() raw() */
+
 #include <sys/stat.h> /* gid_t uid_t */
 
 #include <assert.h> /* assert() */
@@ -73,6 +75,9 @@ typedef enum
 }
 ConflictAction;
 
+/* Type of function that implements single operation. */
+typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
+
 static int op_none(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_remove(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_removesl(ops_t *ops, void *data, const char *src,
@@ -103,40 +108,45 @@ static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 		io_args_t *const args);
+static int confirm_overwrite(io_args_t *args, const char src[],
+		const char dst[]);
+static char * pretty_dir_path(const char path[]);
 
-typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
-
+/* List of functions that implement operations. */
 static op_func op_funcs[] = {
-	op_none,     /* OP_NONE */
-	op_none,     /* OP_USR */
-	op_remove,   /* OP_REMOVE */
-	op_removesl, /* OP_REMOVESL */
-	op_copy,     /* OP_COPY */
-	op_copyf,    /* OP_COPYF */
-	op_copya,    /* OP_COPYA */
-	op_move,     /* OP_MOVE */
-	op_movef,    /* OP_MOVEF */
-	op_movea,    /* OP_MOVEA */
-	op_move,     /* OP_MOVETMP1 */
-	op_move,     /* OP_MOVETMP2 */
-	op_move,     /* OP_MOVETMP3 */
-	op_move,     /* OP_MOVETMP4 */
-	op_chown,    /* OP_CHOWN */
-	op_chgrp,    /* OP_CHGRP */
+	[OP_NONE]     = &op_none,
+	[OP_USR]      = &op_none,
+	[OP_REMOVE]   = &op_remove,
+	[OP_REMOVESL] = &op_removesl,
+	[OP_COPY]     = &op_copy,
+	[OP_COPYF]    = &op_copyf,
+	[OP_COPYA]    = &op_copya,
+	[OP_MOVE]     = &op_move,
+	[OP_MOVEF]    = &op_movef,
+	[OP_MOVEA]    = &op_movea,
+	[OP_MOVETMP1] = &op_move,
+	[OP_MOVETMP2] = &op_move,
+	[OP_MOVETMP3] = &op_move,
+	[OP_MOVETMP4] = &op_move,
+	[OP_CHOWN]    = &op_chown,
+	[OP_CHGRP]    = &op_chgrp,
 #ifndef _WIN32
-	op_chmod,    /* OP_CHMOD */
-	op_chmodr,   /* OP_CHMODR */
+	[OP_CHMOD]    = &op_chmod,
+	[OP_CHMODR]   = &op_chmodr,
 #else
-	op_addattr,  /* OP_ADDATTR */
-	op_subattr,  /* OP_SUBATTR */
+	[OP_ADDATTR]  = &op_addattr,
+	[OP_SUBATTR]  = &op_subattr,
 #endif
-	op_symlink,  /* OP_SYMLINK */
-	op_symlink,  /* OP_SYMLINK2 */
-	op_mkdir,    /* OP_MKDIR */
-	op_rmdir,    /* OP_RMDIR */
-	op_mkfile,   /* OP_MKFILE */
+	[OP_SYMLINK]  = &op_symlink,
+	[OP_SYMLINK2] = &op_symlink,
+	[OP_MKDIR]    = &op_mkdir,
+	[OP_RMDIR]    = &op_rmdir,
+	[OP_MKFILE]   = &op_mkfile,
 };
 ARRAY_GUARD(op_funcs, OP_COUNT);
+
+/* Operation that is processed at the moment. */
+static ops_t *curr_ops;
 
 ops_t *
 ops_alloc(OPS main_op, const char descr[], const char base_dir[])
@@ -249,7 +259,7 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
-		curr_stats.confirmed = query_user_menu("Permanent deletion",
+		curr_stats.confirmed = prompt_msg("Permanent deletion",
 				"Are you sure? If you undoing a command and want to see file names, "
 				"use :undolist! command");
 		if(!curr_stats.confirmed)
@@ -871,13 +881,16 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	int result;
 
 	args->estim = (ops == NULL) ? NULL : ops->estim;
+	args->confirm = &confirm_overwrite;
 
 	if(args->cancellable)
 	{
 		ui_cancellation_enable();
 	}
 
+	curr_ops = ops;
 	result = func(args);
+	curr_ops = NULL;
 
 	if(args->cancellable)
 	{
@@ -885,6 +898,83 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	}
 
 	return result;
+}
+
+/* Asks user to confirm file overwrite.  Returns non-zero on positive user
+ * answer, otherwise zero is returned. */
+static int
+confirm_overwrite(io_args_t *args, const char src[], const char dst[])
+{
+	/* TODO: think about adding "append" and "rename" options here. */
+	static const response_variant responses[] = {
+		{ .key = 'y', .descr = "[y]es", },
+		{ .key = 'Y', .descr = "[Y]es for all", },
+		{ .key = 'n', .descr = "[n]o", },
+		{ .key = 'N', .descr = "[N]o for all", },
+		{ },
+	};
+
+	char *msg;
+	char response;
+	char *src_dir, *dst_dir;
+	const char *fname = get_last_path_component(dst);
+
+	if(curr_ops->crp != CRP_ASK)
+	{
+		return (curr_ops->crp == CRP_OVERWRITE_ALL) ? 1 : 0;
+	}
+
+	src_dir = pretty_dir_path(src);
+	dst_dir = pretty_dir_path(dst);
+
+	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?", fname,
+			dst_dir, fname, src_dir);
+
+	free(dst_dir);
+	free(src_dir);
+
+	/* Active cancellation conflicts with input processing by putting terminal in
+	 * a cocked mode. */
+	if(args->cancellable)
+	{
+		raw();
+	}
+	response = prompt_msg_custom("File overwrite", msg, responses);
+	if(args->cancellable)
+	{
+		noraw();
+	}
+
+	free(msg);
+
+	switch(response)
+	{
+		case 'Y': curr_ops->crp = CRP_OVERWRITE_ALL; /* Fall through. */
+		case 'y': return 1;
+
+		case 'N': curr_ops->crp = CRP_SKIP_ALL; /* Fall through. */
+		case 'n': return 0;
+
+		default:
+			assert(0 && "Unexpected response.");
+			return 0;
+	}
+}
+
+/* Prepares path to presenting to the user.  Returns newly allocated string,
+ * which should be freed by the caller, or NULL if there is not enough
+ * memory. */
+static char *
+pretty_dir_path(const char path[])
+{
+	char dir_only[strlen(path) + 1];
+	char canonic[PATH_MAX];
+
+	copy_str(dir_only, sizeof(dir_only), path);
+	remove_last_path_component(dir_only);
+	canonicalize_path(dir_only, canonic, sizeof(canonic));
+
+	return strdup(canonic);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

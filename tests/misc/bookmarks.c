@@ -10,6 +10,8 @@
 SETUP()
 {
 	cfg.slow_fs_list = strdup("");
+	lwin.column_count = 1;
+	rwin.column_count = 1;
 }
 
 TEARDOWN()

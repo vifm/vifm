@@ -6,6 +6,8 @@
 
 #include <stdio.h> /* FILE fclose() fopen() */
 
+#include "../../src/io/iop.h"
+#include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
 
 void
@@ -59,6 +61,49 @@ create_empty_file(const char file[])
 	FILE *const f = fopen(file, "w");
 	fclose(f);
 	assert_int_equal(0, access(file, F_OK));
+}
+
+void
+clone_file(const char src[], const char dst[])
+{
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+	};
+	assert_success(iop_cp(&args));
+}
+
+void
+delete_file(const char name[])
+{
+	io_args_t args = {
+		.arg1.path = name,
+	};
+	assert_success(iop_rmfile(&args));
+}
+
+void
+delete_dir(const char name[])
+{
+	io_args_t args = {
+		.arg1.path = name,
+	};
+	assert_success(iop_rmdir(&args));
+}
+
+void
+delete_tree(const char name[])
+{
+	io_args_t args = {
+		.arg1.path = name,
+	};
+	assert_success(ior_rm(&args));
+}
+
+int
+file_exists(const char file[])
+{
+	return access(file, F_OK) == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

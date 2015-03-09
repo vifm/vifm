@@ -238,7 +238,7 @@ run_win_executable(char full_path[], int elevate)
 		{
 			if(error == ERROR_ELEVATION_REQUIRED && is_vista_and_above())
 			{
-				const int user_response = query_user_menu("Program running error",
+				const int user_response = prompt_msg("Program running error",
 						"Executable requires rights elevation. Run with elevated rights?");
 				if(user_response != 0)
 				{

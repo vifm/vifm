@@ -110,21 +110,21 @@ init_parser(getenv_func getenv_f)
 const char *
 get_last_position(void)
 {
-	assert(initialized);
+	assert(initialized && "Parser must be initialized before use.");
 	return last_position;
 }
 
 const char *
 get_last_parsed_char(void)
 {
-	assert(initialized);
+	assert(initialized && "Parser must be initialized before use.");
 	return last_parsed_char;
 }
 
 ParsingErrors
 parse(const char input[], var_t *result)
 {
-	assert(initialized);
+	assert(initialized && "Parser must be initialized before use.");
 
 	last_error = PE_NO_ERROR;
 	last_token.type = BEGIN;
@@ -162,7 +162,7 @@ parse(const char input[], var_t *result)
 var_t
 get_parsing_result(void)
 {
-	assert(initialized);
+	assert(initialized && "Parser must be initialized before use.");
 	return var_clone(res_val);
 }
 

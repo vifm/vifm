@@ -573,7 +573,7 @@ exec_startup_commands(int c, char **v)
 static int
 swap_range(void)
 {
-	return query_user_menu("Command Error", "Backwards range given, OK to swap?");
+	return prompt_msg("Command Error", "Backwards range given, OK to swap?");
 }
 
 static int
