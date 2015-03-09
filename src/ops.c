@@ -25,6 +25,8 @@
 #include "utils/utf8.h"
 #endif
 
+#include <curses.h> /* noraw() raw() */
+
 #include <sys/stat.h> /* gid_t uid_t */
 
 #include <assert.h> /* assert() */
@@ -103,6 +105,9 @@ static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 		io_args_t *const args);
+static int confirm_overwrite(io_args_t *args, const char src[],
+		const char dst[]);
+static char * pretty_dir_path(const char path[]);
 
 typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
 
@@ -871,6 +876,7 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	int result;
 
 	args->estim = (ops == NULL) ? NULL : ops->estim;
+	args->confirm = &confirm_overwrite;
 
 	if(args->cancellable)
 	{
@@ -885,6 +891,54 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	}
 
 	return result;
+}
+
+/* Asks user to confirm file overwrite.  Returns non-zero on positive user
+ * answer, otherwise zero is returned. */
+static int
+confirm_overwrite(io_args_t *args, const char src[], const char dst[])
+{
+	char *msg;
+	int confirmed;
+	char *src_dir = pretty_dir_path(src), *dst_dir = pretty_dir_path(dst);
+	const char *fname = get_last_path_component(dst);
+
+	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?",
+			fname, dst_dir, fname, src_dir);
+
+	free(dst_dir);
+	free(src_dir);
+
+	/* Active cancellation conflicts with input processing by putting terminal in
+	 * a cocked mode. */
+	if(args->cancellable)
+	{
+		raw();
+	}
+	confirmed = query_user_menu("File overwrite", msg);
+	if(args->cancellable)
+	{
+		noraw();
+	}
+
+	free(msg);
+	return confirmed;
+}
+
+/* Prepares path to presenting to the user.  Returns newly allocated string,
+ * which should be freed by the caller, or NULL if there is not enough
+ * memory. */
+static char *
+pretty_dir_path(const char path[])
+{
+	char dir_only[strlen(path) + 1];
+	char canonic[PATH_MAX];
+
+	copy_str(dir_only, sizeof(dir_only), path);
+	remove_last_path_component(dir_only);
+	canonicalize_path(dir_only, canonic, sizeof(canonic));
+
+	return strdup(canonic);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
