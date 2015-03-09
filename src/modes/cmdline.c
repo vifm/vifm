@@ -293,6 +293,8 @@ init_cmdline_mode(void)
 	(void)ret_code;
 }
 
+/* Handles all keys uncaught by shortcuts.  Returns zero on success and non-zero
+ * on error. */
 static int
 def_handler(wchar_t key)
 {

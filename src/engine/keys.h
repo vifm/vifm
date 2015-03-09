@@ -109,9 +109,8 @@ typedef struct
 }keys_add_info_t;
 
 /*
- * Return value:
- *  - 0 - success
- *  - something else - an error
+ * Type of callback that handles all keys uncaught by shortcuts.  Should return
+ * zero on success and non-zero on error.
  */
 typedef int (*default_handler)(wchar_t key);
 
