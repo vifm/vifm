@@ -31,7 +31,6 @@ int stic_is_string_equal_i(const char* s1, const char* s2)
 static int sea_test_last_passed = 0;
 #endif
 
-
 typedef enum
 {
 	STIC_DISPLAY_TESTS,
@@ -348,7 +347,6 @@ void fixture_filter(char* filter)
 	stic_fixture_filter = filter;
 }
 
-
 void test_filter(char* filter)
 {
 	stic_test_filter = filter;
@@ -416,7 +414,6 @@ int run_tests(stic_void_void tests)
 	return sea_tests_failed == 0;
 }
 
-
 void stic_show_help( void )
 {
 	printf("Usage: [-t <testname>] [-f <fixturename>] [-d] [help] [-v] [-m] [-k <marker>\n");
@@ -432,7 +429,6 @@ void stic_show_help( void )
 	printf("\t-k:\twill prepend <marker> before machine readable output \n");
 	printf("\t   \t<marker> cannot start with a '-'\n");
 }
-
 
 int stic_commandline_has_value_after(stic_testrunner_t* runner, int arg)
 {
