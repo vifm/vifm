@@ -7,11 +7,6 @@
 
 #include "asserts.h"
 
-SETUP()
-{
-	init_parser(NULL);
-}
-
 TEST(negative_number_ok)
 {
 	ASSERT_OK("-1", "-1");

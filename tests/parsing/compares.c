@@ -7,11 +7,6 @@
 
 #include "asserts.h"
 
-SETUP()
-{
-	init_parser(NULL);
-}
-
 TEST(eq_compare_true)
 {
 	ASSERT_OK("'a'=='a'", "1");

@@ -1,11 +1,20 @@
 #include <stic.h>
 
+#include <wctype.h> /* iswspace() */
+
+#include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/commands.h"
 
 SETUP()
 {
+	int i;
+	for(i = 0; i < 255; ++i)
+	{
+		cfg.is_keyword[i] = !iswspace(i);
+	}
+
 	lwin.selected_files = 0;
 	lwin.list_rows = 0;
 

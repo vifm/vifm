@@ -6,16 +6,15 @@
 
 #include "asserts.h"
 
-static const char *
-ge(const char *name);
+static const char * getenv_value(const char name[]);
 
 SETUP()
 {
-	init_parser(ge);
+	init_parser(&getenv_value);
 }
 
 static const char *
-ge(const char *name)
+getenv_value(const char *name)
 {
 	return name + 1;
 }

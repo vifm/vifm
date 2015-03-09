@@ -21,11 +21,6 @@ SETUP_ONCE()
 	assert_int_equal(0, function_register(&function_c));
 }
 
-SETUP()
-{
-	init_parser(NULL);
-}
-
 static var_t
 dummy(const call_info_t *call_info)
 {
