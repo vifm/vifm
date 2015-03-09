@@ -145,6 +145,9 @@ static op_func op_funcs[] = {
 };
 ARRAY_GUARD(op_funcs, OP_COUNT);
 
+/* Operation that is processed at the moment. */
+static ops_t *curr_ops;
+
 ops_t *
 ops_alloc(OPS main_op, const char descr[], const char base_dir[])
 {
@@ -885,7 +888,9 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 		ui_cancellation_enable();
 	}
 
+	curr_ops = ops;
 	result = func(args);
+	curr_ops = NULL;
 
 	if(args->cancellable)
 	{
@@ -900,13 +905,30 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 static int
 confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 {
+	/* TODO: think about adding "append" and "rename" options here. */
+	static const response_variant responses[] = {
+		{ .key = 'y', .descr = "[y]es", },
+		{ .key = 'Y', .descr = "[Y]es for all", },
+		{ .key = 'n', .descr = "[n]o", },
+		{ .key = 'N', .descr = "[N]o for all", },
+		{ },
+	};
+
 	char *msg;
-	int confirmed;
-	char *src_dir = pretty_dir_path(src), *dst_dir = pretty_dir_path(dst);
+	char response;
+	char *src_dir, *dst_dir;
 	const char *fname = get_last_path_component(dst);
 
-	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?",
-			fname, dst_dir, fname, src_dir);
+	if(curr_ops->crp != CRP_ASK)
+	{
+		return (curr_ops->crp == CRP_OVERWRITE_ALL) ? 1 : 0;
+	}
+
+	src_dir = pretty_dir_path(src);
+	dst_dir = pretty_dir_path(dst);
+
+	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?", fname,
+			dst_dir, fname, src_dir);
 
 	free(dst_dir);
 	free(src_dir);
@@ -917,14 +939,26 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	{
 		raw();
 	}
-	confirmed = prompt_msg("File overwrite", msg);
+	response = prompt_msg_custom("File overwrite", msg, responses);
 	if(args->cancellable)
 	{
 		noraw();
 	}
 
 	free(msg);
-	return confirmed;
+
+	switch(response)
+	{
+		case 'Y': curr_ops->crp = CRP_OVERWRITE_ALL; /* Fall through. */
+		case 'y': return 1;
+
+		case 'N': curr_ops->crp = CRP_SKIP_ALL; /* Fall through. */
+		case 'n': return 0;
+
+		default:
+			assert(0 && "Unexpected response.");
+			return 0;
+	}
 }
 
 /* Prepares path to presenting to the user.  Returns newly allocated string,

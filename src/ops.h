@@ -56,6 +56,15 @@ typedef enum
 }
 OPS;
 
+/* Policy on treating conflicts during operating processing. */
+typedef enum
+{
+	CRP_ASK,           /* Prompt user for the decision. */
+	CRP_SKIP_ALL,      /* Automatically skip file. */
+	CRP_OVERWRITE_ALL, /* Automatically overwrite file. */
+}
+ConflictResolutionPolicy;
+
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
 typedef struct
@@ -69,6 +78,11 @@ typedef struct
 	const char *descr;    /* Description of operations. */
 	int shallow_eta;      /* Count only top level items, without recursion. */
 	char *base_dir;       /* Base directory in which operation is taking place. */
+
+	/* What should be done on conflicts. */
+	ConflictResolutionPolicy crp;
+
+	/* TODO: count number of skipped files. */
 }
 ops_t;
 
