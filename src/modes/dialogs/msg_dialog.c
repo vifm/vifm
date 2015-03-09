@@ -313,6 +313,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	int x, y;
 	int z;
 	const char *control_msg;
+	const int centered = (msg_kind == D_QUERY);
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -355,6 +356,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		{
 			int j;
 			char buf[x - 2 + 1];
+			int cx;
 
 			snprintf(buf, sizeof(buf), "%s", message + i);
 
@@ -374,7 +376,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 			mvwin(error_win, (sy - y)/2, (sx - x)/2);
 			wresize(error_win, y, x);
 
-			checked_wmove(error_win, cy++, 1);
+			cx = centered ? (x - strlen(buf) - 2)/2 : 1;
+			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
 	}
