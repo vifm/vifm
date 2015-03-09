@@ -256,7 +256,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 }
 
 int
-query_user_menu(const char title[], const char message[])
+prompt_msg(const char title[], const char message[])
 {
 	char *dup = strdup(message);
 
@@ -417,7 +417,7 @@ confirm_deletion(int use_trash)
 	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
-		const int proceed = query_user_menu("Permanent deletion",
+		const int proceed = prompt_msg("Permanent deletion",
 				"Are you sure you want to delete files permanently?");
 
 		if(!proceed)

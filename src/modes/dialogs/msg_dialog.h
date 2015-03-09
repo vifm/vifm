@@ -46,7 +46,7 @@ int prompt_error_msgf(const char title[], const char format[], ...);
 
 /* Asks user to confirm some action by answering "Yes" or "No".  Returns
  * non-zero when user answers yes, otherwise zero is returned. */
-int query_user_menu(const char title[], const char message[]);
+int prompt_msg(const char title[], const char message[]);
 
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */

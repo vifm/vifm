@@ -254,7 +254,7 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
-		curr_stats.confirmed = query_user_menu("Permanent deletion",
+		curr_stats.confirmed = prompt_msg("Permanent deletion",
 				"Are you sure? If you undoing a command and want to see file names, "
 				"use :undolist! command");
 		if(!curr_stats.confirmed)
@@ -915,7 +915,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	{
 		raw();
 	}
-	confirmed = query_user_menu("File overwrite", msg);
+	confirmed = prompt_msg("File overwrite", msg);
 	if(args->cancellable)
 	{
 		noraw();
