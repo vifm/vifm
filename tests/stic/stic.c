@@ -45,6 +45,7 @@ typedef struct
 	char** argv;
 	stic_action_t action;
 } stic_testrunner_t;
+
 static int stic_screen_width = 70;
 static int sea_tests_run = 0;
 static int sea_tests_passed = 0;
@@ -126,7 +127,6 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 {
 	if (!passed)
 	{
-
 		if(stic_machine_readable)
 		{
 			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, function, line, reason );
@@ -218,7 +218,7 @@ void stic_assert_double_equal( double expected, double actual, double delta, con
 
 void stic_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line)
 {
-        int comparison;
+	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
 
 	if ((expected == (char *)0) && (actual == (char *)0))
