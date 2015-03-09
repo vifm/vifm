@@ -344,7 +344,7 @@ strprepend(char **str, size_t *len, const char prefix[])
 int
 strappendch(char **str, size_t *len, char c)
 {
-	const char suffix[] = { c, '\0' };
+	const char suffix[] = {c, '\0'};
 	return strappend(str, len, suffix);
 }
 
@@ -363,6 +363,22 @@ strappend(char **str, size_t *len, const char suffix[])
 	*len += suffix_len;
 
 	return 0;
+}
+
+int
+sstrappendch(char str[], size_t *len, size_t size, char c)
+{
+	const char suffix[] = {c, '\0'};
+	return sstrappend(str, len, size, suffix);
+}
+
+int
+sstrappend(char str[], size_t *len, size_t size, const char suffix[])
+{
+	const size_t free_space = size - *len;
+	const size_t suffix_len = snprintf(str + *len, free_space, "%s", suffix);
+	*len += strlen(str + *len);
+	return suffix_len > free_space - 1;
 }
 
 void

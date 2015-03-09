@@ -163,6 +163,16 @@ int strappendch(char **str, size_t *len, char c);
  * appropriately.  Returns zero on success, otherwise non-zero is returned. */
 int strappend(char **str, size_t *len, const char suffix[]);
 
+/* Appends single character to statically allocated string of current length
+ * *len which has size as its limit.  Updates *len appropriately.  Returns zero
+ * if string didn't overflow, otherwise non-zero is returned. */
+int sstrappendch(char str[], size_t *len, size_t size, char c);
+
+/* Appends suffix to statically allocated string of current length *len which
+ * has size as its limit.  Updates *len appropriately.  Returns zero if string
+ * didn't overflow, otherwise non-zero is returned. */
+int sstrappend(char str[], size_t *len, size_t size, const char suffix[]);
+
 /* Pads buffer pointed to by str to be at least of width "width + 1". */
 void stralign(char str[], size_t width, char pad, int left_align);
 
