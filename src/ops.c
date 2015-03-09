@@ -75,6 +75,9 @@ typedef enum
 }
 ConflictAction;
 
+/* Type of function that implements single operation. */
+typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
+
 static int op_none(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_remove(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_removesl(ops_t *ops, void *data, const char *src,
@@ -109,37 +112,36 @@ static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
 
-typedef int (*op_func)(ops_t *ops, void *data, const char *src, const char *dst);
-
+/* List of functions that implement operations. */
 static op_func op_funcs[] = {
-	op_none,     /* OP_NONE */
-	op_none,     /* OP_USR */
-	op_remove,   /* OP_REMOVE */
-	op_removesl, /* OP_REMOVESL */
-	op_copy,     /* OP_COPY */
-	op_copyf,    /* OP_COPYF */
-	op_copya,    /* OP_COPYA */
-	op_move,     /* OP_MOVE */
-	op_movef,    /* OP_MOVEF */
-	op_movea,    /* OP_MOVEA */
-	op_move,     /* OP_MOVETMP1 */
-	op_move,     /* OP_MOVETMP2 */
-	op_move,     /* OP_MOVETMP3 */
-	op_move,     /* OP_MOVETMP4 */
-	op_chown,    /* OP_CHOWN */
-	op_chgrp,    /* OP_CHGRP */
+	[OP_NONE]     = &op_none,
+	[OP_USR]      = &op_none,
+	[OP_REMOVE]   = &op_remove,
+	[OP_REMOVESL] = &op_removesl,
+	[OP_COPY]     = &op_copy,
+	[OP_COPYF]    = &op_copyf,
+	[OP_COPYA]    = &op_copya,
+	[OP_MOVE]     = &op_move,
+	[OP_MOVEF]    = &op_movef,
+	[OP_MOVEA]    = &op_movea,
+	[OP_MOVETMP1] = &op_move,
+	[OP_MOVETMP2] = &op_move,
+	[OP_MOVETMP3] = &op_move,
+	[OP_MOVETMP4] = &op_move,
+	[OP_CHOWN]    = &op_chown,
+	[OP_CHGRP]    = &op_chgrp,
 #ifndef _WIN32
-	op_chmod,    /* OP_CHMOD */
-	op_chmodr,   /* OP_CHMODR */
+	[OP_CHMOD]    = &op_chmod,
+	[OP_CHMODR]   = &op_chmodr,
 #else
-	op_addattr,  /* OP_ADDATTR */
-	op_subattr,  /* OP_SUBATTR */
+	[OP_ADDATTR]  = &op_addattr,
+	[OP_SUBATTR]  = &op_subattr,
 #endif
-	op_symlink,  /* OP_SYMLINK */
-	op_symlink,  /* OP_SYMLINK2 */
-	op_mkdir,    /* OP_MKDIR */
-	op_rmdir,    /* OP_RMDIR */
-	op_mkfile,   /* OP_MKFILE */
+	[OP_SYMLINK]  = &op_symlink,
+	[OP_SYMLINK2] = &op_symlink,
+	[OP_MKDIR]    = &op_mkdir,
+	[OP_RMDIR]    = &op_rmdir,
+	[OP_MKFILE]   = &op_mkfile,
 };
 ARRAY_GUARD(op_funcs, OP_COUNT);
 

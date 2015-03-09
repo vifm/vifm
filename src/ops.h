@@ -21,6 +21,7 @@
 
 #include "io/ioeta.h"
 
+/* Kinds of operations on files. */
 typedef enum
 {
 	OP_NONE,
