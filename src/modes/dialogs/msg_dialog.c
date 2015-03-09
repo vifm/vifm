@@ -68,6 +68,7 @@ static int prompt_error_msg_internal(const char title[], const char message[],
 static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
+static const char * get_control_msg(Dialog msg_kind, int global_skip);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -311,7 +312,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	int sx, sy;
 	int x, y;
 	int z;
-	const char *text;
+	const char *control_msg;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -382,21 +383,29 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	if(title[0] != '\0')
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
+	control_msg = get_control_msg(msg_kind, ctrl_c);
+	mvwaddstr(error_win, y - 2, (x - strlen(control_msg))/2, control_msg);
+
+	wrefresh(error_win);
+}
+
+/* Picks control message (information on available actions) basing on dialog
+ * kind and previous actions.  Returns the message. */
+static const char *
+get_control_msg(Dialog msg_kind, int global_skip)
+{
 	if(msg_kind == D_QUERY)
 	{
-		text = "Enter [y]es or [n]o";
+		return "Enter [y]es or [n]o";
 	}
-	else if(ctrl_c)
+	else if(global_skip)
 	{
-		text = "Press Return to continue or Ctrl-C to skip other error messages";
+		return "Press Return to continue or Ctrl-C to skip other error messages";
 	}
 	else
 	{
-		text = "Press Return to continue";
+		return "Press Return to continue";
 	}
-	mvwaddstr(error_win, y - 2, (x - strlen(text))/2, text);
-
-	wrefresh(error_win);
 }
 
 int
