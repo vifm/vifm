@@ -51,9 +51,11 @@ typedef enum
 	R_CANCEL, /* Cancelled. */
 	R_YES,    /* Confirmed. */
 	R_NO,     /* Denied. */
+	R_CUSTOM, /* One of user-specified keys. */
 }
 Result;
 
+static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
@@ -65,10 +67,13 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
+static void prompt_msg_internal(const char title[], const char message[],
+		const response_variant variants[]);
 static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
+static const char * get_custom_control_msg(const response_variant responses[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -93,15 +98,41 @@ static int accept_mask;
 /* Type of active dialog message. */
 static Dialog msg_kind;
 
+/* Possible responses for custom prompt message. */
+static const response_variant *responses;
+/* One of user-defined input keys. */
+static char custom_result;
+
 void
 init_msg_dialog_mode(void)
 {
 	int ret_code;
 
+	set_def_handler(MSG_MODE, def_handler);
+
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
 	assert(ret_code == 0 && "Failed to register msg dialog keys.");
 
 	(void)ret_code;
+}
+
+/* Handles all keys uncaught by shortcuts.  Returns zero on success and non-zero
+ * on error. */
+static int
+def_handler(wchar_t key)
+{
+	const response_variant *response = responses;
+	while(response != NULL && response->key != '\0')
+	{
+		if(response->key == key)
+		{
+			custom_result = key;
+			leave(R_CUSTOM);
+			break;
+		}
+		++response;
+	}
+	return 0;
 }
 
 /* Cancels the query. */
@@ -144,10 +175,22 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 handle_response(Result r)
 {
-	/* Stay in message mode unless such result is not expected. */
-	if(accept_mask & MASK(r))
+	/* Map result to corresponding input key to omit branching per handler. */
+	static const char r_to_c[] = {
+		[R_OK]     = '\r',
+		[R_CANCEL] = '\x03',
+		[R_YES]    = 'y',
+		[R_NO]     = 'n',
+	};
+
+	(void)def_handler(r_to_c[r]);
+	/* Default handler might have requested quitting. */
+	if(!quit)
 	{
-		leave(r);
+		if(accept_mask & MASK(r))
+		{
+			leave(r);
+		}
 	}
 }
 
@@ -258,8 +301,27 @@ prompt_error_msg_internal(const char title[], const char message[],
 int
 prompt_msg(const char title[], const char message[])
 {
+	prompt_msg_internal(title, message, NULL);
+	return result == R_YES;
+}
+
+char
+prompt_msg_custom(const char title[], const char message[],
+		const response_variant variants[])
+{
+	assert(variants[0].key != '\0' && "Variants should have at least one item.");
+	prompt_msg_internal(title, message, variants);
+	return custom_result;
+}
+
+/* Common implementation of prompt message.  The variants can be NULL. */
+static void
+prompt_msg_internal(const char title[], const char message[],
+		const response_variant variants[])
+{
 	char *dup = strdup(message);
 
+	responses = variants;
 	msg_kind = D_QUERY;
 
 	redraw_error_msg(title, message, 0);
@@ -276,9 +338,9 @@ prompt_msg(const char title[], const char message[])
 	update_all_windows();
 
 	if(curr_stats.need_update != UT_NONE)
+	{
 		update_screen(UT_FULL);
-
-	return result == R_YES;
+	}
 }
 
 /* Enters the mode, which won't be left until one of expected results specified
@@ -399,16 +461,43 @@ get_control_msg(Dialog msg_kind, int global_skip)
 {
 	if(msg_kind == D_QUERY)
 	{
-		return "Enter [y]es or [n]o";
+		if(responses == NULL)
+		{
+			return "Enter [y]es or [n]o";
+		}
+
+		return get_custom_control_msg(responses);
 	}
 	else if(global_skip)
 	{
 		return "Press Return to continue or Ctrl-C to skip other error messages";
 	}
-	else
+
+	return "Press Return to continue";
+}
+
+/* Formats dialog control message for custom set of responses.  Returns pointer
+ * to statically allocated buffer. */
+static const char *
+get_custom_control_msg(const response_variant responses[])
+{
+	static char msg_buf[256];
+
+	const response_variant *response = responses;
+	size_t len = 0U;
+	msg_buf[0] = '\0';
+	while(response != NULL && response->key != '\0')
 	{
-		return "Press Return to continue";
+		(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
+		if(response[1].key != '\0')
+		{
+			(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
+		}
+
+		++response;
 	}
+
+	return msg_buf;
 }
 
 int

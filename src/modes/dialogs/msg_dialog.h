@@ -24,6 +24,14 @@
 
 #include <stdio.h> /* FILE */
 
+/* Definition of a dialog option. */
+typedef struct
+{
+	char key;          /* Corresponding key. */
+	const char *descr; /* Description to be displayed. */
+}
+response_variant;
+
 /* Initializes message dialog mode. */
 void init_msg_dialog_mode(void);
 
@@ -47,6 +55,12 @@ int prompt_error_msgf(const char title[], const char format[], ...);
 /* Asks user to confirm some action by answering "Yes" or "No".  Returns
  * non-zero when user answers yes, otherwise zero is returned. */
 int prompt_msg(const char title[], const char message[]);
+
+/* Same as prompt_msg() but with custom list of options.  The responses array
+ * should be terminated with a record filled with zeroes.  Returns one of keys
+ * defined in the array.  The array has to contain at least one element. */
+char prompt_msg_custom(const char title[], const char message[],
+		const response_variant variants[]);
 
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */
