@@ -1719,7 +1719,7 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 	wchar_t *wargs = to_wide(cmd_info->args);
 	wchar_t *rhs = wargs;
 
-	while(cfg_is_keyword_wchar(*rhs))
+	while(cfg_is_word_wchar(*rhs))
 	{
 		++rhs;
 	}

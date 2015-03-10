@@ -189,12 +189,12 @@ cfg_init(void)
 	cfg.timeout_len = 1000;
 	cfg.min_timeout_len = 150;
 
-	/* Fill cfg.is_keyword as if it was initialized from isspace() fuction. */
-	memset(&cfg.is_keyword, 1, sizeof(cfg.is_keyword));
-	cfg.is_keyword['\x00'] = 0; cfg.is_keyword['\x09'] = 0;
-	cfg.is_keyword['\x0a'] = 0; cfg.is_keyword['\x0b'] = 0;
-	cfg.is_keyword['\x0c'] = 0; cfg.is_keyword['\x0d'] = 0;
-	cfg.is_keyword['\x20'] = 0;
+	/* Fill cfg.word_chars as if it was initialized from isspace() fuction. */
+	memset(&cfg.word_chars, 1, sizeof(cfg.word_chars));
+	cfg.word_chars['\x00'] = 0; cfg.word_chars['\x09'] = 0;
+	cfg.word_chars['\x0a'] = 0; cfg.word_chars['\x0b'] = 0;
+	cfg.word_chars['\x0c'] = 0; cfg.word_chars['\x0d'] = 0;
+	cfg.word_chars['\x20'] = 0;
 
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
@@ -918,9 +918,9 @@ cfg_set_shell(const char shell[])
 }
 
 int
-cfg_is_keyword_wchar(wchar_t c)
+cfg_is_word_wchar(wchar_t c)
 {
-	return c >= 256 || cfg.is_keyword[c];
+	return c >= 256 || cfg.word_chars[c];
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

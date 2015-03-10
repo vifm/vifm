@@ -68,7 +68,7 @@
 
 	Added Ctrl-] command-line key to trigger abbreviation expansion.
 
-	Added 'iskeyword' option to specify which characters in command-line mode
+	Added 'wordchars' option to specify which characters in command-line mode
 	should be considered as part of a word.  Thanks to filterfalse.
 
 	Added command-line mode abbreviations and :cabbrev, :cnoreabbrev and

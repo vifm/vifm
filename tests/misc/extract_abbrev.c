@@ -18,7 +18,7 @@ SETUP()
 	int i;
 	for(i = 0; i < 255; ++i)
 	{
-		cfg.is_keyword[i] = !iswspace(i);
+		cfg.word_chars[i] = !iswspace(i);
 	}
 
 	assert_int_equal(0, vle_abbr_add_no_remap(L"x", L"y"));

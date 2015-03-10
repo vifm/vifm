@@ -76,7 +76,6 @@ optinit_t;
 
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
-static void init_iskeyword(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
@@ -89,6 +88,7 @@ static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
 static void init_viewcolumns(optval_t *val);
+static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
 static void aproposprg_handler(OPT_OP op, optval_t val);
@@ -116,7 +116,6 @@ static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
-static void iskeyword_handler(OPT_OP op, optval_t val);
 static int parse_range(const char range[], int *from, int *to);
 static int parse_endpoint(const char **str, int *endpoint);
 static void laststatus_handler(OPT_OP op, optval_t val);
@@ -162,6 +161,7 @@ static void vixcmd_handler(OPT_OP op, optval_t val);
 static void vifminfo_handler(OPT_OP op, optval_t val);
 static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
+static void wordchars_handler(OPT_OP op, optval_t val);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
@@ -361,10 +361,6 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &incsearch_handler ,
 	  { .ref.bool_val = &cfg.inc_search },
 	},
-	{ "iskeyword", "isk",
-	  OPT_STRLIST, 0, NULL, &iskeyword_handler,
-	  { .init = &init_iskeyword },
-	},
 	{ "laststatus", "ls",
 	  OPT_BOOL, 0, NULL, &laststatus_handler,
 	  { .ref.bool_val = &cfg.display_statusline },
@@ -475,6 +471,10 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &wildmenu_handler,
 	  { .ref.bool_val = &cfg.wild_menu },
 	},
+	{ "wordchars", "",
+	  OPT_STRLIST, 0, NULL, &wordchars_handler,
+	  { .init = &init_wordchars },
+	},
 	{ "wrap", "",
 	  OPT_BOOL, 0, NULL, &wrap_handler,
 	  { .ref.bool_val = &cfg.wrap_quick_view },
@@ -574,59 +574,6 @@ init_cpoptions(optval_t *val)
 	val->str_val = buf;
 }
 
-/* Formats 'iskeyword' initial value from cfg.is_keyword array. */
-static void
-init_iskeyword(optval_t *val)
-{
-	static char *str;
-
-	int i;
-	size_t len;
-
-	len = 0U;
-	i = 0;
-	while(i < sizeof(cfg.is_keyword))
-	{
-		int l, r;
-
-		while(i < sizeof(cfg.is_keyword) && !cfg.is_keyword[i])
-		{
-			++i;
-		}
-		l = i;
-		while(i < sizeof(cfg.is_keyword) && cfg.is_keyword[i])
-		{
-			++i;
-		}
-		r = i - 1;
-
-		if(l < sizeof(cfg.is_keyword))
-		{
-			char left[16];
-			char right[16];
-			char range[32];
-
-			if(len != 0U)
-			{
-				(void)strappendch(&str, &len, ',');
-			}
-
-			if(r == l)
-			{
-				snprintf(range, sizeof(range), "%s", to_endpoint(l, left));
-			}
-			else
-			{
-				snprintf(range, sizeof(range), "%s-%s", to_endpoint(l, left),
-						to_endpoint(r, right));
-			}
-			(void)strappend(&str, &len, range);
-		}
-	}
-
-	val->str_val = str;
-}
-
 /* Convenience function to format an endpoint inside the buffer, which should be
  * large enough.  Returns the buffer. */
 static const char *
@@ -711,6 +658,59 @@ static void
 init_viewcolumns(optval_t *val)
 {
 	val->str_val = "";
+}
+
+/* Formats 'wordchars' initial value from cfg.word_chars array. */
+static void
+init_wordchars(optval_t *val)
+{
+	static char *str;
+
+	int i;
+	size_t len;
+
+	len = 0U;
+	i = 0;
+	while(i < sizeof(cfg.word_chars))
+	{
+		int l, r;
+
+		while(i < sizeof(cfg.word_chars) && !cfg.word_chars[i])
+		{
+			++i;
+		}
+		l = i;
+		while(i < sizeof(cfg.word_chars) && cfg.word_chars[i])
+		{
+			++i;
+		}
+		r = i - 1;
+
+		if(l < sizeof(cfg.word_chars))
+		{
+			char left[16];
+			char right[16];
+			char range[32];
+
+			if(len != 0U)
+			{
+				(void)strappendch(&str, &len, ',');
+			}
+
+			if(r == l)
+			{
+				snprintf(range, sizeof(range), "%s", to_endpoint(l, left));
+			}
+			else
+			{
+				snprintf(range, sizeof(range), "%s-%s", to_endpoint(l, left),
+						to_endpoint(r, right));
+			}
+			(void)strappend(&str, &len, range);
+		}
+	}
+
+	val->str_val = str;
 }
 
 static void
@@ -1175,37 +1175,6 @@ static void
 incsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.inc_search = val.bool_val;
-}
-
-/* Handles setting value of 'iskeyword' by parsing list of ranges into character
- * array. */
-static void
-iskeyword_handler(OPT_OP op, optval_t val)
-{
-	char is_keyword[256] = { };
-
-	char *new_val = strdup(val.str_val);
-	char *part = new_val, *state = NULL;
-	while((part = split_and_get(part, ',', &state)) != NULL)
-	{
-		int from, to;
-		if(parse_range(part, &from, &to) != 0)
-		{
-			error = 1;
-			break;
-		}
-
-		while(from < to)
-		{
-			is_keyword[from++] = 1;
-		}
-	}
-	free(new_val);
-
-	if(part == NULL)
-	{
-		memcpy(&cfg.is_keyword, &is_keyword, sizeof(cfg.is_keyword));
-	}
 }
 
 /* Parses range, which can be shortened to single endpoint if first element
@@ -1831,6 +1800,37 @@ static void
 wildmenu_handler(OPT_OP op, optval_t val)
 {
 	cfg.wild_menu = val.bool_val;
+}
+
+/* Handles setting value of 'wordchars' by parsing list of ranges into character
+ * array. */
+static void
+wordchars_handler(OPT_OP op, optval_t val)
+{
+	char word_chars[256] = { };
+
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		int from, to;
+		if(parse_range(part, &from, &to) != 0)
+		{
+			error = 1;
+			break;
+		}
+
+		while(from < to)
+		{
+			word_chars[from++] = 1;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		memcpy(&cfg.word_chars, &word_chars, sizeof(cfg.word_chars));
+	}
 }
 
 static void
