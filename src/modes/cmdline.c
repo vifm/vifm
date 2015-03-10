@@ -398,7 +398,13 @@ input_line_changed(void)
 	static wchar_t *previous;
 
 	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != CLS_FILTER))
+	{
 		return;
+	}
+
+	/* Hide cursor during view update, otherwise user might notice it blinking in
+	 * wrong place. */
+	curs_set(FALSE);
 
 	set_view_port();
 
@@ -471,6 +477,8 @@ input_line_changed(void)
 	{
 		menu_redraw();
 	}
+
+	curs_set(TRUE);
 }
 
 /* Updates value of the local filter of the current view. */
@@ -581,9 +589,9 @@ redraw_cmdline(void)
 	}
 
 	line_width = getmaxx(stdscr);
-	curs_set(TRUE);
 	update_cmdline_size();
 	update_cmdline_text();
+	curs_set(TRUE);
 
 	if(input_stat.complete_continue && cfg.wild_menu)
 	{
@@ -632,10 +640,9 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.prompt_wid = wcslen(input_stat.prompt);
 	input_stat.curs_pos += input_stat.prompt_wid;
 
-	curs_set(TRUE);
-
 	update_cmdline_size();
 	update_cmdline_text();
+	curs_set(TRUE);
 
 	curr_stats.save_msg = 1;
 
