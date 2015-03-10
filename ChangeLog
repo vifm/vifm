@@ -77,6 +77,9 @@
 	Added per-file overwrite confirmation on directory merging.  Thanks to
 	willemw12.
 
+	Changed default value of 'trashdir' from "$VIFM/Trash" to
+	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
@@ -199,6 +202,9 @@
 	Fixed command execution in network share on Windows.  cmd.exe fails for
 	UNC paths, trick it by running command in temporary directory.  Thanks to
 	Robert Sarkozi.
+
+	Fixed UI glitch when one could notice cursor blinking in the view while
+	typing search pattern on the command-line with 'incsearch' being set.
 
 0.7.8-beta to 0.7.8
 
