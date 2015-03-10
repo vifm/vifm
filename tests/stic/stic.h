@@ -161,12 +161,19 @@ struct stic_test_data
 
 /* Test declaration macros. */
 
-#define IF(...) .p = __VA_ARGS__,
-
 #ifdef TEST
 # undef TEST
 #endif
-#define TEST(name, ...) \
+
+#if __STDC_VERSION__ >= 199901L || (__GNUC__ >= 4 && !defined(__STRICT_ANSI__))
+#define STIC_C99
+#endif
+
+#ifdef STIC_C99
+
+# define IF(...) .p = __VA_ARGS__,
+
+# define TEST(name, ...) \
     static void name(void); \
     static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
         .n = #name, \
@@ -176,6 +183,20 @@ struct stic_test_data
     }; \
     static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
     static void name(void)
+
+#else
+
+# define TEST(name) \
+    static void name(void); \
+    static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
+        /* .n = */ #name, \
+        /* .t = */ &name, \
+        /* .f = */ __FILE__ \
+    }; \
+    static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
+    static void name(void)
+
+#endif
 
 /* Setup/teardown declaration macros. */
 
