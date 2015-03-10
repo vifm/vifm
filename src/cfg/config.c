@@ -453,7 +453,8 @@ store_config_paths(void)
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
+			cfg.config_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
 }
 

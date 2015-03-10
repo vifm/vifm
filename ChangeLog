@@ -77,6 +77,9 @@
 	Added per-file overwrite confirmation on directory merging.  Thanks to
 	willemw12.
 
+	Changed default value of 'trashdir' from "$VIFM/Trash" to
+	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
+
 	Made calculation of directory size visible in :jobs menu.
 
 	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
