@@ -339,6 +339,10 @@ process_scheduled_updates_of_view(FileView *view)
 			break;
 		case UUE_RELOAD:
 			load_saving_pos(view, 1);
+			if(view == curr_view && !is_status_bar_multiline())
+			{
+				ui_ruler_update(view);
+			}
 			break;
 		case UUE_FULL_RELOAD:
 			load_saving_pos(view, 0);
