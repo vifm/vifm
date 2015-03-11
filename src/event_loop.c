@@ -361,7 +361,7 @@ should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
-	    && !vle_mode_is(CMDLINE_MODE);
+	    && NONE(vle_mode_is, CMDLINE_MODE, MSG_MODE);
 }
 
 /* Updates view in case directory it displays was changed externally. */
