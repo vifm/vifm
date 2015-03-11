@@ -271,6 +271,7 @@ static int source_cmd(const cmd_info_t *cmd_info);
 static int split_cmd(const cmd_info_t *cmd_info);
 static int substitute_cmd(const cmd_info_t *cmd_info);
 static int sync_cmd(const cmd_info_t *cmd_info);
+static void sync_location(const char path[], int sync_cursor_pos);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
@@ -3923,25 +3924,35 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", curr_view->curr_dir,
 			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
+	sync_location(dst_path, cmd_info->emark);
 
-	if(cd_is_possible(dst_path) && change_directory(other_view, dst_path) >= 0)
-	{
-		populate_dir_list(other_view, 0);
-
-		if(cmd_info->emark)
-		{
-			const int offset = (curr_view->list_pos - curr_view->top_line);
-			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
-			other_view->top_line = curr_view->list_pos - shift;
-			other_view->list_pos = curr_view->list_pos;
-			(void)consider_scroll_offset(other_view);
-
-			save_view_history(other_view, NULL, NULL, -1);
-		}
-
-		redraw_view(other_view);
-	}
 	return 0;
+}
+
+/* Mirrors location (directory and maybe cursor position) of the current view
+ * with the other one. */
+static void
+sync_location(const char path[], int sync_cursor_pos)
+{
+	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
+	{
+		return;
+	}
+
+	populate_dir_list(other_view, 0);
+
+	if(sync_cursor_pos)
+	{
+		const int offset = (curr_view->list_pos - curr_view->top_line);
+		const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
+		other_view->top_line = curr_view->list_pos - shift;
+		other_view->list_pos = curr_view->list_pos;
+		(void)consider_scroll_offset(other_view);
+
+		save_view_history(other_view, NULL, NULL, -1);
+	}
+
+	ui_view_schedule_redraw(other_view);
 }
 
 static int
