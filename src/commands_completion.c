@@ -98,17 +98,11 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 	/* TODO: Refactor this function complete_args() */
 
 	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
-	const char *arg;
-	const char *start;
-	const char *slash;
-	const char *dollar;
-	const char *ampersand;
-
-	arg = after_last(args, ' ');
-	start = arg;
-	slash = strrchr(args + arg_pos, '/');
-	dollar = strrchr(arg, '$');
-	ampersand = strrchr(arg, '&');
+	const char *arg = after_last(args, ' ');
+	const char *start = arg;
+	const char *slash = strrchr(args + arg_pos, '/');
+	const char *dollar = strrchr(arg, '$');
+	const char *ampersand = strrchr(arg, '&');
 
 	if(id == COM_SET)
 	{
@@ -317,37 +311,26 @@ complete_help(const char *str)
 	vle_compl_add_last_match(str);
 }
 
+/* Completes available kinds of histories. */
 static void
 complete_history(const char str[])
 {
-	static const char *lines[] =
-	{
-		".",
-		"dir",
-		"@",
-		"input",
-		"/",
-		"search",
-		"fsearch",
-		"?",
-		"bsearch",
-		":",
-		"cmd",
-		"=",
-		"filter",
+	static const char *lines[] = {
+		".", "dir",
+		"@", "input",
+		"/", "search", "fsearch",
+		"?", "bsearch",
+		":", "cmd",
+		"=", "filter",
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
+/* Completes available inversion kinds. */
 static void
 complete_invert(const char str[])
 {
-	static const char *lines[] =
-	{
-		"f",
-		"s",
-		"o",
-	};
+	static const char *lines[] = {"f", "s", "o"};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
