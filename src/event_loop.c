@@ -339,6 +339,10 @@ process_scheduled_updates_of_view(FileView *view)
 			break;
 		case UUE_RELOAD:
 			load_saving_pos(view, 1);
+			if(view == curr_view && !is_status_bar_multiline())
+			{
+				ui_ruler_update(view);
+			}
 			break;
 		case UUE_FULL_RELOAD:
 			load_saving_pos(view, 0);
@@ -357,7 +361,7 @@ should_check_views_for_changes(void)
 {
 	return !is_status_bar_multiline()
 	    && !is_in_menu_like_mode()
-	    && !vle_mode_is(CMDLINE_MODE);
+	    && NONE(vle_mode_is, CMDLINE_MODE, MSG_MODE);
 }
 
 /* Updates view in case directory it displays was changed externally. */

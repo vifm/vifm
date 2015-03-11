@@ -337,6 +337,8 @@ void check_marking(FileView *view, int count, const int indexes[]);
 void mark_files_at(FileView *view, int count, const int indexes[]);
 /* Marks selected files of the view. */
 void mark_selected(FileView *view);
+/* Enables/disables ls-like style of the view. */
+void fview_set_lsview(FileView *view, int enabled);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

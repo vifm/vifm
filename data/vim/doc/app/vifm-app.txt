@@ -1908,6 +1908,14 @@ particular the second column of the view will be changed).
     macros is allowed.
 :sync! - change the other pane to the current pane directory and
     synchronize cursor position.
+:sync! [location | cursorpos | localopts | filters | all]... - change
+    enumerated properties of the other pane to match corresponding properties
+    of the current pane.  Arguments have the following meanings:
+     - location - current directory of the pane;
+     - cursorpos - cursor position (doesn't make sense without "location");
+     - localopts - all local options;
+     - filters - all filters;
+     - all - all of the above.
 
                                                *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.

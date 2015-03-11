@@ -766,6 +766,17 @@ load_local_options(FileView *view)
 }
 
 void
+clone_local_options(const FileView *from, FileView *to)
+{
+	to->view_columns = from->view_columns;
+	to->num_width = from->num_width;
+	to->num_type = from->num_type;
+
+	memcpy(to->sort, from->sort, sizeof(to->sort));
+	fview_set_lsview(to, from->ls_view);
+}
+
+void
 load_sort_option(FileView *view)
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
@@ -1411,28 +1422,11 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	redraw_lists();
 }
 
-/* Handles switch that controls columns vs. list like view. */
+/* Handles switch that controls column vs. ls-like view. */
 static void
 lsview_handler(OPT_OP op, optval_t val)
 {
-	curr_view->ls_view = val.bool_val;
-
-	if(curr_view->ls_view)
-	{
-		column_info_t column_info =
-		{
-			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
-		};
-
-		columns_clear(curr_view->columns);
-		columns_add_column(curr_view->columns, column_info);
-		redraw_current_view();
-	}
-	else
-	{
-		load_view_columns_option(curr_view, curr_view->view_columns);
-	}
+	fview_set_lsview(curr_view, val.bool_val);
 }
 
 /* Handles file numbers displaying toggle. */

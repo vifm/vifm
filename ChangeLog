@@ -115,6 +115,10 @@
 	Don't lose previously saved filter on repeated resetting (pressing zO twice
 	in a row caused previous filter values to be lost).
 
+	Extended :sync command to support selective synchronization (user can
+	choose among location, cursor position, local options and filters).
+	Thanks to filterfalse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

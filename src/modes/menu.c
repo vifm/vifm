@@ -46,8 +46,8 @@
 
 static const int SCROLL_GAP = 2;
 
-static int complete_args(int id, const char *args, int argc, char **argv,
-		int arg_pos, void *arg);
+static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * menu_expand_macros(const char *str, int for_shell, int *usr1,
@@ -190,8 +190,7 @@ static cmds_conf_t cmds_conf = {
 };
 
 static int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos,
-		void *arg)
+complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	return 0;
 }

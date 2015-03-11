@@ -8,8 +8,8 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 
-static int complete_args(int id, const char *args, int argc, char **argv,
-		int arg_pos, void *extra_arg);
+static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char *str, int for_shell, int *usr1,
@@ -58,8 +58,7 @@ TEARDOWN()
 }
 
 static int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos,
-		void *extra_arg)
+complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	const char *arg;
 
@@ -69,12 +68,12 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos,
 	vle_compl_finish_group();
 	vle_compl_add_last_match("f");
 
-	arg = strrchr(args, ' ');
+	arg = strrchr(cmd_info->args, ' ');
 	if(arg == NULL)
-		arg = args;
+		arg = cmd_info->args;
 	else
 		arg++;
-	return arg - args;
+	return arg - cmd_info->args;
 }
 
 static int

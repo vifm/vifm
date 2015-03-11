@@ -4306,5 +4306,32 @@ mark_selected(FileView *view)
 	}
 }
 
+void
+fview_set_lsview(FileView *view, int enabled)
+{
+	if(view->ls_view == enabled)
+	{
+		return;
+	}
+
+	view->ls_view = enabled;
+
+	if(view->ls_view)
+	{
+		column_info_t column_info = {
+			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+		};
+
+		columns_clear(view->columns);
+		columns_add_column(view->columns, column_info);
+		ui_view_schedule_redraw(view);
+	}
+	else
+	{
+		load_view_columns_option(view, view->view_columns);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

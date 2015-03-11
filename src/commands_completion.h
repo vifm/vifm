@@ -86,9 +86,10 @@ typedef enum
 }
 CompletionPreProcessing;
 
-/* argv isn't array of pointers to constant strings to omit type conversion. */
-int complete_args(int id, const char args[], int argc, char *argv[],
-		int arg_pos, void *extra_arg);
+typedef struct cmd_info_t cmd_info_t;
+
+int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+		void *extra_arg);
 
 /* Completes name of an executable after extracting it from the cmd.  Returns
  * NULL and sets statusbar error message when command is ambiguous, otherwise

@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "compat/os.h"
 #include "engine/abbrevs.h"
+#include "engine/cmds.h"
 #include "engine/completion.h"
 #include "engine/functions.h"
 #include "engine/options.h"
@@ -69,6 +70,7 @@
 
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
+static void complete_selective_sync(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
@@ -92,23 +94,21 @@ static void complete_with_shared(const char *server, const char *file);
 #endif
 
 int
-complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
-		void *extra_arg)
+complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	/* TODO: Refactor this function complete_args() */
 
 	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
-	const char *arg;
-	const char *start;
-	const char *slash;
-	const char *dollar;
-	const char *ampersand;
 
-	arg = after_last(args, ' ');
-	start = arg;
-	slash = strrchr(args + arg_pos, '/');
-	dollar = strrchr(arg, '$');
-	ampersand = strrchr(arg, '&');
+	const char *const args = cmd_info->args;
+	int argc = cmd_info->argc;
+	char **const argv = cmd_info->argv;
+
+	const char *arg = after_last(args, ' ');
+	const char *start = arg;
+	const char *slash = strrchr(args + arg_pos, '/');
+	const char *dollar = strrchr(arg, '$');
+	const char *ampersand = strrchr(arg, '&');
 
 	if(id == COM_SET)
 	{
@@ -225,8 +225,18 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
 		{
 			complete_colorscheme(arg, arg_num);
 		}
-		else if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC ||
-				id == COM_MKDIR)
+		else if(id == COM_SYNC)
+		{
+			if(cmd_info->emark)
+			{
+				complete_selective_sync(arg);
+			}
+			else
+			{
+				filename_completion(arg, CT_DIRONLY);
+			}
+		}
+		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)
 		{
 			filename_completion(arg, CT_DIRONLY);
 		}
@@ -296,6 +306,21 @@ complete_colorscheme(const char *str, size_t arg_num)
 	}
 }
 
+/* Completes properties for selective synchronization. */
+static void
+complete_selective_sync(const char str[])
+{
+	static const char *lines[] = {
+		"location",
+		"cursorpos",
+		"localopts",
+		"filters",
+		"all",
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+}
+
 static void
 complete_help(const char *str)
 {
@@ -317,37 +342,26 @@ complete_help(const char *str)
 	vle_compl_add_last_match(str);
 }
 
+/* Completes available kinds of histories. */
 static void
 complete_history(const char str[])
 {
-	static const char *lines[] =
-	{
-		".",
-		"dir",
-		"@",
-		"input",
-		"/",
-		"search",
-		"fsearch",
-		"?",
-		"bsearch",
-		":",
-		"cmd",
-		"=",
-		"filter",
+	static const char *lines[] = {
+		".", "dir",
+		"@", "input",
+		"/", "search", "fsearch",
+		"?", "bsearch",
+		":", "cmd",
+		"=", "filter",
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
+/* Completes available inversion kinds. */
 static void
 complete_invert(const char str[])
 {
-	static const char *lines[] =
-	{
-		"f",
-		"s",
-		"o",
-	};
+	static const char *lines[] = {"f", "s", "o"};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 

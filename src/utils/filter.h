@@ -58,6 +58,10 @@ void filter_clear(filter_t *filter);
  * returned. */
 int filter_set(filter_t *filter, const char value[]);
 
+/* Assigns *source to *filter.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int filter_assign(filter_t *filter, const filter_t *source);
+
 /* Sets filter and its case sensitivity to given values.  Case sensitivity is
  * updated even on error.  Returns zero on success, otherwise non-zero is
  * returned. */
