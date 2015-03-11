@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 10
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1903,10 +1903,10 @@ particular the second column of the view will be changed).
     directories that are cleared when |vifm-:empty| command is executed.
 
                                                *vifm-:sync*
-:sync [relative path] - change the other panel to the current panel
+:sync [relative path] - change the other pane to the current pane
     directory or to some path relative to the current directory.  Using
     macros is allowed.
-:sync! - change the other panel to the current panel directory and
+:sync! - change the other pane to the current pane directory and
     synchronize cursor position.
 
                                                *vifm-:undolist* *vifm-:undol*
@@ -3708,7 +3708,7 @@ tree types are supported:
 
 The color schemes in vifm can be applied in two different ways:
    - as the primary color scheme
-   - as local to a panel color scheme
+   - as local to a pane color scheme
 
 Both types are set using |vifm-:colorscheme| command, but of different forms:
    - :colorscheme color_scheme_name - for the primary color scheme
