@@ -100,6 +100,26 @@ filter_set(filter_t *filter, const char value[])
 }
 
 int
+filter_assign(filter_t *filter, const filter_t *source)
+{
+	filter_t tmp;
+	if(filter_init(&tmp, !(source->cflags & REG_ICASE)) != 0)
+	{
+		return 1;
+	}
+
+	if(filter_set(&tmp, source->raw) != 0)
+	{
+		filter_clear(&tmp);
+		return 1;
+	}
+
+	filter_dispose(filter);
+	*filter = tmp;
+	return 0;
+}
+
+int
 filter_change(filter_t *filter, const char value[], int case_sensitive)
 {
 	if(case_sensitive)
