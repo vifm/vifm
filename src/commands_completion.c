@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "compat/os.h"
 #include "engine/abbrevs.h"
+#include "engine/cmds.h"
 #include "engine/completion.h"
 #include "engine/functions.h"
 #include "engine/options.h"
@@ -92,12 +93,16 @@ static void complete_with_shared(const char *server, const char *file);
 #endif
 
 int
-complete_args(int id, const char args[], int argc, char *argv[], int arg_pos,
-		void *extra_arg)
+complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
 	/* TODO: Refactor this function complete_args() */
 
 	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
+
+	const char *const args = cmd_info->args;
+	int argc = cmd_info->argc;
+	char **const argv = cmd_info->argv;
+
 	const char *arg = after_last(args, ' ');
 	const char *start = arg;
 	const char *slash = strrchr(args + arg_pos, '/');

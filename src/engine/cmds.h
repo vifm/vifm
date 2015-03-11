@@ -58,7 +58,8 @@ enum
 
 /* Detailed information resulted from command parsing, which is passed to
  * command handler (cmd_handler). */
-typedef struct
+typedef struct cmd_info_t cmd_info_t;
+struct cmd_info_t
 {
 	int begin, end; /* Parsed range of the command. */
 	int emark, qmark, bg;
@@ -70,8 +71,7 @@ typedef struct
 	char **argv;
 
 	const char *cmd; /* for user defined commands */
-}
-cmd_info_t;
+};
 
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
@@ -103,9 +103,9 @@ typedef struct
 	int end;     /* The highest valid number of the range. */
 
 	/* Argument completion function.  arg is user supplied value, which is passed
-	 * through. */
-	int (*complete_args)(int id, const char args[], int argc, char *argv[],
-			int arg_pos, void *arg);
+	 * through.  The functions must not modify any strings passed to it. */
+	int (*complete_args)(int id, const cmd_info_t *cmd_info, int arg_pos,
+			void *arg);
 
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */

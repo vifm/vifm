@@ -752,8 +752,12 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		int last_arg = 0;
 
 		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL, NULL);
-		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg,
-				arg);
+
+		cmd_info->args = (char *)args;
+		cmd_info->argc = argc;
+		cmd_info->argv = argv;
+		result += cmds_conf->complete_args(cur->id, cmd_info, last_arg, arg);
+
 		free_string_array(argv, argc);
 	}
 	return result;
