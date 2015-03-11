@@ -1,4 +1,4 @@
-.TH vifm 1 "March 10, 2015" "" "Vifm"
+.TH vifm 1 "March 11, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2254,11 +2254,11 @@ will repeat previous substitution command.
 .BI "                                         :sync"
 .TP
 .BI ":sync [relative path]"
-change the other panel to the current panel directory or to some path relative
+change the other pane to the current pane directory or to some path relative
 to the current directory.  Using macros is allowed.
 .TP
 .BI ":sync!"
-change the other panel to the current panel directory and synchronize cursor
+change the other pane to the current pane directory and synchronize cursor
 position.
 .TP
 .BI "                                         :touch"
@@ -3041,32 +3041,6 @@ When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
 .TP
-.BI "iskeyword isk"
-type: string list
-.br
-default: "1-8,14-31,33-255" (that is all non-whitespace characters)
-.br
-Specifies which characters in command-line mode should be considered as part
-of a word.  Value of the option is comma-separated list of ranges.  If both
-endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
-Both endpoints are inclusive.  There are two accepted forms: character
-representing itself or number encoding character according to ASCII table.
-In case of ambiguous characters (dash, comma, digit) use numeric form.
-Accepted characters are in the range from 0 to 255.  Any Unicode character
-with code greater than 255 is considered to be part of a word.
-
-The option affects Alt-D, Alt-B and Alt-F, but not Ctrl-W.  This is
-intensionaly to allow two use cases:
-
- \- Moving by WORDS and deletion by words.
- \- Moving by words and deletion by WORDS.
-
-To get the latter use the following mapping:
-.EX
-    cnoremap <c-w> <a-b><a-d>
-.EE
-Also used for abbreviations.
-.TP
 .BI "laststatus ls"
 type: boolean
 .br
@@ -3555,6 +3529,32 @@ default: false
 .br
 Controls whether possible matches of completion will be shown above the command
 line.
+.TP
+.BI wordchars
+type: string list
+.br
+default: "1-8,14-31,33-255" (that is all non-whitespace characters)
+.br
+Specifies which characters in command-line mode should be considered as part
+of a word.  Value of the option is comma-separated list of ranges.  If both
+endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
+Both endpoints are inclusive.  There are two accepted forms: character
+representing itself or number encoding character according to ASCII table.
+In case of ambiguous characters (dash, comma, digit) use numeric form.
+Accepted characters are in the range from 0 to 255.  Any Unicode character
+with code greater than 255 is considered to be part of a word.
+
+The option affects Alt-D, Alt-B and Alt-F, but not Ctrl-W.  This is
+intensionaly to allow two use cases:
+
+ \- Moving by WORDS and deletion by words.
+ \- Moving by words and deletion by WORDS.
+
+To get the latter use the following mapping:
+.EX
+    cnoremap <c-w> <a-b><a-d>
+.EE
+Also used for abbreviations.
 .TP
 .BI wrap
 type: boolean
@@ -4466,7 +4466,7 @@ The color schemes in vifm can be applied in two different ways:
 .IP \- 2
 as the primary color scheme
 .IP \- 2
-as local to a panel color scheme
+as local to a pane color scheme
 .LP
 Both types are set using :colorscheme command, but of different forms:
 .IP \- 2

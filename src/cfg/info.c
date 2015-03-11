@@ -901,7 +901,6 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
 	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
-	fprintf(fp, "=iskeyword=%s\n", escape_spaces(get_option_value("iskeyword")));
 	fprintf(fp, "=%slaststatus\n", cfg.display_statusline ? "" : "no");
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
@@ -984,6 +983,7 @@ write_options(FILE *const fp)
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
+	fprintf(fp, "=wordchars=%s\n", escape_spaces(get_option_value("wordchars")));
 	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 

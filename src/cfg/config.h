@@ -151,7 +151,7 @@ typedef struct config_t
 	int timeout_len;     /* Maximum period on waiting for the input. */
 	int min_timeout_len; /* Minimum period on waiting for the input. */
 
-	char is_keyword[256]; /* Whether corresponding character is keyword char. */
+	char word_chars[256]; /* Whether corresponding character is a word char. */
 }
 config_t;
 
@@ -220,7 +220,7 @@ void cfg_set_shell(const char shell[]);
 /* Checks whether given wide character should be considered as part of a word
  * according to current settings.  Returns non-zero if so, otherwise zero is
  * returned. */
-int cfg_is_keyword_wchar(wchar_t c);
+int cfg_is_word_wchar(wchar_t c);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

@@ -315,7 +315,7 @@ def_handler(wchar_t key)
 	if(key != L'\r' && !iswprint(key))
 		return 0;
 
-	if(!cfg_is_keyword_wchar(key))
+	if(!cfg_is_word_wchar(key))
 	{
 		expand_abbrev();
 	}
@@ -1245,7 +1245,7 @@ extract_abbrev(line_stats_t *stat, int *pos, int *no_remap)
 	const wchar_t *abbrev_rhs;
 
 	l = i;
-	while(l > 0 && cfg_is_keyword_wchar(line[l - 1]))
+	while(l > 0 && cfg_is_word_wchar(line[l - 1]))
 	{
 		--l;
 	}
@@ -1789,13 +1789,13 @@ static void
 find_prev_word(void)
 {
 	while(input_stat.index > 0 &&
-			!cfg_is_keyword_wchar(input_stat.line[input_stat.index - 1]))
+			!cfg_is_word_wchar(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
 	}
 	while(input_stat.index > 0 &&
-			cfg_is_keyword_wchar(input_stat.line[input_stat.index - 1]))
+			cfg_is_word_wchar(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.curs_pos -= vifm_wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
@@ -1956,13 +1956,13 @@ static void
 find_next_word(void)
 {
 	while(input_stat.index < input_stat.len
-			&& !cfg_is_keyword_wchar(input_stat.line[input_stat.index]))
+			&& !cfg_is_word_wchar(input_stat.line[input_stat.index]))
 	{
 		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 	while(input_stat.index < input_stat.len
-			&& cfg_is_keyword_wchar(input_stat.line[input_stat.index]))
+			&& cfg_is_word_wchar(input_stat.line[input_stat.index]))
 	{
 		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;

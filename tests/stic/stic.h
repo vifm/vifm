@@ -93,6 +93,9 @@ int stic_testrunner(int argc, char** argv, stic_void_void tests, stic_void_void 
 
 /* Names of variables for storing test descriptions. */
 
+/* Number of the last line on which test may be defined. */
+#define STIC_MAX_LINES 800
+
 #define TEST_DATA_STRUCTS \
     l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11,l12,l13,l14,l15,l16,l17,l18,l19,l20,l21,l22,l23,l24,l25,l26,l27,l28,l29,l30,l31,l32,l33,l34,l35,l36,l37,l38,l39,l40,l41,l42,l43,l44,l45,l46,l47,l48,l49,l50,\
     l51,l52,l53,l54,l55,l56,l57,l58,l59,l60,l61,l62,l63,l64,l65,l66,l67,l68,l69,l70,l71,l72,l73,l74,l75,l76,l77,l78,l79,l80,l81,l82,l83,l84,l85,l86,l87,l88,l89,l90,l91,l92,l93,l94,l95,l96,l97,l98,l99,l100,\
@@ -161,12 +164,21 @@ struct stic_test_data
 
 /* Test declaration macros. */
 
-#define IF(...) .p = __VA_ARGS__,
-
 #ifdef TEST
 # undef TEST
 #endif
-#define TEST(name, ...) \
+
+#if __STDC_VERSION__ >= 199901L || (__GNUC__ >= 4 && !defined(__STRICT_ANSI__))
+#define STIC_C99
+#endif
+
+#ifdef STIC_C99
+
+# define IF(...) .p = __VA_ARGS__,
+
+# define TEST(name, ...) \
+    STIC_STATIC_ASSERT(STIC_CAT(too_many_lines_in_file_, __LINE__), \
+                       __LINE__ < STIC_MAX_LINES); \
     static void name(void); \
     static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
         .n = #name, \
@@ -176,6 +188,21 @@ struct stic_test_data
     }; \
     static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
     static void name(void)
+
+#else
+
+# define TEST(name) \
+    STIC_STATIC_ASSERT(too_many_lines,  __LINE__ < STIC_MAX_LINES); \
+    static void name(void); \
+    static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
+        /* .n = */ #name, \
+        /* .t = */ &name, \
+        /* .f = */ __FILE__ \
+    }; \
+    static struct stic_test_data *STIC_CAT(l, __LINE__) = &STIC_CAT(stic_test_data_, name); \
+    static void name(void)
+
+#endif
 
 /* Setup/teardown declaration macros. */
 

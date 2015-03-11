@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 10
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1903,10 +1903,10 @@ particular the second column of the view will be changed).
     directories that are cleared when |vifm-:empty| command is executed.
 
                                                *vifm-:sync*
-:sync [relative path] - change the other panel to the current panel
+:sync [relative path] - change the other pane to the current pane
     directory or to some path relative to the current directory.  Using
     macros is allowed.
-:sync! - change the other panel to the current panel directory and
+:sync! - change the other pane to the current pane directory and
     synchronize cursor position.
 
                                                *vifm-:undolist* *vifm-:undol*
@@ -2514,30 +2514,6 @@ When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
 
-                                               *vifm-'iskeyword'* *vifm-'isk'*
-iskeyword isk
-type: string list
-default: "1-8,14-31,33-255" (that is all non-whitespace characters)
-Specifies which characters in command-line mode should be considered as part
-of a word.  Value of the option is comma-separated list of ranges.  If both
-endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
-Both endpoints are inclusive.  There are two accepted forms: character
-representing itself or number encoding character according to ASCII table.
-In case of ambiguous characters (dash, comma, digit) use numeric form.
-Accepted characters are in the range from 0 to 255.  Any Unicode character
-with code greater than 255 is considered to be part of a word.
-
-The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
-|vifm-c_CTRL-W|.  This is intensionaly to allow two use cases:
-
- - Moving by WORDS and deletion by words.
- - Moving by words and deletion by WORDS.
-
-To get the later use the following mapping: >
-    cnoremap <c-w> <a-b><a-d>
-<
-Also used for abbreviations.
-
                                                *vifm-'laststatus'* *vifm-'ls'*
 laststatus ls
 type: boolean
@@ -2927,6 +2903,30 @@ type: boolean
 default: false
 Controls whether possible matches of completion will be shown above the
 command line.
+
+                                               *vifm-'wordchars'*
+wordchars
+type: string list
+default: "1-8,14-31,33-255" (that is all non-whitespace characters)
+Specifies which characters in command-line mode should be considered as part
+of a word.  Value of the option is comma-separated list of ranges.  If both
+endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
+Both endpoints are inclusive.  There are two accepted forms: character
+representing itself or number encoding character according to ASCII table.
+In case of ambiguous characters (dash, comma, digit) use numeric form.
+Accepted characters are in the range from 0 to 255.  Any Unicode character
+with code greater than 255 is considered to be part of a word.
+
+The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
+|vifm-c_CTRL-W|.  This is intensionaly to allow two use cases:
+
+ - Moving by WORDS and deletion by words.
+ - Moving by words and deletion by WORDS.
+
+To get the later use the following mapping: >
+    cnoremap <c-w> <a-b><a-d>
+<
+Also used for abbreviations.
 
                                                *vifm-'wrap'*
 wrap
@@ -3708,7 +3708,7 @@ tree types are supported:
 
 The color schemes in vifm can be applied in two different ways:
    - as the primary color scheme
-   - as local to a panel color scheme
+   - as local to a pane color scheme
 
 Both types are set using |vifm-:colorscheme| command, but of different forms:
    - :colorscheme color_scheme_name - for the primary color scheme

@@ -257,18 +257,30 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 	}
 	else if (expected == NULL)
 	{
+#ifdef STIC_C99
 		sprintf(s, "Expected <NULL> but was \"%ls\"", actual);
+#else
+		sprintf(s, "Expected <NULL> but was wide string");
+#endif
 		comparison = 0;
 	}
 	else if (actual == NULL)
 	{
+#ifdef STIC_C99
 		sprintf(s, "Expected \"%ls\" but was <NULL>", expected);
+#else
+		sprintf(s, "Expected wide string but was <NULL>");
+#endif
 		comparison = 0;
 	}
 	else
 	{
 		comparison = wcscmp(expected, actual) == 0;
+#ifdef STIC_C99
 		sprintf(s, "Expected \"%ls\" but was \"%ls\"", expected, actual);
+#else
+		sprintf(s, "Expected wide string doesn't match");
+#endif
 	}
 
 	stic_simple_test_result(comparison, s, function, line);

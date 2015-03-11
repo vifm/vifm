@@ -12,7 +12,7 @@ SETUP()
 	int i;
 	for(i = 0; i < 255; ++i)
 	{
-		cfg.is_keyword[i] = !iswspace(i);
+		cfg.word_chars[i] = !iswspace(i);
 	}
 
 	lwin.selected_files = 0;
