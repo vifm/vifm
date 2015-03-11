@@ -271,7 +271,12 @@ static int source_cmd(const cmd_info_t *cmd_info);
 static int split_cmd(const cmd_info_t *cmd_info);
 static int substitute_cmd(const cmd_info_t *cmd_info);
 static int sync_cmd(const cmd_info_t *cmd_info);
+static int sync_selectively(const cmd_info_t *cmd_info);
+static int parse_sync_properties(const cmd_info_t *cmd_info, int *location,
+		int *cursor_pos, int *local_options, int *filters);
 static void sync_location(const char path[], int sync_cursor_pos);
+static void sync_local_opts(void);
+static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
@@ -478,7 +483,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 0, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 1,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = sync_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+		.handler = sync_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = COM_TOUCH,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = touch_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = COM_TR,          .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
@@ -3918,13 +3923,89 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
-		status_bar_error("No arguments are allowed if you use \"!\"");
-		return 1;
+		return sync_selectively(cmd_info);
+	}
+
+	if(cmd_info->argc > 1)
+	{
+		return CMDS_ERR_TRAILING_CHARS;
 	}
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", curr_view->curr_dir,
 			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
 	sync_location(dst_path, cmd_info->emark);
+
+	return 0;
+}
+
+/* Mirrors requested properties of current view with the other one.  Returns
+ * value to be returned by command handler. */
+static int
+sync_selectively(const cmd_info_t *cmd_info)
+{
+	int location = 0, cursor_pos = 0, local_options = 0, filters = 0;
+	if(parse_sync_properties(cmd_info, &location, &cursor_pos, &local_options,
+				&filters) != 0)
+	{
+		return 1;
+	}
+
+	if(location)
+	{
+		sync_location(curr_view->curr_dir, cursor_pos);
+	}
+	if(local_options)
+	{
+		sync_local_opts();
+	}
+	if(filters)
+	{
+		sync_filters();
+	}
+
+	return 0;
+}
+
+/* Parses selective view synchronization properties.  Default values for
+ * arguments should be set before the call.  Returns zero on success, otherwise
+ * non-zero is returned and error message is displayed on the status bar. */
+static int
+parse_sync_properties(const cmd_info_t *cmd_info, int *location,
+		int *cursor_pos, int *local_options, int *filters)
+{
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		const char *const property = cmd_info->argv[i];
+		if(strcmp(property, "location") == 0)
+		{
+			*location = 1;
+		}
+		else if(strcmp(property, "cursorpos") == 0)
+		{
+			*cursor_pos = 1;
+		}
+		else if(strcmp(property, "localopts") == 0)
+		{
+			*local_options = 1;
+		}
+		else if(strcmp(property, "filters") == 0)
+		{
+			*filters = 1;
+		}
+		else if(strcmp(property, "all") == 0)
+		{
+			*location = 1;
+			*cursor_pos = 1;
+			*local_options = 1;
+			*filters = 1;
+		}
+		else
+		{
+			status_bar_errorf("Unknown selective sync property: %s", property);
+			return 1;
+		}
+	}
 
 	return 0;
 }
@@ -3953,6 +4034,26 @@ sync_location(const char path[], int sync_cursor_pos)
 	}
 
 	ui_view_schedule_redraw(other_view);
+}
+
+/* Sets local options of the other view to be equal to options of the current
+ * one. */
+static void
+sync_local_opts(void)
+{
+	clone_local_options(curr_view, other_view);
+	ui_view_schedule_redraw(other_view);
+}
+
+/* Sets filters of the other view to be equal to options of the current one. */
+static void
+sync_filters(void)
+{
+	(void)filter_assign(&other_view->local_filter.filter,
+			&curr_view->local_filter.filter);
+	(void)filter_assign(&other_view->manual_filter, &curr_view->manual_filter);
+	(void)filter_assign(&other_view->auto_filter, &curr_view->auto_filter);
+	ui_view_schedule_reload(other_view);
 }
 
 static int

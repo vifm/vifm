@@ -46,6 +46,9 @@ void init_option_handlers(void);
 
 void load_local_options(FileView *view);
 
+/* Clones all local options of *from into *to. */
+void clone_local_options(const FileView *from, FileView *to);
+
 int process_set_args(const char *args);
 
 void load_sort_option(FileView *view);

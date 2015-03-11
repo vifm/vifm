@@ -2260,6 +2260,23 @@ to the current directory.  Using macros is allowed.
 .BI ":sync!"
 change the other pane to the current pane directory and synchronize cursor
 position.
+
+.TP
+.BI ":sync! [location | cursorpos | localopts | filters | all]..."
+change enumerated properties of the other pane to match corresponding properties
+of the current pane.  Arguments have the following meanings:
+.RS
+.IP \- 2
+location \- current directory of the pane;
+.IP \- 2
+cursorpos \- cursor position (doesn't make sense without "location");
+.IP \- 2
+localopts \- all local options;
+.IP \- 2
+filters \- all filters;
+.IP \- 2
+all \- all of the above.
+.RE
 .TP
 .BI "                                         :touch"
 .TP

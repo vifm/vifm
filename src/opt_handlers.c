@@ -766,6 +766,17 @@ load_local_options(FileView *view)
 }
 
 void
+clone_local_options(const FileView *from, FileView *to)
+{
+	to->view_columns = from->view_columns;
+	to->num_width = from->num_width;
+	to->num_type = from->num_type;
+
+	memcpy(to->sort, from->sort, sizeof(to->sort));
+	fview_set_lsview(to, from->ls_view);
+}
+
+void
 load_sort_option(FileView *view)
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
