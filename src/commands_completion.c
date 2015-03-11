@@ -70,6 +70,7 @@
 
 static int cmd_ends_with_space(const char *cmd);
 static void complete_colorscheme(const char *str, size_t arg_num);
+static void complete_selective_sync(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
@@ -224,8 +225,18 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			complete_colorscheme(arg, arg_num);
 		}
-		else if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC ||
-				id == COM_MKDIR)
+		else if(id == COM_SYNC)
+		{
+			if(cmd_info->emark)
+			{
+				complete_selective_sync(arg);
+			}
+			else
+			{
+				filename_completion(arg, CT_DIRONLY);
+			}
+		}
+		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)
 		{
 			filename_completion(arg, CT_DIRONLY);
 		}
@@ -293,6 +304,21 @@ complete_colorscheme(const char *str, size_t arg_num)
 	{
 		filename_completion(str, CT_DIRONLY);
 	}
+}
+
+/* Completes properties for selective synchronization. */
+static void
+complete_selective_sync(const char str[])
+{
+	static const char *lines[] = {
+		"location",
+		"cursorpos",
+		"localopts",
+		"filters",
+		"all",
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
 static void
