@@ -4026,8 +4026,9 @@ sync_location(const char path[], int sync_cursor_pos)
 	{
 		const int offset = (curr_view->list_pos - curr_view->top_line);
 		const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
-		other_view->top_line = curr_view->list_pos - shift;
-		other_view->list_pos = curr_view->list_pos;
+
+		ensure_file_is_selected(other_view, get_current_file_name(curr_view));
+		other_view->top_line = MAX(0, curr_view->list_pos - shift);
 		(void)consider_scroll_offset(other_view);
 
 		save_view_history(other_view, NULL, NULL, -1);

@@ -210,6 +210,9 @@
 	Fixed UI glitch when one could notice cursor blinking in the view while
 	typing search pattern on the command-line with 'incsearch' being set.
 
+	Fixed crash on :sync! when filters of two panels differ and resulting
+	number of files is not the same.  Thanks to filterfalse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
