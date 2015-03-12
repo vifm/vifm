@@ -8,8 +8,11 @@
 #include "stic.h"
 #include <string.h>
 #include <wchar.h>
+
 #ifdef WIN32
-#include "windows.h"
+
+#include <windows.h>
+
 int stic_is_string_equal_i(const char* s1, const char* s2)
 {
 #ifdef _MSC_VER
@@ -19,12 +22,27 @@ int stic_is_string_equal_i(const char* s1, const char* s2)
 }
 
 #else
+
+#include <sys/time.h>
 #include <strings.h>
-static unsigned int GetTickCount() { return 0;}
+
+static unsigned int GetTickCount()
+{
+    enum {
+        MS_PER_SEC = 1000,
+        NS_PER_MS  = 1000,
+    };
+
+    struct timeval t;
+    gettimeofday(&t, 0);
+    return t.tv_sec*MS_PER_SEC + t.tv_usec/NS_PER_MS;
+}
+
 int stic_is_string_equal_i(const char* s1, const char* s2)
 {
 	return strcasecmp(s1, s2) == 0;
 }
+
 #endif
 
 #ifdef STIC_INTERNAL_TESTS
@@ -418,7 +436,16 @@ int run_tests(stic_void_void tests)
 	}
 	sprintf(s,"%d tests run", sea_tests_run);
 	stic_header_printer(s, stic_screen_width, ' ');
-	sprintf(s,"in %lu ms",end - start);
+
+	if (end - start == 0)
+	{
+		sprintf(s,"in < 1 ms");
+	}
+	else
+	{
+		sprintf(s,"in %lu ms",end - start);
+	}
+
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');

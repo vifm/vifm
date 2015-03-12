@@ -3950,6 +3950,10 @@ sync_selectively(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	if(filters)
+	{
+		sync_filters();
+	}
 	if(location)
 	{
 		sync_location(curr_view->curr_dir, cursor_pos);
@@ -3957,10 +3961,6 @@ sync_selectively(const cmd_info_t *cmd_info)
 	if(local_options)
 	{
 		sync_local_opts();
-	}
-	if(filters)
-	{
-		sync_filters();
 	}
 
 	return 0;
@@ -4026,8 +4026,9 @@ sync_location(const char path[], int sync_cursor_pos)
 	{
 		const int offset = (curr_view->list_pos - curr_view->top_line);
 		const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
-		other_view->top_line = curr_view->list_pos - shift;
-		other_view->list_pos = curr_view->list_pos;
+
+		ensure_file_is_selected(other_view, get_current_file_name(curr_view));
+		other_view->top_line = MAX(0, curr_view->list_pos - shift);
 		(void)consider_scroll_offset(other_view);
 
 		save_view_history(other_view, NULL, NULL, -1);
@@ -4049,6 +4050,9 @@ sync_local_opts(void)
 static void
 sync_filters(void)
 {
+	other_view->prev_invert = curr_view->prev_invert;
+	other_view->invert = curr_view->invert;
+
 	(void)filter_assign(&other_view->local_filter.filter,
 			&curr_view->local_filter.filter);
 	(void)filter_assign(&other_view->manual_filter, &curr_view->manual_filter);

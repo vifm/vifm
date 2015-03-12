@@ -192,7 +192,8 @@ struct stic_test_data
 #else
 
 # define TEST(name) \
-    STIC_STATIC_ASSERT(too_many_lines,  __LINE__ < STIC_MAX_LINES); \
+    STIC_STATIC_ASSERT(STIC_CAT(too_many_lines_in_file_, __LINE__), \
+                       __LINE__ < STIC_MAX_LINES); \
     static void name(void); \
     static struct stic_test_data STIC_CAT(stic_test_data_, name) = { \
         /* .n = */ #name, \
