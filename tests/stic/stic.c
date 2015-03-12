@@ -436,7 +436,16 @@ int run_tests(stic_void_void tests)
 	}
 	sprintf(s,"%d tests run", sea_tests_run);
 	stic_header_printer(s, stic_screen_width, ' ');
-	sprintf(s,"in %lu ms",end - start);
+
+	if (end - start == 0)
+	{
+		sprintf(s,"in < 1 ms");
+	}
+	else
+	{
+		sprintf(s,"in %lu ms",end - start);
+	}
+
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');
