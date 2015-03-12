@@ -4049,6 +4049,9 @@ sync_local_opts(void)
 static void
 sync_filters(void)
 {
+	other_view->prev_invert = curr_view->prev_invert;
+	other_view->invert = curr_view->invert;
+
 	(void)filter_assign(&other_view->local_filter.filter,
 			&curr_view->local_filter.filter);
 	(void)filter_assign(&other_view->manual_filter, &curr_view->manual_filter);
