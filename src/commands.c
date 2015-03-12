@@ -3950,6 +3950,10 @@ sync_selectively(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	if(filters)
+	{
+		sync_filters();
+	}
 	if(location)
 	{
 		sync_location(curr_view->curr_dir, cursor_pos);
@@ -3957,10 +3961,6 @@ sync_selectively(const cmd_info_t *cmd_info)
 	if(local_options)
 	{
 		sync_local_opts();
-	}
-	if(filters)
-	{
-		sync_filters();
 	}
 
 	return 0;
