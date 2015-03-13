@@ -30,7 +30,7 @@
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../compat/os.h"
@@ -79,6 +79,8 @@ static int try_vifm_envvar_for_conf(void);
 static int try_exe_directory_for_conf(void);
 static int try_home_envvar_for_conf(void);
 static int try_appdata_for_conf(void);
+static int try_xdg_for_conf(void);
+static void find_data_dir(void);
 static void find_config_file(void);
 static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_exe_directory_for_vifmrc(void);
@@ -213,6 +215,7 @@ cfg_discover_paths(void)
 
 	find_home_dir();
 	find_config_dir();
+	find_data_dir();
 	find_config_file();
 
 	store_config_paths();
@@ -298,6 +301,7 @@ find_config_dir(void)
 	if(try_exe_directory_for_conf()) return;
 	if(try_home_envvar_for_conf()) return;
 	if(try_appdata_for_conf()) return;
+	if(try_xdg_for_conf()) return;
 }
 
 /* Tries to use VIFM environment variable to find configuration directory.
@@ -375,6 +379,62 @@ try_appdata_for_conf(void)
 #endif
 }
 
+/* Tries to use $XDG_CONFIG_HOME/vifm as configuration directory.  Returns
+ * non-zero on success, otherwise zero is returned. */
+static int
+try_xdg_for_conf(void)
+{
+	LOG_FUNC_ENTER;
+
+	char *config_dir;
+
+	const char *const config_home = env_get("XDG_CONFIG_HOME");
+	if(is_path_absolute(config_home) && path_exists(config_home, DEREF))
+	{
+		config_dir = format_str("%s/vifm", config_home);
+	}
+	else if(path_exists_at(env_get(HOME_EV), ".config", DEREF))
+	{
+		config_dir = format_str("%s/.config/vifm", env_get(HOME_EV));
+	}
+	else
+	{
+		return 0;
+	}
+
+	env_set(VIFM_EV, config_dir);
+	free(config_dir);
+
+	return 1;
+}
+
+/* Tries to find directory for data files. */
+static void
+find_data_dir(void)
+{
+	LOG_FUNC_ENTER;
+
+	const char *const data_home = env_get("XDG_DATA_HOME");
+	if(is_null_or_empty(data_home) || !is_path_absolute(data_home))
+	{
+		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/.local/share/",
+				env_get(HOME_EV));
+	}
+	else
+	{
+		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/", data_home);
+	}
+
+	if(path_exists(cfg.data_dir, DEREF))
+	{
+		strcat(cfg.data_dir, "vifm");
+	}
+	else
+	{
+		copy_str(cfg.data_dir, sizeof(cfg.data_dir) - 4, env_get(VIFM_EV));
+	}
+}
+
 /* Tries to find configuration file. */
 static void
 find_config_file(void)
@@ -446,11 +506,15 @@ store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
+	const char *trash_base = path_exists_at(cfg.config_dir, TRASH, DEREF)
+	                       ? cfg.config_dir
+	                       : cfg.data_dir;
+
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
-			cfg.config_dir);
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
+			trash_base);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.data_dir);
 }
 
 /* Ensures existence of configuration and data directories.  Performs first run
@@ -462,17 +526,17 @@ setup_dirs(void)
 
 	char rc_file[PATH_MAX];
 
-	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
-	{
-		return;
-	}
-
 	if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
 	{
 		copy_help_file();
 	}
 
-	/* This should be first run of Vifm in this environment. */
+	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
+	{
+		return;
+	}
+
+	/* This must be first run of Vifm in this environment. */
 
 	copy_rc_file();
 

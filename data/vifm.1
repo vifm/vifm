@@ -1,4 +1,4 @@
-.TH vifm 1 "March 11, 2015" "" "Vifm"
+.TH vifm 1 "March 13, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3433,7 +3433,8 @@ Use trash directory.  See "Trash directory" section below.
 .BI trashdir
 type: string
 .br
-default: "%r/.vifm-Trash,$VIFM/Trash"
+default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
+         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
 .br
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to trash directory or a path
@@ -4226,7 +4227,9 @@ places:
  \- $VIFM variable;
  \- parent directory of the executable file (on Windows only);
  \- $HOME/.vifm directory;
- \- $APPDATA/Vifm directory (on Windows only).
+ \- $APPDATA/Vifm directory (on Windows only);
+ \- $XDG_CONFIG_HOME/vifm directory;
+ \- $HOME/.config/vifm directory.
 
 vifm tries to find correct configuration file by checking the following places:
  \- $MYVIFMRC variable;

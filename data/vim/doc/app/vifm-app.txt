@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 11
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2805,7 +2805,8 @@ Use |vifm-trash| directory.
                                                *vifm-'trashdir'*
 trashdir
 type: string
-default: "%r/.vifm-Trash,$VIFM/Trash"
+default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
+         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to |vifm-trash| directory
 or a path relative to a mount point root, when list element starts with "%r/".
@@ -3490,7 +3491,9 @@ places:
  - $VIFM variable;
  - parent directory of the executable file (on Windows only);
  - $HOME/.vifm directory;
- - $APPDATA/Vifm directory (on Windows only).
+ - $APPDATA/Vifm directory (on Windows only);
+ - $XDG_CONFIG_HOME/vifm directory;
+ - $HOME/.config/vifm directory.
 
                                                *vifm-$MYVIFMRC*
 vifm tries to find correct configuration file by checking the following places:
