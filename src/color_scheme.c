@@ -412,7 +412,7 @@ write_color_scheme_file(void)
 	int i;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	if(os_mkdir(colors_dir, 0777) != 0)
+	if(os_mkdir(colors_dir, S_IRWXU) != 0)
 		return;
 
 	strncat(colors_dir, "/Default", sizeof(colors_dir) - strlen(colors_dir) - 1);
