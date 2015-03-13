@@ -83,7 +83,7 @@ fuse_try_mount(FileView *view, const char program[])
 
 	if(!path_exists(cfg.fuse_home, DEREF))
 	{
-		if(os_mkdir(cfg.fuse_home, S_IRWXU) != 0)
+		if(make_path(cfg.fuse_home, S_IRWXU) != 0)
 		{
 			show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);

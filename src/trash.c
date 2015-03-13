@@ -203,7 +203,7 @@ try_create_trash_dir(const char trash_dir[])
 		return 0;
 	}
 
-	return os_mkdir(trash_dir, 0777);
+	return make_path(trash_dir, 0777);
 }
 
 void

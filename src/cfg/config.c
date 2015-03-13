@@ -472,7 +472,7 @@ create_config_dir(void)
 		char help_file[PATH_MAX];
 		char rc_file[PATH_MAX];
 
-		if(os_mkdir(cfg.config_dir, S_IRWXU) != 0)
+		if(make_path(cfg.config_dir, S_IRWXU) != 0)
 			return;
 
 		snprintf(help_file, sizeof(help_file), "%s/" VIFM_HELP, cfg.config_dir);
@@ -491,7 +491,7 @@ create_config_dir(void)
 		 * vifmrc file is used right away. */
 		env_set(MYVIFMRC_EV, rc_file);
 #else
-		if(os_mkdir(cfg.config_dir, S_IRWXU) != 0)
+		if(make_path(cfg.config_dir, S_IRWXU) != 0)
 			return;
 #endif
 

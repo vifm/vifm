@@ -412,12 +412,16 @@ write_color_scheme_file(void)
 	int i;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	if(os_mkdir(colors_dir, S_IRWXU) != 0)
+	if(make_path(colors_dir, S_IRWXU) != 0)
+	{
 		return;
+	}
 
 	strncat(colors_dir, "/Default", sizeof(colors_dir) - strlen(colors_dir) - 1);
 	if((fp = os_fopen(colors_dir, "w")) == NULL)
+	{
 		return;
+	}
 
 	fprintf(fp, "\" You can edit this file by hand.\n");
 	fprintf(fp, "\" The \" character at the beginning of a line comments out the line.\n");
