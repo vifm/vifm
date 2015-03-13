@@ -93,6 +93,8 @@ int get_link_target(const char *link, char *buf, size_t buf_len);
  * access mode.  Returns zero on success, otherwise non-zero is returned. */
 int make_path(const char dir_name[], mode_t mode);
 
+/* Whether symbolic links can be used.  Returns non-zero if so, otherwise zero
+ * is returned. */
 int symlinks_available(void);
 
 /* Whether paths are case insensitive.  Returns non-zero if so, otherwise zero

@@ -29,8 +29,8 @@
 int iop_mkfile(io_args_t *const args);
 
 /* Creates directory or hierarchical directory structure (if parent is true).
- * Expects path in arg1 and parent in arg3.  When process_parents is false,
- * fails if destination already exists. */
+ * Expects path in arg1, process_parents in arg2 and mode in arg3.  When
+ * process_parents is false, fails if destination already exists. */
 int iop_mkdir(io_args_t *const args);
 
 /* Deletes file.  Expects path in arg1. */

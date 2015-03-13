@@ -99,7 +99,7 @@ iop_mkdir(io_args_t *const args)
 				continue;
 			}
 
-			/* Create intermediate directories with 0755 permissions. */
+			/* Create intermediate directories with 0700 permissions. */
 			if(os_mkdir(partial_path, S_IRWXU) != 0)
 			{
 				free(partial_path);
