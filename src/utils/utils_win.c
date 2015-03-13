@@ -799,6 +799,14 @@ read_cmd_output(const char cmd[])
 	return result;
 }
 
+const char *
+get_installed_data_dir(void)
+{
+	static char exe_dir[PATH_MAX];
+	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+	return exe_dir;
+}
+
 static FILE *
 use_info_prog_internal(const char cmd[], int out_pipe[2])
 {

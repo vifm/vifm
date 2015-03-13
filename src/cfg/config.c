@@ -26,11 +26,6 @@
 #define LOG "log"
 #define VIFMRC "vifmrc"
 
-#ifndef _WIN32
-#define CP_HELP "cp " PACKAGE_DATA_DIR "/" VIFM_HELP " ~/.vifm"
-#define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
-#endif
-
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
@@ -39,6 +34,7 @@
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../compat/os.h"
+#include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
@@ -88,11 +84,9 @@ static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_exe_directory_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(void);
-static void create_config_dir(void);
-#ifndef _WIN32
-static void create_help_file(void);
-static void create_rc_file(void);
-#endif
+static void setup_dirs(void);
+static void copy_help_file(void);
+static void copy_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
@@ -223,7 +217,7 @@ cfg_discover_paths(void)
 
 	store_config_paths();
 
-	create_config_dir();
+	setup_dirs();
 }
 
 /* Tries to find home directory. */
@@ -472,66 +466,72 @@ store_config_paths(void)
 /* Ensures existence of configuration and data directories.  Performs first run
  * initialization. */
 static void
-create_config_dir(void)
+setup_dirs(void)
 {
 	LOG_FUNC_ENTER;
 
-	/* ensure existence of configuration directory */
-	if(!is_dir(cfg.config_dir))
+	char rc_file[PATH_MAX];
+
+	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
 	{
-#ifndef _WIN32
-		FILE *f;
-		char help_file[PATH_MAX];
-		char rc_file[PATH_MAX];
-
-		if(make_path(cfg.config_dir, S_IRWXU) != 0)
-			return;
-
-		snprintf(help_file, sizeof(help_file), "%s/" VIFM_HELP, cfg.config_dir);
-		if((f = os_fopen(help_file, "r")) == NULL)
-			create_help_file();
-		else
-			fclose(f);
-
-		snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
-		if((f = os_fopen(rc_file, "r")) == NULL)
-			create_rc_file();
-		else
-			fclose(f);
-
-		/* This should be first start of Vifm, ensure that newly created sample
-		 * vifmrc file is used right away. */
-		env_set(MYVIFMRC_EV, rc_file);
-#else
-		if(make_path(cfg.config_dir, S_IRWXU) != 0)
-			return;
-#endif
-
-		add_default_bookmarks();
+		return;
 	}
+
+	if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
+	{
+		copy_help_file();
+	}
+
+	/* This should be first run of Vifm in this environment. */
+
+	copy_rc_file();
+
+	/* Ensure that just copied sample vifmrc file is used right away. */
+	snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
+	env_set(MYVIFMRC_EV, rc_file);
+
+	add_default_bookmarks();
 }
 
-#ifndef _WIN32
 /* Copies help file from shared files to the ~/.vifm directory. */
 static void
-create_help_file(void)
+copy_help_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[] = CP_HELP;
-	(void)vifm_system(command);
+	char src[PATH_MAX];
+	char dst[PATH_MAX];
+
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+	};
+
+	snprintf(src, sizeof(src), "%s/" VIFM_HELP, get_installed_data_dir());
+	snprintf(dst, sizeof(dst), "%s/" VIFM_HELP, cfg.config_dir);
+
+	(void)iop_cp(&args);
 }
 
 /* Copies example vifmrc file from shared files to the ~/.vifm directory. */
 static void
-create_rc_file(void)
+copy_rc_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[] = CP_RC;
-	(void)vifm_system(command);
+	char src[PATH_MAX];
+	char dst[PATH_MAX];
+
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+	};
+
+	snprintf(src, sizeof(src), "%s/" VIFMRC, get_installed_data_dir());
+	snprintf(dst, sizeof(dst), "%s/" VIFMRC, cfg.config_dir);
+
+	(void)iop_cp(&args);
 }
-#endif
 
 /* Adds 'H' and 'z' default bookmarks. */
 static void
