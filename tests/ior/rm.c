@@ -4,6 +4,7 @@
 
 #include <unistd.h> /* F_OK access() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
 
@@ -31,7 +32,7 @@ TEST(file_is_removed)
 
 TEST(empty_directory_is_removed)
 {
-	make_dir(DIRECTORY_NAME, 0700);
+	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_int_equal(0, access(DIRECTORY_NAME, F_OK));
 
 	{
@@ -47,7 +48,7 @@ TEST(empty_directory_is_removed)
 
 TEST(non_empty_directory_is_removed)
 {
-	make_dir(DIRECTORY_NAME, 0700);
+	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_int_equal(0, access(DIRECTORY_NAME, F_OK));
 
 	assert_int_equal(0, chdir(DIRECTORY_NAME));

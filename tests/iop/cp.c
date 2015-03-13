@@ -4,6 +4,7 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fs_limits.h"
@@ -267,7 +268,7 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 /* Creating symbolic links on Windows requires administrator rights. */
 TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 {
-	make_dir("dir", 0700);
+	os_mkdir("dir", 0700);
 	assert_true(is_dir("dir"));
 
 	{

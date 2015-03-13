@@ -89,8 +89,6 @@ int get_link_target_abs(const char link[], const char cwd[], char buf[],
 
 int get_link_target(const char *link, char *buf, size_t buf_len);
 
-int make_dir(const char *dir_name, mode_t mode);
-
 int symlinks_available(void);
 
 /* Whether paths are case insensitive.  Returns non-zero if so, otherwise zero

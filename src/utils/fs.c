@@ -388,12 +388,6 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 }
 
 int
-make_dir(const char *dir_name, mode_t mode)
-{
-	return os_mkdir(dir_name, mode);
-}
-
-int
 symlinks_available(void)
 {
 #ifndef _WIN32
