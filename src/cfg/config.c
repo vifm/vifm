@@ -226,7 +226,7 @@ cfg_discover_paths(void)
 	create_config_dir();
 }
 
-/* tries to find home directory */
+/* Tries to find home directory. */
 static void
 find_home_dir(void)
 {
@@ -240,7 +240,8 @@ find_home_dir(void)
 		return;
 }
 
-/* tries to use HOME environment variable to find home directory */
+/* Tries to use HOME environment variable to find home directory.  Returns
+ * non-zero on success, otherwise zero is returned. */
 static int
 try_home_envvar_for_home(void)
 {
@@ -250,7 +251,8 @@ try_home_envvar_for_home(void)
 	return home != NULL && is_dir(home);
 }
 
-/* tries to use USERPROFILE environment variable to find home directory */
+/* Tries to use USERPROFILE environment variable to find home directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_userprofile_envvar_for_home(void)
 {
@@ -270,6 +272,8 @@ try_userprofile_envvar_for_home(void)
 #endif
 }
 
+/* Tries to use $HOMEDRIVE/$HOMEPATH as home directory.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_homepath_envvar_for_home(void)
 {
@@ -293,7 +297,7 @@ try_homepath_envvar_for_home(void)
 #endif
 }
 
-/* tries to find configuration directory */
+/* Tries to find configuration directory. */
 static void
 find_config_dir(void)
 {
@@ -309,7 +313,8 @@ find_config_dir(void)
 		return;
 }
 
-/* tries to use VIFM environment variable to find configuration directory */
+/* Tries to use VIFM environment variable to find configuration directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_vifm_envvar_for_conf(void)
 {
@@ -319,7 +324,8 @@ try_vifm_envvar_for_conf(void)
 	return vifm != NULL && is_dir(vifm);
 }
 
-/* tries to use directory of executable file as configuration directory */
+/* Tries to use directory of executable file as configuration directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_exe_directory_for_conf(void)
 {
@@ -341,7 +347,8 @@ try_exe_directory_for_conf(void)
 	return 1;
 }
 
-/* tries to use $HOME/.vifm as configuration directory */
+/* Tries to use $HOME/.vifm as configuration directory.  Tries harder on force.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_home_envvar_for_conf(void)
 {
@@ -360,7 +367,8 @@ try_home_envvar_for_conf(void)
 	return 1;
 }
 
-/* tries to use $APPDATA/Vifm as configuration directory */
+/* Tries to use $APPDATA/Vifm as configuration directory.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_appdata_for_conf(void)
 {
@@ -380,7 +388,7 @@ try_appdata_for_conf(void)
 #endif
 }
 
-/* tries to find configuration file */
+/* Tries to find configuration file. */
 static void
 find_config_file(void)
 {
@@ -394,7 +402,8 @@ find_config_file(void)
 		return;
 }
 
-/* tries to use $MYVIFMRC as configuration file */
+/* Tries to use $MYVIFMRC as configuration file.  Returns non-zero on success,
+ * otherwise zero is returned. */
 static int
 try_myvifmrc_envvar_for_vifmrc(void)
 {
@@ -404,7 +413,8 @@ try_myvifmrc_envvar_for_vifmrc(void)
 	return myvifmrc != NULL && path_exists(myvifmrc, DEREF);
 }
 
-/* tries to use vifmrc in directory of executable file as configuration file */
+/* Tries to use vifmrc in directory of executable file as configuration file.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_exe_directory_for_vifmrc(void)
 {
@@ -428,7 +438,8 @@ try_exe_directory_for_vifmrc(void)
 	return 1;
 }
 
-/* tries to use $VIFM/vifmrc as configuration file */
+/* Tries to use $VIFM/vifmrc as configuration file.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_vifm_vifmrc_for_vifmrc(void)
 {
@@ -445,7 +456,7 @@ try_vifm_vifmrc_for_vifmrc(void)
 	return 1;
 }
 
-/* writes path configuration file and directories for further usage */
+/* Writes path configuration file and directories for further usage. */
 static void
 store_config_paths(void)
 {
@@ -458,7 +469,8 @@ store_config_paths(void)
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
 }
 
-/* ensures existence of configuration directory */
+/* Ensures existence of configuration and data directories.  Performs first run
+ * initialization. */
 static void
 create_config_dir(void)
 {
@@ -551,7 +563,9 @@ cfg_source_file(const char filename[])
 	SourcingState sourcing_state;
 
 	if((fp = os_fopen(filename, "r")) == NULL)
+	{
 		return 1;
+	}
 
 	sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;
