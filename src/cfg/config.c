@@ -226,12 +226,9 @@ find_home_dir(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_home_envvar_for_home())
-		return;
-	if(try_userprofile_envvar_for_home())
-		return;
-	if(try_homepath_envvar_for_home())
-		return;
+	if(try_home_envvar_for_home()) return;
+	if(try_userprofile_envvar_for_home()) return;
+	if(try_homepath_envvar_for_home()) return;
 }
 
 /* Tries to use HOME environment variable to find home directory.  Returns
@@ -297,14 +294,10 @@ find_config_dir(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_vifm_envvar_for_conf())
-		return;
-	if(try_exe_directory_for_conf())
-		return;
-	if(try_home_envvar_for_conf())
-		return;
-	if(try_appdata_for_conf())
-		return;
+	if(try_vifm_envvar_for_conf()) return;
+	if(try_exe_directory_for_conf()) return;
+	if(try_home_envvar_for_conf()) return;
+	if(try_appdata_for_conf()) return;
 }
 
 /* Tries to use VIFM environment variable to find configuration directory.
@@ -388,12 +381,9 @@ find_config_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_myvifmrc_envvar_for_vifmrc())
-		return;
-	if(try_exe_directory_for_vifmrc())
-		return;
-	if(try_vifm_vifmrc_for_vifmrc())
-		return;
+	if(try_myvifmrc_envvar_for_vifmrc()) return;
+	if(try_exe_directory_for_vifmrc()) return;
+	if(try_vifm_vifmrc_for_vifmrc()) return;
 }
 
 /* Tries to use $MYVIFMRC as configuration file.  Returns non-zero on success,
