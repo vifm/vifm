@@ -499,7 +499,7 @@ store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
-	const char *trash_base = path_exists_at(cfg.config_dir, TRASH, DEREF)
+	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
 	                       ? cfg.config_dir
 	                       : cfg.data_dir;
 
