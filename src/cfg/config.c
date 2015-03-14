@@ -52,6 +52,7 @@
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../types.h"
+#include "../vifm.h"
 #include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
@@ -77,7 +78,7 @@ static int try_homepath_envvar_for_home(void);
 static void find_config_dir(void);
 static int try_vifm_envvar_for_conf(void);
 static int try_exe_directory_for_conf(void);
-static int try_home_envvar_for_conf(void);
+static int try_home_envvar_for_conf(int force);
 static int try_appdata_for_conf(void);
 static int try_xdg_for_conf(void);
 static void find_data_dir(void);
@@ -299,9 +300,14 @@ find_config_dir(void)
 
 	if(try_vifm_envvar_for_conf()) return;
 	if(try_exe_directory_for_conf()) return;
-	if(try_home_envvar_for_conf()) return;
+	if(try_home_envvar_for_conf(get_env_type() == ET_WIN)) return;
 	if(try_appdata_for_conf()) return;
 	if(try_xdg_for_conf()) return;
+
+	if(!try_home_envvar_for_conf(1))
+	{
+		vifm_finish("Failed to determine location of configuration files.");
+	}
 }
 
 /* Tries to use VIFM environment variable to find configuration directory.
@@ -341,19 +347,24 @@ try_exe_directory_for_conf(void)
 /* Tries to use $HOME/.vifm as configuration directory.  Tries harder on force.
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-try_home_envvar_for_conf(void)
+try_home_envvar_for_conf(int force)
 {
 	LOG_FUNC_ENTER;
 
 	char vifm[PATH_MAX];
+
 	const char *home = env_get(HOME_EV);
 	if(home == NULL || !is_dir(home))
+	{
 		return 0;
+	}
+
 	snprintf(vifm, sizeof(vifm), "%s/.vifm", home);
-#ifdef _WIN32
-	if(!is_dir(vifm))
+	if(!force && !is_dir(vifm))
+	{
 		return 0;
-#endif
+	}
+
 	env_set(VIFM_EV, vifm);
 	return 1;
 }
