@@ -519,7 +519,12 @@ setup_dirs(void)
 
 	char rc_file[PATH_MAX];
 
-	copy_help_file();
+	if(is_dir(cfg.config_dir))
+	{
+		/* We rely on this file for :help, so make sure it's there. */
+		copy_help_file();
+		return;
+	}
 
 	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
 	{
@@ -528,6 +533,7 @@ setup_dirs(void)
 
 	/* This must be first run of Vifm in this environment. */
 
+	copy_help_file();
 	copy_rc_file();
 
 	/* Ensure that just copied sample vifmrc file is used right away. */
