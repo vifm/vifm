@@ -83,7 +83,7 @@ fuse_try_mount(FileView *view, const char program[])
 
 	if(!path_exists(cfg.fuse_home, DEREF))
 	{
-		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
+		if(make_path(cfg.fuse_home, S_IRWXU) != 0)
 		{
 			show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);
@@ -182,7 +182,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 				++mount_point_id, get_current_file_name(view));
 	}
 	while(path_exists(mount_point, DEREF));
-	if(make_dir(mount_point, S_IRWXU) != 0)
+	if(os_mkdir(mount_point, S_IRWXU) != 0)
 	{
 		free(escaped_filename);
 		show_error_msg("Unable to create FUSE mount directory", mount_point);

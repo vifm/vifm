@@ -217,6 +217,10 @@ FILE * reopen_terminal(void);
  * NULL on error, otherwise stream valid for reading is returned. */
 FILE * read_cmd_output(const char cmd[]);
 
+/* Gets path to directory where files bundled with Vifm are stored.  Returns
+ * pointer to a statically allocated buffer. */
+const char * get_installed_data_dir(void);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

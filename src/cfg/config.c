@@ -26,19 +26,15 @@
 #define LOG "log"
 #define VIFMRC "vifmrc"
 
-#ifndef _WIN32
-#define CP_HELP "cp " PACKAGE_DATA_DIR "/" VIFM_HELP " ~/.vifm"
-#define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
-#endif
-
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../compat/os.h"
+#include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
@@ -56,6 +52,7 @@
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../types.h"
+#include "../vifm.h"
 #include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
@@ -81,18 +78,18 @@ static int try_homepath_envvar_for_home(void);
 static void find_config_dir(void);
 static int try_vifm_envvar_for_conf(void);
 static int try_exe_directory_for_conf(void);
-static int try_home_envvar_for_conf(void);
+static int try_home_envvar_for_conf(int force);
 static int try_appdata_for_conf(void);
+static int try_xdg_for_conf(void);
+static void find_data_dir(void);
 static void find_config_file(void);
 static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_exe_directory_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(void);
-static void create_config_dir(void);
-#ifndef _WIN32
-static void create_help_file(void);
-static void create_rc_file(void);
-#endif
+static void setup_dirs(void);
+static void copy_help_file(void);
+static void copy_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
@@ -219,28 +216,27 @@ cfg_discover_paths(void)
 
 	find_home_dir();
 	find_config_dir();
+	find_data_dir();
 	find_config_file();
 
 	store_config_paths();
 
-	create_config_dir();
+	setup_dirs();
 }
 
-/* tries to find home directory */
+/* Tries to find home directory. */
 static void
 find_home_dir(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_home_envvar_for_home())
-		return;
-	if(try_userprofile_envvar_for_home())
-		return;
-	if(try_homepath_envvar_for_home())
-		return;
+	if(try_home_envvar_for_home()) return;
+	if(try_userprofile_envvar_for_home()) return;
+	if(try_homepath_envvar_for_home()) return;
 }
 
-/* tries to use HOME environment variable to find home directory */
+/* Tries to use HOME environment variable to find home directory.  Returns
+ * non-zero on success, otherwise zero is returned. */
 static int
 try_home_envvar_for_home(void)
 {
@@ -250,7 +246,8 @@ try_home_envvar_for_home(void)
 	return home != NULL && is_dir(home);
 }
 
-/* tries to use USERPROFILE environment variable to find home directory */
+/* Tries to use USERPROFILE environment variable to find home directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_userprofile_envvar_for_home(void)
 {
@@ -270,6 +267,8 @@ try_userprofile_envvar_for_home(void)
 #endif
 }
 
+/* Tries to use $HOMEDRIVE/$HOMEPATH as home directory.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_homepath_envvar_for_home(void)
 {
@@ -293,23 +292,26 @@ try_homepath_envvar_for_home(void)
 #endif
 }
 
-/* tries to find configuration directory */
+/* Tries to find configuration directory. */
 static void
 find_config_dir(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_vifm_envvar_for_conf())
-		return;
-	if(try_exe_directory_for_conf())
-		return;
-	if(try_home_envvar_for_conf())
-		return;
-	if(try_appdata_for_conf())
-		return;
+	if(try_vifm_envvar_for_conf()) return;
+	if(try_exe_directory_for_conf()) return;
+	if(try_home_envvar_for_conf(get_env_type() == ET_WIN)) return;
+	if(try_appdata_for_conf()) return;
+	if(try_xdg_for_conf()) return;
+
+	if(!try_home_envvar_for_conf(1))
+	{
+		vifm_finish("Failed to determine location of configuration files.");
+	}
 }
 
-/* tries to use VIFM environment variable to find configuration directory */
+/* Tries to use VIFM environment variable to find configuration directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_vifm_envvar_for_conf(void)
 {
@@ -319,7 +321,8 @@ try_vifm_envvar_for_conf(void)
 	return vifm != NULL && is_dir(vifm);
 }
 
-/* tries to use directory of executable file as configuration directory */
+/* Tries to use directory of executable file as configuration directory.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_exe_directory_for_conf(void)
 {
@@ -341,26 +344,33 @@ try_exe_directory_for_conf(void)
 	return 1;
 }
 
-/* tries to use $HOME/.vifm as configuration directory */
+/* Tries to use $HOME/.vifm as configuration directory.  Tries harder on force.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
-try_home_envvar_for_conf(void)
+try_home_envvar_for_conf(int force)
 {
 	LOG_FUNC_ENTER;
 
 	char vifm[PATH_MAX];
+
 	const char *home = env_get(HOME_EV);
 	if(home == NULL || !is_dir(home))
+	{
 		return 0;
+	}
+
 	snprintf(vifm, sizeof(vifm), "%s/.vifm", home);
-#ifdef _WIN32
-	if(!is_dir(vifm))
+	if(!force && !is_dir(vifm))
+	{
 		return 0;
-#endif
+	}
+
 	env_set(VIFM_EV, vifm);
 	return 1;
 }
 
-/* tries to use $APPDATA/Vifm as configuration directory */
+/* Tries to use $APPDATA/Vifm as configuration directory.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_appdata_for_conf(void)
 {
@@ -380,21 +390,68 @@ try_appdata_for_conf(void)
 #endif
 }
 
-/* tries to find configuration file */
+/* Tries to use $XDG_CONFIG_HOME/vifm as configuration directory.  Returns
+ * non-zero on success, otherwise zero is returned. */
+static int
+try_xdg_for_conf(void)
+{
+	LOG_FUNC_ENTER;
+
+	char *config_dir;
+
+	const char *const config_home = env_get("XDG_CONFIG_HOME");
+	if(!is_null_or_empty(config_home) && is_path_absolute(config_home))
+	{
+		config_dir = format_str("%s/vifm", config_home);
+	}
+	else if(path_exists_at(env_get(HOME_EV), ".config", DEREF))
+	{
+		config_dir = format_str("%s/.config/vifm", env_get(HOME_EV));
+	}
+	else
+	{
+		return 0;
+	}
+
+	env_set(VIFM_EV, config_dir);
+	free(config_dir);
+
+	return 1;
+}
+
+/* Tries to find directory for data files. */
+static void
+find_data_dir(void)
+{
+	LOG_FUNC_ENTER;
+
+	const char *const data_home = env_get("XDG_DATA_HOME");
+	if(is_null_or_empty(data_home) || !is_path_absolute(data_home))
+	{
+		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/.local/share/",
+				env_get(HOME_EV));
+	}
+	else
+	{
+		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/", data_home);
+	}
+
+	strcat(cfg.data_dir, "vifm");
+}
+
+/* Tries to find configuration file. */
 static void
 find_config_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_myvifmrc_envvar_for_vifmrc())
-		return;
-	if(try_exe_directory_for_vifmrc())
-		return;
-	if(try_vifm_vifmrc_for_vifmrc())
-		return;
+	if(try_myvifmrc_envvar_for_vifmrc()) return;
+	if(try_exe_directory_for_vifmrc()) return;
+	if(try_vifm_vifmrc_for_vifmrc()) return;
 }
 
-/* tries to use $MYVIFMRC as configuration file */
+/* Tries to use $MYVIFMRC as configuration file.  Returns non-zero on success,
+ * otherwise zero is returned. */
 static int
 try_myvifmrc_envvar_for_vifmrc(void)
 {
@@ -404,7 +461,8 @@ try_myvifmrc_envvar_for_vifmrc(void)
 	return myvifmrc != NULL && path_exists(myvifmrc, DEREF);
 }
 
-/* tries to use vifmrc in directory of executable file as configuration file */
+/* Tries to use vifmrc in directory of executable file as configuration file.
+ * Returns non-zero on success, otherwise zero is returned. */
 static int
 try_exe_directory_for_vifmrc(void)
 {
@@ -428,7 +486,8 @@ try_exe_directory_for_vifmrc(void)
 	return 1;
 }
 
-/* tries to use $VIFM/vifmrc as configuration file */
+/* Tries to use $VIFM/vifmrc as configuration file.  Returns non-zero on
+ * success, otherwise zero is returned. */
 static int
 try_vifm_vifmrc_for_vifmrc(void)
 {
@@ -445,81 +504,98 @@ try_vifm_vifmrc_for_vifmrc(void)
 	return 1;
 }
 
-/* writes path configuration file and directories for further usage */
+/* Writes path configuration file and directories for further usage. */
 static void
 store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
+	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
+	                       ? cfg.config_dir
+	                       : cfg.data_dir;
+
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
-			cfg.config_dir);
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
+			trash_base);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.data_dir);
 }
 
-/* ensures existence of configuration directory */
+/* Ensures existence of configuration and data directories.  Performs first run
+ * initialization. */
 static void
-create_config_dir(void)
+setup_dirs(void)
 {
 	LOG_FUNC_ENTER;
 
-	/* ensure existence of configuration directory */
-	if(!is_dir(cfg.config_dir))
+	char rc_file[PATH_MAX];
+
+	if(is_dir(cfg.config_dir))
 	{
-#ifndef _WIN32
-		FILE *f;
-		char help_file[PATH_MAX];
-		char rc_file[PATH_MAX];
-
-		if(make_dir(cfg.config_dir, 0777) != 0)
-			return;
-
-		snprintf(help_file, sizeof(help_file), "%s/" VIFM_HELP, cfg.config_dir);
-		if((f = os_fopen(help_file, "r")) == NULL)
-			create_help_file();
-		else
-			fclose(f);
-
-		snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
-		if((f = os_fopen(rc_file, "r")) == NULL)
-			create_rc_file();
-		else
-			fclose(f);
-
-		/* This should be first start of Vifm, ensure that newly created sample
-		 * vifmrc file is used right away. */
-		env_set(MYVIFMRC_EV, rc_file);
-#else
-		if(make_dir(cfg.config_dir, 0777) != 0)
-			return;
-#endif
-
-		add_default_bookmarks();
+		/* We rely on this file for :help, so make sure it's there. */
+		copy_help_file();
+		return;
 	}
+
+	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
+	{
+		return;
+	}
+
+	/* This must be first run of Vifm in this environment. */
+
+	copy_help_file();
+	copy_rc_file();
+
+	/* Ensure that just copied sample vifmrc file is used right away. */
+	snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
+	env_set(MYVIFMRC_EV, rc_file);
+
+	add_default_bookmarks();
 }
 
-#ifndef _WIN32
-/* Copies help file from shared files to the ~/.vifm directory. */
+/* Copies help file from shared files to the ~/.vifm directory if it's not
+ * already there. */
 static void
-create_help_file(void)
+copy_help_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[] = CP_HELP;
-	(void)vifm_system(command);
+	char src[PATH_MAX];
+	char dst[PATH_MAX];
+
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+		.arg3.crs = IO_CRS_FAIL,
+	};
+
+	snprintf(src, sizeof(src), "%s/" VIFM_HELP, get_installed_data_dir());
+	snprintf(dst, sizeof(dst), "%s/" VIFM_HELP, cfg.config_dir);
+
+	/* Don't care if it fails, also don't overwrite if file exists. */
+	(void)iop_cp(&args);
 }
 
 /* Copies example vifmrc file from shared files to the ~/.vifm directory. */
 static void
-create_rc_file(void)
+copy_rc_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[] = CP_RC;
-	(void)vifm_system(command);
+	char src[PATH_MAX];
+	char dst[PATH_MAX];
+
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+	};
+
+	snprintf(src, sizeof(src), "%s/" VIFMRC, get_installed_data_dir());
+	snprintf(dst, sizeof(dst), "%s/" VIFMRC, cfg.config_dir);
+
+	(void)iop_cp(&args);
 }
-#endif
 
 /* Adds 'H' and 'z' default bookmarks. */
 static void
@@ -551,7 +627,9 @@ cfg_source_file(const char filename[])
 	SourcingState sourcing_state;
 
 	if((fp = os_fopen(filename, "r")) == NULL)
+	{
 		return 1;
+	}
 
 	sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;

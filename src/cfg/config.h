@@ -55,8 +55,10 @@ enum
 
 typedef struct config_t
 {
-	char home_dir[PATH_MAX]; /* ends with a slash */
-	char config_dir[PATH_MAX];
+	char home_dir[PATH_MAX];   /* Ends with a slash. */
+	char config_dir[PATH_MAX]; /* Where to store configuration files. */
+	char data_dir[PATH_MAX];   /* Where to store data files. */
+
 	/* This one should be set using set_trash_dir() function. */
 	char trash_dir[PATH_MAX];
 	char log_file[PATH_MAX];

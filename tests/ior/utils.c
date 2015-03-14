@@ -6,6 +6,7 @@
 
 #include <stdio.h> /* FILE fclose() fopen() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
@@ -51,7 +52,7 @@ create_non_empty_nested_dir(const char root_dir[], const char nested_dir[],
 void
 create_empty_dir(const char dir[])
 {
-	make_dir(dir, 0700);
+	os_mkdir(dir, 0700);
 	assert_true(is_dir(dir));
 }
 

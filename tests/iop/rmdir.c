@@ -4,6 +4,7 @@
 
 #include <unistd.h> /* F_OK access() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
@@ -13,7 +14,7 @@ static const char *const DIRECTORY_NAME = "directory-to-remove";
 
 TEST(empty_directory_is_removed)
 {
-	make_dir(DIRECTORY_NAME, 0700);
+	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
 
 	{
@@ -29,7 +30,7 @@ TEST(empty_directory_is_removed)
 
 TEST(non_empty_directory_is_not_removed)
 {
-	make_dir(DIRECTORY_NAME, 0700);
+	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
 
 	assert_int_equal(0, chdir(DIRECTORY_NAME));

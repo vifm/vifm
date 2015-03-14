@@ -1256,7 +1256,8 @@ colname2int(char col[])
 	return -1;
 }
 
-int make_dir(const char *dir_name, mode_t mode)
+static int
+make_dir(const char dir_name[], mode_t mode)
 {
 #ifndef _WIN32
 	return mkdir(dir_name, mode);

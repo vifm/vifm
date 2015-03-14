@@ -29,8 +29,8 @@
 int iop_mkfile(io_args_t *const args);
 
 /* Creates directory or hierarchical directory structure (if parent is true).
- * Expects path in arg1 and parent in arg3.  When process_parents is false,
- * fails if destination already exists. */
+ * Expects path in arg1, process_parents in arg2 and mode in arg3.  When
+ * process_parents is false, fails if destination already exists. */
 int iop_mkdir(io_args_t *const args);
 
 /* Deletes file.  Expects path in arg1. */
@@ -40,7 +40,7 @@ int iop_rmfile(io_args_t *const args);
  * empty. */
 int iop_rmdir(io_args_t *const args);
 
-/* Copies file.  Expects path in arg1 and crs in arg3. */
+/* Copies file.  Expects source in arg1, destination in arg2 and crs in arg3. */
 int iop_cp(io_args_t *const args);
 
 /* Change owner of file/directory.  Expects path in arg1 and uid in arg3. */

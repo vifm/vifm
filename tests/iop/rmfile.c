@@ -4,6 +4,7 @@
 
 #include <unistd.h> /* F_OK access() rmdir() */
 
+#include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/utils.h"
@@ -32,7 +33,7 @@ TEST(file_is_removed)
 
 TEST(directory_is_not_removed)
 {
-	make_dir(DIRECTORY_NAME, 0700);
+	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
 
 	{

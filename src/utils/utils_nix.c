@@ -810,5 +810,11 @@ read_cmd_output(const char cmd[])
 	return fp;
 }
 
+const char *
+get_installed_data_dir(void)
+{
+	return PACKAGE_DATA_DIR;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -40,6 +40,7 @@
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
 #include "../compat/os.h"
+#include "../io/iop.h"
 #include "fs_limits.h"
 #include "log.h"
 #include "path.h"
@@ -388,9 +389,15 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 }
 
 int
-make_dir(const char *dir_name, mode_t mode)
+make_path(const char dir_name[], mode_t mode)
 {
-	return os_mkdir(dir_name, mode);
+	io_args_t args = {
+		.arg1.path = dir_name,
+		.arg2.process_parents = 1,
+		.arg3.mode = mode,
+	};
+
+	return iop_mkdir(&args);
 }
 
 int
