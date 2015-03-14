@@ -40,7 +40,7 @@ int iop_rmfile(io_args_t *const args);
  * empty. */
 int iop_rmdir(io_args_t *const args);
 
-/* Copies file.  Expects path in arg1 and crs in arg3. */
+/* Copies file.  Expects source in arg1, destination in arg2 and crs in arg3. */
 int iop_cp(io_args_t *const args);
 
 /* Change owner of file/directory.  Expects path in arg1 and uid in arg3. */

@@ -519,10 +519,7 @@ setup_dirs(void)
 
 	char rc_file[PATH_MAX];
 
-	if(!path_exists_at(cfg.config_dir, VIFM_HELP, DEREF))
-	{
-		copy_help_file();
-	}
+	copy_help_file();
 
 	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
 	{
@@ -540,7 +537,8 @@ setup_dirs(void)
 	add_default_bookmarks();
 }
 
-/* Copies help file from shared files to the ~/.vifm directory. */
+/* Copies help file from shared files to the ~/.vifm directory if it's not
+ * already there. */
 static void
 copy_help_file(void)
 {
@@ -552,11 +550,13 @@ copy_help_file(void)
 	io_args_t args = {
 		.arg1.src = src,
 		.arg2.dst = dst,
+		.arg3.crs = IO_CRS_FAIL,
 	};
 
 	snprintf(src, sizeof(src), "%s/" VIFM_HELP, get_installed_data_dir());
 	snprintf(dst, sizeof(dst), "%s/" VIFM_HELP, cfg.config_dir);
 
+	/* Don't care if it fails, also don't overwrite if file exists. */
 	(void)iop_cp(&args);
 }
 
