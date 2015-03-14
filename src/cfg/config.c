@@ -389,7 +389,7 @@ try_xdg_for_conf(void)
 	char *config_dir;
 
 	const char *const config_home = env_get("XDG_CONFIG_HOME");
-	if(is_path_absolute(config_home) && path_exists(config_home, DEREF))
+	if(!is_null_or_empty(config_home) && is_path_absolute(config_home))
 	{
 		config_dir = format_str("%s/vifm", config_home);
 	}
@@ -425,14 +425,7 @@ find_data_dir(void)
 		snprintf(cfg.data_dir, sizeof(cfg.data_dir) - 4, "%s/", data_home);
 	}
 
-	if(path_exists(cfg.data_dir, DEREF))
-	{
-		strcat(cfg.data_dir, "vifm");
-	}
-	else
-	{
-		copy_str(cfg.data_dir, sizeof(cfg.data_dir) - 4, env_get(VIFM_EV));
-	}
+	strcat(cfg.data_dir, "vifm");
 }
 
 /* Tries to find configuration file. */
