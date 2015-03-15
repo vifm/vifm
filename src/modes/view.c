@@ -296,7 +296,7 @@ init_view_mode(void)
 }
 
 void
-enter_view_mode(int explore)
+enter_view_mode(FileView *view, int explore)
 {
 	char full_path[PATH_MAX];
 
@@ -315,6 +315,7 @@ enter_view_mode(int explore)
 
 	pick_vi(explore);
 
+	vi->view = view;
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
 		return;

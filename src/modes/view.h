@@ -24,7 +24,8 @@
 /* Initializes view mode. */
 void init_view_mode(void);
 
-void enter_view_mode(int explore);
+/* Enters view mode when possible.  View is the expected output area. */
+void enter_view_mode(FileView *view, int explore);
 
 void leave_view_mode(void);
 
