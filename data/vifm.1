@@ -1,4 +1,4 @@
-.TH vifm 1 "March 13, 2015" "" "Vifm"
+.TH vifm 1 "March 14, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2581,6 +2581,22 @@ forbid using of terminal multiplexer to run the command.
 .TP
 .BI %i
 Completely ignore command output.
+
+.LP
+The following dimensions and coordinates are in characters:
+.TP
+.BI %px
+x coordinate of top-left corner of preview area.
+.TP
+.BI %py
+y coordinate of top-left corner of preview area.
+.TP
+.BI %pw
+width of preview area.
+.TP
+.BI %ph
+height of preview area.
+
 .LP
 Use %% if you need to put a percent sign in your command.
 
