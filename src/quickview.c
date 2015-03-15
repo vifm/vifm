@@ -297,7 +297,14 @@ get_viewer_command(const char viewer[])
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *const escaped = escape_filename(get_current_file_name(curr_view), 0);
+		char *escaped;
+		FileView *view = curr_stats.preview_hint;
+		if(view == NULL)
+		{
+			view = curr_view;
+		}
+
+		escaped = escape_filename(get_current_file_name(view), 0);
 		result = format_str("%s %s", viewer, escaped);
 		free(escaped);
 	}

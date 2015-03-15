@@ -133,6 +133,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->on_choose = NULL;
 
+	stats->preview_hint = NULL;
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif

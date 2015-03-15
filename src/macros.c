@@ -426,7 +426,13 @@ static FileView *
 get_preview_view(FileView *view)
 {
 	FileView *const other = (view == curr_view) ? other_view : curr_view;
-	if(!view->explore_mode && (other->explore_mode || curr_stats.view))
+
+	if(curr_stats.preview_hint != NULL)
+	{
+		return curr_stats.preview_hint;
+	}
+
+	if(curr_stats.view || (!view->explore_mode && other->explore_mode))
 	{
 		return other;
 	}
