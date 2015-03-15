@@ -77,7 +77,7 @@ static void clear_border(WINDOW *border);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
-static void update_view(FileView *win);
+static void update_view(FileView *view);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
@@ -684,10 +684,16 @@ update_all_windows(void)
 
 /* Updates all parts of file view. */
 static void
-update_view(FileView *win)
+update_view(FileView *view)
 {
-	update_window_lazy(win->title);
-	update_window_lazy(win->win);
+	update_window_lazy(view->title);
+
+	/* If view displays graphics, we don't want to update it or the image will be
+	 * lost. */
+	if(!view->explore_mode && !(curr_stats.view && view == other_view))
+	{
+		update_window_lazy(view->win);
+	}
 }
 
 /* Tell curses to internally mark window as changed. */
