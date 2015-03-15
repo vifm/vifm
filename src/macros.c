@@ -49,6 +49,7 @@ static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 static char * expand_register(const char curr_dir[], char expanded[],
 		int quotes, const char mod[], int key, int *well_formed, int for_shell);
 static char * expand_preview(char expanded[], int key, int *well_formed);
+static FileView * get_preview_view(FileView *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
@@ -383,6 +384,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 static char *
 expand_preview(char expanded[], int key, int *well_formed)
 {
+	FileView *view;
 	char num_str[32];
 	int h, w, x, y;
 	int param;
@@ -395,8 +397,10 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 	*well_formed = 1;
 
-	getbegyx(other_view->win, y, x);
-	getmaxyx(other_view->win, h, w);
+	view = get_preview_view(curr_view);
+
+	getbegyx(view->win, y, x);
+	getmaxyx(view->win, h, w);
 
 	switch(key)
 	{
@@ -414,6 +418,22 @@ expand_preview(char expanded[], int key, int *well_formed)
 	snprintf(num_str, sizeof(num_str), "%d", param);
 
 	return append_to_expanded(expanded, num_str);
+}
+
+/* Applies heuristics to determine which view is going to be used for preview.
+ * Returns the view. */
+static FileView *
+get_preview_view(FileView *view)
+{
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+	if(!view->explore_mode && (other->explore_mode || curr_stats.view))
+	{
+		return other;
+	}
+	else
+	{
+		return view;
+	}
 }
 
 /* Appends the path to the expanded string with either proper escaping or
