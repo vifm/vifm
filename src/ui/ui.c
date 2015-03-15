@@ -1421,24 +1421,12 @@ ui_view_clear(FileView *view)
 	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
 	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
 
-	/* Draw fake filler all over the window. */
-	memset(line_filler, '*', sizeof(line_filler));
+	memset(line_filler, '\x09', sizeof(line_filler));
 	for(i = 0; i < height; ++i)
 	{
 		mvwaddstr(view->win, i, 0, line_filler);
 	}
-	/* Copy it to foreground buffer. */
-	wrefresh(view->win);
-
-	/* Clear the window.  It's important for this filler to differ from previous
-	 * one. */
-	memset(line_filler, ' ', sizeof(line_filler));
-	for(i = 0; i < height; ++i)
-	{
-		mvwaddstr(view->win, i, 0, line_filler);
-	}
-	/* This time whole window is guaranteed to be redrawn, because content of each
-	 * and every character changed. */
+	redrawwin(view->win);
 	wrefresh(view->win);
 }
 
