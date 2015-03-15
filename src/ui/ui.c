@@ -77,7 +77,7 @@ static void clear_border(WINDOW *border);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
-static void update_view(FileView *win);
+static void update_view(FileView *view);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
@@ -684,10 +684,16 @@ update_all_windows(void)
 
 /* Updates all parts of file view. */
 static void
-update_view(FileView *win)
+update_view(FileView *view)
 {
-	update_window_lazy(win->title);
-	update_window_lazy(win->win);
+	update_window_lazy(view->title);
+
+	/* If view displays graphics, we don't want to update it or the image will be
+	 * lost. */
+	if(!view->explore_mode && !(curr_stats.view && view == other_view))
+	{
+		update_window_lazy(view->win);
+	}
 }
 
 /* Tell curses to internally mark window as changed. */
@@ -1403,6 +1409,31 @@ ui_view_erase(FileView *view)
 	const int bg = COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr;
 	wbkgdset(view->win, bg);
 	werase(view->win);
+}
+
+void
+ui_view_clear(FileView *view)
+{
+	int i;
+	int height;
+	short int fg, bg;
+	char line_filler[getmaxx(view->win) + 1];
+
+	line_filler[sizeof(line_filler) - 1] = '\0';
+	height = getmaxy(view->win);
+
+	/* User doesn't need to see fake filling so draw it with the color of
+	 * background. */
+	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
+	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
+
+	memset(line_filler, '\x09', sizeof(line_filler));
+	for(i = 0; i < height; ++i)
+	{
+		mvwaddstr(view->win, i, 0, line_filler);
+	}
+	redrawwin(view->win);
+	wrefresh(view->win);
 }
 
 void

@@ -449,6 +449,10 @@ const col_scheme_t * ui_view_get_cs(const FileView *view);
 /* Erases view window by filling it with the background color. */
 void ui_view_erase(FileView *view);
 
+/* Same as erase, but ensures that view is updated in all its size on the
+ * screen (e.g. to clear anything put there by other programs as well). */
+void ui_view_clear(FileView *view);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

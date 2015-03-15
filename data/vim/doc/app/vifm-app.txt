@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 13
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2099,6 +2099,17 @@ The command macros may be used in user commands.
   %n        forbid using of terminal multiplexer to run the command.
                                                                *vifm-%i*
   %i        completely ignore command output.
+
+
+  The following dimensions and coordinates are in characters:
+                                                               *vifm-%px*
+  %px       x coordinate of top-left corner of preview area.
+                                                               *vifm-%py*
+  %py       y coordinate of top-left corner of preview area.
+                                                               *vifm-%pw*
+  %pw       width of preview area.
+                                                               *vifm-%ph*
+  %ph       height of preview area.
 
 Use %% if you need to put a percent sign in your command.
 

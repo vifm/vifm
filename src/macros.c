@@ -48,6 +48,8 @@ static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
 static char * expand_register(const char curr_dir[], char expanded[],
 		int quotes, const char mod[], int key, int *well_formed, int for_shell);
+static char * expand_preview(char expanded[], int key, int *well_formed);
+static FileView * get_preview_view(FileView *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
@@ -196,6 +198,17 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 					if(well_formed)
 					{
 						x++;
+					}
+				}
+				break;
+			case 'p': /* preview pane properties */
+				{
+					int well_formed;
+					expanded = expand_preview(expanded, command[x + 1], &well_formed);
+					len = strlen(expanded);
+					if(well_formed)
+					{
+						++x;
 					}
 				}
 				break;
@@ -362,6 +375,71 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 #endif
 
 	return expanded;
+}
+
+/* Expands preview parameter macros specified by the key argument.  If key is
+ * unknown, skips the macro.  Sets *well_formed to non-zero for valid value of
+ * the key.  Reallocates the expanded string and returns result (possibly
+ * NULL). */
+static char *
+expand_preview(char expanded[], int key, int *well_formed)
+{
+	FileView *view;
+	char num_str[32];
+	int h, w, x, y;
+	int param;
+
+	if(!char_is_one_of("hwxy", key))
+	{
+		*well_formed = 0;
+		return expanded;
+	}
+
+	*well_formed = 1;
+
+	view = get_preview_view(curr_view);
+
+	getbegyx(view->win, y, x);
+	getmaxyx(view->win, h, w);
+
+	switch(key)
+	{
+		case 'h': param = h - 2; break;
+		case 'w': param = w - 2; break;
+		case 'x': param = x + 1; break;
+		case 'y': param = y + 1; break;
+
+		default:
+			assert(0 && "Unhandled preview property type");
+			num_str[0] = '\0';
+			break;
+	}
+
+	snprintf(num_str, sizeof(num_str), "%d", param);
+
+	return append_to_expanded(expanded, num_str);
+}
+
+/* Applies heuristics to determine which view is going to be used for preview.
+ * Returns the view. */
+static FileView *
+get_preview_view(FileView *view)
+{
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+
+	if(curr_stats.preview_hint != NULL)
+	{
+		return curr_stats.preview_hint;
+	}
+
+	if(curr_stats.view || (!view->explore_mode && other->explore_mode))
+	{
+		return other;
+	}
+	else
+	{
+		return view;
+	}
 }
 
 /* Appends the path to the expanded string with either proper escaping or

@@ -86,6 +86,7 @@ typedef struct
 	int wrap;
 	int abandoned; /* Shows whether view mode was abandoned. */
 	char *filename;
+	int graphics; /* Whether viewer presumably displays graphics. */
 
 	int auto_forward;   /* Whether auto forwarding (tail -F) is enabled. */
 	filemon_t file_mon; /* File monitor for auto forwarding mode. */
@@ -296,7 +297,7 @@ init_view_mode(void)
 }
 
 void
-enter_view_mode(int explore)
+enter_view_mode(FileView *view, int explore)
 {
 	char full_path[PATH_MAX];
 
@@ -315,6 +316,7 @@ enter_view_mode(int explore)
 
 	pick_vi(explore);
 
+	vi->view = view;
 	if(load_view_data(vi, "File exploring", full_path, NOSILENT) != 0)
 	{
 		return;
@@ -576,6 +578,14 @@ draw(void)
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
 
+	if(vi->graphics)
+	{
+		ui_view_clear(vi->view);
+		free_string_array(vi->lines, vi->nlines);
+		(void)get_view_data(vi, vi->filename);
+		return;
+	}
+
 	esc_state_init(&state, &cs->color[WIN_COLOR]);
 
 	ui_view_erase(vi->view);
@@ -819,6 +829,10 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	ui_views_update_titles();
+	if(curr_stats.view)
+	{
+		quick_view_file(curr_view);
+	}
 }
 
 /* Switches views. */
@@ -1024,9 +1038,27 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 2;
 		}
 	}
-	else if((fp = use_info_prog(viewer)) == NULL)
+	else
 	{
-		return 3;
+		FileView *const curr = curr_view;
+		curr_view = curr_stats.view ? curr_view
+		          : (vi->view != NULL) ? vi->view : curr_view;
+		curr_stats.preview_hint = vi->view;
+
+		fp = use_info_prog(viewer);
+
+		curr_view = curr;
+		curr_stats.preview_hint = NULL;
+
+		if(fp == NULL)
+		{
+			return 3;
+		}
+	}
+
+	if(strstr(viewer, "%p") != NULL)
+	{
+		vi->graphics = 1;
 	}
 
 	vi->lines = is_null_or_empty(viewer)

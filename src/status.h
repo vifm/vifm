@@ -158,6 +158,8 @@ typedef struct
 
 	char *on_choose; /* Command to execute on picking files. */
 
+	void *preview_hint; /* Hint on which view is used for preview. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

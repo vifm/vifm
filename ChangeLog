@@ -95,6 +95,10 @@
 	find configuration in other places.  Thanks to Miodrag Tokić (a.k.a.
 	loonies).
 
+	Added %px, %py, %pw and %ph macros that describe location and dimensions
+	of preview area to use in external commands.  Thanks to Stephano (a.k.a.
+	cao).
+
 	Switch to utf-8 internal representation of paths on Windows.  This fixes
 	issues when file name encoding doesn't match system encoding.  Thanks to
 	Stas Panteleev.
