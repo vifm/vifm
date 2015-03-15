@@ -1406,6 +1406,43 @@ ui_view_erase(FileView *view)
 }
 
 void
+ui_view_clear(FileView *view)
+{
+	int i;
+	int height;
+	short int fg, bg;
+	char line_filler[getmaxx(view->win) + 1];
+
+	line_filler[sizeof(line_filler) - 1] = '\0';
+	height = getmaxy(view->win);
+
+	/* User doesn't need to see fake filling so draw it with the color of
+	 * background. */
+	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
+	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
+
+	/* Draw fake filler all over the window. */
+	memset(line_filler, '*', sizeof(line_filler));
+	for(i = 0; i < height; ++i)
+	{
+		mvwaddstr(view->win, i, 0, line_filler);
+	}
+	/* Copy it to foreground buffer. */
+	wrefresh(view->win);
+
+	/* Clear the window.  It's important for this filler to differ from previous
+	 * one. */
+	memset(line_filler, ' ', sizeof(line_filler));
+	for(i = 0; i < height; ++i)
+	{
+		mvwaddstr(view->win, i, 0, line_filler);
+	}
+	/* This time whole window is guaranteed to be redrawn, because content of each
+	 * and every character changed. */
+	wrefresh(view->win);
+}
+
+void
 ui_view_schedule_redraw(FileView *view)
 {
 	view->postponed_redraw = get_updated_time(view->postponed_redraw);
