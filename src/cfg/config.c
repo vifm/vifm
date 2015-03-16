@@ -300,7 +300,7 @@ find_config_dir(void)
 
 	if(try_vifm_envvar_for_conf()) return;
 	if(try_exe_directory_for_conf()) return;
-	if(try_home_envvar_for_conf(get_env_type() == ET_WIN)) return;
+	if(try_home_envvar_for_conf(0)) return;
 	if(try_appdata_for_conf()) return;
 	if(try_xdg_for_conf()) return;
 
