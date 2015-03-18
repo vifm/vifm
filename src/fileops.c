@@ -66,6 +66,7 @@
 #include "background.h"
 #include "commands_completion.h"
 #include "filelist.h"
+#include "fileview.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"

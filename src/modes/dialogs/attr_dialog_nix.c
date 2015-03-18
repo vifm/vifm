@@ -41,6 +41,7 @@
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
+#include "../../fileview.h"
 #include "../../ops.h"
 #include "../../status.h"
 #include "../../undo.h"

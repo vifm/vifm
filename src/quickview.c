@@ -46,6 +46,7 @@
 #include "escape.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "fileview.h"
 #include "macros.h"
 #include "status.h"
 #include "types.h"

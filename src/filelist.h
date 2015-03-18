@@ -71,13 +71,8 @@ int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
 /* Returns new list position after making correction for scrolling up. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
-/* Returns non-zero if all files are visible, so no scrolling is needed. */
-int all_files_visible(const FileView *view);
-void move_to_list_pos(FileView *view, int pos);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(FileView *view, FileListScope scope);
-/* Adds inactive cursor mark to the view. */
-void put_inactive_mark(FileView *view);
 /* Returns non-zero in case view can be scrolled up (there are more files). */
 int can_scroll_up(const FileView *view);
 /* Returns non-zero in case view can be scrolled down (there are more files). */
@@ -86,12 +81,6 @@ int can_scroll_down(const FileView *view);
  * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
  * functions. */
 void scroll_by_files(FileView *view, ssize_t by);
-/* Scrolls view up at least by specified number of files.  Updates both top and
- * cursor positions. */
-void scroll_up(FileView *view, size_t by);
-/* Scrolls view down at least by specified number of files.  Updates both top
- * and cursor positions. */
-void scroll_down(FileView *view, size_t by);
 /* Returns non-zero if cursor is on the first line. */
 int at_first_line(const FileView *view);
 /* Returns non-zero if cursor is on the last line. */
@@ -126,8 +115,6 @@ int consider_scroll_offset(FileView *view);
 void reset_view_sort(FileView *view);
 /* Inverts primary key sorting order. */
 void invert_sorting_order(FileView *view);
-void draw_dir_list(FileView *view);
-void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_view(FileView *view);
@@ -140,10 +127,6 @@ void redraw_current_view(void);
  * moment. */
 int window_shows_dirlist(const FileView *const view);
 void change_sort_type(FileView *view, char type, char descending);
-/* Returns non-zero if redraw is needed */
-int move_curr_line(FileView *view);
-/* Returns number of columns in the view. */
-size_t calculate_columns_count(FileView *view);
 
 /* Directory traversing functions. */
 
@@ -337,8 +320,6 @@ void check_marking(FileView *view, int count, const int indexes[]);
 void mark_files_at(FileView *view, int count, const int indexes[]);
 /* Marks selected files of the view. */
 void mark_selected(FileView *view);
-/* Enables/disables ls-like style of the view. */
-void fview_set_lsview(FileView *view, int enabled);
 
 TSTATIC_DEFS(
 	int file_is_visible(FileView *view, const char filename[], int is_dir);

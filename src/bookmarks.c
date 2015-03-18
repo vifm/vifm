@@ -31,6 +31,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
+#include "fileview.h"
 
 static int is_valid_index(const int bmark_index);
 static void clear_bmarks(bookmark_t bmarks[], int count);

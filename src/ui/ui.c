@@ -57,6 +57,7 @@
 #include "../colors.h"
 #include "../event_loop.h"
 #include "../filelist.h"
+#include "../fileview.h"
 #include "../opt_handlers.h"
 #include "../quickview.h"
 #include "../status.h"

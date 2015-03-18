@@ -39,6 +39,7 @@
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../fileview.h"
 #include "../fileops.h"
 #include "../registers.h"
 #include "../running.h"

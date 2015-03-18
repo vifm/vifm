@@ -24,6 +24,7 @@
 
 #include "ui/ui.h"
 #include "filelist.h"
+#include "fileview.h"
 
 stack_entry_t *stack;
 unsigned int stack_top;

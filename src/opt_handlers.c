@@ -42,6 +42,7 @@
 #include "utils/utils.h"
 #include "column_view.h"
 #include "filelist.h"
+#include "fileview.h"
 #include "quickview.h"
 #include "search.h"
 #include "sort.h"

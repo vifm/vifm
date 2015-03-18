@@ -89,6 +89,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "fileview.h"
 #include "macros.h"
 #include "ops.h"
 #include "opt_handlers.h"

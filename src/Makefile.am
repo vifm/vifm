@@ -166,6 +166,7 @@ vifm_SOURCES = \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
+	fileview.c fileview.h \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \

@@ -42,8 +42,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	char *cmd;
 	char *escaped_args = NULL;
 
-	custom_macro_t macros[] =
-	{
+	custom_macro_t macros[] = {
 		{ .letter = 'i', .value = NULL, .uses_left = 1, .group = -1 },
 		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
@@ -59,7 +58,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 		return 0;
 	}
 
-	init_menu_info(&m, GREP_MENU, strdup("No matches found"));
+	init_menu_info(&m, GREP_MENU, format_str("No matches found: %s", args));
 
 	m.title = format_str(" Grep %s ", args);
 	m.execute_handler = &execute_grep_cb;

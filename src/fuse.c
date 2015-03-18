@@ -46,6 +46,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
+#include "fileview.h"
 #include "status.h"
 
 typedef struct fuse_mount_t

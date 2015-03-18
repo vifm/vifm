@@ -33,6 +33,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "fileview.h"
 
 static int find_and_goto_pattern(FileView *view, int wrap_start, int backward);
 static int find_and_goto_match(FileView *view, int start, int backward);

@@ -49,6 +49,7 @@
 #include "../commands.h"
 #include "../filelist.h"
 #include "../fileops.h"
+#include "../fileview.h"
 #include "../quickview.h"
 #include "../registers.h"
 #include "../running.h"

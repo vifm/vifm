@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 06 March, 2015
+Updated: 18 March, 2015
 Version: 0.7.8
 
 Brief Description
@@ -176,10 +176,11 @@ Package content
     |  |-- dir_stack.c - for :pushd and :popd commands
     |  |-- file_magic.c - determines programs associated with file using its
     |  |                  mime-type
-    |  |-- filelist.c - display/redraw/fill list
+    |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- fileops.c - delete/copy/put selected file(s)
     |  |-- filetype.c - stores filetype information from vifmrc
+    |  |-- fileview.c - display/redraw/manage file view
     |  |-- fuse.c - provides support of FUSE filesystems
     |  |-- globals.c - provides support of globals
     |  |-- ipc.c - handles communication across instances of vifm
