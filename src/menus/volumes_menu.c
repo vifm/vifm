@@ -30,7 +30,6 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../filelist.h"
-#include "../fileview.h"
 #include "menus.h"
 
 static int execute_volumes_cb(FileView *view, menu_info *m);

@@ -59,7 +59,6 @@
 #include "background.h"
 #include "file_magic.h"
 #include "filelist.h"
-#include "fileview.h"
 #include "filetype.h"
 #include "fuse.h"
 #include "macros.h"
