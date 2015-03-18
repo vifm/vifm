@@ -719,14 +719,14 @@ update_terminal_settings(void)
 }
 
 void
-get_uid_string(const FileView *view, size_t buf_len, char buf[])
+get_uid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	/* Simply return empty buffer. */
 	buf[0] = '\0';
 }
 
 void
-get_gid_string(const FileView *view, size_t buf_len, char buf[])
+get_gid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	/* Simply return empty buffer. */
 	buf[0] = '\0';

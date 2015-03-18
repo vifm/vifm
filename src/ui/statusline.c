@@ -91,6 +91,7 @@ update_stat_window(FileView *view)
 static void
 update_stat_window_old(FileView *view)
 {
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 	char name_buf[160*2 + 1];
 	char perm_buf[26];
 	char size_buf[56];
@@ -116,10 +117,10 @@ update_stat_window_old(FileView *view)
 	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
 			size_buf);
 
-	get_uid_string(view, sizeof(id_buf), id_buf);
+	get_uid_string(entry, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
 		strcat(id_buf, ":");
-	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
+	get_gid_string(entry, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf),
@@ -180,6 +181,7 @@ static char *
 parse_view_macros(FileView *view, const char **format, const char macros[],
 		int opt)
 {
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -230,10 +232,10 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 #endif
 				break;
 			case 'u':
-				get_uid_string(view, sizeof(buf), buf);
+				get_uid_string(entry, sizeof(buf), buf);
 				break;
 			case 'g':
-				get_gid_string(view, sizeof(buf), buf);
+				get_gid_string(entry, sizeof(buf), buf);
 				break;
 			case 's':
 				friendly_size_notation(view->dir_entry[view->list_pos].size,

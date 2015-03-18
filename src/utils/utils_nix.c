@@ -26,8 +26,8 @@
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
 #include <fcntl.h> /* open() close() */
-#include <grp.h> /* getgrnam() */
-#include <pwd.h> /* getpwnam() */
+#include <grp.h> /* getgrnam() getgrgid_r() */
+#include <pwd.h> /* getpwnam() getpwuid_r() */
 #include <unistd.h> /* X_OK dup() dup2() getpid() pause() */
 
 #include <assert.h> /* assert() */
@@ -681,19 +681,19 @@ update_terminal_settings(void)
 }
 
 void
-get_uid_string(const FileView *view, size_t buf_len, char buf[])
+get_uid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	/* Cache for the last requested user id. */
 	static uid_t last_uid = (uid_t)-1;
 	static char uid_buf[26];
 
-	if(view->dir_entry[view->list_pos].uid != last_uid)
+	if(entry->uid != last_uid)
 	{
 		char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
 		struct passwd pwd_b;
 		struct passwd *pwd_buf;
 
-		last_uid = view->dir_entry[view->list_pos].uid;
+		last_uid = entry->uid;
 
 		if(getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
 				pwd_buf == NULL)
@@ -710,19 +710,19 @@ get_uid_string(const FileView *view, size_t buf_len, char buf[])
 }
 
 void
-get_gid_string(const FileView *view, size_t buf_len, char buf[])
+get_gid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	/* Cache for the last requested group id. */
 	static gid_t last_gid = (gid_t)-1;
 	static char gid_buf[26];
 
-	if(view->dir_entry[view->list_pos].gid != last_gid)
+	if(entry->gid != last_gid)
 	{
 		char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
 		struct group group_b;
 		struct group *group_buf;
 
-		last_gid = view->dir_entry[view->list_pos].gid;
+		last_gid = entry->gid;
 
 		if(getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
 				group_buf == NULL)
