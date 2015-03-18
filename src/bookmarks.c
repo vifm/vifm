@@ -283,7 +283,7 @@ goto_bookmark(FileView *view, char mark)
 			return 0;
 		case '\x03': /* Ctrl-C. */
 		case '\x1b': /* Escape. */
-			move_to_list_pos(view, view->list_pos);
+			flist_set_pos(view, view->list_pos);
 			return 0;
 
 		default:
@@ -317,7 +317,7 @@ navigate_to_bookmark(FileView *view, char mark)
 		status_bar_message("Mark is invalid");
 	}
 
-	move_to_list_pos(view, view->list_pos);
+	flist_set_pos(view, view->list_pos);
 	return 1;
 }
 

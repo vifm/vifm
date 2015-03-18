@@ -664,7 +664,7 @@ follow_link(FileView *view, int follow_dirs)
 		const int pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
 		{
-			move_to_list_pos(view, pos);
+			flist_set_pos(view, pos);
 		}
 	}
 
@@ -711,7 +711,7 @@ cd_updir(FileView *view)
 	if(change_directory(view, "../") != 1)
 	{
 		load_dir_list(view, 0);
-		move_to_list_pos(view, find_file_pos_in_list(view, dir_name));
+		flist_set_pos(view, find_file_pos_in_list(view, dir_name));
 	}
 }
 

@@ -1540,7 +1540,7 @@ commands_scope_finish(void)
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
-	move_to_list_pos(curr_view, cmd_info->end);
+	flist_set_pos(curr_view, cmd_info->end);
 	return 0;
 }
 

@@ -59,7 +59,7 @@ find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 			return 0;
 		}
 	}
-	move_to_list_pos(view, view->list_pos);
+	flist_set_pos(view, view->list_pos);
 	return 1;
 }
 
@@ -176,7 +176,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		if(cfg.hl_search && !was_found)
 		{
 			/* Update the view.  It look might have changed, because of selection. */
-			move_to_list_pos(view, view->list_pos);
+			flist_set_pos(view, view->list_pos);
 		}
 
 		if(!cfg.hl_search)
@@ -191,7 +191,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		move_to_list_pos(view, view->list_pos);
+		flist_set_pos(view, view->list_pos);
 		if(interactive)
 		{
 			print_search_fail_msg(view, backward);

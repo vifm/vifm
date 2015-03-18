@@ -522,7 +522,9 @@ update_screen(UpdateType update_kind)
 	update_all_windows();
 
 	if(!curr_view->explore_mode)
-		move_to_list_pos(curr_view, curr_view->list_pos);
+	{
+		flist_set_pos(curr_view, curr_view->list_pos);
+	}
 
 	update_input_buf();
 

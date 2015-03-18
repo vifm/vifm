@@ -1373,7 +1373,9 @@ scrolloff_handler(OPT_OP op, optval_t val)
 
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
-		move_to_list_pos(curr_view, curr_view->list_pos);
+	{
+		flist_set_pos(curr_view, curr_view->list_pos);
+	}
 }
 
 static void
@@ -1530,7 +1532,7 @@ sort_handler(OPT_OP op, optval_t val)
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	flist_set_pos(curr_view, curr_view->list_pos);
 	load_sort_option(curr_view);
 }
 

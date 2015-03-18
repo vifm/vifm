@@ -150,7 +150,7 @@ enter_attr_mode(FileView *active_view)
 				view->dir_entry[i].name);
 		clean_selected_files(view);
 		load_dir_list(view, 1);
-		move_to_list_pos(view, view->list_pos);
+		flist_set_pos(view, view->list_pos);
 		return;
 	}
 	while(i < view->list_rows)
@@ -381,7 +381,7 @@ leave_attr_mode(void)
 
 	clean_selected_files(view);
 	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
+	flist_set_pos(view, view->list_pos);
 
 	update_all_windows();
 }

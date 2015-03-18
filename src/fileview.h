@@ -46,8 +46,6 @@ int all_files_visible(const FileView *view);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
 
-void move_to_list_pos(FileView *view, int pos);
-
 /* Scrolls view up at least by specified number of files.  Updates both top and
  * cursor positions. */
 void scroll_up(FileView *view, size_t by);
@@ -64,8 +62,13 @@ void fview_set_lsview(FileView *view, int enabled);
 /* Returns number of columns in the view. */
 size_t calculate_columns_count(FileView *view);
 
-/* Callback-like function which triggers some view-specific updates. */
+/* Callback-like function which triggers some view-specific updates after list
+ * of files changes. */
 void fview_list_updated(FileView *view);
+
+/* Callback-like function which triggers some view-specific updates after cursor
+ * position in the list is changed. */
+void fview_position_updated(FileView *view);
 
 #endif /* VIFM__FILEVIEW_H__ */
 

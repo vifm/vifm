@@ -540,7 +540,7 @@ updir_from_mount(FileView *view, fuse_mount_t *runner)
 	file = runner->source_file_name;
 	file += strlen(runner->source_file_dir) + 1;
 	pos = find_file_pos_in_list(view, file);
-	move_to_list_pos(view, pos);
+	flist_set_pos(view, pos);
 }
 
 int

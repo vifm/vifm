@@ -543,6 +543,26 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 }
 
 void
+flist_set_pos(FileView *view, int pos)
+{
+	if(pos < 1)
+	{
+		pos = 0;
+	}
+
+	if(pos > view->list_rows - 1)
+	{
+		pos = view->list_rows - 1;
+	}
+
+	if(pos != -1)
+	{
+		view->list_pos = pos;
+		fview_position_updated(view);
+	}
+}
+
+void
 move_cursor_out_of(FileView *view, FileListScope scope)
 {
 	switch(scope)
@@ -633,7 +653,7 @@ navigate_to_history_pos(FileView *view, int pos)
 	curr_stats.skip_history = 0;
 
 	load_dir_list(view, 1);
-	move_to_list_pos(view, find_file_pos_in_list(view, view->history[pos].file));
+	flist_set_pos(view, find_file_pos_in_list(view, view->history[pos].file));
 
 	view->history_pos = pos;
 }
@@ -1043,7 +1063,7 @@ navigate_to(FileView *view, const char path[])
 	if(change_directory(view, path) >= 0)
 	{
 		load_dir_list(view, 0);
-		move_to_list_pos(view, view->list_pos);
+		flist_set_pos(view, view->list_pos);
 	}
 }
 
@@ -2304,7 +2324,7 @@ toggle_filter_inversion(FileView *view)
 {
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
-	move_to_list_pos(view, 0);
+	flist_set_pos(view, 0);
 }
 
 void
@@ -2773,7 +2793,7 @@ redraw_view_imm(FileView *view)
 		draw_dir_list(view);
 		if(view == curr_view)
 		{
-			move_to_list_pos(view, view->list_pos);
+			flist_set_pos(view, view->list_pos);
 		}
 		else
 		{
@@ -2895,7 +2915,7 @@ load_saving_pos(FileView *view, int reload)
 
 	if(view == curr_view)
 	{
-		move_to_list_pos(view, view->list_pos);
+		flist_set_pos(view, view->list_pos);
 	}
 	else
 	{
@@ -2993,7 +3013,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 		}
 	}
 
-	move_to_list_pos(view, (file_pos < 0) ? 0 : file_pos);
+	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
 	return file_pos >= 0;
 }
 
@@ -3073,7 +3093,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 	load_dir_list(view, 0);
 	if(view == curr_view)
 	{
-		move_to_list_pos(view, view->list_pos);
+		flist_set_pos(view, view->list_pos);
 	}
 	else
 	{

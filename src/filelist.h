@@ -71,6 +71,8 @@ int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
 /* Returns new list position after making correction for scrolling up. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
+/* Moves cursor to specified position. */
+void flist_set_pos(FileView *view, int pos);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(FileView *view, FileListScope scope);
 /* Returns non-zero in case view can be scrolled up (there are more files). */

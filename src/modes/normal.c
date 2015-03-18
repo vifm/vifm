@@ -1012,7 +1012,7 @@ find_goto(int ch, int count, int backward, keys_info_t *keys_info)
 	}
 	else
 	{
-		move_to_list_pos(curr_view, pos);
+		flist_set_pos(curr_view, pos);
 	}
 }
 
@@ -1190,7 +1190,7 @@ pick_or_move(keys_info_t *keys_info, int new_pos)
 	}
 	else
 	{
-		move_to_list_pos(curr_view, new_pos);
+		flist_set_pos(curr_view, new_pos);
 	}
 }
 
@@ -1243,7 +1243,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = goto_bookmark(curr_view, key_info.multi);
 		if(!cfg.auto_ch_pos)
 		{
-			move_to_list_pos(curr_view, 0);
+			flist_set_pos(curr_view, 0);
 		}
 	}
 }
@@ -1757,7 +1757,7 @@ cmd_t(key_info_t key_info, keys_info_t *keys_info)
 		curr_view->selected_files--;
 	}
 
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	flist_set_pos(curr_view, curr_view->list_pos);
 }
 
 /* Undo last command group. */
@@ -2110,7 +2110,7 @@ pick_files(FileView *view, int end, keys_info_t *keys_info)
 
 	if(end < view->list_pos)
 	{
-		move_to_list_pos(view, end);
+		flist_set_pos(view, end);
 	}
 }
 

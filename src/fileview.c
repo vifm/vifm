@@ -508,62 +508,6 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
-void
-move_to_list_pos(FileView *view, int pos)
-{
-	int redraw = 0;
-	size_t col_width;
-	size_t col_count;
-	size_t print_width;
-	column_data_t cdt = {
-		.view = view,
-		.is_current = 1,
-	};
-
-	if(pos < 1)
-		pos = 0;
-
-	if(pos > view->list_rows - 1)
-		pos = view->list_rows - 1;
-
-	if(pos == -1)
-		return;
-
-	if(view->curr_line > view->list_rows - 1)
-		view->curr_line = view->list_rows - 1;
-
-	view->list_pos = pos;
-
-	erase_current_line_bar(view);
-
-	redraw = move_curr_line(view);
-
-	if(curr_stats.load_stage < 2)
-		return;
-
-	if(redraw)
-	{
-		draw_dir_list(view);
-		clear_current_line_bar(view, 0);
-	}
-
-	calculate_table_conf(view, &col_count, &col_width);
-	print_width = calculate_print_width(view, view->list_pos, col_width);
-
-	cdt.line_pos = pos;
-	cdt.line_hi_group = get_line_color(view, pos);
-	cdt.current_line = view->curr_line/col_count;
-	cdt.column_offset = (view->curr_line%col_count)*col_width;
-
-	draw_cell(view, &cdt, print_width, print_width);
-
-	refresh_view_win(view);
-	update_stat_window(view);
-
-	if(curr_stats.view)
-		quick_view_file(view);
-}
-
 /* Redraws directory list without any extra actions that are performed in
  * erase_current_line_bar().  is_current defines whether element under the
  * cursor is being erased.  Returns non-zero if something was actually redrawn,
@@ -997,6 +941,57 @@ get_filetype_decoration_width(FileType type)
 	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
 	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
 	return prefix_len + suffix_len;
+}
+
+void
+fview_position_updated(FileView *view)
+{
+	int redraw = 0;
+	size_t col_width;
+	size_t col_count;
+	size_t print_width;
+	column_data_t cdt = {
+		.view = view,
+		.is_current = 1,
+	};
+
+	if(view->curr_line > view->list_rows - 1)
+	{
+		view->curr_line = view->list_rows - 1;
+	}
+
+	erase_current_line_bar(view);
+
+	redraw = move_curr_line(view);
+
+	if(curr_stats.load_stage < 2)
+	{
+		return;
+	}
+
+	if(redraw)
+	{
+		draw_dir_list(view);
+		clear_current_line_bar(view, 0);
+	}
+
+	calculate_table_conf(view, &col_count, &col_width);
+	print_width = calculate_print_width(view, view->list_pos, col_width);
+
+	cdt.line_pos = view->list_pos;
+	cdt.line_hi_group = get_line_color(view, view->list_pos);
+	cdt.current_line = view->curr_line/col_count;
+	cdt.column_offset = (view->curr_line%col_count)*col_width;
+
+	draw_cell(view, &cdt, print_width, print_width);
+
+	refresh_view_win(view);
+	update_stat_window(view);
+
+	if(curr_stats.view)
+	{
+		quick_view_file(view);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
