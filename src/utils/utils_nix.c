@@ -681,7 +681,7 @@ update_terminal_settings(void)
 }
 
 void
-get_uid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
+get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 {
 	/* Cache for the last requested user id. */
 	static uid_t last_uid = (uid_t)-1;
@@ -695,7 +695,8 @@ get_uid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 
 		last_uid = entry->uid;
 
-		if(getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
+		if(as_num ||
+				getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
 				pwd_buf == NULL)
 		{
 			snprintf(uid_buf, sizeof(uid_buf), "%d", (int)last_uid);
@@ -710,7 +711,7 @@ get_uid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 }
 
 void
-get_gid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
+get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 {
 	/* Cache for the last requested group id. */
 	static gid_t last_gid = (gid_t)-1;
@@ -724,7 +725,8 @@ get_gid_string(const dir_entry_t *entry, size_t buf_len, char buf[])
 
 		last_gid = entry->gid;
 
-		if(getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
+		if(as_num ||
+				getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
 				group_buf == NULL)
 		{
 			snprintf(gid_buf, sizeof(gid_buf), "%d", (int)last_gid);

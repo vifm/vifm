@@ -116,10 +116,10 @@ update_stat_window_old(FileView *view)
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
 	friendly_size_notation(entry->size, sizeof(size_buf), size_buf);
 
-	get_uid_string(entry, sizeof(id_buf), id_buf);
+	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
 		strcat(id_buf, ":");
-	get_gid_string(entry, sizeof(id_buf) - strlen(id_buf),
+	get_gid_string(entry, 0, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
@@ -228,10 +228,10 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 #endif
 				break;
 			case 'u':
-				get_uid_string(entry, sizeof(buf), buf);
+				get_uid_string(entry, 0, sizeof(buf), buf);
 				break;
 			case 'g':
-				get_gid_string(entry, sizeof(buf), buf);
+				get_gid_string(entry, 0, sizeof(buf), buf);
 				break;
 			case 's':
 				friendly_size_notation(entry->size, sizeof(buf), buf);
