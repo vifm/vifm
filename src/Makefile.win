@@ -4,7 +4,7 @@ WINDRES = $(CROSS)windres
 STRIP = $(CROSS)strip
 
 CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
-CFLAGS += -D_FILE_OFFSET_BITS=64
+CFLAGS += -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else
