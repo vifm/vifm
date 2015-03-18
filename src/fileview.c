@@ -79,14 +79,14 @@ static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
 		int type_hi, col_attr_t *col);
 static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
-static void format_name(int id, const void *data, size_t buf_len, char *buf);
-static void format_size(int id, const void *data, size_t buf_len, char *buf);
-static void format_ext(int id, const void *data, size_t buf_len, char *buf);
-static void format_time(int id, const void *data, size_t buf_len, char *buf);
+static void format_name(int id, const void *data, size_t buf_len, char buf[]);
+static void format_size(int id, const void *data, size_t buf_len, char buf[]);
+static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
+static void format_time(int id, const void *data, size_t buf_len, char buf[]);
 #ifndef _WIN32
-static void format_group(int id, const void *data, size_t buf_len, char *buf);
-static void format_mode(int id, const void *data, size_t buf_len, char *buf);
-static void format_owner(int id, const void *data, size_t buf_len, char *buf);
+static void format_group(int id, const void *data, size_t buf_len, char buf[]);
+static void format_mode(int id, const void *data, size_t buf_len, char buf[]);
+static void format_owner(int id, const void *data, size_t buf_len, char buf[]);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static size_t calculate_column_width(FileView *view);
@@ -773,7 +773,7 @@ mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 
 /* File name format callback for column_view unit. */
 static void
-format_name(int id, const void *data, size_t buf_len, char *buf)
+format_name(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	const FileView *view = cdt->view;
@@ -790,7 +790,7 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 
 /* File size format callback for column_view unit. */
 static void
-format_size(int id, const void *data, size_t buf_len, char *buf)
+format_size(int id, const void *data, size_t buf_len, char buf[])
 {
 	char str[24];
 	const column_data_t *cdt = data;
@@ -803,7 +803,7 @@ format_size(int id, const void *data, size_t buf_len, char *buf)
 
 /* File extension format callback for column_view unit. */
 static void
-format_ext(int id, const void *data, size_t buf_len, char *buf)
+format_ext(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
@@ -815,7 +815,7 @@ format_ext(int id, const void *data, size_t buf_len, char *buf)
 
 /* File modification/access/change date format callback for column_view unit. */
 static void
-format_time(int id, const void *data, size_t buf_len, char *buf)
+format_time(int id, const void *data, size_t buf_len, char buf[])
 {
 	struct tm *tm_ptr;
 	const column_data_t *cdt = data;
@@ -854,7 +854,7 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 
 /* File group id/name format callback for column_view unit. */
 static void
-format_group(int id, const void *data, size_t buf_len, char *buf)
+format_group(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
@@ -865,7 +865,7 @@ format_group(int id, const void *data, size_t buf_len, char *buf)
 
 /* File owner id/name format callback for column_view unit. */
 static void
-format_owner(int id, const void *data, size_t buf_len, char *buf)
+format_owner(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
@@ -876,7 +876,7 @@ format_owner(int id, const void *data, size_t buf_len, char *buf)
 
 /* File mode format callback for column_view unit. */
 static void
-format_mode(int id, const void *data, size_t buf_len, char *buf)
+format_mode(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
