@@ -349,7 +349,7 @@ leave_attr_mode(void)
 
 	clean_selected_files(view);
 	load_dir_list(view, 1);
-	flist_set_pos(view, view->list_pos);
+	fview_cursor_redraw(view);
 
 	update_all_windows();
 }

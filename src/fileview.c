@@ -452,6 +452,14 @@ move_curr_line(FileView *view)
 	return redraw != 0 || (view->num_type & NT_REL);
 }
 
+void
+fview_cursor_redraw(FileView *view)
+{
+	/* Call file list function, which will also ensure that current position in
+	 * list is correct. */
+	flist_set_pos(view, view->list_pos);
+}
+
 int
 all_files_visible(const FileView *view)
 {

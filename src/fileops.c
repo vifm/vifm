@@ -1247,7 +1247,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
-	flist_set_pos(curr_view, curr_view->list_pos);
+	fview_cursor_redraw(curr_view);
 }
 #endif
 

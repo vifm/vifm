@@ -523,7 +523,7 @@ update_screen(UpdateType update_kind)
 
 	if(!curr_view->explore_mode)
 	{
-		flist_set_pos(curr_view, curr_view->list_pos);
+		fview_cursor_redraw(curr_view);
 	}
 
 	update_input_buf();

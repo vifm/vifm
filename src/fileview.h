@@ -38,6 +38,9 @@ void erase_current_line_bar(FileView *view);
 /* Returns non-zero if redraw is needed. */
 int move_curr_line(FileView *view);
 
+/* Redraws cursor of the view on the screen. */
+void fview_cursor_redraw(FileView *view);
+
 /* Viewport related functions. */
 
 /* Returns non-zero if all files are visible, so no scrolling is needed. */

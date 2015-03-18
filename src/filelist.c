@@ -1063,7 +1063,7 @@ navigate_to(FileView *view, const char path[])
 	if(change_directory(view, path) >= 0)
 	{
 		load_dir_list(view, 0);
-		flist_set_pos(view, view->list_pos);
+		fview_cursor_redraw(view);
 	}
 }
 
@@ -2793,7 +2793,7 @@ redraw_view_imm(FileView *view)
 		draw_dir_list(view);
 		if(view == curr_view)
 		{
-			flist_set_pos(view, view->list_pos);
+			fview_cursor_redraw(view);
 		}
 		else
 		{
@@ -2915,7 +2915,7 @@ load_saving_pos(FileView *view, int reload)
 
 	if(view == curr_view)
 	{
-		flist_set_pos(view, view->list_pos);
+		fview_cursor_redraw(view);
 	}
 	else
 	{
@@ -3093,7 +3093,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 	load_dir_list(view, 0);
 	if(view == curr_view)
 	{
-		flist_set_pos(view, view->list_pos);
+		fview_cursor_redraw(view);
 	}
 	else
 	{

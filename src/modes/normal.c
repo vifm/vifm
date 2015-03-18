@@ -1757,7 +1757,7 @@ cmd_t(key_info_t key_info, keys_info_t *keys_info)
 		curr_view->selected_files--;
 	}
 
-	flist_set_pos(curr_view, curr_view->list_pos);
+	fview_cursor_redraw(curr_view);
 }
 
 /* Undo last command group. */
