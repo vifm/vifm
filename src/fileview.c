@@ -858,17 +858,9 @@ format_group(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	if(id == SK_BY_GROUP_NAME)
-	{
-		struct group *grp_buf;
-		if((grp_buf = getgrgid(entry->gid)) != NULL)
-		{
-			snprintf(buf, buf_len, " %s", grp_buf->gr_name);
-			return;
-		}
-	}
 
-	snprintf(buf, buf_len, " %d", (int)entry->gid);
+	buf[0] = ' ';
+	get_gid_string(entry, id == SK_BY_GROUP_ID, buf_len - 1, buf + 1);
 }
 
 /* File owner id/name format callback for column_view unit. */
@@ -877,17 +869,9 @@ format_owner(int id, const void *data, size_t buf_len, char *buf)
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	if(id == SK_BY_OWNER_NAME)
-	{
-		struct passwd *pwd_buf;
-		if((pwd_buf = getpwuid(entry->uid)) != NULL)
-		{
-			snprintf(buf, buf_len, " %s", pwd_buf->pw_name);
-			return;
-		}
-	}
 
-	snprintf(buf, buf_len, " %d", (int)entry->uid);
+	buf[0] = ' ';
+	get_uid_string(entry, id == SK_BY_OWNER_ID, buf_len - 1, buf + 1);
 }
 
 /* File mode format callback for column_view unit. */
