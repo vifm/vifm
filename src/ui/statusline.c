@@ -21,10 +21,6 @@
 #include <curses.h> /* mvwin() wbkgdset() werase() */
 
 #include <ctype.h> /* isdigit() */
-#ifndef _WIN32
-#include <grp.h> /* getgrgid_r() */
-#include <pwd.h> /* getpwuid_r() */
-#endif
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h> /* _SC_* sysconf() */
