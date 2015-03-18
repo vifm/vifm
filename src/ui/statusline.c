@@ -114,8 +114,7 @@ update_stat_window_old(FileView *view)
 	filename = get_current_file_name(view);
 	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
-			size_buf);
+	friendly_size_notation(entry->size, sizeof(size_buf), size_buf);
 
 	get_uid_string(entry, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
@@ -123,11 +122,9 @@ update_stat_window_old(FileView *view)
 	get_gid_string(entry, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 #ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf),
-			view->dir_entry[view->list_pos].mode);
+	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
 #else
-	snprintf(perm_buf, sizeof(perm_buf), "%s",
-			attr_str_long(view->dir_entry[view->list_pos].attrs));
+	snprintf(perm_buf, sizeof(perm_buf), "%s", attr_str_long(entry->attrs));
 #endif
 
 	werase(stat_win);
@@ -225,10 +222,9 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'A':
 #ifndef _WIN32
-				get_perm_string(buf, sizeof(buf), view->dir_entry[view->list_pos].mode);
+				get_perm_string(buf, sizeof(buf), entry->mode);
 #else
-				snprintf(buf, sizeof(buf), "%s",
-						attr_str_long(view->dir_entry[view->list_pos].attrs));
+				snprintf(buf, sizeof(buf), "%s", attr_str_long(entry->attrs));
 #endif
 				break;
 			case 'u':
@@ -238,8 +234,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				get_gid_string(entry, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(view->dir_entry[view->list_pos].size,
-						sizeof(buf), buf);
+				friendly_size_notation(entry->size, sizeof(buf), buf);
 				break;
 			case 'E':
 				{
@@ -266,7 +261,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'd':
 				{
-					struct tm *tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
+					struct tm *tm_ptr = localtime(&entry->mtime);
 					strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 				}
 				break;
