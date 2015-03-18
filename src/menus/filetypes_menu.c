@@ -32,6 +32,7 @@
 #include "../file_magic.h"
 #include "../filelist.h"
 #include "../filetype.h"
+#include "../fileview.h"
 #include "../running.h"
 #include "../types.h"
 #include "menus.h"

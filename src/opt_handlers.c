@@ -1530,7 +1530,7 @@ sort_handler(OPT_OP op, optval_t val)
 	}
 	ui_view_sort_list_ensure_well_formed(sort_keys);
 
-	reset_view_sort(curr_view);
+	fview_sorting_updated(curr_view);
 	resort_view(curr_view);
 	fview_cursor_redraw(curr_view);
 	load_sort_option(curr_view);

@@ -49,6 +49,7 @@
 #include "../escape.h"
 #include "../filelist.h"
 #include "../filetype.h"
+#include "../fileview.h"
 #include "../quickview.h"
 #include "../running.h"
 #include "../status.h"

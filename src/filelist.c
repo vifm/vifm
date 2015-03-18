@@ -63,8 +63,6 @@
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
-#include "color_scheme.h"
-#include "column_view.h"
 #include "fileview.h"
 #include "fuse.h"
 #include "macros.h"
@@ -92,6 +90,7 @@ typedef int (*predicate_func)(const dir_entry_t *entry);
 typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
 
 static void init_view(FileView *view);
+static void init_flist(FileView *view);
 static void reset_view(FileView *view);
 static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
@@ -179,30 +178,33 @@ init_filelists(void)
 static void
 init_view(FileView *view)
 {
-	view->curr_line = 0;
-	view->top_line = 0;
+	init_flist(view);
+	fview_view_init(view);
+
+	reset_view(view);
+
+	init_view_history(view);
+	fview_sorting_updated(view);
+}
+
+/* Initializes file list part of the view. */
+static void
+init_flist(FileView *view)
+{
 	view->list_rows = 0;
 	view->list_pos = 0;
 	view->selected_filelist = NULL;
 	view->history_num = 0;
 	view->history_pos = 0;
-	view->local_cs = 0;
 	view->on_slow_fs = 0;
 
 	view->hide_dot = 1;
 	view->matches = 0;
-	view->columns = columns_create();
-	view->view_columns = strdup("");
 
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
 	view->custom.orig_dir = NULL;
 	view->custom.title = NULL;
-
-	reset_view(view);
-
-	init_view_history(view);
-	reset_view_sort(view);
 }
 
 void
@@ -217,18 +219,10 @@ reset_views(void)
 static void
 reset_view(FileView *view)
 {
+	fview_view_reset(view);
+
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
-	view->ls_view = 0;
-	view->max_filename_width = 0;
-	view->column_count = 1;
-
-	view->num_type = NT_NONE;
-	view->num_width = 4;
-	view->real_num_width = 0;
-
-	view->postponed_redraw = 0;
-	view->postponed_reload = 0;
 
 	(void)replace_string(&view->prev_manual_filter, "");
 	reset_filter(&view->manual_filter);
@@ -423,30 +417,6 @@ find_file_pos_in_list(const FileView *const view, const char file[])
 		}
 	}
 	return -1;
-}
-
-void
-reset_view_sort(FileView *view)
-{
-	if(view->view_columns[0] == '\0')
-	{
-		column_info_t column_info =
-		{
-			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_NONE,
-		};
-
-		columns_clear(view->columns);
-		columns_add_column(view->columns, column_info);
-
-		column_info.column_id = get_secondary_key(abs(view->sort[0]));
-		column_info.align = AT_RIGHT;
-		columns_add_column(view->columns, column_info);
-	}
-	else if(strstr(view->view_columns, "{}") != NULL)
-	{
-		load_view_columns_option(view, view->view_columns);
-	}
 }
 
 void
@@ -1796,14 +1766,14 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	view->column_count = calculate_columns_count(view);
 
-	/* If reloading the same directory don't jump to
-	 * history position.  Stay at the current line
-	 */
+	/* If reloading the same directory don't jump to history position.  Stay at
+	 * the current line. */
 	if(!reload)
+	{
 		check_view_dir_history(view);
+	}
 
-	view->local_cs = check_directory_for_color_scheme(view == &lwin,
-			view->curr_dir);
+	fview_dir_updated(view);
 
 	if(view->list_rows < 1)
 	{
@@ -2634,38 +2604,6 @@ alloc_dir_entry(dir_entry_t **list, int list_size)
 	return &new_entry_list[list_size];
 }
 
-void
-redraw_view(FileView *view)
-{
-	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
-	{
-		redraw_view_imm(view);
-	}
-}
-
-void
-redraw_view_imm(FileView *view)
-{
-	if(window_shows_dirlist(view))
-	{
-		draw_dir_list(view);
-		if(view == curr_view)
-		{
-			fview_cursor_redraw(view);
-		}
-		else
-		{
-			put_inactive_mark(view);
-		}
-	}
-}
-
-void
-redraw_current_view(void)
-{
-	redraw_view(curr_view);
-}
-
 static void
 reload_window(FileView *view)
 {
@@ -2827,7 +2765,7 @@ change_sort_type(FileView *view, char type, char descending)
 	view->sort[0] = descending ? -type : type;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
 
-	reset_view_sort(view);
+	fview_sorting_updated(view);
 
 	load_sort_option(view);
 

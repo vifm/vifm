@@ -38,10 +38,12 @@
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_manager.h"
+#include "color_scheme.h"
 #include "column_view.h"
 #include "filelist.h"
 #include "opt_handlers.h"
 #include "quickview.h"
+#include "sort.h"
 
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"
@@ -95,6 +97,7 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
+static void reset_view_sort(FileView *view);
 
 void
 fview_init(void)
@@ -119,6 +122,33 @@ fview_init(void)
 
 	columns_add_column_desc(SK_BY_PERMISSIONS, &format_perms);
 #endif
+}
+
+void
+fview_view_init(FileView *view)
+{
+	view->curr_line = 0;
+	view->top_line = 0;
+
+	view->local_cs = 0;
+
+	view->columns = columns_create();
+	view->view_columns = strdup("");
+}
+
+void
+fview_view_reset(FileView *view)
+{
+	view->ls_view = 0;
+	view->max_filename_width = 0;
+	view->column_count = 1;
+
+	view->num_type = NT_NONE;
+	view->num_width = 4;
+	view->real_num_width = 0;
+
+	view->postponed_redraw = 0;
+	view->postponed_reload = 0;
 }
 
 void
@@ -396,6 +426,38 @@ consider_scroll_bind(FileView *view)
 		draw_dir_list(other);
 		refresh_view_win(other);
 	}
+}
+
+void
+redraw_view(FileView *view)
+{
+	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
+	{
+		redraw_view_imm(view);
+	}
+}
+
+void
+redraw_view_imm(FileView *view)
+{
+	if(window_shows_dirlist(view))
+	{
+		draw_dir_list(view);
+		if(view == curr_view)
+		{
+			fview_cursor_redraw(view);
+		}
+		else
+		{
+			put_inactive_mark(view);
+		}
+	}
+}
+
+void
+redraw_current_view(void)
+{
+	redraw_view(curr_view);
 }
 
 void
@@ -1039,6 +1101,13 @@ calculate_column_width(FileView *view)
 }
 
 void
+fview_dir_updated(FileView *view)
+{
+	view->local_cs = check_directory_for_color_scheme(view == &lwin,
+			view->curr_dir);
+}
+
+void
 fview_list_updated(FileView *view)
 {
 	view->max_filename_width = get_max_filename_width(view);
@@ -1140,6 +1209,36 @@ fview_position_updated(FileView *view)
 	if(curr_stats.view)
 	{
 		quick_view_file(view);
+	}
+}
+
+void
+fview_sorting_updated(FileView *view)
+{
+	reset_view_sort(view);
+}
+
+/* Reinitializes view columns. */
+static void
+reset_view_sort(FileView *view)
+{
+	if(view->view_columns[0] == '\0')
+	{
+		column_info_t column_info = {
+			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_NONE,
+		};
+
+		columns_clear(view->columns);
+		columns_add_column(view->columns, column_info);
+
+		column_info.column_id = get_secondary_key(abs(view->sort[0]));
+		column_info.align = AT_RIGHT;
+		columns_add_column(view->columns, column_info);
+	}
+	else if(strstr(view->view_columns, "{}") != NULL)
+	{
+		load_view_columns_option(view, view->view_columns);
 	}
 }
 

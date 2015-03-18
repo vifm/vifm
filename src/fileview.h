@@ -23,7 +23,14 @@
 
 /* Initialization/termination functions. */
 
+/* Initializes file view unit. */
 void fview_init(void);
+
+/* Initializes view once before. */
+void fview_view_init(FileView *view);
+
+/* Resets view state partially. */
+void fview_view_reset(FileView *view);
 
 /* Appearance related functions. */
 
@@ -32,6 +39,17 @@ void draw_dir_list(FileView *view);
 /* Redraws directory list without any extra actions that are performed in
  * draw_dir_list(). */
 void draw_dir_list_only(FileView *view);
+
+/* Updates view (maybe postponed) on the screen (redraws file list and
+ * cursor) */
+void redraw_view(FileView *view);
+
+/* Updates view immediately on the screen (redraws file list and cursor). */
+void redraw_view_imm(FileView *view);
+
+/* Updates current view (maybe postponed) on the screen (redraws file list and
+ * cursor) */
+void redraw_current_view(void);
 
 void erase_current_line_bar(FileView *view);
 
@@ -105,13 +123,21 @@ void fview_set_lsview(FileView *view, int enabled);
 /* Returns number of columns in the view. */
 size_t calculate_columns_count(FileView *view);
 
+/* Callback-like function which triggers some view-specific updates after
+ * directory of the view changes. */
+void fview_dir_updated(FileView *view);
+
 /* Callback-like function which triggers some view-specific updates after list
  * of files changes. */
 void fview_list_updated(FileView *view);
 
 /* Callback-like function which triggers some view-specific updates after cursor
- * position in the list is changed. */
+ * position in the list changed. */
 void fview_position_updated(FileView *view);
+
+/* Callback-like function which triggers some view-specific updates after view
+ * sorting changed. */
+void fview_sorting_updated(FileView *view);
 
 #endif /* VIFM__FILEVIEW_H__ */
 

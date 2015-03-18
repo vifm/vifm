@@ -40,6 +40,7 @@
 #include "../utils/utils.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../fileview.h"
 #include "../status.h"
 #include "cmdline.h"
 #include "modes.h"

@@ -86,18 +86,8 @@ int get_end_of_line(const FileView *view);
 
 /* Appearance related functions. */
 
-/* Reinitializes view columns. */
-void reset_view_sort(FileView *view);
 /* Inverts primary key sorting order. */
 void invert_sorting_order(FileView *view);
-/* Updates view (maybe postponed) on the screen (redraws file list and
- * cursor) */
-void redraw_view(FileView *view);
-/* Updates view immediately on the screen (redraws file list and cursor). */
-void redraw_view_imm(FileView *view);
-/* Updates current view (maybe postponed) on the screen (redraws file list and
- * cursor) */
-void redraw_current_view(void);
 /* Returns non-zero in case view is visible and shows list of files at the
  * moment. */
 int window_shows_dirlist(const FileView *const view);
@@ -235,7 +225,7 @@ void populate_dir_list(FileView *view, int reload);
 /* Loads file list for the view and redraws the view.  The reload parameter
  * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
-/* Resorts view without reloading it and preserving currently file under cursor
+/* Resorts view without reloading it and preserving current file under cursor
  * along with its relative position in the list.  msg parameter controls whether
  * to show "Sorting..." statusbar message. */
 void resort_dir_list(int msg, FileView *view);
