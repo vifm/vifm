@@ -41,13 +41,35 @@ int move_curr_line(FileView *view);
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(FileView *view);
 
+/* Adds inactive cursor mark to the view. */
+void put_inactive_mark(FileView *view);
+
 /* Viewport related functions. */
 
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
 int all_files_visible(const FileView *view);
 
-/* Adds inactive cursor mark to the view. */
-void put_inactive_mark(FileView *view);
+/* Returns index of last visible file in the view.  Value returned may be
+ * greater than or equal to number of files in the view, which should be
+ * threated correctly. */
+size_t get_last_visible_file(const FileView *view);
+
+/* Returns window top position adjusted for 'scrolloff' option. */
+size_t get_window_top_pos(const FileView *view);
+
+/* Returns window middle position adjusted for 'scrolloff' option. */
+size_t get_window_middle_pos(const FileView *view);
+
+/* Returns window bottom position adjusted for 'scrolloff' option. */
+size_t get_window_bottom_pos(const FileView *view);
+
+/* Scrolling related functions. */
+
+/* Returns non-zero in case view can be scrolled up (there are more files). */
+int can_scroll_up(const FileView *view);
+
+/* Returns non-zero in case view can be scrolled down (there are more files). */
+int can_scroll_down(const FileView *view);
 
 /* Scrolls view up at least by specified number of files.  Updates both top and
  * cursor positions. */
@@ -56,6 +78,24 @@ void scroll_up(FileView *view, size_t by);
 /* Scrolls view down at least by specified number of files.  Updates both top
  * and cursor positions. */
 void scroll_down(FileView *view, size_t by);
+
+/* Returns new list position after making correction for scrolling down. */
+int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
+
+/* Returns new list position after making correction for scrolling up. */
+int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
+
+/* Updates current and top line of a view according to scrolloff option value.
+ * Returns non-zero if redraw is needed. */
+int consider_scroll_offset(FileView *view);
+
+/* Scrolls view down or up at least by specified number of files.  Updates both
+ * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
+ * functions. */
+void scroll_by_files(FileView *view, ssize_t by);
+
+/* Recalculates difference of two panes scroll positions. */
+void update_scroll_bind_offset(void);
 
 /* Layout related functions. */
 

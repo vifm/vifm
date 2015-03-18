@@ -57,32 +57,18 @@ void load_initial_directory(FileView *view, const char *dir);
 /* Find index of the file within list of currently visible files of the view.
  * Returns file entry index or -1, if file wasn't found. */
 int find_file_pos_in_list(const FileView *const view, const char file[]);
-/* Recalculates difference of two panes scroll positions. */
-void update_scroll_bind_offset(void);
 /* Tries to move cursor by pos_delta positions.  A wrapper for
  * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
  * functions. */
 void correct_list_pos(FileView *view, ssize_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
-/* Returns new list position after making correction for scrolling down. */
-int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
-/* Returns new list position after making correction for scrolling up. */
-int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 /* Moves cursor to specified position. */
 void flist_set_pos(FileView *view, int pos);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(FileView *view, FileListScope scope);
-/* Returns non-zero in case view can be scrolled up (there are more files). */
-int can_scroll_up(const FileView *view);
-/* Returns non-zero in case view can be scrolled down (there are more files). */
-int can_scroll_down(const FileView *view);
-/* Scrolls view down or up at least by specified number of files.  Updates both
- * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
- * functions. */
-void scroll_by_files(FileView *view, ssize_t by);
 /* Returns non-zero if cursor is on the first line. */
 int at_first_line(const FileView *view);
 /* Returns non-zero if cursor is on the last line. */
@@ -91,25 +77,12 @@ int at_last_line(const FileView *view);
 int at_first_column(const FileView *view);
 /* Returns non-zero if cursor is on the last column. */
 int at_last_column(const FileView *view);
-/* Returns window top position adjusted for 'scrolloff' option. */
-size_t get_window_top_pos(const FileView *view);
-/* Returns window middle position adjusted for 'scrolloff' option. */
-size_t get_window_middle_pos(const FileView *view);
-/* Returns window bottom position adjusted for 'scrolloff' option. */
-size_t get_window_bottom_pos(const FileView *view);
 /* Moves cursor to the first file in a row. */
 void go_to_start_of_line(FileView *view);
 /* Returns position of the first file in current line. */
 int get_start_of_line(const FileView *view);
 /* Returns position of the last file in current line. */
 int get_end_of_line(const FileView *view);
-/* Returns index of last visible file in the view.  Value returned may be
- * greater than or equal to number of files in the view, which should be
- * threated correctly. */
-size_t get_last_visible_file(const FileView *view);
-/* Updates current and top line of a view according to scrolloff option value.
- * Returns non-zero if redraw is needed. */
-int consider_scroll_offset(FileView *view);
 
 /* Appearance related functions. */
 

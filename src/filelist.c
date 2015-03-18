@@ -101,7 +101,6 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
 static void navigate_to_history_pos(FileView *view, int pos);
-static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static int add_file_entry_to_view(const char name[], const void *data,
@@ -457,14 +456,6 @@ invert_sorting_order(FileView *view)
 }
 
 void
-update_scroll_bind_offset(void)
-{
-	int rwin_pos = rwin.top_line/rwin.column_count;
-	int lwin_pos = lwin.top_line/lwin.column_count;
-	curr_stats.scroll_bind_off = rwin_pos - lwin_pos;
-}
-
-void
 correct_list_pos(FileView *view, ssize_t pos_delta)
 {
 	if(pos_delta > 0)
@@ -496,20 +487,6 @@ correct_list_pos_down(FileView *view, size_t pos_delta)
 }
 
 int
-get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
-{
-	int scroll_offset = get_effective_scroll_offset(view);
-	if(view->list_pos <=
-			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
-	{
-		size_t column_correction = view->list_pos%view->column_count;
-		size_t offset = scroll_offset + pos_delta + column_correction;
-		return view->top_line + offset;
-	}
-	return view->list_pos;
-}
-
-int
 correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
 {
 	if(!all_files_visible(view))
@@ -525,21 +502,6 @@ static void
 correct_list_pos_up(FileView *view, size_t pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
-}
-
-int
-get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
-{
-	int scroll_offset = get_effective_scroll_offset(view);
-	int last = get_last_visible_file(view);
-	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
-	{
-		size_t column_correction = (view->column_count - 1) -
-				view->list_pos%view->column_count;
-		size_t offset = scroll_offset + pos_delta + column_correction;
-		return last - offset;
-	}
-	return view->list_pos;
 }
 
 void
@@ -820,67 +782,6 @@ check_view_dir_history(FileView *view)
 }
 
 int
-consider_scroll_offset(FileView *view)
-{
-	int need_redraw = 0;
-	int pos = view->list_pos;
-	if(cfg.scroll_off > 0)
-	{
-		size_t s = get_effective_scroll_offset(view);
-		/* Check scroll offset at the top. */
-		if(can_scroll_up(view) && pos - view->top_line < s)
-		{
-			scroll_up(view, s - (pos - view->top_line));
-			need_redraw = 1;
-		}
-		/* Check scroll offset at the bottom. */
-		if(can_scroll_down(view))
-		{
-			size_t last = get_last_visible_file(view);
-			if(pos > last - s)
-			{
-				scroll_down(view, s + (pos - last));
-				need_redraw = 1;
-			}
-		}
-	}
-	return need_redraw;
-}
-
-/* Returns scroll offset value for the view taking view height into account. */
-static size_t
-get_effective_scroll_offset(const FileView *view)
-{
-	int val = MIN(DIV_ROUND_UP(view->window_rows, 2), MAX(cfg.scroll_off, 0));
-	return val*view->column_count;
-}
-
-int
-can_scroll_up(const FileView *view)
-{
-	return view->top_line > 0;
-}
-
-int
-can_scroll_down(const FileView *view)
-{
-	return get_last_visible_file(view) < view->list_rows - 1;
-}
-
-void
-scroll_by_files(FileView *view, ssize_t by)
-{
-	if(by > 0)
-	{
-		scroll_down(view, by);
-	}
-	else if(by < 0)
-	{
-		scroll_up(view, -by);
-	}
-}
-
-int
 at_first_line(const FileView *view)
 {
 	return view->list_pos/view->column_count == 0;
@@ -903,49 +804,6 @@ int
 at_last_column(const FileView *view)
 {
 	return view->list_pos%view->column_count == view->column_count - 1;
-}
-
-size_t
-get_window_top_pos(const FileView *view)
-{
-	if(view->top_line == 0)
-	{
-		return 0;
-	}
-	else
-	{
-		return view->top_line + get_effective_scroll_offset(view);
-	}
-}
-
-size_t
-get_window_middle_pos(const FileView *view)
-{
-	int list_middle = view->list_rows/(2*view->column_count);
-	int window_middle = view->window_rows/2;
-	return view->top_line + MIN(list_middle, window_middle)*view->column_count;
-}
-
-size_t
-get_window_bottom_pos(const FileView *view)
-{
-	if(all_files_visible(view))
-	{
-		size_t last = view->list_rows - 1;
-		return last - last%view->column_count;
-	}
-	else
-	{
-		size_t off = get_effective_scroll_offset(view);
-		size_t column_correction = view->column_count - 1;
-		return get_last_visible_file(view) - off - column_correction;
-	}
-}
-
-size_t
-get_last_visible_file(const FileView *view)
-{
-	return view->top_line + view->window_cells - 1;
 }
 
 void
