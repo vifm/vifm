@@ -2709,17 +2709,7 @@ load_saving_pos(FileView *view, int reload)
 
 	flist_goto_by_path(view, full_path);
 
-	if(view == curr_view)
-	{
-		fview_cursor_redraw(view);
-	}
-	else
-	{
-		mvwaddstr(view->win, view->curr_line, 0, " ");
-		if(move_curr_line(view))
-			draw_dir_list(view);
-		put_inactive_mark(view);
-	}
+	fview_cursor_redraw(view);
 
 	if(curr_stats.number_of_windows != 1 || view == curr_view)
 	{

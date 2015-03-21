@@ -785,7 +785,7 @@ redraw_lists(void)
 		}
 		else if(!other_view->explore_mode)
 		{
-			(void)move_curr_line(other_view);
+			fview_cursor_redraw(other_view);
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}

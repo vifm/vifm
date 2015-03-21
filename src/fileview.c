@@ -97,6 +97,7 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
+static int move_curr_line(FileView *view);
 static void reset_view_sort(FileView *view);
 
 void
@@ -469,59 +470,23 @@ erase_current_line_bar(FileView *view)
 	}
 }
 
-int
-move_curr_line(FileView *view)
-{
-	int redraw = 0;
-	int pos = view->list_pos;
-	size_t last;
-
-	if(pos < 1)
-		pos = 0;
-
-	if(pos > view->list_rows - 1)
-		pos = view->list_rows - 1;
-
-	if(pos == -1)
-		return 0;
-
-	view->list_pos = pos;
-
-	if(view->curr_line > view->list_rows - 1)
-		view->curr_line = view->list_rows - 1;
-
-	view->top_line = calculate_top_position(view, view->top_line);
-
-	last = get_last_visible_file(view);
-	if(view->top_line <= pos && pos <= last)
-	{
-		view->curr_line = pos - view->top_line;
-	}
-	else if(pos > last)
-	{
-		scroll_down(view, pos - last);
-		redraw++;
-	}
-	else if(pos < view->top_line)
-	{
-		scroll_up(view, view->top_line - pos);
-		redraw++;
-	}
-
-	if(consider_scroll_offset(view))
-	{
-		redraw++;
-	}
-
-	return redraw != 0 || (view->num_type & NT_REL);
-}
-
 void
 fview_cursor_redraw(FileView *view)
 {
-	/* Call file list function, which will also ensure that current position in
-	 * list is correct. */
-	flist_set_pos(view, view->list_pos);
+	if(view == curr_view)
+	{
+		/* Call file list function, which will also ensure that current position in
+		 * list is correct. */
+		flist_set_pos(view, view->list_pos);
+	}
+	else
+	{
+		if(move_curr_line(view))
+		{
+			draw_dir_list(view);
+		}
+		put_inactive_mark(view);
+	}
 }
 
 void
@@ -1210,6 +1175,54 @@ fview_position_updated(FileView *view)
 	{
 		quick_view_file(view);
 	}
+}
+
+/* Returns non-zero if redraw is needed. */
+static int
+move_curr_line(FileView *view)
+{
+	int redraw = 0;
+	int pos = view->list_pos;
+	size_t last;
+
+	if(pos < 1)
+		pos = 0;
+
+	if(pos > view->list_rows - 1)
+		pos = view->list_rows - 1;
+
+	if(pos == -1)
+		return 0;
+
+	view->list_pos = pos;
+
+	if(view->curr_line > view->list_rows - 1)
+		view->curr_line = view->list_rows - 1;
+
+	view->top_line = calculate_top_position(view, view->top_line);
+
+	last = get_last_visible_file(view);
+	if(view->top_line <= pos && pos <= last)
+	{
+		view->curr_line = pos - view->top_line;
+	}
+	else if(pos > last)
+	{
+		scroll_down(view, pos - last);
+		redraw++;
+	}
+	else if(pos < view->top_line)
+	{
+		scroll_up(view, view->top_line - pos);
+		redraw++;
+	}
+
+	if(consider_scroll_offset(view))
+	{
+		redraw++;
+	}
+
+	return redraw != 0 || (view->num_type & NT_REL);
 }
 
 void
