@@ -224,6 +224,9 @@
 	Fixed crash on :sync! when filters of two panels differ and resulting
 	number of files is not the same.  Thanks to filterfalse.
 
+	Fixed navigation to the bottom of the screen with non-zero 'scrolloff',
+	which lifted cursor when it shouldn't.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

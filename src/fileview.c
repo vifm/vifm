@@ -585,7 +585,7 @@ get_window_middle_pos(const FileView *view)
 size_t
 get_window_bottom_pos(const FileView *view)
 {
-	if(all_files_visible(view))
+	if(view->list_rows - 1 <= get_last_visible_file(view))
 	{
 		const size_t last = view->list_rows - 1;
 		return last - last%view->column_count;
