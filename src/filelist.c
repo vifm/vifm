@@ -165,13 +165,13 @@ static void clear_marking(FileView *view);
 void
 init_filelists(void)
 {
+	fview_init();
+
 	init_view(&rwin);
 	init_view(&lwin);
 
 	curr_view = &lwin;
 	other_view = &rwin;
-
-	fview_init();
 }
 
 /* Loads initial display values into view structure. */
