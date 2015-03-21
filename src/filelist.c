@@ -738,7 +738,7 @@ check_view_dir_history(FileView *view)
 	}
 	else
 	{
-		size_t last = get_last_visible_file(view);
+		const size_t last = get_last_visible_cell(view);
 		if(view->list_pos < view->window_cells)
 		{
 			scroll_up(view, view->top_line);

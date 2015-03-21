@@ -447,7 +447,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		page_scroll(get_last_visible_file(curr_view), -1);
+		page_scroll(get_last_visible_cell(curr_view), -1);
 	}
 }
 

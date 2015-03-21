@@ -523,7 +523,7 @@ all_files_visible(const FileView *view)
 }
 
 size_t
-get_last_visible_file(const FileView *view)
+get_last_visible_cell(const FileView *view)
 {
 	return view->top_line + view->window_cells - 1;
 }
@@ -550,7 +550,7 @@ get_window_middle_pos(const FileView *view)
 size_t
 get_window_bottom_pos(const FileView *view)
 {
-	if(view->list_rows - 1 <= get_last_visible_file(view))
+	if(view->list_rows - 1 <= get_last_visible_cell(view))
 	{
 		const size_t last = view->list_rows - 1;
 		return last - last%view->column_count;
@@ -559,7 +559,7 @@ get_window_bottom_pos(const FileView *view)
 	{
 		const size_t off = get_effective_scroll_offset(view);
 		const size_t column_correction = view->column_count - 1;
-		return get_last_visible_file(view) - off - column_correction;
+		return get_last_visible_cell(view) - off - column_correction;
 	}
 }
 
@@ -650,7 +650,7 @@ can_scroll_up(const FileView *view)
 int
 can_scroll_down(const FileView *view)
 {
-	return get_last_visible_file(view) < view->list_rows - 1;
+	return get_last_visible_cell(view) < view->list_rows - 1;
 }
 
 void
@@ -695,7 +695,7 @@ int
 get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 {
 	const int scroll_offset = get_effective_scroll_offset(view);
-	int last = get_last_visible_file(view);
+	const int last = get_last_visible_cell(view);
 	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
 	{
 		const size_t column_correction = (view->column_count - 1) -
@@ -723,7 +723,7 @@ consider_scroll_offset(FileView *view)
 		/* Check scroll offset at the bottom. */
 		if(can_scroll_down(view))
 		{
-			size_t last = get_last_visible_file(view);
+			const size_t last = get_last_visible_cell(view);
 			if(pos > last - s)
 			{
 				scroll_down(view, s + (pos - last));
@@ -1201,7 +1201,7 @@ move_curr_line(FileView *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	last = get_last_visible_file(view);
+	last = get_last_visible_cell(view);
 	if(view->top_line <= pos && pos <= last)
 	{
 		view->curr_line = pos - view->top_line;

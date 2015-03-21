@@ -69,10 +69,10 @@ void put_inactive_mark(FileView *view);
  * non-zero if so, and zero otherwise. */
 int all_files_visible(const FileView *view);
 
-/* Returns index of last visible file in the view.  Value returned may be
- * greater than or equal to number of files in the view, which should be
- * threated correctly. */
-size_t get_last_visible_file(const FileView *view);
+/* Gets file position of last visible cell in the view.  Value returned may be
+ * greater than or equal to the number of files in the view and thus should be
+ * threated correctly.  Returns the index. */
+size_t get_last_visible_cell(const FileView *view);
 
 /* Calculates position in list of files that corresponds to window top, which is
  * adjusted according to 'scrolloff' option.  Returns the position. */
