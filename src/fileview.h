@@ -19,6 +19,8 @@
 #ifndef VIFM__FILEVIEW_H__
 #define VIFM__FILEVIEW_H__
 
+#include <stddef.h> /* size_t */
+
 #include "ui/ui.h"
 
 /* Initialization/termination functions. */
@@ -34,6 +36,7 @@ void fview_view_reset(FileView *view);
 
 /* Appearance related functions. */
 
+/* Redraws directory list and puts inactive mark for the other view. */
 void draw_dir_list(FileView *view);
 
 /* Redraws directory list without any extra actions that are performed in
@@ -41,7 +44,7 @@ void draw_dir_list(FileView *view);
 void draw_dir_list_only(FileView *view);
 
 /* Updates view (maybe postponed) on the screen (redraws file list and
- * cursor) */
+ * cursor). */
 void redraw_view(FileView *view);
 
 /* Updates view immediately on the screen (redraws file list and cursor). */
@@ -51,6 +54,7 @@ void redraw_view_imm(FileView *view);
  * cursor) */
 void redraw_current_view(void);
 
+/* Restores normal appearance of item under the cursor. */
 void erase_current_line_bar(FileView *view);
 
 /* Redraws cursor of the view on the screen. */
@@ -61,7 +65,8 @@ void put_inactive_mark(FileView *view);
 
 /* Viewport related functions. */
 
-/* Returns non-zero if all files are visible, so no scrolling is needed. */
+/* Checks whether if all files are visible, so no scrolling is needed.  Returns
+ * non-zero if so, and zero otherwise. */
 int all_files_visible(const FileView *view);
 
 /* Returns index of last visible file in the view.  Value returned may be
@@ -69,21 +74,26 @@ int all_files_visible(const FileView *view);
  * threated correctly. */
 size_t get_last_visible_file(const FileView *view);
 
-/* Returns window top position adjusted for 'scrolloff' option. */
+/* Calculates position in list of files that corresponds to window top, which is
+ * adjusted according to 'scrolloff' option.  Returns the position. */
 size_t get_window_top_pos(const FileView *view);
 
-/* Returns window middle position adjusted for 'scrolloff' option. */
+/* Calculates position in list of files that corresponds to window middle, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
 size_t get_window_middle_pos(const FileView *view);
 
-/* Returns window bottom position adjusted for 'scrolloff' option. */
+/* Calculates position in list of files that corresponds to window bottom, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
 size_t get_window_bottom_pos(const FileView *view);
 
 /* Scrolling related functions. */
 
-/* Returns non-zero in case view can be scrolled up (there are more files). */
+/* Checks if view can be scrolled up (there are more files).  Returns non-zero
+ * if so, and zero otherwise. */
 int can_scroll_up(const FileView *view);
 
-/* Returns non-zero in case view can be scrolled down (there are more files). */
+/* Checks if view can be scrolled down (there are more files).  Returns non-zero
+ * if so, and zero otherwise. */
 int can_scroll_down(const FileView *view);
 
 /* Scrolls view up at least by specified number of files.  Updates both top and
@@ -94,13 +104,15 @@ void scroll_up(FileView *view, size_t by);
  * and cursor positions. */
 void scroll_down(FileView *view, size_t by);
 
-/* Returns new list position after making correction for scrolling down. */
+/* Calculates list position corrected for scrolling down.  Returns adjusted
+ * position. */
 int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 
-/* Returns new list position after making correction for scrolling up. */
+/* Calculates list position corrected for scrolling up.  Returns adjusted
+ * position. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 
-/* Updates current and top line of a view according to scrolloff option value.
+/* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
 int consider_scroll_offset(FileView *view);
 
@@ -117,7 +129,7 @@ void update_scroll_bind_offset(void);
 /* Enables/disables ls-like style of the view. */
 void fview_set_lsview(FileView *view, int enabled);
 
-/* Returns number of columns in the view. */
+/* Evaluates number of columns in the view.  Returns the number. */
 size_t calculate_columns_count(FileView *view);
 
 /* Callback-like function which triggers some view-specific updates after
