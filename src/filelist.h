@@ -26,14 +26,6 @@
 #include <stdint.h> /* uint64_t */
 
 #include "ui/ui.h"
-#include "utils/test_helpers.h"
-
-/* Default value of case sensitivity for filters. */
-#ifdef _WIN32
-#define FILTER_DEF_CASE_SENSITIVITY 0
-#else
-#define FILTER_DEF_CASE_SENSITIVITY 1
-#endif
 
 /* Type of contiguous area of file list. */
 typedef enum
@@ -42,6 +34,10 @@ typedef enum
 	FLS_MARKING,   /* Of marked entries. */
 }
 FileListScope;
+
+/* Type of filter function for zapping list of entries.  Should return non-zero
+ * if entry is to be keeped and zero otherwise. */
+typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
 
 /* Initialization/termination functions. */
 
@@ -143,37 +139,6 @@ void free_file_capture(FileView *view);
 /* Remove dot and regexp filters if it's needed to make file visible.  Returns
  * non-zero if file was found. */
 int ensure_file_is_selected(FileView *view, const char name[]);
-
-/* Filters related functions. */
-
-void set_dot_files_visible(FileView *view, int visible);
-void toggle_dot_files(FileView *view);
-
-void filter_selected_files(FileView *view);
-void remove_filename_filter(FileView *view);
-void restore_filename_filter(FileView *view);
-/* Toggles filter inversion state of the view.  Reloads filelist and resets
- * cursor position. */
-void toggle_filter_inversion(FileView *view);
-
-/* Sets regular expression of the local filter for the view.  First call of this
- * function initiates filter set process, which should be ended by call to
- * local_filter_accept() or local_filter_cancel(). */
-void local_filter_set(FileView *view, const char filter[]);
-/* Updates cursor position and top line of the view according to interactive
- * local filter in progress. */
-void local_filter_update_view(FileView *view, int rel_pos);
-/* Accepts current value of local filter. */
-void local_filter_accept(FileView *view);
-/* Sets local filter non-interactively. */
-void local_filter_apply(FileView *view, const char filter[]);
-/* Cancels local filter set process.  Restores previous values of the filter. */
-void local_filter_cancel(FileView *view);
-/* Removes local filter after storing its current value to make restore
- * operation possible. */
-void local_filter_remove(FileView *view);
-/* Restores previously removed local filter. */
-void local_filter_restore(FileView *view);
 
 /* Directory history related functions. */
 
@@ -285,10 +250,27 @@ void check_marking(FileView *view, int count, const int indexes[]);
 void mark_files_at(FileView *view, int count, const int indexes[]);
 /* Marks selected files of the view. */
 void mark_selected(FileView *view);
-
-TSTATIC_DEFS(
-	int file_is_visible(FileView *view, const char filename[], int is_dir);
-)
+/* Removes dead entries (those that refer to non-existing files) or those that
+ * do not match local filter from the view.  Returns number of erased
+ * entries. */
+int zap_entries(FileView *view, dir_entry_t *entries, int *count,
+		zap_filter filter, void *arg, int allow_empty_list);
+/* Finds directory entry in the list of entries by the path.  Returns pointer to
+ * the found entry or NULL. */
+dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
+		const char path[]);
+/* Replaces all entries of the *entries with copy of with_entries elements. */
+void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
+		const dir_entry_t *with_entries, int with_count);
+/* Adds new entry to the *list of length *list_size and updates them
+ * appropriately.  Returns zero on success, otherwise non-zero is returned. */
+int add_dir_entry(dir_entry_t **list, size_t *list_size,
+		const dir_entry_t *entry);
+/* Frees single directory entry. */
+void free_dir_entry(const FileView *view, dir_entry_t *entry);
+/* Use parent_entry to make filtered list not empty, or create such entry (if
+ * parent_entry is NULL) and put it to original list. */
+void ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry);
 
 #endif /* VIFM__FILELIST_H__ */
 

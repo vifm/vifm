@@ -167,6 +167,7 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	fileview.c fileview.h \
+	filtering.c filtering.h \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \

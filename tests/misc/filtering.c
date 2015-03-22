@@ -5,19 +5,13 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
-#include "../../src/filelist.h"
+#include "../../src/filtering.h"
 
 #define assert_hidden(view, name, dir) \
 	assert_false(file_is_visible(&view, name, dir))
 
 #define assert_visible(view, name, dir) \
 	assert_true(file_is_visible(&view, name, dir))
-
-#ifdef _WIN32
-#define CASE_SENSITIVE_FILTER 0
-#else
-#define CASE_SENSITIVE_FILTER 1
-#endif
 
 SETUP()
 {
@@ -52,8 +46,8 @@ SETUP()
 	lwin.dir_entry[6].selected = 0;
 	lwin.selected_files = 6;
 
-	filter_init(&lwin.manual_filter, CASE_SENSITIVE_FILTER);
-	filter_init(&lwin.auto_filter, CASE_SENSITIVE_FILTER);
+	filter_init(&lwin.manual_filter, FILTER_DEF_CASE_SENSITIVITY);
+	filter_init(&lwin.auto_filter, FILTER_DEF_CASE_SENSITIVITY);
 	lwin.invert = cfg.filter_inverted_by_default;
 
 	lwin.column_count = 1;
@@ -88,8 +82,8 @@ SETUP()
 	rwin.dir_entry[7].selected = 0;
 	rwin.selected_files = 0;
 
-	filter_init(&rwin.manual_filter, CASE_SENSITIVE_FILTER);
-	filter_init(&rwin.auto_filter, CASE_SENSITIVE_FILTER);
+	filter_init(&rwin.manual_filter, FILTER_DEF_CASE_SENSITIVITY);
+	filter_init(&rwin.auto_filter, FILTER_DEF_CASE_SENSITIVITY);
 	rwin.invert = cfg.filter_inverted_by_default;
 
 	rwin.column_count = 1;

@@ -41,6 +41,7 @@
 #include "../filelist.h"
 #include "../fileview.h"
 #include "../fileops.h"
+#include "../filtering.h"
 #include "../registers.h"
 #include "../running.h"
 #include "../search.h"

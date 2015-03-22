@@ -90,6 +90,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "fileview.h"
+#include "filtering.h"
 #include "macros.h"
 #include "ops.h"
 #include "opt_handlers.h"

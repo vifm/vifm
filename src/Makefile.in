@@ -119,8 +119,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
 	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fileview.$(OBJEXT) fuse.$(OBJEXT) \
-	ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
+	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
+	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
 	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
 	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
@@ -441,6 +441,7 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	fileview.c fileview.h \
+	filtering.c filtering.h \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
@@ -891,6 +892,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileview.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@

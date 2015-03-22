@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 18 March, 2015
+Updated: 22 March, 2015
 Version: 0.7.8
 
 Brief Description
@@ -181,6 +181,7 @@ Package content
     |  |-- fileops.c - delete/copy/put selected file(s)
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- fileview.c - display/redraw/manage file view
+    |  |-- filtering.c - managing file filters
     |  |-- fuse.c - provides support of FUSE filesystems
     |  |-- globals.c - provides support of globals
     |  |-- ipc.c - handles communication across instances of vifm

@@ -64,6 +64,7 @@
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "fileview.h"
+#include "filtering.h"
 #include "fuse.h"
 #include "macros.h"
 #include "opt_handlers.h"
@@ -85,10 +86,6 @@ dir_fill_info_t;
  * if particular property holds and zero otherwise. */
 typedef int (*predicate_func)(const dir_entry_t *entry);
 
-/* Type of filter function for zapping list of entries.  Should return non-zero
- * if entry is to be keeped and zero otherwise. */
-typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
-
 static void init_view(FileView *view);
 static void init_flist(FileView *view);
 static void reset_view(FileView *view);
@@ -104,7 +101,6 @@ static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
-TSTATIC int file_is_visible(FileView *view, const char filename[], int is_dir);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
@@ -115,47 +111,23 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
-static dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
-		const char path[]);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static void update_entries_data(FileView *view);
-static int zap_entries(FileView *view, dir_entry_t *entries, int *count,
-		zap_filter filter, void *arg, int allow_empty_list);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
 static void add_parent_dir(FileView *view);
-static void append_slash(const char name[], char buf[], size_t buf_size);
-static void ensure_filtered_list_not_empty(FileView *view,
-		dir_entry_t *parent_entry);
-static void local_filter_finish(FileView *view);
-static void update_filtering_lists(FileView *view, int add, int clear);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
-static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
-		void *arg);
-static int load_unfiltered_list(FileView *const view);
-static void replace_dir_entries(FileView *view, dir_entry_t **entries,
-		int *count, const dir_entry_t *with_entries, int with_count);
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
-static void free_dir_entry(const FileView *view, dir_entry_t *entry);
-static int get_unfiltered_pos(const FileView *const view, int pos);
-static void store_local_filter_position(FileView *const view, int pos);
-static int extract_previously_selected_pos(FileView *const view);
-static void clear_local_filter_hist_after(FileView *const view, int pos);
-static int find_nearest_neighour(const FileView *const view);
-static int add_dir_entry(dir_entry_t **list, size_t *list_size,
-		const dir_entry_t *entry);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int file_can_be_displayed(const char directory[], const char filename[]);
-static int parent_dir_is_visible(int in_root);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
-static int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 static int iter_entries(FileView *view, dir_entry_t **entry,
 		predicate_func pred);
 static int is_entry_selected(const dir_entry_t *entry);
@@ -1221,7 +1193,7 @@ refill_dir_list(FileView *view)
 
 #ifdef _WIN32
 	/* Not all Windows file systems provide standard dot directories. */
-	if(!info.with_parent_dir && parent_dir_is_visible(info.is_root))
+	if(!info.with_parent_dir && cfg_parent_dir_is_visible(info.is_root))
 	{
 		add_parent_dir(view);
 		info.with_parent_dir = 1;
@@ -1257,7 +1229,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	/* Always include the ".." directory unless it is the root directory. */
 	if(strcmp(name, "..") == 0)
 	{
-		if(!parent_dir_is_visible(info->is_root))
+		if(!cfg_parent_dir_is_visible(info->is_root))
 		{
 			return 0;
 		}
@@ -1294,46 +1266,6 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	}
 
 	return 0;
-}
-
-/* Checks whether file/directory passes filename filters of the view.  Returns
- * non-zero if given filename passes filter and should be visible, otherwise
- * zero is returned, in which case the file should be hidden. */
-TSTATIC int
-file_is_visible(FileView *view, const char filename[], int is_dir)
-{
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
-	char name_with_slash[NAME_MAX + 1 + 1];
-	if(is_dir)
-	{
-		append_slash(filename, name_with_slash, sizeof(name_with_slash));
-		filename = name_with_slash;
-	}
-
-	if(filter_matches(&view->auto_filter, filename) > 0)
-	{
-		return 0;
-	}
-
-	if(filter_matches(&view->local_filter.filter, filename) == 0)
-	{
-		return 0;
-	}
-
-	if(filter_is_empty(&view->manual_filter))
-	{
-		return 1;
-	}
-
-	if(filter_matches(&view->manual_filter, filename) > 0)
-	{
-		return !view->invert;
-	}
-	else
-	{
-		return view->invert;
-	}
 }
 
 char *
@@ -1557,7 +1489,7 @@ flist_custom_finish(FileView *view)
 		return 1;
 	}
 
-	if(parent_dir_is_visible(0))
+	if(cfg_parent_dir_is_visible(0))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
@@ -1616,9 +1548,7 @@ flist_goto_by_path(FileView *view, const char path[])
 	}
 }
 
-/* Finds directory entry in the list of entries by the path.  Returns pointer to
- * the found entry or NULL. */
-static dir_entry_t *
+dir_entry_t *
 entry_from_path(dir_entry_t *entries, int count, const char path[])
 {
 	char canonic_path[PATH_MAX];
@@ -1836,10 +1766,7 @@ update_entries_data(FileView *view)
 	}
 }
 
-/* Removes dead entries (those that refer to non-existing files) or those that
- * do not match local filter from the view.  Returns number of erased
- * entries. */
-static int
+int
 zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 		void *arg, int allow_empty_list)
 {
@@ -2036,193 +1963,6 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 }
 
 void
-filter_selected_files(FileView *view)
-{
-	dir_entry_t *entry;
-	filter_t filter;
-	int filtered;
-
-	(void)filter_init(&filter, FILTER_DEF_CASE_SENSITIVITY);
-
-	/* Traverse items and update/create filter values. */
-	entry = NULL;
-	while(iter_selection_or_current(view, &entry))
-	{
-		const char *name = entry->name;
-		char name_with_slash[NAME_MAX + 1 + 1];
-
-		if(is_directory_entry(entry))
-		{
-			append_slash(entry->name, name_with_slash, sizeof(name_with_slash));
-			name = name_with_slash;
-		}
-
-		(void)filter_append(&view->auto_filter, name);
-		(void)filter_append(&filter, name);
-	}
-
-	/* Update entry lists to remove entries that must be filtered out now.  No
-	 * view reload is needed. */
-	filtered = zap_entries(view, view->dir_entry, &view->list_rows,
-			&is_newly_filtered, &filter, 0);
-	if(flist_custom_active(view))
-	{
-		(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-				&is_newly_filtered, &filter, 1);
-	}
-	else
-	{
-		view->filtered += filtered;
-	}
-
-	filter_dispose(&filter);
-
-	if(view->list_pos >= view->list_rows)
-	{
-		view->list_pos = view->list_rows - 1;
-	}
-
-	ui_view_schedule_redraw(view);
-}
-
-/* zap_entries() filter to filter-out files that match filter passed in the
- * arg. */
-static int
-is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
-{
-	filter_t *const filter = arg;
-
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
-	char name_with_slash[NAME_MAX + 1 + 1];
-	const char *filename = entry->name;
-
-	if(is_directory_entry(entry))
-	{
-		append_slash(filename, name_with_slash, sizeof(name_with_slash));
-		filename = name_with_slash;
-	}
-
-	return filter_matches(filter, filename) == 0;
-}
-
-void
-set_dot_files_visible(FileView *view, int visible)
-{
-	view->hide_dot = !visible;
-	ui_view_schedule_reload(view);
-}
-
-void
-toggle_dot_files(FileView *view)
-{
-	set_dot_files_visible(view, view->hide_dot);
-}
-
-void
-remove_filename_filter(FileView *view)
-{
-	if(filter_is_empty(&view->manual_filter) &&
-			filter_is_empty(&view->auto_filter))
-	{
-		return;
-	}
-
-	(void)replace_string(&view->prev_manual_filter, view->manual_filter.raw);
-	filter_clear(&view->manual_filter);
-	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
-	filter_clear(&view->auto_filter);
-
-	view->prev_invert = view->invert;
-	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
-	ui_view_schedule_full_reload(view);
-}
-
-void
-restore_filename_filter(FileView *view)
-{
-	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
-	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
-	view->invert = view->prev_invert;
-	ui_view_schedule_full_reload(view);
-}
-
-void
-toggle_filter_inversion(FileView *view)
-{
-	view->invert = !view->invert;
-	load_dir_list(view, 1);
-	flist_set_pos(view, 0);
-}
-
-void
-local_filter_set(FileView *view, const char filter[])
-{
-	const int current_file_pos = view->local_filter.in_progress
-		? get_unfiltered_pos(view, view->list_pos)
-		: load_unfiltered_list(view);
-
-	if(current_file_pos >= 0)
-	{
-		store_local_filter_position(view, current_file_pos);
-	}
-
-	(void)filter_change(&view->local_filter.filter, filter,
-			!regexp_should_ignore_case(filter));
-
-	update_filtering_lists(view, 1, 0);
-}
-
-/* Loads full list of files into unfiltered list of the view.  Returns positon
- * of file under cursor in the unfiltered list. */
-static int
-load_unfiltered_list(FileView *const view)
-{
-	int current_file_pos = view->list_pos;
-
-	view->local_filter.in_progress = 1;
-
-	view->local_filter.saved = strdup(view->local_filter.filter.raw);
-
-	if(view->filtered > 0)
-	{
-		char full_path[PATH_MAX];
-		dir_entry_t *entry;
-
-		get_current_full_path(view, sizeof(full_path), full_path);
-
-		filter_clear(&view->local_filter.filter);
-		populate_dir_list(view, 1);
-
-		/* Resolve current file position in updated list. */
-		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
-		if(entry != NULL)
-		{
-			current_file_pos = entry_to_pos(view, entry);
-		}
-
-		if(current_file_pos >= view->list_rows)
-		{
-			current_file_pos = view->list_rows - 1;
-		}
-	}
-	else
-	{
-		/* Save unfiltered (by local filter) list for further use. */
-		replace_dir_entries(view, &view->custom.entries,
-				&view->custom.entry_count, view->dir_entry, view->list_rows);
-	}
-
-	view->local_filter.unfiltered = view->dir_entry;
-	view->local_filter.unfiltered_count = view->list_rows;
-	view->local_filter.prefiltered_count = view->filtered;
-	view->dir_entry = NULL;
-
-	return current_file_pos;
-}
-
-/* Replaces all entries of the *entries with copy of with_entries elements. */
-static void
 replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 		const dir_entry_t *with_entries, int with_count)
 {
@@ -2273,8 +2013,7 @@ free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 	*count = 0;
 }
 
-/* Frees single directory entry. */
-static void
+void
 free_dir_entry(const FileView *view, dir_entry_t *entry)
 {
 	free(entry->name);
@@ -2287,239 +2026,7 @@ free_dir_entry(const FileView *view, dir_entry_t *entry)
 	}
 }
 
-/* Gets position of an item in dir_entry list at position pos in the unfiltered
- * list.  Returns index on success, otherwise -1 is returned. */
-static int
-get_unfiltered_pos(const FileView *const view, int pos)
-{
-	const size_t count = view->local_filter.unfiltered_count;
-	const char *const filename = view->dir_entry[pos].name;
-	while(pos < count)
-	{
-		/* Compare pointers, which are the same for same entry in two arrays. */
-		if(view->local_filter.unfiltered[pos].name == filename)
-		{
-			return pos;
-		}
-		pos++;
-	}
-	return -1;
-}
-
-/* Adds local filter position (in unfiltered list) to position history. */
-static void
-store_local_filter_position(FileView *const view, int pos)
-{
-	size_t *const len = &view->local_filter.poshist_len;
-	int *const arr = realloc(view->local_filter.poshist, sizeof(int)*(*len + 1));
-	if(arr != NULL)
-	{
-		view->local_filter.poshist = arr;
-		arr[*len] = pos;
-		++*len;
-	}
-}
-
 void
-local_filter_update_view(FileView *view, int rel_pos)
-{
-	int pos = extract_previously_selected_pos(view);
-
-	if(pos < 0)
-	{
-		pos = find_nearest_neighour(view);
-	}
-
-	if(pos >= 0)
-	{
-		if(pos == 0 && is_parent_dir(view->dir_entry[0].name) &&
-				view->list_rows > 0)
-		{
-			pos++;
-		}
-
-		view->list_pos = pos;
-		view->top_line = pos - rel_pos;
-	}
-}
-
-/* Finds one of previously selected files and updates list of visited files
- * if needed.  Returns file position in current list of files or -1. */
-static int
-extract_previously_selected_pos(FileView *const view)
-{
-	size_t i;
-	for(i = 0; i < view->local_filter.poshist_len; i++)
-	{
-		const int unfiltered_pos = view->local_filter.poshist[i];
-		const char *const file = view->local_filter.unfiltered[unfiltered_pos].name;
-		const int filtered_pos = find_file_pos_in_list(view, file);
-
-		if(filtered_pos >= 0)
-		{
-			clear_local_filter_hist_after(view, i);
-			return filtered_pos;
-		}
-	}
-	return -1;
-}
-
-/* Clears all positions after the pos. */
-static void
-clear_local_filter_hist_after(FileView *const view, int pos)
-{
-	view->local_filter.poshist_len -= view->local_filter.poshist_len - (pos + 1);
-}
-
-/* Find nearest filtered neighbour.  Returns index of nearest unfiltered
- * neighbour of the entry initially pointed to by cursor. */
-static int
-find_nearest_neighour(const FileView *const view)
-{
-	const int count = view->local_filter.unfiltered_count;
-
-	if(view->local_filter.poshist_len > 0U)
-	{
-		const int unfiltered_orig_pos = view->local_filter.poshist[0U];
-		int i;
-		for(i = unfiltered_orig_pos; i < count; i++)
-		{
-			const int filtered_pos = find_file_pos_in_list(view,
-					view->local_filter.unfiltered[i].name);
-			if(filtered_pos >= 0)
-			{
-				return filtered_pos;
-			}
-		}
-	}
-
-	assert(view->list_rows > 0 && "List of files is empty.");
-	return view->list_rows - 1;
-}
-
-void
-local_filter_accept(FileView *view)
-{
-	if(!view->local_filter.in_progress)
-	{
-		return;
-	}
-
-	update_filtering_lists(view, 0, 1);
-
-	local_filter_finish(view);
-
-	cfg_save_filter_history(view->local_filter.filter.raw);
-
-	/* Some of previously selected files could be filtered out, update number of
-	 * selected files. */
-	recount_selected_files(view);
-}
-
-void
-local_filter_apply(FileView *view, const char filter[])
-{
-	if(view->local_filter.in_progress)
-	{
-		assert(!view->local_filter.in_progress && "Wrong local filter applying.");
-		return;
-	}
-
-	(void)filter_set(&view->local_filter.filter, filter);
-	cfg_save_filter_history(view->local_filter.filter.raw);
-}
-
-void
-local_filter_cancel(FileView *view)
-{
-	if(!view->local_filter.in_progress)
-	{
-		return;
-	}
-
-	(void)filter_set(&view->local_filter.filter, view->local_filter.saved);
-
-	free(view->dir_entry);
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	update_filtering_lists(view, 1, 1);
-	local_filter_finish(view);
-}
-
-/* Copies/moves elements of the unfiltered list into dir_entry list.  add
- * parameter controls whether entries matching filter are copied into dir_entry
- * list.  clear parameter controls whether entries not matching filter are
- * cleared in unfiltered list. */
-static void
-update_filtering_lists(FileView *view, int add, int clear)
-{
-	size_t i;
-	size_t list_size = 0U;
-	dir_entry_t *parent_entry = NULL;
-
-	for(i = 0; i < view->local_filter.unfiltered_count; i++)
-	{
-		/* FIXME: some very long file names won't be matched against some
-		 * regexps. */
-		char name_with_slash[NAME_MAX + 1 + 1];
-
-		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
-		const char *name = entry->name;
-
-		if(is_parent_dir(name))
-		{
-			parent_entry = entry;
-			if(add && parent_dir_is_visible(is_root_dir(view->curr_dir)))
-			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
-			}
-			continue;
-		}
-
-		if(is_directory_entry(entry))
-		{
-			append_slash(name, name_with_slash, sizeof(name_with_slash));
-			name = name_with_slash;
-		}
-
-		if(filter_matches(&view->local_filter.filter, name) != 0)
-		{
-			if(add)
-			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
-			}
-		}
-		else
-		{
-			if(clear)
-			{
-				free_dir_entry(view, entry);
-			}
-		}
-	}
-
-	if(add)
-	{
-		view->list_rows = list_size;
-		view->filtered = view->local_filter.prefiltered_count
-		               + view->local_filter.unfiltered_count - list_size;
-		ensure_filtered_list_not_empty(view, parent_entry);
-	}
-}
-
-/* Appends slash to the name and stores result in the buffer. */
-static void
-append_slash(const char name[], char buf[], size_t buf_size)
-{
-	const size_t nchars = copy_str(buf, buf_size - 1, name);
-	buf[nchars - 1] = '/';
-	buf[nchars] = '\0';
-}
-
-/* Use parent_entry to make filtered list not empty, or create such entry (if
- * parent_entry is NULL) and put it to original list. */
-static void
 ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
 {
 	if(view->list_rows != 0U)
@@ -2545,36 +2052,7 @@ ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
 	}
 }
 
-/* Finishes filtering process and frees associated resources. */
-static void
-local_filter_finish(FileView *view)
-{
-	free(view->local_filter.unfiltered);
-	free(view->local_filter.saved);
-	view->local_filter.in_progress = 0;
-
-	free(view->local_filter.poshist);
-	view->local_filter.poshist = NULL;
-	view->local_filter.poshist_len = 0U;
-}
-
-void
-local_filter_remove(FileView *view)
-{
-	(void)replace_string(&view->local_filter.prev, view->local_filter.filter.raw);
-	filter_clear(&view->local_filter.filter);
-}
-
-void
-local_filter_restore(FileView *view)
-{
-	(void)filter_set(&view->local_filter.filter, view->local_filter.prev);
-	(void)replace_string(&view->local_filter.prev, "");
-}
-
-/* Adds new entry to the *list of length *list_size and updates them
- * appropriately.  Returns zero on success, otherwise non-zero is returned. */
-static int
+int
 add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 {
 	dir_entry_t *const new_entry = alloc_dir_entry(list, *list_size);
@@ -2810,17 +2288,9 @@ file_can_be_displayed(const char directory[], const char filename[])
 {
 	if(is_parent_dir(filename))
 	{
-		return parent_dir_is_visible(is_root_dir(directory));
+		return cfg_parent_dir_is_visible(is_root_dir(directory));
 	}
 	return path_exists_at(directory, filename, DEREF);
-}
-
-/* Returns non-zero if ../ directory can be displayed. */
-static int
-parent_dir_is_visible(int in_root)
-{
-	return ((in_root && (cfg.dot_dirs & DD_ROOT_PARENT)) ||
-			(!in_root && (cfg.dot_dirs & DD_NONROOT_PARENT)));
 }
 
 int
@@ -2984,23 +2454,6 @@ iter_active_area(FileView *view, dir_entry_t **entry)
 	{
 		*entry = (*entry == NULL) ? current : NULL;
 		return *entry != NULL;
-	}
-}
-
-/* Same as iter_selected_entries() function, but when selection is absent
- * current file is processed. */
-static int
-iter_selection_or_current(FileView *view, dir_entry_t **entry)
-{
-	if(view->selected_files == 0)
-	{
-		dir_entry_t *const current = &view->dir_entry[view->list_pos];
-		*entry = (*entry == NULL) ? current : NULL;
-		return *entry != NULL;
-	}
-	else
-	{
-		return iter_selected_entries(view, entry);
 	}
 }
 

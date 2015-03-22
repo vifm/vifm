@@ -54,6 +54,7 @@
 #include "../commands_completion.h"
 #include "../filelist.h"
 #include "../fileview.h"
+#include "../filtering.h"
 #include "../search.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"

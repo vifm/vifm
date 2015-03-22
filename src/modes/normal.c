@@ -50,6 +50,7 @@
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../fileview.h"
+#include "../filtering.h"
 #include "../quickview.h"
 #include "../registers.h"
 #include "../running.h"
