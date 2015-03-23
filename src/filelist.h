@@ -268,9 +268,8 @@ int add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
-/* Use parent_entry to make filtered list not empty, or create such entry (if
- * parent_entry is NULL) and put it to original list. */
-void ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry);
+/* Adds parent directory entry (..) to filelist. */
+void add_parent_dir(FileView *view);
 
 #endif /* VIFM__FILELIST_H__ */
 

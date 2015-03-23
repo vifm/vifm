@@ -734,14 +734,6 @@ get_tmpdir(void)
 	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP", NULL);
 }
 
-void
-append_slash(const char name[], char buf[], size_t buf_size)
-{
-	const size_t nchars = copy_str(buf, buf_size - 1, name);
-	buf[nchars - 1] = '/';
-	buf[nchars] = '\0';
-}
-
 #ifdef _WIN32
 
 int

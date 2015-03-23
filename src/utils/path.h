@@ -131,9 +131,6 @@ void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
  * tmp directory. */
 const char * get_tmpdir(void);
 
-/* Appends slash to the name and stores result in the buffer. */
-void append_slash(const char name[], char buf[], size_t buf_size);
-
 #ifdef _WIN32
 
 int is_unc_path(const char *path);

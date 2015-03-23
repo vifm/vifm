@@ -29,6 +29,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 
+static void reset_filter(filter_t *filter);
 static int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
@@ -36,10 +37,46 @@ static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
 static void update_filtering_lists(FileView *view, int add, int clear);
+static void ensure_filtered_list_not_empty(FileView *view,
+		dir_entry_t *parent_entry);
 static int extract_previously_selected_pos(FileView *const view);
 static void clear_local_filter_hist_after(FileView *const view, int pos);
 static int find_nearest_neighour(const FileView *const view);
 static void local_filter_finish(FileView *view);
+static void append_slash(const char name[], char buf[], size_t buf_size);
+
+void
+filters_view_reset(FileView *view)
+{
+	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
+	view->prev_invert = view->invert;
+
+	(void)replace_string(&view->prev_manual_filter, "");
+	reset_filter(&view->manual_filter);
+	(void)replace_string(&view->prev_auto_filter, "");
+	reset_filter(&view->auto_filter);
+
+	(void)replace_string(&view->local_filter.prev, "");
+	reset_filter(&view->local_filter.filter);
+	view->local_filter.in_progress = 0;
+	view->local_filter.saved = NULL;
+	view->local_filter.poshist = NULL;
+	view->local_filter.poshist_len = 0U;
+}
+
+/* Resets filter to empty state (either initializes or clears it). */
+static void
+reset_filter(filter_t *filter)
+{
+	if(filter->raw == NULL)
+	{
+		(void)filter_init(filter, FILTER_DEF_CASE_SENSITIVITY);
+	}
+	else
+	{
+		filter_clear(filter);
+	}
+}
 
 void
 set_dot_files_visible(FileView *view, int visible)
@@ -145,20 +182,34 @@ is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 void
 remove_filename_filter(FileView *view)
 {
-	if(filter_is_empty(&view->manual_filter) &&
-			filter_is_empty(&view->auto_filter))
+	if(filename_filter_is_empty(view))
 	{
 		return;
 	}
 
 	(void)replace_string(&view->prev_manual_filter, view->manual_filter.raw);
-	filter_clear(&view->manual_filter);
 	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
-	filter_clear(&view->auto_filter);
-
 	view->prev_invert = view->invert;
+
+	filename_filter_clear(view);
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
+
 	ui_view_schedule_full_reload(view);
+}
+
+int
+filename_filter_is_empty(FileView *view)
+{
+	return filter_is_empty(&view->manual_filter)
+	    && filter_is_empty(&view->auto_filter);
+}
+
+void
+filename_filter_clear(FileView *view)
+{
+	filter_clear(&view->auto_filter);
+	filter_clear(&view->manual_filter);
+	view->invert = 1;
 }
 
 void
@@ -213,6 +264,12 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 	{
 		return view->invert;
 	}
+}
+
+void
+filters_dir_updated(FileView *view)
+{
+	filter_clear(&view->local_filter.filter);
 }
 
 void
@@ -375,6 +432,34 @@ update_filtering_lists(FileView *view, int add, int clear)
 	}
 }
 
+/* Use parent_entry to make filtered list not empty, or create such entry (if
+ * parent_entry is NULL) and put it to original list. */
+static void
+ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
+{
+	if(view->list_rows != 0U)
+	{
+		return;
+	}
+
+	if(parent_entry == NULL)
+	{
+		add_parent_dir(view);
+		if(view->list_rows > 0)
+		{
+			(void)add_dir_entry(&view->local_filter.unfiltered,
+					&view->local_filter.unfiltered_count,
+					&view->dir_entry[view->list_rows - 1]);
+		}
+	}
+	else
+	{
+		size_t list_size = 0U;
+		(void)add_dir_entry(&view->dir_entry, &list_size, parent_entry);
+		view->list_rows = list_size;
+	}
+}
+
 void
 local_filter_update_view(FileView *view, int rel_pos)
 {
@@ -527,6 +612,31 @@ local_filter_restore(FileView *view)
 {
 	(void)filter_set(&view->local_filter.filter, view->local_filter.prev);
 	(void)replace_string(&view->local_filter.prev, "");
+}
+
+int
+local_filter_matches(FileView *view, const dir_entry_t *entry)
+{
+	/* FIXME: some very long file names won't be matched against some
+	 * regexps. */
+	char name_with_slash[NAME_MAX + 1 + 1];
+	const char *filename = entry->name;
+	if(is_directory_entry(entry))
+	{
+		append_slash(filename, name_with_slash, sizeof(name_with_slash));
+		filename = name_with_slash;
+	}
+
+	return filter_matches(&view->local_filter.filter, filename) > 0;
+}
+
+/* Appends slash to the name and stores result in the buffer. */
+static void
+append_slash(const char name[], char buf[], size_t buf_size)
+{
+	const size_t nchars = copy_str(buf, buf_size - 1, name);
+	buf[nchars - 1] = '/';
+	buf[nchars] = '\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

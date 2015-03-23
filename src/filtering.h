@@ -29,6 +29,10 @@
 #define FILTER_DEF_CASE_SENSITIVITY 1
 #endif
 
+/* Initialization/termination functions. */
+
+void filters_view_reset(FileView *view);
+
 /* Generic filters related functions. */
 
 void set_dot_files_visible(FileView *view, int visible);
@@ -38,6 +42,13 @@ void toggle_dot_files(FileView *view);
 void filter_selected_files(FileView *view);
 
 void remove_filename_filter(FileView *view);
+
+/* Checks whether file name filter of the view is empty.  Returns non-zero if
+ * so, and zero otherwise. */
+int filename_filter_is_empty(FileView *view);
+
+/* Clears filename filter dropping (not remembering) its previous state. */
+void filename_filter_clear(FileView *view);
 
 void restore_filename_filter(FileView *view);
 
@@ -49,6 +60,10 @@ void toggle_filter_inversion(FileView *view);
  * non-zero if given filename passes filter and should be visible, otherwise
  * zero is returned, in which case the file should be hidden. */
 int file_is_visible(FileView *view, const char filename[], int is_dir);
+
+/* Callback-like function which triggers some view-specific updates after
+ * directory of the view changes. */
+void filters_dir_updated(FileView *view);
 
 /* Local filter related functions. */
 
@@ -76,6 +91,9 @@ void local_filter_remove(FileView *view);
 
 /* Restores previously removed local filter. */
 void local_filter_restore(FileView *view);
+
+/* Checks whether given entry matches currently set local filter. */
+int local_filter_matches(FileView *view, const dir_entry_t *entry);
 
 #endif /* VIFM__FILTERING_H__ */
 

@@ -51,7 +51,6 @@
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/filemon.h"
-#include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/log.h"
@@ -59,7 +58,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -89,7 +87,6 @@ typedef int (*predicate_func)(const dir_entry_t *entry);
 static void init_view(FileView *view);
 static void init_flist(FileView *view);
 static void reset_view(FileView *view);
-static void reset_filter(filter_t *filter);
 static void init_view_history(FileView *view);
 static void capture_selection(FileView *view);
 static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
@@ -120,7 +117,6 @@ static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
 static int rescue_from_empty_filelist(FileView *view);
-static void add_parent_dir(FileView *view);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
@@ -192,38 +188,10 @@ static void
 reset_view(FileView *view)
 {
 	fview_view_reset(view);
-
-	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
-	view->prev_invert = view->invert;
-
-	(void)replace_string(&view->prev_manual_filter, "");
-	reset_filter(&view->manual_filter);
-	(void)replace_string(&view->prev_auto_filter, "");
-	reset_filter(&view->auto_filter);
-
-	(void)replace_string(&view->local_filter.prev, "");
-	reset_filter(&view->local_filter.filter);
-	view->local_filter.in_progress = 0;
-	view->local_filter.saved = NULL;
-	view->local_filter.poshist = NULL;
-	view->local_filter.poshist_len = 0U;
+	filters_view_reset(view);
 
 	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
 	ui_view_sort_list_ensure_well_formed(view->sort);
-}
-
-/* Resets filter to empty state (either initializes or clears it). */
-static void
-reset_filter(filter_t *filter)
-{
-	if(filter->raw == NULL)
-	{
-		(void)filter_init(filter, FILTER_DEF_CASE_SENSITIVITY);
-	}
-	else
-	{
-		filter_clear(filter);
-	}
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -1036,7 +1004,7 @@ change_directory(FileView *view, const char directory[])
 
 	if(location_changed)
 	{
-		filter_clear(&view->local_filter.filter);
+		filters_dir_updated(view);
 		free_saved_selection(view);
 	}
 	else
@@ -1521,7 +1489,7 @@ flist_custom_finish(FileView *view)
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
-	filter_clear(&view->local_filter.filter);
+	filters_dir_updated(view);
 
 	return 0;
 }
@@ -1734,18 +1702,8 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	/* FIXME: some very long file names won't be matched against some
-		* regexps. */
-	char name_with_slash[NAME_MAX + 1 + 1];
-	const char *filename = entry->name;
-	if(is_directory_entry(entry))
-	{
-		append_slash(filename, name_with_slash, sizeof(name_with_slash));
-		filename = name_with_slash;
-	}
-
 	return path_exists_at(entry->origin, entry->name, DEREF)
-	    && filter_matches(&view->local_filter.filter, filename) != 0;
+	    && !local_filter_matches(view, entry);
 }
 
 /* Re-read meta-data for each entry (does nothing for entries on which querying
@@ -1868,12 +1826,10 @@ sort_dir_list(int msg, FileView *view)
 static int
 rescue_from_empty_filelist(FileView *view)
 {
-	/*
-	 * It is possible to set the file name filter so that no files are showing
+	/* It is possible to set the file name filter so that no files are showing
 	 * in the / directory.  All other directories will always show at least the
-	 * ../ file.  This resets the filter and reloads the directory.
-	 */
-	if(filter_is_empty(&view->manual_filter))
+	 * ../ file.  This resets the filter and reloads the directory. */
+	if(filename_filter_is_empty(view))
 	{
 		return 0;
 	}
@@ -1881,16 +1837,14 @@ rescue_from_empty_filelist(FileView *view)
 	show_error_msgf("Filter error",
 			"The %s\"%s\" pattern did not match any files. It was reset.",
 			view->invert ? "" : "inverted ", view->manual_filter.raw);
-	filter_clear(&view->auto_filter);
-	filter_clear(&view->manual_filter);
-	view->invert = 1;
+
+	filename_filter_clear(view);
 
 	load_dir_list(view, 1);
 	return 1;
 }
 
-/* Adds parent directory entry (..) to filelist. */
-static void
+void
 add_parent_dir(FileView *view)
 {
 	dir_entry_t *dir_entry;
@@ -2023,32 +1977,6 @@ free_dir_entry(const FileView *view, dir_entry_t *entry)
 	{
 		free(entry->origin);
 		entry->origin = NULL;
-	}
-}
-
-void
-ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
-{
-	if(view->list_rows != 0U)
-	{
-		return;
-	}
-
-	if(parent_entry == NULL)
-	{
-		add_parent_dir(view);
-		if(view->list_rows > 0)
-		{
-			(void)add_dir_entry(&view->local_filter.unfiltered,
-					&view->local_filter.unfiltered_count,
-					&view->dir_entry[view->list_rows - 1]);
-		}
-	}
-	else
-	{
-		size_t list_size = 0U;
-		(void)add_dir_entry(&view->dir_entry, &list_size, parent_entry);
-		view->list_rows = list_size;
 	}
 }
 
