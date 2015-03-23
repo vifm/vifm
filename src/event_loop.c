@@ -40,6 +40,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
+#include "fileview.h"
 #include "ipc.h"
 #include "status.h"
 

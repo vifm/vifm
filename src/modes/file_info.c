@@ -212,13 +212,13 @@ redraw_file_info_dialog(void)
 
 #ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
-	get_uid_string(view, sizeof(id_buf), id_buf);
+	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
 	mvwaddstr(menu_win, curr_y, 10, id_buf);
 
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
-	get_gid_string(view, sizeof(id_buf), id_buf);
+	get_gid_string(entry, 0, sizeof(id_buf), id_buf);
 	mvwaddstr(menu_win, curr_y, 10, id_buf);
 #endif
 

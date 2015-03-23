@@ -39,7 +39,9 @@
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../fileview.h"
 #include "../fileops.h"
+#include "../filtering.h"
 #include "../registers.h"
 #include "../running.h"
 #include "../search.h"
@@ -358,7 +360,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(view))
 	{
-		page_scroll(get_last_visible_file(view), -1);
+		page_scroll(get_last_visible_cell(view), -1);
 	}
 }
 

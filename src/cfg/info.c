@@ -45,6 +45,7 @@
 #include "../dir_stack.h"
 #include "../filelist.h"
 #include "../filetype.h"
+#include "../fileview.h"
 #include "../opt_handlers.h"
 #include "../registers.h"
 #include "../status.h"
@@ -342,7 +343,7 @@ get_sort_info(FileView *view, const char line[])
 	}
 	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
 
-	reset_view_sort(view);
+	fview_sorting_updated(view);
 }
 
 /* Appends item to the hist extending the history to fit it if needed. */

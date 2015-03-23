@@ -200,13 +200,15 @@ void stop_process(void);
  * by Vifm messed it up. */
 void update_terminal_settings(void);
 
-/* Fills the buffer with string representation of owner user for current file of
- * the view. */
-void get_uid_string(const FileView *view, size_t buf_len, char buf[]);
+/* Fills the buffer with string representation of owner user for the entry.  The
+ * as_num flag forces formatting as integer. */
+void get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+		char buf[]);
 
-/* Fills the buffer with string representation of owner group for current file
- * of the view. */
-void get_gid_string(const FileView *view, size_t buf_len, char buf[]);
+/* Fills the buffer with string representation of owner group for the entry.
+ * The as_num flag forces formatting as integer. */
+void get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+		char buf[]);
 
 /* Reopens real terminal and binds it to stdout.  Returns NULL on error (message
  * is printed to stderr), otherwise file previously used as stdout is

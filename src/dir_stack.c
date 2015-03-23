@@ -24,6 +24,7 @@
 
 #include "ui/ui.h"
 #include "filelist.h"
+#include "fileview.h"
 
 stack_entry_t *stack;
 unsigned int stack_top;
@@ -89,7 +90,7 @@ popd(void)
 	if(change_directory(&rwin, stack[stack_top].rpane_dir) >= 0)
 		load_dir_list(&rwin, 0);
 
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	fview_cursor_redraw(curr_view);
 	refresh_view_win(other_view);
 
 	free_entry(&stack[stack_top]);
@@ -119,7 +120,7 @@ swap_dirs(void)
 	if(change_directory(&rwin, item.rpane_dir) >= 0)
 		load_dir_list(&rwin, 0);
 
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	fview_cursor_redraw(curr_view);
 	refresh_view_win(other_view);
 
 	free_entry(&item);

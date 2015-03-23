@@ -41,6 +41,7 @@
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
+#include "../../fileview.h"
 #include "../../ops.h"
 #include "../../status.h"
 #include "../../undo.h"
@@ -149,7 +150,7 @@ enter_attr_mode(FileView *active_view)
 				view->dir_entry[i].name);
 		clean_selected_files(view);
 		load_dir_list(view, 1);
-		move_to_list_pos(view, view->list_pos);
+		fview_cursor_redraw(view);
 		return;
 	}
 	while(i < view->list_rows)
@@ -380,7 +381,7 @@ leave_attr_mode(void)
 
 	clean_selected_files(view);
 	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
+	fview_cursor_redraw(view);
 
 	update_all_windows();
 }

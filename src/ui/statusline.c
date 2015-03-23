@@ -21,10 +21,6 @@
 #include <curses.h> /* mvwin() wbkgdset() werase() */
 
 #include <ctype.h> /* isdigit() */
-#ifndef _WIN32
-#include <grp.h> /* getgrgid_r() */
-#include <pwd.h> /* getpwuid_r() */
-#endif
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h> /* _SC_* sysconf() */
@@ -95,6 +91,7 @@ update_stat_window(FileView *view)
 static void
 update_stat_window_old(FileView *view)
 {
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 	char name_buf[160*2 + 1];
 	char perm_buf[26];
 	char size_buf[56];
@@ -117,20 +114,17 @@ update_stat_window_old(FileView *view)
 	filename = get_current_file_name(view);
 	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
-			size_buf);
+	friendly_size_notation(entry->size, sizeof(size_buf), size_buf);
 
-	get_uid_string(view, sizeof(id_buf), id_buf);
+	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
 		strcat(id_buf, ":");
-	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
+	get_gid_string(entry, 0, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 #ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf),
-			view->dir_entry[view->list_pos].mode);
+	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
 #else
-	snprintf(perm_buf, sizeof(perm_buf), "%s",
-			attr_str_long(view->dir_entry[view->list_pos].attrs));
+	snprintf(perm_buf, sizeof(perm_buf), "%s", attr_str_long(entry->attrs));
 #endif
 
 	werase(stat_win);
@@ -184,6 +178,7 @@ static char *
 parse_view_macros(FileView *view, const char **format, const char macros[],
 		int opt)
 {
+	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -227,21 +222,19 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'A':
 #ifndef _WIN32
-				get_perm_string(buf, sizeof(buf), view->dir_entry[view->list_pos].mode);
+				get_perm_string(buf, sizeof(buf), entry->mode);
 #else
-				snprintf(buf, sizeof(buf), "%s",
-						attr_str_long(view->dir_entry[view->list_pos].attrs));
+				snprintf(buf, sizeof(buf), "%s", attr_str_long(entry->attrs));
 #endif
 				break;
 			case 'u':
-				get_uid_string(view, sizeof(buf), buf);
+				get_uid_string(entry, 0, sizeof(buf), buf);
 				break;
 			case 'g':
-				get_gid_string(view, sizeof(buf), buf);
+				get_gid_string(entry, 0, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(view->dir_entry[view->list_pos].size,
-						sizeof(buf), buf);
+				friendly_size_notation(entry->size, sizeof(buf), buf);
 				break;
 			case 'E':
 				{
@@ -268,7 +261,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'd':
 				{
-					struct tm *tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
+					struct tm *tm_ptr = localtime(&entry->mtime);
 					strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 				}
 				break;

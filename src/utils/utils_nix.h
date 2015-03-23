@@ -43,8 +43,12 @@ void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, char cmd[]);
 /* Converts the mode to string representation of permissions. */
 void get_perm_string(char buf[], int len, mode_t mode);
 
+/* Maps string with user id as a string or user name to integer id.  Returns
+ * zero on success and non-zero otherwise. */
 int get_uid(const char user[], uid_t *uid);
 
+/* Maps string with group id as a string or group name to integer id.  Returns
+ * zero on success and non-zero otherwise. */
 int get_gid(const char group[], gid_t *gid);
 
 int S_ISEXE(mode_t mode);

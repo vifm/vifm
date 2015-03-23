@@ -31,6 +31,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
+#include "fileview.h"
 
 static int is_valid_index(const int bmark_index);
 static void clear_bmarks(bookmark_t bmarks[], int count);
@@ -282,7 +283,7 @@ goto_bookmark(FileView *view, char mark)
 			return 0;
 		case '\x03': /* Ctrl-C. */
 		case '\x1b': /* Escape. */
-			move_to_list_pos(view, view->list_pos);
+			fview_cursor_redraw(view);
 			return 0;
 
 		default:
@@ -316,7 +317,7 @@ navigate_to_bookmark(FileView *view, char mark)
 		status_bar_message("Mark is invalid");
 	}
 
-	move_to_list_pos(view, view->list_pos);
+	fview_cursor_redraw(view);
 	return 1;
 }
 

@@ -33,6 +33,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "fileview.h"
 
 static int find_and_goto_pattern(FileView *view, int wrap_start, int backward);
 static int find_and_goto_match(FileView *view, int start, int backward);
@@ -58,7 +59,7 @@ find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 			return 0;
 		}
 	}
-	move_to_list_pos(view, view->list_pos);
+	fview_cursor_redraw(view);
 	return 1;
 }
 
@@ -175,7 +176,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		if(cfg.hl_search && !was_found)
 		{
 			/* Update the view.  It look might have changed, because of selection. */
-			move_to_list_pos(view, view->list_pos);
+			fview_cursor_redraw(view);
 		}
 
 		if(!cfg.hl_search)
@@ -190,7 +191,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		move_to_list_pos(view, view->list_pos);
+		fview_cursor_redraw(view);
 		if(interactive)
 		{
 			print_search_fail_msg(view, backward);

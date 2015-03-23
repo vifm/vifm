@@ -57,6 +57,7 @@
 #include "../colors.h"
 #include "../event_loop.h"
 #include "../filelist.h"
+#include "../fileview.h"
 #include "../opt_handlers.h"
 #include "../quickview.h"
 #include "../status.h"
@@ -521,7 +522,9 @@ update_screen(UpdateType update_kind)
 	update_all_windows();
 
 	if(!curr_view->explore_mode)
-		move_to_list_pos(curr_view, curr_view->list_pos);
+	{
+		fview_cursor_redraw(curr_view);
+	}
 
 	update_input_buf();
 
@@ -782,7 +785,7 @@ redraw_lists(void)
 		}
 		else if(!other_view->explore_mode)
 		{
-			(void)move_curr_line(other_view);
+			fview_cursor_redraw(other_view);
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}

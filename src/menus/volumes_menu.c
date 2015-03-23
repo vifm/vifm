@@ -75,7 +75,7 @@ execute_volumes_cb(FileView *view, menu_info *m)
 	if(change_directory(view, path_buf) >= 0)
 	{
 		load_dir_list(view, 0);
-		move_to_list_pos(view, 0);
+		flist_set_pos(view, 0);
 	}
 	return 0;
 }

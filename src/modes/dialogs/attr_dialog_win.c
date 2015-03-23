@@ -34,6 +34,7 @@
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
+#include "../../fileview.h"
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
@@ -348,7 +349,7 @@ leave_attr_mode(void)
 
 	clean_selected_files(view);
 	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
+	fview_cursor_redraw(view);
 
 	update_all_windows();
 }

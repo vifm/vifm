@@ -300,7 +300,7 @@ find_config_dir(void)
 
 	if(try_vifm_envvar_for_conf()) return;
 	if(try_exe_directory_for_conf()) return;
-	if(try_home_envvar_for_conf(get_env_type() == ET_WIN)) return;
+	if(try_home_envvar_for_conf(0)) return;
 	if(try_appdata_for_conf()) return;
 	if(try_xdg_for_conf()) return;
 
@@ -999,6 +999,13 @@ int
 cfg_is_word_wchar(wchar_t c)
 {
 	return c >= 256 || cfg.word_chars[c];
+}
+
+int
+cfg_parent_dir_is_visible(int in_root)
+{
+	return ((in_root && (cfg.dot_dirs & DD_ROOT_PARENT)) ||
+			(!in_root && (cfg.dot_dirs & DD_NONROOT_PARENT)));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

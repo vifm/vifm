@@ -411,7 +411,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 		default:
 			assert(0 && "Unhandled preview property type");
-			num_str[0] = '\0';
+			param = 0;
 			break;
 	}
 

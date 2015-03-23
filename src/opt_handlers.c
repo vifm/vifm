@@ -42,6 +42,7 @@
 #include "utils/utils.h"
 #include "column_view.h"
 #include "filelist.h"
+#include "fileview.h"
 #include "quickview.h"
 #include "search.h"
 #include "sort.h"
@@ -1372,7 +1373,9 @@ scrolloff_handler(OPT_OP op, optval_t val)
 
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
-		move_to_list_pos(curr_view, curr_view->list_pos);
+	{
+		fview_cursor_redraw(curr_view);
+	}
 }
 
 static void
@@ -1527,9 +1530,9 @@ sort_handler(OPT_OP op, optval_t val)
 	}
 	ui_view_sort_list_ensure_well_formed(sort_keys);
 
-	reset_view_sort(curr_view);
+	fview_sorting_updated(curr_view);
 	resort_view(curr_view);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	fview_cursor_redraw(curr_view);
 	load_sort_option(curr_view);
 }
 
