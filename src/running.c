@@ -977,7 +977,7 @@ output_to_nowhere(const char cmd[])
 {
 	FILE *file, *err;
 
-	if(background_and_capture((char *)cmd, &file, &err) == (pid_t)-1)
+	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;

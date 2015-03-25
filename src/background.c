@@ -50,6 +50,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
+#include "status.h"
 
 /* Special value of process id for internal tasks running in background
  * threads. */
@@ -433,7 +434,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 
 #ifndef _WIN32
 pid_t
-background_and_capture(char *cmd, FILE **out, FILE **err)
+background_and_capture(char *cmd, int user_sh, FILE **out, FILE **err)
 {
 	pid_t pid;
 	int out_pipe[2];
@@ -473,7 +474,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 			exit(-1);
 
-		args[0] = "/bin/sh";
+		args[0] = user_sh ? cfg.shell : "/bin/sh";
 		args[1] = "-c";
 		args[2] = cmd;
 		args[3] = NULL;
@@ -493,13 +494,14 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 /* Runs command in a background and redirects its stdout and stderr streams to
  * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
 static pid_t
-background_and_capture_internal(char *cmd, FILE **out, FILE **err,
+background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
 	wchar_t *args[5];
 	char cwd[PATH_MAX];
 	int code;
 	wchar_t *final_wide_cmd;
+	wchar_t *wide_sh = NULL;
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
@@ -518,14 +520,26 @@ background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 
 	final_wide_cmd = to_wide(cmd);
 
-	args[0] = L"cmd";
-	args[1] = L"/U";
-	args[2] = L"/C";
-	args[3] = final_wide_cmd;
-	args[4] = NULL;
+	wide_sh = to_wide(user_sh ? "cmd" : cfg.shell);
+	if(user_sh || curr_stats.shell_type == ST_CMD)
+	{
+		args[0] = wide_sh;
+		args[1] = L"/U";
+		args[2] = L"/C";
+		args[3] = final_wide_cmd;
+		args[4] = NULL;
+	}
+	else
+	{
+		args[0] = wide_sh;
+		args[1] = L"-c";
+		args[2] = final_wide_cmd;
+		args[3] = NULL;
+	}
 
 	code = _wspawnvp(P_NOWAIT, args[0], (const wchar_t **)args);
 
+	free(wide_sh);
 	free(final_wide_cmd);
 
 	if(is_unc_path(cwd))
@@ -550,7 +564,7 @@ background_and_capture_internal(char *cmd, FILE **out, FILE **err,
 }
 
 pid_t
-background_and_capture(char *cmd, FILE **out, FILE **err)
+background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
 	int out_fd, out_pipe[2];
 	int err_fd, err_pipe[2];
@@ -573,7 +587,8 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	pid = background_and_capture_internal(cmd, out, err, out_pipe, err_pipe);
+	pid = background_and_capture_internal(cmd, user_sh, out, err, out_pipe,
+			err_pipe);
 
 	_close(out_pipe[1]);
 	_close(err_pipe[1]);

@@ -145,7 +145,8 @@ char * prepare_targets(FileView *view);
 
 /* Runs external command and puts its output to the m menu.  Returns non-zero if
  * status bar message should be saved. */
-int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
+int capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
+		menu_info *m);
 
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */

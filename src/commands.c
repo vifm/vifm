@@ -4615,7 +4615,7 @@ output_to_statusbar(const char *cmd)
 	char *lines;
 	size_t len;
 
-	if(background_and_capture((char *)cmd, &file, &err) == (pid_t)-1)
+	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
