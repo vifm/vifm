@@ -582,7 +582,7 @@ capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 	ui_cancellation_disable();
 
 	fclose(file);
-	show_errors_from_file(err);
+	show_errors_from_file(err, "Menu source error");
 
 	if(ui_cancellation_requested())
 	{

@@ -68,7 +68,7 @@ int confirm_deletion(int use_trash);
 
 /* Reads contents of the file and displays it in series of dialog messages.  ef
  * can be NULL.  Closes ef. */
-void show_errors_from_file(FILE *ef);
+void show_errors_from_file(FILE *ef, const char title[]);
 
 #endif /* VIFM__MODES__DIALOGS__MSG_DIALOG_H__ */
 
