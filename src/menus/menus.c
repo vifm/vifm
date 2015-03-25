@@ -539,7 +539,8 @@ normalize_top(menu_info *m)
 }
 
 int
-capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
+capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
+		menu_info *m)
 {
 	FILE *file, *err;
 	char *line = NULL;
@@ -548,7 +549,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 
 	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
 
-	pid = background_and_capture((char *)cmd, &file, &err);
+	pid = background_and_capture((char *)cmd, user_sh, &file, &err);
 	if(pid == (pid_t)-1)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);

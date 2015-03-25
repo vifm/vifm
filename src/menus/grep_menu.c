@@ -80,7 +80,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	free(targets);
 
 	status_bar_message("grep...");
-	save_msg = capture_output_to_menu(view, cmd, &m);
+	save_msg = capture_output_to_menu(view, cmd, 0, &m);
 	free(cmd);
 
 	return save_msg;

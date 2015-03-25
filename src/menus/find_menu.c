@@ -48,8 +48,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	char *targets = NULL;
 	char *cmd;
 
-	custom_macro_t macros[] =
-	{
+	custom_macro_t macros[] = {
 		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
 		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		{ .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
@@ -101,7 +100,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	free(targets);
 	free(custom_args);
 
-	save_msg = capture_output_to_menu(view, cmd, &m);
+	save_msg = capture_output_to_menu(view, cmd, 0, &m);
 	free(cmd);
 
 	return save_msg;

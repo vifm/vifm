@@ -56,7 +56,7 @@ show_apropos_menu(FileView *view, const char args[])
 	status_bar_message("apropos...");
 
 	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
-	save_msg = capture_output_to_menu(view, cmd, &m);
+	save_msg = capture_output_to_menu(view, cmd, 0, &m);
 	free(cmd);
 	return save_msg;
 }

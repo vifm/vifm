@@ -90,7 +90,7 @@ int background_and_wait_for_errors(char cmd[], int cancellable);
 /* Runs command in a background and redirects its stdout and stderr streams to
  * file streams which are set.  Returns id of background process ((pid_t)0 for
  * non-*nix like systems) or (pid_t)-1 on error. */
-pid_t background_and_capture(char *cmd, FILE **out, FILE **err);
+pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);

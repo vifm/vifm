@@ -40,7 +40,7 @@ show_user_menu(FileView *view, const char command[], int navigate)
 		m.key_handler = &filelist_khandler;
 	}
 
-	return capture_output_to_menu(view, command, &m);
+	return capture_output_to_menu(view, command, 1, &m);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
