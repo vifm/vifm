@@ -636,7 +636,7 @@ update_all_windows(void)
 		return;
 	}
 
-  in_menu = is_in_menu_like_mode();
+	in_menu = is_in_menu_like_mode();
 
 	if(!in_menu)
 	{
@@ -677,6 +677,11 @@ update_all_windows(void)
 		update_window_lazy(ltop_line2);
 		update_window_lazy(rtop_line1);
 		update_window_lazy(rtop_line2);
+	}
+
+	if(vle_mode_is(MSG_MODE))
+	{
+		update_window_lazy(error_win);
 	}
 
 	if(curr_stats.load_stage >= 2)

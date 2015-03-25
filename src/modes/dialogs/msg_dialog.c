@@ -520,7 +520,7 @@ confirm_deletion(int use_trash)
 }
 
 void
-show_errors_from_file(FILE *ef)
+show_errors_from_file(FILE *ef, const char title[])
 {
 	char linebuf[160];
 	char buf[sizeof(linebuf)*5];
@@ -535,7 +535,7 @@ show_errors_from_file(FILE *ef)
 			continue;
 		if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
 		{
-			int skip = (prompt_error_msg("Background Process Error", buf) != 0);
+			int skip = (prompt_error_msg(title, buf) != 0);
 			buf[0] = '\0';
 			if(skip)
 				break;
@@ -544,7 +544,9 @@ show_errors_from_file(FILE *ef)
 	}
 
 	if(buf[0] != '\0')
-		show_error_msg("Background Process Error", buf);
+	{
+		show_error_msg(title, buf);
+	}
 
 	fclose(ef);
 }

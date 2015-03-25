@@ -253,6 +253,8 @@ status_bar_message_i(const char message[], int error)
 	wattrset(status_bar, 0);
 
 	update_all_windows();
+	/* This is needed because update_all_windows() doesn't call doupdate() if
+	 * curr_stats.load_stage == 1. */
 	doupdate();
 }
 
