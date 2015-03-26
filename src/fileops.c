@@ -46,8 +46,9 @@
 #include "compat/os.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
-#include "modes/cmdline.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "modes/cmdline.h"
+#include "modes/modes.h"
 #include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -236,6 +237,7 @@ io_progress_changed(const io_progress_t *const state)
 	char total_size_str[16];
 	int progress;
 	char pretty_path[PATH_MAX];
+	const int redraw = is_redraw_scheduled();
 	const char *title, *ctrl_msg;
 
 	if(state->stage == IO_PS_ESTIMATING)
@@ -262,13 +264,19 @@ io_progress_changed(const io_progress_t *const state)
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
 	}
 
-	if(progress == prev_progress)
+	if(progress == prev_progress && !redraw)
 	{
 		return;
 	}
-	else if(progress >= 0)
+
+	if(progress >= 0)
 	{
 		prev_progress = progress;
+	}
+
+	if(redraw)
+	{
+		modes_redraw();
 	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),

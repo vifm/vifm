@@ -130,6 +130,8 @@
 	Automatically install sample vifmrc and help file on first start on
 	Windows.
 
+	Redraw UI on resize during file operation when 'syscalls' is set.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
