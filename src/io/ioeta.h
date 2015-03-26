@@ -32,11 +32,11 @@ typedef struct
 	size_t total_items;
 
 	/* Number of already processed items and index of the current item at the same
-	 * time (0..T). */
+	 * time [0..T). */
 	size_t current_item;
 
-	/* Total number of bytes to process (T).  Size of directories is counted as
-	 * 0. */
+	/* Total number of bytes to process.  Size of directories is counted as
+	 * zero. */
 	uint64_t total_bytes;
 
 	/* Number of already processed bytes. */

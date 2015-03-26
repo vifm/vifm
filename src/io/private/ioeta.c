@@ -67,7 +67,7 @@ ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 	estim->current_byte += bytes;
 	if(estim->current_byte > estim->total_bytes)
 	{
-		/* Estimation are out of date, update them. */
+		/* Estimations are out of date, update them. */
 		estim->total_bytes = estim->current_byte;
 	}
 
@@ -76,7 +76,7 @@ ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 		++estim->current_item;
 		if(estim->current_item > estim->total_items)
 		{
-			/* Estimation are out of date, update them. */
+			/* Estimations are out of date, update them. */
 			estim->total_items = estim->current_item;
 		}
 	}
