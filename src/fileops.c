@@ -236,6 +236,7 @@ io_progress_changed(const io_progress_t *const state)
 	char total_size_str[16];
 	int progress;
 	char pretty_path[PATH_MAX];
+	const char *title, *ctrl_msg;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
@@ -276,11 +277,13 @@ io_progress_changed(const io_progress_t *const state)
 	format_pretty_path(ops->base_dir, estim->item, pretty_path,
 			sizeof(pretty_path));
 
+	title = ops_describe(ops);
+	ctrl_msg = "Press Ctrl-C to cancel";
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			ui_sb_quick_msgf("%s: estimating... %d; %s %s", ops_describe(ops),
-					estim->total_items, total_size_str, pretty_path);
+			draw_msgf(title, ctrl_msg, "estimating... %d; %s %s", estim->total_items,
+					total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -289,13 +292,12 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				ui_sb_quick_msgf("%s: %d of %d; %s %s", ops_describe(ops),
-						estim->current_item + 1, estim->total_items,
-						total_size_str, pretty_path);
+				draw_msgf(title, ctrl_msg, "%d of %d; %s %s", estim->current_item + 1,
+						estim->total_items, total_size_str, pretty_path);
 			}
 			else
 			{
-				ui_sb_quick_msgf("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
+				draw_msgf(title, ctrl_msg, "%d of %d; %s/%s (%2d%%) %s",
 						estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path);
 			}
