@@ -197,7 +197,7 @@ schedule_redraw(void)
 }
 
 int
-is_redraw_scheduled(void)
+fetch_redraw_scheduled(void)
 {
 	if(pending_redraw)
 	{

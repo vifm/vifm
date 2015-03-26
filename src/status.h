@@ -178,9 +178,9 @@ int reset_status(const struct config_t *config);
 /* Sets internal flag to schedule postponed redraw operation of the UI. */
 void schedule_redraw(void);
 
-/* Checks for postponed redraw operations of the UI. Returns non-zero if redraw
- * operation was scheduled and resets internal flag. */
-int is_redraw_scheduled(void);
+/* Checks for postponed redraw operations of the UI.  Has side effects.  Returns
+ * non-zero if redraw operation was scheduled and resets internal flag. */
+int fetch_redraw_scheduled(void);
 
 /* Updates curr_stats to reflect whether terminal multiplexers support is
  * enabled. */
