@@ -33,6 +33,7 @@
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
 #include "../../utils/str.h"
+#include "../../utils/utf8.h"
 #include "../../event_loop.h"
 #include "../../status.h"
 
@@ -510,7 +511,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			mvwin(error_win, (sy - y)/2, (sx - x)/2);
 			wresize(error_win, y, x);
 
-			cx = centered ? (x - strlen(buf) - 2)/2 : 1;
+			cx = centered ? (x - get_screen_string_length(buf) - 2)/2 : 1;
 			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
