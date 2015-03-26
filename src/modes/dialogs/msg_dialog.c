@@ -74,6 +74,8 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
+static void draw_msg(const char title[], const char msg[],
+		const char ctrl_msg[], int centered);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -252,9 +254,9 @@ static int
 prompt_error_msg_internalv(const char title[], const char format[],
 		int prompt_skip, va_list pa)
 {
-	char buf[2048];
-	vsnprintf(buf, sizeof(buf), format, pa);
-	return prompt_error_msg_internal(title, buf, prompt_skip);
+	char msg[2048];
+	vsnprintf(msg, sizeof(msg), format, pa);
+	return prompt_error_msg_internal(title, msg, prompt_skip);
 }
 
 /* Internal function for displaying error messages to a user.  Automatically
@@ -371,10 +373,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	static const char *message;
 	static int ctrl_c;
 
-	int sx, sy;
-	int x, y;
-	int z;
-	const char *control_msg;
+	const char *ctrl_msg;
 	const int centered = (msg_kind == D_QUERY);
 
 	if(title_arg != NULL && message_arg != NULL)
@@ -391,67 +390,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 		return;
 	}
 
-	curs_set(FALSE);
-	werase(error_win);
-
-	getmaxyx(stdscr, sy, sx);
-
-	y = sy - 3 + !cfg.display_statusline;
-	x = sx - 2;
-	wresize(error_win, y, x);
-
-	z = strlen(message);
-	if(z <= x - 2 && strchr(message, '\n') == NULL)
-	{
-		y = 6;
-		wresize(error_win, y, x);
-		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		checked_wmove(error_win, 2, (x - z)/2);
-		wprint(error_win, message);
-	}
-	else
-	{
-		int i;
-		int cy = 2;
-		i = 0;
-		while(i < z)
-		{
-			int j;
-			char buf[x - 2 + 1];
-			int cx;
-
-			snprintf(buf, sizeof(buf), "%s", message + i);
-
-			for(j = 0; buf[j] != '\0'; j++)
-				if(buf[j] == '\n')
-					break;
-
-			if(buf[j] != '\0')
-				i++;
-			buf[j] = '\0';
-			i += j;
-
-			if(buf[0] == '\0')
-				continue;
-
-			y = cy + 4;
-			mvwin(error_win, (sy - y)/2, (sx - x)/2);
-			wresize(error_win, y, x);
-
-			cx = centered ? (x - strlen(buf) - 2)/2 : 1;
-			checked_wmove(error_win, cy++, cx);
-			wprint(error_win, buf);
-		}
-	}
-
-	box(error_win, 0, 0);
-	if(title[0] != '\0')
-		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
-
-	control_msg = get_control_msg(msg_kind, ctrl_c);
-	mvwaddstr(error_win, y - 2, (x - strlen(control_msg))/2, control_msg);
-
-	wrefresh(error_win);
+	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
+	draw_msg(title, message, ctrl_msg, centered);
 }
 
 /* Picks control message (information on available actions) basing on dialog
@@ -498,6 +438,92 @@ get_custom_control_msg(const response_variant responses[])
 	}
 
 	return msg_buf;
+}
+
+void
+draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
+{
+	char msg[8192];
+	va_list pa;
+
+	va_start(pa, format);
+	vsnprintf(msg, sizeof(msg), format, pa);
+	va_end(pa);
+
+	draw_msg(title, msg, ctrl_msg, 1);
+}
+
+/* Draws possibly centered formatted message with specified title and control
+ * message on error_win. */
+static void
+draw_msg(const char title[], const char msg[], const char ctrl_msg[],
+		int centered)
+{
+	int sx, sy;
+	int x, y;
+	int z;
+
+	curs_set(FALSE);
+	werase(error_win);
+
+	getmaxyx(stdscr, sy, sx);
+
+	y = sy - 3 + !cfg.display_statusline;
+	x = sx - 2;
+	wresize(error_win, y, x);
+
+	z = strlen(msg);
+	if(z <= x - 2 && strchr(msg, '\n') == NULL)
+	{
+		y = 6;
+		wresize(error_win, y, x);
+		mvwin(error_win, (sy - y)/2, (sx - x)/2);
+		checked_wmove(error_win, 2, (x - z)/2);
+		wprint(error_win, msg);
+	}
+	else
+	{
+		int i;
+		int cy = 2;
+		i = 0;
+		while(i < z)
+		{
+			int j;
+			char buf[x - 2 + 1];
+			int cx;
+
+			copy_str(buf, sizeof(buf), msg + i);
+
+			for(j = 0; buf[j] != '\0'; j++)
+				if(buf[j] == '\n')
+					break;
+
+			if(buf[j] != '\0')
+				i++;
+			buf[j] = '\0';
+			i += j;
+
+			if(buf[0] == '\0')
+				continue;
+
+			y = cy + 4;
+			mvwin(error_win, (sy - y)/2, (sx - x)/2);
+			wresize(error_win, y, x);
+
+			cx = centered ? (x - strlen(buf) - 2)/2 : 1;
+			checked_wmove(error_win, cy++, cx);
+			wprint(error_win, buf);
+		}
+	}
+
+	box(error_win, 0, 0);
+	if(title[0] != '\0')
+	{
+		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
+	}
+	mvwaddstr(error_win, y - 2, (x - strlen(ctrl_msg))/2, ctrl_msg);
+
+	wrefresh(error_win);
 }
 
 int
