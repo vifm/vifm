@@ -310,11 +310,24 @@ io_progress_changed(const io_progress_t *const state)
 			}
 			else
 			{
+				char current_file_size_str[16];
+				char total_file_size_str[16];
+
+				const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
+					(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
+
+				(void)friendly_size_notation(estim->current_file_byte,
+						sizeof(current_file_size_str), current_file_size_str);
+				(void)friendly_size_notation(estim->total_file_bytes,
+						sizeof(total_file_size_str), total_file_size_str);
+
 				draw_msgf(title, ctrl_msg,
-						"To %s\nItem %d of %d\n%s/%s (%2d%%)\n%s\nfrom %s",
+						"To %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
 						ops->base_dir, estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path,
-						src_path);
+						src_path, current_file_size_str, total_file_size_str,
+						file_progress/PRECISION);
 			}
 			break;
 	}
