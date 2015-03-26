@@ -237,6 +237,7 @@ io_progress_changed(const io_progress_t *const state)
 	char total_size_str[16];
 	int progress;
 	char pretty_path[PATH_MAX];
+	char src_path[PATH_MAX];
 	const int redraw = fetch_redraw_scheduled();
 	const char *title, *ctrl_msg;
 
@@ -284,6 +285,8 @@ io_progress_changed(const io_progress_t *const state)
 
 	format_pretty_path(ops->base_dir, estim->item, pretty_path,
 			sizeof(pretty_path));
+	copy_str(src_path, sizeof(src_path), estim->item);
+	remove_last_path_component(src_path);
 
 	title = ops_describe(ops);
 	ctrl_msg = "Press Ctrl-C to cancel";
@@ -300,16 +303,18 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s",
+				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s\nfrom %s",
 						ops->base_dir,
-						estim->current_item + 1, estim->total_items, pretty_path,
-						total_size_str);
+						estim->current_item + 1, estim->total_items, total_size_str,
+						pretty_path, src_path);
 			}
 			else
 			{
-				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s/%s (%2d%%)",
+				draw_msgf(title, ctrl_msg,
+						"To %s\nItem %d of %d\n%s/%s (%2d%%)\n%s\nfrom %s",
 						ops->base_dir, estim->current_item + 1, estim->total_items,
-						pretty_path, current_size_str, total_size_str, progress/PRECISION);
+						current_size_str, total_size_str, progress/PRECISION, pretty_path,
+						src_path);
 			}
 			break;
 	}

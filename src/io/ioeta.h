@@ -42,7 +42,7 @@ typedef struct
 	/* Number of already processed bytes. */
 	uint64_t current_byte;
 
-	/* Relative path to currently processed file. */
+	/* Path to currently processed file (it's always source file). */
 	char *item;
 
 	/* Progress reported while this flag is on is ignored. */
