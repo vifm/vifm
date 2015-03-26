@@ -290,8 +290,8 @@ io_progress_changed(const io_progress_t *const state)
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			draw_msgf(title, ctrl_msg, "estimating... %d; %s %s", estim->total_items,
-					total_size_str, pretty_path);
+			draw_msgf(title, ctrl_msg, "To %s\nestimating... %d; %s %s",
+					ops->base_dir, estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -300,14 +300,16 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg, "%d of %d; %s %s", estim->current_item + 1,
-						estim->total_items, total_size_str, pretty_path);
+				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s",
+						ops->base_dir,
+						estim->current_item + 1, estim->total_items, pretty_path,
+						total_size_str);
 			}
 			else
 			{
-				draw_msgf(title, ctrl_msg, "%d of %d; %s/%s (%2d%%) %s",
-						estim->current_item + 1, estim->total_items,
-						current_size_str, total_size_str, progress/PRECISION, pretty_path);
+				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s/%s (%2d%%)",
+						ops->base_dir, estim->current_item + 1, estim->total_items,
+						pretty_path, current_size_str, total_size_str, progress/PRECISION);
 			}
 			break;
 	}
