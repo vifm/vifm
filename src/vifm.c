@@ -378,6 +378,7 @@ main(int argc, char *argv[])
 
 	ipc_pre_init();
 
+	(void)vifm_chdir(dir);
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 
 	ipc_init(&parse_recieved_arguments);
@@ -550,6 +551,7 @@ parse_recieved_arguments(char *args[])
 		argc++;
 	}
 
+	(void)vifm_chdir(args[0]);
 	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
 			&rwin_handle);
 	exec_startup_commands(argc, args);
@@ -606,8 +608,6 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 		{ }
 	};
-
-	(void)vifm_chdir(dir);
 
 	/* Request getopt() reinitialization. */
 	optind = 0;
