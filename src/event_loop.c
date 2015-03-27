@@ -309,7 +309,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 static void
 process_scheduled_updates(void)
 {
-	if(is_redraw_scheduled())
+	if(fetch_redraw_scheduled())
 	{
 		modes_redraw();
 	}

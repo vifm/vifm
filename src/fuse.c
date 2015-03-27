@@ -489,7 +489,7 @@ fuse_try_unmount(FileView *view)
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
 	free(escaped_mount_point);
 
-	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
+	/* Have to chdir to parent temporarily, so that this DIR can be unmounted. */
 	if(vifm_chdir(cfg.fuse_home) != 0)
 	{
 		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");

@@ -24,25 +24,32 @@
 
 /* ioeta - Input/Output estimation */
 
-/* TODO: add per file progress. */
-
 typedef struct
 {
 	/* Total number of items to process (T). */
 	size_t total_items;
 
 	/* Number of already processed items and index of the current item at the same
-	 * time (0..T). */
+	 * time [0..T). */
 	size_t current_item;
 
-	/* Total number of bytes to process (T).  Size of directories is counted as
-	 * 0. */
+	/* Total number of bytes to process.  Size of directories is counted as
+	 * zero. */
 	uint64_t total_bytes;
 
-	/* Number of already processed bytes. */
+	/* Number of already processed bytes of all files. */
 	uint64_t current_byte;
 
-	/* Relative path to currently processed file. */
+	/* Size of current file. */
+	uint64_t total_file_bytes;
+
+	/* Number of already processed bytes of current file. */
+	uint64_t current_file_byte;
+
+	/* Number of inspected items. */
+	size_t inspected_items;
+
+	/* Path to currently processed file (it's always source file). */
 	char *item;
 
 	/* Progress reported while this flag is on is ignored. */

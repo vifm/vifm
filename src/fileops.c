@@ -46,8 +46,9 @@
 #include "compat/os.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
-#include "modes/cmdline.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "modes/cmdline.h"
+#include "modes/modes.h"
 #include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -236,6 +237,9 @@ io_progress_changed(const io_progress_t *const state)
 	char total_size_str[16];
 	int progress;
 	char pretty_path[PATH_MAX];
+	char src_path[PATH_MAX];
+	const int redraw = fetch_redraw_scheduled();
+	const char *title, *ctrl_msg;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
@@ -261,13 +265,19 @@ io_progress_changed(const io_progress_t *const state)
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
 	}
 
-	if(progress == prev_progress)
+	if(progress == prev_progress && !redraw)
 	{
 		return;
 	}
-	else if(progress >= 0)
+
+	if(progress >= 0)
 	{
 		prev_progress = progress;
+	}
+
+	if(redraw)
+	{
+		modes_redraw();
 	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
@@ -275,12 +285,16 @@ io_progress_changed(const io_progress_t *const state)
 
 	format_pretty_path(ops->base_dir, estim->item, pretty_path,
 			sizeof(pretty_path));
+	copy_str(src_path, sizeof(src_path), estim->item);
+	remove_last_path_component(src_path);
 
+	title = ops_describe(ops);
+	ctrl_msg = "Press Ctrl-C to cancel";
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			ui_sb_quick_msgf("%s: estimating... %d; %s %s", ops_describe(ops),
-					estim->total_items, total_size_str, pretty_path);
+			draw_msgf(title, ctrl_msg, "To %s\nestimating... %d; %s %s",
+					ops->base_dir, estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -289,15 +303,31 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				ui_sb_quick_msgf("%s: %d of %d; %s %s", ops_describe(ops),
-						estim->current_item + 1, estim->total_items,
-						total_size_str, pretty_path);
+				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s\nfrom %s",
+						ops->base_dir,
+						estim->current_item + 1, estim->total_items, total_size_str,
+						pretty_path, src_path);
 			}
 			else
 			{
-				ui_sb_quick_msgf("%s: %d of %d; %s/%s (%2d%%) %s", ops_describe(ops),
-						estim->current_item + 1, estim->total_items,
-						current_size_str, total_size_str, progress/PRECISION, pretty_path);
+				char current_file_size_str[16];
+				char total_file_size_str[16];
+
+				const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
+					(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
+
+				(void)friendly_size_notation(estim->current_file_byte,
+						sizeof(current_file_size_str), current_file_size_str);
+				(void)friendly_size_notation(estim->total_file_bytes,
+						sizeof(total_file_size_str), total_file_size_str);
+
+				draw_msgf(title, ctrl_msg,
+						"To %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
+						ops->base_dir, estim->current_item + 1, estim->total_items,
+						current_size_str, total_size_str, progress/PRECISION, pretty_path,
+						src_path, current_file_size_str, total_file_size_str,
+						file_progress/PRECISION);
 			}
 			break;
 	}

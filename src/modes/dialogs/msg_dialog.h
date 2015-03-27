@@ -62,6 +62,11 @@ int prompt_msg(const char title[], const char message[]);
 char prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[]);
 
+/* Draws centered formatted message with specified title and control message on
+ * error_win. */
+void draw_msgf(const char title[], const char ctrl_msg[], const char format[],
+		...);
+
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */
 int confirm_deletion(int use_trash);

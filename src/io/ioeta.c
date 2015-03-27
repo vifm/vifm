@@ -33,7 +33,7 @@ static VisitResult eta_visitor(const char full_path[], VisitAction action,
 ioeta_estim_t *
 ioeta_alloc(void *param)
 {
-	ioeta_estim_t *const estim = calloc(1U, sizeof(ioeta_estim_t));
+	ioeta_estim_t *const estim = calloc(1U, sizeof(*estim));
 	estim->param = param;
 	return estim;
 }
