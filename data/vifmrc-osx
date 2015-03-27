@@ -66,8 +66,8 @@ colorscheme Default
 " The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
 " Unless it exists with write/exec permissions set, vifm will attempt to
 " create it.
-" Have a look at FUSE for OSX https://osxfuse.github.io/
-set fusehome=/tmp/vifm_FUSE
+
+" set fusehome=/tmp/vifm_FUSE
 
 " Format for displaying time in file list. For example:
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
@@ -236,23 +236,13 @@ filetype *.asc
 filextype *.torrent open -a Transmission.app
 fileviewer *.torrent dumptorrent -v %c
 
-" FuseZipMount
-filetype *.zip,*.jar,*.war,*.ear,*.oxt
-\ {Mount with fuse-zip}
-\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
-\ {View contents}
-\ zip -sf %c | less,
-\ {Extract here}
-\ tar -xf %c,
-fileviewer *.zip,*.jar,*.war,*.ear,*.oxt zip -sf %c
+" Extract zip files
+filetype *.zip unzip %f
+fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
 
-" ArchiveMount
-filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz
-\ {Mount with archivemount}
-\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
-fileviewer *.tgz,*.tar.gz tar -tzf %c
-fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
-fileviewer *.tar.txz,*.txz xz --list %c
+" Extract tar archives
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz tar -xf %f
+fileviewer *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz tar -tf %f
 
 " Extract .bz2 archives
 filetype *.bz2 bzip2 -d %f
