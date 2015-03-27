@@ -8,14 +8,12 @@
 " ------------------------------------------------------------------------------
 
 " This is the actual command used to start vi.  The default is vim.
-" If you would like to use another vi clone such Elvis or Vile, or if
-" you use Homebrew to manage your vim installation you will need to
-" change this setting.
+" If you would like to use another vi clone such Elvis or Vile
+" you will need to change this setting.
 
 set vicmd=vim
 " set vicmd=elvis\ -G\ termcap
 " set vicmd=vile
-" set vicmd=/usr/local/bin/vim
 
 " Trash Directory
 " The default is to move files that are deleted with dd or :d to
@@ -98,7 +96,7 @@ set incsearch
 
 set scrolloff=4
 
-" Don't do to much requests to slow file systems
+" Don't do too many requests to slow file systems
 
 set slowfs=curlftpfs
 
@@ -133,7 +131,6 @@ command! zip zip -r %f.zip %f
 command! run !! ./%f
 command! make !!make %a
 command! mkcd :mkdir %a | cd %a
-command! vgrep vim "+grep %a"
 command! reload :write | restart
 
 " ------------------------------------------------------------------------------
@@ -181,7 +178,7 @@ filetype *.djvu open -a MacDjView.app
 
 " Audio
 filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
-       \ {Play using MPlayer}
+       \ {Play using MPlayerX}
        \ open -a MPlayerX.app,
        \ {Open in iTunes}
        \ open -a iTunes.app,
@@ -196,7 +193,7 @@ filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov
         \ open -a VLC.app,
         \ {Open in QuickTime Player}
         \ open -a QuickTime\ Player.app,
-        \ {View using mplayer}
+        \ {Open in MPlayerX}
         \ open -a MPlayerX.app,
 fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
          \ ffprobe -pretty %c 2>&1
@@ -207,6 +204,8 @@ filetype *.html,*.htm
         \ open -a Safari.app,
         \ {Open in Firefox}
         \ open -a Firefox.app,
+        \ {Open in Chrome}
+        \ open -a Google\ Chrome.app,
         \ {Open in vim}
         \ vim,
 fileviewer *.html,*.htm w3m -dump -T text/html
@@ -264,7 +263,6 @@ filetype *.pkg open
 filetype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx,*.ppt open -a LibreOffice.app
 fileviewer *.doc antiword -
 fileviewer *.docx, docx2txt.pl %f -
-
 
 " Syntax highlighting in preview
 "
