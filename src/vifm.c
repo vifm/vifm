@@ -129,7 +129,9 @@ static void parse_recieved_arguments(char *args[]);
 static void parse_args(int argc, char *argv[], const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle,
 		args_t *args);
-static void process_args(args_t *args);
+static void process_args(args_t *args, int general);
+static void process_general_args(args_t *args);
+static void process_non_general_args(args_t *args);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -349,6 +351,11 @@ main(int argc, char *argv[])
 	int no_configs;
 	args_t args = {};
 
+	(void)vifm_chdir(dir);
+	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle,
+			&args);
+	process_args(&args, 1);
+
 	cfg_init();
 
 	if(is_in_string_array(argv + 1, argc - 1, "--logging"))
@@ -398,11 +405,7 @@ main(int argc, char *argv[])
 		read_info_file(0);
 
 	ipc_pre_init();
-
-	(void)vifm_chdir(dir);
-	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle,
-			&args);
-	process_args(&args);
+	process_args(&args, 0);
 
 	ipc_init(&parse_recieved_arguments);
 
@@ -578,7 +581,7 @@ parse_recieved_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	parse_args(argc, argv, argv[0], lwin_path, rwin_path, &lwin_handle,
 			&rwin_handle, &args);
-	process_args(&args);
+	process_args(&args, 0);
 	exec_startup_commands(argc, argv);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
@@ -700,9 +703,24 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 	}
 }
 
-/* Processes command-line arguments from fields of the *args structure. */
+/* Processes command-line arguments from fields of the *args structure.  General
+ * args are --help and --version. */
 static void
-process_args(args_t *args)
+process_args(args_t *args, int general)
+{
+	if(general)
+	{
+		process_general_args(args);
+	}
+	else
+	{
+		process_non_general_args(args);
+	}
+}
+
+/* Processes general command-line arguments (--help and --version). */
+static void
+process_general_args(args_t *args)
 {
 	if(args->help)
 	{
@@ -717,7 +735,12 @@ process_args(args_t *args)
 		quit_on_arg_parsing(EXIT_SUCCESS);
 		return;
 	}
+}
 
+/* Processes all non-general command-line arguments. */
+static void
+process_non_general_args(args_t *args)
+{
 	if(args->remote_cmds != NULL && !ipc_server())
 	{
 		ipc_send(args->remote_cmds);

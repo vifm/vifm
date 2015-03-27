@@ -138,6 +138,8 @@
 
 	Redraw UI on resize during file operation when 'syscalls' is set.
 
+	Quit fast on --help/--version.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
