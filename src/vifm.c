@@ -404,10 +404,8 @@ main(int argc, char *argv[])
 	if(!old_config && !no_configs)
 		read_info_file(0);
 
-	ipc_pre_init();
-	process_args(&args, 0);
-
 	ipc_init(&parse_recieved_arguments);
+	process_args(&args, 0);
 
 	init_background();
 

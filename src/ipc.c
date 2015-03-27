@@ -21,11 +21,6 @@
 #ifndef ENABLE_REMOTE_CMDS
 
 void
-ipc_pre_init(void)
-{
-}
-
-void
 ipc_init(recieve_callback callback_func)
 {
 }
@@ -95,8 +90,11 @@ static int server;
 static int sock = -1;
 
 void
-ipc_pre_init(void)
+ipc_init(recieve_callback callback_func)
 {
+	assert(!initialized);
+	callback = callback_func;
+
 #ifdef _WIN32
 	int result;
 	WSADATA wsaData;
@@ -110,18 +108,6 @@ ipc_pre_init(void)
 #endif
 
 	(void)create_socket();
-}
-
-void
-ipc_init(recieve_callback callback_func)
-{
-	assert(!initialized);
-	callback = callback_func;
-
-	if(sock == -1)
-	{
-		ipc_pre_init();
-	}
 
 	if(create_socket() != 0)
 	{
