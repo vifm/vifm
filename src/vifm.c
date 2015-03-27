@@ -93,6 +93,24 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
+/* Parsed command-line arguments. */
+typedef struct
+{
+	int help;    /* Display help information and quit. */
+	int version; /* Display version information and quit. */
+
+	int logging;    /* Enable logging. */
+	int no_configs; /* Skip reading configuration files. */
+
+	char chosen_files_out[PATH_MAX]; /* Output for file picking. */
+	char chosen_dir_out[PATH_MAX];   /* Output for directory picking. */
+	const char *delimiter;           /* Delimiter for list of picked files. */
+	const char *on_choose;           /* Action to perform on chosen files. */
+
+	char **remote_cmds; /* Args to pass to server instance. */
+}
+args_t;
+
 static int is_path_arg(const char arg[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
@@ -109,7 +127,9 @@ static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
 static void parse_args(int argc, char *argv[], const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle,
+		args_t *args);
+static void process_args(args_t *args);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -327,6 +347,7 @@ main(int argc, char *argv[])
 	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
 	int no_configs;
+	args_t args = {};
 
 	cfg_init();
 
@@ -379,7 +400,9 @@ main(int argc, char *argv[])
 	ipc_pre_init();
 
 	(void)vifm_chdir(dir);
-	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
+	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle,
+			&args);
+	process_args(&args);
 
 	ipc_init(&parse_recieved_arguments);
 
@@ -539,22 +562,24 @@ undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 }
 
 static void
-parse_recieved_arguments(char *args[])
+parse_recieved_arguments(char *argv[])
 {
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
 	int argc = 0;
+	args_t args = {};
 
-	while(args[argc] != NULL)
+	while(argv[argc] != NULL)
 	{
 		argc++;
 	}
 
-	(void)vifm_chdir(args[0]);
-	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
-			&rwin_handle);
-	exec_startup_commands(argc, args);
+	(void)vifm_chdir(argv[0]);
+	parse_args(argc, argv, argv[0], lwin_path, rwin_path, &lwin_handle,
+			&rwin_handle, &args);
+	process_args(&args);
+	exec_startup_commands(argc, argv);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
@@ -586,9 +611,10 @@ parse_recieved_arguments(char *args[])
 	curr_stats.save_msg = 0;
 }
 
+/* Parses command-line arguments into fields of the *args structure. */
 static void
 parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
-		char rwin_path[], int *lwin_handle, int *rwin_handle)
+		char rwin_path[], int *lwin_handle, int *rwin_handle, args_t *args)
 {
 	static struct option long_opts[] = {
 		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
@@ -614,67 +640,44 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 
 	while(1)
 	{
-		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
-		if(c == -1)
-		{
-			break;
-		}
-
-		switch(c)
+		switch(getopt_long(argc, argv, "-c:fhv", long_opts, NULL))
 		{
 			case 'f': /* -f */
-				{
-					char path[PATH_MAX];
-					vim_get_list_file_path(path, sizeof(path));
-					stats_set_chosen_files_out(path);
-					break;
-				}
+				vim_get_list_file_path(args->chosen_files_out,
+						sizeof(args->chosen_files_out));
+				break;
 			case 'F': /* --choose-files <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_files_out(output);
-					break;
-				}
+				get_path_or_std(dir, optarg, args->chosen_files_out);
+				break;
 			case 'D': /* --choose-dir <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_dir_out(output);
-					break;
-				}
+				get_path_or_std(dir, optarg, args->chosen_dir_out);
+				break;
 			case 'd': /* --delimiter <delimiter> */
-				stats_set_output_delimiter(optarg);
+				args->delimiter = optarg;
 				break;
 			case 'o': /* --on-choose <cmd> */
-				stats_set_on_choose(optarg);
+				args->on_choose = optarg;
 				break;
 
 			case 'r': /* --remote <args>... */
-				if(!ipc_server())
-				{
-					ipc_send(argv + optind);
-					quit_on_arg_parsing(EXIT_SUCCESS);
-				}
-				break;
+				args->remote_cmds = argv + optind;
+				return;
 
 			case 'h': /* -h, --help */
-				show_help_msg(NULL);
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
+				args->help = 1;
+				return;
 			case 'v': /* -v, --version */
-				show_version_msg();
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
+				args->version = 1;
+				return;
 
 			case 'c': /* -c <cmd> */
 				/* Do nothing.  Handled in exec_startup_commands(). */
 				break;
 			case 'l': /* --logging */
-				/* Do nothing.  Handled in main(). */
+				args->logging = 1;
 				break;
 			case 'n': /* --no-configs */
-				/* Do nothing.  Handled in main(). */
+				args->no_configs = 1;
 				break;
 
 			case 's': /* --select <path> */
@@ -690,7 +693,56 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 				/* getopt_long() already printed error message. */
 				quit_on_arg_parsing(EXIT_FAILURE);
 				break;
+
+			case -1: /* No more arguments. */
+				return;
 		}
+	}
+}
+
+/* Processes command-line arguments from fields of the *args structure. */
+static void
+process_args(args_t *args)
+{
+	if(args->help)
+	{
+		show_help_msg(NULL);
+		quit_on_arg_parsing(EXIT_SUCCESS);
+		return;
+	}
+
+	if(args->version)
+	{
+		show_version_msg();
+		quit_on_arg_parsing(EXIT_SUCCESS);
+		return;
+	}
+
+	if(args->remote_cmds != NULL && !ipc_server())
+	{
+		ipc_send(args->remote_cmds);
+		quit_on_arg_parsing(EXIT_SUCCESS);
+		return;
+	}
+
+	if(args->chosen_files_out[0] != '\0')
+	{
+		stats_set_chosen_files_out(args->chosen_files_out);
+	}
+
+	if(args->chosen_dir_out[0] != '\0')
+	{
+		stats_set_chosen_dir_out(args->chosen_dir_out);
+	}
+
+	if(args->delimiter != NULL)
+	{
+		stats_set_output_delimiter(args->delimiter);
+	}
+
+	if(args->on_choose)
+	{
+		stats_set_on_choose(args->on_choose);
 	}
 }
 
