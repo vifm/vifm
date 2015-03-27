@@ -348,7 +348,6 @@ main(int argc, char *argv[])
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
-	int no_configs;
 	args_t args = {};
 
 	(void)vifm_chdir(dir);
@@ -358,7 +357,7 @@ main(int argc, char *argv[])
 
 	cfg_init();
 
-	if(is_in_string_array(argv + 1, argc - 1, "--logging"))
+	if(args.logging)
 	{
 		init_logger(1);
 	}
@@ -390,8 +389,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
-
 	/* Tell file type module what function to use to check availability of
 	 * external programs. */
 	ft_init(&external_command_exists);
@@ -401,8 +398,10 @@ main(int argc, char *argv[])
 	init_option_handlers();
 
 	old_config = cfg_has_old_format();
-	if(!old_config && !no_configs)
+	if(!old_config && !args.no_configs)
+	{
 		read_info_file(0);
+	}
 
 	ipc_init(&parse_recieved_arguments);
 	process_args(&args, 0);
@@ -460,7 +459,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
-	if(!old_config && !no_configs)
+	if(!old_config && !args.no_configs)
 	{
 		load_scheme();
 		cfg_load();
@@ -469,7 +468,7 @@ main(int argc, char *argv[])
 	write_color_scheme_file();
 	setup_signals();
 
-	if(old_config && !no_configs)
+	if(old_config && !args.no_configs)
 	{
 		convert_configs();
 
