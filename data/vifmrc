@@ -75,7 +75,7 @@ set fusehome=/tmp/vifm_FUSE
 
 set timefmt=%m/%d\ %H:%M
 
-" Show list of matches on tab complition in command-line mode
+" Show list of matches on tab completion in command-line mode
 
 set wildmenu
 
@@ -96,7 +96,7 @@ set incsearch
 
 set scrolloff=4
 
-" Don't do to much requests to slow file systems
+" Don't do too many requests to slow file systems
 
 set slowfs=curlftpfs
 
