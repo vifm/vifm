@@ -163,7 +163,7 @@ command! reload :write | restart
 " program.
 
 " Pdf
-filetype *.pdf
+filextype *.pdf
         \ {Open in Preview}
         \ open -a Preview.app,
         \ {Open in Skim}
@@ -171,13 +171,13 @@ filetype *.pdf
 fileviewer *.pdf pdftotext -nopgbrk %c -
 
 " PostScript
-filetype *.ps,*.eps open -a Preview.app
+filextype *.ps,*.eps open -a Preview.app
 
 " Djvu
-filetype *.djvu open -a MacDjView.app
+filextype *.djvu open -a MacDjView.app
 
 " Audio
-filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
+filextype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
        \ {Play using MPlayerX}
        \ open -a MPlayerX.app,
        \ {Open in iTunes}
@@ -188,7 +188,7 @@ fileviewer *.mp3 mp3info
 fileviewer *.flac soxi
 
 " Video
-filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
         \ {Open in VLC}
         \ open -a VLC.app,
         \ {Open in QuickTime Player}
@@ -199,7 +199,7 @@ fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.m
          \ ffprobe -pretty %c 2>&1
 
 " Web
-filetype *.html,*.htm
+filextype *.html,*.htm
         \ {Open in Safari}
         \ open -a Safari.app,
         \ {Open in Firefox}
@@ -218,7 +218,7 @@ filetype *.[1-8] tbl %c | groff -Tascii -man | less
 fileviewer *.[1-8] tbl %c | groff -Tascii -man | col -b
 
 " Image
-filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,
+filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,
         \ open -a Preview.app,
 fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm convert -identify %f -verbose /dev/null
 
@@ -233,7 +233,7 @@ filetype *.asc
        \ !!gpg --verify %c,
 
 " Torrent
-filetype *.torrent open -a Transmission.app
+filextype *.torrent open -a Transmission.app
 fileviewer *.torrent dumptorrent -v %c
 
 " Extract zip files
@@ -260,7 +260,7 @@ filetype *.img open
 filetype *.pkg open
 
 " Office files
-filetype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx,*.ppt open -a LibreOffice.app
+filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx,*.ppt open -a LibreOffice.app
 fileviewer *.doc antiword -
 fileviewer *.docx, docx2txt.pl %f -
 
@@ -327,9 +327,9 @@ nnoremap w :view<cr>
 vnoremap w :view<cr>gv
 
 " Open file in new MacVim tab
-nmap o :!mvim --remote-tab-silent %f<cr>
+nnoremap o :!mvim --remote-tab-silent %f<cr>
 " Open file in new MacVim window
-nmap O :!mvim %f<cr>
+nnoremap O :!mvim %f<cr>
 
 " Open file in the background using its default program
 nnoremap gb :!open -g %f<cr>
