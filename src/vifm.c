@@ -108,6 +108,8 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
+static void parse_args(int argc, char *argv[], const char dir[],
+		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -116,116 +118,6 @@ static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
-
-static void
-parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
-		char rwin_path[], int *lwin_handle, int *rwin_handle)
-{
-	static struct option long_opts[] = {
-		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
-		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
-		{ "select",       required_argument, .flag = NULL, .val = 's' },
-		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
-		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
-		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
-		{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
-
-#ifdef ENABLE_REMOTE_CMDS
-		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
-#endif
-
-		{ "help",       no_argument,       .flag = NULL, .val = 'h' },
-		{ "version",    no_argument,       .flag = NULL, .val = 'v' },
-
-		{ }
-	};
-
-	(void)vifm_chdir(dir);
-
-	/* Request getopt() reinitialization. */
-	optind = 0;
-
-	while(1)
-	{
-		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
-		if(c == -1)
-		{
-			break;
-		}
-
-		switch(c)
-		{
-			case 'f': /* -f */
-				{
-					char path[PATH_MAX];
-					vim_get_list_file_path(path, sizeof(path));
-					stats_set_chosen_files_out(path);
-					break;
-				}
-			case 'F': /* --choose-files <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_files_out(output);
-					break;
-				}
-			case 'D': /* --choose-dir <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_dir_out(output);
-					break;
-				}
-			case 'd': /* --delimiter <delimiter> */
-				stats_set_output_delimiter(optarg);
-				break;
-			case 'o': /* --on-choose <cmd> */
-				stats_set_on_choose(optarg);
-				break;
-
-			case 'r': /* --remote <args>... */
-				if(!ipc_server())
-				{
-					ipc_send(argv + optind);
-					quit_on_arg_parsing(EXIT_SUCCESS);
-				}
-				break;
-
-			case 'h': /* -h, --help */
-				show_help_msg(NULL);
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
-			case 'v': /* -v, --version */
-				show_version_msg();
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
-
-			case 'c': /* -c <cmd> */
-				/* Do nothing.  Handled in exec_startup_commands(). */
-				break;
-			case 'l': /* --logging */
-				/* Do nothing.  Handled in main(). */
-				break;
-			case 'n': /* --no-configs */
-				/* Do nothing.  Handled in main(). */
-				break;
-
-			case 's': /* --select <path> */
-				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
-						rwin_handle);
-				break;
-			case 1: /* Positional argument. */
-				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
-						lwin_handle, rwin_handle);
-				break;
-
-			case '?': /* Parsing error. */
-				/* getopt_long() already printed error message. */
-				quit_on_arg_parsing(EXIT_FAILURE);
-				break;
-		}
-	}
-}
 
 /* Checks whether argument mentions a valid path.  Returns non-zero if so,
  * otherwise zero is returned. */
@@ -690,6 +582,116 @@ parse_recieved_arguments(char *args[])
 
 	clean_status_bar();
 	curr_stats.save_msg = 0;
+}
+
+static void
+parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
+		char rwin_path[], int *lwin_handle, int *rwin_handle)
+{
+	static struct option long_opts[] = {
+		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
+		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
+		{ "select",       required_argument, .flag = NULL, .val = 's' },
+		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
+		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
+		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
+		{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
+
+#ifdef ENABLE_REMOTE_CMDS
+		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
+#endif
+
+		{ "help",       no_argument,       .flag = NULL, .val = 'h' },
+		{ "version",    no_argument,       .flag = NULL, .val = 'v' },
+
+		{ }
+	};
+
+	(void)vifm_chdir(dir);
+
+	/* Request getopt() reinitialization. */
+	optind = 0;
+
+	while(1)
+	{
+		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
+		if(c == -1)
+		{
+			break;
+		}
+
+		switch(c)
+		{
+			case 'f': /* -f */
+				{
+					char path[PATH_MAX];
+					vim_get_list_file_path(path, sizeof(path));
+					stats_set_chosen_files_out(path);
+					break;
+				}
+			case 'F': /* --choose-files <path>|- */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_files_out(output);
+					break;
+				}
+			case 'D': /* --choose-dir <path>|- */
+				{
+					char output[PATH_MAX];
+					get_path_or_std(dir, optarg, output);
+					stats_set_chosen_dir_out(output);
+					break;
+				}
+			case 'd': /* --delimiter <delimiter> */
+				stats_set_output_delimiter(optarg);
+				break;
+			case 'o': /* --on-choose <cmd> */
+				stats_set_on_choose(optarg);
+				break;
+
+			case 'r': /* --remote <args>... */
+				if(!ipc_server())
+				{
+					ipc_send(argv + optind);
+					quit_on_arg_parsing(EXIT_SUCCESS);
+				}
+				break;
+
+			case 'h': /* -h, --help */
+				show_help_msg(NULL);
+				quit_on_arg_parsing(EXIT_SUCCESS);
+				break;
+			case 'v': /* -v, --version */
+				show_version_msg();
+				quit_on_arg_parsing(EXIT_SUCCESS);
+				break;
+
+			case 'c': /* -c <cmd> */
+				/* Do nothing.  Handled in exec_startup_commands(). */
+				break;
+			case 'l': /* --logging */
+				/* Do nothing.  Handled in main(). */
+				break;
+			case 'n': /* --no-configs */
+				/* Do nothing.  Handled in main(). */
+				break;
+
+			case 's': /* --select <path> */
+				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
+						rwin_handle);
+				break;
+			case 1: /* Positional argument. */
+				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
+						lwin_handle, rwin_handle);
+				break;
+
+			case '?': /* Parsing error. */
+				/* getopt_long() already printed error message. */
+				quit_on_arg_parsing(EXIT_FAILURE);
+				break;
+		}
+	}
 }
 
 static void
