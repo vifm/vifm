@@ -8,7 +8,7 @@
 " ------------------------------------------------------------------------------
 
 " This is the actual command used to start vi.  The default is vim.
-" If you would like to use another vi clone such Elvis or Vile
+" If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
 
 set vicmd=vim
