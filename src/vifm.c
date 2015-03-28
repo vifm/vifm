@@ -113,18 +113,6 @@ main(int argc, char *argv[])
 	char dir[PATH_MAX];
 	int old_config;
 
-	(void)vifm_chdir(dir);
-	args_parse(&vifm_args, argc, argv, dir);
-	args_process(&vifm_args, 1);
-
-	cfg_init();
-
-	if(vifm_args.logging)
-	{
-		init_logger(1);
-	}
-
-	(void)setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
 	{
 		perror("getcwd");
@@ -133,6 +121,19 @@ main(int argc, char *argv[])
 #ifdef _WIN32
 	to_forward_slash(dir);
 #endif
+
+	(void)vifm_chdir(dir);
+	args_parse(&vifm_args, argc, argv, dir);
+	args_process(&vifm_args, 1);
+
+	(void)setlocale(LC_ALL, "");
+
+	cfg_init();
+
+	if(vifm_args.logging)
+	{
+		init_logger(1);
+	}
 
 	init_filelists();
 	init_registers();
