@@ -145,6 +145,9 @@ static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
+/* Command-line arguments in parsed form. */
+static args_t vifm_args;
+
 /* Checks whether argument mentions a valid path.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
@@ -346,15 +349,14 @@ main(int argc, char *argv[])
 
 	char dir[PATH_MAX];
 	int old_config;
-	args_t args = {};
 
 	(void)vifm_chdir(dir);
-	parse_args(argc, argv, dir, &args);
-	process_args(&args, 1);
+	parse_args(argc, argv, dir, &vifm_args);
+	process_args(&vifm_args, 1);
 
 	cfg_init();
 
-	if(args.logging)
+	if(vifm_args.logging)
 	{
 		init_logger(1);
 	}
@@ -395,22 +397,22 @@ main(int argc, char *argv[])
 	init_option_handlers();
 
 	old_config = cfg_has_old_format();
-	if(!old_config && !args.no_configs)
+	if(!old_config && !vifm_args.no_configs)
 	{
 		read_info_file(0);
 	}
 
 	ipc_init(&parse_recieved_arguments);
-	process_args(&args, 0);
+	process_args(&vifm_args, 0);
 
 	init_background();
 
 	init_fileops();
 
-	set_view_path(&lwin, args.lwin_path);
-	set_view_path(&rwin, args.rwin_path);
+	set_view_path(&lwin, vifm_args.lwin_path);
+	set_view_path(&rwin, vifm_args.rwin_path);
 
-	if(need_to_switch_active_pane(args.lwin_path, args.rwin_path))
+	if(need_to_switch_active_pane(vifm_args.lwin_path, vifm_args.rwin_path))
 	{
 		swap_view_roles();
 	}
@@ -419,7 +421,7 @@ main(int argc, char *argv[])
 	load_initial_directory(&rwin, dir);
 
 	/* Force split view when two paths are specified on command-line. */
-	if(args.lwin_path[0] != '\0' && args.rwin_path[0] != '\0')
+	if(vifm_args.lwin_path[0] != '\0' && vifm_args.rwin_path[0] != '\0')
 	{
 		curr_stats.number_of_windows = 2;
 	}
@@ -456,7 +458,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
-	if(!old_config && !args.no_configs)
+	if(!old_config && !vifm_args.no_configs)
 	{
 		load_scheme();
 		cfg_load();
@@ -465,7 +467,7 @@ main(int argc, char *argv[])
 	write_color_scheme_file();
 	setup_signals();
 
-	if(old_config && !args.no_configs)
+	if(old_config && !vifm_args.no_configs)
 	{
 		convert_configs();
 
@@ -473,8 +475,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		set_view_path(&lwin, args.lwin_path);
-		set_view_path(&rwin, args.rwin_path);
+		set_view_path(&lwin, vifm_args.lwin_path);
+		set_view_path(&rwin, vifm_args.rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -486,8 +488,8 @@ main(int argc, char *argv[])
 	 * configuration file sourcing if there is no `set trashdir=...` command. */
 	(void)set_trash_dir(cfg.trash_dir);
 
-	check_path_for_file(&lwin, args.lwin_path, args.lwin_handle);
-	check_path_for_file(&rwin, args.rwin_path, args.rwin_handle);
+	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
+	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
 
 	curr_stats.load_stage = 2;
 
