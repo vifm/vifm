@@ -33,6 +33,7 @@ vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
 									 ../data/vim/doc/app/tags
 
 pkgdata_DATA = ../data/vifmrc \
+							 ../data/vifmrc-osx \
 							 ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm vifmrc-converter
