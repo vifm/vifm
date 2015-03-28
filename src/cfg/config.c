@@ -26,6 +26,12 @@
 #define LOG "log"
 #define VIFMRC "vifmrc"
 
+#ifndef __APPLE__
+#define SAMPLE_VIFMRC "vifmrc"
+#else
+#define SAMPLE_VIFMRC "vifmrc-osx"
+#endif
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* size_t */
@@ -591,7 +597,7 @@ copy_rc_file(void)
 		.arg2.dst = dst,
 	};
 
-	snprintf(src, sizeof(src), "%s/" VIFMRC, get_installed_data_dir());
+	snprintf(src, sizeof(src), "%s/" SAMPLE_VIFMRC, get_installed_data_dir());
 	snprintf(dst, sizeof(dst), "%s/" VIFMRC, cfg.config_dir);
 
 	(void)iop_cp(&args);

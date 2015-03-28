@@ -80,6 +80,9 @@
 	Added per-file progress and changed progress to appear in a dialog rather
 	than statusbar.
 
+	Added OS X version of sample vifmrc file.  Now this one will be used on
+	first run on OS X.  Thanks to Larry Hynes (a.k.a larryhynes).
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
