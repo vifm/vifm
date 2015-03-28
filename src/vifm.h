@@ -22,6 +22,12 @@
 #include "utils/macros.h"
 #include "ui/ui.h"
 
+#ifndef _WIN32
+#define CONF_DIR "~/.vifm"
+#else
+#define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
+#endif
+
 /* Resets internal state and reloads configuration files. */
 void vifm_restart(void);
 

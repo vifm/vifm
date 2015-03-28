@@ -110,7 +110,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
 	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
@@ -421,6 +421,7 @@ vifm_SOURCES = \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \
 	\
+	args.c args.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
 	bracket_notation.c bracket_notation.h \
@@ -873,6 +874,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@

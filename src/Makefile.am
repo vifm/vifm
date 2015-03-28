@@ -147,6 +147,7 @@ vifm_SOURCES = \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \
 	\
+	args.c args.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
 	bracket_notation.c bracket_notation.h \
