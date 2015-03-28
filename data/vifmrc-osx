@@ -1,5 +1,6 @@
 " vim: filetype=vifm :
 " Sample configuration file for vifm on OSX (last updated: 27 Mar, 2015)
+" Copy to ~/.vifmrc and customise to your liking.
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
