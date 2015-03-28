@@ -143,6 +143,7 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void exec_startup_commands(int c, char **v);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
 /* Command-line arguments in parsed form. */
@@ -1007,6 +1008,33 @@ vifm_restart(void)
 	curr_stats.restart_in_progress = 0;
 
 	update_screen(UT_REDRAW);
+}
+
+static void
+exec_startup_commands(int c, char **v)
+{
+	static int argc;
+	static char **argv;
+	int x;
+
+	if(c > 0)
+	{
+		argc = c;
+		argv = v;
+	}
+
+	for(x = 1; x < argc; x++)
+	{
+		if(strcmp(argv[x], "-c") == 0)
+		{
+			(void)exec_commands(argv[x + 1], curr_view, CIT_COMMAND);
+			x++;
+		}
+		else if(argv[x][0] == '+')
+		{
+			(void)exec_commands(argv[x] + 1, curr_view, CIT_COMMAND);
+		}
+	}
 }
 
 void

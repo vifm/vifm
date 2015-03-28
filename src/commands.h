@@ -82,8 +82,6 @@ int commands_scope_finish(void);
  * command. */
 const char * find_last_command(const char cmds[]);
 
-void exec_startup_commands(int argc, char **argv);
-
 /* Expands all environment variables in the str.  Allocates and returns memory
  * that should be freed by the caller. */
 char * cmds_expand_envvars(const char str[]);
