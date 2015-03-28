@@ -21,9 +21,6 @@
 
 typedef void (*recieve_callback)(char *args[]);
 
-/* Initializes IPC unit basic state. */
-void ipc_pre_init(void);
-
 /* Initializes IPC unit state.  The callback_func will be called by
  * ipc_check(). */
 void ipc_init(recieve_callback callback_func);

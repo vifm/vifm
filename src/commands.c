@@ -551,33 +551,6 @@ static int keep_view_selection;
  * well as file scope marks (SCOPE_GUARD). */
 static int_stack_t if_levels;
 
-void
-exec_startup_commands(int c, char **v)
-{
-	static int argc;
-	static char **argv;
-	int x;
-
-	if(c > 0)
-	{
-		argc = c;
-		argv = v;
-	}
-
-	for(x = 1; x < argc; x++)
-	{
-		if(strcmp(argv[x], "-c") == 0)
-		{
-			(void)exec_commands(argv[x + 1], curr_view, CIT_COMMAND);
-			x++;
-		}
-		else if(argv[x][0] == '+')
-		{
-			(void)exec_commands(argv[x] + 1, curr_view, CIT_COMMAND);
-		}
-	}
-}
-
 static int
 swap_range(void)
 {

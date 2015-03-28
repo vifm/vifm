@@ -31,14 +31,13 @@
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() malloc() system() */
 #include <string.h>
 
 #include "cfg/config.h"
 #include "cfg/info.h"
-#include "compat/getopt.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -56,8 +55,8 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "utils/string_array.h"
 #include "utils/utils.h"
+#include "args.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
@@ -84,30 +83,13 @@
 #include "term_title.h"
 #include "trash.h"
 #include "undo.h"
-#include "version.h"
 #include "vim.h"
 
-#ifndef _WIN32
-#define CONF_DIR "~/.vifm"
-#else
-#define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
-#endif
-
-static int is_path_arg(const char arg[]);
-static void handle_arg_or_fail(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
-static void quit_on_arg_parsing(int code);
-static int handle_path_arg(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
-static void get_path_or_std(const char dir[], const char arg[], char output[]);
-static void parse_path(const char dir[], const char path[], char buf[]);
-static void show_help_msg(const char wrong_arg[]);
-static void show_version_msg(void);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
-static void parse_recieved_arguments(char *args[]);
+static void parse_received_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
 static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -115,312 +97,11 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
+static void exec_startup_commands(const args_t *args);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
-static void
-parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
-		char rwin_path[], int *lwin_handle, int *rwin_handle)
-{
-	static struct option long_opts[] = {
-		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
-		{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
-		{ "select",       required_argument, .flag = NULL, .val = 's' },
-		{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
-		{ "choose-dir",   required_argument, .flag = NULL, .val = 'D' },
-		{ "delimiter",    required_argument, .flag = NULL, .val = 'd' },
-		{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
-
-#ifdef ENABLE_REMOTE_CMDS
-		{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
-#endif
-
-		{ "help",       no_argument,       .flag = NULL, .val = 'h' },
-		{ "version",    no_argument,       .flag = NULL, .val = 'v' },
-
-		{ }
-	};
-
-	(void)vifm_chdir(dir);
-
-	/* Request getopt() reinitialization. */
-	optind = 0;
-
-	while(1)
-	{
-		const int c = getopt_long(argc, argv, "-c:fhv", long_opts, NULL);
-		if(c == -1)
-		{
-			break;
-		}
-
-		switch(c)
-		{
-			case 'f': /* -f */
-				{
-					char path[PATH_MAX];
-					vim_get_list_file_path(path, sizeof(path));
-					stats_set_chosen_files_out(path);
-					break;
-				}
-			case 'F': /* --choose-files <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_files_out(output);
-					break;
-				}
-			case 'D': /* --choose-dir <path>|- */
-				{
-					char output[PATH_MAX];
-					get_path_or_std(dir, optarg, output);
-					stats_set_chosen_dir_out(output);
-					break;
-				}
-			case 'd': /* --delimiter <delimiter> */
-				stats_set_output_delimiter(optarg);
-				break;
-			case 'o': /* --on-choose <cmd> */
-				stats_set_on_choose(optarg);
-				break;
-
-			case 'r': /* --remote <args>... */
-				if(!ipc_server())
-				{
-					ipc_send(argv + optind);
-					quit_on_arg_parsing(EXIT_SUCCESS);
-				}
-				break;
-
-			case 'h': /* -h, --help */
-				show_help_msg(NULL);
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
-			case 'v': /* -v, --version */
-				show_version_msg();
-				quit_on_arg_parsing(EXIT_SUCCESS);
-				break;
-
-			case 'c': /* -c <cmd> */
-				/* Do nothing.  Handled in exec_startup_commands(). */
-				break;
-			case 'l': /* --logging */
-				/* Do nothing.  Handled in main(). */
-				break;
-			case 'n': /* --no-configs */
-				/* Do nothing.  Handled in main(). */
-				break;
-
-			case 's': /* --select <path> */
-				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
-						rwin_handle);
-				break;
-			case 1: /* Positional argument. */
-				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
-						lwin_handle, rwin_handle);
-				break;
-
-			case '?': /* Parsing error. */
-				/* getopt_long() already printed error message. */
-				quit_on_arg_parsing(EXIT_FAILURE);
-				break;
-		}
-	}
-}
-
-/* Checks whether argument mentions a valid path.  Returns non-zero if so,
- * otherwise zero is returned. */
-static int
-is_path_arg(const char arg[])
-{
-	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg);
-}
-
-/* Handles path command-line argument or fails with appropriate message.
- * Returns zero on successful handling, otherwise non-zero is returned. */
-static void
-handle_arg_or_fail(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
-{
-	if(arg[0] == '+')
-	{
-		/* Do nothing.  Handled in exec_startup_commands(). */
-		return;
-	}
-
-	if(handle_path_arg(arg, select, dir, lwin_path, rwin_path, lwin_handle,
-				rwin_handle) == 0)
-	{
-		return;
-	}
-
-	if(curr_stats.load_stage == 0)
-	{
-		show_help_msg(arg);
-		quit_on_arg_parsing(EXIT_FAILURE);
-	}
-#ifdef ENABLE_REMOTE_CMDS
-	else
-	{
-		show_error_msgf("--remote error", "Invalid argument: %s", arg);
-	}
-#endif
-}
-
-/* Quits during argument parsing when it's allowed (e.g. not for remote
- * commands). */
-static void
-quit_on_arg_parsing(int code)
-{
-	if(curr_stats.load_stage == 0)
-	{
-		exit(code);
-	}
-}
-
-/* Handles path command-line argument.  Returns zero on successful handling,
- * otherwise non-zero is returned. */
-static int
-handle_path_arg(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
-{
-	if(!is_path_arg(arg))
-	{
-		return 1;
-	}
-
-	if(lwin_path[0] != '\0')
-	{
-		parse_path(dir, arg, rwin_path);
-		*rwin_handle = !select;
-	}
-	else
-	{
-		parse_path(dir, arg, lwin_path);
-		*lwin_handle = !select;
-	}
-
-	return 0;
-}
-
-/* Parses the arg as absolute or relative path (to the dir), unless it's equal
- * to "-".  output should be at least PATH_MAX characters length. */
-static void
-get_path_or_std(const char dir[], const char arg[], char output[])
-{
-	if(arg[0] == '\0')
-	{
-		output[0] = '\0';
-	}
-	else if(strcmp(arg, "-") == 0)
-	{
-		strcpy(output, "-");
-	}
-	else
-	{
-		parse_path(dir, arg, output);
-	}
-}
-
-/* Ensures that path is in suitable form for processing.  buf should be at least
- * PATH_MAX characters length */
-static void
-parse_path(const char dir[], const char path[], char buf[])
-{
-	strcpy(buf, path);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-	if(is_path_absolute(buf))
-	{
-		snprintf(buf, PATH_MAX, "%s", path);
-	}
-#ifdef _WIN32
-	else if(buf[0] == '/')
-	{
-		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
-	}
-#endif
-	else
-	{
-		char new_path[PATH_MAX];
-		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
-		canonicalize_path(new_path, buf, PATH_MAX);
-	}
-	if(!is_root_dir(buf))
-	{
-		chosp(buf);
-	}
-
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
-}
-
-/* Prints brief help to the screen.  If wrong_arg is not NULL, it's reported as
- * wrong. */
-static void
-show_help_msg(const char wrong_arg[])
-{
-	if(wrong_arg != NULL)
-	{
-		fprintf(stderr, "Wrong argument: %s\n\n", wrong_arg);
-	}
-
-	puts("vifm usage:\n");
-	puts("  To start in a specific directory give the directory path.\n");
-	puts("    vifm /path/to/start/dir/one");
-	puts("    or");
-	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
-	puts("  To open file using associated program pass to vifm it's path.\n");
-	puts("  To select file prepend its path with --select.\n");
-	puts("  If no path is given vifm will start in the current working directory.\n");
-	puts("  vifm -f");
-	puts("    makes vifm instead of opening files write selection to");
-	puts("    $VIFM/vimfiles and quit.\n");
-	puts("  vifm --choose-files <path>|-");
-	puts("    sets output file to write selection into on exit instead of");
-	puts("    opening files.  \"-\" means standard output.\n");
-	puts("  vifm --choose-dir <path>|-");
-	puts("    sets output file to write last visited directory into on exit.");
-	puts("    \"-\" means standard output.\n");
-	puts("  vifm --delimiter <delimiter>");
-	puts("    sets separator for list of file paths written out by vifm.\n");
-	puts("  vifm --on-choose <command>");
-	puts("    sets command to be executed on selected files instead of opening");
-	puts("    them.  Command can use any of command macros.");
-	puts("  vifm --logging");
-	puts("    log some errors to " CONF_DIR "/log.\n");
-#ifdef ENABLE_REMOTE_CMDS
-	puts("  vifm --remote");
-	puts("    passes all arguments that left in command line to active vifm server.\n");
-#endif
-	puts("  vifm -c <command> | +<command>");
-	puts("    run <command> on startup.\n");
-	puts("  vifm --version | -v");
-	puts("    show version number and quit.\n");
-	puts("  vifm --help | -h");
-	puts("    show this help message and quit.\n");
-	puts("  vifm --no-configs");
-	puts("    don't read vifmrc and vifminfo.");
-}
-
-/* Prints detailed version information to the screen. */
-static void
-show_version_msg(void)
-{
-	int i, len;
-	char **list;
-
-	list = malloc(sizeof(char *)*fill_version_info(NULL));
-	len = fill_version_info(list);
-
-	for(i = 0; i < len; ++i)
-	{
-		puts(list[i]);
-	}
-
-	free_string_array(list, len);
-}
+/* Command-line arguments in parsed form. */
+static args_t vifm_args;
 
 int
 main(int argc, char *argv[])
@@ -430,20 +111,8 @@ main(int argc, char *argv[])
 	static const int quit = 0;
 
 	char dir[PATH_MAX];
-	char lwin_path[PATH_MAX] = "";
-	char rwin_path[PATH_MAX] = "";
-	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
-	int no_configs;
 
-	cfg_init();
-
-	if(is_in_string_array(argv + 1, argc - 1, "--logging"))
-	{
-		init_logger(1);
-	}
-
-	(void)setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
 	{
 		perror("getcwd");
@@ -452,6 +121,19 @@ main(int argc, char *argv[])
 #ifdef _WIN32
 	to_forward_slash(dir);
 #endif
+
+	(void)vifm_chdir(dir);
+	args_parse(&vifm_args, argc, argv, dir);
+	args_process(&vifm_args, 1);
+
+	(void)setlocale(LC_ALL, "");
+
+	cfg_init();
+
+	if(vifm_args.logging)
+	{
+		init_logger(1);
+	}
 
 	init_filelists();
 	init_registers();
@@ -470,8 +152,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
-
 	/* Tell file type module what function to use to check availability of
 	 * external programs. */
 	ft_init(&external_command_exists);
@@ -481,23 +161,22 @@ main(int argc, char *argv[])
 	init_option_handlers();
 
 	old_config = cfg_has_old_format();
-	if(!old_config && !no_configs)
+	if(!old_config && !vifm_args.no_configs)
+	{
 		read_info_file(0);
+	}
 
-	ipc_pre_init();
-
-	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
-
-	ipc_init(&parse_recieved_arguments);
+	ipc_init(&parse_received_arguments);
+	args_process(&vifm_args, 0);
 
 	init_background();
 
 	init_fileops();
 
-	set_view_path(&lwin, lwin_path);
-	set_view_path(&rwin, rwin_path);
+	set_view_path(&lwin, vifm_args.lwin_path);
+	set_view_path(&rwin, vifm_args.rwin_path);
 
-	if(need_to_switch_active_pane(lwin_path, rwin_path))
+	if(need_to_switch_active_pane(vifm_args.lwin_path, vifm_args.rwin_path))
 	{
 		swap_view_roles();
 	}
@@ -506,7 +185,7 @@ main(int argc, char *argv[])
 	load_initial_directory(&rwin, dir);
 
 	/* Force split view when two paths are specified on command-line. */
-	if(lwin_path[0] != '\0' && rwin_path[0] != '\0')
+	if(vifm_args.lwin_path[0] != '\0' && vifm_args.rwin_path[0] != '\0')
 	{
 		curr_stats.number_of_windows = 2;
 	}
@@ -518,7 +197,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())
 	{
 		return -1;
@@ -543,7 +221,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
-	if(!old_config && !no_configs)
+	if(!old_config && !vifm_args.no_configs)
 	{
 		load_scheme();
 		cfg_load();
@@ -552,7 +230,7 @@ main(int argc, char *argv[])
 	write_color_scheme_file();
 	setup_signals();
 
-	if(old_config && !no_configs)
+	if(old_config && !vifm_args.no_configs)
 	{
 		convert_configs();
 
@@ -560,8 +238,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		set_view_path(&lwin, lwin_path);
-		set_view_path(&rwin, rwin_path);
+		set_view_path(&lwin, vifm_args.lwin_path);
+		set_view_path(&rwin, vifm_args.rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -573,12 +251,12 @@ main(int argc, char *argv[])
 	 * configuration file sourcing if there is no `set trashdir=...` command. */
 	(void)set_trash_dir(cfg.trash_dir);
 
-	check_path_for_file(&lwin, lwin_path, lwin_handle);
-	check_path_for_file(&rwin, rwin_path, rwin_handle);
+	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
+	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
 
 	curr_stats.load_stage = 2;
 
-	exec_startup_commands(argc, argv);
+	exec_startup_commands(&vifm_args);
 	update_screen(UT_FULL);
 	modes_update();
 
@@ -645,22 +323,24 @@ undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 	return perform_operation(op, NULL, data, src, dst);
 }
 
+/* Handles arguments received from remote instance. */
 static void
-parse_recieved_arguments(char *args[])
+parse_received_arguments(char *argv[])
 {
-	char lwin_path[PATH_MAX] = "";
-	char rwin_path[PATH_MAX] = "";
-	int lwin_handle = 0, rwin_handle = 0;
 	int argc = 0;
+	args_t args = {};
 
-	while(args[argc] != NULL)
+	while(argv[argc] != NULL)
 	{
 		argc++;
 	}
 
-	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
-			&rwin_handle);
-	exec_startup_commands(argc, args);
+	(void)vifm_chdir(argv[0]);
+	args_parse(&args, argc, argv, argv[0]);
+	args_process(&args, 0);
+
+	exec_startup_commands(&args);
+	args_free(&args);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
@@ -673,17 +353,17 @@ parse_recieved_arguments(char *args[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if(view_needs_cd(&lwin, lwin_path))
+	if(view_needs_cd(&lwin, args.lwin_path))
 	{
-		remote_cd(&lwin, lwin_path, lwin_handle);
+		remote_cd(&lwin, args.lwin_path, args.lwin_handle);
 	}
 
-	if(view_needs_cd(&rwin, rwin_path))
+	if(view_needs_cd(&rwin, args.rwin_path))
 	{
-		remote_cd(&rwin, rwin_path, rwin_handle);
+		remote_cd(&rwin, args.rwin_path, args.rwin_handle);
 	}
 
-	if(need_to_switch_active_pane(lwin_path, rwin_path))
+	if(need_to_switch_active_pane(args.lwin_path, args.rwin_path))
 	{
 		change_window();
 	}
@@ -712,7 +392,7 @@ remote_cd(FileView *view, const char *path, int handle)
 		toggle_quick_view();
 	}
 
-	snprintf(buf, sizeof(buf), "%s", path);
+	copy_str(buf, sizeof(buf), path);
 	exclude_file_name(buf);
 
 	(void)cd(view, view->curr_dir, buf);
@@ -936,11 +616,22 @@ vifm_restart(void)
 	load_color_scheme_colors();
 
 	cfg_load();
-	exec_startup_commands(0, NULL);
+	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
 
 	update_screen(UT_REDRAW);
+}
+
+/* Executes list of startup commands. */
+static void
+exec_startup_commands(const args_t *args)
+{
+	size_t i;
+	for(i = 0; i < args->ncmds; ++i)
+	{
+		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
+	}
 }
 
 void

@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 22 March, 2015
+Updated: 28 March, 2015
 Version: 0.7.8
 
 Brief Description
@@ -162,6 +162,7 @@ Package content
     |  |  |-- utils_nix.c - various utilities for *nix systems
     |  |  `-- utils_win.c - various utilities for MS Windows
     |  |
+    |  |-- args.c - command-line arguments parsing and processing
     |  |-- background.c - runs commands in background
     |  |-- bookmarks.c - stores information about bookmarked directories
     |  |-- bracket_notation.c - list of bracket notation entries

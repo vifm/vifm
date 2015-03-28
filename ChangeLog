@@ -138,6 +138,11 @@
 
 	Redraw UI on resize during file operation when 'syscalls' is set.
 
+	Quit fast on --help/--version.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
+	Parse paths that start with plus sign as command-line arguments more
+	carefully (don't treat them as startup commands).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
