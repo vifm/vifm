@@ -107,16 +107,22 @@ typedef struct
 	const char *delimiter;           /* Delimiter for list of picked files. */
 	const char *on_choose;           /* Action to perform on chosen files. */
 
-	char **remote_cmds; /* Args to pass to server instance. */
+	char **remote_cmds; /* Arguments to pass to server instance. */
+
+	char lwin_path[PATH_MAX]; /* Chosen path of the left pane. */
+	char rwin_path[PATH_MAX]; /* Chosen path of the right pane. */
+
+	int lwin_handle; /* Whether to open file in the left pane (else select). */
+	int rwin_handle; /* Whether to open file in the right pane (else select). */
 }
 args_t;
 
 static int is_path_arg(const char arg[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+		args_t *args);
 static void quit_on_arg_parsing(int code);
 static int handle_path_arg(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle);
+		args_t *args);
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
 static void parse_path(const char dir[], const char path[], char buf[]);
 static void show_help_msg(const char wrong_arg[]);
@@ -126,9 +132,7 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_recieved_arguments(char *args[]);
-static void parse_args(int argc, char *argv[], const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle,
-		args_t *args);
+static void parse_args(int argc, char *argv[], const char dir[], args_t *args);
 static void process_args(args_t *args, int general);
 static void process_general_args(args_t *args);
 static void process_non_general_args(args_t *args);
@@ -152,8 +156,7 @@ is_path_arg(const char arg[])
 /* Handles path command-line argument or fails with appropriate message.
  * Returns zero on successful handling, otherwise non-zero is returned. */
 static void
-handle_arg_or_fail(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+handle_arg_or_fail(const char arg[], int select, const char dir[], args_t *args)
 {
 	if(arg[0] == '+')
 	{
@@ -161,8 +164,7 @@ handle_arg_or_fail(const char arg[], int select, const char dir[],
 		return;
 	}
 
-	if(handle_path_arg(arg, select, dir, lwin_path, rwin_path, lwin_handle,
-				rwin_handle) == 0)
+	if(handle_path_arg(arg, select, dir, args) == 0)
 	{
 		return;
 	}
@@ -194,23 +196,22 @@ quit_on_arg_parsing(int code)
 /* Handles path command-line argument.  Returns zero on successful handling,
  * otherwise non-zero is returned. */
 static int
-handle_path_arg(const char arg[], int select, const char dir[],
-		char lwin_path[], char rwin_path[], int *lwin_handle, int *rwin_handle)
+handle_path_arg(const char arg[], int select, const char dir[], args_t *args)
 {
 	if(!is_path_arg(arg))
 	{
 		return 1;
 	}
 
-	if(lwin_path[0] != '\0')
+	if(args->lwin_path[0] != '\0')
 	{
-		parse_path(dir, arg, rwin_path);
-		*rwin_handle = !select;
+		parse_path(dir, arg, args->rwin_path);
+		args->rwin_handle = !select;
 	}
 	else
 	{
-		parse_path(dir, arg, lwin_path);
-		*lwin_handle = !select;
+		parse_path(dir, arg, args->lwin_path);
+		args->lwin_handle = !select;
 	}
 
 	return 0;
@@ -344,15 +345,11 @@ main(int argc, char *argv[])
 	static const int quit = 0;
 
 	char dir[PATH_MAX];
-	char lwin_path[PATH_MAX] = "";
-	char rwin_path[PATH_MAX] = "";
-	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
 	args_t args = {};
 
 	(void)vifm_chdir(dir);
-	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle,
-			&args);
+	parse_args(argc, argv, dir, &args);
 	process_args(&args, 1);
 
 	cfg_init();
@@ -410,10 +407,10 @@ main(int argc, char *argv[])
 
 	init_fileops();
 
-	set_view_path(&lwin, lwin_path);
-	set_view_path(&rwin, rwin_path);
+	set_view_path(&lwin, args.lwin_path);
+	set_view_path(&rwin, args.rwin_path);
 
-	if(need_to_switch_active_pane(lwin_path, rwin_path))
+	if(need_to_switch_active_pane(args.lwin_path, args.rwin_path))
 	{
 		swap_view_roles();
 	}
@@ -422,7 +419,7 @@ main(int argc, char *argv[])
 	load_initial_directory(&rwin, dir);
 
 	/* Force split view when two paths are specified on command-line. */
-	if(lwin_path[0] != '\0' && rwin_path[0] != '\0')
+	if(args.lwin_path[0] != '\0' && args.rwin_path[0] != '\0')
 	{
 		curr_stats.number_of_windows = 2;
 	}
@@ -476,8 +473,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		set_view_path(&lwin, lwin_path);
-		set_view_path(&rwin, rwin_path);
+		set_view_path(&lwin, args.lwin_path);
+		set_view_path(&rwin, args.rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -489,8 +486,8 @@ main(int argc, char *argv[])
 	 * configuration file sourcing if there is no `set trashdir=...` command. */
 	(void)set_trash_dir(cfg.trash_dir);
 
-	check_path_for_file(&lwin, lwin_path, lwin_handle);
-	check_path_for_file(&rwin, rwin_path, rwin_handle);
+	check_path_for_file(&lwin, args.lwin_path, args.lwin_handle);
+	check_path_for_file(&rwin, args.rwin_path, args.rwin_handle);
 
 	curr_stats.load_stage = 2;
 
@@ -564,9 +561,6 @@ undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 static void
 parse_recieved_arguments(char *argv[])
 {
-	char lwin_path[PATH_MAX] = "";
-	char rwin_path[PATH_MAX] = "";
-	int lwin_handle = 0, rwin_handle = 0;
 	int argc = 0;
 	args_t args = {};
 
@@ -576,8 +570,7 @@ parse_recieved_arguments(char *argv[])
 	}
 
 	(void)vifm_chdir(argv[0]);
-	parse_args(argc, argv, argv[0], lwin_path, rwin_path, &lwin_handle,
-			&rwin_handle, &args);
+	parse_args(argc, argv, argv[0], &args);
 	process_args(&args, 0);
 	exec_startup_commands(argc, argv);
 
@@ -592,17 +585,17 @@ parse_recieved_arguments(char *argv[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if(view_needs_cd(&lwin, lwin_path))
+	if(view_needs_cd(&lwin, args.lwin_path))
 	{
-		remote_cd(&lwin, lwin_path, lwin_handle);
+		remote_cd(&lwin, args.lwin_path, args.lwin_handle);
 	}
 
-	if(view_needs_cd(&rwin, rwin_path))
+	if(view_needs_cd(&rwin, args.rwin_path))
 	{
-		remote_cd(&rwin, rwin_path, rwin_handle);
+		remote_cd(&rwin, args.rwin_path, args.rwin_handle);
 	}
 
-	if(need_to_switch_active_pane(lwin_path, rwin_path))
+	if(need_to_switch_active_pane(args.lwin_path, args.rwin_path))
 	{
 		change_window();
 	}
@@ -613,8 +606,7 @@ parse_recieved_arguments(char *argv[])
 
 /* Parses command-line arguments into fields of the *args structure. */
 static void
-parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
-		char rwin_path[], int *lwin_handle, int *rwin_handle, args_t *args)
+parse_args(int argc, char *argv[], const char dir[], args_t *args)
 {
 	static struct option long_opts[] = {
 		{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
@@ -681,12 +673,10 @@ parse_args(int argc, char *argv[], const char dir[], char lwin_path[],
 				break;
 
 			case 's': /* --select <path> */
-				handle_arg_or_fail(optarg, 1, dir, lwin_path, rwin_path, lwin_handle,
-						rwin_handle);
+				handle_arg_or_fail(optarg, 1, dir, args);
 				break;
 			case 1: /* Positional argument. */
-				handle_arg_or_fail(argv[optind - 1], 0, dir, lwin_path, rwin_path,
-						lwin_handle, rwin_handle);
+				handle_arg_or_fail(argv[optind - 1], 0, dir, args);
 				break;
 
 			case '?': /* Parsing error. */
