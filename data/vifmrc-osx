@@ -178,12 +178,12 @@ filextype *.djvu open -a MacDjView.app
 
 " Audio
 filextype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
-       \ {Play using MPlayerX}
-       \ open -a MPlayerX.app,
-       \ {Open in iTunes}
-       \ open -a iTunes.app,
-       \ {Open in QuickTime Player}
-       \ open -a QuickTime\ Player.app,
+        \ {Play using MPlayerX}
+        \ open -a MPlayerX.app,
+        \ {Open in iTunes}
+        \ open -a iTunes.app,
+        \ {Open in QuickTime Player}
+        \ open -a QuickTime\ Player.app,
 fileviewer *.mp3 mp3info
 fileviewer *.flac soxi
 
@@ -196,7 +196,7 @@ filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mo
         \ {Open in MPlayerX}
         \ open -a MPlayerX.app,
 fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
-         \ ffprobe -pretty %c 2>&1
+        \ ffprobe -pretty %c 2>&1
 
 " Web
 filextype *.html,*.htm
@@ -224,13 +224,13 @@ fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm convert -identify %f -verbose /d
 
 " MD5
 filetype *.md5
-       \ {Check MD5 hash sum}
-       \ md5 %f,
+        \ {Check MD5 hash sum}
+        \ md5 %f,
 
 " GPG signature
 filetype *.asc
-       \ {Check signature}
-       \ !!gpg --verify %c,
+        \ {Check signature}
+        \ !!gpg --verify %c,
 
 " Torrent
 filextype *.torrent open -a Transmission.app
