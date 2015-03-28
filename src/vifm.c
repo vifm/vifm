@@ -31,7 +31,7 @@
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() malloc() system() */
 #include <string.h>
@@ -114,6 +114,9 @@ typedef struct
 
 	int lwin_handle; /* Whether to open file in the left pane (else select). */
 	int rwin_handle; /* Whether to open file in the right pane (else select). */
+
+	char **cmds;  /* List of startup commands. */
+	size_t ncmds; /* Number of startup commands. */
 }
 args_t;
 
@@ -143,7 +146,7 @@ static int need_to_switch_active_pane(const char lwin_path[],
 static void load_scheme(void);
 static void convert_configs(void);
 static int run_converter(int vifm_like_mode);
-static void exec_startup_commands(int c, char **v);
+static void exec_startup_commands(const args_t *args);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
 /* Command-line arguments in parsed form. */
@@ -162,12 +165,6 @@ is_path_arg(const char arg[])
 static void
 handle_arg_or_fail(const char arg[], int select, const char dir[], args_t *args)
 {
-	if(arg[0] == '+')
-	{
-		/* Do nothing.  Handled in exec_startup_commands(). */
-		return;
-	}
-
 	if(handle_path_arg(arg, select, dir, args) == 0)
 	{
 		return;
@@ -306,7 +303,7 @@ show_help_msg(const char wrong_arg[])
 	puts("    sets separator for list of file paths written out by vifm.\n");
 	puts("  vifm --on-choose <command>");
 	puts("    sets command to be executed on selected files instead of opening");
-	puts("    them.  Command can use any of command macros.");
+	puts("    them.  Command can use any of command macros.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS
@@ -494,7 +491,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 2;
 
-	exec_startup_commands(argc, argv);
+	exec_startup_commands(&vifm_args);
 	update_screen(UT_FULL);
 	modes_update();
 
@@ -575,7 +572,9 @@ parse_recieved_arguments(char *argv[])
 	(void)vifm_chdir(argv[0]);
 	parse_args(argc, argv, argv[0], &args);
 	process_args(&args, 0);
-	exec_startup_commands(argc, argv);
+
+	exec_startup_commands(&args);
+	free_string_array(args.cmds, args.ncmds);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
@@ -666,7 +665,7 @@ parse_args(int argc, char *argv[], const char dir[], args_t *args)
 				return;
 
 			case 'c': /* -c <cmd> */
-				/* Do nothing.  Handled in exec_startup_commands(). */
+				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, optarg);
 				break;
 			case 'l': /* --logging */
 				args->logging = 1;
@@ -679,7 +678,15 @@ parse_args(int argc, char *argv[], const char dir[], args_t *args)
 				handle_arg_or_fail(optarg, 1, dir, args);
 				break;
 			case 1: /* Positional argument. */
-				handle_arg_or_fail(argv[optind - 1], 0, dir, args);
+				if(argv[optind - 1][0] == '+')
+				{
+					args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1,
+							argv[optind - 1] + 1);
+				}
+				else
+				{
+					handle_arg_or_fail(argv[optind - 1], 0, dir, args);
+				}
 				break;
 
 			case '?': /* Parsing error. */
@@ -1003,37 +1010,21 @@ vifm_restart(void)
 	load_color_scheme_colors();
 
 	cfg_load();
-	exec_startup_commands(0, NULL);
+	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
 
 	update_screen(UT_REDRAW);
 }
 
+/* Executes list of startup commands. */
 static void
-exec_startup_commands(int c, char **v)
+exec_startup_commands(const args_t *args)
 {
-	static int argc;
-	static char **argv;
-	int x;
-
-	if(c > 0)
+	size_t i;
+	for(i = 0; i < args->ncmds; ++i)
 	{
-		argc = c;
-		argv = v;
-	}
-
-	for(x = 1; x < argc; x++)
-	{
-		if(strcmp(argv[x], "-c") == 0)
-		{
-			(void)exec_commands(argv[x + 1], curr_view, CIT_COMMAND);
-			x++;
-		}
-		else if(argv[x][0] == '+')
-		{
-			(void)exec_commands(argv[x] + 1, curr_view, CIT_COMMAND);
-		}
+		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
 	}
 }
 
