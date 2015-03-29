@@ -304,9 +304,11 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg, "In %s\nItem %d of %d\n%s\n%s\nfrom %s",
+				draw_msgf(title, ctrl_msg,
+						"In %s\nItem %d of %d\n%s\n%s\nfrom %s\nas %s",
 						ops->target_dir, estim->current_item + 1, estim->total_items,
-						total_size_str, pretty_path, src_path);
+						total_size_str, pretty_path, src_path,
+						get_last_path_component(estim->target));
 			}
 			else
 			{
@@ -323,10 +325,12 @@ io_progress_changed(const io_progress_t *const state)
 
 				draw_msgf(title, ctrl_msg,
 						"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
-						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
+						" \n" /* Space is on purpose to preserve empty line. */
+						"File %s\nfrom %s\nas %s\n%s/%s (%2d%%)",
 						ops->target_dir, estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path,
-						src_path, current_file_size_str, total_file_size_str,
+						src_path, get_last_path_component(estim->target),
+						current_file_size_str, total_file_size_str,
 						file_progress/PRECISION);
 			}
 			break;
