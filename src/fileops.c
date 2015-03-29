@@ -135,7 +135,8 @@ typedef struct
 }
 dir_size_args_t;
 
-static void io_progress_changed(const io_progress_t *const progress);
+static void io_progress_changed(const io_progress_t *const state);
+static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
@@ -323,28 +324,45 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		char current_file_size_str[16];
-		char total_file_size_str[16];
-
-		const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
-			(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
-
-		(void)friendly_size_notation(estim->current_file_byte,
-				sizeof(current_file_size_str), current_file_size_str);
-		(void)friendly_size_notation(estim->total_file_bytes,
-				sizeof(total_file_size_str), total_file_size_str);
+		char *const file_progress = format_file_progress(estim, PRECISION);
 
 		draw_msgf(title, ctrl_msg,
 				"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
-				"File %s\nfrom %s%s\n%s/%s (%2d%%)",
+				"File %s\nfrom %s%s%s",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
 				current_size_str, total_size_str, progress/PRECISION, pretty_path,
-				src_path, as_part, current_file_size_str, total_file_size_str,
-				file_progress/PRECISION);
+				src_path, as_part, file_progress);
+
+		free(file_progress);
 	}
 
 	free(as_part);
+}
+
+/* Formats file progress part of the progress message.  Returns pointer to newly
+ * allocated memory. */
+static char *
+format_file_progress(const ioeta_estim_t *estim, int precision)
+{
+	char current_size[16];
+	char total_size[16];
+
+	const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
+		(estim->current_file_byte*100*precision)/estim->total_file_bytes;
+
+	if(estim->total_items == 1)
+	{
+		return strdup("");
+	}
+
+	(void)friendly_size_notation(estim->current_file_byte, sizeof(current_size),
+			current_size);
+	(void)friendly_size_notation(estim->total_file_bytes, sizeof(total_size),
+			total_size);
+
+	return format_str("\n%s/%s (%2d%%)", current_size, total_size,
+			file_progress/precision);
 }
 
 /* Pretty prints path shortening it by skipping base directory path if
