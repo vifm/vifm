@@ -291,49 +291,47 @@ io_progress_changed(const io_progress_t *const state)
 
 	title = ops_describe(ops);
 	ctrl_msg = "Press Ctrl-C to cancel";
-	switch(state->stage)
+	if(state->stage == IO_PS_ESTIMATING)
 	{
-		case IO_PS_ESTIMATING:
-			draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
-					ops->target_dir, estim->total_items, total_size_str, pretty_path);
-			break;
-		case IO_PS_IN_PROGRESS:
-			(void)friendly_size_notation(estim->current_byte,
-					sizeof(current_size_str), current_size_str);
+		draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
+				ops->target_dir, estim->total_items, total_size_str, pretty_path);
+		return;
+	}
 
-			if(progress < 0)
-			{
-				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg,
-						"In %s\nItem %d of %d\n%s\n%s\nfrom %s\nas %s",
-						ops->target_dir, estim->current_item + 1, estim->total_items,
-						total_size_str, pretty_path, src_path,
-						get_last_path_component(estim->target));
-			}
-			else
-			{
-				char current_file_size_str[16];
-				char total_file_size_str[16];
+	(void)friendly_size_notation(estim->current_byte,
+			sizeof(current_size_str), current_size_str);
 
-				const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
-					(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
+	if(progress < 0)
+	{
+		/* Simplified message for unknown total size. */
+		draw_msgf(title, ctrl_msg,
+				"In %s\nItem %d of %d\n%s\n%s\nfrom %s\nas %s",
+				ops->target_dir, estim->current_item + 1, estim->total_items,
+				total_size_str, pretty_path, src_path,
+				get_last_path_component(estim->target));
+	}
+	else
+	{
+		char current_file_size_str[16];
+		char total_file_size_str[16];
 
-				(void)friendly_size_notation(estim->current_file_byte,
-						sizeof(current_file_size_str), current_file_size_str);
-				(void)friendly_size_notation(estim->total_file_bytes,
-						sizeof(total_file_size_str), total_file_size_str);
+		const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
+			(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
 
-				draw_msgf(title, ctrl_msg,
-						"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
-						" \n" /* Space is on purpose to preserve empty line. */
-						"File %s\nfrom %s\nas %s\n%s/%s (%2d%%)",
-						ops->target_dir, estim->current_item + 1, estim->total_items,
-						current_size_str, total_size_str, progress/PRECISION, pretty_path,
-						src_path, get_last_path_component(estim->target),
-						current_file_size_str, total_file_size_str,
-						file_progress/PRECISION);
-			}
-			break;
+		(void)friendly_size_notation(estim->current_file_byte,
+				sizeof(current_file_size_str), current_file_size_str);
+		(void)friendly_size_notation(estim->total_file_bytes,
+				sizeof(total_file_size_str), total_file_size_str);
+
+		draw_msgf(title, ctrl_msg,
+				"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+				" \n" /* Space is on purpose to preserve empty line. */
+				"File %s\nfrom %s\nas %s\n%s/%s (%2d%%)",
+				ops->target_dir, estim->current_item + 1, estim->total_items,
+				current_size_str, total_size_str, progress/PRECISION, pretty_path,
+				src_path, get_last_path_component(estim->target),
+				current_file_size_str, total_file_size_str,
+				file_progress/PRECISION);
 	}
 }
 
