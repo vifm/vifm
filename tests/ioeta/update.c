@@ -56,39 +56,47 @@ TEST(add_dir_does_not_increment_number_of_bytes)
 TEST(update_increments_current_byte)
 {
 	const int prev = estim->current_byte;
-	ioeta_update(estim, "a", 0, 134);
+	ioeta_update(estim, "a", "x", 0, 134);
 	assert_int_equal(prev + 134, estim->current_byte);
 }
 
-TEST(update_sets_current_file)
+TEST(update_sets_paths)
 {
 	assert_string_equal(NULL, estim->item);
-	ioeta_update(estim, "a", 0, 134);
+
+	ioeta_update(estim, "a", "x", 0, 134);
 	assert_string_equal("a", estim->item);
-	ioeta_update(estim, "b", 0, 134);
+	assert_string_equal("x", estim->target);
+
+	ioeta_update(estim, "b", "y", 0, 134);
 	assert_string_equal("b", estim->item);
+	assert_string_equal("y", estim->target);
 }
 
-TEST(update_with_null_file_does_not_set_current_file)
+TEST(update_with_null_file_does_not_reset_paths)
 {
 	assert_string_equal(NULL, estim->item);
-	ioeta_update(estim, "a", 0, 134);
+
+	ioeta_update(estim, "a", "x", 0, 134);
 	assert_string_equal("a", estim->item);
-	ioeta_update(estim, NULL, 0, 134);
+	assert_string_equal("x", estim->target);
+
+	ioeta_update(estim, NULL, NULL, 0, 134);
 	assert_string_equal("a", estim->item);
+	assert_string_equal("x", estim->target);
 }
 
 TEST(zero_update_changes_nothing)
 {
 	ioeta_estim_t e = *estim;
-	ioeta_update(estim, "b", 0, 0);
+	ioeta_update(estim, "b", "y", 0, 0);
 	assert_int_equal(e.current_item, estim->current_item);
 }
 
 TEST(finished_update_increments_current_item)
 {
 	const int prev = estim->current_item;
-	ioeta_update(estim, "c", 1, 0);
+	ioeta_update(estim, "c", "z", 1, 0);
 	assert_int_equal(prev + 1, estim->current_item);
 }
 

@@ -56,8 +56,8 @@ ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 }
 
 void
-ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
-		uint64_t bytes)
+ioeta_update(ioeta_estim_t *estim, const char path[], const char target[],
+		int finished, uint64_t bytes)
 {
 	if(estim == NULL || estim->silent)
 	{
@@ -92,6 +92,11 @@ ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
 	if(path != NULL)
 	{
 		replace_string(&estim->item, path);
+	}
+
+	if(target != NULL)
+	{
+		replace_string(&estim->target, target);
 	}
 
 	ionotif_notify(IO_PS_IN_PROGRESS, estim);

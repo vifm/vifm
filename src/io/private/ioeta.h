@@ -34,13 +34,15 @@ void ioeta_add_file(ioeta_estim_t *estim, const char path[]);
 /* Adds directory to the estimation. */
 void ioeta_add_dir(ioeta_estim_t *estim, const char path[]);
 
-/* ioeta_update_estim(e, "p", 0, 100); -- 100 bytes of current item processed.
- * ioeta_update_estim(e, "", 1, 50); -- Last 50 bytes of current item processed.
+/* ioeta_update_estim(e, "p", "t", 0, 100); -- 100 bytes of current item
+ * processed.
+ * ioeta_update_estim(e, "", "", 1, 50); -- Last 50 bytes of current item
+ * processed.
  * Might calculate speed, time, etc.  When estim is NULL, the function just
- * returns.  The path can be NULL to indicate that file name didn't change.
- * Calls progress changed notification handler. */
-void ioeta_update(ioeta_estim_t *estim, const char path[], int finished,
-		uint64_t bytes);
+ * returns.  The path or src can be NULL to indicate that file name didn't
+ * change.  Calls progress changed notification handler. */
+void ioeta_update(ioeta_estim_t *estim, const char path[], const char target[],
+		int finished, uint64_t bytes);
 
 /* Silence future progress reports.  Returns previous state to be passed to
  * ioeta_silent_set() later.  If estim is NULL, returns zero. */
