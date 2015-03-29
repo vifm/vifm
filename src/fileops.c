@@ -294,7 +294,7 @@ io_progress_changed(const io_progress_t *const state)
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			draw_msgf(title, ctrl_msg, "To %s\nestimating... %d; %s %s",
+			draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
 					ops->target_dir, estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
@@ -304,7 +304,7 @@ io_progress_changed(const io_progress_t *const state)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s\nfrom %s",
+				draw_msgf(title, ctrl_msg, "In %s\nItem %d of %d\n%s\n%s\nfrom %s",
 						ops->target_dir, estim->current_item + 1, estim->total_items,
 						total_size_str, pretty_path, src_path);
 			}
@@ -322,7 +322,7 @@ io_progress_changed(const io_progress_t *const state)
 						sizeof(total_file_size_str), total_file_size_str);
 
 				draw_msgf(title, ctrl_msg,
-						"To %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+						"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
 						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
 						ops->target_dir, estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path,
