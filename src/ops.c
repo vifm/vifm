@@ -149,12 +149,14 @@ ARRAY_GUARD(op_funcs, OP_COUNT);
 static ops_t *curr_ops;
 
 ops_t *
-ops_alloc(OPS main_op, const char descr[], const char base_dir[])
+ops_alloc(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[])
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
 	ops->main_op = main_op;
 	ops->descr = descr;
 	ops->base_dir = strdup(base_dir);
+	ops->target_dir = strdup(target_dir);
 	return ops;
 }
 
@@ -238,6 +240,7 @@ ops_free(ops_t *ops)
 
 	ioeta_free(ops->estim);
 	free(ops->base_dir);
+	free(ops->target_dir);
 	free(ops);
 }
 

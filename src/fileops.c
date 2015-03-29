@@ -170,7 +170,7 @@ static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
 				const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
-		const char base_dir[]);
+		const char base_dir[], const char target_dir[]);
 static int put_files_i(FileView *view, int start);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
@@ -181,7 +181,8 @@ static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
-static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
+static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
@@ -294,7 +295,7 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		case IO_PS_ESTIMATING:
 			draw_msgf(title, ctrl_msg, "To %s\nestimating... %d; %s %s",
-					ops->base_dir, estim->total_items, total_size_str, pretty_path);
+					ops->target_dir, estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -304,9 +305,8 @@ io_progress_changed(const io_progress_t *const state)
 			{
 				/* Simplified message for unknown total size. */
 				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s\nfrom %s",
-						ops->base_dir,
-						estim->current_item + 1, estim->total_items, total_size_str,
-						pretty_path, src_path);
+						ops->target_dir, estim->current_item + 1, estim->total_items,
+						total_size_str, pretty_path, src_path);
 			}
 			else
 			{
@@ -324,7 +324,7 @@ io_progress_changed(const io_progress_t *const state)
 				draw_msgf(title, ctrl_msg,
 						"To %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
 						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
-						ops->base_dir, estim->current_item + 1, estim->total_items,
+						ops->target_dir, estim->current_item + 1, estim->total_items,
 						current_size_str, total_size_str, progress/PRECISION, pretty_path,
 						src_path, current_file_size_str, total_file_size_str,
 						file_progress/PRECISION);
@@ -426,7 +426,8 @@ delete_files(FileView *view, int reg, int use_trash)
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
-	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir,
+			view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -1918,7 +1919,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	}
 	append_marked_files(view, undo_msg, list);
 
-	ops = get_ops(OP_COPY, "Cloning", view->curr_dir);
+	ops = get_ops(OP_COPY, "Cloning", view->curr_dir,
+			with_dir ? list[0] : view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -2074,7 +2076,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir, view->curr_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2111,13 +2113,14 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op, const char descr[], const char base_dir[])
+reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[])
 {
 	ops_free(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = get_ops(main_op, descr, base_dir);
+	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
 }
 
 /* Returns new value for save_msg flag. */
@@ -2717,14 +2720,14 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", view->curr_dir);
+			ops = get_ops(OP_COPY, "Copying", view->curr_dir, path);
 			break;
 		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", view->curr_dir);
+			ops = get_ops(OP_MOVE, "Moving", view->curr_dir, path);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir);
+			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir, path);
 			break;
 
 		default:
@@ -2839,9 +2842,10 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by ops_free(). */
 static ops_t *
-get_ops(OPS main_op, const char descr[], const char base_dir[])
+get_ops(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, descr, base_dir);
+	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
 		ops->estim = ioeta_alloc(ops);

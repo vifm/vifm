@@ -77,7 +77,10 @@ typedef struct
 	                         also frees it on ops_free(). */
 	const char *descr;    /* Description of operations. */
 	int shallow_eta;      /* Count only top level items, without recursion. */
-	char *base_dir;       /* Base directory in which operation is taking place. */
+
+	char *base_dir;   /* Base directory in which operation is taking place. */
+	char *target_dir; /* Target directory of the operation (same as base_dir if
+	                     none). */
 
 	/* What should be done on conflicts. */
 	ConflictResolutionPolicy crp;
@@ -87,7 +90,8 @@ typedef struct
 ops_t;
 
 /* Allocates and initializes new ops_t.  Returns just allocated structure. */
-ops_t * ops_alloc(OPS main_op, const char descr[], const char base_dir[]);
+ops_t * ops_alloc(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[]);
 
 /* Describes main operation with one generic word.  Returns the description. */
 const char * ops_describe(const ops_t *ops);
