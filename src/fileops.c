@@ -241,6 +241,8 @@ io_progress_changed(const io_progress_t *const state)
 	char src_path[PATH_MAX];
 	const int redraw = fetch_redraw_scheduled();
 	const char *title, *ctrl_msg;
+	const char *target_name;
+	char *as_part;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
@@ -301,14 +303,23 @@ io_progress_changed(const io_progress_t *const state)
 	(void)friendly_size_notation(estim->current_byte,
 			sizeof(current_size_str), current_size_str);
 
+	target_name = get_last_path_component(estim->target);
+	if(stroscmp(target_name, get_last_path_component(pretty_path)) == 0)
+	{
+		as_part = strdup("");
+	}
+	else
+	{
+		as_part = format_str("\nas %s", target_name);
+	}
+
 	if(progress < 0)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg,
-				"In %s\nItem %d of %d\n%s\n%s\nfrom %s\nas %s",
+				"In %s\nItem %d of %d\n%s\n%s\nfrom %s%s",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
-				total_size_str, pretty_path, src_path,
-				get_last_path_component(estim->target));
+				total_size_str, pretty_path, src_path, as_part);
 	}
 	else
 	{
@@ -326,13 +337,14 @@ io_progress_changed(const io_progress_t *const state)
 		draw_msgf(title, ctrl_msg,
 				"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
-				"File %s\nfrom %s\nas %s\n%s/%s (%2d%%)",
+				"File %s\nfrom %s%s\n%s/%s (%2d%%)",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
 				current_size_str, total_size_str, progress/PRECISION, pretty_path,
-				src_path, get_last_path_component(estim->target),
-				current_file_size_str, total_file_size_str,
+				src_path, as_part, current_file_size_str, total_file_size_str,
 				file_progress/PRECISION);
 	}
+
+	free(as_part);
 }
 
 /* Pretty prints path shortening it by skipping base directory path if
