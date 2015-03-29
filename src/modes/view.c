@@ -1057,7 +1057,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		}
 	}
 
-	if(strstr(viewer, "%p") != NULL)
+	if(viewer != NULL && strstr(viewer, "%p") != NULL)
 	{
 		vi->graphics = 1;
 	}
