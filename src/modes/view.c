@@ -1034,10 +1034,14 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		{
 			return 1;
 		}
-		else if((fp = os_fopen(file_to_view, "rb")) == NULL)
+
+		fp = os_fopen(file_to_view, "rb");
+		if(fp == NULL)
 		{
 			return 2;
 		}
+
+		vi->lines = read_file_lines(fp, &vi->nlines);
 	}
 	else
 	{
@@ -1055,16 +1059,14 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		{
 			return 3;
 		}
-	}
 
-	if(strstr(viewer, "%p") != NULL)
-	{
-		vi->graphics = 1;
-	}
+		if(strstr(viewer, "%p") != NULL)
+		{
+			vi->graphics = 1;
+		}
 
-	vi->lines = is_null_or_empty(viewer)
-		? read_file_lines(fp, &vi->nlines)
-		: read_stream_lines(fp, &vi->nlines);
+		vi->lines = read_stream_lines(fp, &vi->nlines);
+	}
 
 	fclose(fp);
 

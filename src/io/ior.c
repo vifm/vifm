@@ -176,7 +176,7 @@ ior_mv(io_args_t *const args)
 
 	if(os_rename(src, dst) == 0)
 	{
-		ioeta_update(args->estim, src, 1, 0);
+		ioeta_update(args->estim, src, dst, 1, 0);
 		return 0;
 	}
 

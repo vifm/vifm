@@ -126,7 +126,7 @@ iop_rmfile(io_args_t *const args)
 	uint64_t size;
 	int result;
 
-	ioeta_update(args->estim, path, 0, 0);
+	ioeta_update(args->estim, path, path, 0, 0);
 
 	size = get_file_size(path);
 
@@ -145,7 +145,7 @@ iop_rmfile(io_args_t *const args)
 	}
 #endif
 
-	ioeta_update(args->estim, path, 1, size);
+	ioeta_update(args->estim, NULL, NULL, 1, size);
 
 	return result;
 }
@@ -157,7 +157,7 @@ iop_rmdir(io_args_t *const args)
 
 	int result;
 
-	ioeta_update(args->estim, path, 0, 0);
+	ioeta_update(args->estim, path, path, 0, 0);
 
 #ifndef _WIN32
 	result = rmdir(path);
@@ -169,7 +169,7 @@ iop_rmdir(io_args_t *const args)
 	}
 #endif
 
-	ioeta_update(args->estim, path, 1, 0);
+	ioeta_update(args->estim, NULL, NULL, 1, 0);
 
 	return result;
 }
@@ -190,7 +190,7 @@ iop_cp(io_args_t *const args)
 	struct stat src_st;
 	const char *open_mode = "wb";
 
-	ioeta_update(args->estim, src, 0, 0);
+	ioeta_update(args->estim, src, dst, 0, 0);
 
 #ifdef _WIN32
 	if(is_symlink(src) || crs != IO_CRS_APPEND_TO_FILES)
@@ -212,7 +212,7 @@ iop_cp(io_args_t *const args)
 		free(utf16_src);
 		free(utf16_dst);
 
-		ioeta_update(args->estim, src, 1, 0);
+		ioeta_update(args->estim, NULL, NULL, 1, 0);
 
 		return error;
 	}
@@ -307,7 +307,7 @@ iop_cp(io_args_t *const args)
 
 		if(!error)
 		{
-			ioeta_update(args->estim, src, 0, get_file_size(dst));
+			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
 		}
 	}
 
@@ -327,7 +327,7 @@ iop_cp(io_args_t *const args)
 			break;
 		}
 
-		ioeta_update(args->estim, src, 0, nread);
+		ioeta_update(args->estim, NULL, NULL, 0, nread);
 	}
 
 	fclose(in);
@@ -338,7 +338,7 @@ iop_cp(io_args_t *const args)
 		error = os_chmod(dst, src_st.st_mode & 07777);
 	}
 
-	ioeta_update(args->estim, src, 1, 0);
+	ioeta_update(args->estim, NULL, NULL, 1, 0);
 
 	return error;
 }
@@ -355,6 +355,7 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 	io_args_t *const args = param;
 
 	const char *const src = args->arg1.src;
+	const char *const dst = args->arg2.dst;
 	ioeta_estim_t *const estim = args->estim;
 
 	if(transferred.QuadPart < last_size)
@@ -362,7 +363,7 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		last_size = 0;
 	}
 
-	ioeta_update(estim, src, 0, transferred.QuadPart - last_size);
+	ioeta_update(estim, src, dst, 0, transferred.QuadPart - last_size);
 
 	last_size = transferred.QuadPart;
 

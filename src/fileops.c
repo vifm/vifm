@@ -135,7 +135,8 @@ typedef struct
 }
 dir_size_args_t;
 
-static void io_progress_changed(const io_progress_t *const progress);
+static void io_progress_changed(const io_progress_t *const state);
+static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
@@ -170,7 +171,7 @@ static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
 				const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
-		const char base_dir[]);
+		const char base_dir[], const char target_dir[]);
 static int put_files_i(FileView *view, int start);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
@@ -181,7 +182,8 @@ static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
-static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[]);
+static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[]);
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
@@ -240,6 +242,8 @@ io_progress_changed(const io_progress_t *const state)
 	char src_path[PATH_MAX];
 	const int redraw = fetch_redraw_scheduled();
 	const char *title, *ctrl_msg;
+	const char *target_name;
+	char *as_part;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
@@ -290,47 +294,75 @@ io_progress_changed(const io_progress_t *const state)
 
 	title = ops_describe(ops);
 	ctrl_msg = "Press Ctrl-C to cancel";
-	switch(state->stage)
+	if(state->stage == IO_PS_ESTIMATING)
 	{
-		case IO_PS_ESTIMATING:
-			draw_msgf(title, ctrl_msg, "To %s\nestimating... %d; %s %s",
-					ops->base_dir, estim->total_items, total_size_str, pretty_path);
-			break;
-		case IO_PS_IN_PROGRESS:
-			(void)friendly_size_notation(estim->current_byte,
-					sizeof(current_size_str), current_size_str);
-
-			if(progress < 0)
-			{
-				/* Simplified message for unknown total size. */
-				draw_msgf(title, ctrl_msg, "To %s\nItem %d of %d\n%s\n%s\nfrom %s",
-						ops->base_dir,
-						estim->current_item + 1, estim->total_items, total_size_str,
-						pretty_path, src_path);
-			}
-			else
-			{
-				char current_file_size_str[16];
-				char total_file_size_str[16];
-
-				const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
-					(estim->current_file_byte*100*PRECISION)/estim->total_file_bytes;
-
-				(void)friendly_size_notation(estim->current_file_byte,
-						sizeof(current_file_size_str), current_file_size_str);
-				(void)friendly_size_notation(estim->total_file_bytes,
-						sizeof(total_file_size_str), total_file_size_str);
-
-				draw_msgf(title, ctrl_msg,
-						"To %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
-						" " /* Space is on purpose. */ "\nFile %s\nfrom %s\n%s/%s (%2d%%)",
-						ops->base_dir, estim->current_item + 1, estim->total_items,
-						current_size_str, total_size_str, progress/PRECISION, pretty_path,
-						src_path, current_file_size_str, total_file_size_str,
-						file_progress/PRECISION);
-			}
-			break;
+		draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
+				ops->target_dir, estim->total_items, total_size_str, pretty_path);
+		return;
 	}
+
+	(void)friendly_size_notation(estim->current_byte,
+			sizeof(current_size_str), current_size_str);
+
+	target_name = get_last_path_component(estim->target);
+	if(stroscmp(target_name, get_last_path_component(pretty_path)) == 0)
+	{
+		as_part = strdup("");
+	}
+	else
+	{
+		as_part = format_str("\nas %s", target_name);
+	}
+
+	if(progress < 0)
+	{
+		/* Simplified message for unknown total size. */
+		draw_msgf(title, ctrl_msg,
+				"In %s\nItem %d of %d\n%s\n%s\nfrom %s%s",
+				ops->target_dir, estim->current_item + 1, estim->total_items,
+				total_size_str, pretty_path, src_path, as_part);
+	}
+	else
+	{
+		char *const file_progress = format_file_progress(estim, PRECISION);
+
+		draw_msgf(title, ctrl_msg,
+				"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+				" \n" /* Space is on purpose to preserve empty line. */
+				"File %s\nfrom %s%s%s",
+				ops->target_dir, estim->current_item + 1, estim->total_items,
+				current_size_str, total_size_str, progress/PRECISION, pretty_path,
+				src_path, as_part, file_progress);
+
+		free(file_progress);
+	}
+
+	free(as_part);
+}
+
+/* Formats file progress part of the progress message.  Returns pointer to newly
+ * allocated memory. */
+static char *
+format_file_progress(const ioeta_estim_t *estim, int precision)
+{
+	char current_size[16];
+	char total_size[16];
+
+	const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
+		(estim->current_file_byte*100*precision)/estim->total_file_bytes;
+
+	if(estim->total_items == 1)
+	{
+		return strdup("");
+	}
+
+	(void)friendly_size_notation(estim->current_file_byte, sizeof(current_size),
+			current_size);
+	(void)friendly_size_notation(estim->total_file_bytes, sizeof(total_size),
+			total_size);
+
+	return format_str("\n%s/%s (%2d%%)", current_size, total_size,
+			file_progress/precision);
 }
 
 /* Pretty prints path shortening it by skipping base directory path if
@@ -426,7 +458,8 @@ delete_files(FileView *view, int reg, int use_trash)
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
-	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir,
+			view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -1918,7 +1951,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	}
 	append_marked_files(view, undo_msg, list);
 
-	ops = get_ops(OP_COPY, "Cloning", view->curr_dir);
+	ops = get_ops(OP_COPY, "Cloning", view->curr_dir,
+			with_dir ? list[0] : view->curr_dir);
 
 	ui_cancellation_reset();
 
@@ -2074,7 +2108,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir, view->curr_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2111,13 +2145,14 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op, const char descr[], const char base_dir[])
+reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[])
 {
 	ops_free(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = get_ops(main_op, descr, base_dir);
+	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
 }
 
 /* Returns new value for save_msg flag. */
@@ -2717,14 +2752,14 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", view->curr_dir);
+			ops = get_ops(OP_COPY, "Copying", view->curr_dir, path);
 			break;
 		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", view->curr_dir);
+			ops = get_ops(OP_MOVE, "Moving", view->curr_dir, path);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir);
+			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir, path);
 			break;
 
 		default:
@@ -2839,9 +2874,10 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by ops_free(). */
 static ops_t *
-get_ops(OPS main_op, const char descr[], const char base_dir[])
+get_ops(OPS main_op, const char descr[], const char base_dir[],
+		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, descr, base_dir);
+	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
 		ops->estim = ioeta_alloc(ops);

@@ -49,8 +49,12 @@ typedef struct
 	/* Number of inspected items. */
 	size_t inspected_items;
 
-	/* Path to currently processed file (it's always source file). */
+	/* Path to currently processed file. */
 	char *item;
+
+	/* Path of the destination file (can match item for operations like
+	 * removal). */
+	char *target;
 
 	/* Progress reported while this flag is on is ignored. */
 	int silent;
