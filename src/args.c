@@ -79,11 +79,11 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 		switch(getopt_long(argc, argv, "-c:fhv", long_opts, NULL))
 		{
 			case 'f': /* -f */
-				vim_get_list_file_path(args->chosen_files_out,
-						sizeof(args->chosen_files_out));
+				args->file_picker = 1;
 				break;
 			case 'F': /* --choose-files <path>|- */
 				get_path_or_std(dir, optarg, args->chosen_files_out);
+				args->file_picker = 0;
 				break;
 			case 'D': /* --choose-dir <path>|- */
 				get_path_or_std(dir, optarg, args->chosen_dir_out);
@@ -360,6 +360,11 @@ process_non_general_args(args_t *args)
 		return;
 	}
 
+	if(args->file_picker)
+	{
+		vim_get_list_file_path(args->chosen_files_out,
+				sizeof(args->chosen_files_out));
+	}
 	if(args->chosen_files_out[0] != '\0')
 	{
 		stats_set_chosen_files_out(args->chosen_files_out);

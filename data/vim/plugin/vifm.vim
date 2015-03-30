@@ -113,6 +113,11 @@ function! s:StartVifm(editcmd, ...)
 
 	redraw!
 
+	if v:shell_error != 0
+		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		return
+	endif
+
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.

@@ -30,8 +30,9 @@ typedef struct
 	int help;    /* Display help information and quit. */
 	int version; /* Display version information and quit. */
 
-	int logging;    /* Enable logging. */
-	int no_configs; /* Skip reading configuration files. */
+	int logging;     /* Enable logging. */
+	int no_configs;  /* Skip reading configuration files. */
+	int file_picker; /* Use predefined $VIFM/vimfiles for list of files. */
 
 	char chosen_files_out[PATH_MAX]; /* Output for file picking. */
 	char chosen_dir_out[PATH_MAX];   /* Output for directory picking. */

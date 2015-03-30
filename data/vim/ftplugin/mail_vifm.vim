@@ -1,6 +1,6 @@
 " Mail file type extension to pick files for attachments via vifm
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 05, 2014
+" Last Change: March 30, 2015
 
 " Insert attachment picked via vifm after 'Subject' header
 function! s:AddMailAttacments()
@@ -9,6 +9,13 @@ function! s:AddMailAttacments()
 		execute 'silent !' g:vifm_term g:vifm_exec '-f' g:vifm_exec_args
 	else
 		execute 'silent !' g:vifm_exec '-f' g:vifm_exec_args
+	endif
+
+	redraw!
+
+	if v:shell_error != 0
+		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		return
 	endif
 
 	let l:vimfiles = expand(g:vifm_home.'/vimfiles')
