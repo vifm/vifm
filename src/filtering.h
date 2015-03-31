@@ -92,7 +92,8 @@ void local_filter_remove(FileView *view);
 /* Restores previously removed local filter. */
 void local_filter_restore(FileView *view);
 
-/* Checks whether given entry matches currently set local filter. */
+/* Checks whether given entry matches currently set local filter.  Returns
+ * non-zero if file should be left in the view, and zero otherwise. */
 int local_filter_matches(FileView *view, const dir_entry_t *entry);
 
 #endif /* VIFM__FILTERING_H__ */
