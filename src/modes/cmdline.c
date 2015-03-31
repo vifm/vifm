@@ -702,25 +702,23 @@ is_line_edited(void)
 	return input_stat.line_edited;
 }
 
+/* Leaves command-line mode. */
 static void
 leave_cmdline_mode(void)
 {
+	const int multiline_status_bar = (getmaxy(status_bar) > 1);
 	int attr;
 
-	if(getmaxy(status_bar) > 1)
+	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
+	if(multiline_status_bar)
 	{
 		curr_stats.need_update = UT_REDRAW;
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
 		{
 			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
 			update_menu();
 		}
-	}
-	else
-	{
-		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	}
 
 	free(input_stat.line);
