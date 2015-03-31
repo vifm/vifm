@@ -709,7 +709,7 @@ leave_cmdline_mode(void)
 
 	if(getmaxy(status_bar) > 1)
 	{
-		curr_stats.need_update = UT_FULL;
+		curr_stats.need_update = UT_REDRAW;
 		wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
