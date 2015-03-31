@@ -627,7 +627,7 @@ local_filter_matches(FileView *view, const dir_entry_t *entry)
 		filename = name_with_slash;
 	}
 
-	return filter_matches(&view->local_filter.filter, filename) > 0;
+	return filter_matches(&view->local_filter.filter, filename) == 0;
 }
 
 /* Appends slash to the name and stores result in the buffer. */
