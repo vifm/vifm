@@ -1703,7 +1703,7 @@ static int
 is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
 	return path_exists_at(entry->origin, entry->name, DEREF)
-	    && !local_filter_matches(view, entry);
+	    && local_filter_matches(view, entry);
 }
 
 /* Re-read meta-data for each entry (does nothing for entries on which querying
