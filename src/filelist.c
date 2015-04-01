@@ -1702,8 +1702,18 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	return path_exists_at(entry->origin, entry->name, DEREF)
-	    && !local_filter_matches(view, entry);
+	if(!path_exists_at(entry->origin, entry->name, DEREF))
+	{
+		return 0;
+	}
+
+	if(local_filter_matches(view, entry))
+	{
+		return 1;
+	}
+
+	++view->filtered;
+	return 0;
 }
 
 /* Re-read meta-data for each entry (does nothing for entries on which querying
