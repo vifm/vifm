@@ -244,6 +244,9 @@
 	command to be executed with default system shell (/bin/sh) rather than
 	with 'shell'.  Thanks to filterfalse.
 
+	Fixed completion of executables by full paths after :!.  Thanks to
+	filterfalse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
