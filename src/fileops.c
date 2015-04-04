@@ -240,7 +240,7 @@ io_progress_changed(const io_progress_t *const state)
 	int progress;
 	char pretty_path[PATH_MAX];
 	char src_path[PATH_MAX];
-	const int redraw = fetch_redraw_scheduled();
+	int redraw;
 	const char *title, *ctrl_msg;
 	const char *target_name;
 	char *as_part;
@@ -269,6 +269,7 @@ io_progress_changed(const io_progress_t *const state)
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
 	}
 
+	redraw = fetch_redraw_scheduled();
 	if(progress == prev_progress && !redraw)
 	{
 		return;
@@ -1752,7 +1753,7 @@ put_decide_cb(const char choice[])
 	{
 		put_continue(1);
 	}
-	else if(strcmp(choice, "p") == 0 && cfg.use_system_calls &&
+	else if(strcmp(choice, "a") == 0 && cfg.use_system_calls &&
 			!is_dir(put_confirm.name))
 	{
 		put_confirm.append = 1;
@@ -1805,6 +1806,10 @@ prompt_what_to_do(const char src_name[])
 			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
 			put_confirm.allow_merge ? "/[m]erge" : "",
 			put_confirm.allow_merge ? "/[M]erge all" : "");
+
+	/* Screen needs to be restored after displaying progress dialog. */
+	modes_update();
+
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
@@ -2113,6 +2118,8 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	put_confirm.op = op;
 	put_confirm.reg = reg;
 	put_confirm.view = view;
+
+	ui_cancellation_reset();
 
 	for(i = 0; i < reg->num_files; ++i)
 	{

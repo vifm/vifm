@@ -1,6 +1,7 @@
 #include <stic.h>
 
-#include <string.h> /* free() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/commands.h"
@@ -47,14 +48,15 @@ TEARDOWN()
 	free(rwin.dir_entry);
 }
 
-TEST(sync_all_syncs_local_filter)
+TEST(sync_syncs_local_filter)
 {
 	other_view->curr_dir[0] = '\0';
 	assert_true(change_directory(curr_view, ".") >= 0);
 	populate_dir_list(curr_view, 0);
 	local_filter_apply(curr_view, "a");
 
-	assert_success(exec_commands("sync! all", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("sync! location filters", curr_view,
+				CIT_COMMAND));
 	assert_string_equal("a", other_view->local_filter.filter.raw);
 }
 
