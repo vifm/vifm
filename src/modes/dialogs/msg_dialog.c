@@ -465,13 +465,14 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	int z;
 
 	curs_set(FALSE);
-	werase(error_win);
 
 	getmaxyx(stdscr, sy, sx);
 
 	y = sy - 3 + !cfg.display_statusline;
 	x = sx - 2;
 	wresize(error_win, y, x);
+
+	werase(error_win);
 
 	z = strlen(msg);
 	if(z <= x - 2 && strchr(msg, '\n') == NULL)
