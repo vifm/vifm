@@ -1236,6 +1236,11 @@ fview_sorting_updated(FileView *view)
 static void
 reset_view_sort(FileView *view)
 {
+	if(view->ls_view)
+	{
+		return;
+	}
+
 	if(view->view_columns[0] == '\0')
 	{
 		column_info_t column_info = {

@@ -253,6 +253,9 @@
 	Fixed "[a]ppend" shortcut for name conflict resolution, which was still
 	using "p" from older "a[p]pend".
 
+	Fixed sorting change in ls-like view with empty 'viewcolumns'.  Thanks to
+	filterfalse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
