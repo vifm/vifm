@@ -725,6 +725,27 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 #endif
 }
 
+char *
+get_cwd(void)
+{
+	char cwd[PATH_MAX];
+	if(getcwd(cwd, sizeof(cwd)) != cwd)
+	{
+		return NULL;
+	}
+	return strdup(cwd);
+}
+
+void
+restore_cwd(char saved_cwd[])
+{
+	if(saved_cwd != NULL)
+	{
+		(void)vifm_chdir(saved_cwd);
+		free(saved_cwd);
+	}
+}
+
 #ifndef _WIN32
 
 /* Checks if path (dereferencer or not symbolic link) is an existing directory.

@@ -653,6 +653,7 @@ complete_command_name(const char beginning[])
 	int i;
 	char ** paths;
 	size_t paths_count;
+	char *const cwd = get_cwd();
 
 	paths = get_paths(&paths_count);
 	for(i = 0; i < paths_count; i++)
@@ -663,6 +664,8 @@ complete_command_name(const char beginning[])
 		}
 	}
 	vle_compl_add_last_path_match(beginning);
+
+	restore_cwd(cwd);
 }
 
 static void
@@ -688,10 +691,11 @@ void
 filename_completion(const char *str, CompletionType type)
 {
 	/* TODO refactor filename_completion(...) function */
-	DIR * dir;
-	char * dirname;
-	char * filename;
-	char * temp;
+	DIR *dir;
+	char *dirname;
+	char *filename;
+	char *temp;
+	char *cwd;
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -753,6 +757,8 @@ filename_completion(const char *str, CompletionType type)
 
 	dir = os_opendir(dirname);
 
+	cwd = get_cwd();
+
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{
 		vle_compl_add_path_match(filename);
@@ -770,6 +776,8 @@ filename_completion(const char *str, CompletionType type)
 	{
 		os_closedir(dir);
 	}
+
+	restore_cwd(cwd);
 }
 
 static void
