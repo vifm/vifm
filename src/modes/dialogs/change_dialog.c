@@ -120,7 +120,7 @@ redraw_change_dialog(void)
 
 	getmaxyx(change_win, y, x);
 	werase(change_win);
-	box(change_win, ACS_VLINE, ACS_HLINE);
+	box(change_win, 0, 0);
 
 	mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
 	mvwaddstr(change_win, 2, 4, " [ ] Name");

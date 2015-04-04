@@ -154,7 +154,7 @@ redraw_sort_dialog(void)
 	mvwin(sort_win, MAX(0, y), x);
 
 	werase(sort_win);
-	box(sort_win, ACS_VLINE, ACS_HLINE);
+	box(sort_win, 0, 0);
 
 	mvwaddstr(sort_win, 0, (getmaxx(sort_win) - 6)/2, " Sort ");
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");

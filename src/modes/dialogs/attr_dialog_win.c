@@ -319,7 +319,7 @@ redraw_attr_dialog(void)
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - getmaxy(change_win))/2, (x - getmaxx(change_win))/2);
-	box(change_win, ACS_VLINE, ACS_HLINE);
+	box(change_win, 0, 0);
 
 	x = getmaxx(change_win);
 	title = get_title();
