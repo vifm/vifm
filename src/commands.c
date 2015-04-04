@@ -276,7 +276,8 @@ static int sync_cmd(const cmd_info_t *cmd_info);
 static int sync_selectively(const cmd_info_t *cmd_info);
 static int parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 		int *cursor_pos, int *local_options, int *filters);
-static void sync_location(const char path[], int sync_cursor_pos);
+static void sync_location(const char path[], int sync_cursor_pos,
+		int sync_filters);
 static void sync_local_opts(void);
 static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
@@ -3908,7 +3909,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", curr_view->curr_dir,
 			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
-	sync_location(dst_path, cmd_info->emark);
+	sync_location(dst_path, cmd_info->emark, 0);
 
 	return 0;
 }
@@ -3931,7 +3932,7 @@ sync_selectively(const cmd_info_t *cmd_info)
 	}
 	if(location)
 	{
-		sync_location(curr_view->curr_dir, cursor_pos);
+		sync_location(curr_view->curr_dir, cursor_pos, filters);
 	}
 	if(local_options)
 	{
@@ -3985,14 +3986,22 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 	return 0;
 }
 
-/* Mirrors location (directory and maybe cursor position) of the current view
- * with the other one. */
+/* Mirrors location (directory and maybe cursor position plus local filter) of
+ * the current view to the other one. */
 static void
-sync_location(const char path[], int sync_cursor_pos)
+sync_location(const char path[], int sync_cursor_pos, int sync_filters)
 {
 	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
 	{
 		return;
+	}
+
+	/* Normally changing location resets local filter.  Prevent this by
+	 * synchronizing it here (after directory changing, but before loading list of
+	 * files, hence no extra work). */
+	if(sync_filters)
+	{
+		local_filter_apply(other_view, curr_view->local_filter.filter.raw);
 	}
 
 	populate_dir_list(other_view, 0);

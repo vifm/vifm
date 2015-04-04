@@ -92,7 +92,7 @@ TEST(reload_considers_local_filter)
 	flist_custom_add(&lwin, "test-data/existing-files/b");
 	assert_true(flist_custom_finish(&lwin) == 0);
 
-	local_filter_set(&lwin, "b");
+	local_filter_apply(&lwin, "b");
 
 	load_dir_list(&lwin, 1);
 
@@ -111,7 +111,7 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 	flist_custom_add(&lwin, "test-data/existing-files/b");
 	assert_true(flist_custom_finish(&lwin) == 0);
 
-	local_filter_set(&lwin, "b");
+	local_filter_apply(&lwin, "b");
 
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.filtered);
