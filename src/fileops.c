@@ -240,7 +240,7 @@ io_progress_changed(const io_progress_t *const state)
 	int progress;
 	char pretty_path[PATH_MAX];
 	char src_path[PATH_MAX];
-	const int redraw = fetch_redraw_scheduled();
+	int redraw;
 	const char *title, *ctrl_msg;
 	const char *target_name;
 	char *as_part;
@@ -269,6 +269,7 @@ io_progress_changed(const io_progress_t *const state)
 		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
 	}
 
+	redraw = fetch_redraw_scheduled();
 	if(progress == prev_progress && !redraw)
 	{
 		return;
