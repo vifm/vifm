@@ -291,9 +291,6 @@ prompt_error_msg_internal(const char title[], const char message[],
 	if(curr_stats.load_stage < 2)
 		skip_until_started = (result == R_CANCEL);
 
-	werase(error_win);
-	wrefresh(error_win);
-
 	modes_update();
 	if(curr_stats.need_update != UT_NONE)
 		modes_redraw();
@@ -332,9 +329,6 @@ prompt_msg_internal(const char title[], const char message[],
 	enter(MASK(R_YES, R_NO));
 
 	free(dup);
-
-	werase(error_win);
-	wrefresh(error_win);
 
 	touchwin(stdscr);
 
