@@ -1806,6 +1806,10 @@ prompt_what_to_do(const char src_name[])
 			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
 			put_confirm.allow_merge ? "/[m]erge" : "",
 			put_confirm.allow_merge ? "/[M]erge all" : "");
+
+	/* Screen needs to be restored after displaying progress dialog. */
+	modes_update();
+
 	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
