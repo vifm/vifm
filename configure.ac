@@ -246,6 +246,9 @@ if test "x${HAVE_FILE_PROG}" = 'x1' ; then
     AC_DEFINE_UNQUOTED(HAVE_FILE_PROG, 1, [Define if file program present])
 fi
 
+dnl Use either troff or mandoc for generating plain text help from manual page.
+AC_CHECK_PROGS(MANGEN_PROG, [troff mandoc], [])
+
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datadir}" = 'x${prefix}/share'; then
   if test "x${prefix}" = "xNONE"; then

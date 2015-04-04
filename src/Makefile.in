@@ -219,6 +219,7 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
+MANGEN_PROG = @MANGEN_PROG@
 MKDIR_P = @MKDIR_P@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -475,6 +476,7 @@ vifmrc_converter_SOURCES = \
 check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 CLEANFILES = runtests
+MANGEN = @MANGEN_PROG@
 all: all-am
 
 .SUFFIXES:
@@ -1640,11 +1642,11 @@ compile_info.c: update_compile_info
 update_compile_info:
 
 ../data/vifm-help.txt: ../data/vifm.1
-	@if [ "x$$(which groff 2> /dev/null)" != "x" -a "x$$(which sed 2> /dev/null)" != "x" ]; then \
+	@if [ -n "$(MANGEN)" -a "x$$(which sed 2> /dev/null)" != "x" ]; then \
 		if [ "x$$(which col 2> /dev/null)" != "x" ]; then \
-			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | col -b >| '$@'; \
+			$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | col -b >| '$@'; \
 		else \
-			groff -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
