@@ -18,12 +18,11 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
-static line_stats_t stats;
+static void fusehome_handler(OPT_OP op, optval_t val);
+static int dquotes_allowed_in_paths(void);
+static int has_unix_like_fs(void);
 
-static void
-fusehome_handler(OPT_OP op, optval_t val)
-{
-}
+static line_stats_t stats;
 
 SETUP()
 {
@@ -63,6 +62,11 @@ TEARDOWN()
 	clear_options();
 
 	function_reset_all();
+}
+
+static void
+fusehome_handler(OPT_OP op, optval_t val)
+{
 }
 
 TEST(leave_spaces_at_begin)
@@ -222,9 +226,7 @@ TEST(dquoted_completion)
 	assert_wstring_equal(L"touch 'b", stats.line);
 }
 
-#if !defined(__CYGWIN__) && !defined(_WIN32)
-
-TEST(dquoted_completion_escaping)
+TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
 	assert_int_equal(0, chdir("../quotes-in-names"));
 
@@ -232,17 +234,6 @@ TEST(dquoted_completion_escaping)
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"touch \"d-quote-\\\"-in-name", stats.line);
 }
-
-TEST(bang_abs_path_completion)
-{
-	prepare_for_line_completion(L"!/bin/ca");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!/bin/cat", stats.line);
-
-	assert_int_equal(2, vle_compl_get_count());
-}
-
-#endif
 
 TEST(last_match_is_properly_escaped)
 {
@@ -421,6 +412,37 @@ TEST(abbreviations)
 	assert_wstring_equal(L"cabbrev l l", stats.line);
 
 	vle_abbr_reset();
+}
+
+/* It's possible to test this on Windows as well, but harder to format valid
+ * path. */
+TEST(bang_abs_path_completion, IF(has_unix_like_fs))
+{
+	prepare_for_line_completion(L"!/bin/ca");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"!/bin/cat", stats.line);
+
+	assert_int_equal(2, vle_compl_get_count());
+}
+
+static int
+dquotes_allowed_in_paths(void)
+{
+#if defined(__CYGWIN__) || defined(_WIN32)
+	return 0;
+#else
+	return 1;
+#endif
+}
+
+static int
+has_unix_like_fs(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
