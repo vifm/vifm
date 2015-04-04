@@ -2114,6 +2114,8 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 
+	ui_cancellation_reset();
+
 	for(i = 0; i < reg->num_files; ++i)
 	{
 		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
