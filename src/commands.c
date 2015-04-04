@@ -4334,7 +4334,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 			break;
 	}
 
-	update_screen(UT_FULL);
+	curr_stats.need_update = UT_FULL;
 
 	return result;
 }
