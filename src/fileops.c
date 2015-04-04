@@ -1752,7 +1752,7 @@ put_decide_cb(const char choice[])
 	{
 		put_continue(1);
 	}
-	else if(strcmp(choice, "p") == 0 && cfg.use_system_calls &&
+	else if(strcmp(choice, "a") == 0 && cfg.use_system_calls &&
 			!is_dir(put_confirm.name))
 	{
 		put_confirm.append = 1;
