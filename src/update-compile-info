@@ -18,6 +18,8 @@ if [ -n "$in_repo" ]; then
     unset GIT_DIR
 
     info="`git describe --tags --long --always --abbrev=12 --dirty`"
+else
+    info='built out of repository'
 fi
 new="const char GIT_INFO[] = \"$info\";"
 
