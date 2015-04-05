@@ -241,6 +241,10 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T
 
+dnl ----------------------------------------------------------------------------
+dnl check for available tools/applications
+dnl ----------------------------------------------------------------------------
+
 AC_CHECK_PROG(HAVE_FILE_PROG, file, 1)
 if test "x${HAVE_FILE_PROG}" = 'x1' ; then
     AC_DEFINE_UNQUOTED(HAVE_FILE_PROG, 1, [Define if file program present])
@@ -248,6 +252,32 @@ fi
 
 dnl Use either troff or mandoc for generating plain text help from manual page.
 AC_CHECK_PROGS(MANGEN_PROG, [troff mandoc], [])
+
+dnl col might be used for filtering out terminal escape sequences
+AC_CHECK_PROG(COL_PROG, col, col)
+
+dnl awk is used to generate source with list of documentation tags
+AC_CHECK_PROG(AWK_PROG, awk, awk)
+
+dnl perl is used to generate tags from documentation
+AC_CHECK_PROG(PERL_PROG, perl, perl)
+
+dnl sed is used to make plain text documentation
+AC_CHECK_PROG(SED_PROG, sed, sed)
+
+dnl vim is a fallback for generating documentation tags when perl isn't there
+AC_CHECK_PROG(VIM_PROG, vim, vim)
+
+dnl check if we're building inside git repository
+AC_CHECK_PROG(GIT_PROG, git, git)
+if test "x${GIT_PROG}" != 'x' -a -d .git/; then
+    IN_GIT_REPO=1
+fi
+AC_SUBST([IN_GIT_REPO])
+
+dnl ----------------------------------------------------------------------------
+dnl setup various package/compilation settings
+dnl ----------------------------------------------------------------------------
 
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datadir}" = 'x${prefix}/share'; then

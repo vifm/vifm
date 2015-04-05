@@ -146,6 +146,9 @@
 	Parse paths that start with plus sign as command-line arguments more
 	carefully (don't treat them as startup commands).
 
+	Moved checks for build-time tools existance from Makefile to configure
+	script.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

@@ -13,6 +13,9 @@ endif
 
 LDFLAGS := $(LDFLAGS)
 
+MANGEN := groff
+UNDER_VCS := $(shell [ "`which git 2> /dev/null`" -a -d ../.git ] && echo 1)
+
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
 DIRS := ./ compat/ cfg/ engine/ io/ io/private/ menus/ modes/ modes/dialogs/ \
@@ -112,7 +115,7 @@ vifmres.o: vifm.res
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-	@./update-compile-info
+	@./update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
@@ -120,17 +123,15 @@ update_compile_info:
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-MANGEN := groff
-
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
 		$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
-	@if [ "x$$(which vim)" != "x" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
+	@if [ "x$$(which vim)" != "x" -a "x$$(which awk)" != "x" ]; then \
 		vim -e -s -c 'helptags $(dir $<)|q'; \
-		cat $(dir $<)/tags | awk ' \
+		awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
 			} \
@@ -140,7 +141,7 @@ tags.c: ../data/vim/doc/app/vifm-app.txt
 			END { \
 				print "\t0,\n};" \
 			} \
-		' > $@; \
+		' -- $(dir $<)/tags > $@; \
 		dos2unix "$@"; \
 	fi
 

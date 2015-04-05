@@ -1,15 +1,18 @@
 #!/bin/sh
 
-if [ $# -ne 0 ]; then
-    echo "`basename "$0"`: no arguments expected."
+if [ $# -gt 1 ]; then
+    echo "`basename "$0"`: [git]"
     exit 1
 fi
+
+in_repo="$1"
+shift
 
 if [ -r compile_info.c ]; then
     old="`cat compile_info.c`"
 fi
 
-if [ -n "`which git 2> /dev/null`" -a -d ../.git ]; then
+if [ -n "$in_repo" ]; then
     # This is set for scripts running from git hooks, but it breaks the command
     # below.
     unset GIT_DIR

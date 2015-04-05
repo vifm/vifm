@@ -201,6 +201,14 @@ vifmrc_converter_SOURCES = \
 check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 
+MANGEN = @MANGEN_PROG@
+COL = @COL_PROG@
+AWK = @AWK_PROG@
+PERL = @PERL_PROG@
+SED = @SED_PROG@
+VIM = @VIM_PROG@
+UNDER_VCS = @IN_GIT_REPO@
+
 runtests:
 	echo '$(MAKE) -C ../tests' > $@_
 	chmod +x $@_
@@ -213,43 +221,40 @@ distclean-local:
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-	@./update-compile-info
+	@./update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
-
-MANGEN = @MANGEN_PROG@
-
 ../data/vifm-help.txt: ../data/vifm.1
-	@if [ -n "$(MANGEN)" -a "x$$(which sed 2> /dev/null)" != "x" ]; then \
-		if [ "x$$(which col 2> /dev/null)" != "x" ]; then \
-			$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | col -b >| '$@'; \
+	@if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
+		if [ -n "$(COL)" ]; then \
+			$(MANGEN) -Tutf8 -man ../data/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
-			$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tutf8 -man ../data/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
 ../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
-	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
+	@if [ -n "$(PERL)" ]; then \
 		./helpztags "$(dir $@)"; \
-	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
+	elif [ -n "$(VIM)" ]; then \
 		vim -e -s -c 'helptags $(dir $@)|q'; \
 	else \
 		touch $@; \
 	fi
 
 ../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
-	@if [ "x$$(which perl 2> /dev/null)" != "x" ]; then \
+	@if [ -n "$(PERL)" ]; then \
 		./helpztags "$(dir $@)"; \
-	elif [ "x$$(which vim 2> /dev/null)" != "x" ]; then \
+	elif [ -n "$(VIM)" ]; then \
 		vim -e -s -c 'helptags $(dir $@)|q'; \
 	else \
 		touch $@; \
 	fi
 
 tags.c: ../data/vim/doc/app/tags
-	@if [ -s "$<" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
-		cat "$<" | awk ' \
+	if [ -s "$<" -a -n "$(AWK)" ]; then \
+		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
 			} \
@@ -259,7 +264,7 @@ tags.c: ../data/vim/doc/app/tags
 			END { \
 				print "\t0,\n};" \
 			} \
-		' > $@; \
+		' -- "$<" > $@; \
 	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
