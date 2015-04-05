@@ -105,6 +105,9 @@
 	of preview area to use in external commands.  Thanks to Stephano (a.k.a.
 	cao).
 
+	Added lookup for mandoc on *nix to perform manual page to plain text
+	transformation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
 	Switch to utf-8 internal representation of paths on Windows.  This fixes
 	issues when file name encoding doesn't match system encoding.  Thanks to
 	Stas Panteleev.
@@ -142,6 +145,9 @@
 
 	Parse paths that start with plus sign as command-line arguments more
 	carefully (don't treat them as startup commands).
+
+	Moved checks for build-time tools existence from Makefile to configure
+	script.
 
 	Fixed search messages in menus (nth time...).
 
@@ -255,6 +261,9 @@
 
 	Fixed sorting change in ls-like view with empty 'viewcolumns'.  Thanks to
 	filterfalse.
+
+	Fixed estimation calculation on file putting after cancellation.  Thanks to
+	Svyatoslav Mishyn, a.k.a. juef.
 
 0.7.8-beta to 0.7.8
 
