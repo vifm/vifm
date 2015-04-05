@@ -1144,6 +1144,11 @@ fview_position_updated(FileView *view)
 		view->curr_line = view->list_rows - 1;
 	}
 
+	if(curr_stats.load_stage < 1)
+	{
+		return;
+	}
+
 	erase_current_line_bar(view);
 
 	redraw = move_curr_line(view);

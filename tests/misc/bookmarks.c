@@ -10,7 +10,9 @@
 SETUP()
 {
 	cfg.slow_fs_list = strdup("");
+	lwin.list_pos = 0;
 	lwin.column_count = 1;
+	rwin.list_pos = 0;
 	rwin.column_count = 1;
 }
 
