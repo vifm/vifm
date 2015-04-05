@@ -141,7 +141,7 @@ tags.c: ../data/vim/doc/app/vifm-app.txt
 			END { \
 				print "\t0,\n};" \
 			} \
-		' -- $(dir $<)/tags > $@; \
+		' $(dir $<)/tags > $@; \
 		dos2unix "$@"; \
 	fi
 

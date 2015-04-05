@@ -264,7 +264,7 @@ tags.c: ../data/vim/doc/app/tags
 			END { \
 				print "\t0,\n};" \
 			} \
-		' -- "$<" > $@; \
+		' "$<" > $@; \
 	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

@@ -77,15 +77,16 @@ TEARDOWN()
 	teardown_view(&rwin);
 
 	free(cfg.vi_command);
+	free(cfg.vi_x_command);
 }
 
 static void
 teardown_view(FileView *view)
 {
 	int i;
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
 	{
-		free(view->dir_entry[i].name);
+		free_dir_entry(view, &view->dir_entry[i]);
 	}
 	free(view->dir_entry);
 	view->list_rows = 0;

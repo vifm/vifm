@@ -40,7 +40,7 @@ cleanup_view(FileView *view)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		free(view->dir_entry[i].name);
+		free_dir_entry(view, &view->dir_entry[i]);
 	}
 	free(view->dir_entry);
 

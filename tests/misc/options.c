@@ -22,7 +22,7 @@ SETUP()
 	cfg.cd_path = strdup("");
 	cfg.find_prg = strdup("");
 	cfg.fuse_home = strdup("");
-	cfg.time_format = strdup("");
+	cfg.time_format = strdup("+");
 	cfg.vi_command = strdup("");
 	cfg.vi_x_command = strdup("");
 	cfg.ruler_format = strdup("");
@@ -30,8 +30,7 @@ SETUP()
 	cfg.grep_prg = strdup("");
 	cfg.locate_prg = strdup("");
 	cfg.border_filler = strdup("");
-
-	init_option_handlers();
+	cfg.shell = strdup("");
 
 	lwin.dir_entry = NULL;
 	lwin.list_rows = 0;
@@ -50,6 +49,8 @@ SETUP()
 	rwin.view_columns = strdup("");
 
 	columns_add_column_desc(SK_BY_NAME, &format_name);
+
+	init_option_handlers();
 }
 
 TEARDOWN()
@@ -71,6 +72,7 @@ TEARDOWN()
 	free(cfg.grep_prg);
 	free(cfg.locate_prg);
 	free(cfg.border_filler);
+	free(cfg.shell);
 
 	columns_free(lwin.columns);
 	lwin.columns = NULL;
