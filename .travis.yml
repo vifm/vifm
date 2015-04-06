@@ -1,7 +1,7 @@
 language: c
 
 script:
- - pip install cpp-coveralls --use-mirrors
+ - sudo pip install cpp-coveralls
  - autoreconf && ./configure CFLAGS=--coverage && make && make check
 
 compiler:
