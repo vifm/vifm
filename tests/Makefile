@@ -61,7 +61,7 @@ endif
 
 ifdef DEBUG
 CFLAGS += -g
-LDFLAGS += -g
+LDFLAGS += -g -rdynamic
 endif
 
 .PHONY: check build clean $(suites)
