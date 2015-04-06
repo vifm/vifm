@@ -8,7 +8,8 @@ compiler:
  - gcc
  - clang
 
-after_success: coveralls --encoding iso-8859-1
+after_success:
+ - coveralls --encoding iso-8859-1 --build-root src/ --gcov-options '\-p'
 
 notifications:
   email:
