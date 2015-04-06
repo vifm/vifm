@@ -2,13 +2,14 @@ language: c
 
 script:
  - sudo pip install cpp-coveralls
- - autoreconf && ./configure CFLAGS=--coverage && make && make check
+ - autoreconf && ./configure CFLAGS=--coverage && make -j4 && make check
 
 compiler:
  - gcc
  - clang
 
-after_success: coveralls --encoding iso-8859-1
+after_success:
+ - coveralls --encoding iso-8859-1 --build-root src/ --gcov-options '\-p'
 
 notifications:
   email:
