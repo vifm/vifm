@@ -29,6 +29,8 @@ SETUP()
 	static int option_changed;
 	optval_t def = { .str_val = "/tmp" };
 
+	cfg.slow_fs_list = strdup("");
+
 	init_builtin_functions();
 
 	stats.line = wcsdup(L"set ");
@@ -56,6 +58,9 @@ SETUP()
 TEARDOWN()
 {
 	assert_int_equal(0, chdir("../.."));
+
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = NULL;
 
 	free(stats.line);
 	reset_cmds();
