@@ -1680,7 +1680,7 @@ update_compile_info:
 	fi
 
 tags.c: ../data/vim/doc/app/tags
-	if [ -s "$<" -a -n "$(AWK)" ]; then \
+	@if [ -s "$<" -a -n "$(AWK)" ]; then \
 		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
