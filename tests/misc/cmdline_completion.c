@@ -20,7 +20,6 @@
 
 static void fusehome_handler(OPT_OP op, optval_t val);
 static int dquotes_allowed_in_paths(void);
-static int has_unix_like_fs(void);
 
 static line_stats_t stats;
 
@@ -419,13 +418,27 @@ TEST(abbreviations)
 	vle_abbr_reset();
 }
 
-/* It's possible to test this on Windows as well, but harder to format valid
- * path. */
-TEST(bang_abs_path_completion, IF(has_unix_like_fs))
+TEST(bang_abs_path_completion)
 {
-	prepare_for_line_completion(L"!/bin/[");
+#ifdef _WIN32
+#define SUFFIX L".exe"
+#else
+#define SUFFIX L""
+#endif
+
+	wchar_t cmd[PATH_MAX];
+	char cwd[PATH_MAX];
+	assert_true(getcwd(cwd, sizeof(cwd)) == cwd);
+#ifdef _WIN32
+	to_forward_slash(cwd);
+#endif
+
+	vifm_swprintf(cmd, ARRAY_LEN(cmd),
+			L"!%" WPRINTF_MBSTR L"/../../../src/vifmrc-converter" SUFFIX , cwd);
+
+	prepare_for_line_completion(cmd);
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!/bin/\\[", stats.line);
+	assert_wstring_equal(cmd, stats.line);
 
 	assert_int_equal(2, vle_compl_get_count());
 }
@@ -434,16 +447,6 @@ static int
 dquotes_allowed_in_paths(void)
 {
 #if defined(__CYGWIN__) || defined(_WIN32)
-	return 0;
-#else
-	return 1;
-#endif
-}
-
-static int
-has_unix_like_fs(void)
-{
-#ifdef _WIN32
 	return 0;
 #else
 	return 1;
