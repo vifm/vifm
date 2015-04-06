@@ -48,7 +48,7 @@ endif
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include ../config.h
 CFLAGS += -D_XOPEN_SOURCE -Wno-char-subscripts
-LDFLAGS := -lpthread
+LDFLAGS := -lpthread --coverage
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' ../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' ../src/Makefile)
