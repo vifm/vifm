@@ -423,9 +423,9 @@ TEST(abbreviations)
  * path. */
 TEST(bang_abs_path_completion, IF(has_unix_like_fs))
 {
-	prepare_for_line_completion(L"!/bin/cat");
+	prepare_for_line_completion(L"!/bin/[");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!/bin/cat", stats.line);
+	assert_wstring_equal(L"!/bin/\\[", stats.line);
 
 	assert_int_equal(2, vle_compl_get_count());
 }
