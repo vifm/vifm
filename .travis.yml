@@ -2,7 +2,7 @@ language: c
 
 script:
  - sudo pip install cpp-coveralls
- - autoreconf && ./configure CFLAGS=--coverage && make -j4 && make check
+ - autoreconf && ./configure --enable-coverage && make -j4 && make check
 
 compiler:
  - gcc
