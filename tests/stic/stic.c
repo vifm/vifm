@@ -6,6 +6,9 @@
  */
 
 #include "stic.h"
+
+#include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -104,6 +107,14 @@ void stic_suite_setup( void )
 int stic_positive_predicate( void )
 {
     return 1;
+}
+
+void stic_printf(char buf[], const char format[], ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    vsprintf(buf, format, ap);
+    va_end(ap);
 }
 
 void stic_suite_teardown( void )

@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* F_OK access() getcwd() */
 
+#include <stdio.h> /* snprintf() */
+
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"

@@ -9,7 +9,6 @@
 #define STIC__STIC_H__
 
 #include <stddef.h>
-#include <stdio.h>
 
 /* Global data. */
 
@@ -52,6 +51,7 @@ void stic_teardown( void );
 void stic_suite_teardown( void );
 void stic_suite_setup( void );
 int stic_positive_predicate( void );
+void stic_printf(char buf[], const char format[], ...);
 
 /* Assert macros. */
 
@@ -65,7 +65,7 @@ int stic_positive_predicate( void );
 #define assert_ulong_equal(expected, actual) do {  stic_assert_ulong_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)
 #define assert_string_equal(expected, actual) do {  stic_assert_string_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)
 #define assert_wstring_equal(expected, actual) do {  stic_assert_wstring_equal(expected, actual, __FUNCTION__, __LINE__); } while (0)
-#define assert_n_array_equal(expected, actual, n) do { int stic_count; for(stic_count=0; stic_count<n; stic_count++) { char s_seatest[STIC_PRINT_BUFFER_SIZE]; sprintf(s_seatest,"Expected %d to be %d at position %d", actual[stic_count], expected[stic_count], stic_count); stic_simple_test_result((expected[stic_count] == actual[stic_count]), s_seatest, __FUNCTION__, __LINE__);} } while (0)
+#define assert_n_array_equal(expected, actual, n) do { int stic_count; for(stic_count=0; stic_count<n; stic_count++) { char s_seatest[STIC_PRINT_BUFFER_SIZE]; stic_printf(s_seatest,"Expected %d to be %d at position %d", actual[stic_count], expected[stic_count], stic_count); stic_simple_test_result((expected[stic_count] == actual[stic_count]), s_seatest, __FUNCTION__, __LINE__);} } while (0)
 #define assert_bit_set(bit_number, value) { stic_simple_test_result(((1 << bit_number) & value), " Expected bit to be set" ,  __FUNCTION__, __LINE__); } while (0)
 #define assert_bit_not_set(bit_number, value) { stic_simple_test_result(!((1 << bit_number) & value), " Expected bit not to to be set" ,  __FUNCTION__, __LINE__); } while (0)
 #define assert_bit_mask_matches(value, mask) { stic_simple_test_result(((value & mask) == mask), " Expected all bits of mask to be set" ,  __FUNCTION__, __LINE__); } while (0)
