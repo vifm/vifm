@@ -26,7 +26,7 @@ TEARDOWN()
 
 TEST(executable_true_for_executable)
 {
-	ASSERT_INT_OK("executable('bin/misc')", 1);
+	ASSERT_INT_OK("executable('../src/vifm')", 1);
 }
 
 TEST(executable_false_for_regular_file)
