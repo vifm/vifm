@@ -115,9 +115,9 @@ bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
 
 bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. stic/stic.h.gch \
                              | bin/build/$(BINSUBDIR)/$1
-	$(CC) -c -o $$@ $(CFLAGS) -include stic/stic.h \
-	                          -DTESTID=$$(call pos, $$($1.obj), $$@) \
-	                          -DMAXTESTID=$$(words $$($1.obj)) $$<
+	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
+	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
+	                -DMAXTESTID=$$(words $$($1.obj)) $$<
 
 bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
