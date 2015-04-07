@@ -42,6 +42,8 @@ when building with Cygwin):
            - debug-friendly optimizations
            - treating compilation warnings as errors
 
+      --[disable]/enable-coverage - enables code coverage generation.
+
       --without/[with]-gtk - use GTK+ to determine mimetypes if available.
 
       --without/[with]-libmagic - use libmagic to determine mimetypes if
