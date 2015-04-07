@@ -736,6 +736,7 @@ enable_extended_keys
 enable_desktop_files
 enable_remote_cmds
 enable_developer
+enable_coverage
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1374,6 +1375,8 @@ Optional Features:
   --enable-remote-cmds    enable remote command sending (insecure).
                           [default=disabled]
   --enable-developer      enables features of interest to developers
+                          [default=disabled]
+  --enable-coverage       enables coverage information generation
                           [default=disabled]
 
 Optional Packages:
@@ -8908,6 +8911,14 @@ else
 fi
 
 
+# Check whether --enable-coverage was given.
+if test "${enable_coverage+set}" = set; then :
+  enableval=$enable_coverage; coverage=$enableval
+else
+  coverage=no
+fi
+
+
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
@@ -9148,6 +9159,11 @@ fi
 
 if test "$developer" = "yes"; then
 	CFLAGS="$CFLAGS -g -O0 -Werror"
+fi
+
+if test "$coverage" = "yes"; then
+	CFLAGS="$CFLAGS --coverage"
+	LDFLAGS="$LDFLAGS --coverage"
 fi
 
 CFLAGS="$CFLAGS -include ../config.h"

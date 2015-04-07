@@ -45,6 +45,8 @@ ifdef win_env
     exe_suffix := .exe
 endif
 
+CC := gcc
+
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include ../config.h
 CFLAGS += -D_XOPEN_SOURCE -Wno-char-subscripts
@@ -78,13 +80,13 @@ $(vifm_bin): $(vifm_src)
 	$(MAKE) -C ../src/ $(make_arg) vifm$(exe_suffix)
 
 bin/build/$(BINSUBDIR)/stubs.o: stubs.c
-	gcc -c -o $@ $(CFLAGS) $<
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
-	gcc -c -o $@ $(CFLAGS) $<
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 stic/stic.h.gch: stic/stic.h
-	gcc -c -o $@ $(CFLAGS) $<
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 bin/$(BINSUBDIR)/:
 	mkdir -p $@
@@ -109,13 +111,13 @@ deps += $$($1.obj:.o=.d)
 
 bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
                                   $(vifm_obj) | $(vifm_bin) bin/$(BINSUBDIR)/
-	gcc -o $$@ $$^ $(LDFLAGS)
+	$(CC) -o $$@ $$^ $(LDFLAGS)
 
 bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. stic/stic.h.gch \
                              | bin/build/$(BINSUBDIR)/$1
-	gcc -c -o $$@ $(CFLAGS) -include stic/stic.h \
-	                        -DTESTID=$$(call pos, $$($1.obj), $$@) \
-	                        -DMAXTESTID=$$(words $$($1.obj)) $$<
+	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
+	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
+	                -DMAXTESTID=$$(words $$($1.obj)) $$<
 
 bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@

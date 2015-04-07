@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <stdio.h> /* snprintf() */
 #include <string.h>
 
 #include "../../src/utils/macros.h"

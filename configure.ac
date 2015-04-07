@@ -561,6 +561,14 @@ AC_ARG_ENABLE(developer,
 	[developer=$enableval],
 	[developer=no])
 
+AC_ARG_ENABLE(coverage,
+	AS_HELP_STRING(
+		[--enable-coverage],
+		[enables coverage information generation
+		 @<:@default=disabled@:>@     ]),
+	[coverage=$enableval],
+	[coverage=no])
+
 if test "$extended_keys" = "yes"; then
 	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
 fi
@@ -610,6 +618,11 @@ fi
 
 if test "$developer" = "yes"; then
 	CFLAGS="$CFLAGS -g -O0 -Werror"
+fi
+
+if test "$coverage" = "yes"; then
+	CFLAGS="$CFLAGS --coverage"
+	LDFLAGS="$LDFLAGS --coverage"
 fi
 
 dnl Include config.h in all translation units implicitly

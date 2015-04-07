@@ -83,6 +83,8 @@
 	Added OS X version of sample vifmrc file.  Now this one will be used on
 	first run on OS X.  Thanks to Larry Hynes (a.k.a larryhynes).
 
+	Added --enable-coverage option to configure script.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
