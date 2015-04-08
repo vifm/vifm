@@ -387,6 +387,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
 	draw_msg(title, message, ctrl_msg, centered);
+	wrefresh(error_win);
 }
 
 /* Picks control message (information on available actions) basing on dialog
@@ -446,6 +447,8 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
 	va_end(pa);
 
 	draw_msg(title, msg, ctrl_msg, 1);
+	touch_all_windows();
+	wrefresh(error_win);
 }
 
 /* Draws possibly centered formatted message with specified title and control
@@ -518,8 +521,6 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 	}
 	mvwaddstr(error_win, y - 2, (x - strlen(ctrl_msg))/2, ctrl_msg);
-
-	wrefresh(error_win);
 }
 
 int
