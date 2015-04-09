@@ -74,15 +74,15 @@ static void complete_selective_sync(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
-static void complete_from_string_list(const char str[], const char *list[],
-		size_t list_len);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
-static void complete_winrun(const char *str);
+static void complete_winrun(const char str[]);
+static void complete_from_string_list(const char str[], const char *list[],
+		size_t list_len);
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
@@ -365,23 +365,6 @@ complete_invert(const char str[])
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
-/* Performs str completion using items in the list of length list_len. */
-static void
-complete_from_string_list(const char str[], const char *list[], size_t list_len)
-{
-	int i;
-	const size_t len = strlen(str);
-	for(i = 0; i < list_len; i++)
-	{
-		if(strncmp(str, list[i], len) == 0)
-		{
-			vle_compl_add_match(list[i]);
-		}
-	}
-	vle_compl_finish_group();
-	vle_compl_add_last_match(str);
-}
-
 static int
 complete_chown(const char *str)
 {
@@ -575,18 +558,25 @@ complete_envvar(const char str[])
 	vle_compl_add_last_match(str);
 }
 
+/* Completes first :winrun argument. */
 static void
-complete_winrun(const char *str)
+complete_winrun(const char str[])
 {
-	static const char *VARIANTS[] = { "^", "$", "%", ".", "," };
-	const size_t len = strlen(str);
-	int i;
+	static const char *win_marks[] = { "^", "$", "%", ".", "," };
+	complete_from_string_list(str, win_marks, ARRAY_LEN(win_marks));
+}
 
-	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
+/* Performs str completion using items in the list of length list_len. */
+static void
+complete_from_string_list(const char str[], const char *list[], size_t list_len)
+{
+	size_t i;
+	const size_t len = strlen(str);
+	for(i = 0; i < list_len; ++i)
 	{
-		if(strncmp(str, VARIANTS[i], len) == 0)
+		if(strncmp(str, list[i], len) == 0)
 		{
-			vle_compl_add_match(VARIANTS[i]);
+			vle_compl_add_match(list[i]);
 		}
 	}
 	vle_compl_finish_group();
