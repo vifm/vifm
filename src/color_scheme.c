@@ -376,14 +376,7 @@ check_color_scheme(col_scheme_t *cs)
 {
 	if(cs->state == CSS_BROKEN)
 	{
-		size_t i;
-		for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
-		{
-			cs->color[i].fg = default_colors[i][0];
-			cs->color[i].bg = default_colors[i][1];
-			cs->color[i].attr = default_colors[i][2];
-		}
-
+		reset_color_scheme_colors(cs);
 		cs->state = CSS_DEFAULTED;
 	}
 }
@@ -617,19 +610,11 @@ static void
 reset_color_scheme_colors(col_scheme_t *cs)
 {
 	size_t i;
-
 	for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
-	}
-
-	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; ++i)
-	{
-		cs->color[i].fg = -1;
-		cs->color[i].bg = -1;
-		cs->color[i].attr = 0;
 	}
 }
 
