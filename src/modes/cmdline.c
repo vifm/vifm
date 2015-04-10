@@ -802,7 +802,7 @@ cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	const CmdInputType type = cls_to_editable_cit(sub_mode);
 	const int prompt_ee = sub_mode == CLS_PROMPT && sub_mode_allows_ee;
-	if(type != -1 || prompt_ee)
+	if(type != (CmdInputType)-1 || prompt_ee)
 	{
 		char *const mbstr = to_multibyte(input_stat.line);
 		leave_cmdline_mode();
@@ -1466,7 +1466,7 @@ complete_next(const hist_t *hist, size_t len)
 			restore_user_input();
 			return;
 		}
-		input_stat.cmd_pos--;
+		--input_stat.cmd_pos;
 	}
 	else
 	{
@@ -1494,7 +1494,7 @@ complete_next(const hist_t *hist, size_t len)
 
 	update_cmdline();
 
-	if(input_stat.cmd_pos > len - 1)
+	if(input_stat.cmd_pos > (int)len - 1)
 	{
 		input_stat.cmd_pos = len - 1;
 	}
@@ -2072,8 +2072,10 @@ complete_prev(const hist_t *hist, size_t len)
 	if(input_stat.history_search != HIST_SEARCH)
 	{
 		if(input_stat.cmd_pos == hist->pos)
+		{
 			return;
-		input_stat.cmd_pos++;
+		}
+		++input_stat.cmd_pos;
 	}
 	else
 	{
@@ -2100,7 +2102,7 @@ complete_prev(const hist_t *hist, size_t len)
 
 	update_cmdline();
 
-	if(input_stat.cmd_pos > len - 1)
+	if(input_stat.cmd_pos > (int)len - 1)
 	{
 		input_stat.cmd_pos = len - 1;
 	}
@@ -2140,22 +2142,24 @@ static void
 cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t char_before_last;
-	size_t index;
+	int index;
 
 	stop_completion();
 
 	index = input_stat.index;
 	if(index == 0 || input_stat.len == 1)
+	{
 		return;
+	}
 
 	if(index == input_stat.len)
 	{
-		index--;
+		--index;
 	}
 	else
 	{
 		input_stat.curs_pos += vifm_wcwidth(input_stat.line[input_stat.index]);
-		input_stat.index++;
+		++input_stat.index;
 	}
 
 	char_before_last = input_stat.line[index - 1];

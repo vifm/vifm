@@ -212,7 +212,7 @@ max_desc_len(const assoc_records_t *records)
 	int max_len = 0;
 	for(i = 0; i < records->count; ++i)
 	{
-		max_len = MAX(max_len, strlen(records->list[i].description));
+		max_len = MAX(max_len, (int)strlen(records->list[i].description));
 	}
 	return max_len;
 }

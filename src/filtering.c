@@ -295,7 +295,7 @@ local_filter_set(FileView *view, const char filter[])
 static int
 get_unfiltered_pos(const FileView *const view, int pos)
 {
-	const size_t count = view->local_filter.unfiltered_count;
+	const int count = (int)view->local_filter.unfiltered_count;
 	const char *const filename = view->dir_entry[pos].name;
 	while(pos < count)
 	{
@@ -304,7 +304,7 @@ get_unfiltered_pos(const FileView *const view, int pos)
 		{
 			return pos;
 		}
-		pos++;
+		++pos;
 	}
 	return -1;
 }

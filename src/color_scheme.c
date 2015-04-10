@@ -376,8 +376,8 @@ check_color_scheme(col_scheme_t *cs)
 {
 	if(cs->state == CSS_BROKEN)
 	{
-		int i;
-		for(i = 0; i < ARRAY_LEN(default_colors); i++)
+		size_t i;
+		for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
 		{
 			cs->color[i].fg = default_colors[i][0];
 			cs->color[i].bg = default_colors[i][1];
@@ -495,7 +495,7 @@ color_to_str(int color, size_t buf_len, char str_buf[])
 	{
 		copy_str(str_buf, buf_len, "default");
 	}
-	else if(color >= 0 && color < ARRAY_LEN(XTERM256_COLOR_NAMES))
+	else if(color >= 0 && color < (int)ARRAY_LEN(XTERM256_COLOR_NAMES))
 	{
 		copy_str(str_buf, buf_len, XTERM256_COLOR_NAMES[color]);
 	}
@@ -616,16 +616,16 @@ assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
 static void
 reset_color_scheme_colors(col_scheme_t *cs)
 {
-	int i;
+	size_t i;
 
-	for(i = 0; i < ARRAY_LEN(default_colors); i++)
+	for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
 	}
 
-	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; i++)
+	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; ++i)
 	{
 		cs->color[i].fg = -1;
 		cs->color[i].bg = -1;

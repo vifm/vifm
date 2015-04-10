@@ -126,13 +126,13 @@ function_reset_all(void)
 void
 function_complete_name(const char str[], const char **start)
 {
-	int i;
+	size_t i;
 	size_t len;
 
 	*start = str;
 
 	len = strlen(str);
-	for(i = 0; i < function_count; ++i)
+	for(i = 0U; i < function_count; ++i)
 	{
 		const char *const name = functions[i].name;
 		if(starts_withn(name, str, len))

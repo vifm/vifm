@@ -522,7 +522,8 @@ redraw(void)
 static void
 calc_vlines(void)
 {
-	if(vi->view->window_width - 1 == vi->width && vi->wrap == cfg.wrap_quick_view)
+	if((int)vi->view->window_width - 1 == vi->width &&
+			vi->wrap == cfg.wrap_quick_view)
 	{
 		return;
 	}
@@ -1177,12 +1178,12 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 
 	while(key_info.count-- > 0)
 	{
-		size_t height = (vi->widths[vi->line][1] + vi->width - 1)/vi->width;
+		int height = (vi->widths[vi->line][1] + vi->width - 1)/vi->width;
 		height = MAX(height, 1);
 		if(vi->linev + 1 >= vi->widths[vi->line][0] + height)
-			vi->line++;
+			++vi->line;
 
-		vi->linev++;
+		++vi->linev;
 	}
 
 	draw();
@@ -1201,9 +1202,9 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 	while(key_info.count-- > 0)
 	{
 		if(vi->linev - 1 < vi->widths[vi->line][0])
-			vi->line--;
+			--vi->line;
 
-		vi->linev--;
+		--vi->linev;
 	}
 
 	draw();

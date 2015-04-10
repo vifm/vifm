@@ -19,6 +19,7 @@
 #include "viewcolumns_parser.h"
 
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "column_view.h"
 
 #include <ctype.h> /* isdigit() */
@@ -203,8 +204,9 @@ parse_name(map_name_cb cn, const char *str, column_info_t *info)
 		if(closing_brace != NULL)
 		{
 			char name[16];
-			size_t len = MIN(sizeof(name), closing_brace - (str + 1) + 1);
-			(void)snprintf(name, len, "%s", str + 1);
+			const size_t len = MIN(sizeof(name),
+					(size_t)(closing_brace - (str + 1) + 1));
+			(void)copy_str(name, len, str + 1);
 			if((info->column_id = cn(name)) >= 0)
 			{
 				return closing_brace + 1;

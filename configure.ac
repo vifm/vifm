@@ -617,7 +617,7 @@ if test "$use_libX11" = "yes"; then
 fi
 
 if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -O0 -Werror"
+	CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare"
 fi
 
 if test "$coverage" = "yes"; then

@@ -694,7 +694,7 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	while(isalpha(*t))
 		t++;
 
-	len = MIN(t - cmd, buf_len - 1);
+	len = MIN((size_t)(t - cmd), buf_len - 1);
 	strncpy(buf, cmd, len);
 	buf[len] = '\0';
 	if(*t == '?' || *t == '!')

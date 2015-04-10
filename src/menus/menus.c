@@ -308,7 +308,8 @@ draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
 	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
 
 	checked_wmove(menu_win, m->current, 1);
-	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
+	if(get_screen_string_length(m->items[m->pos] + off) >
+			(size_t)(getmaxx(menu_win) - 4))
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
@@ -492,7 +493,7 @@ draw_menu(menu_info *m)
 				buf[z] = ' ';
 
 		checked_wmove(menu_win, i, 2);
-		if(get_screen_string_length(buf) > win_len - 4)
+		if(get_screen_string_length(buf) > (size_t)(win_len - 4))
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
 			memset(buf + len, ' ', strlen(buf) - len);

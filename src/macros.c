@@ -67,7 +67,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 	size_t cmd_len;
 	char *expanded;
 	size_t x;
-	int y = 0;
+	size_t y = 0U;
 	int len = 0;
 
 	if(flags != NULL)
@@ -505,16 +505,16 @@ expand_custom_macros(const char pattern[], size_t nmacros,
 		}
 		else
 		{
-			int i = 0;
-			pattern++;
+			size_t i = 0U;
+			++pattern;
 			while(i < nmacros && macros[i].letter != *pattern)
 			{
-				i++;
+				++i;
 			}
 			if(i < nmacros)
 			{
 				expanded = extend_string(expanded, macros[i].value, &len);
-				macros[i].uses_left--;
+				--macros[i].uses_left;
 			}
 		}
 		pattern++;
@@ -532,10 +532,10 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[])
 {
 	int groups[nmacros];
-	int i;
+	size_t i;
 
 	memset(&groups, 0, sizeof(groups));
-	for(i = 0; i < nmacros; i++)
+	for(i = 0U; i < nmacros; ++i)
 	{
 		custom_macro_t *const macro = &macros[i];
 		const int group = macro->group;
@@ -545,7 +545,7 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		}
 	}
 
-	for(i = 0; i < nmacros; i++)
+	for(i = 0U; i < nmacros; ++i)
 	{
 		custom_macro_t *const macro = &macros[i];
 		const int group = macro->group;

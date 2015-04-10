@@ -443,7 +443,7 @@ static int
 complete_highlight_arg(const char *str)
 {
 	/* TODO: Refactor this function complete_highlight_arg() */
-	char *equal = strchr(str, '=');
+	const char *equal = strchr(str, '=');
 	int result = (equal == NULL) ? 0 : (equal - str + 1);
 	size_t len = strlen((equal == NULL) ? str : ++equal);
 	if(equal == NULL)
@@ -454,9 +454,9 @@ complete_highlight_arg(const char *str)
 			"ctermbg",
 		};
 
-		int i;
+		size_t i;
 
-		for(i = 0; i < ARRAY_LEN(args); i++)
+		for(i = 0U; i < ARRAY_LEN(args); ++i)
 		{
 			if(strncmp(str, args[i], len) == 0)
 			{
@@ -477,9 +477,9 @@ complete_highlight_arg(const char *str)
 				"none",
 			};
 
-			int i;
+			size_t i;
 
-			char *comma = strrchr(equal, ',');
+			const char *const comma = strrchr(equal, ',');
 			if(comma != NULL)
 			{
 				result += comma - equal + 1;
@@ -487,7 +487,7 @@ complete_highlight_arg(const char *str)
 				len = strlen(equal);
 			}
 
-			for(i = 0; i < ARRAY_LEN(STYLES); i++)
+			for(i = 0U; i < ARRAY_LEN(STYLES); ++i)
 			{
 				if(strncasecmp(equal, STYLES[i], len) == 0)
 				{
@@ -497,7 +497,7 @@ complete_highlight_arg(const char *str)
 		}
 		else
 		{
-			int i;
+			size_t i;
 
 			if(strncasecmp(equal, "default", len) == 0)
 			{
@@ -508,14 +508,14 @@ complete_highlight_arg(const char *str)
 				vle_compl_add_match("none");
 			}
 
-			for(i = 0; i < ARRAY_LEN(XTERM256_COLOR_NAMES); i++)
+			for(i = 0U; i < ARRAY_LEN(XTERM256_COLOR_NAMES); ++i)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
 				{
 					vle_compl_add_match(XTERM256_COLOR_NAMES[i]);
 				}
 			}
-			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
+			for(i = 0U; i < ARRAY_LEN(LIGHT_COLOR_NAMES); ++i)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
 				{
@@ -640,13 +640,13 @@ fast_run_complete(const char cmd[])
 static void
 complete_command_name(const char beginning[])
 {
-	int i;
+	size_t i;
 	char ** paths;
 	size_t paths_count;
 	char *const cwd = get_cwd();
 
 	paths = get_paths(&paths_count);
-	for(i = 0; i < paths_count; i++)
+	for(i = 0U; i < paths_count; ++i)
 	{
 		if(vifm_chdir(paths[i]) == 0)
 		{

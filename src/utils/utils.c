@@ -104,8 +104,11 @@ expand_envvars(const char str[], int escape_vals)
 			char *q = var_name;
 			const char *var_value;
 
-			while((isalnum(*p) || *p == '_') && q - var_name < sizeof(var_name) - 1)
+			while((isalnum(*p) || *p == '_') &&
+					(size_t)(q - var_name) < sizeof(var_name) - 1)
+			{
 				*q++ = *p++;
+			}
 			*q = '\0';
 
 			var_value = env_get(var_name);
@@ -297,7 +300,7 @@ extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[])
 		result++;
 	}
 #endif
-	snprintf(buf, MIN(result - line + 1, buf_len), "%s", line);
+	copy_str(buf, MIN((size_t)(result - line + 1), buf_len), line);
 #ifdef _WIN32
 	if(!raw && left_quote && right_quote)
 	{

@@ -54,7 +54,7 @@ static void check_view_for_changes(FileView *view);
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
 /* Current position in current input buffer. */
-static const int *curr_input_buf_pos;
+static const size_t *curr_input_buf_pos;
 
 void
 event_loop(const int *quit)
@@ -64,10 +64,10 @@ event_loop(const int *quit)
 	LOG_FUNC_ENTER;
 
 	const wchar_t *const prev_input_buf = curr_input_buf;
-	const int *const prev_input_buf_pos = curr_input_buf_pos;
+	const size_t *const prev_input_buf_pos = curr_input_buf_pos;
 
 	wchar_t input_buf[128];
-	int input_buf_pos;
+	size_t input_buf_pos;
 
 	int last_result = 0;
 	int wait_for_enter = 0;

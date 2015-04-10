@@ -292,7 +292,7 @@ show_file_type(FileView *view, int curr_y)
 		pclose(pipe);
 
 		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		if(x > 9 && strlen(buf) > x - 9)
+		if(x > 9 && strlen(buf) > (size_t)(x - 9))
 		{
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 		}

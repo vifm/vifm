@@ -1164,8 +1164,8 @@ load_default_colors(void)
 static void
 init_color_scheme(col_scheme_t *cs)
 {
-	int i;
-	for(i = 0; i < ARRAY_LEN(default_colors); i++)
+	size_t i;
+	for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
@@ -1336,14 +1336,14 @@ write_color_schemes(const char *colors_dir)
 			int bg = cs.array[x].color[y].bg;
 			if(fg == -1)
 				strcpy(fg_buf, "none");
-			else if(fg < ARRAY_LEN(COLOR_NAMES))
+			else if(fg < (int)ARRAY_LEN(COLOR_NAMES))
 				snprintf(fg_buf, sizeof(fg_buf), "%s", COLOR_NAMES[fg]);
 			else
 				snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
 
 			if(bg == -1)
 				strcpy(bg_buf, "none");
-			else if(bg < ARRAY_LEN(COLOR_NAMES))
+			else if(bg < (int)ARRAY_LEN(COLOR_NAMES))
 				snprintf(bg_buf, sizeof(bg_buf), "%s", COLOR_NAMES[bg]);
 			else
 				snprintf(bg_buf, sizeof(bg_buf), "%d", bg);

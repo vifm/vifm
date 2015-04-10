@@ -728,7 +728,7 @@ update_input_bar(const wchar_t *str)
 	if(!curr_stats.use_input_bar)
 		return;
 
-	if(wcslen(str) > getmaxx(input_win))
+	if(wcslen(str) > (size_t)getmaxx(input_win))
 	{
 		str += wcslen(str) - getmaxx(input_win);
 	}

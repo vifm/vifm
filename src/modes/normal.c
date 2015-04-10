@@ -1993,7 +1993,7 @@ cmd_paren(int lb, int ub, int inc)
 					return pos;
 				break;
 			case SK_BY_INAME:
-				if(towupper(get_first_wchar(nentry->name)) != ch)
+				if((wchar_t)towupper(get_first_wchar(nentry->name)) != ch)
 					return pos;
 				break;
 #ifndef _WIN32

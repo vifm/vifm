@@ -44,7 +44,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 {
 	int active_bookmarks[NUM_BOOKMARKS];
 	int i;
-	int max_len;
+	size_t max_len;
 
 	static menu_info m;
 	init_menu_info(&m, BOOKMARK_MENU, strdup("No bookmarks set"));
@@ -64,7 +64,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			max_len = len;
 		i++;
 	}
-	max_len = MIN(max_len + 3, getmaxx(menu_win) - 5 - 2 - 10);
+	max_len = MIN(max_len + 3, (size_t)(getmaxx(menu_win) - 5 - 2 - 10));
 
 	i = 0;
 	while(i < m.len)
@@ -110,7 +110,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 
 		overhead = get_screen_overhead(with_tilde);
 		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(j),
-				max_len + overhead, with_tilde, file, suffix);
+				(int)(max_len + overhead), with_tilde, file, suffix);
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);
 	}
