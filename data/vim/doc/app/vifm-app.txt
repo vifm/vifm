@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Mar 14
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -325,6 +325,10 @@ za - toggles the showing and hiding of dot files.
 
                                                *vifm-zo*
 zo - show the dot files.
+
+                                               *vifm-zd*
+zd - exclude selection or current file from custom view.  Does nothing for
+    regular view.
 
                                                *vifm-zf*
 zf - add the selected files to the file name filter.

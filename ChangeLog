@@ -46,6 +46,8 @@
 	Added b key to menu mode that creates custom view filled with menu items
 	filtering out those that are not paths.
 
+	Added zd normal and visual modes key to exclude items from custom views.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

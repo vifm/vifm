@@ -30,7 +30,6 @@
 #include "filelist.h"
 
 static void reset_filter(filter_t *filter);
-static int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static int get_unfiltered_pos(const FileView *const view, int pos);
@@ -135,23 +134,6 @@ filter_selected_files(FileView *view)
 
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
-}
-
-/* Same as iter_selected_entries() function, but when selection is absent
- * current file is processed. */
-static int
-iter_selection_or_current(FileView *view, dir_entry_t **entry)
-{
-	if(view->selected_files == 0)
-	{
-		dir_entry_t *const current = &view->dir_entry[view->list_pos];
-		*entry = (*entry == NULL) ? current : NULL;
-		return *entry != NULL;
-	}
-	else
-	{
-		return iter_selected_entries(view, entry);
-	}
 }
 
 /* zap_entries() filter to filter-out files that match filter passed in the

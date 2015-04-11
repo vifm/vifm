@@ -179,6 +179,8 @@ void flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise non-zero is returned. */
 int flist_custom_finish(FileView *view);
+/* Removes selected files from custom view. */
+void flist_custom_exclude(FileView *view);
 
 /* Other functions. */
 
@@ -231,6 +233,9 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 int iter_active_area(FileView *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but checks for marks. */
 int iter_marked_entries(FileView *view, dir_entry_t **entry);
+/* Same as iter_selected_entries() function, but when selection is absent
+ * current file is processed. */
+int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
