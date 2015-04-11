@@ -171,6 +171,7 @@ draw_dir_list_only(FileView *view)
 	size_t cell;
 	size_t col_width;
 	size_t col_count;
+	int coll_pad;
 	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
@@ -203,6 +204,7 @@ draw_dir_list_only(FileView *view)
 	ui_view_erase(view);
 
 	cell = 0U;
+	coll_pad = (view->ls_view && cfg.filelist_col_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
 		const column_data_t cdt = {
@@ -216,7 +218,7 @@ draw_dir_list_only(FileView *view)
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
 
-		draw_cell(view, &cdt, col_width, print_width);
+		draw_cell(view, &cdt, col_width - coll_pad, print_width);
 
 		++cell;
 		if(cell >= view->window_cells)
@@ -631,11 +633,17 @@ clear_current_line_bar(FileView *view, int is_current)
 
 	print_width = calculate_print_width(view, old_pos, col_width);
 
-	/* When this function is used to draw cursor position in inactive view, only
-	 * name width should be updated. */
 	if(is_current)
 	{
+		/* When this function is used to draw cursor position in inactive view, only
+		 * name width should be updated. */
 		col_width = print_width;
+	}
+	else if(view->ls_view && cfg.filelist_col_padding)
+	{
+		/* Padding in ls-like view adds additional empty single character between
+		 * columns, which which shouldn't draw on. */
+		--col_width;
 	}
 
 	draw_cell(view, &cdt, col_width, print_width);
@@ -1052,10 +1060,7 @@ calculate_columns_count(FileView *view)
 		const size_t column_width = calculate_column_width(view);
 		return ui_view_available_width(view)/column_width;
 	}
-	else
-	{
-		return 1;
-	}
+	return 1U;
 }
 
 /* Returns width of one column in the view. */
