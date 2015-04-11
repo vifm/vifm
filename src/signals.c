@@ -26,7 +26,8 @@
 #include <curses.h>
 
 #include <signal.h>
-#include <stdio.h> /* fprintf */
+#include <stdio.h> /* fprintf() */
+#include <string.h> /* strsignal() */
 
 #include "cfg/info.h"
 #include "ui/cancellation.h"
@@ -35,7 +36,7 @@
 #include "fuse.h"
 #include "term_title.h"
 
-static void _gnuc_noreturn shutdown_nicely(void);
+static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 
 #ifndef _WIN32
 
@@ -104,7 +105,7 @@ handle_signal(int sig)
 		case SIGHUP:
 		case SIGQUIT:
 		case SIGTERM:
-			shutdown_nicely();
+			shutdown_nicely(sig, strsignal(sig));
 			break;
 		default:
 			break;
@@ -124,9 +125,13 @@ ctrl_handler(DWORD dwCtrlType)
 			ui_cancellation_request();
 			break;
 		case CTRL_CLOSE_EVENT:
+			shutdown_nicely(dwCtrlType, "Ctrl-C");
+			break;
 		case CTRL_LOGOFF_EVENT:
+			shutdown_nicely(dwCtrlType, "Logoff");
+			break;
 		case CTRL_SHUTDOWN_EVENT:
-			shutdown_nicely();
+			shutdown_nicely(dwCtrlType, "Shutdown");
 			break;
 	}
 
@@ -135,7 +140,7 @@ ctrl_handler(DWORD dwCtrlType)
 #endif
 
 static void _gnuc_noreturn
-shutdown_nicely(void)
+shutdown_nicely(int sig, const char descr[])
 {
   LOG_FUNC_ENTER;
 
@@ -143,7 +148,7 @@ shutdown_nicely(void)
 	set_term_title(NULL);
 	fuse_unmount_all();
 	write_info_file();
-	fprintf(stdout, "Vifm killed by signal.\n");
+	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);
 	exit(0);
 }
 
