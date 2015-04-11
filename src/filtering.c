@@ -133,11 +133,7 @@ filter_selected_files(FileView *view)
 
 	filter_dispose(&filter);
 
-	if(view->list_pos >= view->list_rows)
-	{
-		view->list_pos = view->list_rows - 1;
-	}
-
+	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
 }
 

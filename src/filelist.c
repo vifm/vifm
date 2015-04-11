@@ -435,6 +435,15 @@ flist_set_pos(FileView *view, int pos)
 }
 
 void
+flist_ensure_pos_is_valid(FileView *view)
+{
+	if(view->list_pos >= view->list_rows)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+}
+
+void
 move_cursor_out_of(FileView *view, FileListScope scope)
 {
 	switch(scope)
@@ -1479,10 +1488,7 @@ flist_custom_finish(FileView *view)
 
 	ui_view_schedule_redraw(view);
 
-	if(view->list_pos >= view->list_rows)
-	{
-		view->list_pos = view->list_rows - 1;
-	}
+	flist_ensure_pos_is_valid(view);
 
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 	view->dir_entry = view->custom.entries;

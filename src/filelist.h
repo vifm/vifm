@@ -63,6 +63,8 @@ int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
 /* Moves cursor to specified position. */
 void flist_set_pos(FileView *view, int pos);
+/* Ensures that position in the list doesn't exceed its bounds. */
+void flist_ensure_pos_is_valid(FileView *view);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(FileView *view, FileListScope scope);
 /* Returns non-zero if cursor is on the first line. */
