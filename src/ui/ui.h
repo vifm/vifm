@@ -335,7 +335,11 @@ void change_window(void);
 /* Swaps curr_view and other_view pointers. */
 void swap_view_roles(void);
 
+/* Forcibly updates all windows. */
 void update_all_windows(void);
+
+/* Touches all windows, actual update can be performed later. */
+void touch_all_windows(void);
 
 void update_input_bar(const wchar_t *str);
 

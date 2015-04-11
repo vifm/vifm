@@ -616,10 +616,10 @@ delete_files_bg(FileView *view, int use_trash)
 static void
 delete_files_in_bg(void *arg)
 {
-	int i;
+	size_t i;
 	bg_args_t *const args = arg;
 
-	for(i = 0; i < args->sel_list_len; ++i)
+	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		delete_file_in_bg(args->sel_list[i], args->use_trash);
 		inner_bg_next();
@@ -3152,11 +3152,11 @@ cmlo_to_str(CopyMoveLikeOp op)
 static void
 cpmv_files_in_bg(void *arg)
 {
-	int i;
+	size_t i;
 	bg_args_t *const args = arg;
 	const int custom_fnames = (args->nlines > 0);
 
-	for(i = 0; i < args->sel_list_len; ++i)
+	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;

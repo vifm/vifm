@@ -117,21 +117,21 @@ reset_option_to_default(const char name[])
 void
 reset_options_to_default(void)
 {
-	int i;
-	for(i = 0; i < options_count; i++)
+	size_t i;
+	for(i = 0U; i < options_count; ++i)
 	{
-		if(options[i].full != NULL)
-			continue;
-		set_reset(&options[i]);
+		if(options[i].full == NULL)
+		{
+			set_reset(&options[i]);
+		}
 	}
 }
 
 void
 clear_options(void)
 {
-	int i;
-
-	for(i = 0; i < options_count; i++)
+	size_t i;
+	for(i = 0U; i < options_count; ++i)
 	{
 		free(options[i].name);
 		if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
@@ -255,8 +255,8 @@ set_options(const char args[])
 static void
 print_changed_options(void)
 {
-	int i;
-	for(i = 0; i < options_count; i++)
+	size_t i;
+	for(i = 0; i < options_count; ++i)
 	{
 		opt_t *opt = &options[i];
 
@@ -365,12 +365,13 @@ process_option(const char arg[])
 static void
 print_options(void)
 {
-	int i;
-	for(i = 0; i < options_count; i++)
+	size_t i;
+	for(i = 0U; i < options_count; ++i)
 	{
-		if(options[i].full != NULL)
-			continue;
-		set_print(&options[i]);
+		if(options[i].full == NULL)
+		{
+			set_print(&options[i]);
+		}
 	}
 }
 
@@ -718,7 +719,7 @@ charset_add_all(opt_t *opt, const char value[])
 {
 	char new_val[opt->val_count + 1];
 	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= opt->val_count);
+	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
 
 	for_each_char_of(new_val, charset_add, value);
 	return replace_if_changed(&opt->val.str_val, new_val);
@@ -742,7 +743,7 @@ charset_remove_all(opt_t *opt, const char value[])
 {
 	char new_val[opt->val_count + 1];
 	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= opt->val_count);
+	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
 
 	for_each_char_of(new_val, charset_remove, value);
 	return replace_if_changed(&opt->val.str_val, new_val);
@@ -951,7 +952,7 @@ complete_options(const char args[], const char **start)
 			return;
 		}
 	}
-	if(strlen(buf) != args - *start)
+	if(strlen(buf) != (size_t)(args - *start))
 	{
 		*start = args;
 		buf[0] = '\0';
@@ -1115,14 +1116,14 @@ static void
 complete_option_name(const char buf[], int bool_only, int pseudo)
 {
 	const size_t len = strlen(buf);
-	int i;
+	size_t i;
 
 	if(pseudo && strncmp(buf, "all", len) == 0)
 	{
 		vle_compl_add_match("all");
 	}
 
-	for(i = 0; i < options_count; i++)
+	for(i = 0U; i < options_count; ++i)
 	{
 		opt_t *const opt = &options[i];
 

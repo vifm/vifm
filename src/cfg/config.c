@@ -103,7 +103,7 @@ static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
 static void decrease_history(size_t new_len, size_t removed_count);
-static void reduce_view_history(FileView *view, size_t size);
+static void reduce_view_history(FileView *view, int size);
 static void reallocate_history(size_t new_len);
 static void zero_new_history_items(size_t old_len, size_t delta);
 static void save_into_history(const char item[], hist_t *hist, int len);
@@ -848,8 +848,8 @@ free_view_history(FileView *view)
 static void
 decrease_history(size_t new_len, size_t removed_count)
 {
-	reduce_view_history(&lwin, new_len);
-	reduce_view_history(&rwin, new_len);
+	reduce_view_history(&lwin, (int)new_len);
+	reduce_view_history(&rwin, (int)new_len);
 
 	hist_trunc(&cfg.search_hist, new_len, removed_count);
 	hist_trunc(&cfg.cmd_hist, new_len, removed_count);
@@ -859,18 +859,22 @@ decrease_history(size_t new_len, size_t removed_count)
 
 /* Moves items of directory history when size of history becomes smaller. */
 static void
-reduce_view_history(FileView *view, size_t size)
+reduce_view_history(FileView *view, int size)
 {
-	const int delta = MIN(view->history_num - (int)size, view->history_pos);
+	const int delta = MIN(view->history_num - size, view->history_pos);
 	if(delta <= 0)
+	{
 		return;
+	}
 
 	cfg_free_history_items(view->history, MIN(size, delta));
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 
 	if(view->history_num >= size)
+	{
 		view->history_num = size - 1;
+	}
 	view->history_pos -= delta;
 }
 

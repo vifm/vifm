@@ -45,7 +45,7 @@ show_commands_menu(FileView *view)
 {
 	char **list;
 	int i;
-	int cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
+	size_t cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_info m;
 	init_menu_info(&m, COMMANDS_MENU, strdup("No commands set"));
@@ -65,7 +65,7 @@ show_commands_menu(FileView *view)
 			cmdname_width = cmdname_len;
 		}
 
-		m.len++;
+		++m.len;
 		assert(list[m.len] != NULL && "Broken list of user-defined commands.");
 	}
 	m.len /= 2;
@@ -73,7 +73,8 @@ show_commands_menu(FileView *view)
 	m.items = (m.len != 0) ? malloc(sizeof(char *)*m.len) : NULL;
 	for(i = 0; i < m.len; i++)
 	{
-		m.items[i] = format_str("%-*s %s", cmdname_width, list[i*2], list[i*2 + 1]);
+		m.items[i] = format_str("%-*s %s", (int)cmdname_width, list[i*2],
+				list[i*2 + 1]);
 	}
 
 	free_string_array(list, m.len*2);

@@ -175,22 +175,26 @@ status_bar_message_i(const char message[], int error)
 		status_bar_lines += DIV_ROUND_UP(q - p, len );
 		if(q == p)
 		{
-			status_bar_lines++;
+			++status_bar_lines;
 		}
 		p = q + 1;
 	}
 	if(*p == '\0')
 	{
-		status_bar_lines++;
+		++status_bar_lines;
 	}
 	screen_length = get_screen_string_length(p);
 	status_bar_lines += DIV_ROUND_UP(screen_length, len);
 	if(status_bar_lines == 0)
+	{
 		status_bar_lines = 1;
+	}
 
 	lines = status_bar_lines;
-	if(status_bar_lines > 1 || screen_length > getmaxx(status_bar))
-		lines++;
+	if(status_bar_lines > 1 || screen_length > (size_t)getmaxx(status_bar))
+	{
+		++lines;
+	}
 
 	out_msg = msg;
 
@@ -211,7 +215,9 @@ status_bar_message_i(const char message[], int error)
 	}
 
 	if(lines > getmaxy(stdscr))
+	{
 		lines = getmaxy(stdscr);
+	}
 
 	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);

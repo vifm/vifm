@@ -671,15 +671,15 @@ check_view_dir_history(FileView *view)
 	view->list_pos = pos;
 	if(rel_pos >= 0)
 	{
-		view->top_line = pos - MIN(view->window_cells - 1, rel_pos);
+		view->top_line = pos - MIN((int)view->window_cells - 1, rel_pos);
 		if(view->top_line < 0)
 			view->top_line = 0;
 		view->curr_line = pos - view->top_line;
 	}
 	else
 	{
-		const size_t last = get_last_visible_cell(view);
-		if(view->list_pos < view->window_cells)
+		const int last = (int)get_last_visible_cell(view);
+		if(view->list_pos < (int)view->window_cells)
 		{
 			scroll_up(view, view->top_line);
 		}

@@ -117,10 +117,10 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 		const size_t char_width_esc = get_char_width_esc(src_sym);
 		if(*src_sym != '\033')
 		{
-			int i;
+			size_t i;
 			const int offset = src_sym - line;
 			/* Each offset value is filled over whole character width. */
-			for(i = 0; i < char_width_esc; i++)
+			for(i = 0U; i < char_width_esc; ++i)
 			{
 				offsets[no_esc_sym_pos + i] = offset;
 			}
@@ -287,13 +287,14 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 {
 	int offset;
 	const char *curr = line;
-	size_t pos = 0;
+	size_t pos = 0U;
 	checked_wmove(win, row, col);
-	while(pos <= max_width && *curr != '\0')
+	while(pos <= (size_t)max_width && *curr != '\0')
 	{
 		size_t screen_width;
 		const char *const char_str = strchar2str(curr, pos, &screen_width);
-		if((pos += screen_width) <= max_width)
+		pos += screen_width;
+		if(pos <= (size_t)max_width)
 		{
 			if(!dry_run || screen_width == 0)
 			{
@@ -545,7 +546,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	else if(str[0] == '\033')
 	{
 		char *dst = buf;
-		while(*str != 'm' && *str != '\0' && dst - buf < sizeof(buf) - 2)
+		while(*str != 'm' && *str != '\0' && (size_t)(dst - buf) < sizeof(buf) - 2)
 		{
 			*dst++ = *str++;
 		}

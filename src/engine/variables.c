@@ -113,7 +113,7 @@ init_var(const char *env)
 	char *p = strchr(env, '=');
 	assert(p != NULL);
 
-	snprintf(name, MIN(sizeof(name), p - env + 1), "%s", env);
+	copy_str(name, MIN(sizeof(name), (size_t)(p - env + 1)), env);
 	record = get_record(name);
 	if(record == NULL)
 		return;
@@ -130,11 +130,11 @@ init_var(const char *env)
 void
 clear_variables(void)
 {
-	int i;
+	size_t i;
 	assert(initialized);
 
 	/* free memory */
-	for(i = 0; i < nvars; i++)
+	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name == NULL)
 			continue;
@@ -178,7 +178,7 @@ let_variables(const char *cmd)
 	/* copy variable name */
 	p = name;
 	while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
-			*cmd != '.' && *cmd != '=' && p - name < sizeof(name) - 1)
+			*cmd != '.' && *cmd != '=' && (size_t)(p - name) < sizeof(name) - 1)
 	{
 		if(*cmd != '_' && !isalnum(*cmd))
 		{
@@ -313,10 +313,10 @@ static envvar_t *
 get_record(const char *name)
 {
 	envvar_t *p = NULL;
-	int i;
+	size_t i;
 
 	/* search for existent variable */
-	for(i = 0; i < nvars; i++)
+	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name == NULL)
 			p = &vars[i];
@@ -372,8 +372,10 @@ unlet_variables(const char *cmd)
 		/* copy variable name */
 		p = name;
 		while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
-				p - name < sizeof(name) - 1)
+				(size_t)(p - name) < sizeof(name) - 1)
+		{
 			*p++ = *cmd++;
+		}
 		*p = '\0';
 
 		if(*cmd != '\0' && !isspace(*cmd))
@@ -426,8 +428,8 @@ unlet_variables(const char *cmd)
 static envvar_t *
 find_record(const char *name)
 {
-	int i;
-	for(i = 0; i < nvars; i++)
+	size_t i;
+	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name != NULL && stroscmp(vars[i].name, name) == 0)
 			return &vars[i];
@@ -456,9 +458,9 @@ clear_record(envvar_t *record)
 void
 complete_variables(const char *cmd, const char **start)
 {
-	int i;
+	size_t i;
 	size_t len;
-	assert(initialized);
+	assert(initialized && "Variables unit is not initialized.");
 
 	/* currently we support only environment variables */
 	if(*cmd != '$')
@@ -472,7 +474,7 @@ complete_variables(const char *cmd, const char **start)
 
 	/* add all variables that start with given beginning */
 	len = strlen(cmd);
-	for(i = 0; i < nvars; i++)
+	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name == NULL)
 			continue;

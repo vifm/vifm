@@ -375,12 +375,12 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!at_last_line(view))
 	{
-		int new_pos;
+		size_t new_pos;
 		size_t offset = view->window_cells/2;
 		offset = ROUND_DOWN(offset, view->column_count);
 		new_pos = get_corrected_list_pos_down(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
-		new_pos = MIN(new_pos, view->list_rows);
+		new_pos = MIN(new_pos, (size_t)view->list_rows);
 		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);

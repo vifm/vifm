@@ -108,9 +108,11 @@ char **
 copy_string_array(char **array, size_t len)
 {
 	char **result = malloc(sizeof(char *)*len);
-	int i;
-	for(i = 0; i < len; i++)
+	size_t i;
+	for(i = 0U; i < len; ++i)
+	{
 		result[i] = strdup(array[i]);
+	}
 	return result;
 }
 
@@ -128,7 +130,7 @@ string_array_pos(char *array[], size_t len, const char item[])
 			}
 		}
 	}
-	return (i < len) ? i : -1;
+	return (i < len) ? (int)i : -1;
 }
 
 int
@@ -145,7 +147,7 @@ string_array_pos_case(char *array[], size_t len, const char item[])
 			}
 		}
 	}
-	return (i < len) ? i : -1;
+	return (i < len) ? (int)i : -1;
 }
 
 void

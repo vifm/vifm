@@ -562,7 +562,7 @@ substitute_specsw(const wchar_t cmd[])
 		}
 	}
 	*p = L'\0';
-	assert(p + 1 - buf <= len && "Destination buffer was too small.");
+	assert((size_t)(p + 1 - buf) <= len && "Destination buffer was too small.");
 
 	return buf;
 }

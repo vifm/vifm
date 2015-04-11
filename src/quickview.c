@@ -197,7 +197,7 @@ view_file(FILE *fp, int wrapped)
 	const col_scheme_t *cs = ui_view_get_cs(other_view);
 	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
-	int y = LINE;
+	size_t y = LINE;
 	const char *res = get_line(fp, line, sizeof(line));
 	esc_state state;
 

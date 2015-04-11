@@ -667,11 +667,11 @@ init_wordchars(optval_t *val)
 {
 	static char *str;
 
-	int i;
+	size_t i;
 	size_t len;
 
 	len = 0U;
-	i = 0;
+	i = 0U;
 	while(i < sizeof(cfg.word_chars))
 	{
 		int l, r;
@@ -687,7 +687,7 @@ init_wordchars(optval_t *val)
 		}
 		r = i - 1;
 
-		if(l < sizeof(cfg.word_chars))
+		if((size_t)l < sizeof(cfg.word_chars))
 		{
 			char left[16];
 			char right[16];
@@ -718,7 +718,7 @@ static void
 load_options_defaults(void)
 {
 	size_t i;
-	for(i = 0; i < ARRAY_LEN(options); i++)
+	for(i = 0U; i < ARRAY_LEN(options); ++i)
 	{
 		if(options[i].initializer.init != NULL)
 		{
@@ -734,8 +734,8 @@ load_options_defaults(void)
 static void
 add_options(void)
 {
-	int i;
-	for(i = 0; i < ARRAY_LEN(options); i++)
+	size_t i;
+	for(i = 0U; i < ARRAY_LEN(options); ++i)
 	{
 		add_option(options[i].name, options[i].abbr, options[i].type,
 				options[i].val_count, options[i].vals, options[i].handler,
@@ -1463,7 +1463,7 @@ relativenumber_handler(OPT_OP op, optval_t val)
 static void
 update_num_type(NumberingType num_type, int enable)
 {
-	const int old_num_type = curr_view->num_type;
+	const NumberingType old_num_type = curr_view->num_type;
 
 	curr_view->num_type = enable
 	                    ? (old_num_type | num_type)

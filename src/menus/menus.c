@@ -61,6 +61,8 @@
 #include "../status.h"
 #include "../vim.h"
 
+static void draw_menu_item(menu_info *m, char buf[], int off,
+		const col_attr_t *col);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
@@ -143,31 +145,7 @@ clean_menu_position(menu_info *m)
 		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
 	}
 
-	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-
-	checked_wmove(menu_win, m->current, 1);
-	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
-	{
-		size_t len = get_normal_utf8_string_widthn(buf,
-				getmaxx(menu_win) - 3 - 4 + 1);
-		memset(buf + len, ' ', strlen(buf) - len);
-		if(strlen(buf) > len + 3)
-		{
-			buf[len + 3] = '\0';
-		}
-		wprint(menu_win, buf);
-		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
-	}
-	else
-	{
-		size_t len = get_normal_utf8_string_widthn(buf, getmaxx(menu_win) - 4 + 1);
-		buf[len] = '\0';
-		wprint(menu_win, buf);
-	}
-	waddstr(menu_win, " ");
-
-	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-
+	draw_menu_item(m, buf, off, &col);
 	free(buf);
 }
 
@@ -311,14 +289,27 @@ move_to_menu_pos(int pos, menu_info *m)
 	col = cfg.cs.color[WIN_COLOR];
 
 	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
+	{
 		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+	}
 
 	mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
+	m->pos = pos;
 
-	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+	draw_menu_item(m, buf, off, &col);
+	free(buf);
+	show_position_in_menu(m);
+}
+
+/* Draws single menu item at current position. */
+static void
+draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
+{
+	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
 
 	checked_wmove(menu_win, m->current, 1);
-	if(get_screen_string_length(m->items[pos] + off) > getmaxx(menu_win) - 4)
+	if(get_screen_string_length(m->items[m->pos] + off) >
+			(size_t)(getmaxx(menu_win) - 4))
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
@@ -338,11 +329,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-
-	m->pos = pos;
-	free(buf);
-	show_position_in_menu(m);
+	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
 }
 
 void
@@ -506,7 +493,7 @@ draw_menu(menu_info *m)
 				buf[z] = ' ';
 
 		checked_wmove(menu_win, i, 2);
-		if(get_screen_string_length(buf) > win_len - 4)
+		if(get_screen_string_length(buf) > (size_t)(win_len - 4))
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
 			memset(buf + len, ' ', strlen(buf) - len);

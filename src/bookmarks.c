@@ -96,7 +96,7 @@ index2mark(const int bmark_index)
 static int
 is_valid_index(const int bmark_index)
 {
-	return bmark_index >= 0 && bmark_index < ARRAY_LEN(valid_bookmarks) - 1;
+	return bmark_index >= 0 && bmark_index < (int)ARRAY_LEN(valid_bookmarks) - 1;
 }
 
 int

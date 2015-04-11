@@ -585,10 +585,10 @@ update_info_file(const char filename[])
 
 					pos = read_optional_number(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
-					if(nlh/2 > nlhp)
+					if(nlh/2U > nlhp)
 					{
 						nlhp = add_to_int_array(&lhp, nlhp, pos);
-						nlhp = MIN(nlh/2, nlhp);
+						nlhp = MIN(nlh/2U, nlhp);
 					}
 				}
 			}
@@ -607,10 +607,10 @@ update_info_file(const char filename[])
 
 					pos = read_optional_number(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
-					if(nrh/2 > nrhp)
+					if(nrh/2U > nrhp)
 					{
 						nrhp = add_to_int_array(&rhp, nrhp, pos);
-						nrhp = MIN(nrh/2, nrhp);
+						nrhp = MIN(nrh/2U, nrhp);
 					}
 				}
 			}
@@ -1177,8 +1177,8 @@ write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack)
 	fputs("\n# Directory stack (oldest to newest):\n", fp);
 	if(dir_stack_changed())
 	{
-		int i;
-		for(i = 0; i < stack_top; i++)
+		unsigned int i;
+		for(i = 0U; i < stack_top; ++i)
 		{
 			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
 			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);

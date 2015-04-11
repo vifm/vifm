@@ -344,9 +344,11 @@ format_mount_command(const char mount_point[], const char file_name[],
 			while(*prog_pos != '\0' && *prog_pos != ' ')
 			{
 				*cmd_pos = *prog_pos;
-				if(cmd_pos - cmd_buf < sizeof(cmd_buf))
-					cmd_pos++;
-				prog_pos++;
+				if((size_t)(cmd_pos - cmd_buf) < sizeof(cmd_buf))
+				{
+					++cmd_pos;
+				}
+				++prog_pos;
 			}
 			*cmd_pos = '\0';
 
@@ -373,9 +375,11 @@ format_mount_command(const char mount_point[], const char file_name[],
 		else
 		{
 			*buf_pos = *prog_pos;
-			if(buf_pos - buf < buf_size - 1)
-				buf_pos++;
-			prog_pos++;
+			if((size_t)(buf_pos - buf) < buf_size - 1)
+			{
+				++buf_pos;
+			}
+			++prog_pos;
 		}
 	}
 

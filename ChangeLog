@@ -151,6 +151,9 @@
 	Moved checks for build-time tools existence from Makefile to configure
 	script.
 
+	Report signal that killed Vifm when that happens.  Thanks to Svyatoslav
+	Mishyn, a.k.a. juef.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -266,6 +269,9 @@
 
 	Fixed estimation calculation on file putting after cancellation.  Thanks to
 	Svyatoslav Mishyn, a.k.a. juef.
+
+	Fixed wrong single character drawing in ls-like view.  Thanks to Svyatoslav
+	Mishyn, a.k.a. juef.
 
 0.7.8-beta to 0.7.8
 

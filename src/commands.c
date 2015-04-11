@@ -2971,7 +2971,7 @@ parse_and_apply_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 			return 1;
 		}
 
-		snprintf(arg_name, MIN(sizeof(arg_name), equal - arg + 1), "%s", arg);
+		copy_str(arg_name, MIN(sizeof(arg_name), (size_t)(equal - arg + 1)), arg);
 
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
@@ -3133,7 +3133,7 @@ history_cmd(const cmd_info_t *cmd_info)
 		return show_bsearchhistory_menu(curr_view) != 0;
 	else if(strcmp(type, "@") == 0 || starts_withn("input", type, len))
 		return show_prompthistory_menu(curr_view) != 0;
-	else if(strcmp(type, "=") == 0 || starts_withn("filter", type, MAX(2, len)))
+	else if(strcmp(type, "=") == 0 || starts_withn("filter", type, MAX(2U, len)))
 		return show_filterhistory_menu(curr_view) != 0;
 	else if(strcmp(type, ".") == 0 || starts_withn("dir", type, len))
 		return show_history_menu(curr_view) != 0;

@@ -629,6 +629,16 @@ swap_view_roles(void)
 void
 update_all_windows(void)
 {
+	if(curr_stats.load_stage >= 2)
+	{
+		touch_all_windows();
+		doupdate();
+	}
+}
+
+void
+touch_all_windows(void)
+{
 	int in_menu;
 
 	if(curr_stats.load_stage < 2)
@@ -683,11 +693,6 @@ update_all_windows(void)
 	{
 		update_window_lazy(error_win);
 	}
-
-	if(curr_stats.load_stage >= 2)
-	{
-		doupdate();
-	}
 }
 
 /* Updates all parts of file view. */
@@ -723,7 +728,7 @@ update_input_bar(const wchar_t *str)
 	if(!curr_stats.use_input_bar)
 		return;
 
-	if(wcslen(str) > getmaxx(input_win))
+	if(wcslen(str) > (size_t)getmaxx(input_win))
 	{
 		str += wcslen(str) - getmaxx(input_win);
 	}

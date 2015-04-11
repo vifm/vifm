@@ -168,9 +168,10 @@ void
 draw_dir_list_only(FileView *view)
 {
 	int x;
-	int cell;
+	size_t cell;
 	size_t col_width;
 	size_t col_count;
+	int coll_pad;
 	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
@@ -202,7 +203,8 @@ draw_dir_list_only(FileView *view)
 
 	ui_view_erase(view);
 
-	cell = 0;
+	cell = 0U;
+	coll_pad = (view->ls_view && cfg.filelist_col_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
 		const column_data_t cdt = {
@@ -216,9 +218,10 @@ draw_dir_list_only(FileView *view)
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
 
-		draw_cell(view, &cdt, col_width, print_width);
+		draw_cell(view, &cdt, col_width - coll_pad, print_width);
 
-		if(++cell >= view->window_cells)
+		++cell;
+		if(cell >= view->window_cells)
 		{
 			break;
 		}
@@ -297,11 +300,11 @@ calculate_top_position(FileView *view, int top)
 {
 	int result = MIN(MAX(top, 0), view->list_rows - 1);
 	result = ROUND_DOWN(result, view->column_count);
-	if(view->window_cells >= view->list_rows)
+	if((int)view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
-	else if(view->list_rows - top < view->window_cells)
+	else if(view->list_rows - top < (int)view->window_cells)
 	{
 		if(view->window_cells - (view->list_rows - top) >= view->column_count)
 		{
@@ -520,7 +523,7 @@ put_inactive_mark(FileView *view)
 int
 all_files_visible(const FileView *view)
 {
-	return view->list_rows <= view->window_cells;
+	return view->list_rows <= (int)view->window_cells;
 }
 
 size_t
@@ -551,7 +554,7 @@ get_window_middle_pos(const FileView *view)
 size_t
 get_window_bottom_pos(const FileView *view)
 {
-	if(view->list_rows - 1 <= get_last_visible_cell(view))
+	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
 	{
 		const size_t last = view->list_rows - 1;
 		return last - last%view->column_count;
@@ -630,11 +633,17 @@ clear_current_line_bar(FileView *view, int is_current)
 
 	print_width = calculate_print_width(view, old_pos, col_width);
 
-	/* When this function is used to draw cursor position in inactive view, only
-	 * name width should be updated. */
 	if(is_current)
 	{
+		/* When this function is used to draw cursor position in inactive view, only
+		 * name width should be updated. */
 		col_width = print_width;
+	}
+	else if(view->ls_view && cfg.filelist_col_padding)
+	{
+		/* Padding in ls-like view adds additional empty single character between
+		 * columns, which which shouldn't draw on. */
+		--col_width;
 	}
 
 	draw_cell(view, &cdt, col_width, print_width);
@@ -651,7 +660,7 @@ can_scroll_up(const FileView *view)
 int
 can_scroll_down(const FileView *view)
 {
-	return get_last_visible_cell(view) < view->list_rows - 1;
+	return (int)get_last_visible_cell(view) < view->list_rows - 1;
 }
 
 void
@@ -714,7 +723,7 @@ consider_scroll_offset(FileView *view)
 	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
-		const size_t s = get_effective_scroll_offset(view);
+		const int s = (int)get_effective_scroll_offset(view);
 		/* Check scroll offset at the top. */
 		if(can_scroll_up(view) && pos - view->top_line < s)
 		{
@@ -724,7 +733,7 @@ consider_scroll_offset(FileView *view)
 		/* Check scroll offset at the bottom. */
 		if(can_scroll_down(view))
 		{
-			const size_t last = get_last_visible_cell(view);
+			const int last = (int)get_last_visible_cell(view);
 			if(pos > last - s)
 			{
 				scroll_down(view, s + (pos - last));
@@ -806,7 +815,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 		format = mixed ? "%-*d " : "%*d ";
 		line_number = ((view->num_type & NT_REL) && !mixed)
 		            ? abs(i - view->list_pos)
-		            : (i + 1);
+		            : (int)(i + 1);
 
 		snprintf(number, sizeof(number), format, view->real_num_width - 1,
 				line_number);
@@ -1051,10 +1060,7 @@ calculate_columns_count(FileView *view)
 		const size_t column_width = calculate_column_width(view);
 		return ui_view_available_width(view)/column_width;
 	}
-	else
-	{
-		return 1;
-	}
+	return 1U;
 }
 
 /* Returns width of one column in the view. */
@@ -1063,7 +1069,7 @@ calculate_column_width(FileView *view)
 {
 	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
 	return MIN(view->max_filename_width + column_gap,
-	           ui_view_available_width(view));
+	           (size_t)ui_view_available_width(view));
 }
 
 void
@@ -1189,7 +1195,7 @@ move_curr_line(FileView *view)
 {
 	int redraw = 0;
 	int pos = view->list_pos;
-	size_t last;
+	int last;
 
 	if(pos < 1)
 		pos = 0;
@@ -1207,7 +1213,7 @@ move_curr_line(FileView *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	last = get_last_visible_cell(view);
+	last = (int)get_last_visible_cell(view);
 	if(view->top_line <= pos && pos <= last)
 	{
 		view->curr_line = pos - view->top_line;

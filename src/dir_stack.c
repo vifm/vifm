@@ -131,7 +131,7 @@ int
 rotate_stack(int n)
 {
 	stack_entry_t *new_stack;
-	int i;
+	size_t i;
 
 	if(n == 0)
 		return 0;
@@ -143,8 +143,10 @@ rotate_stack(int n)
 	if(new_stack == NULL)
 		return -1;
 
-	for(i = 0; i < stack_top; i++)
+	for(i = 0U; i < stack_top; ++i)
+	{
 		new_stack[(i + n)%stack_top] = stack[i];
+	}
 
 	free(stack);
 	stack = new_stack;
@@ -176,7 +178,7 @@ free_entry(const stack_entry_t *entry)
 char **
 dir_stack_list(void)
 {
-	int i;
+	size_t i;
 	int len;
 	char **list, **p;
 
@@ -200,7 +202,7 @@ dir_stack_list(void)
 			return list;
 	}
 
-	for(i = 0; i < stack_top; i++)
+	for(i = 0U; i < stack_top; ++i)
 	{
 		if((*p++ = strdup(stack[stack_top - 1 - i].lpane_dir)) == NULL)
 			return list;
