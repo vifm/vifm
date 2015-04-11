@@ -858,17 +858,39 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		if(mv_file(files[i], curr_dir, list[i], curr_dir,
 				is_dup[i] ? 1 : 0, 1, NULL) == 0)
 		{
+			char path[PATH_MAX];
+			dir_entry_t *entry;
 			int pos;
 
-			renamed++;
+			++renamed;
 
-			pos = find_file_pos_in_list(view, files[i]);
-			if(pos == view->list_pos)
+			make_full_path(curr_dir, files[i], path, sizeof(path));
+			entry = entry_from_path(view->dir_entry, view->list_rows, path);
+			if(entry == NULL)
 			{
-				/* Rename file in internal structures for correct positioning of cursor
-				 * after reloading, as cursor will be positioned on the file with the
-				 * same name. */
-				(void)replace_string(&view->dir_entry[pos].name, list[i]);
+				continue;
+			}
+
+			pos = entry_to_pos(view, entry);
+			if(pos == view->list_pos || flist_custom_active(view))
+			{
+				const char *const new_name = get_last_path_component(list[i]);
+
+				/* For regular views rename file in internal structures for correct
+				 * positioning of cursor after reloading, as cursor will be positioned
+				 * on the file with the same name.  For custom views rename to prevent
+				 * files from disappearing. */
+				(void)replace_string(&entry->name, new_name);
+
+				if(flist_custom_active(view))
+				{
+					entry = entry_from_path(view->custom.entries,
+							view->custom.entry_count, path);
+					if(entry != NULL)
+					{
+						(void)replace_string(&entry->name, new_name);
+					}
+				}
 			}
 		}
 	}
