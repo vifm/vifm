@@ -488,7 +488,7 @@ PERL = @PERL_PROG@
 SED = @SED_PROG@
 VIM = @VIM_PROG@
 UNDER_VCS = @IN_GIT_REPO@
-CLEANFILES = runtests
+CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda)
 all: all-am
 
 .SUFFIXES:

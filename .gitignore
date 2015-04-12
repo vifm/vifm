@@ -29,6 +29,10 @@
 *.d
 *.gch
 
+# code coverage
+*.gcda
+*.gcno
+
 # windows specific
 src/*.exe
 src/*.res

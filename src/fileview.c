@@ -142,7 +142,7 @@ void
 fview_view_reset(FileView *view)
 {
 	view->ls_view = 0;
-	view->max_filename_width = 0;
+	view->max_filename_width = get_max_filename_width(view);
 	view->column_count = 1;
 
 	view->num_type = NT_NONE;
@@ -642,7 +642,7 @@ clear_current_line_bar(FileView *view, int is_current)
 	else if(view->ls_view && cfg.filelist_col_padding)
 	{
 		/* Padding in ls-like view adds additional empty single character between
-		 * columns, which which shouldn't draw on. */
+		 * columns, on which we shouldn't draw anything here. */
 		--col_width;
 	}
 

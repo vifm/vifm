@@ -982,7 +982,7 @@ get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 
 	t = skip_non_whitespace(cmd);
 
-	len = MIN(t - cmd, buf_len);
+	len = MIN((size_t)(t - cmd), buf_len);
 	strncpy(buf, cmd, len);
 	buf[len] = '\0';
 	return t;
