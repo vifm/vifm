@@ -514,5 +514,59 @@ def_count(int count)
 	return (count == NO_COUNT_GIVEN) ? 1 : count;
 }
 
+/* Extracts path and line number from the spec (default line number is 1).
+ * Returns path in as newly allocated string and sets *line_num to line number,
+ * otherwise NULL is returned. */
+TSTATIC char *
+parse_file_spec(const char spec[], int *line_num)
+{
+	char *path_buf;
+	const char *colon;
+	int colon_lookup_offset = 0;
+	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+
+	path_buf = malloc(bufs_len);
+	if(path_buf == NULL)
+	{
+		return NULL;
+	}
+
+	if(is_path_absolute(spec))
+	{
+		path_buf[0] = '\0';
+	}
+	else
+	{
+		copy_str(path_buf, bufs_len, "./");
+	}
+
+#ifdef _WIN32
+	if(is_path_absolute(spec))
+	{
+		colon_lookup_offset = 2;
+	}
+#endif
+
+	colon = strchr(spec + colon_lookup_offset, ':');
+	if(colon != NULL)
+	{
+		strncat(path_buf, spec, colon - spec);
+		*line_num = atoi(colon + 1);
+	}
+	else
+	{
+		strcat(path_buf, spec);
+		*line_num = 1;
+	}
+
+	chomp(path_buf);
+
+#ifdef _WIN32
+	to_forward_slash(path_buf);
+#endif
+
+	return path_buf;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
