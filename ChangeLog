@@ -277,6 +277,9 @@
 	Fixed wrong single character drawing in ls-like view.  Thanks to Svyatoslav
 	Mishyn, a.k.a. juef.
 
+	Fixed displaying ls-like view as list of dots after :restart.  Thanks to
+	Svyatoslav Mishyn, a.k.a. juef.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
