@@ -1472,6 +1472,8 @@ flist_custom_finish(FileView *view)
 	if(view->custom.entry_count == 0)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
+		free(view->custom.title);
+		view->custom.title = NULL;
 		return 1;
 	}
 
