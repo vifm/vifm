@@ -420,7 +420,7 @@ TEST(abbreviations)
 
 TEST(bang_abs_path_completion)
 {
-#ifdef _WIN32
+#if defined(__CYGWIN__) || defined(_WIN32)
 #define SUFFIX L".exe"
 #else
 #define SUFFIX L""
