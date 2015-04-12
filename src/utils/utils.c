@@ -29,6 +29,7 @@
 
 #include <regex.h>
 
+#include <sys/types.h> /* pid_t */
 #include <unistd.h>
 
 #include <ctype.h> /* isalnum() isalpha() */
@@ -38,12 +39,16 @@
 #include <string.h> /* strdup() strchr() strlen() strpbrk() */
 #include <wchar.h> /* wcwidth() */
 
+#include "../modes/dialogs/msg_dialog.h"
 #include "../cfg/config.h"
 #include "../compat/os.h"
 #include "../engine/keys.h"
+#include "../ui/cancellation.h"
+#include "../background.h"
 #include "../fuse.h"
 #include "../registers.h"
 #include "env.h"
+#include "file_streams.h"
 #include "fs.h"
 #include "fs_limits.h"
 #include "log.h"
@@ -65,6 +70,45 @@ vifm_system(char command[])
 #endif
 	LOG_INFO_MSG("Shell command: %s", command);
 	return run_in_shell_no_cls(command);
+}
+
+int
+process_cmd_output(const char descr[], const char cmd[], int user_sh,
+		cmd_output_handler handler, void *arg)
+{
+	FILE *file, *err;
+	char *line;
+	pid_t pid;
+
+	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
+
+	pid = background_and_capture((char *)cmd, user_sh, &file, &err);
+	if(pid == (pid_t)-1)
+	{
+		return 1;
+	}
+
+	show_progress("", 0);
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	wait_for_data_from(pid, file, 0);
+
+	line = NULL;
+	while((line = read_line(file, line)) != NULL)
+	{
+		show_progress(descr, 1000);
+		handler(line, arg);
+		wait_for_data_from(pid, file, 0);
+	}
+
+	ui_cancellation_disable();
+
+	fclose(file);
+	show_errors_from_file(err, descr);
+
+	return 0;
 }
 
 int

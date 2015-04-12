@@ -39,6 +39,9 @@ typedef enum
 }
 EnvType;
 
+/* Callback for process_cmd_output() function. */
+typedef void (*cmd_output_handler)(const char line[], void *arg);
+
 /* Regular expressions. */
 
 /* Gets flags for compiling a regular expression specified by the pattern taking
@@ -63,6 +66,12 @@ void pause_shell(void);
 
 /* Called after return from a shellout to provide point to recover UI. */
 void recover_after_shellout(void);
+
+/* Invokes handler for each line read from stdout of the command specified via
+ * cmd.  Error stream is displayed separately.  Supports cancellation.  Returns
+ * zero on success, otherwise non-zero is returned. */
+int process_cmd_output(const char descr[], const char cmd[], int user_sh,
+		cmd_output_handler handler, void *arg);
 
 /* Other functions. */
 
