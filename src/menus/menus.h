@@ -23,7 +23,6 @@
 #include <stddef.h> /* wchar_t */
 
 #include "../ui/ui.h"
-#include "../utils/test_helpers.h"
 
 enum
 {
@@ -160,10 +159,6 @@ KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
 int menu_to_custom_view(menu_info *m, FileView *view);
-
-TSTATIC_DEFS(
-	char * parse_file_spec(const char spec[], int *line_num);
-)
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

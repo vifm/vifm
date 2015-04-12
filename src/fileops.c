@@ -196,12 +196,14 @@ static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
-static int mv_file(const char src[], const char src_path[], const char dst[],
-		const char path[], int tmpfile_num, int cancellable, ops_t *ops);
+static int mv_file(const char src[], const char src_dir[], const char dst[],
+		const char dst_dir[], int tmpfile_num, int cancellable, ops_t *ops);
 static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
 		int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
+static void make_full_path(const char dir[], const char file[], char buf[],
+		size_t buf_len);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int cancellable, ops_t *ops);
 static void free_bg_args(bg_args_t *args);
@@ -802,9 +804,10 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	size_t buf_len;
 	int i;
 	int renamed = 0;
+	const char *const curr_dir = flist_get_dir(view);
 
 	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
-			replace_home_part(view->curr_dir));
+			replace_home_part(curr_dir));
 
 	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
 	{
@@ -831,8 +834,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2, 1,
-				NULL) != 0)
+		if(mv_file(files[i], curr_dir, unique_name, curr_dir, 2, 1, NULL) != 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -853,20 +855,42 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		if(strcmp(list[i], files[i]) == 0)
 			continue;
 
-		if(mv_file(files[i], view->curr_dir, list[i], view->curr_dir,
+		if(mv_file(files[i], curr_dir, list[i], curr_dir,
 				is_dup[i] ? 1 : 0, 1, NULL) == 0)
 		{
+			char path[PATH_MAX];
+			dir_entry_t *entry;
 			int pos;
 
-			renamed++;
+			++renamed;
 
-			pos = find_file_pos_in_list(view, files[i]);
-			if(pos == view->list_pos)
+			make_full_path(curr_dir, files[i], path, sizeof(path));
+			entry = entry_from_path(view->dir_entry, view->list_rows, path);
+			if(entry == NULL)
 			{
-				/* Rename file in internal structures for correct positioning of cursor
-				 * after reloading, as cursor will be positioned on the file with the
-				 * same name. */
-				(void)replace_string(&view->dir_entry[pos].name, list[i]);
+				continue;
+			}
+
+			pos = entry_to_pos(view, entry);
+			if(pos == view->list_pos || flist_custom_active(view))
+			{
+				const char *const new_name = get_last_path_component(list[i]);
+
+				/* For regular views rename file in internal structures for correct
+				 * positioning of cursor after reloading, as cursor will be positioned
+				 * on the file with the same name.  For custom views rename to prevent
+				 * files from disappearing. */
+				(void)replace_string(&entry->name, new_name);
+
+				if(flist_custom_active(view))
+				{
+					entry = entry_from_path(view->custom.entries,
+							view->custom.entry_count, path);
+					if(entry != NULL)
+					{
+						(void)replace_string(&entry->name, new_name);
+					}
+				}
 			}
 		}
 	}
@@ -961,13 +985,16 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
+		char path[PATH_MAX];
+		get_short_path_of(view, entry, 0, sizeof(path), path);
+
 		if(recursive)
 		{
-			files = add_files_to_list(entry->name, files, &nfiles);
+			files = add_files_to_list(path, files, &nfiles);
 		}
 		else
 		{
-			nfiles = add_to_string_array(&files, nfiles, 1, entry->name);
+			nfiles = add_to_string_array(&files, nfiles, 1, path);
 		}
 	}
 
@@ -3206,15 +3233,13 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
 /* Adapter for mv_file_f() that accepts paths broken into directory/file
  * parts. */
 static int
-mv_file(const char src[], const char src_path[], const char dst[],
-		const char path[], int tmpfile_num, int cancellable, ops_t *ops)
+mv_file(const char src[], const char src_dir[], const char dst[],
+		const char dst_dir[], int tmpfile_num, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
-	chosp(full_dst);
+	make_full_path(src_dir, src, full_src, sizeof(full_src));
+	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
 
 	return mv_file_f(full_src, full_dst, tmpfile_num, cancellable, ops);
 }
@@ -3264,12 +3289,26 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
-	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
-	chosp(full_src);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
-	chosp(full_dst);
+	make_full_path(src_dir, src, full_src, sizeof(full_src));
+	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
 
 	return cp_file_f(full_src, full_dst, op, cancellable, ops);
+}
+
+/* Makes full path from base directory and path.  Drops base directory if path
+ * is absolute. */
+static void
+make_full_path(const char dir[], const char file[], char buf[], size_t buf_len)
+{
+	if(is_path_absolute(file))
+	{
+		copy_str(buf, buf_len, file);
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s", dir, file);
+	}
+	chosp(buf);
 }
 
 /* Copies file from one location to another.  Returns zero on success, otherwise

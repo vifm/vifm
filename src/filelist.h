@@ -63,6 +63,8 @@ int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
 /* Moves cursor to specified position. */
 void flist_set_pos(FileView *view, int pos);
+/* Ensures that position in the list doesn't exceed its bounds. */
+void flist_ensure_pos_is_valid(FileView *view);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(FileView *view, FileListScope scope);
 /* Returns non-zero if cursor is on the first line. */
@@ -177,6 +179,8 @@ void flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise non-zero is returned. */
 int flist_custom_finish(FileView *view);
+/* Removes selected files from custom view. */
+void flist_custom_exclude(FileView *view);
 
 /* Other functions. */
 
@@ -229,6 +233,9 @@ int iter_selected_entries(FileView *view, dir_entry_t **entry);
 int iter_active_area(FileView *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but checks for marks. */
 int iter_marked_entries(FileView *view, dir_entry_t **entry);
+/* Same as iter_selected_entries() function, but when selection is absent
+ * current file is processed. */
+int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);

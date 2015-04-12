@@ -199,6 +199,7 @@ static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zO(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zR(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_za(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zm(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zo(key_info_t key_info, keys_info_t *keys_info);
@@ -366,6 +367,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"zO", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zO}}},
 	{L"zR", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zR}}},
 	{L"za", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_za}}},
+	{L"zd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zd}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 	{L"zm", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zm}}},
@@ -1913,6 +1915,13 @@ static void
 cmd_za(key_info_t key_info, keys_info_t *keys_info)
 {
 	toggle_dot_files(curr_view);
+}
+
+/* Excludes entries from custom view. */
+static void
+cmd_zd(key_info_t key_info, keys_info_t *keys_info)
+{
+	flist_custom_exclude(curr_view);
 }
 
 /* Redraw with file in bottom of list. */

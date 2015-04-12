@@ -312,6 +312,8 @@ static int try_handle_ext_command(const char cmd[], MacroFlags flags,
 		int *save_msg);
 static void output_to_statusbar(const char *cmd);
 static void run_in_split(const FileView *view, const char cmd[]);
+static void output_to_custom_flist(FileView *view, const char cmd[]);
+static void path_handler(const char line[], void *arg);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -4582,6 +4584,10 @@ try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
 	{
 		run_in_split(curr_view, cmd);
 	}
+	else if(flags == MF_CUSTOMVIEW_OUTPUT)
+	{
+		output_to_custom_flist(curr_view, cmd);
+	}
 	else
 	{
 		return 0;
@@ -4659,6 +4665,42 @@ run_in_split(const FileView *view, const char cmd[])
 	}
 
 	free(escaped_cmd);
+}
+
+/* Runs the cmd and parses its output as list of paths to compose custom
+ * view. */
+static void
+output_to_custom_flist(FileView *view, const char cmd[])
+{
+	char *title;
+
+	title = format_str("!%s", cmd);
+	flist_custom_start(view, title);
+	free(title);
+
+	if(process_cmd_output("Loading custom view", cmd, 1, &path_handler,
+				view) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	(void)flist_custom_finish(view);
+	flist_set_pos(view, 0);
+}
+
+/* Implements process_cmd_output() callback that loads paths into custom
+ * view. */
+static void
+path_handler(const char line[], void *arg)
+{
+	FileView *view = arg;
+	int line_num;
+	char *const path = parse_file_spec(line, &line_num);
+	if(path != NULL)
+	{
+		flist_custom_add(view, path);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

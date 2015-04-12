@@ -134,6 +134,7 @@ static void accept_and_leave(int save_msg);
 static void reject_and_leave(void);
 static void leave_clearing_selection(int go_to_top, int save_msg);
 static void update_marks(FileView *view);
+static void cmd_zd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
@@ -228,6 +229,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
+	{L"zd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zd}}},
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
@@ -1089,6 +1091,14 @@ update_marks(FileView *view)
 
 	set_spec_bookmark(start_mark, start_entry->origin, start_entry->name);
 	set_spec_bookmark(end_mark, end_entry->origin, end_entry->name);
+}
+
+/* Excludes entries from custom view. */
+static void
+cmd_zd(key_info_t key_info, keys_info_t *keys_info)
+{
+	flist_custom_exclude(curr_view);
+	accept_and_leave(0);
 }
 
 static void

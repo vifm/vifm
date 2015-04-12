@@ -27,6 +27,7 @@
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -262,12 +263,25 @@ check_mark_directory(FileView *view, char mark)
 {
 	const bookmark_t *const bmark = get_bmark_by_name(mark);
 
-	if(!is_bmark_empty(bmark))
+	if(is_bmark_empty(bmark))
 	{
-		if(paths_are_equal(view->curr_dir, bmark->directory))
+		return -1;
+	}
+
+	if(flist_custom_active(view))
+	{
+		dir_entry_t *entry;
+		char path[PATH_MAX];
+		snprintf(path, sizeof(path), "%s/%s", bmark->directory, bmark->file);
+		entry = entry_from_path(view->dir_entry, view->list_rows, path);
+		if(entry != NULL)
 		{
-			return find_file_pos_in_list(view, bmark->file);
+			return entry_to_pos(view, entry);
 		}
+	}
+	else if(paths_are_equal(view->curr_dir, bmark->directory))
+	{
+		return find_file_pos_in_list(view, bmark->file);
 	}
 
 	return -1;

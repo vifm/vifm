@@ -38,7 +38,6 @@
 #include "../ui/cancellation.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
-#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -46,7 +45,6 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../background.h"
@@ -66,10 +64,10 @@ static void draw_menu_item(menu_info *m, char buf[], int off,
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
+static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
-TSTATIC char * parse_file_spec(const char spec[], int *line_num);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -529,47 +527,11 @@ int
 capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 		menu_info *m)
 {
-	FILE *file, *err;
-	char *line = NULL;
-	int x;
-	pid_t pid;
-
-	LOG_INFO_MSG("Capturing output of the command to a menu: %s", cmd);
-
-	pid = background_and_capture((char *)cmd, user_sh, &file, &err);
-	if(pid == (pid_t)-1)
+	if(process_cmd_output("Loading menu", cmd, user_sh, &output_handler, m) != 0)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
 	}
-
-	show_progress("", 0);
-
-	ui_cancellation_reset();
-	ui_cancellation_enable();
-
-	wait_for_data_from(pid, file, 0);
-
-	x = 0;
-	while((line = read_line(file, line)) != NULL)
-	{
-		char *expanded_line;
-		show_progress("Loading menu", 1000);
-		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		expanded_line = expand_tabulation_a(line, cfg.tab_stop);
-		if(expanded_line != NULL)
-		{
-			m->items[x++] = expanded_line;
-		}
-
-		wait_for_data_from(pid, file, 0);
-	}
-	m->len = x;
-
-	ui_cancellation_disable();
-
-	fclose(file);
-	show_errors_from_file(err, "Menu source error");
 
 	if(ui_cancellation_requested())
 	{
@@ -578,6 +540,21 @@ capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 	}
 
 	return display_menu(m, view);
+}
+
+/* Implements process_cmd_output() callback that loads lines to a menu. */
+static void
+output_handler(const char line[], void *arg)
+{
+	menu_info *m = arg;
+	char *expanded_line;
+
+	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
+	expanded_line = expand_tabulation_a(line, cfg.tab_stop);
+	if(expanded_line != NULL)
+	{
+		m->items[m->len++] = expanded_line;
+	}
 }
 
 /* Replaces *str with a copy of the with string extended by the suffix.  *str
@@ -728,60 +705,6 @@ menu_to_custom_view(menu_info *m, FileView *view)
 	flist_goto_by_path(view, current);
 	free(current);
 	return 0;
-}
-
-/* Extracts path and line number from the spec (default line number is 1).
- * Returns path in as newly allocated string and sets *line_num to line number,
- * otherwise NULL is returned. */
-TSTATIC char *
-parse_file_spec(const char spec[], int *line_num)
-{
-	char *path_buf;
-	const char *colon;
-	int colon_lookup_offset = 0;
-	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
-
-	path_buf = malloc(bufs_len);
-	if(path_buf == NULL)
-	{
-		return NULL;
-	}
-
-	if(is_path_absolute(spec))
-	{
-		path_buf[0] = '\0';
-	}
-	else
-	{
-		copy_str(path_buf, bufs_len, "./");
-	}
-
-#ifdef _WIN32
-	if(is_path_absolute(spec))
-	{
-		colon_lookup_offset = 2;
-	}
-#endif
-
-	colon = strchr(spec + colon_lookup_offset, ':');
-	if(colon != NULL)
-	{
-		strncat(path_buf, spec, colon - spec);
-		*line_num = atoi(colon + 1);
-	}
-	else
-	{
-		strcat(path_buf, spec);
-		*line_num = 1;
-	}
-
-	chomp(path_buf);
-
-#ifdef _WIN32
-	to_forward_slash(path_buf);
-#endif
-
-	return path_buf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

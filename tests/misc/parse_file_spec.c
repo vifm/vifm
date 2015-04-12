@@ -2,7 +2,7 @@
 
 #include <stdlib.h> /* free() */
 
-#include "../../src/menus/menus.h"
+#include "../../src/utils/utils.h"
 
 #define DEFAULT_LINENUM 1
 

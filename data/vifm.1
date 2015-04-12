@@ -1,4 +1,4 @@
-.TH vifm 1 "March 14, 2015" "" "Vifm"
+.TH vifm 1 "April 12, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -388,6 +388,10 @@ to a directory name before testing whether it matches the filter.  Examples:
 .TP
 .BI zo
 Show all of the dot files.
+.TP
+.BI zd
+Exclude selection or current file from custom view.  Does nothing for regular
+view.
 .TP
 .BI zf
 Filter all of the selected files.
@@ -2568,6 +2572,9 @@ Show command output in a menu.
 .TP
 .BI %M
 Same as %m, but l (or Enter) key is handled like for :locate and :find commands.
+.TP
+.BI %u
+Process command output as list of paths and compose custom view out of it.
 .TP
 .BI %S
 Show command output in the status bar.

@@ -76,9 +76,17 @@ typedef struct
 {
 	FileView *const view; /* View being filled. */
 	const int is_root;    /* Whether we're at file system root. */
-	int with_parent_dir;  /* Whether parent direcotory was seen during filling. */
+	int with_parent_dir;  /* Whether parent directory was seen during filling. */
 }
 dir_fill_info_t;
+
+/* Custom argument for is_in_list() function. */
+typedef struct
+{
+	int nitems;   /* Number of items in the list. */
+	char **items; /* The list itself. */
+}
+list_t;
 
 /* Type of predicate functions to reason about entries.  Should return non-zero
  * if particular property holds and zero otherwise. */
@@ -108,6 +116,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
@@ -431,6 +440,15 @@ flist_set_pos(FileView *view, int pos)
 	{
 		view->list_pos = pos;
 		fview_position_updated(view);
+	}
+}
+
+void
+flist_ensure_pos_is_valid(FileView *view)
+{
+	if(view->list_pos >= view->list_rows)
+	{
+		view->list_pos = view->list_rows - 1;
 	}
 }
 
@@ -1479,10 +1497,7 @@ flist_custom_finish(FileView *view)
 
 	ui_view_schedule_redraw(view);
 
-	if(view->list_pos >= view->list_rows)
-	{
-		view->list_pos = view->list_rows - 1;
-	}
+	flist_ensure_pos_is_valid(view);
 
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 	view->dir_entry = view->custom.entries;
@@ -1492,6 +1507,53 @@ flist_custom_finish(FileView *view)
 	filters_dir_updated(view);
 
 	return 0;
+}
+
+void
+flist_custom_exclude(FileView *view)
+{
+	dir_entry_t *entry;
+	int nfiles = 0;
+	char **files = NULL;
+	list_t list;
+
+	if(!flist_custom_active(view))
+	{
+		return;
+	}
+
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry))
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		nfiles = add_to_string_array(&files, nfiles, 1, full_path);
+	}
+
+	list.nitems = nfiles;
+	list.items = files;
+
+	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_in_list, &list,
+			0);
+	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
+			&is_in_list, &list, 1);
+
+	free_string_array(files, nfiles);
+
+	flist_ensure_pos_is_valid(view);
+	ui_view_schedule_redraw(view);
+}
+
+/* zap_entries() filter to filter-out files from array of strings.  Returns
+ * non-zero if entry is to be keeped and zero otherwise.*/
+static int
+is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	const list_t *list = arg;
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	return !is_in_string_array(list->items, list->nitems, full_path);
 }
 
 const char *
@@ -2431,6 +2493,23 @@ static int
 is_entry_marked(const dir_entry_t *entry)
 {
 	return entry->marked;
+}
+
+/* Same as iter_selected_entries() function, but when selection is absent
+ * current file is processed. */
+int
+iter_selection_or_current(FileView *view, dir_entry_t **entry)
+{
+	if(view->selected_files == 0)
+	{
+		dir_entry_t *const current = &view->dir_entry[view->list_pos];
+		*entry = (*entry == NULL) ? current : NULL;
+		return *entry != NULL;
+	}
+	else
+	{
+		return iter_selected_entries(view, entry);
+	}
 }
 
 int

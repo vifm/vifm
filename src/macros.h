@@ -28,13 +28,14 @@
 /* Macros that affect running of commands and processing their output. */
 typedef enum
 {
-	MF_NONE,             /* No special macro specified. */
-	MF_MENU_OUTPUT,      /* Redirect output to the menu. */
-	MF_MENU_NAV_OUTPUT,  /* Redirect output to the navigation menu. */
-	MF_STATUSBAR_OUTPUT, /* Redirect output to the status bar. */
-	MF_SPLIT,            /* Run command in a new screen region. */
-	MF_IGNORE,           /* Completely ignore command output. */
-	MF_NO_TERM_MUX,      /* Forbid using terminal multiplexer, even if active. */
+	MF_NONE,              /* No special macro specified. */
+	MF_MENU_OUTPUT,       /* Redirect output to the menu. */
+	MF_MENU_NAV_OUTPUT,   /* Redirect output to the navigation menu. */
+	MF_STATUSBAR_OUTPUT,  /* Redirect output to the status bar. */
+	MF_CUSTOMVIEW_OUTPUT, /* Redirect output directly to custom view. */
+	MF_SPLIT,             /* Run command in a new screen region. */
+	MF_IGNORE,            /* Completely ignore command output. */
+	MF_NO_TERM_MUX,       /* Forbid using terminal multiplexer, even if active. */
 }
 MacroFlags;
 
