@@ -64,6 +64,7 @@
 #include "modes/normal.h"
 #include "modes/view.h"
 #include "modes/visual.h"
+#include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -312,6 +313,7 @@ static int try_handle_ext_command(const char cmd[], MacroFlags flags,
 		int *save_msg);
 static void output_to_statusbar(const char *cmd);
 static void run_in_split(const FileView *view, const char cmd[]);
+static void output_to_custom_flist(FileView *view, const char cmd[]);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -4582,6 +4584,10 @@ try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
 	{
 		run_in_split(curr_view, cmd);
 	}
+	else if(flags == MF_CUSTOMVIEW_OUTPUT)
+	{
+		output_to_custom_flist(curr_view, cmd);
+	}
 	else
 	{
 		return 0;
@@ -4659,6 +4665,62 @@ run_in_split(const FileView *view, const char cmd[])
 	}
 
 	free(escaped_cmd);
+}
+
+/* Runs the cmd and parses its output as list of paths to compose custom
+ * view. */
+static void
+output_to_custom_flist(FileView *view, const char cmd[])
+{
+	FILE *file, *err;
+	char *line = NULL;
+	pid_t pid;
+	char *title;
+
+	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
+
+	pid = background_and_capture((char *)cmd, 1, &file, &err);
+	if(pid == (pid_t)-1)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	show_progress("", 0);
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	wait_for_data_from(pid, file, 0);
+
+	title = format_str("!%s", cmd);
+	flist_custom_start(view, title);
+	free(title);
+
+	while((line = read_line(file, line)) != NULL)
+	{
+		int line_num;
+		char *const path = parse_file_spec(line, &line_num);
+
+		show_progress("Processing output", 1000);
+
+		if(path == NULL)
+		{
+			continue;
+		}
+
+		flist_custom_add(view, path);
+
+		wait_for_data_from(pid, file, 0);
+	}
+
+	ui_cancellation_disable();
+
+	fclose(file);
+	fclose(err);
+
+	(void)flist_custom_finish(view);
+	flist_set_pos(view, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

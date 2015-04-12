@@ -166,6 +166,9 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case 's': /* Split in new screen region and execute command there. */
 				set_flags(flags, MF_SPLIT);
 				break;
+			case 'u': /* Parse output as list of files and compose custom view. */
+				set_flags(flags, MF_CUSTOMVIEW_OUTPUT);
+				break;
 			case 'i': /* Ignore output. */
 				set_flags(flags, MF_IGNORE);
 				break;

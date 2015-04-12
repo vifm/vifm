@@ -24,6 +24,7 @@ const char *tags[] = {
 	"vifm-%py",
 	"vifm-%r",
 	"vifm-%s",
+	"vifm-%u",
 	"vifm-'",
 	"vifm-'aproposprg'",
 	"vifm-'autochpos'",

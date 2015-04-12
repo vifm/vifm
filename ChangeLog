@@ -48,6 +48,8 @@
 
 	Added zd normal and visual modes key to exclude items from custom views.
 
+	Added %u macros to redirect command output directly into custom view.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
