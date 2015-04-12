@@ -40,6 +40,7 @@
 #include "registers.h"
 #include "status.h"
 
+static void set_flags(MacroFlags *flags, MacroFlags value);
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
 static char * append_selected_file(FileView *view, char *expanded,
@@ -70,10 +71,7 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 	size_t y = 0U;
 	int len = 0;
 
-	if(flags != NULL)
-	{
-		*flags = MF_NONE;
-	}
+	set_flags(flags, MF_NONE);
 
 	cmd_len = strlen(command);
 
@@ -148,48 +146,30 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
-			case 'D': /* other directory */
+			case 'D': /* Directory of the other view. */
 				expanded = expand_directory_path(other_view, expanded, quotes,
 						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'n': /* Forbid using of terminal multiplexer, even if active. */
-				if(flags != NULL)
-				{
-					*flags = MF_NO_TERM_MUX;
-				}
+				set_flags(flags, MF_NO_TERM_MUX);
 				break;
-			case 'm': /* use menu */
-				if(flags != NULL)
-				{
-					*flags = MF_MENU_OUTPUT;
-				}
+			case 'm': /* Use menu. */
+				set_flags(flags, MF_MENU_OUTPUT);
 				break;
-			case 'M': /* use menu like with :locate and :find */
-				if(flags != NULL)
-				{
-					*flags = MF_MENU_NAV_OUTPUT;
-				}
+			case 'M': /* Use menu like with :locate and :find. */
+				set_flags(flags, MF_MENU_NAV_OUTPUT);
 				break;
-			case 'S': /* show command output in the status bar */
-				if(flags != NULL)
-				{
-					*flags = MF_STATUSBAR_OUTPUT;
-				}
+			case 'S': /* Show command output in the status bar */
+				set_flags(flags, MF_STATUSBAR_OUTPUT);
 				break;
-			case 's': /* split in new screen region */
-				if(flags != NULL)
-				{
-					*flags = MF_SPLIT;
-				}
+			case 's': /* Split in new screen region and execute command there. */
+				set_flags(flags, MF_SPLIT);
 				break;
-			case 'i': /* ignore output */
-				if(flags != NULL)
-				{
-					*flags = MF_IGNORE;
-				}
+			case 'i': /* Ignore output. */
+				set_flags(flags, MF_IGNORE);
 				break;
-			case 'r': /* register's content */
+			case 'r': /* Register's content. */
 				{
 					int well_formed;
 					expanded = expand_register(curr_view->curr_dir, expanded, quotes,
@@ -253,6 +233,16 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 	while(x < cmd_len);
 
 	return expanded;
+}
+
+/* Sets *flags to the value, if flags isn't NULL. */
+static void
+set_flags(MacroFlags *flags, MacroFlags value)
+{
+	if(flags != NULL)
+	{
+		*flags = value;
+	}
 }
 
 TSTATIC char *
