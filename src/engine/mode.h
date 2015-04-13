@@ -53,7 +53,7 @@ const vle_mode_t vle_mode_get(void);
 int vle_mode_is(vle_mode_t mode);
 
 /* Gets identifier of currently active primary mode.  Returns the id. */
-const vle_mode_t vle_mode_get_primary(void);
+vle_mode_t vle_mode_get_primary(void);
 
 /* Checks that primary mode is the mode.  Returns non-zero if so, otherwise zero
  * is returned. */

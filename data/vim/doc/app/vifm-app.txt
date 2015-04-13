@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 12
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -954,30 +954,30 @@ similar macros).
                                                *vifm-c_CTRL-X_c*
 Ctrl-X c - name of the current file of the active pane.
 
-                                               *vifm-c_CTRL-X_CTRL-X_c*
-Ctrl-X Ctrl-X c - name of the current file of the inactive pane.
-
                                                *vifm-c_CTRL-X_d*
 Ctrl-X d - path to the current directory of the active pane.
-
-                                               *vifm-c_CTRL-X_CTRL-X_d*
-Ctrl-X Ctrl-X d - path to the current directory of the inactive pane.
 
                                                *vifm-c_CTRL-X_e*
 Ctrl-X e - extension of the current file of the active pane.
 
-                                               *vifm-c_CTRL-X_CTRL-X_e*
-Ctrl-X Ctrl-X e - extension of the current file of the inactive pane.
-
                                                *vifm-c_CTRL-X_r*
 Ctrl-X r - name root of current file of the active pane.
-
-                                               *vifm-c_CTRL-X_CTRL-X_r*
-Ctrl-X Ctrl-X r - name root of current file of the inactive pane.
 
                                                *vifm-c_CTRL-X_t*
 Ctrl-X t - the last component of path to the current directory of the
     active pane.
+
+                                               *vifm-c_CTRL-X_CTRL-X_c*
+Ctrl-X Ctrl-X c - name of the current file of the inactive pane.
+
+                                               *vifm-c_CTRL-X_CTRL-X_d*
+Ctrl-X Ctrl-X d - path to the current directory of the inactive pane.
+
+                                               *vifm-c_CTRL-X_CTRL-X_e*
+Ctrl-X Ctrl-X e - extension of the current file of the inactive pane.
+
+                                               *vifm-c_CTRL-X_CTRL-X_r*
+Ctrl-X Ctrl-X r - name root of current file of the inactive pane.
 
                                                *vifm-c_CTRL-X_CTRL-X_t*
 Ctrl-X Ctrl-X t - the last component of path to the current directory of

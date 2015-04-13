@@ -33,7 +33,7 @@ vle_mode_is(vle_mode_t mode)
 	return current_mode == mode;
 }
 
-const vle_mode_t
+vle_mode_t
 vle_mode_get_primary(void)
 {
 	return primary_mode;

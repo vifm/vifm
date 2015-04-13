@@ -172,10 +172,10 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case 'i': /* Ignore output. */
 				set_flags(flags, MF_IGNORE);
 				break;
-			case 'r': /* Register's content. */
+			case 'r': /* Registers' content. */
 				{
 					int well_formed;
-					expanded = expand_register(curr_view->curr_dir, expanded, quotes,
+					expanded = expand_register(flist_get_dir(curr_view), expanded, quotes,
 							command + x + 2, command[x + 1], &well_formed, for_shell);
 					len = strlen(expanded);
 					if(well_formed)
@@ -306,7 +306,7 @@ append_selected_file(FileView *view, char *expanded, int full_path, int pos,
 		copy_str(path, sizeof(path), view->dir_entry[pos].name);
 	}
 
-	modified = apply_mods(path, view->curr_dir, mod, for_shell);
+	modified = apply_mods(path, flist_get_dir(view), mod, for_shell);
 	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;
@@ -316,7 +316,7 @@ static char *
 expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell)
 {
-	const char *const modified = apply_mods(view->curr_dir, "/", mod, for_shell);
+	const char *const modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 #ifdef _WIN32
