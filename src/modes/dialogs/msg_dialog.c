@@ -467,31 +467,31 @@ static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		Style style)
 {
-	int sx, sy;
-	int x, y;
-	int z;
+	int sw, sh;
+	int w, h;
+	int len;
 	int centered = (style == S_CENTERED);
 	int margin = (style == S_PRETTY) ? 1 : 0;
 
 	curs_set(FALSE);
 
-	getmaxyx(stdscr, sy, sx);
+	getmaxyx(stdscr, sh, sw);
 
-	y = sy - 3 + !cfg.display_statusline;
-	x = (style == S_PRETTY)
-	  ? MIN(sx - 2, (int)determine_width(msg) + 4)
-	  : sx - 2;
-	wresize(error_win, y, x);
+	h = sh - 3 + !cfg.display_statusline;
+	w = (style == S_PRETTY)
+	 ? MIN(sw - 2, (int)determine_width(msg) + 4)
+	 : sw - 2;
+	wresize(error_win, h, w);
 
 	werase(error_win);
 
-	z = strlen(msg);
-	if(z <= x - 2 && strchr(msg, '\n') == NULL)
+	len = strlen(msg);
+	if(len <= w - 2 && strchr(msg, '\n') == NULL)
 	{
-		y = 6;
-		wresize(error_win, y, x);
-		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		checked_wmove(error_win, 2, (x - z)/2);
+		h = 6;
+		wresize(error_win, h, w);
+		mvwin(error_win, (sh - h)/2, (sw - w)/2);
+		checked_wmove(error_win, 2, (w - len)/2);
 		wprint(error_win, msg);
 	}
 	else
@@ -499,10 +499,10 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		int i;
 		int cy = 2;
 		i = 0;
-		while(i < z)
+		while(i < len)
 		{
 			int j;
-			char buf[x - 2 + 1];
+			char buf[w - 2 + 1];
 			int cx;
 
 			copy_str(buf, sizeof(buf), msg + i);
@@ -519,12 +519,12 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			if(buf[0] == '\0')
 				continue;
 
-			y = cy + 4;
-			mvwin(error_win, (sy - y)/2, (sx - x)/2);
-			wresize(error_win, y, x);
+			h = cy + 4;
+			mvwin(error_win, (sh - h)/2, (sw - w)/2);
+			wresize(error_win, h, w);
 
 			cx = 1 + margin
-			   + (centered ? (x - get_screen_string_length(buf) - 2)/2 : 0);
+			   + (centered ? (w - get_screen_string_length(buf) - 2)/2 : 0);
 			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
@@ -533,9 +533,9 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	box(error_win, 0, 0);
 	if(title[0] != '\0')
 	{
-		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
+		mvwprintw(error_win, 0, (w - strlen(title) - 2)/2, " %s ", title);
 	}
-	mvwaddstr(error_win, y - 2, (x - strlen(ctrl_msg))/2, ctrl_msg);
+	mvwaddstr(error_win, h - 2, (w - strlen(ctrl_msg))/2, ctrl_msg);
 }
 
 /* Determines maximum width of line in the message.  Returns the width. */
