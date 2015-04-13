@@ -1686,6 +1686,7 @@ populate_dir_list_internal(FileView *view, int reload)
 				&is_dead_or_filtered, NULL, 0);
 		update_entries_data(view);
 		sort_dir_list(!reload, view);
+		fview_list_updated(view);
 		return 0;
 	}
 
