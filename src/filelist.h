@@ -159,7 +159,7 @@ void clean_positions_in_history(FileView *view);
 
 /* Gets typed filename (not path, just name) for current entry of the view.
  * Allocates memory, that should be freed by the caller. */
-char * get_typed_current_fname(const FileView *view);
+char * get_typed_current_fpath(const FileView *view);
 /* Gets typed filename (not path, just name) for the entry.  Allocates memory,
  * that should be freed by the caller. */
 char * get_typed_entry_fname(const dir_entry_t *entry);

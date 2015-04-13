@@ -1255,9 +1255,17 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 }
 
 char *
-get_typed_current_fname(const FileView *view)
+get_typed_current_fpath(const FileView *view)
 {
-	return get_typed_entry_fname(&view->dir_entry[view->list_pos]);
+	dir_entry_t *entry;
+	const char *type_suffix;
+	char full_path[PATH_MAX];
+
+	entry = get_current_entry((FileView *)view);
+	type_suffix = is_directory_entry(entry) ? "/" : "";
+
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	return format_str("%s%s", full_path, type_suffix);
 }
 
 char *
@@ -1678,6 +1686,7 @@ populate_dir_list_internal(FileView *view, int reload)
 				&is_dead_or_filtered, NULL, 0);
 		update_entries_data(view);
 		sort_dir_list(!reload, view);
+		fview_list_updated(view);
 		return 0;
 	}
 

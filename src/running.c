@@ -389,7 +389,7 @@ run_file(FileView *view, int dont_execute)
 		clean_selected_files(view);
 	}
 
-	typed_fname = get_typed_current_fname(view);
+	typed_fname = get_typed_current_fpath(view);
 	multi_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
@@ -990,7 +990,7 @@ output_to_nowhere(const char cmd[])
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
-	char *const typed_fname = get_typed_current_fname(view);
+	char *const typed_fname = get_typed_current_fpath(view);
 	assoc_records_t ft = ft_get_all_programs(typed_fname);
 	assoc_records_t magic = get_magic_handlers(typed_fname);
 	free(typed_fname);
