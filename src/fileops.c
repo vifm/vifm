@@ -197,15 +197,15 @@ static void cpmv_files_in_bg(void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
-		const char dst_dir[], int tmpfile_num, int cancellable, ops_t *ops);
-static int mv_file_f(const char src[], const char dst[], int tmpfile_num,
+		const char dst_dir[], OPS op, int cancellable, ops_t *ops);
+static int mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
 static void make_full_path(const char dir[], const char file[], char buf[],
 		size_t buf_len);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
-		int cancellable, ops_t *ops);
+		int bg, int cancellable, ops_t *ops);
 static void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
@@ -683,7 +683,7 @@ rename_file_cb(const char new_name[])
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(forigin), fname, new);
 	cmd_group_begin(buf);
-	mv_res = mv_file(fname, forigin, new, forigin, 0, 1, NULL);
+	mv_res = mv_file(fname, forigin, new, forigin, OP_MOVE, 1, NULL);
 	cmd_group_end();
 	if(mv_res != 0)
 	{
@@ -834,7 +834,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], curr_dir, unique_name, curr_dir, 2, 1, NULL) != 0)
+		if(mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
+					NULL) != 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -856,7 +857,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		if(mv_file(files[i], curr_dir, list[i], curr_dir,
-				is_dup[i] ? 1 : 0, 1, NULL) == 0)
+				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
 		{
 			char path[PATH_MAX];
 			dir_entry_t *entry;
@@ -1145,7 +1146,8 @@ incdec_names(FileView *view, int k)
 	{
 		const char *const path = entry->origin;
 		/* Rename: <original name> -> <temporary name>. */
-		if(mv_file(entry->name, path, tmp_names[i++], path, 4, 1, NULL) != 0)
+		if(mv_file(entry->name, path, tmp_names[i++], path, OP_MOVETMP4, 1,
+					NULL) != 0)
 		{
 			err = 1;
 			break;
@@ -1160,7 +1162,8 @@ incdec_names(FileView *view, int k)
 		const char *const path = entry->origin;
 		const char *const new_fname = incdec_name(entry->name, k);
 		/* Rename: <temporary name> -> <final name>. */
-		if(mv_file(tmp_names[i++], path, new_fname, path, 3, 1, NULL) != 0)
+		if(mv_file(tmp_names[i++], path, new_fname, path, OP_MOVETMP3, 1,
+					NULL) != 0)
 		{
 			err = 1;
 			break;
@@ -2667,7 +2670,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const new_fname = dest[i++];
-		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, 0, 1,
+		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, OP_MOVE, 1,
 					NULL) == 0)
 		{
 			fixup_entry_after_rename(view, entry, new_fname);
@@ -2842,7 +2845,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 		if(op == CMLO_MOVE)
 		{
-			err = mv_file(entry->name, entry->origin, dst, path, 0, 1, ops);
+			err = mv_file(entry->name, entry->origin, dst, path, OP_MOVE, 1, ops);
 			if(err != 0)
 			{
 				view->list_pos = find_file_pos_in_list(view, entry->name);
@@ -3222,11 +3225,11 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
 
 	if(move)
 	{
-		(void)mv_file_f(src, dst_full, -1, 0, NULL);
+		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, NULL);
 	}
 	else
 	{
-		(void)cp_file_f(src, dst_full, -1, 0, NULL);
+		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, NULL);
 	}
 }
 
@@ -3234,23 +3237,22 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
  * parts. */
 static int
 mv_file(const char src[], const char src_dir[], const char dst[],
-		const char dst_dir[], int tmpfile_num, int cancellable, ops_t *ops)
+		const char dst_dir[], OPS op, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
 	make_full_path(src_dir, src, full_src, sizeof(full_src));
 	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
 
-	return mv_file_f(full_src, full_dst, tmpfile_num, cancellable, ops);
+	return mv_file_f(full_src, full_dst, op, 0, cancellable, ops);
 }
 
 /* Moves file from one location to another.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
+mv_file_f(const char src[], const char dst[], OPS op, int bg, int cancellable,
 		ops_t *ops)
 {
-	int op;
 	int result;
 
 	/* Compare case sensitive strings even on Windows to let user rename file
@@ -3260,21 +3262,8 @@ mv_file_f(const char src[], const char dst[], int tmpfile_num, int cancellable,
 		return 0;
 	}
 
-	if(tmpfile_num <= 0)
-		op = OP_MOVE;
-	else if(tmpfile_num == 1)
-		op = OP_MOVETMP1;
-	else if(tmpfile_num == 2)
-		op = OP_MOVETMP2;
-	else if(tmpfile_num == 3)
-		op = OP_MOVETMP3;
-	else if(tmpfile_num == 4)
-		op = OP_MOVETMP4;
-	else
-		op = OP_NONE;
-
 	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
-	if(result == 0 && tmpfile_num >= 0)
+	if(result == 0 && !bg)
 	{
 		add_operation(op, NULL, NULL, src, dst);
 	}
@@ -3292,7 +3281,7 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 	make_full_path(src_dir, src, full_src, sizeof(full_src));
 	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
 
-	return cp_file_f(full_src, full_dst, op, cancellable, ops);
+	return cp_file_f(full_src, full_dst, op, 0, cancellable, ops);
 }
 
 /* Makes full path from base directory and path.  Drops base directory if path
@@ -3314,7 +3303,7 @@ make_full_path(const char dir[], const char file[], char buf[], size_t buf_len)
 /* Copies file from one location to another.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
+cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 		int cancellable, ops_t *ops)
 {
 	char rel_path[PATH_MAX];
@@ -3349,7 +3338,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 
 	result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1, src,
 			dst);
-	if(result == 0)
+	if(result == 0 && !bg)
 	{
 		add_operation(file_op, NULL, NULL, src, dst);
 	}
