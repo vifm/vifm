@@ -8,8 +8,11 @@
 #include "../../src/utils/filter.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/macros.h"
+#include "../../src/registers.h"
 
 static void cleanup_view(FileView *view);
+static void setup_custom_view(FileView *view);
 
 SETUP()
 {
@@ -23,6 +26,9 @@ SETUP()
 	strcpy(lwin.curr_dir, "/path");
 	free(lwin.custom.orig_dir);
 	lwin.custom.orig_dir = NULL;
+
+	curr_view = &lwin;
+	other_view = &lwin;
 }
 
 TEARDOWN()
@@ -115,6 +121,46 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.filtered);
+}
+
+TEST(register_macros_are_expanded_relatively_to_orig_dir)
+{
+	char *expanded;
+
+	setup_custom_view(&lwin);
+
+	init_registers();
+
+	assert_success(append_to_register('r', "test-data/existing-files/b"));
+	expanded = expand_macros("%rr:p", NULL, NULL, 0);
+	assert_string_equal("/path/test-data/existing-files/b", expanded);
+	free(expanded);
+
+	clear_registers();
+}
+
+TEST(dir_macros_are_expanded_to_orig_dir)
+{
+	char *expanded;
+
+	setup_custom_view(&lwin);
+
+	expanded = expand_macros("%d", NULL, NULL, 0);
+	assert_string_equal("/path", expanded);
+	free(expanded);
+
+	expanded = expand_macros("%D", NULL, NULL, 0);
+	assert_string_equal("/path", expanded);
+	free(expanded);
+}
+
+static void
+setup_custom_view(FileView *view)
+{
+	assert_false(flist_custom_active(view));
+	flist_custom_start(view, "test");
+	flist_custom_add(view, "test-data/existing-files/a");
+	assert_true(flist_custom_finish(view) == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
