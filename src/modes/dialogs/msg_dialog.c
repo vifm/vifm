@@ -56,6 +56,15 @@ typedef enum
 }
 Result;
 
+/* Message style. */
+typedef enum
+{
+	S_USUAL,    /* 100% width, left aligned, without margins. */
+	S_CENTERED, /* 100% width, centered, without margins. */
+	S_PRETTY,   /* Max line width, centered, with margins. */
+}
+Style;
+
 static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
@@ -76,7 +85,8 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], int centered);
+		const char ctrl_msg[], Style style);
+static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
@@ -386,7 +396,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, centered);
+	draw_msg(title, message, ctrl_msg, centered ? S_CENTERED : S_USUAL);
 	wrefresh(error_win);
 }
 
@@ -446,7 +456,7 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
 	vsnprintf(msg, sizeof(msg), format, pa);
 	va_end(pa);
 
-	draw_msg(title, msg, ctrl_msg, 1);
+	draw_msg(title, msg, ctrl_msg, S_PRETTY);
 	touch_all_windows();
 	wrefresh(error_win);
 }
@@ -455,29 +465,33 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
  * message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		int centered)
+		Style style)
 {
-	int sx, sy;
-	int x, y;
-	int z;
+	int sw, sh;
+	int w, h;
+	int len;
+	int centered = (style == S_CENTERED);
+	int margin = (style == S_PRETTY) ? 1 : 0;
 
 	curs_set(FALSE);
 
-	getmaxyx(stdscr, sy, sx);
+	getmaxyx(stdscr, sh, sw);
 
-	y = sy - 3 + !cfg.display_statusline;
-	x = sx - 2;
-	wresize(error_win, y, x);
+	h = sh - 3 + !cfg.display_statusline;
+	w = (style == S_PRETTY)
+	 ? MIN(sw - 2, (int)determine_width(msg) + 4)
+	 : sw - 2;
+	wresize(error_win, h, w);
 
 	werase(error_win);
 
-	z = strlen(msg);
-	if(z <= x - 2 && strchr(msg, '\n') == NULL)
+	len = strlen(msg);
+	if(len <= w - 2 && strchr(msg, '\n') == NULL)
 	{
-		y = 6;
-		wresize(error_win, y, x);
-		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		checked_wmove(error_win, 2, (x - z)/2);
+		h = 6;
+		wresize(error_win, h, w);
+		mvwin(error_win, (sh - h)/2, (sw - w)/2);
+		checked_wmove(error_win, 2, (w - len)/2);
 		wprint(error_win, msg);
 	}
 	else
@@ -485,10 +499,10 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		int i;
 		int cy = 2;
 		i = 0;
-		while(i < z)
+		while(i < len)
 		{
 			int j;
-			char buf[x - 2 + 1];
+			char buf[w - 2 + 1];
 			int cx;
 
 			copy_str(buf, sizeof(buf), msg + i);
@@ -505,11 +519,12 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			if(buf[0] == '\0')
 				continue;
 
-			y = cy + 4;
-			mvwin(error_win, (sy - y)/2, (sx - x)/2);
-			wresize(error_win, y, x);
+			h = cy + 4;
+			mvwin(error_win, (sh - h)/2, (sw - w)/2);
+			wresize(error_win, h, w);
 
-			cx = 1 + (centered ? (x - get_screen_string_length(buf) - 2)/2 : 0);
+			cx = 1 + margin
+			   + (centered ? (w - get_screen_string_length(buf) - 2)/2 : 0);
 			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
@@ -518,9 +533,38 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	box(error_win, 0, 0);
 	if(title[0] != '\0')
 	{
-		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
+		mvwprintw(error_win, 0, (w - strlen(title) - 2)/2, " %s ", title);
 	}
-	mvwaddstr(error_win, y - 2, (x - strlen(ctrl_msg))/2, ctrl_msg);
+	mvwaddstr(error_win, h - 2, (w - strlen(ctrl_msg))/2, ctrl_msg);
+}
+
+/* Determines maximum width of line in the message.  Returns the width. */
+static size_t
+determine_width(const char msg[])
+{
+	size_t max_width = 0U;
+
+	while(*msg != '\0')
+	{
+		size_t width = 0U;
+		while(*msg != '\n' && *msg != '\0')
+		{
+			++width;
+			++msg;
+		}
+
+		if(width > max_width)
+		{
+			max_width = width;
+		}
+
+		if(*msg == '\n')
+		{
+			++msg;
+		}
+	}
+
+	return max_width;
 }
 
 int

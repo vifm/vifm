@@ -32,7 +32,10 @@
 #include "utils/utils.h"
 #endif
 
-#define MAX_ELLIPSIS_DOT_COUNT 3
+/* Maximum number of ellipsis dots. */
+#define MAX_ELLIPSIS_DOT_COUNT 3U
+
+/* Character used to fill gaps in lines. */
 #define GAP_FILL_CHAR ' '
 
 /* Holds general column information. */

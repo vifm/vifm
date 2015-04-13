@@ -314,7 +314,7 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		as_part = format_str("\nas %s", target_name);
+		as_part = format_str("\nas   %s", target_name);
 	}
 
 	if(progress < 0)
@@ -330,9 +330,9 @@ io_progress_changed(const io_progress_t *const state)
 		char *const file_progress = format_file_progress(estim, PRECISION);
 
 		draw_msgf(title, ctrl_msg,
-				"In %s\nItem %d of %d\nOverall %s/%s (%2d%%)\n"
+				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
-				"File %s\nfrom %s%s%s",
+				"file %s\nfrom %s%s%s",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
 				current_size_str, total_size_str, progress/PRECISION, pretty_path,
 				src_path, as_part, file_progress);
@@ -2173,7 +2173,7 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 		default:
 			assert(0 && "Unexpected operation type.");
-			return CMLO_COPY;
+			return OP_COPY;
 	}
 }
 
