@@ -1116,9 +1116,9 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
-		const CmdLineSubmode cmd_type = (sub_mode == CLS_COMMAND)
-		                              ? CIT_COMMAND
-		                              : CIT_MENU_COMMAND;
+		const CmdInputType cmd_type = (sub_mode == CLS_COMMAND)
+		                            ? CIT_COMMAND
+		                            : CIT_MENU_COMMAND;
 
 		const char *real_start = input;
 		while(*real_start == ' ' || *real_start == ':')

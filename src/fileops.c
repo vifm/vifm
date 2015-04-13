@@ -2173,7 +2173,7 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 		default:
 			assert(0 && "Unexpected operation type.");
-			return CMLO_COPY;
+			return OP_COPY;
 	}
 }
 
