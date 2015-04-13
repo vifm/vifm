@@ -27,7 +27,7 @@
 
 #define NO_POS (-1)
 
-static int move_to_first_position(hist_t *hist, size_t size, const char item[]);
+static int move_to_first_position(hist_t *hist, const char item[]);
 static int insert_at_first_position(hist_t *hist, size_t size, const char item[]);
 
 int
@@ -74,7 +74,7 @@ hist_add(hist_t *hist, const char item[], size_t size)
 {
 	if(size > 0 && item[0] != '\0')
 	{
-		if(move_to_first_position(hist, size, item) != 0)
+		if(move_to_first_position(hist, item) != 0)
 		{
 			return insert_at_first_position(hist, size, item);
 		}
@@ -85,7 +85,7 @@ hist_add(hist_t *hist, const char item[], size_t size)
 /* Moves item to the first position.  Returns zero on success or non-zero when
  * item wasn't found in the history. */
 static int
-move_to_first_position(hist_t *hist, size_t size, const char item[])
+move_to_first_position(hist_t *hist, const char item[])
 {
 	const int pos = string_array_pos(hist->items, hist->pos + 1, item);
 	if(pos == 0)
