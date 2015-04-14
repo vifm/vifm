@@ -74,6 +74,7 @@ static WINDOW *rtop_line2;
 
 static void create_windows(void);
 static void update_geometry(void);
+static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -233,7 +234,7 @@ only_layout(FileView *view, int screen_x, int screen_y)
 	wresize(view->title, 1, screen_x - 2);
 	mvwin(view->title, 0, 1);
 
-	wresize(view->win, screen_y - 3 + !cfg.display_statusline,
+	wresize(view->win, get_working_area_height(),
 			screen_x + vborder_size_correction);
 	mvwin(view->win, 1, vborder_pos_correction);
 }
@@ -245,7 +246,7 @@ vertical_layout(int screen_x, int screen_y)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
-	const int border_height = screen_y - 3 + !cfg.display_statusline;
+	const int border_height = get_working_area_height();
 
 	int splitter_pos;
 	int splitter_width;
@@ -307,8 +308,8 @@ horizontal_layout(int screen_x, int screen_y)
 		splitter_pos = curr_stats.splitter_pos;
 	if(splitter_pos < 2)
 		splitter_pos = 2;
-	if(splitter_pos > screen_y - 3 - cfg.display_statusline - 1)
-		splitter_pos = screen_y - 3 - cfg.display_statusline;
+	if(splitter_pos > get_working_area_height() - 1)
+		splitter_pos = get_working_area_height();
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
@@ -321,7 +322,7 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(lwin.win, splitter_pos - 1, screen_x + vborder_size_correction);
 	mvwin(lwin.win, 1, vborder_pos_correction);
 
-	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.display_statusline - 1,
+	wresize(rwin.win, get_working_area_height() - splitter_pos,
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
@@ -384,7 +385,7 @@ resize_all(void)
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
 
-	border_height = screen_y - 3 + !cfg.display_statusline;
+	border_height = get_working_area_height();
 
 	wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
@@ -423,6 +424,14 @@ resize_all(void)
 	update_statusbar_layout();
 
 	curs_set(FALSE);
+}
+
+/* Calculates height available for main area that contains file lists.  Returns
+ * the height. */
+static int
+get_working_area_height(void)
+{
+	return getmaxy(stdscr) - 2 - (cfg.display_statusline ? 1 : 0);
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
