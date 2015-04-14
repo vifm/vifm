@@ -357,5 +357,17 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 	}
 }
 
+int
+ui_stat_reposition(int statusbar_height)
+{
+	if(cfg.display_statusline)
+	{
+		const int y = getmaxy(stdscr) - statusbar_height - 1;
+		mvwin(stat_win, y, 0);
+		return 1;
+	}
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

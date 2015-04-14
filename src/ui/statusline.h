@@ -23,9 +23,14 @@
 
 #include "../utils/test_helpers.h"
 
-/* Formatting status line. */
+/* Status line managing. */
 
 void update_stat_window(FileView *view);
+
+/* Puts status line where it's suppose to be according to other elements.  Does
+ * nothing if displaying status line is disabled.  Returns non-zero if status
+ * line is visible, and zero otherwise. */
+int ui_stat_reposition(int statusbar_height);
 
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);

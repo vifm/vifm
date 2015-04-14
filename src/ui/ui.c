@@ -419,7 +419,7 @@ resize_all(void)
 	correct_size(&rwin);
 
 	wresize(stat_win, 1, screen_x);
-	mvwin(stat_win, screen_y - 2, 0);
+	(void)ui_stat_reposition(1);
 
 	update_statusbar_layout();
 

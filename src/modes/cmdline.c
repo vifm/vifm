@@ -359,9 +359,8 @@ update_cmdline_size(void)
 
 		if(prev_mode != MENU_MODE)
 		{
-			if(cfg.display_statusline)
+			if(ui_stat_reposition(d))
 			{
-				mvwin(stat_win, y - d - 1, 0);
 				wrefresh(stat_win);
 			}
 		}

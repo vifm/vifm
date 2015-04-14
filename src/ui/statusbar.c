@@ -32,6 +32,7 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../color_manager.h"
+#include "statusline.h"
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
@@ -47,8 +48,9 @@ static int multiline_status_bar;
 void
 clean_status_bar(void)
 {
+	(void)ui_stat_reposition(1);
+
 	werase(status_bar);
-	mvwin(stat_win, getmaxy(stdscr) - 2, 0);
 	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 	wnoutrefresh(status_bar);
@@ -219,7 +221,7 @@ status_bar_message_i(const char message[], int error)
 		lines = getmaxy(stdscr);
 	}
 
-	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
+	(void)ui_stat_reposition(lines);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
 	{
