@@ -108,6 +108,7 @@ line_stats_t;
 static int prev_mode;
 static CmdLineSubmode sub_mode;
 static line_stats_t input_stat;
+/* Width of the status bar. */
 static int line_width = 1;
 static void *sub_mode_ptr;
 static int sub_mode_allows_ee;
@@ -198,6 +199,7 @@ static void search_prev(void);
 static void complete_prev(const hist_t *hist, size_t len);
 static int replace_input_line(const char new[]);
 static void update_cmdline(void);
+static int get_required_height(void);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
@@ -347,26 +349,24 @@ def_handler(wchar_t key)
 static void
 update_cmdline_size(void)
 {
-	int d;
-
-	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
-	if(d >= getmaxy(status_bar))
+	const int required_height = get_required_height();
+	if(required_height >= getmaxy(status_bar))
 	{
-		int y = getmaxy(stdscr);
+		const int screen_height = getmaxy(stdscr);
 
-		mvwin(status_bar, y - d, 0);
-		wresize(status_bar, d, line_width);
+		mvwin(status_bar, screen_height - required_height, 0);
+		wresize(status_bar, required_height, line_width);
 
 		if(prev_mode != MENU_MODE)
 		{
-			if(ui_stat_reposition(d))
+			if(ui_stat_reposition(required_height))
 			{
 				wrefresh(stat_win);
 			}
 		}
 		else
 		{
-			wresize(menu_win, y - d, getmaxx(stdscr));
+			wresize(menu_win, screen_height - required_height, getmaxx(stdscr));
 			update_menu();
 			wrefresh(menu_win);
 		}
@@ -2202,16 +2202,26 @@ cmd_up(key_info_t key_info, keys_info_t *keys_info)
 static void
 update_cmdline(void)
 {
-	int d;
+	int required_height;
 	input_stat.curs_pos = input_stat.prompt_wid +
 			wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
-	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
-	if(d >= getmaxy(status_bar))
+	required_height = get_required_height();
+	if(required_height >= getmaxy(status_bar))
+	{
 		update_cmdline_size();
+	}
 
 	update_cmdline_text();
+}
+
+/* Gets status bar height required to display all its content.  Returns the
+ * height. */
+static int
+get_required_height(void)
+{
+	return DIV_ROUND_UP(input_stat.prompt_wid + input_stat.len + 1, line_width);
 }
 
 /*
