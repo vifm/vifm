@@ -46,6 +46,10 @@ static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
 static int expand_num(char buf[], size_t buf_len, int val);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
+static void update_job_bar(void);
+
+/* Number of backround jobs. */
+static int njobs;
 
 void
 update_stat_window(FileView *view)
@@ -388,7 +392,40 @@ ui_stat_refresh(void)
 int
 ui_stat_job_bar_height(void)
 {
-	return 1;
+	return (njobs > 0) ? 1 : 0;
+}
+
+void
+ui_stat_job_bar_add(void)
+{
+	++njobs;
+	update_job_bar();
+}
+
+void
+ui_stat_job_bar_remove(void)
+{
+	const int prev_height = ui_stat_job_bar_height();
+
+	--njobs;
+
+	if(ui_stat_job_bar_height() != 0)
+	{
+		update_job_bar();
+	}
+	else if(ui_stat_job_bar_height() != prev_height)
+	{
+		schedule_redraw();
+	}
+}
+
+/* Fills job bar with up-to-date content. */
+static void
+update_job_bar(void)
+{
+	werase(job_bar);
+	mvwprintw(job_bar, 0, 0, "Number of background jobs: %d", njobs);
+	schedule_redraw();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

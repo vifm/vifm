@@ -44,6 +44,7 @@
 #include "cfg/config.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
+#include "ui/statusline.h"
 #include "utils/env.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -157,6 +158,12 @@ check_background_jobs(void)
 				head = p->next;
 
 			p = p->next;
+
+			if(j->type == BJT_OPERATION)
+			{
+				ui_stat_job_bar_remove();
+			}
+
 			job_free(j);
 		}
 		else
@@ -752,6 +759,8 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		free(task_args);
 		return 2;
 	}
+
+	ui_stat_job_bar_add();
 
 	task_args->job->total = total;
 
