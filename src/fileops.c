@@ -233,6 +233,7 @@ io_progress_changed(const io_progress_t *const state)
 	enum { PRECISION = 10 };
 
 	static int prev_progress = -1;
+	static IoPs prev_stage;
 
 	const ioeta_estim_t *const estim = state->estim;
 	ops_t *const ops = estim->param;
@@ -272,10 +273,12 @@ io_progress_changed(const io_progress_t *const state)
 	}
 
 	redraw = fetch_redraw_scheduled();
-	if(progress == prev_progress && !redraw)
+	if(progress == prev_progress && state->stage == prev_stage && !redraw)
 	{
 		return;
 	}
+
+	prev_stage = state->stage;
 
 	if(progress >= 0)
 	{
