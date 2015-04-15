@@ -86,9 +86,9 @@ typedef enum
 }
 CompletionPreProcessing;
 
-typedef struct cmd_info_t cmd_info_t;
+struct cmd_info_t;
 
-int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
+int complete_args(int id, const struct cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 
 /* Completes name of an executable after extracting it from the cmd.  Returns
