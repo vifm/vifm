@@ -368,15 +368,15 @@ ui_stat_reposition(int statusbar_height)
 	const int job_bar_height = ui_stat_job_bar_height();
 	const int y = getmaxy(stdscr)
 	            - statusbar_height
-	            - job_bar_height
-	            - STAT_LINE_HEIGHT;
+	            - STAT_LINE_HEIGHT
+	            - job_bar_height;
 
-	mvwin(job_bar, y + 1, 0);
+	mvwin(job_bar, y, 0);
 	wresize(job_bar, job_bar_height, getmaxx(job_bar));
 
 	if(cfg.display_statusline)
 	{
-		mvwin(stat_win, y, 0);
+		mvwin(stat_win, y + job_bar_height, 0);
 		return 1;
 	}
 	return 0;
@@ -385,8 +385,8 @@ ui_stat_reposition(int statusbar_height)
 void
 ui_stat_refresh(void)
 {
-	wrefresh(stat_win);
 	wrefresh(job_bar);
+	wrefresh(stat_win);
 }
 
 int
