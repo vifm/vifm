@@ -299,6 +299,7 @@ FileView *curr_view;
 
 WINDOW *status_bar;
 WINDOW *stat_win;
+WINDOW *job_bar;
 WINDOW *ruler_win;
 WINDOW *input_win;
 WINDOW *menu_win;

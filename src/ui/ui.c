@@ -196,6 +196,7 @@ create_windows(void)
 	rborder = newwin(1, 1, 0, 0);
 
 	stat_win = newwin(1, 1, 0, 0);
+	job_bar = newwin(1, 1, 0, 0);
 	status_bar = newwin(1, 1, 0, 0);
 	ruler_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
@@ -421,6 +422,8 @@ resize_all(void)
 	wresize(stat_win, 1, screen_x);
 	(void)ui_stat_reposition(1);
 
+	wresize(job_bar, 1, screen_x);
+
 	update_statusbar_layout();
 
 	curs_set(FALSE);
@@ -431,7 +434,11 @@ resize_all(void)
 static int
 get_working_area_height(void)
 {
-	return getmaxy(stdscr) - 2 - (cfg.display_statusline ? 1 : 0);
+	return getmaxy(stdscr)                  /* Total available height. */
+	     - 1                                /* Top line. */
+	     - (cfg.display_statusline ? 1 : 0) /* Status line. */
+	     - ui_stat_job_bar_height()         /* Job bar. */
+	     - 1;                               /* Status bar line. */
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
@@ -686,6 +693,11 @@ touch_all_windows(void)
 		{
 			update_window_lazy(stat_win);
 		}
+
+		if(ui_stat_job_bar_height() != 0)
+		{
+			update_window_lazy(job_bar);
+		}
 	}
 
 	update_window_lazy(ruler_win);
@@ -859,6 +871,7 @@ update_attributes(void)
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
+	wbkgdset(job_bar, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
 
 	attr = cfg.cs.color[WIN_COLOR].attr;
 	wbkgdset(menu_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);

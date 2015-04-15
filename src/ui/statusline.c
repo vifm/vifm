@@ -360,13 +360,35 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 int
 ui_stat_reposition(int statusbar_height)
 {
+	enum { STAT_LINE_HEIGHT = 1 };
+	const int job_bar_height = ui_stat_job_bar_height();
+	const int y = getmaxy(stdscr)
+	            - statusbar_height
+	            - job_bar_height
+	            - STAT_LINE_HEIGHT;
+
+	mvwin(job_bar, y + 1, 0);
+	wresize(job_bar, job_bar_height, getmaxx(job_bar));
+
 	if(cfg.display_statusline)
 	{
-		const int y = getmaxy(stdscr) - statusbar_height - 1;
 		mvwin(stat_win, y, 0);
 		return 1;
 	}
 	return 0;
+}
+
+void
+ui_stat_refresh(void)
+{
+	wrefresh(stat_win);
+	wrefresh(job_bar);
+}
+
+int
+ui_stat_job_bar_height(void)
+{
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

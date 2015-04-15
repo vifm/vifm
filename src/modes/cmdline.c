@@ -361,7 +361,7 @@ update_cmdline_size(void)
 		{
 			if(ui_stat_reposition(required_height))
 			{
-				wrefresh(stat_win);
+				ui_stat_refresh();
 			}
 		}
 		else
