@@ -752,8 +752,12 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 
 	task_args->job->bg_op.total = total;
 
-	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
+	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
 	{
+		/* Mark job as finished with error. */
+		task_args->job->running = 0;
+		task_args->job->exit_code = 1;
+
 		free(task_args);
 		return 3;
 	}
