@@ -89,7 +89,6 @@ static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
 static void make_current_job_key(void);
-static void finish_current_job(void);
 
 job_t *jobs;
 
@@ -811,7 +810,9 @@ background_task_bootstrap(void *arg)
 
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
-	finish_current_job();
+	/* Mark task as finished normally. */
+	task_args->job->running = 0;
+	task_args->job->exit_code = 0;
 
 	free(task_args);
 
@@ -831,19 +832,6 @@ static void
 make_current_job_key(void)
 {
 	(void)pthread_key_create(&current_job, NULL);
-}
-
-/* Marks current job stored in a thread-local storage as finished
- * successfully. */
-static void
-finish_current_job(void)
-{
-	job_t *const job = pthread_getspecific(current_job);
-	if(job != NULL)
-	{
-		job->running = 0;
-		job->exit_code = 0;
-	}
 }
 
 int
