@@ -627,7 +627,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		delete_file_in_bg(args->sel_list[i], args->use_trash);
-		inner_bg_next();
+		++bg_op->done;
 	}
 
 	free_bg_args(args);
@@ -3195,7 +3195,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
 		cpmv_file_in_bg(src, dst, args->move, args->force, args->use_trash,
 				args->path);
-		inner_bg_next();
+		++bg_op->done;
 	}
 
 	free_bg_args(args);

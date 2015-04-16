@@ -726,17 +726,6 @@ start_background_job(const char *cmd, int skip_errors)
 	return 0;
 }
 
-void
-inner_bg_next(void)
-{
-	job_t *job = pthread_getspecific(current_job);
-	if(job != NULL)
-	{
-		++job->bg_op.done;
-		assert(job->bg_op.done <= job->bg_op.total);
-	}
-}
-
 int
 bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		void *args)

@@ -103,8 +103,6 @@ pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 
-void inner_bg_next(void);
-
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
 int bg_execute(const char desc[], int total, int important,
