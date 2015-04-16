@@ -45,6 +45,8 @@ BgJobType;
 /* Auxiliary structure to be updated by background tasks while they progress. */
 typedef struct
 {
+	int total; /* Total number of coarse operations. */
+	int done;  /* Number of already processed coarse operations. */
 }
 bg_op_t;
 
@@ -60,8 +62,6 @@ typedef struct job_t
 	char *error;
 
 	/* For background operations and tasks. */
-	int total;
-	int done;
 	bg_op_t bg_op;
 
 #ifndef _WIN32

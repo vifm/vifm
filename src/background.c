@@ -732,8 +732,8 @@ inner_bg_next(void)
 	job_t *job = pthread_getspecific(current_job);
 	if(job != NULL)
 	{
-		++job->done;
-		assert(job->done <= job->total);
+		++job->bg_op.done;
+		assert(job->bg_op.done <= job->bg_op.total);
 	}
 }
 
@@ -762,7 +762,7 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 
 	ui_stat_job_bar_add();
 
-	task_args->job->total = total;
+	task_args->job->bg_op.total = total;
 
 	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
 	{
@@ -803,8 +803,8 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->running = 1;
 	new->error = NULL;
 
-	new->total = 0;
-	new->done = 0;
+	new->bg_op.total = 0;
+	new->bg_op.done = 0;
 
 	jobs = new;
 	return new;
