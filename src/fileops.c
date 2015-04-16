@@ -140,7 +140,7 @@ static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
-static void delete_files_in_bg(void *arg);
+static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
@@ -193,7 +193,7 @@ static int check_dir_path(const FileView *view, const char path[], char buf[]);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
-static void cpmv_files_in_bg(void *arg);
+static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
@@ -215,7 +215,7 @@ static int can_add_files_to_view(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
-static void dir_size_bg(void *arg);
+static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
 static void redraw_after_path_change(FileView *view, const char path[]);
@@ -619,7 +619,7 @@ delete_files_bg(FileView *view, int use_trash)
 
 /* Entry point for a background task that deletes files. */
 static void
-delete_files_in_bg(void *arg)
+delete_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
@@ -3183,7 +3183,7 @@ cmlo_to_str(CopyMoveLikeOp op)
 
 /* Entry point for a background task that copies/moves files. */
 static void
-cpmv_files_in_bg(void *arg)
+cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
@@ -3720,7 +3720,7 @@ start_dir_size_calc(const char path[], int force)
 
 /* Entry point for a background task that calculates size of a directory. */
 static void
-dir_size_bg(void *arg)
+dir_size_bg(bg_op_t *bg_op, void *arg)
 {
 	dir_size_args_t *const dir_size = arg;
 

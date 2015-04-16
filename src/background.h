@@ -42,6 +42,13 @@ typedef enum
 }
 BgJobType;
 
+/* Auxiliary structure to be updated by background tasks while they progress. */
+typedef struct
+{
+}
+bg_op_t;
+
+/* Description of background activity. */
 typedef struct job_t
 {
 	BgJobType type; /* Type of background job. */
@@ -55,6 +62,7 @@ typedef struct job_t
 	/* For background operations and tasks. */
 	int total;
 	int done;
+	bg_op_t bg_op;
 
 #ifndef _WIN32
 	int fd;
@@ -66,7 +74,7 @@ typedef struct job_t
 job_t;
 
 /* Background task entry point function signature. */
-typedef void (*bg_task_func)(void *arg);
+typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
 extern struct job_t *jobs;
 

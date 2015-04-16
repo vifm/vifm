@@ -820,7 +820,7 @@ background_task_bootstrap(void *arg)
 
 	set_current_job(task_args->job);
 
-	task_args->func(task_args->args);
+	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	finish_current_job();
 
