@@ -94,25 +94,6 @@ typedef enum
 }
 DirRole;
 
-static char rename_file_ext[NAME_MAX];
-
-static struct
-{
-	registers_t *reg;
-	FileView *view;
-	CopyMoveLikeOp op; /* Type of current operation. */
-	int x, y;
-	char *name;
-	int skip_all;      /* Skip all conflicting files/directories. */
-	int overwrite_all;
-	int append;        /* Whether we're appending ending of a file or not. */
-	int allow_merge;
-	int merge;         /* Merge conflicting directory once. */
-	int merge_all;     /* Merge all conflicting directories. */
-	ops_t *ops;
-}
-put_confirm;
-
 typedef struct
 {
 	char **list;
@@ -219,6 +200,30 @@ static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
 static void redraw_after_path_change(FileView *view, const char path[]);
+
+/* Temporary storage for extension of file being renamed in name-only mode. */
+static char rename_file_ext[NAME_MAX];
+
+/* Global state for file putting and name conflicts resolution that happen in
+ * the process. */
+static struct
+{
+	/* TODO: give some fields of this structure normal names (not "x" and "y"). */
+	registers_t *reg;  /* Register used for the operation. */
+	FileView *view;    /* View in which operation takes place. */
+	CopyMoveLikeOp op; /* Type of current operation. */
+	int x;             /* Index of the next file of the register to process. */
+	int y;             /* Number of successfully processed files. */
+	char *name;        /* Name of the conflicting file. */
+	int skip_all;      /* Skip all conflicting files/directories. */
+	int overwrite_all; /* Overwrite all future conflicting files/directories. */
+	int append;        /* Whether we're appending ending of a file or not. */
+	int allow_merge;   /* Allow merging of files in directories. */
+	int merge;         /* Merge conflicting directory once. */
+	int merge_all;     /* Merge all conflicting directories. */
+	ops_t *ops;        /* Currently running operation. */
+}
+put_confirm;
 
 void
 init_fileops(void)
