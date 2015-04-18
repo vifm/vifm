@@ -1309,8 +1309,7 @@ ui_view_title_update(FileView *view)
 static size_t
 get_title_width(const FileView *view)
 {
-	const int correction = cfg.side_borders_visible ? 0 : -1;
-	return ((int)view->window_width + 1) + correction;
+	return getmaxx(view->title);
 }
 
 int
