@@ -1237,12 +1237,14 @@ ui_view_title_update(FileView *view)
 	}
 	else
 	{
-		wbkgdset(view->title, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-		wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		col_attr_t col = cfg.cs.color[TOP_LINE_COLOR];
+		const int bg_attr = COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR])
+		                  | (col.attr & A_REVERSE);
+
+		wbkgdset(view->title, bg_attr);
+		wattrset(view->title, col.attr & ~A_REVERSE);
+		wbkgdset(top_line, bg_attr);
+		wattrset(top_line, col.attr & ~A_REVERSE);
 		werase(top_line);
 	}
 	werase(view->title);
