@@ -2180,9 +2180,8 @@ You can use following syntax:
  \- for string options \- option=x
  \- for string list options \- option=x, option+=x and option\-=x
  \- for enumeration options \- option=x, option+=x and option\-=x
- \- for enumeration options \- option=x
  \- for set options \- option=x, option+=x and option\-=x
- \- for charset options \- option=x, option+=x and option\-=x
+ \- for charset options \- option=x, option+=x, option\-=x and option^=x
 
 the meaning:
  \- option \- turn option on (for boolean) or print its value (for all others)
@@ -2194,6 +2193,7 @@ the meaning:
  \- option=x or option:x \- set option to x
  \- option+=x \- add x to option
  \- option\-=x \- remove (or subtract) x from option
+ \- option^=x \- toggle x presence among values of the option
 
 Option name can be prepended and appended by any number of whitespace
 characters.

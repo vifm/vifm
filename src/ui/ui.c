@@ -86,7 +86,10 @@ static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
-static size_t get_title_width(const FileView *view);
+static char * format_view_title(const FileView *view);
+static void print_view_title(const FileView *view, int active_view,
+		char title[]);
+static void fixup_titles_attributes(const FileView *view, int active_view);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
@@ -1213,8 +1216,6 @@ void
 ui_view_title_update(FileView *view)
 {
 	char *title;
-	size_t len;
-	size_t title_width;
 	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
 	FileView *selected = gen_view ? other_view : curr_view;
 
@@ -1223,7 +1224,90 @@ ui_view_title_update(FileView *view)
 		return;
 	}
 
+	title = format_view_title(view);
+
 	if(view == selected)
+	{
+		set_term_title(title);
+	}
+
+	print_view_title(view, view == selected, title);
+
+	wnoutrefresh(view->title);
+
+	free(title);
+}
+
+/* Formats title for the view.  Returns newly allocated string, which should be
+ * freed by the caller, or NULL if there is not enough memory. */
+static char *
+format_view_title(const FileView *view)
+{
+	if(view->explore_mode)
+	{
+		char full_path[PATH_MAX];
+		get_current_full_path(view, sizeof(full_path), full_path);
+		return strdup(replace_home_part(full_path));
+	}
+	else if(curr_stats.view && view == other_view)
+	{
+		return format_str("File: %s", get_current_file_name(curr_view));
+	}
+	else if(flist_custom_active(view))
+	{
+		return format_str("[%s] @ %s", view->custom.title,
+				replace_home_part(view->custom.orig_dir));
+	}
+	else
+	{
+		return strdup(replace_home_part(view->curr_dir));
+	}
+}
+
+/* Prints view title (which can be changed for printing).  Takes care of setting
+ * correct attributes. */
+static void
+print_view_title(const FileView *view, int active_view, char title[])
+{
+	size_t len = get_screen_string_length(title);
+	const size_t title_width = getmaxx(view->title);
+
+	fixup_titles_attributes(view, active_view);
+	werase(view->title);
+
+	if(len <= title_width)
+	{
+		wprint(view->title, title);
+		return;
+	}
+
+	/* Truncate long titles. */
+	if(active_view)
+	{
+		const char *ptr = title;
+		while(len > title_width - 3)
+		{
+			--len;
+			ptr += get_char_width(ptr);
+		}
+
+		wprintw(view->title, "...");
+		wprint(view->title, ptr);
+	}
+	else
+	{
+		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
+		title[len] = '\0';
+		wprint(view->title, title);
+		wprintw(view->title, "...");
+	}
+}
+
+/* Updates attributes for view titles and top line. */
+static void
+fixup_titles_attributes(const FileView *view, int active_view)
+{
+	if(active_view)
 	{
 		col_attr_t col;
 
@@ -1236,81 +1320,16 @@ ui_view_title_update(FileView *view)
 	}
 	else
 	{
-		wbkgdset(view->title, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-		wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+		col_attr_t col = cfg.cs.color[TOP_LINE_COLOR];
+		const int bg_attr = COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR])
+		                  | (col.attr & A_REVERSE);
+
+		wbkgdset(view->title, bg_attr);
+		wattrset(view->title, col.attr & ~A_REVERSE);
+		wbkgdset(top_line, bg_attr);
+		wattrset(top_line, col.attr & ~A_REVERSE);
 		werase(top_line);
 	}
-	werase(view->title);
-
-	if(view->explore_mode)
-	{
-		char full_path[PATH_MAX];
-		get_current_full_path(view, sizeof(full_path), full_path);
-		title = strdup(replace_home_part(full_path));
-	}
-	else if(curr_stats.view && view == other_view)
-	{
-		title = format_str("File: %s", get_current_file_name(curr_view));
-	}
-	else if(flist_custom_active(view))
-	{
-		title = format_str("[%s] @ %s", view->custom.title,
-				replace_home_part(view->custom.orig_dir));
-	}
-	else
-	{
-		title = strdup(replace_home_part(view->curr_dir));
-	}
-
-	if(view == selected)
-	{
-		set_term_title(title);
-	}
-
-	len = get_screen_string_length(title);
-	title_width = get_title_width(view);
-	if(len > title_width && view == selected)
-	{
-		/* Truncate long directory names. */
-		const char *ptr;
-
-		ptr = title;
-		while(len > title_width - 3)
-		{
-			len--;
-			ptr += get_char_width(ptr);
-		}
-
-		wprintw(view->title, "...");
-		wprint(view->title, ptr);
-	}
-	else if(len > title_width && view != selected)
-	{
-		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
-		title[len] = '\0';
-		wprint(view->title, title);
-		wprintw(view->title, "...");
-	}
-	else
-	{
-		wprint(view->title, title);
-	}
-
-	wnoutrefresh(view->title);
-
-	free(title);
-}
-
-/* Gets width of the title for the view. */
-static size_t
-get_title_width(const FileView *view)
-{
-	const int correction = cfg.side_borders_visible ? 0 : -1;
-	return ((int)view->window_width + 1) + correction;
 }
 
 int

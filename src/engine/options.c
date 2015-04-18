@@ -24,7 +24,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> /* memset() strcmp() strcpy() strlen() */
+#include <string.h> /* memset() strchr() strcmp() strcpy() strlen() */
 
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -67,6 +67,7 @@ static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
 static int set_add(opt_t *opt, const char value[]);
 static int set_remove(opt_t *opt, const char value[]);
+static int set_hat(opt_t *opt, const char value[]);
 static void notify_option_update(opt_t *opt, OPT_OP op, optval_t val);
 static int set_op(opt_t *opt, const char value[], SetOp op);
 static int charset_set(opt_t *opt, const char value[]);
@@ -74,6 +75,9 @@ static int charset_add_all(opt_t *opt, const char value[]);
 static void charset_add(char buffer[], char value);
 static int charset_remove_all(opt_t *opt, const char value[]);
 static void charset_remove(char buffer[], char value);
+static int charset_toggle_all(opt_t *opt, const char value[]);
+static int charset_do_all(opt_t *opt, mod_t func, const char value[]);
+static void charset_toggle(char buffer[], char value);
 static void for_each_char_of(char buffer[], mod_t func, const char input[]);
 static int replace_if_changed(char **current, const char new[]);
 static char * str_add(char old[], const char value[]);
@@ -88,8 +92,10 @@ static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
 static int complete_char_value(const opt_t *opt, const char beginning[]);
 
+/* Characters that can occur after option values. */
 static const char ENDING_CHARS[] = "!?&";
-static const char MIDDLE_CHARS[] = "+-=:";
+/* Characters that can between option names and values. */
+static const char MIDDLE_CHARS[] = "^+-=:";
 
 static int *opts_changed;
 
@@ -344,6 +350,10 @@ process_option(const char arg[])
 	else if(strncmp(p, "-=", 2) == 0)
 	{
 		err = set_remove(opt, p + 2);
+	}
+	else if(strncmp(p, "^=", 2) == 0)
+	{
+		err = set_hat(opt, p + 2);
 	}
 	else if(*p == '=' || *p == ':')
 	{
@@ -651,6 +661,24 @@ set_remove(opt_t *opt, const char value[])
 	return 0;
 }
 
+/* Toggles value(s) from the option (^= operator).  Returns non-zero on
+ * success. */
+static int
+set_hat(opt_t *opt, const char value[])
+{
+	if(opt->type != OPT_CHARSET)
+	{
+		return -1;
+	}
+
+	if(charset_toggle_all(opt, value))
+	{
+		notify_option_update(opt, OP_MODIFIED, opt->val);
+	}
+
+	return 0;
+}
+
 /* Calls option handler to notify about option change.  Also updates
  * opts_changed flag. */
 static void
@@ -717,16 +745,10 @@ charset_set(opt_t *opt, const char value[])
 static int
 charset_add_all(opt_t *opt, const char value[])
 {
-	char new_val[opt->val_count + 1];
-	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
-
-	for_each_char_of(new_val, charset_add, value);
-	return replace_if_changed(&opt->val.str_val, new_val);
+	return charset_do_all(opt, &charset_add, value);
 }
 
-/* Adds an item to the value of an option of type OPT_CHARSET.  Returns non-zero
- * when value of the option was changed, otherwise zero is returned. */
+/* Adds an item to the value of an option of type OPT_CHARSET. */
 static void
 charset_add(char buffer[], char value)
 {
@@ -741,16 +763,10 @@ charset_add(char buffer[], char value)
 static int
 charset_remove_all(opt_t *opt, const char value[])
 {
-	char new_val[opt->val_count + 1];
-	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
-
-	for_each_char_of(new_val, charset_remove, value);
-	return replace_if_changed(&opt->val.str_val, new_val);
+	return charset_do_all(opt, &charset_remove, value);
 }
 
-/* Removes an item from the value of an option of type OPT_CHARSET.  Returns
- * non-zero when value of the option was changed, otherwise zero is returned. */
+/* Removes an item from the value of an option of type OPT_CHARSET. */
 static void
 charset_remove(char buffer[], char value)
 {
@@ -767,15 +783,64 @@ charset_remove(char buffer[], char value)
 	*l++ = '\0';
 }
 
-/* Calls the func once for each character in the input argument, passing the
- * buffer and the character as its arguments. */
+/* Toggles items in the option of type OPT_CHARSET.  Returns non-zero when value
+ * of the option was changed, otherwise zero is returned. */
+static int
+charset_toggle_all(opt_t *opt, const char value[])
+{
+	return charset_do_all(opt, &charset_toggle, value);
+}
+
+/* Invokes modification function for the value of the option of type
+ * OPT_CHARSET.  Returns non-zero when value of the option was changed,
+ * otherwise zero is returned. */
+static int
+charset_do_all(opt_t *opt, mod_t func, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	copy_str(new_val, sizeof(new_val), opt->val.str_val);
+	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count &&
+			"Character set includes duplicates?");
+
+	for_each_char_of(new_val, func, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Toggles items in the value of an option of type OPT_CHARSET. */
+static void
+charset_toggle(char buffer[], char value)
+{
+	char *l = buffer;
+	const char *r = buffer;
+	while(*r != '\0')
+	{
+		if(*r != value)
+		{
+			*l++ = *r;
+		}
+		r++;
+	}
+	if(l == r)
+	{
+		*l++ = value;
+	}
+	*l++ = '\0';
+}
+
+/* Calls the func once for each unique character in the input argument, passing
+ * the buffer and the character as its arguments. */
 static void
 for_each_char_of(char buffer[], mod_t func, const char input[])
 {
 	const char *val = input;
 	while(*val != '\0')
 	{
-		func(buffer, *val++);
+		/* Process only unique characters. */
+		if(strchr(input, *val) == val)
+		{
+			func(buffer, *val);
+		}
+		++val;
 	}
 }
 
@@ -961,9 +1026,10 @@ complete_options(const char args[], const char **start)
 	bool_only = 0;
 
 	p = skip_alphas(buf);
-	is_value_completion = (p[0] == '=' || p[0] == ':');
-	is_value_completion = is_value_completion || (p[0] == '-' && p[1] == '=');
-	is_value_completion = is_value_completion || (p[0] == '+' && p[1] == '=');
+	is_value_completion =  (p[0] == '=' || p[0] == ':');
+	is_value_completion |= (p[0] == '-' && p[1] == '=');
+	is_value_completion |= (p[0] == '+' && p[1] == '=');
+	is_value_completion |= (p[0] == '^' && p[1] == '=');
 	if(is_value_completion)
 	{
 		char t = *p;

@@ -65,7 +65,7 @@ Vi(m) specific features that need to be added.
     :let mapleader and <leader> support.
     Completion of first argument for :map commands.
     Support hex and octal numbers in :set
-    Add support for ^= in :set command.
+    Add support of ^= in :set command for more option kinds.
     Add support for directory completion for some of :set options.
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.

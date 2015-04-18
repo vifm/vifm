@@ -393,5 +393,30 @@ TEST(charset_completion_skips_entered_elements)
 	free(completed);
 }
 
+TEST(charset_hat_completion_works)
+{
+	const char *start;
+	char *completed;
+
+	vle_compl_reset();
+	complete_options("cpo^=a", &start);
+
+	completed = vle_compl_next();
+	assert_string_equal("b", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("c", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("b", completed);
+	free(completed);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
