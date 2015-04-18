@@ -1273,27 +1273,28 @@ ui_view_title_update(FileView *view)
 
 	len = get_screen_string_length(title);
 	title_width = get_title_width(view);
-	if(len > title_width && view == selected)
+	if(len > title_width)
 	{
 		/* Truncate long directory names. */
-		const char *ptr;
-
-		ptr = title;
-		while(len > title_width - 3)
+		if(view == selected)
 		{
-			len--;
-			ptr += get_char_width(ptr);
-		}
+			const char *ptr = title;
+			while(len > title_width - 3)
+			{
+				len--;
+				ptr += get_char_width(ptr);
+			}
 
-		wprintw(view->title, "...");
-		wprint(view->title, ptr);
-	}
-	else if(len > title_width && view != selected)
-	{
-		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
-		title[len] = '\0';
-		wprint(view->title, title);
-		wprintw(view->title, "...");
+			wprintw(view->title, "...");
+			wprint(view->title, ptr);
+		}
+		else
+		{
+			size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
+			title[len] = '\0';
+			wprint(view->title, title);
+			wprintw(view->title, "...");
+		}
 	}
 	else
 	{
