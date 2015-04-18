@@ -76,6 +76,7 @@ static void charset_add(char buffer[], char value);
 static int charset_remove_all(opt_t *opt, const char value[]);
 static void charset_remove(char buffer[], char value);
 static int charset_toggle_all(opt_t *opt, const char value[]);
+static int charset_do_all(opt_t *opt, mod_t func, const char value[]);
 static void charset_toggle(char buffer[], char value);
 static void for_each_char_of(char buffer[], mod_t func, const char input[]);
 static int replace_if_changed(char **current, const char new[]);
@@ -744,16 +745,10 @@ charset_set(opt_t *opt, const char value[])
 static int
 charset_add_all(opt_t *opt, const char value[])
 {
-	char new_val[opt->val_count + 1];
-	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
-
-	for_each_char_of(new_val, charset_add, value);
-	return replace_if_changed(&opt->val.str_val, new_val);
+	return charset_do_all(opt, &charset_add, value);
 }
 
-/* Adds an item to the value of an option of type OPT_CHARSET.  Returns non-zero
- * when value of the option was changed, otherwise zero is returned. */
+/* Adds an item to the value of an option of type OPT_CHARSET. */
 static void
 charset_add(char buffer[], char value)
 {
@@ -768,16 +763,10 @@ charset_add(char buffer[], char value)
 static int
 charset_remove_all(opt_t *opt, const char value[])
 {
-	char new_val[opt->val_count + 1];
-	copy_str(new_val, sizeof(new_val), opt->val.str_val);
-	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count);
-
-	for_each_char_of(new_val, charset_remove, value);
-	return replace_if_changed(&opt->val.str_val, new_val);
+	return charset_do_all(opt, &charset_remove, value);
 }
 
-/* Removes an item from the value of an option of type OPT_CHARSET.  Returns
- * non-zero when value of the option was changed, otherwise zero is returned. */
+/* Removes an item from the value of an option of type OPT_CHARSET. */
 static void
 charset_remove(char buffer[], char value)
 {
@@ -799,12 +788,21 @@ charset_remove(char buffer[], char value)
 static int
 charset_toggle_all(opt_t *opt, const char value[])
 {
+	return charset_do_all(opt, &charset_toggle, value);
+}
+
+/* Invokes modification function for the value of the option of type
+ * OPT_CHARSET.  Returns non-zero when value of the option was changed,
+ * otherwise zero is returned. */
+static int
+charset_do_all(opt_t *opt, mod_t func, const char value[])
+{
 	char new_val[opt->val_count + 1];
 	copy_str(new_val, sizeof(new_val), opt->val.str_val);
 	assert(strlen(opt->val.str_val) <= (size_t)opt->val_count &&
 			"Character set includes duplicates?");
 
-	for_each_char_of(new_val, &charset_toggle, value);
+	for_each_char_of(new_val, func, value);
 	return replace_if_changed(&opt->val.str_val, new_val);
 }
 
