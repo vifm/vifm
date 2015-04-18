@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 13
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -575,7 +575,7 @@ Registers~
 vifm supports multiple registers for temporary storing list of yanked or
 deleted files.
 
-Registers should be specified with hitting double quite key followed by a
+Registers should be specified by hitting double quote key followed by a
 register name.  Count is specified after register name.  By default
 commands use unnamed register, which has double quote as its name.
 
