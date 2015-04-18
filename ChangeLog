@@ -89,6 +89,8 @@
 
 	Added --enable-coverage option to configure script.
 
+	Added ^= operation for charset options.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
