@@ -32,6 +32,7 @@
 #include "cfg/config.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -47,7 +48,7 @@
 static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
-static void process_scheduled_updates_of_view(FileView *view);
+static int process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 
@@ -316,42 +317,50 @@ process_scheduled_updates(void)
 
 	if(vle_mode_get_primary() != MENU_MODE)
 	{
-		process_scheduled_updates_of_view(curr_view);
-		process_scheduled_updates_of_view(other_view);
+		int changed = 0;
+
+		changed += process_scheduled_updates_of_view(curr_view) != 0;
+		changed += process_scheduled_updates_of_view(other_view) != 0;
+
+		if(changed && vle_mode_is(MSG_MODE))
+		{
+			redraw_msg_dialog();
+		}
 	}
 }
 
-/* Performs postponed updates for the view, if any. */
-static void
+/* Performs postponed updates for the view, if any.  Returns non-zero if
+ * something was indeed updated, and zero otherwise. */
+static int
 process_scheduled_updates_of_view(FileView *view)
 {
 	if(!window_shows_dirlist(view))
 	{
-		return;
+		return 0;
 	}
 
 	switch(ui_view_query_scheduled_event(view))
 	{
 		case UUE_NONE:
 			/* Nothing to do. */
-			break;
+			return 0;
 		case UUE_REDRAW:
 			redraw_view_imm(view);
-			break;
+			return 1;
 		case UUE_RELOAD:
 			load_saving_pos(view, 1);
 			if(view == curr_view && !is_status_bar_multiline())
 			{
 				ui_ruler_update(view);
 			}
-			break;
+			return 1;
 		case UUE_FULL_RELOAD:
 			load_saving_pos(view, 0);
-			break;
+			return 1;
 
 		default:
 			assert(0 && "Unexpected type of scheduled UI event.");
-			break;
+			return 0;
 	}
 }
 

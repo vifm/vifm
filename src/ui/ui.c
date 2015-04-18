@@ -86,6 +86,7 @@ static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
+static size_t get_title_width(const FileView *view);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
@@ -379,8 +380,6 @@ resize_all(void)
 
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
-	mvwin(error_win, (screen_y - 10)/2, 1);
 
 	border_height = screen_y - 3 + !cfg.display_statusline;
 
@@ -1215,6 +1214,7 @@ ui_view_title_update(FileView *view)
 {
 	char *title;
 	size_t len;
+	size_t title_width;
 	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
 	FileView *selected = gen_view ? other_view : curr_view;
 
@@ -1272,12 +1272,14 @@ ui_view_title_update(FileView *view)
 	}
 
 	len = get_screen_string_length(title);
-	if(len > view->window_width + 1 && view == selected)
-	{ /* Truncate long directory names */
+	title_width = get_title_width(view);
+	if(len > title_width && view == selected)
+	{
+		/* Truncate long directory names. */
 		const char *ptr;
 
 		ptr = title;
-		while(len > view->window_width - 2)
+		while(len > title_width - 3)
 		{
 			len--;
 			ptr += get_char_width(ptr);
@@ -1286,10 +1288,9 @@ ui_view_title_update(FileView *view)
 		wprintw(view->title, "...");
 		wprint(view->title, ptr);
 	}
-	else if(len > view->window_width + 1 && view != selected)
+	else if(len > title_width && view != selected)
 	{
-		size_t len = get_normal_utf8_string_widthn(title,
-				view->window_width - 3 + 1);
+		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
 		title[len] = '\0';
 		wprint(view->title, title);
 		wprintw(view->title, "...");
@@ -1302,6 +1303,14 @@ ui_view_title_update(FileView *view)
 	wnoutrefresh(view->title);
 
 	free(title);
+}
+
+/* Gets width of the title for the view. */
+static size_t
+get_title_width(const FileView *view)
+{
+	const int correction = cfg.side_borders_visible ? 0 : -1;
+	return ((int)view->window_width + 1) + correction;
 }
 
 int
@@ -1399,14 +1408,8 @@ ui_view_entry_target_type(const FileView *const view, size_t pos)
 int
 ui_view_available_width(const FileView *const view)
 {
-	if(cfg.filelist_col_padding)
-	{
-		return (int)view->window_width - 1;
-	}
-	else
-	{
-		return (int)view->window_width + 1;
-	}
+	const int correction = cfg.filelist_col_padding ? -2 : 0;
+	return ((int)view->window_width + 1) + correction;
 }
 
 const col_scheme_t *
