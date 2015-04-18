@@ -86,6 +86,7 @@ static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
+static char * format_view_title(const FileView *view);
 static size_t get_title_width(const FileView *view);
 static uint64_t get_updated_time(uint64_t prev);
 
@@ -1246,25 +1247,7 @@ ui_view_title_update(FileView *view)
 	}
 	werase(view->title);
 
-	if(view->explore_mode)
-	{
-		char full_path[PATH_MAX];
-		get_current_full_path(view, sizeof(full_path), full_path);
-		title = strdup(replace_home_part(full_path));
-	}
-	else if(curr_stats.view && view == other_view)
-	{
-		title = format_str("File: %s", get_current_file_name(curr_view));
-	}
-	else if(flist_custom_active(view))
-	{
-		title = format_str("[%s] @ %s", view->custom.title,
-				replace_home_part(view->custom.orig_dir));
-	}
-	else
-	{
-		title = strdup(replace_home_part(view->curr_dir));
-	}
+	title = format_view_title(view);
 
 	if(view == selected)
 	{
@@ -1304,6 +1287,32 @@ ui_view_title_update(FileView *view)
 	wnoutrefresh(view->title);
 
 	free(title);
+}
+
+/* Formats title for the view.  Returns newly allocated string, which should be
+ * freed by the caller, or NULL if there is not enough memory. */
+static char *
+format_view_title(const FileView *view)
+{
+	if(view->explore_mode)
+	{
+		char full_path[PATH_MAX];
+		get_current_full_path(view, sizeof(full_path), full_path);
+		return strdup(replace_home_part(full_path));
+	}
+	else if(curr_stats.view && view == other_view)
+	{
+		return format_str("File: %s", get_current_file_name(curr_view));
+	}
+	else if(flist_custom_active(view))
+	{
+		return format_str("[%s] @ %s", view->custom.title,
+				replace_home_part(view->custom.orig_dir));
+	}
+	else
+	{
+		return strdup(replace_home_part(view->curr_dir));
+	}
 }
 
 /* Gets width of the title for the view. */
