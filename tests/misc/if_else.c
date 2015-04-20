@@ -185,9 +185,19 @@ TEST(sourcing_in_body)
 	assert_int_equal(0, exec_commands(CMDS, &lwin, CIT_COMMAND));
 }
 
-TEST(wrong_expr_causes_error)
+TEST(wrong_expr_causes_hard_error)
 {
 	assert_true(exec_commands("if $USER == root", &lwin, CIT_COMMAND) < 0);
+}
+
+TEST(misplaced_else_causes_hard_error)
+{
+	assert_true(exec_commands("else", &lwin, CIT_COMMAND) < 0);
+}
+
+TEST(misplaced_endif_causes_hard_error)
+{
+	assert_true(exec_commands("endif", &lwin, CIT_COMMAND) < 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

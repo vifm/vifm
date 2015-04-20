@@ -2207,7 +2207,7 @@ else_cmd(const cmd_info_t *cmd_info)
 	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":else without :if");
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
 	keep_view_selection = 1;
@@ -2228,7 +2228,7 @@ endif_cmd(const cmd_info_t *cmd_info)
 	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":endif without :if");
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 	int_stack_pop(&if_levels);
 	return 0;
