@@ -160,6 +160,9 @@
 	Report signal that killed Vifm when that happens.  Thanks to Svyatoslav
 	Mishyn, a.k.a. juef.
 
+	Report error on wrong expression in :if statement and misplaced
+	:else/:endif on file sourcing.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

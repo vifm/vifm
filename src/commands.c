@@ -2207,7 +2207,7 @@ else_cmd(const cmd_info_t *cmd_info)
 	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":else without :if");
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
 	keep_view_selection = 1;
@@ -2228,7 +2228,7 @@ endif_cmd(const cmd_info_t *cmd_info)
 	if(is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error(":endif without :if");
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 	int_stack_pop(&if_levels);
 	return 0;
@@ -3154,7 +3154,7 @@ if_cmd(const cmd_info_t *cmd_info)
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);
 		status_bar_error(vle_tb_get_data(vle_err));
-		return 1;
+		return CMDS_ERR_CUSTOM;
 	}
 	(void)int_stack_push(&if_levels, var_to_boolean(condition));
 	var_free(condition);
@@ -3768,7 +3768,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 static int
 set_cmd(const cmd_info_t *cmd_info)
 {
-	int result = process_set_args(cmd_info->args);
+	const int result = process_set_args(cmd_info->args);
 	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 
