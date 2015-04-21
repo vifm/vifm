@@ -944,7 +944,7 @@ change_directory(FileView *view, const char directory[])
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
-	if(is_parent_dir(directory) && fuse_is_in_mounted_dir(view->curr_dir))
+	if(is_parent_dir(directory) && fuse_is_mount_point(view->curr_dir))
 	{
 		FileView *other = (view == curr_view) ? other_view : curr_view;
 		if(!path_starts_with(other->curr_dir, view->curr_dir))

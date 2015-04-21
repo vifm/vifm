@@ -440,7 +440,7 @@ fuse_try_updir_from_a_mount(const char path[], FileView *view)
 }
 
 int
-fuse_is_in_mounted_dir(const char path[])
+fuse_is_mount_point(const char path[])
 {
 	return get_mount_by_mount_point(path) != NULL;
 }
