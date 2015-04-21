@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 18
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 21
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -30,7 +30,7 @@
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
-|vifm-env-vars|           Environment variables that affect vifm.
+|vifm-env-vars|           Environment variables that affect vifm or set by it.
 |vifm-see-also|           Other resources about vifm.
 
 Tag name structure:
@@ -3874,6 +3874,13 @@ vifmrc in the same directory as vifm.exe has higher priority than
 $VIFM/vifmrc).
 
 See |vifm-startup| section above for more details.
+
+                                               *vifm-$VIFM_FUSE_FILE*
+On execution of external commands this variable is set to the full path of file
+used to initiate FUSE mount of the closes mount point from current pane
+directory up.  It's not set when outside FUSE mount point.  When vifm is used
+inside terminal multiplexer, it tries to set this variable as well (it doesn't
+work this way on its own).
 
 --------------------------------------------------------------------------------
 *vifm-see-also*

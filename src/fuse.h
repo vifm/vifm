@@ -36,6 +36,11 @@ int fuse_try_updir_from_a_mount(const char path[], FileView *view);
  * operation.  Returns non-zero if so, and zero otherwise. */
 int fuse_is_mount_point(const char path[]);
 
+/* For paths under one of FUSE mount points gets full path to file used to
+ * initiate mounting.  Returns pointer to internally stored string, or NULL if
+ * path is out of any previously made FUSE mounts. */
+const char * fuse_get_mount_file(const char path[]);
+
 /* Return value:
  *   -1 error occurred.
  *   0  not mount point.
