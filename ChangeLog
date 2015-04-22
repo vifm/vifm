@@ -163,6 +163,10 @@
 	Report error on wrong expression in :if statement and misplaced
 	:else/:endif on file sourcing.
 
+	Define $VIFM_FUSE_FILE environment variable for external commands to
+	communicate path to file used to initiate FUSE mounting of directory we're
+	in.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

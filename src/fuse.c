@@ -25,7 +25,7 @@
 #include <unistd.h> /* rmdir() unlink() */
 
 #include <errno.h> /* errno */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() malloc() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
@@ -48,17 +48,16 @@
 #include "filelist.h"
 #include "status.h"
 
+/* Description of existing FUSE mounts. */
 typedef struct fuse_mount_t
 {
-	char source_file_name[PATH_MAX]; /* full path to source file */
-	char source_file_dir[PATH_MAX]; /* full path to directory of source file */
-	char mount_point[PATH_MAX]; /* full path to mount point */
-	int mount_point_id;
-	struct fuse_mount_t *next;
+	char source_file_path[PATH_MAX]; /* Full path to source file. */
+	char source_file_dir[PATH_MAX];  /* Full path to directory of source file. */
+	char mount_point[PATH_MAX];      /* Full path to mount point. */
+	int mount_point_id;              /* Identifier of mounts for unique dirs. */
+	struct fuse_mount_t *next;       /* Pointer to the next mount in chain. */
 }
 fuse_mount_t;
-
-static fuse_mount_t *fuse_mounts;
 
 static int fuse_mount(FileView *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[]);
@@ -70,7 +69,11 @@ TSTATIC void format_mount_command(const char mount_point[],
 		size_t buf_size, char buf[], int *foreground);
 static fuse_mount_t * get_mount_by_source(const char source[]);
 static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
+static fuse_mount_t * get_mount_by_path(const char path[]);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
+
+/* List of active mounts. */
+static fuse_mount_t *fuse_mounts;
 
 void
 fuse_try_mount(FileView *view, const char program[])
@@ -150,7 +153,7 @@ get_mount_by_source(const char source[])
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		if(paths_are_equal(runner->source_file_name, source))
+		if(paths_are_equal(runner->source_file_path, source))
 			break;
 		runner = runner->next;
 	}
@@ -291,7 +294,7 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 {
 	fuse_mount_t *fuse_mount = malloc(sizeof(*fuse_mount));
 
-	copy_str(fuse_mount->source_file_name, sizeof(fuse_mount->source_file_name),
+	copy_str(fuse_mount->source_file_path, sizeof(fuse_mount->source_file_path),
 			file_full_path);
 
 	copy_str(fuse_mount->source_file_dir, sizeof(fuse_mount->source_file_dir),
@@ -430,22 +433,24 @@ fuse_unmount_all(void)
 int
 fuse_try_updir_from_a_mount(const char path[], FileView *view)
 {
-	fuse_mount_t *runner;
-	if((runner = get_mount_by_mount_point(path)) != NULL)
+	fuse_mount_t *const mount = get_mount_by_mount_point(path);
+	if(mount == NULL)
 	{
-		updir_from_mount(view, runner);
-		return 1;
+		return 0;
 	}
-	return 0;
+
+	updir_from_mount(view, mount);
+	return 1;
 }
 
 int
-fuse_is_in_mounted_dir(const char path[])
+fuse_is_mount_point(const char path[])
 {
 	return get_mount_by_mount_point(path) != NULL;
 }
 
-/* Searches for mount record by path to mount point. */
+/* Searches for mount record by path to mount point.  Returns mount point or
+ * NULL on failure. */
 static fuse_mount_t *
 get_mount_by_mount_point(const char dir[])
 {
@@ -453,10 +458,44 @@ get_mount_by_mount_point(const char dir[])
 	while(runner != NULL)
 	{
 		if(paths_are_equal(runner->mount_point, dir))
-			break;
+		{
+			return runner;
+		}
 		runner = runner->next;
 	}
-	return runner;
+	return NULL;
+}
+
+const char *
+fuse_get_mount_file(const char path[])
+{
+	const fuse_mount_t *const mount = get_mount_by_path(path);
+	return (mount == NULL) ? NULL : mount->source_file_path;
+}
+
+/* Searches for mount record by path inside one of mount points.  Picks the
+ * longest match so that even nested mount points work.  Returns mount point or
+ * NULL on failure. */
+static fuse_mount_t *
+get_mount_by_path(const char path[])
+{
+	size_t max_len = 0U;
+	fuse_mount_t *mount = NULL;
+	fuse_mount_t *runner = fuse_mounts;
+	while(runner != NULL)
+	{
+		if(path_starts_with(path, runner->mount_point))
+		{
+			const size_t len = strlen(runner->mount_point);
+			if(len > max_len)
+			{
+				max_len = len;
+				mount = runner;
+			}
+		}
+		runner = runner->next;
+	}
+	return mount;
 }
 
 int
@@ -508,7 +547,7 @@ fuse_try_unmount(FileView *view)
 	{
 		werase(status_bar);
 		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
-				runner->source_file_name);
+				runner->source_file_path);
 		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
 	}
@@ -540,7 +579,7 @@ updir_from_mount(FileView *view, fuse_mount_t *runner)
 
 	load_dir_list(view, 0);
 
-	file = runner->source_file_name;
+	file = runner->source_file_path;
 	file += strlen(runner->source_file_dir) + 1;
 	pos = find_file_pos_in_list(view, file);
 	flist_set_pos(view, pos);

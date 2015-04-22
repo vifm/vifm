@@ -96,6 +96,8 @@ static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
+static void setup_shellout_env(void);
+static void cleanup_shellout_env(void);
 static char * gen_shell_cmd(const char cmd[], int pause,
 		int use_term_multiplexer);
 static char * gen_term_multiplexer_cmd(const char cmd[], int pause);
@@ -105,6 +107,10 @@ static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
+
+/* Name of environment variable used to communicate path to file used to
+ * initiate FUSE mounting of directory we're in. */
+static const char *const FUSE_FILE_ENVVAR = "VIFM_FUSE_FILE";
 
 void
 open_file(FileView *view, FileHandleExec exec)
@@ -735,17 +741,17 @@ shellout(const char command[], int pause, int use_term_multiplexer)
 		pause = -1;
 	}
 
+	setup_shellout_env();
+
 	cmd = gen_shell_cmd(command, pause > 0, use_term_multiplexer);
 
 	endwin();
-
-	/* Need to use setenv instead of getcwd for a symlink directory */
-	env_set("PWD", curr_view->curr_dir);
-
 	ec = vifm_system(cmd);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
+
+	cleanup_shellout_env();
 
 	if(result != 0 && pause < 0)
 	{
@@ -771,6 +777,67 @@ shellout(const char command[], int pause, int use_term_multiplexer)
 	curs_set(FALSE);
 
 	return result;
+}
+
+/* Configures environment variables before shellout.  Should be used in pair
+ * with cleanup_shellout_env(). */
+static void
+setup_shellout_env(void)
+{
+	const char *mount_file;
+	const char *term_multiplexer_fmt;
+	char *escaped_path;
+	char *cmd;
+
+	/* Need to use internal value instead of getcwd() for a symlink directory. */
+	env_set("PWD", curr_view->curr_dir);
+
+	mount_file = fuse_get_mount_file(curr_view->curr_dir);
+	if(mount_file == NULL)
+	{
+		env_remove(FUSE_FILE_ENVVAR);
+	}
+	else
+	{
+		env_set(FUSE_FILE_ENVVAR, mount_file);
+	}
+
+	switch(curr_stats.term_multiplexer)
+	{
+		case TM_TMUX:   term_multiplexer_fmt = "tmux set-environment %s %s"; break;
+		case TM_SCREEN: term_multiplexer_fmt = "screen -X setenv %s %s"; break;
+
+		default:
+			return;
+	}
+
+	escaped_path = escape_filename(mount_file, 0);
+	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR, escaped_path);
+	(void)vifm_system(cmd);
+	free(cmd);
+	free(escaped_path);
+}
+
+/* Cleans up some environment changes made by setup_shellout_env() after command
+ * execution ends. */
+static void
+cleanup_shellout_env(void)
+{
+	const char *term_multiplexer_fmt;
+	char *cmd;
+
+	switch(curr_stats.term_multiplexer)
+	{
+		case TM_TMUX:   term_multiplexer_fmt = "tmux set-environment -u %s"; break;
+		case TM_SCREEN: term_multiplexer_fmt = "screen -X unsetenv %s"; break;
+
+		default:
+			return;
+	}
+
+	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR);
+	(void)vifm_system(cmd);
+	free(cmd);
 }
 
 /* Composes shell command to run basing on parameters for execution.  NULL cmd

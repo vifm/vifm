@@ -4,6 +4,7 @@ const char *tags[] = {
 	"vifm-$HOME",
 	"vifm-$MYVIFMRC",
 	"vifm-$VIFM",
+	"vifm-$VIFM_FUSE_FILE",
 	"vifm-%",
 	"vifm-%C",
 	"vifm-%D",

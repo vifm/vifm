@@ -32,7 +32,14 @@ void fuse_unmount_all(void);
 /* Returns non-zero on successful leaving mount point directory. */
 int fuse_try_updir_from_a_mount(const char path[], FileView *view);
 
-int fuse_is_in_mounted_dir(const char path[]);
+/* Checks whether given path is mount point of some previous FUSE mount
+ * operation.  Returns non-zero if so, and zero otherwise. */
+int fuse_is_mount_point(const char path[]);
+
+/* For paths under one of FUSE mount points gets full path to file used to
+ * initiate mounting.  Returns pointer to internally stored string, or NULL if
+ * path is out of any previously made FUSE mounts. */
+const char * fuse_get_mount_file(const char path[]);
 
 /* Return value:
  *   -1 error occurred.
