@@ -689,6 +689,13 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
+		const char *const src = args->sel_list[i];
+		char *const trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
+		ops_enqueue(ops, src, trash_dir);
+	}
+
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
 		delete_file_in_bg(args->sel_list[i], args->use_trash);
 		++bg_op->done;
 	}
@@ -3260,6 +3267,13 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 
 	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
 			args->move ? "moving" : "copying", args->path, bg_op);
+
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
+		const char *const src = args->sel_list[i];
+		const char *const dst = custom_fnames ? args->list[i] : NULL;
+		ops_enqueue(ops, src, dst);
+	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
