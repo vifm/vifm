@@ -175,6 +175,7 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
+static void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
@@ -557,7 +558,7 @@ delete_files(FileView *view, int reg, int use_trash)
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
 			get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -2051,7 +2052,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	status_bar_messagef("%d file%s cloned%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -2193,7 +2194,7 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_free(put_confirm.ops);
+	free_ops(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
@@ -2879,7 +2880,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -2917,7 +2918,7 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 }
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
- * newly allocated structure, which should be freed by ops_free(). */
+ * newly allocated structure, which should be freed by free_ops(). */
 static ops_t *
 get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
@@ -3204,6 +3205,14 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	}
 
 	free_bg_args(args);
+}
+
+/* Frees ops structure previously obtained by call to get_ops().  ops can be
+ * NULL. */
+static void
+free_ops(ops_t *ops)
+{
+	ops_free(ops);
 }
 
 /* Actual implementation of background file copying/moving. */
