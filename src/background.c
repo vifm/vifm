@@ -797,6 +797,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 
 	new->bg_op.total = 0;
 	new->bg_op.done = 0;
+	new->bg_op.progress = -1;
 
 	jobs = new;
 	return new;

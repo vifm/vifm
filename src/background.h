@@ -47,6 +47,8 @@ typedef struct
 {
 	int total; /* Total number of coarse operations. */
 	int done;  /* Number of already processed coarse operations. */
+
+	int progress; /* Progress in percents.  -1 if task doesn't provide one. */
 }
 bg_op_t;
 

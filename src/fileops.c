@@ -77,6 +77,10 @@
 #include "undo.h"
 #include "vim.h"
 
+/* 10 to the power of number of digits after decimal point to take into account
+ * on progress percentage counting. */
+#define IO_PRECISION 10
+
 /* What to do with rename candidate name (old name and new name). */
 typedef enum
 {
@@ -93,6 +97,19 @@ typedef enum
 	DR_DESTINATION, /* Destination path. */
 }
 DirRole;
+
+/* Object to be able to differentiate between foreground and background
+ * operations in io_progress_changed() handler. */
+typedef struct
+{
+	int bg; /* Whether this is background operation. */
+	union
+	{
+		ops_t *ops;     /* Information for foreground operation. */
+		bg_op_t *bg_op; /* Information for background operation. */
+	};
+}
+estim_backref_t;
 
 typedef struct
 {
@@ -117,6 +134,8 @@ typedef struct
 dir_size_args_t;
 
 static void io_progress_changed(const io_progress_t *const state);
+static void io_progress_fg(const io_progress_t *const state, int progress);
+static void io_progress_bg(const io_progress_t *const state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
@@ -175,6 +194,8 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
+static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
+		bg_op_t *bg_op);
 static void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[]);
@@ -236,38 +257,29 @@ init_fileops(void)
 static void
 io_progress_changed(const io_progress_t *const state)
 {
-	enum { PRECISION = 10 };
-
 	static int prev_progress = -1;
 	static IoPs prev_stage;
 
 	const ioeta_estim_t *const estim = state->estim;
-	ops_t *const ops = estim->param;
+	estim_backref_t *const backref = estim->param;
 
-	char current_size_str[16];
-	char total_size_str[16];
 	int progress;
-	char pretty_path[PATH_MAX];
-	char src_path[PATH_MAX];
 	int redraw;
-	const char *title, *ctrl_msg;
-	const char *target_name;
-	char *as_part;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
-		progress = estim->total_items/PRECISION;
+		progress = estim->total_items/IO_PRECISION;
 	}
 	else if(estim->total_bytes == 0)
 	{
 		progress = 0;
 	}
-	else if(prev_progress >= 100*PRECISION &&
+	else if(prev_progress >= 100*IO_PRECISION &&
 			estim->current_byte == estim->total_bytes)
 	{
 		/* Special handling for unknown total size. */
 		++prev_progress;
-		if(prev_progress%PRECISION != 0)
+		if(prev_progress%IO_PRECISION != 0)
 		{
 			return;
 		}
@@ -275,10 +287,14 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
+		progress = (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
 	}
 
-	redraw = fetch_redraw_scheduled();
+	/* Don't query for scheduled redraw for background operations. */
+	redraw = !backref->bg && fetch_redraw_scheduled();
+
+	/* Do nothing if progress change is small, but force update on stage
+	 * change or redraw request. */
 	if(progress == prev_progress && state->stage == prev_stage && !redraw)
 	{
 		return;
@@ -295,6 +311,32 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		modes_redraw();
 	}
+
+	if(backref->bg)
+	{
+		io_progress_bg(state, progress);
+	}
+	else
+	{
+		io_progress_fg(state, progress);
+	}
+}
+
+/* Takes care of progress for foreground operations. */
+static void
+io_progress_fg(const io_progress_t *const state, int progress)
+{
+	char current_size_str[16];
+	char total_size_str[16];
+	char pretty_path[PATH_MAX];
+	char src_path[PATH_MAX];
+	const char *title, *ctrl_msg;
+	const char *target_name;
+	char *as_part;
+
+	const ioeta_estim_t *const estim = state->estim;
+	estim_backref_t *const backref = estim->param;
+	ops_t *const ops = backref->ops;
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -336,20 +378,31 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		char *const file_progress = format_file_progress(estim, PRECISION);
+		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
 		draw_msgf(title, ctrl_msg,
 				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
-				current_size_str, total_size_str, progress/PRECISION, pretty_path,
+				current_size_str, total_size_str, progress/IO_PRECISION, pretty_path,
 				src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
 
 	free(as_part);
+}
+
+/* Takes care of progress for background operations. */
+static void
+io_progress_bg(const io_progress_t *const state, int progress)
+{
+	const ioeta_estim_t *const estim = state->estim;
+	estim_backref_t *const backref = estim->param;
+	bg_op_t *const bg_op = backref->bg_op;
+
+	bg_op->progress = progress;
 }
 
 /* Formats file progress part of the progress message.  Returns pointer to newly
@@ -629,6 +682,10 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
+	ops_t *ops;
+
+	ops = get_bg_ops(args->use_trash ? OP_REMOVE : OP_REMOVESL,
+			args->use_trash ? "deleting" : "Deleting", args->path, bg_op);
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
@@ -636,6 +693,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
+	free_ops(ops);
 	free_bg_args(args);
 }
 
@@ -2926,7 +2984,11 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
-		ops->estim = ioeta_alloc(ops);
+		estim_backref_t *const backref = malloc(sizeof(*backref));
+		backref->bg = 0;
+		backref->ops = ops;
+
+		ops->estim = ioeta_alloc(backref);
 	}
 	return ops;
 }
@@ -3194,6 +3256,10 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	size_t i;
 	bg_args_t *const args = arg;
 	const int custom_fnames = (args->nlines > 0);
+	ops_t *ops;
+
+	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
+			args->move ? "moving" : "copying", args->path, bg_op);
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
@@ -3204,7 +3270,33 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
+	free_ops(ops);
 	free_bg_args(args);
+}
+
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure or NULL if ops are not needed, which should be
+ * freed by free_ops(). */
+static ops_t *
+get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
+{
+	ops_t *ops;
+
+	if(!cfg.use_system_calls)
+	{
+		return NULL;
+	}
+
+	estim_backref_t *const backref = malloc(sizeof(*backref));
+
+	ops = ops_alloc(main_op, descr, dir, dir);
+
+	backref->bg = 0;
+	backref->ops = ops;
+
+	ops->estim = ioeta_alloc(backref);
+
+	return ops;
 }
 
 /* Frees ops structure previously obtained by call to get_ops().  ops can be
@@ -3212,6 +3304,10 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 static void
 free_ops(ops_t *ops)
 {
+	if(cfg.use_system_calls)
+	{
+		free(ops->estim->param);
+	}
 	ops_free(ops);
 }
 
