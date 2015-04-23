@@ -53,6 +53,22 @@
 #include "commands_completion.h"
 #include "status.h"
 
+/**
+ * This unit implements three kinds of backgrounded operations:
+ *  - external applications run from vifm (commands);
+ *  - threads that perform auxiliary work (tasks), like counting size of
+ *    directories;
+ *  - threads that perform important work (operations), like file copying,
+ *    deletion, etc.
+ *
+ * All jobs can be viewed via :jobs menu.
+ *
+ * Tasks and operations can provide progress information for displaying it in
+ * UI.
+ *
+ * Operations are displayed on designated job bar.
+ */
+
 /* Turns pointer (P) to field (F) of a structure (S) to address of that
  * structure. */
 #define STRUCT_FROM_FIELD(S, F, P) ((S *)((char *)P - offsetof(S, F)))
@@ -248,7 +264,7 @@ job_free(job_t *const job)
 		return;
 	}
 
-	if(job->type != BJT_COMMAND)
+	if(job->type == BJT_COMMAND)
 	{
 		pthread_mutex_destroy(&job->bg_op_guard);
 	}
@@ -757,7 +773,10 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		return 2;
 	}
 
-	ui_stat_job_bar_add(&task_args->job->bg_op);
+	if(task_args->job->type == BJT_OPERATION)
+	{
+		ui_stat_job_bar_add(&task_args->job->bg_op);
+	}
 
 	task_args->job->bg_op.total = total;
 
