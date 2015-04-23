@@ -53,6 +53,10 @@
 #include "commands_completion.h"
 #include "status.h"
 
+/* Turns pointer (P) to field (F) of a structure (S) to address of that
+ * structure. */
+#define STRUCT_FROM_FIELD(S, F, P) ((S *)((char *)P - offsetof(S, F)))
+
 /* Special value of process id for internal tasks running in background
  * threads. */
 #define WRONG_PID ((pid_t)-1)
@@ -896,14 +900,14 @@ bg_jobs_unfreeze(void)
 void
 bg_op_lock(bg_op_t *bg_op)
 {
-	job_t *const job = (job_t *)((char *)bg_op - offsetof(job_t, bg_op));
+	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
 	pthread_mutex_lock(&job->bg_op_guard);
 }
 
 void
 bg_op_unlock(bg_op_t *bg_op)
 {
-	job_t *const job = (job_t *)((char *)bg_op - offsetof(job_t, bg_op));
+	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
 	pthread_mutex_unlock(&job->bg_op_guard);
 }
 
