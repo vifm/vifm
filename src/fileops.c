@@ -3337,11 +3337,14 @@ get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 static void
 free_ops(ops_t *ops)
 {
-	if(cfg.use_system_calls)
+	if(ops != NULL)
 	{
-		free(ops->estim->param);
+		if(cfg.use_system_calls)
+		{
+			free(ops->estim->param);
+		}
+		ops_free(ops);
 	}
-	ops_free(ops);
 }
 
 /* Updates description of background job. */
