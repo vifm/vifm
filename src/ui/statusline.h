@@ -39,11 +39,13 @@ void ui_stat_refresh(void);
 /* Gets height of the job bar (>= 0).  Returns the height. */
 int ui_stat_job_bar_height(void);
 
+struct bg_op_t;
+
 /* Adds job to the bar. */
-void ui_stat_job_bar_add(void);
+void ui_stat_job_bar_add(struct bg_op_t *bg_op);
 
 /* Removes job from the bar. */
-void ui_stat_job_bar_remove(void);
+void ui_stat_job_bar_remove(struct bg_op_t *bg_op);
 
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);

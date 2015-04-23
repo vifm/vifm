@@ -23,7 +23,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcat() strdup() strlen() */
-#include <unistd.h> /* _SC_* sysconf() */
+#include <unistd.h>
 
 #include "../cfg/config.h"
 #include "../engine/mode.h"
@@ -33,6 +33,7 @@
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../background.h"
 #include "../filelist.h"
 #include "ui.h"
 
@@ -396,14 +397,14 @@ ui_stat_job_bar_height(void)
 }
 
 void
-ui_stat_job_bar_add(void)
+ui_stat_job_bar_add(bg_op_t *bg_op)
 {
 	++njobs;
 	update_job_bar();
 }
 
 void
-ui_stat_job_bar_remove(void)
+ui_stat_job_bar_remove(bg_op_t *bg_op)
 {
 	const int prev_height = ui_stat_job_bar_height();
 

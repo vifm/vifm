@@ -23,7 +23,7 @@
 #include <windows.h>
 #endif
 
-#include <pthread.h>
+#include <pthread.h> /* PTHREAD_* pthread_*() */
 
 #include <fcntl.h> /* open() */
 #include <unistd.h>
@@ -160,7 +160,7 @@ check_background_jobs(void)
 
 			if(j->type == BJT_OPERATION)
 			{
-				ui_stat_job_bar_remove();
+				ui_stat_job_bar_remove(&j->bg_op);
 			}
 
 			job_free(j);
@@ -242,6 +242,11 @@ job_free(job_t *const job)
 	if(job == NULL)
 	{
 		return;
+	}
+
+	if(job->type != BJT_COMMAND)
+	{
+		pthread_mutex_destroy(&job->bg_op_guard);
 	}
 
 #ifndef _WIN32
@@ -748,7 +753,7 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		return 2;
 	}
 
-	ui_stat_job_bar_add();
+	ui_stat_job_bar_add(&task_args->job->bg_op);
 
 	task_args->job->bg_op.total = total;
 
@@ -795,9 +800,14 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->running = 1;
 	new->error = NULL;
 
+	if(type != BJT_COMMAND)
+	{
+		pthread_mutex_init(&new->bg_op_guard, NULL);
+	}
 	new->bg_op.total = 0;
 	new->bg_op.done = 0;
 	new->bg_op.progress = -1;
+	new->bg_op.descr = NULL;
 
 	jobs = new;
 	return new;
@@ -881,6 +891,26 @@ bg_jobs_unfreeze(void)
 	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
 	 *        blocked. */
 	(void)set_sigchld(0);
+}
+
+void
+bg_op_lock(bg_op_t *bg_op)
+{
+	job_t *const job = (job_t *)((char *)bg_op - offsetof(job_t, bg_op));
+	pthread_mutex_lock(&job->bg_op_guard);
+}
+
+void
+bg_op_unlock(bg_op_t *bg_op)
+{
+	job_t *const job = (job_t *)((char *)bg_op - offsetof(job_t, bg_op));
+	pthread_mutex_unlock(&job->bg_op_guard);
+}
+
+void
+bg_op_changed(bg_op_t *bg_op)
+{
+	/* TODO: inform UI about the update. */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -24,6 +24,8 @@
 #include <windef.h>
 #endif
 
+#include <pthread.h> /* pthread_mutex_t */
+
 #include <sys/types.h> /* pid_t */
 
 #include <stdio.h>
@@ -43,12 +45,13 @@ typedef enum
 BgJobType;
 
 /* Auxiliary structure to be updated by background tasks while they progress. */
-typedef struct
+typedef struct bg_op_t
 {
 	int total; /* Total number of coarse operations. */
 	int done;  /* Number of already processed coarse operations. */
 
 	int progress; /* Progress in percents.  -1 if task doesn't provide one. */
+	char *descr;  /* Description of current activity, can be NULL. */
 }
 bg_op_t;
 
@@ -64,6 +67,7 @@ typedef struct job_t
 	char *error;
 
 	/* For background operations and tasks. */
+	pthread_mutex_t bg_op_guard;
 	bg_op_t bg_op;
 
 #ifndef _WIN32
@@ -121,6 +125,18 @@ int bg_jobs_freeze(void);
 
 /* Undoes changes made by bg_jobs_freeze(). */
 void bg_jobs_unfreeze(void);
+
+/* Temporary locks bg_op_t structure to ensure that it's not modified by
+ * anyone during reading/updating its fields.  The structure must be part of
+ * job_t. */
+void bg_op_lock(bg_op_t *bg_op);
+
+/* Unlocks bg_op_t structure.  The structure must be part of job_t. */
+void bg_op_unlock(bg_op_t *bg_op);
+
+/* Callback-like function to report that state of background operation
+ * changed. */
+void bg_op_changed(bg_op_t *bg_op);
 
 #endif /* VIFM__BACKGROUND_H__ */
 
