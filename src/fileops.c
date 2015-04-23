@@ -141,7 +141,7 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
-static void delete_file_in_bg(const char path[], int use_trash);
+static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
@@ -197,8 +197,8 @@ static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
 		bg_op_t *bg_op);
 static void free_ops(ops_t *ops);
-static void cpmv_file_in_bg(const char src[], const char dst[], int move,
-		int force, int from_trash, const char dst_dir[]);
+static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
+		int move, int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops);
 static int mv_file_f(const char src[], const char dst[], OPS op, int bg,
@@ -402,7 +402,7 @@ io_progress_bg(const io_progress_t *const state, int progress)
 	estim_backref_t *const backref = estim->param;
 	bg_op_t *const bg_op = backref->bg_op;
 
-	bg_op->progress = progress;
+	bg_op->progress = progress/IO_PRECISION;
 }
 
 /* Formats file progress part of the progress message.  Returns pointer to newly
@@ -687,16 +687,24 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 	ops = get_bg_ops(args->use_trash ? OP_REMOVE : OP_REMOVESL,
 			args->use_trash ? "deleting" : "Deleting", args->path, bg_op);
 
-	for(i = 0U; i < args->sel_list_len; ++i)
+	if(ops != NULL)
 	{
-		const char *const src = args->sel_list[i];
-		char *const trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
-		ops_enqueue(ops, src, trash_dir);
+		size_t i;
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			char *trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
+			ops_enqueue(ops, src, trash_dir);
+			if(trash_dir != args->path)
+			{
+				free(trash_dir);
+			}
+		}
 	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
-		delete_file_in_bg(args->sel_list[i], args->use_trash);
+		delete_file_in_bg(ops, args->sel_list[i], args->use_trash);
 		++bg_op->done;
 	}
 
@@ -706,7 +714,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 
 /* Actual implementation of background file removal. */
 static void
-delete_file_in_bg(const char path[], int use_trash)
+delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 {
 	if(!use_trash)
 	{
@@ -719,7 +727,7 @@ delete_file_in_bg(const char path[], int use_trash)
 		const char *const fname = get_last_path_component(path);
 		char *const trash_name = gen_trash_name(path, fname);
 		const char *const dest = (trash_name != NULL) ? trash_name : fname;
-		(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
+		(void)perform_operation(OP_MOVE, ops, (void *)1, path, dest);
 		free(trash_name);
 	}
 }
@@ -3268,18 +3276,22 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
 			args->move ? "moving" : "copying", args->path, bg_op);
 
-	for(i = 0U; i < args->sel_list_len; ++i)
+	if(ops != NULL)
 	{
-		const char *const src = args->sel_list[i];
-		const char *const dst = custom_fnames ? args->list[i] : NULL;
-		ops_enqueue(ops, src, dst);
+		size_t i;
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			const char *const dst = custom_fnames ? args->list[i] : NULL;
+			ops_enqueue(ops, src, dst);
+		}
 	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
-		cpmv_file_in_bg(src, dst, args->move, args->force, args->use_trash,
+		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->use_trash,
 				args->path);
 		++bg_op->done;
 	}
@@ -3305,8 +3317,8 @@ get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 
 	ops = ops_alloc(main_op, descr, dir, dir);
 
-	backref->bg = 0;
-	backref->ops = ops;
+	backref->bg = 1;
+	backref->bg_op = bg_op;
 
 	ops->estim = ioeta_alloc(backref);
 
@@ -3327,8 +3339,8 @@ free_ops(ops_t *ops)
 
 /* Actual implementation of background file copying/moving. */
 static void
-cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
-		int from_trash, const char dst_dir[])
+cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
+		int force, int from_trash, const char dst_dir[])
 {
 	char dst_full[PATH_MAX];
 
@@ -3352,11 +3364,11 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
 
 	if(move)
 	{
-		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, NULL);
+		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
 	}
 	else
 	{
-		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, NULL);
+		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, ops);
 	}
 }
 
