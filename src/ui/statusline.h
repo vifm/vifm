@@ -47,6 +47,13 @@ void ui_stat_job_bar_add(struct bg_op_t *bg_op);
 /* Removes job from the bar. */
 void ui_stat_job_bar_remove(struct bg_op_t *bg_op);
 
+/* Informs about changes of the job. */
+void ui_stat_job_bar_changed(struct bg_op_t *bg_op);
+
+/* Checks for previously reported changes in background jobs and updates view if
+ * needed. */
+void ui_stat_job_bar_check_for_updates(void);
+
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);
 )

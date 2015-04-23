@@ -21,7 +21,7 @@
 #include <curses.h> /* mvwin() wbkgdset() werase() */
 
 #include <ctype.h> /* isdigit() */
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h>
 
@@ -50,7 +50,11 @@ static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 static void update_job_bar(void);
 
 /* Number of backround jobs. */
-static int njobs;
+static size_t nbar_jobs;
+/* Array of jobs. */
+static bg_op_t **bar_jobs;
+/* Whether list of jobs needs to be redrawn. */
+static int job_bar_changed;
 
 void
 update_stat_window(FileView *view)
@@ -68,6 +72,8 @@ update_stat_window(FileView *view)
 	{
 		return;
 	}
+
+	ui_stat_job_bar_check_for_updates();
 
 	if(cfg.status_line[0] == '\0')
 	{
@@ -386,6 +392,8 @@ ui_stat_reposition(int statusbar_height)
 void
 ui_stat_refresh(void)
 {
+	ui_stat_job_bar_check_for_updates();
+
 	wrefresh(job_bar);
 	wrefresh(stat_win);
 }
@@ -393,30 +401,76 @@ ui_stat_refresh(void)
 int
 ui_stat_job_bar_height(void)
 {
-	return (njobs > 0) ? 1 : 0;
+	return (nbar_jobs != 0U) ? 1 : 0;
 }
 
 void
 ui_stat_job_bar_add(bg_op_t *bg_op)
 {
-	++njobs;
+	const int prev_height = ui_stat_job_bar_height();
+
+	bg_op_t **p = realloc(bar_jobs, (nbar_jobs + 1)*sizeof(*bar_jobs));
+	if(p == NULL)
+	{
+		return;
+	}
+	bar_jobs = p;
+
+	bar_jobs[nbar_jobs] = bg_op;
+	++nbar_jobs;
+
 	update_job_bar();
+
+	if(ui_stat_job_bar_height() != prev_height)
+	{
+		schedule_redraw();
+	}
 }
 
 void
 ui_stat_job_bar_remove(bg_op_t *bg_op)
 {
+	size_t i;
 	const int prev_height = ui_stat_job_bar_height();
 
-	--njobs;
+	for(i = 0U; i < nbar_jobs; ++i)
+	{
+		if(bar_jobs[i] == bg_op)
+		{
+			memmove(&bar_jobs[i], &bar_jobs[i + 1],
+					sizeof(*bar_jobs)*(nbar_jobs - 1 - i));
+			break;
+		}
+	}
+
+	--nbar_jobs;
 
 	if(ui_stat_job_bar_height() != 0)
 	{
 		update_job_bar();
 	}
-	else if(ui_stat_job_bar_height() != prev_height)
+	else if(prev_height != 0)
 	{
 		schedule_redraw();
+	}
+}
+
+void
+ui_stat_job_bar_changed(bg_op_t *bg_op)
+{
+	job_bar_changed = 1;
+}
+
+void
+ui_stat_job_bar_check_for_updates(void)
+{
+	if(job_bar_changed)
+	{
+		job_bar_changed = 0;
+		if(ui_stat_job_bar_height() != 0)
+		{
+			update_job_bar();
+		}
 	}
 }
 
@@ -425,8 +479,14 @@ static void
 update_job_bar(void)
 {
 	werase(job_bar);
-	mvwprintw(job_bar, 0, 0, "Number of background jobs: %d", njobs);
-	schedule_redraw();
+	mvwprintw(job_bar, 0, 0, "Number of background jobs: %d, %s, %d%%", nbar_jobs,
+			bar_jobs[0]->descr, bar_jobs[0]->progress);
+
+	wnoutrefresh(job_bar);
+	/* Update status_bar after job_bar just to ensure that it owns the cursor.
+	 * Don't know a cleaner way of doing this. */
+	wnoutrefresh(status_bar);
+	doupdate();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

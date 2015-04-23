@@ -35,6 +35,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "ui/statusbar.h"
+#include "ui/statusline.h"
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -310,6 +311,8 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 static void
 process_scheduled_updates(void)
 {
+	ui_stat_job_bar_check_for_updates();
+
 	if(fetch_redraw_scheduled())
 	{
 		modes_redraw();
