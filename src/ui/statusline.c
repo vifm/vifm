@@ -464,7 +464,9 @@ ui_stat_job_bar_changed(bg_op_t *bg_op)
 void
 ui_stat_job_bar_check_for_updates(void)
 {
-	if(job_bar_changed)
+	static int prev_width;
+
+	if(job_bar_changed || getmaxx(job_bar) != prev_width)
 	{
 		job_bar_changed = 0;
 		if(ui_stat_job_bar_height() != 0)
@@ -472,6 +474,8 @@ ui_stat_job_bar_check_for_updates(void)
 			update_job_bar();
 		}
 	}
+
+	prev_width = getmaxx(job_bar);
 }
 
 /* Fills job bar with up-to-date content. */
