@@ -22,6 +22,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* malloc() */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h>
 
@@ -30,6 +31,7 @@
 #include "../modes/modes.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
@@ -48,6 +50,8 @@ static char * parse_view_macros(FileView *view, const char **format,
 static int expand_num(char buf[], size_t buf_len, int val);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 static void update_job_bar(void);
+static const char * format_job_bar(void);
+static char ** take_job_descr_snapshot(void);
 
 /* Number of backround jobs. */
 static size_t nbar_jobs;
@@ -483,14 +487,87 @@ static void
 update_job_bar(void)
 {
 	werase(job_bar);
-	mvwprintw(job_bar, 0, 0, "Number of background jobs: %d, %s, %d%%", nbar_jobs,
-			bar_jobs[0]->descr, bar_jobs[0]->progress);
+	checked_wmove(job_bar, 0, 0);
+	wprint(job_bar, format_job_bar());
 
 	wnoutrefresh(job_bar);
 	/* Update status_bar after job_bar just to ensure that it owns the cursor.
 	 * Don't know a cleaner way of doing this. */
 	wnoutrefresh(status_bar);
 	doupdate();
+}
+
+/* Formats contents of the job bar.  Returns pointer to statically allocated
+ * storage. */
+static const char *
+format_job_bar(void)
+{
+	enum { MAX_UTF_CHAR_LEN = 4 };
+
+	static char bar_text[512*MAX_UTF_CHAR_LEN + 1];
+
+	size_t i;
+	size_t text_width;
+	size_t width_used;
+	size_t total_width;
+	size_t max_width;
+	char **descrs;
+
+	descrs = take_job_descr_snapshot();
+
+	total_width = 0U;
+	for(i = 0U; i < nbar_jobs; ++i)
+	{
+		total_width += get_screen_string_length(descrs[i]);
+	}
+
+	bar_text[0] = '\0';
+	text_width = 0U;
+
+	max_width = getmaxx(job_bar);
+	width_used = 0U;
+	for(i = 0U; i < nbar_jobs; ++i)
+	{
+		const size_t full_width = get_screen_string_length(descrs[i]);
+		char item_text[max_width*MAX_UTF_CHAR_LEN + 1U];
+		size_t width;
+
+		width = (i == nbar_jobs - 1U)
+		      ? (max_width - width_used)
+		      : (max_width*full_width)/total_width;
+
+		snprintf(item_text, sizeof(item_text), "[%s %3d%%]",
+				left_ellipsis(descrs[i], width - 7U), bar_jobs[i]->progress);
+		(void)sstrappend(bar_text, &text_width, sizeof(bar_text), item_text);
+
+		width_used += width;
+	}
+
+	free_string_array(descrs, nbar_jobs);
+
+	return bar_text;
+}
+
+/* Makes snapshot of current job descriptions.  Returns array of length
+ * nbar_jobs which should be freed via free_string_array(). */
+static char **
+take_job_descr_snapshot(void)
+{
+	size_t i;
+	char **descrs;
+
+	descrs = malloc(sizeof(*descrs)*nbar_jobs);
+	for(i = 0U; i < nbar_jobs; ++i)
+	{
+		const char *descr;
+
+		bg_op_lock(bar_jobs[i]);
+		descr = bar_jobs[i]->descr;
+		descrs[i] = strdup((descr == NULL) ? "UNKNOWN" : descr);
+		bg_op_unlock(bar_jobs[i]);
+	}
+
+	return descrs;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
