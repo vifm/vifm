@@ -405,6 +405,73 @@ stralign(char str[], size_t width, char pad, int left_align)
 }
 
 char *
+left_ellipsis(char str[], size_t max_width)
+{
+	size_t width;
+	size_t len;
+	const char *tail;
+
+	if(max_width == 0U)
+	{
+		return NULL;
+	}
+
+	width = get_screen_string_length(str);
+	if(width <= max_width)
+	{
+		return str;
+	}
+
+	len = strlen(str);
+	if(max_width <= 3U)
+	{
+		copy_str(str, len + 1U, "...");
+		str[max_width] = '\0';
+		return str;
+	}
+
+	tail = str;
+	while(width > max_width - 3U)
+	{
+		width -= utf8_get_screen_width_of_char(tail);
+		tail += get_char_width(tail);
+	}
+	strcpy(str, "...");
+	memmove(str + 3U, tail, len - (tail - str) + 1U);
+
+	return str;
+}
+
+char *
+right_ellipsis(char str[], size_t max_width)
+{
+	size_t width;
+	size_t prefix;
+
+	if(max_width == 0U)
+	{
+		return NULL;
+	}
+
+	width = get_screen_string_length(str);
+	if(width <= max_width)
+	{
+		return str;
+	}
+
+	if(max_width <= 3U)
+	{
+		copy_str(str, strlen(str) + 1U, "...");
+		str[max_width] = '\0';
+		return str;
+	}
+
+	prefix = get_normal_utf8_string_widthn(str, max_width - 3U);
+	strcpy(&str[prefix], "...");
+	return str;
+}
+
+char *
 break_in_two(char str[], size_t max)
 {
 	int i;

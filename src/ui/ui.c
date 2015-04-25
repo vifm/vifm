@@ -1291,37 +1291,18 @@ format_view_title(const FileView *view)
 static void
 print_view_title(const FileView *view, int active_view, char title[])
 {
-	size_t len = get_screen_string_length(title);
 	const size_t title_width = getmaxx(view->title);
 
 	fixup_titles_attributes(view, active_view);
 	werase(view->title);
 
-	if(len <= title_width)
-	{
-		wprint(view->title, title);
-		return;
-	}
-
-	/* Truncate long titles. */
 	if(active_view)
 	{
-		const char *ptr = title;
-		while(len > title_width - 3)
-		{
-			--len;
-			ptr += get_char_width(ptr);
-		}
-
-		wprintw(view->title, "...");
-		wprint(view->title, ptr);
+		wprint(view->title, left_ellipsis(title, title_width));
 	}
 	else
 	{
-		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
-		title[len] = '\0';
-		wprint(view->title, title);
-		wprintw(view->title, "...");
+		wprint(view->title, right_ellipsis(title, title_width));
 	}
 }
 

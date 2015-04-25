@@ -161,6 +161,12 @@ get_screen_string_length(const char str[])
 	return length;
 }
 
+size_t
+utf8_get_screen_width_of_char(const char str[])
+{
+	return get_char_screen_width(str, get_char_width(str));
+}
+
 /* Returns width of the character in the terminal. */
 static size_t
 get_char_screen_width(const char str[], size_t char_width)

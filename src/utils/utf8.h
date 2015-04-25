@@ -34,6 +34,11 @@ size_t get_real_string_width(const char str[], size_t max_screen_width);
 size_t get_normal_utf8_string_widthn(const char str[], size_t max_screen_width);
 /* Returns number of screen characters in a utf-8 encoded str. */
 size_t get_screen_string_length(const char str[]);
+
+/* Gets screen width of the first character in the string.  Returns the
+ * width or (size_t)-1 for unknown/broken characters. */
+size_t utf8_get_screen_width_of_char(const char str[]);
+
 /* Returns (string_width - string_length). */
 size_t get_utf8_overhead(const char str[]);
 /* Returns (string_screen_width - string_length). */

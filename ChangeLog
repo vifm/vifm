@@ -292,6 +292,8 @@
 	Fixed title UI glitch with disappearing last character on disabled side
 	borders.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
+	Fixed small view title glitch in CJK directories.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
