@@ -49,6 +49,7 @@ static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
 static int expand_num(char buf[], size_t buf_len, int val);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
+static int is_job_bar_visible(void);
 static void update_job_bar(void);
 static const char * format_job_bar(void);
 static char ** take_job_descr_snapshot(void);
@@ -423,6 +424,11 @@ ui_stat_job_bar_add(bg_op_t *bg_op)
 	bar_jobs[nbar_jobs] = bg_op;
 	++nbar_jobs;
 
+	if(!is_job_bar_visible())
+	{
+		return;
+	}
+
 	update_job_bar();
 
 	if(ui_stat_job_bar_height() != prev_height)
@@ -473,19 +479,29 @@ ui_stat_job_bar_check_for_updates(void)
 	if(job_bar_changed || getmaxx(job_bar) != prev_width)
 	{
 		job_bar_changed = 0;
-		if(ui_stat_job_bar_height() != 0)
-		{
-			update_job_bar();
-		}
+		update_job_bar();
 	}
 
 	prev_width = getmaxx(job_bar);
+}
+
+/* Checks whether job bar is visible.  Returns non-zero if so, and zero
+ * otherwise. */
+static int
+is_job_bar_visible(void)
+{
+	return ui_stat_job_bar_height() != 0 && !is_in_menu_like_mode();
 }
 
 /* Fills job bar with up-to-date content. */
 static void
 update_job_bar(void)
 {
+	if(!is_job_bar_visible())
+	{
+		return;
+	}
+
 	werase(job_bar);
 	checked_wmove(job_bar, 0, 0);
 	wprint(job_bar, format_job_bar());
