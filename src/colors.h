@@ -51,6 +51,7 @@ enum
 	ERROR_MSG_COLOR,    /* Error of the command line. */
 	BORDER_COLOR,       /* Vertical border lines. */
 	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
+	JOB_LINE_COLOR,     /* Line that displays status of background jobs. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

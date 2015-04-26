@@ -1,4 +1,4 @@
-.TH vifm 1 "April 21, 2015" "" "Vifm"
+.TH vifm 1 "April 26, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1744,6 +1744,7 @@ their content (e.g. regular files in views)
  \- CmdLine \- the command line/status bar color
  \- ErrorMsg \- color of error messages in the status bar
  \- StatusLine \- color of the line above the status bar
+ \- JobLine \- color of job line that appears above the status line
  \- WildMenu \- color of the wild menu items
  \- CurrLine \- line at cursor position in active view
  \- OtherLine \- line at cursor position in inactive view
@@ -1884,6 +1885,7 @@ command.
 
 Here is the hierarchy of highlight groups, which you need to know for using
 transparency:
+  JobLine
   StatusLine
     WildMenu
   Border
@@ -4520,8 +4522,8 @@ Both types are set using :colorscheme command, but of different forms:
 Look of different parts of the TUI (Text User Interface) is determined in \
 this way:
 .IP \- 2
-Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu are \
-always determined by the primary color scheme
+Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine and \
+WildMenu are always determined by the primary color scheme
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
 Fifo and Win are determined by primary color scheme and a set of local \

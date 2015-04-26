@@ -173,6 +173,7 @@ char *HI_GROUPS[] =
 	[ERROR_MSG_COLOR]    = "ErrorMsg",
 	[BORDER_COLOR]       = "Border",
 	[OTHER_LINE_COLOR]   = "OtherLine",
+	[JOB_LINE_COLOR]     = "JobLine",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
@@ -207,6 +208,7 @@ static const int default_colors[][3] = {
 	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
+	[JOB_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, A_BOLD | A_REVERSE      },
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR);
 

@@ -77,6 +77,10 @@
 #include "undo.h"
 #include "vim.h"
 
+/* 10 to the power of number of digits after decimal point to take into account
+ * on progress percentage counting. */
+#define IO_PRECISION 10
+
 /* What to do with rename candidate name (old name and new name). */
 typedef enum
 {
@@ -94,24 +98,18 @@ typedef enum
 }
 DirRole;
 
-static char rename_file_ext[NAME_MAX];
-
-static struct
+/* Object to be able to differentiate between foreground and background
+ * operations in io_progress_changed() handler. */
+typedef struct
 {
-	registers_t *reg;
-	FileView *view;
-	CopyMoveLikeOp op; /* Type of current operation. */
-	int x, y;
-	char *name;
-	int skip_all;      /* Skip all conflicting files/directories. */
-	int overwrite_all;
-	int append;        /* Whether we're appending ending of a file or not. */
-	int allow_merge;
-	int merge;         /* Merge conflicting directory once. */
-	int merge_all;     /* Merge all conflicting directories. */
-	ops_t *ops;
+	int bg; /* Whether this is background operation. */
+	union
+	{
+		ops_t *ops;     /* Information for foreground operation. */
+		bg_op_t *bg_op; /* Information for background operation. */
+	};
 }
-put_confirm;
+estim_backref_t;
 
 typedef struct
 {
@@ -136,12 +134,14 @@ typedef struct
 dir_size_args_t;
 
 static void io_progress_changed(const io_progress_t *const state);
+static void io_progress_fg(const io_progress_t *const state, int progress);
+static void io_progress_bg(const io_progress_t *const state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int prepare_register(int reg);
-static void delete_files_in_bg(void *arg);
-static void delete_file_in_bg(const char path[], int use_trash);
+static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
+static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
@@ -193,9 +193,13 @@ static int check_dir_path(const FileView *view, const char path[], char buf[]);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
-static void cpmv_files_in_bg(void *arg);
-static void cpmv_file_in_bg(const char src[], const char dst[], int move,
-		int force, int from_trash, const char dst_dir[]);
+static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
+static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
+		bg_op_t *bg_op);
+static void free_ops(ops_t *ops);
+static void set_bg_descr(bg_op_t *bg_op, const char descr[]);
+static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
+		int move, int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops);
 static int mv_file_f(const char src[], const char dst[], OPS op, int bg,
@@ -215,10 +219,34 @@ static int can_add_files_to_view(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
-static void dir_size_bg(void *arg);
+static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static uint64_t calc_dirsize(const char path[], int force_update);
 static void set_dir_size(const char path[], uint64_t size);
 static void redraw_after_path_change(FileView *view, const char path[]);
+
+/* Temporary storage for extension of file being renamed in name-only mode. */
+static char rename_file_ext[NAME_MAX];
+
+/* Global state for file putting and name conflicts resolution that happen in
+ * the process. */
+static struct
+{
+	/* TODO: give some fields of this structure normal names (not "x" and "y"). */
+	registers_t *reg;  /* Register used for the operation. */
+	FileView *view;    /* View in which operation takes place. */
+	CopyMoveLikeOp op; /* Type of current operation. */
+	int x;             /* Index of the next file of the register to process. */
+	int y;             /* Number of successfully processed files. */
+	char *name;        /* Name of the conflicting file. */
+	int skip_all;      /* Skip all conflicting files/directories. */
+	int overwrite_all; /* Overwrite all future conflicting files/directories. */
+	int append;        /* Whether we're appending ending of a file or not. */
+	int allow_merge;   /* Allow merging of files in directories. */
+	int merge;         /* Merge conflicting directory once. */
+	int merge_all;     /* Merge all conflicting directories. */
+	ops_t *ops;        /* Currently running operation. */
+}
+put_confirm;
 
 void
 init_fileops(void)
@@ -230,37 +258,29 @@ init_fileops(void)
 static void
 io_progress_changed(const io_progress_t *const state)
 {
-	enum { PRECISION = 10 };
-
 	static int prev_progress = -1;
+	static IoPs prev_stage;
 
 	const ioeta_estim_t *const estim = state->estim;
-	ops_t *const ops = estim->param;
+	estim_backref_t *const backref = estim->param;
 
-	char current_size_str[16];
-	char total_size_str[16];
 	int progress;
-	char pretty_path[PATH_MAX];
-	char src_path[PATH_MAX];
 	int redraw;
-	const char *title, *ctrl_msg;
-	const char *target_name;
-	char *as_part;
 
 	if(state->stage == IO_PS_ESTIMATING)
 	{
-		progress = estim->total_items/PRECISION;
+		progress = estim->total_items/IO_PRECISION;
 	}
 	else if(estim->total_bytes == 0)
 	{
 		progress = 0;
 	}
-	else if(prev_progress >= 100*PRECISION &&
+	else if(prev_progress >= 100*IO_PRECISION &&
 			estim->current_byte == estim->total_bytes)
 	{
 		/* Special handling for unknown total size. */
 		++prev_progress;
-		if(prev_progress%PRECISION != 0)
+		if(prev_progress%IO_PRECISION != 0)
 		{
 			return;
 		}
@@ -268,14 +288,20 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		progress = (estim->current_byte*100*PRECISION)/estim->total_bytes;
+		progress = (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
 	}
 
-	redraw = fetch_redraw_scheduled();
-	if(progress == prev_progress && !redraw)
+	/* Don't query for scheduled redraw for background operations. */
+	redraw = !backref->bg && fetch_redraw_scheduled();
+
+	/* Do nothing if progress change is small, but force update on stage
+	 * change or redraw request. */
+	if(progress == prev_progress && state->stage == prev_stage && !redraw)
 	{
 		return;
 	}
+
+	prev_stage = state->stage;
 
 	if(progress >= 0)
 	{
@@ -286,6 +312,32 @@ io_progress_changed(const io_progress_t *const state)
 	{
 		modes_redraw();
 	}
+
+	if(backref->bg)
+	{
+		io_progress_bg(state, progress);
+	}
+	else
+	{
+		io_progress_fg(state, progress);
+	}
+}
+
+/* Takes care of progress for foreground operations. */
+static void
+io_progress_fg(const io_progress_t *const state, int progress)
+{
+	char current_size_str[16];
+	char total_size_str[16];
+	char pretty_path[PATH_MAX];
+	char src_path[PATH_MAX];
+	const char *title, *ctrl_msg;
+	const char *target_name;
+	char *as_part;
+
+	const ioeta_estim_t *const estim = state->estim;
+	estim_backref_t *const backref = estim->param;
+	ops_t *const ops = backref->ops;
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -327,20 +379,32 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		char *const file_progress = format_file_progress(estim, PRECISION);
+		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
 		draw_msgf(title, ctrl_msg,
 				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
 				ops->target_dir, estim->current_item + 1, estim->total_items,
-				current_size_str, total_size_str, progress/PRECISION, pretty_path,
+				current_size_str, total_size_str, progress/IO_PRECISION, pretty_path,
 				src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
 
 	free(as_part);
+}
+
+/* Takes care of progress for background operations. */
+static void
+io_progress_bg(const io_progress_t *const state, int progress)
+{
+	const ioeta_estim_t *const estim = state->estim;
+	estim_backref_t *const backref = estim->param;
+	bg_op_t *const bg_op = backref->bg_op;
+
+	bg_op->progress = progress/IO_PRECISION;
+	bg_op_changed(bg_op);
 }
 
 /* Formats file progress part of the progress message.  Returns pointer to newly
@@ -549,7 +613,7 @@ delete_files(FileView *view, int reg, int use_trash)
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
 			get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -616,23 +680,46 @@ delete_files_bg(FileView *view, int use_trash)
 
 /* Entry point for a background task that deletes files. */
 static void
-delete_files_in_bg(void *arg)
+delete_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
+	ops_t *ops;
+
+	ops = get_bg_ops(args->use_trash ? OP_REMOVE : OP_REMOVESL,
+			args->use_trash ? "deleting" : "Deleting", args->path, bg_op);
+
+	if(ops != NULL)
+	{
+		size_t i;
+		set_bg_descr(bg_op, "estimating...");
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			char *trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
+			ops_enqueue(ops, src, trash_dir);
+			if(trash_dir != args->path)
+			{
+				free(trash_dir);
+			}
+		}
+	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
-		delete_file_in_bg(args->sel_list[i], args->use_trash);
-		inner_bg_next();
+		const char *const src = args->sel_list[i];
+		set_bg_descr(bg_op, src);
+		delete_file_in_bg(ops, src, args->use_trash);
+		++bg_op->done;
 	}
 
+	free_ops(ops);
 	free_bg_args(args);
 }
 
 /* Actual implementation of background file removal. */
 static void
-delete_file_in_bg(const char path[], int use_trash)
+delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 {
 	if(!use_trash)
 	{
@@ -645,7 +732,7 @@ delete_file_in_bg(const char path[], int use_trash)
 		const char *const fname = get_last_path_component(path);
 		char *const trash_name = gen_trash_name(path, fname);
 		const char *const dest = (trash_name != NULL) ? trash_name : fname;
-		(void)perform_operation(OP_MOVE, NULL, (void *)1, path, dest);
+		(void)perform_operation(OP_MOVE, ops, (void *)1, path, dest);
 		free(trash_name);
 	}
 }
@@ -2043,7 +2130,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	status_bar_messagef("%d file%s cloned%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -2185,7 +2272,7 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_free(put_confirm.ops);
+	free_ops(put_confirm.ops);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
@@ -2871,7 +2958,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
 
-	ops_free(ops);
+	free_ops(ops);
 
 	return 1;
 }
@@ -2909,7 +2996,7 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 }
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
- * newly allocated structure, which should be freed by ops_free(). */
+ * newly allocated structure, which should be freed by free_ops(). */
 static ops_t *
 get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
@@ -2917,7 +3004,11 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
-		ops->estim = ioeta_alloc(ops);
+		estim_backref_t *const backref = malloc(sizeof(*backref));
+		backref->bg = 0;
+		backref->ops = ops;
+
+		ops->estim = ioeta_alloc(backref);
 	}
 	return ops;
 }
@@ -3180,28 +3271,97 @@ cmlo_to_str(CopyMoveLikeOp op)
 
 /* Entry point for a background task that copies/moves files. */
 static void
-cpmv_files_in_bg(void *arg)
+cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
 	const int custom_fnames = (args->nlines > 0);
+	ops_t *ops;
+
+	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
+			args->move ? "moving" : "copying", args->path, bg_op);
+
+	if(ops != NULL)
+	{
+		size_t i;
+		set_bg_descr(bg_op, "estimating...");
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			const char *const dst = custom_fnames ? args->list[i] : NULL;
+			ops_enqueue(ops, src, dst);
+		}
+	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
-		cpmv_file_in_bg(src, dst, args->move, args->force, args->use_trash,
+		set_bg_descr(bg_op, src);
+		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->use_trash,
 				args->path);
-		inner_bg_next();
+		++bg_op->done;
 	}
 
+	free_ops(ops);
 	free_bg_args(args);
+}
+
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure or NULL if ops are not needed, which should be
+ * freed by free_ops(). */
+static ops_t *
+get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
+{
+	ops_t *ops;
+
+	if(!cfg.use_system_calls)
+	{
+		return NULL;
+	}
+
+	estim_backref_t *const backref = malloc(sizeof(*backref));
+
+	ops = ops_alloc(main_op, descr, dir, dir);
+
+	backref->bg = 1;
+	backref->bg_op = bg_op;
+
+	ops->estim = ioeta_alloc(backref);
+
+	return ops;
+}
+
+/* Frees ops structure previously obtained by call to get_ops().  ops can be
+ * NULL. */
+static void
+free_ops(ops_t *ops)
+{
+	if(ops != NULL)
+	{
+		if(cfg.use_system_calls)
+		{
+			free(ops->estim->param);
+		}
+		ops_free(ops);
+	}
+}
+
+/* Updates description of background job. */
+static void
+set_bg_descr(bg_op_t *bg_op, const char descr[])
+{
+	bg_op_lock(bg_op);
+	replace_string(&bg_op->descr, descr);
+	bg_op_unlock(bg_op);
+
+	bg_op_changed(bg_op);
 }
 
 /* Actual implementation of background file copying/moving. */
 static void
-cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
-		int from_trash, const char dst_dir[])
+cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
+		int force, int from_trash, const char dst_dir[])
 {
 	char dst_full[PATH_MAX];
 
@@ -3225,11 +3385,11 @@ cpmv_file_in_bg(const char src[], const char dst[], int move, int force,
 
 	if(move)
 	{
-		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, NULL);
+		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
 	}
 	else
 	{
-		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, NULL);
+		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, ops);
 	}
 }
 
@@ -3717,7 +3877,7 @@ start_dir_size_calc(const char path[], int force)
 
 /* Entry point for a background task that calculates size of a directory. */
 static void
-dir_size_bg(void *arg)
+dir_size_bg(bg_op_t *bg_op, void *arg)
 {
 	dir_size_args_t *const dir_size = arg;
 

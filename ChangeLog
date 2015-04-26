@@ -91,6 +91,11 @@
 
 	Added ^= operation for charset options.
 
+	Added job bar that displays backgrounded file operations if any.  Thanks to
+	geo909.
+
+	Added JobLine highlight group for the job bar.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
@@ -291,6 +296,8 @@
 
 	Fixed title UI glitch with disappearing last character on disabled side
 	borders.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
+	Fixed small view title glitch in CJK directories.
 
 0.7.8-beta to 0.7.8
 

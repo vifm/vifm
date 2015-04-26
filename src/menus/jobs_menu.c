@@ -60,13 +60,14 @@ show_jobs_menu(FileView *view)
 			{
 				snprintf(info_buf, sizeof(info_buf), PRINTF_PID_T, p->pid);
 			}
-			else if(p->total == BG_UNDEFINED_TOTAL)
+			else if(p->bg_op.total == BG_UNDEFINED_TOTAL)
 			{
 				snprintf(info_buf, sizeof(info_buf), "n/a");
 			}
 			else
 			{
-				snprintf(info_buf, sizeof(info_buf), "%d/%d", p->done + 1, p->total);
+				snprintf(info_buf, sizeof(info_buf), "%d/%d", p->bg_op.done + 1,
+						p->bg_op.total);
 			}
 
 			snprintf(item_buf, sizeof(item_buf), "%-8s  %s", info_buf, p->cmd);

@@ -58,8 +58,7 @@ enum
 
 /* Detailed information resulted from command parsing, which is passed to
  * command handler (cmd_handler). */
-typedef struct cmd_info_t cmd_info_t;
-struct cmd_info_t
+typedef struct cmd_info_t
 {
 	int begin, end; /* Parsed range of the command. */
 	int emark, qmark, bg;
@@ -71,7 +70,8 @@ struct cmd_info_t
 	char **argv;
 
 	const char *cmd; /* for user defined commands */
-};
+}
+cmd_info_t;
 
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 

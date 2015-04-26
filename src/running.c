@@ -796,11 +796,10 @@ setup_shellout_env(void)
 	if(mount_file == NULL)
 	{
 		env_remove(FUSE_FILE_ENVVAR);
+		return;
 	}
-	else
-	{
-		env_set(FUSE_FILE_ENVVAR, mount_file);
-	}
+
+	env_set(FUSE_FILE_ENVVAR, mount_file);
 
 	switch(curr_stats.term_multiplexer)
 	{

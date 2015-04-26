@@ -81,7 +81,7 @@ static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
-static void empty_trash_in_bg(void *arg);
+static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
 static void empty_trash_list(void);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
@@ -251,7 +251,7 @@ empty_trash_dir(const char trash_dir[])
 /* Entry point for a background task that removes files in a single trash
  * directory. */
 static void
-empty_trash_in_bg(void *arg)
+empty_trash_in_bg(bg_op_t *bg_op, void *arg)
 {
 	char *const trash_dir = arg;
 

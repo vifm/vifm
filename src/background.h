@@ -24,6 +24,8 @@
 #include <windef.h>
 #endif
 
+#include <pthread.h> /* pthread_mutex_t */
+
 #include <sys/types.h> /* pid_t */
 
 #include <stdio.h>
@@ -42,6 +44,18 @@ typedef enum
 }
 BgJobType;
 
+/* Auxiliary structure to be updated by background tasks while they progress. */
+typedef struct bg_op_t
+{
+	int total; /* Total number of coarse operations. */
+	int done;  /* Number of already processed coarse operations. */
+
+	int progress; /* Progress in percents.  -1 if task doesn't provide one. */
+	char *descr;  /* Description of current activity, can be NULL. */
+}
+bg_op_t;
+
+/* Description of background activity. */
 typedef struct job_t
 {
 	BgJobType type; /* Type of background job. */
@@ -53,8 +67,8 @@ typedef struct job_t
 	char *error;
 
 	/* For background operations and tasks. */
-	int total;
-	int done;
+	pthread_mutex_t bg_op_guard;
+	bg_op_t bg_op;
 
 #ifndef _WIN32
 	int fd;
@@ -66,7 +80,7 @@ typedef struct job_t
 job_t;
 
 /* Background task entry point function signature. */
-typedef void (*bg_task_func)(void *arg);
+typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
 extern struct job_t *jobs;
 
@@ -95,8 +109,6 @@ pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 
-void inner_bg_next(void);
-
 /* Start new background task, executed in a separate thread.  Returns zero on
  * success, otherwise non-zero is returned. */
 int bg_execute(const char desc[], int total, int important,
@@ -113,6 +125,18 @@ int bg_jobs_freeze(void);
 
 /* Undoes changes made by bg_jobs_freeze(). */
 void bg_jobs_unfreeze(void);
+
+/* Temporary locks bg_op_t structure to ensure that it's not modified by
+ * anyone during reading/updating its fields.  The structure must be part of
+ * job_t. */
+void bg_op_lock(bg_op_t *bg_op);
+
+/* Unlocks bg_op_t structure.  The structure must be part of job_t. */
+void bg_op_unlock(bg_op_t *bg_op);
+
+/* Callback-like function to report that state of background operation
+ * changed. */
+void bg_op_changed(bg_op_t *bg_op);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

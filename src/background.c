@@ -23,7 +23,7 @@
 #include <windows.h>
 #endif
 
-#include <pthread.h>
+#include <pthread.h> /* PTHREAD_* pthread_*() */
 
 #include <fcntl.h> /* open() */
 #include <unistd.h>
@@ -44,6 +44,7 @@
 #include "cfg/config.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
+#include "ui/statusline.h"
 #include "utils/env.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -51,6 +52,26 @@
 #include "utils/utils.h"
 #include "commands_completion.h"
 #include "status.h"
+
+/**
+ * This unit implements three kinds of backgrounded operations:
+ *  - external applications run from vifm (commands);
+ *  - threads that perform auxiliary work (tasks), like counting size of
+ *    directories;
+ *  - threads that perform important work (operations), like file copying,
+ *    deletion, etc.
+ *
+ * All jobs can be viewed via :jobs menu.
+ *
+ * Tasks and operations can provide progress information for displaying it in
+ * UI.
+ *
+ * Operations are displayed on designated job bar.
+ */
+
+/* Turns pointer (P) to field (F) of a structure (S) to address of that
+ * structure. */
+#define STRUCT_FROM_FIELD(S, F, P) ((S *)((char *)P - offsetof(S, F)))
 
 /* Special value of process id for internal tasks running in background
  * threads. */
@@ -88,7 +109,6 @@ static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
 static void make_current_job_key(void);
-static void finish_current_job(void);
 
 job_t *jobs;
 
@@ -157,6 +177,12 @@ check_background_jobs(void)
 				head = p->next;
 
 			p = p->next;
+
+			if(j->type == BJT_OPERATION)
+			{
+				ui_stat_job_bar_remove(&j->bg_op);
+			}
+
 			job_free(j);
 		}
 		else
@@ -236,6 +262,11 @@ job_free(job_t *const job)
 	if(job == NULL)
 	{
 		return;
+	}
+
+	if(job->type == BJT_COMMAND)
+	{
+		pthread_mutex_destroy(&job->bg_op_guard);
 	}
 
 #ifndef _WIN32
@@ -719,17 +750,6 @@ start_background_job(const char *cmd, int skip_errors)
 	return 0;
 }
 
-void
-inner_bg_next(void)
-{
-	job_t *job = pthread_getspecific(current_job);
-	if(job != NULL)
-	{
-		++job->done;
-		assert(job->done <= job->total);
-	}
-}
-
 int
 bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		void *args)
@@ -753,10 +773,19 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		return 2;
 	}
 
-	task_args->job->total = total;
-
-	if(pthread_create(&id, NULL, background_task_bootstrap, task_args) != 0)
+	if(task_args->job->type == BJT_OPERATION)
 	{
+		ui_stat_job_bar_add(&task_args->job->bg_op);
+	}
+
+	task_args->job->bg_op.total = total;
+
+	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
+	{
+		/* Mark job as finished with error. */
+		task_args->job->running = 0;
+		task_args->job->exit_code = 1;
+
 		free(task_args);
 		return 3;
 	}
@@ -794,8 +823,14 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->running = 1;
 	new->error = NULL;
 
-	new->total = 0;
-	new->done = 0;
+	if(type != BJT_COMMAND)
+	{
+		pthread_mutex_init(&new->bg_op_guard, NULL);
+	}
+	new->bg_op.total = 0;
+	new->bg_op.done = 0;
+	new->bg_op.progress = -1;
+	new->bg_op.descr = NULL;
 
 	jobs = new;
 	return new;
@@ -811,9 +846,11 @@ background_task_bootstrap(void *arg)
 
 	set_current_job(task_args->job);
 
-	task_args->func(task_args->args);
+	task_args->func(&task_args->job->bg_op, task_args->args);
 
-	finish_current_job();
+	/* Mark task as finished normally. */
+	task_args->job->running = 0;
+	task_args->job->exit_code = 0;
 
 	free(task_args);
 
@@ -833,19 +870,6 @@ static void
 make_current_job_key(void)
 {
 	(void)pthread_key_create(&current_job, NULL);
-}
-
-/* Marks current job stored in a thread-local storage as finished
- * successfully. */
-static void
-finish_current_job(void)
-{
-	job_t *const job = pthread_getspecific(current_job);
-	if(job != NULL)
-	{
-		job->running = 0;
-		job->exit_code = 0;
-	}
 }
 
 int
@@ -890,6 +914,26 @@ bg_jobs_unfreeze(void)
 	/* FIXME: maybe store previous state of SIGCHLD and don't unblock if it was
 	 *        blocked. */
 	(void)set_sigchld(0);
+}
+
+void
+bg_op_lock(bg_op_t *bg_op)
+{
+	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
+	pthread_mutex_lock(&job->bg_op_guard);
+}
+
+void
+bg_op_unlock(bg_op_t *bg_op)
+{
+	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
+	pthread_mutex_unlock(&job->bg_op_guard);
+}
+
+void
+bg_op_changed(bg_op_t *bg_op)
+{
+	ui_stat_job_bar_changed(bg_op);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

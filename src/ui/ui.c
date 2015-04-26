@@ -74,6 +74,7 @@ static WINDOW *rtop_line2;
 
 static void create_windows(void);
 static void update_geometry(void);
+static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -195,6 +196,7 @@ create_windows(void)
 	rborder = newwin(1, 1, 0, 0);
 
 	stat_win = newwin(1, 1, 0, 0);
+	job_bar = newwin(1, 1, 0, 0);
 	status_bar = newwin(1, 1, 0, 0);
 	ruler_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
@@ -233,7 +235,7 @@ only_layout(FileView *view, int screen_x, int screen_y)
 	wresize(view->title, 1, screen_x - 2);
 	mvwin(view->title, 0, 1);
 
-	wresize(view->win, screen_y - 3 + !cfg.display_statusline,
+	wresize(view->win, get_working_area_height(),
 			screen_x + vborder_size_correction);
 	mvwin(view->win, 1, vborder_pos_correction);
 }
@@ -245,7 +247,7 @@ vertical_layout(int screen_x, int screen_y)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
-	const int border_height = screen_y - 3 + !cfg.display_statusline;
+	const int border_height = get_working_area_height();
 
 	int splitter_pos;
 	int splitter_width;
@@ -307,8 +309,8 @@ horizontal_layout(int screen_x, int screen_y)
 		splitter_pos = curr_stats.splitter_pos;
 	if(splitter_pos < 2)
 		splitter_pos = 2;
-	if(splitter_pos > screen_y - 3 - cfg.display_statusline - 1)
-		splitter_pos = screen_y - 3 - cfg.display_statusline;
+	if(splitter_pos > get_working_area_height() - 1)
+		splitter_pos = get_working_area_height();
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
@@ -321,7 +323,7 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(lwin.win, splitter_pos - 1, screen_x + vborder_size_correction);
 	mvwin(lwin.win, 1, vborder_pos_correction);
 
-	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.display_statusline - 1,
+	wresize(rwin.win, get_working_area_height() - splitter_pos,
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
@@ -384,7 +386,7 @@ resize_all(void)
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
 
-	border_height = screen_y - 3 + !cfg.display_statusline;
+	border_height = get_working_area_height();
 
 	wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
@@ -418,11 +420,25 @@ resize_all(void)
 	correct_size(&rwin);
 
 	wresize(stat_win, 1, screen_x);
-	mvwin(stat_win, screen_y - 2, 0);
+	(void)ui_stat_reposition(1);
+
+	wresize(job_bar, 1, screen_x);
 
 	update_statusbar_layout();
 
 	curs_set(FALSE);
+}
+
+/* Calculates height available for main area that contains file lists.  Returns
+ * the height. */
+static int
+get_working_area_height(void)
+{
+	return getmaxy(stdscr)                  /* Total available height. */
+	     - 1                                /* Top line. */
+	     - (cfg.display_statusline ? 1 : 0) /* Status line. */
+	     - ui_stat_job_bar_height()         /* Job bar. */
+	     - 1;                               /* Status bar line. */
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
@@ -529,6 +545,7 @@ update_screen(UpdateType update_kind)
 	}
 
 	update_input_buf();
+	ui_stat_job_bar_redraw();
 
 	curr_stats.need_update = UT_NONE;
 }
@@ -676,6 +693,11 @@ touch_all_windows(void)
 		if(cfg.display_statusline)
 		{
 			update_window_lazy(stat_win);
+		}
+
+		if(ui_stat_job_bar_height() != 0)
+		{
+			update_window_lazy(job_bar);
 		}
 	}
 
@@ -850,6 +872,9 @@ update_attributes(void)
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
+
+	attr = cfg.cs.color[JOB_LINE_COLOR].attr;
+	wbkgdset(job_bar, COLOR_PAIR(cfg.cs.pair[JOB_LINE_COLOR]) | attr);
 
 	attr = cfg.cs.color[WIN_COLOR].attr;
 	wbkgdset(menu_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
@@ -1269,37 +1294,18 @@ format_view_title(const FileView *view)
 static void
 print_view_title(const FileView *view, int active_view, char title[])
 {
-	size_t len = get_screen_string_length(title);
 	const size_t title_width = getmaxx(view->title);
 
 	fixup_titles_attributes(view, active_view);
 	werase(view->title);
 
-	if(len <= title_width)
-	{
-		wprint(view->title, title);
-		return;
-	}
-
-	/* Truncate long titles. */
 	if(active_view)
 	{
-		const char *ptr = title;
-		while(len > title_width - 3)
-		{
-			--len;
-			ptr += get_char_width(ptr);
-		}
-
-		wprintw(view->title, "...");
-		wprint(view->title, ptr);
+		wprint(view->title, left_ellipsis(title, title_width));
 	}
 	else
 	{
-		size_t len = get_normal_utf8_string_widthn(title, title_width - 3);
-		title[len] = '\0';
-		wprint(view->title, title);
-		wprintw(view->title, "...");
+		wprint(view->title, right_ellipsis(title, title_width));
 	}
 }
 
