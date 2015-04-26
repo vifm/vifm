@@ -175,6 +175,9 @@
 	Allow non-printable characters to be arguments of :commands.  Thanks to
 	filterfalse.
 
+	Prevent inserting odd characters on terminal resize while in command-line
+	mode.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
