@@ -22,15 +22,11 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* memmove() memset() strcpy() strlen() */
-#include <wchar.h> /* wcswidth() */
 
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
-/* For wcswidth() stub. */
-#ifdef _WIN32
 #include "utils/utils.h"
-#endif
 
 /* Maximum number of ellipsis dots. */
 #define MAX_ELLIPSIS_DOT_COUNT 3U
@@ -441,7 +437,7 @@ get_width_on_screen(const char str[])
 	wchar_t *const wide = to_wide(str);
 	if(wide != NULL)
 	{
-		length = wcswidth(wide, (size_t)-1);
+		length = vifm_wcswidth(wide, (size_t)-1);
 		free(wide);
 	}
 	if(length == (size_t)-1)
