@@ -545,6 +545,7 @@ update_screen(UpdateType update_kind)
 	}
 
 	update_input_buf();
+	ui_stat_job_bar_redraw();
 
 	curr_stats.need_update = UT_NONE;
 }
@@ -871,7 +872,9 @@ update_attributes(void)
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
-	wbkgdset(job_bar, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
+
+	attr = cfg.cs.color[JOB_LINE_COLOR].attr;
+	wbkgdset(job_bar, COLOR_PAIR(cfg.cs.pair[JOB_LINE_COLOR]) | attr);
 
 	attr = cfg.cs.color[WIN_COLOR].attr;
 	wbkgdset(menu_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);

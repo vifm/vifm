@@ -472,6 +472,12 @@ ui_stat_job_bar_changed(bg_op_t *bg_op)
 }
 
 void
+ui_stat_job_bar_redraw(void)
+{
+	update_job_bar();
+}
+
+void
 ui_stat_job_bar_check_for_updates(void)
 {
 	static int prev_width;
