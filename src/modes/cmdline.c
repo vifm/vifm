@@ -1046,7 +1046,7 @@ draw_wild_menu(int op)
 		{
 			col_attr_t col;
 			col = cfg.cs.color[STATUS_LINE_COLOR];
-			mix_colors(&col, &cfg.cs.color[MENU_COLOR]);
+			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
 
 			wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}

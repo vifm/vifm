@@ -168,7 +168,7 @@ char *HI_GROUPS[] =
 	[TOP_LINE_COLOR]     = "TopLine",
 	[TOP_LINE_SEL_COLOR] = "TopLineSel",
 	[STATUS_LINE_COLOR]  = "StatusLine",
-	[MENU_COLOR]         = "WildMenu",
+	[WILD_MENU_COLOR]    = "WildMenu",
 	[CMD_LINE_COLOR]     = "CmdLine",
 	[ERROR_MSG_COLOR]    = "ErrorMsg",
 	[BORDER_COLOR]       = "Border",
@@ -203,7 +203,7 @@ static const int default_colors[][3] = {
 	[TOP_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[TOP_LINE_SEL_COLOR] = { COLOR_BLACK,   -1,          A_BOLD                  },
 	[STATUS_LINE_COLOR]  = { COLOR_BLACK,   COLOR_WHITE, A_BOLD                  },
-	[MENU_COLOR]         = { COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE },
+	[WILD_MENU_COLOR]    = { COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE },
 	[CMD_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
@@ -1189,7 +1189,7 @@ add_color(char s1[], char s2[], char s3[])
 	bg = colname2int(s3);
 
 	if(!strcmp(s1, "MENU"))
-		y = MENU_COLOR;
+		y = WILD_MENU_COLOR;
 	else if(!strcmp(s1, "BORDER"))
 		y = BORDER_COLOR;
 	else if(!strcmp(s1, "WIN"))
