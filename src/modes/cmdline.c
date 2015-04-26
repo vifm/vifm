@@ -988,15 +988,16 @@ draw_wild_menu(int op)
 	int i;
 	int len = getmaxx(stdscr);
 
-	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL)
-		return;
-
-	if(count < 2)
-		return;
-
+	/* This check should go first to ensure that resetting of wild menu is
+	 * processed and no returns will break the expected behaviour. */
 	if(op > 0)
 	{
 		last_pos = 0;
+		return;
+	}
+
+	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL || count < 2)
+	{
 		return;
 	}
 
