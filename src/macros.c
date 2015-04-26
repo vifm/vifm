@@ -43,8 +43,8 @@
 static void set_flags(MacroFlags *flags, MacroFlags value);
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
-static char * append_selected_file(FileView *view, char *expanded,
-		int full_path, int pos, int quotes, const char *mod, int for_shell);
+static char * append_entry(FileView *view, char expanded[], int full_path,
+		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
 static char * expand_register(const char curr_dir[], char expanded[],
@@ -259,16 +259,14 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 
 	if(view->selected_files && !under_cursor)
 	{
-		int y, x = 0;
-		for(y = 0; y < view->list_rows; y++)
+		int n = 0;
+		dir_entry_t *entry = NULL;
+		while(iter_selected_entries(view, &entry))
 		{
-			if(!view->dir_entry[y].selected)
-				continue;
-
-			expanded = append_selected_file(view, expanded, full_path, y, quotes, mod,
+			expanded = append_entry(view, expanded, full_path, entry, quotes, mod,
 					for_shell);
 
-			if(++x != view->selected_files)
+			if(++n != view->selected_files)
 			{
 				expanded = append_to_expanded(expanded, " ");
 			}
@@ -276,7 +274,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	}
 	else
 	{
-		expanded = append_selected_file(view, expanded, full_path, view->list_pos,
+		expanded = append_entry(view, expanded, full_path, get_current_entry(view),
 				quotes, mod, for_shell);
 	}
 
@@ -290,20 +288,22 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	return expanded;
 }
 
+/* Appends path to the entry to the expanded string.  Returns new value of
+ * expanded string. */
 static char *
-append_selected_file(FileView *view, char *expanded, int full_path, int pos,
-		int quotes, const char *mod, int for_shell)
+append_entry(FileView *view, char expanded[], int full_path, dir_entry_t *entry,
+		int quotes, const char mod[], int for_shell)
 {
 	char path[PATH_MAX];
 	const char *modified;
 
 	if(full_path)
 	{
-		get_full_path_at(view, pos, sizeof(path), path);
+		get_full_path_of(entry, sizeof(path), path);
 	}
 	else
 	{
-		copy_str(path, sizeof(path), view->dir_entry[pos].name);
+		copy_str(path, sizeof(path), entry->name);
 	}
 
 	modified = apply_mods(path, flist_get_dir(view), mod, for_shell);
