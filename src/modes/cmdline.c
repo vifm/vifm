@@ -27,7 +27,7 @@
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strdup() */
-#include <wchar.h> /* wcslen() wcswidth() */
+#include <wchar.h> /* wcslen() wcsncpy() */
 #include <wctype.h>
 
 #include "../cfg/config.h"
@@ -614,7 +614,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.line = vifm_wcsdup(cmd);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
 	input_stat.index = wcslen(cmd);
-	input_stat.curs_pos = wcswidth(input_stat.line, (size_t)-1);
+	input_stat.curs_pos = vifm_wcswidth(input_stat.line, (size_t)-1);
 	input_stat.len = input_stat.index;
 	input_stat.cmd_pos = -1;
 	input_stat.complete_continue = 0;
@@ -639,7 +639,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	}
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
-	input_stat.prompt_wid = wcslen(input_stat.prompt);
+	input_stat.prompt_wid = vifm_wcswidth(input_stat.prompt, (size_t)-1);
 	input_stat.curs_pos += input_stat.prompt_wid;
 
 	update_cmdline_size();
@@ -988,15 +988,16 @@ draw_wild_menu(int op)
 	int i;
 	int len = getmaxx(stdscr);
 
-	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL)
-		return;
-
-	if(count < 2)
-		return;
-
+	/* This check should go first to ensure that resetting of wild menu is
+	 * processed and no returns will break the expected behaviour. */
 	if(op > 0)
 	{
 		last_pos = 0;
+		return;
+	}
+
+	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL || count < 2)
+	{
 		return;
 	}
 
@@ -1273,7 +1274,7 @@ exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos)
 
 	input_stat.len -= lhs_len;
 	input_stat.index -= lhs_len;
-	input_stat.curs_pos -= wcswidth(&input_stat.line[pos], lhs_len);
+	input_stat.curs_pos -= vifm_wcswidth(&input_stat.line[pos], lhs_len);
 	(void)wcsdel(input_stat.line, pos + 1, lhs_len);
 
 	if(no_remap)
@@ -2012,7 +2013,7 @@ static void
 cmd_home(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = 0;
-	input_stat.curs_pos = wcslen(input_stat.prompt);
+	input_stat.curs_pos = input_stat.prompt_wid;
 	update_cursor();
 }
 
@@ -2025,7 +2026,7 @@ cmd_end(key_info_t key_info, keys_info_t *keys_info)
 
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid +
-			wcswidth(input_stat.line, (size_t)-1);
+			vifm_wcswidth(input_stat.line, (size_t)-1);
 	update_cursor();
 }
 
@@ -2204,7 +2205,7 @@ update_cmdline(void)
 {
 	int required_height;
 	input_stat.curs_pos = input_stat.prompt_wid +
-			wcswidth(input_stat.line, input_stat.len);
+			vifm_wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
 	required_height = get_required_height();
@@ -2379,7 +2380,7 @@ static void
 update_line_stat(line_stats_t *stat, int new_len)
 {
 	stat->index += (new_len - 1) - stat->len;
-	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
+	stat->curs_pos = stat->prompt_wid + vifm_wcswidth(stat->line, stat->index);
 	stat->len = new_len - 1;
 }
 

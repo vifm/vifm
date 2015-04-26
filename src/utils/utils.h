@@ -121,9 +121,16 @@ unsigned int get_pid(void);
  * Returns a pointer to the argument list. */
 char * extract_cmd_name(const char line[], int raw, size_t buf_len, char buf[]);
 
-/* Determines columns needed for a wide character.  Returns number of columns,
- * on error default value of 1 is returned. */
+/* Determines columns needed for displaying a wide character.  Extends standard
+ * wcwidth() with support of non-printable characters.  Returns number of
+ * columns, on error default value of 1 is returned. */
 int vifm_wcwidth(wchar_t c);
+
+/* Determines columns needed for displaying a string of wide characters of
+ * length at most n.  Extends standard wcswidth() with support of non-printable
+ * characters.  Returns number of columns, on error default value of 1 is
+ * returned. */
+int vifm_wcswidth(const wchar_t str[], size_t n);
 
 /* Escapes string from offset position until its end for insertion into single
  * quoted string, prefix is not escaped.  Returns newly allocated string. */

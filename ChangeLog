@@ -172,6 +172,9 @@
 	communicate path to file used to initiate FUSE mounting of directory we're
 	in.
 
+	Allow non-printable characters to be arguments of :commands.  Thanks to
+	filterfalse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -298,6 +301,12 @@
 	borders.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
 	Fixed small view title glitch in CJK directories.
+
+	Fixed some command-line cursor positioning issues related to non-printable
+	characters.
+
+	Fixed crash on starting command-line completion with Shift-Tab after
+	stopping on completion item with lower number during previous completion.
 
 0.7.8-beta to 0.7.8
 

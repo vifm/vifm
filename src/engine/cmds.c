@@ -224,7 +224,7 @@ execute_cmd(const char cmd[])
 	/* Set background flag and remove background mark from raw arguments, when
 	 * command supports backgrounding. */
 	last_arg = get_last_argument(cmd_info.raw_args, &last_arg_len);
-	if(cur->bg && *last_arg == '&' && *skip_whitespace(last_arg + 1) == '\0')
+	if(cur->bg && *last_arg == '&' && *vle_cmds_at_arg(last_arg + 1) == '\0')
 	{
 		cmd_info.bg = 1;
 		*last_arg = '\0';
@@ -569,7 +569,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 {
 	char last_sep;
 
-	cmd = skip_whitespace(cmd);
+	cmd = vle_cmds_at_arg(cmd);
 
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
 	{
@@ -590,9 +590,11 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 		cmd = correct_limit(cmd, cmd_info);
 
 		if(cmd_info->begin == NOT_DEF)
+		{
 			cmd_info->begin = cmd_info->end;
+		}
 
-		cmd = skip_whitespace(cmd);
+		cmd = vle_cmds_at_arg(cmd);
 
 		if(!char_is_one_of(RANGE_SEPARATORS, *cmd))
 		{
@@ -602,7 +604,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 		last_sep = *cmd;
 		cmd++;
 
-		cmd = skip_whitespace(cmd);
+		cmd = vle_cmds_at_arg(cmd);
 	}
 
 	return cmd;
@@ -686,7 +688,7 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	if(cmd[0] == '!')
 	{
 		strcpy(buf, "!");
-		cmd = skip_whitespace(cmd + 1);
+		cmd = vle_cmds_at_arg(cmd + 1);
 		return cmd;
 	}
 
@@ -732,7 +734,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		return 0;
 
 	args = parse_tail(cur, tmp_args, cmd_info);
-	args = skip_whitespace(args);
+	args = vle_cmds_at_arg(args);
 	result += args - tmp_args;
 
 	if(cur->id == COMMAND_CMD_ID || cur->id == DELCOMMAND_CMD_ID)
@@ -923,7 +925,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	}
 
 	args = get_user_cmd_name(cmd_info->args, cmd_name, sizeof(cmd_name));
-	args = skip_whitespace(args);
+	args = vle_cmds_at_arg(args);
 	if(args[0] == '\0')
 		return CMDS_ERR_TOO_FEW_ARGS;
 	else if(!is_correct_name(cmd_name))
@@ -980,7 +982,7 @@ get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	const char *t;
 	size_t len;
 
-	t = skip_non_whitespace(cmd);
+	t = vle_cmds_past_arg(cmd);
 
 	len = MIN((size_t)(t - cmd), buf_len);
 	strncpy(buf, cmd, len);
@@ -1092,7 +1094,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	args_beg = args;
 	if(sep == ' ')
 	{
-		args = skip_whitespace(args);
+		args = vle_cmds_at_arg(args);
 	}
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
@@ -1232,13 +1234,14 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 }
 
 /* Checks whether character is command separator.  Special case is space as a
- * separator, which means that any whitespace can be used as separators.
- * Returns non-zero if c is counted to be a separator, otherwise zero is
- * returned. */
+ * separator, which means that any reasonable whitespace can be used as
+ * separators (we don't won't to treat line feeds or similar characters as
+ * separators to allow their appearance as part of arguments).  Returns non-zero
+ * if c is counted to be a separator, otherwise zero is returned. */
 static int
 is_separator(char c, char sep)
 {
-	return (sep == ' ') ? isspace(c) : (c == sep);
+	return (sep == ' ') ? (c == ' ' || c == '\t') : (c == sep);
 }
 
 TSTATIC void
@@ -1326,6 +1329,33 @@ list_udf_content(const char beginning[])
 	}
 
 	return content;
+}
+
+char *
+vle_cmds_past_arg(const char args[])
+{
+	while(!is_separator(*args, ' ') && *args != '\0')
+	{
+		++args;
+	}
+	return (char *)args;
+}
+
+char *
+vle_cmds_at_arg(const char args[])
+{
+	while(is_separator(*args, ' '))
+	{
+		++args;
+	}
+	return (char *)args;
+}
+
+char *
+vle_cmds_next_arg(const char args[])
+{
+	args = vle_cmds_past_arg(args);
+	return vle_cmds_at_arg(args);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -382,10 +382,18 @@ vifm_wcwidth(wchar_t wc)
 	{
 		return ((size_t)wc < (size_t)L' ') ? 2 : 1;
 	}
-	else
+	return width;
+}
+
+int
+vifm_wcswidth(const wchar_t str[], size_t n)
+{
+	int width = 0;
+	while(*str != L'\0' && n--)
 	{
-		return width;
+		width += vifm_wcwidth(*str++);
 	}
+	return width;
 }
 
 char *

@@ -54,6 +54,7 @@ static void report_parsing_error(ParsingErrors error);
 static void append_envvar(const char *name, const char *val);
 static void set_envvar(const char *name, const char *val);
 static envvar_t * get_record(const char *name);
+static char * skip_non_whitespace(const char str[]);
 static envvar_t * find_record(const char *name);
 static void free_record(envvar_t *record);
 static void clear_record(envvar_t *record);
@@ -422,6 +423,18 @@ unlet_variables(const char *cmd)
 	}
 
 	return error;
+}
+
+/* Skips consecutive non-whitespace characters.  Returns pointer to the next
+ * character in the str. */
+static char *
+skip_non_whitespace(const char str[])
+{
+	while(!isspace(*str) && *str != '\0')
+	{
+		++str;
+	}
+	return (char *)str;
 }
 
 /* searches for existent variable */
