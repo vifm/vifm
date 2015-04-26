@@ -83,6 +83,8 @@ static stic_void_void stic_suite_teardown_func = 0;
 static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
+const char *stic_current_test;
+
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, unsigned int line) = stic_simple_test_result_log;
 
 void suite_setup(stic_void_void setup)
@@ -154,15 +156,18 @@ static int stic_fixture_tests_failed;
 
 void stic_simple_test_result_log(int passed, char* reason, const char* function, unsigned int line)
 {
+	/* TODO: do use function if it differs from test. */
+	(void)function;
+
 	if (!passed)
 	{
 		if(stic_machine_readable)
 		{
-			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, function, line, reason );
+			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason );
 		}
 		else
 		{
-			printf("%-30s Line %-5d %s\n", function, line, reason );
+			printf("%-30s Line %-5d %s\n", stic_current_test, line, reason );
 		}
 		sea_tests_failed++;
 	}
@@ -172,11 +177,11 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		{
 			if(stic_machine_readable)
 			{
-				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, function, line );
+				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line );
 			}
 			else
 			{
-				printf("%-30s Line %-5d Passed\n", function, line);
+				printf("%-30s Line %-5d Passed\n", stic_current_test, line);
 			}
 		}
 		sea_tests_passed++;

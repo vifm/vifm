@@ -305,11 +305,14 @@ static void stic_fixture(void)
 
     for(i = 0; i < STIC_ARRAY_LEN(test_data); ++i)
     {
+        extern const char *stic_current_test;
+
         struct stic_test_data *td = *test_data[i];
         if(td == NULL) continue;
         if(td->p != NULL && !td->p()) continue;
         if(!stic_should_run(fixture_name, td->n)) continue;
 
+        stic_current_test = td->n;
         stic_suite_setup();
         stic_setup();
         td->t();
