@@ -96,6 +96,8 @@
 
 	Added JobLine highlight group for the job bar.
 
+	Added :redr[aw] command to force immediate redraw.  Thanks to filterfalse.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 

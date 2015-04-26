@@ -259,6 +259,7 @@ static int pwd_cmd(const cmd_info_t *cmd_info);
 static int qmap_cmd(const cmd_info_t *cmd_info);
 static int qnoremap_cmd(const cmd_info_t *cmd_info);
 static int qunmap_cmd(const cmd_info_t *cmd_info);
+static int redraw_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
@@ -463,6 +464,8 @@ static const cmd_add_t commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "qunmap",           .abbr = "qun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = qunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "redraw",           .abbr = "redr",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = redraw_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "rename",           .abbr = NULL,    .emark = 1,  .id = COM_RENAME,      .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -3659,6 +3662,14 @@ static int
 qunmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_unmap(cmd_info->argv[0], VIEW_MODE);
+}
+
+/* Immediately redraws the screen. */
+static int
+redraw_cmd(const cmd_info_t *cmd_info)
+{
+	update_screen(UT_FULL);
+	return 0;
 }
 
 static int
