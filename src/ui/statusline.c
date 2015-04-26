@@ -376,11 +376,11 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 int
 ui_stat_reposition(int statusbar_height)
 {
-	enum { STAT_LINE_HEIGHT = 1 };
+	const int stat_line_height = cfg.display_statusline ? 1 : 0;
 	const int job_bar_height = ui_stat_job_bar_height();
 	const int y = getmaxy(stdscr)
 	            - statusbar_height
-	            - STAT_LINE_HEIGHT
+	            - stat_line_height
 	            - job_bar_height;
 
 	mvwin(job_bar, y, 0);
