@@ -576,14 +576,13 @@ update_info_file(const char filename[])
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					int pos;
+					const int pos = read_optional_number(fp);
 
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&lwin, line_val))
 						continue;
 
-					pos = read_optional_number(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2U > nlhp)
 					{
@@ -598,14 +597,13 @@ update_info_file(const char filename[])
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					int pos;
+					const int pos = read_optional_number(fp);
 
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&rwin, line_val))
 						continue;
 
-					pos = read_optional_number(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2U > nrhp)
 					{
