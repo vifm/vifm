@@ -147,7 +147,7 @@ static void execute_extcmd(const char command[], CmdInputType type);
 static void save_extcmd(const char command[], CmdInputType type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
-static int skip_at_beginning(int id, const char *args);
+static int skip_at_beginning(int id, const char args[]);
 static int cmd_should_be_processed(int cmd_id);
 static int is_out_of_arg(const char cmd[], const char pos[]);
 TSTATIC int line_pos(const char begin[], const char end[], char sep,
@@ -867,8 +867,10 @@ select_count(const cmd_info_t *cmd_info, int count)
 	}
 }
 
+/* Command prefix remover for command parsing unit.  Returns < 0 to do nothing
+ * or x to skip command name and x chars. */
 static int
-skip_at_beginning(int id, const char *args)
+skip_at_beginning(int id, const char args[])
 {
 	if(id == COM_WINDO)
 	{
@@ -878,7 +880,9 @@ skip_at_beginning(int id, const char *args)
 	{
 		args = vle_cmds_at_arg(args);
 		if(*args != '\0')
+		{
 			return 1;
+		}
 	}
 	return -1;
 }

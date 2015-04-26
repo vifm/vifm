@@ -590,7 +590,9 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 		cmd = correct_limit(cmd, cmd_info);
 
 		if(cmd_info->begin == NOT_DEF)
+		{
 			cmd_info->begin = cmd_info->end;
+		}
 
 		cmd = vle_cmds_at_arg(cmd);
 
