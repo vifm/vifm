@@ -582,6 +582,8 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&lwin, line_val))
 						continue;
+					if(!is_dir(line_val))
+						continue;
 
 					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2U > nlhp)
@@ -602,6 +604,8 @@ update_info_file(const char filename[])
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&rwin, line_val))
+						continue;
+					if(!is_dir(line_val))
 						continue;
 
 					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);

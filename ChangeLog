@@ -180,6 +180,9 @@
 	Prevent inserting odd characters on terminal resize while in command-line
 	mode.
 
+	Throw away dead directories in directory histories on merging vifminfo
+	files.  Otherwise clearing such directories on :history is almost useless.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
