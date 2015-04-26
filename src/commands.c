@@ -876,7 +876,7 @@ skip_at_beginning(int id, const char *args)
 	}
 	else if(id == COM_WINRUN)
 	{
-		args = skip_whitespace(args);
+		args = vle_cmds_at_arg(args);
 		if(*args != '\0')
 			return 1;
 	}
@@ -2391,7 +2391,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	records = skip_word(cmd_info->args);
+	records = vle_cmds_next_arg(cmd_info->args);
 	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
 	ft_set_programs(cmd_info->argv[0], records, for_x, in_x);
 	return 0;
@@ -2410,7 +2410,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	records = skip_word(cmd_info->args);
+	records = vle_cmds_next_arg(cmd_info->args);
 	ft_set_viewers(cmd_info->argv[0], records);
 	return 0;
 }
@@ -4201,11 +4201,11 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		return save_msg != 0;
 	}
 
-	raw_rhs = skip_non_whitespace(cmd_info->args);
+	raw_rhs = vle_cmds_past_arg(cmd_info->args);
 	t = *raw_rhs;
 	*raw_rhs = '\0';
 
-	rhs = skip_whitespace(raw_rhs + 1);
+	rhs = vle_cmds_at_arg(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
 	result = add_user_keys(keys, mapping, mode, no_remap);

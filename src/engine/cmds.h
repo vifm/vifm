@@ -147,6 +147,20 @@ char ** list_udf(void);
 
 char * list_udf_content(const char beginning[]);
 
+/* Skips at most one argument of the string.  Returns pointer to the next
+ * character after that argument, if any, otherwise pointer to
+ * null-character. */
+char * vle_cmds_past_arg(const char args[]);
+
+/* Skips argument separators in the string.  Returns pointer to the first
+ * character of the first argument, if any, otherwise pointer to
+ * null-character. */
+char * vle_cmds_at_arg(const char args[]);
+
+/* Advances to the next argument in the string.  Returns pointer to the next
+ * argument, if any, otherwise pointer to null-character. */
+char * vle_cmds_next_arg(const char args[]);
+
 TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,

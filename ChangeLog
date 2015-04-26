@@ -172,6 +172,9 @@
 	communicate path to file used to initiate FUSE mounting of directory we're
 	in.
 
+	Allow non-printable characters to be arguments of :commands.  Thanks to
+	filterfalse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

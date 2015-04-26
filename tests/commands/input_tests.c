@@ -692,5 +692,12 @@ TEST(missing_quotes_are_allowed)
 	assert_int_equal(CMDS_ERR_INVALID_ARG, execute_cmd("call 'ismissing"));
 }
 
+TEST(non_printable_arg)
+{
+	/* \x0C is Ctrl-L. */
+	assert_int_equal(0, execute_cmd("call \x0C"));
+	assert_string_equal("\x0C", arg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
