@@ -183,6 +183,8 @@
 	Throw away dead directories in directory histories on merging vifminfo
 	files.  Otherwise clearing such directories on :history is almost useless.
 
+	Display calculated size of directory for symbolic links that point to it.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
