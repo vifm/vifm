@@ -66,5 +66,29 @@ TEST(root_ok)
 	assert_true(path == last);
 }
 
+TEST(rel_single_no_trailing_slash)
+{
+	assert_string_equal("c", get_last_path_component("c"));
+	assert_string_equal("cc", get_last_path_component("cc"));
+}
+
+TEST(rel_single_trailing_slash)
+{
+	assert_string_equal("c/", get_last_path_component("c/"));
+	assert_string_equal("cc/", get_last_path_component("cc/"));
+}
+
+TEST(rel_many_no_trailing_slash)
+{
+	assert_string_equal("c", get_last_path_component("a/b/c"));
+	assert_string_equal("cc", get_last_path_component("a/b/cc"));
+}
+
+TEST(rel_many_trailing_slash)
+{
+	assert_string_equal("c/", get_last_path_component("a/b/c/"));
+	assert_string_equal("cc/", get_last_path_component("a/b/cc/"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
