@@ -290,7 +290,7 @@ init_cmdline_mode(void)
 {
 	int ret_code;
 
-	set_def_handler(CMDLINE_MODE, def_handler);
+	set_def_handler(CMDLINE_MODE, &def_handler);
 
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
@@ -309,7 +309,7 @@ def_handler(wchar_t key)
 	input_stat.history_search = HIST_NONE;
 
 	if(input_stat.complete_continue
-			&& input_stat.line[input_stat.index - 1] == L'/' && key == '/')
+			&& input_stat.line[input_stat.index - 1] == L'/' && key == L'/')
 	{
 		stop_completion();
 		return 0;
@@ -317,8 +317,12 @@ def_handler(wchar_t key)
 
 	stop_completion();
 
-	if(key != L'\r' && !iswprint(key))
+	/* iswprint(KEY_RESIZE) can return true, but we really don't want to mess up
+	 * input because terminal dimensions changed. */
+	if(key != L'\r' && (!iswprint(key) || key == KEY_RESIZE))
+	{
 		return 0;
+	}
 
 	if(!cfg_is_word_wchar(key))
 	{
@@ -1046,7 +1050,7 @@ draw_wild_menu(int op)
 		{
 			col_attr_t col;
 			col = cfg.cs.color[STATUS_LINE_COLOR];
-			mix_colors(&col, &cfg.cs.color[MENU_COLOR]);
+			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
 
 			wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}

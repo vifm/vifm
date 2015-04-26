@@ -1783,6 +1783,9 @@ order using the '.' operator.  Any whitespace is ignored.
     the list is original path of a deleted file, thus the list can contain
     duplicates.
 
+                                               *vifm-:redraw* *vifm-:redr*
+:redr[aw] - immediately redraws the screen.
+
                                                *vifm-:registers* *vifm-:reg*
 :reg[isters] - popup menu with registers content.
 :reg[isters] list - display the contents of the numbered and named

@@ -259,6 +259,8 @@ const char *tags[] = {
 	"vifm-:qun",
 	"vifm-:qunmap",
 	"vifm-:range",
+	"vifm-:redr",
+	"vifm-:redraw",
 	"vifm-:reg",
 	"vifm-:registers",
 	"vifm-:rename",
