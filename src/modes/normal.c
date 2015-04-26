@@ -459,7 +459,6 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	clean_selected_files(curr_view);
 	redraw_current_view();
-	curs_set(FALSE);
 }
 
 /* Scroll view down by half of its height. */
@@ -582,7 +581,6 @@ static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_screen(UT_FULL);
-	curs_set(FALSE);
 }
 
 /* Enters directory or runs file. */
