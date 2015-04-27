@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/str.h"
 #include "../../src/commands.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
@@ -14,6 +15,7 @@ static const cmd_add_t commands[] = {
 
 static int called;
 static int bg;
+static char *arg;
 
 SETUP()
 {
@@ -37,6 +39,12 @@ builtin_cmd(const cmd_info_t* cmd_info)
 {
 	called = 1;
 	bg = cmd_info->bg;
+
+	if(cmd_info->argc != 0)
+	{
+		replace_string(&arg, cmd_info->argv[0]);
+	}
+
 	return 0;
 }
 
@@ -44,6 +52,14 @@ TEST(space_amp)
 {
 	called = 0;
 	assert_int_equal(0, exec_commands("builtin &", &lwin, CIT_COMMAND));
+	assert_int_equal(1, called);
+	assert_int_equal(1, bg);
+}
+
+TEST(space_amp_spaces)
+{
+	called = 0;
+	assert_int_equal(0, exec_commands("builtin &    ", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
 	assert_int_equal(1, bg);
 }
@@ -78,6 +94,30 @@ TEST(non_printable_arg)
 	/* \x0C is Ctrl-L. */
 	assert_int_equal(0, exec_commands("onearg \x0C", &lwin, CIT_COMMAND));
 	assert_true(called);
+	assert_string_equal("\x0C", arg);
+}
+
+TEST(non_printable_arg_in_udf)
+{
+	/* \x0C is Ctrl-L. */
+	assert_int_equal(0, exec_commands("command udf :onearg \x0C", &lwin,
+				CIT_COMMAND));
+
+	called = 0;
+	assert_int_equal(0, exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_string_equal("\x0C", arg);
+}
+
+TEST(space_last_arg_in_udf)
+{
+	assert_int_equal(0, exec_commands("command udf :onearg \\ ", &lwin,
+				CIT_COMMAND));
+
+	called = 0;
+	assert_int_equal(0, exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_string_equal(" ", arg);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

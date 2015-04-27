@@ -56,9 +56,6 @@
 /* Removes at most one trailing newline character. */
 void chomp(char str[]);
 
-/* Removes all trailing whitespace. Returns new length of the string. */
-size_t trim_right(char *text);
-
 /* Converts multibyte string to a wide string.  On success returns newly
  * allocated string, which should be freed by the caller, otherwise NULL is
  * returned. */

@@ -309,6 +309,7 @@ static int wq_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
+static int parse_bg_mark(char cmd[]);
 static int try_handle_ext_command(const char cmd[], MacroFlags flags,
 		int *save_msg);
 static void output_to_statusbar(const char *cmd);
@@ -4475,7 +4476,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 {
 	char *expanded_com = NULL;
 	MacroFlags flags;
-	size_t len;
 	int external = 1;
 	int bg;
 	int save_msg = 0;
@@ -4485,11 +4485,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
 			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
 
-	len = trim_right(expanded_com);
-	if((bg = ends_with(expanded_com, " &")))
-	{
-		expanded_com[len - 2] = '\0';
-	}
+	bg = parse_bg_mark(expanded_com);
 
 	if(expanded_com[0] == ':')
 	{
@@ -4569,6 +4565,23 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	free(expanded_com);
 
 	return save_msg;
+}
+
+/* Checks for background mark and trims it from the command.  Returns non-zero
+ * if mark is found, and zero otherwise. */
+static int
+parse_bg_mark(char cmd[])
+{
+	/* Mark is: space, ampersand, any number of trailing separators. */
+
+	char *const amp = strrchr(cmd, '&');
+	if(amp == NULL || amp - 1 < cmd || *vle_cmds_at_arg(amp + 1) != '\0')
+	{
+		return 0;
+	}
+
+	amp[-1] = '\0';
+	return 1;
 }
 
 /* Handles most of command handling variants.  Returns:

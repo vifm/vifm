@@ -318,6 +318,9 @@
 	Fixed crash on starting command-line completion with Shift-Tab after
 	stopping on completion item with lower number during previous completion.
 
+	Fixed last space trimming in user defined commands (quite unusual use
+	case).  Thanks to filterfalse.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

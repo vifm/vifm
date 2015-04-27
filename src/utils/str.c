@@ -48,20 +48,6 @@ chomp(char str[])
 	}
 }
 
-size_t
-trim_right(char *text)
-{
-	size_t len;
-
-	len = strlen(text);
-	while(len > 0 && isspace(text[len - 1]))
-	{
-		text[--len] = '\0';
-	}
-
-	return len;
-}
-
 wchar_t *
 to_wide(const char s[])
 {

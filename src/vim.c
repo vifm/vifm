@@ -20,10 +20,11 @@
 
 #include <curses.h> /* FALSE curs_set() */
 
+#include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
 #include <stdio.h> /* FILE fclose() fprintf() fputs() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
-#include <string.h> /* strcmp() strrchr() strstr() */
+#include <string.h> /* strcmp() strlen() strrchr() strstr() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
@@ -47,6 +48,7 @@
 
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
+TSTATIC void trim_right(char text[]);
 static void dump_filenames(const FileView *view, FILE *fp, int nfiles,
 		char *files[]);
 
@@ -158,7 +160,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 #endif
 
 	copy_str(vicmd, sizeof(vicmd), cfg_get_vicmd(&bg));
-	(void)trim_right(vicmd);
+	trim_right(vicmd);
 	if(!allow_forking)
 	{
 		char *p = strrchr(vicmd, ' ');
@@ -184,6 +186,17 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	curs_set(FALSE);
 
 	return result;
+}
+
+/* Removes all trailing whitespace. */
+TSTATIC void
+trim_right(char str[])
+{
+	size_t len = strlen(str);
+	while(len > 0U && isspace(str[len - 1U]))
+	{
+		str[--len] = '\0';
+	}
 }
 
 /* Runs command with specified settings.  Returns exit code of the command. */
