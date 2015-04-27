@@ -2558,6 +2558,7 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 
 	if(format)
 	{
+		/* XXX: decorations should apply to whole shortened paths? */
 		format_entry_name(view, entry - view->dir_entry, sizeof(name), name);
 	}
 	else
