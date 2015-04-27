@@ -40,10 +40,19 @@
 #include "registers.h"
 #include "status.h"
 
+/* Type of path to use during entry path expansion. */
+typedef enum
+{
+	PT_NAME, /* Last path component, i.e. file name. */
+	PT_REL,  /* Relative path. */
+	PT_FULL, /* Full path. */
+}
+PathType;
+
 static void set_flags(MacroFlags *flags, MacroFlags value);
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
-static char * append_entry(FileView *view, char expanded[], int full_path,
+static char * append_entry(FileView *view, char expanded[], PathType type,
 		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
@@ -252,7 +261,9 @@ TSTATIC char *
 append_selected_files(FileView *view, char expanded[], int under_cursor,
 		int quotes, const char mod[], int for_shell)
 {
-	const int full_path = (view == other_view || flist_custom_active(view));
+	const PathType type = (view == other_view)
+	                    ? PT_FULL
+	                    : (flist_custom_active(view) ? PT_REL : PT_NAME);
 #ifdef _WIN32
 	size_t old_len = strlen(expanded);
 #endif
@@ -263,7 +274,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 		dir_entry_t *entry = NULL;
 		while(iter_selected_entries(view, &entry))
 		{
-			expanded = append_entry(view, expanded, full_path, entry, quotes, mod,
+			expanded = append_entry(view, expanded, type, entry, quotes, mod,
 					for_shell);
 
 			if(++n != view->selected_files)
@@ -274,7 +285,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	}
 	else
 	{
-		expanded = append_entry(view, expanded, full_path, get_current_entry(view),
+		expanded = append_entry(view, expanded, type, get_current_entry(view),
 				quotes, mod, for_shell);
 	}
 
@@ -291,19 +302,28 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 /* Appends path to the entry to the expanded string.  Returns new value of
  * expanded string. */
 static char *
-append_entry(FileView *view, char expanded[], int full_path, dir_entry_t *entry,
+append_entry(FileView *view, char expanded[], PathType type, dir_entry_t *entry,
 		int quotes, const char mod[], int for_shell)
 {
 	char path[PATH_MAX];
 	const char *modified;
 
-	if(full_path)
+	switch(type)
 	{
-		get_full_path_of(entry, sizeof(path), path);
-	}
-	else
-	{
-		copy_str(path, sizeof(path), entry->name);
+		case PT_NAME:
+			copy_str(path, sizeof(path), entry->name);
+			break;
+		case PT_REL:
+			get_short_path_of(view, entry, 0, sizeof(path), path);
+			break;
+		case PT_FULL:
+			get_full_path_of(entry, sizeof(path), path);
+			break;
+
+		default:
+			assert(0 && "Unexpected path type");
+			path[0] = '\0';
+			break;
 	}
 
 	modified = apply_mods(path, flist_get_dir(view), mod, for_shell);
