@@ -185,6 +185,9 @@
 
 	Display calculated size of directory for symbolic links that point to it.
 
+	Handle commands that are too long to be passed directly to the shell by
+	breaking them into list of arguments if possible.  Thanks to filterfalse.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
