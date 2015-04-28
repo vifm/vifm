@@ -20,6 +20,11 @@
 #include "utils_nix.h"
 #include "utils_int.h"
 
+#if defined (HAVE_LINUX_BINFMTS_H) && defined (HAVE_SYS_USER_H)
+#include <linux/binfmts.h>
+#include <sys/user.h>
+#endif
+
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* O_RDONLY O_WRONLY S_* */
 #include <sys/time.h> /* timeval */
@@ -255,9 +260,18 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 char **
 make_execv_array(char shell[], char cmd[])
 {
-	enum { MAX_ARG_LEN = 32*1024 };
+#ifdef MAX_ARG_STRLEN
+	/* Don't use maximum length, leave some room or commands fail to run. */
+	const size_t safe_arg_len = MIN(MAX_ARG_STRLEN, MAX_ARG_STRLEN - 4096U);
+	const size_t npieces = DIV_ROUND_UP(strlen(cmd), safe_arg_len);
+#else
+	/* Actual value doesn't matter in this case. */
+	const size_t safe_arg_len = 1;
+	/* Don't break anything if Linux-specific MAX_ARG_STRLEN macro isn't
+	 * defined. */
+	const size_t npieces = 1U;
+#endif
 
-	const size_t npieces = DIV_ROUND_UP(strlen(cmd), MAX_ARG_LEN);
 	char **args = malloc(sizeof(*args)*(3 + npieces + 1));
 	char *eval_cmd;
 	size_t len;
@@ -287,13 +301,13 @@ make_execv_array(char shell[], char cmd[])
 		snprintf(s, sizeof(s), "${%d}", (int)i);
 		(void)strappend(&eval_cmd, &len, s);
 
-		c = cmd[MAX_ARG_LEN];
-		cmd[MAX_ARG_LEN] = '\0';
+		c = cmd[safe_arg_len];
+		cmd[safe_arg_len] = '\0';
 
 		args[3 + i] = strdup(cmd);
 
-		cmd[MAX_ARG_LEN] = c;
-		cmd += MAX_ARG_LEN;
+		cmd[safe_arg_len] = c;
+		cmd += safe_arg_len;
 	}
 	(void)strappend(&eval_cmd, &len, "\"");
 
