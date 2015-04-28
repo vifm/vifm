@@ -1,7 +1,6 @@
 Basic things that need to be done.
     Termcap or terminfo support for keybindings (do we need this? curses does).
     Backgrounding of commands with job control (pause/resume/kill).
-    Handle commands that are too long to be passed directly to the shell.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
     Mouse support.

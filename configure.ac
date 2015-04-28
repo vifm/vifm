@@ -71,6 +71,8 @@ AC_CHECK_HEADER([time.h], [], [AC_MSG_ERROR([time.h header not found.])])
 AC_CHECK_HEADER([unistd.h], [], [AC_MSG_ERROR([unistd.h header not found.])])
 AC_CHECK_HEADER([wchar.h], [], [AC_MSG_ERROR([wchar.h header not found.])])
 AC_CHECK_HEADER([wctype.h], [], [AC_MSG_ERROR([wctype.h header not found.])])
+dnl Headers required for breaking too long command-lines.
+AC_CHECK_HEADERS([sys/user.h linux/binfmts.h])
 
 dnl Check for various system types.
 AC_CHECK_TYPE([uid_t])

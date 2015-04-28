@@ -20,6 +20,11 @@
 #include "utils_nix.h"
 #include "utils_int.h"
 
+#if defined (HAVE_LINUX_BINFMTS_H) && defined (HAVE_SYS_USER_H)
+#include <linux/binfmts.h>
+#include <sys/user.h>
+#endif
+
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* O_RDONLY O_WRONLY S_* */
 #include <sys/time.h> /* timeval */
@@ -38,7 +43,7 @@
                        sigprocmask() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
-#include <stdlib.h> /* atoi() free() */
+#include <stdlib.h> /* atoi() free() malloc() */
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
@@ -119,17 +124,11 @@ run_in_shell_no_cls(char command[])
 	}
 	if(pid == 0)
 	{
-		char *args[4];
-
 		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
 		(void)set_sigchld(0);
 
-		args[0] = cfg.shell;
-		args[1] = "-c";
-		args[2] = command;
-		args[3] = NULL;
-		execve(cfg.shell, args, environ);
+		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
 		exit(127);
 	}
 
@@ -217,7 +216,6 @@ get_proc_exit_status(pid_t pid)
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err_only, char cmd[])
 {
-	char *args[4];
 	int nullfd;
 
 	/* Redirect stderr and maybe stdout to write end of the pipe. */
@@ -255,13 +253,70 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 		}
 	}
 
-	args[0] = cfg.shell;
-	args[1] = "-c";
-	args[2] = cmd;
-	args[3] = NULL;
-
-	execvp(args[0], args);
+	execvp(cfg.shell, make_execv_array(cfg.shell, cmd));
 	exit(1);
+}
+
+char **
+make_execv_array(char shell[], char cmd[])
+{
+#ifdef MAX_ARG_STRLEN
+	/* Don't use maximum length, leave some room or commands fail to run. */
+	const size_t safe_arg_len = MIN(MAX_ARG_STRLEN, MAX_ARG_STRLEN - 4096U);
+	const size_t npieces = DIV_ROUND_UP(strlen(cmd), safe_arg_len);
+#else
+	/* Actual value doesn't matter in this case. */
+	const size_t safe_arg_len = 1;
+	/* Don't break anything if Linux-specific MAX_ARG_STRLEN macro isn't
+	 * defined. */
+	const size_t npieces = 1U;
+#endif
+
+	char **args = malloc(sizeof(*args)*(3 + npieces + 1));
+	char *eval_cmd;
+	size_t len;
+	size_t i;
+
+	/* Don't use eval hack unless necessary. */
+	if(npieces == 1)
+	{
+		args[0] = shell;
+		args[1] = "-c";
+		args[2] = cmd;
+		args[3] = NULL;
+		return args;
+	}
+
+	/* Break very long commands into pieces and run like this:
+	 * sh -c 'eval "${1}${2}...${10}...${N}"' sh quoted-substring1 ...
+	 * see https://lists.gnu.org/archive/html/bug-make/2009-07/msg00012.html */
+	eval_cmd = NULL;
+	len = 0U;
+	(void)strappend(&eval_cmd, &len, "eval \"");
+	for(i = 0; i < npieces; ++i)
+	{
+		char s[32];
+		char c;
+
+		snprintf(s, sizeof(s), "${%d}", (int)i);
+		(void)strappend(&eval_cmd, &len, s);
+
+		c = cmd[safe_arg_len];
+		cmd[safe_arg_len] = '\0';
+
+		args[3 + i] = strdup(cmd);
+
+		cmd[safe_arg_len] = c;
+		cmd += safe_arg_len;
+	}
+	(void)strappend(&eval_cmd, &len, "\"");
+
+	args[0] = shell;
+	args[1] = "-c";
+	args[2] = eval_cmd;
+	args[3 + npieces] = NULL;
+
+	return args;
 }
 
 void

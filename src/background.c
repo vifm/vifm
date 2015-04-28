@@ -316,15 +316,9 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 	{
 		extern char **environ;
 
-		char *args[4];
-
 		(void)set_sigchld(0);
 
-		args[0] = cfg.shell;
-		args[1] = "-c";
-		args[2] = cmd;
-		args[3] = NULL;
-		(void)execve(cfg.shell, args, environ);
+		(void)execve(cfg.shell, make_execv_array(cfg.shell, cmd), environ);
 		exit(127);
 	}
 
@@ -496,21 +490,21 @@ background_and_capture(char *cmd, int user_sh, FILE **out, FILE **err)
 
 	if(pid == 0)
 	{
-		char *args[4];
+		char *sh;
 
 		close(out_pipe[0]);
 		close(error_pipe[0]);
 		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
+		{
 			exit(-1);
+		}
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
+		{
 			exit(-1);
+		}
 
-		args[0] = user_sh ? cfg.shell : "/bin/sh";
-		args[1] = "-c";
-		args[2] = cmd;
-		args[3] = NULL;
-
-		execvp(args[0], args);
+		sh = user_sh ? cfg.shell : "/bin/sh";
+		execvp(sh, make_execv_array(sh, cmd));
 		exit(-1);
 	}
 
@@ -643,7 +637,6 @@ start_background_job(const char *cmd, int skip_errors)
 	job_t *job = NULL;
 #ifndef _WIN32
 	pid_t pid;
-	char *args[4];
 	int error_pipe[2];
 	char *command;
 
@@ -688,14 +681,9 @@ start_background_job(const char *cmd, int skip_errors)
 			dup2(nullfd, 1);
 		}
 
-		args[0] = cfg.shell;
-		args[1] = "-c";
-		args[2] = command;
-		args[3] = NULL;
-
 		setpgid(0, 0);
 
-		execve(cfg.shell, args, environ);
+		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
 		exit(-1);
 	}
 	else
