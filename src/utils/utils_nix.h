@@ -40,6 +40,12 @@ int get_proc_exit_status(pid_t pid);
  * and stderr are redirected to the pipe. */
 void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, char cmd[]);
 
+/* Creates array to be passed into one of execv*() functions.  To be used by
+ * forked process.  Returns newly allocated array with some strings allocated,
+ * some as is.  Memory management shouldn't matter at this point, we either
+ * successfully replace process image or terminate. */
+char ** make_execv_array(char shell[], char cmd[]);
+
 /* Converts the mode to string representation of permissions. */
 void get_perm_string(char buf[], int len, mode_t mode);
 
