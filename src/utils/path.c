@@ -493,14 +493,20 @@ get_last_path_component(const char path[])
 	}
 	else if(slash[1] == '\0')
 	{
+		/* Skip slashes. */
 		while(slash > path && slash[0] == '/')
-			slash--;
-		while(slash > path + 1 && slash[-1] != '/')
-			slash--;
+		{
+			--slash;
+		}
+		/* Skip until slash. */
+		while(slash > path && slash[-1] != '/')
+		{
+			--slash;
+		}
 	}
 	else
 	{
-		slash++;
+		++slash;
 	}
 	return slash;
 }

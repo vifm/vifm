@@ -1,11 +1,7 @@
 Basic things that need to be done.
     Termcap or terminfo support for keybindings (do we need this? curses does).
     Backgrounding of commands with job control (pause/resume/kill).
-    Show background commands presence in the TUI.
-    Fix window resizing (I think it's almost done).
     Handle commands that are too long to be passed directly to the shell.
-    Perform operations using system calls, not programs.  This is much faster.
-    Show operation progress.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
     Mouse support.
@@ -14,7 +10,6 @@ Basic things that need to be done.
     Make status bar able to display error and info messages at the same time.
     Command to create multiple copies of selected one with ability to rename
         it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
-    Make :filetype, :filextype and :fileviewer show menus with 0 or 1 args.
     Add :increment and :decrement commands, which should work in two modes
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
     Improve ga and gA commands to recalculate sizes of modified directories
@@ -25,6 +20,7 @@ Basic things that need to be done.
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
     Process shell pause request for running in %s.
     Accept [count] for "h" and "gh".
+    :setlocal command.
 
 Documentation.
     Better documentation.
@@ -37,8 +33,6 @@ Windows.
     Make properties dialog change file attributes recursively.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
-    Fix freezing (maybe already fixed).
-    Use UTF8 internally.
     Make 'fastrun' understand file extensions on Windows (to ignore them).
     Maybe read first bytes of files and threat files as executable if first
         two bytes equal to '#!'.
@@ -51,7 +45,6 @@ Vi(m) specific features that need to be added.
     Fix '' to go back to all jumps G gg links (in one directory?).
     Change file list filters to use fold levels instead of just
         the dot filter and regular expression filter (what does this mean?).
-    Some kind of selection mode (multiple blocks, mixing).
     Better registers support.
     /, ?, n, N as selectors.
     Make n, N, / and ? with count behave like Vim on nowrapscan and match fail
@@ -103,9 +96,6 @@ Possible things to add.
     $_ env var and Alt-T combination as in bash shell.
     Rename existing file option on name conflicts.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
-    Think about running vim on :help command in kind of sandbox, so the only
-        help files available were those provided by vifm.
-    Something to control the frequency of directory change changes.
     Invalidate calculated directory size if its modification time changed.
     Add search history for less-like mode.
     Update visible symbolic links in the other pane on updating current pane
@@ -115,7 +105,7 @@ Possible things to add.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
-    %i macro to prompt user for input.
+    %p/%I macro to prompt user for input.
     Maybe inotify support on Linux.
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
@@ -166,10 +156,11 @@ Code improvements.
     Maybe show "An error occurred" message on fail to build menus like
         apropos or locate instead of "No files found" (check that list is
         empty AND an error occurred).
-    Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with copy_str().
+    Continue replacing calls like `snprintf(foo, sizeof(foo), "%s", line)` with
+        copy_str().
     Rename escape_filename() to shell_escape() or similar, but quite generic.
     Maybe allow specifying limit of input characters for command-line prompt
-        submode. Would it make conflict resolution prompt easier to use?
+        submode.  Would it make conflict resolution prompt easier to use?
     Maybe pass var by pointer to var_free and cleanup the structure.
     Write more tests for get_lines functions in string_array.c
     Move utils/mntent.h and utils/fs_limits.h to compat/ directory.

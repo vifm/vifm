@@ -520,8 +520,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 				continue;
 
 			h = cy + 4;
-			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 			wresize(error_win, h, w);
+			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
 			cx = 1 + margin
 			   + (centered ? (w - get_screen_string_length(buf) - 2)/2 : 0);

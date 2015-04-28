@@ -1,20 +1,7 @@
-Strange piece of escape sequence 37m (maybe fixed).
-
 Selection isn't cleared on keys in normal mode.
-
-vifm freezes sometimes on Windows (maybe fixed).
-New data, only on :copy! _directory (ies)_ to network drive, one needs to
-press anykey N times, where N is number of files inside folder.
-
-Files with names containing Unicode characters are not always processed correctly.
 
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).
-
-Something is wrong with checking program existance on Windows (probably false
-positive).
-
-A bug? Last search pattern is stored per window, but history is common.
 
 When output of something like `:filter?` fills whole screen two character
 positions filled with border color are left (in left and right top corners).

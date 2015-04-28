@@ -180,6 +180,11 @@
 	Prevent inserting odd characters on terminal resize while in command-line
 	mode.
 
+	Throw away dead directories in directory histories on merging vifminfo
+	files.  Otherwise clearing such directories on :history is almost useless.
+
+	Display calculated size of directory for symbolic links that point to it.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -312,6 +317,9 @@
 
 	Fixed crash on starting command-line completion with Shift-Tab after
 	stopping on completion item with lower number during previous completion.
+
+	Fixed last space trimming in user defined commands (quite unusual use
+	case).  Thanks to filterfalse.
 
 0.7.8-beta to 0.7.8
 

@@ -64,6 +64,8 @@ static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static void process_hist_entry(FileView *view, const char dir[],
+		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
 static int assoc_exists(assoc_list_t *assocs, const char pattern[],
 		const char cmd[]);
@@ -570,47 +572,23 @@ update_info_file(const char filename[])
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line_val, line2);
 				}
 			}
-			else if(type == LINE_TYPE_LWIN_HIST)
+			else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 			{
-				if(line_val[0] == '\0')
+				if(line_val[0] != '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					int pos;
+					const int pos = read_optional_number(fp);
 
-					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
-						continue;
-					if(is_in_view_history(&lwin, line_val))
-						continue;
-
-					pos = read_optional_number(fp);
-					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
-					if(nlh/2U > nlhp)
+					if(type == LINE_TYPE_LWIN_HIST)
 					{
-						nlhp = add_to_int_array(&lhp, nlhp, pos);
-						nlhp = MIN(nlh/2U, nlhp);
+						process_hist_entry(&lwin, line_val, line2, pos, &lh, &nlh, &lhp,
+								&nlhp);
 					}
-				}
-			}
-			else if(type == LINE_TYPE_RWIN_HIST)
-			{
-				if(line_val[0] == '\0')
-					continue;
-				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
-				{
-					int pos;
-
-					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
-						continue;
-					if(is_in_view_history(&rwin, line_val))
-						continue;
-
-					pos = read_optional_number(fp);
-					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
-					if(nrh/2U > nrhp)
+					else
 					{
-						nrhp = add_to_int_array(&rhp, nrhp, pos);
-						nrhp = MIN(nrh/2U, nrhp);
+						process_hist_entry(&rwin, line_val, line2, pos, &rh, &nrh, &rhp,
+								&nrhp);
 					}
 				}
 			}
@@ -824,6 +802,25 @@ update_info_file(const char filename[])
 	free_string_array(trash, ntrash);
 	free_string_array(dir_stack, ndir_stack);
 	free(non_conflicting_bmarks);
+}
+
+/* Handles single directory history entry, possibly skipping merging it in. */
+static void
+process_hist_entry(FileView *view, const char dir[], const char file[], int pos,
+		char ***lh, int *nlh, int **lhp, size_t *nlhp)
+{
+	if(view->history_pos + *nlh/2 == cfg.history_len - 1 ||
+			is_in_view_history(view, dir) || !is_dir(dir))
+	{
+		return;
+	}
+
+	*nlh = add_to_string_array(lh, *nlh, 2, dir, file);
+	if(*nlh/2U > *nlhp)
+	{
+		*nlhp = add_to_int_array(lhp, *nlhp, pos);
+		*nlhp = MIN(*nlh/2U, *nlhp);
+	}
 }
 
 /* Performs conversions on files in trash required for partial backward

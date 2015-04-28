@@ -519,12 +519,15 @@ store_config_paths(void)
 	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
 	                       ? cfg.config_dir
 	                       : cfg.data_dir;
+	const char *log_base = path_exists(cfg.data_dir, DEREF)
+	                     ? cfg.data_dir
+	                     : cfg.config_dir;
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
 			trash_base);
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.data_dir);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, log_base);
 }
 
 /* Ensures existence of configuration and data directories.  Performs first run

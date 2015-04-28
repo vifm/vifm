@@ -65,6 +65,7 @@ void vim_get_list_file_path(char buf[], size_t buf_size);
 
 TSTATIC_DEFS(
 	char * format_edit_selection_cmd(int *bg);
+	void trim_right(char str[]);
 )
 
 #endif /* VIFM__VIM_H__ */

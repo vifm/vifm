@@ -247,7 +247,8 @@ void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 /* Fills the buffer with the full path to file of specified file list entry. */
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 /* Fills the buffer with short path of specified file list entry.  The
- * shortening occurs for files under original directory of custom views. */
+ * shortening occurs for files under original directory of custom views.
+ * Non-zero format enables file type specific decoration. */
 void get_short_path_of(const FileView *view, const dir_entry_t *entry,
 		int format, size_t buf_len, char buf[]);
 /* Ensures that either entries at specified positions, selected entries or file

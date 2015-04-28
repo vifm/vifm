@@ -106,8 +106,8 @@ static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-static int is_separator(char c, char sep);
 TSTATIC void unescape(char s[], int regexp);
+static int is_separator(char c, char sep);
 
 void
 init_cmds(int udf, cmds_conf_t *conf)
@@ -1233,17 +1233,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	return params;
 }
 
-/* Checks whether character is command separator.  Special case is space as a
- * separator, which means that any reasonable whitespace can be used as
- * separators (we don't won't to treat line feeds or similar characters as
- * separators to allow their appearance as part of arguments).  Returns non-zero
- * if c is counted to be a separator, otherwise zero is returned. */
-static int
-is_separator(char c, char sep)
-{
-	return (sep == ' ') ? (c == ' ' || c == '\t') : (c == sep);
-}
-
 TSTATIC void
 unescape(char s[], int regexp)
 {
@@ -1356,6 +1345,17 @@ vle_cmds_next_arg(const char args[])
 {
 	args = vle_cmds_past_arg(args);
 	return vle_cmds_at_arg(args);
+}
+
+/* Checks whether character is command separator.  Special case is space as a
+ * separator, which means that any reasonable whitespace can be used as
+ * separators (we don't won't to treat line feeds or similar characters as
+ * separators to allow their appearance as part of arguments).  Returns non-zero
+ * if c is counted to be a separator, otherwise zero is returned. */
+static int
+is_separator(char c, char sep)
+{
+	return (sep == ' ') ? (c == ' ' || c == '\t') : (c == sep);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
