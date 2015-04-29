@@ -4503,6 +4503,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(handled < 0)
 	{
+		/* XXX: is it intentional to skip adding such commands to undo list? */
 		free(expanded_com);
 		return save_msg;
 	}
