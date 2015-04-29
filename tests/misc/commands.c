@@ -27,6 +27,8 @@ SETUP()
 	init_commands();
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
+
+	called = 0;
 }
 
 TEARDOWN()
@@ -50,49 +52,43 @@ builtin_cmd(const cmd_info_t* cmd_info)
 
 TEST(space_amp)
 {
-	called = 0;
-	assert_int_equal(0, exec_commands("builtin &", &lwin, CIT_COMMAND));
-	assert_int_equal(1, called);
-	assert_int_equal(1, bg);
+	assert_success(exec_commands("builtin &", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
 }
 
 TEST(space_amp_spaces)
 {
-	called = 0;
-	assert_int_equal(0, exec_commands("builtin &    ", &lwin, CIT_COMMAND));
-	assert_int_equal(1, called);
-	assert_int_equal(1, bg);
+	assert_success(exec_commands("builtin &    ", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
 }
 
 TEST(space_bg_bar)
 {
-	called = 0;
-	assert_int_equal(0, exec_commands("builtin &|", &lwin, CIT_COMMAND));
-	assert_int_equal(1, called);
-	assert_int_equal(1, bg);
+	assert_success(exec_commands("builtin &|", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
 }
 
 TEST(bg_space_bar)
 {
-	called = 0;
-	assert_int_equal(0, exec_commands("builtin& |", &lwin, CIT_COMMAND));
-	assert_int_equal(1, called);
-	assert_int_equal(1, bg);
+	assert_success(exec_commands("builtin& |", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
 }
 
 TEST(space_bg_space_bar)
 {
-	called = 0;
-	assert_int_equal(0, exec_commands("builtin & |", &lwin, CIT_COMMAND));
-	assert_int_equal(1, called);
-	assert_int_equal(1, bg);
+	assert_success(exec_commands("builtin & |", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
 }
 
 TEST(non_printable_arg)
 {
-	called = 0;
 	/* \x0C is Ctrl-L. */
-	assert_int_equal(0, exec_commands("onearg \x0C", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("onearg \x0C", &lwin, CIT_COMMAND));
 	assert_true(called);
 	assert_string_equal("\x0C", arg);
 }
@@ -100,22 +96,18 @@ TEST(non_printable_arg)
 TEST(non_printable_arg_in_udf)
 {
 	/* \x0C is Ctrl-L. */
-	assert_int_equal(0, exec_commands("command udf :onearg \x0C", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("command udf :onearg \x0C", &lwin, CIT_COMMAND));
 
-	called = 0;
-	assert_int_equal(0, exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
 	assert_true(called);
 	assert_string_equal("\x0C", arg);
 }
 
 TEST(space_last_arg_in_udf)
 {
-	assert_int_equal(0, exec_commands("command udf :onearg \\ ", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("command udf :onearg \\ ", &lwin, CIT_COMMAND));
 
-	called = 0;
-	assert_int_equal(0, exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
 	assert_true(called);
 	assert_string_equal(" ", arg);
 }
