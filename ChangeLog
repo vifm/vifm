@@ -324,6 +324,10 @@
 	Fixed last space trimming in user defined commands (quite unusual use
 	case).  Thanks to filterfalse.
 
+	Fixed *nix 'shell' default, was "sh", but as kernel doesn't perform search
+	is $PATH, it would never work.  Luckily $SHELL is defined everywhere, so
+	this probably didn't cause any trouble.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
