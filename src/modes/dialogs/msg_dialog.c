@@ -56,15 +56,6 @@ typedef enum
 }
 Result;
 
-/* Message style. */
-typedef enum
-{
-	S_USUAL,    /* 100% width, left aligned, without margins. */
-	S_CENTERED, /* 100% width, centered, without margins. */
-	S_PRETTY,   /* Max line width, centered, with margins. */
-}
-Style;
-
 static int def_handler(wchar_t key);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
@@ -85,7 +76,7 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], Style style);
+		const char ctrl_msg[], int centered);
 static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
@@ -396,8 +387,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, centered ? S_CENTERED : S_USUAL);
-	wrefresh(error_win);
+	draw_msg(title, message, ctrl_msg, centered);
 
 	if(lazy)
 	{
@@ -465,7 +455,7 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
 	vsnprintf(msg, sizeof(msg), format, pa);
 	va_end(pa);
 
-	draw_msg(title, msg, ctrl_msg, S_PRETTY);
+	draw_msg(title, msg, ctrl_msg, 0);
 	touch_all_windows();
 	wrefresh(error_win);
 }
@@ -474,22 +464,20 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
  * message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		Style style)
+		int centered)
 {
+	enum { margin = 1 };
+
 	int sw, sh;
 	int w, h;
 	int len;
-	int centered = (style == S_CENTERED);
-	int margin = (style == S_PRETTY) ? 1 : 0;
 
 	curs_set(FALSE);
 
 	getmaxyx(stdscr, sh, sw);
 
 	h = sh - 3 + !cfg.display_statusline;
-	w = (style == S_PRETTY)
-	 ? MIN(sw - 2, (int)determine_width(msg) + 4)
-	 : sw - 2;
+	w = MIN(sw - 2, (int)determine_width(msg) + 4);
 	wresize(error_win, h, w);
 
 	werase(error_win);
