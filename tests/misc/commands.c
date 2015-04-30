@@ -1,10 +1,17 @@
 #include <stic.h>
 
+#include <unistd.h> /* F_OK access() */
+
+#include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/str.h"
 #include "../../src/commands.h"
+#include "../../src/ops.h"
+#include "../../src/undo.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
+static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static int op_avail(OPS op);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin", .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
@@ -19,6 +26,8 @@ static char *arg;
 
 SETUP()
 {
+	static int max_undo_levels = 0;
+
 	lwin.selected_files = 0;
 	lwin.list_rows = 0;
 
@@ -29,11 +38,14 @@ SETUP()
 	add_builtin_commands(commands, ARRAY_LEN(commands));
 
 	called = 0;
+
+	init_undo_list(&exec_func, &op_avail, NULL, &max_undo_levels);
 }
 
 TEARDOWN()
 {
 	reset_cmds();
+	reset_undo_list();
 }
 
 static int
@@ -48,6 +60,18 @@ builtin_cmd(const cmd_info_t* cmd_info)
 	}
 
 	return 0;
+}
+
+static int
+exec_func(OPS op, void *data, const char *src, const char *dst)
+{
+	return 0;
+}
+
+static int
+op_avail(OPS op)
+{
+	return op == OP_MOVE;
 }
 
 TEST(space_amp)
@@ -128,6 +152,21 @@ TEST(bg_mark_without_space_in_udf)
 	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
 	assert_true(called);
 	assert_true(bg);
+}
+
+TEST(shell_invocation_works_in_udf)
+{
+	replace_string(&cfg.shell, "/bin/sh");
+
+	const char *const cmd = "command! udf echo a > test-data/sandbox/out";
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+
+	curr_view = &lwin;
+
+	assert_failure(access("test-data/sandbox/out", F_OK));
+	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_success(access("test-data/sandbox/out", F_OK));
+	assert_success(unlink("test-data/sandbox/out"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
