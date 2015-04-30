@@ -327,7 +327,7 @@ process_scheduled_updates(void)
 
 		if(changed && vle_mode_is(MSG_MODE))
 		{
-			redraw_msg_dialog();
+			redraw_msg_dialog(0);
 		}
 	}
 }

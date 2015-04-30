@@ -81,7 +81,7 @@ static void prompt_msg_internal(const char title[], const char message[],
 		const response_variant variants[]);
 static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip);
+		int prompt_skip, int lazy);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
@@ -220,9 +220,9 @@ leave(Result r)
 }
 
 void
-redraw_msg_dialog(void)
+redraw_msg_dialog(int lazy)
 {
-	redraw_error_msg(NULL, NULL, 0);
+	redraw_error_msg(NULL, NULL, 0, 1);
 }
 
 void
@@ -294,7 +294,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 
 	msg_kind = D_ERROR;
 
-	redraw_error_msg(title, message, prompt_skip);
+	redraw_error_msg(title, message, prompt_skip, 0);
 
 	enter(MASK(R_OK) | (prompt_skip ? MASK(R_CANCEL) : 0));
 
@@ -334,7 +334,7 @@ prompt_msg_internal(const char title[], const char message[],
 	responses = variants;
 	msg_kind = D_QUERY;
 
-	redraw_error_msg(title, message, 0);
+	redraw_error_msg(title, message, 0, 0);
 
 	enter(MASK(R_YES, R_NO));
 
@@ -370,7 +370,7 @@ enter(int result_mask)
  * title_arg and message_arg are NULL. */
 static void
 redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip)
+		int prompt_skip, int lazy)
 {
 	/* TODO: refactor this function redraw_error_msg() */
 
@@ -398,6 +398,15 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
 	draw_msg(title, message, ctrl_msg, centered ? S_CENTERED : S_USUAL);
 	wrefresh(error_win);
+
+	if(lazy)
+	{
+		wnoutrefresh(error_win);
+	}
+	else
+	{
+		wrefresh(error_win);
+	}
 }
 
 /* Picks control message (information on available actions) basing on dialog

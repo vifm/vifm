@@ -36,7 +36,7 @@ response_variant;
 void init_msg_dialog_mode(void);
 
 /* Redraws currently visible error message on the screen. */
-void redraw_msg_dialog(void);
+void redraw_msg_dialog(int lazy);
 
 /* Shows error message to a user. */
 void show_error_msg(const char title[], const char message[]);

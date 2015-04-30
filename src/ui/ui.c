@@ -715,7 +715,9 @@ touch_all_windows(void)
 
 	if(vle_mode_is(MSG_MODE))
 	{
-		update_window_lazy(error_win);
+		/* Location of message dialog can change, so it's better to let it position
+		 * itself or multiple copies appear on the screen. */
+		redraw_msg_dialog(1);
 	}
 }
 
