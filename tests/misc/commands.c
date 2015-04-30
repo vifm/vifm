@@ -112,5 +112,23 @@ TEST(space_last_arg_in_udf)
 	assert_string_equal(" ", arg);
 }
 
+TEST(bg_mark_with_space_in_udf)
+{
+	assert_success(exec_commands("command udf :builtin &", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
+}
+
+TEST(bg_mark_without_space_in_udf)
+{
+	assert_success(exec_commands("command udf :builtin&", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
+	assert_true(called);
+	assert_true(bg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

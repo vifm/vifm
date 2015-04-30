@@ -328,6 +328,8 @@
 	is $PATH, it would never work.  Luckily $SHELL is defined everywhere, so
 	this probably didn't cause any trouble.
 
+	Fixed background mark truncation for :commands in user-defined commands.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

@@ -4485,14 +4485,14 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
 			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
 
-	bg = parse_bg_mark(expanded_com);
-
 	if(expanded_com[0] == ':')
 	{
 		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
 		return sm != 0;
 	}
+
+	bg = parse_bg_mark(expanded_com);
 
 	clean_selected_files(curr_view);
 
