@@ -511,7 +511,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		while(i < len)
 		{
 			int j;
-			char buf[w - 2 + 1];
+			char buf[w - 2 - 2*margin + 1];
 			int cx;
 
 			copy_str(buf, sizeof(buf), msg + i);
