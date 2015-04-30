@@ -214,7 +214,9 @@ runtests:
 	chmod +x $@_
 	mv $@_ $@
 
-CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda)
+CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
+             $(vifmrc_converter_OBJECTS:.o=.gcno) \
+             $(vifmrc_converter_OBJECTS:.o=.gcda)
 
 distclean-local:
 	$(MAKE) -C ../tests clean

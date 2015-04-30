@@ -67,7 +67,7 @@
 /* Default value of shell command used if $SHELL environment variable isn't
  * set. */
 #ifndef _WIN32
-#define DEFAULT_SHELL_CMD "sh"
+#define DEFAULT_SHELL_CMD "/bin/sh"
 #else
 #define DEFAULT_SHELL_CMD "cmd"
 #endif

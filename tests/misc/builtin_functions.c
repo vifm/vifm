@@ -22,6 +22,7 @@ TEARDOWN()
 {
 	function_reset_all();
 	free(cfg.shell);
+	cfg.shell = NULL;
 }
 
 TEST(executable_true_for_executable)

@@ -531,17 +531,10 @@ format_job_bar(void)
 	size_t i;
 	size_t text_width;
 	size_t width_used;
-	size_t total_width;
 	size_t max_width;
 	char **descrs;
 
 	descrs = take_job_descr_snapshot();
-
-	total_width = 0U;
-	for(i = 0U; i < nbar_jobs; ++i)
-	{
-		total_width += get_screen_string_length(descrs[i]);
-	}
 
 	bar_text[0] = '\0';
 	text_width = 0U;
@@ -550,7 +543,6 @@ format_job_bar(void)
 	width_used = 0U;
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
-		const size_t full_width = get_screen_string_length(descrs[i]);
 		const int progress = bar_jobs[i]->progress;
 		const char *const fmt = (progress == -1) ? "[%s]" : "[%s %3d%%]";
 		const unsigned int reserved = (progress == -1) ? 0U : 5U;
@@ -559,7 +551,7 @@ format_job_bar(void)
 
 		width = (i == nbar_jobs - 1U)
 		      ? (max_width - width_used)
-		      : (max_width*full_width)/total_width;
+		      : (max_width/nbar_jobs);
 
 		snprintf(item_text, sizeof(item_text), fmt,
 				left_ellipsis(descrs[i], width - 2U - reserved), progress);

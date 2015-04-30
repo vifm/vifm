@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 26
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2671,7 +2671,7 @@ beginning or end of the file list), set this option to some large value
                                                *vifm-'shell'* *vifm-'sh'*
 shell sh
 type: string
-default: $SHELL or "sh" or "cmd" (on MS-Windows)
+default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 Full path to the shell to use to run external commands.
 
                                                *vifm-'shortmess'* *vifm-'shm'*

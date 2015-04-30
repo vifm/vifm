@@ -24,6 +24,7 @@
 #include <string.h> /* strcmp() */
 
 #include "compat/getopt.h"
+#include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"

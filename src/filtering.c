@@ -210,8 +210,7 @@ toggle_filter_inversion(FileView *view)
 int
 file_is_visible(FileView *view, const char filename[], int is_dir)
 {
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
+	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	if(is_dir)
 	{

@@ -230,7 +230,7 @@ modes_redraw(void)
 		menu_redraw();
 		if(vle_mode_is(MSG_MODE))
 		{
-			redraw_msg_dialog();
+			redraw_msg_dialog(0);
 		}
 		goto finish;
 	}
@@ -265,7 +265,7 @@ modes_redraw(void)
 	}
 	else if(vle_mode_is(MSG_MODE))
 	{
-		redraw_msg_dialog();
+		redraw_msg_dialog(0);
 	}
 
 finish:

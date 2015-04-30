@@ -1049,6 +1049,9 @@ output_to_nowhere(const char cmd[])
 		return;
 	}
 
+	/* FIXME: better way of doing this would be to redirect these streams to
+	 *        /dev/null rather than closing them, but not sure about Windows (NUL
+	 *        device might work). */
 	fclose(file);
 	fclose(err);
 }
