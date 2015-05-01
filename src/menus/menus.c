@@ -426,7 +426,7 @@ goto_selected_directory(FileView *view, menu_info *m)
 {
 	if(!cfg.auto_ch_pos)
 	{
-		clean_positions_in_history(curr_view);
+		clean_positions_in_history(view);
 		curr_stats.ch_pos = 0;
 	}
 	navigate_to(view, m->items[m->pos]);
