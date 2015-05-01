@@ -123,6 +123,9 @@
 	Added lookup for mandoc on *nix to perform manual page to plain text
 	transformation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
+	Added :trashes? to display sizes of each non-empty trash directory.
+	Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
 	Switch to utf-8 internal representation of paths on Windows.  This fixes
 	issues when file name encoding doesn't match system encoding.  Thanks to
 	Stas Panteleev.

@@ -21,14 +21,18 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/utils.h"
+#include "../fileops.h"
 #include "../trash.h"
 #include "menus.h"
 
+static char * format_item(const char trash_dir[], int calc_size);
 static int execute_trashes_cb(FileView *view, menu_info *m);
 
 int
-show_trashes_menu(FileView *view)
+show_trashes_menu(FileView *view, int calc_size)
 {
 	char **trashes;
 	int ntrashes;
@@ -38,14 +42,18 @@ show_trashes_menu(FileView *view)
 	init_menu_info(&m, TRASHES_MENU,
 			strdup("No non-empty trash directories found"));
 
-	m.title = strdup(" Non-empty trash directories ");
+	m.title = format_str(" %sNon-empty trash directories ",
+			calc_size ? "[  size] " : "");
 	m.execute_handler = &execute_trashes_cb;
+	m.extra_data = calc_size;
 
 	trashes = list_trashes(&ntrashes);
 
+	show_progress(NULL, 0);
 	for(i = 0; i < ntrashes; i++)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, trashes[i]);
+		char *const item = format_item(trashes[i], calc_size);
+		m.len = put_into_string_array(&m.items, m.len, item);
 	}
 
 	free_string_array(trashes, ntrashes);
@@ -53,12 +61,38 @@ show_trashes_menu(FileView *view)
 	return display_menu(&m, view);
 }
 
-/* Callback that is called when menu item is selected.  Should return non-zero
- * to stay in menu mode. */
+/* Formats single menu item.  Returns pointer to newly allocated string. */
+static char *
+format_item(const char trash_dir[], int calc_size)
+{
+	char msg[PATH_MAX];
+	uint64_t size;
+	char size_str[24];
+
+	if(!calc_size)
+	{
+		return strdup(trash_dir);
+	}
+
+	snprintf(msg, sizeof(msg), "Calculating size of %s...", trash_dir);
+	show_progress(msg, 1);
+
+	size = calculate_dir_size(trash_dir, 1);
+
+	size_str[0] = '\0';
+	friendly_size_notation(size, sizeof(size_str), size_str);
+
+	return format_str("[%8s] %s", size_str, trash_dir);
+}
+
+/* Callback that is called when menu item is selected.  Return non-zero to stay
+ * in menu mode and zero otherwise. */
 static int
 execute_trashes_cb(FileView *view, menu_info *m)
 {
-	goto_selected_directory(view, m->items[m->pos]);
+	const char *const item = m->items[m->pos];
+	const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
+	goto_selected_directory(view, trash_dir);
 	return 0;
 }
 

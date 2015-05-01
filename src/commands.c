@@ -498,7 +498,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = COM_TR,          .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = tr_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 2,       .select = 1, },
 	{ .name = "trashes",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = trashes_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = trashes_cmd,     .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "unmap",            .abbr = "unm",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -4102,11 +4102,12 @@ tr_cmd(const cmd_info_t *cmd_info)
 	return tr_in_names(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
-/* Lists all valid trash directories in a menu. */
+/* Lists all valid non-empty trash directories in a menu with optional size of
+ * each one. */
 static int
 trashes_cmd(const cmd_info_t *cmd_info)
 {
-	return show_trashes_menu(curr_view) != 0;
+	return show_trashes_menu(curr_view, cmd_info->qmark) != 0;
 }
 
 static int

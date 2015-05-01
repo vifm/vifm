@@ -99,7 +99,7 @@ typedef struct menu_info
 	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
 	 * both taken actions and what should be done next. */
 	KHandlerResponse (*key_handler)(struct menu_info *m, const wchar_t keys[]);
-	int extra_data; /* For filetype background and mime flags. */
+	int extra_data; /* For filetype background, mime flags and such. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
 	int (*execute_handler)(FileView *view, struct menu_info *m);
