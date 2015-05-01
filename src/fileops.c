@@ -220,7 +220,7 @@ static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
-static uint64_t calc_dirsize(const char path[], int force_update);
+static void dir_size(char path[], int force);
 static void set_dir_size(const char path[], uint64_t size);
 static void redraw_after_path_change(FileView *view, const char path[]);
 
@@ -3821,7 +3821,7 @@ check_if_dir_writable(DirRole dir_role, const char path[])
 }
 
 void
-calculate_size(const FileView *view, int force)
+calculate_size_bg(const FileView *view, int force)
 {
 	int i;
 
@@ -3857,18 +3857,18 @@ static void
 start_dir_size_calc(const char path[], int force)
 {
 	char task_desc[PATH_MAX];
-	dir_size_args_t *dir_size;
+	dir_size_args_t *args;
 
-	dir_size = malloc(sizeof(*dir_size));
-	dir_size->path = strdup(path);
-	dir_size->force = force;
+	args = malloc(sizeof(*args));
+	args->path = strdup(path);
+	args->force = force;
 
 	snprintf(task_desc, sizeof(task_desc), "Calculating size: %s", path);
 
-	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, 0, &dir_size_bg, dir_size) != 0)
+	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, 0, &dir_size_bg, args) != 0)
 	{
-		free(dir_size->path);
-		free(dir_size);
+		free(args->path);
+		free(args);
 
 		show_error_msg("Can't calculate size",
 				"Failed to initiate background operation");
@@ -3879,23 +3879,31 @@ start_dir_size_calc(const char path[], int force)
 static void
 dir_size_bg(bg_op_t *bg_op, void *arg)
 {
-	dir_size_args_t *const dir_size = arg;
+	dir_size_args_t *const args = arg;
 
-	(void)calc_dirsize(dir_size->path, dir_size->force);
+	dir_size(args->path, args->force);
 
-	remove_last_path_component(dir_size->path);
+	free(args->path);
+	free(args);
+}
 
-	redraw_after_path_change(&lwin, dir_size->path);
-	redraw_after_path_change(&rwin, dir_size->path);
+/* Calculates directory size and triggers view updates if necessary.  Changes
+ * path. */
+static void
+dir_size(char path[], int force)
+{
+	(void)calculate_dir_size(path, force);
 
-	free(dir_size->path);
-	free(dir_size);
+	remove_last_path_component(path);
+
+	redraw_after_path_change(&lwin, path);
+	redraw_after_path_change(&rwin, path);
 }
 
 /* Calculates size of a directory possibly using cache of known sizes.  Returns
  * size of a directory or zero on error. */
-static uint64_t
-calc_dirsize(const char path[], int force_update)
+uint64_t
+calculate_dir_size(const char path[], int force_update)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -3929,7 +3937,7 @@ calc_dirsize(const char path[], int force_update)
 			uint64_t dir_size = 0;
 			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
 					|| force_update)
-				dir_size = calc_dirsize(buf, force_update);
+				dir_size = calculate_dir_size(buf, force_update);
 			size += dir_size;
 		}
 		else

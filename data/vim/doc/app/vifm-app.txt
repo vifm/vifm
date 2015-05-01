@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 Apr 29
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 01
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1910,6 +1910,7 @@ particular the second column of the view will be changed).
 :trashes - lists all valid trash directories in a menu.  Only non-empty and
     writable trash directories are shown.  This is exactly the list of
     directories that are cleared when |vifm-:empty| command is executed.
+:trashes? - same as :trashes, but also displays size of each trash directory.
 
                                                *vifm-:sync*
 :sync [relative path] - change the other pane to the current pane

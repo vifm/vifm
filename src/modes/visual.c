@@ -712,7 +712,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	calculate_size(curr_view, 1);
+	calculate_size_bg(curr_view, 1);
 	accept_and_leave(0);
 }
 
@@ -720,7 +720,7 @@ cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	calculate_size(curr_view, 0);
+	calculate_size_bg(curr_view, 0);
 	accept_and_leave(0);
 }
 

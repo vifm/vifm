@@ -99,7 +99,7 @@ typedef struct menu_info
 	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
 	 * both taken actions and what should be done next. */
 	KHandlerResponse (*key_handler)(struct menu_info *m, const wchar_t keys[]);
-	int extra_data; /* For filetype background and mime flags. */
+	int extra_data; /* For filetype background, mime flags and such. */
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
 	int (*execute_handler)(FileView *view, struct menu_info *m);
@@ -133,8 +133,8 @@ void draw_menu(menu_info *m);
  * followed by a line number when try_open is not zero. */
 void goto_selected_file(FileView *view, const char spec[], int try_open);
 
-/* Navigates to selected menu item. */
-void goto_selected_directory(FileView *view, menu_info *m);
+/* Navigates to directory from a menu. */
+void goto_selected_directory(FileView *view, const char path[]);
 
 /* Forms list of target files/directories in the current view and possibly
  * changes working directory to use relative paths.  On success returns newly
