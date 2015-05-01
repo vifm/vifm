@@ -2312,23 +2312,23 @@ cd(FileView *view, const char *base_dir, const char *path)
 
 	if(path != NULL)
 	{
-		char *arg = expand_tilde(path);
+		char *const arg = expand_tilde(path);
 #ifndef _WIN32
 		if(is_path_absolute(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
+			copy_str(dir, sizeof(dir), arg);
 #else
-		strcpy(dir, base_dir);
+		copy_str(dir, sizeof(dir), base_dir);
 		break_at(dir + 2, '/');
 		if(is_path_absolute(arg) && *arg != '/')
-			snprintf(dir, sizeof(dir), "%s", arg);
+			copy_str(dir, sizeof(dir), arg);
 		else if(*arg == '/' && is_unc_root(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
+			copy_str(dir, sizeof(dir), arg);
 		else if(*arg == '/' && is_unc_path(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
+			copy_str(dir, sizeof(dir), arg);
 		else if(*arg == '/' && is_unc_path(base_dir))
 			sprintf(dir + strlen(dir), "/%s", arg + 1);
-		else if(stroscmp(arg, "/") == 0 && is_unc_path(base_dir))
-			snprintf(dir, strchr(base_dir + 2, '/') - base_dir + 1, "%s", base_dir);
+		else if(strcmp(arg, "/") == 0 && is_unc_path(base_dir))
+			copy_str(dir, strchr(base_dir + 2, '/') - base_dir + 1, base_dir);
 		else if(*arg == '/')
 			snprintf(dir, sizeof(dir), "%c:%s", base_dir[0], arg);
 #endif
