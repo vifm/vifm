@@ -909,12 +909,17 @@ change_directory(FileView *view, const char directory[])
 	else
 	{
 		char newdir[PATH_MAX];
+		const char *const dir = flist_get_dir(view);
 #ifdef _WIN32
 		if(directory[0] == '/')
-			snprintf(newdir, sizeof(newdir), "%c:%s", view->curr_dir[0], directory);
+		{
+			snprintf(newdir, sizeof(newdir), "%c:%s", dir[0], directory);
+		}
 		else
 #endif
-			snprintf(newdir, sizeof(newdir), "%s/%s", view->curr_dir, directory);
+		{
+			snprintf(newdir, sizeof(newdir), "%s/%s", dir, directory);
+		}
 		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
 
