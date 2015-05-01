@@ -422,14 +422,14 @@ navigate_to_selected_file(FileView *view, const char path[])
 }
 
 void
-goto_selected_directory(FileView *view, menu_info *m)
+goto_selected_directory(FileView *view, const char path[])
 {
 	if(!cfg.auto_ch_pos)
 	{
 		clean_positions_in_history(view);
 		curr_stats.ch_pos = 0;
 	}
-	navigate_to(view, m->items[m->pos]);
+	navigate_to(view, path);
 	if(!cfg.auto_ch_pos)
 	{
 		curr_stats.ch_pos = 1;

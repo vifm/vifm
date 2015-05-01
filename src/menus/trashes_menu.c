@@ -58,7 +58,7 @@ show_trashes_menu(FileView *view)
 static int
 execute_trashes_cb(FileView *view, menu_info *m)
 {
-	goto_selected_directory(view, m);
+	goto_selected_directory(view, m->items[m->pos]);
 	return 0;
 }
 

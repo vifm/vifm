@@ -124,7 +124,7 @@ show_history_menu(FileView *view)
 static int
 execute_dirhistory_cb(FileView *view, menu_info *m)
 {
-	goto_selected_directory(view, m);
+	goto_selected_directory(view, m->items[m->pos]);
 	return 0;
 }
 
