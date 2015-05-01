@@ -247,7 +247,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else if(id == COM_SPLIT || id == COM_VSPLIT)
 		{
-			filename_completion_in_dir(curr_view->curr_dir, arg, CT_DIRONLY);
+			filename_completion_in_dir(flist_get_dir(curr_view), arg, CT_DIRONLY);
 		}
 		else if(id == COM_FIND)
 		{
