@@ -965,7 +965,7 @@ execute_command(FileView *view, const char command[], int menu)
 		char undo_msg[COMMAND_GROUP_INFO_LEN];
 
 		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
-				replace_home_part(view->curr_dir), command);
+				replace_home_part(flist_get_dir(view)), command);
 
 		cmd_group_begin(undo_msg);
 		cmd_group_end();
@@ -1595,7 +1595,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
-			replace_home_part(curr_view->curr_dir), cmd_info->raw_args);
+			replace_home_part(flist_get_dir(curr_view)), cmd_info->raw_args);
 	cmd_group_begin(buf);
 	add_operation(OP_USR, strdup(com), NULL, "", "");
 	cmd_group_end();
@@ -3925,7 +3925,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TRAILING_CHARS;
 	}
 
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", curr_view->curr_dir,
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", flist_get_dir(curr_view),
 			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
 	sync_location(dst_path, cmd_info->emark, 0);
 
@@ -3950,7 +3950,7 @@ sync_selectively(const cmd_info_t *cmd_info)
 	}
 	if(location)
 	{
-		sync_location(curr_view->curr_dir, cursor_pos, filters);
+		sync_location(flist_get_dir(curr_view), cursor_pos, filters);
 	}
 	if(local_options)
 	{
@@ -4270,7 +4270,7 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 	else
 	{
 		if(cmd_info->argc == 1)
-			cd(other_view, curr_view->curr_dir, cmd_info->argv[0]);
+			cd(other_view, flist_get_dir(curr_view), cmd_info->argv[0]);
 		split_view(orientation);
 	}
 	return 0;
@@ -4675,7 +4675,7 @@ run_in_split(const FileView *view, const char cmd[])
 		char buf[1024];
 		char *escaped_chdir;
 
-		char *const escaped_dir = escape_filename(view->curr_dir, 0);
+		char *const escaped_dir = escape_filename(flist_get_dir(view), 0);
 		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
 		free(escaped_dir);
 
