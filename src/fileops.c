@@ -3821,7 +3821,7 @@ check_if_dir_writable(DirRole dir_role, const char path[])
 }
 
 void
-calculate_size(const FileView *view, int force)
+calculate_size_bg(const FileView *view, int force)
 {
 	int i;
 
