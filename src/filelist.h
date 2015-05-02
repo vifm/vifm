@@ -26,6 +26,7 @@
 #include <stdint.h> /* uint64_t */
 
 #include "ui/ui.h"
+#include "utils/test_helpers.h"
 
 /* Type of contiguous area of file list. */
 typedef enum
@@ -116,8 +117,9 @@ void navigate_to_file(FileView *view, const char dir[], const char file[]);
  *      directory.
  *   1  if directory successfully changed and we left FUSE mount directory. */
 int change_directory(FileView *view, const char path[]);
-/* Changes pane directory handling path just like cd command does. */
-int cd(FileView *view, const char *base_dir, const char *path);
+/* Changes pane directory handling path just like cd command does (e.g. "-" goes
+ * to previous location and NULL or empty path goes to home directory). */
+int cd(FileView *view, const char base_dir[], const char path[]);
 /* Ensures that current directory of the view is a valid one.  Modifies
  * view->curr_dir. */
 void leave_invalid_dir(FileView *view);
@@ -278,6 +280,11 @@ int add_dir_entry(dir_entry_t **list, size_t *list_size,
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
+
+TSTATIC_DEFS(
+	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
+			const char path[], int *updir, char buf[], size_t buf_size);
+)
 
 #endif /* VIFM__FILELIST_H__ */
 
