@@ -103,6 +103,28 @@ ui_cancellation_disable(void)
 	                   : CRS_DISABLED;
 }
 
+int
+ui_cancellation_pause(void)
+{
+	if(!ui_cancellation_enabled())
+	{
+		return 0;
+	}
+
+	raw();
+	return 1;
+}
+
+void
+ui_cancellation_resume(int state)
+{
+	if(state)
+	{
+		assert(ui_cancellation_enabled() && "Invalid cancellation resume");
+		noraw();
+	}
+}
+
 /* Checks whether cancellation processing is enabled.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
