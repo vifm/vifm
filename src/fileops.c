@@ -81,6 +81,9 @@
  * on progress percentage counting. */
 #define IO_PRECISION 10
 
+/* Key used to switch to progress dialog. */
+#define IO_DETAILS_KEY 'i'
+
 /* What to do with rename candidate name (old name and new name). */
 typedef enum
 {
@@ -134,7 +137,9 @@ typedef struct
 dir_size_args_t;
 
 static void io_progress_changed(const io_progress_t *const state);
-static void io_progress_fg(const io_progress_t *const state, int progress);
+static void io_progress_fg(const io_progress_t *const state, int progress,
+		int dialog);
+static void io_progress_fg_sb(const io_progress_t *const state, int progress);
 static void io_progress_bg(const io_progress_t *const state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
@@ -259,6 +264,7 @@ static void
 io_progress_changed(const io_progress_t *const state)
 {
 	static int prev_progress = -1;
+	static int dialog;
 	static IoPs prev_stage;
 
 	const ioeta_estim_t *const estim = state->estim;
@@ -294,6 +300,24 @@ io_progress_changed(const io_progress_t *const state)
 	/* Don't query for scheduled redraw for background operations. */
 	redraw = !backref->bg && fetch_redraw_scheduled();
 
+	if(!backref->bg)
+	{
+		/* Reset to status bar mode on new operation. */
+		if(progress < prev_progress)
+		{
+			dialog = 0;
+		}
+
+		if(!dialog)
+		{
+			if(ui_char_pressed(IO_DETAILS_KEY))
+			{
+				dialog = 1;
+				clean_status_bar();
+			}
+		}
+	}
+
 	/* Do nothing if progress change is small, but force update on stage
 	 * change or redraw request. */
 	if(progress == prev_progress && state->stage == prev_stage && !redraw)
@@ -319,13 +343,13 @@ io_progress_changed(const io_progress_t *const state)
 	}
 	else
 	{
-		io_progress_fg(state, progress);
+		io_progress_fg(state, progress, dialog);
 	}
 }
 
 /* Takes care of progress for foreground operations. */
 static void
-io_progress_fg(const io_progress_t *const state, int progress)
+io_progress_fg(const io_progress_t *const state, int progress, int dialog)
 {
 	char current_size_str[16];
 	char total_size_str[16];
@@ -338,6 +362,12 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	const ioeta_estim_t *const estim = state->estim;
 	estim_backref_t *const backref = estim->param;
 	ops_t *const ops = backref->ops;
+
+	if(!dialog)
+	{
+		io_progress_fg_sb(state, progress);
+		return;
+	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -393,6 +423,60 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	}
 
 	free(as_part);
+}
+
+/* Takes care of progress for foreground operations displayed on status line. */
+static void
+io_progress_fg_sb(const io_progress_t *const state, int progress)
+{
+	const ioeta_estim_t *const estim = state->estim;
+	estim_backref_t *const backref = estim->param;
+	ops_t *const ops = backref->ops;
+
+	char current_size_str[16];
+	char total_size_str[16];
+	char pretty_path[PATH_MAX];
+	char *suffix;
+
+	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
+			total_size_str);
+
+	format_pretty_path(ops->base_dir, estim->item, pretty_path,
+			sizeof(pretty_path));
+
+	switch(state->stage)
+	{
+		case IO_PS_ESTIMATING:
+			suffix = format_str("estimating... %d; %s %s", estim->total_items,
+					total_size_str, pretty_path);
+			break;
+		case IO_PS_IN_PROGRESS:
+			(void)friendly_size_notation(estim->current_byte,
+					sizeof(current_size_str), current_size_str);
+
+			if(progress < 0)
+			{
+				/* Simplified message for unknown total size. */
+				suffix = format_str("%d of %d; %s %s", estim->current_item + 1,
+						estim->total_items, total_size_str, pretty_path);
+			}
+			else
+			{
+				suffix = format_str("%d of %d; %s/%s (%2d%%) %s",
+						estim->current_item + 1, estim->total_items, current_size_str,
+						total_size_str, progress/IO_PRECISION, pretty_path);
+			}
+			break;
+
+		default:
+			assert(0 && "Unhandled progress stage");
+			suffix = strdup("");
+			break;
+	}
+
+	ui_sb_quick_msgf("(hit %c for details) %s: %s", IO_DETAILS_KEY,
+			ops_describe(ops), suffix);
+	free(suffix);
 }
 
 /* Takes care of progress for background operations. */
