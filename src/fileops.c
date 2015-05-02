@@ -101,8 +101,8 @@ typedef enum
 }
 DirRole;
 
-/* Object to be able to differentiate between foreground and background
- * operations in io_progress_changed() handler. */
+/* Object for auxiliary information related to progress of operations in
+ * io_progress_changed() handler. */
 typedef struct
 {
 	int bg; /* Whether this is background operation. */
@@ -112,7 +112,7 @@ typedef struct
 		bg_op_t *bg_op; /* Information for background operation. */
 	};
 }
-estim_backref_t;
+progress_data_t;
 
 typedef struct
 {
@@ -268,7 +268,7 @@ io_progress_changed(const io_progress_t *const state)
 	static IoPs prev_stage;
 
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
+	progress_data_t *const progress_data = estim->param;
 
 	int progress;
 	int redraw;
@@ -298,9 +298,9 @@ io_progress_changed(const io_progress_t *const state)
 	}
 
 	/* Don't query for scheduled redraw for background operations. */
-	redraw = !backref->bg && fetch_redraw_scheduled();
+	redraw = !progress_data->bg && fetch_redraw_scheduled();
 
-	if(!backref->bg)
+	if(!progress_data->bg)
 	{
 		/* Reset to status bar mode on new operation. */
 		if(progress < prev_progress)
@@ -337,7 +337,7 @@ io_progress_changed(const io_progress_t *const state)
 		modes_redraw();
 	}
 
-	if(backref->bg)
+	if(progress_data->bg)
 	{
 		io_progress_bg(state, progress);
 	}
@@ -360,8 +360,8 @@ io_progress_fg(const io_progress_t *const state, int progress, int dialog)
 	char *as_part;
 
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
-	ops_t *const ops = backref->ops;
+	progress_data_t *const progress_data = estim->param;
+	ops_t *const ops = progress_data->ops;
 
 	if(!dialog)
 	{
@@ -430,8 +430,8 @@ static void
 io_progress_fg_sb(const io_progress_t *const state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
-	ops_t *const ops = backref->ops;
+	progress_data_t *const progress_data = estim->param;
+	ops_t *const ops = progress_data->ops;
 
 	char current_size_str[16];
 	char total_size_str[16];
@@ -484,8 +484,8 @@ static void
 io_progress_bg(const io_progress_t *const state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
-	bg_op_t *const bg_op = backref->bg_op;
+	progress_data_t *const progress_data = estim->param;
+	bg_op_t *const bg_op = progress_data->bg_op;
 
 	bg_op->progress = progress/IO_PRECISION;
 	bg_op_changed(bg_op);
@@ -3088,11 +3088,11 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
-		estim_backref_t *const backref = malloc(sizeof(*backref));
-		backref->bg = 0;
-		backref->ops = ops;
+		progress_data_t *const progress_data = malloc(sizeof(*progress_data));
+		progress_data->bg = 0;
+		progress_data->ops = ops;
 
-		ops->estim = ioeta_alloc(backref);
+		ops->estim = ioeta_alloc(progress_data);
 	}
 	return ops;
 }
@@ -3404,14 +3404,14 @@ get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 		return NULL;
 	}
 
-	estim_backref_t *const backref = malloc(sizeof(*backref));
+	progress_data_t *const progress_data = malloc(sizeof(*progress_data));
 
 	ops = ops_alloc(main_op, descr, dir, dir);
 
-	backref->bg = 1;
-	backref->bg_op = bg_op;
+	progress_data->bg = 1;
+	progress_data->bg_op = bg_op;
 
-	ops->estim = ioeta_alloc(backref);
+	ops->estim = ioeta_alloc(progress_data);
 
 	return ops;
 }
