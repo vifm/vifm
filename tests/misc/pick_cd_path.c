@@ -1,0 +1,77 @@
+#include <stic.h>
+
+#include <string.h> /* strcpy() */
+
+#include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
+#include "../../src/utils/fs_limits.h"
+#include "../../src/filelist.h"
+
+TEST(absolute_path_dominates)
+{
+	int updir;
+	char dir[PATH_MAX];
+
+	pick_cd_path(&lwin, "something", "/abs/path", &updir, dir, sizeof(dir));
+
+	assert_false(updir);
+	assert_string_equal("/abs/path", dir);
+}
+
+TEST(dash_chooses_previous_location)
+{
+	int updir;
+	char dir[PATH_MAX];
+
+	strcpy(lwin.last_dir, "--last--");
+	strcpy(lwin.curr_dir, "--cur--");
+
+	pick_cd_path(&lwin, ".", "-", &updir, dir, sizeof(dir));
+
+	assert_false(updir);
+	assert_string_equal("--last--", dir);
+}
+
+TEST(null_or_empty_chooses_home)
+{
+	int updir;
+	char dir[PATH_MAX];
+
+	strcpy(cfg.home_dir, "--home--");
+	strcpy(lwin.curr_dir, "--cur--");
+
+	pick_cd_path(&lwin, ".", "", &updir, dir, sizeof(dir));
+	assert_false(updir);
+	assert_string_equal("--home--", dir);
+
+	pick_cd_path(&lwin, ".", NULL, &updir, dir, sizeof(dir));
+	assert_false(updir);
+	assert_string_equal("--home--", dir);
+}
+
+TEST(double_in_current_view_dot_just_sets_updir)
+{
+	int updir;
+	char dir[PATH_MAX];
+
+	dir[0] = '\0';
+
+	pick_cd_path(&lwin, lwin.curr_dir, "..", &updir, dir, sizeof(dir));
+	assert_true(updir);
+	assert_string_equal("", dir);
+}
+
+TEST(double_in_other_view_changes_dir)
+{
+	int updir;
+	char dir[PATH_MAX];
+
+	dir[0] = '\0';
+
+	pick_cd_path(&lwin, "some path", "..", &updir, dir, sizeof(dir));
+	assert_false(updir);
+	assert_string_equal("some path/..", dir);
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

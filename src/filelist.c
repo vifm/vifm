@@ -58,6 +58,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -131,6 +132,8 @@ static void init_dir_entry(FileView *view, dir_entry_t *entry,
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int file_can_be_displayed(const char directory[], const char filename[]);
+TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
+		const char path[], int *updir, char buf[], size_t buf_size);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 static int iter_entries(FileView *view, dir_entry_t **entry,
@@ -2313,51 +2316,15 @@ int
 cd(FileView *view, const char *base_dir, const char *path)
 {
 	char dir[PATH_MAX];
-	int updir = 0;
+	int updir;
 
-	if(path != NULL)
-	{
-		char *const arg = expand_tilde(path);
-#ifndef _WIN32
-		if(is_path_absolute(arg))
-			copy_str(dir, sizeof(dir), arg);
-#else
-		copy_str(dir, sizeof(dir), base_dir);
-		break_at(dir + 2, '/');
-		if(is_path_absolute(arg) && *arg != '/')
-			copy_str(dir, sizeof(dir), arg);
-		else if(*arg == '/' && is_unc_root(arg))
-			copy_str(dir, sizeof(dir), arg);
-		else if(*arg == '/' && is_unc_path(arg))
-			copy_str(dir, sizeof(dir), arg);
-		else if(*arg == '/' && is_unc_path(base_dir))
-			sprintf(dir + strlen(dir), "/%s", arg + 1);
-		else if(strcmp(arg, "/") == 0 && is_unc_path(base_dir))
-			copy_str(dir, strchr(base_dir + 2, '/') - base_dir + 1, base_dir);
-		else if(*arg == '/')
-			snprintf(dir, sizeof(dir), "%c:%s", base_dir[0], arg);
-#endif
-		else if(strcmp(arg, "-") == 0)
-			copy_str(dir, sizeof(dir), view->last_dir);
-		else
-			find_dir_in_cdpath(base_dir, arg, dir, sizeof(dir));
-		updir = is_parent_dir(arg);
-		free(arg);
-	}
-	else
-	{
-		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
-	}
+	pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
 
-	if(!cd_is_possible(dir))
-	{
-		return 0;
-	}
 	if(updir)
 	{
 		cd_updir(view);
 	}
-	else if(change_directory(view, dir) < 0)
+	else if(!cd_is_possible(dir) || change_directory(view, dir) < 0)
 	{
 		return 0;
 	}
@@ -2373,6 +2340,52 @@ cd(FileView *view, const char *base_dir, const char *path)
 		refresh_view_win(other_view);
 	}
 	return 0;
+}
+
+/* Picks new directory or requested going up one level judging from supplied
+ * base directory, desired location and current location of the view. */
+TSTATIC void
+pick_cd_path(FileView *view, const char base_dir[], const char path[],
+		int *updir, char buf[], size_t buf_size)
+{
+	char *arg;
+
+	*updir = 0;
+
+	if(is_null_or_empty(path))
+	{
+		copy_str(buf, buf_size, cfg.home_dir);
+		return;
+	}
+
+	arg = expand_tilde(path);
+
+#ifndef _WIN32
+	if(is_path_absolute(arg))
+		copy_str(buf, buf_size, arg);
+#else
+	copy_str(buf, buf_size, base_dir);
+	break_at(buf + 2, '/');
+	if(is_path_absolute(arg) && *arg != '/')
+		copy_str(buf, buf_size, arg);
+	else if(*arg == '/' && is_unc_root(arg))
+		copy_str(buf, buf_size, arg);
+	else if(*arg == '/' && is_unc_path(arg))
+		copy_str(buf, buf_size, arg);
+	else if(*arg == '/' && is_unc_path(base_dir))
+		sprintf(buf + strlen(buf), "/%s", arg + 1);
+	else if(strcmp(arg, "/") == 0 && is_unc_path(base_dir))
+		copy_str(buf, strchr(base_dir + 2, '/') - base_dir + 1, base_dir);
+	else if(*arg == '/')
+		snprintf(buf, buf_size, "%c:%s", base_dir[0], arg);
+#endif
+	else if(strcmp(arg, "-") == 0)
+		copy_str(buf, buf_size, view->last_dir);
+	else if(is_parent_dir(arg) && stroscmp(base_dir, flist_get_dir(view)) == 0)
+		*updir = 1;
+	else
+		find_dir_in_cdpath(base_dir, arg, buf, buf_size);
+	free(arg);
 }
 
 /* Searches for an existing directory in cdpath and fills the buf with final

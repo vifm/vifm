@@ -333,6 +333,8 @@
 
 	Fixed background mark truncation for :commands in user-defined commands.
 
+	Fixed ":vs .." which used to use wrong base directory.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
