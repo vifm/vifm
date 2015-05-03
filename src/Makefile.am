@@ -58,6 +58,11 @@ desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 desktoppix_DATA = $(desktoppixfile)
 
+docsfile = ../AUTHORS ../COPYING ../ChangeLog ../INSTALL ../NEWS ../README \
+					 ../TODO
+docsdir = $(docdir)
+docs_DATA = $(docsfile)
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
