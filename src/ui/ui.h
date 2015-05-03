@@ -25,7 +25,7 @@
 #endif
 
 #include <curses.h>
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t wchar_t wint_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* mode_t */
 #include <sys/types.h>
@@ -320,6 +320,9 @@ void ui_ruler_update(FileView *view);
 void ui_ruler_set(const char val[]);
 
 void is_term_working(void);
+
+/* Checks whether given character was pressed ignores any other characters. */
+int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
 

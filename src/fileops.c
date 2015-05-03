@@ -81,6 +81,9 @@
  * on progress percentage counting. */
 #define IO_PRECISION 10
 
+/* Key used to switch to progress dialog. */
+#define IO_DETAILS_KEY 'i'
+
 /* What to do with rename candidate name (old name and new name). */
 typedef enum
 {
@@ -98,8 +101,8 @@ typedef enum
 }
 DirRole;
 
-/* Object to be able to differentiate between foreground and background
- * operations in io_progress_changed() handler. */
+/* Object for auxiliary information related to progress of operations in
+ * io_progress_changed() handler. */
 typedef struct
 {
 	int bg; /* Whether this is background operation. */
@@ -108,8 +111,14 @@ typedef struct
 		ops_t *ops;     /* Information for foreground operation. */
 		bg_op_t *bg_op; /* Information for background operation. */
 	};
+
+	int last_progress; /* Progress of the operation during previous call. */
+	IoPs last_stage;   /* Stage of the operation during previous call. */
+
+	/* Whether progress is displayed in a dialog, rather than on status bar. */
+	int dialog;
 }
-estim_backref_t;
+progress_data_t;
 
 typedef struct
 {
@@ -134,7 +143,9 @@ typedef struct
 dir_size_args_t;
 
 static void io_progress_changed(const io_progress_t *const state);
+static int calc_io_progress(const io_progress_t *const state, int *skip);
 static void io_progress_fg(const io_progress_t *const state, int progress);
+static void io_progress_fg_sb(const io_progress_t *const state, int progress);
 static void io_progress_bg(const io_progress_t *const state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
@@ -196,6 +207,7 @@ static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
 		bg_op_t *bg_op);
+static progress_data_t * alloc_progress_data(int bg, void *info);
 static void free_ops(ops_t *ops);
 static void set_bg_descr(bg_op_t *bg_op, const char descr[]);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
@@ -258,54 +270,46 @@ init_fileops(void)
 static void
 io_progress_changed(const io_progress_t *const state)
 {
-	static int prev_progress = -1;
-	static IoPs prev_stage;
-
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
+	progress_data_t *const pdata = estim->param;
 
-	int progress;
-	int redraw;
+	int redraw = 0;
+	int progress, skip;
 
-	if(state->stage == IO_PS_ESTIMATING)
-	{
-		progress = estim->total_items/IO_PRECISION;
-	}
-	else if(estim->total_bytes == 0)
-	{
-		progress = 0;
-	}
-	else if(prev_progress >= 100*IO_PRECISION &&
-			estim->current_byte == estim->total_bytes)
-	{
-		/* Special handling for unknown total size. */
-		++prev_progress;
-		if(prev_progress%IO_PRECISION != 0)
-		{
-			return;
-		}
-		progress = -1;
-	}
-	else
-	{
-		progress = (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
-	}
-
-	/* Don't query for scheduled redraw for background operations. */
-	redraw = !backref->bg && fetch_redraw_scheduled();
-
-	/* Do nothing if progress change is small, but force update on stage
-	 * change or redraw request. */
-	if(progress == prev_progress && state->stage == prev_stage && !redraw)
+	progress = calc_io_progress(state, &skip);
+	if(skip)
 	{
 		return;
 	}
 
-	prev_stage = state->stage;
+	/* Don't query for scheduled redraw or input for background operations. */
+	if(!pdata->bg)
+	{
+		redraw = fetch_redraw_scheduled();
+
+		if(!pdata->dialog)
+		{
+			if(ui_char_pressed(IO_DETAILS_KEY))
+			{
+				pdata->dialog = 1;
+				clean_status_bar();
+			}
+		}
+	}
+
+	/* Do nothing if progress change is small, but force update on stage
+	 * change or redraw request. */
+	if(progress == pdata->last_progress &&
+			state->stage == pdata->last_stage && !redraw)
+	{
+		return;
+	}
+
+	pdata->last_stage = state->stage;
 
 	if(progress >= 0)
 	{
-		prev_progress = progress;
+		pdata->last_progress = progress;
 	}
 
 	if(redraw)
@@ -313,13 +317,48 @@ io_progress_changed(const io_progress_t *const state)
 		modes_redraw();
 	}
 
-	if(backref->bg)
+	if(pdata->bg)
 	{
 		io_progress_bg(state, progress);
 	}
 	else
 	{
 		io_progress_fg(state, progress);
+	}
+}
+
+/* Calculates current IO operation progress.  *skip will be set to non-zero
+ * value to indicate that progress change is irrelevant.  Returns progress in
+ * the range [-1; 100], where -1 means "unknown". */
+static int
+calc_io_progress(const io_progress_t *const state, int *skip)
+{
+	const ioeta_estim_t *const estim = state->estim;
+	progress_data_t *const pdata = estim->param;
+
+	*skip = 0;
+	if(state->stage == IO_PS_ESTIMATING)
+	{
+		return estim->total_items/IO_PRECISION;
+	}
+	else if(estim->total_bytes == 0)
+	{
+		return 0;
+	}
+	else if(pdata->last_progress >= 100*IO_PRECISION &&
+			estim->current_byte == estim->total_bytes)
+	{
+		/* Special handling for unknown total size. */
+		++pdata->last_progress;
+		if(pdata->last_progress%IO_PRECISION != 0)
+		{
+			*skip = 1;
+		}
+		return -1;
+	}
+	else
+	{
+		return (estim->current_byte*100*IO_PRECISION)/estim->total_bytes;
 	}
 }
 
@@ -336,8 +375,14 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	char *as_part;
 
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
-	ops_t *const ops = backref->ops;
+	progress_data_t *const pdata = estim->param;
+	ops_t *const ops = pdata->ops;
+
+	if(!pdata->dialog)
+	{
+		io_progress_fg_sb(state, progress);
+		return;
+	}
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
@@ -395,13 +440,67 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	free(as_part);
 }
 
+/* Takes care of progress for foreground operations displayed on status line. */
+static void
+io_progress_fg_sb(const io_progress_t *const state, int progress)
+{
+	const ioeta_estim_t *const estim = state->estim;
+	progress_data_t *const pdata = estim->param;
+	ops_t *const ops = pdata->ops;
+
+	char current_size_str[16];
+	char total_size_str[16];
+	char pretty_path[PATH_MAX];
+	char *suffix;
+
+	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
+			total_size_str);
+
+	format_pretty_path(ops->base_dir, estim->item, pretty_path,
+			sizeof(pretty_path));
+
+	switch(state->stage)
+	{
+		case IO_PS_ESTIMATING:
+			suffix = format_str("estimating... %d; %s %s", estim->total_items,
+					total_size_str, pretty_path);
+			break;
+		case IO_PS_IN_PROGRESS:
+			(void)friendly_size_notation(estim->current_byte,
+					sizeof(current_size_str), current_size_str);
+
+			if(progress < 0)
+			{
+				/* Simplified message for unknown total size. */
+				suffix = format_str("%d of %d; %s %s", estim->current_item + 1,
+						estim->total_items, total_size_str, pretty_path);
+			}
+			else
+			{
+				suffix = format_str("%d of %d; %s/%s (%2d%%) %s",
+						estim->current_item + 1, estim->total_items, current_size_str,
+						total_size_str, progress/IO_PRECISION, pretty_path);
+			}
+			break;
+
+		default:
+			assert(0 && "Unhandled progress stage");
+			suffix = strdup("");
+			break;
+	}
+
+	ui_sb_quick_msgf("(hit %c for details) %s: %s", IO_DETAILS_KEY,
+			ops_describe(ops), suffix);
+	free(suffix);
+}
+
 /* Takes care of progress for background operations. */
 static void
 io_progress_bg(const io_progress_t *const state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
-	estim_backref_t *const backref = estim->param;
-	bg_op_t *const bg_op = backref->bg_op;
+	progress_data_t *const pdata = estim->param;
+	bg_op_t *const bg_op = pdata->bg_op;
 
 	bg_op->progress = progress/IO_PRECISION;
 	bg_op_changed(bg_op);
@@ -3004,11 +3103,7 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
-		estim_backref_t *const backref = malloc(sizeof(*backref));
-		backref->bg = 0;
-		backref->ops = ops;
-
-		ops->estim = ioeta_alloc(backref);
+		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
 	}
 	return ops;
 }
@@ -3314,22 +3409,35 @@ static ops_t *
 get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 {
 	ops_t *ops;
+	progress_data_t *pdata;
 
 	if(!cfg.use_system_calls)
 	{
 		return NULL;
 	}
 
-	estim_backref_t *const backref = malloc(sizeof(*backref));
-
 	ops = ops_alloc(main_op, descr, dir, dir);
-
-	backref->bg = 1;
-	backref->bg_op = bg_op;
-
-	ops->estim = ioeta_alloc(backref);
+	pdata = alloc_progress_data(1, bg_op);
+	ops->estim = ioeta_alloc(pdata);
 
 	return ops;
+}
+
+/* Allocates progress data with specified parameters and initializes all the
+ * rest of structure fields with default values. */
+static progress_data_t *
+alloc_progress_data(int bg, void *info)
+{
+	progress_data_t *const pdata = malloc(sizeof(*pdata));
+
+	pdata->bg = bg;
+	pdata->ops = info;
+
+	pdata->last_progress = -1;
+	pdata->last_stage = (IoPs)-1;
+	pdata->dialog = 0;
+
+	return pdata;
 }
 
 /* Frees ops structure previously obtained by call to get_ops().  ops can be

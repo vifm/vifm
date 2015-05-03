@@ -30,7 +30,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
-#include <stddef.h> /* NULL size_t wchar_t */
+#include <stddef.h> /* NULL size_t wchar_t wint_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
@@ -64,6 +64,7 @@
 #include "../term_title.h"
 #include "../vifm.h"
 #include "private/statusline.h"
+#include "cancellation.h"
 #include "statusbar.h"
 #include "statusline.h"
 
@@ -210,6 +211,34 @@ is_term_working(void)
 	update_term_size();
 	getmaxyx(stdscr, screen_y, screen_x);
 	(void)stats_update_term_state(screen_x, screen_y);
+}
+
+int
+ui_char_pressed(wint_t c)
+{
+	static const wint_t CTRL_C = L'\x03';
+
+	wint_t pressed = L'\0';
+	const int cancellation_state = ui_cancellation_pause();
+
+	/* Query single character in non-blocking mode. */
+	wtimeout(status_bar, 0);
+	if(wget_wch(status_bar, &pressed) != ERR)
+	{
+		if(pressed != c && pressed != CTRL_C)
+		{
+			unget_wch(pressed);
+		}
+	}
+
+	ui_cancellation_resume(cancellation_state);
+
+	if(c != CTRL_C && pressed == CTRL_C)
+	{
+		ui_cancellation_requested();
+	}
+
+	return pressed == c;
 }
 
 static void

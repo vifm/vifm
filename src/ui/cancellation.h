@@ -40,6 +40,14 @@ int ui_cancellation_requested(void);
 /* Disables handling of cancellation requests through the UI. */
 void ui_cancellation_disable(void);
 
+/* Pauses cancellation if it's active, otherwise does nothing.  This effectively
+ * prevents cancellation from affecting environment until cancellation is
+ * restored.  Returns state to be passed to ui_cancellation_resume() later. */
+int ui_cancellation_pause(void);
+
+/* Restores cancellation paused via ui_cancellation_pause(). */
+void ui_cancellation_resume(int state);
+
 #endif /* VIFM__UI__CANCELLATION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
