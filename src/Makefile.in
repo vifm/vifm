@@ -66,8 +66,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" \
-	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)" \
-	"$(DESTDIR)$(vim_autoload_vifm_dir)" \
+	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" \
+	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" \
 	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" \
 	"$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" \
 	"$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"
@@ -179,8 +179,8 @@ am__can_run_installinfo = \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
-DATA = $(desktopapp_DATA) $(desktoppix_DATA) $(pkgdata_DATA) \
-	$(vim_autoload_vifm__DATA) $(vim_doc__DATA) \
+DATA = $(desktopapp_DATA) $(desktoppix_DATA) $(docs_DATA) \
+	$(pkgdata_DATA) $(vim_autoload_vifm__DATA) $(vim_doc__DATA) \
 	$(vim_ftdetect__DATA) $(vim_ftplugin__DATA) \
 	$(vim_plugin__DATA) $(vim_syntax__DATA) $(vimdoc_doc__DATA)
 ETAGS = etags
@@ -340,6 +340,11 @@ desktopapp_DATA = $(desktopappfile)
 desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 desktoppix_DATA = $(desktoppixfile)
+docsfile = ../AUTHORS ../COPYING ../ChangeLog ../INSTALL ../NEWS ../README \
+					 ../TODO
+
+docsdir = $(docdir)
+docs_DATA = $(docsfile)
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
@@ -1112,6 +1117,27 @@ uninstall-desktoppixDATA:
 	@list='$(desktoppix_DATA)'; test -n "$(desktoppixdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(desktoppixdir)'; $(am__uninstall_files_from_dir)
+install-docsDATA: $(docs_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(docs_DATA)'; test -n "$(docsdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(docsdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(docsdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(docsdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(docsdir)" || exit $$?; \
+	done
+
+uninstall-docsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(docs_DATA)'; test -n "$(docsdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(docsdir)'; $(am__uninstall_files_from_dir)
 install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -1475,7 +1501,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1553,10 +1579,11 @@ info: info-am
 info-am:
 
 install-data-am: install-desktopappDATA install-desktoppixDATA \
-	install-man install-pkgdataDATA install-vim_autoload_vifm_DATA \
-	install-vim_doc_DATA install-vim_ftdetect_DATA \
-	install-vim_ftplugin_DATA install-vim_plugin_DATA \
-	install-vim_syntax_DATA install-vimdoc_doc_DATA
+	install-docsDATA install-man install-pkgdataDATA \
+	install-vim_autoload_vifm_DATA install-vim_doc_DATA \
+	install-vim_ftdetect_DATA install-vim_ftplugin_DATA \
+	install-vim_plugin_DATA install-vim_syntax_DATA \
+	install-vimdoc_doc_DATA
 
 install-dvi: install-dvi-am
 
@@ -1603,7 +1630,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-desktopappDATA uninstall-desktoppixDATA \
-	uninstall-man uninstall-pkgdataDATA \
+	uninstall-docsDATA uninstall-man uninstall-pkgdataDATA \
 	uninstall-vim_autoload_vifm_DATA uninstall-vim_doc_DATA \
 	uninstall-vim_ftdetect_DATA uninstall-vim_ftplugin_DATA \
 	uninstall-vim_plugin_DATA uninstall-vim_syntax_DATA \
@@ -1619,20 +1646,21 @@ uninstall-man: uninstall-man1
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-binSCRIPTS \
 	install-data install-data-am install-desktopappDATA \
-	install-desktoppixDATA install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-man1 install-pdf \
-	install-pdf-am install-pkgdataDATA install-ps install-ps-am \
-	install-strip install-vim_autoload_vifm_DATA \
-	install-vim_doc_DATA install-vim_ftdetect_DATA \
-	install-vim_ftplugin_DATA install-vim_plugin_DATA \
-	install-vim_syntax_DATA install-vimdoc_doc_DATA installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-desktopappDATA uninstall-desktoppixDATA \
-	uninstall-man uninstall-man1 uninstall-pkgdataDATA \
+	install-desktoppixDATA install-docsDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-man1 install-pdf install-pdf-am install-pkgdataDATA \
+	install-ps install-ps-am install-strip \
+	install-vim_autoload_vifm_DATA install-vim_doc_DATA \
+	install-vim_ftdetect_DATA install-vim_ftplugin_DATA \
+	install-vim_plugin_DATA install-vim_syntax_DATA \
+	install-vimdoc_doc_DATA installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-desktopappDATA \
+	uninstall-desktoppixDATA uninstall-docsDATA uninstall-man \
+	uninstall-man1 uninstall-pkgdataDATA \
 	uninstall-vim_autoload_vifm_DATA uninstall-vim_doc_DATA \
 	uninstall-vim_ftdetect_DATA uninstall-vim_ftplugin_DATA \
 	uninstall-vim_plugin_DATA uninstall-vim_syntax_DATA \

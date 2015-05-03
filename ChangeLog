@@ -191,6 +191,10 @@
 	Handle commands that are too long to be passed directly to the shell by
 	breaking them into list of arguments if possible.  Thanks to filterfalse.
 
+	Install AUTHORS, COPYING, ChangeLog, INSTALL, NEWS, README and TODO to
+	{prefix}/share/doc/vifm, otherwise they are not available after
+	installation.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
