@@ -892,6 +892,7 @@ change_directory(FileView *view, const char directory[])
 {
 	char dir_dup[PATH_MAX];
 	char real_path[PATH_MAX];
+	const int was_in_custom_view = flist_custom_active(view);
 	int location_changed;
 
 	if(is_dir_list_loaded(view))
@@ -1052,6 +1053,13 @@ change_directory(FileView *view, const char directory[])
 	{
 		save_view_history(view, NULL, "", -1);
 	}
+
+	/* Perform additional actions on leaving custom view. */
+	if(was_in_custom_view)
+	{
+		memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
+	}
+
 	return 0;
 }
 

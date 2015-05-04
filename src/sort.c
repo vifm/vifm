@@ -62,6 +62,12 @@ sort_view(FileView *v)
 {
 	int i;
 
+	if(v->sort[0] > SK_LAST)
+	{
+		/* Completely skip sorting if primary key isn't set. */
+		return;
+	}
+
 	view = v;
 	custom_view = flist_custom_active(v);
 

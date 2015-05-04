@@ -177,6 +177,11 @@ typedef struct
 		char *orig_dir;
 		/* Title for the custom view. */
 		char *title;
+
+		/* Whether list is unsorted. */
+		int unsorted;
+		/* Previous sorting value, before unsorted custom view was loaded. */
+		char sort[SK_COUNT];
 	}
 	custom;
 
@@ -424,7 +429,8 @@ void ui_view_title_update(FileView *view);
  * otherwise zero is returned. */
 int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
 
-/* Ensures that list of sorting keys contains either "name" or "iname". */
+/* Ensures that list of sorting keys is sensible (i.e. contains either "name" or
+ * "iname" for views, except for unsorted custom view). */
 void ui_view_sort_list_ensure_well_formed(FileView *view);
 
 /* Checks whether file numbers should be displayed for the view.  Returns

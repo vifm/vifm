@@ -1407,7 +1407,8 @@ ui_view_sort_list_ensure_well_formed(FileView *view)
 		}
 	}
 
-	if(!found_name_key && i < SK_COUNT)
+	if(!found_name_key && i < SK_COUNT &&
+			(!flist_custom_active(view) || !view->custom.unsorted))
 	{
 		view->sort[i++] = SK_DEFAULT;
 	}

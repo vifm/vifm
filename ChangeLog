@@ -48,7 +48,9 @@
 
 	Added zd normal and visual modes key to exclude items from custom views.
 
-	Added %u macros to redirect command output directly into custom view.
+	Added %u and %U macros to redirect command output directly into custom
+	view.  The second one allows for more customization of file list, which is
+	absence of sorting for now.  Thanks to filterfalse.
 
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
