@@ -245,7 +245,11 @@ load_initial_directory(FileView *view, const char *dir)
 	{
 		chosp(view->curr_dir);
 	}
-	(void)change_directory(view, dir);
+	if(change_directory(view, dir) < 0)
+	{
+		leave_invalid_dir(view);
+		(void)change_directory(view, view->curr_dir);
+	}
 }
 
 dir_entry_t *
@@ -1054,7 +1058,7 @@ change_directory(FileView *view, const char directory[])
 int
 is_dir_list_loaded(FileView *view)
 {
-	dir_entry_t *entry = &view->dir_entry[0];
+	dir_entry_t *const entry = (view->list_rows < 1) ? NULL : &view->dir_entry[0];
 	return entry != NULL && entry->name[0] != '\0';
 }
 
@@ -1932,6 +1936,13 @@ rescue_from_empty_filelist(FileView *view)
 	filename_filter_clear(view);
 
 	load_dir_list(view, 1);
+	if(view->list_rows < 1)
+	{
+		leave_invalid_dir(view);
+		(void)change_directory(view, view->curr_dir);
+		load_dir_list(view, 0);
+	}
+
 	return 1;
 }
 
@@ -2123,21 +2134,31 @@ reload_window(FileView *view)
 void
 check_if_filelist_have_changed(FileView *view)
 {
-	if(view->on_slow_fs || flist_custom_active(view))
+	int failed, changed;
+
+	if(view->on_slow_fs || flist_custom_active(view) ||
+			is_unc_root(view->curr_dir))
 	{
 		return;
 	}
 
 #ifndef _WIN32
-	filemon_t mon;
-	if(filemon_from_file(view->curr_dir, &mon) != 0)
+	{
+		filemon_t mon;
+		failed = filemon_from_file(view->curr_dir, &mon) != 0;
+		changed = !failed && !filemon_equal(&mon, &view->mon);
+	}
 #else
-	int r;
-	if(is_unc_root(view->curr_dir))
-		return;
-	r = win_check_dir_changed(view);
-	if(r < 0)
+	{
+		const int r = win_check_dir_changed(view);
+		failed = r < 0;
+		changed = r > 0;
+	}
 #endif
+
+	failed |= os_access(view->curr_dir, X_OK) != 0;
+
+	if(failed)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		log_cwd();
@@ -2151,11 +2172,7 @@ check_if_filelist_have_changed(FileView *view)
 		return;
 	}
 
-#ifndef _WIN32
-	if(!filemon_equal(&mon, &view->mon))
-#else
-	if(r > 0)
-#endif
+	if(changed)
 	{
 		reload_window(view);
 	}
