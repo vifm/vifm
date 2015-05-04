@@ -201,7 +201,8 @@
 	screen-wide all the time).  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
 	Try harder to start in valid directory (go upwards if last visited one
-	doesn't have search permission).
+	doesn't have search permission) or leave the one that's not available
+	anymore.
 
 	Fixed search messages in menus (nth time...).
 

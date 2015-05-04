@@ -2156,6 +2156,8 @@ check_if_filelist_have_changed(FileView *view)
 	}
 #endif
 
+	failed |= os_access(view->curr_dir, X_OK) != 0;
+
 	if(failed)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
