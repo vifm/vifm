@@ -2127,21 +2127,29 @@ reload_window(FileView *view)
 void
 check_if_filelist_have_changed(FileView *view)
 {
-	if(view->on_slow_fs || flist_custom_active(view))
+	int failed, changed;
+
+	if(view->on_slow_fs || flist_custom_active(view) ||
+			is_unc_root(view->curr_dir))
 	{
 		return;
 	}
 
 #ifndef _WIN32
-	filemon_t mon;
-	if(filemon_from_file(view->curr_dir, &mon) != 0)
+	{
+		filemon_t mon;
+		failed = filemon_from_file(view->curr_dir, &mon) != 0;
+		changed = !failed && !filemon_equal(&mon, &view->mon);
+	}
 #else
-	int r;
-	if(is_unc_root(view->curr_dir))
-		return;
-	r = win_check_dir_changed(view);
-	if(r < 0)
+	{
+		const int r = win_check_dir_changed(view);
+		failed = r < 0;
+		changed = r > 0;
+	}
 #endif
+
+	if(failed)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		log_cwd();
@@ -2155,11 +2163,7 @@ check_if_filelist_have_changed(FileView *view)
 		return;
 	}
 
-#ifndef _WIN32
-	if(!filemon_equal(&mon, &view->mon))
-#else
-	if(r > 0)
-#endif
+	if(changed)
 	{
 		reload_window(view);
 	}
