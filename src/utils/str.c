@@ -169,22 +169,24 @@ str_to_upper(const char str[], char buf[], size_t buf_len)
 	return transform_ascii_str(str, &toupper, buf, buf_len);
 }
 
-/* Transforms all characters in the string by calling specified function on
- * them.  Returns zero on success or non-zero if output buffer is too small. */
+/* Transforms characters of the string to while they fit in the buffer by
+ * calling specified function on them.  Returns zero on success or non-zero if
+ * output buffer is too small. */
 static int
 transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 {
+	if(buf_len == 0U)
+	{
+		return 1;
+	}
+
 	while(*str != '\0' && buf_len > 1U)
 	{
 		*buf++ = f(*str++);
 		--buf_len;
 	}
-	if(buf_len == 1U)
-	{
-		return 1;
-	}
 	*buf = '\0';
-	return 0;
+	return *str != '\0';
 }
 
 void
@@ -650,6 +652,7 @@ extend_string(char str[], const char with[], size_t *len)
 int
 has_uppercase_letters(const char str[])
 {
+	/* TODO: rewrite this without call to to_wide(), use utf8_char_to_wchar(). */
 	int has_uppercase = 0;
 	wchar_t *const wstring = to_wide(str);
 	if(wstring != NULL)

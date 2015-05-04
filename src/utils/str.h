@@ -90,12 +90,12 @@ char * to_multibyte(const wchar_t *s);
  * Returns the length. */
 size_t multibyte_len(const wchar_t wide[]);
 
-/* Converts all characters in the string to lower case.  Returns zero on success
- * or non-zero if output buffer is too small. */
+/* Converts characters of the string to lower case while they fit in the buffer.
+ * Returns zero on success or non-zero if output buffer is too small. */
 int str_to_lower(const char str[], char buf[], size_t buf_len);
 
-/* Converts all characters in the string to upper case.  Returns zero on success
- * or non-zero if output buffer is too small. */
+/* Converts characters of the string to upper case while they fit in the buffer.
+ * Returns zero on success or non-zero if output buffer is too small. */
 int str_to_upper(const char str[], char buf[], size_t buf_len);
 
 /* Converts all characters of the string s to their lowercase equivalents. */

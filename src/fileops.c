@@ -2779,13 +2779,15 @@ change_case(FileView *view, int toupper)
 		const char *const old_fname = entry->name;
 		char new_fname[NAME_MAX];
 
+		/* Ignore too small buffer errors by not caring about part that didn't
+		 * fit. */
 		if(toupper)
 		{
-			str_to_upper(old_fname, new_fname, sizeof(new_fname));
+			(void)str_to_upper(old_fname, new_fname, sizeof(new_fname));
 		}
 		else
 		{
-			str_to_lower(old_fname, new_fname, sizeof(new_fname));
+			(void)str_to_lower(old_fname, new_fname, sizeof(new_fname));
 		}
 
 		if(strcmp(new_fname, old_fname) == 0)

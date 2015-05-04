@@ -339,8 +339,10 @@ compare_file_names(const char s[], const char t[], int ignore_case)
 
 	if(ignore_case)
 	{
-		str_to_lower(s, s_buf, sizeof(s_buf));
-		str_to_lower(t, t_buf, sizeof(t_buf));
+		/* Ignore too small buffer errors by not caring about part that didn't
+		 * fit. */
+		(void)str_to_lower(s, s_buf, sizeof(s_buf));
+		(void)str_to_lower(t, t_buf, sizeof(t_buf));
 
 		s = s_buf;
 		t = t_buf;
