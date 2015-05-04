@@ -1936,6 +1936,13 @@ rescue_from_empty_filelist(FileView *view)
 	filename_filter_clear(view);
 
 	load_dir_list(view, 1);
+	if(view->list_rows < 1)
+	{
+		leave_invalid_dir(view);
+		(void)change_directory(view, view->curr_dir);
+		load_dir_list(view, 0);
+	}
+
 	return 1;
 }
 
