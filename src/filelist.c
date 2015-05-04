@@ -245,7 +245,11 @@ load_initial_directory(FileView *view, const char *dir)
 	{
 		chosp(view->curr_dir);
 	}
-	(void)change_directory(view, dir);
+	if(change_directory(view, dir) < 0)
+	{
+		leave_invalid_dir(view);
+		(void)change_directory(view, view->curr_dir);
+	}
 }
 
 dir_entry_t *

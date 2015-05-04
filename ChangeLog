@@ -81,8 +81,8 @@
 	Added per-file overwrite confirmation on directory merging.  Thanks to
 	willemw12.
 
-	Added per-file progress and changed progress to appear in a dialog rather
-	than statusbar.
+	Added optional per-file progress in dialog mode activated by hitting "i"
+	while operation is being performed.
 
 	Added OS X version of sample vifmrc file.  Now this one will be used on
 	first run on OS X.  Thanks to Larry Hynes (a.k.a larryhynes).
@@ -196,6 +196,12 @@
 	installation.
 
 	Break ties on case insensitive sort deterministically.
+
+	Dynamic dialog dimensions (minimum %30 percent of the screen rather than
+	screen-wide all the time).  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
+	Try harder to start in valid directory (go upwards if last visited one
+	doesn't have search permission).
 
 	Fixed search messages in menus (nth time...).
 
