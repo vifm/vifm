@@ -22,20 +22,22 @@
 #include <ctype.h> /* tolower() isspace() */
 #include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
-#include <stddef.h> /* NULL size_t wchar_t */
+#include <stddef.h> /* NULL size_t wchar_t wint_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
                        strtol() wcstombs() */
 #include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* vswprintf() */
-#include <wctype.h> /* towlower() iswupper() */
+#include <wctype.h> /* iswupper() towlower() towupper() */
 
 #include "macros.h"
 #include "utf8.h"
 #include "utils.h"
 
 static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
+		size_t buf_len);
+static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len);
 
 void
@@ -160,13 +162,27 @@ multibyte_len(const wchar_t wide[])
 int
 str_to_lower(const char str[], char buf[], size_t buf_len)
 {
-	return transform_ascii_str(str, &tolower, buf, buf_len);
+	if(get_utf8_overhead(str) == 0U)
+	{
+		return transform_ascii_str(str, &tolower, buf, buf_len);
+	}
+	else
+	{
+		return transform_wide_str(str, &towlower, buf, buf_len);
+	}
 }
 
 int
 str_to_upper(const char str[], char buf[], size_t buf_len)
 {
-	return transform_ascii_str(str, &toupper, buf, buf_len);
+	if(get_utf8_overhead(str) == 0U)
+	{
+		return transform_ascii_str(str, &toupper, buf, buf_len);
+	}
+	else
+	{
+		return transform_wide_str(str, &towupper, buf, buf_len);
+	}
 }
 
 /* Transforms characters of the string to while they fit in the buffer by
@@ -187,6 +203,43 @@ transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 	}
 	*buf = '\0';
 	return *str != '\0';
+}
+
+/* Transforms characters of the string to while they fit in the buffer by
+ * calling specified function on them.  Returns zero on success or non-zero if
+ * output buffer is too small. */
+static int
+transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
+		size_t buf_len)
+{
+	size_t copied;
+	int error;
+	wchar_t *wstring;
+	wchar_t *p;
+	char *narrow;
+
+	wstring = to_wide(str);
+	if(wstring == NULL)
+	{
+		(void)utf8_strcpy(buf, str, buf_len);
+		return 1;
+	}
+
+	p = wstring;
+	while(*p != L'\0')
+	{
+		*p = f(*p);
+		++p;
+	}
+
+	narrow = to_multibyte(wstring);
+	copied = utf8_strcpy(buf, narrow, buf_len);
+	error = copied == 0U || narrow[copied - 1U] != '\0';
+
+	free(wstring);
+	free(narrow);
+
+	return error;
 }
 
 void

@@ -353,5 +353,32 @@ utf8_narrowd_len(const wchar_t utf16[])
 	return len;
 }
 
+size_t
+utf8_strcpy(char dst[], const char src[], size_t dst_len)
+{
+	const size_t len = dst_len;
+	if(dst_len == 0U)
+	{
+		return 0U;
+	}
+
+	while(*src != '\0' && dst_len > 1U)
+	{
+		size_t char_width = get_char_width(src);
+		if(char_width >= dst_len)
+		{
+			break;
+		}
+		while(char_width-- != 0)
+		{
+			*dst++ = *src++;
+			--dst_len;
+		}
+	}
+
+	*dst = '\0';
+	return len - (dst_len - 1U);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

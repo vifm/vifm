@@ -58,6 +58,11 @@ char * utf8_from_utf16(const wchar_t utf16[]);
  * Returns the number. */
 size_t utf8_narrowd_len(const wchar_t utf16[]);
 
+/* Copies as many full utf-8 characters from source to destination as size of
+ * destination buffer permits.  Returns number of actually copied bytes
+ * including terminating null character. */
+size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
+
 #endif /* VIFM__UTILS__UTF8_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
