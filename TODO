@@ -16,7 +16,6 @@ Basic things that need to be done.
         show somehow in the TUI calculation process.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
-    Fix gU, gu and ignore case name sort on filenames with non-latin characters.
     Process shell pause request for running in %s.
     Accept [count] for "h" and "gh".
     :setlocal command.

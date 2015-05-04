@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() unlink() */
 
+#include <locale.h> /* LC_ALL setlocale() */
 #include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
@@ -12,6 +13,13 @@
 #define SIGN(n) ({__typeof(n) _n = (n); (_n < 0) ? -1 : (_n > 0);})
 #define ASSERT_STRCMP_EQUAL(a, b) \
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
+
+static void free_view(FileView *view);
+
+SETUP_ONCE()
+{
+	(void)setlocale(LC_ALL, "");
+}
 
 SETUP()
 {
@@ -25,19 +33,33 @@ SETUP()
 	lwin.dir_entry[1].type = FT_REG;
 	lwin.dir_entry[2].name = strdup("A");
 	lwin.dir_entry[2].type = FT_REG;
+
+	rwin.list_rows = 2;
+	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry[0].name = strdup("аааааааааа");
+	rwin.dir_entry[0].type = FT_REG;
+	rwin.dir_entry[1].name = strdup("АААААААААА");
+	rwin.dir_entry[1].type = FT_REG;
 }
 
 TEARDOWN()
 {
+	free_view(&lwin);
+	free_view(&rwin);
+}
+
+static void
+free_view(FileView *view)
+{
 	int i;
 
-	for(i = 0; i < lwin.list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
 	{
-		free(lwin.dir_entry[i].name);
+		free(view->dir_entry[i].name);
 	}
-	free(lwin.dir_entry);
+	free(view->dir_entry);
 
-	lwin.list_rows = 0;
+	view->list_rows = 0;
 }
 
 TEST(special_chars_ignore_case_sort)
@@ -255,6 +277,20 @@ TEST(versort_man_page_example)
 	assert_true(strnumcmp("0", "1") < 0);
 	assert_true(strnumcmp("1", "9") < 0);
 	assert_true(strnumcmp("9", "10") < 0);
+}
+
+TEST(ignore_case_name_sort_breaks_ties_deterministically)
+{
+	/* If normalized names are equal, byte-by-byte comparison should be used to
+	 * break ties. */
+
+	rwin.sort[0] = SK_BY_INAME;
+	memset(&rwin.sort[1], SK_NONE, sizeof(rwin.sort) - 1);
+
+	sort_view(&rwin);
+
+	assert_string_equal("АААААААААА", rwin.dir_entry[0].name);
+	assert_string_equal("аааааааааа", rwin.dir_entry[1].name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

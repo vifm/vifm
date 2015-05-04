@@ -195,6 +195,8 @@
 	{prefix}/share/doc/vifm, otherwise they are not available after
 	installation.
 
+	Break ties on case insensitive sort deterministically.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -338,6 +340,9 @@
 	Fixed background mark truncation for :commands in user-defined commands.
 
 	Fixed ":vs .." which used to use wrong base directory.
+
+	Fixed gU, gu and ignore case name sort on filenames with non-latin
+	characters.
 
 0.7.8-beta to 0.7.8
 

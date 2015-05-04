@@ -22,7 +22,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdlib.h> /* abs() qsort() */
-#include <string.h> /* strrchr() */
+#include <string.h> /* strcmp() strrchr() */
 
 #include "cfg/config.h"
 #include "ui/ui.h"
@@ -334,22 +334,30 @@ compare_full_file_names(const char s[], const char t[], int ignore_case)
 static int
 compare_file_names(const char s[], const char t[], int ignore_case)
 {
+	const char *s_val = s, *t_val = t;
 	char s_buf[NAME_MAX];
 	char t_buf[NAME_MAX];
+	int result;
 
 	if(ignore_case)
 	{
-		copy_str(s_buf, sizeof(s_buf), s);
-		s = s_buf;
+		/* Ignore too small buffer errors by not caring about part that didn't
+		 * fit. */
+		(void)str_to_lower(s, s_buf, sizeof(s_buf));
+		(void)str_to_lower(t, t_buf, sizeof(t_buf));
 
-		copy_str(t_buf, sizeof(t_buf), t);
-		t = t_buf;
-
-		str_to_lower(s_buf);
-		str_to_lower(t_buf);
+		s_val = s_buf;
+		t_val = t_buf;
 	}
 
-	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
+	result = cfg.sort_numbers ? strnumcmp(s_val, t_val) : strcmp(s_val, t_val);
+	if(result == 0 && ignore_case)
+	{
+		/* Resort to comparing original names when their normalized versions match
+		 * to always solve ties in deterministic way. */
+		result = strcmp(s, t);
+	}
+	return result;
 }
 
 int

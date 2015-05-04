@@ -90,14 +90,16 @@ char * to_multibyte(const wchar_t *s);
  * Returns the length. */
 size_t multibyte_len(const wchar_t wide[]);
 
-/* Converts all characters in the string to lower case.  Not aware of UTF-8. */
-void str_to_lower(char str[]);
+/* Converts characters of the string to lower case while they fit in the buffer.
+ * Returns zero on success or non-zero if output buffer is too small. */
+int str_to_lower(const char str[], char buf[], size_t buf_len);
 
-/* Converts all characters in the string to upper case.  Not aware of UTF-8. */
-void str_to_upper(char str[]);
+/* Converts characters of the string to upper case while they fit in the buffer.
+ * Returns zero on success or non-zero if output buffer is too small. */
+int str_to_upper(const char str[], char buf[], size_t buf_len);
 
 /* Converts all characters of the string s to their lowercase equivalents. */
-void wcstolower(wchar_t s[]);
+void wcstolower(wchar_t str[]);
 
 /* Replaces first occurrence of the c character in the str with '\0'.  Nothing
  * is done if the character isn't found. */
