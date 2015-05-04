@@ -1058,7 +1058,7 @@ change_directory(FileView *view, const char directory[])
 int
 is_dir_list_loaded(FileView *view)
 {
-	dir_entry_t *entry = &view->dir_entry[0];
+	dir_entry_t *const entry = (view->list_rows < 1) ? NULL : &view->dir_entry[0];
 	return entry != NULL && entry->name[0] != '\0';
 }
 
