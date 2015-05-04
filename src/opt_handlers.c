@@ -792,7 +792,7 @@ load_sort_option(FileView *view)
 
 	opt_val[0] = '\0';
 
-	ui_view_sort_list_ensure_well_formed(view->sort);
+	ui_view_sort_list_ensure_well_formed(view);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
@@ -1528,7 +1528,7 @@ sort_handler(OPT_OP op, optval_t val)
 	{
 		sort_keys[key_count] = SK_NONE;
 	}
-	ui_view_sort_list_ensure_well_formed(sort_keys);
+	ui_view_sort_list_ensure_well_formed(curr_view);
 
 	fview_sorting_updated(curr_view);
 	resort_view(curr_view);

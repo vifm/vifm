@@ -425,7 +425,7 @@ void ui_view_title_update(FileView *view);
 int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
 
 /* Ensures that list of sorting keys contains either "name" or "iname". */
-void ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT]);
+void ui_view_sort_list_ensure_well_formed(FileView *view);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
