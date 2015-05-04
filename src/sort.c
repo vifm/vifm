@@ -339,14 +339,11 @@ compare_file_names(const char s[], const char t[], int ignore_case)
 
 	if(ignore_case)
 	{
-		copy_str(s_buf, sizeof(s_buf), s);
+		str_to_lower(s, s_buf, sizeof(s_buf));
+		str_to_lower(t, t_buf, sizeof(t_buf));
+
 		s = s_buf;
-
-		copy_str(t_buf, sizeof(t_buf), t);
 		t = t_buf;
-
-		str_to_lower(s_buf);
-		str_to_lower(t_buf);
 	}
 
 	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);

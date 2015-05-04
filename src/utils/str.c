@@ -35,6 +35,9 @@
 #include "utf8.h"
 #include "utils.h"
 
+static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
+		size_t buf_len);
+
 void
 chomp(char str[])
 {
@@ -154,35 +157,43 @@ multibyte_len(const wchar_t wide[])
 #endif
 }
 
-void
-str_to_lower(char str[])
+int
+str_to_lower(const char str[], char buf[], size_t buf_len)
 {
-	/* FIXME: handle UTF-8 properly. */
-	while(*str != '\0')
+	return transform_ascii_str(str, &tolower, buf, buf_len);
+}
+
+int
+str_to_upper(const char str[], char buf[], size_t buf_len)
+{
+	return transform_ascii_str(str, &toupper, buf, buf_len);
+}
+
+/* Transforms all characters in the string by calling specified function on
+ * them.  Returns zero on success or non-zero if output buffer is too small. */
+static int
+transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
+{
+	while(*str != '\0' && buf_len > 1U)
 	{
-		*str = tolower(*str);
-		++str;
+		*buf++ = f(*str++);
+		--buf_len;
 	}
+	if(buf_len == 1U)
+	{
+		return 1;
+	}
+	*buf = '\0';
+	return 0;
 }
 
 void
-str_to_upper(char str[])
+wcstolower(wchar_t str[])
 {
-	/* FIXME: handle UTF-8 properly. */
-	while(*str != '\0')
+	while(*str != L'\0')
 	{
-		*str = toupper(*str);
+		*str = towlower(*str);
 		++str;
-	}
-}
-
-void
-wcstolower(wchar_t s[])
-{
-	while(*s != L'\0')
-	{
-		*s = towlower(*s);
-		++s;
 	}
 }
 
