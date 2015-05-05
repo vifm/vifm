@@ -99,7 +99,7 @@ static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(FileType type);
 static int move_curr_line(FileView *view);
-static void reset_view_sort(FileView *view);
+static void reset_view_columns(FileView *view);
 
 void
 fview_init(void)
@@ -1240,12 +1240,12 @@ move_curr_line(FileView *view)
 void
 fview_sorting_updated(FileView *view)
 {
-	reset_view_sort(view);
+	reset_view_columns(view);
 }
 
 /* Reinitializes view columns. */
 static void
-reset_view_sort(FileView *view)
+reset_view_columns(FileView *view)
 {
 	if(view->ls_view)
 	{

@@ -314,7 +314,7 @@ static int try_handle_ext_command(const char cmd[], MacroFlags flags,
 		int *save_msg);
 static void output_to_statusbar(const char *cmd);
 static void run_in_split(const FileView *view, const char cmd[]);
-static void output_to_custom_flist(FileView *view, const char cmd[]);
+static void output_to_custom_flist(FileView *view, const char cmd[], int very);
 static void path_handler(const char line[], void *arg);
 
 static const cmd_add_t commands[] = {
@@ -4614,9 +4614,10 @@ try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
 	{
 		run_in_split(curr_view, cmd);
 	}
-	else if(flags == MF_CUSTOMVIEW_OUTPUT)
+	else if(flags == MF_CUSTOMVIEW_OUTPUT || flags == MF_VERYCUSTOMVIEW_OUTPUT)
 	{
-		output_to_custom_flist(curr_view, cmd);
+		const int very = flags == MF_VERYCUSTOMVIEW_OUTPUT;
+		output_to_custom_flist(curr_view, cmd, very);
 	}
 	else
 	{
@@ -4697,10 +4698,10 @@ run_in_split(const FileView *view, const char cmd[])
 	free(escaped_cmd);
 }
 
-/* Runs the cmd and parses its output as list of paths to compose custom
- * view. */
+/* Runs the cmd and parses its output as list of paths to compose custom view.
+ * Very custom view implies unsorted list. */
 static void
-output_to_custom_flist(FileView *view, const char cmd[])
+output_to_custom_flist(FileView *view, const char cmd[], int very)
 {
 	char *title;
 
@@ -4715,7 +4716,22 @@ output_to_custom_flist(FileView *view, const char cmd[])
 		return;
 	}
 
+	if(very)
+	{
+		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+	}
+	view->custom.unsorted = very;
+
 	(void)flist_custom_finish(view);
+
+	if(very)
+	{
+		/* As custom view isn't activated until flist_custom_finish() is called,
+		 * need to update option separately from view sort array. */
+		load_sort_option(view);
+	}
+
 	flist_set_pos(view, 0);
 }
 

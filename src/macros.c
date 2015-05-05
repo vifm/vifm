@@ -178,6 +178,9 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case 'u': /* Parse output as list of files and compose custom view. */
 				set_flags(flags, MF_CUSTOMVIEW_OUTPUT);
 				break;
+			case 'U': /* Parse output as list of files and compose unsorted view. */
+				set_flags(flags, MF_VERYCUSTOMVIEW_OUTPUT);
+				break;
 			case 'i': /* Ignore output. */
 				set_flags(flags, MF_IGNORE);
 				break;

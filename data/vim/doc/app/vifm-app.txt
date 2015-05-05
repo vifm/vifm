@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 01
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 04
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2103,6 +2103,9 @@ The command macros may be used in user commands.
                                                                *vifm-%u*
   %u        process command output as list of paths and compose custom view
             out of it.
+                                                               *vifm-%U*
+  %U        same as %u, but implies less list updates inside vifm, which is
+            absence of sorting at the moment.
                                                                *vifm-%S*
   %S        show command output in the status bar.
                                                                *vifm-%s*

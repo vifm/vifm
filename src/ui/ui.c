@@ -1389,13 +1389,14 @@ ui_view_sort_list_contains(const char sort[SK_COUNT], char key)
 }
 
 void
-ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT])
+ui_view_sort_list_ensure_well_formed(FileView *view)
 {
 	int found_name_key = 0;
 	int i = -1;
+
 	while(++i < SK_COUNT)
 	{
-		const int sort_key = abs(sort[i]);
+		const int sort_key = abs(view->sort[i]);
 		if(sort_key > SK_LAST)
 		{
 			break;
@@ -1406,14 +1407,15 @@ ui_view_sort_list_ensure_well_formed(char sort[SK_COUNT])
 		}
 	}
 
-	if(!found_name_key && i < SK_COUNT)
+	if(!found_name_key && i < SK_COUNT &&
+			(!flist_custom_active(view) || !view->custom.unsorted))
 	{
-		sort[i++] = SK_DEFAULT;
+		view->sort[i++] = SK_DEFAULT;
 	}
 
 	if(i < SK_COUNT)
 	{
-		memset(&sort[i], SK_NONE, SK_COUNT - i);
+		memset(&view->sort[i], SK_NONE, SK_COUNT - i);
 	}
 }
 

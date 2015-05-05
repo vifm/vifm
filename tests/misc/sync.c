@@ -21,13 +21,13 @@ SETUP()
 	lwin.list_rows = 0;
 	lwin.window_rows = 1;
 	lwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(lwin.sort);
+	ui_view_sort_list_ensure_well_formed(&lwin);
 
 	rwin.dir_entry = NULL;
 	rwin.list_rows = 0;
 	rwin.window_rows = 1;
 	rwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(rwin.sort);
+	ui_view_sort_list_ensure_well_formed(&rwin);
 }
 
 TEARDOWN()

@@ -36,7 +36,7 @@ SETUP()
 	lwin.list_rows = 0;
 	lwin.window_rows = 1;
 	lwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(lwin.sort);
+	ui_view_sort_list_ensure_well_formed(&lwin);
 	lwin.columns = columns_create();
 	lwin.view_columns = strdup("");
 
@@ -44,7 +44,7 @@ SETUP()
 	rwin.list_rows = 0;
 	rwin.window_rows = 1;
 	rwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(rwin.sort);
+	ui_view_sort_list_ensure_well_formed(&rwin);
 	rwin.columns = columns_create();
 	rwin.view_columns = strdup("");
 
