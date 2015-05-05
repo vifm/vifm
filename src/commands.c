@@ -1254,7 +1254,11 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 
 			if(is_whole_line_command(cmd))
 			{
-				save_msg += exec_command(cmd, view, type) != 0;
+				ret = exec_command(cmd, view, type);
+				if(ret != 0)
+				{
+					save_msg = (ret < 0) ? -1 : 1;
+				}
 				break;
 			}
 

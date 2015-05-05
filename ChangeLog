@@ -353,6 +353,9 @@
 	Fixed gU, gu and ignore case name sort on filenames with non-latin
 	characters.
 
+	Fixed missing error messages related to command parsing on sourcing
+	files.  Thanks to Damian Ariel Perticone.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
