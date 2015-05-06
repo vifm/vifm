@@ -1055,7 +1055,7 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view)
+	if(was_in_custom_view && view->custom.unsorted)
 	{
 		memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
 	}
