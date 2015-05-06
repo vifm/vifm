@@ -356,6 +356,8 @@
 	Fixed missing error messages related to command parsing on sourcing
 	files.  Thanks to Damian Ariel Perticone.
 
+	Fixed placing right aligned ellipsis for CJK characters in one case.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

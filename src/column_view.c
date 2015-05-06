@@ -360,8 +360,8 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 	}
 }
 
-/* Adds ellipsis to the string in buf not changing its length (at most three
- * first or last characters are replaced). */
+/* Adds ellipsis to the string in buf not changing enlarging its length (at most
+ * three first or last characters are replaced). */
 static void
 add_ellipsis(AlignType align, char buf[])
 {
@@ -376,8 +376,14 @@ add_ellipsis(AlignType align, char buf[])
 	}
 	else
 	{
-		const size_t beginning_shift = get_real_string_width(buf, dot_count);
-		const char *const new_beginning = buf + beginning_shift;
+		const char *new_beginning = buf;
+		int skipped = 0;
+		while(skipped < dot_count)
+		{
+			skipped += utf8_get_screen_width_of_char(new_beginning);
+			new_beginning += get_char_width(new_beginning);
+		}
+
 		memmove(buf + dot_count, new_beginning, strlen(new_beginning) + 1);
 		memset(buf, '.', dot_count);
 	}
