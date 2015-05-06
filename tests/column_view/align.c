@@ -7,7 +7,7 @@
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset);
+		size_t offset, AlignType align);
 static void column1_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
@@ -29,7 +29,7 @@ TEARDOWN()
 
 static void
 column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset)
+		size_t offset, AlignType align)
 {
 	print_offset = offset;
 	strncpy(print_buffer + offset, buf, strlen(buf));
