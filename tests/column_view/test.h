@@ -6,7 +6,14 @@
 #define COL1_ID 1
 #define COL2_ID 2
 
-column_line_print_func print_next;
+/* This is version of column_line_print_func with fewer number of parameters.
+ * Omitted those which are provide additional information and do not very
+ * valuable in tests. */
+typedef void (*print_func)(const void *data, int column_id, const char buf[],
+		size_t offset);
+
+print_func print_next;
+
 column_func col1_next;
 column_func col2_next;
 

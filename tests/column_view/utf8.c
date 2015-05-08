@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <locale.h> /* setlocale() */
+#include <stddef.h> /* NULL size_t */
 #include <string.h>
 
 #include "../../src/utils/utf8.h"
@@ -9,10 +10,10 @@
 
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset, AlignType align);
-static void column1_func(int id, const void *data, size_t buf_len, char *buf);
-static void column2_func(int id, const void *data, size_t buf_len, char *buf);
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset);
+static void column1_func(int id, const void *data, size_t buf_len, char buf[]);
+static void column2_func(int id, const void *data, size_t buf_len, char buf[]);
 static int locale_works(void);
 
 static const size_t MAX_WIDTH = 20;
@@ -31,9 +32,9 @@ SETUP_ONCE()
 
 SETUP()
 {
-	print_next = column_line_print;
-	col1_next = column1_func;
-	col2_next = column2_func;
+	print_next = &column_line_print;
+	col1_next = &column1_func;
+	col2_next = &column2_func;
 
 	col1_str = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя";
 }
@@ -46,21 +47,21 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset, AlignType align)
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset)
 {
 	strncpy(print_buffer + get_normal_utf8_string_widthn(print_buffer, offset),
 			buf, strlen(buf));
 }
 
 static void
-column1_func(int id, const void *data, size_t buf_len, char *buf)
+column1_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len + 1, "%s", col1_str);
 }
 
 static void
-column2_func(int id, const void *data, size_t buf_len, char *buf)
+column2_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгв推");
 }
