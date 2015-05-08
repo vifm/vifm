@@ -502,7 +502,7 @@ get_file_size(const char path[])
 }
 
 char **
-list_regular_files(const char path[], int *len)
+list_regular_files(const char path[], char *extension, int *len)
 {
 	DIR *dir;
 	char **list = NULL;
@@ -514,6 +514,16 @@ list_regular_files(const char path[], int *len)
 		while((d = os_readdir(dir)) != NULL)
 		{
 			char full_path[PATH_MAX];
+
+			if (extension != NULL)
+			{
+				char *file_extension;
+				file_extension = strchr(d->d_name, '.');
+				if(file_extension == NULL)
+					continue;
+				if(strcmp(file_extension, extension) != 0)
+					continue;
+			}
 			snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
 
 			if(is_regular_file(full_path))
