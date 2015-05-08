@@ -77,7 +77,7 @@ static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 static int clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset, AlignType align);
+		size_t offset, AlignType align, const char full_column[]);
 static int prepare_col_color(const FileView *view, dir_entry_t *entry,
 		int primary, int line_color, int current);
 static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
@@ -386,14 +386,14 @@ draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 {
 	if(cfg.filelist_col_padding)
 	{
-		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT);
+		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
 	}
 
 	columns_format_line(view->columns, cdt, col_width);
 
 	if(cfg.filelist_col_padding)
 	{
-		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT);
+		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
 	}
 }
 
@@ -776,7 +776,7 @@ update_scroll_bind_offset(void)
 /* Print callback for column_view unit. */
 static void
 column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset, AlignType align)
+		size_t offset, AlignType align, const char full_column[])
 {
 	const int padding = (cfg.filelist_col_padding != 0);
 

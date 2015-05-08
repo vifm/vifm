@@ -274,10 +274,12 @@ columns_format_line(const columns_t cols, const void *data,
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
 		char col_buffer[sizeof(prev_col_buf)];
+		char full_column[sizeof(prev_col_buf)];
 		size_t cur_col_start;
 		const column_t *const col = &cols->list[i];
 
-		col->func(col->info.column_id, data, ARRAY_LEN(col_buffer), col_buffer);
+		col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
+		strcpy(full_column, col_buffer);
 		decorate_output(col, col_buffer, max_line_width);
 		cur_col_start = calculate_start_pos(col, col_buffer);
 
@@ -300,7 +302,7 @@ columns_format_line(const columns_t cols, const void *data,
 		}
 
 		print_func(data, col->info.column_id, col_buffer, cur_col_start,
-				col->info.align);
+				col->info.align, full_column);
 
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
 
@@ -431,7 +433,7 @@ fill_gap_pos(const void *data, size_t from, size_t to)
 		char gap[to - from + 1];
 		memset(gap, GAP_FILL_CHAR, to - from);
 		gap[to - from] = '\0';
-		print_func(data, FILL_COLUMN_ID, gap, from, AT_LEFT);
+		print_func(data, FILL_COLUMN_ID, gap, from, AT_LEFT, gap);
 	}
 }
 
