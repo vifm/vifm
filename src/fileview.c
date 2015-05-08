@@ -832,7 +832,10 @@ column_line_print(const void *data, int column_id, const char *buf,
 	width_left = padding + ui_view_available_width(view)
 	           - reserved_width - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
-	print_buf[trim_pos] = '\0';
+	if(trim_pos < sizeof(print_buf))
+	{
+		print_buf[trim_pos] = '\0';
+	}
 	wprinta(view->win, print_buf, line_attrs);
 }
 
