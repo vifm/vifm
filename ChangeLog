@@ -100,6 +100,9 @@
 
 	Added :redr[aw] command to force immediate redraw.  Thanks to filterfalse.
 
+	Added search match highlight for file names.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef) and willemw12.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
