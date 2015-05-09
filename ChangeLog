@@ -100,6 +100,9 @@
 
 	Added :redr[aw] command to force immediate redraw.  Thanks to filterfalse.
 
+	Added search match highlight for file names.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef) and willemw12.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 
@@ -352,6 +355,11 @@
 
 	Fixed gU, gu and ignore case name sort on filenames with non-latin
 	characters.
+
+	Fixed missing error messages related to command parsing on sourcing
+	files.  Thanks to Damian Ariel Perticone.
+
+	Fixed placing right aligned ellipsis for CJK characters in one case.
 
 0.7.8-beta to 0.7.8
 

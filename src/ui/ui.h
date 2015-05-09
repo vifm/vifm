@@ -147,7 +147,9 @@ typedef struct
 	int selected;
 	int was_selected; /* Stores previous selection state in Visual mode. */
 
-	int search_match;
+	int search_match;      /* Whether the item matches last search. */
+	short int match_left;  /* Starting position of the match. */
+	short int match_right; /* Ending position of the match. */
 
 	int list_num;     /* Used by sorting comparer to perform stable sort. */
 
@@ -195,7 +197,10 @@ typedef struct
 #endif
 	char last_dir[PATH_MAX];
 
+	/* Number of files that match current search pattern. */
 	int matches;
+	/* Last used search pattern, empty if none. */
+	char last_search[NAME_MAX];
 
 	int hide_dot;
 	int prev_invert;
@@ -412,6 +417,9 @@ void ui_view_win_changed(FileView *view);
 
 /* Resets selection of the view and reloads it preserving cursor position. */
 void ui_view_reset_selection_and_reload(FileView *view);
+
+/* Resets search highlighting of the view and schedules reload. */
+void ui_view_reset_search_highlight(FileView *view);
 
 /* Reloads visible lists of files preserving current position of cursor. */
 void ui_views_reload_visible_filelists(void);

@@ -574,7 +574,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 			{
-				if(line_val[0] != '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{

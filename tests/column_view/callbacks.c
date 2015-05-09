@@ -1,12 +1,12 @@
 #include <stic.h>
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 
 #include "../../src/column_view.h"
 
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset);
 static void columns_func(int id, const void *data, size_t buf_len, char *buf);
 
@@ -20,17 +20,16 @@ static int column2_counter;
 
 SETUP()
 {
-	static column_info_t column_infos[2] =
-	{
+	static column_info_t column_infos[2] = {
 		{ .column_id = COL1_ID, .full_width = 100, .text_width = 100,
 		  .align = AT_LEFT,     .sizing = ST_AUTO, .cropping = CT_NONE, },
 		{ .column_id = COL2_ID, .full_width = 100, .text_width = 100,
 		  .align = AT_LEFT,     .sizing = ST_AUTO, .cropping = CT_NONE, },
 	};
 
-	print_next = column_line_print;
-	col1_next = columns_func;
-	col2_next = columns_func;
+	print_next = &column_line_print;
+	col1_next = &columns_func;
+	col2_next = &columns_func;
 
 	print_counter = 0;
 	column1_counter = 0;
@@ -51,22 +50,22 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset)
 {
-	print_counter++;
+	++print_counter;
 }
 
 static void
-columns_func(int id, const void *data, size_t buf_len, char *buf)
+columns_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	if(id == COL1_ID)
 	{
-		column1_counter++;
+		++column1_counter;
 	}
 	else
 	{
-		column2_counter++;
+		++column2_counter;
 	}
 }
 

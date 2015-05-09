@@ -1,24 +1,25 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h>
 
 #include "../../src/column_view.h"
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset);
-static void column1_func(int id, const void *data, size_t buf_len, char *buf);
-static void column2_func(int id, const void *data, size_t buf_len, char *buf);
+static void column1_func(int id, const void *data, size_t buf_len, char buf[]);
+static void column2_func(int id, const void *data, size_t buf_len, char buf[]);
 
 static const size_t MAX_WIDTH = 20;
 static char print_buffer[20 + 1];
 
 SETUP()
 {
-	print_next = column_line_print;
-	col1_next = column1_func;
-	col2_next = column2_func;
+	print_next = &column_line_print;
+	col1_next = &column1_func;
+	col2_next = &column2_func;
 }
 
 TEARDOWN()
@@ -29,20 +30,20 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset)
 {
 	strncpy(print_buffer + offset, buf, strlen(buf));
 }
 
 static void
-column1_func(int id, const void *data, size_t buf_len, char *buf)
+column1_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len + 1, "%s", "aaaaayyyyyzzzzz");
 }
 
 static void
-column2_func(int id, const void *data, size_t buf_len, char *buf)
+column2_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len + 1, "%s", "bbbbbcccccdddddeeeee");
 }

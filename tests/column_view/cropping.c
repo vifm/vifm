@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h>
 
@@ -11,7 +12,7 @@
 static const size_t MAX_WIDTH = 40;
 static char print_buffer[40 + 1];
 
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset);
 static void column1_func(int id, const void *data, size_t buf_len, char *buf);
 static void column2_func(int id, const void *data, size_t buf_len, char *buf);
@@ -20,9 +21,9 @@ static void column2_short_func(int id, const void *data, size_t buf_len,
 
 SETUP()
 {
-	print_next = column_line_print;
-	col1_next = column1_func;
-	col2_next = column2_func;
+	print_next = &column_line_print;
+	col1_next = &column1_func;
+	col2_next = &column2_func;
 }
 
 TEARDOWN()
@@ -33,7 +34,7 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset)
 {
 	strncpy(print_buffer + offset, buf, strlen(buf));

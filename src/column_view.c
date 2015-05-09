@@ -274,10 +274,12 @@ columns_format_line(const columns_t cols, const void *data,
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
 		char col_buffer[sizeof(prev_col_buf)];
+		char full_column[sizeof(prev_col_buf)];
 		size_t cur_col_start;
 		const column_t *const col = &cols->list[i];
 
-		col->func(col->info.column_id, data, ARRAY_LEN(col_buffer), col_buffer);
+		col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
+		strcpy(full_column, col_buffer);
 		decorate_output(col, col_buffer, max_line_width);
 		cur_col_start = calculate_start_pos(col, col_buffer);
 
@@ -291,14 +293,16 @@ columns_format_line(const columns_t cols, const void *data,
 			const size_t break_point = get_real_string_width(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
-			fill_gap_pos(data, prev_col_start + get_width_on_screen(prev_col_buf), cur_col_start);
+			fill_gap_pos(data, prev_col_start + get_width_on_screen(prev_col_buf),
+					cur_col_start);
 		}
 		else
 		{
 			fill_gap_pos(data, prev_col_end, cur_col_start);
 		}
 
-		print_func(data, col->info.column_id, col_buffer, cur_col_start);
+		print_func(data, col->info.column_id, col_buffer, cur_col_start,
+				col->info.align, full_column);
 
 		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
 
@@ -358,8 +362,8 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 	}
 }
 
-/* Adds ellipsis to the string in buf not changing its length (at most three
- * first or last characters are replaced). */
+/* Adds ellipsis to the string in buf not changing enlarging its length (at most
+ * three first or last characters are replaced). */
 static void
 add_ellipsis(AlignType align, char buf[])
 {
@@ -374,8 +378,14 @@ add_ellipsis(AlignType align, char buf[])
 	}
 	else
 	{
-		const size_t beginning_shift = get_real_string_width(buf, dot_count);
-		const char *const new_beginning = buf + beginning_shift;
+		const char *new_beginning = buf;
+		int skipped = 0;
+		while(skipped < dot_count)
+		{
+			skipped += utf8_get_screen_width_of_char(new_beginning);
+			new_beginning += get_char_width(new_beginning);
+		}
+
 		memmove(buf + dot_count, new_beginning, strlen(new_beginning) + 1);
 		memset(buf, '.', dot_count);
 	}
@@ -423,7 +433,7 @@ fill_gap_pos(const void *data, size_t from, size_t to)
 		char gap[to - from + 1];
 		memset(gap, GAP_FILL_CHAR, to - from);
 		gap[to - from] = '\0';
-		print_func(data, FILL_COLUMN_ID, gap, from);
+		print_func(data, FILL_COLUMN_ID, gap, from, AT_LEFT, gap);
 	}
 }
 

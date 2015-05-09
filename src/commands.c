@@ -1231,6 +1231,7 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 		}
 		else if((*p == '|' && is_out_of_arg(cmd, q)) || *p == '\0')
 		{
+			int whole_line;
 			int ret;
 
 			if(*p != '\0')
@@ -1251,20 +1252,26 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 			{
 				init_cmds(1, &cmds_conf);
 			}
+			whole_line = is_whole_line_command(cmd);
 
-			if(is_whole_line_command(cmd))
+			/* Don't break line for whole line commands. */
+			if(!whole_line)
 			{
-				save_msg += exec_command(cmd, view, type) != 0;
-				break;
+				*q = '\0';
+				q = p;
 			}
-
-			*q = '\0';
-			q = p;
 
 			ret = exec_command(cmd, view, type);
 			if(ret != 0)
 			{
 				save_msg = (ret < 0) ? -1 : 1;
+			}
+
+			if(whole_line)
+			{
+				/* Whole line command takes the rest of the string, nothing more to
+				 * process. */
+				break;
 			}
 
 			cmd = q;
@@ -3536,14 +3543,17 @@ nnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Normal", NORMAL_MODE, 1) != 0;
 }
 
+/* Resets file selection and search highlight. */
 static int
 nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_view->selected_files == 0)
-		return 0;
+	ui_view_reset_search_highlight(curr_view);
 
-	clean_selected_files(curr_view);
-	redraw_current_view();
+	if(curr_view->selected_files != 0)
+	{
+		clean_selected_files(curr_view);
+		redraw_current_view();
+	}
 	return 0;
 }
 

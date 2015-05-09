@@ -19,6 +19,8 @@ Basic things that need to be done.
     Process shell pause request for running in %s.
     Accept [count] for "h" and "gh".
     :setlocal command.
+    Filtering in menus.
+    Search match highlight in menus.
 
 Documentation.
     Better documentation.

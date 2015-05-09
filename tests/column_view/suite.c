@@ -1,11 +1,13 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL size_t */
+
 #include "../../src/column_view.h"
 
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset);
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
 static void column1_func(int id, const void *data, size_t buf_len, char *buf);
 static void column2_func(int id, const void *data, size_t buf_len, char *buf);
 
@@ -24,10 +26,10 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
-		size_t offset)
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[])
 {
-	assert_true(print_next != NULL);
+	assert_non_null(print_next);
 	print_next(data, column_id, buf, offset);
 }
 

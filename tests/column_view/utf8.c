@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <locale.h> /* setlocale() */
+#include <stddef.h> /* NULL size_t */
 #include <string.h>
 
 #include "../../src/utils/utf8.h"
@@ -9,14 +10,16 @@
 
 #include "test.h"
 
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset);
-static void column1_func(int id, const void *data, size_t buf_len, char *buf);
-static void column2_func(int id, const void *data, size_t buf_len, char *buf);
+static void column1_func(int id, const void *data, size_t buf_len, char buf[]);
+static void column2_func(int id, const void *data, size_t buf_len, char buf[]);
 static int locale_works(void);
 
 static const size_t MAX_WIDTH = 20;
 static char print_buffer[80 + 1];
+
+static const char *col1_str;
 
 SETUP_ONCE()
 {
@@ -29,9 +32,11 @@ SETUP_ONCE()
 
 SETUP()
 {
-	print_next = column_line_print;
-	col1_next = column1_func;
-	col2_next = column2_func;
+	print_next = &column_line_print;
+	col1_next = &column1_func;
+	col2_next = &column2_func;
+
+	col1_str = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя";
 }
 
 TEARDOWN()
@@ -42,7 +47,7 @@ TEARDOWN()
 }
 
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset)
 {
 	strncpy(print_buffer + get_normal_utf8_string_widthn(print_buffer, offset),
@@ -50,13 +55,13 @@ column_line_print(const void *data, int column_id, const char *buf,
 }
 
 static void
-column1_func(int id, const void *data, size_t buf_len, char *buf)
+column1_func(int id, const void *data, size_t buf_len, char buf[])
 {
-	snprintf(buf, buf_len + 1, "%s", "师从螺丝刀йклмнопрстуфхцчшщьыъэюя");
+	snprintf(buf, buf_len + 1, "%s", col1_str);
 }
 
 static void
-column2_func(int id, const void *data, size_t buf_len, char *buf)
+column2_func(int id, const void *data, size_t buf_len, char buf[])
 {
 	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгв推");
 }
@@ -183,6 +188,24 @@ TEST(right_filling, IF(locale_works))
 	columns_format_line(cols, NULL, 1);
 
 	columns_free(cols);
+
+	assert_string_equal(expected, print_buffer);
+}
+
+TEST(wide_right_ellipsis_ok, IF(locale_works))
+{
+	/* A gap might appear after removing several characters to insert ellipsis in
+	 * their place, make sure that it's filled with spaces to obtain requested
+	 * width. */
+
+	static column_info_t column_infos[1] = {
+		{ .column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		  .align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_ELLIPSIS, },
+	};
+	static const char expected[] = " ...螺丝刀师从螺丝刀";
+
+	col1_str = ",师从螺丝刀师从螺丝刀";
+	perform_test(column_infos, ARRAY_LEN(column_infos), MAX_WIDTH);
 
 	assert_string_equal(expected, print_buffer);
 }
