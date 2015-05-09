@@ -19,7 +19,7 @@
 
 #include "search.h"
 
-#include <regex.h>
+#include <regex.h> /* regmatch_t regcomp() regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
@@ -132,6 +132,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		int i;
 		for(i = 0; i < view->list_rows; ++i)
 		{
+			regmatch_t matches[1];
 			dir_entry_t *const entry = &view->dir_entry[i];
 
 			if(is_parent_dir(entry->name))
@@ -139,12 +140,14 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 				continue;
 			}
 
-			if(regexec(&re, entry->name, 0, NULL, 0) != 0)
+			if(regexec(&re, entry->name, 1, matches, 0) != 0)
 			{
 				continue;
 			}
 
 			entry->search_match = 1;
+			entry->match_left = matches[0].rm_so;
+			entry->match_right = matches[0].rm_eo;
 			if(cfg.hl_search)
 			{
 				entry->selected = 1;

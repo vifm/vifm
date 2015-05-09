@@ -147,7 +147,9 @@ typedef struct
 	int selected;
 	int was_selected; /* Stores previous selection state in Visual mode. */
 
-	int search_match;
+	int search_match;      /* Whether the item matches last search. */
+	short int match_left;  /* Starting position of the match. */
+	short int match_right; /* Ending position of the match. */
 
 	int list_num;     /* Used by sorting comparer to perform stable sort. */
 
