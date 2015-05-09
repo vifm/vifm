@@ -197,7 +197,10 @@ typedef struct
 #endif
 	char last_dir[PATH_MAX];
 
+	/* Number of files that match current search pattern. */
 	int matches;
+	/* Last used search pattern, empty if none. */
+	char last_search[NAME_MAX];
 
 	int hide_dot;
 	int prev_invert;
@@ -414,6 +417,9 @@ void ui_view_win_changed(FileView *view);
 
 /* Resets selection of the view and reloads it preserving cursor position. */
 void ui_view_reset_selection_and_reload(FileView *view);
+
+/* Resets search highlighting of the view and schedules reload. */
+void ui_view_reset_search_highlight(FileView *view);
 
 /* Reloads visible lists of files preserving current position of cursor. */
 void ui_views_reload_visible_filelists(void);

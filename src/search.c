@@ -110,6 +110,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	int nmatches = 0;
 	regex_t re;
 	int err;
+	FileView *other;
 
 	if(move && cfg.hl_search)
 	{
@@ -166,6 +167,15 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		regfree(&re);
 		return 1;
 	}
+
+	other = (view == &lwin) ? &rwin : &lwin;
+	if(other->matches != 0 && strcmp(other->last_search, pattern) != 0)
+	{
+		other->last_search[0] = '\0';
+		ui_view_reset_search_highlight(other);
+	}
+	view->matches = nmatches;
+	copy_str(view->last_search, sizeof(view->last_search), pattern);
 
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view);

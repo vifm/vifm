@@ -3543,14 +3543,17 @@ nnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Normal", NORMAL_MODE, 1) != 0;
 }
 
+/* Resets file selection and search highlight. */
 static int
 nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_view->selected_files == 0)
-		return 0;
+	ui_view_reset_search_highlight(curr_view);
 
-	clean_selected_files(curr_view);
-	redraw_current_view();
+	if(curr_view->selected_files != 0)
+	{
+		clean_selected_files(curr_view);
+		redraw_current_view();
+	}
 	return 0;
 }
 

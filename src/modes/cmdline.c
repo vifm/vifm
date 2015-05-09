@@ -431,6 +431,11 @@ input_line_changed(void)
 		free(previous);
 		previous = NULL;
 
+		if(prev_mode != MENU_MODE)
+		{
+			ui_view_reset_search_highlight(curr_view);
+		}
+
 		if(sub_mode == CLS_FILTER)
 		{
 			set_local_filter("");

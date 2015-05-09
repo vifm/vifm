@@ -1242,6 +1242,16 @@ ui_view_reset_selection_and_reload(FileView *view)
 }
 
 void
+ui_view_reset_search_highlight(FileView *view)
+{
+	if(view->matches != 0)
+	{
+		view->matches = 0;
+		ui_view_schedule_redraw(view);
+	}
+}
+
+void
 ui_views_reload_visible_filelists(void)
 {
 	if(curr_stats.view)
