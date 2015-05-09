@@ -78,6 +78,9 @@ static int clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset, AlignType align, const char full_column[]);
+static void highlight_search(FileView *view, dir_entry_t *entry,
+		const char full_column[], char buf[], size_t buf_len, AlignType align,
+		int line, int col, int line_attrs);
 static int prepare_col_color(const FileView *view, dir_entry_t *entry,
 		int primary, int line_color, int current);
 static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
@@ -837,6 +840,88 @@ column_line_print(const void *data, int column_id, const char *buf,
 		print_buf[trim_pos] = '\0';
 	}
 	wprinta(view->win, print_buf, line_attrs);
+
+	if(primary && view->matches != 0 && entry->search_match)
+	{
+		highlight_search(view, entry, full_column, print_buf, trim_pos, align,
+				cdt->current_line, final_offset, line_attrs);
+	}
+}
+
+/* Highlights search match for the entry (assumed to be a search hit).  Modifies
+ * the buf argument in process. */
+static void
+highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
+		char buf[], size_t buf_len, AlignType align, int line, int col,
+		int line_attrs)
+{
+	const size_t width = get_screen_string_length(buf);
+
+	const FileType type = ui_view_entry_target_type(view,
+			entry_to_pos(view, entry));
+	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
+
+	const char *const fname = get_last_path_component(full_column) + prefix_len;
+	const size_t name_offset = fname - full_column;
+
+	size_t lo = name_offset + entry->match_left;
+	size_t ro = name_offset + entry->match_right;
+
+	if(align == AT_LEFT && buf_len < ro)
+	{
+		/* Right end of the match isn't visible. */
+
+		char mark[4];
+		const size_t mark_len = MIN(sizeof(mark) - 1, width);
+		const int offset = width - mark_len;
+		copy_str(mark, mark_len + 1, ">>>");
+
+		checked_wmove(view->win, line, col + offset);
+		wprinta(view->win, mark, line_attrs ^ A_REVERSE);
+	}
+	else if(align == AT_RIGHT && lo < (short int)strlen(full_column) - buf_len)
+	{
+		/* Left end of the match isn't visible. */
+
+		char mark[4];
+		const size_t mark_len = MIN(sizeof(mark) - 1, width);
+		copy_str(mark, mark_len + 1, "<<<");
+
+		checked_wmove(view->win, line, col);
+		wprinta(view->win, mark, line_attrs ^ A_REVERSE);
+	}
+	else
+	{
+		/* Match is completely visible (although some chars might be concealed with
+		 * ellipsis). */
+
+		size_t match_start;
+		char c;
+
+		if(align == AT_RIGHT)
+		{
+			/* Match offsets require correction if left hand side of the file is
+			 * trimmed. */
+
+			const size_t orig_width = get_screen_string_length(full_column);
+			if(orig_width > width)
+			{
+				const int offset = orig_width - width;
+				lo -= offset;
+				ro -= offset;
+			}
+		}
+
+		/* Calculate number of screen characters before the match. */
+		c = buf[lo];
+		buf[lo] = '\0';
+		match_start = get_screen_string_length(buf);
+		buf[lo] = c;
+
+		checked_wmove(view->win, line, col + match_start);
+		buf[ro] = '\0';
+		wprinta(view->win, buf + lo, line_attrs ^ (A_REVERSE | A_UNDERLINE));
+	}
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be
