@@ -2849,6 +2849,9 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
+$as_echo "#define PACKAGE_SYSCONF_DIR /**/" >>confdefs.h
+
+
 $as_echo "#define PACKAGE_DATA_DIR /**/" >>confdefs.h
 
 
@@ -7945,6 +7948,25 @@ if test "x${GIT_PROG}" != 'x' -a -d .git/; then
 fi
 
 
+
+if test "x${sysconfdir}" = 'x${prefix}/etc'; then
+  if test "x${prefix}" = "xNONE"; then
+    cat >>confdefs.h <<_ACEOF
+#define PACKAGE_SYSCONF_DIR "${ac_default_prefix}/etc/${PACKAGE}"
+_ACEOF
+
+  else
+    cat >>confdefs.h <<_ACEOF
+#define PACKAGE_SYSCONF_DIR "${prefix}/etc/${PACKAGE}"
+_ACEOF
+
+  fi
+else
+  cat >>confdefs.h <<_ACEOF
+#define PACKAGE_SYSCONF_DIR "${sysconfdir}/${PACKAGE}"
+_ACEOF
+
+fi
 
 if test "x${datadir}" = 'x${prefix}/share'; then
   if test "x${prefix}" = "xNONE"; then

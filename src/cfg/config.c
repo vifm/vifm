@@ -619,10 +619,16 @@ add_default_bookmarks(void)
 void
 cfg_load(void)
 {
-	const char *const myvifmrc = env_get(MYVIFMRC_EV);
-	if(myvifmrc != NULL)
+	const char *rc;
+
+	/* Try to load global configuration. */
+	(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
+
+	/* Try to load local configuration. */
+	rc = env_get(MYVIFMRC_EV);
+	if(!is_null_or_empty(rc))
 	{
-		(void)cfg_source_file(myvifmrc);
+		(void)cfg_source_file(rc);
 	}
 }
 

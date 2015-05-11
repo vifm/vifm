@@ -109,7 +109,7 @@ The other command line arguments are:
 --version, -v                                  *vifm---version* *vifm--v*
     show the version information and exit.
 --no-configs                                   *vifm---no-configs*
-    don't read vifmrc and vifminfo.
+    skip reading vifmrc and vifminfo.
 
 See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 
@@ -3535,9 +3535,14 @@ See |vifm-startup| section above for the explanations on |vifm-$VIFM| and
 |vifm-$MYVIFMRC|.
 
                                                *vifm-vifmrc*
-The vifmrc file contains commands that will be executed on vifm startup.  See
-|vifm-$MYVIFMRC| variable description for search algorithm used to find vifmrc.
-Use it to set settings, mappings, filetypes etc.  To use multi line commands
+
+The vifmrc file contains commands that will be executed on vifm startup.  There
+are two such files: global and local.  Global one is at
+{prefix}/etc/vifm/vifmrc, see |vifm-$MYVIFMRC| variable description for the
+search algorithm used to find local vifmrc.  Global vifmrc is loaded before the
+local one, so that the later one can redefine anything configured globally.
+
+Use vifmrc to set settings, mappings, filetypes etc.  To use multi line commands
 precede each next line with a slash (whitespace before slash is ignored, but all
 spaces at the end of the lines are saved).  For example:
 set
