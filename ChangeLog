@@ -52,9 +52,6 @@
 	view.  The second one allows for more customization of file list, which is
 	absence of sorting for now.  Thanks to filterfalse.
 
-	Allowed having multiple file viewers with same rules for choosing them at
-	run-time as for file associations.  Thanks to filterfalse.
-
 	Added --delimiter command-line option.  Configures delimiter string on
 	writing out list of paths (like on `-f` switch).  Thanks to Jeet
 	Sukumaran (a.k.a. jeetsukumaran).
@@ -103,20 +100,6 @@
 	Added search match highlight for file names.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef) and willemw12.
 
-	Changed default value of 'trashdir' from "$VIFM/Trash" to
-	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
-
-	Made calculation of directory size visible in :jobs menu.
-
-	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
-	henk).
-
-	Removed unnecessary command existence checks from vifm.vim.  Thanks to
-	filterfalse.
-
-	Auto-resize position field on the status bar to fit the text.  Thanks to
-	ranousse.
-
 	Added fallback to use "XDG Base Directory Specification" when failed to
 	find configuration in other places.  Thanks to Miodrag Tokić (a.k.a.
 	loonies).
@@ -130,6 +113,23 @@
 
 	Added :trashes? to display sizes of each non-empty trash directory.
 	Thanks to Svyatoslav Mishyn, a.k.a. juef.
+
+	Allowed having multiple file viewers with same rules for choosing them at
+	run-time as for file associations.  Thanks to filterfalse.
+
+	Changed default value of 'trashdir' from "$VIFM/Trash" to
+	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
+
+	Made calculation of directory size visible in :jobs menu.
+
+	Made tests less dependent on environment.  Thanks to Hendrik Jaeger (a.k.a.
+	henk).
+
+	Removed unnecessary command existence checks from vifm.vim.  Thanks to
+	filterfalse.
+
+	Auto-resize position field on the status bar to fit the text.  Thanks to
+	ranousse.
 
 	Switch to utf-8 internal representation of paths on Windows.  This fixes
 	issues when file name encoding doesn't match system encoding.  Thanks to
