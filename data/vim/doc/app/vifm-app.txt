@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 04
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2425,7 +2425,7 @@ Sets characters used to fill borders.
     item          default         Used for ~
     vborder:c     ' '             left, middle and right vertical borders
 If value is omitted, its default value is used.  Example: >
- set fillchars=vborder:·
+ set fillchars=vborder:.
 <
                                                *vifm-'findprg'*
 findprg
