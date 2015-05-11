@@ -252,8 +252,8 @@ if test "x${HAVE_FILE_PROG}" = 'x1' ; then
     AC_DEFINE_UNQUOTED(HAVE_FILE_PROG, 1, [Define if file program present])
 fi
 
-dnl Use either troff or mandoc for generating plain text help from manual page.
-AC_CHECK_PROGS(MANGEN_PROG, [troff mandoc], [])
+dnl Use either groff or mandoc for generating plain text help from manual page.
+AC_CHECK_PROGS(MANGEN_PROG, [groff mandoc], [])
 
 dnl col might be used for filtering out terminal escape sequences
 AC_CHECK_PROG(COL_PROG, col, col)
