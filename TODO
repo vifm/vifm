@@ -102,6 +102,7 @@ Possible things to add.
         (to show broken links to the user).
     Highlight first line of command-editing buffer of vifm in different
         color, like gitcommit syntax file does.
+    Parse escape sequences in menus as in preview.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
