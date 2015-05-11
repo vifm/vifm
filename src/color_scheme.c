@@ -386,16 +386,14 @@ check_color_scheme(col_scheme_t *cs)
 char **
 list_color_schemes(int *len)
 {
-	char colors_dir[PATH_MAX];
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return list_regular_files(colors_dir, len);
+	return list_regular_files(cfg.colors_dir, len);
 }
 
 int
 color_scheme_exists(const char name[])
 {
 	char full_path[PATH_MAX];
-	snprintf(full_path, sizeof(full_path), "%s/colors/%s", cfg.config_dir, name);
+	snprintf(full_path, sizeof(full_path), "%s/%s", cfg.colors_dir, name);
 	return is_regular_file(full_path);
 }
 
@@ -406,14 +404,14 @@ write_color_scheme_file(void)
 	char colors_dir[PATH_MAX];
 	int i;
 
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	if(make_path(colors_dir, S_IRWXU) != 0)
+	if(make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
 		return;
 	}
 
-	strncat(colors_dir, "/Default", sizeof(colors_dir) - strlen(colors_dir) - 1);
-	if((fp = os_fopen(colors_dir, "w")) == NULL)
+	snprintf(colors_dir, sizeof(colors_dir), "%s/Default", cfg.colors_dir);
+	fp = os_fopen(colors_dir, "w");
+	if(fp == NULL)
 	{
 		return;
 	}
@@ -516,7 +514,7 @@ load_primary_color_scheme(const char name[])
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
-	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
+	snprintf(full, sizeof(full), "%s/%s", cfg.colors_dir, name);
 	if(cfg_source_file(full) != 0)
 	{
 		restore_primary_color_scheme(&prev_cs);
@@ -703,8 +701,8 @@ check_directory_for_color_scheme(int left, const char dir[])
 		if(tree_get_data(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
 		{
 			char full_cs_path[PATH_MAX];
-			snprintf(full_cs_path, sizeof(full_cs_path), "%s/colors/%s",
-					cfg.config_dir, u.name);
+			snprintf(full_cs_path, sizeof(full_cs_path), "%s/%s", cfg.colors_dir,
+					u.name);
 			(void)cfg_source_file(full_cs_path);
 			altered = 1;
 		}

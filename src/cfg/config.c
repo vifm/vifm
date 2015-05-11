@@ -524,7 +524,9 @@ store_config_paths(void)
 	                     : cfg.config_dir;
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
-	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));
+	snprintf(cfg.colors_dir, sizeof(cfg.colors_dir), "%s/colors/",
+			cfg.config_dir);
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
 			trash_base);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, log_base);
@@ -765,9 +767,7 @@ is_conf_file(const char file[])
 int
 cfg_has_old_color_schemes(void)
 {
-	char colors_dir[PATH_MAX];
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return !is_dir(colors_dir)
+	return !is_dir(cfg.colors_dir)
 	    && path_exists_at(cfg.config_dir, "colorschemes", DEREF);
 }
 
