@@ -502,27 +502,28 @@ get_file_size(const char path[])
 }
 
 char **
-list_regular_files(const char path[], int *len)
+list_regular_files(const char path[], char *list[], int *len)
 {
 	DIR *dir;
-	char **list = NULL;
-	*len = 0;
+	struct dirent *d;
 
-	if((dir = os_opendir(path)) != NULL)
+	dir = os_opendir(path);
+	if(dir == NULL)
 	{
-		struct dirent *d;
-		while((d = os_readdir(dir)) != NULL)
-		{
-			char full_path[PATH_MAX];
-			snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
-
-			if(is_regular_file(full_path))
-			{
-				*len = add_to_string_array(&list, *len, 1, d->d_name);
-			}
-		}
-		os_closedir(dir);
+		return list;
 	}
+
+	while((d = os_readdir(dir)) != NULL)
+	{
+		char full_path[PATH_MAX];
+		snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
+
+		if(is_regular_file(full_path))
+		{
+			*len = add_to_string_array(&list, *len, 1, d->d_name);
+		}
+	}
+	os_closedir(dir);
 
 	return list;
 }

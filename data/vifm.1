@@ -1,4 +1,4 @@
-.TH vifm 1 "May 11, 2015" "" "Vifm"
+.TH vifm 1 "May 12, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ Show an overview of the commandline options.
 Show version information and quit.
 .TP
 .BI \-\-no\-configs
-Don't read vifmrc and vifminfo.
+Skip reading vifmrc and vifminfo.
 
 .LP
 See Startup section below for the explanations on $VIFM.
@@ -4274,9 +4274,13 @@ vifm tries to find correct configuration file by checking the following places:
 .\" ---------------------------------------------------------------------------
 See Startup section above for the explanations on $VIFM and $MYVIFMRC.
 
-The vifmrc file contains commands that will be executed on vifm startup.  See
-$MYVIFMRC variable description for search algorithm used to find vifmrc.
-Use it to set settings, mappings, filetypes etc.  To use multi line commands
+The vifmrc file contains commands that will be executed on vifm startup.  There
+are two such files: global and local.  Global one is at
+{prefix}/etc/vifm/vifmrc, see $MYVIFMRC variable description for the search
+algorithm used to find local vifmrc.  Global vifmrc is loaded before the local
+one, so that the later one can redefine anything configured globally.
+
+Use vifmrc to set settings, mappings, filetypes etc.  To use multi line commands
 precede each next line with a slash (whitespace before slash is ignored, but all
 spaces at the end of the lines are saved).  For example:
 .EX
@@ -4314,7 +4318,9 @@ full path.  All subdirectories of the $VIFM/scripts will be added to PATH too.
 Script in a subdirectory overlaps script with the same name in all its parent
 directories.
 
-The $VIFM/colors directory contains color schemes.
+The $VIFM/colors/ and {prefix}/etc/vifm/colors/ directories contain color
+schemes.  Available color schemes are searched in that order, so on name
+conflict the one in $VIFM/colors/ wins.
 .\" ---------------------------------------------------------------------------
 .SH Automatic FUSE mounts
 .\" ---------------------------------------------------------------------------

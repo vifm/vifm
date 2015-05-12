@@ -38,6 +38,9 @@
  * implicitly included into $PATH for Vifm only. */
 #define SCRIPTS_DIR "scripts"
 
+/* Path to global directory for color schemes. */
+#define GLOBAL_COLORS_DIR PACKAGE_SYSCONF_DIR "/colors/"
+
 typedef enum
 {
 	DD_ROOT_PARENT    = 1 << 0,
@@ -56,7 +59,8 @@ enum
 typedef struct config_t
 {
 	char home_dir[PATH_MAX];   /* Ends with a slash. */
-	char config_dir[PATH_MAX]; /* Where to store configuration files. */
+	char config_dir[PATH_MAX]; /* Where local configuration files are stored. */
+	char colors_dir[PATH_MAX]; /* Where local color files are stored. */
 	char data_dir[PATH_MAX];   /* Where to store data files. */
 
 	/* This one should be set using set_trash_dir() function. */

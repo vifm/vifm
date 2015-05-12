@@ -4,6 +4,7 @@ AC_INIT(configure.ac)
 AM_INIT_AUTOMAKE(vifm, 0.7.8)
 AM_CONFIG_HEADER(config.h)
 
+AC_DEFINE([PACKAGE_SYSCONF_DIR], [], [Configuration directory of the package.])
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
 AC_DEFINE([PACKAGE_SOURCE_DIR], [], [Source directory of the package.])
 
@@ -280,6 +281,17 @@ AC_SUBST([IN_GIT_REPO])
 dnl ----------------------------------------------------------------------------
 dnl setup various package/compilation settings
 dnl ----------------------------------------------------------------------------
+
+dnl Set PACKAGE_SYSCONF_DIR in config.h.
+if test "x${sysconfdir}" = 'x${prefix}/etc'; then
+  if test "x${prefix}" = "xNONE"; then
+    AC_DEFINE_UNQUOTED(PACKAGE_SYSCONF_DIR, "${ac_default_prefix}/etc/${PACKAGE}")
+  else
+    AC_DEFINE_UNQUOTED(PACKAGE_SYSCONF_DIR, "${prefix}/etc/${PACKAGE}")
+  fi
+else
+  AC_DEFINE_UNQUOTED(PACKAGE_SYSCONF_DIR, "${sysconfdir}/${PACKAGE}")
+fi
 
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datadir}" = 'x${prefix}/share'; then
