@@ -117,10 +117,10 @@ int is_dir_writable(const char path[]);
  * empty files and on error. */
 uint64_t get_file_size(const char path[]);
 
-/* Lists all regular files inside the path directory.  Allocates an array of
- * strings, which should be freed by the caller.  Always sets *len.  Returns
- * NULL on error. */
-char ** list_regular_files(const char path[], int *len);
+/* Appends all regular files inside the path directory.  Reallocates array of
+ * strings if necessary to fit all elements.  Returns pointer to reallocated
+ * array or source list (on error). */
+char ** list_regular_files(const char path[], char *list[], int *len);
 
 /* Returns non-zero if file (or symbolic link target) path points to is a
  * regular file. */

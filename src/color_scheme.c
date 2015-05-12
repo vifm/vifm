@@ -386,7 +386,12 @@ check_color_scheme(col_scheme_t *cs)
 char **
 list_color_schemes(int *len)
 {
-	return list_regular_files(cfg.colors_dir, len);
+	char **list = NULL;
+	*len = 0;
+
+	list = list_regular_files(cfg.colors_dir, list, len);
+
+	return list;
 }
 
 int
