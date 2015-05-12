@@ -38,6 +38,9 @@
  * implicitly included into $PATH for Vifm only. */
 #define SCRIPTS_DIR "scripts"
 
+/* Path to global directory for color schemes. */
+#define GLOBAL_COLORS_DIR PACKAGE_SYSCONF_DIR "/colors/"
+
 typedef enum
 {
 	DD_ROOT_PARENT    = 1 << 0,

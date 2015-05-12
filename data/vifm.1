@@ -1,4 +1,4 @@
-.TH vifm 1 "May 11, 2015" "" "Vifm"
+.TH vifm 1 "May 12, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4318,7 +4318,9 @@ full path.  All subdirectories of the $VIFM/scripts will be added to PATH too.
 Script in a subdirectory overlaps script with the same name in all its parent
 directories.
 
-The $VIFM/colors directory contains color schemes.
+The $VIFM/colors/ and {prefix}/etc/vifm/colors/ directories contain color
+schemes.  Available color schemes are searched in that order, so on name
+conflict the one in $VIFM/colors/ wins.
 .\" ---------------------------------------------------------------------------
 .SH Automatic FUSE mounts
 .\" ---------------------------------------------------------------------------

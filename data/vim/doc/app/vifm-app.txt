@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 11
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3576,7 +3576,9 @@ Script in a subdirectory overlaps script with the same name in all its parent
 directories.
 
                                                *vifm-colors*
-The $VIFM/colors directory contains color schemes.
+The $VIFM/colors/ and {prefix}/etc/vifm/colors/ directories contain color
+schemes.  Available color schemes are searched in that order, so on name
+conflict the one in $VIFM/colors/ wins.
 
 --------------------------------------------------------------------------------
 *vifm-fuse*

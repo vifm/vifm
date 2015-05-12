@@ -368,6 +368,8 @@ static void reset_to_default_color_scheme(col_scheme_t *cs);
 static void free_color_scheme_highlights(col_scheme_t *cs);
 static file_hi_t * clone_color_scheme_highlights(const col_scheme_t *from);
 static void reset_color_scheme_colors(col_scheme_t *cs);
+static int source_cs(const char name[]);
+static void get_cs_path(const char name[], char buf[], size_t buf_size);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
@@ -390,6 +392,7 @@ list_color_schemes(int *len)
 	*len = 0;
 
 	list = list_regular_files(cfg.colors_dir, list, len);
+	list = list_regular_files(GLOBAL_COLORS_DIR, list, len);
 
 	return list;
 }
@@ -397,9 +400,9 @@ list_color_schemes(int *len)
 int
 color_scheme_exists(const char name[])
 {
-	char full_path[PATH_MAX];
-	snprintf(full_path, sizeof(full_path), "%s/%s", cfg.colors_dir, name);
-	return is_regular_file(full_path);
+	char cs_path[PATH_MAX];
+	get_cs_path(name, cs_path, sizeof(cs_path));
+	return is_regular_file(cs_path);
 }
 
 void
@@ -507,7 +510,6 @@ int
 load_primary_color_scheme(const char name[])
 {
 	col_scheme_t prev_cs;
-	char full[PATH_MAX];
 
 	if(!color_scheme_exists(name))
 	{
@@ -519,12 +521,11 @@ load_primary_color_scheme(const char name[])
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
-	snprintf(full, sizeof(full), "%s/%s", cfg.colors_dir, name);
-	if(cfg_source_file(full) != 0)
+	if(source_cs(name) != 0)
 	{
 		restore_primary_color_scheme(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
-				"Errors loading colors cheme: \"%s\"", name);
+				"An error occurred on loading color scheme: \"%s\"", name);
 		cfg.cs.state = CSS_NORMAL;
 		return 0;
 	}
@@ -705,10 +706,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 
 		if(tree_get_data(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
 		{
-			char full_cs_path[PATH_MAX];
-			snprintf(full_cs_path, sizeof(full_cs_path), "%s/%s", cfg.colors_dir,
-					u.name);
-			(void)cfg_source_file(full_cs_path);
+			(void)source_cs(u.name);
 			altered = 1;
 		}
 
@@ -728,6 +726,28 @@ check_directory_for_color_scheme(int left, const char dir[])
 	load_color_pairs(curr_stats.cs);
 
 	return 1;
+}
+
+/* Sources color scheme file.  Returns non-zero on error (e.g. file doesn't
+ * exist), and zero otherwise. */
+static int
+source_cs(const char name[])
+{
+	char cs_path[PATH_MAX];
+	get_cs_path(name, cs_path, sizeof(cs_path));
+	return cfg_source_file(cs_path);
+}
+
+/* Fill the buffer of specified size with path to color scheme, which might not
+ * exist. */
+static void
+get_cs_path(const char name[], char buf[], size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/%s", cfg.colors_dir, name);
+	if(!is_regular_file(buf))
+	{
+		snprintf(buf, buf_size, GLOBAL_COLORS_DIR "/%s", name);
+	}
 }
 
 /* Loads color scheme settings into color pairs. */

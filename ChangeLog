@@ -114,8 +114,8 @@
 	Added :trashes? to display sizes of each non-empty trash directory.
 	Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
-	Added global configuration {prefix}/etc/vifm/vifmrc.  Thanks to Michael
-	Vetter (a.k.a. jubalh).
+	Added global configuration {prefix}/etc/vifm/vifmrc and color schemes
+	{prefix}/etc/vifm/colors/*.  Thanks to Michael Vetter (a.k.a. jubalh).
 
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
