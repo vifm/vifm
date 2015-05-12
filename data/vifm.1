@@ -1,4 +1,4 @@
-.TH vifm 1 "May 12, 2015" "" "Vifm"
+.TH vifm 1 "May 13, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -290,8 +290,8 @@ moves to the file set for the mark.
 .LP
 There are also several special marks that can't be set manually:
 .IP \- 2
-\' (single quote) \- previously visited directory of the view, thus hitting
-\'' allows switching between two last locations
+\(aq (single quote) \- previously visited directory of the view, thus hitting
+\(aq\(aq allows switching between two last locations
 .IP \- 2
 < \- the first file of the last visually selected block
 .IP \- 2
@@ -1084,7 +1084,7 @@ last pattern from search history.
 .\" ---------------------------------------------------------------------------
 vifm provides a facility to edit several kinds of data, that is usually edited
 in command-line mode, in external editor (using command specified by
-\'vicmd' or 'vixcmd' option).  This has at least two advantages
+\(aqvicmd\(aq or 'vixcmd' option).  This has at least two advantages
 over built-in command-line mode:
  \- one can use full power of Vim to edit text;
  \- finding and reusing history entries becomes possible.
@@ -1137,7 +1137,7 @@ However, there are several exceptions:
 :if and :else commands doesn't affect selection on successful execution.
 .LP
 
-\'|' can be used to separate commands, so you can give multiple commands in one
+\(aq|\(aq can be used to separate commands, so you can give multiple commands in one
 line.  If you want to use '|' in an argument, precede it with '\\'.
 
 These commands see '|' as part of their arguments even when it's escaped:
@@ -1707,7 +1707,7 @@ show the help file.
 .BI ":h[elp] argument"
 is the same as using ':h argument' in vim.  Use vifm\-<something> to get help
 on vifm (tab completion works).  This form of the command doesn't work when
-\'vimhelp' option is off.
+\(aqvimhelp\(aq option is off.
 .TP
 .BI "                                         :highlight"
 .TP
@@ -3316,7 +3316,7 @@ etc.):
 Note: look for st_atime, st_ctime and st_mtime in "man 2 stat" for more
 information on time keys.
 
-\'+' means ascending sort for this key, and '\-' means descending sort.
+\(aq+\(aq means ascending sort for this key, and '\-' means descending sort.
 
 In case name (iname on Windoes) is skipped, it will be added at the end
 automatically.
@@ -3860,7 +3860,7 @@ literal-string
 .br
 --------------
 .br
-\'string'             string constant
+\(aqstring\(aq             string constant
 
 Note that single quotes are used.
 
@@ -4163,7 +4163,7 @@ X \- means that it has different value for files in selection.
 d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X argument \
 for the chmod program.  If you want to remove execute right from all files, \
 but preserve it for directories, set all execute flags to 'd' and check \
-\'Set Recursively' flag.
+\(aqSet Recursively\(aq flag.
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------
@@ -4297,7 +4297,7 @@ equals "set  smartcase".
 The $VIFM/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
-\'vifminfo' option.  Vifm always writes this file on exit unless 'vifminfo'
+\(aqvifminfo\(aq option.  Vifm always writes this file on exit unless 'vifminfo'
 option is empty.  Bookmarks, commands, histories, filetypes, fileviewers
 and registers in the file are merged with vifm configuration (which has bigger
 priority).
@@ -4395,7 +4395,7 @@ in a multicolumn list manner which looks almost like `ls \-x` command output
 (see ls-like view section below for details).
 .LP
 The look is local for each view and can be chosen by changing value of the
-\'lsview' boolean option.
+\(aqlsview\(aq boolean option.
 
 Depending on view look some of keys change their meaning to allow more natural
 cursor moving.  This concerns mainly h, j, k, l and other similar navigation
@@ -4486,7 +4486,7 @@ This is just a sort key surrounded with curly braces, e.g.
     {name},{ext},{mtime}
 .EE
 {name} and {iname} keys are the same and present both for consistency with
-\'sort' option.
+\(aqsort\(aq option.
 
 Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command view will be displayed almost as
@@ -4598,10 +4598,10 @@ cursor with black background and green foreground
 .\" ---------------------------------------------------------------------------
 vifm has support of trash directory, which is used as temporary storage for
 deleted files or files that were cut.  Using trash is controlled by the
-\'trash' option, and exact path to the trash can be set with 'trashdir' option.
-Trash directory in vifm differs from the system-wide one by default, because of
-possible incompatibilities of storing deleted files among different file
-managers.  But one can set 'trashdir' to "~/.local/share/Trash" to use a
+\(aqtrash\(aq option, and exact path to the trash can be set with 'trashdir'
+option.  Trash directory in vifm differs from the system-wide one by default,
+because of possible incompatibilities of storing deleted files among different
+file managers.  But one can set 'trashdir' to "~/.local/share/Trash" to use a
 "standard" trash directory.
 
 There are two scenarios of using trash in vifm:
@@ -4675,8 +4675,8 @@ and opened in vim.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-\'xterm \-e'.  And another string variable named g:vifm_exec, which equals "vifm"
-by default and specifies path to vifm's executable.  To pass arguments to
+\(aqxterm \-e\(aq.  And another string variable named g:vifm_exec, which equals
+"vifm" by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 
 To use the plugin copy the vifm.vim file to either the system wide vim/plugin
