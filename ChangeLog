@@ -367,6 +367,9 @@
 
 	Fixed placing right aligned ellipsis for CJK characters in one case.
 
+	Fixed assertion on including "type" in 'viewcolumns' value.  Thanks to
+	Michal Belica (a.k.a. beli-sk).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

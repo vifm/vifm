@@ -91,6 +91,7 @@ static void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_time(int id, const void *data, size_t buf_len, char buf[]);
+static void format_type(int id, const void *data, size_t buf_len, char buf[]);
 #ifndef _WIN32
 static void format_group(int id, const void *data, size_t buf_len, char buf[]);
 static void format_mode(int id, const void *data, size_t buf_len, char buf[]);
@@ -116,6 +117,7 @@ fview_init(void)
 	columns_add_column_desc(SK_BY_TIME_ACCESSED, &format_time);
 	columns_add_column_desc(SK_BY_TIME_CHANGED, &format_time);
 	columns_add_column_desc(SK_BY_TIME_MODIFIED, &format_time);
+	columns_add_column_desc(SK_BY_TYPE, &format_type);
 
 #ifndef _WIN32
 	columns_add_column_desc(SK_BY_GROUP_ID, &format_group);
@@ -1066,6 +1068,16 @@ format_time(int id, const void *data, size_t buf_len, char buf[])
 	{
 		buf[0] = '\0';
 	}
+}
+
+/* Directory vs. file type format callback for column_view unit. */
+static void
+format_type(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	const char *type = is_directory_entry(entry) ? "dir" : "file";
+	snprintf(buf, buf_len, " %s", type);
 }
 
 #ifndef _WIN32
