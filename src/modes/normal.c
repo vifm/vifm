@@ -1982,7 +1982,6 @@ cmd_paren(int lb, int ub, int inc)
 	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
 #ifndef _WIN32
-	const char *mode_str = get_mode_str(pentry->mode);
 	char perms[16];
 	get_perm_string(perms, sizeof(perms), pentry->mode);
 #endif
@@ -2017,7 +2016,7 @@ cmd_paren(int lb, int ub, int inc)
 					return pos;
 				break;
 		case SK_BY_MODE:
-				if(get_mode_str(nentry->mode) != mode_str)
+				if(nentry->mode != pentry->mode)
 					return pos;
 				break;
 		case SK_BY_PERMISSIONS:

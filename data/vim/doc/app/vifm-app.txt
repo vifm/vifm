@@ -2725,7 +2725,7 @@ key, etc.):
    [+-]dir   - directory grouping (directory < file)
    [+-]gid   - group id (*nix only)
    [+-]gname - group name (*nix only)
-   [+-]mode  - mode (*nix only)
+   [+-]mode  - file mode (file type + permissions) in octal (*nix only)
    [+-]perms - permissions string (*nix only)
    [+-]uid   - owner id (*nix only)
    [+-]uname - owner name (*nix only)

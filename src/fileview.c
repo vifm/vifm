@@ -1123,7 +1123,7 @@ format_mode(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
+	snprintf(buf, buf_len, " %o", entry->mode);
 }
 
 /* File permissions mask format callback for column_view unit. */
