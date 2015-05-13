@@ -363,8 +363,8 @@ compare_file_names(const char s[], const char t[], int ignore_case)
 	return result;
 }
 
-int
-get_secondary_key(int primary_key)
+SortingKey
+get_secondary_key(SortingKey primary_key)
 {
 	switch(primary_key)
 	{
@@ -384,9 +384,11 @@ get_secondary_key(int primary_key)
 		case SK_BY_INAME:
 		case SK_BY_EXTENSION:
 		case SK_BY_SIZE:
-		default:
+		case SK_BY_DIR:
 			return SK_BY_SIZE;
 	}
+	assert(0 && "Unhandled sorting key?");
+	return SK_BY_SIZE;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

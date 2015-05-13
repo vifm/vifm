@@ -1375,7 +1375,7 @@ reset_view_columns(FileView *view)
 		columns_clear(view->columns);
 		columns_add_column(view->columns, column_info);
 
-		column_info.column_id = get_secondary_key(abs(view->sort[0]));
+		column_info.column_id = get_secondary_key((SortingKey)abs(view->sort[0]));
 		column_info.align = AT_RIGHT;
 		columns_add_column(view->columns, column_info);
 	}
