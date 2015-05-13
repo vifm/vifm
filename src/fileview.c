@@ -108,27 +108,40 @@ static void reset_view_columns(FileView *view);
 void
 fview_init(void)
 {
-	columns_set_line_print_func(&column_line_print);
-	columns_add_column_desc(SK_BY_NAME, &format_name);
-	columns_add_column_desc(SK_BY_INAME, &format_name);
-	columns_add_column_desc(SK_BY_SIZE, &format_size);
+	static const struct {
+		SortingKey key;
+		column_func func;
+	} sort_to_func[] = {
+		{ SK_BY_NAME,  &format_name },
+		{ SK_BY_INAME, &format_name },
+		{ SK_BY_SIZE,  &format_size },
 
-	columns_add_column_desc(SK_BY_EXTENSION, &format_ext);
-	columns_add_column_desc(SK_BY_TIME_ACCESSED, &format_time);
-	columns_add_column_desc(SK_BY_TIME_CHANGED, &format_time);
-	columns_add_column_desc(SK_BY_TIME_MODIFIED, &format_time);
-	columns_add_column_desc(SK_BY_TYPE, &format_type);
+		{ SK_BY_EXTENSION,     &format_ext },
+		{ SK_BY_TIME_ACCESSED, &format_time },
+		{ SK_BY_TIME_CHANGED,  &format_time },
+		{ SK_BY_TIME_MODIFIED, &format_time },
+		{ SK_BY_TYPE,          &format_type },
 
 #ifndef _WIN32
-	columns_add_column_desc(SK_BY_GROUP_ID, &format_group);
-	columns_add_column_desc(SK_BY_GROUP_NAME, &format_group);
-	columns_add_column_desc(SK_BY_OWNER_ID, &format_owner);
-	columns_add_column_desc(SK_BY_OWNER_NAME, &format_owner);
+		{ SK_BY_GROUP_ID,   &format_group },
+		{ SK_BY_GROUP_NAME, &format_group },
+		{ SK_BY_OWNER_ID,   &format_owner },
+		{ SK_BY_OWNER_NAME, &format_owner },
 
-	columns_add_column_desc(SK_BY_MODE, &format_mode);
+		{ SK_BY_MODE, &format_mode },
 
-	columns_add_column_desc(SK_BY_PERMISSIONS, &format_perms);
+		{ SK_BY_PERMISSIONS, &format_perms },
 #endif
+	};
+	ARRAY_GUARD(sort_to_func, SK_COUNT);
+
+	size_t i;
+
+	columns_set_line_print_func(&column_line_print);
+	for(i = 0U; i < ARRAY_LEN(sort_to_func); ++i)
+	{
+		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func);
+	}
 }
 
 void
