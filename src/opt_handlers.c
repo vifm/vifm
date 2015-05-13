@@ -185,7 +185,7 @@ static const char * sort_enum[] = {
 #ifndef _WIN32
 	"perms",
 #endif
-	"type",
+	"dir",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
 
@@ -232,7 +232,7 @@ static const char *sort_types[] = {
 #ifndef _WIN32
 	"perms", "+perms", "-perms",
 #endif
-	"type", "+type", "-type",
+	"dir", "+dir", "-dir",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 

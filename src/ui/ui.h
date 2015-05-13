@@ -76,7 +76,7 @@ typedef enum
 #ifndef _WIN32
 	SK_BY_PERMISSIONS,
 #endif
-	SK_BY_TYPE,
+	SK_BY_DIR,
 }
 SortingKey;
 
@@ -90,7 +90,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_TYPE,
+	SK_LAST = SK_BY_DIR,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,

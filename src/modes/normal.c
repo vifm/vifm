@@ -2047,7 +2047,7 @@ cmd_paren(int lb, int ub, int inc)
 				if(nentry->mtime != pentry->mtime)
 					return pos;
 				break;
-		case SK_BY_TYPE:
+		case SK_BY_DIR:
 				if(is_dir != is_directory_entry(nentry))
 				{
 					return pos;

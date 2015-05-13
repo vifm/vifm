@@ -215,6 +215,9 @@
 	Do not depend on UTF-8 locale on making plain text version of
 	documentation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
+	Normalized sorting keys/view column names: "type" -> "dir".  Thanks to
+	Michal Belica (a.k.a. beli-sk).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

@@ -66,7 +66,7 @@ static int indexes[] = {
 #ifndef _WIN32
 	7,               /* SK_BY_PERMISSIONS */
 #endif
-	3,               /* SK_BY_TYPE */
+	3,               /* SK_BY_DIR */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -162,7 +162,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Type");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Dir");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");

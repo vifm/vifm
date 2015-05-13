@@ -84,9 +84,9 @@ sort_view(FileView *v)
 		sort_by_key(sorting_key);
 	}
 
-	if(!ui_view_sort_list_contains(v->sort, SK_BY_TYPE))
+	if(!ui_view_sort_list_contains(v->sort, SK_BY_DIR))
 	{
-		sort_by_key(SK_BY_TYPE);
+		sort_by_key(SK_BY_DIR);
 	}
 }
 
@@ -206,7 +206,7 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 
-		case SK_BY_TYPE:
+		case SK_BY_DIR:
 			if(first_is_dir != second_is_dir)
 			{
 				retval = first_is_dir ? -1 : 1;
