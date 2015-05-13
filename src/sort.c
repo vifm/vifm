@@ -41,7 +41,8 @@ static FileView* view;
 /* Whether the view displays custom file list. */
 static int custom_view;
 static int sort_descending;
-static int sort_type;
+/* Key used to sort entries in current sorting round. */
+static SortingKey sort_type;
 
 static void sort_by_key(char key);
 static int sort_dir_list(const void *one, const void *two);
@@ -97,7 +98,7 @@ sort_by_key(char key)
 	int j;
 
 	sort_descending = (key < 0);
-	sort_type = abs(key);
+	sort_type = (SortingKey)abs(key);
 
 	for(j = 0; j < view->list_rows; j++)
 	{
@@ -282,10 +283,6 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 #endif
-
-		default:
-			assert(0 && "All possible sort options should be handled");
-			break;
 	}
 
 	if(retval == 0)
