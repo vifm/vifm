@@ -77,6 +77,7 @@ typedef enum
 	SK_BY_PERMISSIONS,
 #endif
 	SK_BY_DIR,
+	SK_BY_TYPE,
 }
 SortingKey;
 
@@ -90,7 +91,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_DIR,
+	SK_LAST = SK_BY_TYPE,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,

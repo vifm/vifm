@@ -214,6 +214,10 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 
+		case SK_BY_TYPE:
+			retval = strcmp(get_type_str(first->type), get_type_str(second->type));
+			break;
+
 		case SK_BY_EXTENSION:
 			pfirst = strrchr(first->name,  '.');
 			psecond = strrchr(second->name, '.');
@@ -376,6 +380,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_MODE:
 		case SK_BY_PERMISSIONS:
 #endif
+		case SK_BY_TYPE:
 		case SK_BY_TIME_MODIFIED:
 		case SK_BY_TIME_ACCESSED:
 		case SK_BY_TIME_CHANGED:

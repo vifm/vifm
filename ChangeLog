@@ -216,7 +216,8 @@
 	documentation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
 	Normalized sorting keys/view column names: "type" -> "dir", display real
-	mode in octal for "mode".  Thanks to Michal Belica (a.k.a. beli-sk).
+	mode in octal for "mode", make "type" actually display file type (as
+	"mode" did before).  Thanks to Michal Belica (a.k.a. beli-sk).
 
 	Fixed search messages in menus (nth time...).
 

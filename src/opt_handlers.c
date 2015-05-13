@@ -186,6 +186,7 @@ static const char * sort_enum[] = {
 	"perms",
 #endif
 	"dir",
+	"type",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
 
@@ -233,6 +234,7 @@ static const char *sort_types[] = {
 	"perms", "+perms", "-perms",
 #endif
 	"dir", "+dir", "-dir",
+	"type", "+type", "-type",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
