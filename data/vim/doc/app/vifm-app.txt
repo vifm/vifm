@@ -2424,7 +2424,7 @@ Sets characters used to fill borders.
     item          default         Used for ~
     vborder:c     ' '             left, middle and right vertical borders
 If value is omitted, its default value is used.  Example: >
- set fillchars=vborder:·
+ set fillchars=vborder:.
 <
                                                *vifm-'findprg'*
 findprg
