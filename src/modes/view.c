@@ -1394,6 +1394,9 @@ update_with_half_win(key_info_t *const key_info)
 	}
 }
 
+/* Invokes an editor to edit the current file being viewed.  The command for
+ * editing is taken from the 'vicmd'/'vixcmd' option value and extended with
+ * middle line number prepended by a plus sign and name of the current file. */
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {

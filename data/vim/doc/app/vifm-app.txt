@@ -794,7 +794,10 @@ less.
 [count]p, [count]% - go to beginning of file (or N percent into file).
 
                                                *vifm-q_v*
-v - edit the current file with vim.
+v - invoke an editor to edit the current file being viewed.  The command for
+    editing is taken from the |vifm-'vicmd'|/|vifm-'vixcmd'| option value and
+    extended with middle line number prepended by a plus sign and name of the
+    current file.
 
 
 Ctrl-W H - move the pane to the far left.      *vifm-q_CTRL-W_H*

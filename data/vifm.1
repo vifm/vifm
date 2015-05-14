@@ -838,8 +838,9 @@ go to last line in file (or line [count]).
 go to beginning of file (or N percent into file).
 .TP
 .BI v
-edit the current file with vim.
-
+invoke an editor to edit the current file being viewed.  The command for editing
+is taken from the 'vicmd'/'vixcmd' option value and extended with middle line
+number prepended by a plus sign and name of the current file.
 .TP
 .BI "Ctrl-W H"
 move the pane to the far left.
