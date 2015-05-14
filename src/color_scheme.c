@@ -413,8 +413,10 @@ write_color_scheme_file(void)
 	char colors_dir[PATH_MAX];
 	int i;
 
-	if(make_path(cfg.colors_dir, S_IRWXU) != 0)
+	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
+		/* Do nothing if local colors directory exists or we've failed to create
+		 * it. */
 		return;
 	}
 
