@@ -374,6 +374,9 @@
 	Fixed assertion on including "type" in 'viewcolumns' value.  Thanks to
 	Michal Belica (a.k.a. beli-sk).
 
+	Fixed writing current color scheme as the default one, should use builtin
+	colors instead.  Thanks to Karol M. Langner (langner).
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.

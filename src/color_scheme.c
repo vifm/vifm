@@ -482,11 +482,11 @@ write_color_scheme_file(void)
 			continue;
 		}
 
-		color_to_str(cfg.cs.color[i].fg, sizeof(fg_buf), fg_buf);
-		color_to_str(cfg.cs.color[i].bg, sizeof(bg_buf), bg_buf);
+		color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
+		color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
 
 		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-				attrs_to_str(cfg.cs.color[i].attr), fg_buf, bg_buf);
+				attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
