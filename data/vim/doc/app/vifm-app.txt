@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 12
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2722,10 +2722,11 @@ key, etc.):
    [+-]ext   - extension
    [+-]name  - name (including extension)
    [+-]iname - name (including extension, ignores case)
-   [+-]type  - type (directory < file)
+   [+-]type  - file type (dir/reg/exe/link/char/block/sock/fifo)
+   [+-]dir   - directory grouping (directory < file)
    [+-]gid   - group id (*nix only)
    [+-]gname - group name (*nix only)
-   [+-]mode  - mode (*nix only)
+   [+-]mode  - file mode (file type + permissions) in octal (*nix only)
    [+-]perms - permissions string (*nix only)
    [+-]uid   - owner id (*nix only)
    [+-]uname - owner name (*nix only)

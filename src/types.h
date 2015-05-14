@@ -43,11 +43,6 @@ typedef enum
 }
 FileType;
 
-/* Provides string representation for FileType enumeration item that corresponds
- * to specified file mode.  Returns pointer to a statically allocated file type
- * string. */
-const char * get_mode_str(mode_t mode);
-
 /* Provides string representation for FileType enumeration item.  Returns
  * pointer to a statically allocated file type string. */
 const char * get_type_str(FileType type);

@@ -1981,8 +1981,8 @@ cmd_paren(int lb, int ub, int inc)
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
 	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
+	const char *const type_str = get_type_str(pentry->type);
 #ifndef _WIN32
-	const char *mode_str = get_mode_str(pentry->mode);
 	char perms[16];
 	get_perm_string(perms, sizeof(perms), pentry->mode);
 #endif
@@ -2017,7 +2017,7 @@ cmd_paren(int lb, int ub, int inc)
 					return pos;
 				break;
 		case SK_BY_MODE:
-				if(get_mode_str(nentry->mode) != mode_str)
+				if(nentry->mode != pentry->mode)
 					return pos;
 				break;
 		case SK_BY_PERMISSIONS:
@@ -2047,8 +2047,14 @@ cmd_paren(int lb, int ub, int inc)
 				if(nentry->mtime != pentry->mtime)
 					return pos;
 				break;
-		case SK_BY_TYPE:
+		case SK_BY_DIR:
 				if(is_dir != is_directory_entry(nentry))
+				{
+					return pos;
+				}
+				break;
+		case SK_BY_TYPE:
+				if(get_type_str(nentry->mode) != type_str)
 				{
 					return pos;
 				}

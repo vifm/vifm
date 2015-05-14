@@ -215,6 +215,10 @@
 	Do not depend on UTF-8 locale on making plain text version of
 	documentation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
+	Normalized sorting keys/view column names: "type" -> "dir", display real
+	mode in octal for "mode", make "type" actually display file type (as
+	"mode" did before).  Thanks to Michal Belica (a.k.a. beli-sk).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -366,6 +370,9 @@
 	files.  Thanks to Damian Ariel Perticone.
 
 	Fixed placing right aligned ellipsis for CJK characters in one case.
+
+	Fixed assertion on including "type" in 'viewcolumns' value.  Thanks to
+	Michal Belica (a.k.a. beli-sk).
 
 0.7.8-beta to 0.7.8
 

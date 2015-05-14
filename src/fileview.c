@@ -89,8 +89,10 @@ static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
 static void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
+static void format_type(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_time(int id, const void *data, size_t buf_len, char buf[]);
+static void format_dir(int id, const void *data, size_t buf_len, char buf[]);
 #ifndef _WIN32
 static void format_group(int id, const void *data, size_t buf_len, char buf[]);
 static void format_mode(int id, const void *data, size_t buf_len, char buf[]);
@@ -107,26 +109,41 @@ static void reset_view_columns(FileView *view);
 void
 fview_init(void)
 {
-	columns_set_line_print_func(&column_line_print);
-	columns_add_column_desc(SK_BY_NAME, &format_name);
-	columns_add_column_desc(SK_BY_INAME, &format_name);
-	columns_add_column_desc(SK_BY_SIZE, &format_size);
+	static const struct {
+		SortingKey key;
+		column_func func;
+	} sort_to_func[] = {
+		{ SK_BY_NAME,  &format_name },
+		{ SK_BY_INAME, &format_name },
+		{ SK_BY_SIZE,  &format_size },
+		{ SK_BY_TYPE,  &format_type },
 
-	columns_add_column_desc(SK_BY_EXTENSION, &format_ext);
-	columns_add_column_desc(SK_BY_TIME_ACCESSED, &format_time);
-	columns_add_column_desc(SK_BY_TIME_CHANGED, &format_time);
-	columns_add_column_desc(SK_BY_TIME_MODIFIED, &format_time);
+		{ SK_BY_EXTENSION,     &format_ext },
+		{ SK_BY_TIME_ACCESSED, &format_time },
+		{ SK_BY_TIME_CHANGED,  &format_time },
+		{ SK_BY_TIME_MODIFIED, &format_time },
+		{ SK_BY_DIR,           &format_dir },
 
 #ifndef _WIN32
-	columns_add_column_desc(SK_BY_GROUP_ID, &format_group);
-	columns_add_column_desc(SK_BY_GROUP_NAME, &format_group);
-	columns_add_column_desc(SK_BY_OWNER_ID, &format_owner);
-	columns_add_column_desc(SK_BY_OWNER_NAME, &format_owner);
+		{ SK_BY_GROUP_ID,   &format_group },
+		{ SK_BY_GROUP_NAME, &format_group },
+		{ SK_BY_OWNER_ID,   &format_owner },
+		{ SK_BY_OWNER_NAME, &format_owner },
 
-	columns_add_column_desc(SK_BY_MODE, &format_mode);
+		{ SK_BY_MODE, &format_mode },
 
-	columns_add_column_desc(SK_BY_PERMISSIONS, &format_perms);
+		{ SK_BY_PERMISSIONS, &format_perms },
 #endif
+	};
+	ARRAY_GUARD(sort_to_func, SK_COUNT);
+
+	size_t i;
+
+	columns_set_line_print_func(&column_line_print);
+	for(i = 0U; i < ARRAY_LEN(sort_to_func); ++i)
+	{
+		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func);
+	}
 }
 
 void
@@ -1019,6 +1036,15 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	snprintf(buf, buf_len + 1, " %s", str);
 }
 
+/* File type (dir/reg/exe/link/...) format callback for column_view unit. */
+static void
+format_type(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	snprintf(buf, buf_len, " %s", get_type_str(entry->type));
+}
+
 /* File extension format callback for column_view unit. */
 static void
 format_ext(int id, const void *data, size_t buf_len, char buf[])
@@ -1068,6 +1094,16 @@ format_time(int id, const void *data, size_t buf_len, char buf[])
 	}
 }
 
+/* Directory vs. file type format callback for column_view unit. */
+static void
+format_dir(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	const char *type = is_directory_entry(entry) ? "dir" : "file";
+	snprintf(buf, buf_len, " %s", type);
+}
+
 #ifndef _WIN32
 
 /* File group id/name format callback for column_view unit. */
@@ -1098,7 +1134,7 @@ format_mode(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
+	snprintf(buf, buf_len, " %o", entry->mode);
 }
 
 /* File permissions mask format callback for column_view unit. */
@@ -1350,7 +1386,7 @@ reset_view_columns(FileView *view)
 		columns_clear(view->columns);
 		columns_add_column(view->columns, column_info);
 
-		column_info.column_id = get_secondary_key(abs(view->sort[0]));
+		column_info.column_id = get_secondary_key((SortingKey)abs(view->sort[0]));
 		column_info.align = AT_RIGHT;
 		columns_add_column(view->columns, column_info);
 	}

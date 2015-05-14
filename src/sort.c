@@ -41,7 +41,8 @@ static FileView* view;
 /* Whether the view displays custom file list. */
 static int custom_view;
 static int sort_descending;
-static int sort_type;
+/* Key used to sort entries in current sorting round. */
+static SortingKey sort_type;
 
 static void sort_by_key(char key);
 static int sort_dir_list(const void *one, const void *two);
@@ -84,9 +85,9 @@ sort_view(FileView *v)
 		sort_by_key(sorting_key);
 	}
 
-	if(!ui_view_sort_list_contains(v->sort, SK_BY_TYPE))
+	if(!ui_view_sort_list_contains(v->sort, SK_BY_DIR))
 	{
-		sort_by_key(SK_BY_TYPE);
+		sort_by_key(SK_BY_DIR);
 	}
 }
 
@@ -97,7 +98,7 @@ sort_by_key(char key)
 	int j;
 
 	sort_descending = (key < 0);
-	sort_type = abs(key);
+	sort_type = (SortingKey)abs(key);
 
 	for(j = 0; j < view->list_rows; j++)
 	{
@@ -206,11 +207,15 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 
-		case SK_BY_TYPE:
+		case SK_BY_DIR:
 			if(first_is_dir != second_is_dir)
 			{
 				retval = first_is_dir ? -1 : 1;
 			}
+			break;
+
+		case SK_BY_TYPE:
+			retval = strcmp(get_type_str(first->type), get_type_str(second->type));
 			break;
 
 		case SK_BY_EXTENSION:
@@ -282,10 +287,6 @@ sort_dir_list(const void *one, const void *two)
 			}
 			break;
 #endif
-
-		default:
-			assert(0 && "All possible sort options should be handled");
-			break;
 	}
 
 	if(retval == 0)
@@ -366,8 +367,8 @@ compare_file_names(const char s[], const char t[], int ignore_case)
 	return result;
 }
 
-int
-get_secondary_key(int primary_key)
+SortingKey
+get_secondary_key(SortingKey primary_key)
 {
 	switch(primary_key)
 	{
@@ -379,6 +380,7 @@ get_secondary_key(int primary_key)
 		case SK_BY_MODE:
 		case SK_BY_PERMISSIONS:
 #endif
+		case SK_BY_TYPE:
 		case SK_BY_TIME_MODIFIED:
 		case SK_BY_TIME_ACCESSED:
 		case SK_BY_TIME_CHANGED:
@@ -387,9 +389,11 @@ get_secondary_key(int primary_key)
 		case SK_BY_INAME:
 		case SK_BY_EXTENSION:
 		case SK_BY_SIZE:
-		default:
+		case SK_BY_DIR:
 			return SK_BY_SIZE;
 	}
+	assert(0 && "Unhandled sorting key?");
+	return SK_BY_SIZE;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

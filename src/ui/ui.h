@@ -76,6 +76,7 @@ typedef enum
 #ifndef _WIN32
 	SK_BY_PERMISSIONS,
 #endif
+	SK_BY_DIR,
 	SK_BY_TYPE,
 }
 SortingKey;

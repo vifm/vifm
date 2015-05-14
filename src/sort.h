@@ -24,8 +24,10 @@
 #include "utils/test_helpers.h"
 
 void sort_view(FileView *view);
-/* Maps primary sort key to second column type. */
-int get_secondary_key(int primary_key);
+
+/* Maps primary sort key to second column type.  Returns secondary key that
+ * corresponds to the primary one. */
+SortingKey get_secondary_key(SortingKey primary_key);
 
 TSTATIC_DEFS(
 	int strnumcmp(const char s[], const char t[]);

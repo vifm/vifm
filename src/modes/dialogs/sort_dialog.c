@@ -52,20 +52,21 @@ static int indexes[] = {
 	0,               /* SK_BY_EXTENSION */
 	1,               /* SK_BY_NAME */
 #ifndef _WIN32
-	4,               /* SK_BY_GROUP_ID */
-	5,               /* SK_BY_GROUP_NAME */
-	6,               /* SK_BY_MODE */
-	8,               /* SK_BY_OWNER_ID */
-	9,               /* SK_BY_OWNER_NAME */
+	5,               /* SK_BY_GROUP_ID */
+	6,               /* SK_BY_GROUP_NAME */
+	7,               /* SK_BY_MODE */
+	9,               /* SK_BY_OWNER_ID */
+	10,              /* SK_BY_OWNER_NAME */
 #endif
-	10 + CORRECTION, /* SK_BY_SIZE */
-	11 + CORRECTION, /* SK_BY_TIME_ACCESSED */
-	12 + CORRECTION, /* SK_BY_TIME_CHANGED */
-	13 + CORRECTION, /* SK_BY_TIME_MODIFIED */
+	11 + CORRECTION, /* SK_BY_SIZE */
+	12 + CORRECTION, /* SK_BY_TIME_ACCESSED */
+	13 + CORRECTION, /* SK_BY_TIME_CHANGED */
+	14 + CORRECTION, /* SK_BY_TIME_MODIFIED */
 	2,               /* SK_BY_INAME */
 #ifndef _WIN32
-	7,               /* SK_BY_PERMISSIONS */
+	8,               /* SK_BY_PERMISSIONS */
 #endif
+	4,               /* SK_BY_DIR */
 	3,               /* SK_BY_TYPE */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
@@ -163,6 +164,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Type");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Dir");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");

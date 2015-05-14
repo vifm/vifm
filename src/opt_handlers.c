@@ -146,7 +146,7 @@ static void viewcolumns_handler(OPT_OP op, optval_t val);
 static void set_view_columns_option(FileView *view, const char value[],
 		int update_ui);
 static void add_column(columns_t columns, column_info_t column_info);
-static int map_name(const char *name);
+static int map_name(const char name[]);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
@@ -185,6 +185,7 @@ static const char * sort_enum[] = {
 #ifndef _WIN32
 	"perms",
 #endif
+	"dir",
 	"type",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
@@ -232,6 +233,7 @@ static const char *sort_types[] = {
 #ifndef _WIN32
 	"perms", "+perms", "-perms",
 #endif
+	"dir", "+dir", "-dir",
 	"type", "+type", "-type",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
@@ -1618,7 +1620,7 @@ add_column(columns_t columns, column_info_t column_info)
 
 /* Maps column name to column id.  Returns column id. */
 static int
-map_name(const char *name)
+map_name(const char name[])
 {
 	if(*name != '\0')
 	{
@@ -1626,7 +1628,7 @@ map_name(const char *name)
 		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
 		return (pos >= 0) ? (pos + 1) : -1;
 	}
-	return get_secondary_key(abs(curr_view->sort[0]));
+	return (int)get_secondary_key((SortingKey)abs(curr_view->sort[0]));
 }
 
 void

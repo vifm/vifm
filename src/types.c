@@ -29,12 +29,6 @@
 #include "utils/utils.h"
 
 const char *
-get_mode_str(mode_t mode)
-{
-	return get_type_str(get_type_from_mode(mode));
-}
-
-const char *
 get_type_str(FileType type)
 {
 	static const char *str[] = {
