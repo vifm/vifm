@@ -339,7 +339,8 @@ char *XTERM256_COLOR_NAMES[256] = {
 	[255] = "Grey93",
 };
 
-static const int default_colors[][3] = {
+/* Default color scheme definition. */
+static const col_attr_t default_cs[] = {
 	                      /* fg             bg           attr */
 	[WIN_COLOR]          = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[DIRECTORY_COLOR]    = { COLOR_CYAN,    -1,          A_BOLD                  },
@@ -361,7 +362,7 @@ static const int default_colors[][3] = {
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 	[JOB_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, A_BOLD | A_REVERSE      },
 };
-ARRAY_GUARD(default_colors, MAXNUM_COLOR);
+ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
@@ -616,11 +617,9 @@ static void
 reset_color_scheme_colors(col_scheme_t *cs)
 {
 	size_t i;
-	for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
+	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-		cs->color[i].attr = default_colors[i][2];
+		cs->color[i] = default_cs[i];
 	}
 }
 
