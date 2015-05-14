@@ -219,6 +219,8 @@
 	mode in octal for "mode", make "type" actually display file type (as
 	"mode" did before).  Thanks to Michal Belica (a.k.a. beli-sk).
 
+	Complete `clear` subcommand of :highlight.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -373,6 +375,9 @@
 
 	Fixed assertion on including "type" in 'viewcolumns' value.  Thanks to
 	Michal Belica (a.k.a. beli-sk).
+
+	Fixed writing current color scheme as the default one, should use builtin
+	colors instead.  Thanks to Karol M. Langner (langner).
 
 0.7.8-beta to 0.7.8
 

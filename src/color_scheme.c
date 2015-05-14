@@ -339,7 +339,8 @@ char *XTERM256_COLOR_NAMES[256] = {
 	[255] = "Grey93",
 };
 
-static const int default_colors[][3] = {
+/* Default color scheme definition. */
+static const col_attr_t default_cs[] = {
 	                      /* fg             bg           attr */
 	[WIN_COLOR]          = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[DIRECTORY_COLOR]    = { COLOR_CYAN,    -1,          A_BOLD                  },
@@ -361,7 +362,7 @@ static const int default_colors[][3] = {
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 	[JOB_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, A_BOLD | A_REVERSE      },
 };
-ARRAY_GUARD(default_colors, MAXNUM_COLOR);
+ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
@@ -409,16 +410,18 @@ void
 write_color_scheme_file(void)
 {
 	FILE *fp;
-	char colors_dir[PATH_MAX];
+	char def_cs_path[PATH_MAX];
 	int i;
 
-	if(make_path(cfg.colors_dir, S_IRWXU) != 0)
+	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
+		/* Do nothing if local colors directory exists or we've failed to create
+		 * it. */
 		return;
 	}
 
-	snprintf(colors_dir, sizeof(colors_dir), "%s/Default", cfg.colors_dir);
-	fp = os_fopen(colors_dir, "w");
+	snprintf(def_cs_path, sizeof(def_cs_path), "%s/Default", cfg.colors_dir);
+	fp = os_fopen(def_cs_path, "w");
 	if(fp == NULL)
 	{
 		return;
@@ -469,6 +472,8 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
+	fprintf(fp, "highlight clear\n\n");
+
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		char fg_buf[16], bg_buf[16];
@@ -479,11 +484,11 @@ write_color_scheme_file(void)
 			continue;
 		}
 
-		color_to_str(cfg.cs.color[i].fg, sizeof(fg_buf), fg_buf);
-		color_to_str(cfg.cs.color[i].bg, sizeof(bg_buf), bg_buf);
+		color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
+		color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
 
 		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-				attrs_to_str(cfg.cs.color[i].attr), fg_buf, bg_buf);
+				attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
@@ -616,11 +621,9 @@ static void
 reset_color_scheme_colors(col_scheme_t *cs)
 {
 	size_t i;
-	for(i = 0U; i < ARRAY_LEN(default_colors); ++i)
+	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-		cs->color[i].attr = default_colors[i][2];
+		cs->color[i] = default_cs[i];
 	}
 }
 
