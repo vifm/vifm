@@ -410,7 +410,7 @@ void
 write_color_scheme_file(void)
 {
 	FILE *fp;
-	char colors_dir[PATH_MAX];
+	char def_cs_path[PATH_MAX];
 	int i;
 
 	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
@@ -420,8 +420,8 @@ write_color_scheme_file(void)
 		return;
 	}
 
-	snprintf(colors_dir, sizeof(colors_dir), "%s/Default", cfg.colors_dir);
-	fp = os_fopen(colors_dir, "w");
+	snprintf(def_cs_path, sizeof(def_cs_path), "%s/Default", cfg.colors_dir);
+	fp = os_fopen(def_cs_path, "w");
 	if(fp == NULL)
 	{
 		return;
