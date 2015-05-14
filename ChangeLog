@@ -219,6 +219,8 @@
 	mode in octal for "mode", make "type" actually display file type (as
 	"mode" did before).  Thanks to Michal Belica (a.k.a. beli-sk).
 
+	Complete `clear` subcommand of :highlight.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

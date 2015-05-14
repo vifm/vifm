@@ -423,6 +423,7 @@ complete_progs(const char *str, assoc_records_t records)
 	}
 }
 
+/* Completes highlight groups and subcomand "clear" for :highlight command. */
 static void
 complete_highlight_groups(const char *str)
 {
@@ -434,6 +435,10 @@ complete_highlight_groups(const char *str)
 		{
 			vle_compl_add_match(HI_GROUPS[i]);
 		}
+	}
+	if(strncmp(str, "clear", len) == 0)
+	{
+		vle_compl_add_match("clear");
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
