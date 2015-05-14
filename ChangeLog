@@ -234,6 +234,13 @@
 	No more unjustified inconsistency in processing macros in :! and
 	:file[x]type commands.  Thanks to Miodrag Tokić (a.k.a. loonies).
 
+	Manual page fixes/improvements.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
+	Wrapped option names with single quotes in the man page to make it easier
+	to search for options by their names.
+
+	Fixed search messages in menus (nth time...).
+
 	Fixed automatic finishing in some situation when no terminal is available.
 	Thanks to tYGjQCsvVI.
 

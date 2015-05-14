@@ -2823,7 +2823,7 @@ in their name.
 These are kind of options that are local to a specific view. So you can set
 ascending sorting order for left pane and descending order for right pane.
 .TP
-.BI aproposprg
+.BI 'aproposprg'
 type: string
 .br
 default: "apropos %a"
@@ -2835,7 +2835,7 @@ include the %a macro to specify placement of arguments passed to the :apropos
 command.  If the macro is not used, it will be implicitly added after a space to
 the value of this option.
 .TP
-.BI autochpos
+.BI 'autochpos'
 type: boolean
 .br
 default: true
@@ -2848,14 +2848,14 @@ l key in the ":history ." and ":trashes" menus is treated like :cd command.
 This option also affects bookmarks so that navigating to a bookmark doesn't
 restore cursor position.
 .TP
-.BI "columns co"
+.BI "'columns' 'co'"
 type: int
 .br
 default: terminal width on startup
 .br
 Terminal width in characters.
 .TP
-.BI "cdpath cd"
+.BI "'cdpath' 'cd'"
 type: string list
 .br
 default: value of $CDPATH with commas instead of colons
@@ -2873,7 +2873,7 @@ Example:
 This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
 in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
 .TP
-.BI "chaselinks"
+.BI 'chaselinks'
 type: boolean
 .br
 default: false
@@ -2881,7 +2881,7 @@ default: false
 When enabled path of view is always resolved to real path (with all symbolic
 links expanded).
 .TP
-.BI classify
+.BI 'classify'
 type: string list
 .br
 default: ":dir:/"
@@ -2896,7 +2896,7 @@ which operate on file names in any way. Comma (',') character should not be
 used.  List of file type names can be found in the description of filetype()
 function.
 .TP
-.BI "confirm cf"
+.BI "'confirm' 'cf'"
 type: boolean
 .br
 default: true
@@ -2904,7 +2904,7 @@ default: true
 Ask about permanent deletion of files (on D or :delete! command or on undo/redo
 operation).
 .TP
-.BI "cpoptions cpo"
+.BI "'cpoptions' 'cpo'"
 type: charset
 .br
 default: "fst"
@@ -2922,7 +2922,7 @@ otherwise they operate on current file only;
 t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
 pane, otherwise <tab> and <c-i> go forward in the view history.
 .TP
-.BI dotdirs
+.BI 'dotdirs'
 type: set
 .br
 default: nonrootparent
@@ -2934,7 +2934,7 @@ Controls displaying of dot directories.  The following values are possible:
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.
 .TP
-.BI fastrun
+.BI 'fastrun'
 type: boolean
 .br
 default: false
@@ -2942,7 +2942,7 @@ default: false
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 .TP
-.BI "fillchars fcs"
+.BI "'fillchars' 'fcs'"
 type: string list
 .br
 default: ""
@@ -2956,7 +2956,7 @@ If value is omitted, its default value is used.  Example:
  set fillchars=vborder:.
 .EE
 .TP
-.BI findprg
+.BI 'findprg'
 type: string
 .br
 default: "find %s %a \-print , \-type d \\( ! \-readable \-o ! \-executable \\) \-prune"
@@ -2998,14 +2998,14 @@ this:
     set findprg="find %s %a"
 .EE
 .TP
-.BI followlinks
+.BI 'followlinks'
 type: boolean
 .br
 default: true
 .br
 Follow links on l or Enter.
 .TP
-.BI fusehome
+.BI 'fusehome'
 type: string
 .br
 default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
@@ -3018,14 +3018,14 @@ absolute path.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.  See "Automatic FUSE mounts" section below for more information.
 .TP
-.BI "gdefault gd"
+.BI "'gdefault' 'gd'"
 type: boolean
 .br
 default: false
 .br
 When on, 'g' flag is on for :substitute by default.
 .TP
-.BI grepprg
+.BI 'grepprg'
 type: string
 .br
 default: "grep \-n \-H \-I \-r %i %a %s"
@@ -3053,7 +3053,7 @@ or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 .EE
 
 .TP
-.BI "history hi"
+.BI "'history' 'hi'"
 type: integer
 .br
 default: 15
@@ -3061,21 +3061,21 @@ default: 15
 Maximum number of directories in the view history and lines in the prompt,
 command line and search histories.
 .TP
-.BI "hlsearch hls"
+.BI "'hlsearch' 'hls'"
 type: bool
 .br
 default: true
 .br
 Highlight all matches of search pattern.
 .TP
-.BI iec
+.BI 'iec'
 type: boolean
 .br
 default: false
 .br
 Use KiB, MiB, ... instead of KB, MB, ...
 .TP
-.BI "ignorecase ic"
+.BI "'ignorecase' 'ic'"
 type: boolean
 .br
 default: false
@@ -3083,7 +3083,7 @@ default: false
 Ignore case in search patterns (:substitute, / and ? commands) and characters
 after f and F commands.  It doesn't affect file filtering.
 .TP
-.BI "incsearch is"
+.BI "'incsearch' 'is'"
 type: boolean
 .br
 default: false
@@ -3092,21 +3092,21 @@ When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
 .TP
-.BI "laststatus ls"
+.BI "'laststatus' 'ls'"
 type: boolean
 .br
 default: true
 .br
 Controls if status bar is visible.
 .TP
-.BI lines
+.BI 'lines'
 type: int
 .br
 default: terminal height on startup
 .br
 Terminal height in lines.
 .TP
-.BI locateprg
+.BI 'locateprg'
 type: string
 .br
 default: "locate %a"
@@ -3118,7 +3118,7 @@ include the %a macro to specify placement of arguments passed to the :locate
 command.  If the macro is not used, it will be implicitly added after a space to
 the value of this option.
 .TP
-.BI mintimeoutlen
+.BI 'mintimeoutlen'
 type: integer
 .br
 default: 150
@@ -3129,7 +3129,7 @@ made by external applications, monitoring background jobs, redrawing UI).  There
 are no strict guarantees, however the higher this value is, the less is CPU load
 in idle mode.
 .TP
-.BI lsview
+.BI 'lsview'
 type: boolean
 .br
 default: false
@@ -3140,7 +3140,7 @@ When this option is set, directory view will be displayed in multiple columns
 with filenames similar to output of `ls \-x` command.  See ls-like view section
 below for format description.
 .TP
-.BI "number nu"
+.BI "'number' 'nu'"
 type: boolean
 .br
 default: false
@@ -3150,7 +3150,7 @@ type: local
 Print line number in front of each filename when 'lsview' option is turned off.
 Use 'numberwidth' to control width of line number.  Also see 'relativenumber'.
 .TP
-.BI "numberwidth nuw"
+.BI "'numberwidth' 'nuw'"
 type: integer
 .br
 default: 4
@@ -3159,7 +3159,7 @@ type: local
 .br
 Minimal number of characters for line number field.
 .TP
-.BI "relativenumber rnu"
+.BI "'relativenumber' 'rnu'"
 type: boolean
 .br
 default: false
@@ -3181,7 +3181,7 @@ combinations of 'number' and 'relativenumber' lead to such results:
                        |   1 third            |   1 third
 
 .TP
-.BI "rulerformat ruf"
+.BI "'rulerformat' 'ruf'"
 type: string
 .br
 default: "%l/%S "
@@ -3217,14 +3217,14 @@ Example:
  set rulerformat='%2l-%S%[ +%0-%]'
 .EE
 .TP
-.BI runexec
+.BI 'runexec'
 type: boolean
 .br
 default: false
 .br
 Run executable file on Enter or l.
 .TP
-.BI "scrollbind scb"
+.BI "'scrollbind' 'scb'"
 type: boolean
 .br
 default: false
@@ -3232,7 +3232,7 @@ default: false
 When this option is set, vifm will try to keep difference of scrolling positions
 of two windows constant.
 .TP
-.BI "scrolloff so"
+.BI "'scrolloff' 'so'"
 type: int
 .br
 default: 0
@@ -3242,14 +3242,14 @@ want cursor line to always be in the middle of the view (except at the
 beginning or end of the file list), set this option to some large value
 (e.g. 999).
 .TP
-.BI "shell sh"
+.BI "'shell' 'sh'"
 type: string
 .br
 default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 .br
 Full path to the shell to use to run external commands.
 .TP
-.BI "shortmess shm"
+.BI "'shortmess' 'shm'"
 type: charset
 .br
 default: ""
@@ -3260,7 +3260,7 @@ of some message displayed by vifm in the TUI.  Flags:
 T \- truncate status-bar messages in the middle if they are too long to fit on \
 the command line.  "..." will appear in the middle.
 .TP
-.BI slowfs
+.BI 'slowfs'
 type: string list
 .br
 default: ""
@@ -3280,7 +3280,7 @@ Example for autofs root /mnt/autofs:
  set slowfs+=/mnt/autofs
 .EE
 .TP
-.BI "smartcase scs"
+.BI "'smartcase' 'scs'"
 type: boolean
 .br
 default: false
@@ -3289,7 +3289,7 @@ Overrides the ignorecase option if the search pattern contains at least one
 upper case character.  Only used when ignorecase option is enabled.  It doesn't
 affect file filtering.
 .TP
-.BI sort
+.BI 'sort'
 type: string list
 .br
 default: +name on *nix and +iname on Windows
@@ -3355,7 +3355,7 @@ This option also changes view columns according to primary sorting key set,
 unless 'viewcolumns' option is not empty.
 .RE
 .TP
-.BI sortnumbers
+.BI 'sortnumbers'
 type: boolean
 .br
 default: false
@@ -3364,7 +3364,7 @@ type: local
 .br
 Natural sort of (version) numbers within text.
 .TP
-.BI "statusline stl"
+.BI "'statusline' 'stl'"
 type: string
 .br
 default: ""
@@ -3424,14 +3424,14 @@ On Windows file properties include next flags (upper case means flag is on):
  Z \- sparse file
 .RE
 .TP
-.BI sortorder
+.BI 'sortorder'
 type: enumeration
 .br
 default: ascending
 .br
 Sets sort order for primary key: ascending, descending.
 .TP
-.BI syscalls
+.BI 'syscalls'
 type: boolean
 .br
 default: false
@@ -3441,21 +3441,21 @@ operations, otherwise system calls are used instead (much faster).  The
 feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
 eventually removed.  Mostly *nix-like systems are affected.
 .TP
-.BI "tabstop ts"
+.BI "'tabstop' 'ts'"
 type: integer
 .br
 default: value from curses library
 .br
 Number of spaces that a Tab in the file counts for.
 .TP
-.BI timefmt
+.BI 'timefmt'
 type: string
 .br
 default: " %m/%d %H:%M"
 .br
 Format of time in file list.  See man date or man strftime for details.
 .TP
-.BI "timeoutlen tm"
+.BI "'timeoutlen' 'tm'"
 type: integer
 .br
 default: 1000
@@ -3463,14 +3463,14 @@ default: 1000
 The time in milliseconds that is waited for a mapped key in case of already
 typed key sequence is ambiguous.
 .TP
-.BI trash
+.BI 'trash'
 type: boolean
 .br
 default: true
 .br
 Use trash directory.  See "Trash directory" section below.
 .TP
-.BI trashdir
+.BI 'trashdir'
 type: string
 .br
 default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
@@ -3493,7 +3493,7 @@ Default value tries to use trash directory per mount point and falls back to
 Will attempt to create the directory if it does not exist.  See
 "Trash directory" section below.
 .TP
-.BI "tuioptions to"
+.BI "'tuioptions' 'to'"
 type: charset
 .br
 default: "ps"
@@ -3506,14 +3506,14 @@ padding on left and right sides;
 s \- when included, left and right borders (side borders, hence "s" character)
 are visible.
 .TP
-.BI "undolevels ul"
+.BI "'undolevels' 'ul'"
 type: integer
 .br
 default: 100
 .br
 Maximum number of changes that can be undone.
 .TP
-.BI vicmd
+.BI 'vicmd'
 type: string
 .br
 default: "vim"
@@ -3521,7 +3521,7 @@ default: "vim"
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 .TP
-.BI viewcolumns
+.BI 'viewcolumns'
 type: string
 .br
 default: ""
@@ -3538,7 +3538,7 @@ An example of setting the options for both panes (note vifm-windo command):
  windo set viewcolumns=-{name}..,6{size},11{perms}
 .EE
 .TP
-.BI vixcmd
+.BI 'vixcmd'
 type: string
 .br
 default: value of vicmd
@@ -3546,7 +3546,7 @@ default: value of vicmd
 The command used to start vi when in X.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 .TP
-.BI vifminfo
+.BI 'vifminfo'
 type: set
 .br
 default: bookmarks
@@ -3573,14 +3573,14 @@ Controls what will be saved in the $VIFM/vifminfo file.
    filetypes \- associated programs and viewers (obsolete)
    commands  \- user defined commands (see :command description) (obsolete)
 .TP
-.BI vimhelp
+.BI 'vimhelp'
 type: boolean
 .br
 default: false
 .br
 Use vim help format.
 .TP
-.BI "wildmenu wmnu"
+.BI "'wildmenu' 'wmnu'"
 type: boolean
 .br
 default: false
@@ -3588,7 +3588,7 @@ default: false
 Controls whether possible matches of completion will be shown above the command
 line.
 .TP
-.BI wordchars
+.BI 'wordchars'
 type: string list
 .br
 default: "1-8,14-31,33-255" (that is all non-whitespace characters)
@@ -3614,14 +3614,14 @@ To get the latter use the following mapping:
 .EE
 Also used for abbreviations.
 .TP
-.BI wrap
+.BI 'wrap'
 type: boolean
 .br
 default: true
 .br
 Controls whether to wrap text in quick view.
 .TP
-.BI "wrapscan ws"
+.BI "'wrapscan' 'ws'"
 type: boolean
 .br
 default: true
