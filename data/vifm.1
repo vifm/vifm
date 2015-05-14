@@ -3313,7 +3313,7 @@ etc.):
    [+\-]atime \- time accessed (e.g. read, executed)
    [+\-]ctime \- time changed (changes in metadata, e.g. mode)
    [+\-]mtime \- time modified (when file contents is changed)
-.LP
+
 Note: look for st_atime, st_ctime and st_mtime in "man 2 stat" for more
 information on time keys.
 
@@ -3341,15 +3341,19 @@ or
 Value of the option is checked to include type key and default sorting
 key (name on *nix, iname on Windows).  Here is what happens if one of them is
 missing:
+.RS
 .IP \- 2
 type key is added at the beginning;
 .IP \- 2
 default key is added at the end;
-.LP
+.RE
+
+.RS
 all other keys are left untouched (at most they are moved).
 
 This option also changes view columns according to primary sorting key set,
 unless 'viewcolumns' option is not empty.
+.RE
 .TP
 .BI sortnumbers
 type: boolean
@@ -3369,26 +3373,26 @@ Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
 .RS
-.HP 7
-\- %t \- file name (considering value of the 'classify' option)
-.HP 7
-\- %A \- file attributes (permissions on *nix or properties on Windows)
-.HP 7
-\- %u \- user name or uid (if it cannot be resolved)
-.HP 7
-\- %g \- group name or gid (if it cannot be resolved)
-.HP 7
-\- %s \- file size in human readable format
-.HP 7
-\- %E \- size of selected files in human readable format, same as %s when no
+.IP \- 2
+%t \- file name (considering value of the 'classify' option)
+.IP \- 2
+%A \- file attributes (permissions on *nix or properties on Windows)
+%u \- user name or uid (if it cannot be resolved)
+.IP \- 2
+%g \- group name or gid (if it cannot be resolved)
+.IP \- 2
+%s \- file size in human readable format
+.IP \- 2
+%E \- size of selected files in human readable format, same as %s when no
 files are selected, except that it will never show size of ../ in visual mode,
 since it cannot be selected
-.HP 7
-\- %d \- file modification date (uses 'timefmt' option)
-.HP 7
-\- all 'rulerformat' macros
-.LP
+.IP \- 2
+%d \- file modification date (uses 'timefmt' option)
+.IP \- 2
+all 'rulerformat' macros
+.RE
 
+.RS
 Percent sign can be followed by optional minimum field width.  Add '\-' before
 minimum field width if you want field to be right aligned.
 Example:
@@ -3418,6 +3422,7 @@ On Windows file properties include next flags (upper case means flag is on):
  P \- reparse point (e.g. symbolic link)
 .br
  Z \- sparse file
+.RE
 .TP
 .BI sortorder
 type: enumeration
