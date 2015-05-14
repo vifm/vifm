@@ -472,6 +472,8 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
+	fprintf(fp, "highlight clear\n\n");
+
 	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		char fg_buf[16], bg_buf[16];
