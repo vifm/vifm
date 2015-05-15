@@ -51,8 +51,8 @@ Tag name structure:
 General format:
 vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
 
-The vifm executable will start vifm in the current directory unless it is
-given a different directory on the command line.
+vifm starts in the current directory unless it is given a different directory
+on the command line.
 
 vifm /path/to/directory/one
 or
@@ -195,6 +195,7 @@ Scrolling panes~
 zt - redraw pane with file in top of list.     *vifm-zt*
 zz - redraw pane with file in center of list.  *vifm-zz*
 zb - redraw pane with file in bottom of list.  *vifm-zb*
+
 Ctrl-E - scroll pane one line down.            *vifm-CTRL-E*
 Ctrl-Y - scroll pane one line up.              *vifm-CTRL-Y*
 
@@ -235,8 +236,8 @@ Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
 
 For Ctrl-W +, Ctrl-W -, Ctrl-W < and Ctrl-W > commands count
 can be given before and/or after Ctrl-W.  The resulting count
-is a multiplication of those two.  So "2 Ctrl-W 2 - " will
-decrease window size by 4 lines or columns.
+is a multiplication of those two.  So "2 Ctrl-W 2 - " decreases
+window size by 4 lines or columns.
 
 Marks~
 
@@ -605,12 +606,12 @@ Registers do not contain one file more than once.
 
 Example:
   "a2yy
-will put names of two files to register a (and to the unnamed register).
+puts names of two files to register a (and to the unnamed register).
   "Ad
-will remove one file and append its name to register a (and to the
-unnamed register).
+removes one file and append its name to register a (and to the unnamed
+register).
   p or "ap or "Ap
-will insert previously yanked and deleted files into current directory.
+inserts previously yanked and deleted files into current directory.
 
 Selectors~
                                                *vifm-selectors*
@@ -1049,7 +1050,7 @@ This means the complete command is nohlsearch, and the short one is noh.
                                                *vifm-commands-and-selection*
 Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
- - ":invert s" will most likely leave some files selected;
+ - ":invert s" most likely leaves some files selected;
  - :if and :else commands doesn't affect selection on successful execution.
 
                                                *vifm-:bar*
@@ -1101,6 +1102,7 @@ Examples:
 See |vifm-reserved| for a list of reserved command names.
 
 The builtin commands are:
+
                                                *vifm-:!*
 :[range]!program - shellout and execute program.
     :!command & will run the process in the background using vifm's means.
@@ -2159,19 +2161,19 @@ special meaning.  And %"x means using of double quotes and escape only backslash
 and double quote characters, which is more useful on Windows systems.
 
 Position and quantity (if there is any) of %m, %M, %S or %s macros in the
-command is unimportant.  All their occurrences will be removed from the
-resulting command.
+command is unimportant.  All their occurrences are removed from the resulting
+command.
 
 %c and %f macros are expanded to file names only, when %C and %F are expanded
 to full paths.  %f and %F follow this in %b too.
 
-:com move mv %f %D - would set the :move command to move all of the files
+:com move mv %f %D - set the :move command to move all of the files
 selected in the current directory to the other directory.
 
-The %a macro will substitute any arguments given in a command into the
-command.  All arguments are considered optional.
-:com lsl !!ls -l %a - will set the lsl command to execute ls -l with or
-without an argument.
+The %a macro is replaced with any arguments given to an alias command.  All
+arguments are considered optional.
+:com lsl !!ls -l %a - set the lsl command to execute ls -l with or without an
+argument.
 
 :lsl<Return> will list the directory contents of the current directory.
 :lsl filename<Return> will list only the given filename.
@@ -2180,14 +2182,14 @@ The macros can also be used in directly executing commands.
 :!mv %f %D - would move the current directory selected files to the other
 directory.
 
-Appending & to the end of a command will cause it to be executed in the
+Appending & to the end of a command causes it to be executed in the
 background.  Typically you want to run two kinds of external commands in the
 background:
  - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
  - console tools that do not work with terminal (:!mv %f %D &).
-You don't want to run terminal commands, which require terminal input or
-output something because they will mess up vifm's TUI. Anyway, if you did run
-such a command, you can use Ctrl-L key to update vifm's TUI.
+You don't want to run terminal commands which require terminal input or
+output something in background because they will mess up vifm's TUI.  Anyway,
+if you did run such a command, you can use Ctrl-L key to update vifm's TUI.
 
 Rewriting the example command with macros given above with backgrounding:
 >
@@ -2203,8 +2205,8 @@ Copy and move operation can take a lot of time to proceed.  That's why vifm
 supports backgrounding of this two operations.  To run :copy, :move or :delete
 command in the background just add " &" at the end of a command.
 
-For each background operation a new thread will be created.  Currently job
-cannot be stopped or paused.
+For each background operation a new thread is created.  Currently job cannot
+be stopped or paused.
 
 You can see if command is still running in the :jobs menu.  Backgrounded
 commands have progress instead of process id at the line beginning.
@@ -2416,8 +2418,8 @@ type: set
 default: nonrootparent
 
 Controls displaying of dot directories.  The following values are possible:
-   rootparent    - show "../" in root directory of file system
-   nonrootparent - show "../" in non-root directories of file system
+ - rootparent    - show "../" in root directory of file system
+ - nonrootparent - show "../" in non-root directories of file system
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.
 
@@ -2616,7 +2618,7 @@ default: false
 local
 
 When this option is set, directory view will be displayed in multiple
-columns with filenames similar to output of `ls -x` command.  See also
+columns with file names similar to output of `ls -x` command.  See also
 |vifm-ls-view|.
 
                                                *vifm-'number'* *vifm-'nu'*
@@ -2952,7 +2954,7 @@ command): >
                                                *vifm-'vixcmd'*
 vixcmd
 type: string
-default: value of vicmd
+default: value of |vifm-'vicmd'|
 
 The command used to start vi when in X.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
@@ -3084,24 +3086,24 @@ Supported expressions is a subset of what VimL provides.
 Expression syntax summary, from least to most significant:
 
 |vifm-expr1| expr2 == expr2          equal
-             expr2 != expr2          not equal
-             expr2 >  expr2          greater than
-             expr2 >= expr2          greater than or equal
-             expr2 <  expr2          smaller than
-             expr2 <= expr2          smaller than or equal
+           expr2 != expr2          not equal
+           expr2 >  expr2          greater than
+           expr2 >= expr2          greater than or equal
+           expr2 <  expr2          smaller than
+           expr2 <= expr2          smaller than or equal
 
 |vifm-expr2| expr3 . expr3 ..        string concatenation
 
 |vifm-expr3| - expr3                 unary minus
-             + expr3                 unary plus
-             ! expr3                 logical NOT
+           + expr3                 unary plus
+           ! expr3                 logical NOT
 
 |vifm-expr4| number                  number constant
-             "string"                string constant, backslash is special
-             'string'                string constant, ' is doubled
-             &option                 option value
-             $VAR                    environment variable
-             function(expr1, ...)    function call
+           "string"                string constant, backslash is special
+           'string'                string constant, ' is doubled
+           &option                 option value
+           $VAR                    environment variable
+           function(expr1, ...)    function call
 
 ".." indicates that the operations in this level can be concatenated.
 
@@ -3342,7 +3344,9 @@ General~
 
 j, Ctrl-N - moves down.                        *vifm-m_j* *vifm-m_CTRL-N*
 k, Ctrl-P - moves up.                          *vifm-m_k* *vifm-m_CTRL-P*
+
 Enter, l - select and exit the menu.           *vifm-m_Enter* *vifm-m_l*
+
 Ctrl-L - redraw the menu.                      *vifm-m_CTRL-L*
 
                                                *vifm-m_Escape* *vifm-m_CTRL-C*
@@ -3350,6 +3354,8 @@ Ctrl-L - redraw the menu.                      *vifm-m_CTRL-L*
 Escape, Ctrl-C, ZZ, ZQ, q - quit.
 
 In all menus~
+
+The following set of  keys have the same meaning as in normal mode.
 
 Ctrl-B/Ctrl-F                                  *vifm-m_CTRL-B* *vifm-m_CTRL-F*
 Ctrl-D/Ctrl-U                                  *vifm-m_CTRL-D* *vifm-m_CTRL-U*
@@ -3362,9 +3368,6 @@ H/M/L                                          *vifm-m_H* *vifm-m_M* *vifm-m_L*
                                                *vifm-m_zb* *vifm-m_zt*
                                                *vifm-m_zz*
 zb/zt/zz
-
-All keys above have the same meaning as in normal mode (but not L in filetype
-menu).
 
                                                *vifm-m_zh*
 zh - scroll menu items [count] characters to the right.
