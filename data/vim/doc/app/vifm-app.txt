@@ -3199,7 +3199,9 @@ filetype({fnum})    String        Returns file type from position.
 has({property})     Integer       Checks whether instance has {property}.
 system({command})   String        Executes shell command and returns its output.
 
+
 executable({expr})                             *vifm-executable()*
+
 If {expr} is absolute or relative path, checks whether path destination exists
 and refers to an executable, otherwise checks whether command named {expr} is
 present in directories listed in $PATH.  Checks for various executable
@@ -3216,7 +3218,9 @@ Example: >
       endif
   endif
 <
+
 expand({expr})                                 *vifm-expand()*
+
 Expands environment variables and macros in {expr} just like it's done for
 command-line commands.  Returns a string.  See |vifm-macros|.
 
@@ -3228,7 +3232,9 @@ Examples: >
   " $PATH environment variable (same as `:echo $PATH`)
   :echo expand('$PATH')
 
+
 filetype({fnum})                               *vifm-filetype()*
+
 The result is a string, which represents file type and is one of the list:
     exe    executables
     reg    regular files
@@ -3242,7 +3248,9 @@ The result is a string, which represents file type and is one of the list:
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
 
+
 has({property})                                *vifm-has()*
+
 Allows examining internal parameters from scripts to e.g. figure out
 environment in which application is running.  Returns 1 if property is
 true/present, otherwise 0 is returned.  Currently the following properties
@@ -3258,7 +3266,9 @@ Usage example: >
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 <
+
 system({command})                              *vifm-system()*
+
 Runs the command in shell and returns its output (joined standard output and
 standard error streams).  All trailing newline characters are stripped to
 allow easy appending to command output.  CTRL-C should interrupt the command.
@@ -3538,7 +3548,6 @@ See |vifm-startup| section above for the explanations on |vifm-$VIFM| and
 |vifm-$MYVIFMRC|.
 
                                                *vifm-vifmrc*
-
 The vifmrc file contains commands that will be executed on vifm startup.  There
 are two such files: global and local.  Global one is at
 {prefix}/etc/vifm/vifmrc, see |vifm-$MYVIFMRC| variable description for the
