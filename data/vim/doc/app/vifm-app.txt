@@ -221,10 +221,10 @@ Ctrl-W v - shortcut for |vifm-:vsplit|.          *vifm-CTRL-W_v*
 Ctrl-W x - exchange panes.                     *vifm-CTRL-W_x*
 Ctrl-W z - quit preview pane or view modes.    *vifm-CTRL-W_z*
 
-Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
 Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
-Ctrl-W < - increase size of the view by count. *vifm-CTRL-W_<*
-Ctrl-W > - decrease size of the view by count. *vifm-CTRL-W_>*
+Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
+Ctrl-W < - decrease size of the view by count. *vifm-CTRL-W_<*
+Ctrl-W > - increase size of the view by count. *vifm-CTRL-W_>*
 Ctrl-W | - maximize current view.              *vifm-CTRL-W_bar*
 Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
@@ -792,10 +792,10 @@ Ctrl-W v - split window vertically.            *vifm-q_CTRL-W_v*
 Ctrl-W x - exchange panes.                     *vifm-q_CTRL-W_x*
 Ctrl-W z - quit preview pane or view modes.    *vifm-q_CTRL-W_z*
 
-Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
 Ctrl-W - - decrease size of the view.          *vifm-q_CTRL-W_-*
-Ctrl-W < - increase size of the view.          *vifm-q_CTRL-W_<*
-Ctrl-W > - decrease size of the view.          *vifm-q_CTRL-W_>*
+Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
+Ctrl-W < - decrease size of the view.          *vifm-q_CTRL-W_<*
+Ctrl-W > - increase size of the view.          *vifm-q_CTRL-W_>*
 Ctrl-W | - maximize current view.              *vifm-q_CTRL-W_bar*
 Ctrl-W _ - maximize current view.              *vifm-q_CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-q_CTRL-W_=*
