@@ -411,7 +411,7 @@ write_color_scheme_file(void)
 {
 	FILE *fp;
 	char def_cs_path[PATH_MAX];
-	int i;
+	size_t i;
 
 	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
@@ -474,7 +474,7 @@ write_color_scheme_file(void)
 
 	fprintf(fp, "highlight clear\n\n");
 
-	for(i = 0; i < MAXNUM_COLOR; ++i)
+	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
 		char fg_buf[16], bg_buf[16];
 
