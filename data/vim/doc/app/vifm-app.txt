@@ -2316,6 +2316,7 @@ ascending sorting order for left pane and descending order for right pane.
 aproposprg
 type: string
 default: "apropos %a"
+
 Specifies format for an external command to be invoked by the |vifm-:apropos|
 command.  The format supports expanding of macros, specific for a particular
 *prg option, and %% sequence for inserting percent sign literally.  This
@@ -2327,6 +2328,7 @@ implicitly added after a space to the value of this option.
 autochpos
 type: boolean
 default: true
+
 When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
@@ -2339,6 +2341,7 @@ restore cursor position.
 cdpath cd
 type: string list
 default: value of $CDPATH with commas instead of colons
+
 Specifies locations to check on changing directory with relative path that
 doesn't start with "./" or "../".  When non-empty, current directory is
 examined after directories listed in the option.
@@ -2354,6 +2357,7 @@ in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
 chaselinks
 type: boolean
 default: false
+
 When enabled path of view is always resolved to real path (with all symbolic
 links expanded).
 
@@ -2361,6 +2365,7 @@ links expanded).
 classify
 type: string list
 default: ":dir:/"
+
 Specifies file name prefixes and suffixes depending on file types.  The format
 is: [{prefix}]:{filetype}:[{suffix}].  Either {prefix} or {suffix} or both of
 them can be omitted (which is the default for all unspecified file types),
@@ -2375,12 +2380,14 @@ used.  List of file type names can be found in the description of
 columns co
 type: int
 default: terminal width on startup
+
 Terminal width in characters.
 
                                                *vifm-'confirm'* *vifm-'cf'*
 confirm cf
 type: boolean
 default: true
+
 Ask about permanent deletion of files (on D or :delete! command or on
 undo/redo operation).
 
@@ -2388,6 +2395,7 @@ undo/redo operation).
 cpoptions cpo
 type: charset
 default: "fst"
+
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
                                                *vifm-cpo-f*
@@ -2406,6 +2414,7 @@ t - when included, <tab> (thus <c-i>) behave as <space> and switch active
 dotdirs
 type: set
 default: nonrootparent
+
 Controls displaying of dot directories.  The following values are possible:
    rootparent    - show "../" in root directory of file system
    nonrootparent - show "../" in non-root directories of file system
@@ -2416,6 +2425,7 @@ this option.  "../" disappears at the moment at least one file is created.
 fastrun
 type: boolean
 default: false
+
 With this option turned on you can run partially entered commands with
 unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
@@ -2423,6 +2433,7 @@ unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 fillchars fcs
 type: string list
 default: ""
+
 Sets characters used to fill borders.
     item          default         Used for ~
     vborder:c     ' '             left, middle and right vertical borders
@@ -2433,6 +2444,7 @@ If value is omitted, its default value is used.  Example: >
 findprg
 type: string
 default: "find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune"
+
 Specifies format for an external command to be invoked by the |vifm-:find|
 command.  The format supports expanding of macros, specific for a particular
 *prg option, and %% sequence for inserting percent sign literally.  This
@@ -2472,12 +2484,14 @@ this: >
 followlinks
 type: boolean
 default: true
+
 Follow links on l or Enter.
 
                                                *vifm-'fusehome'*
 fusehome
 type: string
 default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
+
 Directory to be used as a root dir for FUSE mounts.  Value of the option can
 contain environment variables (in form "$envname"), which will be expanded
 (prepend it with a slash to prevent expansion).  The value should expand to
@@ -2490,12 +2504,14 @@ mounts only.  See |vifm-fuse| section for more information about FUSE mounts.
 gdefault gd
 type: boolean
 default: false
+
 When on, 'g' flag is on for |vifm-:substitute| by default.
 
                                                *vifm-'grepprg'*
 grepprg
 type: string
 default: "grep -n -H -I -r %i %a %s"
+
 Specifies format for an external command to be invoked by the |vifm-:grep|
 command.  The format supports expanding of macros, specific for a particular
 *prg option, and %% sequence for inserting percent sign literally.  This
@@ -2521,6 +2537,7 @@ or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 history hi
 type: integer
 default: 15
+
 Maximum number of directories in the view history and lines in the prompt,
 command line and search histories.
 
@@ -2528,18 +2545,21 @@ command line and search histories.
 hlsearch hls
 type: bool
 default: true
+
 Highlight all matches of search pattern.
 
                                                *vifm-'iec'*
 iec
 type: boolean
 default: false
+
 Use KiB, MiB, ... instead of KB, MB, ...
 
                                                *vifm-'ignorecase'* *vifm-'ic'*
 ignorecase ic
 type: boolean
 default: false
+
 Ignore case in search patterns (:substitute, / and ? commands) and
 characters after f and F commands.  It doesn't affect file filtering.
 
@@ -2547,6 +2567,7 @@ characters after f and F commands.  It doesn't affect file filtering.
 incsearch is
 type: boolean
 default: false
+
 When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
@@ -2555,18 +2576,21 @@ changed.
 laststatus ls
 type: boolean
 default: true
+
 Controls if status bar is visible.
 
                                                *vifm-'lines'*
 lines
 type: int
 default: terminal height on startup
+
 Terminal height in lines.
 
                                                *vifm-'locateprg'*
 locateprg
 type: string
 default: "locate %a"
+
 Specifies format for an external command to be invoked by the |vifm-:locate|
 command.  The format supports expanding of macros, specific for a particular
 *prg option, and %% sequence for inserting percent sign literally.  This
@@ -2578,6 +2602,7 @@ implicitly added after a space to the value of this option.
 mintimeoutlen
 type: integer
 default: 150
+
 The fracture of |vifm-'timeoutlen'| in milliseconds that is waited between
 subsequent input polls, which affects various asynchronous
 operations (detecting changes made by external applications, monitoring
@@ -2589,6 +2614,7 @@ lsview
 type: boolean
 default: false
 type: local
+
 When this option is set, directory view will be displayed in multiple
 columns with filenames similar to output of `ls -x` command.  See also
 |vifm-ls-view|.
@@ -2598,6 +2624,7 @@ number nu
 type: boolean
 default: false
 type: local
+
 Print line number in front of each filename when |vifm-'lsview'| option is
 turned off.  Use |vifm-'numberwidth'| to control width of line number.
 Also see |vifm-'relativenumber'|.
@@ -2607,6 +2634,7 @@ numberwidth nuw
 type: integer
 default: 4
 type: local
+
 Minimal number of characters for line number field.
 
                                                *vifm-'relativenumber'*
@@ -2615,6 +2643,7 @@ relativenumber rnu
 type: boolean
 default: false
 type: local
+
 Print relative line number in front of each filename when |vifm-'lsview'|
 option is turned off.  Use |vifm-'numberwidth'| to control width of line
 number.  Various combinations of |vifm-'number'| and |vifm-'relativenumber'|
@@ -2634,6 +2663,7 @@ lead to such results:
 rulerformat ruf
 type: string
 default: "%l/%S "
+
 Determines the content of the ruler.  Its minimal width is 13 characters and
 it's right aligned.  Following macros are supported:
     %l - file number
@@ -2656,12 +2686,14 @@ Example: >
 runexec
 type: boolean
 default: false
+
 Run executable file on Enter or l.
 
                                                *vifm-'scrollbind'* *vifm-'scb'*
 scrollbind scb
 type: boolean
 default: false
+
 When this option is set, vifm will try to keep difference of scrolling
 positions of two windows constant.
 
@@ -2669,6 +2701,7 @@ positions of two windows constant.
 scrolloff so
 type: int
 default: 0
+
 Minimal number of screen lines to keep above and below the cursor.  If you
 want cursor line to always be in the middle of the view (except at the
 beginning or end of the file list), set this option to some large value
@@ -2678,12 +2711,14 @@ beginning or end of the file list), set this option to some large value
 shell sh
 type: string
 default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
+
 Full path to the shell to use to run external commands.
 
                                                *vifm-'shortmess'* *vifm-'shm'*
 shortmess shm
 type: charset
 default: ""
+
 Contains a sequence of single-character flags.  Each flag enables shortening
 of some message displayed by vifm in the TUI.  Flags:
 T - truncate status-bar messages in the middle if they are too long to fit on
@@ -2694,6 +2729,7 @@ T - truncate status-bar messages in the middle if they are too long to fit on
 slowfs
 type: string list
 default: ""
+
 A list of mounter fs name beginnings (first column in /etc/mtab or
 /proc/mounts) or paths prefixes for fs/directories that work too slow for
 you.  This option can be used to stop vifm from making some requests to
@@ -2710,6 +2746,7 @@ Example for autofs root /mnt/autofs: >
 smartcase scs
 type: boolean
 default: false
+
 Overrides the |vifm-'ignorecase'| option if the search pattern contains at
 least one upper case character.  Only used when |vifm-'ignorecase'| option
 is enabled.  It doesn't affect file filtering.
@@ -2719,6 +2756,7 @@ sort
 type: enumeration
 default: +name on *nix and +iname on Windows
 type: local
+
 Sets list of sorting keys (first item is primary key, second is secondary
 key, etc.):
    [+-]ext   - extension
@@ -2761,6 +2799,7 @@ unless |vifm-'viewcolumns'| option is not empty.
 sortnumbers
 type: boolean
 default: false
+
 Natural sort of (version) numbers within text.
 
                                                *vifm-'sortorder'*
@@ -2768,12 +2807,14 @@ sortorder
 type: enumeration
 default: ascending
 type: local
+
 Sets sort order for primary key: ascending, descending.
 
                                                *vifm-'statusline'* *vifm-'stl'*
 statusline stl
 type: string
 default: ""
+
 Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
@@ -2809,6 +2850,7 @@ Example: >
 syscalls
 type: boolean
 default: false
+
 When disabled, vifm will rely on external applications to perform file-system
 operations, otherwise system calls are used instead (much faster).  The
 feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
@@ -2818,18 +2860,21 @@ eventually removed.  Mostly *nix-like systems are affected.
 tabstop ts
 type: integer
 default: value from curses library
+
 Number of spaces that a Tab in the file counts for.
 
                                                *vifm-'timefmt'*
 timefmt
 type: string
 default: " %m/%d %H:%M"
+
 Format of time in file list.  See man date or man strftime for details.
 
                                                *vifm-'trash'*
 trash
 type: boolean
 default: true
+
 Use |vifm-trash| directory.
 
                                                *vifm-'trashdir'*
@@ -2837,6 +2882,7 @@ trashdir
 type: string
 default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
          "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to |vifm-trash| directory
 or a path relative to a mount point root, when list element starts with "%r/".
@@ -2857,6 +2903,7 @@ Will attempt to create the directory if it does not exist.
 timeoutlen tm
 type: integer
 default: 1000
+
 The time in milliseconds that is waited for a mapped key in case of already
 typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
 
@@ -2864,6 +2911,7 @@ typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
 tuioptions to
 type: charset
 default: "ps"
+
 Each flag configures some aspect of TUI appearance.  The flags are:
                                                *vifm-to-p*
 p - when included, file list inside a pane gets additional single character
@@ -2876,12 +2924,14 @@ are visible.
 undolevels ul
 type: integer
 default: 100
+
 Maximum number of changes that can be undone.
 
                                                *vifm-'vicmd'*
 vicmd
 type: string
 default: "vim"
+
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 
@@ -2890,6 +2940,7 @@ viewcolumns
 type: string
 default: ""
 type: local
+
 Format string containing list of columns in the view. When this option is
 empty view columns to show are chosen automatically using sorting keys
 (see |vifm-'sort'|) as a base.  Value of this option is ignored if
@@ -2902,6 +2953,7 @@ command): >
 vixcmd
 type: string
 default: value of vicmd
+
 The command used to start vi when in X.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 
@@ -2909,6 +2961,7 @@ whether it's preceded by space or not) means backgrounding of command.
 vifminfo
 type: set
 default: bookmarks
+
 Controls what will be saved in the $VIFM/vifminfo file:
 
    bookmarks - bookmarks, except special ones like '< and '>
@@ -2934,12 +2987,14 @@ Controls what will be saved in the $VIFM/vifminfo file:
 vimhelp
 type: boolean
 default: false
+
 Use vim help format.
 
                                                *vifm-'wildmenu'* *vifm-'wmnu'*
 wildmenu wmnu
 type: boolean
 default: false
+
 Controls whether possible matches of completion will be shown above the
 command line.
 
@@ -2947,6 +3002,7 @@ command line.
 wordchars
 type: string list
 default: "1-8,14-31,33-255" (that is all non-whitespace characters)
+
 Specifies which characters in command-line mode should be considered as part
 of a word.  Value of the option is comma-separated list of ranges.  If both
 endpoints of a range match, single endpoint is enough (e.g. "a" = "a-a").
@@ -2971,12 +3027,14 @@ Also used for abbreviations.
 wrap
 type: boolean
 default: true
+
 Controls whether to wrap text in quick view.
 
                                                *vifm-'wrapscan'* *vifm-'ws'*
 wrapscan ws
 type: boolean
 default: true
+
 Searches wrap around end of the list.
 
 --------------------------------------------------------------------------------
