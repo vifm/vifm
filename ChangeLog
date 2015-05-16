@@ -203,7 +203,8 @@
 	breaking them into list of arguments if possible.  Thanks to filterfalse.
 
 	Install AUTHORS, COPYING, ChangeLog, INSTALL, NEWS, README and TODO to
-	{prefix}/share/doc/vifm, otherwise they are not available after
+	{prefix}/share/doc/vifm.  Install color schemes to
+	{prefix}/share/vifm/colors.  Otherwise these are not available after
 	installation.
 
 	Break ties on case insensitive sort deterministically.

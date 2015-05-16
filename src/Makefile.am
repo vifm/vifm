@@ -5,6 +5,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
 vim_dir = $(pkgdatadir)/vim
+vim_colors_dir = $(pkgdatadir)/colors
 vimdoc_dir = $(pkgdatadir)/vim-doc
 
 vim_autoload_vifm_dir = $(vim_dir)/autoload/vifm
@@ -17,6 +18,13 @@ vim_syntax_dir = $(vim_dir)/syntax
 vimdoc_doc_dir = $(vimdoc_dir)/doc
 
 vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+vim_colors__DATA = ../data/colors/astrell-root \
+									 ../data/colors/astrell-user \
+									 ../data/colors/dmilith-root \
+									 ../data/colors/dmilith-user \
+									 ../data/colors/istib-solarized-dark \
+									 ../data/colors/juef-zenburn \
+									 ../data/colors/reicheltd-light
 vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt \
 								../data/vim/doc/plugin/tags
 vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
