@@ -117,6 +117,9 @@
 	Added global configuration {prefix}/etc/vifm/vifmrc and color schemes
 	{prefix}/etc/vifm/colors/*.  Thanks to Michael Vetter (a.k.a. jubalh).
 
+	Added one more light color scheme to assets (in two variations
+	astrell-root and astrell-user).  Thanks to astrell.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
