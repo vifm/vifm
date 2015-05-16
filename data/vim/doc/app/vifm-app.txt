@@ -214,9 +214,9 @@ Ctrl-W t - switch to top-left window.          *vifm-CTRL-W_t*
 Ctrl-W p - switch to previous window.          *vifm-CTRL-W_p*
 Ctrl-W w - switch to other pane.               *vifm-CTRL-W_w*
 
-Ctrl-W o - shortcut for |vifm-:only|.            *vifm-CTRL-W_o*
-Ctrl-W s - shortcut for |vifm-:split|.           *vifm-CTRL-W_s*
-Ctrl-W v - shortcut for |vifm-:vsplit|.          *vifm-CTRL-W_v*
+Ctrl-W o - leave only one pane.                *vifm-CTRL-W_o*
+Ctrl-W s - split window horizontally.          *vifm-CTRL-W_s*
+Ctrl-W v - split window vertically.            *vifm-CTRL-W_v*
 
 Ctrl-W x - exchange panes.                     *vifm-CTRL-W_x*
 Ctrl-W z - quit preview pane or view modes.    *vifm-CTRL-W_z*
@@ -225,6 +225,7 @@ Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
 Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
 Ctrl-W < - decrease size of the view by count. *vifm-CTRL-W_<*
 Ctrl-W > - increase size of the view by count. *vifm-CTRL-W_>*
+
 Ctrl-W | - maximize current view.              *vifm-CTRL-W_bar*
 Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
@@ -769,44 +770,12 @@ v                                              *vifm-q_v*
     current file.
 
 
-Ctrl-W H - move the pane to the far left.      *vifm-q_CTRL-W_H*
-Ctrl-W J - move the pane to the very bottom.   *vifm-q_CTRL-W_J*
-Ctrl-W K - move the pane to the very top.      *vifm-q_CTRL-W_K*
-Ctrl-W L - move the pane to the far right.     *vifm-q_CTRL-W_L*
-
-Ctrl-W h - switch to left pane.                *vifm-q_CTRL-W_h*
-Ctrl-W j - switch to pane below.               *vifm-q_CTRL-W_j*
-Ctrl-W k - switch to pane above.               *vifm-q_CTRL-W_k*
-Ctrl-W l - switch to right pane.               *vifm-q_CTRL-W_l*
-
-Ctrl-W b - switch to bottom-right window.      *vifm-q_CTRL-W_b*
-Ctrl-W t - switch to top-left window.          *vifm-q_CTRL-W_t*
-
-Ctrl-W p - switch to previous window.          *vifm-q_CTRL-W_p*
-Ctrl-W w - switch to other pane.               *vifm-q_CTRL-W_w*
-
-Ctrl-W o - leave only one pane.                *vifm-q_CTRL-W_o*
-Ctrl-W s - split window horizontally.          *vifm-q_CTRL-W_s*
-Ctrl-W v - split window vertically.            *vifm-q_CTRL-W_v*
-
-Ctrl-W x - exchange panes.                     *vifm-q_CTRL-W_x*
-Ctrl-W z - quit preview pane or view modes.    *vifm-q_CTRL-W_z*
-
-Ctrl-W - - decrease size of the view.          *vifm-q_CTRL-W_-*
-Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
-Ctrl-W < - decrease size of the view.          *vifm-q_CTRL-W_<*
-Ctrl-W > - increase size of the view.          *vifm-q_CTRL-W_>*
-Ctrl-W | - maximize current view.              *vifm-q_CTRL-W_bar*
-Ctrl-W _ - maximize current view.              *vifm-q_CTRL-W__*
-Ctrl-W = - make size of two views equal.       *vifm-q_CTRL-W_=*
-
-In general, all "Ctrl-W x" keys above work the same was as in |vifm-normal|
-mode.  Active mode is automatically changed on navigating among windows.
-When less-like activated on file preview is left using one by "Ctrl-W x"
-keys, its state is stored until another file is displayed using preview (it's
-possible to leave the mode, hide preview pane, do something else, then get
-back to the file and show preview pane again with previously stored state
-in it).
+All "Ctrl-W x" keys above work the same was as in |vifm-normal| mode.  Active
+mode is automatically changed on navigating among windows.  When less-like
+activated on file preview is left using one by "Ctrl-W x" keys, its state is
+stored until another file is displayed using preview (it's possible to leave
+the mode, hide preview pane, do something else, then get back to the file and
+show preview pane again with previously stored state in it).
 
 --------------------------------------------------------------------------------
 *vifm-command-line*

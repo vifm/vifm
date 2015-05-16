@@ -213,9 +213,7 @@ move the pane to the very top.
 .TP
 .BI "Ctrl-W L"
 move the pane to the far right.
-.TP
-.BI "Ctrl-W b"
-switch to bottom-right window.
+
 .TP
 .BI "Ctrl-W h"
 switch to the left pane.
@@ -228,30 +226,38 @@ switch to the pane above.
 .TP
 .BI "Ctrl-W l"
 switch to the right pane.
+
 .TP
-.BI "Ctrl-W o"
-shortcut for :only
+.BI "Ctrl-W b"
+switch to bottom-right window.
+.TP
+.BI "Ctrl-W t"
+switch to top-left window.
+
 .TP
 .BI "Ctrl-W p"
 switch to previous window.
 .TP
-.BI "Ctrl-W s"
-shortcut for :split
-.TP
-.BI "Ctrl-W t"
-switch to top-left window.
-.TP
-.BI "Ctrl-W v"
-shortcut for :vsplit
-.TP
 .BI "Ctrl-W w"
 switch to other pane.
+
+.TP
+.BI "Ctrl-W o"
+leave only one pane.
+.TP
+.BI "Ctrl-W s"
+split window horizontally.
+.TP
+.BI "Ctrl-W v"
+split window vertically.
+
 .TP
 .BI "Ctrl-W x"
 exchange panes.
 .TP
 .BI "Ctrl-W z"
 quit preview pane or view modes.
+
 .TP
 .BI "[count1]Ctrl-W[count2]\-"
 decrease size of the view by count1*count2.
@@ -264,6 +270,7 @@ decrease size of the view by count1*count2.
 .TP
 .BI "[count1]Ctrl-W[count2]>"
 increase size of the view by count1*count2.
+
 .TP
 .BI "Ctrl-W |"
 maximize current view.
@@ -841,92 +848,13 @@ go to beginning of file (or N percent into file).
 invoke an editor to edit the current file being viewed.  The command for editing
 is taken from the 'vicmd'/'vixcmd' option value and extended with middle line
 number prepended by a plus sign and name of the current file.
-.TP
-.BI "Ctrl-W H"
-move the pane to the far left.
-.TP
-.BI "Ctrl-W J"
-move the pane to the very bottom.
-.TP
-.BI "Ctrl-W K"
-move the pane to the very top.
-.TP
-.BI "Ctrl-W L"
-move the pane to the far right.
-
-.TP
-.BI "Ctrl-W h"
-switch to left pane.
-.TP
-.BI "Ctrl-W j"
-switch to pane below.
-.TP
-.BI "Ctrl-W k"
-switch to pane above.
-.TP
-.BI "Ctrl-W l"
-switch to right pane.
-
-.TP
-.BI "Ctrl-W b"
-switch to bottom-right window.
-.TP
-.BI "Ctrl-W t"
-switch to top-left window.
-
-.TP
-.BI "Ctrl-W p"
-switch to previous window.
-.TP
-.BI "Ctrl-W w"
-switch to other pane.
-
-.TP
-.BI "Ctrl-W o"
-leave only one pane.
-.TP
-.BI "Ctrl-W s"
-split window horizontally.
-.TP
-.BI "Ctrl-W v"
-split window vertically.
-
-.TP
-.BI "Ctrl-W x"
-exchange panes.
-.TP
-.BI "Ctrl-W z"
-quit preview pane or view modes.
-
-.TP
-.BI "Ctrl-W \-"
-decrease size of the view.
-.TP
-.BI "Ctrl-W +"
-increase size of the view.
-.TP
-.BI "Ctrl-W <"
-decrease size of the view.
-.TP
-.BI "Ctrl-W >"
-increase size of the view.
-.TP
-.BI "Ctrl-W |"
-maximize current view.
-.TP
-.BI "Ctrl-W _"
-maximize current view.
-.TP
-.BI "Ctrl-W ="
-make size of two views equal.
-
 .LP
-In general, all "Ctrl-W x" keys above work the same was as in Normal mode.
-Active mode is automatically changed on navigating among windows.  When
-less-like mode activated on file preview is left using one by "Ctrl-W x" keys,
-its state is stored until another file is displayed using preview (it's possible
-to leave the mode, hide preview pane, do something else, then get back to the
-file and show preview pane again with previously stored state in it).
+All "Ctrl-W x" keys work the same was as in Normal mode.  Active mode is
+automatically changed on navigating among windows.  When less-like mode
+activated on file preview is left using one by "Ctrl-W x" keys, its state is
+stored until another file is displayed using preview (it's possible to leave the
+mode, hide preview pane, do something else, then get back to the file and show
+preview pane again with previously stored state in it).
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------
