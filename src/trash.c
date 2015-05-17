@@ -236,15 +236,17 @@ static void
 empty_trash_dir(const char trash_dir[])
 {
 	char *const task_desc = format_str("Empty trash: %s", trash_dir);
+	char *const op_desc = format_str("Emptying %s", replace_home_part(trash_dir));
 
 	char *const trash_dir_copy = strdup(trash_dir);
 
-	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
+	if(bg_execute(task_desc, op_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
 			trash_dir_copy) != 0)
 	{
 		free(trash_dir_copy);
 	}
 
+	free(op_desc);
 	free(task_desc);
 }
 

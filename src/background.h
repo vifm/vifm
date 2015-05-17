@@ -109,10 +109,10 @@ pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 
-/* Start new background task, executed in a separate thread.  Returns zero on
- * success, otherwise non-zero is returned. */
-int bg_execute(const char desc[], int total, int important,
-		bg_task_func task_func, void *args);
+/* Starts new background task, which is run in a separate thread.  Returns zero
+ * on success, otherwise non-zero is returned. */
+int bg_execute(const char descr[], const char op_descr[], int total,
+		int important, bg_task_func task_func, void *args);
 
 /* Checks whether there are any internal jobs (not external applications tracked
  * by vifm) running in background. */
@@ -137,6 +137,11 @@ void bg_op_unlock(bg_op_t *bg_op);
 /* Callback-like function to report that state of background operation
  * changed. */
 void bg_op_changed(bg_op_t *bg_op);
+
+/* Conveniece method to update description of background job, use
+ * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
+ * operation change. */
+void bg_op_set_descr(bg_op_t *bg_op, const char descr[]);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

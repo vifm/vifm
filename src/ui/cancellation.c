@@ -18,7 +18,7 @@
 
 #include "cancellation.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* noraw() raw() */
 
 #include <assert.h> /* assert() */
 
