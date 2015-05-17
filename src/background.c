@@ -924,5 +924,15 @@ bg_op_changed(bg_op_t *bg_op)
 	ui_stat_job_bar_changed(bg_op);
 }
 
+void
+bg_op_set_descr(bg_op_t *bg_op, const char descr[])
+{
+	bg_op_lock(bg_op);
+	replace_string(&bg_op->descr, descr);
+	bg_op_unlock(bg_op);
+
+	bg_op_changed(bg_op);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -209,7 +209,6 @@ static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
 		bg_op_t *bg_op);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static void free_ops(ops_t *ops);
-static void set_bg_descr(bg_op_t *bg_op, const char descr[]);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
 		int move, int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
@@ -791,7 +790,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 	if(ops != NULL)
 	{
 		size_t i;
-		set_bg_descr(bg_op, "estimating...");
+		bg_op_set_descr(bg_op, "estimating...");
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
@@ -807,7 +806,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
-		set_bg_descr(bg_op, src);
+		bg_op_set_descr(bg_op, src);
 		delete_file_in_bg(ops, src, args->use_trash);
 		++bg_op->done;
 	}
@@ -3380,7 +3379,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	if(ops != NULL)
 	{
 		size_t i;
-		set_bg_descr(bg_op, "estimating...");
+		bg_op_set_descr(bg_op, "estimating...");
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
@@ -3393,7 +3392,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	{
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
-		set_bg_descr(bg_op, src);
+		bg_op_set_descr(bg_op, src);
 		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->use_trash,
 				args->path);
 		++bg_op->done;
@@ -3454,17 +3453,6 @@ free_ops(ops_t *ops)
 		}
 		ops_free(ops);
 	}
-}
-
-/* Updates description of background job. */
-static void
-set_bg_descr(bg_op_t *bg_op, const char descr[])
-{
-	bg_op_lock(bg_op);
-	replace_string(&bg_op->descr, descr);
-	bg_op_unlock(bg_op);
-
-	bg_op_changed(bg_op);
 }
 
 /* Actual implementation of background file copying/moving. */

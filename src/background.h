@@ -138,6 +138,11 @@ void bg_op_unlock(bg_op_t *bg_op);
  * changed. */
 void bg_op_changed(bg_op_t *bg_op);
 
+/* Conveniece method to update description of background job, use
+ * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
+ * operation change. */
+void bg_op_set_descr(bg_op_t *bg_op, const char descr[]);
+
 #endif /* VIFM__BACKGROUND_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
