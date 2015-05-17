@@ -739,8 +739,8 @@ start_background_job(const char *cmd, int skip_errors)
 }
 
 int
-bg_execute(const char desc[], int total, int important, bg_task_func task_func,
-		void *args)
+bg_execute(const char descr[], const char op_descr[], int total, int important,
+		bg_task_func task_func, void *args)
 {
 	pthread_t id;
 
@@ -752,7 +752,7 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 
 	task_args->func = task_func;
 	task_args->args = args;
-	task_args->job = add_background_job(WRONG_PID, desc, NO_JOB_ID,
+	task_args->job = add_background_job(WRONG_PID, descr, NO_JOB_ID,
 			important ? BJT_OPERATION : BJT_TASK);
 
 	if(task_args->job == NULL)
@@ -761,12 +761,13 @@ bg_execute(const char desc[], int total, int important, bg_task_func task_func,
 		return 2;
 	}
 
+	replace_string(&task_args->job->bg_op.descr, op_descr);
+	task_args->job->bg_op.total = total;
+
 	if(task_args->job->type == BJT_OPERATION)
 	{
 		ui_stat_job_bar_add(&task_args->job->bg_op);
 	}
-
-	task_args->job->bg_op.total = total;
 
 	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
 	{

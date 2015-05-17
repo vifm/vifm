@@ -765,7 +765,7 @@ delete_files_bg(FileView *view, int use_trash)
 
 	append_marked_files(view, task_desc, NULL);
 
-	if(bg_execute(task_desc, args->sel_list_len, 1, &delete_files_in_bg,
+	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
 	{
 		free_bg_args(args);
@@ -3146,7 +3146,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	general_prepare_for_bg_task(view, args);
 
-	if(bg_execute(task_desc, args->sel_list_len, 1, &cpmv_files_in_bg, args) != 0)
+	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
+				args) != 0)
 	{
 		free_bg_args(args);
 
@@ -3962,7 +3963,8 @@ start_dir_size_calc(const char path[], int force)
 
 	snprintf(task_desc, sizeof(task_desc), "Calculating size: %s", path);
 
-	if(bg_execute(task_desc, BG_UNDEFINED_TOTAL, 0, &dir_size_bg, args) != 0)
+	if(bg_execute(task_desc, path, BG_UNDEFINED_TOTAL, 0, &dir_size_bg,
+				args) != 0)
 	{
 		free(args->path);
 		free(args);
