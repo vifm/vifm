@@ -213,9 +213,7 @@ ops_enqueue(ops_t *ops, const char src[], const char dst[])
 		}
 	}
 
-	ui_cancellation_enable();
 	ioeta_calculate(ops->estim, src, ops->shallow_eta);
-	ui_cancellation_disable();
 }
 
 void

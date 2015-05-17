@@ -2335,11 +2335,14 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	put_confirm.view = view;
 
 	ui_cancellation_reset();
+	ui_cancellation_enable();
 
-	for(i = 0; i < reg->num_files; ++i)
+	for(i = 0; i < reg->num_files && !ui_cancellation_requested(); ++i)
 	{
 		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
 	}
+
+	ui_cancellation_disable();
 
 	return put_files_i(view, 1);
 }
@@ -3071,6 +3074,8 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 	int nmarked_files = 0;
 	dir_entry_t *entry = NULL;
 
+	ui_cancellation_enable();
+
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		char full_path[PATH_MAX];
@@ -3090,6 +3095,8 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 
 		++nmarked_files;
 	}
+
+	ui_cancellation_disable();
 
 	return nmarked_files;
 }
