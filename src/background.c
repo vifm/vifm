@@ -123,7 +123,7 @@ init_background(void)
 }
 
 void
-add_finished_job(pid_t pid, int status)
+add_finished_job(pid_t pid, int exit_code)
 {
 	job_t *job;
 
@@ -134,6 +134,8 @@ add_finished_job(pid_t pid, int status)
 		if(job->pid == pid)
 		{
 			job->running = 0;
+			job->exit_code = exit_code;
+			break;
 		}
 		job = job->next;
 	}
@@ -280,6 +282,7 @@ job_free(job_t *const job)
 		CloseHandle(job->hprocess);
 	}
 #endif
+	free(job->bg_op.descr);
 	free(job->cmd);
 	free(job);
 }

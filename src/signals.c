@@ -41,7 +41,7 @@ static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 #ifndef _WIN32
 
 #include <sys/types.h> /* pid_t */
-#include <sys/wait.h> /* waitpid */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 
 #include <stdlib.h> /* exit() */
 
@@ -81,7 +81,12 @@ received_sigchld(void)
 
 	/* This needs to be a loop in case of multiple blocked signals. */
 	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
-		add_finished_job(pid, status);
+	{
+		if(WIFEXITED(status))
+		{
+			add_finished_job(pid, WEXITSTATUS(status));
+		}
+	}
 }
 
 static void
