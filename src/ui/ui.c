@@ -955,6 +955,8 @@ resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
 
+	is_term_working();
+
 	update_term_size();
 	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
