@@ -123,7 +123,10 @@ redraw_file_info_dialog(void)
 
 	assert(view != NULL);
 
-	resize_for_menu_like();
+	if(resize_for_menu_like() != 0)
+	{
+		return;
+	}
 
 	werase(menu_win);
 

@@ -950,12 +950,16 @@ wprinta(WINDOW *win, const char str[], int line_attrs)
 	wnoutrefresh(win);
 }
 
-void
+int
 resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
 
 	ui_update_term_state();
+	if(curr_stats.term_state == TS_TOO_SMALL)
+	{
+		return 1;
+	}
 
 	update_term_size();
 	flushinp(); /* without it we will get strange character on input */
@@ -972,6 +976,8 @@ resize_for_menu_like(void)
 	wrefresh(status_bar);
 	wrefresh(ruler_win);
 	wrefresh(input_win);
+
+	return 0;
 }
 
 /* Query terminal size from the "device" and pass it to curses library. */

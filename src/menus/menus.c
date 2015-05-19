@@ -333,7 +333,11 @@ draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
 void
 redraw_menu(menu_info *m)
 {
-	resize_for_menu_like();
+	if(resize_for_menu_like() != 0)
+	{
+		return;
+	}
+
 	m->win_rows = getmaxy(menu_win);
 
 	draw_menu(m);

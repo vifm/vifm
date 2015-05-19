@@ -377,8 +377,9 @@ void wprint(WINDOW *win, const char str[]);
  * set during print operation only. */
 void wprinta(WINDOW *win, const char str[], int line_attrs);
 
-/* Performs resizing of some of TUI elements for menu like modes. */
-void resize_for_menu_like(void);
+/* Performs resizing of some of TUI elements for menu like modes.  Returns zero
+ * on success, and non-zero otherwise. */
+int resize_for_menu_like(void);
 
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);
