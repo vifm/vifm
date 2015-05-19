@@ -63,6 +63,7 @@ typedef struct job_t
 	char *cmd;
 	int skip_errors;
 	int running;
+	/* TODO: use or remove this (set to correct value, but not used). */
 	int exit_code;
 	char *error;
 
@@ -106,7 +107,10 @@ int background_and_wait_for_errors(char cmd[], int cancellable);
  * non-*nix like systems) or (pid_t)-1 on error. */
 pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 
-void add_finished_job(pid_t pid, int status);
+/* Mark background job specified by its process id, which is finished with the
+ * exit_code. */
+void add_finished_job(pid_t pid, int exit_code);
+
 void check_background_jobs(void);
 
 /* Starts new background task, which is run in a separate thread.  Returns zero
