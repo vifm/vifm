@@ -39,6 +39,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/tree.h"
+#include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
 #include "../file_magic.h"
@@ -47,6 +48,7 @@
 #include "modes.h"
 
 static void leave_file_info_mode(void);
+static int print_path(const char label[], const char path[], int curr_y);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -107,7 +109,6 @@ leave_file_info_mode(void)
 void
 redraw_file_info_dialog(void)
 {
-	char path_buf[PATH_MAX];
 	const dir_entry_t *entry;
 	char perm_buf[26];
 	char size_buf[56];
@@ -151,19 +152,8 @@ redraw_file_info_dialog(void)
 
 	curr_y = 2;
 
-	mvwaddstr(menu_win, curr_y, 2, "Path: ");
-	copy_str(path_buf, sizeof(path_buf), entry->origin);
-	path_buf[getmaxx(menu_win) - 8] = '\0';
-	checked_wmove(menu_win, curr_y, 8);
-	wprint(menu_win, path_buf);
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Name: ");
-	copy_str(path_buf, sizeof(path_buf), entry->name);
-	path_buf[getmaxx(menu_win) - 8] = '\0';
-	checked_wmove(menu_win, curr_y, 8);
-	wprint(menu_win, path_buf);
-	curr_y += 2;
+	curr_y +=  print_path("Path: ", entry->origin, curr_y);
+	curr_y +=  print_path("Name: ", entry->name, curr_y);
 
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
@@ -230,7 +220,30 @@ redraw_file_info_dialog(void)
 	was_redraw = 1;
 }
 
-/* Returns increment for curr_y */
+/* Prints path prefixed with a label truncating the path if it's too long.
+ * Returns increment for curr_y. */
+static int
+print_path(const char label[], const char path[], int curr_y)
+{
+	const int max_width = getmaxx(menu_win) - strlen(label) - 2;
+	const size_t print_len = get_normal_utf8_string_widthn(path, max_width);
+
+	mvwaddstr(menu_win, curr_y, 2, label);
+	if(path[print_len] == '\0')
+	{
+		wprint(menu_win, path);
+	}
+	else
+	{
+		char path_buf[PATH_MAX];
+		copy_str(path_buf, MIN(sizeof(path_buf), print_len + 1), path);
+		wprint(menu_win, path_buf);
+	}
+
+	return 2;
+}
+
+/* Returns increment for curr_y. */
 static int
 show_file_type(FileView *view, int curr_y)
 {
@@ -334,7 +347,7 @@ show_file_type(FileView *view, int curr_y)
 	return curr_y - old_curr_y;
 }
 
-/* Returns increment for curr_y */
+/* Returns increment for curr_y. */
 static int
 show_mime_type(FileView *view, int curr_y)
 {
