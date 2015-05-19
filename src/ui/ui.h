@@ -330,7 +330,10 @@ void ui_ruler_update(FileView *view);
  * efficiency reasons. */
 void ui_ruler_set(const char val[]);
 
-void is_term_working(void);
+/* Checks whether terminal is operational and has at least minimal
+ * dimensions.  Might terminate application on unavailable terminal.  Updates
+ * term_state in status structure. */
+void ui_update_term_state(void);
 
 /* Checks whether given character was pressed ignores any other characters. */
 int ui_char_pressed(wint_t c);

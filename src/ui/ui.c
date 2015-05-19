@@ -204,7 +204,7 @@ create_windows(void)
 }
 
 void
-is_term_working(void)
+ui_update_term_state(void)
 {
 	int screen_x, screen_y;
 
@@ -955,7 +955,7 @@ resize_for_menu_like(void)
 {
 	int screen_x, screen_y;
 
-	is_term_working();
+	ui_update_term_state();
 
 	update_term_size();
 	flushinp(); /* without it we will get strange character on input */
