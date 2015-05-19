@@ -282,6 +282,7 @@ job_free(job_t *const job)
 		CloseHandle(job->hprocess);
 	}
 #endif
+	free(job->bg_op.descr);
 	free(job->cmd);
 	free(job);
 }
