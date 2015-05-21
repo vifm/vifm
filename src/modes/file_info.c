@@ -166,22 +166,22 @@ redraw_file_info_dialog(void)
 
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
-	curr_y += print_item("Permissions: ", entry->origin, curr_y);
+	curr_y += print_item("Permissions: ", perm_buf, curr_y);
 #else
 	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
-	curr_y += print_item("Attributes: ", entry->origin, curr_y);
+	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
 	tm_ptr = localtime(&entry->mtime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	curr_y += print_item("Modified: ", buf, curr_y);
 
 	tm_ptr = localtime(&entry->atime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	curr_y += print_item("Accessed: ", buf, curr_y);
 
 	tm_ptr = localtime(&entry->ctime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 #ifndef _WIN32
 	curr_y += print_item("Changed: ", buf, curr_y);
 #else
