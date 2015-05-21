@@ -107,8 +107,6 @@ ipc_init(recieve_callback callback_func)
 	}
 #endif
 
-	(void)create_socket();
-
 	if(create_socket() != 0)
 	{
 #ifdef _WIN32
@@ -118,7 +116,8 @@ ipc_init(recieve_callback callback_func)
 		return;
 	}
 
-	try_become_a_server();
+	/* FIXME: used to call try_become_a_server() here, but it always succeeds (see
+	 *        FIXME comment there, which breaks our logic. */
 
 	atexit(&clean_at_exit);
 	initialized = 1;
@@ -169,6 +168,9 @@ try_become_a_server(void)
 
 	if(server)
 		return;
+
+	/* FIXME: with SO_REUSEADDR this operation always succeeds...  Which breaks
+	 *        client/server relationships. */
 
 #ifdef _WIN32
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes,
