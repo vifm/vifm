@@ -70,16 +70,17 @@ execute_apropos_cb(FileView *view, menu_info *m)
 	char *man_page;
 	char *free_this;
 	char *num_str;
-	char command[256];
 
 	free_this = man_page = line = strdup(m->items[m->pos]);
 	if(free_this == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		curr_stats.save_msg = 1;
 		return 1;
 	}
 
-	if((num_str = strchr(line, '(')))
+	num_str = strchr(line, '(');
+	if(num_str != NULL)
 	{
 		int z = 0;
 
@@ -89,6 +90,8 @@ execute_apropos_cb(FileView *view, menu_info *m)
 			z++;
 			if(z > 40)
 			{
+				status_bar_error("Failed to find section number.");
+				curr_stats.save_msg = 1;
 				free(free_this);
 				return 1;
 			}
@@ -98,13 +101,26 @@ execute_apropos_cb(FileView *view, menu_info *m)
 		line = strchr(line, ' ');
 		if(line != NULL)
 		{
+			char command[256];
+			int exit_code;
+
 			line[0] = '\0';
 
 			snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
 
 			curr_stats.skip_shellout_redraw = 1;
-			shellout(command, 0, 1);
+			exit_code = shellout(command, 0, 1);
+			if(exit_code != 0)
+			{
+				status_bar_errorf("man view command failed with code: %d", exit_code);
+				curr_stats.save_msg = 1;
+			}
 			curr_stats.skip_shellout_redraw = 0;
+		}
+		else
+		{
+			status_bar_error("Failed to extract man page name.");
+			curr_stats.save_msg = 1;
 		}
 	}
 	free(free_this);
