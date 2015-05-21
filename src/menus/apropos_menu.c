@@ -19,7 +19,8 @@
 
 #include "apropos_menu.h"
 
-#include <stddef.h> /* NULL */
+#include <ctype.h> /* isdigit() */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
@@ -30,20 +31,22 @@
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #include "../macros.h"
 #include "../running.h"
 #include "../status.h"
 #include "menus.h"
 
 static int execute_apropos_cb(FileView *view, menu_info *m);
+TSTATIC int parse_apropos_line(const char line[], int *section, char topic[],
+		size_t topic_len);
 
 int
 show_apropos_menu(FileView *view, const char args[])
 {
 	char *cmd;
 	int save_msg;
-	custom_macro_t macros[] =
-	{
+	custom_macro_t macros[] = {
 		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 	};
 
@@ -66,65 +69,70 @@ show_apropos_menu(FileView *view, const char args[])
 static int
 execute_apropos_cb(FileView *view, menu_info *m)
 {
-	char *line;
-	char *man_page;
-	char *free_this;
-	char *num_str;
+	int section;
+	char topic[64];
+	char command[256];
+	int exit_code;
 
-	free_this = man_page = line = strdup(m->items[m->pos]);
-	if(free_this == NULL)
+	if(parse_apropos_line(m->items[m->pos], &section, topic, sizeof(topic)) != 0)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		curr_stats.save_msg = 1;
 		return 1;
 	}
 
-	num_str = strchr(line, '(');
-	if(num_str != NULL)
+	snprintf(command, sizeof(command), "man %d %s", section, topic);
+
+	curr_stats.skip_shellout_redraw = 1;
+	exit_code = shellout(command, 0, 1);
+	curr_stats.skip_shellout_redraw = 0;
+
+	if(exit_code != 0)
 	{
-		int z = 0;
-
-		num_str++;
-		while(num_str[z] != ')')
-		{
-			z++;
-			if(z > 40)
-			{
-				status_bar_error("Failed to find section number.");
-				curr_stats.save_msg = 1;
-				free(free_this);
-				return 1;
-			}
-		}
-
-		num_str[z] = '\0';
-		line = strchr(line, ' ');
-		if(line != NULL)
-		{
-			char command[256];
-			int exit_code;
-
-			line[0] = '\0';
-
-			snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
-
-			curr_stats.skip_shellout_redraw = 1;
-			exit_code = shellout(command, 0, 1);
-			if(exit_code != 0)
-			{
-				status_bar_errorf("man view command failed with code: %d", exit_code);
-				curr_stats.save_msg = 1;
-			}
-			curr_stats.skip_shellout_redraw = 0;
-		}
-		else
-		{
-			status_bar_error("Failed to extract man page name.");
-			curr_stats.save_msg = 1;
-		}
+		status_bar_errorf("man view command failed with code: %d", exit_code);
+		curr_stats.save_msg = 1;
 	}
-	free(free_this);
+
 	return 1;
+}
+
+/* Parses apropos output line and extracts section number and topic.  On error
+ * prints status bar message and returns non-zero, otherwise zero is
+ * returned. */
+TSTATIC int
+parse_apropos_line(const char line[], int *section, char topic[],
+		size_t topic_len)
+{
+	char *num_str;
+	const char *sep;
+
+	num_str = strchr(line, '(');
+	if(num_str == NULL)
+	{
+		status_bar_error("Failed to find section number.");
+		return 1;
+	}
+
+	/* Check for "(\d+)" format. */
+	if(!isdigit(num_str[1]) ||
+			num_str[1 + strspn(num_str + 1, "0123456789")] != ')')
+	{
+		status_bar_error("Wrong section number format.");
+		return 1;
+	}
+
+	*section = str_to_int(num_str + 1);
+
+	/* sep can't be NULL as we found '(' above. */
+	sep = strpbrk(line, " (");
+
+	if(topic_len == 0 || topic_len - 1 < (size_t)(sep - line))
+	{
+		status_bar_error("Internal buffer is too small.");
+		return 1;
+	}
+
+	copy_str(topic, sep - line + 1, line);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

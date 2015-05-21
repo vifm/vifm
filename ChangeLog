@@ -225,7 +225,8 @@
 
 	Complete `clear` subcommand of :highlight.
 
-	Fixed search messages in menus (nth time...).
+	Parse output of mandoc version of apropos in :apropos.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef).
 
 	Fixed automatic finishing in some situation when no terminal is available.
 	Thanks to tYGjQCsvVI.

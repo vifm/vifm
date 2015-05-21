@@ -21,9 +21,15 @@
 #define VIFM__MENUS__APROPOS_MENU_H__
 
 #include "../ui/ui.h"
+#include "../utils/test_helpers.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_apropos_menu(FileView *view, const char args[]);
+
+TSTATIC_DEFS(
+	int parse_apropos_line(const char line[], int *section, char topic[],
+		size_t topic_len);
+)
 
 #endif /* VIFM__MENUS__APROPOS_MENU_H__ */
 
