@@ -107,8 +107,6 @@ ipc_init(recieve_callback callback_func)
 	}
 #endif
 
-	(void)create_socket();
-
 	if(create_socket() != 0)
 	{
 #ifdef _WIN32
