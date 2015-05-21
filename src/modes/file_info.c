@@ -39,6 +39,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/tree.h"
+#include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
 #include "../file_magic.h"
@@ -47,6 +48,7 @@
 #include "modes.h"
 
 static void leave_file_info_mode(void);
+static int print_item(const char label[], const char path[], int curr_y);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -107,7 +109,6 @@ leave_file_info_mode(void)
 void
 redraw_file_info_dialog(void)
 {
-	char path_buf[PATH_MAX];
 	const dir_entry_t *entry;
 	char perm_buf[26];
 	char size_buf[56];
@@ -122,7 +123,10 @@ redraw_file_info_dialog(void)
 
 	assert(view != NULL);
 
-	resize_for_menu_like();
+	if(resize_for_menu_like() != 0)
+	{
+		return;
+	}
 
 	werase(menu_win);
 
@@ -143,27 +147,10 @@ redraw_file_info_dialog(void)
 
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
-#ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
-#else
-	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
-#endif
-
 	curr_y = 2;
 
-	mvwaddstr(menu_win, curr_y, 2, "Path: ");
-	copy_str(path_buf, sizeof(path_buf), entry->origin);
-	path_buf[getmaxx(menu_win) - 8] = '\0';
-	checked_wmove(menu_win, curr_y, 8);
-	wprint(menu_win, path_buf);
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Name: ");
-	copy_str(path_buf, sizeof(path_buf), entry->name);
-	path_buf[getmaxx(menu_win) - 8] = '\0';
-	checked_wmove(menu_win, curr_y, 8);
-	wprint(menu_win, path_buf);
-	curr_y += 2;
+	curr_y += print_item("Path: ", entry->origin, curr_y);
+	curr_y += print_item("Name: ", entry->name, curr_y);
 
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
@@ -178,49 +165,39 @@ redraw_file_info_dialog(void)
 	curr_y += show_mime_type(view, curr_y);
 
 #ifndef _WIN32
-	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
+	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
+	curr_y += print_item("Permissions: ", entry->origin, curr_y);
 #else
-	mvwaddstr(menu_win, curr_y, 2, "Attributes: ");
+	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
+	curr_y += print_item("Attributes: ", entry->origin, curr_y);
 #endif
-	mvwaddstr(menu_win, curr_y, 15, perm_buf);
-	curr_y += 2;
 
-	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&entry->mtime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	checked_wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
+	curr_y += print_item("Modified: ", buf, curr_y);
 
-	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
 	tm_ptr = localtime(&entry->atime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	checked_wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
+	curr_y += print_item("Accessed: ", buf, curr_y);
 
-#ifndef _WIN32
-	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
-#else
-	mvwaddstr(menu_win, curr_y, 2, "Created: ");
-#endif
 	tm_ptr = localtime(&entry->ctime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	checked_wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
+#ifndef _WIN32
+	curr_y += print_item("Changed: ", buf, curr_y);
+#else
+	curr_y += print_item("Created: ", buf, curr_y);
+#endif
 
 #ifndef _WIN32
-	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
 	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
-	mvwaddstr(menu_win, curr_y, 10, id_buf);
+	curr_y += print_item("Owner: ", id_buf, curr_y);
 
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Group: ");
 	get_gid_string(entry, 0, sizeof(id_buf), id_buf);
-	mvwaddstr(menu_win, curr_y, 10, id_buf);
+	curr_y += print_item("Group: ", id_buf, curr_y);
 #endif
+
+	/* Fake use after last assignment. */
+	(void)curr_y;
 
 	box(menu_win, 0, 0);
 	checked_wmove(menu_win, 0, 3);
@@ -230,7 +207,30 @@ redraw_file_info_dialog(void)
 	was_redraw = 1;
 }
 
-/* Returns increment for curr_y */
+/* Prints item prefixed with a label truncating the item if it's too long.
+ * Returns increment for curr_y. */
+static int
+print_item(const char label[], const char path[], int curr_y)
+{
+	const int max_width = getmaxx(menu_win) - strlen(label) - 2;
+	const size_t print_len = get_normal_utf8_string_widthn(path, max_width);
+
+	mvwaddstr(menu_win, curr_y, 2, label);
+	if(path[print_len] == '\0')
+	{
+		wprint(menu_win, path);
+	}
+	else
+	{
+		char path_buf[PATH_MAX];
+		copy_str(path_buf, MIN(sizeof(path_buf), print_len + 1), path);
+		wprint(menu_win, path_buf);
+	}
+
+	return 2;
+}
+
+/* Returns increment for curr_y. */
 static int
 show_file_type(FileView *view, int curr_y)
 {
@@ -334,7 +334,7 @@ show_file_type(FileView *view, int curr_y)
 	return curr_y - old_curr_y;
 }
 
-/* Returns increment for curr_y */
+/* Returns increment for curr_y. */
 static int
 show_mime_type(FileView *view, int curr_y)
 {

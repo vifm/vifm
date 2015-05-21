@@ -330,7 +330,10 @@ void ui_ruler_update(FileView *view);
  * efficiency reasons. */
 void ui_ruler_set(const char val[]);
 
-void is_term_working(void);
+/* Checks whether terminal is operational and has at least minimal
+ * dimensions.  Might terminate application on unavailable terminal.  Updates
+ * term_state in status structure. */
+void ui_update_term_state(void);
 
 /* Checks whether given character was pressed ignores any other characters. */
 int ui_char_pressed(wint_t c);
@@ -374,8 +377,9 @@ void wprint(WINDOW *win, const char str[]);
  * set during print operation only. */
 void wprinta(WINDOW *win, const char str[], int line_attrs);
 
-/* Performs resizing of some of TUI elements for menu like modes. */
-void resize_for_menu_like(void);
+/* Performs resizing of some of TUI elements for menu like modes.  Returns zero
+ * on success, and non-zero otherwise. */
+int resize_for_menu_like(void);
 
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);

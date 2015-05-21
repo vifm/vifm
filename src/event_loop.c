@@ -232,7 +232,7 @@ event_loop(const int *quit)
 static int
 ensure_term_is_ready(void)
 {
-	is_term_working();
+	ui_update_term_state();
 
 	update_terminal_settings();
 

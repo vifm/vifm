@@ -1276,11 +1276,15 @@ static void
 put_sort_info(FILE *fp, char leading_char, const FileView *view)
 {
 	int i = -1;
+	const char *const sort = (flist_custom_active(view) && view->custom.unsorted)
+	                       ? view->custom.sort
+	                       : view->sort;
+
 	fputc(leading_char, fp);
-	while(++i < SK_COUNT && abs(view->sort[i]) <= SK_LAST)
+	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)
 	{
-		int is_last_option = i >= SK_COUNT - 1 || abs(view->sort[i + 1]) > SK_LAST;
-		fprintf(fp, "%d%s", view->sort[i], is_last_option ? "" : ",");
+		int is_last_option = i >= SK_COUNT - 1 || abs(sort[i + 1]) > SK_LAST;
+		fprintf(fp, "%d%s", sort[i], is_last_option ? "" : ",");
 	}
 	fputc('\n', fp);
 }
