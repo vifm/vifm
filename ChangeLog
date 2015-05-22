@@ -230,6 +230,9 @@
 
 	Error on wrong combinations of macros and background mark in commands.
 
+	No more unjustified inconsistency in processing macros in :! and
+	:file[x]type commands.  Thanks to Miodrag Tokić (a.k.a. loonies).
+
 	Fixed automatic finishing in some situation when no terminal is available.
 	Thanks to tYGjQCsvVI.
 

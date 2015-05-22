@@ -574,22 +574,37 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 	}
 	else if(strchr(program, '%') != NULL)
 	{
-		int background;
+		int bg;
 		MacroFlags flags;
-		char *command = expand_macros(program, NULL, &flags, 1);
+		int save_msg = 0;
+		char *const cmd = expand_macros(program, NULL, &flags, 1);
+		int handled;
 
-		background = ends_with(command, " &");
-		if(background)
-			command[strlen(command) - 2] = '\0';
+		bg = ends_with(cmd, " &");
+		if(bg)
+		{
+			cmd[strlen(cmd) - 2] = '\0';
+		}
+		bg = !pause && (bg || force_background);
 
-		if(!pause && (background || force_background))
-			start_background_job(command, flags == MF_IGNORE);
-		else if(flags == MF_IGNORE)
-			output_to_nowhere(command);
+		handled = run_ext_command(cmd, flags, bg, &save_msg);
+		if(handled)
+		{
+			if(save_msg)
+			{
+				curr_stats.save_msg = 1;
+			}
+		}
+		else if(bg)
+		{
+			start_background_job(cmd, flags == MF_IGNORE);
+		}
 		else
-			shellout(command, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+		{
+			shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+		}
 
-		free(command);
+		free(cmd);
 	}
 	else
 	{
