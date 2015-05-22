@@ -27,8 +27,8 @@
 int show_apropos_menu(FileView *view, const char args[]);
 
 TSTATIC_DEFS(
-	int parse_apropos_line(const char line[], int *section, char topic[],
-		size_t topic_len);
+	int parse_apropos_line(const char line[], char section[], size_t section_len,
+		char topic[], size_t topic_len);
 )
 
 #endif /* VIFM__MENUS__APROPOS_MENU_H__ */
