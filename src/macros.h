@@ -63,6 +63,10 @@ char * expand_macros(const char command[], const char args[], MacroFlags *flags,
 char * expand_custom_macros(const char pattern[], size_t nmacros,
 		custom_macro_t macros[]);
 
+/* Maps flag to corresponding string representation of the macro using %-syntax.
+ * Returns the string representation. */
+const char * macros_to_str(MacroFlags flags);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif

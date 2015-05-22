@@ -1,4 +1,4 @@
-.TH vifm 1 "May 14, 2015" "" "Vifm"
+.TH vifm 1 "May 22, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2618,8 +2618,8 @@ height of preview area.
 .LP
 Use %% if you need to put a percent sign in your command.
 
-Note that %m, %M, %s, %S and %i macros are mutually exclusive. Only the last one
-of them in the command will take effect.
+Note that %m, %M, %s, %S, %i, %u and %U macros are mutually exclusive.  Only
+the last one of them on the command will take effect.
 
 You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
 Supported modifiers are:
@@ -2688,9 +2688,8 @@ Rewriting the example command with macros given above with backgrounding:
  :!mv %f %D &
 .EE
 .LP
-Note that %m, %M, %s, %S and %i macros have bigger priority than &.  So
-command containing at least one of them can't be backgrounded and " &" at the
-end will be just silently ignored.
+%m, %M, %s, %S, %u and %U macros cannot be combined with background mark (" &")
+as it doesn't make much sense.
 .\" ---------------------------------------------------------------------------
 .SH Command backgrounding
 .\" ---------------------------------------------------------------------------

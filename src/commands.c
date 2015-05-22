@@ -310,7 +310,7 @@ static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
-static int try_handle_ext_command(const char cmd[], MacroFlags flags,
+static int try_handle_ext_command(const char cmd[], MacroFlags flags, int bg,
 		int *save_msg);
 static void output_to_statusbar(const char *cmd);
 static void run_in_split(const FileView *view, const char cmd[]);
@@ -1568,7 +1568,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	handled = try_handle_ext_command(com, flags, &save_msg);
+	handled = try_handle_ext_command(com, flags, cmd_info->bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4507,7 +4507,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	clean_selected_files(curr_view);
 
-	handled = try_handle_ext_command(expanded_com, flags, &save_msg);
+	handled = try_handle_ext_command(expanded_com, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4601,8 +4601,17 @@ parse_bg_mark(char cmd[])
  *  - = 0 -- not handled at all;
  *  - < 0 -- handled, exit. */
 static int
-try_handle_ext_command(const char cmd[], MacroFlags flags, int *save_msg)
+try_handle_ext_command(const char cmd[], MacroFlags flags, int bg,
+		int *save_msg)
 {
+	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
+	{
+		status_bar_errorf("\"%s\" macro can't be combined with \" &\"",
+				macros_to_str(flags));
+		*save_msg = 1;
+		return -1;
+	}
+
 	if(flags == MF_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(cmd);
