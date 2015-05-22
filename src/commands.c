@@ -310,12 +310,6 @@ static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
-static int try_handle_ext_command(const char cmd[], MacroFlags flags, int bg,
-		int *save_msg);
-static void output_to_statusbar(const char *cmd);
-static void run_in_split(const FileView *view, const char cmd[]);
-static void output_to_custom_flist(FileView *view, const char cmd[], int very);
-static void path_handler(const char line[], void *arg);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1568,7 +1562,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	handled = try_handle_ext_command(com, flags, cmd_info->bg, &save_msg);
+	handled = run_ext_command(com, flags, cmd_info->bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4507,7 +4501,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	clean_selected_files(curr_view);
 
-	handled = try_handle_ext_command(expanded_com, flags, bg, &save_msg);
+	handled = run_ext_command(expanded_com, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4594,178 +4588,6 @@ parse_bg_mark(char cmd[])
 
 	amp[-1] = '\0';
 	return 1;
-}
-
-/* Handles most of command handling variants.  Returns:
- *  - > 0 -- handled, good to go;
- *  - = 0 -- not handled at all;
- *  - < 0 -- handled, exit. */
-static int
-try_handle_ext_command(const char cmd[], MacroFlags flags, int bg,
-		int *save_msg)
-{
-	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
-	{
-		status_bar_errorf("\"%s\" macro can't be combined with \" &\"",
-				macros_to_str(flags));
-		*save_msg = 1;
-		return -1;
-	}
-
-	if(flags == MF_STATUSBAR_OUTPUT)
-	{
-		output_to_statusbar(cmd);
-		*save_msg = 1;
-		return -1;
-	}
-	else if(flags == MF_IGNORE)
-	{
-		output_to_nowhere(cmd);
-		*save_msg = 0;
-		return -1;
-	}
-	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
-	{
-		const int navigate = flags == MF_MENU_NAV_OUTPUT;
-		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
-	}
-	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
-	{
-		run_in_split(curr_view, cmd);
-	}
-	else if(flags == MF_CUSTOMVIEW_OUTPUT || flags == MF_VERYCUSTOMVIEW_OUTPUT)
-	{
-		const int very = flags == MF_VERYCUSTOMVIEW_OUTPUT;
-		output_to_custom_flist(curr_view, cmd, very);
-	}
-	else
-	{
-		return 0;
-	}
-	return 1;
-}
-
-static void
-output_to_statusbar(const char *cmd)
-{
-	FILE *file, *err;
-	char buf[2048];
-	char *lines;
-	size_t len;
-
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
-	}
-
-	lines = NULL;
-	len = 0;
-	while(fgets(buf, sizeof(buf), file) == buf)
-	{
-		chomp(buf);
-		lines = realloc(lines, len + 1 + strlen(buf) + 1);
-		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
-	}
-
-	fclose(file);
-	fclose(err);
-
-	status_bar_message((lines == NULL) ? "" : lines);
-	free(lines);
-}
-
-/* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
- * is NULL. */
-static void
-run_in_split(const FileView *view, const char cmd[])
-{
-	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
-
-	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
-
-	if(curr_stats.term_multiplexer == TM_TMUX)
-	{
-		char buf[1024];
-		snprintf(buf, sizeof(buf), "tmux split-window %s", escaped_cmd);
-		(void)vifm_system(buf);
-	}
-	else if(curr_stats.term_multiplexer == TM_SCREEN)
-	{
-		char buf[1024];
-		char *escaped_chdir;
-
-		char *const escaped_dir = escape_filename(flist_get_dir(view), 0);
-		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
-		free(escaped_dir);
-
-		escaped_chdir = escape_filename(buf, 0);
-		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
-		free(escaped_chdir);
-
-		(void)vifm_system(buf);
-
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
-				escaped_cmd);
-		(void)vifm_system(buf);
-	}
-	else
-	{
-		assert(0 && "Unexpected active terminal multiplexer value.");
-	}
-
-	free(escaped_cmd);
-}
-
-/* Runs the cmd and parses its output as list of paths to compose custom view.
- * Very custom view implies unsorted list. */
-static void
-output_to_custom_flist(FileView *view, const char cmd[], int very)
-{
-	char *title;
-
-	title = format_str("!%s", cmd);
-	flist_custom_start(view, title);
-	free(title);
-
-	if(process_cmd_output("Loading custom view", cmd, 1, &path_handler,
-				view) != 0)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
-	}
-
-	if(very)
-	{
-		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
-		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-	}
-	view->custom.unsorted = very;
-
-	(void)flist_custom_finish(view);
-
-	if(very)
-	{
-		/* As custom view isn't activated until flist_custom_finish() is called,
-		 * need to update option separately from view sort array. */
-		load_sort_option(view);
-	}
-
-	flist_set_pos(view, 0);
-}
-
-/* Implements process_cmd_output() callback that loads paths into custom
- * view. */
-static void
-path_handler(const char line[], void *arg)
-{
-	FileView *view = arg;
-	int line_num;
-	char *const path = parse_file_spec(line, &line_num);
-	if(path != NULL)
-	{
-		flist_custom_add(view, path);
-	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

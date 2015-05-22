@@ -21,6 +21,7 @@
 #define VIFM__RUNNING_H__
 
 #include "ui/ui.h"
+#include "macros.h"
 
 /* Kinds of executable file treatment on file handling. */
 typedef enum
@@ -53,10 +54,14 @@ void cd_updir(FileView *view);
  * Returns zero on success, otherwise non-zero is returned. */
 int shellout(const char command[], int pause, int use_term_multiplexer);
 
-void output_to_nowhere(const char cmd[]);
-
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
+
+/* Handles most of command handling variants.  Returns:
+ *  - > 0 -- handled, good to go;
+ *  - = 0 -- not handled at all;
+ *  - < 0 -- handled, exit. */
+int run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 
 #endif /* VIFM__RUNNING_H__ */
 
