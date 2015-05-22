@@ -4,25 +4,21 @@
 
 TEST(groff_format)
 {
-	int section;
-	char topic[64];
-	const int err = parse_apropos_line("vifm    (1)  - vi file manager", &section,
-			topic, sizeof(topic));
+	char section[64], topic[64];
+	assert_success(parse_apropos_line("vifm    (1)  - vi file manager", section,
+			sizeof(section), topic, sizeof(topic)));
 
-	assert_success(err);
-	assert_int_equal(1, section);
+	assert_string_equal("1", section);
 	assert_string_equal("vifm", topic);
 }
 
 TEST(mandoc_format)
 {
-	int section;
-	char topic[64];
-	const int err = parse_apropos_line("vifm(1)  - vi file manager", &section,
-			topic, sizeof(topic));
+	char section[64], topic[64];
+	assert_success(parse_apropos_line("vifm(1)  - vi file manager", section,
+			sizeof(section), topic, sizeof(topic)));
 
-	assert_success(err);
-	assert_int_equal(1, section);
+	assert_string_equal("1", section);
 	assert_string_equal("vifm", topic);
 }
 
@@ -30,59 +26,74 @@ TEST(mandoc_format)
  * reliably. */
 TEST(bad_format)
 {
-	int section;
-	char topic[64];
-	const int err = parse_apropos_line("v(1)fm (1) - vi file manager", &section,
-			topic, sizeof(topic));
+	char section[64], topic[64];
+	assert_success(parse_apropos_line("v(1)fm (1) - vi file manager", section,
+			sizeof(section), topic, sizeof(topic)));
 
-	assert_success(err);
-	assert_int_equal(1, section);
+	assert_string_equal("1", section);
 	assert_string_equal("v", topic);
 }
 
-TEST(section_number_validation)
+TEST(section_validation)
 {
-	int section;
-	char t[64];
+	char s[64], t[64];
 
-	assert_success(parse_apropos_line("v(0) - d", &section, t, sizeof(t)));
-	assert_success(parse_apropos_line("v(1) - d", &section, t, sizeof(t)));
-	assert_success(parse_apropos_line("v(8) - d", &section, t, sizeof(t)));
+	assert_success(parse_apropos_line("v(0) - d", s, sizeof(s), t, sizeof(t)));
+	assert_success(parse_apropos_line("v(1) - d", s, sizeof(s), t, sizeof(t)));
+	assert_success(parse_apropos_line("v(8) - d", s, sizeof(s), t, sizeof(t)));
 
-	assert_failure(parse_apropos_line("v - d", &section, t, sizeof(t)));
-	assert_failure(parse_apropos_line("v(-1) - d", &section, t, sizeof(t)));
-	assert_failure(parse_apropos_line("v() - d", &section, t, sizeof(t)));
-	assert_failure(parse_apropos_line("v( - d", &section, t, sizeof(t)));
-	assert_failure(parse_apropos_line("v(4", &section, t, sizeof(t)));
+	assert_failure(parse_apropos_line("v - d", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v() - d", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v( - d", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v(4", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v(()", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v(())", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v())", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v( )", s, sizeof(s), t, sizeof(t)));
+	assert_failure(parse_apropos_line("v(a\tb)", s, sizeof(s), t, sizeof(t)));
 }
 
-TEST(section_number_value)
+TEST(section_value)
 {
-	int section;
-	char t[64];
+	char s[64], t[64];
 
-	assert_success(parse_apropos_line("v(0) - d", &section, t, sizeof(t)));
-	assert_int_equal(0, section);
+	assert_success(parse_apropos_line("v(0) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("0", s);
 
-	assert_success(parse_apropos_line("v(1) - d", &section, t, sizeof(t)));
-	assert_int_equal(1, section);
+	assert_success(parse_apropos_line("v(1) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("1", s);
 
-	assert_success(parse_apropos_line("v(8) - d", &section, t, sizeof(t)));
-	assert_int_equal(8, section);
+	assert_success(parse_apropos_line("v(666) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("666", s);
+
+	assert_success(parse_apropos_line("v(n) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("n", s);
+
+	assert_success(parse_apropos_line("v(p1) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("p1", s);
+
+	assert_success(parse_apropos_line("v(#3-*) - d", s, sizeof(s), t, sizeof(t)));
+	assert_string_equal("#3-*", s);
 }
 
 TEST(too_small_buffer)
 {
-	int section;
-	char topic[64];
+	char section[64], topic[64];
 
-	assert_failure(parse_apropos_line("vifm (1) - d", &section, topic, 0));
-	assert_failure(parse_apropos_line("vifm (1) - d", &section, topic, 1));
-	assert_failure(parse_apropos_line("vifm (1) - d", &section, topic, 2));
-	assert_failure(parse_apropos_line("vifm (1) - d", &section, topic, 3));
-	assert_failure(parse_apropos_line("vifm (1) - d", &section, topic, 4));
-	assert_success(parse_apropos_line("vifm (1) - d", &section, topic, 5));
+	assert_failure(parse_apropos_line("vifm (1) - d", section, 10, topic, 0));
+	assert_failure(parse_apropos_line("vifm (1) - d", section, 10, topic, 1));
+	assert_failure(parse_apropos_line("vifm (1) - d", section, 10, topic, 2));
+	assert_failure(parse_apropos_line("vifm (1) - d", section, 10, topic, 3));
+	assert_failure(parse_apropos_line("vifm (1) - d", section, 10, topic, 4));
+	assert_success(parse_apropos_line("vifm (1) - d", section, 10, topic, 5));
 	assert_string_equal("vifm", topic);
+
+	assert_failure(parse_apropos_line("vifm (123) - d", section, 0, topic, 10));
+	assert_failure(parse_apropos_line("vifm (123) - d", section, 1, topic, 10));
+	assert_failure(parse_apropos_line("vifm (123) - d", section, 2, topic, 10));
+	assert_failure(parse_apropos_line("vifm (123) - d", section, 3, topic, 10));
+	assert_success(parse_apropos_line("vifm (123) - d", section, 4, topic, 10));
+	assert_string_equal("123", section);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

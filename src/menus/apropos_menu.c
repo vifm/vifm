@@ -38,8 +38,8 @@
 #include "menus.h"
 
 static int execute_apropos_cb(FileView *view, menu_info *m);
-TSTATIC int parse_apropos_line(const char line[], int *section, char topic[],
-		size_t topic_len);
+TSTATIC int parse_apropos_line(const char line[], char section[],
+		size_t section_len, char topic[], size_t topic_len);
 
 int
 show_apropos_menu(FileView *view, const char args[])
@@ -69,18 +69,18 @@ show_apropos_menu(FileView *view, const char args[])
 static int
 execute_apropos_cb(FileView *view, menu_info *m)
 {
-	int section;
-	char topic[64];
+	char section[64], topic[64];
 	char command[256];
 	int exit_code;
 
-	if(parse_apropos_line(m->items[m->pos], &section, topic, sizeof(topic)) != 0)
+	if(parse_apropos_line(m->items[m->pos], section, sizeof(section), topic,
+				sizeof(topic)) != 0)
 	{
 		curr_stats.save_msg = 1;
 		return 1;
 	}
 
-	snprintf(command, sizeof(command), "man %d %s", section, topic);
+	snprintf(command, sizeof(command), "man %s %s", section, topic);
 
 	curr_stats.skip_shellout_redraw = 1;
 	exit_code = shellout(command, 0, 1);
@@ -99,39 +99,39 @@ execute_apropos_cb(FileView *view, menu_info *m)
  * prints status bar message and returns non-zero, otherwise zero is
  * returned. */
 TSTATIC int
-parse_apropos_line(const char line[], int *section, char topic[],
-		size_t topic_len)
+parse_apropos_line(const char line[], char section[], size_t section_len,
+		char topic[], size_t topic_len)
 {
-	char *num_str;
+	const char *sec_l, *sec_r;
 	const char *sep;
 
-	num_str = strchr(line, '(');
-	if(num_str == NULL)
+	sec_l = strchr(line, '(');
+	if(sec_l == NULL)
 	{
 		status_bar_error("Failed to find section number.");
 		return 1;
 	}
 
-	/* Check for "(\d+)" format. */
-	if(!isdigit(num_str[1]) ||
-			num_str[1 + strspn(num_str + 1, "0123456789")] != ')')
+	/* Check for "([^\s()]+)" format. */
+	sec_r = sec_l + 1 + strcspn(sec_l + 1, " \t()");
+	if(sec_r == sec_l + 1 || *sec_r != ')')
 	{
 		status_bar_error("Wrong section number format.");
 		return 1;
 	}
 
-	*section = str_to_int(num_str + 1);
-
 	/* sep can't be NULL as we found '(' above. */
 	sep = strpbrk(line, " (");
 
-	if(topic_len == 0 || topic_len - 1 < (size_t)(sep - line))
+	if(section_len == 0 || section_len - 1 < (size_t)(sec_r - (sec_l + 1)) ||
+			topic_len == 0 || topic_len - 1 < (size_t)(sep - line))
 	{
 		status_bar_error("Internal buffer is too small.");
 		return 1;
 	}
 
 	copy_str(topic, sep - line + 1, line);
+	copy_str(section, sec_r - (sec_l + 1) + 1, sec_l + 1);
 	return 0;
 }
 
