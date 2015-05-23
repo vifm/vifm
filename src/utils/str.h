@@ -73,6 +73,11 @@ wchar_t * vifm_wcsdup(const wchar_t ws[]);
  * so, otherwise zero is returned. */
 int starts_with(const char str[], const char prefix[]);
 
+/* Checks whether *str starts with the given prefix and advances *str to point
+ * past the prefix.  Returns non-zero if prefix was skipped, otherwise zero is
+ * returned. */
+int skip_prefix(const char **str, const char prefix[]);
+
 /* Checks whether str ends with the given suffix and removes it if found.
  * Returns non-zero if it's so, otherwise zero is returned. */
 int cut_suffix(char str[], const char suffix[]);

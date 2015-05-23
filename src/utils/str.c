@@ -106,6 +106,18 @@ starts_with(const char str[], const char prefix[])
 }
 
 int
+skip_prefix(const char **str, const char prefix[])
+{
+	const size_t prefix_len = strlen(prefix);
+	if(starts_withn(*str, prefix, prefix_len))
+	{
+		*str += prefix_len;
+		return 1;
+	}
+	return 0;
+}
+
+int
 cut_suffix(char str[], const char suffix[])
 {
 	if(ends_with(str, suffix))

@@ -544,12 +544,7 @@ run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	const int pause = starts_with(prog_spec, "!!");
-
-	if(pause)
-	{
-		prog_spec += 2;
-	}
+	const int pause = skip_prefix(&prog_spec, "!!");
 
 	if(!path_exists_at(entry->origin, entry->name, DEREF))
 	{
