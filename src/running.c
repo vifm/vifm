@@ -612,13 +612,11 @@ run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 		const char *name_macro;
 		char *file_name;
 
-#ifdef _WIN32
 		if(curr_stats.shell_type == ST_CMD)
 		{
 			name_macro = (view == curr_view) ? "%\"c" : "%\"C";
 		}
 		else
-#endif
 		{
 			name_macro = (view == curr_view) ? "%c" : "%C";
 		}
@@ -1003,13 +1001,11 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		const char *cmd_with_pause_fmt;
 
-#ifdef _WIN32
 		if(curr_stats.shell_type == ST_CMD)
 		{
 			cmd_with_pause_fmt = "%s" PAUSE_STR;
 		}
 		else
-#endif
 		{
 			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
 		}
