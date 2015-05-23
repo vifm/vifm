@@ -1769,18 +1769,14 @@ static void
 vicmd_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.vi_command, val.str_val);
-	cfg.vi_cmd_bg = ends_with(cfg.vi_command, "&");
-	if(cfg.vi_cmd_bg)
-		cfg.vi_command[strlen(cfg.vi_command) - 1] = '\0';
+	cfg.vi_cmd_bg = cut_suffix(cfg.vi_command, "&");
 }
 
 static void
 vixcmd_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.vi_x_command, val.str_val);
-	cfg.vi_x_cmd_bg = ends_with(cfg.vi_x_command, "&");
-	if(cfg.vi_x_cmd_bg)
-		cfg.vi_x_command[strlen(cfg.vi_x_command) - 1] = '\0';
+	cfg.vi_x_cmd_bg = cut_suffix(cfg.vi_x_command, "&");
 }
 
 static void

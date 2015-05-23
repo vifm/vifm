@@ -106,6 +106,17 @@ starts_with(const char str[], const char prefix[])
 }
 
 int
+cut_suffix(char str[], const char suffix[])
+{
+	if(ends_with(str, suffix))
+	{
+		str[strlen(str) - 2] = '\0';
+		return 1;
+	}
+	return 0;
+}
+
+int
 starts_withn(const char str[], const char prefix[], size_t prefix_len)
 {
 	return strncmp(str, prefix, prefix_len) == 0;

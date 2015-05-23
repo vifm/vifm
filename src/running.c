@@ -580,11 +580,7 @@ run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 		char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
 		int handled;
 
-		bg = ends_with(cmd, " &");
-		if(bg)
-		{
-			cmd[strlen(cmd) - 2] = '\0';
-		}
+		bg = cut_suffix(cmd, " &");
 		bg = !pause && (bg || force_bg);
 
 		handled = run_ext_command(cmd, flags, bg, &save_msg);
