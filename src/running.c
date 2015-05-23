@@ -96,6 +96,9 @@ static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
 static void run_selection_separately(FileView *view, int dont_execute);
 static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
+static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
+static void run_implicit_prog(FileView *view, const char prog_spec[],
+		int pause);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -569,56 +572,71 @@ run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
-		int bg;
-		MacroFlags flags;
-		int save_msg = 0;
-		char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
-		int handled;
-
-		bg = cut_suffix(cmd, " &");
-		bg = !pause && (bg || force_bg);
-
-		handled = run_ext_command(cmd, flags, bg, &save_msg);
-		if(handled)
-		{
-			if(save_msg)
-			{
-				curr_stats.save_msg = 1;
-			}
-		}
-		else if(bg)
-		{
-			start_background_job(cmd, flags == MF_IGNORE);
-		}
-		else
-		{
-			shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
-		}
-
-		free(cmd);
+		run_explicit_prog(prog_spec, pause, force_bg);
 	}
 	else
 	{
-		char buf[NAME_MAX + 1 + NAME_MAX + 1];
-		const char *name_macro;
-		char *file_name;
-
-		if(curr_stats.shell_type == ST_CMD)
-		{
-			name_macro = (view == curr_view) ? "%\"c" : "%\"C";
-		}
-		else
-		{
-			name_macro = (view == curr_view) ? "%c" : "%C";
-		}
-
-		file_name = expand_macros(name_macro, NULL, NULL, 1);
-
-		snprintf(buf, sizeof(buf), "%s %s", prog_spec, file_name);
-		shellout(buf, pause ? 1 : -1, 1);
-
-		free(file_name);
+		run_implicit_prog(view, prog_spec, pause);
 	}
+}
+
+/* Executes current file of the current view by program specification that
+ * includes at least one macro. */
+static void
+run_explicit_prog(const char prog_spec[], int pause, int force_bg)
+{
+	int bg;
+	MacroFlags flags;
+	int save_msg;
+	char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
+
+	bg = cut_suffix(cmd, " &");
+	bg = !pause && (bg || force_bg);
+
+	save_msg = 0;
+	if(run_ext_command(cmd, flags, bg, &save_msg) != 0)
+	{
+		if(save_msg)
+		{
+			curr_stats.save_msg = 1;
+		}
+	}
+	else if(bg)
+	{
+		start_background_job(cmd, flags == MF_IGNORE);
+	}
+	else
+	{
+		shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+	}
+
+	free(cmd);
+}
+
+/* Executes current file of the view by program specification that does not
+ * include any macros (hence file name is appended implicitly. */
+static void
+run_implicit_prog(FileView *view, const char prog_spec[], int pause)
+{
+	char buf[NAME_MAX + 1 + NAME_MAX + 1];
+	const char *name_macro;
+	char *file_name;
+
+	if(curr_stats.shell_type == ST_CMD)
+	{
+		name_macro = (view == curr_view) ? "%\"c" : "%\"C";
+	}
+	else
+	{
+		name_macro = (view == curr_view) ? "%c" : "%C";
+	}
+
+	file_name = expand_macros(name_macro, NULL, NULL, 1);
+
+	snprintf(buf, sizeof(buf), "%s %s", prog_spec, file_name);
+	shellout(buf, pause ? 1 : -1, 1);
+
+	free(file_name);
 }
 
 /* Opens file under the cursor in the viewer. */
