@@ -39,12 +39,16 @@ void open_file(FileView *view, FileHandleExec exec);
  * opens it. */
 void follow_file(FileView *view);
 
-void run_using_prog(FileView *view, const char program[], int dont_execute,
-		int force_background);
+/* Runs current file of the view guided by program specification with additional
+ * options. */
+void run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
+		int force_bg);
 
 /* Handles opening of current file of the view as directory. */
 void open_dir(FileView *view);
 
+/* Moves the view to parent directory taking care of special cases like root of
+ * FUSE mount. */
 void cd_updir(FileView *view);
 
 /* Values of pause:

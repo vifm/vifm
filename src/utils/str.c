@@ -101,7 +101,7 @@ vifm_wcsdup(const wchar_t ws[])
 int
 starts_with(const char str[], const char prefix[])
 {
-	size_t prefix_len = strlen(prefix);
+	const size_t prefix_len = strlen(prefix);
 	return starts_withn(str, prefix, prefix_len);
 }
 
@@ -112,7 +112,7 @@ starts_withn(const char str[], const char prefix[], size_t prefix_len)
 }
 
 int
-ends_with(const char *str, const char *suffix)
+ends_with(const char str[], const char suffix[])
 {
 	size_t str_len = strlen(str);
 	size_t suffix_len = strlen(suffix);

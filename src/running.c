@@ -540,15 +540,15 @@ is_multi_run_compat(FileView *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(FileView *view, const char program[], int dont_execute,
-		int force_background)
+run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
+		int force_bg)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	const int pause = starts_with(program, "!!");
+	const int pause = starts_with(prog_spec, "!!");
 
 	if(pause)
 	{
-		program += 2;
+		prog_spec += 2;
 	}
 
 	if(!path_exists_at(entry->origin, entry->name, DEREF))
@@ -557,7 +557,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 		return;
 	}
 
-	if(fuse_is_mount_string(program))
+	if(fuse_is_mount_string(prog_spec))
 	{
 		if(dont_execute)
 		{
@@ -565,19 +565,19 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 		}
 		else
 		{
-			fuse_try_mount(view, program);
+			fuse_try_mount(view, prog_spec);
 		}
 	}
-	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
+	else if(strcmp(prog_spec, VIFM_PSEUDO_CMD) == 0)
 	{
 		open_dir(view);
 	}
-	else if(strchr(program, '%') != NULL)
+	else if(strchr(prog_spec, '%') != NULL)
 	{
 		int bg;
 		MacroFlags flags;
 		int save_msg = 0;
-		char *const cmd = expand_macros(program, NULL, &flags, 1);
+		char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
 		int handled;
 
 		bg = ends_with(cmd, " &");
@@ -585,7 +585,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 		{
 			cmd[strlen(cmd) - 2] = '\0';
 		}
-		bg = !pause && (bg || force_background);
+		bg = !pause && (bg || force_bg);
 
 		handled = run_ext_command(cmd, flags, bg, &save_msg);
 		if(handled)
@@ -625,7 +625,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 
 		file_name = expand_macros(name_macro, NULL, NULL, 1);
 
-		snprintf(buf, sizeof(buf), "%s %s", program, file_name);
+		snprintf(buf, sizeof(buf), "%s %s", prog_spec, file_name);
 		shellout(buf, pause ? 1 : -1, 1);
 
 		free(file_name);

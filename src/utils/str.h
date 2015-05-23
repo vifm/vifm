@@ -77,7 +77,9 @@ int starts_with(const char str[], const char prefix[]);
  * non-zero if it's so, otherwise zero is returned. */
 int starts_withn(const char str[], const char prefix[], size_t prefix_len);
 
-int ends_with(const char *str, const char *suffix);
+/* Checks whether str ends with the given suffix.  Returns non-zero if it's so,
+ * otherwise zero is returned. */
+int ends_with(const char str[], const char suffix[]);
 
 /* Checks whether the string starts and ends with specified mark characters.
  * Substring can't be empty.  The string can't consist of single mark character
