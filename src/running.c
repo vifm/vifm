@@ -45,7 +45,9 @@
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "compat/os.h"
+#include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs.h"
@@ -62,6 +64,7 @@
 #include "filetype.h"
 #include "fuse.h"
 #include "macros.h"
+#include "opt_handlers.h"
 #include "status.h"
 #include "types.h"
 #include "vifm.h"
@@ -93,6 +96,9 @@ static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
 static void run_selection_separately(FileView *view, int dont_execute);
 static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
+static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
+static void run_implicit_prog(FileView *view, const char prog_spec[],
+		int pause);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -107,6 +113,11 @@ static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
+static void output_to_statusbar(const char cmd[]);
+static void output_to_nowhere(const char cmd[]);
+static void run_in_split(const FileView *view, const char cmd[]);
+static void output_to_custom_flist(FileView *view, const char cmd[], int very);
+static void path_handler(const char line[], void *arg);
 
 /* Name of environment variable used to communicate path to file used to
  * initiate FUSE mounting of directory we're in. */
@@ -532,16 +543,11 @@ is_multi_run_compat(FileView *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(FileView *view, const char program[], int dont_execute,
-		int force_background)
+run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
+		int force_bg)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	const int pause = starts_with(program, "!!");
-
-	if(pause)
-	{
-		program += 2;
-	}
+	const int pause = skip_prefix(&prog_spec, "!!");
 
 	if(!path_exists_at(entry->origin, entry->name, DEREF))
 	{
@@ -549,7 +555,7 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 		return;
 	}
 
-	if(fuse_is_mount_string(program))
+	if(fuse_is_mount_string(prog_spec))
 	{
 		if(dont_execute)
 		{
@@ -557,56 +563,80 @@ run_using_prog(FileView *view, const char program[], int dont_execute,
 		}
 		else
 		{
-			fuse_try_mount(view, program);
+			fuse_try_mount(view, prog_spec);
 		}
 	}
-	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
+	else if(strcmp(prog_spec, VIFM_PSEUDO_CMD) == 0)
 	{
 		open_dir(view);
 	}
-	else if(strchr(program, '%') != NULL)
+	else if(strchr(prog_spec, '%') != NULL)
 	{
-		int background;
-		MacroFlags flags;
-		char *command = expand_macros(program, NULL, &flags, 1);
-
-		background = ends_with(command, " &");
-		if(background)
-			command[strlen(command) - 2] = '\0';
-
-		if(!pause && (background || force_background))
-			start_background_job(command, flags == MF_IGNORE);
-		else if(flags == MF_IGNORE)
-			output_to_nowhere(command);
-		else
-			shellout(command, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
-
-		free(command);
+		run_explicit_prog(prog_spec, pause, force_bg);
 	}
 	else
 	{
-		char buf[NAME_MAX + 1 + NAME_MAX + 1];
-		const char *name_macro;
-		char *file_name;
-
-#ifdef _WIN32
-		if(curr_stats.shell_type == ST_CMD)
-		{
-			name_macro = (view == curr_view) ? "%\"c" : "%\"C";
-		}
-		else
-#endif
-		{
-			name_macro = (view == curr_view) ? "%c" : "%C";
-		}
-
-		file_name = expand_macros(name_macro, NULL, NULL, 1);
-
-		snprintf(buf, sizeof(buf), "%s %s", program, file_name);
-		shellout(buf, pause ? 1 : -1, 1);
-
-		free(file_name);
+		run_implicit_prog(view, prog_spec, pause);
 	}
+}
+
+/* Executes current file of the current view by program specification that
+ * includes at least one macro. */
+static void
+run_explicit_prog(const char prog_spec[], int pause, int force_bg)
+{
+	int bg;
+	MacroFlags flags;
+	int save_msg;
+	char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
+
+	bg = cut_suffix(cmd, " &");
+	bg = !pause && (bg || force_bg);
+
+	save_msg = 0;
+	if(run_ext_command(cmd, flags, bg, &save_msg) != 0)
+	{
+		if(save_msg)
+		{
+			curr_stats.save_msg = 1;
+		}
+	}
+	else if(bg)
+	{
+		start_background_job(cmd, flags == MF_IGNORE);
+	}
+	else
+	{
+		shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+	}
+
+	free(cmd);
+}
+
+/* Executes current file of the view by program specification that does not
+ * include any macros (hence file name is appended implicitly. */
+static void
+run_implicit_prog(FileView *view, const char prog_spec[], int pause)
+{
+	char buf[NAME_MAX + 1 + NAME_MAX + 1];
+	const char *name_macro;
+	char *file_name;
+
+	if(curr_stats.shell_type == ST_CMD)
+	{
+		name_macro = (view == curr_view) ? "%\"c" : "%\"C";
+	}
+	else
+	{
+		name_macro = (view == curr_view) ? "%c" : "%C";
+	}
+
+	file_name = expand_macros(name_macro, NULL, NULL, 1);
+
+	snprintf(buf, sizeof(buf), "%s %s", prog_spec, file_name);
+	shellout(buf, pause ? 1 : -1, 1);
+
+	free(file_name);
 }
 
 /* Opens file under the cursor in the viewer. */
@@ -980,13 +1010,11 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		const char *cmd_with_pause_fmt;
 
-#ifdef _WIN32
 		if(curr_stats.shell_type == ST_CMD)
 		{
 			cmd_with_pause_fmt = "%s" PAUSE_STR;
 		}
 		else
-#endif
 		{
 			cmd_with_pause_fmt = "%s; " PAUSE_CMD;
 		}
@@ -1038,24 +1066,6 @@ set_pwd_in_screen(const char path[])
 	free(escaped_dir);
 }
 
-void
-output_to_nowhere(const char cmd[])
-{
-	FILE *file, *err;
-
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
-	}
-
-	/* FIXME: better way of doing this would be to redirect these streams to
-	 *        /dev/null rather than closing them, but not sure about Windows (NUL
-	 *        device might work). */
-	fclose(file);
-	fclose(err);
-}
-
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
@@ -1091,6 +1101,193 @@ try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		}
 	}
 	return 0;
+}
+
+int
+run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
+{
+	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
+	{
+		status_bar_errorf("\"%s\" macro can't be combined with \" &\"",
+				macros_to_str(flags));
+		*save_msg = 1;
+		return -1;
+	}
+
+	if(flags == MF_STATUSBAR_OUTPUT)
+	{
+		output_to_statusbar(cmd);
+		*save_msg = 1;
+		return -1;
+	}
+	else if(flags == MF_IGNORE)
+	{
+		output_to_nowhere(cmd);
+		*save_msg = 0;
+		return -1;
+	}
+	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
+	{
+		const int navigate = flags == MF_MENU_NAV_OUTPUT;
+		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+	}
+	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
+	{
+		run_in_split(curr_view, cmd);
+	}
+	else if(flags == MF_CUSTOMVIEW_OUTPUT || flags == MF_VERYCUSTOMVIEW_OUTPUT)
+	{
+		const int very = flags == MF_VERYCUSTOMVIEW_OUTPUT;
+		output_to_custom_flist(curr_view, cmd, very);
+	}
+	else
+	{
+		return 0;
+	}
+	return 1;
+}
+
+/* Executes the cmd and displays its output on the status bar. */
+static void
+output_to_statusbar(const char cmd[])
+{
+	FILE *file, *err;
+	char buf[2048];
+	char *lines;
+	size_t len;
+
+	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	lines = NULL;
+	len = 0;
+	while(fgets(buf, sizeof(buf), file) == buf)
+	{
+		chomp(buf);
+		lines = realloc(lines, len + 1 + strlen(buf) + 1);
+		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
+	}
+
+	fclose(file);
+	fclose(err);
+
+	status_bar_message((lines == NULL) ? "" : lines);
+	free(lines);
+}
+
+/* Executes the cmd ignoring its output. */
+static void
+output_to_nowhere(const char cmd[])
+{
+	FILE *file, *err;
+
+	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	/* FIXME: better way of doing this would be to redirect these streams to
+	 *        /dev/null rather than closing them, but not sure about Windows (NUL
+	 *        device might work). */
+	fclose(file);
+	fclose(err);
+}
+
+/* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
+ * is NULL. */
+static void
+run_in_split(const FileView *view, const char cmd[])
+{
+	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
+
+	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
+
+	if(curr_stats.term_multiplexer == TM_TMUX)
+	{
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "tmux split-window %s", escaped_cmd);
+		(void)vifm_system(buf);
+	}
+	else if(curr_stats.term_multiplexer == TM_SCREEN)
+	{
+		char buf[1024];
+		char *escaped_chdir;
+
+		char *const escaped_dir = escape_filename(flist_get_dir(view), 0);
+		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
+		free(escaped_dir);
+
+		escaped_chdir = escape_filename(buf, 0);
+		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
+		free(escaped_chdir);
+
+		(void)vifm_system(buf);
+
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
+				escaped_cmd);
+		(void)vifm_system(buf);
+	}
+	else
+	{
+		assert(0 && "Unexpected active terminal multiplexer value.");
+	}
+
+	free(escaped_cmd);
+}
+
+/* Runs the cmd and parses its output as list of paths to compose custom view.
+ * Very custom view implies unsorted list. */
+static void
+output_to_custom_flist(FileView *view, const char cmd[], int very)
+{
+	char *title;
+
+	title = format_str("!%s", cmd);
+	flist_custom_start(view, title);
+	free(title);
+
+	if(process_cmd_output("Loading custom view", cmd, 1, &path_handler,
+				view) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	if(very)
+	{
+		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+	}
+	view->custom.unsorted = very;
+
+	(void)flist_custom_finish(view);
+
+	if(very)
+	{
+		/* As custom view isn't activated until flist_custom_finish() is called,
+		 * need to update option separately from view sort array. */
+		load_sort_option(view);
+	}
+
+	flist_set_pos(view, 0);
+}
+
+/* Implements process_cmd_output() callback that loads paths into custom
+ * view. */
+static void
+path_handler(const char line[], void *arg)
+{
+	FileView *view = arg;
+	int line_num;
+	char *const path = parse_file_spec(line, &line_num);
+	if(path != NULL)
+	{
+		flist_custom_add(view, path);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

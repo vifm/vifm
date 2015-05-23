@@ -101,8 +101,31 @@ vifm_wcsdup(const wchar_t ws[])
 int
 starts_with(const char str[], const char prefix[])
 {
-	size_t prefix_len = strlen(prefix);
+	const size_t prefix_len = strlen(prefix);
 	return starts_withn(str, prefix, prefix_len);
+}
+
+int
+skip_prefix(const char **str, const char prefix[])
+{
+	const size_t prefix_len = strlen(prefix);
+	if(starts_withn(*str, prefix, prefix_len))
+	{
+		*str += prefix_len;
+		return 1;
+	}
+	return 0;
+}
+
+int
+cut_suffix(char str[], const char suffix[])
+{
+	if(ends_with(str, suffix))
+	{
+		str[strlen(str) - 2] = '\0';
+		return 1;
+	}
+	return 0;
 }
 
 int
@@ -112,7 +135,7 @@ starts_withn(const char str[], const char prefix[], size_t prefix_len)
 }
 
 int
-ends_with(const char *str, const char *suffix)
+ends_with(const char str[], const char suffix[])
 {
 	size_t str_len = strlen(str);
 	size_t suffix_len = strlen(suffix);

@@ -576,5 +576,27 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 	return expanded;
 }
 
+const char *
+macros_to_str(MacroFlags flags)
+{
+	switch(flags)
+	{
+		case MF_NONE: return "";
+
+		case MF_MENU_OUTPUT: return "%m";
+		case MF_MENU_NAV_OUTPUT: return "%M";
+		case MF_STATUSBAR_OUTPUT: return "%S";
+		case MF_CUSTOMVIEW_OUTPUT: return "%u";
+		case MF_VERYCUSTOMVIEW_OUTPUT: return "%U";
+
+		case MF_SPLIT: return "%s";
+		case MF_IGNORE: return "%i";
+		case MF_NO_TERM_MUX: return "%n";
+	}
+
+	assert(0 && "Unhandled MacroFlags item.");
+	return "";
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

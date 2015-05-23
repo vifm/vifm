@@ -73,11 +73,22 @@ wchar_t * vifm_wcsdup(const wchar_t ws[]);
  * so, otherwise zero is returned. */
 int starts_with(const char str[], const char prefix[]);
 
+/* Checks whether *str starts with the given prefix and advances *str to point
+ * past the prefix.  Returns non-zero if prefix was skipped, otherwise zero is
+ * returned. */
+int skip_prefix(const char **str, const char prefix[]);
+
+/* Checks whether str ends with the given suffix and removes it if found.
+ * Returns non-zero if it's so, otherwise zero is returned. */
+int cut_suffix(char str[], const char suffix[]);
+
 /* Checks whether str starts with the given prefix of specified length.  Returns
  * non-zero if it's so, otherwise zero is returned. */
 int starts_withn(const char str[], const char prefix[], size_t prefix_len);
 
-int ends_with(const char *str, const char *suffix);
+/* Checks whether str ends with the given suffix.  Returns non-zero if it's so,
+ * otherwise zero is returned. */
+int ends_with(const char str[], const char suffix[]);
 
 /* Checks whether the string starts and ends with specified mark characters.
  * Substring can't be empty.  The string can't consist of single mark character

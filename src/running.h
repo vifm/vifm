@@ -21,6 +21,7 @@
 #define VIFM__RUNNING_H__
 
 #include "ui/ui.h"
+#include "macros.h"
 
 /* Kinds of executable file treatment on file handling. */
 typedef enum
@@ -38,12 +39,16 @@ void open_file(FileView *view, FileHandleExec exec);
  * opens it. */
 void follow_file(FileView *view);
 
-void run_using_prog(FileView *view, const char program[], int dont_execute,
-		int force_background);
+/* Runs current file of the view guided by program specification with additional
+ * options. */
+void run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
+		int force_bg);
 
 /* Handles opening of current file of the view as directory. */
 void open_dir(FileView *view);
 
+/* Moves the view to parent directory taking care of special cases like root of
+ * FUSE mount. */
 void cd_updir(FileView *view);
 
 /* Values of pause:
@@ -53,10 +58,14 @@ void cd_updir(FileView *view);
  * Returns zero on success, otherwise non-zero is returned. */
 int shellout(const char command[], int pause, int use_term_multiplexer);
 
-void output_to_nowhere(const char cmd[]);
-
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
+
+/* Handles most of command handling variants.  Returns:
+ *  - > 0 -- handled, good to go;
+ *  - = 0 -- not handled at all;
+ *  - < 0 -- handled, exit. */
+int run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 
 #endif /* VIFM__RUNNING_H__ */
 
