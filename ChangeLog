@@ -115,7 +115,8 @@
 	Thanks to Svyatoslav Mishyn, a.k.a. juef.
 
 	Added global configuration {prefix}/etc/vifm/vifmrc and color schemes
-	{prefix}/etc/vifm/colors/*.  Thanks to Michael Vetter (a.k.a. jubalh).
+	{prefix}/etc/vifm/colors/*.  Thanks to astrell and Michael Vetter (a.k.a.
+	jubalh).
 
 	Added one more light color scheme to assets (in two variations
 	astrell-root and astrell-user).  Thanks to astrell.
@@ -186,7 +187,7 @@
 
 	Define $VIFM_FUSE_FILE environment variable for external commands to
 	communicate path to file used to initiate FUSE mounting of directory we're
-	in.
+	in.  Thanks to astrell.
 
 	Allow non-printable characters to be arguments of :commands.  Thanks to
 	filterfalse.
@@ -232,6 +233,13 @@
 
 	No more unjustified inconsistency in processing macros in :! and
 	:file[x]type commands.  Thanks to Miodrag Tokić (a.k.a. loonies).
+
+	Manual page fixes/improvements.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
+	Wrapped option names with single quotes in the man page to make it easier
+	to search for options by their names.
+
+	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
 	Thanks to tYGjQCsvVI.
@@ -777,7 +785,7 @@
 	:locate and user menu with navigation (%M macro).
 
 	Added --enable-remote-cmd switch to configure script disabled by default,
-	as current implementation of the feature is insecure.
+	as current implementation of the feature is insecure.  Thanks to astrell.
 
 	Added Ctrl-X a/c/d/e/m/r/t/= keys to command-line mode that insert parts of
 	file names and values of filters (see related documentation).  Thanks to

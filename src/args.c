@@ -324,10 +324,10 @@ show_help_msg(const char wrong_arg[])
 #endif
 	puts("  vifm -c <command> | +<command>");
 	puts("    run <command> on startup.\n");
-	puts("  vifm --version | -v");
-	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
 	puts("    show this help message and quit.\n");
+	puts("  vifm --version | -v");
+	puts("    show version number and quit.\n");
 	puts("  vifm --no-configs");
 	puts("    don't read vifmrc and vifminfo.");
 }
