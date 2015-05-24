@@ -1,4 +1,4 @@
-.TH vifm 1 "May 22, 2015" "" "Vifm"
+.TH vifm 1 "May 24, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -380,9 +380,9 @@ Filtered files are not checked in / search or :commands.
 .TP
 Files and directories are filtered separately.  For this a slash is appended \
 to a directory name before testing whether it matches the filter.  Examples:
+
 .EX
 .LP
-
   " filter directories which names end with '.files'
   :filter /^.*\\.files\\/$/
 
@@ -1054,7 +1054,9 @@ preceded by whitespace characters.
 Most of the commands have two forms: complete and the short one.
 Example:
 .EX
-    :noh[lsearch]
+
+  :noh[lsearch]
+
 .EE
 This means the complete command is nohlsearch, and the short one is noh.
 
@@ -1095,7 +1097,8 @@ These commands see '|' as part of their arguments even when it's escaped:
 To be able to use another command after one of these, wrap it with the :execute
 command.  An example:
 .EX
-    if filetype('.') == 'reg' | execute '!!echo regular file' | endif
+
+  if filetype('.') == 'reg' | execute '!!echo regular file' | endif
 .EE
 .TP
 .BI :[count]
@@ -1317,10 +1320,11 @@ sets local filter value.
 .BI ":com[mand] name filter{:filter args}"
 sets file name filter (see :filter command description).  For example:
 .EX
- " display only audio files
- :command onlyaudio filter/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
- " display everything except audio files
- :command noaudio filter!/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
+
+  " display only audio files
+  :command onlyaudio filter/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
+  " display everything except audio files
+  :command noaudio filter!/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
 .EE
 .TP
 .BI ":com[mand] cmd :commands"
@@ -1467,13 +1471,13 @@ See "Globs" section below for pattern definition.  See also
 actions:
 
 .EX
- filetype *.zip,*.jar,*.war,*.ear
-        \\ {Mount with fuse-zip}
-        \\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
-        \\ {View contents}
-        \\ zip \-sf %c | less,
-        \\ {Extract here}
-        \\ tar \-xf %c,
+  filetype *.zip,*.jar,*.war,*.ear
+         \\ {Mount with fuse-zip}
+         \\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+         \\ {View contents}
+         \\ zip \-sf %c | less,
+         \\ {Extract here}
+         \\ tar \-xf %c,
 .EE
 .TP
 .BI ":filet[ype] filename"
@@ -1491,20 +1495,20 @@ For example, consider the following settings (the order might seem strange,
 but it's for the demonstration purpose):
 
 .EX
- filetype *.html,*.htm
-         \\ {View in lynx}
-         \\ lynx
- filextype *.html,*.htm
-         \\ {Open with dwb}
-         \\ dwb %f %i &,
- filetype *.html,*.htm
-         \\ {View in links}
-         \\ links
- filextype *.html,*.htm
-         \\ {Open with firefox}
-         \\ firefox %f &,
-         \\ {Open with uzbl}
-         \\ uzbl-browser %f %i &,
+  filetype *.html,*.htm
+          \\ {View in lynx}
+          \\ lynx
+  filextype *.html,*.htm
+          \\ {Open with dwb}
+          \\ dwb %f %i &,
+  filetype *.html,*.htm
+          \\ {View in links}
+          \\ links
+  filextype *.html,*.htm
+          \\ {Open with firefox}
+          \\ firefox %f &,
+          \\ {Open with uzbl}
+          \\ uzbl-browser %f %i &,
 .EE
 
 If you're using vifm inside a terminal emulator that is running in graphical
@@ -1546,7 +1550,8 @@ this command.  See "Globs" section below for pattern definition.
 
 Example for zip archives:
 .EX
- fileviewer *.zip,*.jar,*.war,*.ear zip \-sf %c, echo "No zip to preview:"
+
+  fileviewer *.zip,*.jar,*.war,*.ear zip \-sf %c, echo "No zip to preview:"
 .EE
 .TP
 .BI ":filev[iewer] filename"
@@ -1875,6 +1880,7 @@ See also help on :else and :endif commands.
 
 Example:
 .EX
+
   if $TERM == "screen.linux"
       highlight CurrLine ctermfg=lightwhite ctermbg=lightblack
   else
@@ -2689,18 +2695,24 @@ points that one needs to know about them.
 
 Only names of files are matched by the globs, not full paths.  E.g.
 .EX
- :filetype Makefile make %c
+
+  :filetype Makefile make %c
+
 .EE
 will match files with name "Makefile" regardless whether it's in root or home
 directory.
 
 *, ?, [ and ] are treated as special symbols in the pattern.  E.g.
 .EX
- :filetype * less %c
+
+  :filetype * less %c
+
 .EE
 matches all files.  One can use character classes for escaping, so
 .EX
- :filetype [*] less %c
+
+  :filetype [*] less %c
+
 .EE
 matches only one file name, the one which contains only asterisk symbol.
 
@@ -2708,14 +2720,18 @@ matches only one file name, the one which contains only asterisk symbol.
 exception: asterisk at the pattern beginning doesn't match dot in the first
 position.  E.g.
 .EX
- :fileviewer *.zip,*.jar zip \-sf %c
+
+  :fileviewer *.zip,*.jar zip \-sf %c
+
 .EE
 associates using of zip program to preview all files with zip or jar
 extensions as listing of their content.
 
 ? means any character at this position.  E.g.
 .EX
- :fileviewer ?.out file %c
+
+  :fileviewer ?.out file %c
+
 .EE
 calls file tool for all files which has exactly one character before their
 extension (e.g. a.out, b.out).
@@ -2723,24 +2739,32 @@ extension (e.g. a.out, b.out).
 Square brackets designate character class, which means that whole character
 class matches against any of characters listed in it.  For example
 .EX
- :fileviewer *.[ch] highlight \-O xterm256 \-s dante \-\-syntax c %c
+
+  :fileviewer *.[ch] highlight \-O xterm256 \-s dante \-\-syntax c %c
+
 .EE
 makes vifm call highlight program to colorize source and header files in C
 language for a 256-color terminal.  Equal command would be
 .EX
- :fileviewer *.c,*.h highlight \-O xterm256 \-s dante \-\-syntax c %c
+
+  :fileviewer *.c,*.h highlight \-O xterm256 \-s dante \-\-syntax c %c
+
 .EE
 
 Inside square brackets ^ or ! can be used for symbol class negotiation and
 the \- symbol to set a range. ^ and ! should appear right after the opening
 square bracket.  For example
 .EX
- :filetype *.[!d]/ inspect_dir
+
+  :filetype *.[!d]/ inspect_dir
+
 .EE
 associates inspect_dir as additional handler for all directories that have one
 character extension unless it's "d" letter.  And
 .EX
- :filetype [0-9].jpg sxiv
+
+  :filetype [0-9].jpg sxiv
+
 .EE
 associates sxiv picture viewer only for JPEG-files that contain single digit
 in their name.
@@ -2797,7 +2821,9 @@ This option doesn't affect completion of :cd command.
 
 Example:
 .EX
-    set cdpath=~
+
+  set cdpath=~
+
 .EE
 This way ":cd bin" will switch to "~/bin" even if directory named "bin" exists
 in current directory, while ":cd ./bin" command will ignore value of 'cdpath'.
@@ -2879,10 +2905,11 @@ default: ""
 Sets characters used to fill borders.
   item       default  Used for
   vborder:c  ' '      left, middle and right vertical borders
-.br
+
 If value is omitted, its default value is used.  Example:
 .EX
- set fillchars=vborder:.
+
+  set fillchars=vborder:.
 .EE
 .TP
 .BI 'findprg'
@@ -2915,7 +2942,9 @@ shell escaping is a mess and can break command execution.
 Starting from Windows Server 2003 a where command is available, one can
 configure vifm to use it in the following way:
 .EX
-    set findprg="where /R %s %A"
+
+  set findprg="where /R %s %A"
+
 .EE
 As the syntax of this command is rather limited, one can't use :find
 command with selection of more than one item in this case.  The command looks
@@ -2924,7 +2953,8 @@ for files only completely ignoring directories.
 When using find port on Windows, another option is to setup 'findprg' like
 this:
 .EX
-    set findprg="find %s %a"
+
+  set findprg="find %s %a"
 .EE
 .TP
 .BI 'followlinks'
@@ -2974,11 +3004,15 @@ See 'findprg' option for description of difference between %a and %A.
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 .EX
-    set grepprg=ack\\ \-H\\ \-r\\ %i\\ %a\\ %s
+
+  set grepprg=ack\\ \-H\\ \-r\\ %i\\ %a\\ %s
+
 .EE
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 .EX
-    set grepprg=ag\\ \-\-line-numbers\\ %i\\ %a\\ %s
+
+  set grepprg=ag\\ \-\-line-numbers\\ %i\\ %a\\ %s
+
 .EE
 
 .TP
@@ -3143,7 +3177,7 @@ field ("%0-").
 Example:
 
 .EX
- set rulerformat='%2l-%S%[ +%0-%]'
+  set rulerformat='%2l-%S%[ +%0-%]'
 .EE
 .TP
 .BI 'runexec'
@@ -3206,7 +3240,8 @@ to be a directory (allows entering directories and navigating to files via gf).
 
 Example for autofs root /mnt/autofs:
 .EX
- set slowfs+=/mnt/autofs
+
+  set slowfs+=/mnt/autofs
 .EE
 .TP
 .BI "'smartcase' 'scs'"
@@ -3260,11 +3295,14 @@ when "type" is not specified, sorting behaves as if it was the first key in
 the list.  That's why if one wants sorting algorithm to mix directories and
 files, "type" should be appended to sorting option, for example like this:
 .EX
- set sort+=type
+
+  set sort+=type
+
 .EE
 or
 .EX
- set sort=-size,type
+
+  set sort=-size,type
 .EE
 
 Value of the option is checked to include type key and default sorting
@@ -3327,7 +3365,7 @@ minimum field width if you want field to be right aligned.
 Example:
 
 .EX
- set statusline="  %t%= %A %10u:%\-7g %15s %20d "
+  set statusline="  %t%= %A %10u:%\-7g %15s %20d "
 .EE
 
 On Windows file properties include next flags (upper case means flag is on):
@@ -3464,7 +3502,8 @@ section below for format description.
 
 An example of setting the options for both panes (note vifm-windo command):
 .EX
- windo set viewcolumns=-{name}..,6{size},11{perms}
+
+  windo set viewcolumns=-{name}..,6{size},11{perms}
 .EE
 .TP
 .BI 'vixcmd'
@@ -3539,7 +3578,9 @@ intensionaly to allow two use cases:
 
 To get the latter use the following mapping:
 .EX
-    cnoremap <c-w> <a-b><a-d>
+
+  cnoremap <c-w> <a-b><a-d>
+
 .EE
 Also used for abbreviations.
 .TP
@@ -3632,7 +3673,7 @@ That's why you may want to use <space> at the end of rhs in mappings.  For
 example:
 
 .EX
- cmap <f1> man<space>
+  cmap <f1> man<space>
 .EE
 
 will put "man " in line when you hit the <f1> key in the command line mode.
@@ -3687,16 +3728,17 @@ smaller than            <
 smaller than or equal   <=
 
 Examples:
+
 .EX
- 'a' ==  'a'         == 1
- 'a' >   'b'         == 1
- 'a' ==  'b'         == 0
- '2' >   'b'         == 0
-  2  >   'b'         == 1
-  2  >   '1b'        == 1
-  2  >   '9b'        == 0
- \-1  == \-'1'         == 1
-  0  ==  '\-\-1'       == 1
+  'a' ==  'a'         == 1
+  'a' >   'b'         == 1
+  'a' ==  'b'         == 0
+  '2' >   'b'         == 0
+   2  >   'b'         == 1
+   2  >   '1b'        == 1
+   2  >   '9b'        == 0
+  \-1  == \-'1'         == 1
+   0  ==  '\-\-1'       == 1
 .EE
 
 expr2
@@ -3706,9 +3748,10 @@ expr2
 expr3 . expr3 ..     string concatenation
 
 Examples:
+
 .EX
- 'a' . 'b'           == 'ab'
- 'aaa' . '' . 'c'    == 'aaac'
+  'a' . 'b'           == 'ab'
+  'aaa' . '' . 'c'    == 'aaac'
 .EE
 
 expr3
@@ -3731,14 +3774,15 @@ For '!' non-zero becomes zero, zero becomes one.
 A String will be converted to a Number first.
 
 These operations can be repeated and mixed.  Examples:
+
 .EX
-  \-\-9                == 9
- \-\-\-9                == \-9
-  \-+9                == 9
-  !\-9                == 0
-  !''                == 1
- !'x'                == 0
-  !!9                == 1
+   \-\-9                == 9
+  \-\-\-9                == \-9
+   \-+9                == 9
+   !\-9                == 0
+   !''                == 1
+  !'x'                == 0
+   !!9                == 1
 .EE
 
 expr4
@@ -3752,12 +3796,13 @@ number               number constant
 .br
 
 Decimal number.  Examples:
+
 .EX
- 0                   == 0
- 0000                == 0
- 01                  == 1
- 123                 == 123
- 10000               == 10000
+  0                   == 0
+  0000                == 0
+  01                  == 1
+  123                 == 123
+  10000               == 10000
 .EE
 
 string
@@ -3786,9 +3831,10 @@ A string constant accepts these special characters:
 .br
 
 Examples:
+
 .EX
- "\\"Hello,\\tWorld!\\""
- "Hi,\\nthere!"
+  "\\"Hello,\\tWorld!\\""
+  "Hi,\\nthere!"
 .EE
 
 literal-string
@@ -3803,9 +3849,10 @@ This string is taken as it is.  No backslashes are removed or have a special
 meaning.  The only exception is that two quotes stand for one quote.
 
 Examples:
+
 .EX
- 'All\\slashes\\are\\saved.'
- 'This string contains doubled single quotes ''here'''
+  'All\\slashes\\are\\saved.'
+  'This string contains doubled single quotes ''here'''
 .EE
 
 option
@@ -3815,10 +3862,12 @@ option
 &option               option value
 
 Examples:
+
 .EX
   echo 'Terminal size: '.&columns.'x'.&lines
   if &columns > 100
 .EE
+
 Any valid option name can be used here (note that "all" in ":set all" is a
 pseudo option).  See ":set options" section above.
 
@@ -3832,9 +3881,10 @@ The String value of any environment variable.  When it is not defined, the
 result is an empty string.
 
 Examples:
+
 .EX
- 'This is my $PATH env: ' . $PATH
- 'vifmrc at ' . $MYVIFMRC . ' is used.'
+  'This is my $PATH env: ' . $PATH
+  'vifmrc at ' . $MYVIFMRC . ' is used.'
 .EE
 
 function call
@@ -3846,9 +3896,10 @@ function(expr1, ...)  function call
 See Functions section below.
 
 Examples:
+
 .EX
- "'" . filetype('.') . "'"
- filetype('.') == 'reg'
+  "'" . filetype('.') . "'"
+  filetype('.') == 'reg'
 .EE
 .\" ---------------------------------------------------------------------------
 .SH Functions
@@ -3873,6 +3924,7 @@ present in directories listed in $PATH.  Checks for various executable
 extensions on Windows.  Returns boolean value describing result of the check.
 
 Example:
+
 .EX
   " use custom default viewer script if it's available and installed
   " in predefined system directory, otherwise try to find it elsewhere
@@ -3892,6 +3944,7 @@ command-line commands.  Returns a string.  See "Command macros" section above.
 .br
 
 Examples:
+
 .EX
   " percent sign
   :echo expand('%%')
@@ -3928,6 +3981,7 @@ are supported (anything else will yield 0):
 .br
 
 Usage example:
+
 .EX
   " skip user/group on Windows
   if !has('win')
@@ -3944,6 +3998,7 @@ standard error streams).  All trailing newline characters are stripped to
 allow easy appending to command output.  CTRL-C should interrupt the command.
 
 Usage example:
+
 .EX
   " command to enter .git/ directory of git-repository (when ran inside one)
   command! cdgit :execute 'cd' system('git rev-parse \-\-git-dir')
@@ -4218,15 +4273,19 @@ one, so that the later one can redefine anything configured globally.
 Use vifmrc to set settings, mappings, filetypes etc.  To use multi line commands
 precede each next line with a slash (whitespace before slash is ignored, but all
 spaces at the end of the lines are saved).  For example:
+
 .EX
   set
       \\smartcase
 .EE
+
 equals "setsmartcase".  When
+
 .EX
   set<space here>
       \\ smartcase
 .EE
+
 equals "set  smartcase".
 
 The $VIFM/vifminfo file contains session settings.  You may edit it by hand
@@ -4273,6 +4332,7 @@ Format line:
   FUSE_MOUNT|mounter %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
 
 Example filetype command:
+
 .EX
   :filetype FUSE_MOUNT|fuse\-zip %SOURCE_FILE %DESTINATION_DIR
 .EE
@@ -4286,13 +4346,15 @@ Format line:
   FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%FOREGROUND]
 
 Example filetype command:
+
 .EX
   :filetype FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 .EE
 
 Example file content:
+
 .EX
-    root@127.0.0.1:/
+  root@127.0.0.1:/
 .EE
 
 All % macros are expanded by vifm at runtime and have the following meaning:
@@ -4374,13 +4436,15 @@ It's an optional minus sign as the first symbol of the string.
 Specifies type of text alignment within a column.  Two types are supported:
 .IP \- 2
 left align
+
 .EX
-     set viewcolumns=\-{name}
+  set viewcolumns=\-{name}
 .EE
 .IP \- 2
 right align (default)
+
 .EX
-     set viewcolumns={name}
+  set viewcolumns={name}
 .EE
 .LP
 Width specifier
@@ -4391,22 +4455,28 @@ less than or equal to the first one) separated with a dot or a single number.
 Specifies column width and its units. There are tree size types:
 .IP \- 2
 absolute size \- column width is specified in characters
+
 .EX
-     set viewcolumns=\-100{name},20.15{ext}
+  set viewcolumns=\-100{name},20.15{ext}
 .EE
+
 results in two columns with lengths of 100 and 20 and a reserved space of five \
 characters on the left of second column.
 .IP \- 2
 relative (percent) size \- column width is specified in percents of view width
+
 .EX
-     set viewcolumns=\-80%{name},15%{ext},5%{mtime}
+  set viewcolumns=\-80%{name},15%{ext},5%{mtime}
 .EE
+
 results in three columns with lengths of 80/100, 15/100 and 5/100 of view width.
 .IP \- 2
 auto size (default) \- column width is automatically determined
+
 .EX
-     set viewcolumns=\-{name},{ext},{mtime}
+  set viewcolumns=\-{name},{ext},{mtime}
 .EE
+
 results in three columns with length of one third of view width. There is no \
 size adjustment to content, since it will slow down rendering.
 .LP
@@ -4417,17 +4487,20 @@ there is not enough space to display them.
 Column name
 
 This is just a sort key surrounded with curly braces, e.g.
+
 .EX
-    {name},{ext},{mtime}
+  {name},{ext},{mtime}
 .EE
+
 {name} and {iname} keys are the same and present both for consistency with
 \(aqsort\(aq option.
 
 Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command view will be displayed almost as
 if 'viewcolumns' is empty, but adding ellipsis for long file names:
+
 .EX
-    set viewcolumns=\-{name}..,6{}.
+  set viewcolumns=\-{name}..,6{}.
 .EE
 .LP
 Cropping specifier
@@ -4438,21 +4511,27 @@ Specifies type of text truncation if it doesn't fit in the column. Currently
 tree types are supported:
 .IP \- 2
 truncation \- text is truncated
+
 .EX
-     set viewcolumns=\-{name}.
+  set viewcolumns=\-{name}.
 .EE
+
 results in truncation of names that are too long too fit in the view.
 .IP \- 2
 adding of ellipsis \- ellipsis on the left or right are added when needed
+
 .EX
-     set viewcolumns=\-{name}..
+  set viewcolumns=\-{name}..
 .EE
+
 results in that ellipsis are added at the end of too long file names.
 .IP \- 2
 none (default) \- text can pass column boundaries
+
 .EX
-     set viewcolumns=\-{name}...,{ext}
+  set viewcolumns=\-{name}...,{ext}
 .EE
+
 results in that long file names can partially be written on the ext column.
 .\" ---------------------------------------------------------------------------
 .SH Color schemes
@@ -4484,29 +4563,29 @@ hierarchically according to file system structure. For example, having the
 following piece of file system:
 .EX
 
- ~
- `\-\- bin
-    |
-    `\-\- my
+  ~
+  `\-\- bin
+     |
+     `\-\- my
 
 .EE
 Two color schemes:
 .EX
 
- # ~/.vifm/colors/for_bin
- highlight Win cterm=none ctermfg=white ctermbg=red
- highlight CurrLine cterm=none ctermfg=red ctermbg=black
+  # ~/.vifm/colors/for_bin
+  highlight Win cterm=none ctermfg=white ctermbg=red
+  highlight CurrLine cterm=none ctermfg=red ctermbg=black
 
- # ~/.vifm/colors/for_bin_my
- highlight CurrLine cterm=none ctermfg=green ctermbg=black
+  # ~/.vifm/colors/for_bin_my
+  highlight CurrLine cterm=none ctermfg=green ctermbg=black
 
 .EE
 And these three commands in the vifmrc file:
 .EX
 
- colorscheme Default
- colorscheme for_bin ~/bin
- colorscheme for_bin_my ~/bin/my
+  colorscheme Default
+  colorscheme for_bin ~/bin
+  colorscheme for_bin_my ~/bin/my
 
 .EE
 File list will look in the following way for each level:
@@ -4571,17 +4650,19 @@ argument.
 
 To execute a command remotely combine \-\-remote argument with \-c <command> or
 +<command>.  For example:
+
 .EX
-    vifm \-\-remote \-c 'cd /'
-    vifm \-\-remote '+cd /'
+  vifm \-\-remote \-c 'cd /'
+  vifm \-\-remote '+cd /'
 .EE
 
 To change directory not using command-line mode commands one can specify paths
 right after \-\-remote argument, like this:
+
 .EX
-    vifm \-\-remote /
-    vifm \-\-remote ~
-    vifm \-\-remote /usr/bin /tmp
+  vifm \-\-remote /
+  vifm \-\-remote ~
+  vifm \-\-remote /usr/bin /tmp
 .EE
 
 At the moment there is no way of specifying, which instance of vifm should
