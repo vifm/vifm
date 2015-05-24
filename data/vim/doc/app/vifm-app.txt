@@ -1806,7 +1806,7 @@ order using the '.' operator.  Any whitespace is ignored.
     with appropriate support turned on causes vifm to open a new terminal
     multiplexer window for each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument or
-    tmux (1.8 version or newer is recommented).
+    tmux (1.8 version or newer is recommended).
 :screen?
     display whether integration with terminal multiplexers is enabled.
 
