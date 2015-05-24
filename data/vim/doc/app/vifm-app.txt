@@ -526,7 +526,7 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 
 .                                              *vifm-.*
-    repeat last command line command (not normal mode command) of this
+    repeat last command-line command (not normal mode command) of this
     session (does nothing right after startup or |vifm-:restart| command).
     The command doesn't depend on command-line history and can be used
     with completely disabled history.
@@ -575,7 +575,7 @@ default register.  Every time when you use named registers (a-z and A-Z)
 unnamed register is updated to contain same list of files as the last
 used register.
 
-Registers with names from a to z  and from A to Z are named ones.
+Registers with names from a to z and from A to Z are named ones.
 Lowercase registers are cleared before adding new files, while uppercase
 aren't and should be used to append new files to the existing file list
 of appropriate lowercase register (A for a, B for b, ...).
@@ -1103,7 +1103,7 @@ The builtin commands are:
     display file attributes (permission on *nix and properties on Windows)
     change dialog.
 :[range]chmod[!] arg...                        {only for *nix}
-    change permissions for files.  See `man chmod` for arg format.  "!"
+    change permissions for files.  See `man 1 chmod` for arg format.  "!"
     means set permissions recursively.
 
                                                *vifm-:chown*
@@ -1413,7 +1413,7 @@ The builtin commands are:
     default.  By default the command relies on the external "grep" utility,
     which can be customized by altering value of the |vifm-'grepprg'| option.
 :[range]gr[ep][!] -opt...
-    same as :grep above, but user defines all find arguments, which are not
+    same as :grep above, but user defines all grep arguments, which are not
     escaped.  Searches among selected files if any.
 :[range]gr[ep][!]
     repeats last :grep command.  "!" of this command inverts "!" in repeated
@@ -1806,7 +1806,7 @@ order using the '.' operator.  Any whitespace is ignored.
     with appropriate support turned on causes vifm to open a new terminal
     multiplexer window for each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument or
-    tmux (version equal to or newer than 1.8 is recommented).
+    tmux (1.8 version or newer is recommented).
 :screen?
     display whether integration with terminal multiplexers is enabled.
 

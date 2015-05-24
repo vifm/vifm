@@ -79,7 +79,7 @@ special symbols must be enclosed in double or single quotes or all special
 symbols should be escaped (the exact syntax strongly depends on shell).
 .TP
 .BI "\-\-help, \-h"
-Show an overview of the commandline options.
+Show a brief command summary and exit vifm.
 .TP
 .BI "\-\-version, \-v"
 Show version information and quit.
@@ -88,7 +88,7 @@ Show version information and quit.
 Skip reading vifmrc and vifminfo.
 
 .LP
-See Startup section below for the explanations on $VIFM.
+See "Startup" section below for the explanations on $VIFM.
 .br
 .\" ---------------------------------------------------------------------------
 .SH General keys
@@ -604,7 +604,7 @@ same as :quit!.
 same as :quit.
 .TP
 .BI .
-repeat last command line command (not normal mode command) of this session (does
+repeat last command-line command (not normal mode command) of this session (does
 nothing right after startup or :restart command).  The command doesn't depend on
 command-line history and can be used with completely disabled history.
 .TP
@@ -651,7 +651,7 @@ register is updated to contain same list of files as the last used register.
 _ is black hole register.  It can be used for writing, but its list is always
 empty.
 
-Registers with names from a to z  and from A to Z are named ones.  Lowercase
+Registers with names from a to z and from A to Z are named ones.  Lowercase
 registers are cleared before adding new files, while uppercase aren't and should
 be used to append new files to the existing file list of appropriate lowercase
 register (A for a, B for b, ...).
@@ -779,7 +779,7 @@ leave visual mode if not in amending mode, otherwise switch to normal visual
 selection.
 .TP
 .BI Ctrl-G
-switche type of amending by round robin scheme: append \-> remove \-> invert.
+switch type of amending by round robin scheme: append \-> remove \-> invert.
 .TP
 .BI :
 enter command line mode.  Selection is cleared on leaving the mode.
@@ -1043,7 +1043,7 @@ The facility is supported by four input submodes of the command-line:
   \- backward search;
   \- file rename (see description of cw and cW normal mode keys).
 
-Editing command-line using external editor is activated by the c_CTRL-G
+Editing command-line using external editor is activated by the Ctrl-G
 shortcut.  It's also possible to do almost the same from Normal and Visual
 modes using q:, q/ and q? commands.
 
@@ -1253,7 +1253,7 @@ dialog.
 .BI ":[range]chmod[!] arg..."
 only for *nix
 .br
-change permissions for files.  See `man chmod` for arg format.  "!" means set
+change permissions for files.  See `man 1 chmod` for arg format.  "!" means set
 permissions recursively.
 .TP
 .BI "                                         :chown"
@@ -1652,7 +1652,7 @@ the command relies on the external "grep" utility, which can be customized by
 altering value of the 'grepprg' option.
 .TP
 .BI ":[range]gr[ep][!] \-opt..."
-same as :grep above, but user defines all find arguments, which are not escaped.
+same as :grep above, but user defines all grep arguments, which are not escaped.
 Searches among selected files if any.
 .TP
 .BI :[range]gr[ep][!]
@@ -1951,7 +1951,7 @@ order using the '.' operator.  Any whitespace is ignored.
 .BI "                                         :locate"
 .TP
 .BI ":locate filename"
-uses the locate command to create a menu of filenames.
+use "locate" command to create a menu of filenames.
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.  By default the command relies on the external
 "locate" utility (it's assumed that its database is already built), which can be
@@ -2120,7 +2120,7 @@ terminal multiplexer window for each new file edited or program launched from
 vifm.
 .br
 This requires screen version 3.9.9 or newer for the screen \-X argument or tmux
-(version or newer 1.8 is recommented).
+(1.8 version or newer is recommented).
 .TP
 .BI :screen?
 display whether integration with terminal multiplexers is enabled.
@@ -2426,7 +2426,6 @@ mapping of rhs.
 .BI ":no[remap]! lhs rhs"
 map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
 rhs.
-
 .TP
 .BI ":cno[remap] lhs rhs"
 map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
@@ -2451,7 +2450,6 @@ remove the mapping of lhs from normal and visual modes.
 .TP
 .BI ":unm[ap]! lhs"
 remove the mapping of lhs from command line mode.
-
 .TP
 .BI ":cu[nmap] lhs"
 remove the mapping of lhs from command line mode.
@@ -2643,8 +2641,8 @@ will list the directory contents of the current directory.
 .BI ":lsl filename<Enter>"
 will list only the given filename.
 .TP
-The macros can also be used in directly executing commands. ":!mv %f %D" would \
-move the current directory selected files to the other directory.
+The macros can also be used in directly executing commands.  ":!mv %f %D" \
+would move the current directory selected files to the other directory.
 .TP
 Appending & to the end of a command causes it to be executed in the \
 background.  Typically you want to run two kinds of external commands in the \
@@ -3142,8 +3140,8 @@ default: false
 type: local
 .br
 When this option is set, directory view will be displayed in multiple columns
-with file names similar to output of `ls \-x` command.  See ls-like view section
-below for format description.
+with file names similar to output of `ls \-x` command.  See "ls-like view"
+section below for format description.
 .TP
 .BI "'number' 'nu'"
 type: boolean
@@ -3325,7 +3323,7 @@ information on time keys.
 
 \(aq+\(aq means ascending sort for this key, and '\-' means descending sort.
 
-In case name (iname on Windoes) is skipped, it will be added at the end
+In case "name" ("iname" on Windoes) is skipped, it will be added at the end
 automatically.
 
 Value of the option is checked to include default sorting key (name on *nix,
@@ -3464,7 +3462,7 @@ type: string
 .br
 default: " %m/%d %H:%M"
 .br
-Format of time in file list.  See man date or man strftime for details.
+Format of time in file list.  See "man 1 date" or "man 3 strftime" for details.
 .TP
 .BI "'timeoutlen' 'tm'"
 type: integer
@@ -3541,7 +3539,7 @@ type: local
 .br
 Format string containing list of columns in the view.  When this option is empty
 view columns to show are chosen automatically using sorting keys (see 'sort') as
-a base.  Value of this option is ignored if 'lsview' is set.  See Column view
+a base.  Value of this option is ignored if 'lsview' is set.  See "Column view"
 section below for format description.
 
 An example of setting the options for both panes (note vifm-windo command):
@@ -3695,7 +3693,7 @@ only for *nix
 Alt + Ctrl + some key.
 .TP
 .BI "<f0> \- <f63>"
-Functional keys
+Functional keys.
 .TP
 .BI "<c-f1> \- <c-f12>"
 only for MS-Windows
@@ -3937,7 +3935,7 @@ function call
 .br
 function(expr1, ...)  function call
 
-See Functions section below.
+See "Functions" section below.
 
 Examples:
 
@@ -4039,7 +4037,7 @@ system({command})
 .br
 Runs the command in shell and returns its output (joined standard output and
 standard error streams).  All trailing newline characters are stripped to
-allow easy appending to command output.  CTRL-C should interrupt the command.
+allow easy appending to command output.  Ctrl-C should interrupt the command.
 
 Usage example:
 
@@ -4301,7 +4299,7 @@ vifm tries to find correct configuration file by checking the following places:
 .\" ---------------------------------------------------------------------------
 .SH Configure
 .\" ---------------------------------------------------------------------------
-See Startup section above for the explanations on $VIFM and $MYVIFMRC.
+See "Startup" section above for the explanations on $VIFM and $MYVIFMRC.
 
 The vifmrc file contains commands that will be executed on vifm startup.  There
 are two such files: global and local.  Global one is at
@@ -4428,10 +4426,10 @@ vifm supports displaying of file list view in two different ways:
 .RS 2
 .IP \- 2
 in a table mode, when multiple columns can be set using 'viewcolumns' option
-(see Column view section below for details);
+(see "Column view" section below for details);
 .IP \- 2
 in a multicolumn list manner which looks almost like `ls \-x` command output
-(see ls-like view section below for details).
+(see "ls-like view" section below for details).
 .RE
 
 The look is local for each view and can be chosen by changing value of the
@@ -4782,7 +4780,7 @@ When $MYVIFMRC isn't set, it's made as $VIFM/vifmrc (exception
 for Windows: vifmrc in the same directory as vifm.exe has higher priority than
 $VIFM/vifmrc).
 .LP
-See Startup section above for more details.
+See "Startup" section above for more details.
 .TP
 .BI VIFM_FUSE_FILE
 On execution of external commands this variable is set to the full path of file
