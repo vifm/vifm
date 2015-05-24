@@ -226,6 +226,8 @@ main(int argc, char *argv[])
 		load_scheme();
 		cfg_load();
 	}
+	/* Load colors in any case to load color pairs. */
+	load_color_scheme_colors();
 
 	write_color_scheme_file();
 	setup_signals();
@@ -450,7 +452,6 @@ load_scheme(void)
 	{
 		load_primary_color_scheme(curr_stats.color_scheme);
 	}
-	load_color_scheme_colors();
 }
 
 /* Converts old versions of configuration files to new ones.  Terminates
