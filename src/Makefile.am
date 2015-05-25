@@ -175,7 +175,7 @@ vifm_SOURCES = \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
 	event_loop.c event_loop.h \
-	globals.c globals.h \
+	globs.c globs.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \

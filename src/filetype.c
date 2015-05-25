@@ -29,7 +29,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
-#include "globals.h"
+#include "globs.h"
 
 /* Predefined builtin command. */
 const assoc_record_t NONE_PSEUDO_PROG = {
@@ -100,7 +100,7 @@ find_existing_cmd(const assoc_list_t *record_list, const char file[])
 	{
 		assoc_record_t prog;
 
-		if(!global_matches(record_list->list[i].pattern, file))
+		if(!globs_matches(record_list->list[i].pattern, file))
 		{
 			continue;
 		}
@@ -283,7 +283,7 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 
 	for(i = 0; i < record_list->count; ++i)
 	{
-		if(global_matches(record_list->list[i].pattern, file))
+		if(globs_matches(record_list->list[i].pattern, file))
 		{
 			ft_assoc_record_add_all(&result, &record_list->list[i].records);
 		}

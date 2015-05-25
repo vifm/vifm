@@ -184,7 +184,7 @@ Package content
     |  |-- fileview.c - display/redraw/manage file view
     |  |-- filtering.c - managing file filters
     |  |-- fuse.c - provides support of FUSE filesystems
-    |  |-- globals.c - provides support of globals
+    |  |-- globs.c - provides support of glob patterns
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- ops.c - most of operations performed on file system

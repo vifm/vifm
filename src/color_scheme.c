@@ -43,7 +43,7 @@
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "color_manager.h"
-#include "globals.h"
+#include "globs.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {
@@ -661,7 +661,7 @@ clone_color_scheme_highlights(const col_scheme_t *from)
 
 		if(hi->glob)
 		{
-			(void)global_compile_as_re(hi->pattern, &file_hi[i].re);
+			(void)globs_compile_as_re(hi->pattern, &file_hi[i].re);
 		}
 		else
 		{
@@ -877,7 +877,7 @@ add_file_hi(const char pattern[], int glob, int case_sensitive,
 
 	if(glob)
 	{
-		err = global_compile_as_re(pattern, &file_hi->re);
+		err = globs_compile_as_re(pattern, &file_hi->re);
 	}
 	else
 	{

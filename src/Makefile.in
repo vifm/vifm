@@ -118,7 +118,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	color_manager.$(OBJEXT) commands.$(OBJEXT) \
 	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
 	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
-	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	globs.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
 	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
@@ -459,7 +459,7 @@ vifm_SOURCES = \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
 	event_loop.c event_loop.h \
-	globals.c globals.h \
+	globs.c globs.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
@@ -929,7 +929,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@

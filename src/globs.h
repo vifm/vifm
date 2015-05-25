@@ -16,23 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__GLOBALS_H__
-#define VIFM__GLOBALS_H__
+#ifndef VIFM__GLOBS_H__
+#define VIFM__GLOBS_H__
 
 #include <regex.h> /* regex_t */
 
-/* Implements globals by converting them into regular expressions.  They are
+/* Implements globs by converting them into regular expressions.  They are
  * treated as case insensitive. */
 
-/* Checks whether file name matches comma-separated list of globals.  Returns
+/* Checks whether file name matches comma-separated list of globs.  Returns
  * non-zero if so, otherwise zero is returned. */
-int global_matches(const char globals[], const char file[]);
+int globs_matches(const char globs[], const char file[]);
 
-/* Compiles global into regular expression.  Returns zero on success, on error
+/* Compiles glob into regular expression.  Returns zero on success, on error
  * result of regcomp() is returned, which is non-zero. */
-int global_compile_as_re(const char global[], regex_t *re);
+int globs_compile_as_re(const char glob[], regex_t *re);
 
-#endif /* VIFM__GLOBALS_H__ */
+#endif /* VIFM__GLOBS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
