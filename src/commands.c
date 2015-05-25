@@ -209,14 +209,14 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
-static int highlight_file(const cmd_info_t *cmd_info, int global);
+static int highlight_file(const cmd_info_t *cmd_info, int glob);
 static int is_re_arg(const char arg[]);
 static int parse_case_flag(const char flags[], int *case_sensitive);
-static void display_file_highlights(const char pattern[], int global);
+static void display_file_highlights(const char pattern[], int glob);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
-static const char * get_file_hi_str(const char pattern[], int global,
+static const char * get_file_hi_str(const char pattern[], int glob,
 		int case_sensitive, const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
@@ -2739,7 +2739,7 @@ is_re_arg(const char arg[])
 /* Handles highlight-file form of :highlight command.  Returns value to be
  * returned by command handler. */
 static int
-highlight_file(const cmd_info_t *cmd_info, int global)
+highlight_file(const cmd_info_t *cmd_info, int glob)
 {
 	char pattern[strlen(cmd_info->args) + 1];
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
@@ -2748,7 +2748,7 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 
 	(void)extract_part(cmd_info->args + 1, ' ', pattern);
 
-	if(global)
+	if(glob)
 	{
 		/* Cut off trailing '}'. */
 		pattern[strlen(pattern) - 1] = '\0';
@@ -2767,12 +2767,12 @@ highlight_file(const cmd_info_t *cmd_info, int global)
 
 	if(cmd_info->argc == 1)
 	{
-		display_file_highlights(pattern, global);
+		display_file_highlights(pattern, glob);
 		return 1;
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += add_file_hi(pattern, global, case_sensitive, &color);
+	result += add_file_hi(pattern, glob, case_sensitive, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;
@@ -2806,7 +2806,7 @@ parse_case_flag(const char flags[], int *case_sensitive)
 
 /* Displays information about filename specific highlight on the status bar. */
 static void
-display_file_highlights(const char pattern[], int global)
+display_file_highlights(const char pattern[], int glob)
 {
 	int i;
 
@@ -2816,7 +2816,7 @@ display_file_highlights(const char pattern[], int global)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
 
-		if(file_hi->global != global)
+		if(file_hi->glob != glob)
 		{
 			continue;
 		}
@@ -2826,7 +2826,7 @@ display_file_highlights(const char pattern[], int global)
 			break;
 		}
 
-		if(global && is_in_str_list(file_hi->pattern, ',', pattern))
+		if(glob && is_in_str_list(file_hi->pattern, ',', pattern))
 		{
 			break;
 		}
@@ -2839,7 +2839,7 @@ display_file_highlights(const char pattern[], int global)
 	}
 
 	status_bar_message(get_file_hi_str(cs->file_hi[i].pattern,
-				cs->file_hi[i].global, cs->file_hi[i].case_sensitive,
+				cs->file_hi[i].glob, cs->file_hi[i].case_sensitive,
 				&cs->file_hi[i].hi));
 }
 
@@ -2908,7 +2908,7 @@ get_all_highlights(void)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
-		const char *const line = get_file_hi_str(file_hi->pattern, file_hi->global,
+		const char *const line = get_file_hi_str(file_hi->pattern, file_hi->glob,
 				file_hi->case_sensitive, &file_hi->hi);
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
 				(i < cs->file_hi_count - 1) ? "\n" : "");
@@ -2928,12 +2928,12 @@ get_group_str(int group, const col_attr_t *col)
 /* Composes string representation of filename specific highlight definition.
  * Returns pointer to a statically allocated buffer. */
 static const char *
-get_file_hi_str(const char pattern[], int global, int case_sensitive,
+get_file_hi_str(const char pattern[], int glob, int case_sensitive,
 		const col_attr_t *col)
 {
 	char title[128];
-	const char left = global ? '{' : '/';
-	const char right = global ? '}' : '/';
+	const char left = glob ? '{' : '/';
+	const char right = glob ? '}' : '/';
 	const char *const case_str = case_sensitive ? "I" : "";
 
 	snprintf(title, sizeof(title), "%c%s%c%s", left, pattern, right, case_str);

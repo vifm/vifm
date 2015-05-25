@@ -44,7 +44,7 @@ ColorSchemeState;
 typedef struct
 {
 	char *pattern;      /* Raw pattern literal. */
-	int global;         /* Whether pattern is global or regular expression. */
+	int glob;           /* Whether pattern is glob or regular expression. */
 	int case_sensitive; /* Whether re pattern is case sensitive (globs not). */
 	regex_t re;         /* Pattern in compiled form. */
 	col_attr_t hi;      /* File appearance parameters. */
@@ -117,7 +117,7 @@ void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 /* Registers pattern-highlight pair for active color scheme.  Returns new value
  * for curr_stats.save_msg. */
-int add_file_hi(const char pattern[], int global, int case_sensitive,
+int add_file_hi(const char pattern[], int glob, int case_sensitive,
 		const col_attr_t *hi);
 
 /* Gets filename specific highlight.  hi_hint can't be NULL and should be equal
