@@ -55,6 +55,10 @@ int regexp_should_ignore_case(const char pattern[]);
 
 const char * get_regexp_error(int err, regex_t *re);
 
+/* *case_sensitive should be initialized with default value outside the call.
+ * Returns zero on success, otherwise non-zero is returned. */
+int parse_case_flag(const char flags[], int *case_sensitive);
+
 /* Shell and program running. */
 
 /* Executes an external command.  Clears the screen up on Windows before running

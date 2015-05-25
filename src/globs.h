@@ -32,6 +32,11 @@ int globs_matches(const char globs[], const char file[]);
  * result of regcomp() is returned, which is non-zero. */
 int globs_compile_as_re(const char glob[], regex_t *re);
 
+/* Converts comma-separated list of globs into equivalent regular expression.
+ * Returns pointer to a newly allocated string, which should be freed by the
+ * caller, or NULL if there is not enough memory or no patters are given. */
+char * globs_to_regex(const char globs[]);
+
 #endif /* VIFM__GLOBS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

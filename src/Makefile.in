@@ -108,27 +108,27 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
 	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	color_manager.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
-	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
-	globs.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
-	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
-	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
-	vifm.$(OBJEXT) vim.$(OBJEXT)
+	utils/matcher.$(OBJEXT) utils/mntent.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
+	bookmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
+	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
+	event_loop.$(OBJEXT) globs.$(OBJEXT) file_magic.$(OBJEXT) \
+	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) fileview.$(OBJEXT) \
+	filtering.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
+	macros.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	path_env.$(OBJEXT) quickview.$(OBJEXT) registers.$(OBJEXT) \
+	running.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	sort.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) \
+	term_title.$(OBJEXT) trash.$(OBJEXT) types.$(OBJEXT) \
+	undo.$(OBJEXT) version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) \
+	compile_info.$(OBJEXT) vifm.$(OBJEXT) vim.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -435,6 +435,7 @@ vifm_SOURCES = \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/matcher.c utils/matcher.h \
 	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
@@ -768,6 +769,8 @@ utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/mntent.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
@@ -894,6 +897,7 @@ mostlyclean-compile:
 	-rm -f utils/fs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
+	-rm -f utils/matcher.$(OBJEXT)
 	-rm -f utils/mntent.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
@@ -1018,6 +1022,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/mntent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@

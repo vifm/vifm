@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <regex.h> /* regcomp() regexec() regfree() */
+#include <regex.h> /* regcomp() regexec() */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
@@ -38,6 +38,7 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
@@ -637,8 +638,7 @@ free_color_scheme_highlights(col_scheme_t *cs)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		file_hi_t *const hi = &cs->file_hi[i];
-		free(hi->pattern);
-		regfree(&hi->re);
+		matcher_free(hi->matcher);
 	}
 
 	free(cs->file_hi);
@@ -658,19 +658,7 @@ clone_color_scheme_highlights(const col_scheme_t *from)
 	for(i = 0; i < from->file_hi_count; ++i)
 	{
 		const file_hi_t *const hi = &from->file_hi[i];
-
-		if(hi->glob)
-		{
-			(void)globs_compile_as_re(hi->pattern, &file_hi[i].re);
-		}
-		else
-		{
-			const int re_flags = REG_EXTENDED | (hi->case_sensitive ? 0 : REG_ICASE);
-			(void)regcomp(&file_hi[i].re, hi->pattern, re_flags);
-		}
-
-		file_hi[i].pattern = strdup(hi->pattern);
-		file_hi[i].glob = hi->glob;
+		file_hi[i].matcher = matcher_clone(hi->matcher);
 		file_hi[i].hi = hi->hi;
 	}
 
@@ -858,12 +846,11 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 }
 
 int
-add_file_hi(const char pattern[], int glob, int case_sensitive,
-		const col_attr_t *hi)
+add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 {
-	int err;
 	file_hi_t *file_hi;
 	col_scheme_t *const cs = curr_stats.cs;
+
 	void *const p = realloc(cs->file_hi,
 			sizeof(*cs->file_hi)*(cs->file_hi_count + 1));
 	if(p == NULL)
@@ -871,30 +858,11 @@ add_file_hi(const char pattern[], int glob, int case_sensitive,
 		show_error_msg("Color Scheme File Highlight", "Not enough memory");
 		return 1;
 	}
-
 	cs->file_hi = p;
+
 	file_hi = &cs->file_hi[cs->file_hi_count];
 
-	if(glob)
-	{
-		err = globs_compile_as_re(pattern, &file_hi->re);
-	}
-	else
-	{
-		const int re_flags = REG_EXTENDED | (case_sensitive ? 0 : REG_ICASE);
-		err = regcomp(&file_hi->re, pattern, re_flags);
-	}
-
-	if(err != 0)
-	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &file_hi->re));
-		regfree(&file_hi->re);
-		return 1;
-	}
-
-	file_hi->pattern = strdup(pattern);
-	file_hi->glob = glob;
-	file_hi->case_sensitive = case_sensitive;
+	file_hi->matcher = matcher;
 	file_hi->hi = *hi;
 
 	++cs->file_hi_count;
@@ -917,7 +885,7 @@ get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
-		if(regexec(&file_hi->re, fname, 0, NULL, 0) == 0)
+		if(matcher_matches(file_hi->matcher, fname))
 		{
 			*hi_hint = i;
 			return &file_hi->hi;

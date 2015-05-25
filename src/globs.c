@@ -26,7 +26,6 @@
 
 #include "utils/str.h"
 
-static char * globs_to_regex(const char globs[]);
 static char * glob_to_regex(const char glob[]);
 
 int
@@ -61,10 +60,7 @@ globs_compile_as_re(const char glob[], regex_t *re)
 	return result;
 }
 
-/* Converts comma-separated list of globs into equivalent regular expression.
- * Returns pointer to a newly allocated string, which should be freed by the
- * caller, or NULL if there is not enough memory or no patters are given. */
-static char *
+char *
 globs_to_regex(const char globs[])
 {
 	char *final_regex = NULL;

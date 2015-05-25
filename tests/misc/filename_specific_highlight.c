@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/color_scheme.h"
 #include "../../src/commands.h"
 #include "../../src/status.h"
@@ -31,7 +32,7 @@ TEST(curly_braces_pattern_transform)
 	const char *const COMMANDS = "highlight {*.sh} ctermfg=red";
 
 	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
-	assert_string_equal("*.sh", cfg.cs.file_hi[0].pattern);
+	assert_string_equal("{*.sh}", matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 TEST(curly_braces_no_flags_allowed)
@@ -60,7 +61,7 @@ TEST(pattern_is_not_unescaped)
 	const char *const COMMANDS = "highlight /^\\./ ctermfg=red";
 
 	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
-	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
+	assert_string_equal("/^\\./", matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 TEST(pattern_length_is_not_limited)
@@ -70,9 +71,10 @@ TEST(pattern_length_is_not_limited)
 		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$/ ctermfg=red";
 
 	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
-	assert_string_equal("\\.(7z|Z|a|ace|alz|apkg|arc|arj|bz"
+	assert_string_equal("/\\.(7z|Z|a|ace|alz|apkg|arc|arj|bz"
 		"|bz2|cab|cpio|deb|gz|jar|lha|lrz|lz|lzma|lzo|rar|rpm|rz|t7z|tZ|tar|tbz"
-		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$", cfg.cs.file_hi[0].pattern);
+		"|tbz2|tgz|tlz|txz|tzo|war|xz|zip)$/",
+		matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 TEST(i_flag)
@@ -80,7 +82,7 @@ TEST(i_flag)
 	const char *const COMMANDS = "highlight /^\\./i ctermfg=red";
 
 	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
-	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
+	assert_string_equal("/^\\./i", matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 TEST(I_flag)
@@ -88,7 +90,7 @@ TEST(I_flag)
 	const char *const COMMANDS = "highlight /^\\./I ctermfg=red";
 
 	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
-	assert_string_equal("^\\.", cfg.cs.file_hi[0].pattern);
+	assert_string_equal("/^\\./I", matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 TEST(wrong_flag)

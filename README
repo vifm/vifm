@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 28 March, 2015
+Updated: 26 May, 2015
 Version: 0.7.8
 
 Brief Description
@@ -152,6 +152,7 @@ Package content
     |  |  |-- filter.c - small abstraction over filter driven by a regexp
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
+    |  |  |-- matcher.c - file name matcher (glob/regexp)
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions
