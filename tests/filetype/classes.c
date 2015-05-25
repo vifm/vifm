@@ -21,7 +21,7 @@ TEST(enumeration)
 	assert_string_equal("c file", prog_cmd);
 }
 
-TEST(negotiation_with_emark)
+TEST(negation_with_emark)
 {
 	const char *prog_cmd;
 
@@ -34,7 +34,7 @@ TEST(negotiation_with_emark)
 	assert_string_equal("not c file", prog_cmd);
 }
 
-TEST(negotiation_with_hat)
+TEST(negation_with_hat)
 {
 	const char *prog_cmd;
 

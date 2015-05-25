@@ -58,6 +58,7 @@ TSTATIC void replace_double_comma(char cmd[], int put_null);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
+static int assoc_matches(const assoc_t *assoc, const char file[]);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(const char pattern[], int globs,
 		const assoc_records_t *viewers);
@@ -100,13 +101,14 @@ find_existing_cmd(const assoc_list_t *record_list, const char file[])
 	for(i = 0; i < record_list->count; ++i)
 	{
 		assoc_record_t prog;
+		assoc_t *const assoc = &record_list->list[i];
 
-		if(!globs_matches(record_list->list[i].pattern, file))
+		if(!assoc_matches(assoc, file))
 		{
 			continue;
 		}
 
-		prog = find_existing_cmd_record(&record_list->list[i].records);
+		prog = find_existing_cmd_record(&assoc->records);
 		if(!is_assoc_record_empty(&prog))
 		{
 			return prog.command;
@@ -284,13 +286,33 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 
 	for(i = 0; i < record_list->count; ++i)
 	{
-		if(globs_matches(record_list->list[i].pattern, file))
+		assoc_t *const assoc = &record_list->list[i];
+		if(assoc_matches(assoc, file))
 		{
-			ft_assoc_record_add_all(&result, &record_list->list[i].records);
+			ft_assoc_record_add_all(&result, &assoc->records);
 		}
 	}
 
 	return result;
+}
+
+static int
+assoc_matches(const assoc_t *assoc, const char file[])
+{
+	regex_t re;
+	int matches;
+
+	if(assoc->globs)
+	{
+		return globs_matches(assoc->pattern, file);
+	}
+
+	/* TODO: pass regex flags here. */
+	(void)regcomp(&re, assoc->pattern, REG_EXTENDED);
+	matches = (regexec(&re, file, 0, NULL, 0) == 0);
+	regfree(&re);
+
+	return matches;
 }
 
 void
