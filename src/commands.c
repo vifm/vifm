@@ -2402,7 +2402,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 
 	records = vle_cmds_next_arg(cmd_info->args);
 	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
-	ft_set_programs(cmd_info->argv[0], records, for_x, in_x);
+	ft_set_programs(cmd_info->argv[0], 1, records, for_x, in_x);
 	return 0;
 }
 
@@ -2420,7 +2420,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	}
 
 	records = vle_cmds_next_arg(cmd_info->args);
-	ft_set_viewers(cmd_info->argv[0], records);
+	ft_set_viewers(cmd_info->argv[0], 1, records);
 	return 0;
 }
 

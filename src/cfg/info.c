@@ -135,7 +135,7 @@ read_info_file(int reread)
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
-					ft_set_programs(line_val, line2, 0,
+					ft_set_programs(line_val, 1, line2, 0,
 							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 				}
 			}
@@ -144,7 +144,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				ft_set_programs(line_val, line2, 1,
+				ft_set_programs(line_val, 1, line2, 1,
 						curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 			}
 		}
@@ -152,7 +152,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				ft_set_viewers(line_val, line2);
+				ft_set_viewers(line_val, 1, line2);
 			}
 		}
 		else if(type == LINE_TYPE_COMMAND)

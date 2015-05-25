@@ -51,7 +51,7 @@ static external_command_exists_t external_command_exists_func;
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
-static void assoc_programs(const char pattern[],
+static void assoc_programs(const char pattern[], int globs,
 		const assoc_records_t *programs, int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 TSTATIC void replace_double_comma(char cmd[], int put_null);
@@ -59,7 +59,8 @@ static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewers(const char pattern[], const assoc_records_t *viewers);
+static void assoc_viewers(const char pattern[], int globs,
+		const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
@@ -146,23 +147,23 @@ ft_get_all_programs(const char file[])
 }
 
 void
-ft_set_programs(const char patterns[], const char programs[], int for_x,
-		int in_x)
+ft_set_programs(const char patterns[], int globs, const char programs[],
+		int for_x, int in_x)
 {
 	assoc_records_t prog_records = parse_command_list(programs, 1);
-	assoc_programs(patterns, &prog_records, for_x, in_x);
+	assoc_programs(patterns, globs, &prog_records, for_x, in_x);
 	ft_assoc_records_free(&prog_records);
 }
 
 /* Associates pattern with the list of programs either for X or non-X
  * associations and depending on current execution environment. */
 static void
-assoc_programs(const char pattern[], const assoc_records_t *programs, int for_x,
-		int in_x)
+assoc_programs(const char pattern[], int globs, const assoc_records_t *programs,
+		int for_x, int in_x)
 {
-	const assoc_t assoc =
-	{
+	const assoc_t assoc = {
 		.pattern = strdup(pattern),
+		.globs = globs,
 		.records = clone_assoc_records(programs),
 	};
 
@@ -293,20 +294,20 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 }
 
 void
-ft_set_viewers(const char patterns[], const char viewers[])
+ft_set_viewers(const char patterns[], int globs, const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 0);
-	assoc_viewers(patterns, &view_records);
+	assoc_viewers(patterns, globs, &view_records);
 	ft_assoc_records_free(&view_records);
 }
 
 /* Associates pattern with the list of viewers. */
 static void
-assoc_viewers(const char pattern[], const assoc_records_t *viewers)
+assoc_viewers(const char pattern[], int globs, const assoc_records_t *viewers)
 {
-	const assoc_t assoc =
-	{
+	const assoc_t assoc = {
 		.pattern = strdup(pattern),
+		.globs = globs,
 		.records = clone_assoc_records(viewers),
 	};
 
@@ -359,7 +360,7 @@ static void
 add_defaults(int in_x)
 {
 	new_records_type = ART_BUILTIN;
-	ft_set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
+	ft_set_programs("*/", 1, "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
 	new_records_type = ART_CUSTOM;
 }
 

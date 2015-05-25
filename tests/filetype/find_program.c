@@ -14,8 +14,8 @@ TEST(find_program)
 
 	ft_init(&prog_exists);
 
-	ft_set_programs("*.tar.bz2", "no console prog", 0, 0);
-	ft_set_programs("*.tar.bz2", "console prog", 0, 0);
+	ft_set_programs("*.tar.bz2", 1, "no console prog", 0, 0);
+	ft_set_programs("*.tar.bz2", 1, "console prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.tar.bz2")) != NULL);
 	assert_string_equal("console prog", prog_cmd);

@@ -9,7 +9,7 @@ TEST(one_pattern)
 {
 	assoc_records_t ft;
 
-	ft_set_programs("*.tar", "{description} tar prog", 0, 0);
+	ft_set_programs("*.tar", 1, "{description} tar prog", 0, 0);
 
 	ft = ft_get_all_programs("file.version.tar");
 	assert_int_equal(1, ft.count);
@@ -24,7 +24,7 @@ TEST(two_patterns)
 {
 	assoc_records_t ft;
 
-	ft_set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
+	ft_set_programs("*.tar,*.zip", 1, "{archives} prog", 0, 0);
 
 	{
 		ft = ft_get_all_programs("file.version.tar");
@@ -51,7 +51,7 @@ TEST(two_programs)
 {
 	assoc_records_t ft;
 
-	ft_set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
+	ft_set_programs("*.tar", 1, "{rar} rarprog, {zip} zipprog", 0, 0);
 
 	ft = ft_get_all_programs("a.tar");
 
