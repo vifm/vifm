@@ -150,6 +150,7 @@ Package content
     |  |  |-- file_streams.c - file stream reading related functions
     |  |  |-- filemon.c - file monitoring "object"
     |  |  |-- filter.c - small abstraction over filter driven by a regexp
+    |  |  |-- globs.c - provides support of glob patterns
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
     |  |  |-- matcher.c - file name matcher (glob/regexp)
@@ -185,7 +186,6 @@ Package content
     |  |-- fileview.c - display/redraw/manage file view
     |  |-- filtering.c - managing file filters
     |  |-- fuse.c - provides support of FUSE filesystems
-    |  |-- globs.c - provides support of glob patterns
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- ops.c - most of operations performed on file system

@@ -44,7 +44,6 @@
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "color_manager.h"
-#include "globs.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {

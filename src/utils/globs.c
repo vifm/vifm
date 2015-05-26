@@ -18,8 +18,6 @@
 
 #include "globs.h"
 
-#include <regex.h> /* regex_t regcomp() regexec() regfree() */
-
 #include <stdlib.h> /* realloc() free() */
 #include <stdio.h> /* sprintf() */
 #include <string.h> /* strdup() */

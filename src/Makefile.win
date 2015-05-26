@@ -52,8 +52,8 @@ modes := $(addprefix modes/, $(modes))
 ui := cancellation.c statusbar.c statusline.c ui.c
 ui := $(addprefix ui/, $(ui))
 
-utilities := env.c file_streams.c filemon.c filter.c fs.c int_stack.c log.c \
-             matcher.c path.c str.c string_array.c tree.c utf8.c utils.c \
+utilities := env.c file_streams.c filemon.c filter.c fs.c globs.c int_stack.c \
+             log.c matcher.c path.c str.c string_array.c tree.c utf8.c utils.c \
              utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
@@ -63,7 +63,7 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(io) $(menus) $(modes) $(ui) \
                 color_scheme.c column_view.c commands.c commands_completion.c \
                 compile_info.c dir_stack.c escape.c event_loop.c file_magic.c \
                 filelist.c filename_modifiers.c fileops.c filetype.c \
-                fileview.c filtering.c fuse.c globs.c ipc.c macros.c ops.c \
+                fileview.c filtering.c fuse.c ipc.c macros.c ops.c \
                 opt_handlers.c path_env.c quickview.c registers.c running.c \
                 search.c signals.c sort.c status.c tags.c term_title.c trash.c \
                 types.c undo.c version.c viewcolumns_parser.c vifmres.o vifm.c \

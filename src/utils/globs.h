@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__GLOBS_H__
-#define VIFM__GLOBS_H__
+#ifndef VIFM__UTILS__GLOBS_H__
+#define VIFM__UTILS__GLOBS_H__
 
 /* Implements globs by converting them into regular expressions.  They are
  * treated as case insensitive. */
@@ -27,7 +27,7 @@
  * caller, or NULL if there is not enough memory or no patters are given. */
 char * globs_to_regex(const char globs[]);
 
-#endif /* VIFM__GLOBS_H__ */
+#endif /* VIFM__UTILS__GLOBS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -24,7 +24,7 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strlen() strrchr() strspn() */
 
-#include "../globs.h"
+#include "globs.h"
 #include "str.h"
 #include "utils.h"
 
