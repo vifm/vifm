@@ -38,70 +38,132 @@ struct matcher_t
 	regex_t regex; /* The expression in compiled form. */
 };
 
+static int compile_expr(matcher_t *m, int cs_by_def, char **error);
+static int parse_glob(matcher_t *m, char **error);
+static int parse_re(matcher_t *m, int cs_by_def, char **error);
 static int is_re_expr(const char expr[]);
 static int is_globs_expr(const char expr[]);
 
 matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 {
-	regex_t regex;
-	int err;
-	matcher_t *matcher;
-	int cflags;
-
-	const int re = (is_re_expr(expr) || (!is_globs_expr(expr) && !glob_by_def));
-	char *e = strdup(expr);
+	const int re = is_re_expr(expr), glob = is_globs_expr(expr);
+	matcher_t *matcher, m = {
+		.globs = !(re || (!glob && !glob_by_def)),
+		.raw = strdup(expr + ((re || glob) ? 1 : 0)),
+	};
 
 	*error = NULL;
 
-	if(re)
+	if(m.raw == NULL)
 	{
-		char *const flags = strrchr(e, '/') + 1;
-		if(parse_case_flag(flags, &cs_by_def) != 0)
-		{
-			free(e);
-			replace_string(error, "Failed to parse flags.");
-			return NULL;
-		}
-
-		/* Cut the flags off by replacing slash with null character. */
-		flags[-1] = '\0';
-
-		cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
-	}
-	else
-	{
-		char *re;
-
-		/* Cut off trailing '}'. */
-		e[strlen(e) - 1] = '\0';
-
-		re = globs_to_regex(e + 1);
-		free(e);
-		e = re;
-
-		cflags = REG_EXTENDED | REG_ICASE;
+		replace_string(error, "Failed to allocate memory for match expr copy.");
+		return NULL;
 	}
 
-	err = regcomp(&regex, e, cflags);
-
-	if(err != 0)
+	if(compile_expr(&m, cs_by_def, error) != 0)
 	{
-		free(e);
-		replace_string(error, get_regexp_error(err, &regex));
-		regfree(&regex);
+		free(m.raw);
+		return NULL;
+	}
+
+	m.expr = strdup(expr);
+	if(m.expr == NULL)
+	{
+		replace_string(error, "Failed to clone match expr.");
+		matcher_free(&m);
 		return NULL;
 	}
 
 	matcher = malloc(sizeof(*matcher));
-
-	matcher->expr = strdup(expr);
-	matcher->raw = e;
-	matcher->globs = !re;
-	matcher->cflags = cflags;
-	matcher->regex = regex;
+	if(matcher == NULL)
+	{
+		replace_string(error, "Failed allocate memory for matcher.");
+		matcher_free(&m);
+	}
+	else
+	{
+		*matcher = m;
+	}
 
 	return matcher;
+}
+
+/* Compiles m->raw into regular expression.  Also replaces global with
+ * equivalent regexp.  Returns zero on success or non-zero on error with *error
+ * containing description of it. */
+static int
+compile_expr(matcher_t *m, int cs_by_def, char **error)
+{
+	int err;
+
+	if(m->globs)
+	{
+		if(parse_glob(m, error) != 0)
+		{
+			return 1;
+		}
+	}
+	else
+	{
+		if(parse_re(m, cs_by_def, error) != 0)
+		{
+			return 1;
+		}
+	}
+
+	err = regcomp(&m->regex, m->raw, m->cflags);
+	if(err != 0)
+	{
+		replace_string(error, get_regexp_error(err, &m->regex));
+		regfree(&m->regex);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Replaces global with equivalent regexp and setups flags.  Returns zero on
+ * success or non-zero on error with *error containing description of it. */
+static int
+parse_glob(matcher_t *m, char **error)
+{
+	char *re;
+
+	/* Cut off trailing '}'. */
+	m->raw[strlen(m->raw) - 1] = '\0';
+
+	re = globs_to_regex(m->raw);
+	if(re == NULL)
+	{
+		replace_string(error, "Failed convert globs into regexp.");
+		return 1;
+	}
+
+	free(m->raw);
+	m->raw = re;
+
+	m->cflags = REG_EXTENDED | REG_ICASE;
+	return 0;
+}
+
+/* Parses regexp flags.  Returns zero on success or non-zero on error with
+ * *error containing description of it. */
+static int
+parse_re(matcher_t *m, int cs_by_def, char **error)
+{
+	char *const flags = strrchr(m->raw, '/') + 1;
+	if(parse_case_flag(flags, &cs_by_def) != 0)
+	{
+		replace_string(error, "Failed to parse flags.");
+		return 1;
+	}
+
+	/* Cut the flags off by replacing slash with null character. */
+	flags[-1] = '\0';
+
+	m->cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
+	return 0;
 }
 
 matcher_t *
