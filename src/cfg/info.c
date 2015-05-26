@@ -36,6 +36,7 @@
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/matcher.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -128,31 +129,38 @@ read_info_file(int reread)
 				process_set_args(line_val);
 			}
 		}
-		else if(type == LINE_TYPE_FILETYPE)
+		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				/* This is to prevent old builtin fake associations to be loaded. */
-				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
+				char *error;
+				matcher_t *m;
+				const int x = (type == LINE_TYPE_XFILETYPE);
+
+				/* Prevent loading of old builtin fake associations. */
+				if(ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
-					ft_set_programs(line_val, 1, line2, 0,
+					continue;
+				}
+
+				m = matcher_alloc(line_val, 0, 1, &error);
+				if(m != NULL)
+				{
+					ft_set_programs(m, line2, x,
 							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 				}
-			}
-		}
-		else if(type == LINE_TYPE_XFILETYPE)
-		{
-			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
-			{
-				ft_set_programs(line_val, 1, line2, 1,
-						curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 			}
 		}
 		else if(type == LINE_TYPE_FILEVIEWER)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				ft_set_viewers(line_val, 1, line2);
+				char *error;
+				matcher_t *const m = matcher_alloc(line_val, 0, 1, &error);
+				if(m != NULL)
+				{
+					ft_set_viewers(m, line2);
+				}
 			}
 		}
 		else if(type == LINE_TYPE_COMMAND)
@@ -852,7 +860,7 @@ assoc_exists(assoc_list_t *assocs, const char pattern[], const char cmd[])
 		int j;
 
 		const assoc_t assoc = assocs->list[i];
-		if(strcmp(assoc.pattern, pattern) == 0)
+		if(strcmp(matcher_get_expr(assoc.matcher), pattern) == 0)
 		{
 			continue;
 		}
@@ -1013,11 +1021,12 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 
 			if(ft_record.description[0] == '\0')
 			{
-				fprintf(fp, "%c%s\n\t%s\n", mark, assoc.pattern, ft_record.command);
+				fprintf(fp, "%c%s\n\t%s\n", mark, matcher_get_expr(assoc.matcher),
+						ft_record.command);
 			}
 			else
 			{
-				fprintf(fp, "%c%s\n\t{%s}%s\n", mark, assoc.pattern,
+				fprintf(fp, "%c%s\n\t{%s}%s\n", mark, matcher_get_expr(assoc.matcher),
 						ft_record.description, ft_record.command);
 			}
 		}

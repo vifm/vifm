@@ -19,18 +19,8 @@
 #ifndef VIFM__GLOBS_H__
 #define VIFM__GLOBS_H__
 
-#include <regex.h> /* regex_t */
-
 /* Implements globs by converting them into regular expressions.  They are
  * treated as case insensitive. */
-
-/* Checks whether file name matches comma-separated list of globs.  Returns
- * non-zero if so, otherwise zero is returned. */
-int globs_matches(const char globs[], const char file[]);
-
-/* Compiles glob into regular expression.  Returns zero on success, on error
- * result of regcomp() is returned, which is non-zero. */
-int globs_compile_as_re(const char glob[], regex_t *re);
 
 /* Converts comma-separated list of globs into equivalent regular expression.
  * Returns pointer to a newly allocated string, which should be freed by the

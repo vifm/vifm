@@ -121,6 +121,9 @@
 	Added one more light color scheme to assets (in two variations
 	astrell-root and astrell-user).  Thanks to astrell.
 
+	Added regexp patterns to :file[x]type and :fileviewer commands.  Thanks to
+	filterfalse.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

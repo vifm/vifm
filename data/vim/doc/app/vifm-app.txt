@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 24
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -12,7 +12,8 @@
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-cancellation|       Cancellation of commands.
-|vifm-globs|              Description of how about globs work in vifm.
+|vifm-patterns|           Description of file match patterns.
+|vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
@@ -2261,11 +2262,31 @@ Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 |vifm-:grep|, |vifm-:locate|.
 
 --------------------------------------------------------------------------------
+*vifm-patterns*
+
+|vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands
+support both globs and regular expressions as patterns to match file names.
+
+There is three possible ways to write them:
+ - {comma-seperated-globs}
+ - /regular-expression/[iI]
+ - undecorated-pattern
+
+First two forms are unambiguous, the third one implicitly refers to one of the
+other two when available.  |vifm-:highlight| does not accept third form, while
+|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| treat it as list of
+globals.
+
+Whether regular expression patterns are case sensitive or not depends on
+platform: case is ignored on Windows, but not on *nix like systems.
+
+|vifm-globs| section provides short overview of globs and some important points
+that one needs to know about them.
+
+--------------------------------------------------------------------------------
 *vifm-globs*
 
-|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globs
-to match file names.  Here is a short overview of globs and some important
-points that one needs to know about them.
+Globs are always case insensitive as it makes sense in general case.
 
 Only names of files are matched by the globs, not full paths.  E.g. >
  :filetype Makefile make %c

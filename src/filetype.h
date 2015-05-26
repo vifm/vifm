@@ -24,11 +24,13 @@
 
 #define VIFM_PSEUDO_CMD "vifm"
 
+struct matcher_t;
+
 /* Type of file association by it's source. */
 typedef enum
 {
-	ART_BUILTIN, /* builtin type of file association, set automatically by vifm */
-	ART_CUSTOM, /* custom type of file association, which is set by user */
+	ART_BUILTIN, /* Builtin type of association, set automatically by vifm. */
+	ART_CUSTOM,  /* Custom type of association, which is set by user. */
 }
 assoc_record_type_t;
 
@@ -51,8 +53,7 @@ assoc_records_t;
 
 typedef struct
 {
-	char *pattern;
-	int globs;               /* Whether pattern field contains globs, not res. */
+	struct matcher_t *matcher;
 	assoc_records_t records;
 }
 assoc_t;
@@ -96,7 +97,7 @@ assoc_records_t ft_get_all_programs(const char file[]);
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated programs either for X or non-X associations and depending on
  * current execution environment. */
-void ft_set_programs(const char patterns[], int globs, const char programs[],
+void ft_set_programs(struct matcher_t *matcher, const char programs[],
 		int for_x, int in_x);
 
 /* Viewers. */
@@ -111,7 +112,7 @@ assoc_records_t ft_get_all_viewers(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated viewers. */
-void ft_set_viewers(const char patterns[], int globs, const char viewers[]);
+void ft_set_viewers(struct matcher_t *matcher, const char viewers[]);
 
 /* Records managing. */
 

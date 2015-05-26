@@ -1,4 +1,4 @@
-.TH vifm 1 "May 25, 2015" "" "Vifm"
+.TH vifm 1 "May 26, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1487,7 +1487,7 @@ the default isn't found.  When program entry doesn't contain any of vifm
 macros, name of current file is appended as if program entry ended with %c
 macro on *nix and %"c on Windows.  On Windows path to executables containing
 spaces can (and should be for correct work with such paths) be double quoted.
-See "Globs" section below for pattern definition.  See also
+See "Patterns" section below for pattern definition.  See also
 "Automatic FUSE mounts" section below.  Example for zip archives and several
 actions:
 
@@ -1509,7 +1509,7 @@ name.  Same as ":filextype filename".
 .TP
 .BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
 same as :filetype, but this command is ignored if not running in X.
-In X :filextype is equal to :filetype.  See "Globs" section below for pattern
+In X :filextype is equal to :filetype.  See "Patterns" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
 
 For example, consider the following settings (the order might seem strange,
@@ -1572,7 +1572,7 @@ is a command which output is captured and displayed in the second pane of vifm
 after running :view command.  When the command doesn't contain any of vifm
 macros, name of current file is appended as if command ended with %c macro.
 Comma escaping and missing commands processing rules as for :filetype apply to
-this command.  See "Globs" section below for pattern definition.
+this command.  See "Patterns" section below for pattern definition.
 
 Example for zip archives:
 .EX
@@ -2727,11 +2727,34 @@ shown.
 
 Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 .\" ---------------------------------------------------------------------------
+.SH Patterns
+.\" ---------------------------------------------------------------------------
+:highlight, :filetype, :filextype and vifm-:fileviewer commands support both
+globs and regular expressions as patterns to match file names.
+
+There is three possible ways to write them:
+.RS 2
+.IP \- 2
+{comma-seperated-globs}
+.IP \- 2
+/regular-expression/[iI]
+.IP \- 2
+undecorated-pattern
+.RE
+
+First two forms are unambiguous, the third one implicitly refers to one of the
+other two when available.  :highlight does not accept third form, while
+:filetype, :filextype and :fileviewer treat it as list of globals.
+
+Whether regular expression patterns are case sensitive or not depends on
+platform: case is ignored on Windows, but not on *nix like systems.
+
+"Globs" section below provides short overview of globs and some important points
+that one needs to know about them.
+.\" ---------------------------------------------------------------------------
 .SH Globs
 .\" ---------------------------------------------------------------------------
-:filetype, :filextype and :fileviewer commands support globs
-to match file names.  Here is a short overview of globs and some important
-points that one needs to know about them.
+Globs are always case insensitive as it makes sense in general case.
 
 Only names of files are matched by the globs, not full paths.  E.g.
 .EX

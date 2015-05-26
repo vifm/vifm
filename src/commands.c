@@ -2393,15 +2393,24 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 {
 	const char *records;
 	int in_x;
+	char *error;
+	matcher_t *m;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
+	m = matcher_alloc(cmd_info->argv[0], !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
+	if(m == NULL)
+	{
+		status_bar_errorf("Wrong pattern: %s", error);
+		return 1;
+	}
+
 	records = vle_cmds_next_arg(cmd_info->args);
 	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
-	ft_set_programs(cmd_info->argv[0], 1, records, for_x, in_x);
+	ft_set_programs(m, records, for_x, in_x);
 	return 0;
 }
 
@@ -2412,14 +2421,23 @@ static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *records;
+	char *error;
+	matcher_t *m;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
+	m = matcher_alloc(cmd_info->argv[0], !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
+	if(m == NULL)
+	{
+		status_bar_errorf("Wrong pattern: %s", error);
+		return 1;
+	}
+
 	records = vle_cmds_next_arg(cmd_info->args);
-	ft_set_viewers(cmd_info->argv[0], 1, records);
+	ft_set_viewers(m, records);
 	return 0;
 }
 
@@ -2731,7 +2749,7 @@ highlight_file(const cmd_info_t *cmd_info)
 
 	(void)extract_part(cmd_info->args, ' ', pattern);
 
-	matcher = matcher_alloc(pattern, 0, 1, &error);
+	matcher = matcher_alloc(pattern, !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
 	if(matcher == NULL)
 	{
 		status_bar_errorf("Pattern error: %s", error);

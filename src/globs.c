@@ -28,38 +28,6 @@
 
 static char * glob_to_regex(const char glob[]);
 
-int
-globs_matches(const char globs[], const char file[])
-{
-	int matches;
-	regex_t re;
-
-	matches = 0;
-	if(globs_compile_as_re(globs, &re) == 0)
-	{
-		if(regexec(&re, file, 0, NULL, 0) == 0)
-		{
-			matches = 1;
-		}
-	}
-
-	regfree(&re);
-	return matches;
-}
-
-int
-globs_compile_as_re(const char glob[], regex_t *re)
-{
-	char *regex;
-	int result;
-
-	regex = globs_to_regex(glob);
-	result = regcomp(re, regex, REG_EXTENDED | REG_ICASE);
-	free(regex);
-
-	return result;
-}
-
 char *
 globs_to_regex(const char globs[])
 {
