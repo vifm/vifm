@@ -38,9 +38,9 @@ struct matcher_t
 	regex_t regex; /* The expression in compiled form. */
 };
 
-static int compile_expr(matcher_t *m, int cs_by_def, char **error);
-static int parse_glob(matcher_t *m, char **error);
-static int parse_re(matcher_t *m, int cs_by_def, char **error);
+static int compile_expr(matcher_t *m, int strip, int cs_by_def, char **error);
+static int parse_glob(matcher_t *m, int strip, char **error);
+static int parse_re(matcher_t *m, int strip, int cs_by_def, char **error);
 static int is_re_expr(const char expr[]);
 static int is_globs_expr(const char expr[]);
 
@@ -48,9 +48,10 @@ matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 {
 	const int re = is_re_expr(expr), glob = is_globs_expr(expr);
+	const int strip = (re || glob);
 	matcher_t *matcher, m = {
 		.globs = !(re || (!glob && !glob_by_def)),
-		.raw = strdup(expr + ((re || glob) ? 1 : 0)),
+		.raw = strdup(expr + (strip ? 1 : 0)),
 	};
 
 	*error = NULL;
@@ -61,7 +62,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 		return NULL;
 	}
 
-	if(compile_expr(&m, cs_by_def, error) != 0)
+	if(compile_expr(&m, strip, cs_by_def, error) != 0)
 	{
 		free(m.raw);
 		return NULL;
@@ -93,20 +94,20 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
  * equivalent regexp.  Returns zero on success or non-zero on error with *error
  * containing description of it. */
 static int
-compile_expr(matcher_t *m, int cs_by_def, char **error)
+compile_expr(matcher_t *m, int strip, int cs_by_def, char **error)
 {
 	int err;
 
 	if(m->globs)
 	{
-		if(parse_glob(m, error) != 0)
+		if(parse_glob(m, strip, error) != 0)
 		{
 			return 1;
 		}
 	}
 	else
 	{
-		if(parse_re(m, cs_by_def, error) != 0)
+		if(parse_re(m, strip, cs_by_def, error) != 0)
 		{
 			return 1;
 		}
@@ -126,12 +127,15 @@ compile_expr(matcher_t *m, int cs_by_def, char **error)
 /* Replaces global with equivalent regexp and setups flags.  Returns zero on
  * success or non-zero on error with *error containing description of it. */
 static int
-parse_glob(matcher_t *m, char **error)
+parse_glob(matcher_t *m, int strip, char **error)
 {
 	char *re;
 
-	/* Cut off trailing '}'. */
-	m->raw[strlen(m->raw) - 1] = '\0';
+	if(strip)
+	{
+		/* Cut off trailing '}'. */
+		m->raw[strlen(m->raw) - 1] = '\0';
+	}
 
 	re = globs_to_regex(m->raw);
 	if(re == NULL)
@@ -150,17 +154,20 @@ parse_glob(matcher_t *m, char **error)
 /* Parses regexp flags.  Returns zero on success or non-zero on error with
  * *error containing description of it. */
 static int
-parse_re(matcher_t *m, int cs_by_def, char **error)
+parse_re(matcher_t *m, int strip, int cs_by_def, char **error)
 {
-	char *const flags = strrchr(m->raw, '/') + 1;
-	if(parse_case_flag(flags, &cs_by_def) != 0)
+	if(strip)
 	{
-		replace_string(error, "Failed to parse flags.");
-		return 1;
-	}
+		char *const flags = strrchr(m->raw, '/') + 1;
+		if(parse_case_flag(flags, &cs_by_def) != 0)
+		{
+			replace_string(error, "Failed to parse flags.");
+			return 1;
+		}
 
-	/* Cut the flags off by replacing slash with null character. */
-	flags[-1] = '\0';
+		/* Cut the flags off by replacing slash with null character. */
+		flags[-1] = '\0';
+	}
 
 	m->cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
 	return 0;
