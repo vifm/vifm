@@ -127,7 +127,7 @@ Ctrl-L - clear and redraw the screen.          *vifm-CTRL-L*
 
 Basic Movement~
 
-The basic vi key bindings are used to move through the files and popup windows.
+The basic vi key bindings are used to move through the files and pop-up windows.
 
 k, gk or Ctrl-P - move cursor up one line.     *vifm-k* *vifm-gk* *vifm-CTRL-P*
 j, gj or Ctrl-N - move cursor down one line.   *vifm-j* *vifm-gj* *vifm-CTRL-N*
