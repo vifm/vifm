@@ -40,14 +40,13 @@ typedef enum
 }
 ColorSchemeState;
 
+struct matcher_t;
+
 /* Single file highlight description. */
 typedef struct
 {
-	char *pattern;      /* Raw pattern literal. */
-	int global;         /* Whether pattern is global or regular expression. */
-	int case_sensitive; /* Whether re pattern is case sensitive (globs not). */
-	regex_t re;         /* Pattern in compiled form. */
-	col_attr_t hi;      /* File appearance parameters. */
+	struct matcher_t *matcher; /* Name matcher object. */
+	col_attr_t hi;             /* File appearance parameters. */
 }
 file_hi_t;
 
@@ -117,8 +116,7 @@ void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 /* Registers pattern-highlight pair for active color scheme.  Returns new value
  * for curr_stats.save_msg. */
-int add_file_hi(const char pattern[], int global, int case_sensitive,
-		const col_attr_t *hi);
+int add_file_hi(struct matcher_t *matcher, const col_attr_t *hi);
 
 /* Gets filename specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing was found, otherwise returns

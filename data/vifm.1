@@ -1,4 +1,4 @@
-.TH vifm 1 "May 24, 2015" "" "Vifm"
+.TH vifm 1 "May 27, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ null character.  Default is new line character.
 .TP
 .BI "\-\-on\-choose <command>"
 Sets command to be executed on selected files instead of opening them.  The
-command may use any of macros described in Command macros section below.  The
+command may use any of macros described in "Command macros" section below.  The
 command is executed once for whole selection.
 .TP
 .BI "\-\-logging"
@@ -259,16 +259,16 @@ exchange panes.
 quit preview pane or view modes.
 
 .TP
-.BI "Ctrl-W\-"
+.BI "Ctrl-W \-"
 decrease size of the view by count.
 .TP
-.BI "Ctrl-W+"
+.BI "Ctrl-W +"
 increase size of the view by count.
 .TP
-.BI "Ctrl-W<"
+.BI "Ctrl-W <"
 decrease size of the view by count.
 .TP
-.BI "Ctrl-W>"
+.BI "Ctrl-W >"
 increase size of the view by count.
 
 .TP
@@ -1204,7 +1204,7 @@ specified prefix.
 .BI ":ca[bbrev] lhs rhs"
 register new or overwrites existing abbreviation for command-line mode.  rhs
 can contain spaces and any special sequences accepted in rhs of mappings (see
-Mappings section below).  Abbreviations are expanded non-recursively.
+"Mappings" section below).  Abbreviations are expanded non-recursively.
 .TP
 .BI "                                         :cnoreabbrev"
 .TP
@@ -1487,7 +1487,7 @@ the default isn't found.  When program entry doesn't contain any of vifm
 macros, name of current file is appended as if program entry ended with %c
 macro on *nix and %"c on Windows.  On Windows path to executables containing
 spaces can (and should be for correct work with such paths) be double quoted.
-See "Globs" section below for pattern definition.  See also
+See "Patterns" section below for pattern definition.  See also
 "Automatic FUSE mounts" section below.  Example for zip archives and several
 actions:
 
@@ -1509,7 +1509,7 @@ name.  Same as ":filextype filename".
 .TP
 .BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
 same as :filetype, but this command is ignored if not running in X.
-In X :filextype is equal to :filetype.  See "Globs" section below for pattern
+In X :filextype is equal to :filetype.  See "Patterns" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
 
 For example, consider the following settings (the order might seem strange,
@@ -1572,7 +1572,7 @@ is a command which output is captured and displayed in the second pane of vifm
 after running :view command.  When the command doesn't contain any of vifm
 macros, name of current file is appended as if command ended with %c macro.
 Comma escaping and missing commands processing rules as for :filetype apply to
-this command.  See "Globs" section below for pattern definition.
+this command.  See "Patterns" section below for pattern definition.
 
 Example for zip archives:
 .EX
@@ -2727,20 +2727,37 @@ shown.
 
 Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 .\" ---------------------------------------------------------------------------
+.SH Patterns
+.\" ---------------------------------------------------------------------------
+:highlight, :filetype, :filextype and :fileviewer commands support both globs
+and regular expressions as patterns to match file names or full paths.
+
+There are five possible ways to write them:
+.RS 2
+.IP 1. 3
+{comma-seperated-name-globs}
+.IP 2. 3
+{{comma-seperated-path-globs}}
+.IP 3. 3
+/name-regular-expression/[iI]
+.IP 4. 3
+//path-regular-expression//[iI]
+.IP 5. 3
+undecorated-pattern
+.RE
+
+The last form is implicitly refers to one of others.  :highlight does not accept
+undecorated form, while :filetype, :filextype and :fileviewer treat it as list
+of name globals.
+
+Regular expression patterns are case insensitive by default.
+
+"Globs" section below provides short overview of globs and some important points
+that one needs to know about them.
+.\" ---------------------------------------------------------------------------
 .SH Globs
 .\" ---------------------------------------------------------------------------
-:filetype, :filextype and :fileviewer commands support globs
-to match file names.  Here is a short overview of globs and some important
-points that one needs to know about them.
-
-Only names of files are matched by the globs, not full paths.  E.g.
-.EX
-
-  :filetype Makefile make %c
-
-.EE
-will match files with name "Makefile" regardless whether it's in root or home
-directory.
+Globs are always case insensitive as it makes sense in general case.
 
 *, ?, [ and ] are treated as special symbols in the pattern.  E.g.
 .EX
@@ -3757,9 +3774,9 @@ expr2 {cmp} expr2
 Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
 if it evaluates to true.
 
-equal      ==
+equal                   ==
 .br
-not equal  !=
+not equal               !=
 .br
 greater than            >
 .br

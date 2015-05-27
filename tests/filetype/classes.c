@@ -4,12 +4,13 @@
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
+#include "test.h"
 
 TEST(enumeration)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.[ch]", "c file", 0, 0);
+	set_programs("*.[ch]", "c file", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("main.cpp")) == NULL);
 	assert_true((prog_cmd = ft_get_program("main.hpp")) == NULL);
@@ -21,11 +22,11 @@ TEST(enumeration)
 	assert_string_equal("c file", prog_cmd);
 }
 
-TEST(negotiation_with_emark)
+TEST(negation_with_emark)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.[!ch]", "not c file", 0, 0);
+	set_programs("*.[!ch]", "not c file", 0, 0);
 
 	assert_false((prog_cmd = ft_get_program("main.c")) != NULL);
 	assert_false((prog_cmd = ft_get_program("main.h")) != NULL);
@@ -34,11 +35,11 @@ TEST(negotiation_with_emark)
 	assert_string_equal("not c file", prog_cmd);
 }
 
-TEST(negotiation_with_hat)
+TEST(negation_with_hat)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.[^ch]", "not c file", 0, 0);
+	set_programs("*.[^ch]", "not c file", 0, 0);
 
 	assert_false((prog_cmd = ft_get_program("main.c")) != NULL);
 	assert_false((prog_cmd = ft_get_program("main.h")) != NULL);
@@ -51,7 +52,7 @@ TEST(ranges)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.[0-9]", "part file", 0, 0);
+	set_programs("*.[0-9]", "part file", 0, 0);
 
 	assert_false((prog_cmd = ft_get_program("main.A")) != NULL);
 

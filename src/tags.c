@@ -562,6 +562,7 @@ const char *tags[] = {
 	"vifm-normal",
 	"vifm-options",
 	"vifm-p",
+	"vifm-patterns",
 	"vifm-plugin",
 	"vifm-q/",
 	"vifm-q:",

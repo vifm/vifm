@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 24
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -12,7 +12,8 @@
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-cancellation|       Cancellation of commands.
-|vifm-globs|              Description of how about globs work in vifm.
+|vifm-patterns|           Description of file match patterns.
+|vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
@@ -2261,16 +2262,32 @@ Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 |vifm-:grep|, |vifm-:locate|.
 
 --------------------------------------------------------------------------------
+*vifm-patterns*
+
+|vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands
+support both globs and regular expressions as patterns to match file names or
+full paths.
+
+There are five possible ways to write them:
+ 1. {comma-seperated-name-globs}
+ 2. {{comma-seperated-path-globs}}
+ 3. /name-regular-expression/[iI]
+ 4. //path-regular-expression//[iI]
+ 5. undecorated-pattern
+
+The last form is implicitly refers to one of others.  |vifm-:highlight| does not
+accept undecorated form, while |vifm-:filetype|, |vifm-:filextype| and
+|vifm-:fileviewer| treat it as list of name globals.
+
+Regular expression patterns are case insensitive by default.
+
+|vifm-globs| section provides short overview of globs and some important points
+that one needs to know about them.
+
+--------------------------------------------------------------------------------
 *vifm-globs*
 
-|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands support globs
-to match file names.  Here is a short overview of globs and some important
-points that one needs to know about them.
-
-Only names of files are matched by the globs, not full paths.  E.g. >
- :filetype Makefile make %c
-will match files with name "Makefile" regardless whether it's in root or home
-directory.
+Globs are always case insensitive as it makes sense in general case.
 
 *, ?, [ and ] are treated as special symbols in the pattern.  E.g. >
  :filetype * less %c

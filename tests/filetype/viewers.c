@@ -6,6 +6,7 @@
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 #include "../../src/utils/str.h"
+#include "test.h"
 
 static int
 prog1_available(const char name[])
@@ -34,8 +35,8 @@ TEST(multiple_choice_separated)
 {
 	const char *viewer;
 
-	ft_set_viewers("*.tar.bz2", "prog1");
-	ft_set_viewers("*.tar.bz2", "prog2");
+	set_viewers("*.tar.bz2", "prog1");
+	set_viewers("*.tar.bz2", "prog2");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -62,7 +63,7 @@ TEST(multiple_choice_joined)
 {
 	const char *viewer;
 
-	ft_set_viewers("*.tar.bz2", "prog1,prog2");
+	set_viewers("*.tar.bz2", "prog1,prog2");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -89,7 +90,7 @@ TEST(description_is_not_allowed)
 {
 	const char *viewer;
 
-	ft_set_viewers("*.tar.bz2", "{archives} prog1");
+	set_viewers("*.tar.bz2", "{archives} prog1");
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -98,7 +99,7 @@ TEST(description_is_not_allowed)
 
 TEST(several_patterns)
 {
-	ft_set_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
+	set_viewers("*.tbz,*.tbz2,*.tar.bz2", "prog1");
 
 	ft_init(&prog1_available);
 

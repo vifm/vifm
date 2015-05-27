@@ -16,9 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "globals.h"
-
-#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+#include "globs.h"
 
 #include <stdlib.h> /* realloc() free() */
 #include <stdio.h> /* sprintf() */
@@ -26,59 +24,23 @@
 
 #include "utils/str.h"
 
-static char * globals_to_regex(const char globals[]);
-static char * global_to_regex(const char global[]);
+static char * glob_to_regex(const char glob[]);
 
-int
-global_matches(const char globals[], const char file[])
-{
-	int matches;
-	regex_t re;
-
-	matches = 0;
-	if(global_compile_as_re(globals, &re) == 0)
-	{
-		if(regexec(&re, file, 0, NULL, 0) == 0)
-		{
-			matches = 1;
-		}
-	}
-
-	regfree(&re);
-	return matches;
-}
-
-int
-global_compile_as_re(const char global[], regex_t *re)
-{
-	char *regex;
-	int result;
-
-	regex = globals_to_regex(global);
-	result = regcomp(re, regex, REG_EXTENDED | REG_ICASE);
-	free(regex);
-
-	return result;
-}
-
-/* Converts comma-separated list of globals into equivalent regular expression.
- * Returns pointer to a newly allocated string, which should be freed by the
- * caller, or NULL if there is not enough memory or no patters are given. */
-static char *
-globals_to_regex(const char globals[])
+char *
+globs_to_regex(const char globs[])
 {
 	char *final_regex = NULL;
 	size_t final_regex_len = 0UL;
 
-	char *globals_copy = strdup(globals);
-	char *global = globals_copy, *state = NULL;
-	while((global = split_and_get(global, ',', &state)) != NULL)
+	char *globs_copy = strdup(globs);
+	char *glob = globs_copy, *state = NULL;
+	while((glob = split_and_get(glob, ',', &state)) != NULL)
 	{
 		void *p;
 		char *regex;
 		size_t new_len;
 
-		regex = global_to_regex(global);
+		regex = glob_to_regex(glob);
 
 		new_len = final_regex_len + 1 + 1 + strlen(regex) + 1;
 		p = realloc(final_regex, new_len + 1);
@@ -91,49 +53,49 @@ globals_to_regex(const char globals[])
 
 		free(regex);
 	}
-	free(globals_copy);
+	free(globs_copy);
 
 	return final_regex;
 }
 
-/* Converts the global into equivalent regular expression.  Returns pointer to
+/* Converts the glob into equivalent regular expression.  Returns pointer to
  * a newly allocated string, which should be freed by the caller, or NULL if
  * there is not enough memory. */
 static char *
-global_to_regex(const char global[])
+glob_to_regex(const char glob[])
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");
 	int result_len = 1;
-	while(*global != '\0')
+	while(*glob != '\0')
 	{
-		if(char_is_one_of(CHARS_TO_ESCAPE, *global))
+		if(char_is_one_of(CHARS_TO_ESCAPE, *glob))
 		{
-		  if(*global != '^' || result[result_len - 1] != '[')
+		  if(*glob != '^' || result[result_len - 1] != '[')
 			{
 				result = realloc(result, result_len + 2 + 1 + 1);
 				result[result_len++] = '\\';
 			}
 		}
-		else if(*global == '!' && result[result_len - 1] == '[')
+		else if(*glob == '!' && result[result_len - 1] == '[')
 		{
 			result = realloc(result, result_len + 2 + 1 + 1);
 			result[result_len++] = '^';
 			continue;
 		}
-		else if(*global == '\\')
+		else if(*glob == '\\')
 		{
 			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = *global++;
+			result[result_len++] = *glob++;
 		}
-		else if(*global == '?')
+		else if(*glob == '?')
 		{
 			result = realloc(result, result_len + 1 + 1 + 1);
 			result[result_len++] = '.';
-			global++;
+			++glob;
 			continue;
 		}
-		else if(*global == '*')
+		else if(*glob == '*')
 		{
 			if(result_len == 1)
 			{
@@ -151,14 +113,14 @@ global_to_regex(const char global[])
 				result[result_len++] = '.';
 				result[result_len++] = '*';
 			}
-			global++;
+			++glob;
 			continue;
 		}
 		else
 		{
 			result = realloc(result, result_len + 1 + 1 + 1);
 		}
-		result[result_len++] = *global++;
+		result[result_len++] = *glob++;
 	}
 	result[result_len++] = '$';
 	result[result_len] = '\0';

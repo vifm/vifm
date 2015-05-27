@@ -148,9 +148,11 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
+	utils/globs.c utils/globs.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/matcher.c utils/matcher.h \
 	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
@@ -175,7 +177,6 @@ vifm_SOURCES = \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
 	event_loop.c event_loop.h \
-	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \

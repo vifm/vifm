@@ -19,6 +19,7 @@
 
 #include "filetype.h"
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() realloc() */
@@ -26,10 +27,9 @@
 
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs_limits.h"
-#include "utils/path.h"
+#include "utils/matcher.h"
 #include "utils/str.h"
 #include "utils/utils.h"
-#include "globals.h"
 
 /* Predefined builtin command. */
 const assoc_record_t NONE_PSEUDO_PROG = {
@@ -51,15 +51,15 @@ static external_command_exists_t external_command_exists_func;
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
-static void assoc_programs(const char pattern[],
-		const assoc_records_t *programs, int for_x, int in_x);
+static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
+		int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
 TSTATIC void replace_double_comma(char cmd[], int put_null);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewers(const char pattern[], const assoc_records_t *viewers);
+static void assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
@@ -94,18 +94,18 @@ static const char *
 find_existing_cmd(const assoc_list_t *record_list, const char file[])
 {
 	int i;
-	file = get_last_path_component(file);
 
 	for(i = 0; i < record_list->count; ++i)
 	{
 		assoc_record_t prog;
+		assoc_t *const assoc = &record_list->list[i];
 
-		if(!global_matches(record_list->list[i].pattern, file))
+		if(!matcher_matches(assoc->matcher, file))
 		{
 			continue;
 		}
 
-		prog = find_existing_cmd_record(&record_list->list[i].records);
+		prog = find_existing_cmd_record(&assoc->records);
 		if(!is_assoc_record_empty(&prog))
 		{
 			return prog.command;
@@ -146,23 +146,21 @@ ft_get_all_programs(const char file[])
 }
 
 void
-ft_set_programs(const char patterns[], const char programs[], int for_x,
-		int in_x)
+ft_set_programs(matcher_t *matcher, const char programs[], int for_x, int in_x)
 {
 	assoc_records_t prog_records = parse_command_list(programs, 1);
-	assoc_programs(patterns, &prog_records, for_x, in_x);
+	assoc_programs(matcher, &prog_records, for_x, in_x);
 	ft_assoc_records_free(&prog_records);
 }
 
 /* Associates pattern with the list of programs either for X or non-X
  * associations and depending on current execution environment. */
 static void
-assoc_programs(const char pattern[], const assoc_records_t *programs, int for_x,
+assoc_programs(matcher_t *matcher, const assoc_records_t *programs, int for_x,
 		int in_x)
 {
-	const assoc_t assoc =
-	{
-		.pattern = strdup(pattern),
+	const assoc_t assoc = {
+		.matcher = matcher,
 		.records = clone_assoc_records(programs),
 	};
 
@@ -279,13 +277,13 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 {
 	int i;
 	assoc_records_t result = {};
-	file = get_last_path_component(file);
 
 	for(i = 0; i < record_list->count; ++i)
 	{
-		if(global_matches(record_list->list[i].pattern, file))
+		assoc_t *const assoc = &record_list->list[i];
+		if(matcher_matches(assoc->matcher, file))
 		{
-			ft_assoc_record_add_all(&result, &record_list->list[i].records);
+			ft_assoc_record_add_all(&result, &assoc->records);
 		}
 	}
 
@@ -293,20 +291,19 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 }
 
 void
-ft_set_viewers(const char patterns[], const char viewers[])
+ft_set_viewers(matcher_t *matcher, const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 0);
-	assoc_viewers(patterns, &view_records);
+	assoc_viewers(matcher, &view_records);
 	ft_assoc_records_free(&view_records);
 }
 
 /* Associates pattern with the list of viewers. */
 static void
-assoc_viewers(const char pattern[], const assoc_records_t *viewers)
+assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
 {
-	const assoc_t assoc =
-	{
-		.pattern = strdup(pattern),
+	const assoc_t assoc = {
+		.matcher = matcher,
 		.records = clone_assoc_records(viewers),
 	};
 
@@ -358,8 +355,12 @@ reset_all_list(void)
 static void
 add_defaults(int in_x)
 {
+	char *error;
+	matcher_t *const m = matcher_alloc("{*/}", 0, 1, &error);
+	assert(m != NULL && "Failed to allocate builtin matcher!");
+
 	new_records_type = ART_BUILTIN;
-	ft_set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
+	ft_set_programs(m, "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
 	new_records_type = ART_CUSTOM;
 }
 
@@ -385,7 +386,7 @@ reset_list_head(assoc_list_t *assoc_list)
 static void
 free_assoc(assoc_t *assoc)
 {
-	safe_free(&assoc->pattern);
+	matcher_free(assoc->matcher);
 	ft_assoc_records_free(&assoc->records);
 }
 

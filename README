@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 28 March, 2015
+Updated: 26 May, 2015
 Version: 0.7.8
 
 Brief Description
@@ -150,8 +150,10 @@ Package content
     |  |  |-- file_streams.c - file stream reading related functions
     |  |  |-- filemon.c - file monitoring "object"
     |  |  |-- filter.c - small abstraction over filter driven by a regexp
+    |  |  |-- globs.c - provides support of glob patterns
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
+    |  |  |-- matcher.c - file path/name matcher (glob/regexp)
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions
@@ -184,7 +186,6 @@ Package content
     |  |-- fileview.c - display/redraw/manage file view
     |  |-- filtering.c - managing file filters
     |  |-- fuse.c - provides support of FUSE filesystems
-    |  |-- globals.c - provides support of globals
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- ops.c - most of operations performed on file system

@@ -4,12 +4,13 @@
 
 #include "../../src/filetype.h"
 #include "../../src/status.h"
+#include "test.h"
 
 TEST(one_pattern)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.tar", "tar prog", 0, 0);
+	set_programs("*.tar", "tar prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.tar")) != NULL);
 	assert_string_equal("tar prog", prog_cmd);
@@ -19,8 +20,8 @@ TEST(many_pattern)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.tar", "tar prog", 0, 0);
-	ft_set_programs("*.tar.gz", "tar.gz prog", 0, 0);
+	set_programs("*.tar", "tar prog", 0, 0);
+	set_programs("*.tar.gz", "tar.gz prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.tar.gz")) != NULL);
 	assert_string_equal("tar.gz prog", prog_cmd);
@@ -30,7 +31,7 @@ TEST(many_filepattern)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.tar.gz")) != NULL);
 	assert_string_equal("tar.gz prog", prog_cmd);
@@ -40,7 +41,7 @@ TEST(dont_match_hidden)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program(".file.version.tar.gz")) == NULL);
 }
@@ -49,7 +50,7 @@ TEST(match_empty)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("a*bc", "empty prog", 0, 0);
+	set_programs("a*bc", "empty prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("abc")) != NULL);
 	assert_string_equal("empty prog", prog_cmd);
@@ -59,7 +60,7 @@ TEST(match_full_line)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("abc", "full prog", 0, 0);
+	set_programs("abc", "full prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("abcd")) == NULL);
 	assert_true((prog_cmd = ft_get_program("0abc")) == NULL);
@@ -73,7 +74,7 @@ TEST(match_qmark)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("a?c", "full prog", 0, 0);
+	set_programs("a?c", "full prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("ac")) == NULL);
 
@@ -85,7 +86,7 @@ TEST(qmark_escaping)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("a\\?c", "qmark prog", 0, 0);
+	set_programs("a\\?c", "qmark prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("abc")) == NULL);
 
@@ -97,7 +98,7 @@ TEST(star_escaping)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("a\\*c", "star prog", 0, 0);
+	set_programs("a\\*c", "star prog", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("abc")) == NULL);
 
@@ -109,7 +110,7 @@ TEST(star_and_dot)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.doc", "libreoffice", 0, 0);
+	set_programs("*.doc", "libreoffice", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("a.doc")) != NULL);
 	assert_string_equal("libreoffice", prog_cmd);
@@ -117,7 +118,7 @@ TEST(star_and_dot)
 	assert_true((prog_cmd = ft_get_program(".a.doc")) == NULL);
 	assert_true((prog_cmd = ft_get_program(".doc")) == NULL);
 
-	ft_set_programs(".*.doc", "hlibreoffice", 0, 0);
+	set_programs(".*.doc", "hlibreoffice", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program(".a.doc")) != NULL);
 	assert_string_equal("hlibreoffice", prog_cmd);
@@ -127,12 +128,12 @@ TEST(double_comma)
 {
 	const char *prog_cmd;
 
-	ft_set_programs("*.tar", "prog -o opt1,,opt2", 0, 0);
+	set_programs("*.tar", "prog -o opt1,,opt2", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.tar")) != NULL);
 	assert_string_equal("prog -o opt1,opt2", prog_cmd);
 
-	ft_set_programs("*.zip", "prog1 -o opt1, prog2", 0, 0);
+	set_programs("*.zip", "prog1 -o opt1, prog2", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("file.version.zip")) != NULL);
 	assert_string_equal("prog1 -o opt1", prog_cmd);

@@ -107,7 +107,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
 	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
@@ -118,7 +119,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	color_manager.$(OBJEXT) commands.$(OBJEXT) \
 	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
 	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
-	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
 	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
@@ -432,9 +433,11 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
+	utils/globs.c utils/globs.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/matcher.c utils/matcher.h \
 	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
@@ -459,7 +462,6 @@ vifm_SOURCES = \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
 	event_loop.c event_loop.h \
-	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
@@ -764,9 +766,13 @@ utils/filter.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/mntent.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -892,8 +898,10 @@ mostlyclean-compile:
 	-rm -f utils/filemon.$(OBJEXT)
 	-rm -f utils/filter.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
+	-rm -f utils/globs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
+	-rm -f utils/matcher.$(OBJEXT)
 	-rm -f utils/mntent.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
@@ -929,7 +937,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
@@ -1016,8 +1023,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/mntent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@

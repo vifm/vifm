@@ -269,6 +269,28 @@ get_regexp_error(int err, regex_t *re)
 	return buf;
 }
 
+int
+parse_case_flag(const char flags[], int *case_sensitive)
+{
+	/* TODO: maybe generalize code with substitute_cmd(). */
+
+	while(*flags != '\0')
+	{
+		switch(*flags)
+		{
+			case 'i': *case_sensitive = 0; break;
+			case 'I': *case_sensitive = 1; break;
+
+			default:
+				return 1;
+		}
+
+		++flags;
+	}
+
+	return 0;
+}
+
 const char *
 enclose_in_dquotes(const char str[])
 {
