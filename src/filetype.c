@@ -28,7 +28,6 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs_limits.h"
 #include "utils/matcher.h"
-#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 
@@ -95,7 +94,6 @@ static const char *
 find_existing_cmd(const assoc_list_t *record_list, const char file[])
 {
 	int i;
-	file = get_last_path_component(file);
 
 	for(i = 0; i < record_list->count; ++i)
 	{
@@ -279,7 +277,6 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 {
 	int i;
 	assoc_records_t result = {};
-	file = get_last_path_component(file);
 
 	for(i = 0; i < record_list->count; ++i)
 	{

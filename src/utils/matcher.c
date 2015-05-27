@@ -25,6 +25,7 @@
 #include <string.h> /* strlen() strrchr() strspn() */
 
 #include "globs.h"
+#include "path.h"
 #include "str.h"
 #include "utils.h"
 
@@ -34,10 +35,12 @@ struct matcher_t
 	char *expr;    /* User-entered pattern. */
 	char *raw;     /* Raw regular expression. */
 	int globs;     /* Whether original pattern is globs or regexp. */
+	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
 	regex_t regex; /* The expression in compiled form. */
 };
 
+static int is_full_path(const char expr[], int re, int glob, int *strip);
 static int compile_expr(matcher_t *m, int strip, int cs_by_def, char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
 static int parse_re(matcher_t *m, int strip, int cs_by_def, char **error);
@@ -48,10 +51,12 @@ matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 {
 	const int re = is_re_expr(expr), glob = is_globs_expr(expr);
-	const int strip = (re || glob);
+	int strip;
+	const int full_path = is_full_path(expr, re, glob, &strip);
 	matcher_t *matcher, m = {
+		.raw = strdup(expr + strip),
 		.globs = !(re || (!glob && !glob_by_def)),
-		.raw = strdup(expr + (strip ? 1 : 0)),
+		.full_path = full_path,
 	};
 
 	*error = NULL;
@@ -88,6 +93,16 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 	}
 
 	return matcher;
+}
+
+/* Checks whether this is full path match expression.  Sets *strip to width of
+ * markers before and after pattern.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+is_full_path(const char expr[], int re, int glob, int *strip)
+{
+	*strip = (re || glob);
+	return 0;
 }
 
 /* Compiles m->raw into regular expression.  Also replaces global with
@@ -131,10 +146,10 @@ parse_glob(matcher_t *m, int strip, char **error)
 {
 	char *re;
 
-	if(strip)
+	if(strip != 0)
 	{
-		/* Cut off trailing '}'. */
-		m->raw[strlen(m->raw) - 1] = '\0';
+		/* Cut off trailing "}" or "}}". */
+		m->raw[strlen(m->raw) - strip] = '\0';
 	}
 
 	re = globs_to_regex(m->raw);
@@ -156,7 +171,7 @@ parse_glob(matcher_t *m, int strip, char **error)
 static int
 parse_re(matcher_t *m, int strip, int cs_by_def, char **error)
 {
-	if(strip)
+	if(strip != 0)
 	{
 		char *const flags = strrchr(m->raw, '/') + 1;
 		if(parse_case_flag(flags, &cs_by_def) != 0)
@@ -165,8 +180,8 @@ parse_re(matcher_t *m, int strip, int cs_by_def, char **error)
 			return 1;
 		}
 
-		/* Cut the flags off by replacing slash with null character. */
-		flags[-1] = '\0';
+		/* Cut the flags off by replacing traling slash(es) with null character. */
+		flags[-strip] = '\0';
 	}
 
 	m->cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
@@ -213,9 +228,14 @@ matcher_free(matcher_t *matcher)
 }
 
 int
-matcher_matches(matcher_t *matcher, const char name[])
+matcher_matches(matcher_t *matcher, const char path[])
 {
-	return (regexec(&matcher->regex, name, 0, NULL, 0) == 0);
+	if(!matcher->full_path)
+	{
+		path = get_last_path_component(path);
+	}
+
+	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0);
 }
 
 const char *
@@ -227,7 +247,8 @@ matcher_get_expr(const matcher_t *matcher)
 int
 matcher_includes(const matcher_t *like, const matcher_t *m)
 {
-	if(m->globs != like->globs || m->cflags != like->cflags)
+	if(m->globs != like->globs || m->cflags != like->cflags ||
+			m->full_path != like->full_path)
 	{
 		return 0;
 	}

@@ -153,7 +153,7 @@ Package content
     |  |  |-- globs.c - provides support of glob patterns
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
-    |  |  |-- matcher.c - file name matcher (glob/regexp)
+    |  |  |-- matcher.c - file path/name matcher (glob/regexp)
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions

@@ -22,7 +22,7 @@
 #ifndef VIFM__UTILS__MATCHER_H__
 #define VIFM__UTILS__MATCHER_H__
 
-/* File name matcher (glob/regexp). */
+/* File path/name matcher (glob/regexp). */
 
 /* Opaque matcher type. */
 typedef struct matcher_t matcher_t;
@@ -39,9 +39,9 @@ matcher_t * matcher_clone(const matcher_t *matcher);
 /* Frees all resources allocated by the matcher.  matcher can be NULL. */
 void matcher_free(matcher_t *matcher);
 
-/* Checks whether given name matches.  Returns non-zero if so, otherwise zero is
- * returned. */
-int matcher_matches(matcher_t *matcher, const char name[]);
+/* Checks whether given path/name matches.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int matcher_matches(matcher_t *matcher, const char path[]);
 
 /* Gets original matcher expression.  Returns the expression.*/
 const char * matcher_get_expr(const matcher_t *matcher);
