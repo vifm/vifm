@@ -603,6 +603,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	}
 	else if(bg)
 	{
+		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
 		start_background_job(cmd, flags == MF_IGNORE);
 	}
 	else
@@ -1122,8 +1123,19 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	}
 	else if(flags == MF_IGNORE)
 	{
-		output_to_nowhere(cmd);
 		*save_msg = 0;
+		if(bg)
+		{
+			if(start_background_job(cmd, 1) != 0)
+			{
+				status_bar_errorf("Failed to start in bg: %s", cmd);
+				*save_msg = 1;
+			}
+		}
+		else
+		{
+			output_to_nowhere(cmd);
+		}
 		return -1;
 	}
 	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
