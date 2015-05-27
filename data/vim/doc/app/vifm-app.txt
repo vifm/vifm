@@ -2397,7 +2397,7 @@ used.  List of file type names can be found in the description of
 
                                                *vifm-'columns'* *vifm-'co'*
 columns co
-type: int
+type: integer
 default: terminal width on startup
 
 Terminal width in characters.
@@ -2562,7 +2562,7 @@ command line and search histories.
 
                                                *vifm-'hlsearch'* *vifm-'hls'*
 hlsearch hls
-type: bool
+type: boolean
 default: true
 
 Highlight all matches of search pattern.
@@ -2600,7 +2600,7 @@ Controls if status bar is visible.
 
                                                *vifm-'lines'*
 lines
-type: int
+type: integer
 default: terminal height on startup
 
 Terminal height in lines.
@@ -2718,7 +2718,7 @@ positions of two windows constant.
 
                                                *vifm-'scrolloff'* *vifm-'so'*
 scrolloff so
-type: int
+type: integer
 default: 0
 
 Minimal number of screen lines to keep above and below the cursor.  If you
