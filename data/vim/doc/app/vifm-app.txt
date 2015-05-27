@@ -127,7 +127,7 @@ Ctrl-L - clear and redraw the screen.          *vifm-CTRL-L*
 
 Basic Movement~
 
-The basic vi key bindings are used to move through the files and popup windows.
+The basic vi key bindings are used to move through the files and pop-up windows.
 
 k, gk or Ctrl-P - move cursor up one line.     *vifm-k* *vifm-gk* *vifm-CTRL-P*
 j, gj or Ctrl-N - move cursor down one line.   *vifm-j* *vifm-gj* *vifm-CTRL-N*
@@ -2397,7 +2397,7 @@ used.  List of file type names can be found in the description of
 
                                                *vifm-'columns'* *vifm-'co'*
 columns co
-type: int
+type: integer
 default: terminal width on startup
 
 Terminal width in characters.
@@ -2562,7 +2562,7 @@ command line and search histories.
 
                                                *vifm-'hlsearch'* *vifm-'hls'*
 hlsearch hls
-type: bool
+type: boolean
 default: true
 
 Highlight all matches of search pattern.
@@ -2600,7 +2600,7 @@ Controls if status bar is visible.
 
                                                *vifm-'lines'*
 lines
-type: int
+type: integer
 default: terminal height on startup
 
 Terminal height in lines.
@@ -2718,7 +2718,7 @@ positions of two windows constant.
 
                                                *vifm-'scrolloff'* *vifm-'so'*
 scrolloff so
-type: int
+type: integer
 default: 0
 
 Minimal number of screen lines to keep above and below the cursor.  If you
@@ -3032,7 +3032,7 @@ Accepted characters are in the range from 0 to 255.  Any Unicode character
 with code greater than 255 is considered to be part of a word.
 
 The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
-|vifm-c_CTRL-W|.  This is intensionaly to allow two use cases:
+|vifm-c_CTRL-W|.  This is intensionally to allow two use cases:
 
  - Moving by WORDS and deletion by words.
  - Moving by words and deletion by WORDS.

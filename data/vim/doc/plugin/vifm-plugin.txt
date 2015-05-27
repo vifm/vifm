@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2014 Nov 04
+*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2015 May 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -28,7 +28,7 @@ under the cursor is opened, otherwise whole selection is passed to the plugin
 and opened in vim.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
-let user specify command to run gui terminal.  By default it's equal to
+let user specify command to run GUI terminal.  By default it's equal to
 'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.

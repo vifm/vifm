@@ -103,7 +103,7 @@ clear and redraw the screen.
 .\" ---------------------------------------------------------------------------
 .SH Basic Movement
 .\" ---------------------------------------------------------------------------
-The basic vi key bindings are used to move through the files and popup windows.
+The basic vi key bindings are used to move through the files and pop-up windows.
 .TP
 .BI "k, gk, or Ctrl-P"
 move cursor up one line.
@@ -1877,7 +1877,7 @@ important in certain cases.
 .BI "                                         :history"
 .TP
 .BI :his[tory]
-creates a popup menu of directories visited.
+creates a pop-up menu of directories visited.
 .TP
 .BI ":his[tory] x"
 x can be:
@@ -1984,7 +1984,7 @@ Question mark will stop command from overwriting existing marks.
 .BI "                                         :marks"
 .TP
 .BI :marks
-create a popup menu of bookmarks.
+create a pop-up menu of bookmarks.
 .TP
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
@@ -2859,7 +2859,7 @@ This option also affects bookmarks so that navigating to a bookmark doesn't
 restore cursor position.
 .TP
 .BI "'columns' 'co'"
-type: int
+type: integer
 .br
 default: terminal width on startup
 .br
@@ -3082,7 +3082,7 @@ Maximum number of directories in the view history and lines in the prompt,
 command line and search histories.
 .TP
 .BI "'hlsearch' 'hls'"
-type: bool
+type: boolean
 .br
 default: true
 .br
@@ -3120,7 +3120,7 @@ default: true
 Controls if status bar is visible.
 .TP
 .BI 'lines'
-type: int
+type: integer
 .br
 default: terminal height on startup
 .br
@@ -3253,7 +3253,7 @@ When this option is set, vifm will try to keep difference of scrolling positions
 of two windows constant.
 .TP
 .BI "'scrolloff' 'so'"
-type: int
+type: integer
 .br
 default: 0
 .br
@@ -3630,7 +3630,7 @@ Accepted characters are in the range from 0 to 255.  Any Unicode character
 with code greater than 255 is considered to be part of a word.
 
 The option affects Alt-D, Alt-B and Alt-F, but not Ctrl-W.  This is
-intensionaly to allow two use cases:
+intensionally to allow two use cases:
 
  \- Moving by WORDS and deletion by words.
  \- Moving by words and deletion by WORDS.
@@ -4757,7 +4757,7 @@ under the cursor is opened, otherwise whole selection is passed to the plugin
 and opened in vim.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
-let user specify command to run gui terminal.  By default it's equal to
+let user specify command to run GUI terminal.  By default it's equal to
 \(aqxterm \-e\(aq.  And another string variable named g:vifm_exec, which equals
 "vifm" by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
