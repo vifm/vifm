@@ -101,8 +101,23 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 static int
 is_full_path(const char expr[], int re, int glob, int *strip)
 {
-	*strip = (re || glob);
-	return 0;
+	int full_path = 0;
+
+	*strip = 0;
+
+	if(re)
+	{
+		const char *const s = strrchr(expr, '/') - 1;
+		full_path = (expr[1] == '/' && s != expr + 1 && *s == '/');
+		*strip = full_path ? 2 : 1;
+	}
+	else if(glob)
+	{
+		full_path = (expr[1] == '{' && expr[strlen(expr) - 2] == '}');
+		*strip = full_path ? 2 : 1;
+	}
+
+	return full_path;
 }
 
 /* Compiles m->raw into regular expression.  Also replaces global with

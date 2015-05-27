@@ -57,6 +57,44 @@ TEST(defaulted_regexp)
 	matcher_free(m);
 }
 
+TEST(full_path_glob)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("{{/tmp/[^/].ext}}", 0, 1, &error));
+	assert_null(error);
+
+	assert_true(matcher_matches(m, "/tmp/a.ext"));
+	assert_true(matcher_matches(m, "/tmp/b.ext"));
+
+	assert_false(matcher_matches(m, "/tmp/a,ext"));
+	assert_false(matcher_matches(m, "/tmp/prog/a.ext"));
+	assert_false(matcher_matches(m, "/tmp/.ext"));
+	assert_false(matcher_matches(m, "/tmp/ab.ext"));
+
+	matcher_free(m);
+}
+
+TEST(full_path_regexp)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("//^/tmp/[^/]+\\.ext$//", 0, 1, &error));
+	assert_null(error);
+
+	assert_true(matcher_matches(m, "/tmp/a.ext"));
+	assert_true(matcher_matches(m, "/tmp/b.ext"));
+	assert_true(matcher_matches(m, "/tmp/ab.ext"));
+
+	assert_false(matcher_matches(m, "/tmp/a,ext"));
+	assert_false(matcher_matches(m, "/tmp/prog/a.ext"));
+	assert_false(matcher_matches(m, "/tmp/.ext"));
+
+	matcher_free(m);
+}
+
 static void
 check_glob(matcher_t *m)
 {

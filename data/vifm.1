@@ -1,4 +1,4 @@
-.TH vifm 1 "May 26, 2015" "" "Vifm"
+.TH vifm 1 "May 27, 2015" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2729,22 +2729,26 @@ Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 .\" ---------------------------------------------------------------------------
 .SH Patterns
 .\" ---------------------------------------------------------------------------
-:highlight, :filetype, :filextype and vifm-:fileviewer commands support both
-globs and regular expressions as patterns to match file names.
+:highlight, :filetype, :filextype and :fileviewer commands support both globs
+and regular expressions as patterns to match file names or full paths.
 
-There is three possible ways to write them:
+There are five possible ways to write them:
 .RS 2
-.IP \- 2
-{comma-seperated-globs}
-.IP \- 2
-/regular-expression/[iI]
-.IP \- 2
+.IP 1. 3
+{comma-seperated-name-globs}
+.IP 2. 3
+{{comma-seperated-path-globs}}
+.IP 3. 3
+/name-regular-expression/[iI]
+.IP 4. 3
+//path-regular-expression//[iI]
+.IP 5. 3
 undecorated-pattern
 .RE
 
-First two forms are unambiguous, the third one implicitly refers to one of the
-other two when available.  :highlight does not accept third form, while
-:filetype, :filextype and :fileviewer treat it as list of globals.
+The last form is implicitly refers to one of others.  :highlight does not accept
+undecorated form, while :filetype, :filextype and :fileviewer treat it as list
+of name globals.
 
 Whether regular expression patterns are case sensitive or not depends on
 platform: case is ignored on Windows, but not on *nix like systems.
@@ -2755,15 +2759,6 @@ that one needs to know about them.
 .SH Globs
 .\" ---------------------------------------------------------------------------
 Globs are always case insensitive as it makes sense in general case.
-
-Only names of files are matched by the globs, not full paths.  E.g.
-.EX
-
-  :filetype Makefile make %c
-
-.EE
-will match files with name "Makefile" regardless whether it's in root or home
-directory.
 
 *, ?, [ and ] are treated as special symbols in the pattern.  E.g.
 .EX
