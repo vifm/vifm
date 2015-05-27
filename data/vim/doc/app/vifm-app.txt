@@ -2279,8 +2279,7 @@ The last form is implicitly refers to one of others.  |vifm-:highlight| does not
 accept undecorated form, while |vifm-:filetype|, |vifm-:filextype| and
 |vifm-:fileviewer| treat it as list of name globals.
 
-Whether regular expression patterns are case sensitive or not depends on
-platform: case is ignored on Windows, but not on *nix like systems.
+Regular expression patterns are case insensitive by default.
 
 |vifm-globs| section provides short overview of globs and some important points
 that one needs to know about them.

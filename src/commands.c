@@ -2401,7 +2401,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
+	m = matcher_alloc(cmd_info->argv[0], 0, 1, &error);
 	if(m == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
@@ -2429,7 +2429,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
+	m = matcher_alloc(cmd_info->argv[0], 0, 1, &error);
 	if(m == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
@@ -2749,7 +2749,7 @@ highlight_file(const cmd_info_t *cmd_info)
 
 	(void)extract_part(cmd_info->args, ' ', pattern);
 
-	matcher = matcher_alloc(pattern, !FILTER_DEF_CASE_SENSITIVITY, 1, &error);
+	matcher = matcher_alloc(pattern, 0, 1, &error);
 	if(matcher == NULL)
 	{
 		status_bar_errorf("Pattern error: %s", error);
