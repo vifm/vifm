@@ -50,10 +50,10 @@ typedef enum
 	/* Whole action should be stopped (including all possible next operations). */
 	IO_ECR_BREAK
 }
-IO_ERR_CB_RESULT;
+IoErrCbResult;
 
 /* Callback used to report information about errors occurred. */
-typedef IO_ERR_CB_RESULT (*io_err_cb)(const io_err_t *err);
+typedef IoErrCbResult (*ioerr_cb)(const io_err_t *err);
 
 /* List of errors. */
 typedef struct
@@ -63,18 +63,18 @@ typedef struct
 	/* Number of accumulated error entries. */
 	size_t error_count;
 }
-io_errlst_t;
+ioe_errlst_t;
 
 /* Initializes empty error list. */
-void io_errlst_init(io_errlst_t *lst);
+void ioe_errlst_init(ioe_errlst_t *lst);
 
 /* Appends new error entry to the lst.  Returns zero on error, otherwise
  * non-zero is returned. */
-int io_errlst_append(io_errlst_t *lst, const char path[], int error_code,
+int ioe_errlst_append(ioe_errlst_t *lst, const char path[], int error_code,
 		const char msg[]);
 
 /* Frees resources allocated by error list.  lst can be NULL. */
-void io_errlst_free(io_errlst_t *lst);
+void ioe_errlst_free(ioe_errlst_t *lst);
 
 #endif /* VIFM__IO__IOE_H__ */
 

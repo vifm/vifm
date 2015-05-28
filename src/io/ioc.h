@@ -54,8 +54,8 @@ typedef int (*io_confirm)(io_args_t *args, const char src[], const char dst[]);
 
 typedef struct
 {
-	io_err_cb errors_cb;
-	io_errlst_t errors;
+	ioerr_cb errors_cb;
+	ioe_errlst_t errors;
 }
 io_result_t;
 
