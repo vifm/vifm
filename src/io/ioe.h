@@ -19,6 +19,8 @@
 #ifndef VIFM__IO__IOE_H__
 #define VIFM__IO__IOE_H__
 
+#include <stddef.h> /* size_t */
+
 /* ioe - I/O error reporting - Input/Output error reporting */
 
 enum
@@ -27,6 +29,18 @@ enum
 	 * particular error entry. */
 	IO_ERR_UNKNOWN
 };
+
+/* Possible results of the ioerr_cb callback. */
+typedef enum
+{
+	/* Failed operation should be restarted. */
+	IO_ECR_RETRY,
+	/* Operation should be skipped. */
+	IO_ECR_SKIP,
+	/* Whole action should be stopped (including all possible next operations). */
+	IO_ECR_BREAK
+}
+IoErrCbResult;
 
 /* An error entry containing details about an issue. */
 typedef struct
@@ -39,18 +53,6 @@ typedef struct
 	char *msg;
 }
 io_err_t;
-
-/* Possible results of the io_err_cb callback. */
-typedef enum
-{
-	/* Failed operation should be restarted. */
-	IO_ECR_RETRY,
-	/* Operation should be skipped. */
-	IO_ECR_SKIP,
-	/* Whole action should be stopped (including all possible next operations). */
-	IO_ECR_BREAK
-}
-IoErrCbResult;
 
 /* Callback used to report information about errors occurred. */
 typedef IoErrCbResult (*ioerr_cb)(const io_err_t *err);
@@ -66,15 +68,10 @@ typedef struct
 ioe_errlst_t;
 
 /* Initializes empty error list. */
-void ioe_errlst_init(ioe_errlst_t *lst);
+void ioe_errlst_init(ioe_errlst_t *elst);
 
-/* Appends new error entry to the lst.  Returns zero on error, otherwise
- * non-zero is returned. */
-int ioe_errlst_append(ioe_errlst_t *lst, const char path[], int error_code,
-		const char msg[]);
-
-/* Frees resources allocated by error list.  lst can be NULL. */
-void ioe_errlst_free(ioe_errlst_t *lst);
+/* Frees resources allocated by error list.  elst can be NULL. */
+void ioe_errlst_free(ioe_errlst_t *elst);
 
 #endif /* VIFM__IO__IOE_H__ */
 
