@@ -19,6 +19,29 @@
 #ifndef VIFM__ENGINE__TEXT_BUFFER_H__
 #define VIFM__ENGINE__TEXT_BUFFER_H__
 
+/* Typical usage examples:
+ *
+ * vle_textbuf *msg = vle_tb_create();
+ * if(*msg != NULL)
+ * {
+ *   vle_tb_append_line(msg, "line1");
+ *   ...
+ *   vle_tb_append_line(msg, "lineN");
+ *   output(vle_tb_get_data(msg));
+ *   vle_tb_free(msg);
+ * }
+ *
+ * or
+ *
+ * vle_textbuf *msg = vle_tb_create();
+ * if(*msg != NULL)
+ * {
+ *   vle_tb_append_line(msg, "line1");
+ *   ...
+ *   vle_tb_append_line(msg, "lineN");
+ *   return vle_tb_release(msg);
+ * } */
+
 /* Opaque text buffer type. */
 typedef struct vle_textbuf vle_textbuf;
 
