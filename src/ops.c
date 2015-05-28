@@ -339,8 +339,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 #endif
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.path = src,
 
 		.cancellable = data == NULL,
@@ -437,8 +436,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 #endif
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.src = src,
 		.arg2.dst = dst,
 		.arg3.crs = ca_to_crs(conflict_action),
@@ -538,8 +536,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 	}
 	else
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.src = src,
 			.arg2.dst = dst,
 			.arg3.crs = ca_to_crs(conflict_action),
@@ -733,8 +730,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		return result;
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.path = src,
 		.arg2.target = dst,
 		.arg3.crs = IO_CRS_REPLACE_FILES,
@@ -798,8 +794,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 #endif
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.path = src,
 		.arg2.process_parents = data != NULL,
 		.arg3.mode = 0755,
@@ -829,8 +824,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 #endif
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.path = src,
 	};
 	return exec_io_op(ops, &iop_rmdir, &args);
@@ -867,8 +861,7 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 #endif
 	}
 
-	io_args_t args =
-	{
+	io_args_t args = {
 		.arg1.path = src,
 	};
 	return exec_io_op(ops, &iop_mkfile, &args);
