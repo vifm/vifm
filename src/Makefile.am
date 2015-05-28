@@ -94,9 +94,11 @@ vifm_SOURCES = \
 	\
 	io/ioc.h \
 	io/ioe.h \
+	io/ioe.c io/ioe.h \
 	io/ioeta.c io/ioeta.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioe.c io/private/ioe.h \
 	io/private/ioeta.c io/private/ioeta.h \
 	io/private/ionotif.c io/private/ionotif.h \
 	io/private/traverser.c io/private/traverser.h \

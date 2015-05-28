@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2013 xaizek.
+ * Copyright (C) 2015 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__IO__PRIVATE__IOE_H__
-#define VIFM__IO__PRIVATE__IOE_H__
+#include "ioe.h"
 
-#include "../ioe.h"
+#include <stddef.h> /* NULL size_t */
 
-/* ioe - private functions of Input/Output error reporting */
+#include "private/ioe.h"
 
-/* Appends new error entry to the elist.  Returns non-zero on error, otherwise
- * zero is returned. */
-int ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
-		const char msg[]);
+void
+ioe_errlst_init(ioe_errlst_t *elist)
+{
+	elist->active = 1;
+	elist->errors = NULL;
+	elist->error_count = 0U;
+}
 
-/* Frees single error.  err can't be NULL. */
-void ioe_err_free(ioe_err_t *err);
+void
+ioe_errlst_free(ioe_errlst_t *elist)
+{
+	size_t i;
 
-#endif /* VIFM__IO__PRIVATE__IOETA_H__ */
+	if(elist == NULL)
+	{
+		return;
+	}
+
+	for(i = 0U; i < elist->error_count; ++i)
+	{
+		ioe_err_free(&elist->errors[i]);
+	}
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

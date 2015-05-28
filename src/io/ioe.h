@@ -52,26 +52,28 @@ typedef struct
 	/* Concise error message about what the problem. */
 	char *msg;
 }
-io_err_t;
+ioe_err_t;
 
 /* Callback used to report information about errors occurred. */
-typedef IoErrCbResult (*ioerr_cb)(const io_err_t *err);
+typedef IoErrCbResult (*ioerr_cb)(const ioe_err_t *err);
 
 /* List of errors. */
 typedef struct
 {
+	/* Whether this list will be examined. */
+	int active;
 	/* Errors, can be NULL if error_count is zero. */
-	io_err_t *errors;
+	ioe_err_t *errors;
 	/* Number of accumulated error entries. */
 	size_t error_count;
 }
 ioe_errlst_t;
 
 /* Initializes empty error list. */
-void ioe_errlst_init(ioe_errlst_t *elst);
+void ioe_errlst_init(ioe_errlst_t *elist);
 
-/* Frees resources allocated by error list.  elst can be NULL. */
-void ioe_errlst_free(ioe_errlst_t *elst);
+/* Frees resources allocated by error list.  elist can be NULL. */
+void ioe_errlst_free(ioe_errlst_t *elist);
 
 #endif /* VIFM__IO__IOE_H__ */
 

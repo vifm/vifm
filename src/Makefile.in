@@ -82,20 +82,20 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
 	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
 	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
-	engine/variables.$(OBJEXT) io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) \
-	io/ior.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
-	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	engine/variables.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
+	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
+	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bookmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -379,9 +379,11 @@ vifm_SOURCES = \
 	\
 	io/ioc.h \
 	io/ioe.h \
+	io/ioe.c io/ioe.h \
 	io/ioeta.c io/ioeta.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioe.c io/private/ioe.h \
 	io/private/ioeta.c io/private/ioeta.h \
 	io/private/ionotif.c io/private/ionotif.h \
 	io/private/traverser.c io/private/traverser.h \
@@ -639,6 +641,7 @@ io/$(am__dirstamp):
 io/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) io/$(DEPDIR)
 	@: > io/$(DEPDIR)/$(am__dirstamp)
+io/ioe.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
 io/ioeta.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
 io/iop.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
 io/ior.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
@@ -648,6 +651,8 @@ io/private/$(am__dirstamp):
 io/private/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) io/private/$(DEPDIR)
 	@: > io/private/$(DEPDIR)/$(am__dirstamp)
+io/private/ioe.$(OBJEXT): io/private/$(am__dirstamp) \
+	io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/ioeta.$(OBJEXT): io/private/$(am__dirstamp) \
 	io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/ionotif.$(OBJEXT): io/private/$(am__dirstamp) \
@@ -851,9 +856,11 @@ mostlyclean-compile:
 	-rm -f engine/text_buffer.$(OBJEXT)
 	-rm -f engine/var.$(OBJEXT)
 	-rm -f engine/variables.$(OBJEXT)
+	-rm -f io/ioe.$(OBJEXT)
 	-rm -f io/ioeta.$(OBJEXT)
 	-rm -f io/iop.$(OBJEXT)
 	-rm -f io/ior.$(OBJEXT)
+	-rm -f io/private/ioe.$(OBJEXT)
 	-rm -f io/private/ioeta.$(OBJEXT)
 	-rm -f io/private/ionotif.$(OBJEXT)
 	-rm -f io/private/traverser.$(OBJEXT)
@@ -976,9 +983,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/var.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ioe.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/iop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ior.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioe.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
