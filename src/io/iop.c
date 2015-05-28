@@ -224,8 +224,7 @@ iop_cp(io_args_t *const args)
 	{
 		char link_target[PATH_MAX];
 
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = link_target,
 			.arg2.target = dst,
 			.arg3.crs = crs,

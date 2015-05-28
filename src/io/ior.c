@@ -78,8 +78,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 			break;
 		case VA_FILE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
@@ -91,8 +90,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 			}
 		case VA_DIR_LEAVE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
@@ -120,8 +118,7 @@ ior_cp(io_args_t *const args)
 
 	if(args->arg3.crs == IO_CRS_REPLACE_ALL)
 	{
-		io_args_t rm_args =
-		{
+		io_args_t rm_args = {
 			.arg1.path = dst,
 
 			.cancellable = args->cancellable,
@@ -187,8 +184,7 @@ ior_mv(io_args_t *const args)
 				int result = ior_cp(args);
 				if(result == 0)
 				{
-					io_args_t rm_args =
-					{
+					io_args_t rm_args = {
 						.arg1.path = src,
 
 						.cancellable = args->cancellable,
@@ -208,8 +204,7 @@ ior_mv(io_args_t *const args)
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
 				int error;
-				io_args_t rm_args =
-				{
+				io_args_t rm_args = {
 					.arg1.path = dst,
 
 					.cancellable = args->cancellable,
@@ -235,8 +230,7 @@ ior_mv(io_args_t *const args)
 			{
 				if(!has_atomic_file_replace() && is_file(dst))
 				{
-					io_args_t rm_args =
-					{
+					io_args_t rm_args = {
 						.arg1.path = dst,
 
 						.cancellable = args->cancellable,
@@ -303,8 +297,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 		case VA_DIR_ENTER:
 			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = dst_full_path,
 
 					/* Temporary fake rights so we can add files to the directory. */
@@ -323,8 +316,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 			break;
 		case VA_FILE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.src = full_path,
 					.arg2.dst = dst_full_path,
 					.arg3.crs = cp_args->arg3.crs,
