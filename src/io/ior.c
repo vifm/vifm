@@ -25,7 +25,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* removee() snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strlen() */
+#include <string.h> /* strerror() strlen() */
 
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
@@ -35,6 +35,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../background.h"
+#include "private/ioe.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
 #include "ioc.h"
@@ -62,7 +63,7 @@ ior_rm(io_args_t *const args)
 static VisitResult
 rm_visitor(const char full_path[], VisitAction action, void *param)
 {
-	const io_args_t *const rm_args = param;
+	io_args_t *const rm_args = param;
 	VisitResult result = VR_OK;
 
 	if(rm_args->cancellable && ui_cancellation_requested())
@@ -78,28 +79,32 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 			break;
 		case VA_FILE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
 					.estim = rm_args->estim,
+
+					.result = rm_args->result,
 				};
 
 				result = iop_rmfile(&args);
+				rm_args->result = args.result;
 				break;
 			}
 		case VA_DIR_LEAVE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = full_path,
 
 					.cancellable = rm_args->cancellable,
 					.estim = rm_args->estim,
+
+					.result = rm_args->result,
 				};
 
 				result = iop_rmdir(&args);
+				rm_args->result = args.result;
 				break;
 			}
 	}
@@ -115,21 +120,31 @@ ior_cp(io_args_t *const args)
 
 	if(is_in_subtree(dst, src))
 	{
+		(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
+				"Can't copy parent path into subpath");
 		return 1;
 	}
 
 	if(args->arg3.crs == IO_CRS_REPLACE_ALL)
 	{
-		io_args_t rm_args =
-		{
+		io_args_t rm_args = {
 			.arg1.path = dst,
 
 			.cancellable = args->cancellable,
 			.estim = args->estim,
+
+			.result = args->result,
 		};
+
 		const int result = ior_rm(&rm_args);
+		args->result = rm_args.result;
 		if(result != 0)
 		{
+			if(!args->cancellable || !ui_cancellation_requested())
+			{
+				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+						"Failed to remove");
+			}
 			return result;
 		}
 	}
@@ -155,13 +170,23 @@ ior_mv(io_args_t *const args)
 
 	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
+		(void)ioe_errlst_append(&args->result.errors, dst, EEXIST,
+				strerror(EEXIST));
 		return 1;
 	}
 
 	if(crs == IO_CRS_APPEND_TO_FILES)
 	{
-		if(!is_file(src) || !is_file(dst))
+		if(!is_file(src))
 		{
+			(void)ioe_errlst_append(&args->result.errors, src, EISDIR,
+					strerror(EISDIR));
+			return 1;
+		}
+		if(!is_file(dst))
+		{
+			(void)ioe_errlst_append(&args->result.errors, dst, EISDIR,
+					strerror(EISDIR));
 			return 1;
 		}
 	}
@@ -187,17 +212,19 @@ ior_mv(io_args_t *const args)
 				int result = ior_cp(args);
 				if(result == 0)
 				{
-					io_args_t rm_args =
-					{
+					io_args_t rm_args = {
 						.arg1.path = src,
 
 						.cancellable = args->cancellable,
 						.estim = args->estim,
+
+						.result = args->result,
 					};
 
 					/* Disable progress reporting for this "secondary" operation. */
 					const int silent = ioeta_silent_on(rm_args.estim);
 					result = ior_rm(&rm_args);
+					args->result = rm_args.result;
 					ioeta_silent_set(rm_args.estim, silent);
 				}
 				return result;
@@ -208,12 +235,13 @@ ior_mv(io_args_t *const args)
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
 				int error;
-				io_args_t rm_args =
-				{
+				io_args_t rm_args = {
 					.arg1.path = dst,
 
 					.cancellable = args->cancellable,
 					.estim = args->estim,
+
+					.result = args->result,
 				};
 
 				/* Ask user whether to overwrite destination file. */
@@ -223,29 +251,48 @@ ior_mv(io_args_t *const args)
 				}
 
 				error = ior_rm(&rm_args);
+				args->result = rm_args.result;
 				if(error != 0)
 				{
+					if(!args->cancellable || !ui_cancellation_requested())
+					{
+						(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+								"Failed to remove");
+					}
 					return error;
 				}
 
-				return os_rename(src, dst);
+				if(os_rename(src, dst) != 0)
+				{
+					(void)ioe_errlst_append(&args->result.errors, src, errno,
+							strerror(errno));
+					return 1;
+				}
+				return 0;
 			}
 			else if(crs == IO_CRS_REPLACE_FILES ||
 					(!has_atomic_file_replace() && crs == IO_CRS_APPEND_TO_FILES))
 			{
 				if(!has_atomic_file_replace() && is_file(dst))
 				{
-					io_args_t rm_args =
-					{
+					io_args_t rm_args = {
 						.arg1.path = dst,
 
 						.cancellable = args->cancellable,
 						.estim = args->estim,
+
+						.result = args->result,
 					};
 
 					const int error = iop_rmfile(&rm_args);
+					args->result = rm_args.result;
 					if(error != 0)
 					{
+						if(!args->cancellable || !ui_cancellation_requested())
+						{
+							(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+									"Failed to remove");
+						}
 						return error;
 					}
 				}
@@ -255,6 +302,8 @@ ior_mv(io_args_t *const args)
 			/* Break is intentionally omitted. */
 
 		default:
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					strerror(errno));
 			return errno;
 	}
 }
@@ -281,7 +330,7 @@ mv_visitor(const char full_path[], VisitAction action, void *param)
 static VisitResult
 cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 {
-	const io_args_t *const cp_args = param;
+	io_args_t *const cp_args = param;
 	const char *dst_full_path;
 	char *free_me = NULL;
 	VisitResult result = VR_OK;
@@ -303,8 +352,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 		case VA_DIR_ENTER:
 			if(cp_args->arg3.crs != IO_CRS_REPLACE_FILES || !is_dir(dst_full_path))
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.path = dst_full_path,
 
 					/* Temporary fake rights so we can add files to the directory. */
@@ -312,9 +360,12 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 
 					.cancellable = cp_args->cancellable,
 					.estim = cp_args->estim,
+
+					.result = cp_args->result,
 				};
 
 				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
+				cp_args->result = args.result;
 			}
 			else
 			{
@@ -323,8 +374,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 			break;
 		case VA_FILE:
 			{
-				io_args_t args =
-				{
+				io_args_t args = {
 					.arg1.src = full_path,
 					.arg2.dst = dst_full_path,
 					.arg3.crs = cp_args->arg3.crs,
@@ -332,9 +382,12 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					.cancellable = cp_args->cancellable,
 					.confirm = cp_args->confirm,
 					.estim = cp_args->estim,
+
+					.result = cp_args->result,
 				};
 
 				result = ((cp ? iop_cp(&args) : ior_mv(&args)) == 0) ? VR_OK : VR_ERROR;
+				cp_args->result = args.result;
 				break;
 			}
 		case VA_DIR_LEAVE:
@@ -346,9 +399,16 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					result = (os_chmod(dst_full_path, st.st_mode & 07777) == 0)
 									? VR_OK
 									: VR_ERROR;
+					if(result == VR_ERROR)
+					{
+						(void)ioe_errlst_append(&cp_args->result.errors, dst_full_path,
+								errno, strerror(errno));
+					}
 				}
 				else
 				{
+					(void)ioe_errlst_append(&cp_args->result.errors, full_path, errno,
+							strerror(errno));
 					result = VR_ERROR;
 				}
 				break;

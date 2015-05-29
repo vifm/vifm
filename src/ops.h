@@ -77,6 +77,7 @@ typedef struct
 	                         also frees it on ops_free(). */
 	const char *descr;    /* Description of operations. */
 	int shallow_eta;      /* Count only top level items, without recursion. */
+	char *errors;         /* Multi-line string of errors. */
 
 	char *base_dir;   /* Base directory in which operation is taking place. */
 	char *target_dir; /* Target directory of the operation (same as base_dir if

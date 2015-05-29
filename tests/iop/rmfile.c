@@ -18,17 +18,19 @@ TEST(file_is_removed)
 {
 	FILE *const f = fopen(FILE_NAME, "w");
 	fclose(f);
-	assert_int_equal(0, access(FILE_NAME, F_OK));
+	assert_success(access(FILE_NAME, F_OK));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = FILE_NAME,
 		};
-		assert_int_equal(0, iop_rmfile(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_int_equal(-1, access(FILE_NAME, F_OK));
+	assert_failure(access(FILE_NAME, F_OK));
 }
 
 TEST(directory_is_not_removed)
@@ -37,11 +39,15 @@ TEST(directory_is_not_removed)
 	assert_true(is_dir(DIRECTORY_NAME));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = DIRECTORY_NAME,
 		};
-		assert_false(iop_rmfile(&args) == 0);
+		ioe_errlst_init(&args.result.errors);
+
+		assert_failure(iop_rmfile(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	assert_true(is_dir(DIRECTORY_NAME));
@@ -54,38 +60,44 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 {
 	FILE *const f = fopen(FILE_NAME, "w");
 	fclose(f);
-	assert_int_equal(0, access(FILE_NAME, F_OK));
+	assert_success(access(FILE_NAME, F_OK));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = FILE_NAME,
 			.arg2.target = "link",
 		};
-		assert_int_equal(0, iop_ln(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_ln(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_int_equal(0, access("link", F_OK));
+	assert_success(access("link", F_OK));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = "link",
 		};
-		assert_int_equal(0, iop_rmfile(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_int_equal(-1, access("link", F_OK));
+	assert_failure(access("link", F_OK));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = FILE_NAME,
 		};
-		assert_int_equal(0, iop_rmfile(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_int_equal(-1, access(FILE_NAME, F_OK));
+	assert_failure(access(FILE_NAME, F_OK));
 }
 
 static int

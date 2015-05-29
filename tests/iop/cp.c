@@ -20,7 +20,12 @@ TEST(dir_is_not_copied)
 		.arg1.src = "../existing-files",
 		.arg2.dst = "existing-files",
 	};
-	assert_false(iop_cp(&args) == 0);
+	ioe_errlst_init(&args.result.errors);
+
+	assert_failure(iop_cp(&args));
+
+	assert_true(args.result.errors.error_count != 0);
+	ioe_errlst_free(&args.result.errors);
 }
 
 TEST(empty_file_is_copied)
@@ -32,7 +37,11 @@ TEST(empty_file_is_copied)
 			.arg1.src = "empty",
 			.arg2.dst = "empty-copy",
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(files_are_identical("empty", "empty-copy"));
@@ -52,7 +61,12 @@ TEST(file_is_not_overwritten_if_not_asked)
 			.arg2.dst = "empty-copy",
 			.arg3.crs = IO_CRS_FAIL,
 		};
-		assert_false(iop_cp(&args) == 0);
+		ioe_errlst_init(&args.result.errors);
+
+		assert_failure(iop_cp(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	assert_true(files_are_identical("empty", "empty-copy"));
@@ -70,7 +84,11 @@ TEST(file_is_overwritten_if_asked)
 			.arg2.dst = "two-lines",
 			.arg3.crs = IO_CRS_FAIL,
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_false(files_are_identical("../read/binary-data", "two-lines"));
@@ -81,7 +99,11 @@ TEST(file_is_overwritten_if_asked)
 			.arg2.dst = "two-lines",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(files_are_identical("../read/binary-data", "two-lines"));
@@ -97,7 +119,11 @@ file_is_copied(const char original[])
 			.arg1.src = original,
 			.arg2.dst = "copy",
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(files_are_identical("copy", original));
@@ -149,7 +175,11 @@ TEST(appending_works_for_files)
 			.arg2.dst = "appending",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_int_equal(size + 1, get_file_size("appending"));
@@ -160,7 +190,11 @@ TEST(appending_works_for_files)
 			.arg2.dst = "appending",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_int_equal(size + 2, get_file_size("appending"));
@@ -182,17 +216,24 @@ TEST(appending_does_not_shrink_files)
 			.arg2.dst = "two-lines",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_int_equal(size, get_file_size("two-lines"));
 
 	{
-		io_args_t args =
-		{
+		io_args_t args = {
 			.arg1.path = "two-lines",
 		};
-		assert_int_equal(0, iop_rmfile(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_rmfile(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
 
@@ -216,7 +257,11 @@ TEST(file_permissions_are_preserved, IF(not_windows))
 			.arg1.src = "file",
 			.arg2.dst = "file-copy",
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_int_equal(0, lstat("file", &src));
@@ -238,7 +283,11 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 			.arg1.path = "../read/two-lines",
 			.arg2.target = "sym-link",
 		};
-		assert_int_equal(0, iop_ln(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_ln(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(is_symlink("sym-link"));
@@ -248,16 +297,19 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 			.arg1.src = "sym-link",
 			.arg2.dst = "sym-link-copy",
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(is_symlink("sym-link"));
 	assert_true(is_symlink("sym-link-copy"));
 
-	assert_int_equal(0,
-			get_link_target("sym-link", old_target, sizeof(old_target)));
-	assert_int_equal(0,
-			get_link_target("sym-link-copy", new_target, sizeof(new_target)));
+	assert_success(get_link_target("sym-link", old_target, sizeof(old_target)));
+	assert_success(get_link_target("sym-link-copy", new_target,
+				sizeof(new_target)));
 
 	assert_string_equal(new_target, old_target);
 
@@ -276,7 +328,11 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 			.arg1.path = "dir",
 			.arg2.target = "dir-sym-link",
 		};
-		assert_int_equal(0, iop_ln(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_ln(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(is_symlink("dir-sym-link"));
@@ -287,7 +343,11 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 			.arg1.src = "dir-sym-link",
 			.arg2.dst = "dir-sym-link-copy",
 		};
-		assert_int_equal(0, iop_cp(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(is_symlink("dir-sym-link"));
@@ -302,7 +362,11 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 		io_args_t args = {
 			.arg1.path = "dir",
 		};
-		assert_int_equal(0, iop_rmdir(&args));
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_rmdir(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
 

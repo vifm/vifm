@@ -31,8 +31,8 @@ engine := abbrevs.c cmds.c functions.c completion.c keys.c mode.c options.c \
           parsing.c text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
-io := private/ioeta.c private/ionotif.c private/traverser.c
-io += ioeta.c iop.c ior.c
+io := private/ioe.c private/ioeta.c private/ionotif.c private/traverser.c
+io += ioe.c ioeta.c iop.c ior.c
 io := $(addprefix io/, $(io))
 
 menus := apropos_menu.c bookmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \

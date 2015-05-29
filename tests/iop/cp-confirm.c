@@ -29,9 +29,14 @@ TEST(confirm_is_not_called_for_no_overwrite)
 
 			.confirm = &confirm_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_failure(iop_cp(&args));
 		assert_int_equal(0, confirm_called);
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	delete_test_file("empty");
@@ -50,9 +55,14 @@ TEST(confirm_is_called_for_overwrite)
 
 			.confirm = &confirm_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_success(iop_cp(&args));
 		assert_int_equal(1, confirm_called);
+
+		/* Skipping file by user is not real error. */
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(files_are_identical("../read/two-lines", "empty"));
@@ -75,9 +85,13 @@ TEST(no_confirm_on_appending)
 
 			.confirm = &confirm_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_success(iop_cp(&args));
 		assert_int_equal(0, confirm_called);
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(files_are_identical("../read/two-lines", "empty"));
@@ -100,9 +114,13 @@ TEST(deny_to_overwrite_is_considered)
 
 			.confirm = &deny_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_success(iop_cp(&args));
 		assert_int_equal(1, confirm_called);
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_false(files_are_identical("../read/two-lines", "empty"));

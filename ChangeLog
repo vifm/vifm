@@ -126,6 +126,8 @@
 
 	Added full path patterns ({{globs}} and //regexp//).  Thanks to astrell.
 
+	Added detailed list of errors when 'syscalls' is used.  Thanks to willemw12.
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

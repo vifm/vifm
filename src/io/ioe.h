@@ -19,6 +19,8 @@
 #ifndef VIFM__IO__IOE_H__
 #define VIFM__IO__IOE_H__
 
+#include <stddef.h> /* size_t */
+
 /* ioe - I/O error reporting - Input/Output error reporting */
 
 enum
@@ -27,6 +29,18 @@ enum
 	 * particular error entry. */
 	IO_ERR_UNKNOWN
 };
+
+/* Possible results of the ioerr_cb callback. */
+typedef enum
+{
+	/* Failed operation should be restarted. */
+	IO_ECR_RETRY,
+	/* Operation should be skipped. */
+	IO_ECR_SKIP,
+	/* Whole action should be stopped (including all possible next operations). */
+	IO_ECR_BREAK
+}
+IoErrCbResult;
 
 /* An error entry containing details about an issue. */
 typedef struct
@@ -38,43 +52,28 @@ typedef struct
 	/* Concise error message about what the problem. */
 	char *msg;
 }
-io_err_t;
-
-/* Possible results of the io_err_cb callback. */
-typedef enum
-{
-	/* Failed operation should be restarted. */
-	IO_ECR_RETRY,
-	/* Operation should be skipped. */
-	IO_ECR_SKIP,
-	/* Whole action should be stopped (including all possible next operations). */
-	IO_ECR_BREAK
-}
-IO_ERR_CB_RESULT;
+ioe_err_t;
 
 /* Callback used to report information about errors occurred. */
-typedef IO_ERR_CB_RESULT (*io_err_cb)(const io_err_t *err);
+typedef IoErrCbResult (*ioerr_cb)(const ioe_err_t *err);
 
 /* List of errors. */
 typedef struct
 {
+	/* Whether this list will be examined. */
+	int active;
 	/* Errors, can be NULL if error_count is zero. */
-	io_err_t *errors;
+	ioe_err_t *errors;
 	/* Number of accumulated error entries. */
 	size_t error_count;
 }
-io_errlst_t;
+ioe_errlst_t;
 
 /* Initializes empty error list. */
-void io_errlst_init(io_errlst_t *lst);
+void ioe_errlst_init(ioe_errlst_t *elist);
 
-/* Appends new error entry to the lst.  Returns zero on error, otherwise
- * non-zero is returned. */
-int io_errlst_append(io_errlst_t *lst, const char path[], int error_code,
-		const char msg[]);
-
-/* Frees resources allocated by error list.  lst can be NULL. */
-void io_errlst_free(io_errlst_t *lst);
+/* Frees resources allocated by error list.  elist can be NULL. */
+void ioe_errlst_free(ioe_errlst_t *elist);
 
 #endif /* VIFM__IO__IOE_H__ */
 
