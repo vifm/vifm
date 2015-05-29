@@ -13,12 +13,12 @@ SETUP()
 {
 	cfg.shell = strdup("/bin/bash");
 
-	assert_int_equal(0, chdir("test-data/sandbox"));
+	assert_success(chdir("test-data/sandbox"));
 }
 
 TEARDOWN()
 {
-	assert_int_equal(0, chdir("../.."));
+	assert_success(chdir("../.."));
 
 	free(cfg.shell);
 }
