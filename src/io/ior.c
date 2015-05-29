@@ -120,7 +120,7 @@ ior_cp(io_args_t *const args)
 
 	if(is_in_subtree(dst, src))
 	{
-		(void)ioe_errlst_append(&args->result.errors, src, 0,
+		(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 				"Can't copy parent path into subpath");
 		return 1;
 	}
@@ -142,7 +142,7 @@ ior_cp(io_args_t *const args)
 		{
 			if(!args->cancellable || !ui_cancellation_requested())
 			{
-				(void)ioe_errlst_append(&args->result.errors, dst, 0,
+				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 						"Failed to remove");
 			}
 			return result;
@@ -256,7 +256,7 @@ ior_mv(io_args_t *const args)
 				{
 					if(!args->cancellable || !ui_cancellation_requested())
 					{
-						(void)ioe_errlst_append(&args->result.errors, dst, 0,
+						(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 								"Failed to remove");
 					}
 					return error;
@@ -290,7 +290,7 @@ ior_mv(io_args_t *const args)
 					{
 						if(!args->cancellable || !ui_cancellation_requested())
 						{
-							(void)ioe_errlst_append(&args->result.errors, dst, 0,
+							(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 									"Failed to remove");
 						}
 						return error;

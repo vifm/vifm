@@ -275,7 +275,7 @@ iop_cp(io_args_t *const args)
 
 		if(get_link_target(src, link_target, sizeof(link_target)) != 0)
 		{
-			(void)ioe_errlst_append(&args->result.errors, src, 0,
+			(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 					"Failed to get symbolic link target");
 			return 1;
 		}
@@ -285,7 +285,7 @@ iop_cp(io_args_t *const args)
 
 		if(error != 0)
 		{
-			(void)ioe_errlst_append(&args->result.errors, src, 0,
+			(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 					"Failed to make symbolic link");
 			return 1;
 		}
@@ -528,7 +528,7 @@ iop_ln(io_args_t *const args)
 
 	if(overwrite && !is_symlink(target))
 	{
-		(void)ioe_errlst_append(&args->result.errors, target, 0,
+		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 				"Target is not a symbolic link");
 		return -1;
 	}
@@ -537,7 +537,7 @@ iop_ln(io_args_t *const args)
 	escaped_target = escape_filename(target, 0);
 	if(escaped_path == NULL || escaped_target == NULL)
 	{
-		(void)ioe_errlst_append(&args->result.errors, target, 0,
+		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 				"Not enough memory");
 		free(escaped_target);
 		free(escaped_path);
@@ -546,7 +546,7 @@ iop_ln(io_args_t *const args)
 
 	if(GetModuleFileNameA(NULL, base_dir, ARRAY_LEN(base_dir)) == 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, target, 0,
+		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 				"Failed to find win_helper");
 		free(escaped_target);
 		free(escaped_path);
@@ -560,7 +560,7 @@ iop_ln(io_args_t *const args)
 	result = os_system(cmd);
 	if(result != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, target, 0,
+		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,
 				"Running win_helper has failed");
 	}
 
