@@ -16,9 +16,9 @@ create_non_empty_dir(const char dir[], const char file[])
 {
 	create_empty_dir(dir);
 
-	assert_int_equal(0, chdir(dir));
+	assert_success(chdir(dir));
 	create_empty_file(file);
-	assert_int_equal(0, chdir(".."));
+	assert_success(chdir(".."));
 }
 
 void
@@ -27,9 +27,9 @@ create_empty_nested_dir(const char dir[],
 {
 	create_empty_dir(dir);
 
-	assert_int_equal(0, chdir(dir));
+	assert_success(chdir(dir));
 	create_empty_dir(nested_dir);
-	assert_int_equal(0, chdir(".."));
+	assert_success(chdir(".."));
 }
 
 void
@@ -38,15 +38,15 @@ create_non_empty_nested_dir(const char root_dir[], const char nested_dir[],
 {
 	create_empty_dir(root_dir);
 
-	assert_int_equal(0, chdir(root_dir));
+	assert_success(chdir(root_dir));
 	{
 		create_empty_dir(nested_dir);
 
-		assert_int_equal(0, chdir(nested_dir));
+		assert_success(chdir(nested_dir));
 		create_empty_file(file);
-		assert_int_equal(0, chdir(".."));
+		assert_success(chdir(".."));
 	}
-	assert_int_equal(0, chdir(".."));
+	assert_success(chdir(".."));
 }
 
 void
@@ -61,7 +61,7 @@ create_empty_file(const char file[])
 {
 	FILE *const f = fopen(file, "w");
 	fclose(f);
-	assert_int_equal(0, access(file, F_OK));
+	assert_success(access(file, F_OK));
 }
 
 void

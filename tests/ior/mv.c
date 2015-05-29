@@ -24,7 +24,7 @@ TEST(file_is_moved)
 			.arg1.src = "binary-data",
 			.arg2.dst = "moved-binary-data",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_false(file_exists("binary-data"));
@@ -42,7 +42,7 @@ TEST(empty_directory_is_moved)
 			.arg1.src = "empty-dir",
 			.arg2.dst = "moved-empty-dir",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_false(is_dir("empty-dir"));
@@ -60,7 +60,7 @@ TEST(non_empty_directory_is_moved)
 			.arg1.src = "non-empty-dir",
 			.arg2.dst = "moved-non-empty-dir",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_true(file_exists("moved-non-empty-dir/a-file"));
@@ -77,7 +77,7 @@ TEST(empty_nested_directory_is_moved)
 			.arg1.src = "non-empty-dir",
 			.arg2.dst = "moved-non-empty-dir",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_true(is_dir("moved-non-empty-dir/empty-nested-dir"));
@@ -94,7 +94,7 @@ TEST(non_empty_nested_directory_is_moved)
 			.arg1.src = "non-empty-dir",
 			.arg2.dst = "moved-non-empty-dir",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_false(file_exists("non-empty-dir/nested-dir/a-file"));
@@ -112,7 +112,7 @@ TEST(fails_to_overwrite_file_by_default)
 			.arg1.src = "../read/two-lines",
 			.arg2.dst = "a-file",
 		};
-		assert_false(ior_mv(&args) == 0);
+		assert_failure(ior_mv(&args));
 	}
 
 	delete_file("a-file");
@@ -127,7 +127,7 @@ TEST(fails_to_overwrite_dir_by_default)
 			.arg1.src = "../read",
 			.arg2.dst = "empty-dir",
 		};
-		assert_false(ior_mv(&args) == 0);
+		assert_failure(ior_mv(&args));
 	}
 
 	delete_dir("empty-dir");
@@ -144,7 +144,7 @@ TEST(overwrites_file_when_asked)
 			.arg2.dst = "a-file",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	delete_file("a-file");
@@ -159,7 +159,7 @@ TEST(overwrites_dir_when_asked)
 			.arg1.src = "../read",
 			.arg2.dst = "read",
 		};
-		assert_int_equal(0, ior_cp(&args));
+		assert_success(ior_cp(&args));
 	}
 
 	{
@@ -168,14 +168,14 @@ TEST(overwrites_dir_when_asked)
 			.arg2.dst = "dir",
 			.arg3.crs = IO_CRS_REPLACE_ALL,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = "dir",
 		};
-		assert_false(iop_rmdir(&args) == 0);
+		assert_failure(iop_rmdir(&args));
 	}
 
 	delete_tree("dir");
@@ -190,7 +190,7 @@ TEST(appending_fails_for_directories)
 			.arg1.src = "../read",
 			.arg2.dst = "read",
 		};
-		assert_int_equal(0, ior_cp(&args));
+		assert_success(ior_cp(&args));
 	}
 
 	{
@@ -199,7 +199,7 @@ TEST(appending_fails_for_directories)
 			.arg2.dst = "dir",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_false(ior_mv(&args) == 0);
+		assert_failure(ior_mv(&args));
 	}
 
 	delete_dir("dir");
@@ -223,7 +223,7 @@ TEST(appending_works_for_files)
 			.arg2.dst = "two-lines",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_int_equal(size, get_file_size("two-lines"));
@@ -235,15 +235,15 @@ TEST(directories_can_be_merged)
 {
 	create_empty_dir("first");
 
-	assert_int_equal(0, chdir("first"));
+	assert_success(chdir("first"));
 	create_empty_file("first-file");
-	assert_int_equal(0, chdir(".."));
+	assert_success(chdir(".."));
 
 	create_empty_dir("second");
 
-	assert_int_equal(0, chdir("second"));
+	assert_success(chdir("second"));
 	create_empty_file("second-file");
-	assert_int_equal(0, chdir(".."));
+	assert_success(chdir(".."));
 
 	{
 		io_args_t args = {
@@ -251,7 +251,7 @@ TEST(directories_can_be_merged)
 			.arg2.dst = "second",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_true(file_exists("second/second-file"));
@@ -270,7 +270,7 @@ TEST(fails_to_move_directory_inside_itself)
 			.arg1.src = "empty-dir",
 			.arg2.dst = "empty-dir/empty-dir-copy",
 		};
-		assert_false(ior_mv(&args) == 0);
+		assert_failure(ior_mv(&args));
 	}
 
 	delete_dir("empty-dir");
@@ -284,7 +284,7 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 			.arg1.path = "../read/two-lines",
 			.arg2.target = "sym-link",
 		};
-		assert_int_equal(0, iop_ln(&args));
+		assert_success(iop_ln(&args));
 	}
 
 	assert_true(is_symlink("sym-link"));
@@ -294,10 +294,10 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 			.arg1.src = "sym-link",
 			.arg2.dst = "moved-sym-link",
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
-	assert_true(!is_symlink("sym-link"));
+	assert_false(is_symlink("sym-link"));
 	assert_true(is_symlink("moved-sym-link"));
 
 	delete_file("moved-sym-link");
