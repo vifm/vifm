@@ -821,7 +821,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 {
 	if(!use_trash)
 	{
-		(void)perform_operation(OP_REMOVE, NULL, (void *)1, path, NULL);
+		(void)perform_operation(OP_REMOVE, ops, (void *)1, path, NULL);
 		return;
 	}
 
@@ -1492,42 +1492,54 @@ is_file_name_changed(const char old[], const char new[])
 }
 
 #ifndef _WIN32
+
 void
 chown_files(int u, int g, uid_t uid, gid_t gid)
 {
+#define V(e) (void *)(long)(e)
+
+	FileView *const view = curr_view;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
 	int sel_len;
+	ops_t *ops;
 
 	ui_cancellation_reset();
 
 	snprintf(buf, sizeof(buf), "ch%s in %s: ", ((u && g) || u) ? "own" : "grp",
-			replace_home_part(curr_view->curr_dir));
+			replace_home_part(view->curr_dir));
 
-	get_group_file_list(curr_view->saved_selection, curr_view->nsaved_selection,
-			buf);
+	ops = get_ops(OP_CHOWN, "re-owning", view->curr_dir, view->curr_dir);
+
+	get_group_file_list(view->saved_selection, view->nsaved_selection, buf);
 	cmd_group_begin(buf);
 
-	sel_len = curr_view->nsaved_selection;
+	sel_len = view->nsaved_selection;
 	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
 	{
-		char *filename = curr_view->saved_selection[i];
-		int pos = find_file_pos_in_list(curr_view, filename);
+		const char *const fname = view->saved_selection[i];
+		const int pos = find_file_pos_in_list(view, fname);
+		const dir_entry_t *const entry = &view->dir_entry[pos];
 
-		if(u && perform_operation(OP_CHOWN, NULL, (void *)(long)uid, filename,
-					NULL) == 0)
-			add_operation(OP_CHOWN, (void *)(long)uid,
-					(void *)(long)curr_view->dir_entry[pos].uid, filename, "");
-		if(g && perform_operation(OP_CHGRP, NULL, (void *)(long)gid, filename,
-					NULL) == 0)
-			add_operation(OP_CHGRP, (void *)(long)gid,
-					(void *)(long)curr_view->dir_entry[pos].gid, filename, "");
+		if(u && perform_operation(OP_CHOWN, ops, V(uid), fname, NULL) == 0)
+		{
+			add_operation(OP_CHOWN, V(uid), V(entry->uid), fname, "");
+		}
+		if(g && perform_operation(OP_CHGRP, ops, V(gid), fname, NULL) == 0)
+		{
+			add_operation(OP_CHGRP, V(gid), V(entry->gid), fname, "");
+		}
 	}
 	cmd_group_end();
 
-	load_dir_list(curr_view, 1);
-	fview_cursor_redraw(curr_view);
+	free_ops(ops);
+
+	load_dir_list(view, 1);
+	fview_cursor_redraw(view);
+
+#undef V
 }
+
 #endif
 
 void
@@ -1631,6 +1643,7 @@ change_link_cb(const char new_target[])
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX];
 	const char *fname;
+	ops_t *ops;
 
 	if(is_null_or_empty(new_target))
 	{
@@ -1646,28 +1659,34 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
+	ops = get_ops(OP_SYMLINK2, "re-owning", curr_view->curr_dir,
+			curr_view->curr_dir);
+
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(curr_view->curr_dir), fname, linkto, new_target);
 	cmd_group_begin(undo_msg);
 
 	get_current_full_path(curr_view, sizeof(full_path), full_path);
 
-	if(perform_operation(OP_REMOVESL, NULL, NULL, full_path, NULL) == 0)
+	if(perform_operation(OP_REMOVESL, ops, NULL, full_path, NULL) == 0)
 	{
 		add_operation(OP_REMOVESL, NULL, NULL, full_path, linkto);
 	}
-	if(perform_operation(OP_SYMLINK2, NULL, NULL, new_target, full_path) == 0)
+	if(perform_operation(OP_SYMLINK2, ops, NULL, new_target, full_path) == 0)
 	{
 		add_operation(OP_SYMLINK2, NULL, NULL, new_target, full_path);
 	}
 
 	cmd_group_end();
+
+	free_ops(ops);
 }
 
 int
 change_link(FileView *view)
 {
 	char linkto[PATH_MAX];
+	const dir_entry_t *const entry = get_current_entry(view);
 
 	if(!symlinks_available())
 	{
@@ -1680,20 +1699,19 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	if(view->dir_entry[view->list_pos].type != FT_LINK)
+	if(entry->type != FT_LINK)
 	{
-		status_bar_error("File isn't a symbolic link");
+		status_bar_error("File is not a symbolic link");
 		return 1;
 	}
 
-	if(get_link_target(view->dir_entry[view->list_pos].name, linkto,
-			sizeof(linkto)) != 0)
+	if(get_link_target(entry->name, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return 0;
 	}
 
-	enter_prompt_mode(L"Link target: ", linkto, change_link_cb,
+	enter_prompt_mode(L"Link target: ", linkto, &change_link_cb,
 			&complete_filename, 0);
 	return 0;
 }
@@ -1784,7 +1802,8 @@ put_next(const char dest_name[], int force)
 			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
-				if(perform_operation(OP_REMOVESL, NULL, NULL, dst_buf, NULL) != 0)
+				if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
+							NULL) != 0)
 				{
 					return 0;
 				}
@@ -2373,8 +2392,6 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	free_ops(put_confirm.ops);
-
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
 	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
@@ -2439,6 +2456,7 @@ put_files_i(FileView *view, int start)
 	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
 
+	free_ops(put_confirm.ops);
 	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
@@ -3453,14 +3471,23 @@ alloc_progress_data(int bg, void *info)
 static void
 free_ops(ops_t *ops)
 {
-	if(ops != NULL)
+	if(ops == NULL)
 	{
-		if(cfg.use_system_calls)
-		{
-			free(ops->estim->param);
-		}
-		ops_free(ops);
+		return;
 	}
+
+	if(cfg.use_system_calls)
+	{
+		progress_data_t *const pdata = ops->estim->param;
+
+		if(!pdata->bg && ops->errors != NULL)
+		{
+			show_error_msg("Encountered errors", ops->errors);
+		}
+
+		free(ops->estim->param);
+	}
+	ops_free(ops);
 }
 
 /* Actual implementation of background file copying/moving. */
@@ -3738,6 +3765,7 @@ make_files(FileView *view, char **names, int count)
 	int i;
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	ops_t *ops;
 
 	if(!can_add_files_to_view(view))
 	{
@@ -3768,20 +3796,24 @@ make_files(FileView *view, char **names, int count)
 		}
 	}
 
+	ui_cancellation_reset();
+
+	ops = get_ops(OP_MKFILE, "touching", view->curr_dir, view->curr_dir);
+
 	snprintf(buf, sizeof(buf), "touch in %s: ",
 			replace_home_part(view->curr_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	n = 0;
-	for(i = 0; i < count && !ui_cancellation_requested(); i++)
+	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
 		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
-		if(perform_operation(OP_MKFILE, NULL, NULL, full, NULL) == 0)
+		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
-			n++;
+			++n;
 		}
 	}
 	cmd_group_end();
@@ -3791,6 +3823,9 @@ make_files(FileView *view, char **names, int count)
 
 	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
 			get_cancellation_suffix());
+
+	free_ops(ops);
+
 	return 1;
 }
 
