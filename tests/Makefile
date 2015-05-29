@@ -113,11 +113,18 @@ bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
                                   $(vifm_obj) | $(vifm_bin) bin/$(BINSUBDIR)/
 	$(CC) -o $$@ $$^ $(LDFLAGS)
 
-bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $1/. stic/stic.h.gch \
+bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c stic/stic.h.gch \
+                               bin/build/$(BINSUBDIR)/$1/filelist \
                              | bin/build/$(BINSUBDIR)/$1
 	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                -DMAXTESTID=$$(words $$($1.obj)) $$<
+
+bin/build/$(BINSUBDIR)/$1/filelist: $1/. | bin/build/$(BINSUBDIR)/$1
+	@if [ ! -f "$$@" -o "$$$$(cat $$@)" != '$$($1.src)' ]; then \
+		echo -n '$$($1.src)'; \
+		echo -n '$$($1.src)' > $$@; \
+	fi
 
 bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
