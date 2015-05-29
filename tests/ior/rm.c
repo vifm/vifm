@@ -23,7 +23,10 @@ TEST(file_is_removed)
 		io_args_t args = {
 			.arg1.src = FILE_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access(FILE_NAME, F_OK));
@@ -38,7 +41,10 @@ TEST(empty_directory_is_removed)
 		io_args_t args = {
 			.arg1.src = DIRECTORY_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access(DIRECTORY_NAME, F_OK));
@@ -61,7 +67,10 @@ TEST(non_empty_directory_is_removed)
 		io_args_t args = {
 			.arg1.src = DIRECTORY_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access(DIRECTORY_NAME, F_OK));

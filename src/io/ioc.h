@@ -54,7 +54,7 @@ typedef int (*io_confirm)(io_args_t *args, const char src[], const char dst[]);
 
 typedef struct
 {
-	ioerr_cb errors_cb;
+	ioerr_cb errors_cb;  /* TODO: use this. */
 	ioe_errlst_t errors;
 }
 io_result_t;
@@ -100,7 +100,7 @@ struct io_args_t
 	/* Set to NULL to do not use estimates. */
 	ioeta_estim_t *estim;
 
-	io_result_t result; /* TODO: use this. */
+	io_result_t result;
 };
 
 #endif /* VIFM__IO__IOC_H__ */

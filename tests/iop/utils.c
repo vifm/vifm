@@ -12,7 +12,10 @@ create_test_file(const char name[])
 	io_args_t args = {
 		.arg1.path = name,
 	};
+	ioe_errlst_init(&args.result.errors);
+
 	assert_success(iop_mkfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
 }
 
 void
@@ -22,7 +25,10 @@ clone_test_file(const char src[], const char dst[])
 		.arg1.src = src,
 		.arg2.dst = dst,
 	};
+	ioe_errlst_init(&args.result.errors);
+
 	assert_success(iop_cp(&args));
+	assert_int_equal(0, args.result.errors.error_count);
 }
 
 void
@@ -31,7 +37,10 @@ delete_test_file(const char name[])
 	io_args_t args = {
 		.arg1.path = name,
 	};
+	ioe_errlst_init(&args.result.errors);
+
 	assert_success(iop_rmfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
 }
 
 int

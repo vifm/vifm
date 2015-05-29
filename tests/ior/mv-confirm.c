@@ -30,9 +30,14 @@ TEST(confirm_is_not_called_for_no_overwrite)
 
 			.confirm = &confirm_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_failure(ior_mv(&args));
 		assert_int_equal(0, confirm_called);
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	delete_file("empty");
@@ -51,9 +56,13 @@ TEST(confirm_is_called_for_overwrite)
 
 			.confirm = &confirm_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_success(ior_mv(&args));
 		assert_int_equal(1, confirm_called);
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	delete_file("empty");
@@ -71,9 +80,13 @@ TEST(deny_to_overwrite_is_considered)
 
 			.confirm = &deny_overwrite,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		confirm_called = 0;
 		assert_success(ior_mv(&args));
 		assert_int_equal(1, confirm_called);
+
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_true(file_exists("../read/two-lines"));

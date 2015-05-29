@@ -24,7 +24,10 @@ TEST(file_is_removed)
 		io_args_t args = {
 			.arg1.path = FILE_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access(FILE_NAME, F_OK));
@@ -39,7 +42,12 @@ TEST(directory_is_not_removed)
 		io_args_t args = {
 			.arg1.path = DIRECTORY_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_failure(iop_rmfile(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	assert_true(is_dir(DIRECTORY_NAME));
@@ -59,7 +67,10 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 			.arg1.path = FILE_NAME,
 			.arg2.target = "link",
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_ln(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_success(access("link", F_OK));
@@ -68,7 +79,10 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		io_args_t args = {
 			.arg1.path = "link",
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access("link", F_OK));
@@ -77,7 +91,10 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 		io_args_t args = {
 			.arg1.path = FILE_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmfile(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_failure(access(FILE_NAME, F_OK));

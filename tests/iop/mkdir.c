@@ -47,7 +47,10 @@ create_directory(const char path[], const char root[], int create_parents)
 			.arg2.process_parents = create_parents,
 			.arg3.mode = 0700,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_mkdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	assert_success(access(path, F_OK));
@@ -57,7 +60,10 @@ create_directory(const char path[], const char root[], int create_parents)
 		io_args_t args = {
 			.arg1.path = root,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(ior_rm(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
 
@@ -70,7 +76,12 @@ TEST(child_dir_is_not_created)
 			.arg1.path = NESTED_DIR_NAME,
 			.arg2.process_parents = 0,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_failure(iop_mkdir(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	assert_failure(access(NESTED_DIR_NAME, F_OK));
@@ -84,7 +95,10 @@ TEST(permissions_are_taken_into_account, IF(has_unix_permissions))
 			.arg2.process_parents = 0,
 			.arg3.mode = 0000,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_mkdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	{
@@ -92,14 +106,22 @@ TEST(permissions_are_taken_into_account, IF(has_unix_permissions))
 			.arg1.path = NESTED_DIR_NAME,
 			.arg2.process_parents = 0,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_failure(iop_mkdir(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = DIR_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
 
@@ -112,7 +134,10 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 			.arg2.process_parents = 1,
 			.arg3.mode = 0000,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_mkdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	{
@@ -121,7 +146,10 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 			.arg2.process_parents = 0,
 			.arg3.mode = 0755,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_mkdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	{
@@ -130,28 +158,42 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 			.arg2.process_parents = 0,
 			.arg3.mode = 0755,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_failure(iop_mkdir(&args));
+
+		assert_true(args.result.errors.error_count != 0);
+		ioe_errlst_free(&args.result.errors);
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = NESTED_DIR_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = DIR_NAME "/dir",
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 
 	{
 		io_args_t args = {
 			.arg1.path = DIR_NAME,
 		};
+		ioe_errlst_init(&args.result.errors);
+
 		assert_success(iop_rmdir(&args));
+		assert_int_equal(0, args.result.errors.error_count);
 	}
 }
 
