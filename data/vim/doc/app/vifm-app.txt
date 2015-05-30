@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 27
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3032,7 +3032,7 @@ Accepted characters are in the range from 0 to 255.  Any Unicode character
 with code greater than 255 is considered to be part of a word.
 
 The option affects |vifm-c_ALT-D|, |vifm-c_ALT-B| and |vifm-c_ALT-F|, but not
-|vifm-c_CTRL-W|.  This is intensionally to allow two use cases:
+|vifm-c_CTRL-W|.  This is intentionally to allow two use cases:
 
  - Moving by WORDS and deletion by words.
  - Moving by words and deletion by WORDS.
