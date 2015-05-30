@@ -678,7 +678,7 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		int line_num;
 
 		/* Skip empty lines. */
-		if(m->items[i][0] == '\0')
+		if(skip_whitespace(m->items[i])[0] == '\0')
 		{
 			continue;
 		}
@@ -699,6 +699,8 @@ menu_to_custom_view(menu_info *m, FileView *view)
 
 		free(path);
 	}
+
+	view->custom.unsorted = 0;
 
 	if(flist_custom_finish(view) != 0)
 	{
