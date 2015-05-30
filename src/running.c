@@ -1278,6 +1278,7 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 
 	if(flist_custom_finish(view) != 0)
 	{
+		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
 	}
 
