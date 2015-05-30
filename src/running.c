@@ -1276,7 +1276,10 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 	}
 	view->custom.unsorted = very;
 
-	(void)flist_custom_finish(view);
+	if(flist_custom_finish(view) != 0)
+	{
+		return;
+	}
 
 	if(very)
 	{
