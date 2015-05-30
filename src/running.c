@@ -1295,7 +1295,10 @@ path_handler(const char line[], void *arg)
 {
 	FileView *view = arg;
 	int line_num;
-	char *const path = parse_file_spec(line, &line_num);
+	/* Skip empty lines. */
+	char *const path = (skip_whitespace(line)[0] == '\0')
+	                 ? NULL
+	                 : parse_file_spec(line, &line_num);
 	if(path != NULL)
 	{
 		flist_custom_add(view, path);
