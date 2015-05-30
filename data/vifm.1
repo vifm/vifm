@@ -4162,15 +4162,16 @@ All commands below empty line are from .desktop files.
 
 .B Grep, find, locate and user menu with navigation (%M macro)
 
-gf \- navigate previously active view to currently selected item leaving menu
-mode.  Pressing Enter key has the same effect.
+gf \- navigate previously active view to currently selected item.  Leaves menu
+mode except for grep menu.  Pressing Enter key has the same effect.
 
 e \- open selected path in the editor, stays in menu mode.
 
 .B Grep menu
 
-Selecting file opens it in editor set by 'vicmd' at given line number.
-Menu won't be closed automatically to allow viewing more than one result.
+Selecting file (via Enter or l key) opens it in editor set by 'vicmd' at given
+line number.  Menu won't be closed automatically to allow viewing more than one
+result.
 
 See above for "gf" and "e" keys description.
 
