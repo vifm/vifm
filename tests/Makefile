@@ -62,8 +62,11 @@ ifdef win_env
 endif
 
 ifdef DEBUG
-CFLAGS += -g
-LDFLAGS += -g -rdynamic
+    CFLAGS += -g
+    LDFLAGS += -g
+    ifdef unix_env
+        LDFLAGS += -rdynamic
+    endif
 endif
 
 .PHONY: check build clean $(suites)
