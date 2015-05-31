@@ -98,7 +98,7 @@ static void run_selection_separately(FileView *view, int dont_execute);
 static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
 static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
 static void run_implicit_prog(FileView *view, const char prog_spec[],
-		int pause);
+		int pause, int force_bg);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
 static void extract_last_path_component(const char path[], char buf[]);
@@ -576,7 +576,7 @@ run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 	}
 	else
 	{
-		run_implicit_prog(view, prog_spec, pause);
+		run_implicit_prog(view, prog_spec, pause, force_bg);
 	}
 }
 
@@ -604,11 +604,11 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	else if(bg)
 	{
 		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
-		start_background_job(cmd, flags == MF_IGNORE);
+		(void)start_background_job(cmd, flags == MF_IGNORE);
 	}
 	else
 	{
-		shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+		(void)shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
 	}
 
 	free(cmd);
@@ -617,11 +617,17 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 /* Executes current file of the view by program specification that does not
  * include any macros (hence file name is appended implicitly. */
 static void
-run_implicit_prog(FileView *view, const char prog_spec[], int pause)
+run_implicit_prog(FileView *view, const char prog_spec[], int pause,
+		int force_bg)
 {
-	char buf[NAME_MAX + 1 + NAME_MAX + 1];
+	int bg;
+	char cmd[NAME_MAX + 1 + NAME_MAX + 1];
 	const char *name_macro;
 	char *file_name;
+	char spec[strlen(prog_spec) + 1];
+
+	strcpy(spec, prog_spec);
+	bg = cut_suffix(spec, " &") || force_bg;
 
 	if(curr_stats.shell_type == ST_CMD)
 	{
@@ -633,11 +639,17 @@ run_implicit_prog(FileView *view, const char prog_spec[], int pause)
 	}
 
 	file_name = expand_macros(name_macro, NULL, NULL, 1);
-
-	snprintf(buf, sizeof(buf), "%s %s", prog_spec, file_name);
-	shellout(buf, pause ? 1 : -1, 1);
-
+	snprintf(cmd, sizeof(cmd), "%s %s", spec, file_name);
 	free(file_name);
+
+	if(bg)
+	{
+		(void)start_background_job(cmd, 0);
+	}
+	else
+	{
+		(void)shellout(cmd, pause ? 1 : -1, 1);
+	}
 }
 
 /* Opens file under the cursor in the viewer. */

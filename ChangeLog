@@ -404,6 +404,9 @@
 	Fixed writing current color scheme as the default one, should use builtin
 	colors instead.  Thanks to Karol M. Langner (langner).
 
+	Fixed running filetype commands with background mark and no macros.
+	Thanks to Martin Fischer.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
