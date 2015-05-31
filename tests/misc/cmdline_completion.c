@@ -14,6 +14,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"

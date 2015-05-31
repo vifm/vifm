@@ -2054,7 +2054,7 @@ cmd_paren(int lb, int ub, int inc)
 				}
 				break;
 		case SK_BY_TYPE:
-				if(get_type_str(nentry->mode) != type_str)
+				if(get_type_str(nentry->type) != type_str)
 				{
 					return pos;
 				}
