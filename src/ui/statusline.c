@@ -544,17 +544,24 @@ format_job_bar(void)
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
 		const int progress = bar_jobs[i]->progress;
-		const char *const fmt = (progress == -1) ? "[%s]" : "[%s %3d%%]";
 		const unsigned int reserved = (progress == -1) ? 0U : 5U;
 		char item_text[max_width*MAX_UTF_CHAR_LEN + 1U];
-		size_t width;
 
-		width = (i == nbar_jobs - 1U)
-		      ? (max_width - width_used)
-		      : (max_width/nbar_jobs);
+		const size_t width = (i == nbar_jobs - 1U)
+		                   ? (max_width - width_used)
+		                   : (max_width/nbar_jobs);
 
-		snprintf(item_text, sizeof(item_text), fmt,
-				left_ellipsis(descrs[i], width - 2U - reserved), progress);
+		const char *ellipsis = left_ellipsis(descrs[i], width - 2U - reserved);
+
+		if(progress == -1)
+		{
+			snprintf(item_text, sizeof(item_text), "[%s]", ellipsis);
+		}
+		else
+		{
+			snprintf(item_text, sizeof(item_text), "[%s %3d%%]", ellipsis, progress);
+		}
+
 		(void)sstrappend(bar_text, &text_width, sizeof(bar_text), item_text);
 
 		width_used += width;
