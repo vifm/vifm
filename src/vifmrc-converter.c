@@ -1040,12 +1040,12 @@ write_vifminfo(const char *config_file, int vifm_like)
 	if(vifminfo & VIFMINFO_DHISTORY)
 	{
 		fputs("\n# Left window history (oldest to newest):\n", fp);
-		fprintf(fp, "d%s\n", (lwin_dir == NULL) ? "" : lwin_dir);
+		fprintf(fp, "d%s\n", lwin_dir);
 		if(vifminfo & VIFMINFO_SAVEDIRS)
 			fprintf(fp, "d\n");
 
 		fputs("\n# Right window history (oldest to newest):\n", fp);
-		fprintf(fp, "D%s\n", (rwin_dir == NULL) ? "" : rwin_dir);
+		fprintf(fp, "D%s\n", rwin_dir);
 		if(vifminfo & VIFMINFO_SAVEDIRS)
 			fprintf(fp, "D\n");
 	}
