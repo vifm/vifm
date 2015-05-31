@@ -28,6 +28,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* abs() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
@@ -834,8 +835,8 @@ column_line_print(const void *data, int column_id, const char *buf,
 		mixed = cdt->is_current && view->num_type == NT_MIX;
 		format = mixed ? "%-*d " : "%*d ";
 		line_number = ((view->num_type & NT_REL) && !mixed)
-		            ? abs(i - view->list_pos)
-		            : (int)(i + 1);
+		            ? abs((int)i - view->list_pos)
+		            : ((int)i + 1);
 
 		snprintf(number, sizeof(number), format, view->real_num_width - 1,
 				line_number);
