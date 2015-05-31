@@ -1,4 +1,4 @@
-.TH vifm 1 "May 27, 2015" "" "Vifm"
+.TH VIFM 1 "May 31, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3630,7 +3630,7 @@ Accepted characters are in the range from 0 to 255.  Any Unicode character
 with code greater than 255 is considered to be part of a word.
 
 The option affects Alt-D, Alt-B and Alt-F, but not Ctrl-W.  This is
-intensionally to allow two use cases:
+intentionally to allow two use cases:
 
  \- Moving by WORDS and deletion by words.
  \- Moving by words and deletion by WORDS.
@@ -4162,15 +4162,16 @@ All commands below empty line are from .desktop files.
 
 .B Grep, find, locate and user menu with navigation (%M macro)
 
-gf \- navigate previously active view to currently selected item leaving menu
-mode.  Pressing Enter key has the same effect.
+gf \- navigate previously active view to currently selected item.  Leaves menu
+mode except for grep menu.  Pressing Enter key has the same effect.
 
 e \- open selected path in the editor, stays in menu mode.
 
 .B Grep menu
 
-Selecting file opens it in editor set by 'vicmd' at given line number.
-Menu won't be closed automatically to allow viewing more than one result.
+Selecting file (via Enter or l key) opens it in editor set by 'vicmd' at given
+line number.  Menu won't be closed automatically to allow viewing more than one
+result.
 
 See above for "gf" and "e" keys description.
 
@@ -4781,7 +4782,7 @@ commands.
   g[lobal]
   v[global]
 .\" ---------------------------------------------------------------------------
-.SH ENVIRONMENT VARIABLES
+.SH ENVIRONMENT
 .\" ---------------------------------------------------------------------------
 .TP
 .BI VIFM
@@ -4808,7 +4809,12 @@ work this way on its own).
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO
 .\" ---------------------------------------------------------------------------
+.BR vifm-convert-dircolors (1),
+.BR vifm-pause (1),
+.BR vifmrc-converter (1)
+
 Website: http://vifm.info/
+.br
 Wiki: http://wiki.vifm.info/
 
 Esperanto translation of the documentation by Sebastian Cyprych:
