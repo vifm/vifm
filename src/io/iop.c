@@ -241,6 +241,14 @@ iop_cp(io_args_t *const args)
 		{
 			flags |= COPY_FILE_FAIL_IF_EXISTS;
 		}
+		else if(path_exists(dst, DEREF))
+		{
+			/* Ask user whether to overwrite destination file. */
+			if(confirm != NULL && !confirm(args, src, dst))
+			{
+				return 0;
+			}
+		}
 
 		utf16_src = utf8_to_utf16(src);
 		utf16_dst = utf8_to_utf16(dst);
