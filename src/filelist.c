@@ -2389,8 +2389,6 @@ pick_cd_path(FileView *view, const char base_dir[], const char path[],
 	if(is_path_absolute(arg))
 		copy_str(buf, buf_size, arg);
 #else
-	copy_str(buf, buf_size, base_dir);
-	break_at(buf + 2, '/');
 	if(is_path_absolute(arg) && *arg != '/')
 		copy_str(buf, buf_size, arg);
 	else if(*arg == '/' && is_unc_root(arg))
