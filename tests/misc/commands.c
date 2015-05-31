@@ -156,9 +156,16 @@ TEST(bg_mark_without_space_in_udf)
 
 TEST(shell_invocation_works_in_udf)
 {
-	replace_string(&cfg.shell, "/bin/sh");
-
+#ifndef _WIN32
 	const char *const cmd = "command! udf echo a > test-data/sandbox/out";
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	const char *const cmd = "command! udf echo a > test-data\\sandbox\\out";
+	replace_string(&cfg.shell, "cmd");
+#endif
+
+	stats_update_shell_type(cfg.shell);
+
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	curr_view = &lwin;
@@ -167,6 +174,8 @@ TEST(shell_invocation_works_in_udf)
 	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
 	assert_success(access("test-data/sandbox/out", F_OK));
 	assert_success(unlink("test-data/sandbox/out"));
+
+	stats_update_shell_type("/bin/sh");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

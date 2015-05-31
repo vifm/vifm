@@ -47,6 +47,10 @@ size_t get_screen_overhead(const char str[]);
 /* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */
 wchar_t * utf8_to_utf16(const char utf8[]);
 
+/* Extracts first utf-8 character from the string converting it to wide
+ * character representation.  Returns the wide character. */
+wchar_t utf8_first_char(const char utf8[]);
+
 /* Calculates how many utf-16 chars are needed to store given utf-8 string.
  * Returns the number. */
 size_t utf8_widen_len(const char utf8[]);

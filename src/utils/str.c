@@ -706,8 +706,12 @@ expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
 wchar_t
 get_first_wchar(const char str[])
 {
+#ifndef _WIN32
 	wchar_t wc[2] = {};
 	return (mbstowcs(wc, str, ARRAY_LEN(wc)) >= 1) ? wc[0] : str[0];
+#else
+	return utf8_first_char(str);
+#endif
 }
 
 char *
@@ -849,6 +853,24 @@ split_and_get(char str[], char sep, char **state)
 	*state = (end == NULL) ? (str + strlen(str)) : (end + 1);
 	return (*str == '\0') ? NULL : str;
 }
+
+#if defined(_WIN32)
+
+char *
+strcasestr(const char haystack[], const char needle[])
+{
+	char haystack_us[strlen(haystack) + 1];
+	char needle_us[strlen(needle) + 1];
+	const char *s;
+
+	strcpy(haystack_us, haystack);
+	strcpy(needle_us, needle);
+
+	s = strstr(haystack_us, needle_us);
+	return (s == NULL) ? NULL : ((char *)haystack + (s - haystack_us));
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

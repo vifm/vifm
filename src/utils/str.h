@@ -283,8 +283,15 @@ int is_in_str_list(const char list[], char separator, const char needle[]);
  *   } */
 char * split_and_get(char str[], char sep, char **state);
 
-#if defined(_WIN32) && !defined(strtok_r)
+#ifdef _WIN32
+
+/* Same as strstr(), but in case insensitive way. */
+char * strcasestr(const char haystack[], const char needle[]);
+
+#ifndef strtok_r
 #define strtok_r(str, delim, saveptr) (*(saveptr) = strtok((str), (delim)))
+#endif
+
 #endif
 
 #endif /* VIFM__UTILS__STR_H__ */

@@ -515,7 +515,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	static char buf[32];
 
 	const size_t char_width = get_char_width(str);
-	if(char_width != 1 || str[0] >= ' ')
+	if(char_width != 1 || (unsigned char)str[0] >= (unsigned char)' ')
 	{
 		memcpy(buf, str, char_width);
 		buf[char_width] = '\0';

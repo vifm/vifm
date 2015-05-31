@@ -246,6 +246,42 @@ utf8_to_utf16(const char utf8[])
 	return utf16;
 }
 
+wchar_t
+utf8_first_char(const char utf8[])
+{
+	/* This code is a copy of utf8_to_utf16() loop body, which is hard to share
+	 * between these two functions.  Luckily this shouldn't require much updates
+	 * in the future. */
+
+	unsigned char c = *utf8;
+	wchar_t wc;
+
+	if(c < 0x80)
+	{
+		wc = c;
+	}
+	else if((c & 0xe0) == 0xc0)
+	{
+		wc = ((c & 0x1f) << 6) | ((*utf8++) & 0x3f);
+	}
+	else if((c & 0xf0) == 0xe0)
+	{
+		wc = ((c & 0x0f) << 12) | ((utf8[0] & 0x3f) << 6) | (utf8[1] & 0x3f);
+		utf8 += 2;
+	}
+	else
+	{
+		const unsigned int r32 = ((c & 0x07) << 18)
+		                       | ((utf8[0] & 0x3f) << 12)
+		                       | ((utf8[1] & 0x3f) << 6)
+		                       | (utf8[2] & 0x3f);
+		utf8 += 3;
+		wc = 0xd800 | (((r32 - 0x10000) >> 10) & 0x3ff);
+	}
+
+	return wc;
+}
+
 size_t
 utf8_widen_len(const char utf8[])
 {

@@ -172,7 +172,14 @@ iop_rmfile(io_args_t *const args)
 			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
 		result = !DeleteFileW(utf16_path);
-		/* FIXME: append error here. */
+
+		if(result)
+		{
+			/* FIXME: use real system error message here. */
+			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
+					"Directory removal failed");
+		}
+
 		free(utf16_path);
 	}
 #endif
@@ -201,7 +208,14 @@ iop_rmdir(io_args_t *const args)
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
 		result = RemoveDirectoryW(utf16_path) == 0;
-		/* FIXME: append error here. */
+
+		if(result)
+		{
+			/* FIXME: use real system error message here. */
+			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
+					"Directory removal failed");
+		}
+
 		free(utf16_path);
 	}
 #endif
@@ -241,17 +255,33 @@ iop_cp(io_args_t *const args)
 		{
 			flags |= COPY_FILE_FAIL_IF_EXISTS;
 		}
+		else if(path_exists(dst, DEREF))
+		{
+			/* Ask user whether to overwrite destination file. */
+			if(confirm != NULL && !confirm(args, src, dst))
+			{
+				return 0;
+			}
+		}
 
 		utf16_src = utf8_to_utf16(src);
 		utf16_dst = utf8_to_utf16(dst);
+
 		error = CopyFileExW(utf16_src, utf16_dst, &win_progress_cb, args, NULL,
 				flags) == 0;
+
+		if(error)
+		{
+			/* FIXME: use real system error message here. */
+			(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
+					"Copy file failed");
+		}
+
 		free(utf16_src);
 		free(utf16_dst);
 
 		ioeta_update(args->estim, NULL, NULL, 1, 0);
 
-		/* FIXME: append error here. */
 		return error;
 	}
 #endif

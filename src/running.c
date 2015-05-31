@@ -776,7 +776,10 @@ shellout(const char command[], int pause, int use_term_multiplexer)
 
 	cmd = gen_shell_cmd(command, pause > 0, use_term_multiplexer);
 
-	endwin();
+	if(curr_stats.load_stage != 0)
+	{
+		endwin();
+	}
 	ec = vifm_system(cmd);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
@@ -805,7 +808,10 @@ shellout(const char command[], int pause, int use_term_multiplexer)
 		curr_stats.need_update = UT_FULL;
 	}
 
-	curs_set(FALSE);
+	if(curr_stats.load_stage != 0)
+	{
+		curs_set(FALSE);
+	}
 
 	return result;
 }

@@ -21,6 +21,8 @@ Basic things that need to be done.
     :setlocal command.
     Filtering in menus.
     Search match highlight in menus.
+    For 'syscalls', vifm should ask for standard retry/abort/cancel actions on
+        error.
 
 Documentation.
     Better documentation.

@@ -7,15 +7,22 @@
 #include "../../src/utils/fs_limits.h"
 #include "../../src/filelist.h"
 
+#ifdef _WIN32
+#define PREFIX "c:"
+#else
+#define PREFIX ""
+#endif
+
 TEST(absolute_path_dominates)
 {
 	int updir;
 	char dir[PATH_MAX];
 
-	pick_cd_path(&lwin, "something", "/abs/path", &updir, dir, sizeof(dir));
+	pick_cd_path(&lwin, "something", PREFIX "/abs/path", &updir, dir,
+			sizeof(dir));
 
 	assert_false(updir);
-	assert_string_equal("/abs/path", dir);
+	assert_string_equal(PREFIX "/abs/path", dir);
 }
 
 TEST(dash_chooses_previous_location)

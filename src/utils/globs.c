@@ -22,7 +22,7 @@
 #include <stdio.h> /* sprintf() */
 #include <string.h> /* strdup() */
 
-#include "utils/str.h"
+#include "str.h"
 
 static char * glob_to_regex(const char glob[]);
 
