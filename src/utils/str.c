@@ -854,5 +854,23 @@ split_and_get(char str[], char sep, char **state)
 	return (*str == '\0') ? NULL : str;
 }
 
+#if defined(_WIN32)
+
+char *
+strcasestr(const char haystack[], const char needle[])
+{
+	char haystack_us[strlen(haystack) + 1];
+	char needle_us[strlen(needle) + 1];
+	const char *s;
+
+	strcpy(haystack_us, haystack);
+	strcpy(needle_us, needle);
+
+	s = strstr(haystack_us, needle_us);
+	return (s == NULL) ? NULL : ((char *)haystack + (s - haystack_us));
+}
+
+#endif
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
