@@ -692,7 +692,6 @@ init_wordchars(optval_t *val)
 		if((size_t)l < sizeof(cfg.word_chars))
 		{
 			char left[16];
-			char right[16];
 			char range[32];
 
 			if(len != 0U)
@@ -706,6 +705,7 @@ init_wordchars(optval_t *val)
 			}
 			else
 			{
+				char right[16];
 				snprintf(range, sizeof(range), "%s-%s", to_endpoint(l, left),
 						to_endpoint(r, right));
 			}

@@ -827,7 +827,6 @@ add_builtin_commands(const cmd_add_t *cmds, int count)
 TSTATIC int
 add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 {
-	int i;
 	int cmp;
 	cmd_t *new;
 	cmd_t *cur = &inner->head;
@@ -841,9 +840,16 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	}
 
 	if(strcmp(name, "!") != 0)
-		for(i = 0; name[i] != '\0'; i++)
+	{
+		unsigned int i;
+		for(i = 0U; name[i] != '\0'; ++i)
+		{
 			if(!isalpha(name[i]))
+			{
 				return -1;
+			}
+		}
+	}
 
 	cmp = -1;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, name)) < 0)

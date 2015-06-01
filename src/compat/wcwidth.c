@@ -193,7 +193,6 @@ static int
 bisearch(wchar_t ucs, const interval *table, int max)
 {
 	int min;
-	int mid;
 
 	if(ucs < table[0].first || ucs > table[max].last)
 	{
@@ -203,7 +202,7 @@ bisearch(wchar_t ucs, const interval *table, int max)
 	min = 0;
 	while(max >= min)
 	{
-		mid = (min + max)/2;
+		const int mid = (min + max)/2;
 		if(ucs > table[mid].last)
 		{
 			min = mid + 1;

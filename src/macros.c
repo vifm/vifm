@@ -77,7 +77,6 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 	size_t cmd_len;
 	char *expanded;
 	size_t x;
-	size_t y = 0U;
 	int len = 0;
 
 	set_flags(flags, MF_NONE);
@@ -100,6 +99,8 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 
 	do
 	{
+		size_t y;
+
 		int quotes = 0;
 		if(command[x] == '"' && char_is_one_of(MACROS_WITH_QUOTING, command[x + 1]))
 		{

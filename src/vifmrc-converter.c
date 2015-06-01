@@ -266,13 +266,13 @@ read_config_file(const char *config_file)
 	char *s2 = NULL;
 	char *s3 = NULL;
 	char *s4 = NULL;
-	char *sx = NULL;
 
 	if((fp = fopen(config_file, "r")) == NULL)
 		return 0;
 
 	while(fgets(line, sizeof(line), fp))
 	{
+		char *sx;
 		int args;
 
 		if(line[0] == '#')
@@ -1084,7 +1084,6 @@ read_color_scheme_file(const char *config_file)
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *s3 = NULL;
-	char *sx = NULL;
 
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
@@ -1096,6 +1095,7 @@ read_color_scheme_file(const char *config_file)
 	while(fgets(line, sizeof(line), fp))
 	{
 		int args;
+		char *sx;
 
 		if(line[0] == '#')
 			continue;
