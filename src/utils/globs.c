@@ -18,7 +18,7 @@
 
 #include "globs.h"
 
-#include <stdlib.h> /* realloc() free() */
+#include <stdlib.h> /* free() realloc() */
 #include <stdio.h> /* sprintf() */
 #include <string.h> /* strdup() */
 
@@ -41,6 +41,10 @@ globs_to_regex(const char globs[])
 		size_t new_len;
 
 		regex = glob_to_regex(glob);
+		if(regex == NULL)
+		{
+			break;
+		}
 
 		new_len = final_regex_len + 1 + 1 + strlen(regex) + 1;
 		p = realloc(final_regex, new_len + 1);
@@ -66,32 +70,40 @@ glob_to_regex(const char glob[])
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");
-	int result_len = 1;
+	size_t result_len = 1;
 	while(*glob != '\0')
 	{
 		if(char_is_one_of(CHARS_TO_ESCAPE, *glob))
 		{
-		  if(*glob != '^' || result[result_len - 1] != '[')
+			if(*glob != '^' || result[result_len - 1] != '[')
 			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '\\';
+				if(strappendch(&result, &result_len, '\\') != 0)
+				{
+					break;
+				}
 			}
 		}
 		else if(*glob == '!' && result[result_len - 1] == '[')
 		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = '^';
+			if(strappendch(&result, &result_len, '^') != 0)
+			{
+				break;
+			}
 			continue;
 		}
 		else if(*glob == '\\')
 		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = *glob++;
+			if(strappendch(&result, &result_len, *glob++) != 0)
+			{
+				break;
+			}
 		}
 		else if(*glob == '?')
 		{
-			result = realloc(result, result_len + 1 + 1 + 1);
-			result[result_len++] = '.';
+			if(strappendch(&result, &result_len, '.') != 0)
+			{
+				break;
+			}
 			++glob;
 			continue;
 		}
@@ -99,31 +111,34 @@ glob_to_regex(const char glob[])
 		{
 			if(result_len == 1)
 			{
-				result = realloc(result, result_len + 9 + 1 + 1);
-				result[result_len++] = '[';
-				result[result_len++] = '^';
-				result[result_len++] = '.';
-				result[result_len++] = ']';
-				result[result_len++] = '.';
-				result[result_len++] = '*';
+				if(strappend(&result, &result_len, "[^.].*") != 0)
+				{
+					break;
+				}
 			}
 			else
 			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '.';
-				result[result_len++] = '*';
+				if(strappend(&result, &result_len, ".*") != 0)
+				{
+					break;
+				}
 			}
 			++glob;
 			continue;
 		}
-		else
+
+		if(strappendch(&result, &result_len, *glob++) != 0)
 		{
-			result = realloc(result, result_len + 1 + 1 + 1);
+			break;
 		}
-		result[result_len++] = *glob++;
 	}
-	result[result_len++] = '$';
-	result[result_len] = '\0';
+
+	if(*glob != '\0' || strappendch(&result, &result_len, '$') != 0)
+	{
+		free(result);
+		return NULL;
+	}
+
 	return result;
 }
 

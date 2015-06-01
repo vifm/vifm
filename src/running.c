@@ -1196,9 +1196,15 @@ output_to_statusbar(const char cmd[])
 	len = 0;
 	while(fgets(buf, sizeof(buf), file) == buf)
 	{
+		char *p;
+
 		chomp(buf);
-		lines = realloc(lines, len + 1 + strlen(buf) + 1);
-		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
+		p = realloc(lines, len + 1 + strlen(buf) + 1);
+		if(p != NULL)
+		{
+			lines = p;
+			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
+		}
 	}
 
 	fclose(file);
