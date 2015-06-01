@@ -1,4 +1,4 @@
-.TH VIFM\-CONVERT\-DIRCOLORS 1 "May 31, 2015" "vifm 0.7.8"
+.TH VIFM\-CONVERT\-DIRCOLORS 1 "June 01, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH "NAME"
 .\" ---------------------------------------------------------------------------
@@ -37,14 +37,14 @@ standard input stream is read.
 .SH "EXAMPLES"
 .\" ---------------------------------------------------------------------------
 Parse \fB$LS_COLORS\fR and append results of conversion to
-\fB~/.vifm/colors/Default\fR:
+\fI~/.vifm/colors/Default\fR:
 .LP
 .EX\fB
     vifm\-convert\-dircolors \-e >> ~/.vifm/colors/Default
 .EE\fR
 .LP
-Parse \fB/etc/DIR_COLORS\fR and store results of conversion to
-\fB~/.vifm/colors/ls\-based\fR:
+Parse \fI/etc/DIR_COLORS\fR and store results of conversion to
+\fI~/.vifm/colors/ls\-based\fR:
 .LP
 .EX\fB
     vifm\-convert\-dircolors /etc/DIR_COLORS > ~/.vifm/colors/ls\-based
