@@ -253,7 +253,7 @@ utf8_first_char(const char utf8[])
 	 * between these two functions.  Luckily this shouldn't require much updates
 	 * in the future. */
 
-	unsigned char c = *utf8;
+	unsigned char c = *utf8++;
 	wchar_t wc;
 
 	if(c < 0x80)
@@ -262,12 +262,11 @@ utf8_first_char(const char utf8[])
 	}
 	else if((c & 0xe0) == 0xc0)
 	{
-		wc = ((c & 0x1f) << 6) | ((*utf8++) & 0x3f);
+		wc = ((c & 0x1f) << 6) | (utf8[0] & 0x3f);
 	}
 	else if((c & 0xf0) == 0xe0)
 	{
 		wc = ((c & 0x0f) << 12) | ((utf8[0] & 0x3f) << 6) | (utf8[1] & 0x3f);
-		utf8 += 2;
 	}
 	else
 	{
@@ -275,7 +274,6 @@ utf8_first_char(const char utf8[])
 		                       | ((utf8[0] & 0x3f) << 12)
 		                       | ((utf8[1] & 0x3f) << 6)
 		                       | (utf8[2] & 0x3f);
-		utf8 += 3;
 		wc = 0xd800 | (((r32 - 0x10000) >> 10) & 0x3ff);
 	}
 
