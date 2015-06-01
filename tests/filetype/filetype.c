@@ -39,11 +39,9 @@ TEST(many_filepattern)
 
 TEST(dont_match_hidden)
 {
-	const char *prog_cmd;
-
 	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
 
-	assert_true((prog_cmd = ft_get_program(".file.version.tar.gz")) == NULL);
+	assert_null(ft_get_program(".file.version.tar.gz"));
 }
 
 TEST(match_empty)

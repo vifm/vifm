@@ -30,11 +30,9 @@ TEST(one_graphic_prog)
 
 TEST(two_console_prog)
 {
-	const char *prog_cmd;
-
 	set_programs("*.tgz", "2 x prog", 1, 0);
 
-	assert_true((prog_cmd = ft_get_program("file.version.tgz")) == NULL);
+	assert_null(ft_get_program("file.version.tgz"));
 }
 
 TEST(two_graphic_prog)
