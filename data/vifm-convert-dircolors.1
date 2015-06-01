@@ -38,17 +38,19 @@ standard input stream is read.
 .\" ---------------------------------------------------------------------------
 Parse \fB$LS_COLORS\fR and append results of conversion to
 \fI~/.vifm/colors/Default\fR:
-.LP
-.EX\fB
+
+.EX
+.B
     vifm\-convert\-dircolors \-e >> ~/.vifm/colors/Default
-.EE\fR
-.LP
+.EE
+
 Parse \fI/etc/DIR_COLORS\fR and store results of conversion to
 \fI~/.vifm/colors/ls\-based\fR:
-.LP
-.EX\fB
+
+.EX
+.B
     vifm\-convert\-dircolors /etc/DIR_COLORS > ~/.vifm/colors/ls\-based
-.EE\fR
+.EE
 .\" ---------------------------------------------------------------------------
 .SH "SEE ALSO"
 .\" ---------------------------------------------------------------------------
