@@ -97,10 +97,6 @@ int surrounded_with(const char str[], char left, char right);
 
 char * to_multibyte(const wchar_t *s);
 
-/* Calculates length of wide string after converting it to multibyte string.
- * Returns the length. */
-size_t multibyte_len(const wchar_t wide[]);
-
 /* Converts characters of the string to lower case while they fit in the buffer.
  * Returns zero on success or non-zero if output buffer is too small. */
 int str_to_lower(const char str[], char buf[], size_t buf_len);
@@ -261,11 +257,6 @@ int str_to_int(const char str[]);
 /* Replaces all occurrences of the from non-nul character in the str to the to
  * character. */
 void replace_char(char str[], char from, char to);
-
-/* Checks that needle is present in the list.  Empty elements are ignored and
- * can't be checked for presence.  Presence check is case insensitive.  Returns
- * non-zero if so, otherwise zero is used. */
-int is_in_str_list(const char list[], char separator, const char needle[]);
 
 /* Splits string on a separator multiple times returning next part.  *state must
  * be NULL for the first call.  Usage example:

@@ -32,7 +32,6 @@ int
 show_undolist_menu(FileView *view, int with_details)
 {
 	char **p;
-	size_t len;
 
 	static menu_info m;
 	init_menu_info(&m, UNDOLIST_MENU, strdup("Undolist is empty"));
@@ -47,6 +46,8 @@ show_undolist_menu(FileView *view, int with_details)
 
 	if(m.len > 0)
 	{
+		size_t len;
+
 		m.len = add_to_string_array(&m.items, m.len, 1, "list end");
 
 		/* Add current position mark to menu item. */

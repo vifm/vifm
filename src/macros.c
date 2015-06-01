@@ -24,8 +24,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realloc() free() calloc() */
-#include <string.h> /* memset() strchr() strncat() strcpy() strlen() strcat()
-                       strdup() */
+#include <string.h> /* memset() strncat() strcpy() strlen() strdup() */
 
 #include "cfg/config.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -62,7 +61,7 @@ static char * expand_preview(char expanded[], int key, int *well_formed);
 static FileView * get_preview_view(FileView *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
-static char * append_to_expanded(char *expanded, const char* str);
+static char * append_to_expanded(char expanded[], const char str[]);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
@@ -71,13 +70,13 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell)
 {
 	/* TODO: refactor this function expand_macros() */
+	/* FIXME: repetitive len = strlen(expanded) could be optimized. */
 
 	static const char MACROS_WITH_QUOTING[] = "cCfFbdDr";
 
 	size_t cmd_len;
 	char *expanded;
 	size_t x;
-	size_t y = 0U;
 	int len = 0;
 
 	set_flags(flags, MF_NONE);
@@ -100,6 +99,9 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 
 	do
 	{
+		size_t y;
+		char *p;
+
 		int quotes = 0;
 		if(command[x] == '"' && char_is_one_of(MACROS_WITH_QUOTING, command[x + 1]))
 		{
@@ -111,21 +113,14 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			case 'a': /* user arguments */
 				if(args != NULL)
 				{
-					char arg_buf[strlen(args) + 2];
-
-					expanded = (char *)realloc(expanded,
-							strlen(expanded) + strlen(args) + 3);
-					snprintf(arg_buf, sizeof(arg_buf), "%s", args);
-					strcat(expanded, arg_buf);
+					expanded = append_to_expanded(expanded, args);
 					len = strlen(expanded);
 				}
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0, quotes,
 						command + x + 1, for_shell);
-				len = strlen(expanded);
-				expanded = realloc(expanded, len + 1 + 1);
-				strcat(expanded, " ");
+				expanded = append_to_expanded(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
 						command + x + 1, for_shell);
 				len = strlen(expanded);
@@ -208,9 +203,8 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 				}
 				break;
 			case '%':
-				expanded = (char *)realloc(expanded, len + 2);
-				strcat(expanded, "%");
-				len++;
+				expanded = append_to_expanded(expanded, "%");
+				len = strlen(expanded);
 				break;
 
 			default:
@@ -238,12 +232,21 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 			if(command[x] != '\0')
 				x++;
 		}
+
 		assert(x >= y);
 		assert(y <= cmd_len);
-		expanded = realloc(expanded, len + (x - y) + 1);
+
+		p = realloc(expanded, len + (x - y) + 1);
+		if(p == NULL)
+		{
+			free(expanded);
+			return NULL;
+		}
+		expanded = p;
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
-		x++;
+
+		++x;
 	}
 	while(x < cmd_len);
 
@@ -485,19 +488,22 @@ append_path_to_expanded(char expanded[], int quotes, const char path[])
 	return expanded;
 }
 
+/* Appends str to expanded with reallocation.  Returns address of the new
+ * string or NULL on reallocation error. */
 static char *
-append_to_expanded(char *expanded, const char* str)
+append_to_expanded(char expanded[], const char str[])
 {
 	char *t;
+	const size_t len = strlen(expanded);
 
-	t = realloc(expanded, strlen(expanded) + strlen(str) + 1);
+	t = realloc(expanded, len + strlen(str) + 1);
 	if(t == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
-	strcat(t, str);
+	strcpy(t + len, str);
 	return t;
 }
 

@@ -102,7 +102,7 @@ clean_menu_position(menu_info *m)
 {
 	int x, z;
 	int off = 0;
-	char * buf = (char *)NULL;
+	char *buf;
 	col_attr_t col;
 
 	x = getmaxx(menu_win) + get_utf8_overhead(m->items[m->pos]);

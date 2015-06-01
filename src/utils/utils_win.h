@@ -42,8 +42,6 @@
 
 int wcwidth(wchar_t c);
 
-int wcswidth(const wchar_t str[], size_t max_len);
-
 /* Executes a command (cmd) using CreateProcess() API function.  Expects path
  * that contain spaces to be enclosed in double quotes.  On internal error
  * returns last error code and sets *returned_exit_code to zero, otherwise sets

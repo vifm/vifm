@@ -30,7 +30,7 @@
 #include <locale.h> /* setlocale() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h>
+#include <stdlib.h> /* EXIT_FAILURE exit() */
 #include <string.h> /* strcpy() */
 
 #include "utils/fs_limits.h"
@@ -266,13 +266,13 @@ read_config_file(const char *config_file)
 	char *s2 = NULL;
 	char *s3 = NULL;
 	char *s4 = NULL;
-	char *sx = NULL;
 
 	if((fp = fopen(config_file, "r")) == NULL)
 		return 0;
 
 	while(fgets(line, sizeof(line), fp))
 	{
+		char *sx;
 		int args;
 
 		if(line[0] == '#')
@@ -629,10 +629,17 @@ is_dir(const char *file)
 static void
 add_command(const char *name, const char *cmd)
 {
-	commands = realloc(commands, sizeof(command)*(ncommands + 1));
+	void *p = realloc(commands, sizeof(command)*(ncommands + 1));
+	if(p == NULL)
+	{
+		fprintf(stderr, "%s\n", "Memory allocation error.");
+		exit(EXIT_FAILURE);
+	}
+	commands = p;
+
 	commands[ncommands].name = strdup(conv_udf_name(name));
 	commands[ncommands].cmd = strdup(cmd);
-	ncommands++;
+	++ncommands;
 }
 
 static const char *
@@ -664,33 +671,50 @@ conv_udf_name(const char *cmd)
 static void
 add_bookmark(char name, const char *dir, const char *file)
 {
-	bookmarks = realloc(bookmarks, sizeof(bookmark)*(nbookmarks + 1));
+	void *p = realloc(bookmarks, sizeof(bookmark)*(nbookmarks + 1));
+	if(p == NULL)
+	{
+		fprintf(stderr, "%s\n", "Memory allocation error.");
+		exit(EXIT_FAILURE);
+	}
+	bookmarks = p;
+
 	bookmarks[nbookmarks].name = name;
 	bookmarks[nbookmarks].dir = strdup(dir);
 	bookmarks[nbookmarks].file = strdup(file);
-	nbookmarks++;
+	++nbookmarks;
 }
 
 static void
 add_filetype(const char *desc, const char *exts, const char *viewer,
 		const char *programs)
 {
-	char *p, *ex_copy, *free_this, *exptr2;
+	void *p;
+	char *e, *ex_copy, *free_this, *exptr2;
 	size_t len;
 
-	filetypes = realloc(filetypes, sizeof(filetype)*(nfiletypes + 1));
+	p = realloc(filetypes, sizeof(filetype)*(nfiletypes + 1));
+	if(p == NULL)
+	{
+		fprintf(stderr, "%s\n", "Memory allocation error.");
+		exit(EXIT_FAILURE);
+	}
+	filetypes = p;
+
 	filetypes[nfiletypes].description = strdup(desc);
 	filetypes[nfiletypes].viewer = strdup(viewer);
 	filetypes[nfiletypes].programs = strdup(programs);
 
-	p = NULL;
+	e = NULL;
 	len = 0;
 	ex_copy = strdup(exts);
 	free_this = ex_copy;
 	exptr2 = NULL;
 	while(*ex_copy != '\0')
 	{
+		char *p;
 		size_t new_len;
+
 		if((exptr2 = strchr(ex_copy, ',')) == NULL)
 			exptr2 = ex_copy + strlen(ex_copy);
 		else
@@ -699,18 +723,25 @@ add_filetype(const char *desc, const char *exts, const char *viewer,
 		new_len = len + 2 + strlen(ex_copy);
 		if(len > 0)
 			new_len += 1;
-		p = realloc(p, new_len + 1);
+		p = realloc(e, new_len + 1);
+		if(p == NULL)
+		{
+			fprintf(stderr, "%s\n", "Memory allocation error.");
+			exit(EXIT_FAILURE);
+		}
+		e = p;
+
 		if(len > 0)
-			strcpy(p + len, ",*.");
+			strcpy(e + len, ",*.");
 		else
-			strcpy(p + len, "*.");
-		strcat(p + len, ex_copy);
+			strcpy(e + len, "*.");
+		strcat(e + len, ex_copy);
 		len = new_len;
 
 		ex_copy = exptr2;
 	}
 	free(free_this);
-	filetypes[nfiletypes].extensions = p;
+	filetypes[nfiletypes].extensions = e;
 
 	nfiletypes++;
 }
@@ -1084,7 +1115,6 @@ read_color_scheme_file(const char *config_file)
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *s3 = NULL;
-	char *sx = NULL;
 
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
@@ -1096,6 +1126,7 @@ read_color_scheme_file(const char *config_file)
 	while(fgets(line, sizeof(line), fp))
 	{
 		int args;
+		char *sx;
 
 		if(line[0] == '#')
 			continue;

@@ -172,16 +172,6 @@ to_multibyte(const wchar_t *s)
 #endif
 }
 
-size_t
-multibyte_len(const wchar_t wide[])
-{
-#ifndef _WIN32
-	return wcstombs(NULL, wide, 0);
-#else
-	return utf8_narrowd_len(wide);
-#endif
-}
-
 int
 str_to_lower(const char str[], char buf[], size_t buf_len)
 {
@@ -802,23 +792,6 @@ replace_char(char str[], char from, char to)
 		}
 		++str;
 	}
-}
-
-int
-is_in_str_list(const char list[], char separator, const char needle[])
-{
-	char *list_copy = strdup(list);
-	char *item = list_copy, *state = NULL;
-	while((item = split_and_get(item, separator, &state)) != NULL)
-	{
-		if(strcasecmp(item, needle) == 0)
-		{
-			break;
-		}
-	}
-	free(list_copy);
-
-	return (item != NULL);
 }
 
 char *

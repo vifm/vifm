@@ -193,7 +193,6 @@ static int
 bisearch(wchar_t ucs, const interval *table, int max)
 {
 	int min;
-	int mid;
 
 	if(ucs < table[0].first || ucs > table[max].last)
 	{
@@ -203,7 +202,7 @@ bisearch(wchar_t ucs, const interval *table, int max)
 	min = 0;
 	while(max >= min)
 	{
-		mid = (min + max)/2;
+		const int mid = (min + max)/2;
 		if(ucs > table[mid].last)
 		{
 			min = mid + 1;
@@ -219,25 +218,6 @@ bisearch(wchar_t ucs, const interval *table, int max)
 	}
 
 	return 0;
-}
-
-int
-compat_wcswidth(const wchar_t pwcs[], size_t n)
-{
-	int width = 0;
-
-	while(*pwcs != '\0' && n--)
-	{
-		int w = compat_wcwidth(*pwcs++);
-		if(w < 0)
-		{
-			return -1;
-		}
-
-		width += w;
-	}
-
-	return width;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -167,7 +167,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		}
 		else
 		{
-			printf("%-30s Line %-5d %s\n", stic_current_test, line, reason );
+			printf("%-30s Line %-5u %s\n", stic_current_test, line, reason );
 		}
 		sea_tests_failed++;
 	}
@@ -181,7 +181,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			}
 			else
 			{
-				printf("%-30s Line %-5d Passed\n", stic_current_test, line);
+				printf("%-30s Line %-5u Passed\n", stic_current_test, line);
 			}
 		}
 		sea_tests_passed++;

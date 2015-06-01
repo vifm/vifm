@@ -160,12 +160,6 @@ wcwidth(wchar_t c)
 }
 
 int
-wcswidth(const wchar_t str[], size_t max_len)
-{
-	return compat_wcswidth(str, max_len);
-}
-
-int
 win_exec_cmd(char cmd[], int *const returned_exit_code)
 {
 	wchar_t *utf16_cmd;
