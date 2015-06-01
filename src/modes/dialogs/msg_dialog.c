@@ -24,7 +24,7 @@
 #include <assert.h> /* assert() */
 #include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stddef.h> /* NULL */
-#include <string.h> /* strdup() strchr() strlen() */
+#include <string.h> /* strchr() strlen() */
 
 #include "../../cfg/config.h"
 #include "../../engine/keys.h"
@@ -320,16 +320,12 @@ static void
 prompt_msg_internal(const char title[], const char message[],
 		const response_variant variants[])
 {
-	char *dup = strdup(message);
-
 	responses = variants;
 	msg_kind = D_QUERY;
 
 	redraw_error_msg(title, message, 0, 0);
 
 	enter(MASK(R_YES, R_NO));
-
-	free(dup);
 
 	touchwin(stdscr);
 
