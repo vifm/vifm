@@ -37,6 +37,7 @@
 #include "../engine/completion.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
 #include "../ui/statusline.h"
 #include "../ui/ui.h"
@@ -577,7 +578,11 @@ enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 
 	buf = to_wide(cmd);
 	if(buf == NULL)
+	{
+		/* This is either memory allocation error or broken multi-byte sequence. */
+		show_error_msgf("Error", "Unicode conversion failed for: %s", cmd);
 		return;
+	}
 
 	prepare_cmdline_mode(prompt, buf, complete);
 	free(buf);

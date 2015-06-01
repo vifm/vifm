@@ -76,28 +76,32 @@ traverse_subtree(const char path[], subtree_visitor visitor, void *param)
 	result = 0;
 	while((d = os_readdir(dir)) != NULL)
 	{
-		if(!is_builtin_dir(d->d_name))
-		{
-			char *const full_path = format_str("%s/%s", path, d->d_name);
-			if(entry_is_link(full_path, d))
-			{
-				/* Treat symbolic links to directories as files as well. */
-				result = visitor(full_path, VA_FILE, param);
-			}
-			else if(entry_is_dir(full_path, d))
-			{
-				result = traverse_subtree(full_path, visitor, param);
-			}
-			else
-			{
-				result = visitor(full_path, VA_FILE, param);
-			}
-			free(full_path);
+		char *full_path;
 
-			if(result != 0)
-			{
-				break;
-			}
+		if(is_builtin_dir(d->d_name))
+		{
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, d->d_name);
+		if(entry_is_link(full_path, d))
+		{
+			/* Treat symbolic links to directories as files as well. */
+			result = visitor(full_path, VA_FILE, param);
+		}
+		else if(entry_is_dir(full_path, d))
+		{
+			result = traverse_subtree(full_path, visitor, param);
+		}
+		else
+		{
+			result = visitor(full_path, VA_FILE, param);
+		}
+		free(full_path);
+
+		if(result != 0)
+		{
+			break;
 		}
 	}
 	(void)os_closedir(dir);

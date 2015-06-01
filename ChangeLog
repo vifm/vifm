@@ -246,6 +246,9 @@
 	Wrapped option names with single quotes in the man page to make it easier
 	to search for options by their names.
 
+	Display error on failed conversion to Unicode (say if file name includes
+	broken UTF-8 sequence).  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.
@@ -403,6 +406,9 @@
 
 	Fixed writing current color scheme as the default one, should use builtin
 	colors instead.  Thanks to Karol M. Langner (langner).
+
+	Fixed running filetype commands with background mark and no macros.
+	Thanks to Martin Fischer.
 
 0.7.8-beta to 0.7.8
 
