@@ -41,12 +41,6 @@ static void ensure_allocated(vle_textbuf *tb, size_t extra);
 static vle_textbuf vle_err_data;
 vle_textbuf *const vle_err = &vle_err_data;
 
-const char *
-text_buffer_get(void)
-{
-	return vle_tb_get_data(vle_err);
-}
-
 vle_textbuf *
 vle_tb_create()
 {
