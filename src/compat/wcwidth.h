@@ -23,8 +23,6 @@
 
 int compat_wcwidth(wchar_t ucs);
 
-int compat_wcswidth(const wchar_t pwcs[], size_t n);
-
 #endif /* VIFM__COMPAT__WCWIDTH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

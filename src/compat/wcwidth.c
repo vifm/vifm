@@ -221,24 +221,5 @@ bisearch(wchar_t ucs, const interval *table, int max)
 	return 0;
 }
 
-int
-compat_wcswidth(const wchar_t pwcs[], size_t n)
-{
-	int width = 0;
-
-	while(*pwcs != '\0' && n--)
-	{
-		int w = compat_wcwidth(*pwcs++);
-		if(w < 0)
-		{
-			return -1;
-		}
-
-		width += w;
-	}
-
-	return width;
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
