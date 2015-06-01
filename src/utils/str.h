@@ -97,10 +97,6 @@ int surrounded_with(const char str[], char left, char right);
 
 char * to_multibyte(const wchar_t *s);
 
-/* Calculates length of wide string after converting it to multibyte string.
- * Returns the length. */
-size_t multibyte_len(const wchar_t wide[]);
-
 /* Converts characters of the string to lower case while they fit in the buffer.
  * Returns zero on success or non-zero if output buffer is too small. */
 int str_to_lower(const char str[], char buf[], size_t buf_len);

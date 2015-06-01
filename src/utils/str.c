@@ -172,16 +172,6 @@ to_multibyte(const wchar_t *s)
 #endif
 }
 
-size_t
-multibyte_len(const wchar_t wide[])
-{
-#ifndef _WIN32
-	return wcstombs(NULL, wide, 0);
-#else
-	return utf8_narrowd_len(wide);
-#endif
-}
-
 int
 str_to_lower(const char str[], char buf[], size_t buf_len)
 {
