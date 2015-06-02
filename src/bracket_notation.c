@@ -30,12 +30,6 @@
 #include "utils/macros.h"
 #include "utils/str.h"
 
-#ifdef __PDCURSES__
-#define BACKSPACE_KEY L'\b'
-#else
-#define BACKSPACE_KEY KEY_BACKSPACE
-#endif
-
 /* Bracket notation entry description structure. */
 typedef struct
 {
@@ -58,7 +52,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<c-e>",      L"\x05"              },
 	{ L"<c-f>",      L"\x06"              },
 	{ L"<c-g>",      L"\x07"              },
-	{ L"<c-h>",      { BACKSPACE_KEY, 0 } },
+	{ L"<c-h>",      L"\b"                },
 	{ L"<c-i>",      L"\x09"              },
 	{ L"<c-j>",      L"\x0a"              },
 	{ L"<c-k>",      L"\x0b"              },
@@ -373,7 +367,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<right>",    { KEY_RIGHT,     0 } },
 	{ L"<up>",       { KEY_UP,        0 } },
 	{ L"<down>",     { KEY_DOWN,      0 } },
-	{ L"<bs>",       { BACKSPACE_KEY, 0 } },
+	{ L"<bs>",       L"\b"                },
 	{ L"<delete>",   { KEY_DC,        0 } },
 	{ L"<pageup>",   { KEY_PPAGE,     0 } },
 	{ L"<pagedown>", { KEY_NPAGE,     0 } },
@@ -609,20 +603,20 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 	*len = 1;
 	switch(*c)
 	{
-		case L' ':          strcpy(buf, "<space>");    break;
-		case L'\r':         strcpy(buf, "<cr>");       break;
-		case L'\177':       strcpy(buf, "<del>");      break;
-		case KEY_HOME:      strcpy(buf, "<home>");     break;
-		case KEY_END:       strcpy(buf, "<end>");      break;
-		case KEY_UP:        strcpy(buf, "<up>");       break;
-		case KEY_DOWN:      strcpy(buf, "<down>");     break;
-		case KEY_LEFT:      strcpy(buf, "<left>");     break;
-		case KEY_RIGHT:     strcpy(buf, "<right>");    break;
-		case KEY_DC:        strcpy(buf, "<delete>");   break;
-		case KEY_BTAB:      strcpy(buf, "<s-tab>");    break;
-		case KEY_PPAGE:     strcpy(buf, "<pageup>");   break;
-		case KEY_NPAGE:     strcpy(buf, "<pagedown>"); break;
-		case KEY_BACKSPACE: strcpy(buf, "<bs>");       break;
+		case L' ':      strcpy(buf, "<space>");    break;
+		case L'\r':     strcpy(buf, "<cr>");       break;
+		case L'\b':     strcpy(buf, "<bs>");       break;
+		case L'\177':   strcpy(buf, "<del>");      break;
+		case KEY_HOME:  strcpy(buf, "<home>");     break;
+		case KEY_END:   strcpy(buf, "<end>");      break;
+		case KEY_UP:    strcpy(buf, "<up>");       break;
+		case KEY_DOWN:  strcpy(buf, "<down>");     break;
+		case KEY_LEFT:  strcpy(buf, "<left>");     break;
+		case KEY_RIGHT: strcpy(buf, "<right>");    break;
+		case KEY_DC:    strcpy(buf, "<delete>");   break;
+		case KEY_BTAB:  strcpy(buf, "<s-tab>");    break;
+		case KEY_PPAGE: strcpy(buf, "<pageup>");   break;
+		case KEY_NPAGE: strcpy(buf, "<pagedown>"); break;
 
 		case L'\033':
 			if(c[1] == L'[' && c[2] == 'Z')
