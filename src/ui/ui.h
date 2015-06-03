@@ -335,7 +335,7 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
-/* Checks whether given character was pressed ignores any other characters. */
+/* Checks whether given character was pressed, ignores any other characters. */
 int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);

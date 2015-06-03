@@ -235,7 +235,7 @@ ui_char_pressed(wint_t c)
 
 	if(c != CTRL_C && pressed == CTRL_C)
 	{
-		ui_cancellation_requested();
+		ui_cancellation_request();
 	}
 
 	return pressed == c;
