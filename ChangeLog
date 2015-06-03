@@ -4,6 +4,8 @@
 	even notice it: this doesn't affect regular use case, rather more exotic
 	one, which is hard to notice.
 
+	Map <c-h> and <bs> to different keys.  Thanks to fogine.
+
 	Added <lt> angle bracket notation (less-than character, '<').  Thanks to
 	filterfalse.
 
@@ -409,8 +411,6 @@
 
 	Fixed running filetype commands with background mark and no macros.
 	Thanks to Martin Fischer.
-
-	Fixed mapping of <c-h> and <bs> on *nix.  Thanks to fogine.
 
 0.7.8-beta to 0.7.8
 
