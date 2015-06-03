@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 01, 2015" "vifm 0.7.8"
+.TH VIFM 1 "June 03, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3677,7 +3677,7 @@ Less-than character (<).
 provides a way to disable a mapping (by mapping it to <nop>).
 .TP
 .BI <bs>
-Backspace key.
+Backspace key (see key conflict description below).
 .TP
 .BI "<tab> <s-tab>"
 Tabulation and Shift+Tabulation keys.
@@ -3696,7 +3696,7 @@ Delete key.  <del> and <delete> mean different codes, but <delete> is more
 common.
 .TP
 .BI "<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>"
-Control + some key.
+Control + some key (see key conflict description below).
 .TP
 .BI "<a-a>,<a-b>,...,<a-z>"
 .BI "<m-a>,<m-b>,...,<m-z>"
@@ -3726,6 +3726,25 @@ only for MS-Windows
 .br
 functional keys with Shift key pressed.
 .LP
+Note that due to the way terminals process their input, several keyboard keys
+might be mapped to single key code, for example:
+.RS 2
+.IP \- 2
+<cr> and <c-m>;
+.IP \- 2
+<tab> and <c-i>;
+.IP \- 2
+<c-h> and <bs>;
+.IP \- 2
+etc.
+.RE
+
+Most of the time they are defined consistenly and don't cause surprises, but
+<c-h> and <bs> are treated differently in different environments (although they
+match each other all the time), that's why they correspond to different keys
+in vifm.  As a consequence, if you map <c-h> or <bs> be sure to map the other
+one to the same combination so that the mapping will work in all environments.
+
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For
 example:

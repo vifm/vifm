@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 May 30
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 June 03
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3073,7 +3073,7 @@ sequences that can be used in place of them.  They are:
 <nop>
     provides a way to disable a mapping (by mapping it to <nop>).
 <bs>
-    Backspace key.
+    Backspace key (see key conflict description below).
 <tab> <s-tab>
     Tabulation and Shift+Tabulation keys.
 <home> <end>
@@ -3086,7 +3086,7 @@ sequences that can be used in place of them.  They are:
     Delete key.  <del> and <delete> mean different codes, but <delete> is
     more common.
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>
-    Control + some key.
+    Control + some key (see key conflict description below).
 <a-a>,<a-b>,...,<a-z>
     Alt + some key.
 <m-a>,<m-b>,...,<m-z>
@@ -3103,6 +3103,18 @@ sequences that can be used in place of them.  They are:
     functional keys with Alt key pressed.
 <s-f1>,...,<s-f12>                             {only for MS-Windows}
     functional keys with Shift key pressed.
+
+Note that due to the way terminals process their input, several keyboard keys
+might be mapped to single key code, for example:
+ - <cr> and <c-m>;
+ - <tab> and <c-i>;
+ - <c-h> and <bs>;
+ - etc.
+Most of the time they are defined consistenly and don't cause surprises, but
+<c-h> and <bs> are treated differently in different environments (although they
+match each other all the time), that's why they correspond to different keys
+in vifm.  As a consequence, if you map <c-h> or <bs> be sure to map the other
+one to the same combination so that the mapping will work in all environments.
 
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For
