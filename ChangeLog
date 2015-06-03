@@ -412,6 +412,9 @@
 	Fixed running filetype commands with background mark and no macros.
 	Thanks to Martin Fischer.
 
+	Fixed displaying <c-j> in :map menu (it's new line, which was treated in a
+	special way).  Thanks to fogine.
+
 0.7.8-beta to 0.7.8
 
 	Added ga and gA keys to visual mode.  Thanks to geo909.
