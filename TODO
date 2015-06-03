@@ -23,6 +23,7 @@ Basic things that need to be done.
     Search match highlight in menus.
     For 'syscalls', vifm should ask for standard retry/abort/cancel actions on
         error.
+    Queueing of file operations.
 
 Documentation.
     Better documentation.
