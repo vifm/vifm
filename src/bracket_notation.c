@@ -534,7 +534,7 @@ substitute_specsw(const wchar_t cmd[])
 	const wchar_t *s = cmd;
 
 	buf = malloc(len*sizeof(wchar_t));
-	if(cmd == NULL || buf == NULL)
+	if(buf == NULL)
 	{
 		free(buf);
 		return NULL;
