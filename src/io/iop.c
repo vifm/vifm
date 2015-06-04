@@ -125,7 +125,6 @@ iop_mkdir(io_args_t *const args)
 			}
 		}
 
-		free(partial_path);
 #ifndef _WIN32
 		if(os_chmod(path, mode) != 0)
 		{
@@ -134,6 +133,8 @@ iop_mkdir(io_args_t *const args)
 			return 1;
 		}
 #endif
+
+		free(partial_path);
 		return 0;
 	}
 
