@@ -618,8 +618,8 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 static int
 clear_current_line_bar(FileView *view, int is_current)
 {
-	int old_cursor = view->curr_line;
-	int old_pos = view->top_line + old_cursor;
+	const int old_cursor = view->curr_line;
+	const int old_pos = view->top_line + old_cursor;
 	size_t col_width;
 	size_t col_count;
 	size_t print_width;
@@ -627,16 +627,15 @@ clear_current_line_bar(FileView *view, int is_current)
 	column_data_t cdt = {
 		.view = view,
 		.line_pos = old_pos,
-		.line_hi_group = get_line_color(view, old_pos),
 		.is_current = is_current,
 	};
 
-	if(old_cursor < 0)
+	if(curr_stats.load_stage < 2)
 	{
 		return 0;
 	}
 
-	if(curr_stats.load_stage < 2)
+	if(old_cursor < 0)
 	{
 		return 0;
 	}
@@ -646,6 +645,8 @@ clear_current_line_bar(FileView *view, int is_current)
 		/* The entire list is going to be redrawn so just return. */
 		return 0;
 	}
+
+	cdt.line_hi_group = get_line_color(view, old_pos),
 
 	calculate_table_conf(view, &col_count, &col_width);
 
