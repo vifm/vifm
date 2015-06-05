@@ -220,7 +220,7 @@ matcher_clone(const matcher_t *matcher)
 	clone->globs = matcher->globs;
 	clone->cflags = matcher->cflags;
 
-	err = regcomp(&clone->regex, clone->raw, clone->cflags);
+	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
 	if(err != 0 || clone->expr == NULL || clone->raw == NULL)
 	{
