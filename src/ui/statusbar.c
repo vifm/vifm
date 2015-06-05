@@ -41,7 +41,8 @@ static void save_status_bar_msg(const char msg[]);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
-static const char *PRESS_ENTER_MSG = "Press ENTER or type command to continue";
+/* Message displayed on multi-line or too long status bar message. */
+static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
 static int multiline_status_bar;
 
