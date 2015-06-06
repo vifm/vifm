@@ -130,6 +130,7 @@ iop_mkdir(io_args_t *const args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, partial_path, errno,
 					strerror(errno));
+			free(partial_path);
 			return 1;
 		}
 #endif
