@@ -2433,6 +2433,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	if(m == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
+		free(error);
 		return 1;
 	}
 
