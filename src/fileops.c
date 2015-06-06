@@ -3512,7 +3512,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
 	if(path_exists(dst_full, DEREF) && !from_trash)
 	{
-		perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
+		(void)perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
 	}
 
 	if(move)

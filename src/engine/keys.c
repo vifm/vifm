@@ -38,8 +38,8 @@ typedef struct key_chunk_t
 	wchar_t key;
 	int no_remap;
 	size_t children_count;
-	int enters; /* to prevent stack overflow */
-	int deleted; /* postpone free() call for proper lazy deletion */
+	int enters;            /* To prevent stack overflow and manager lifetime. */
+	int deleted;           /* Postpone free() call for proper lazy deletion. */
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
@@ -517,7 +517,10 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	{
 		int result = has_def_handler() ? 0 : KEYS_UNKNOWN;
 
-		if(curr->enters == 0)
+		/* Protect chunk from deletion while it's in use. */
+		enter_chunk(curr);
+
+		if(curr->enters == 1)
 		{
 			result = execute_after_remapping(conf->data.cmd, keys, *keys_info,
 					key_info, curr);
@@ -535,8 +538,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 		if(result == KEYS_UNKNOWN && has_def_handler())
 		{
-			/* curr shouldn't be freed here as if it was result would be 0. */
-			if(curr->enters == 0)
+			if(curr->enters == 1)
 			{
 				result = def_handler()(conf->data.cmd[0]);
 				enter_chunk(curr);
@@ -552,6 +554,9 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 				}
 			}
 		}
+
+		/* Release the chunk, this will free it if deletion was attempted. */
+		leave_chunk(curr);
 
 		return result;
 	}
@@ -626,7 +631,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 static void
 enter_chunk(key_chunk_t *chunk)
 {
-	chunk->enters = 1;
+	++chunk->enters;
 }
 
 /* Handles leaving a chunk performing postponed chunk removal if needed.
@@ -634,15 +639,14 @@ enter_chunk(key_chunk_t *chunk)
 static void
 leave_chunk(key_chunk_t *chunk)
 {
-	if(chunk->deleted)
+	--chunk->enters;
+
+	if(chunk->enters == 0 && chunk->deleted)
 	{
 		/* Removal of the chunk was postponed because it was in use, proceed with
 		 * this now. */
 		free(chunk);
-		return;
 	}
-
-	chunk->enters = 0;
 }
 
 static void

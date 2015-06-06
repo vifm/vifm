@@ -125,15 +125,17 @@ iop_mkdir(io_args_t *const args)
 			}
 		}
 
-		free(partial_path);
 #ifndef _WIN32
 		if(os_chmod(path, mode) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, partial_path, errno,
 					strerror(errno));
+			free(partial_path);
 			return 1;
 		}
 #endif
+
+		free(partial_path);
 		return 0;
 	}
 

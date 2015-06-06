@@ -2405,6 +2405,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 	if(m == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
+		free(error);
 		return 1;
 	}
 
@@ -2433,6 +2434,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	if(m == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
+		free(error);
 		return 1;
 	}
 

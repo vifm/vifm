@@ -1,17 +1,45 @@
 language: c
 
+env:
+  global:
+    - secure: "E4XPm7AOr/3w6JmeAh41CYGvHnB2KfpOzjmT0o/rzwCfXbLQd+FW/wNHI3eEjhNP9uN4OAc6Gk6KcxVRV+UUvs5nzhHyu4QkOEp6l/lHOeEmJBS+NpN1a+HdAj6BAc8vcfmWvQHOHtIgnykyEyhaVpC4eB3K/ZfSu8nQQYLaZqw="
+    - TRAVIS_REPO_SLUG=ksteen/vifm
+
 script:
- - sudo pip install cpp-coveralls
- - autoreconf && ( if [ "$CC" = gcc ]; then ./configure --enable-coverage; else ./configure; fi ) && make -j4 && make check
+ - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
+     sudo pip install cpp-coveralls &&
+     autoreconf && (
+       if [ "$CC" = gcc ]; then
+         ./configure --enable-coverage;
+       else
+         ./configure;
+       fi
+     ) &&
+     make -j4 &&
+     make check;
+   fi
 
 compiler:
  - gcc
  - clang
 
 after_success:
- - if [ "$CC" = gcc ]; then coveralls --encoding iso-8859-1 --build-root src/ --gcov-options '\-p'; fi
+ - if [ "$COVERITY_SCAN_BRANCH" != 1 -a "$CC" = gcc ]; then
+     coveralls --encoding iso-8859-1 --build-root src/ --gcov-options '\-p';
+   fi
 
 notifications:
   email:
     recipients:
       - xaizek@openmailbox.org
+
+addons:
+  coverity_scan:
+    project:
+      name: ksteen/vifm
+      version: 0.7.8
+      description: "Build submitted via Travis CI"
+    notification_email: xaizek@openmailbox.org
+    build_command_prepend: ./configure --enable-remote-cmds
+    build_command: make -j 3
+    branch_pattern: coverity-scan

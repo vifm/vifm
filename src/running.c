@@ -1330,6 +1330,7 @@ path_handler(const char line[], void *arg)
 	if(path != NULL)
 	{
 		flist_custom_add(view, path);
+		free(path);
 	}
 }
 

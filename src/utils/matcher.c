@@ -44,6 +44,7 @@ static int is_full_path(const char expr[], int re, int glob, int *strip);
 static int compile_expr(matcher_t *m, int strip, int cs_by_def, char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
 static int parse_re(matcher_t *m, int strip, int cs_by_def, char **error);
+static void free_matcher_items(matcher_t *matcher);
 static int is_re_expr(const char expr[]);
 static int is_globs_expr(const char expr[]);
 
@@ -77,7 +78,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 	if(m.expr == NULL)
 	{
 		replace_string(error, "Failed to clone match expr.");
-		matcher_free(&m);
+		free_matcher_items(&m);
 		return NULL;
 	}
 
@@ -85,7 +86,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 	if(matcher == NULL)
 	{
 		replace_string(error, "Failed allocate memory for matcher.");
-		matcher_free(&m);
+		free_matcher_items(&m);
 	}
 	else
 	{
@@ -219,7 +220,7 @@ matcher_clone(const matcher_t *matcher)
 	clone->globs = matcher->globs;
 	clone->cflags = matcher->cflags;
 
-	err = regcomp(&clone->regex, clone->raw, clone->cflags);
+	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
 	if(err != 0 || clone->expr == NULL || clone->raw == NULL)
 	{
@@ -235,11 +236,19 @@ matcher_free(matcher_t *matcher)
 {
 	if(matcher != NULL)
 	{
-		free(matcher->expr);
-		free(matcher->raw);
-		regfree(&matcher->regex);
+		free_matcher_items(matcher);
 		free(matcher);
 	}
+}
+
+/* Frees all resources allocated by the matcher, but not the matcher itself.
+ * matcher can't be NULL. */
+static void
+free_matcher_items(matcher_t *matcher)
+{
+	free(matcher->expr);
+	free(matcher->raw);
+	regfree(&matcher->regex);
 }
 
 int

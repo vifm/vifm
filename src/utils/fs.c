@@ -320,15 +320,22 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 	char *filename;
 	ssize_t len;
 
+	if(buf_len == 0)
+	{
+		return -1;
+	}
+
 	filename = strdup(link);
 	chosp(filename);
 
-	len = readlink(filename, buf, buf_len);
+	len = readlink(filename, buf, buf_len - 1);
 
 	free(filename);
 
 	if(len == -1)
+	{
 		return -1;
+	}
 
 	buf[len] = '\0';
 	return 0;

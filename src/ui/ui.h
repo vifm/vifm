@@ -335,7 +335,7 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
-/* Checks whether given character was pressed ignores any other characters. */
+/* Checks whether given character was pressed, ignores any other characters. */
 int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
@@ -407,8 +407,7 @@ void only(void);
 
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
-void format_entry_name(const FileView *view, size_t pos, size_t buf_len,
-		char buf[]);
+void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);
 
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */
@@ -463,7 +462,7 @@ int ui_view_displays_columns(const FileView *const view);
 
 /* Gets real type of file view entry.  Returns type of entry, resolving symbolic
  * link if needed. */
-FileType ui_view_entry_target_type(const FileView *const view, size_t pos);
+FileType ui_view_entry_target_type(const dir_entry_t *entry);
 
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */

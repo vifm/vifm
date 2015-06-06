@@ -144,7 +144,12 @@ read_info_file(int reread)
 				}
 
 				m = matcher_alloc(line_val, 0, 1, &error);
-				if(m != NULL)
+				if(m == NULL)
+				{
+					/* Ignore error description. */
+					free(error);
+				}
+				else
 				{
 					ft_set_programs(m, line2, x,
 							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
@@ -157,7 +162,12 @@ read_info_file(int reread)
 			{
 				char *error;
 				matcher_t *const m = matcher_alloc(line_val, 0, 1, &error);
-				if(m != NULL)
+				if(m == NULL)
+				{
+					/* Ignore error description. */
+					free(error);
+				}
+				else
 				{
 					ft_set_viewers(m, line2);
 				}

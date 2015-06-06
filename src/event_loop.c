@@ -52,6 +52,8 @@ static void process_scheduled_updates(void);
 static int process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
+static void reset_input_buf(wchar_t curr_input_buf[],
+		size_t *curr_input_buf_pos);
 
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
@@ -117,8 +119,19 @@ event_loop(const int *quit)
 		 * code rely on this). */
 		(void)vifm_chdir(flist_get_dir(curr_view));
 
-		if(got_input && input_buf_pos != ARRAY_LEN(input_buf) - 2)
+		if(got_input)
 		{
+			if(wait_for_enter)
+			{
+				wait_for_enter = 0;
+				curr_stats.save_msg = 0;
+				clean_status_bar();
+				if(c == L'\x0d')
+				{
+					continue;
+				}
+			}
+
 			if(c == L'\x1a') /* Ctrl-Z */
 			{
 				def_prog_mode();
@@ -127,22 +140,18 @@ event_loop(const int *quit)
 				continue;
 			}
 
-			if(wait_for_enter)
+			if(input_buf_pos < ARRAY_LEN(input_buf) - 2)
 			{
-				wait_for_enter = 0;
-				curr_stats.save_msg = 0;
-				clean_status_bar();
-				if(c == L'\x0d')
-					continue;
+				input_buf[input_buf_pos++] = c;
+				input_buf[input_buf_pos] = L'\0';
 			}
-
-			input_buf[input_buf_pos++] = c;
-			input_buf[input_buf_pos] = L'\0';
-		}
-
-		if(wait_for_enter && !got_input)
-		{
-			continue;
+			else
+			{
+				/* Recover from input buffer overflow by resetting its contents. */
+				reset_input_buf(input_buf, &input_buf_pos);
+				clear_input_bar();
+				continue;
+			}
 		}
 
 		counter = get_key_counter();
@@ -205,8 +214,7 @@ event_loop(const int *quit)
 
 		process_scheduled_updates();
 
-		input_buf_pos = 0;
-		input_buf[0] = L'\0';
+		reset_input_buf(input_buf, &input_buf_pos);
 		clear_input_bar();
 
 		if(is_status_bar_multiline())
@@ -402,6 +410,14 @@ int
 is_input_buf_empty(void)
 {
 	return curr_input_buf_pos == NULL || *curr_input_buf_pos == 0;
+}
+
+/* Empties input buf and resets input position. */
+static void
+reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
+{
+	*curr_input_buf_pos = 0;
+	curr_input_buf[0] = L'\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

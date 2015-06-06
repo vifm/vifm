@@ -670,18 +670,28 @@ start_background_job(const char *cmd, int skip_errors)
 		/* Redirect stderr to write end of pipe. */
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
-			perror("dup");
+			perror("dup2");
 			exit(-1);
 		}
-		close(error_pipe[0]); /* Close read end of pipe. */
-		close(0); /* Close stdin */
-		close(1); /* Close stdout */
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		/* Close read end of pipe. */
+		close(error_pipe[0]);
 
-		/* Send stdout, stdin to /dev/null */
-		if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+		/* Attach stdout, stdin to /dev/null. */
+		nullfd = open("/dev/null", O_RDWR);
+		if(nullfd != -1)
 		{
-			dup2(nullfd, 0);
-			dup2(nullfd, 1);
+			if(dup2(nullfd, STDIN_FILENO) == -1)
+			{
+				perror("dup2 for stdin");
+				exit(-1);
+			}
+			if(dup2(nullfd, STDOUT_FILENO) == -1)
+			{
+				perror("dup2 for stdout");
+				exit(-1);
+			}
 		}
 
 		setpgid(0, 0);
@@ -691,7 +701,8 @@ start_background_job(const char *cmd, int skip_errors)
 	}
 	else
 	{
-		close(error_pipe[1]); /* Close write end of pipe. */
+		/* Close write end of pipe. */
+		close(error_pipe[1]);
 
 		job = add_background_job(pid, command, error_pipe[0], BJT_COMMAND);
 		if(job == NULL)
