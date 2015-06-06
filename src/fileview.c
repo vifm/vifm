@@ -876,8 +876,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 {
 	const size_t width = get_screen_string_length(buf);
 
-	const FileType type = ui_view_entry_target_type(view,
-			entry_to_pos(view, entry));
+	const FileType type = ui_view_entry_target_type(entry);
 	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
 
 	const char *const fname = get_last_path_component(full_column) + prefix_len;
@@ -1234,17 +1233,18 @@ get_max_filename_width(const FileView *view)
 static size_t
 get_filename_width(const FileView *view, int i)
 {
-	const FileType target_type = ui_view_entry_target_type(view, i);
+	const dir_entry_t *const entry = &view->dir_entry[i];
+	const FileType target_type = ui_view_entry_target_type(entry);
 	size_t name_len;
 	if(flist_custom_active(view))
 	{
 		char name[NAME_MAX];
-		get_short_path_of(view, &view->dir_entry[i], 0, sizeof(name), name);
+		get_short_path_of(view, entry, 0, sizeof(name), name);
 		name_len = get_screen_string_length(name);
 	}
 	else
 	{
-		name_len = get_screen_string_length(view->dir_entry[i].name);
+		name_len = get_screen_string_length(entry->name);
 	}
 	return name_len + get_filetype_decoration_width(target_type);
 }
