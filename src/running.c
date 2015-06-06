@@ -1187,8 +1187,12 @@ output_to_statusbar(const char cmd[])
 	char buf[2048];
 	char *lines;
 	size_t len;
+	int error;
 
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	setup_shellout_env();
+	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	cleanup_shellout_env();
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
