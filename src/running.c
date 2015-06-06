@@ -1144,7 +1144,13 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 		*save_msg = 0;
 		if(bg)
 		{
-			if(start_background_job(cmd, 1) != 0)
+			int error;
+
+			setup_shellout_env();
+			error = (start_background_job(cmd, 1) != 0);
+			cleanup_shellout_env();
+
+			if(error)
 			{
 				status_bar_errorf("Failed to start in bg: %s", cmd);
 				*save_msg = 1;
@@ -1159,7 +1165,9 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
 	{
 		const int navigate = flags == MF_MENU_NAV_OUTPUT;
+		setup_shellout_env();
 		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+		cleanup_shellout_env();
 	}
 	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
@@ -1185,8 +1193,12 @@ output_to_statusbar(const char cmd[])
 	char buf[2048];
 	char *lines;
 	size_t len;
+	int error;
 
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	setup_shellout_env();
+	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	cleanup_shellout_env();
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
@@ -1219,8 +1231,12 @@ static void
 output_to_nowhere(const char cmd[])
 {
 	FILE *file, *err;
+	int error;
 
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	setup_shellout_env();
+	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	cleanup_shellout_env();
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
@@ -1241,6 +1257,8 @@ run_in_split(const FileView *view, const char cmd[])
 	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
 
 	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
+
+	setup_shellout_env();
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
@@ -1272,6 +1290,8 @@ run_in_split(const FileView *view, const char cmd[])
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
 
+	cleanup_shellout_env();
+
 	free(escaped_cmd);
 }
 
@@ -1281,13 +1301,18 @@ static void
 output_to_custom_flist(FileView *view, const char cmd[], int very)
 {
 	char *title;
+	int error;
 
 	title = format_str("!%s", cmd);
 	flist_custom_start(view, title);
 	free(title);
 
-	if(process_cmd_output("Loading custom view", cmd, 1, &path_handler,
-				view) != 0)
+	setup_shellout_env();
+	error = (process_cmd_output("Loading custom view", cmd, 1, &path_handler,
+				view) != 0);
+	cleanup_shellout_env();
+
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
