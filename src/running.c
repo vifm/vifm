@@ -1221,8 +1221,12 @@ static void
 output_to_nowhere(const char cmd[])
 {
 	FILE *file, *err;
+	int error;
 
-	if(background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1)
+	setup_shellout_env();
+	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	cleanup_shellout_env();
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
