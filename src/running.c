@@ -1242,6 +1242,8 @@ run_in_split(const FileView *view, const char cmd[])
 
 	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
 
+	setup_shellout_env();
+
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
 		char buf[1024];
@@ -1271,6 +1273,8 @@ run_in_split(const FileView *view, const char cmd[])
 	{
 		assert(0 && "Unexpected active terminal multiplexer value.");
 	}
+
+	cleanup_shellout_env();
 
 	free(escaped_cmd);
 }
