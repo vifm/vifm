@@ -1281,13 +1281,18 @@ static void
 output_to_custom_flist(FileView *view, const char cmd[], int very)
 {
 	char *title;
+	int error;
 
 	title = format_str("!%s", cmd);
 	flist_custom_start(view, title);
 	free(title);
 
-	if(process_cmd_output("Loading custom view", cmd, 1, &path_handler,
-				view) != 0)
+	setup_shellout_env();
+	error = (process_cmd_output("Loading custom view", cmd, 1, &path_handler,
+				view) != 0);
+	cleanup_shellout_env();
+
+	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return;
