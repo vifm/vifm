@@ -824,11 +824,13 @@ reopen_terminal(void)
 	}
 	if(dup2(ttyfd, STDOUT_FILENO) == -1)
 	{
+		close(ttyfd);
 		fclose(fp);
 		fprintf(stderr, "Failed to setup terminal as standard output stream.");
 		return NULL;
 	}
 
+	close(ttyfd);
 	return fp;
 }
 
