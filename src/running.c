@@ -1159,7 +1159,9 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	else if(flags == MF_MENU_OUTPUT || flags == MF_MENU_NAV_OUTPUT)
 	{
 		const int navigate = flags == MF_MENU_NAV_OUTPUT;
+		setup_shellout_env();
 		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+		cleanup_shellout_env();
 	}
 	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
 	{
