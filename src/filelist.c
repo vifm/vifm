@@ -1527,13 +1527,15 @@ flist_custom_finish(FileView *view)
 
 	ui_view_schedule_redraw(view);
 
-	flist_ensure_pos_is_valid(view);
-
+	/* Replace view file list with custom list. */
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 	view->dir_entry = view->custom.entries;
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
+
+	flist_ensure_pos_is_valid(view);
+
 	filters_dir_updated(view);
 
 	return 0;
