@@ -691,13 +691,25 @@ menu_to_custom_view(menu_info *m, FileView *view)
 
 		flist_custom_add(view, path);
 
-		if(i == m->pos)
+		/* Use either exact position or the next path. */
+		if(i == m->pos || (current == NULL && i > m->pos))
 		{
 			current = path;
 			continue;
 		}
 
 		free(path);
+	}
+
+	/* If current line and none of the lines below didn't contain valid path, try
+	 * to use file above cursor position. */
+	if(current == NULL && view->custom.entry_count != 0)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(&view->custom.entries[view->custom.entry_count - 1],
+				sizeof(full_path), full_path);
+
+		current = strdup(full_path);
 	}
 
 	view->custom.unsorted = 0;
@@ -708,8 +720,12 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		return 1;
 	}
 
-	flist_goto_by_path(view, current);
-	free(current);
+	if(current != NULL)
+	{
+		flist_goto_by_path(view, current);
+		free(current);
+	}
+
 	return 0;
 }
 
