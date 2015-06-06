@@ -1144,7 +1144,13 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 		*save_msg = 0;
 		if(bg)
 		{
-			if(start_background_job(cmd, 1) != 0)
+			int error;
+
+			setup_shellout_env();
+			error = (start_background_job(cmd, 1) != 0);
+			cleanup_shellout_env();
+
+			if(error)
 			{
 				status_bar_errorf("Failed to start in bg: %s", cmd);
 				*save_msg = 1;
