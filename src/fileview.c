@@ -1013,14 +1013,14 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	const FileView *view = cdt->view;
+	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
 	if(flist_custom_active(view))
 	{
-		get_short_path_of(view, &view->dir_entry[cdt->line_pos], 1, buf_len + 1,
-				buf);
+		get_short_path_of(view, entry, 1, buf_len + 1, buf);
 	}
 	else
 	{
-		format_entry_name(view, cdt->line_pos, buf_len + 1, buf);
+		format_entry_name(entry, buf_len + 1, buf);
 	}
 }
 
