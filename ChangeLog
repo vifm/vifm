@@ -4,7 +4,7 @@
 	even notice it: this doesn't affect regular use case, rather more exotic
 	one, which is hard to notice.
 
-	Map <c-h> and <bs> to different keys.  Thanks to fogine.
+	Map <c-h> and <bs> to different key codes.  Thanks to fogine.
 
 	Added <lt> angle bracket notation (less-than character, '<').  Thanks to
 	filterfalse.
@@ -23,7 +23,7 @@
 
 	Added %[ and %] macros for statusline/ruler.  Thanks to ranousse.
 
-	Added single-argument form of :file[x]type and :fileviewer command that
+	Added single-argument form of :file[x]type and :fileviewer commands that
 	lists (in menu mode) currently registered patterns that match specified
 	file name.
 
@@ -86,7 +86,7 @@
 	while operation is being performed.
 
 	Added OS X version of sample vifmrc file.  Now this one will be used on
-	first run on OS X.  Thanks to Larry Hynes (a.k.a larryhynes).
+	first run on OS X.  Thanks to Larry Hynes (a.k.a. larryhynes).
 
 	Added --enable-coverage option to configure script.
 
@@ -111,10 +111,10 @@
 	cao).
 
 	Added lookup for mandoc on *nix to perform manual page to plain text
-	transformation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	transformation.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
-	Added :trashes? to display sizes of each non-empty trash directory.
-	Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	Added :trashes? to display sizes of each non-empty trash directories.
+	Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Added global configuration {prefix}/etc/vifm/vifmrc and color schemes
 	{prefix}/etc/vifm/colors/*.  Thanks to astrell and Michael Vetter (a.k.a.
@@ -154,8 +154,8 @@
 	Made leaving wrong (unexpectedly removed) directory more robust.  Thanks
 	to willemw12.
 
-	Significantly reduced amount of work performed by Vifm is idle.  Thanks to
-	hofheinz.
+	Significantly reduced amount of work performed by Vifm in idle state.
+	Thanks to hofheinz.
 
 	Made message dialogs interact better with everything else on the screen.
 	E.g. redraw properly after terminal resize.
@@ -180,7 +180,7 @@
 
 	Redraw UI on resize during file operation when 'syscalls' is set.
 
-	Quit fast on --help/--version.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	Quit fast on --help/--version.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Parse paths that start with plus sign as command-line arguments more
 	carefully (don't treat them as startup commands).
@@ -189,7 +189,7 @@
 	script.
 
 	Report signal that killed Vifm when that happens.  Thanks to Svyatoslav
-	Mishyn, a.k.a. juef.
+	Mishyn (a.k.a. juef).
 
 	Report error on wrong expression in :if statement and misplaced
 	:else/:endif on file sourcing.
@@ -220,14 +220,14 @@
 	Break ties on case insensitive sort deterministically.
 
 	Dynamic dialog dimensions (minimum %30 percent of the screen rather than
-	screen-wide all the time).  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	screen-wide all the time).  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Try harder to start in valid directory (go upwards if last visited one
 	doesn't have search permission) or leave the one that's not available
 	anymore.
 
 	Do not depend on UTF-8 locale on making plain text version of
-	documentation.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	documentation.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Normalized sorting keys/view column names: "type" -> "dir", display real
 	mode in octal for "mode", make "type" actually display file type (as
@@ -365,16 +365,16 @@
 	filterfalse.
 
 	Fixed estimation calculation on file putting after cancellation.  Thanks to
-	Svyatoslav Mishyn, a.k.a. juef.
+	Svyatoslav Mishyn (a.k.a. juef).
 
 	Fixed wrong single character drawing in ls-like view.  Thanks to Svyatoslav
-	Mishyn, a.k.a. juef.
+	Mishyn (a.k.a. juef).
 
 	Fixed displaying ls-like view as list of dots after :restart.  Thanks to
-	Svyatoslav Mishyn, a.k.a. juef.
+	Svyatoslav Mishyn (a.k.a. juef).
 
 	Fixed title UI glitch with disappearing last character on disabled side
-	borders.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	borders.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Fixed small view title glitch in CJK directories.
 
@@ -407,7 +407,7 @@
 	Michal Belica (a.k.a. beli-sk).
 
 	Fixed writing current color scheme as the default one, should use builtin
-	colors instead.  Thanks to Karol M. Langner (langner).
+	colors instead.  Thanks to Karol M. Langner (a.k.a. langner).
 
 	Fixed running filetype commands with background mark and no macros.
 	Thanks to Martin Fischer.
@@ -522,7 +522,7 @@
 	'syscalls' option is set. Thanks to Sergei Shilovsky.
 
 	Added OtherLine highlight group for cursor of inactive pane.  Thanks to
-	Svyatoslav Mishyn, a.k.a. juef.
+	Svyatoslav Mishyn (a.k.a. juef).
 
 	Added 'tuioptions' option.  Controls padding of file lists in panels and
 	visibility of side borders.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn)
@@ -670,7 +670,7 @@
 	vifmrc using 'trashdir' option.
 
 	Fixed segmentation fault on running vifm with single argument if restored
-	cursor is in the right pane.  Thanks to Svyatoslav Mishyn, a.k.a. juef.
+	cursor is in the right pane.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 	Fixed visual glitch for long wide character (CJK) file names with disabled
 	cropping.  Thanks to anonymous from linux.org.ru.
