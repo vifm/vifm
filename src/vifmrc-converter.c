@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <errno.h> /* ENOENT errno */
 #include <locale.h> /* setlocale() */
 #include <stddef.h> /* size_t */
@@ -242,6 +243,8 @@ static void add_color(char s1[], char s2[], char s3[]);
 static int colname2int(char col[]);
 static void write_color_schemes(const char *colors_dir);
 static const char * conv_attrs_to_str(int attrs);
+static void rename_color_schemes(const char colors_dir[]);
+static int is_regular_file(const char path[]);
 
 static void
 chomp(char *text)
@@ -498,7 +501,7 @@ main(int argc, char **argv)
 	char startup_file[PATH_MAX];
 	char vifminfo_file[PATH_MAX], vifminfo_file_bak[PATH_MAX];
 	char colorschemes_file[PATH_MAX], colors_dir[PATH_MAX];
-	int vifm_like;
+	int mode;
 	char *vifmrc_arg, *vifminfo_arg;
 	int err;
 
@@ -512,15 +515,16 @@ main(int argc, char **argv)
 		return 1;
 	}
 	if(argv[1][1] != '\0' || (argv[1][0] != '0' && argv[1][0] != '1' &&
-			argv[1][0] != '2'))
+			argv[1][0] != '2' && argv[1][0] != '3'))
 	{
-		puts("Usage: vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]\n\n"
+		puts("Usage: vifmrc-converter 0|1|2|3 [vifmrc_file vifminfo_file]\n\n"
 				"1 means comment commands in vifmrc and put more things to vifminfo\n"
-				"2 means convert colorscheme file only");
+				"2 means convert colorscheme file only\n"
+				"3 means convert colorscheme file only");
 		return 1;
 	}
 
-	vifm_like = atoi(argv[1]);
+	mode = atoi(argv[1]);
 
 	home_dir = getenv("HOME");
 #ifdef _WIN32
@@ -559,9 +563,15 @@ main(int argc, char **argv)
 	change_slashes(colors_dir);
 #endif
 
-	if(vifm_like == 2)
+	if(mode == 2)
 	{
 		convert_color_schemes(colorschemes_file, colors_dir);
+		return 0;
+	}
+
+	if(mode == 3)
+	{
+		rename_color_schemes(colors_dir);
 		return 0;
 	}
 
@@ -576,8 +586,10 @@ main(int argc, char **argv)
 		vifminfo_arg = vifminfo_file;
 	}
 
-	if(!vifm_like)
+	if(!mode)
+	{
 		vifminfo = VIFMINFO_BOOKMARKS;
+	}
 
 	read_config_file(config_file);
 	read_config_file(vifminfo_file);
@@ -600,12 +612,12 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	write_vifmrc(vifmrc_arg, vifm_like);
-	append_vifmrc(vifmrc_arg, vifm_like);
-	append_vifminfo_option(vifmrc_arg, vifm_like);
+	write_vifmrc(vifmrc_arg, mode);
+	append_vifmrc(vifmrc_arg, mode);
+	append_vifminfo_option(vifmrc_arg, mode);
 	append_startup(vifmrc_arg, startup_file);
 
-	write_vifminfo(vifminfo_arg, vifm_like);
+	write_vifminfo(vifminfo_arg, mode);
 
 	convert_color_schemes(colorschemes_file, colors_dir);
 
@@ -1406,6 +1418,54 @@ conv_attrs_to_str(int attrs)
 		strcat(result, "standout,");
 	result[strlen(result) - 1] = '\0';
 	return result;
+}
+
+/* Adds .vifm extension to all regular files in colors_dir directory. */
+static void
+rename_color_schemes(const char colors_dir[])
+{
+	DIR *dir;
+	struct dirent *d;
+
+	dir = opendir(colors_dir);
+	if(dir == NULL)
+	{
+		return;
+	}
+
+	while((d = readdir(dir)) != NULL)
+	{
+		char full_old_path[PATH_MAX];
+		char full_new_path[PATH_MAX];
+		snprintf(full_old_path, sizeof(full_old_path), "%s/%s", colors_dir,
+				d->d_name);
+		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", colors_dir,
+				d->d_name);
+		if(d->d_type == DT_REG ||
+				(d->d_type == DT_UNKNOWN && is_regular_file(full_old_path)))
+		{
+			(void)rename(full_old_path, full_new_path);
+		}
+	}
+	closedir(dir);
+}
+
+/* Checks whether file is the regular one (not a directory, pipe, etc.).
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_regular_file(const char path[])
+{
+#ifndef _WIN32
+	struct stat s;
+	return stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+#else
+	const DWORD attrs = GetFileAttributesA(path);
+	if(attrs == INVALID_FILE_ATTRIBUTES)
+	{
+		return 0;
+	}
+	return (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0UL;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
