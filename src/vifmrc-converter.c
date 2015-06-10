@@ -1319,7 +1319,7 @@ write_color_schemes(const char *colors_dir)
 		char buf[PATH_MAX];
 		int y;
 
-		snprintf(buf, sizeof(buf), "%s/%s", colors_dir, cs.array[x].name);
+		snprintf(buf, sizeof(buf), "%s/%s.vifm", colors_dir, cs.array[x].name);
 		if((fp = fopen(buf, "w")) == NULL)
 		{
 			fprintf(stderr, "Can't create color scheme file at \"%s\"\n", buf);
