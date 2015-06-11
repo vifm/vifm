@@ -387,6 +387,26 @@ check_color_scheme(col_scheme_t *cs)
 	}
 }
 
+int
+cs_have_no_extensions(void)
+{
+	int len;
+	char **list = list_color_scheme_files(&len);
+	int i;
+
+	/* Check if extensions are in use. */
+	for(i = 0; i < len; ++i)
+	{
+		if(ends_with(list[i], ".vifm"))
+		{
+			break;
+		}
+	}
+
+	free_string_array(list, len);
+	return (i >= len);
+}
+
 char **
 list_color_schemes(int *len)
 {
