@@ -41,6 +41,9 @@ void init_modes(void);
 
 void modes_pre(void);
 
+/* Executes poll-based requests for any of the active modes. */
+void modes_periodic(void);
+
 void modes_post(void);
 
 void modes_redraw(void);
