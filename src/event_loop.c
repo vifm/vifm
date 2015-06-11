@@ -103,6 +103,8 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
+			modes_periodic();
+
 			check_background_jobs();
 
 			got_input = get_char_async_loop(status_bar, &c, timeout) != ERR;
