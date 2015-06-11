@@ -2723,6 +2723,8 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clear") == 0)
 	{
 		reset_color_scheme(curr_stats.cs);
+		fview_view_cs_reset(&lwin);
+		fview_view_cs_reset(&rwin);
 
 		/* Request full update instead of redraw to force recalculation of mixed
 		 * colors like cursor line, which otherwise are not updated. */

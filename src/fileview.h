@@ -35,6 +35,9 @@ void fview_view_init(FileView *view);
 /* Resets view state partially. */
 void fview_view_reset(FileView *view);
 
+/* Resets view state with regard to color schemes. */
+void fview_view_cs_reset(FileView *view);
+
 /* Appearance related functions. */
 
 /* Redraws directory list and puts inactive mark for the other view. */

@@ -175,6 +175,16 @@ fview_view_reset(FileView *view)
 }
 
 void
+fview_view_cs_reset(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].hi_num = -1;
+	}
+}
+
+void
 draw_dir_list(FileView *view)
 {
 	draw_dir_list_only(view);
