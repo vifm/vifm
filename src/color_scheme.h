@@ -89,6 +89,9 @@ void assign_color_scheme(col_scheme_t *to, const col_scheme_t *from);
  * specified directory, otherwise zero is returned. */
 int check_directory_for_color_scheme(int left, const char dir[]);
 
+/* Checks whether local colorschemes do not have file extensions. */
+int cs_have_no_extensions(void);
+
 /* Lists names of all color schemes.  Allocates an array of strings, which
  * should be freed by the caller.  Always sets *len.  Returns NULL on error. */
 char ** list_color_schemes(int *len);

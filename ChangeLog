@@ -130,6 +130,9 @@
 
 	Added detailed list of errors when 'syscalls' is used.  Thanks to willemw12.
 
+	Added .vifm extension to color schemes (initial rename is performed
+	automatically).  Thanks Michael Vetter (a.k.a. jubalh).
+
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 

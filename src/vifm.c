@@ -19,7 +19,6 @@
 
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0500
-#include <tchar.h>
 #include <windows.h>
 #endif
 
@@ -448,6 +447,16 @@ load_scheme(void)
 			exit(err);
 		}
 	}
+	else if(cs_have_no_extensions())
+	{
+		const int err = run_converter(3);
+		if(err != 0)
+		{
+			endwin();
+			fputs("Problems with running vifmrc-converter\n", stderr);
+			exit(err);
+		}
+	}
 	if(color_scheme_exists(curr_stats.color_scheme))
 	{
 		load_primary_color_scheme(curr_stats.color_scheme);
@@ -508,32 +517,16 @@ run_converter(int vifm_like_mode)
 	snprintf(cmd, sizeof(cmd), "vifmrc-converter %d", vifm_like_mode);
 	return shellout(cmd, -1, 0);
 #else
+	char path[PATH_MAX];
 	char cmd[2*PATH_MAX];
 	int returned_exit_code;
-	char *name_part;
 
-	if(GetModuleFileName(NULL, cmd, PATH_MAX) == 0)
+	if(get_exe_dir(path, sizeof(path)) != 0)
 	{
 		return -1;
 	}
 
-	/* Override last path component. */
-	name_part = strrchr(cmd, '\\');
-	name_part = (name_part == NULL) ? cmd : (name_part + 1);
-	switch(vifm_like_mode)
-	{
-		case 2:
-			strcpy(name_part, "vifmrc-converter 2");
-			break;
-		case 1:
-			strcpy(name_part, "vifmrc-converter 1");
-			break;
-
-		default:
-			strcpy(name_part, "vifmrc-converter 0");
-			break;
-	}
-
+	snprintf(cmd, sizeof(cmd), "%s/vifmrc-converter %d", path, vifm_like_mode);
 	return win_exec_cmd(cmd, &returned_exit_code);
 #endif
 }

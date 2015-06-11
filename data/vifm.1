@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 03, 2015" "vifm 0.7.8"
+.TH VIFM 1 "June 11, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4371,6 +4371,7 @@ priority).
 
 Generally, runtime configuration has bigger priority during merging, but there
 are some exceptions:
+.RS 2
 .IP \- 2
 directory stack stored in the file is not overwritten unless something is
 changed in vifm session that performs merge;
@@ -4378,7 +4379,8 @@ changed in vifm session that performs merge;
 each bookmark is marked with a timestamp, so that newer value is not
 overwritten by older one, thus no matter from where bookmark comes, the newer
 one wins.
-.LP
+.RE
+
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying
 full path.  All subdirectories of the $VIFM/scripts will be added to PATH too.
@@ -4388,6 +4390,16 @@ directories.
 The $VIFM/colors/ and {prefix}/etc/vifm/colors/ directories contain color
 schemes.  Available color schemes are searched in that order, so on name
 conflict the one in $VIFM/colors/ wins.
+
+Each color scheme should have ".vifm" extension.  This wasn't the case before
+and for this reason the following rules apply during lookup:
+.RS 2
+.IP \- 2
+if there is no file with .vifm extension, all regular files are listed;
+.IP \- 2
+otherwise only files with .vifm extension are listed (with the extension
+being truncated).
+.RE
 .\" ---------------------------------------------------------------------------
 .SH Automatic FUSE mounts
 .\" ---------------------------------------------------------------------------

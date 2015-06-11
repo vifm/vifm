@@ -364,6 +364,7 @@ static const col_attr_t default_cs[] = {
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 
+static char ** list_color_scheme_files(int *len);
 static void restore_primary_color_scheme(const col_scheme_t *cs);
 static void reset_to_default_color_scheme(col_scheme_t *cs);
 static void free_color_scheme_highlights(col_scheme_t *cs);
@@ -386,8 +387,67 @@ check_color_scheme(col_scheme_t *cs)
 	}
 }
 
+int
+cs_have_no_extensions(void)
+{
+	int len;
+	char **list = list_color_scheme_files(&len);
+	int i;
+
+	/* Check if extensions are in use. */
+	for(i = 0; i < len; ++i)
+	{
+		if(ends_with(list[i], ".vifm"))
+		{
+			break;
+		}
+	}
+
+	free_string_array(list, len);
+	return (i >= len);
+}
+
 char **
 list_color_schemes(int *len)
+{
+	char **const list = list_color_scheme_files(len);
+	int i, j;
+	int new_names;
+
+	/* Check if extensions are in use. */
+	new_names = 0;
+	for(i = 0; i < *len; ++i)
+	{
+		if(ends_with(list[i], ".vifm"))
+		{
+			new_names = 1;
+		}
+	}
+
+	/* Remove hidden files, maybe along with old style file names, maybe cut off
+	 * extensions from new style file names. */
+	j = 0;
+	for(i = 0; i < *len; ++i)
+	{
+		if(list[i][0] == '.' || (new_names && !cut_suffix(list[i], ".vifm")))
+		{
+			free(list[i]);
+		}
+		else
+		{
+			list[j++] = list[i];
+		}
+	}
+	*len = j;
+
+	return list;
+}
+
+/* Lists names of all files in color schemes directories.  Allocates an array of
+ * strings, which should be freed by the caller.  Always sets *len.  Returns
+ * NULL on error. */
+static char **
+list_color_scheme_files(int *len)
 {
 	char **list = NULL;
 	*len = 0;
@@ -420,7 +480,7 @@ write_color_scheme_file(void)
 		return;
 	}
 
-	snprintf(def_cs_path, sizeof(def_cs_path), "%s/Default", cfg.colors_dir);
+	snprintf(def_cs_path, sizeof(def_cs_path), "%s/Default.vifm", cfg.colors_dir);
 	fp = os_fopen(def_cs_path, "w");
 	if(fp == NULL)
 	{
@@ -733,11 +793,25 @@ source_cs(const char name[])
 static void
 get_cs_path(const char name[], char buf[], size_t buf_size)
 {
-	snprintf(buf, buf_size, "%s/%s", cfg.colors_dir, name);
-	if(!is_regular_file(buf))
+	snprintf(buf, buf_size, "%s/%s.vifm", cfg.colors_dir, name);
+	if(is_regular_file(buf))
 	{
-		snprintf(buf, buf_size, GLOBAL_COLORS_DIR "/%s", name);
+		return;
 	}
+
+	(void)cut_suffix(buf, ".vifm");
+	if(is_regular_file(buf))
+	{
+		return;
+	}
+
+	snprintf(buf, buf_size, GLOBAL_COLORS_DIR "/%s.vifm", name);
+	if(is_regular_file(buf))
+	{
+		return;
+	}
+
+	(void)cut_suffix(buf, ".vifm");
 }
 
 /* Loads color scheme settings into color pairs. */

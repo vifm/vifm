@@ -1,4 +1,4 @@
-.TH "VIFMRC-CONVERTER" "1" "May 31, 2015" "vifm 0.7.8"
+.TH "VIFMRC-CONVERTER" "1" "June 10, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH "NAME"
 .\" ---------------------------------------------------------------------------
@@ -6,33 +6,42 @@ vifmrc-converter \- a helper tool for vifm
 .\" ---------------------------------------------------------------------------
 .SH "SYNOPSIS"
 .\" ---------------------------------------------------------------------------
-Only called automagically from within vifm
+Only called automatically from within vifm
 .LP
-vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]
+\fBvifmrc-converter\fR \fI0\fR|\fI1\fR|\fI2\fR
+[\fIvifmrc_file\fR \fIvifminfo_file\fR]
 .\" ---------------------------------------------------------------------------
 .SH "DESCRIPTION"
 .\" ---------------------------------------------------------------------------
 A helper script for vifm, not for standalone use.
 .LP
-Its main purpose is to automatically convert configuration files (vifmrc,
-vifminfo, startup and colorschemes files) of vifm prior to 0.7 version to new
-format.  You don't have to run it by yourself, vifm will do this for you after
-asking some questions at first startup.
+Its main purpose is to automatically convert configuration files (\fIvifmrc\fR,
+\fIvifminfo\fR, \fIstartup\fR and \fIcolorschemes\fR files) of vifm prior to 0.7
+version to new format and append .vifm extension to color schemes on switch to
+0.8.  You don't have to run it by yourself, vifm will do this for you either
+after asking some questions at first startup or silently if conversion is safe.
+.\" ---------------------------------------------------------------------------
+.SH "OPTIONS"
+.\" ---------------------------------------------------------------------------
 .TP
 .BI 0
 Makes vifmrc-converter create more vi-like configuration.  Will put as much as
-possible to vifmrc file, and less to vifminfo.
+possible to \fIvifmrc\fR file, and less to vifminfo.
 .TP
 .BI 1
-Makes vifmrc-converter create more old-vifm-like configuration.  vifmrc file is
-generated as for 0, but with commented out commands and more things are put to
-vifminfo file.
+Makes vifmrc-converter create more old-vifm-like configuration.  \fIvifmrc\fR
+file is generated as for 0, but with commented out commands and more things are
+put to \fIvifminfo\fR file.
 .TP
 .BI 2
 Converting of colorscheme file only.
+.TP
+.BI 3
+Adds .vifm extension to all color scheme files.
 .LP
-When vifmrc_file and vifminfo_file arguments are ommited, default locations are
-used (~/.vifm/vifmrc and ~/.vifm/vifminfo accordingly).
+When \fBvifmrc_file\fR and \fBvifminfo_file\fR arguments are ommited, default
+locations are used (\fI~/.vifm/vifmrc\fR and \fI~/.vifm/vifminfo\fR
+accordingly).
 .\" ---------------------------------------------------------------------------
 .SH "SEE ALSO"
 .\" ---------------------------------------------------------------------------

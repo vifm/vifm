@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 June 03
+*vifm-app.txt*    For Vifm version 0.7.8  Last change: 2015 June 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3690,6 +3690,12 @@ directories.
 The $VIFM/colors/ and {prefix}/etc/vifm/colors/ directories contain color
 schemes.  Available color schemes are searched in that order, so on name
 conflict the one in $VIFM/colors/ wins.
+
+Each color scheme should have ".vifm" extension.  This wasn't the case before
+and for this reason the following rules apply during lookup:
+ - if there is no file with .vifm extension, all regular files are listed;
+ - otherwise only files with .vifm extension are listed (with the extension
+   being truncated).
 
 --------------------------------------------------------------------------------
 *vifm-fuse*
