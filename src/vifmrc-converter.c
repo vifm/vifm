@@ -1441,8 +1441,12 @@ rename_color_schemes(const char colors_dir[])
 				d->d_name);
 		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", colors_dir,
 				d->d_name);
+#ifndef _WIN32
 		if(d->d_type == DT_REG ||
 				(d->d_type == DT_UNKNOWN && is_regular_file(full_old_path)))
+#else
+		if(is_regular_file(full_old_path))
+#endif
 		{
 			(void)rename(full_old_path, full_new_path);
 		}
