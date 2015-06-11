@@ -122,7 +122,7 @@ cut_suffix(char str[], const char suffix[])
 {
 	if(ends_with(str, suffix))
 	{
-		str[strlen(str) - 2] = '\0';
+		str[strlen(str) - strlen(suffix)] = '\0';
 		return 1;
 	}
 	return 0;
