@@ -1585,6 +1585,8 @@ reload_view(view_info_t *vi, int silent)
 	view_info_t new_vi;
 
 	init_view_info(&new_vi);
+	/* The view field is used in get_view_data(). */
+	new_vi.view = vi->view;
 
 	if(load_view_data(&new_vi, "File exploring reload", vi->filename, silent)
 			== 0)
