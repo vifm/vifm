@@ -91,6 +91,7 @@ static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
+static char * path_identity(const char path[]);
 static char * format_view_title(const FileView *view, path_func pf);
 static void print_view_title(const FileView *view, int active_view,
 		char title[]);
@@ -1300,7 +1301,8 @@ ui_view_title_update(FileView *view)
 		return;
 	}
 
-	title = format_view_title(view, &replace_home_part);
+	title = format_view_title(view,
+			cfg.shorten_title_paths ? &replace_home_part : &path_identity);
 
 	if(view == selected)
 	{
@@ -1312,6 +1314,13 @@ ui_view_title_update(FileView *view)
 	wnoutrefresh(view->title);
 
 	free(title);
+}
+
+/* Identity path function.  Returns its argument. */
+static char *
+path_identity(const char path[])
+{
+	return (char *)path;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.
