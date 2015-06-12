@@ -123,12 +123,15 @@ typedef struct config_t
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
 	char decorations[FT_COUNT][2]; /* File type specific refixes and suffixes. */
-	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
 	char *apropos_prg; /* apropos tool calling pattern. */
 	char *find_prg; /* find tool calling pattern. */
 	char *grep_prg; /* grep tool calling pattern. */
 	char *locate_prg; /* locate tool calling pattern. */
+
+	/* Message shortening controlled by 'shortmess'. */
+	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
+	int shorten_title_paths;  /* Use tilde shortening in view titles. */
 
 	/* Comma-separated list of file system types which are slow to respond. */
 	char *slow_fs_list;
