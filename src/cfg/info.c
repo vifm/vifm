@@ -926,7 +926,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 	fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-	fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
+	fprintf(fp, "=shortmess=%s\n", escape_spaces(get_option_value("shortmess")));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif

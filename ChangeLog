@@ -136,6 +136,9 @@
 	Allowed having multiple file viewers with same rules for choosing them at
 	run-time as for file associations.  Thanks to filterfalse.
 
+	Added "p" to 'shortmess' option to control tilde shortening of paths in
+	view titles.  Thanks to Martin Fischer.
+
 	Changed default value of 'trashdir' from "$VIFM/Trash" to
 	"%r/.vifm-Trash,$VIFM/Trash".  Thanks to Joseph LP (a.k.a. ootput).
 

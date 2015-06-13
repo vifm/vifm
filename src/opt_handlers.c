@@ -200,7 +200,8 @@ static const char * dotdirs_vals[] = {
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
-static const char shortmess_list[] = "T";
+/* Possible flags of 'shortmess' and their count. */
+static const char shortmess_list[] = "Tp";
 static const char *shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
 
@@ -604,11 +605,13 @@ init_lsview(optval_t *val)
 	val->bool_val = curr_view->ls_view;
 }
 
+/* Initializes 'shortmess' from current configuration state. */
 static void
 init_shortmess(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s", cfg.trunc_normal_sb_msgs ? "T" : "");
+	snprintf(buf, sizeof(buf), "%s%s", cfg.trunc_normal_sb_msgs ? "T" : "",
+			cfg.shorten_title_paths ? "p" : "");
 	val->str_val = buf;
 }
 
@@ -1386,12 +1389,15 @@ shell_handler(OPT_OP op, optval_t val)
 	cfg_set_shell(val.str_val);
 }
 
+/* Handles changes of 'shortmess' option by expanding flags into actual option
+ * values. */
 static void
 shortmess_handler(OPT_OP op, optval_t val)
 {
 	const char *p;
 
 	cfg.trunc_normal_sb_msgs = 0;
+	cfg.shorten_title_paths = 0;
 
 	p = val.str_val;
 	while(*p != '\0')
@@ -1400,8 +1406,14 @@ shortmess_handler(OPT_OP op, optval_t val)
 		{
 			cfg.trunc_normal_sb_msgs = 1;
 		}
-		p++;
+		else if(*p == 'p')
+		{
+			cfg.shorten_title_paths = 1;
+		}
+		++p;
 	}
+
+	ui_views_update_titles();
 }
 
 #ifndef _WIN32
