@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 11, 2015" "vifm 0.7.8"
+.TH VIFM 1 "June 12, 2015" "vifm 0.7.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3271,13 +3271,15 @@ Full path to the shell to use to run external commands.
 .BI "'shortmess' 'shm'"
 type: charset
 .br
-default: ""
+default: "p"
 .br
 Contains a sequence of single-character flags.  Each flag enables shortening
 of some message displayed by vifm in the TUI.  Flags:
 .br
 T \- truncate status-bar messages in the middle if they are too long to fit on \
 the command line.  "..." will appear in the middle.
+.br
+p \- use tilde shortening in view titles.
 .TP
 .BI 'slowfs'
 type: string list

@@ -184,6 +184,20 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 		full->def.int_val = def.int_val;
 		full->val.int_val = def.int_val;
 	}
+
+#ifndef NDEBUG
+	switch(type)
+	{
+		case OPT_CHARSET:
+			assert((size_t)full->val_count == strlen(*full->vals) &&
+					"Number of character set items is incorrect.");
+			break;
+
+		default:
+			/* No checks for other types, at least for now. */
+			break;
+	}
+#endif
 }
 
 /* Adds option to internal array of option descriptors.  Returns a pointer to
@@ -294,7 +308,7 @@ process_option(const char arg[])
 
 	p = skip_alphas(arg);
 
-	snprintf(option, p - arg + 1, "%s", arg);
+	copy_str(option, p - arg + 1, arg);
 
 	if(strcmp(option, "all") == 0)
 	{
@@ -705,7 +719,7 @@ set_op(opt_t *opt, const char value[], SetOp op)
 		if(p == NULL)
 			p = value + strlen(value);
 
-		snprintf(val, p - value + 1, "%s", value);
+		copy_str(val, p - value + 1, value);
 
 		i = find_val(opt, val);
 		if(i != -1)
@@ -969,11 +983,11 @@ get_value(const opt_t *opt)
 	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
 			opt->type == OPT_CHARSET)
 	{
-		snprintf(buf, sizeof(buf), "%s", opt->val.str_val ? opt->val.str_val : "");
+		copy_str(buf, sizeof(buf), opt->val.str_val ? opt->val.str_val : "");
 	}
 	else if(opt->type == OPT_ENUM)
 	{
-		snprintf(buf, sizeof(buf), "%s", opt->vals[opt->val.enum_item]);
+		copy_str(buf, sizeof(buf), opt->vals[opt->val.enum_item]);
 	}
 	else if(opt->type == OPT_SET)
 	{

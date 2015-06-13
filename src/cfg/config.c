@@ -166,8 +166,6 @@ cfg_init(void)
 
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 
-	cfg.trunc_normal_sb_msgs = 0;
-
 	cfg.filter_inverted_by_default = 1;
 
 	cfg.apropos_prg = strdup("apropos %a");
@@ -175,6 +173,9 @@ cfg_init(void)
 			"-type d \\( ! -readable -o ! -executable \\) -prune");
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
+
+	cfg.trunc_normal_sb_msgs = 0;
+	cfg.shorten_title_paths = 1;
 
 	cfg.slow_fs_list = strdup("");
 

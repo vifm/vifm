@@ -44,7 +44,7 @@ SETUP()
 	init_options(&option_changed);
 
 	val.str_val = "bc";
-	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset),
+	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset) - 1,
 			&cpoptions_vals, dummy_handler, val);
 
 	val.bool_val = 0;
