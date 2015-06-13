@@ -184,6 +184,20 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 		full->def.int_val = def.int_val;
 		full->val.int_val = def.int_val;
 	}
+
+#ifndef NDEBUG
+	switch(type)
+	{
+		case OPT_CHARSET:
+			assert((size_t)full->val_count == strlen(*full->vals) &&
+					"Number of character set items is incorrect.");
+			break;
+
+		default:
+			/* No checks for other types, at least for now. */
+			break;
+	}
+#endif
 }
 
 /* Adds option to internal array of option descriptors.  Returns a pointer to

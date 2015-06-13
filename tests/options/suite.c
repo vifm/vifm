@@ -59,7 +59,7 @@ SETUP()
 	init_options(&option_changed);
 
 	val.str_val = "";
-	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset),
+	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset) - 1,
 			&cpoptions_vals, cpoptions_handler, val);
 
 	val.str_val = "";
