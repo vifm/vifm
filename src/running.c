@@ -746,9 +746,16 @@ cd_updir(FileView *view)
 {
 	char dir_name[strlen(view->curr_dir) + 1];
 
+	/* Return to original directory from custom view. */
 	if(flist_custom_active(view))
 	{
 		navigate_to(view, view->custom.orig_dir);
+		return;
+	}
+
+	/* Do nothing in root. */
+	if(is_root_dir(view->curr_dir))
+	{
 		return;
 	}
 
