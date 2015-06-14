@@ -414,7 +414,7 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
 		snprintf(buf, sizeof(buf), "chmod in %s: %s",
-				replace_home_part(view->curr_dir),
+				replace_home_part(flist_get_dir(view)),
 				view->dir_entry[view->list_pos].name);
 		cmd_group_begin(buf);
 		attrib_file_in_list(view, view->list_pos, add, sub, recurse_dirs);
@@ -425,7 +425,7 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 		size_t len;
 		int j = i;
 		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
-				replace_home_part(view->curr_dir));
+				replace_home_part(flist_get_dir(view)));
 
 		while(i < view->list_rows && len < sizeof(buf))
 		{

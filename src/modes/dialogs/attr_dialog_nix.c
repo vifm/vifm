@@ -483,7 +483,7 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 		char buf[COMMAND_GROUP_INFO_LEN];
 		char inv[16];
 		snprintf(buf, sizeof(buf), "chmod in %s: %s",
-				replace_home_part(view->curr_dir),
+				replace_home_part(flist_get_dir(view)),
 				view->dir_entry[view->list_pos].name);
 		cmd_group_begin(buf);
 		snprintf(inv, sizeof(inv), "0%o",
@@ -496,7 +496,7 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 		size_t len;
 		int j = i;
 		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
-				replace_home_part(view->curr_dir));
+				replace_home_part(flist_get_dir(view)));
 
 		while(i < view->list_rows && len < sizeof(buf))
 		{
