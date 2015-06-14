@@ -257,6 +257,9 @@
 	Display error on failed conversion to Unicode (say if file name includes
 	broken UTF-8 sequence).  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Do not move cursor on trying to go one directory up in root of the file
+	system.  Thanks to Martin Fischer.
+
 	Fixed search messages in menus (nth time...).
 
 	Fixed automatic finishing in some situation when no terminal is available.

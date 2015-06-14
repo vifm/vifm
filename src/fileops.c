@@ -619,7 +619,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	}
 
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
-			replace_home_part(view->curr_dir));
+			replace_home_part(flist_get_dir(view)));
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
@@ -761,7 +761,7 @@ delete_files_bg(FileView *view, int use_trash)
 	general_prepare_for_bg_task(view, args);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
-			use_trash ? 'd' : 'D', replace_home_part(view->curr_dir));
+			use_trash ? 'd' : 'D', replace_home_part(flist_get_dir(view)));
 
 	append_marked_files(view, task_desc, NULL);
 
@@ -1268,7 +1268,7 @@ incdec_names(FileView *view, int k)
 	int err, nrenames, nrenamed;
 
 	snprintf(undo_msg, sizeof(undo_msg), "<c-a> in %s: ",
-			replace_home_part(view->curr_dir));
+			replace_home_part(flist_get_dir(view)));
 	append_marked_files(view, undo_msg, NULL);
 
 	entry = NULL;
@@ -1663,7 +1663,7 @@ change_link_cb(const char new_target[])
 			curr_view->curr_dir);
 
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
-			replace_home_part(curr_view->curr_dir), fname, linkto, new_target);
+			replace_home_part(flist_get_dir(curr_view)), fname, linkto, new_target);
 	cmd_group_begin(undo_msg);
 
 	get_current_full_path(curr_view, sizeof(full_path), full_path);
@@ -2421,7 +2421,7 @@ put_files_i(FileView *view, int start)
 		}
 
 		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", descr,
-				replace_home_part(view->curr_dir));
+				replace_home_part(flist_get_dir(view)));
 		cmd_group_begin(undo_msg);
 		cmd_group_end();
 	}
@@ -2861,12 +2861,12 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 	if(lhs == NULL && rhs == NULL)
 	{
 		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", desc,
-				replace_home_part(view->curr_dir));
+				replace_home_part(flist_get_dir(view)));
 	}
 	else
 	{
 		snprintf(undo_msg, sizeof(undo_msg), "%s/%s/%s/ in %s: ", desc, lhs, rhs,
-				replace_home_part(view->curr_dir));
+				replace_home_part(flist_get_dir(view)));
 	}
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
@@ -3262,7 +3262,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	}
 
 	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
-			replace_home_part(view->curr_dir));
+			replace_home_part(flist_get_dir(view)));
 	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
 			"%s: ", replace_home_part(path));
 	append_marked_files(view, undo_msg, *list);
