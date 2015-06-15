@@ -667,7 +667,14 @@ change_window(void)
 		navigate_to(curr_view, curr_view->curr_dir);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	if(window_shows_dirlist(&lwin) && window_shows_dirlist(&rwin))
+	{
+		fview_cursor_redraw(curr_view);
+	}
+	else
+	{
+		curr_stats.need_update = UT_REDRAW;
+	}
 }
 
 void
