@@ -299,7 +299,12 @@ read_config_file(const char *config_file)
 		}
 		/* COMMAND is handled here so that the command can have an '=' */
 		if(!strcmp(line, "COMMAND"))
-			add_command(s1, s2);
+		{
+			if(args == 2)
+			{
+				add_command(s1, s2);
+			}
+		}
 		else
 		{
 			if(args == 2 && (sx = s3 = strchr(s2, '=')) != NULL)

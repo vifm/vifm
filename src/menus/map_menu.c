@@ -48,17 +48,13 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	x = 0;
 	while(list[x] != NULL)
 	{
-		if(list[x][0] != L'\0' && wcsncmp(start, list[x], start_len) != 0)
-		{
-			free(list[x]);
-			x++;
-			continue;
-		}
-
 		if(list[x][0] != '\0')
 		{
-			add_mapping_item(&m, list[x]);
-			m.len++;
+			if(wcsncmp(start, list[x], start_len) == 0)
+			{
+				add_mapping_item(&m, list[x]);
+				++m.len;
+			}
 		}
 		else if(m.len != 0)
 		{
@@ -66,19 +62,21 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		}
 
 		free(list[x]);
-		x++;
+		++x;
 	}
 	free(list);
 
 	if(m.len > 0 && m.items[m.len - 1][0] == '\0')
 	{
 		free(m.items[m.len - 1]);
-		m.len--;
+		--m.len;
 	}
 
 	return display_menu(&m, view);
 }
 
+/* Adds map_info to the menu after pre-formatting.  Map_info is assumed to be
+ * non-empty. */
 static void
 add_mapping_item(menu_info *m, const wchar_t map_info[])
 {
@@ -86,6 +84,7 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	size_t len;
 	int i, str_len, buf_len;
 	const wchar_t *rhs;
+	char *item;
 
 	str_len = wcslen(map_info);
 	rhs = map_info + str_len + 1;
@@ -101,45 +100,35 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 		rhs = L"<nop>";
 	}
 
-	if(str_len > 0)
-	{
-		buf_len += 1 + wcslen(rhs)*4 + 1;
-	}
-	else
-	{
-		buf_len += 1 + 0 + 1;
-	}
+	buf_len += 1 + wcslen(rhs)*4 + 1;
 
 	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
-	m->items[m->len] = malloc(buf_len + MAP_WIDTH);
-	m->items[m->len][0] = '\0';
+	item = malloc(buf_len + MAP_WIDTH);
+	item[0] = '\0';
+	m->items[m->len] = item;
+
 	for(i = 0; i < str_len; i += len)
 	{
-		strcat(m->items[m->len], wchar_to_spec(map_info + i, &len));
+		strcat(item, wchar_to_spec(map_info + i, &len));
 	}
 
-	if(str_len == 0)
+	for(i = strlen(item); i < MAP_WIDTH; i++)
 	{
-		strcat(m->items[m->len], "<nop>");
+		strcat(item, " ");
 	}
 
-	for(i = strlen(m->items[m->len]); i < MAP_WIDTH; i++)
-	{
-		strcat(m->items[m->len], " ");
-	}
-
-	strcat(m->items[m->len], " ");
+	strcat(item, " ");
 
 	for(i = 0; rhs[i] != L'\0'; i += len)
 	{
 		if(rhs[i] == L' ')
 		{
-			strcat(m->items[m->len], " ");
+			strcat(item, " ");
 			len = 1;
 		}
 		else
 		{
-			strcat(m->items[m->len], wchar_to_spec(rhs + i, &len));
+			strcat(item, wchar_to_spec(rhs + i, &len));
 		}
 	}
 }
