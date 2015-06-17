@@ -79,6 +79,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	return display_menu(&m, view);
 }
 
+/* Adds map_info to the menu after pre-formatting. */
 static void
 add_mapping_item(menu_info *m, const wchar_t map_info[])
 {
@@ -86,6 +87,7 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	size_t len;
 	int i, str_len, buf_len;
 	const wchar_t *rhs;
+	char *item;
 
 	str_len = wcslen(map_info);
 	rhs = map_info + str_len + 1;
@@ -111,35 +113,37 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	}
 
 	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
-	m->items[m->len] = malloc(buf_len + MAP_WIDTH);
-	m->items[m->len][0] = '\0';
+	item = malloc(buf_len + MAP_WIDTH);
+	item[0] = '\0';
+	m->items[m->len] = item;
+
 	for(i = 0; i < str_len; i += len)
 	{
-		strcat(m->items[m->len], wchar_to_spec(map_info + i, &len));
+		strcat(item, wchar_to_spec(map_info + i, &len));
 	}
 
 	if(str_len == 0)
 	{
-		strcat(m->items[m->len], "<nop>");
+		strcat(item, "<nop>");
 	}
 
-	for(i = strlen(m->items[m->len]); i < MAP_WIDTH; i++)
+	for(i = strlen(item); i < MAP_WIDTH; i++)
 	{
-		strcat(m->items[m->len], " ");
+		strcat(item, " ");
 	}
 
-	strcat(m->items[m->len], " ");
+	strcat(item, " ");
 
 	for(i = 0; rhs[i] != L'\0'; i += len)
 	{
 		if(rhs[i] == L' ')
 		{
-			strcat(m->items[m->len], " ");
+			strcat(item, " ");
 			len = 1;
 		}
 		else
 		{
-			strcat(m->items[m->len], wchar_to_spec(rhs + i, &len));
+			strcat(item, wchar_to_spec(rhs + i, &len));
 		}
 	}
 }
