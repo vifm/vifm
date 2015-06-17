@@ -131,7 +131,10 @@ if [ "$target" = all -o "$target" = archive ]; then
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
-        rm -f "$dir.zip"
-        zip -9 -r "$dir.zip" "$dir"
+
+        archive_name="$dir.zip"
+        rm -f "$archive_name"
+        zip -9 -r "$archive_name" "$dir"
     fi
+    echo "Archive: $archive_name"
 fi
