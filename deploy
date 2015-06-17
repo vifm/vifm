@@ -61,6 +61,9 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
 
     # update version in README
     sed -i "/^Version:/s/ .*/ $1/" README
+
+    # update man pages
+    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $1\"/" data/*.1
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
