@@ -79,7 +79,8 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	return display_menu(&m, view);
 }
 
-/* Adds map_info to the menu after pre-formatting. */
+/* Adds map_info to the menu after pre-formatting.  Map_info is assumed to be
+ * non-empty. */
 static void
 add_mapping_item(menu_info *m, const wchar_t map_info[])
 {
@@ -103,14 +104,7 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 		rhs = L"<nop>";
 	}
 
-	if(str_len > 0)
-	{
-		buf_len += 1 + wcslen(rhs)*4 + 1;
-	}
-	else
-	{
-		buf_len += 1 + 0 + 1;
-	}
+	buf_len += 1 + wcslen(rhs)*4 + 1;
 
 	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
 	item = malloc(buf_len + MAP_WIDTH);
@@ -120,11 +114,6 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 	for(i = 0; i < str_len; i += len)
 	{
 		strcat(item, wchar_to_spec(map_info + i, &len));
-	}
-
-	if(str_len == 0)
-	{
-		strcat(item, "<nop>");
 	}
 
 	for(i = strlen(item); i < MAP_WIDTH; i++)
