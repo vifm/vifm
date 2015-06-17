@@ -221,6 +221,13 @@ static struct
 	.count = 0,
 };
 
+/* Help message. */
+static const char *const USAGE =
+	"Usage: vifmrc-converter 0|1|2|3 [vifmrc_file vifminfo_file]\n\n"
+	"1 means comment commands in vifmrc and put more things to vifminfo\n"
+	"2 means convert colorscheme file only\n"
+	"3 means rename colorschemes only (add .vifm extension)";
+
 #ifdef _WIN32
 static int is_dir(const char *file);
 #endif
@@ -514,18 +521,13 @@ main(int argc, char **argv)
 
 	if(argc != 2 && argc != 4)
 	{
-		puts("Usage: vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]\n\n"
-				"1 means comment commands in vifmrc and put more things to vifminfo\n"
-				"2 means convert colorscheme file only");
+		puts(USAGE);
 		return 1;
 	}
 	if(argv[1][1] != '\0' || (argv[1][0] != '0' && argv[1][0] != '1' &&
 			argv[1][0] != '2' && argv[1][0] != '3'))
 	{
-		puts("Usage: vifmrc-converter 0|1|2|3 [vifmrc_file vifminfo_file]\n\n"
-				"1 means comment commands in vifmrc and put more things to vifminfo\n"
-				"2 means convert colorscheme file only\n"
-				"3 means convert colorscheme file only");
+		puts(USAGE);
 		return 1;
 	}
 
