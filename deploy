@@ -5,6 +5,8 @@ if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
     exit 1
 fi
 
+ver="$1"
+
 target="all"
 
 if [ $# -eq 2 ]; then
@@ -26,10 +28,10 @@ if [ "$target" = all -o "$target" = update ]; then
     echo "Updating version number..."
 
     # update version in ChangeLog
-    sed -i "1s/current/$1/" ChangeLog
+    sed -i "1s/current/$ver/" ChangeLog
 
     # update version in configure script
-    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.ac
+    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $ver)/" configure.ac
 
     if [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
@@ -45,13 +47,13 @@ if [ "$target" = all -o "$target" = update ]; then
 
     # update version in src/Makefile.win
     makefile=src/Makefile.win
-    sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
+    sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$ver\"/" "${makefile}"
 
     vimplugindoc=data/vim/doc/plugin/vifm-plugin.txt
     vimappdoc=data/vim/doc/app/vifm-app.txt
     # update version in vifm-{app,plugin}.txt
-    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimplugindoc}"
-    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimappdoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $ver/" "${vimplugindoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $ver/" "${vimappdoc}"
     # update last change date in vifm-{app,plugin}.txt
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimplugindoc}"
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
@@ -60,10 +62,10 @@ if [ "$target" = all -o "$target" = update ]; then
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
 
     # update version in README
-    sed -i "/^Version:/s/ .*/ $1/" README
+    sed -i "/^Version:/s/ .*/ $ver/" README
 
     # update man pages
-    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $1\"/" data/*.1
+    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/*.1
 fi
 
 if [ "$target" = all -o "$target" = commit ]; then
@@ -71,19 +73,19 @@ if [ "$target" = all -o "$target" = commit ]; then
 
     # try to mark commit with tag to figure out what to do:
     # commit or ammend changes
-    git tag "v$1"
+    git tag "v$ver"
     if [ "$?" != "0" ]; then
         amendflag=--amend
     else
         amendflag=
     fi
-    git commit -av $amendflag -m "Version v$1"
+    git commit -av $amendflag -m "Version v$ver"
     if [ "$?" != "0" ]; then
         echo 'Committing error.'
         exit 1
     fi
     # force mark commit with tag
-    git tag --force "v$1"
+    git tag --force "v$ver"
 fi
 
 if [ "$target" = all -o "$target" = archive ]; then
@@ -91,8 +93,9 @@ if [ "$target" = all -o "$target" = archive ]; then
 
     # make archive
     if [ "$OS" != Windows_NT ]; then
-        archive_name="vifm-$1.tar.bz2"
-        git archive "v$1" --prefix "vifm-$1/" --format tar | bzip2 > "$archive_name"
+        archive_name="vifm-$ver.tar.bz2"
+        git archive "v$ver" --prefix "vifm-$ver/" --format tar |
+            bzip2 > "$archive_name"
     else
         # remove config.h
         if [ -f config.h ]; then
@@ -106,7 +109,7 @@ if [ "$target" = all -o "$target" = archive ]; then
             exit 3
         fi
 
-        dir="vifm-w32-$1-binary"
+        dir="vifm-w32-$ver-binary"
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
