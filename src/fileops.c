@@ -1292,7 +1292,6 @@ incdec_names(FileView *view, int k)
 	err = 0;
 
 	entry = NULL;
-	i = 0;
 	while(iter_marked_entries(view, &entry))
 	{
 		char new_path[PATH_MAX];
