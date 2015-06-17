@@ -735,6 +735,7 @@ reopen_terminal(void)
 	int outfd;
 	FILE *fp;
 	HANDLE handle_out;
+	SECURITY_ATTRIBUTES sec_attr;
 
 	outfd = dup(STDOUT_FILENO);
 	if(outfd == -1)
@@ -750,8 +751,14 @@ reopen_terminal(void)
 		return NULL;
 	}
 
+	/* Share this file handle with child processes so that could use standard
+	 * output. */
+	sec_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sec_attr.bInheritHandle = TRUE;
+	sec_attr.lpSecurityDescriptor = NULL;
+
 	handle_out = CreateFileW(L"CONOUT$", GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, 0, 0, 0);
+			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, 0, 0, 0);
 	if(handle_out == NULL)
 	{
 		fclose(fp);
