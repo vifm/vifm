@@ -24,7 +24,9 @@
 
 #include "../ui/ui.h"
 
-/* Returns non-zero if status bar message should be saved. */
+/* Displays menu of mappings that have specified prefix.  Frees the list array
+ * and all of its strings.  Returns non-zero if status bar message should be
+ * saved. */
 int show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		const wchar_t start[]);
 

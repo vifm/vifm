@@ -48,17 +48,13 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	x = 0;
 	while(list[x] != NULL)
 	{
-		if(list[x][0] != L'\0' && wcsncmp(start, list[x], start_len) != 0)
-		{
-			free(list[x]);
-			x++;
-			continue;
-		}
-
 		if(list[x][0] != '\0')
 		{
-			add_mapping_item(&m, list[x]);
-			m.len++;
+			if(wcsncmp(start, list[x], start_len) == 0)
+			{
+				add_mapping_item(&m, list[x]);
+				++m.len;
+			}
 		}
 		else if(m.len != 0)
 		{
@@ -66,14 +62,14 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		}
 
 		free(list[x]);
-		x++;
+		++x;
 	}
 	free(list);
 
 	if(m.len > 0 && m.items[m.len - 1][0] == '\0')
 	{
 		free(m.items[m.len - 1]);
-		m.len--;
+		--m.len;
 	}
 
 	return display_menu(&m, view);
