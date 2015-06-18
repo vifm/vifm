@@ -97,17 +97,16 @@ if [ "$target" = all -o "$target" = archive ]; then
         git archive "v$ver" --prefix "vifm-$ver/" --format tar |
             bzip2 > "$archive_name"
     else
-        # remove config.h
-        if [ -f config.h ]; then
-            rm config.h
-        fi
+        # remove config.h to make Makefile.win install default configuration
+        rm -f config.h
 
         # build vifm
-        RELEASE=1 make -B -C src -f Makefile.win
-        if [ "$?" != "0" ]; then
+        if ! RELEASE=1 make -B -C src/ -f Makefile.win; then
             echo "ERROR: Building project failed."
             exit 3
         fi
+
+        set -e
 
         dir="vifm-w32-$ver-binary"
         rm -rf "$dir"
@@ -135,6 +134,8 @@ if [ "$target" = all -o "$target" = archive ]; then
         archive_name="$dir.zip"
         rm -f "$archive_name"
         zip -9 -r "$archive_name" "$dir"
+
+        set +e
     fi
     echo "Archive: $archive_name"
 fi
