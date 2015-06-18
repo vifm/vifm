@@ -127,7 +127,7 @@ update_compile_info:
 
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
