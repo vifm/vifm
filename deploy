@@ -114,11 +114,11 @@ if [ "$target" = all -o "$target" = archive ]; then
         mkdir "$dir"
         cp -R data "$dir"
         for i in "$dir/colors"/*; do
-            unix2dos "$i"
+            unix2dos -c ISO "$i"
         done
         rm "$dir/data"/*.desktop "$dir/data"/*.1
-        unix2dos "$dir/data/vifm-help.txt"
-        unix2dos "$dir/data/vifmrc"
+        unix2dos -c ISO "$dir/data/vifm-help.txt"
+        unix2dos -c ISO "$dir/data/vifmrc"
         mv "$dir/data/vim/doc/plugin/vifm-plugin.txt" "$dir/data/vim/doc/vifm-plugin.txt"
         rmdir "$dir/data/vim/doc/plugin"
         mkdir "$dir/data/vim-doc"
@@ -127,7 +127,7 @@ if [ "$target" = all -o "$target" = archive ]; then
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
-            unix2dos "$dest"
+            unix2dos -c ISO "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
