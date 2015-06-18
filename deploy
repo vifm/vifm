@@ -113,7 +113,7 @@ if [ "$target" = all -o "$target" = archive ]; then
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
-        for i in "$dir/colors"/*; do
+        for i in "$dir/data/colors"/*; do
             unix2dos -c ISO "$i"
         done
         rm "$dir/data"/*.desktop "$dir/data"/*.1
