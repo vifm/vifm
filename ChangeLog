@@ -1,3 +1,7 @@
+0.8-beta to current
+
+	Fixed pane titles update on switching panes.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't
