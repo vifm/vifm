@@ -670,6 +670,7 @@ change_window(void)
 	if(window_shows_dirlist(&lwin) && window_shows_dirlist(&rwin))
 	{
 		fview_cursor_redraw(curr_view);
+		ui_views_update_titles();
 	}
 	else
 	{
