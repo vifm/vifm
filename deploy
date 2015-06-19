@@ -5,33 +5,35 @@ if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
     exit 1
 fi
 
+ver="$1"
+
 target="all"
 
-if [ "$#" == "2" ]; then
+if [ $# -eq 2 ]; then
     target="$2"
 fi
 
 # this check is for me, since I'm always use vifm.exe from the repository
-if [ "$OS" == "Windows_NT" ]; then
-    if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
+if [ "$OS" = Windows_NT ]; then
+    if [ "$target" = all -o "$target" = archive ]; then
         vifm_running="$(ps -W | grep vifm.exe)"
-        if [ "x$vifm_running" != "x" ]; then
+        if [ -n "$vifm_running" ]; then
             echo "ERROR: vifm is running"
             exit 2
         fi
     fi
 fi
 
-if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
+if [ "$target" = all -o "$target" = update ]; then
     echo "Updating version number..."
 
     # update version in ChangeLog
-    sed -i "1s/current/$1/" ChangeLog
+    sed -i "1s/current/$ver/" ChangeLog
 
     # update version in configure script
-    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.ac
+    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $ver)/" configure.ac
 
-    if [ "x$OS" != "xWindows_NT" ]; then
+    if [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
         autoreconf
         # some voodoo magic to preserve old version of aclocal.m4 file
@@ -45,13 +47,13 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
 
     # update version in src/Makefile.win
     makefile=src/Makefile.win
-    sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
+    sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$ver\"/" "${makefile}"
 
     vimplugindoc=data/vim/doc/plugin/vifm-plugin.txt
     vimappdoc=data/vim/doc/app/vifm-app.txt
     # update version in vifm-{app,plugin}.txt
-    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimplugindoc}"
-    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimappdoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $ver/" "${vimplugindoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $ver/" "${vimappdoc}"
     # update last change date in vifm-{app,plugin}.txt
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimplugindoc}"
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
@@ -60,59 +62,62 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
 
     # update version in README
-    sed -i "/^Version:/s/ .*/ $1/" README
+    sed -i "/^Version:/s/ .*/ $ver/" README
+
+    # update man pages
+    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/*.1
 fi
 
-if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
+if [ "$target" = all -o "$target" = commit ]; then
     echo "Making version commit..."
 
     # try to mark commit with tag to figure out what to do:
     # commit or ammend changes
-    git tag "v$1"
+    git tag "v$ver"
     if [ "$?" != "0" ]; then
         amendflag=--amend
     else
         amendflag=
     fi
-    git commit -av $amendflag -m "Version v$1"
+    git commit -av $amendflag -m "Version v$ver"
     if [ "$?" != "0" ]; then
         echo 'Committing error.'
         exit 1
     fi
     # force mark commit with tag
-    git tag --force "v$1"
+    git tag --force "v$ver"
 fi
 
-if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
+if [ "$target" = all -o "$target" = archive ]; then
     echo "Building archive..."
 
     # make archive
-    if [ "$OS" != "Windows_NT" ]; then
-        archive_name="vifm-$1.tar.bz2"
-        git archive "v$1" --prefix "vifm-$1/" --format tar | bzip2 > "$archive_name"
+    if [ "$OS" != Windows_NT ]; then
+        archive_name="vifm-$ver.tar.bz2"
+        git archive "v$ver" --prefix "vifm-$ver/" --format tar |
+            bzip2 > "$archive_name"
     else
-        # remove config.h
-        if [ -f config.h ]; then
-            rm config.h
-        fi
+        # remove config.h to make Makefile.win install default configuration
+        rm -f config.h
 
         # build vifm
-        RELEASE=1 make -B -C src -f Makefile.win
-        if [ "$?" != "0" ]; then
+        if ! RELEASE=1 make -B -C src/ -f Makefile.win; then
             echo "ERROR: Building project failed."
             exit 3
         fi
 
-        dir="vifm-w32-$1-binary"
+        set -e
+
+        dir="vifm-w32-$ver-binary"
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
-        for i in "$dir/colors"/*; do
-            unix2dos "$i"
+        for i in "$dir/data/colors"/*; do
+            unix2dos -c ISO "$i"
         done
         rm "$dir/data"/*.desktop "$dir/data"/*.1
-        unix2dos "$dir/data/vifm-help.txt"
-        unix2dos "$dir/data/vifmrc"
+        unix2dos -c ISO "$dir/data/vifm-help.txt"
+        unix2dos -c ISO "$dir/data/vifmrc"
         mv "$dir/data/vim/doc/plugin/vifm-plugin.txt" "$dir/data/vim/doc/vifm-plugin.txt"
         rmdir "$dir/data/vim/doc/plugin"
         mkdir "$dir/data/vim-doc"
@@ -121,11 +126,16 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"
-            unix2dos "$dest"
+            unix2dos -c ISO "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
-        rm -f "$dir.zip"
-        zip -9 -r "$dir.zip" "$dir"
+
+        archive_name="$dir.zip"
+        rm -f "$archive_name"
+        zip -9 -r "$archive_name" "$dir"
+
+        set +e
     fi
+    echo "Archive: $archive_name"
 fi

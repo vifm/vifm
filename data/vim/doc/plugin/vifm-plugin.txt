@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.7.8  Last change: 2015 May 27
+*vifm-plugin.txt*    For Vifm version 0.8-beta  Last change: 2015 Jun 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 

@@ -109,7 +109,7 @@ vifmres.o: vifm.res
 
 ../config.h:
 	@echo Creating sample ../config.h
-	echo '#define VERSION "0.7.8"' > ../config.h; \
+	echo '#define VERSION "0.8-beta"' > ../config.h; \
 	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
 	echo '#define _GNU_SOURCE 1' >> ../config.h; \
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> ../config.h; \
@@ -127,7 +127,7 @@ update_compile_info:
 
 ../data/vifm-help.txt: ../data/vifm.1
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tutf8 -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
