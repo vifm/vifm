@@ -66,6 +66,10 @@ if [ "$target" = all -o "$target" = update ]; then
 
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/*.1
+
+    # update first header in the NEWS file
+    sed -i -e "1s/.*/$(date '+%B %d, %Y')/" \
+           -e "2{s/.*/$(date '+%B %d, %Y')/;s/./=/g}" NEWS
 fi
 
 if [ "$target" = all -o "$target" = commit ]; then
