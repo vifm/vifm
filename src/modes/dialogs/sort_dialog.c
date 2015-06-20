@@ -73,6 +73,7 @@ ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
@@ -85,6 +86,7 @@ static void clear_at_pos(void);
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
@@ -196,6 +198,13 @@ leave_sort_mode(void)
 	ui_view_reset_selection_and_reload(view);
 
 	update_all_windows();
+}
+
+/* Redraws the dialog. */
+static void
+cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
+{
+	redraw_sort_dialog();
 }
 
 static void
