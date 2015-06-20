@@ -5,6 +5,8 @@
 	Append unused space in view columns to the last one with percent sizing
 	type if any.  Thanks to fogine.
 
+	Drastically increased performance of custom view composing.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).

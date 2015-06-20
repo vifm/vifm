@@ -60,6 +60,7 @@
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
+#include "utils/trie.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "fileview.h"
@@ -1316,6 +1317,8 @@ flist_custom_start(FileView *view, const char title[])
 {
 	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 	(void)replace_string(&view->custom.title, title);
+
+	view->custom.paths_cache = trie_create();
 }
 
 void
@@ -1324,20 +1327,19 @@ flist_custom_add(FileView *view, const char path[])
 	char canonic_path[PATH_MAX];
 	dir_entry_t *dir_entry;
 
+	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
+	{
+		return;
+	}
+
 	/* Don't add duplicates. */
-	if(entry_from_path(view->custom.entries, view->custom.entry_count,
-				path) != NULL)
+	if(trie_put(view->custom.paths_cache, canonic_path) != 0)
 	{
 		return;
 	}
 
 	dir_entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
 	if(dir_entry == NULL)
-	{
-		return;
-	}
-
-	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
 	{
 		return;
 	}
@@ -1497,6 +1499,9 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view)
 {
+	trie_free(view->custom.paths_cache);
+	view->custom.paths_cache = NULL_TRIE;
+
 	if(view->custom.entry_count == 0)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);

@@ -34,6 +34,7 @@
 #include "../utils/filemon.h"
 #include "../utils/filter.h"
 #include "../utils/fs_limits.h"
+#include "../utils/trie.h"
 #include "../color_scheme.h"
 #include "../column_view.h"
 #include "../status.h"
@@ -185,6 +186,10 @@ typedef struct
 		int unsorted;
 		/* Previous sorting value, before unsorted custom view was loaded. */
 		char sort[SK_COUNT];
+
+		/* Names of files in custom view while it's being composed.  Used for
+		 * duplicate elimination. */
+		trie_t paths_cache;
 	}
 	custom;
 
