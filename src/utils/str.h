@@ -38,7 +38,11 @@
 #define WPRINTF_MBSTR L"s"
 #define WPRINTF_WSTR L"ls"
 #define PRINTF_PID_T "%d"
+#if defined(__OpenBSD__)
+#define TIME_T "%lld"
+#else
 #define TIME_T "%ld"
+#endif
 #if defined(_LP64)
 #define PRINTF_SIZE_T "%lu"
 #else
