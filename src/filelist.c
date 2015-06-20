@@ -2122,25 +2122,6 @@ alloc_dir_entry(dir_entry_t **list, int list_size)
 	return &new_entry_list[list_size];
 }
 
-static void
-reload_window(FileView *view)
-{
-	if(!window_shows_dirlist(view))
-		return;
-
-	curr_stats.skip_history = 1;
-
-	load_saving_pos(view, is_dir_list_loaded(view));
-
-	if(view != curr_view)
-	{
-		put_inactive_mark(view);
-		refresh_view_win(view);
-	}
-
-	curr_stats.skip_history = 0;
-}
-
 void
 check_if_filelist_have_changed(FileView *view)
 {
@@ -2178,13 +2159,13 @@ check_if_filelist_have_changed(FileView *view)
 		leave_invalid_dir(view);
 		(void)change_directory(view, view->curr_dir);
 		clean_selected_files(view);
-		reload_window(view);
+		ui_view_schedule_reload(view);
 		return;
 	}
 
 	if(changed)
 	{
-		reload_window(view);
+		ui_view_schedule_reload(view);
 	}
 }
 
