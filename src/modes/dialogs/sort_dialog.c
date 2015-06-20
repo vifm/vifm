@@ -153,7 +153,7 @@ redraw_sort_dialog(void)
 
 	y = (getmaxy(stdscr) - ((top + SK_COUNT) - 2 + 3))/2;
 	x = (getmaxx(stdscr) - SORT_WIN_WIDTH)/2;
-	wresize(sort_win, SK_COUNT + 6, SORT_WIN_WIDTH);
+	wresize(sort_win, MIN(getmaxy(stdscr), SK_COUNT + 6), SORT_WIN_WIDTH);
 	mvwin(sort_win, MAX(0, y), x);
 
 	werase(sort_win);
