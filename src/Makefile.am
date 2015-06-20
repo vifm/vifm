@@ -161,6 +161,7 @@ vifm_SOURCES = \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
+	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \
