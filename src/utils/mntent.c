@@ -125,10 +125,12 @@ flags2opts(int flags)
 	if(flags & MNT_SYNCHRONOUS) res = catopt(res, "sync");
 	if(flags & MNT_NOEXEC)      res = catopt(res, "noexec");
 	if(flags & MNT_NOSUID)      res = catopt(res, "nosuid");
+#ifndef __OpenBSD__
 	if(flags & MNT_UNION)       res = catopt(res, "union");
+#endif
 	if(flags & MNT_ASYNC)       res = catopt(res, "async");
 	if(flags & MNT_NOATIME)     res = catopt(res, "noatime");
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__OpenBSD__)
 	if(flags & MNT_NOCLUSTERR)  res = catopt(res, "noclusterr");
 	if(flags & MNT_NOCLUSTERW)  res = catopt(res, "noclusterw");
 	if(flags & MNT_NOSYMFOLLOW) res = catopt(res, "nosymfollow");
