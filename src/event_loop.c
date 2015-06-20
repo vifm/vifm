@@ -286,13 +286,13 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 	{
 		int i;
 
-		process_scheduled_updates();
-
 		if(should_check_views_for_changes())
 		{
 			check_view_for_changes(curr_view);
 			check_view_for_changes(other_view);
 		}
+
+		process_scheduled_updates();
 
 		for(i = 0; i < IPC_F; ++i)
 		{
@@ -321,24 +321,21 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 static void
 process_scheduled_updates(void)
 {
-	ui_stat_job_bar_check_for_updates();
+	int need_redraw = 0;
 
-	if(fetch_redraw_scheduled())
-	{
-		modes_redraw();
-	}
+	ui_stat_job_bar_check_for_updates();
 
 	if(vle_mode_get_primary() != MENU_MODE)
 	{
-		int changed = 0;
+		need_redraw += (process_scheduled_updates_of_view(curr_view) != 0);
+		need_redraw += (process_scheduled_updates_of_view(other_view) != 0);
+	}
 
-		changed += process_scheduled_updates_of_view(curr_view) != 0;
-		changed += process_scheduled_updates_of_view(other_view) != 0;
+	need_redraw += (fetch_redraw_scheduled() != 0);
 
-		if(changed && vle_mode_is(MSG_MODE))
-		{
-			redraw_msg_dialog(0);
-		}
+	if(need_redraw)
+	{
+		modes_redraw();
 	}
 }
 

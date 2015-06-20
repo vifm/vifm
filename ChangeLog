@@ -1,8 +1,13 @@
 0.8-beta to current
 
+	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).
+
+	Fixed redrawing of dialogs requested via startup commands.  Thanks to
+	filterfalse.
 
 0.7.8 to 0.8-beta
 
