@@ -32,6 +32,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../compat/curses.h"
 #include "../engine/abbrevs.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
@@ -391,8 +392,8 @@ update_cmdline_text(line_stats_t *stat)
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
 	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
-	mvwaddwstr(status_bar, 0, 0, stat->prompt);
-	mvwaddwstr(status_bar, stat->prompt_wid/line_width,
+	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
 			stat->prompt_wid%line_width, stat->line);
 	update_cursor();
 	wrefresh(status_bar);
@@ -1532,8 +1533,8 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index = 0;
 
 	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	compat_mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	compat_mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
 	update_cmdline_text(&input_stat);
 }

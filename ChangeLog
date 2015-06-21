@@ -22,6 +22,10 @@
 
 	Fixed dialog message centering which could be off by one.
 
+	Fixed work on OpenBSD (at least to some degree that curses implementation
+	there allows).  There are still some troubles with non-ascii characters.
+	Thanks to hofheinz.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

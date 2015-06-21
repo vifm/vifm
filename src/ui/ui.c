@@ -40,6 +40,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/info.h"
+#include "../compat/curses.h"
 #include "../engine/mode.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
@@ -227,11 +228,11 @@ ui_char_pressed(wint_t c)
 
 	/* Query single character in non-blocking mode. */
 	wtimeout(status_bar, 0);
-	if(wget_wch(status_bar, &pressed) != ERR)
+	if(compat_wget_wch(status_bar, &pressed) != ERR)
 	{
 		if(pressed != c && pressed != CTRL_C)
 		{
-			unget_wch(pressed);
+			compat_unget_wch(pressed);
 		}
 	}
 
@@ -801,7 +802,7 @@ update_input_bar(const wchar_t *str)
 	}
 
 	werase(input_win);
-	waddwstr(input_win, str);
+	compat_waddwstr(input_win, str);
 	wrefresh(input_win);
 }
 
@@ -948,7 +949,7 @@ wprint(WINDOW *win, const char str[])
 		return;
 	}
 
-	waddwstr(win, t);
+	compat_waddwstr(win, t);
 	free(t);
 #endif
 }

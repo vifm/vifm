@@ -24,6 +24,10 @@
 
 #include <stdio.h> /* FILE */
 
+/* Windows lacks support for UTF-8, that's why file system related functions
+ * that work with paths are wrapped here.  Wrappers basically do transparent
+ * string encoding conversion. */
+
 #ifndef _WIN32
 
 #include <sys/stat.h> /* mkdir() */

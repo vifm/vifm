@@ -19,3 +19,5 @@ Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
 Screen split title cannot be overwritten when it's run from `:shell`.
 
 :change->Name renames only one file even when several are selected.
+
+On OpenBSD there are issues with non-ascii characters.
