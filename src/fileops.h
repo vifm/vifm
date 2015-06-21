@@ -143,10 +143,15 @@ uint64_t calculate_dir_size(const char path[], int force);
  * previously cached values. */
 void calculate_size_bg(const FileView *view, int force);
 
+#ifdef TEST
+#include "ops.h"
+#endif
+
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
 	int check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type);
+	int merge_dirs(const char src[], const char dst[], ops_t *ops);
 	const char * gen_clone_name(const char normal_name[]);
 	int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 	const char * incdec_name(const char fname[], int k);

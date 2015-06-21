@@ -169,6 +169,7 @@ static void change_owner_cb(const char new_owner[]);
 static int complete_group(const char str[], void *arg);
 #endif
 static int complete_filename(const char str[], void *arg);
+TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
@@ -1858,48 +1859,18 @@ put_next(const char dest_name[], int force)
 	 * "mv" itself. */
 	if(move && merge)
 	{
-		DIR *dir;
+		char dst_path[PATH_MAX];
 
 		success = 1;
 
 		cmd_group_continue();
 
-		if((dir = os_opendir(src_buf)) != NULL)
-		{
-			struct dirent *d;
-			while((d = os_readdir(dir)) != NULL)
-			{
-				if(!is_builtin_dir(d->d_name))
-				{
-					char src_path[PATH_MAX];
-					char dst_path[PATH_MAX];
-					snprintf(src_path, sizeof(src_path), "%s/%s", src_buf, d->d_name);
-					snprintf(dst_path, sizeof(dst_path), "%s/%s/%s",
-							put_confirm.view->curr_dir, dest_name, d->d_name);
-					if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
-								dst_path) != 0)
-					{
-						success = 0;
-						break;
-					}
-					add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
-				}
-			}
-			os_closedir(dir);
-		}
-		else
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.view->curr_dir,
+				dest_name);
+
+		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
 		{
 			success = 0;
-		}
-
-		if(success)
-		{
-			success = (perform_operation(OP_RMDIR, put_confirm.ops, NULL, src_buf,
-						NULL) == 0);
-			if(success)
-			{
-				add_operation(OP_RMDIR, NULL, NULL, src_buf, "");
-			}
 		}
 
 		cmd_group_end();
@@ -1953,6 +1924,66 @@ put_next(const char dest_name[], int force)
 	}
 
 	return 0;
+}
+
+/* Merges src into dst. Returns zero on success, otherwise non-zero is
+ * returned. */
+TSTATIC int
+merge_dirs(const char src[], const char dst[], ops_t *ops)
+{
+	DIR *dir;
+	struct dirent *d;
+	int result;
+
+	dir = os_opendir(src);
+	if(dir == NULL)
+	{
+		return -1;
+	}
+
+	while((d = os_readdir(dir)) != NULL)
+	{
+		char src_path[PATH_MAX];
+		char dst_path[PATH_MAX];
+
+		if(is_builtin_dir(d->d_name))
+		{
+			continue;
+		}
+
+		snprintf(src_path, sizeof(src_path), "%s/%s", src, d->d_name);
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, d->d_name);
+
+		if(is_dir_entry(dst_path, d))
+		{
+			if(merge_dirs(src_path, dst_path, ops) != 0)
+			{
+				break;
+			}
+		}
+		else
+		{
+			if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
+						dst_path) != 0)
+			{
+				break;
+			}
+			add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
+		}
+	}
+	os_closedir(dir);
+
+	if(d != NULL)
+	{
+		return 1;
+	}
+
+	result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
+	if(result == 0)
+	{
+		add_operation(OP_RMDIR, NULL, NULL, src, "");
+	}
+	return result;
 }
 
 static void
