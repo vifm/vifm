@@ -254,10 +254,41 @@ TEST(directories_can_be_merged)
 		assert_success(ior_mv(&args));
 	}
 
+	/* Original directory must be deleted. */
+	assert_false(file_exists("first"));
+
 	assert_true(file_exists("second/second-file"));
 	assert_true(file_exists("second/first-file"));
 
-	delete_tree("first");
+	delete_tree("second");
+}
+
+TEST(nested_directories_can_be_merged)
+{
+	create_empty_dir("first");
+	create_empty_dir("first/nested");
+	create_empty_file("first/nested/first-file");
+
+	create_empty_dir("second");
+	create_empty_dir("second/nested");
+	create_empty_file("second/nested/second-file");
+
+	{
+		io_args_t args = {
+			.arg1.src = "first",
+			.arg2.dst = "second",
+			.arg3.crs = IO_CRS_REPLACE_FILES,
+		};
+		assert_success(ior_mv(&args));
+	}
+
+	/* Original directory must be deleted. */
+	assert_false(file_exists("first/nested"));
+	assert_false(file_exists("first"));
+
+	assert_true(file_exists("second/nested/second-file"));
+	assert_true(file_exists("second/nested/first-file"));
+
 	delete_tree("second");
 }
 

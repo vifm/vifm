@@ -367,7 +367,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
 				cp_args->result = args.result;
 			}
-			else
+			else if(cp)
 			{
 				result = VR_SKIP_DIR_LEAVE;
 			}
@@ -394,7 +394,20 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 			{
 				struct stat st;
 
-				if(os_stat(full_path, &st) == 0)
+				if(cp_args->arg3.crs == IO_CRS_REPLACE_FILES && !cp)
+				{
+					io_args_t rm_args = {
+						.arg1.path = full_path,
+
+						.cancellable = cp_args->cancellable,
+						.estim = cp_args->estim,
+
+						.result = cp_args->result,
+					};
+
+					result = (iop_rmdir(&rm_args) == 0) ? VR_OK : VR_ERROR;
+				}
+				else if(os_stat(full_path, &st) == 0)
 				{
 					result = (os_chmod(dst_full_path, st.st_mode & 07777) == 0)
 									? VR_OK
