@@ -1954,11 +1954,22 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		snprintf(src_path, sizeof(src_path), "%s/%s", src, d->d_name);
 		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, d->d_name);
 
-		if(perform_operation(OP_MOVEF, ops, NULL, src_path, dst_path) != 0)
+		if(is_dir_entry(dst_path, d))
 		{
-			break;
+			if(merge_dirs(src_path, dst_path, ops) != 0)
+			{
+				break;
+			}
 		}
-		add_operation(OP_MOVEF, ops, NULL, src_path, dst_path);
+		else
+		{
+			if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
+						dst_path) != 0)
+			{
+				break;
+			}
+			add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
+		}
 	}
 	os_closedir(dir);
 
@@ -1967,7 +1978,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		return 1;
 	}
 
-	result = perform_operation(OP_RMDIR, ops, NULL, src, NULL);
+	result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
 	if(result == 0)
 	{
 		add_operation(OP_RMDIR, NULL, NULL, src, "");
