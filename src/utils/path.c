@@ -166,7 +166,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		p++;
 	}
 
-	if(*q != '/')
+	if((*directory != '\0' && q < buf) || (q >= buf && *q != '/'))
 	{
 		*++q = '/';
 	}
