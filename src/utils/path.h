@@ -31,7 +31,8 @@
 
 /* Various functions to work with paths */
 
-void chosp(char *path);
+/* Like chomp() but removes trailing slashes. */
+void chosp(char path[]);
 
 int ends_with_slash(const char *path);
 
