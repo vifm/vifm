@@ -418,5 +418,35 @@ TEST(charset_hat_completion_works)
 	free(completed);
 }
 
+TEST(no_no_or_inv_completion_for_all_pseudo_option)
+{
+	const char *start;
+	char *completed;
+
+	vle_compl_reset();
+	complete_options("noa", &start);
+	assert_string_equal("a", start);
+
+	completed = vle_compl_next();
+	assert_string_equal("a", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("a", completed);
+	free(completed);
+
+	vle_compl_reset();
+	complete_options("inva", &start);
+	assert_string_equal("a", start);
+
+	completed = vle_compl_next();
+	assert_string_equal("a", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("a", completed);
+	free(completed);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
