@@ -9,6 +9,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -73,6 +74,8 @@ static int sea_tests_passed = 0;
 static int sea_tests_failed = 0;
 static int stic_display_only = 0;
 static int stic_verbose = 0;
+static int stic_random_failures = 0;
+static int stic_silent = 0;
 static int stic_machine_readable = 0;
 static const char *stic_current_fixture;
 static const char *stic_current_fixture_path;
@@ -84,8 +87,9 @@ static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
 const char *stic_current_test;
+const char *stic_suite_name;
 
-void (*stic_simple_test_result)(int passed, char* reason, const char* function, unsigned int line) = stic_simple_test_result_log;
+void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
 
 void suite_setup(stic_void_void setup)
 {
@@ -99,6 +103,19 @@ void suite_teardown(stic_void_void teardown)
 int stic_is_display_only()
 {
 	return stic_display_only;
+}
+
+static void stic_header_printer(const char s[], int length, char f)
+{
+	int l = strlen(s);
+	int d = (length- (l + 2)) / 2;
+	int i;
+	if(stic_is_display_only() || stic_machine_readable) return;
+	for(i = 0; i<d; i++) printf("%c",f);
+	if(l==0) printf("%c%c", f, f);
+	else printf(" %s ", s);
+	for(i = (d+l+2); i<length; i++) printf("%c",f);
+	printf("\n");
 }
 
 void stic_suite_setup( void )
@@ -153,23 +170,53 @@ static const char * test_file_name(const char path[])
 
 static int stic_fixture_tests_run;
 static int stic_fixture_tests_failed;
+static int stic_fixture_tests_passed;
 
-void stic_simple_test_result_log(int passed, char* reason, const char* function, unsigned int line)
+static int test_had_output(void)
 {
-	/* TODO: do use function if it differs from test. */
-	(void)function;
+	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
+	const int npassed = sea_tests_passed - stic_fixture_tests_passed;
+	return (nfailed != 0 || (npassed != 0 && stic_verbose));
+}
+
+void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
+{
+	static const char *last_test;
+
+	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test;
+
+	if (stic_current_test != NULL && strcmp(function, stic_current_test) == 0)
+	{
+		function = "test body";
+	}
+
+	if (stic_random_failures && random() % 8 == 0)
+	{
+		passed = !passed;
+	}
+
+	if (stic_silent && !test_had_output() && (!passed || stic_verbose))
+	{
+		stic_header_printer(stic_current_fixture, stic_screen_width, '-');
+	}
 
 	if (!passed)
 	{
 		if(stic_machine_readable)
 		{
-			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason );
+			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason);
 		}
 		else
 		{
-			printf("%-30s Line %-5u %s\n", stic_current_test, line, reason );
+			if(stic_current_test != last_test)
+			{
+				printf("\n%s:\n", test_name);
+			}
+			printf("   (-) %s:%u\n       in %s\n       %s\n",
+			       file, line, function, reason );
 		}
 		sea_tests_failed++;
+		last_test = stic_current_test;
 	}
 	else
 	{
@@ -177,80 +224,85 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		{
 			if(stic_machine_readable)
 			{
-				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line );
+				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line);
 			}
 			else
 			{
-				printf("%-30s Line %-5u Passed\n", stic_current_test, line);
+				if(stic_current_test != last_test)
+				{
+					printf("\n%s\n", test_name);
+				}
+				printf("   (+) %s:%u\n       in %s\n", file, line, function);
 			}
+			last_test = stic_current_test;
 		}
 		sea_tests_passed++;
 	}
 }
 
-void stic_assert_true(int test, const char* function, unsigned int line)
+void stic_assert_true(int test, const char* function, const char file[], unsigned int line)
 {
-	stic_simple_test_result(test, "Should have been true", function, line);
+	stic_simple_test_result(test, "Should have been true", function, file, line);
 }
 
-void stic_assert_false(int test, const char* function, unsigned int line)
+void stic_assert_false(int test, const char* function, const char file[], unsigned int line)
 {
-	stic_simple_test_result(!test, "Should have been false", function, line);
+	stic_simple_test_result(!test, "Should have been false", function, file, line);
 }
 
-void stic_assert_success(int test, const char function[], unsigned int line)
+void stic_assert_success(int test, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(test == 0, "Should have been success (zero)", function, line);
+	stic_simple_test_result(test == 0, "Should have been success (zero)", function, file, line);
 }
 
-void stic_assert_failure(int test, const char function[], unsigned int line)
+void stic_assert_failure(int test, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, line);
+	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, file, line);
 }
 
-void stic_assert_null(const void *value, const char function[], unsigned int line)
+void stic_assert_null(const void *value, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(value == NULL, "Should have been NULL", function, line);
+	stic_simple_test_result(value == NULL, "Should have been NULL", function, file, line);
 }
 
-void stic_assert_non_null(const void *value, const char function[], unsigned int line)
+void stic_assert_non_null(const void *value, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(value != NULL, "Should have been non-NULL", function, line);
+	stic_simple_test_result(value != NULL, "Should have been non-NULL", function, file, line);
 }
 
-void stic_assert_int_equal(int expected, int actual, const char* function, unsigned int line)
+void stic_assert_int_equal(int expected, int actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected %d but was %d", expected, actual);
-	stic_simple_test_result(expected==actual, s, function, line);
+	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
-void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, unsigned int line)
+void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected %lu but was %lu", expected, actual);
-	stic_simple_test_result(expected==actual, s, function, line);
+	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
-void stic_assert_float_equal( float expected, float actual, float delta, const char* function, unsigned int line )
+void stic_assert_float_equal( float expected, float actual, float delta, const char* function, const char file[], unsigned int line )
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	float result = expected-actual;
 	sprintf(s, "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0f - result;
-	stic_simple_test_result( result <= delta, s, function, line);
+	stic_simple_test_result( result <= delta, s, function, file, line);
 }
 
-void stic_assert_double_equal( double expected, double actual, double delta, const char* function, unsigned int line )
+void stic_assert_double_equal( double expected, double actual, double delta, const char* function, const char file[], unsigned int line )
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	double result = expected-actual;
 	sprintf(s, "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0 - result;
-	stic_simple_test_result( result <= delta, s, function, line);
+	stic_simple_test_result( result <= delta, s, function, file, line);
 }
 
-void stic_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_equal(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
@@ -276,10 +328,10 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 	  sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
 	}
 
-	stic_simple_test_result(comparison, s, function, line);
+	stic_simple_test_result(comparison, s, function, file, line);
 }
 
-void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], unsigned int line)
+void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], const char file[], unsigned int line)
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
@@ -317,35 +369,35 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 #endif
 	}
 
-	stic_simple_test_result(comparison, s, function, line);
+	stic_simple_test_result(comparison, s, function, file, line);
 }
 
-void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to end with \"%s\"", actual, expected);
-	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, line);
+	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, file, line);
 }
 
-void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to start with \"%s\"", actual, expected);
-	stic_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, line);
+	stic_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, file, line);
 }
 
-void stic_assert_string_contains(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_contains(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to be in \"%s\"", expected, actual);
-	stic_simple_test_result(strstr(actual, expected)!=0, s, function, line);
+	stic_simple_test_result(strstr(actual, expected)!=0, s, function, file, line);
 }
 
-void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" not to have \"%s\" in it", actual, expected);
-	stic_simple_test_result(strstr(actual, expected)==0, s, function, line);
+	stic_simple_test_result(strstr(actual, expected)==0, s, function, file, line);
 }
 
 void stic_run_test(const char fixture[], const char test[])
@@ -353,34 +405,50 @@ void stic_run_test(const char fixture[], const char test[])
 	sea_tests_run++;
 }
 
-static void stic_header_printer(const char s[], int length, char f)
-{
-	int l = strlen(s);
-	int d = (length- (l + 2)) / 2;
-	int i;
-	if(stic_is_display_only() || stic_machine_readable) return;
-	for(i = 0; i<d; i++) printf("%c",f);
-	if(l==0) printf("%c%c", f, f);
-	else printf(" %s ", s);
-	for(i = (d+l+2); i<length; i++) printf("%c",f);
-	printf("\n");
-}
-
 void stic_test_fixture_start(const char filepath[])
 {
 	stic_current_fixture_path = filepath;
 	stic_current_fixture = test_file_name(filepath);
-	stic_header_printer(stic_current_fixture, stic_screen_width, '-');
 	stic_fixture_tests_failed = sea_tests_failed;
+	stic_fixture_tests_passed = sea_tests_passed;
 	stic_fixture_tests_run = sea_tests_run;
 	stic_fixture_teardown = 0;
 	stic_fixture_setup = 0;
+
+	if (!stic_silent)
+	{
+		stic_header_printer(stic_current_fixture, stic_screen_width, '-');
+	}
 }
 
 void stic_test_fixture_end()
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "%d run  %d failed", sea_tests_run-stic_fixture_tests_run, sea_tests_failed-stic_fixture_tests_failed);
+	const int nrun = sea_tests_run - stic_fixture_tests_run;
+	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
+
+	if (stic_silent)
+	{
+		if (stic_verbose)
+		{
+			if(!test_had_output())
+			{
+				stic_header_printer(stic_current_fixture, stic_screen_width, '-');
+			}
+		}
+		else if(!test_had_output())
+		{
+			return;
+		}
+		printf("\n");
+	}
+	else if(test_had_output())
+	{
+		printf("\n");
+	}
+
+	sprintf(s, "%d run  %d failed", nrun, nfailed);
+
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
 }
@@ -447,8 +515,19 @@ int run_tests(stic_void_void tests)
 	if (sea_tests_failed > 0) {
 		stic_header_printer("Failed", stic_screen_width, ' ');
 	}
-	else {
-		stic_header_printer("ALL TESTS PASSED", stic_screen_width, ' ');
+	else
+	{
+		extern const char *stic_suite_name;
+		char s[100];
+
+		if(stic_suite_name == NULL || stic_suite_name[0] == '\0')
+		{
+			stic_suite_name = "";
+		}
+
+		snprintf(s, sizeof(s), "ALL%s%s TESTS PASSED",
+				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
+		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	sprintf(s,"%d tests run", sea_tests_run);
 	stic_header_printer(s, stic_screen_width, ' ');
@@ -478,6 +557,8 @@ void stic_show_help( void )
 	printf("\t-f:\twill only run fixtures that match <fixturename>\n");
 	printf("\t-d:\twill just display test names and fixtures without\n");
 	printf("\t-d:\trunning the test\n");
+	printf("\t-r:\tproduce random failures\n");
+	printf("\t-s:\tdo not display fixtures unless they contain failures\n");
 	printf("\t-v:\twill print a more verbose version of the test run\n");
 	printf("\t-m:\twill print a machine readable format of the test run, ie :- \n");
 	printf("\t   \t<textfixture>,<testname>,<linenumber>,<testresult><EOL>\n");
@@ -520,6 +601,8 @@ void stic_interpret_commandline(stic_testrunner_t* runner)
 			return;
 		}
 		if(stic_is_string_equal_i(runner->argv[arg], "-d")) runner->action = STIC_DISPLAY_TESTS;
+		if(stic_is_string_equal_i(runner->argv[arg], "-r")) stic_random_failures = 1;
+		if(stic_is_string_equal_i(runner->argv[arg], "-s")) stic_silent = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-v")) stic_verbose = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-m")) stic_machine_readable = 1;
 		if(stic_parse_commandline_option_with_value(runner,arg,"-t", test_filter)) arg++;
@@ -566,7 +649,7 @@ int stic_testrunner(int argc, char** argv, stic_void_void tests, stic_void_void 
 
 #ifdef STIC_INTERNAL_TESTS
 
-void stic_simple_test_result_nolog(int passed, char* reason, const char* function, unsigned int line)
+void stic_simple_test_result_nolog(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	sea_test_last_passed = passed;
 }

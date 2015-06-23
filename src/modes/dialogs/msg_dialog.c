@@ -516,8 +516,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			wresize(error_win, h, w);
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
-			cx = 1 + margin
-			   + (centered ? (w - get_screen_string_length(buf) - 2)/2 : 0);
+			cx = centered ? (w - get_screen_string_length(buf))/2 : (1 + margin);
 			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
