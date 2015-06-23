@@ -87,7 +87,7 @@ static stic_void_void stic_fixture_teardown = 0;
 
 const char *stic_current_test;
 
-void (*stic_simple_test_result)(int passed, char* reason, const char* function, unsigned int line) = stic_simple_test_result_log;
+void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
 
 void suite_setup(stic_void_void setup)
 {
@@ -156,7 +156,7 @@ static const char * test_file_name(const char path[])
 static int stic_fixture_tests_run;
 static int stic_fixture_tests_failed;
 
-void stic_simple_test_result_log(int passed, char* reason, const char* function, unsigned int line)
+void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	/* TODO: do use function if it differs from test. */
 	(void)function;
@@ -195,69 +195,69 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 	}
 }
 
-void stic_assert_true(int test, const char* function, unsigned int line)
+void stic_assert_true(int test, const char* function, const char file[], unsigned int line)
 {
-	stic_simple_test_result(test, "Should have been true", function, line);
+	stic_simple_test_result(test, "Should have been true", function, file, line);
 }
 
-void stic_assert_false(int test, const char* function, unsigned int line)
+void stic_assert_false(int test, const char* function, const char file[], unsigned int line)
 {
-	stic_simple_test_result(!test, "Should have been false", function, line);
+	stic_simple_test_result(!test, "Should have been false", function, file, line);
 }
 
-void stic_assert_success(int test, const char function[], unsigned int line)
+void stic_assert_success(int test, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(test == 0, "Should have been success (zero)", function, line);
+	stic_simple_test_result(test == 0, "Should have been success (zero)", function, file, line);
 }
 
-void stic_assert_failure(int test, const char function[], unsigned int line)
+void stic_assert_failure(int test, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, line);
+	stic_simple_test_result(test != 0, "Should have been failure (non-zero)", function, file, line);
 }
 
-void stic_assert_null(const void *value, const char function[], unsigned int line)
+void stic_assert_null(const void *value, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(value == NULL, "Should have been NULL", function, line);
+	stic_simple_test_result(value == NULL, "Should have been NULL", function, file, line);
 }
 
-void stic_assert_non_null(const void *value, const char function[], unsigned int line)
+void stic_assert_non_null(const void *value, const char function[], const char file[], unsigned int line)
 {
-	stic_simple_test_result(value != NULL, "Should have been non-NULL", function, line);
+	stic_simple_test_result(value != NULL, "Should have been non-NULL", function, file, line);
 }
 
-void stic_assert_int_equal(int expected, int actual, const char* function, unsigned int line)
+void stic_assert_int_equal(int expected, int actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected %d but was %d", expected, actual);
-	stic_simple_test_result(expected==actual, s, function, line);
+	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
-void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, unsigned int line)
+void stic_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected %lu but was %lu", expected, actual);
-	stic_simple_test_result(expected==actual, s, function, line);
+	stic_simple_test_result(expected==actual, s, function, file, line);
 }
 
-void stic_assert_float_equal( float expected, float actual, float delta, const char* function, unsigned int line )
+void stic_assert_float_equal( float expected, float actual, float delta, const char* function, const char file[], unsigned int line )
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	float result = expected-actual;
 	sprintf(s, "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0f - result;
-	stic_simple_test_result( result <= delta, s, function, line);
+	stic_simple_test_result( result <= delta, s, function, file, line);
 }
 
-void stic_assert_double_equal( double expected, double actual, double delta, const char* function, unsigned int line )
+void stic_assert_double_equal( double expected, double actual, double delta, const char* function, const char file[], unsigned int line )
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	double result = expected-actual;
 	sprintf(s, "Expected %f but was %f", expected, actual);
 	if(result < 0.0) result = 0.0 - result;
-	stic_simple_test_result( result <= delta, s, function, line);
+	stic_simple_test_result( result <= delta, s, function, file, line);
 }
 
-void stic_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_equal(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
@@ -283,10 +283,10 @@ void stic_assert_string_equal(const char* expected, const char* actual, const ch
 	  sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
 	}
 
-	stic_simple_test_result(comparison, s, function, line);
+	stic_simple_test_result(comparison, s, function, file, line);
 }
 
-void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], unsigned int line)
+void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[], const char function[], const char file[], unsigned int line)
 {
 	int comparison;
 	char s[STIC_PRINT_BUFFER_SIZE];
@@ -324,35 +324,35 @@ void stic_assert_wstring_equal(const wchar_t expected[], const wchar_t actual[],
 #endif
 	}
 
-	stic_simple_test_result(comparison, s, function, line);
+	stic_simple_test_result(comparison, s, function, file, line);
 }
 
-void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_ends_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to end with \"%s\"", actual, expected);
-	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, line);
+	stic_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, file, line);
 }
 
-void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_starts_with(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to start with \"%s\"", actual, expected);
-	stic_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, line);
+	stic_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, file, line);
 }
 
-void stic_assert_string_contains(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_contains(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to be in \"%s\"", expected, actual);
-	stic_simple_test_result(strstr(actual, expected)!=0, s, function, line);
+	stic_simple_test_result(strstr(actual, expected)!=0, s, function, file, line);
 }
 
-void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, unsigned int line)
+void stic_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, const char file[], unsigned int line)
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" not to have \"%s\" in it", actual, expected);
-	stic_simple_test_result(strstr(actual, expected)==0, s, function, line);
+	stic_simple_test_result(strstr(actual, expected)==0, s, function, file, line);
 }
 
 void stic_run_test(const char fixture[], const char test[])
@@ -575,7 +575,7 @@ int stic_testrunner(int argc, char** argv, stic_void_void tests, stic_void_void 
 
 #ifdef STIC_INTERNAL_TESTS
 
-void stic_simple_test_result_nolog(int passed, char* reason, const char* function, unsigned int line)
+void stic_simple_test_result_nolog(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	sea_test_last_passed = passed;
 }
