@@ -75,6 +75,7 @@ static int sea_tests_failed = 0;
 static int stic_display_only = 0;
 static int stic_verbose = 0;
 static int stic_random_failures = 0;
+static int stic_silent = 0;
 static int stic_machine_readable = 0;
 static const char *stic_current_fixture;
 static const char *stic_current_fixture_path;
@@ -102,6 +103,19 @@ void suite_teardown(stic_void_void teardown)
 int stic_is_display_only()
 {
 	return stic_display_only;
+}
+
+static void stic_header_printer(const char s[], int length, char f)
+{
+	int l = strlen(s);
+	int d = (length- (l + 2)) / 2;
+	int i;
+	if(stic_is_display_only() || stic_machine_readable) return;
+	for(i = 0; i<d; i++) printf("%c",f);
+	if(l==0) printf("%c%c", f, f);
+	else printf(" %s ", s);
+	for(i = (d+l+2); i<length; i++) printf("%c",f);
+	printf("\n");
 }
 
 void stic_suite_setup( void )
@@ -156,6 +170,14 @@ static const char * test_file_name(const char path[])
 
 static int stic_fixture_tests_run;
 static int stic_fixture_tests_failed;
+static int stic_fixture_tests_passed;
+
+static int test_had_output(void)
+{
+	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
+	const int npassed = sea_tests_passed - stic_fixture_tests_passed;
+	return (nfailed != 0 || (npassed != 0 && stic_verbose));
+}
 
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
@@ -171,6 +193,11 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 	if (stic_random_failures && random() % 8 == 0)
 	{
 		passed = !passed;
+	}
+
+	if (stic_silent && !test_had_output() && (!passed || stic_verbose))
+	{
+		stic_header_printer(stic_current_fixture, stic_screen_width, '-');
 	}
 
 	if (!passed)
@@ -378,42 +405,50 @@ void stic_run_test(const char fixture[], const char test[])
 	sea_tests_run++;
 }
 
-static void stic_header_printer(const char s[], int length, char f)
-{
-	int l = strlen(s);
-	int d = (length- (l + 2)) / 2;
-	int i;
-	if(stic_is_display_only() || stic_machine_readable) return;
-	for(i = 0; i<d; i++) printf("%c",f);
-	if(l==0) printf("%c%c", f, f);
-	else printf(" %s ", s);
-	for(i = (d+l+2); i<length; i++) printf("%c",f);
-	printf("\n");
-}
-
 void stic_test_fixture_start(const char filepath[])
 {
 	stic_current_fixture_path = filepath;
 	stic_current_fixture = test_file_name(filepath);
-	stic_header_printer(stic_current_fixture, stic_screen_width, '-');
 	stic_fixture_tests_failed = sea_tests_failed;
+	stic_fixture_tests_passed = sea_tests_passed;
 	stic_fixture_tests_run = sea_tests_run;
 	stic_fixture_teardown = 0;
 	stic_fixture_setup = 0;
+
+	if (!stic_silent)
+	{
+		stic_header_printer(stic_current_fixture, stic_screen_width, '-');
+	}
 }
 
 void stic_test_fixture_end()
 {
+	char s[STIC_PRINT_BUFFER_SIZE];
 	const int nrun = sea_tests_run - stic_fixture_tests_run;
 	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
-	char s[STIC_PRINT_BUFFER_SIZE];
 
-	sprintf(s, "%d run  %d failed", nrun, nfailed);
-
-	if(nrun != 0 && (nfailed != 0 || stic_verbose))
+	if (stic_silent)
+	{
+		if (stic_verbose)
+		{
+			if(!test_had_output())
+			{
+				stic_header_printer(stic_current_fixture, stic_screen_width, '-');
+			}
+		}
+		else if(!test_had_output())
+		{
+			return;
+		}
+		printf("\n");
+	}
+	else if(test_had_output())
 	{
 		printf("\n");
 	}
+
+	sprintf(s, "%d run  %d failed", nrun, nfailed);
+
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
 }
@@ -523,6 +558,7 @@ void stic_show_help( void )
 	printf("\t-d:\twill just display test names and fixtures without\n");
 	printf("\t-d:\trunning the test\n");
 	printf("\t-r:\tproduce random failures\n");
+	printf("\t-s:\tdo not display fixtures unless they contain failures\n");
 	printf("\t-v:\twill print a more verbose version of the test run\n");
 	printf("\t-m:\twill print a machine readable format of the test run, ie :- \n");
 	printf("\t   \t<textfixture>,<testname>,<linenumber>,<testresult><EOL>\n");
@@ -566,6 +602,7 @@ void stic_interpret_commandline(stic_testrunner_t* runner)
 		}
 		if(stic_is_string_equal_i(runner->argv[arg], "-d")) runner->action = STIC_DISPLAY_TESTS;
 		if(stic_is_string_equal_i(runner->argv[arg], "-r")) stic_random_failures = 1;
+		if(stic_is_string_equal_i(runner->argv[arg], "-s")) stic_silent = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-v")) stic_verbose = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-m")) stic_machine_readable = 1;
 		if(stic_parse_commandline_option_with_value(runner,arg,"-t", test_filter)) arg++;

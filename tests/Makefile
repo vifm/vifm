@@ -121,7 +121,8 @@ bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c stic/stic.h.gch \
                              | bin/build/$(BINSUBDIR)/$1
 	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
-	                -DMAXTESTID=$$(words $$($1.obj)) $$<
+	                -DMAXTESTID=$$(words $$($1.obj)) $$< \
+	                -DSUITE_NAME="$1"
 
 bin/build/$(BINSUBDIR)/$1/filelist: $1/. | bin/build/$(BINSUBDIR)/$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@)" != '$$($1.src)' ]; then \
@@ -133,7 +134,7 @@ bin/build/$(BINSUBDIR)/$1:
 	mkdir -p $$@
 
 $1: bin/$(BINSUBDIR)/$1$(exe_suffix)
-	@$$^
+	@$$^ -s
 
 build: bin/$(BINSUBDIR)/$1$(exe_suffix)
 
