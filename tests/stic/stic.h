@@ -162,6 +162,9 @@ struct stic_test_data
 #define STIC_CAT(X, Y) STIC_CAT_(X, Y)
 #define STIC_CAT_(X, Y) X##Y
 
+#define STIC_STR(X) STIC_STR_(X)
+#define STIC_STR_(X) #X
+
 /* Test declaration macros. */
 
 #ifdef TEST
@@ -229,9 +232,15 @@ struct stic_test_data
 
 /* Test suite entry point macro. */
 
+#ifndef SUITE_NAME
+#define SUITE_NAME
+#endif
+
 #define DEFINE_SUITE() \
     typedef void (*stic_ft)(void); \
     stic_ft FIXTURES_VARIABLES; \
+    \
+    const char *stic_suite_name = STIC_STR(SUITE_NAME); \
     \
     void stic_suite(void) \
     { \

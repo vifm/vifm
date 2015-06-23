@@ -86,6 +86,7 @@ static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
 const char *stic_current_test;
+const char *stic_suite_name;
 
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
 
@@ -479,8 +480,19 @@ int run_tests(stic_void_void tests)
 	if (sea_tests_failed > 0) {
 		stic_header_printer("Failed", stic_screen_width, ' ');
 	}
-	else {
-		stic_header_printer("ALL TESTS PASSED", stic_screen_width, ' ');
+	else
+	{
+		extern const char *stic_suite_name;
+		char s[100];
+
+		if(stic_suite_name == NULL || stic_suite_name[0] == '\0')
+		{
+			stic_suite_name = "";
+		}
+
+		snprintf(s, sizeof(s), "ALL%s%s TESTS PASSED",
+				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
+		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	sprintf(s,"%d tests run", sea_tests_run);
 	stic_header_printer(s, stic_screen_width, ' ');
