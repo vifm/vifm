@@ -48,9 +48,8 @@ static int skip_dotdir_if_any(const char *path[], int fully);
 static char * try_replace_tilde(const char path[]);
 static char * find_ext_dot(const char path[]);
 
-/* like chomp() but removes trailing slash */
 void
-chosp(char *path)
+chosp(char path[])
 {
 	size_t len;
 
@@ -167,7 +166,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		p++;
 	}
 
-	if(*q != '/')
+	if((*directory != '\0' && q < buf) || (q >= buf && *q != '/'))
 	{
 		*++q = '/';
 	}

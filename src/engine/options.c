@@ -1075,7 +1075,7 @@ complete_options(const char args[], const char **start)
 
 	if(!is_value_completion)
 	{
-		complete_option_name(buf, bool_only, 1);
+		complete_option_name(buf, bool_only, !bool_only);
 	}
 	else if(opt != NULL)
 	{

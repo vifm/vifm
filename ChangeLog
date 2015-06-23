@@ -14,6 +14,9 @@
 
 	Fixed directory merging when 'syscalls' is off.  Thanks to willemw12.
 
+	Fixed option completion to do not provide completion for "noall" or
+	"invall", which isn't valid.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't
