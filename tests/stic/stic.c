@@ -9,6 +9,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -73,6 +74,7 @@ static int sea_tests_passed = 0;
 static int sea_tests_failed = 0;
 static int stic_display_only = 0;
 static int stic_verbose = 0;
+static int stic_random_failures = 0;
 static int stic_machine_readable = 0;
 static const char *stic_current_fixture;
 static const char *stic_current_fixture_path;
@@ -158,6 +160,11 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 {
 	/* TODO: do use function if it differs from test. */
 	(void)function;
+
+	if (stic_random_failures && random() % 8 == 0)
+	{
+		passed = !passed;
+	}
 
 	if (!passed)
 	{
@@ -478,6 +485,7 @@ void stic_show_help( void )
 	printf("\t-f:\twill only run fixtures that match <fixturename>\n");
 	printf("\t-d:\twill just display test names and fixtures without\n");
 	printf("\t-d:\trunning the test\n");
+	printf("\t-r:\tproduce random failures\n");
 	printf("\t-v:\twill print a more verbose version of the test run\n");
 	printf("\t-m:\twill print a machine readable format of the test run, ie :- \n");
 	printf("\t   \t<textfixture>,<testname>,<linenumber>,<testresult><EOL>\n");
@@ -520,6 +528,7 @@ void stic_interpret_commandline(stic_testrunner_t* runner)
 			return;
 		}
 		if(stic_is_string_equal_i(runner->argv[arg], "-d")) runner->action = STIC_DISPLAY_TESTS;
+		if(stic_is_string_equal_i(runner->argv[arg], "-r")) stic_random_failures = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-v")) stic_verbose = 1;
 		if(stic_is_string_equal_i(runner->argv[arg], "-m")) stic_machine_readable = 1;
 		if(stic_parse_commandline_option_with_value(runner,arg,"-t", test_filter)) arg++;
