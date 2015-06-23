@@ -6,7 +6,6 @@ if [ $# -gt 1 ]; then
 fi
 
 in_repo="$1"
-shift
 
 if [ -r compile_info.c ]; then
     old="`cat compile_info.c`"
