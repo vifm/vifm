@@ -386,8 +386,16 @@ void stic_test_fixture_start(const char filepath[])
 
 void stic_test_fixture_end()
 {
+	const int nrun = sea_tests_run - stic_fixture_tests_run;
+	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
 	char s[STIC_PRINT_BUFFER_SIZE];
-	sprintf(s, "%d run  %d failed", sea_tests_run-stic_fixture_tests_run, sea_tests_failed-stic_fixture_tests_failed);
+
+	sprintf(s, "%d run  %d failed", nrun, nfailed);
+
+	if(nrun != 0 && (nfailed != 0 || stic_verbose))
+	{
+		printf("\n");
+	}
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
 }
