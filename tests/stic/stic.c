@@ -158,8 +158,10 @@ static int stic_fixture_tests_failed;
 
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
-	/* TODO: do use function if it differs from test. */
-	(void)function;
+	if (stic_current_test != NULL && strcmp(function, stic_current_test) == 0)
+	{
+		function = "test body";
+	}
 
 	if (stic_random_failures && random() % 8 == 0)
 	{
@@ -170,11 +172,13 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 	{
 		if(stic_machine_readable)
 		{
-			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason );
+			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason);
 		}
 		else
 		{
-			printf("%-30s Line %-5u %s\n", stic_current_test, line, reason );
+			printf("\n%s:\n", stic_current_test);
+			printf("   (-) %s:%u\n       in %s\n       %s\n",
+			       file, line, function, reason );
 		}
 		sea_tests_failed++;
 	}
@@ -184,11 +188,12 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		{
 			if(stic_machine_readable)
 			{
-				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line );
+				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line);
 			}
 			else
 			{
-				printf("%-30s Line %-5u Passed\n", stic_current_test, line);
+				printf("\n%s\n", stic_current_test);
+				printf("   (+) %s:%u\n       in %s\n", file, line, function);
 			}
 		}
 		sea_tests_passed++;
