@@ -158,6 +158,10 @@ static int stic_fixture_tests_failed;
 
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
+	static const char *last_test;
+
+	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test;
+
 	if (stic_current_test != NULL && strcmp(function, stic_current_test) == 0)
 	{
 		function = "test body";
@@ -176,11 +180,15 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		}
 		else
 		{
-			printf("\n%s:\n", stic_current_test);
+			if(stic_current_test != last_test)
+			{
+				printf("\n%s:\n", test_name);
+			}
 			printf("   (-) %s:%u\n       in %s\n       %s\n",
 			       file, line, function, reason );
 		}
 		sea_tests_failed++;
+		last_test = stic_current_test;
 	}
 	else
 	{
@@ -192,9 +200,13 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			}
 			else
 			{
-				printf("\n%s\n", stic_current_test);
+				if(stic_current_test != last_test)
+				{
+					printf("\n%s\n", test_name);
+				}
 				printf("   (+) %s:%u\n       in %s\n", file, line, function);
 			}
+			last_test = stic_current_test;
 		}
 		sea_tests_passed++;
 	}
