@@ -500,6 +500,7 @@ update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 {
 	size_t i;
 	size_t auto_count = 0;
+	size_t percent_count = 0;
 	size_t width_left = *max_width;
 	for(i = 0; i < cols->count; i++)
 	{
@@ -511,6 +512,7 @@ update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 		}
 		else if(col->info.sizing == ST_PERCENT)
 		{
+			++percent_count;
 			effective_width = MIN(col->info.full_width**max_width/100, width_left);
 		}
 		else
@@ -530,6 +532,25 @@ update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 			col->print_width = col->width;
 		}
 	}
+
+	/* When there is no columns with automatic size, give unused size to last
+	 * percent column if one exists.  This removes right "margin", which otherwise
+	 * present. */
+	if(auto_count == 0U && percent_count != 0U)
+	{
+		int i;
+		for(i = cols->count; i >= 0; --i)
+		{
+			column_t *col = &cols->list[i];
+			if(col->info.sizing == ST_PERCENT)
+			{
+				col->width += width_left;
+				col->print_width += width_left;
+				width_left = 0U;
+			}
+		}
+	}
+
 	*max_width = width_left;
 	return auto_count;
 }

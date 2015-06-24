@@ -91,7 +91,7 @@ TEST(absolute_smaller_width)
 	assert_string_equal(expected, print_buffer);
 }
 
-TEST(percent)
+TEST(last_percent_column_gets_unused_space)
 {
 	static column_info_t column_infos[2] = {
 		{ .column_id = COL1_ID, .full_width = 25UL,   .text_width = 0UL,
@@ -99,7 +99,7 @@ TEST(percent)
 		{ .column_id = COL2_ID, .full_width = 50UL,   .text_width = 0UL,
 		  .align = AT_LEFT,     .sizing = ST_PERCENT, .cropping = CT_TRUNCATE, },
 	};
-	static const char expected[] = "aaaaabbbbbccccc     ";
+	static const char expected[] = "aaaaabbbbbcccccddddd";
 
 	perform_test(column_infos);
 
