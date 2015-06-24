@@ -5,6 +5,8 @@
 	Append unused space in view columns to the last one with percent sizing
 	type if any.  Thanks to fogine.
 
+	Drastically increased performance of custom view composing.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).
@@ -25,6 +27,9 @@
 	Fixed work on OpenBSD (at least to some degree that curses implementation
 	there allows).  There are still some troubles with non-ascii characters.
 	Thanks to hofheinz.
+
+	Fixed possible constant view reload when built on some systems.  Thanks to
+	hofheinz.
 
 0.7.8 to 0.8-beta
 

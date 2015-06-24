@@ -16,48 +16,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "filemon.h"
+#ifndef VIFM__UTILS__TRIE_H__
+#define VIFM__UTILS__TRIE_H__
 
-#include <sys/stat.h> /* stat */
+#include <stddef.h> /* NULL */
 
-#include <string.h> /* memcmp() memcpy() */
+/* NULL equivalent for variables of type trie_t. */
+#define NULL_TRIE NULL
 
-#include "../compat/os.h"
+/* Declaration of opaque trie type. */
+typedef struct trie_t *trie_t;
 
-int
-filemon_from_file(const char path[], filemon_t *timestamp)
-{
-	struct stat s;
+/* Creates new empty trie.  Returns NULL_TRIE on error. */
+trie_t trie_create(void);
 
-	if(os_stat(path, &s) != 0)
-	{
-		return 1;
-	}
+/* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK. */
+void trie_free(trie_t trie);
 
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-	memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
-#else
-	memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
-#endif
-	timestamp->dev = s.st_dev;
-	timestamp->inode = s.st_ino;
+/* Inserts string to the trie if it's not already there.  Returns negative value
+ * on error, zero on successful insertion and positive number if element was
+ * already in the trie. */
+int trie_put(trie_t trie, const char str[]);
 
-	return 0;
-}
-
-int
-filemon_equal(const filemon_t *a, const filemon_t *b)
-{
-	return memcmp(&a->ts, &b->ts, sizeof(a->ts)) == 0
-	    && a->dev == b->dev
-	    && a->inode == b->inode;
-}
-
-void
-filemon_assign(filemon_t *lhs, const filemon_t *rhs)
-{
-	memcpy(lhs, rhs, sizeof(*rhs));
-}
+#endif /* VIFM__UTILS__TRIE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -112,7 +112,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
 	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/tree.$(OBJEXT) utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
@@ -447,6 +447,7 @@ vifm_SOURCES = \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
+	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	utils/utils_nix.c utils/utils_nix.h \
@@ -793,6 +794,8 @@ utils/string_array.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/tree.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/trie.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/utf8.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/utils.$(OBJEXT): utils/$(am__dirstamp) \
@@ -919,6 +922,7 @@ mostlyclean-compile:
 	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
 	-rm -f utils/tree.$(OBJEXT)
+	-rm -f utils/trie.$(OBJEXT)
 	-rm -f utils/utf8.$(OBJEXT)
 	-rm -f utils/utils.$(OBJEXT)
 	-rm -f utils/utils_nix.$(OBJEXT)
@@ -1047,6 +1051,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/trie.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utf8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils_nix.Po@am__quote@
