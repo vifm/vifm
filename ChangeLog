@@ -28,6 +28,9 @@
 	there allows).  There are still some troubles with non-ascii characters.
 	Thanks to hofheinz.
 
+	Fixed possible constant view reload when built on some systems.  Thanks to
+	hofheinz.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

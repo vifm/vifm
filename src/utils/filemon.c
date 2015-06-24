@@ -48,7 +48,9 @@ filemon_from_file(const char path[], filemon_t *timestamp)
 int
 filemon_equal(const filemon_t *a, const filemon_t *b)
 {
-	return memcmp(a, b, sizeof(*a)) == 0;
+	return memcmp(&a->ts, &b->ts, sizeof(a->ts)) == 0
+	    && a->dev == b->dev
+	    && a->inode == b->inode;
 }
 
 void
