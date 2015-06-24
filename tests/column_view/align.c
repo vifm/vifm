@@ -63,8 +63,7 @@ perform_test(column_info_t column_info)
 
 TEST(right_align)
 {
-	static column_info_t column_info =
-	{
+	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 30UL,    .text_width = 30UL,
 		.align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_NONE,
 	};
@@ -76,8 +75,7 @@ TEST(right_align)
 
 TEST(left_align)
 {
-	static column_info_t column_info =
-	{
+	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 80UL,    .text_width = 80UL,
 		.align = AT_LEFT,     .sizing = ST_ABSOLUTE, .cropping = CT_NONE,
 	};
@@ -89,8 +87,7 @@ TEST(left_align)
 
 TEST(very_long_line_right_align)
 {
-	static column_info_t column_info =
-	{
+	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
 		.align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_NONE,
 	};
@@ -105,8 +102,7 @@ TEST(very_long_line_right_align)
 
 TEST(truncation_on_right_align)
 {
-	static column_info_t column_info =
-	{
+	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
 		.align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
 	};
