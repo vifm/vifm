@@ -77,6 +77,7 @@ vifm_SOURCES = \
 	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	\
+	compat/curses.c compat/curses.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/os.c compat/os.h \
 	\

@@ -32,6 +32,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../compat/curses.h"
 #include "../engine/abbrevs.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
@@ -116,7 +117,7 @@ static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
-static void update_cmdline_text(void);
+static void update_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
@@ -346,7 +347,7 @@ def_handler(wchar_t key)
 	input_stat.curs_pos += vifm_wcwidth(key);
 
 	update_cmdline_size();
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 
 	return 0;
 }
@@ -378,9 +379,9 @@ update_cmdline_size(void)
 	}
 }
 
-/* Also updates cursor. */
+/* Update test displayed on the command line and cursor. */
 static void
-update_cmdline_text(void)
+update_cmdline_text(line_stats_t *stat)
 {
 	int attr;
 
@@ -391,9 +392,9 @@ update_cmdline_text(void)
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
 	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, input_stat.prompt_wid/line_width,
-			input_stat.prompt_wid%line_width, input_stat.line);
+	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
+			stat->prompt_wid%line_width, stat->line);
 	update_cursor();
 	wrefresh(status_bar);
 }
@@ -606,7 +607,7 @@ redraw_cmdline(void)
 
 	line_width = getmaxx(stdscr);
 	update_cmdline_size();
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 	curs_set(TRUE);
 
 	if(input_stat.complete_continue && cfg.wild_menu)
@@ -657,7 +658,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.curs_pos += input_stat.prompt_wid;
 
 	update_cmdline_size();
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 	curs_set(TRUE);
 
 	curr_stats.save_msg = 1;
@@ -920,7 +921,7 @@ cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 		wcsdel(input_stat.line, input_stat.index + 1, 1);
 	}
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 /* Checks whether backspace key pressed in current state should quit
@@ -983,7 +984,7 @@ do_completion(void)
 	line_completion(&input_stat);
 
 	update_cmdline_size();
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 /*
@@ -1098,7 +1099,7 @@ cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 			input_stat.len - input_stat.index);
 	input_stat.len = input_stat.index;
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 static void
@@ -1242,7 +1243,7 @@ expand_abbrev(void)
 		input_stat.expanding_abbrev = 0;
 
 		update_cmdline_size();
-		update_cmdline_text();
+		update_cmdline_text(&input_stat);
 	}
 }
 
@@ -1532,10 +1533,10 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index = 0;
 
 	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	compat_mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	compat_mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 /* Handler of Ctrl-W shortcut, which remove all to the left until beginning of
@@ -1583,7 +1584,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.len -= old - input_stat.index;
 	}
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 /* Inserts last pattern from search history into current cursor position. */
@@ -1765,7 +1766,7 @@ paste_str(const char str[], int allow_escaping)
 
 	if(insert_str(wide) == 0)
 	{
-		update_cmdline_text();
+		update_cmdline_text(&input_stat);
 	}
 
 	free(wide);
@@ -1853,7 +1854,7 @@ cmd_meta_d(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index = old_i;
 	input_stat.curs_pos = old_c;
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 static void
@@ -1895,7 +1896,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 
 	if(insert_dot_completion(wide) == 0)
 	{
-		update_cmdline_text();
+		update_cmdline_text(&input_stat);
 	}
 	else
 	{
@@ -2062,7 +2063,7 @@ cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 	wcsdel(input_stat.line, input_stat.index+1, 1);
 	input_stat.len--;
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 static void
@@ -2198,7 +2199,7 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.line[index - 1] = input_stat.line[index];
 	input_stat.line[index] = char_before_last;
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 #ifdef ENABLE_EXTENDED_KEYS
@@ -2234,7 +2235,7 @@ update_cmdline(void)
 		update_cmdline_size();
 	}
 
-	update_cmdline_text();
+	update_cmdline_text(&input_stat);
 }
 
 /* Gets status bar height required to display all its content.  Returns the
@@ -2281,7 +2282,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 
 	update_line_stat(stat, new_len);
 	update_cmdline_size();
-	update_cmdline_text();
+	update_cmdline_text(stat);
 	return 0;
 }
 

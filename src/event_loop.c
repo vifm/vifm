@@ -30,6 +30,7 @@
 #include <wchar.h> /* wcslen() wcscmp() */
 
 #include "cfg/config.h"
+#include "compat/curses.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -258,7 +259,7 @@ ensure_term_is_ready(void)
 		wint_t c;
 
 		wtimeout(status_bar, 0);
-		while(wget_wch(status_bar, &c) != ERR);
+		while(compat_wget_wch(status_bar, &c) != ERR);
 		curr_stats.term_state = TS_NORMAL;
 		modes_redraw();
 		wtimeout(status_bar, cfg.timeout_len);
@@ -301,7 +302,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			ipc_check();
 			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
 
-			result = wget_wch(win, c);
+			result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
 				return result;
