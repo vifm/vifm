@@ -241,22 +241,27 @@ let_variables(const char *cmd)
 	return 0;
 }
 
+/* Appends error message with details to the error stream. */
 static void
 report_parsing_error(ParsingErrors error)
 {
-	if(error == PE_INVALID_EXPRESSION)
+	switch(error)
 	{
-		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
-				get_last_position());
-	}
-	else if(error == PE_MISSING_QUOTE)
-	{
-		vle_tb_append_linef(vle_err, "%s: %s",
-				"Invalid :let expression (missing quote)", get_last_position());
-	}
-	else
-	{
-		assert(0 && "Unexpected parsing error code.");
+		case PE_NO_ERROR:
+			/* Not an error. */
+			break;
+		case PE_INVALID_EXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+					get_last_position());
+			break;
+		case PE_INVALID_SUBEXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid subexpression",
+					get_last_position());
+			break;
+		case PE_MISSING_QUOTE:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Invalid :let expression (missing quote)", get_last_position());
+			break;
 	}
 }
 

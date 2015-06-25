@@ -35,6 +35,9 @@
 	Fixed possible constant view reload when built on some systems.  Thanks to
 	hofheinz.
 
+	Fixed error reporting on builtin function argument parsing in rhs of :let
+	expression.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

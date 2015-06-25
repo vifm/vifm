@@ -2,15 +2,31 @@
 
 #include <stdlib.h>
 
+#include "../../src/engine/functions.h"
 #include "../../src/engine/variables.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/utils.h"
 
 #define VAR_NAME "VAR"
 
+static var_t dummy(const call_info_t *call_info);
+
+SETUP_ONCE()
+{
+	static const function_t function_a = { "a", 1, &dummy };
+	assert_int_equal(0, function_register(&function_a));
+}
+
 SETUP()
 {
 	env_remove(VAR_NAME);
+}
+
+static var_t
+dummy(const call_info_t *call_info)
+{
+	static const var_val_t var_val = { .string = "" };
+	return var_new(VTYPE_STRING, var_val);
 }
 
 TEST(env_variable_creation_success)
@@ -91,6 +107,18 @@ TEST(unlet_with_equal_sign)
 	assert_true(getenv("VAR_B") != NULL);
 	assert_false(unlet_variables("$VAR_B=") == 0);
 	assert_true(getenv("VAR_B") != NULL);
+}
+
+TEST(let_survives_wrong_argument_list_in_rhs)
+{
+	assert_failure(let_variables("$" VAR_NAME " = a(b)"));
+}
+
+TEST(variable_is_not_set_on_error)
+{
+	assert_null(getenv(VAR_NAME));
+	assert_failure(let_variables("$" VAR_NAME " = a(b)"));
+	assert_null(getenv(VAR_NAME));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
