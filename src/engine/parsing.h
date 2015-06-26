@@ -24,11 +24,12 @@
 /* An enumeration of possible parsing errors. */
 typedef enum
 {
-	PE_NO_ERROR,
-	PE_INVALID_EXPRESSION,
-	PE_INVALID_SUBEXPRESSION,
-	PE_MISSING_QUOTE,
-}ParsingErrors;
+	PE_NO_ERROR,              /* No error occurred. */
+	PE_INVALID_EXPRESSION,    /* Wrong expression construct. */
+	PE_INVALID_SUBEXPRESSION, /* Wrong subexpression construct. */
+	PE_MISSING_QUOTE,         /* Missing closing quote. */
+}
+ParsingErrors;
 
 /* A type of function that will be used to resolve environment variable
  * value. If variable doesn't exist the function should return an empty
