@@ -73,9 +73,19 @@ toggle_quick_view(void)
 
 		if(ui_view_is_visible(other_view))
 		{
+			/* Force cleaning possible leftovers of graphics, otherwise curses
+			 * internal structures don't know that those parts need to be redrawn on
+			 * the screen. */
+			if(curr_stats.graphics_preview)
+			{
+				ui_view_wipe(other_view);
+			}
+
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}
+
+		curr_stats.graphics_preview = 0;
 	}
 	else
 	{
