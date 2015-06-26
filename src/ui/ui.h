@@ -482,7 +482,7 @@ void ui_view_erase(FileView *view);
 
 /* Same as erase, but ensures that view is updated in all its size on the
  * screen (e.g. to clear anything put there by other programs as well). */
-void ui_view_clear(FileView *view);
+void ui_view_wipe(FileView *view);
 
 /* View update scheduling. */
 

@@ -11,6 +11,10 @@
 	particularly rely on %px and %py, because %pw and %ph might be useful for
 	text viewers as well.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Less flicker on preview window update.
+
+	Clean occasional graphics leftovers after disabling preview.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).

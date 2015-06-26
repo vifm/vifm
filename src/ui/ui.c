@@ -1523,7 +1523,7 @@ ui_view_erase(FileView *view)
 }
 
 void
-ui_view_clear(FileView *view)
+ui_view_wipe(FileView *view)
 {
 	int i;
 	int height;
