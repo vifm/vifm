@@ -145,6 +145,7 @@ quick_view_file(FileView *view)
 		case FT_UNK:
 		default:
 			{
+				int graphics = 0;
 				const char *viewer;
 				FILE *fp;
 
@@ -163,6 +164,7 @@ quick_view_file(FileView *view)
 				}
 				else
 				{
+					graphics = is_graphics_viewer(viewer);
 					fp = use_info_prog(viewer);
 				}
 
@@ -172,7 +174,14 @@ quick_view_file(FileView *view)
 					break;
 				}
 
-				ui_view_wipe(other_view);
+				/* We want to wipe the view in two cases: it displayed graphics, it will
+				 * display graphics. */
+				if(curr_stats.graphics_preview || graphics)
+				{
+					ui_view_wipe(other_view);
+				}
+				curr_stats.graphics_preview = graphics;
+
 				wattrset(other_view->win, 0);
 				view_file(fp, cfg.wrap_quick_view);
 

@@ -90,7 +90,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->curr_register = -1;
 	stats->register_saved = 0;
 	stats->number_of_windows = 2;
-	stats->view = 0;
 	stats->use_input_bar = 1;
 	stats->load_stage = 0;
 	stats->term_state = TS_NORMAL;
@@ -100,6 +99,9 @@ load_def_values(status_t *stats, config_t *config)
 	stats->skip_shellout_redraw = 0;
 	stats->cs = &config->cs;
 	strcpy(stats->color_scheme, "");
+
+	stats->view = 0;
+	stats->graphics_preview = 0;
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;
