@@ -172,7 +172,7 @@ quick_view_file(FileView *view)
 					break;
 				}
 
-				ui_view_clear(other_view);
+				ui_view_wipe(other_view);
 				wattrset(other_view->win, 0);
 				view_file(fp, cfg.wrap_quick_view);
 

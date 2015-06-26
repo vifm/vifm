@@ -582,7 +582,7 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		ui_view_clear(vi->view);
+		ui_view_wipe(vi->view);
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 		return;
