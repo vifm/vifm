@@ -1061,9 +1061,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		/* %pw and %ph can be useful for text output, but %px and %py are useful
-		 * for graphics and basically must have both. */
-		if(strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL)
+		if(is_graphics_viewer(viewer))
 		{
 			vi->graphics = 1;
 		}

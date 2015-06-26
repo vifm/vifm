@@ -642,5 +642,13 @@ parse_file_spec(const char spec[], int *line_num)
 	return path_buf;
 }
 
+int
+is_graphics_viewer(const char viewer[])
+{
+	/* %pw and %ph can be useful for text output, but %px and %py are useful
+	 * for graphics and basically must have both. */
+	return (strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
