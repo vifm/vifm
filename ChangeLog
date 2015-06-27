@@ -2,6 +2,8 @@
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
 
+	Added device id (major and minor numbers) to file info dialog.
+
 	Append unused space in view columns to the last one with percent sizing
 	type if any.  Thanks to fogine.
 
@@ -44,6 +46,9 @@
 
 	Fixed truncating viewed file on 'wrap', 'tabstop' > 2 and line wrapping
 	caused by tabulation.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
+	Fixed copying of fifo, socket and device files with 'syscalls' enabled.
+	Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
 0.7.8 to 0.8-beta
 

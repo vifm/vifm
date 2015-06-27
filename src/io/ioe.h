@@ -19,7 +19,7 @@
 #ifndef VIFM__IO__IOE_H__
 #define VIFM__IO__IOE_H__
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 
 /* ioe - I/O error reporting - Input/Output error reporting */
 
@@ -68,6 +68,10 @@ typedef struct
 	size_t error_count;
 }
 ioe_errlst_t;
+
+/* Static initializer for an error list, could be used instead of
+ * ioe_errlst_init(). */
+#define IOE_ERRLST_INIT { .active = 1, .errors = NULL, .error_count = 0U }
 
 /* Initializes empty error list. */
 void ioe_errlst_init(ioe_errlst_t *elist);

@@ -30,6 +30,7 @@
 #include <string.h> /* strlen() */
 #include <time.h>
 
+#include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../menus/menus.h"
@@ -305,29 +306,43 @@ show_file_type(FileView *view, int curr_y)
 	}
 	else if(entry->type == FT_DIR)
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Directory");
+		mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
-	else if(S_ISCHR(entry->mode))
+	else if(entry->type == FT_CHAR_DEV || entry->type == FT_BLOCK_DEV)
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
+		const char *const type = (entry->type == FT_CHAR_DEV)
+		                       ? "Character Device"
+		                       : "Block Device";
+		char full_path[PATH_MAX];
+		struct stat st;
+
+		mvwaddstr(menu_win, curr_y, 8, type);
+
+		get_current_full_path(view, sizeof(full_path), full_path);
+		if(os_stat(full_path, &st) == 0)
+		{
+			char info[64];
+
+			snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
+					minor(st.st_rdev));
+
+			curr_y += 2;
+			mvwaddstr(menu_win, curr_y, 2, info);
+		}
 	}
-	else if(S_ISBLK(entry->mode))
+	else if(entry->type == FT_SOCK)
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
-	}
-	else if(entry->type == FT_FIFO)
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
-	}
-	else if(S_ISSOCK(entry->mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Socket");
+		mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
 #endif
+	else if(entry->type == FT_FIFO)
+	{
+		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
+	}
 	else
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
+		mvwaddstr(menu_win, curr_y, 8, "Unknown");
 	}
 	curr_y += 2;
 

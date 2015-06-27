@@ -215,8 +215,8 @@ filetype *.html,*.htm links, lynx
 filetype *.o nm %f | less
 
 " Man page
-filetype *.[1-8] gtbl %c | groff -Tascii -man | less
-fileviewer *.[1-8] gtbl %c | groff -Tascii -man | col -b
+filetype *.[1-8] man ./%c
+fileviewer *.[1-8] man ./%c | col -b
 
 " Image
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
