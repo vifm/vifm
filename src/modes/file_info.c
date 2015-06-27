@@ -308,23 +308,23 @@ show_file_type(FileView *view, int curr_y)
 		mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
-	else if(S_ISCHR(entry->mode))
+	else if(entry->type == FT_CHAR_DEV)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Character Device");
 	}
-	else if(S_ISBLK(entry->mode))
+	else if(entry->type == FT_BLOCK_DEV)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
-	else if(entry->type == FT_FIFO)
-	{
-		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
-	}
-	else if(S_ISSOCK(entry->mode))
+	else if(entry->type == FT_SOCK)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
 #endif
+	else if(entry->type == FT_FIFO)
+	{
+		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
+	}
 	else
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Unknown");
