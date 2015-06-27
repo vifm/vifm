@@ -2,6 +2,8 @@
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
 
+	Added device id (major and minor numbers) to file info dialog.
+
 	Append unused space in view columns to the last one with percent sizing
 	type if any.  Thanks to fogine.
 
