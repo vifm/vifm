@@ -370,6 +370,69 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 	}
 }
 
+/* Windows lacks definitions some declarations. */
+#ifndef _WIN32
+
+/* No named fifo in file systems on Windows. */
+TEST(fifo_is_copied, IF(not_windows))
+{
+	struct stat st;
+
+	io_args_t args = {
+		.arg1.src = "fifo-src",
+		.arg2.dst = "fifo-dst",
+
+		.result.errors = IOE_ERRLST_INIT,
+	};
+
+	assert_success(mkfifo(args.arg1.src, 0755));
+
+	assert_success(iop_cp(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+
+	assert_success(lstat("fifo-dst", &st));
+	assert_true(S_ISFIFO(st.st_mode));
+
+	args.arg1.path = "fifo-src";
+	assert_success(iop_rmfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+
+	args.arg1.path = "fifo-dst";
+	assert_success(iop_rmfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+}
+
+/* No named sockets in file systems on Windows. */
+TEST(socket_is_copied, IF(not_windows))
+{
+	struct stat st;
+
+	io_args_t args = {
+		.arg1.src = "sock-src",
+		.arg2.dst = "sock-dst",
+
+		.result.errors = IOE_ERRLST_INIT,
+	};
+
+	assert_success(mknod(args.arg1.src, S_IFSOCK | 0755, 0));
+
+	assert_success(iop_cp(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+
+	assert_success(lstat("sock-dst", &st));
+	assert_true(S_ISSOCK(st.st_mode));
+
+	args.arg1.path = "sock-src";
+	assert_success(iop_rmfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+
+	args.arg1.path = "sock-dst";
+	assert_success(iop_rmfile(&args));
+	assert_int_equal(0, args.result.errors.error_count);
+}
+
+#endif
+
 static int
 not_windows(void)
 {

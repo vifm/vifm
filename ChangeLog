@@ -47,6 +47,9 @@
 	Fixed truncating viewed file on 'wrap', 'tabstop' > 2 and line wrapping
 	caused by tabulation.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Fixed copying of fifo, socket and device files with 'syscalls' enabled.
+	Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

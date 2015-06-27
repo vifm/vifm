@@ -235,6 +235,7 @@ iop_cp(io_args_t *const args)
 	const IoCrs crs = args->arg3.crs;
 	const io_confirm confirm = args->confirm;
 	const int cancellable = args->cancellable;
+	struct stat st;
 
 	char block[BLOCK_SIZE];
 	FILE *in, *out;
@@ -331,11 +332,30 @@ iop_cp(io_args_t *const args)
 		return 1;
 	}
 
-	in = os_fopen(src, "rb");
-	if(in == NULL)
+	if(os_stat(src, &st) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno, strerror(errno));
 		return 1;
+	}
+
+#ifndef _WIN32
+	/* Fifo/socket/device files don't need to be opened, their content is not
+	 * accessed. */
+	if(S_ISFIFO(st.st_mode) || S_ISSOCK(st.st_mode) || S_ISBLK(st.st_mode) ||
+			S_ISCHR(st.st_mode))
+	{
+		in = NULL;
+	}
+	else
+#endif
+	{
+		in = os_fopen(src, "rb");
+		if(in == NULL)
+		{
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					strerror(errno));
+			return 1;
+		}
 	}
 
 	if(crs == IO_CRS_APPEND_TO_FILES)
@@ -351,7 +371,7 @@ iop_cp(io_args_t *const args)
 			/* Ask user whether to overwrite destination file. */
 			if(confirm != NULL && !confirm(args, src, dst))
 			{
-				if(fclose(in) != 0)
+				if(in != NULL && fclose(in) != 0)
 				{
 					(void)ioe_errlst_append(&args->result.errors, src, errno,
 							strerror(errno));
@@ -365,7 +385,7 @@ iop_cp(io_args_t *const args)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
 					strerror(errno));
-			if(fclose(in) != 0)
+			if(in != NULL && fclose(in) != 0)
 			{
 				(void)ioe_errlst_append(&args->result.errors, src, errno,
 						strerror(errno));
@@ -382,13 +402,39 @@ iop_cp(io_args_t *const args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, EEXIST,
 				strerror(EEXIST));
-		if(fclose(in) != 0)
+		if(in != NULL && fclose(in) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
 					strerror(errno));
 		}
 		return 1;
 	}
+
+#ifndef _WIN32
+	/* Replicate fifo without even opening it. */
+	if(S_ISFIFO(st.st_mode))
+	{
+		if(mkfifo(dst, st.st_mode & 07777) != 0)
+		{
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					strerror(errno));
+			return 1;
+		}
+		return 0;
+	}
+
+	/* Replicate socket or device file without even opening it. */
+	if(S_ISSOCK(st.st_mode) | S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode))
+	{
+		if(mknod(dst, st.st_mode & (S_IFMT | 07777), st.st_rdev) != 0)
+		{
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					strerror(errno));
+			return 1;
+		}
+		return 0;
+	}
+#endif
 
 	out = os_fopen(dst, open_mode);
 	if(out == NULL)
