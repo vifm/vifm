@@ -305,29 +305,29 @@ show_file_type(FileView *view, int curr_y)
 	}
 	else if(entry->type == FT_DIR)
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Directory");
+		mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
 	else if(S_ISCHR(entry->mode))
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
+		mvwaddstr(menu_win, curr_y, 8, "Character Device");
 	}
 	else if(S_ISBLK(entry->mode))
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
+		mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
 	else if(entry->type == FT_FIFO)
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
+		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
 	else if(S_ISSOCK(entry->mode))
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Socket");
+		mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
 #endif
 	else
 	{
-	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
+		mvwaddstr(menu_win, curr_y, 8, "Unknown");
 	}
 	curr_y += 2;
 
