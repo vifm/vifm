@@ -91,6 +91,8 @@ struct io_args_t
 	}
 	arg3;
 
+	/* Whether this operation should expect cancellation requests from the
+	 * outside. */
 	int cancellable;
 
 	/* File overwrite confirmation callback.  Set to NULL to silently
@@ -100,6 +102,7 @@ struct io_args_t
 	/* Set to NULL to do not use estimates. */
 	ioeta_estim_t *estim;
 
+	/* Output of the operation after it finishes. */
 	io_result_t result;
 };
 
