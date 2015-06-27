@@ -527,7 +527,7 @@ format_file_progress(const ioeta_estim_t *estim, int precision)
 	(void)friendly_size_notation(estim->total_file_bytes, sizeof(total_size),
 			total_size);
 
-	return format_str("\n%s/%s (%2d%%)", current_size, total_size,
+	return format_str("\nprogress %s/%s (%2d%%)", current_size, total_size,
 			file_progress/precision);
 }
 
