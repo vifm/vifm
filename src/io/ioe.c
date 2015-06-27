@@ -25,9 +25,8 @@
 void
 ioe_errlst_init(ioe_errlst_t *elist)
 {
-	elist->active = 1;
-	elist->errors = NULL;
-	elist->error_count = 0U;
+	static const ioe_errlst_t initializer = IOE_ERRLST_INIT;
+	*elist = initializer;
 }
 
 void
