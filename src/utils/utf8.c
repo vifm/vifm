@@ -162,6 +162,33 @@ get_screen_string_length(const char str[])
 }
 
 size_t
+utf8_strsw_with_tabs(const char str[], int tab_stops)
+{
+	size_t length = 0U;
+
+	assert(tab_stops > 0 && "Non-positive number of tab stops.");
+
+	while(*str != '\0')
+	{
+		size_t char_screen_width;
+		const size_t char_width = get_char_width(str);
+
+		if(char_width == 1 && *str == '\t')
+		{
+			char_screen_width = tab_stops - length%tab_stops;
+		}
+		else
+		{
+			char_screen_width = get_char_screen_width(str, char_width);
+		}
+
+		str += char_width;
+		length += char_screen_width;
+	}
+	return length;
+}
+
+size_t
 utf8_get_screen_width_of_char(const char str[])
 {
 	return get_char_screen_width(str, get_char_width(str));

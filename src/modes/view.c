@@ -550,7 +550,7 @@ calc_vlines_wrapped(view_info_t *vi)
 	for(i = 0; i < vi->nlines; i++)
 	{
 		vi->widths[i][0] = vi->nlinesv++;
-		vi->widths[i][1] = get_screen_string_length(vi->lines[i]) -
+		vi->widths[i][1] = utf8_strsw_with_tabs(vi->lines[i], cfg.tab_stop) -
 			esc_str_overhead(vi->lines[i]);
 		vi->nlinesv += vi->widths[i][1]/vi->width;
 	}

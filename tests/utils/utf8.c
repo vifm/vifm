@@ -27,6 +27,15 @@ TEST(get_real_string_width_full)
 	assert_int_equal(expected_len, calculated_len);
 }
 
+TEST(tabulation_is_counted_correctly)
+{
+	const char utf8_str[] = "ab\tcd";
+	assert_int_equal(5, utf8_strsw_with_tabs(utf8_str, 1));
+	assert_int_equal(6, utf8_strsw_with_tabs(utf8_str, 2));
+	assert_int_equal(5, utf8_strsw_with_tabs(utf8_str, 3));
+	assert_int_equal(10, utf8_strsw_with_tabs(utf8_str, 8));
+}
+
 TEST(get_real_string_width_in_the_middle_a, IF(locale_works))
 {
 #define ENDING "丝刀"

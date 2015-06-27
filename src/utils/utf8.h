@@ -21,6 +21,9 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
+/* Below "sw" stands for "screen width", i.e. number of character positions
+ * taken on the screen. */
+
 /* Returns real width of valid and complete utf-8 character. */
 size_t get_char_width(const char str[]);
 /* Returns count of utf-8 characters excluding incomplete utf-8 characters. */
@@ -32,8 +35,15 @@ size_t get_real_string_width(const char str[], size_t max_screen_width);
 /* Same as get_real_string_width(), but ignores trailing incomplete utf-8
  * characters. */
 size_t get_normal_utf8_string_widthn(const char str[], size_t max_screen_width);
-/* Returns number of screen characters in a utf-8 encoded str. */
+
+/* Counts number of screen characters in a utf-8 encoded str.  Returns the
+ * number. */
 size_t get_screen_string_length(const char str[]);
+
+/* Counts number of screen characters in a utf-8 encoded str expanding
+ * tabulation according to specified tab stops.  tab_stops must be positive.
+ * Returns the number. */
+size_t utf8_strsw_with_tabs(const char str[], int tab_stops);
 
 /* Gets screen width of the first character in the string.  Returns the
  * width or (size_t)-1 for unknown/broken characters. */
