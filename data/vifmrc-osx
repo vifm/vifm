@@ -214,8 +214,8 @@ fileviewer *.html,*.htm w3m -dump -T text/html
 filetype *.o nm %f | less
 
 " Man page
-filetype *.[1-8] tbl %c | groff -Tascii -man | less
-fileviewer *.[1-8] tbl %c | groff -Tascii -man | col -b
+filetype *.[1-8] man ./%c
+fileviewer *.[1-8] man ./%c | col -b
 
 " Image
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,
