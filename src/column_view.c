@@ -379,7 +379,7 @@ add_ellipsis(AlignType align, char buf[])
 	else
 	{
 		const char *new_beginning = buf;
-		int skipped = 0;
+		size_t skipped = 0;
 		while(skipped < dot_count)
 		{
 			skipped += utf8_get_screen_width_of_char(new_beginning);

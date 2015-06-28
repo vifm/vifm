@@ -21,7 +21,7 @@
 static vle_mode_t current_mode;
 static vle_mode_t primary_mode;
 
-const vle_mode_t
+vle_mode_t
 vle_mode_get(void)
 {
 	return current_mode;
