@@ -30,13 +30,13 @@
 
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
-#include <stddef.h> /* NULL size_t wchar_t wint_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* abs() free() malloc() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
 #include <time.h> /* time() */
-#include <wchar.h> /* wcslen() */
+#include <wchar.h> /* wint_t wcslen() */
 
 #include "../cfg/config.h"
 #include "../cfg/info.h"

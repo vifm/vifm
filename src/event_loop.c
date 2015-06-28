@@ -25,9 +25,9 @@
 
 #include <assert.h> /* assert() */
 #include <signal.h> /* signal() */
-#include <stddef.h> /* NULL size_t wchar_t wint_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <string.h> /* memmove() strncpy() */
-#include <wchar.h> /* wcslen() wcscmp() */
+#include <wchar.h> /* wint_t wcslen() wcscmp() */
 
 #include "cfg/config.h"
 #include "compat/curses.h"
