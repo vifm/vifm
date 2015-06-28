@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <wchar.h> /* wchar_t */
+#include <wchar.h> /* wchar_t wint_t */
 
 /* OpenBSD has perverted ncurses library, which has stubs with infinite loops
  * instead of real wide functions.  As there is only a couple of wide functions

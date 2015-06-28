@@ -24,12 +24,14 @@
 #include <windows.h>
 #endif
 
+#include <sys/types.h>
+
 #include <curses.h>
-#include <stddef.h> /* size_t wchar_t wint_t */
+#include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* mode_t */
-#include <sys/types.h>
 #include <time.h> /* time_t */
+#include <wchar.h> /* wint_t */
 
 #include "../utils/filemon.h"
 #include "../utils/filter.h"

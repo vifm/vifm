@@ -22,13 +22,13 @@
 #include <ctype.h> /* tolower() isspace() */
 #include <limits.h> /* INT_MAX INT_MIN LONG_MAX LONG_MIN */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
-#include <stddef.h> /* NULL size_t wchar_t wint_t */
+#include <stddef.h> /* NULL size_t wchar_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
                        strtol() wcstombs() */
 #include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
-#include <wchar.h> /* vswprintf() */
+#include <wchar.h> /* wint_t vswprintf() */
 #include <wctype.h> /* iswupper() towlower() towupper() */
 
 #include "macros.h"

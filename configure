@@ -6015,11 +6015,9 @@ case "$host_os" in
 		;;
 esac
 
-if test -n "$OSX_HOST" ; then
 
 $as_echo "#define _XOPEN_SOURCE_EXTENDED 1" >>confdefs.h
 
-fi
 
 for ac_header in alloca.h
 do :

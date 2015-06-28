@@ -5,7 +5,9 @@ On *nix you need:
 
     A working version of ncursesw built as a shared library (*.so files,
     enabled by the --with-shared switch of ncurses' configure script) and
-    an ascii compliant terminal.
+    an ascii compliant terminal.  ncurses can be static, but that will
+    require providing appropriate options for linker (thus might not work
+    out of the box).
 
     Hint for building on Debian-based systems: ncurses package you need to
     build vifm is called libncursesw5-dev.

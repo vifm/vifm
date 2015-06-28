@@ -46,7 +46,7 @@ VleModeType;
 typedef int vle_mode_t;
 
 /* Gets identifier of currently active mode.  Returns the id. */
-const vle_mode_t vle_mode_get(void);
+vle_mode_t vle_mode_get(void);
 
 /* Checks that currently active mode is the mode.  Returns non-zero if so,
  * otherwise zero is returned. */

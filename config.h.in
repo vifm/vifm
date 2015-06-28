@@ -170,7 +170,7 @@
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #undef _POSIX_SOURCE
 
-/* Define to 1 to enable wide functions of ncurses on OS X. */
+/* Define to 1 to enable wide functions of ncurses in some environments. */
 #undef _XOPEN_SOURCE_EXTENDED
 
 /* Define to `long int' if <sys/types.h> does not define. */
