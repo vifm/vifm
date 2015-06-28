@@ -742,23 +742,32 @@ get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 	static uid_t last_uid = (uid_t)-1;
 	static char uid_buf[26];
 
-	if(entry->uid != last_uid)
+	if(entry->uid == last_uid)
 	{
-		char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
-		struct passwd pwd_b;
-		struct passwd *pwd_buf;
+		copy_str(buf, buf_len, uid_buf);
+		return;
+	}
 
-		last_uid = entry->uid;
+	last_uid = entry->uid;
+	snprintf(uid_buf, sizeof(uid_buf), "%d", (int)last_uid);
 
-		if(as_num ||
-				getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) != 0 ||
-				pwd_buf == NULL)
+	if(!as_num)
+	{
+		enum { MAX_TRIES = 4 };
+		size_t size = MAX(sysconf(_SC_GETPW_R_SIZE_MAX) + 1, PATH_MAX);
+		int i;
+		for(i = 0; i < MAX_TRIES; ++i, size *= 2)
 		{
-			snprintf(uid_buf, sizeof(uid_buf), "%d", (int)last_uid);
-		}
-		else
-		{
-			copy_str(uid_buf, sizeof(uid_buf), pwd_buf->pw_name);
+			char buf[size];
+			struct passwd pwd_b;
+			struct passwd *pwd_buf;
+
+			if(getpwuid_r(last_uid, &pwd_b, buf, sizeof(buf), &pwd_buf) == 0 &&
+					pwd_buf != NULL)
+			{
+				copy_str(uid_buf, sizeof(uid_buf), pwd_buf->pw_name);
+				break;
+			}
 		}
 	}
 
@@ -772,23 +781,32 @@ get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 	static gid_t last_gid = (gid_t)-1;
 	static char gid_buf[26];
 
-	if(entry->gid != last_gid)
+	if(entry->gid == last_gid)
 	{
-		char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
-		struct group group_b;
-		struct group *group_buf;
+		copy_str(buf, buf_len, gid_buf);
+		return;
+	}
 
-		last_gid = entry->gid;
+	last_gid = entry->gid;
+	snprintf(gid_buf, sizeof(gid_buf), "%d", (int)last_gid);
 
-		if(as_num ||
-				getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) != 0 ||
-				group_buf == NULL)
+	if(!as_num)
+	{
+		enum { MAX_TRIES = 4 };
+		size_t size = MAX(sysconf(_SC_GETGR_R_SIZE_MAX) + 1, PATH_MAX);
+		int i;
+		for(i = 0; i < MAX_TRIES; ++i, size *= 2)
 		{
-			snprintf(gid_buf, sizeof(gid_buf), "%d", (int)last_gid);
-		}
-		else
-		{
-			copy_str(gid_buf, sizeof(gid_buf), group_buf->gr_name);
+			char buf[size];
+			struct group group_b;
+			struct group *group_buf;
+
+			if(getgrgid_r(last_gid, &group_b, buf, sizeof(buf), &group_buf) == 0 &&
+					group_buf != NULL)
+			{
+				copy_str(gid_buf, sizeof(gid_buf), group_buf->gr_name);
+				break;
+			}
 		}
 	}
 
