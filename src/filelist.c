@@ -1528,8 +1528,6 @@ flist_custom_finish(FileView *view)
 		view->curr_dir[0] = '\0';
 	}
 
-	sort_dir_list(0, view);
-
 	ui_view_schedule_redraw(view);
 
 	/* Replace view file list with custom list. */
@@ -1538,6 +1536,8 @@ flist_custom_finish(FileView *view)
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
+
+	sort_dir_list(0, view);
 
 	flist_ensure_pos_is_valid(view);
 
