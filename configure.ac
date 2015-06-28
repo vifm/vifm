@@ -35,10 +35,8 @@ case "$host_os" in
 		;;
 esac
 
-if test -n "$OSX_HOST" ; then
-	AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
-	          [Define to 1 to enable wide functions of ncurses on OS X.])
-fi
+AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
+          [Define to 1 to enable wide functions of ncurses in some environments.])
 
 dnl Check for system headers.
 AC_CHECK_HEADERS([alloca.h], [AC_DEFINE([HAVE_ALLOCA_H], [1], [alloca.h header is available.])])
