@@ -1,15 +1,19 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() rmdir() */
+
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() */
+#include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/filter.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
+#include "../../src/sort.h"
 
 static void cleanup_view(FileView *view);
 static void setup_custom_view(FileView *view);
@@ -152,6 +156,38 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 	expanded = expand_macros("%D", NULL, NULL, 0);
 	assert_string_equal("/path", expanded);
 	free(expanded);
+}
+
+TEST(files_are_sorted_undecorated)
+{
+	assert_success(chdir("test-data/sandbox"));
+
+	cfg.decorations[FT_DIR][1] = '/';
+
+	lwin.custom.unsorted = 0;
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	assert_success(os_mkdir("foo", 0700));
+	assert_success(os_mkdir("foo-", 0700));
+	assert_success(os_mkdir("foo.", 0700));
+
+	assert_false(flist_custom_active(&lwin));
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "foo");
+	flist_custom_add(&lwin, "foo-");
+	flist_custom_add(&lwin, "foo.");
+	assert_success(flist_custom_finish(&lwin));
+
+	assert_string_equal("foo", lwin.dir_entry[0].name);
+	assert_string_equal("foo-", lwin.dir_entry[1].name);
+	assert_string_equal("foo.", lwin.dir_entry[2].name);
+
+	assert_success(rmdir("foo"));
+	assert_success(rmdir("foo-"));
+	assert_success(rmdir("foo."));
+
+	assert_success(chdir("../.."));
 }
 
 static void
