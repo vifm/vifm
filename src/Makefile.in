@@ -1731,42 +1731,47 @@ uninstall-man: uninstall-man1
 .PHONY: update_compile_info
 
 runtests:
-	echo '$(MAKE) -C ../tests' > $@_
+	echo 'mkdir -p $(abs_builddir)/../tests/' > $@_
+	echo '$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/' >> $@_
 	chmod +x $@_
 	mv $@_ $@
 
 distclean-local:
-	$(MAKE) -C ../tests clean
+	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-	@./update-compile-info $(UNDER_VCS)
+	@$(abs_srcdir)/update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
-../data/vifm-help.txt: ../data/man/vifm.1
+
+../data/vifm-help.txt: $(abs_srcdir)/../data/man/vifm.1
+	mkdir -p ../data/
 	@if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
 		if [ -n "$(COL)" ]; then \
-			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
+			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
-			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
-../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
+../data/vim/doc/app/tags: $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
+	mkdir -p ../data/vim/doc/app/
 	@if [ -n "$(PERL)" ]; then \
-		./helpztags "$(dir $@)"; \
+		$(abs_srcdir)/helpztags "$(dir $<)"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $@)|q'; \
+		vim -e -s -c 'helptags $(dir $<)|q'; \
 	else \
 		touch $@; \
 	fi
 
-../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
+../data/vim/doc/plugin/tags: $(abs_srcdir)/../data/vim/doc/plugin/vifm-plugin.txt
+	mkdir -p ../data/vim/doc/plugin/
 	@if [ -n "$(PERL)" ]; then \
-		./helpztags "$(dir $@)"; \
+		$(abs_srcdir)/helpztags "$(dir $<)"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $@)|q'; \
+		vim -e -s -c 'helptags $(dir $<)|q'; \
 	else \
 		touch $@; \
 	fi
