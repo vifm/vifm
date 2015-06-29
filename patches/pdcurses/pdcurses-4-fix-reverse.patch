@@ -1,0 +1,35 @@
+This file is part of MXE.
+See index.html for further information.
+
+This patch has been taken from:
+https://sourceforge.net/p/pdcurses/discussion/95730/thread/395ac4ed/
+
+diff --git a/win32/pdcscrn.c b/win32/pdcscrn.c
+index da84cde..4d9ce51 100644
+--- a/win32/pdcscrn.c
++++ b/win32/pdcscrn.c
+@@ -555,9 +555,11 @@ void PDC_init_pair(short pair, short fg, short bg)
+ 
+     for (i = 0; i < PDC_OFFSET; i++)
+     {
++        const int reverse = (i & (A_REVERSE >> PDC_ATTR_SHIFT));
++
+         att = fg | (bg << 4);
+ 
+-        if (i & (A_REVERSE >> PDC_ATTR_SHIFT))
++        if (reverse)
+             att = bg | (fg << 4);
+         if (i & (A_UNDERLINE >> PDC_ATTR_SHIFT))
+             /* No underscores in Windows terminals. */
+@@ -568,9 +570,9 @@ void PDC_init_pair(short pair, short fg, short bg)
+             att = temp_bg << 4 | temp_bg;
+         }
+         if (i & (A_BOLD >> PDC_ATTR_SHIFT))
+-            att |= 8;
++            att |= reverse ? 128 : 8;
+         if (i & (A_BLINK >> PDC_ATTR_SHIFT))
+-            att |= 128;
++            att |= reverse ? 8 : 128;
+ 
+         pdc_atrtab[pair * PDC_OFFSET + i] = att;
+     }
