@@ -1,0 +1,37 @@
+#!/bin/sh
+# this script prevents useless rebuilds after checking out sources from git, run
+# it to omit build files regeneration, which otherwise require build tools being
+# available
+# see https://www.gnu.org/software/automake/manual/automake.html#CVS
+
+next_second()
+{
+    echo Waiting for time change...
+    sleep 1
+}
+
+update()
+{
+    echo "Updating $@"
+    touch "$@"
+}
+
+next_second
+
+# aclocal-generated aclocal.m4 depends on locally-installed '.m4' macro files,
+# as well as on 'configure.ac'
+update aclocal.m4
+
+next_second
+
+# autoconf-generated configure depends on aclocal.m4 and on configure.ac
+update configure
+
+# so does autoheader-generated config.h.in
+update config.h.in
+
+# and all the automake-generated Makefile.in files
+update `find . -name Makefile.in -print`
+
+# generated tags.c file should be newer than tags in data/vim/doc/app/
+update src/tags.c

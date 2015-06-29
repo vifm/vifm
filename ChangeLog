@@ -4,6 +4,10 @@
 
 	Added device id (major and minor numbers) to file info dialog.
 
+	Added script to update timestamps, so that build system won't be
+	regenerated without real reason.  One might want to run it when building
+	from git checkout, which doesn't preserve correct timestamps.
+
 	Append unused space in view columns to the last one with percent sizing
 	type if any.  Thanks to fogine.
 
