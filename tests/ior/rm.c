@@ -8,16 +8,14 @@
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
 
+#include "utils.h"
+
 static const char *const FILE_NAME = "file-to-remove";
 static const char *const DIRECTORY_NAME = "directory-to-remove";
 
 TEST(file_is_removed)
 {
-	{
-		FILE *const f = fopen(FILE_NAME, "w");
-		fclose(f);
-		assert_success(access(FILE_NAME, F_OK));
-	}
+	create_empty_file(FILE_NAME);
 
 	{
 		io_args_t args = {
@@ -56,11 +54,7 @@ TEST(non_empty_directory_is_removed)
 	assert_success(access(DIRECTORY_NAME, F_OK));
 
 	assert_success(chdir(DIRECTORY_NAME));
-	{
-		FILE *const f = fopen(FILE_NAME, "w");
-		fclose(f);
-		assert_success(access(FILE_NAME, F_OK));
-	}
+	create_empty_file(FILE_NAME);
 	assert_success(chdir(".."));
 
 	{

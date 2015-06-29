@@ -60,7 +60,10 @@ void
 create_empty_file(const char file[])
 {
 	FILE *const f = fopen(file, "w");
-	fclose(f);
+	if(f != NULL)
+	{
+		fclose(f);
+	}
 	assert_success(access(file, F_OK));
 }
 

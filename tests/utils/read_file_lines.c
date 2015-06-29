@@ -7,7 +7,12 @@ TEST(dos_line_endings)
 	int nlines;
 	char **lines = read_file_of_lines("test-data/read/dos-line-endings", &nlines);
 
-	assert_true(lines != NULL);
+	if(lines == NULL)
+	{
+		assert_fail("Failed to read file lines");
+		return;
+	}
+
 	assert_int_equal(3, nlines);
 	assert_string_equal("first line", lines[0]);
 	assert_string_equal("second line", lines[1]);
@@ -21,7 +26,12 @@ TEST(dos_end_of_file)
 	int nlines;
 	char **lines = read_file_of_lines("test-data/read/dos-eof", &nlines);
 
-	assert_true(lines != NULL);
+	if(lines == NULL)
+	{
+		assert_fail("Failed to read file lines");
+		return;
+	}
+
 	assert_int_equal(3, nlines);
 	assert_string_equal("next line contains EOF", lines[0]);
 	assert_string_equal("\x1a", lines[1]);

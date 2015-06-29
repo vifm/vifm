@@ -1,13 +1,13 @@
 #include <stic.h>
 
-#include <stdio.h> /* FILE fopen() fclose() */
-
 #include <unistd.h> /* F_OK access() */
 
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
+
+#include "utils.h"
 
 static const char *const FILE_NAME = "file-to-remove";
 static const char *const DIRECTORY_NAME = "directory-to-remove";
@@ -36,11 +36,7 @@ TEST(non_empty_directory_is_not_removed)
 	assert_true(is_dir(DIRECTORY_NAME));
 
 	assert_success(chdir(DIRECTORY_NAME));
-	{
-		FILE *const f = fopen(FILE_NAME, "w");
-		fclose(f);
-		assert_success(access(FILE_NAME, F_OK));
-	}
+	create_test_file(FILE_NAME);
 	assert_success(chdir(".."));
 
 	{
