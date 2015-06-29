@@ -1,7 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(configure.ac)
-AM_INIT_AUTOMAKE(vifm, 0.8-beta)
+AC_INIT(vifm, 0.8-beta, xaizek@openmailbox.org, vifm, http://vifm.info)
+AC_CONFIG_SRCDIR(configure.ac)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 AC_DEFINE([PACKAGE_SYSCONF_DIR], [], [Configuration directory of the package.])

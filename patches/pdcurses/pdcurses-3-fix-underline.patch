@@ -1,0 +1,17 @@
+This file is part of MXE.
+See index.html for further information.
+
+diff --git a/win32/pdcscrn.c b/win32/pdcscrn.c
+index b48ddaa..da84cde 100644
+--- a/win32/pdcscrn.c
++++ b/win32/pdcscrn.c
+@@ -560,7 +560,8 @@ void PDC_init_pair(short pair, short fg, short bg)
+         if (i & (A_REVERSE >> PDC_ATTR_SHIFT))
+             att = bg | (fg << 4);
+         if (i & (A_UNDERLINE >> PDC_ATTR_SHIFT))
+-            att = 1;
++            /* No underscores in Windows terminals. */
++            att |= 0;
+         if (i & (A_INVIS >> PDC_ATTR_SHIFT))
+         {
+             temp_bg = att >> 4;

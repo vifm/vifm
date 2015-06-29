@@ -31,7 +31,7 @@ if [ "$target" = all -o "$target" = update ]; then
     sed -i "1s/current/$ver/" ChangeLog
 
     # update version in configure script
-    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $ver)/" configure.ac
+    sed -i "/AC_INIT(/s/, [^,]\\+/, $ver/" configure.ac
 
     if [ "$OS" != Windows_NT ]; then
         # regenerate autotools files
