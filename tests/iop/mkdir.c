@@ -8,9 +8,10 @@
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fs_limits.h"
+#include "../../src/utils/path.h"
 
-#define DIR_NAME "dir-to-create"
-#define NESTED_DIR_NAME "dir-to-create/dir-to-create"
+#define DIR_NAME SANDBOX_PATH "/dir-to-create"
+#define NESTED_DIR_NAME SANDBOX_PATH "/dir-to-create/dir-to-create"
 
 static void create_directory(const char path[], const char root[],
 		int create_parents);
@@ -28,12 +29,15 @@ TEST(child_dir_and_parent_are_created)
 
 TEST(create_by_absolute_path)
 {
-	char cwd[PATH_MAX];
-	char full_path[PATH_MAX];
+	if(!is_path_absolute(NESTED_DIR_NAME))
+	{
+		char cwd[PATH_MAX];
+		char full_path[PATH_MAX];
 
-	getcwd(cwd, sizeof(cwd));
-	snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);
-	create_directory(full_path, DIR_NAME, 1);
+		getcwd(cwd, sizeof(cwd));
+		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);
+		create_directory(full_path, DIR_NAME, 1);
+	}
 }
 
 static void

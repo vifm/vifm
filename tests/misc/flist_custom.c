@@ -66,8 +66,8 @@ TEST(empty_list_is_not_accepted)
 TEST(duplicates_are_not_added)
 {
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, "test-data/existing-files/a");
-	flist_custom_add(&lwin, "test-data/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin) == 0);
 	assert_int_equal(1, lwin.list_rows);
 }
@@ -77,14 +77,14 @@ TEST(custom_view_replaces_custom_view_fine)
 	assert_false(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, "test-data/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin) == 0);
 	assert_int_equal(1, lwin.list_rows);
 
 	assert_true(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, "test-data/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
 	assert_true(flist_custom_finish(&lwin) == 0);
 	assert_int_equal(1, lwin.list_rows);
 
@@ -98,8 +98,8 @@ TEST(reload_considers_local_filter)
 	assert_false(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, "test-data/existing-files/a");
-	flist_custom_add(&lwin, "test-data/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
 	assert_true(flist_custom_finish(&lwin) == 0);
 
 	local_filter_apply(&lwin, "b");
@@ -117,8 +117,8 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 	assert_false(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, "test-data/existing-files/a");
-	flist_custom_add(&lwin, "test-data/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
 	assert_true(flist_custom_finish(&lwin) == 0);
 
 	local_filter_apply(&lwin, "b");
@@ -135,9 +135,10 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 
 	init_registers();
 
-	assert_success(append_to_register('r', "test-data/existing-files/b"));
+	assert_success(chdir(TEST_DATA_PATH));
+	assert_success(append_to_register('r', "existing-files/b"));
 	expanded = expand_macros("%rr:p", NULL, NULL, 0);
-	assert_string_equal("/path/test-data/existing-files/b", expanded);
+	assert_string_equal("/path/existing-files/b", expanded);
 	free(expanded);
 
 	clear_registers();
@@ -160,7 +161,7 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 
 TEST(files_are_sorted_undecorated)
 {
-	assert_success(chdir("test-data/sandbox"));
+	assert_success(chdir(SANDBOX_PATH));
 
 	cfg.decorations[FT_DIR][1] = '/';
 
@@ -186,8 +187,6 @@ TEST(files_are_sorted_undecorated)
 	assert_success(rmdir("foo"));
 	assert_success(rmdir("foo-"));
 	assert_success(rmdir("foo0"));
-
-	assert_success(chdir("../.."));
 }
 
 static void
@@ -195,7 +194,7 @@ setup_custom_view(FileView *view)
 {
 	assert_false(flist_custom_active(view));
 	flist_custom_start(view, "test");
-	flist_custom_add(view, "test-data/existing-files/a");
+	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(view) == 0);
 }
 

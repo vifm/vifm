@@ -19,12 +19,12 @@ static int confirm_called;
 
 TEST(confirm_is_not_called_for_no_overwrite)
 {
-	create_test_file("empty");
+	create_test_file(SANDBOX_PATH "/empty");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_FAIL,
 
 			.confirm = &confirm_overwrite,
@@ -39,18 +39,18 @@ TEST(confirm_is_not_called_for_no_overwrite)
 		ioe_errlst_free(&args.result.errors);
 	}
 
-	delete_test_file("empty");
+	delete_test_file(SANDBOX_PATH "/empty");
 }
 
 TEST(confirm_is_called_for_overwrite)
 {
-	create_test_file("empty");
-	clone_test_file("empty", "empty-copy");
+	create_test_file(SANDBOX_PATH "/empty");
+	clone_test_file(SANDBOX_PATH "/empty", SANDBOX_PATH "/empty-copy");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 
 			.confirm = &confirm_overwrite,
@@ -65,22 +65,24 @@ TEST(confirm_is_called_for_overwrite)
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_true(files_are_identical("../read/two-lines", "empty"));
-	assert_false(files_are_identical("empty", "empty-copy"));
+	assert_true(files_are_identical(TEST_DATA_PATH "/read/two-lines",
+				SANDBOX_PATH "/empty"));
+	assert_false(files_are_identical(SANDBOX_PATH "/empty",
+				SANDBOX_PATH "/empty-copy"));
 
-	delete_test_file("empty");
-	delete_test_file("empty-copy");
+	delete_test_file(SANDBOX_PATH "/empty");
+	delete_test_file(SANDBOX_PATH "/empty-copy");
 }
 
 TEST(no_confirm_on_appending)
 {
-	create_test_file("empty");
-	clone_test_file("empty", "empty-copy");
+	create_test_file(SANDBOX_PATH "/empty");
+	clone_test_file(SANDBOX_PATH "/empty", SANDBOX_PATH "/empty-copy");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 
 			.confirm = &confirm_overwrite,
@@ -94,22 +96,24 @@ TEST(no_confirm_on_appending)
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_true(files_are_identical("../read/two-lines", "empty"));
-	assert_false(files_are_identical("empty", "empty-copy"));
+	assert_true(files_are_identical(TEST_DATA_PATH "/read/two-lines",
+				SANDBOX_PATH "/empty"));
+	assert_false(files_are_identical(SANDBOX_PATH "/empty",
+				SANDBOX_PATH "/empty-copy"));
 
-	delete_test_file("empty");
-	delete_test_file("empty-copy");
+	delete_test_file(SANDBOX_PATH "/empty");
+	delete_test_file(SANDBOX_PATH "/empty-copy");
 }
 
 TEST(deny_to_overwrite_is_considered)
 {
-	create_test_file("empty");
-	clone_test_file("empty", "empty-copy");
+	create_test_file(SANDBOX_PATH "/empty");
+	clone_test_file(SANDBOX_PATH "/empty", SANDBOX_PATH "/empty-copy");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 
 			.confirm = &deny_overwrite,
@@ -123,11 +127,13 @@ TEST(deny_to_overwrite_is_considered)
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_false(files_are_identical("../read/two-lines", "empty"));
-	assert_true(files_are_identical("empty", "empty-copy"));
+	assert_false(files_are_identical(TEST_DATA_PATH "/read/two-lines",
+				SANDBOX_PATH "/empty"));
+	assert_true(files_are_identical(SANDBOX_PATH "/empty",
+				SANDBOX_PATH "/empty-copy"));
 
-	delete_test_file("empty");
-	delete_test_file("empty-copy");
+	delete_test_file(SANDBOX_PATH "/empty");
+	delete_test_file(SANDBOX_PATH "/empty-copy");
 }
 
 static int

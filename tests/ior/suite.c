@@ -3,8 +3,6 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
-#include <unistd.h> /* chdir() */
-
 #include "../../src/cfg/config.h"
 
 DEFINE_SUITE();
@@ -12,14 +10,10 @@ DEFINE_SUITE();
 SETUP()
 {
 	cfg.shell = strdup("/bin/bash");
-
-	assert_success(chdir("test-data/sandbox"));
 }
 
 TEARDOWN()
 {
-	assert_success(chdir("../.."));
-
 	free(cfg.shell);
 }
 

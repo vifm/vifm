@@ -7,7 +7,7 @@
 
 TEST(buffer_can_be_null)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 
 	if(fp == NULL)
@@ -25,7 +25,7 @@ TEST(buffer_can_be_null)
 
 TEST(buffer_can_be_not_null)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = malloc(10);
 
 	if(fp == NULL)
@@ -43,7 +43,7 @@ TEST(buffer_can_be_not_null)
 
 TEST(very_long_line_can_be_read)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 
 	if(fp == NULL)
@@ -142,7 +142,7 @@ TEST(very_long_line_can_be_read)
 
 TEST(empty_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 
 	if(fp == NULL)
@@ -162,7 +162,7 @@ TEST(empty_line_is_read_correctly)
 
 TEST(next_to_empty_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 
 	if(fp == NULL)
@@ -183,7 +183,7 @@ TEST(next_to_empty_line_is_read_correctly)
 
 TEST(the_last_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 
 	if(fp == NULL)
@@ -206,7 +206,7 @@ TEST(the_last_line_is_read_correctly)
 TEST(reads_after_eof_return_null)
 {
 	const int READ_COUNT = 10;
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 	int i;
 

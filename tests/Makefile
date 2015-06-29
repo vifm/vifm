@@ -75,7 +75,8 @@ endif
 check: build
 
 clean:
-	-$(RM) -r bin/ stic/stic.h.d stic/stic.h.gch
+	$(RM) -r bin/ sandbox/
+	$(RM) stic/stic.h.d stic/stic.h.gch
 
 $(vifm_src:.c=.o): | $(vifm_bin)
 
@@ -118,11 +119,13 @@ bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) bin/build/$(BINSUBDIR)/stic.o \
 
 bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c stic/stic.h.gch \
                                bin/build/$(BINSUBDIR)/$1/filelist \
-                             | bin/build/$(BINSUBDIR)/$1
+                             | bin/build/$(BINSUBDIR)/$1 sandbox/$1
 	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                -DMAXTESTID=$$(words $$($1.obj)) $$< \
-	                -DSUITE_NAME="$1"
+	                -DSUITE_NAME="$1" \
+	                -DTEST_DATA_PATH='"$(abspath .)/test-data"' \
+	                -DSANDBOX_PATH='"$(abspath .)/sandbox/$1"' \
 
 bin/build/$(BINSUBDIR)/$1/filelist: $1/. | bin/build/$(BINSUBDIR)/$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@)" != '$$($1.src)' ]; then \
@@ -130,7 +133,7 @@ bin/build/$(BINSUBDIR)/$1/filelist: $1/. | bin/build/$(BINSUBDIR)/$1
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
-bin/build/$(BINSUBDIR)/$1:
+bin/build/$(BINSUBDIR)/$1 sandbox/$1:
 	mkdir -p $$@
 
 $1: bin/$(BINSUBDIR)/$1$(exe_suffix)

@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() */
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -72,9 +74,14 @@ static void
 setup_registers(void)
 {
 	init_registers();
-	append_to_register('z', "test-data/existing-files/a");
-	append_to_register('z', "test-data/existing-files/b");
-	append_to_register('z', "test-data/existing-files/c");
+	append_to_register('z', "existing-files/a");
+	append_to_register('z', "existing-files/b");
+	append_to_register('z', "existing-files/c");
+}
+
+SETUP_ONCE()
+{
+	assert_success(chdir(TEST_DATA_PATH));
 }
 
 SETUP()
@@ -143,7 +150,7 @@ TEST(colon_p)
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:p ", "", &flags, 1);
-	assert_string_equal(" cp " SL "lwin" SL "test-data" SL "existing-files" SL "a " SL "lwin" SL "test-data" SL "existing-files" SL "b " SL "lwin" SL "test-data" SL "existing-files" SL "c ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "existing-files" SL "a " SL "lwin" SL "existing-files" SL "b " SL "lwin" SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -186,7 +193,7 @@ TEST(colon_p_in_root)
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:p ", "", &flags, 1);
-	assert_string_equal(" cp " SL "test-data" SL "existing-files" SL "a " SL "test-data" SL "existing-files" SL "b " SL "test-data" SL "existing-files" SL "c ", expanded);
+	assert_string_equal(" cp " SL "existing-files" SL "a " SL "existing-files" SL "b " SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -241,7 +248,7 @@ TEST(colon_tilde)
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:~ ", "", &flags, 1);
-	assert_string_equal(" cp test-data" SL "existing-files" SL "a test-data" SL "existing-files" SL "b test-data" SL "existing-files" SL "c ", expanded);
+	assert_string_equal(" cp existing-files" SL "a existing-files" SL "b existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -301,7 +308,7 @@ TEST(colon_dot)
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:. ", "", &flags, 1);
-	assert_string_equal(" cp test-data" SL "existing-files" SL "a test-data" SL "existing-files" SL "b test-data" SL "existing-files" SL "c ", expanded);
+	assert_string_equal(" cp existing-files" SL "a existing-files" SL "b existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -352,7 +359,7 @@ TEST(colon_h)
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:h ", "", &flags, 1);
-	assert_string_equal(" cp test-data" SL "existing-files test-data" SL "existing-files test-data" SL "existing-files ", expanded);
+	assert_string_equal(" cp existing-files existing-files existing-files ", expanded);
 	free(expanded);
 }
 

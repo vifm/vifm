@@ -9,8 +9,8 @@
 
 #include "utils.h"
 
-static const char *const FILE_NAME = "file-to-remove";
-static const char *const DIRECTORY_NAME = "directory-to-remove";
+#define DIRECTORY_NAME SANDBOX_PATH "/directory-to-remove"
+#define FILE_NAME DIRECTORY_NAME "/file-to-remove"
 
 TEST(empty_directory_is_removed)
 {
@@ -34,10 +34,7 @@ TEST(non_empty_directory_is_not_removed)
 {
 	os_mkdir(DIRECTORY_NAME, 0700);
 	assert_true(is_dir(DIRECTORY_NAME));
-
-	assert_success(chdir(DIRECTORY_NAME));
 	create_test_file(FILE_NAME);
-	assert_success(chdir(".."));
 
 	{
 		io_args_t args = {

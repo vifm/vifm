@@ -21,7 +21,7 @@ static int file_exists(const char file[]);
 
 SETUP()
 {
-	assert_int_equal(0, chdir("test-data/sandbox"));
+	assert_int_equal(0, chdir(SANDBOX_PATH));
 
 	/* lwin */
 	strcpy(lwin.curr_dir, ".");

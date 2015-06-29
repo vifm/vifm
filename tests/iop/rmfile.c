@@ -9,10 +9,10 @@
 
 #include "utils.h"
 
-static int not_windows(void);
+#define DIRECTORY_NAME SANDBOX_PATH "/directory-to-remove"
+#define FILE_NAME SANDBOX_PATH "/file-to-remove"
 
-static const char *const FILE_NAME = "file-to-remove";
-static const char *const DIRECTORY_NAME = "directory-to-remove";
+static int not_windows(void);
 
 TEST(file_is_removed)
 {

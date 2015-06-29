@@ -5,7 +5,8 @@
 TEST(dos_line_endings)
 {
 	int nlines;
-	char **lines = read_file_of_lines("test-data/read/dos-line-endings", &nlines);
+	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/dos-line-endings",
+			&nlines);
 
 	if(lines == NULL)
 	{
@@ -24,7 +25,7 @@ TEST(dos_line_endings)
 TEST(dos_end_of_file)
 {
 	int nlines;
-	char **lines = read_file_of_lines("test-data/read/dos-eof", &nlines);
+	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/dos-eof", &nlines);
 
 	if(lines == NULL)
 	{
@@ -43,7 +44,8 @@ TEST(dos_end_of_file)
 TEST(binary_data_is_fully_read)
 {
 	int nlines;
-	char **lines = read_file_of_lines("test-data/read/binary-data", &nlines);
+	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/binary-data",
+			&nlines);
 
 	assert_true(lines != NULL);
 	assert_int_equal(12, nlines);

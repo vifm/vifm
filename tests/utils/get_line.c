@@ -6,7 +6,7 @@
 
 TEST(reads_line_chunk_by_chunk)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[5];
 
@@ -27,7 +27,7 @@ TEST(reads_line_chunk_by_chunk)
 
 TEST(eol_is_preserved)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[100];
 
@@ -45,7 +45,7 @@ TEST(eol_is_preserved)
 
 TEST(reads_more_than_one_line)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[100];
 
@@ -66,7 +66,7 @@ TEST(reads_more_than_one_line)
 
 TEST(writes_nothing_and_returns_null_on_zero_size_buffer)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[] = "01";
 
@@ -85,7 +85,7 @@ TEST(writes_nothing_and_returns_null_on_zero_size_buffer)
 
 TEST(writes_nothing_and_returns_null_on_one_byte_buffer)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[] = "01";
 

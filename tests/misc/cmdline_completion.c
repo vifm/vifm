@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* NULL */
@@ -20,6 +21,7 @@
 #include "../../src/commands.h"
 
 static void fusehome_handler(OPT_OP op, optval_t val);
+static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
 
 static line_stats_t stats;
@@ -52,13 +54,11 @@ SETUP()
 	init_options(&option_changed);
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, def);
 
-	assert_int_equal(0, chdir("test-data/existing-files"));
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 }
 
 TEARDOWN()
 {
-	assert_int_equal(0, chdir("../.."));
-
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
 
@@ -422,26 +422,48 @@ TEST(abbreviations)
 TEST(bang_abs_path_completion)
 {
 #if defined(__CYGWIN__) || defined(_WIN32)
-#define SUFFIX L".exe"
+#define SUFFIX ".exe"
+#define SUFFIXW L".exe"
 #else
-#define SUFFIX L""
+#define SUFFIX ""
+#define SUFFIXW L""
 #endif
 
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
+
+	assert_success(chdir(SANDBOX_PATH));
+
 	assert_true(getcwd(cwd, sizeof(cwd)) == cwd);
 #ifdef _WIN32
 	to_forward_slash(cwd);
 #endif
 
+	create_executable("exec-for-completion" SUFFIX);
+
 	vifm_swprintf(cmd, ARRAY_LEN(cmd),
-			L"!%" WPRINTF_MBSTR L"/../../../src/vifmrc-converter" SUFFIX , cwd);
+			L"!%" WPRINTF_MBSTR L"/exec-for-completion" SUFFIXW, cwd);
 
 	prepare_for_line_completion(cmd);
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(cmd, stats.line);
 
 	assert_int_equal(2, vle_compl_get_count());
+
+	assert_success(unlink("exec-for-completion" SUFFIX));
+}
+
+static void
+create_executable(const char file[])
+{
+	FILE *const f = fopen(file, "w");
+	if(f != NULL)
+	{
+		fclose(f);
+	}
+	assert_success(access(file, F_OK));
+	chmod(file, 0755);
+	assert_success(access(file, X_OK));
 }
 
 static int

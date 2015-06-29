@@ -17,155 +17,157 @@ static int windows(void);
 
 TEST(file_is_moved)
 {
-	create_empty_file("binary-data");
+	create_empty_file(SANDBOX_PATH "/binary-data");
 
 	{
 		io_args_t args = {
-			.arg1.src = "binary-data",
-			.arg2.dst = "moved-binary-data",
+			.arg1.src = SANDBOX_PATH "/binary-data",
+			.arg2.dst = SANDBOX_PATH "/moved-binary-data",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_false(file_exists("binary-data"));
-	assert_true(file_exists("moved-binary-data"));
+	assert_false(file_exists(SANDBOX_PATH "/binary-data"));
+	assert_true(file_exists(SANDBOX_PATH "/moved-binary-data"));
 
-	remove("moved-binary-data");
+	remove(SANDBOX_PATH "/moved-binary-data");
 }
 
 TEST(empty_directory_is_moved)
 {
-	create_empty_dir("empty-dir");
+	create_empty_dir(SANDBOX_PATH "/empty-dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "empty-dir",
-			.arg2.dst = "moved-empty-dir",
+			.arg1.src = SANDBOX_PATH "/empty-dir",
+			.arg2.dst = SANDBOX_PATH "/moved-empty-dir",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_false(is_dir("empty-dir"));
-	assert_true(is_dir("moved-empty-dir"));
+	assert_false(is_dir(SANDBOX_PATH "/empty-dir"));
+	assert_true(is_dir(SANDBOX_PATH "/moved-empty-dir"));
 
-	delete_dir("moved-empty-dir");
+	delete_dir(SANDBOX_PATH "/moved-empty-dir");
 }
 
 TEST(non_empty_directory_is_moved)
 {
-	create_non_empty_dir("non-empty-dir", "a-file");
+	create_non_empty_dir(SANDBOX_PATH "/non-empty-dir", "a-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "non-empty-dir",
-			.arg2.dst = "moved-non-empty-dir",
+			.arg1.src = SANDBOX_PATH "/non-empty-dir",
+			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_true(file_exists("moved-non-empty-dir/a-file"));
+	assert_true(file_exists(SANDBOX_PATH "/moved-non-empty-dir/a-file"));
 
-	delete_tree("moved-non-empty-dir");
+	delete_tree(SANDBOX_PATH "/moved-non-empty-dir");
 }
 
 TEST(empty_nested_directory_is_moved)
 {
-	create_empty_nested_dir("non-empty-dir", "empty-nested-dir");
+	create_empty_nested_dir(SANDBOX_PATH "/non-empty-dir", "empty-nested-dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "non-empty-dir",
-			.arg2.dst = "moved-non-empty-dir",
+			.arg1.src = SANDBOX_PATH "/non-empty-dir",
+			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_true(is_dir("moved-non-empty-dir/empty-nested-dir"));
+	assert_true(is_dir(SANDBOX_PATH "/moved-non-empty-dir/empty-nested-dir"));
 
-	delete_tree("moved-non-empty-dir");
+	delete_tree(SANDBOX_PATH "/moved-non-empty-dir");
 }
 
 TEST(non_empty_nested_directory_is_moved)
 {
-	create_non_empty_nested_dir("non-empty-dir", "nested-dir", "a-file");
+	create_non_empty_nested_dir(SANDBOX_PATH "/non-empty-dir", "nested-dir",
+			"a-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "non-empty-dir",
-			.arg2.dst = "moved-non-empty-dir",
+			.arg1.src = SANDBOX_PATH "/non-empty-dir",
+			.arg2.dst = SANDBOX_PATH "/moved-non-empty-dir",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_false(file_exists("non-empty-dir/nested-dir/a-file"));
-	assert_true(file_exists("moved-non-empty-dir/nested-dir/a-file"));
+	assert_false(file_exists(SANDBOX_PATH "/non-empty-dir/nested-dir/a-file"));
+	assert_true(file_exists(SANDBOX_PATH
+				"/moved-non-empty-dir/nested-dir/a-file"));
 
-	delete_tree("moved-non-empty-dir");
+	delete_tree(SANDBOX_PATH "/moved-non-empty-dir");
 }
 
 TEST(fails_to_overwrite_file_by_default)
 {
-	create_empty_file("a-file");
+	create_empty_file(SANDBOX_PATH "/a-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "a-file",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/a-file",
 		};
 		assert_failure(ior_mv(&args));
 	}
 
-	delete_file("a-file");
+	delete_file(SANDBOX_PATH "/a-file");
 }
 
 TEST(fails_to_overwrite_dir_by_default)
 {
-	create_empty_dir("empty-dir");
+	create_empty_dir(SANDBOX_PATH "/empty-dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read",
-			.arg2.dst = "empty-dir",
+			.arg1.src = TEST_DATA_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/empty-dir",
 		};
 		assert_failure(ior_mv(&args));
 	}
 
-	delete_dir("empty-dir");
+	delete_dir(SANDBOX_PATH "/empty-dir");
 }
 
 TEST(overwrites_file_when_asked)
 {
-	create_empty_file("a-file");
-	clone_file("../read/two-lines", "two-lines");
+	create_empty_file(SANDBOX_PATH "/a-file");
+	clone_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
 
 	{
 		io_args_t args = {
-			.arg1.src = "two-lines",
-			.arg2.dst = "a-file",
+			.arg1.src = SANDBOX_PATH "/two-lines",
+			.arg2.dst = SANDBOX_PATH "/a-file",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	delete_file("a-file");
+	delete_file(SANDBOX_PATH "/a-file");
 }
 
 TEST(overwrites_dir_when_asked)
 {
-	create_empty_dir("dir");
+	create_empty_dir(SANDBOX_PATH "/dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read",
-			.arg2.dst = "read",
+			.arg1.src = TEST_DATA_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/read",
 		};
 		assert_success(ior_cp(&args));
 	}
 
 	{
 		io_args_t args = {
-			.arg1.src = "read",
-			.arg2.dst = "dir",
+			.arg1.src = SANDBOX_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/dir",
 			.arg3.crs = IO_CRS_REPLACE_ALL,
 		};
 		assert_success(ior_mv(&args));
@@ -173,138 +175,132 @@ TEST(overwrites_dir_when_asked)
 
 	{
 		io_args_t args = {
-			.arg1.path = "dir",
+			.arg1.path = SANDBOX_PATH "/dir",
 		};
 		assert_failure(iop_rmdir(&args));
 	}
 
-	delete_tree("dir");
+	delete_tree(SANDBOX_PATH "/dir");
 }
 
 TEST(appending_fails_for_directories)
 {
-	create_empty_dir("dir");
+	create_empty_dir(SANDBOX_PATH "/dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read",
-			.arg2.dst = "read",
+			.arg1.src = TEST_DATA_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/read",
 		};
 		assert_success(ior_cp(&args));
 	}
 
 	{
 		io_args_t args = {
-			.arg1.src = "read",
-			.arg2.dst = "dir",
+			.arg1.src = SANDBOX_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/dir",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
 		assert_failure(ior_mv(&args));
 	}
 
-	delete_dir("dir");
+	delete_dir(SANDBOX_PATH "/dir");
 
-	delete_tree("read");
+	delete_tree(SANDBOX_PATH "/read");
 }
 
 TEST(appending_works_for_files)
 {
 	uint64_t size;
 
-	clone_file("../read/two-lines", "two-lines");
+	clone_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
 
-	size = get_file_size("two-lines");
+	size = get_file_size(SANDBOX_PATH "/two-lines");
 
-	clone_file("../read/two-lines", "two-lines2");
+	clone_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines2");
 
 	{
 		io_args_t args = {
-			.arg1.src = "two-lines2",
-			.arg2.dst = "two-lines",
+			.arg1.src = SANDBOX_PATH "/two-lines2",
+			.arg2.dst = SANDBOX_PATH "/two-lines",
 			.arg3.crs = IO_CRS_APPEND_TO_FILES,
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_int_equal(size, get_file_size("two-lines"));
+	assert_int_equal(size, get_file_size(SANDBOX_PATH "/two-lines"));
 
-	delete_file("two-lines");
+	delete_file(SANDBOX_PATH "/two-lines");
 }
 
 TEST(directories_can_be_merged)
 {
-	create_empty_dir("first");
+	create_empty_dir(SANDBOX_PATH "/first");
+	create_empty_file(SANDBOX_PATH "/first/first-file");
 
-	assert_success(chdir("first"));
-	create_empty_file("first-file");
-	assert_success(chdir(".."));
-
-	create_empty_dir("second");
-
-	assert_success(chdir("second"));
-	create_empty_file("second-file");
-	assert_success(chdir(".."));
+	create_empty_dir(SANDBOX_PATH "/second");
+	create_empty_file(SANDBOX_PATH "/second/second-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "first",
-			.arg2.dst = "second",
+			.arg1.src = SANDBOX_PATH "/first",
+			.arg2.dst = SANDBOX_PATH "/second",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
 		assert_success(ior_mv(&args));
 	}
 
 	/* Original directory must be deleted. */
-	assert_false(file_exists("first"));
+	assert_false(file_exists(SANDBOX_PATH "/first"));
 
-	assert_true(file_exists("second/second-file"));
-	assert_true(file_exists("second/first-file"));
+	assert_true(file_exists(SANDBOX_PATH "/second/second-file"));
+	assert_true(file_exists(SANDBOX_PATH "/second/first-file"));
 
-	delete_tree("second");
+	delete_tree(SANDBOX_PATH "/second");
 }
 
 TEST(nested_directories_can_be_merged)
 {
-	create_empty_dir("first");
-	create_empty_dir("first/nested");
-	create_empty_file("first/nested/first-file");
+	create_empty_dir(SANDBOX_PATH "/first");
+	create_empty_dir(SANDBOX_PATH "/first/nested");
+	create_empty_file(SANDBOX_PATH "/first/nested/first-file");
 
-	create_empty_dir("second");
-	create_empty_dir("second/nested");
-	create_empty_file("second/nested/second-file");
+	create_empty_dir(SANDBOX_PATH "/second");
+	create_empty_dir(SANDBOX_PATH "/second/nested");
+	create_empty_file(SANDBOX_PATH "/second/nested/second-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "first",
-			.arg2.dst = "second",
+			.arg1.src = SANDBOX_PATH "/first",
+			.arg2.dst = SANDBOX_PATH "/second",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};
 		assert_success(ior_mv(&args));
 	}
 
 	/* Original directory must be deleted. */
-	assert_false(file_exists("first/nested"));
-	assert_false(file_exists("first"));
+	assert_false(file_exists(SANDBOX_PATH "/first/nested"));
+	assert_false(file_exists(SANDBOX_PATH "/first"));
 
-	assert_true(file_exists("second/nested/second-file"));
-	assert_true(file_exists("second/nested/first-file"));
+	assert_true(file_exists(SANDBOX_PATH "/second/nested/second-file"));
+	assert_true(file_exists(SANDBOX_PATH "/second/nested/first-file"));
 
-	delete_tree("second");
+	delete_tree(SANDBOX_PATH "/second");
 }
 
 TEST(fails_to_move_directory_inside_itself)
 {
-	create_empty_dir("empty-dir");
+	create_empty_dir(SANDBOX_PATH "/empty-dir");
 
 	{
 		io_args_t args = {
-			.arg1.src = "empty-dir",
-			.arg2.dst = "empty-dir/empty-dir-copy",
+			.arg1.src = SANDBOX_PATH "/empty-dir",
+			.arg2.dst = SANDBOX_PATH "/empty-dir/empty-dir-copy",
 		};
 		assert_failure(ior_mv(&args));
 	}
 
-	delete_dir("empty-dir");
+	delete_dir(SANDBOX_PATH "/empty-dir");
 }
 
 /* Creating symbolic links on Windows requires administrator rights. */
@@ -312,42 +308,42 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 {
 	{
 		io_args_t args = {
-			.arg1.path = "../read/two-lines",
-			.arg2.target = "sym-link",
+			.arg1.path = TEST_DATA_PATH "/read/two-lines",
+			.arg2.target = SANDBOX_PATH "/sym-link",
 		};
 		assert_success(iop_ln(&args));
 	}
 
-	assert_true(is_symlink("sym-link"));
+	assert_true(is_symlink(SANDBOX_PATH "/sym-link"));
 
 	{
 		io_args_t args = {
-			.arg1.src = "sym-link",
-			.arg2.dst = "moved-sym-link",
+			.arg1.src = SANDBOX_PATH "/sym-link",
+			.arg2.dst = SANDBOX_PATH "/moved-sym-link",
 		};
 		assert_success(ior_mv(&args));
 	}
 
-	assert_false(is_symlink("sym-link"));
-	assert_true(is_symlink("moved-sym-link"));
+	assert_false(is_symlink(SANDBOX_PATH "/sym-link"));
+	assert_true(is_symlink(SANDBOX_PATH "/moved-sym-link"));
 
-	delete_file("moved-sym-link");
+	delete_file(SANDBOX_PATH "/moved-sym-link");
 }
 
 /* Case insensitive renames are easier to check on Windows. */
 TEST(case_insensitive_rename, IF(windows))
 {
-	create_empty_file("a-file");
+	create_empty_file(SANDBOX_PATH "/a-file");
 
 	{
 		io_args_t args = {
-			.arg1.src = "a-file",
-			.arg2.dst = "A-file",
+			.arg1.src = SANDBOX_PATH "/a-file",
+			.arg2.dst = SANDBOX_PATH "/A-file",
 		};
 		assert_true(ior_mv(&args) == 0);
 	}
 
-	delete_file("A-file");
+	delete_file(SANDBOX_PATH "/A-file");
 }
 
 static int

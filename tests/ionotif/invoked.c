@@ -47,17 +47,16 @@ progress_changed(const io_progress_t *const progress)
 
 TEST(cp_file_invokes_ionotif)
 {
-	ioeta_calculate(estim, "../read/binary-data", 0);
+	ioeta_calculate(estim, TEST_DATA_PATH "/read/binary-data", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.src = "../read/binary-data",
-			.arg2.dst = "binary-data",
+		io_args_t args = {
+			.arg1.src = TEST_DATA_PATH "/read/binary-data",
+			.arg2.dst = SANDBOX_PATH "/binary-data",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_cp(&args));
+		assert_success(ior_cp(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -67,17 +66,16 @@ TEST(cp_file_invokes_ionotif)
 /* Relies on the previous test. */
 TEST(mv_file_invokes_ionotif)
 {
-	ioeta_calculate(estim, "copy-of-binary-data", 0);
+	ioeta_calculate(estim, SANDBOX_PATH "/copy-of-binary-data", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.src = "binary-data",
-			.arg2.dst = "copy-of-binary-data",
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/binary-data",
+			.arg2.dst = SANDBOX_PATH "/copy-of-binary-data",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -87,16 +85,15 @@ TEST(mv_file_invokes_ionotif)
 /* Relies on the previous test. */
 TEST(rm_file_invokes_ionotif)
 {
-	ioeta_calculate(estim, "copy-of-binary-data", 0);
+	ioeta_calculate(estim, SANDBOX_PATH "/copy-of-binary-data", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.path = "copy-of-binary-data",
+		io_args_t args = {
+			.arg1.path = SANDBOX_PATH "/copy-of-binary-data",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_rm(&args));
+		assert_success(ior_rm(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -105,17 +102,16 @@ TEST(rm_file_invokes_ionotif)
 
 TEST(cp_dir_invokes_ionotif)
 {
-	ioeta_calculate(estim, "../read", 0);
+	ioeta_calculate(estim, TEST_DATA_PATH "/read", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.src = "../read",
-			.arg2.dst = "read",
+		io_args_t args = {
+			.arg1.src = TEST_DATA_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/read",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_cp(&args));
+		assert_success(ior_cp(&args));
 	}
 
 	assert_int_equal(6, invoked_eta);
@@ -125,17 +121,16 @@ TEST(cp_dir_invokes_ionotif)
 /* Relies on the previous test. */
 TEST(mv_dir_invokes_ionotif)
 {
-	ioeta_calculate(estim, "moved-read", 0);
+	ioeta_calculate(estim, SANDBOX_PATH "/moved-read", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.src = "read",
-			.arg2.dst = "moved-read",
+		io_args_t args = {
+			.arg1.src = SANDBOX_PATH "/read",
+			.arg2.dst = SANDBOX_PATH "/moved-read",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_mv(&args));
+		assert_success(ior_mv(&args));
 	}
 
 	assert_int_equal(1, invoked_eta);
@@ -145,16 +140,15 @@ TEST(mv_dir_invokes_ionotif)
 /* Relies on the previous test. */
 TEST(rm_dir_invokes_ionotif)
 {
-	ioeta_calculate(estim, "moved-read", 0);
+	ioeta_calculate(estim, SANDBOX_PATH "/moved-read", 0);
 
 	{
-		io_args_t args =
-		{
-			.arg1.path = "moved-read",
+		io_args_t args = {
+			.arg1.path = SANDBOX_PATH "/moved-read",
 
 			.estim = estim,
 		};
-		assert_int_equal(0, ior_rm(&args));
+		assert_success(ior_rm(&args));
 	}
 
 	assert_int_equal(6, invoked_eta);
