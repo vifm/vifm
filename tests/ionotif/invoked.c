@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+
 #include <stddef.h> /* NULL */
 
 #include "../../src/io/ioeta.h"
@@ -141,6 +143,8 @@ TEST(mv_dir_invokes_ionotif)
 TEST(rm_dir_invokes_ionotif)
 {
 	ioeta_calculate(estim, SANDBOX_PATH "/moved-read", 0);
+
+	assert_success(chmod(SANDBOX_PATH "/moved-read", 0700));
 
 	{
 		io_args_t args = {

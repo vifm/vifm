@@ -1,9 +1,10 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+#include <unistd.h> /* chdir() */
+
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
-
-#include <unistd.h> /* chdir() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
@@ -164,6 +165,8 @@ TEST(overwrites_dir_when_asked)
 		assert_success(ior_cp(&args));
 	}
 
+	assert_success(chmod(SANDBOX_PATH "/read", 0700));
+
 	{
 		io_args_t args = {
 			.arg1.src = SANDBOX_PATH "/read",
@@ -194,6 +197,8 @@ TEST(appending_fails_for_directories)
 		};
 		assert_success(ior_cp(&args));
 	}
+
+	assert_success(chmod(SANDBOX_PATH "/read", 0700));
 
 	{
 		io_args_t args = {

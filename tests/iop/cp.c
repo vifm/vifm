@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+
 #include <sys/types.h> /* stat */
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat() */
@@ -176,6 +178,7 @@ TEST(appending_works_for_files)
 
 	clone_test_file(TEST_DATA_PATH "/various-sizes/block-size-minus-one-file",
 			SANDBOX_PATH "/appending");
+	assert_success(chmod(SANDBOX_PATH "/appending", 0700));
 
 	size = get_file_size(SANDBOX_PATH "/appending");
 
@@ -193,6 +196,7 @@ TEST(appending_works_for_files)
 	}
 
 	assert_int_equal(size + 1, get_file_size(SANDBOX_PATH "/appending"));
+	assert_success(chmod(SANDBOX_PATH "/appending", 0700));
 
 	{
 		io_args_t args = {
@@ -217,6 +221,7 @@ TEST(appending_does_not_shrink_files)
 	uint64_t size;
 
 	clone_test_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
+	assert_success(chmod(SANDBOX_PATH "/two-lines", 0700));
 
 	size = get_file_size(SANDBOX_PATH "/two-lines");
 

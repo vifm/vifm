@@ -302,6 +302,8 @@ TEST(overwrites_dir_when_asked)
 		ioe_errlst_free(&args.result.errors);
 	}
 
+	assert_success(chmod(SANDBOX_PATH "/dir", 0700));
+
 	{
 		io_args_t args = {
 			.arg1.path = SANDBOX_PATH "/dir",
