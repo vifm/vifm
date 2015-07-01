@@ -60,9 +60,13 @@
 #endif	/* GNU C library.  */
 
 #ifdef HAVE_ALLOCA_H
-#include <alloca.h> /* alloca() */
+# include <alloca.h> /* alloca() */
+#elif HAVE_MALLOC_H
+# include <malloc.h> /* alloca() */
 #else
-#include <malloc.h> /* alloca() */
+/* Comment above advices not to do do this, but we don't really have much choice
+   if there is no alloca.h or malloc.h. */
+# include <stdlib.h> /* alloca() */
 #endif
 
 #include <string.h>

@@ -59,6 +59,8 @@
 
 	Fixed compilation with musl.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Fixed build on FreeBSD.  Thanks to bsdmp.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

@@ -40,6 +40,9 @@
 /* Define to 1 if you have the <linux/binfmts.h> header file. */
 #undef HAVE_LINUX_BINFMTS_H
 
+/* malloc.h header is available. */
+#undef HAVE_MALLOC_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 

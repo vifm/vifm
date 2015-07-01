@@ -513,7 +513,9 @@ int run_tests(stic_void_void tests)
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
 	if (sea_tests_failed > 0) {
-		stic_header_printer("Failed", stic_screen_width, ' ');
+		char s[100];
+		snprintf(s, sizeof(s), "Failed %d checks", sea_tests_failed);
+		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	else
 	{
