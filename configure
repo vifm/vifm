@@ -6044,6 +6044,20 @@ fi
 
 done
 
+for ac_header in malloc.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "malloc.h" "ac_cv_header_malloc_h" "$ac_includes_default"
+if test "x$ac_cv_header_malloc_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MALLOC_H 1
+_ACEOF
+
+$as_echo "#define HAVE_MALLOC_H 1" >>confdefs.h
+
+fi
+
+done
+
 ac_fn_c_check_header_mongrel "$LINENO" "assert.h" "ac_cv_header_assert_h" "$ac_includes_default"
 if test "x$ac_cv_header_assert_h" = xyes; then :
 

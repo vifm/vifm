@@ -41,6 +41,7 @@ AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
 
 dnl Check for system headers.
 AC_CHECK_HEADERS([alloca.h], [AC_DEFINE([HAVE_ALLOCA_H], [1], [alloca.h header is available.])])
+AC_CHECK_HEADERS([malloc.h], [AC_DEFINE([HAVE_MALLOC_H], [1], [malloc.h header is available.])])
 AC_CHECK_HEADER([assert.h], [], [AC_MSG_ERROR([assert.h header not found.])])
 AC_CHECK_HEADER([ctype.h], [], [AC_MSG_ERROR([ctype.h header not found.])])
 AC_CHECK_HEADER([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found.])])
