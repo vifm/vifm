@@ -404,7 +404,7 @@ cs_have_no_extensions(void)
 	}
 
 	free_string_array(list, len);
-	return (i >= len);
+	return (len > 0 && i >= len);
 }
 
 char **

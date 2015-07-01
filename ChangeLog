@@ -24,6 +24,9 @@
 	Ignore file decorations ('classify') on sorting custom views.  Thanks to
 	filterfalse.
 
+	Do not invoke vifmrc-converter to update color scheme names if no color
+	schemes were found.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).
