@@ -20,9 +20,7 @@
 
 #if defined(ENABLE_DESKTOP_FILES)
 
-#ifndef _WIN32
-#include <sys/dir.h>
-#endif
+#include <dirent.h>
 
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
