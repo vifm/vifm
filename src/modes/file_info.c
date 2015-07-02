@@ -52,6 +52,7 @@ static void leave_file_info_mode(void);
 static int print_item(const char label[], const char path[], int curr_y);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
+static void format_time(time_t t, char buf[], size_t buf_size);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
@@ -117,7 +118,6 @@ redraw_file_info_dialog(void)
 #ifndef _WIN32
 	char id_buf[26];
 #endif
-	struct tm *tm_ptr;
 	int curr_y;
 	uint64_t size;
 	int size_not_precise;
@@ -173,16 +173,13 @@ redraw_file_info_dialog(void)
 	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
-	tm_ptr = localtime(&entry->mtime);
-	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	format_time(entry->mtime, buf, sizeof(buf));
 	curr_y += print_item("Modified: ", buf, curr_y);
 
-	tm_ptr = localtime(&entry->atime);
-	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	format_time(entry->atime, buf, sizeof(buf));
 	curr_y += print_item("Accessed: ", buf, curr_y);
 
-	tm_ptr = localtime(&entry->ctime);
-	strftime(buf, sizeof(buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	format_time(entry->ctime, buf, sizeof(buf));
 #ifndef _WIN32
 	curr_y += print_item("Changed: ", buf, curr_y);
 #else
@@ -367,6 +364,20 @@ show_mime_type(FileView *view, int curr_y)
 	mvwaddstr(menu_win, curr_y, 13, mimetype);
 
 	return 2;
+}
+
+/* Formats single time field as a string.  Writes empty string on error. */
+static void
+format_time(time_t t, char buf[], size_t buf_size)
+{
+	struct tm *const tm = localtime(&t);
+	if(tm == NULL)
+	{
+		copy_str(buf, buf_size, "");
+		return;
+	}
+
+	strftime(buf, buf_size, "%a %b %d %Y %I:%M %p", tm);
 }
 
 static void
