@@ -27,6 +27,9 @@
 	Do not invoke vifmrc-converter to update color scheme names if no color
 	schemes were found.
 
+	Display 'timefmt' date along with RFC 2822 date in file info.  Thanks to
+	Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).

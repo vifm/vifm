@@ -25,11 +25,13 @@
 
 #include <assert.h> /* assert() */
 #include <inttypes.h> /* PRId64 */
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <string.h> /* strlen() */
-#include <time.h>
+#include <time.h> /* tm localtime() strftime() */
 
+#include "../cfg/config.h"
 #include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
@@ -370,6 +372,8 @@ show_mime_type(FileView *view, int curr_y)
 static void
 format_time(time_t t, char buf[], size_t buf_size)
 {
+	size_t written;
+
 	struct tm *const tm = localtime(&t);
 	if(tm == NULL)
 	{
@@ -377,7 +381,8 @@ format_time(time_t t, char buf[], size_t buf_size)
 		return;
 	}
 
-	strftime(buf, buf_size, "%a %b %d %Y %I:%M %p", tm);
+	written = strftime(buf, buf_size, cfg.time_format + 1, tm);;
+	strftime(buf + written, buf_size - written, " (%a, %d %b %Y %T %z)", tm);
 }
 
 static void
