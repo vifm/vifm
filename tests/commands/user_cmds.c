@@ -23,6 +23,7 @@ SETUP()
 
 	assert_success(execute_cmd("command udf a"));
 	assert_success(execute_cmd("command mkcd! a"));
+	assert_success(execute_cmd("command mkcd? a"));
 }
 
 static int
@@ -46,6 +47,10 @@ TEST(does_not_clash_with_builtins)
 {
 	move_cmd_called = 0;
 	assert_success(execute_cmd("m!"));
+	assert_true(move_cmd_called);
+
+	move_cmd_called = 0;
+	assert_success(execute_cmd("m?"));
 	assert_true(move_cmd_called);
 }
 
