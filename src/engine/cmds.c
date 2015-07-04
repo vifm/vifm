@@ -290,7 +290,7 @@ execute_cmd(const char cmd[])
 	{
 		cur->passed++;
 
-		if(cur->type != BUILTIN_CMD && cur->type != BUILTIN_ABBR)
+		if(cur->type == USER_CMD)
 		{
 			cmd_info.cmd = cur->cmd;
 			execution_code = inner->user_cmd_handler.handler(&cmd_info);
