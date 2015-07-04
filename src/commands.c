@@ -1989,8 +1989,14 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	{
 		const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
 
-		assign_color_scheme(&lwin.cs, &cfg.cs);
-		assign_color_scheme(&rwin.cs, &cfg.cs);
+		if(!lwin.local_cs)
+		{
+			assign_color_scheme(&lwin.cs, &cfg.cs);
+		}
+		if(!rwin.local_cs)
+		{
+			assign_color_scheme(&rwin.cs, &cfg.cs);
+		}
 		redraw_lists();
 		update_all_windows();
 
