@@ -69,6 +69,10 @@
 
 	Fixed not drawing local colorscheme once after setting global one.
 
+	Fixed priority of abbreviations for user-defined commands with trailing
+	"!" or "?", which shouldn't be preferred over corresponding builtin
+	abbreviation.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

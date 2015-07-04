@@ -707,16 +707,30 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 		cur = inner->head.next;
 		while(cur != NULL && (cmp = strncmp(cur->name, buf, len)) <= 0)
 		{
-			if(cmp == 0 && cur->type == USER_CMD &&
-					cur->name[strlen(cur->name) - 1] == *t)
+			if(cmp == 0)
 			{
-				strncpy(buf, cur->name, buf_len);
-				break;
+				/* Check for user-defined command that ends with the char. */
+				if(cur->type == USER_CMD && cur->name[strlen(cur->name) - 1] == *t)
+				{
+					strncpy(buf, cur->name, buf_len);
+					break;
+				}
+				/* Or builtin abbreviation that supports the mark. */
+				if(cur->type == BUILTIN_ABBR &&
+						((*t == '!' && cur->emark) || (*t == '?' && cur->qmark)))
+				{
+					strncpy(buf, cur->name, buf_len);
+					break;
+				}
 			}
 			cur = cur->next;
 		}
-		if(cur != NULL && strncmp(cur->name, buf, len) == 0)
-			t++;
+		/* For builtin commands, the char is not part of the name. */
+		if(cur != NULL && cur->type == USER_CMD &&
+				strncmp(cur->name, buf, len) == 0)
+		{
+			++t;
+		}
 	}
 
 	return t;
