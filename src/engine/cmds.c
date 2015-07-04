@@ -867,9 +867,11 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 
 	cmp = -1;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, name)) < 0)
+	{
 		cur = cur->next;
+	}
 
-	/* command with the same name already exists */
+	/* Command with the same name already exists. */
 	if(cmp == 0)
 	{
 		if(strncmp(name, "command", strlen(name)) == 0)
@@ -935,6 +937,8 @@ command_cmd(const cmd_info_t *cmd_info)
 	char cmd_name[MAX_CMD_NAME_LEN];
 	const char *args;
 	cmd_t *new, *cur;
+	size_t len;
+	int has_emark, has_qmark;
 
 	if(cmd_info->argc < 2)
 	{
@@ -951,10 +955,28 @@ command_cmd(const cmd_info_t *cmd_info)
 	else if(!is_correct_name(cmd_name))
 		return CMDS_ERR_INCORRECT_NAME;
 
+	len = strlen(cmd_name);
+	has_emark = (len > 0 && cmd_name[len - 1] == '!');
+	has_qmark = (len > 0 && cmd_name[len - 1] == '?');
+
 	cmp = -1;
 	cur = &inner->head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
+	{
+		if(has_emark && cur->next->type == BUILTIN_CMD && cur->next->emark &&
+				strncmp(cmd_name, cur->next->name, len - 1) == 0)
+		{
+			cmp = 0;
+			break;
+		}
+		if(has_qmark && cur->next->type == BUILTIN_CMD && cur->next->qmark &&
+				strncmp(cmd_name, cur->next->name, len - 1) == 0)
+		{
+			cmp = 0;
+			break;
+		}
 		cur = cur->next;
+	}
 
 	if(cmp == 0)
 	{

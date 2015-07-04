@@ -54,5 +54,11 @@ TEST(does_not_clash_with_builtins)
 	assert_true(move_cmd_called);
 }
 
+TEST(cant_redefine_builtin_with_suffix)
+{
+	assert_failure(execute_cmd("command move! a"));
+	assert_failure(execute_cmd("command move? a"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
