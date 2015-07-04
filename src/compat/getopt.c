@@ -61,7 +61,7 @@
 
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h> /* alloca() */
-#elif HAVE_MALLOC_H
+#elif HAVE_MALLOC_H || defined(_WIN32)
 # include <malloc.h> /* alloca() */
 #else
 /* Comment above advices not to do do this, but we don't really have much choice

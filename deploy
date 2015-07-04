@@ -98,8 +98,10 @@ if [ "$target" = all -o "$target" = archive ]; then
     # make archive
     if [ "$OS" != Windows_NT ]; then
         archive_name="vifm-$ver.tar.bz2"
-        git archive "v$ver" --prefix "vifm-$ver/" --format tar |
-            bzip2 > "$archive_name"
+        git archive "v$ver" --prefix "vifm-$ver/" --format tar | tar vxf -
+        ( cd "vifm-$ver/" && ../fix-timestamps )
+        tar cvf - "vifm-$ver/" | bzip2 --best > "$archive_name"
+        rm -r "vifm-$ver/"
     else
         # remove config.h to make Makefile.win install default configuration
         rm -f config.h

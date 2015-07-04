@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8-beta  Last change: 2015 Jun 19
+*vifm-app.txt*    For Vifm version 0.8-beta  Last change: 2015 Jul 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2945,7 +2945,9 @@ undolevels ul
 type: integer
 default: 100
 
-Maximum number of changes that can be undone.
+Maximum number of changes that can be undone.  Note that here single file
+operation is used as a unit, not operation, i.e. deletion of 101 files will
+exceed default limit.
 
                                                *vifm-'vicmd'*
 vicmd

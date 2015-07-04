@@ -64,7 +64,6 @@ Key bindings:
  - added 'mintimeout' option.  It enables controlling responsiveness on external events by Vifm (thanks to hofheinz);
  - added 'wordchars' option to specify which characters in command-line mode should be considered as part of a word (thanks to filterfalse);
  - added ^= operation for charset options;
- - added :redr[aw] command to force immediate redraw (thanks to filterfalse);
  - added %[ and %] macros for 'statusline'/'ruler' (thanks to ranousse);
  - added "p" to 'shortmess' option to control tilde shortening of path in view titles (thanks to Martin Fischer);
  - changed default value of 'trashdir' from "$VIFM/Trash" to "%r/.vifm-Trash,$VIFM/Trash" (thanks to Joseph LP, a.k.a. ootput);
@@ -80,6 +79,7 @@ Command-line mode:
  - added :cq[uit] command to exit with non-zero exit code and also abort directory choosing (thanks to Jeet Sukumaran, a.k.a. jeetsukumaran);
  - added :trashes? to display sizes of each non-empty trash directories (thanks to Svyatoslav Mishyn, a.k.a. juef);
  - added regexp patterns to :file[x]type and :fileviewer commands (thanks to filterfalse);
+ - added :redr[aw] command to force immediate redraw (thanks to filterfalse);
  - allow non-printable characters to be arguments of :commands (thanks to filterfalse);
  - extended :sync command to support selective synchronization (user can choose among location, cursor position, local options and filters) (thanks to filterfalse).
 

@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 19, 2015" "vifm 0.8-beta"
+.TH VIFM 1 "July 02, 2015" "vifm 0.8-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3538,7 +3538,9 @@ type: integer
 .br
 default: 100
 .br
-Maximum number of changes that can be undone.
+Maximum number of changes that can be undone.  Note that here single file
+operation is used as a unit, not operation, i.e. deletion of 101 files will
+exceed default limit.
 .TP
 .BI 'vicmd'
 type: string
