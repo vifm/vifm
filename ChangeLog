@@ -34,6 +34,8 @@
 	would hide builtin command.  Redefining commands without suffixes is not
 	allowed, thus this shouldn't be allowed too.
 
+	Better "all" pseudo-option parsing and support of resetting it.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).

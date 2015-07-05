@@ -58,6 +58,7 @@ static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
 		const char *vals[], opt_handler handler);
 static void print_changed_options(void);
 static int process_option(const char arg[]);
+static int handle_all_pseudo(const char arg[], const char suffix[]);
 static void print_options(void);
 static opt_t * get_option(const char option[]);
 static int set_on(opt_t *opt);
@@ -297,26 +298,26 @@ print_changed_options(void)
 	}
 }
 
-/* Processes one :set statement.  Returns zero on success. */
+/* Processes one :set statement.  Returns zero on success, otherwize non-zero is
+ * returned. */
 static int
 process_option(const char arg[])
 {
-	char option[OPTION_NAME_MAX + 1];
+	char optname[OPTION_NAME_MAX + 1];
 	int err;
-	const char *p;
+	const char *suffix;
 	opt_t *opt;
 
-	p = skip_alphas(arg);
+	suffix = skip_alphas(arg);
 
-	copy_str(option, p - arg + 1, arg);
+	copy_str(optname, suffix - arg + 1, arg);
 
-	if(strcmp(option, "all") == 0)
+	if(strcmp(optname, "all") == 0)
 	{
-		print_options();
-		return 0;
+		return handle_all_pseudo(arg, suffix);
 	}
 
-	opt = get_option(option);
+	opt = get_option(optname);
 	if(opt == NULL)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", arg);
@@ -324,9 +325,9 @@ process_option(const char arg[])
 	}
 
 	err = 0;
-	if(*p == '\0')
+	if(*suffix == '\0')
 	{
-		opt_t *o = find_option(option);
+		opt_t *o = find_option(optname);
 		if(o != NULL)
 		{
 			if(o->type == OPT_BOOL)
@@ -334,44 +335,44 @@ process_option(const char arg[])
 			else
 				err = set_print(o);
 		}
-		else if(strncmp(option, "no", 2) == 0)
+		else if(strncmp(optname, "no", 2) == 0)
 		{
 			err = set_off(opt);
 		}
-		else if(strncmp(option, "inv", 3) == 0)
+		else if(strncmp(optname, "inv", 3) == 0)
 		{
 			err = set_inv(opt);
 		}
 	}
-	else if(char_is_one_of(ENDING_CHARS, *p))
+	else if(char_is_one_of(ENDING_CHARS, *suffix))
 	{
-		if(*(p + 1) != '\0')
+		if(*(suffix + 1) != '\0')
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
 			return 1;
 		}
-		if(*p == '!')
+		if(*suffix == '!')
 			err = set_inv(opt);
-		else if(*p == '?')
+		else if(*suffix == '?')
 			err = set_print(opt);
 		else
 			err = set_reset(opt);
 	}
-	else if(strncmp(p, "+=", 2) == 0)
+	else if(strncmp(suffix, "+=", 2) == 0)
 	{
-		err = set_add(opt, p + 2);
+		err = set_add(opt, suffix + 2);
 	}
-	else if(strncmp(p, "-=", 2) == 0)
+	else if(strncmp(suffix, "-=", 2) == 0)
 	{
-		err = set_remove(opt, p + 2);
+		err = set_remove(opt, suffix + 2);
 	}
-	else if(strncmp(p, "^=", 2) == 0)
+	else if(strncmp(suffix, "^=", 2) == 0)
 	{
-		err = set_hat(opt, p + 2);
+		err = set_hat(opt, suffix + 2);
 	}
-	else if(*p == '=' || *p == ':')
+	else if(*suffix == '=' || *suffix == ':')
 	{
-		err = set_set(opt, p + 1);
+		err = set_set(opt, suffix + 1);
 	}
 	else
 	{
@@ -383,6 +384,26 @@ process_option(const char arg[])
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid argument", arg);
 	}
 	return err;
+}
+
+/* Handles "all" pseudo-option.  Actual action is determined by the suffix.
+ * Returns zero on success, otherwize non-zero is returned. */
+static int
+handle_all_pseudo(const char arg[], const char suffix[])
+{
+	switch(*suffix)
+	{
+		case '\0':
+			print_options();
+			return 0;
+		case '&':
+			reset_options_to_default();
+			return 0;
+
+		default:
+			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
+			return 1;
+	}
 }
 
 /* Prints values of all options. */
