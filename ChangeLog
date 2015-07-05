@@ -67,6 +67,8 @@
 
 	Fixed build on FreeBSD.  Thanks to bsdmp.
 
+	Fixed not drawing local colorscheme once after setting global one.
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't
