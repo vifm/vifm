@@ -305,16 +305,16 @@ process_option(const char arg[])
 {
 	char optname[OPTION_NAME_MAX + 1];
 	int err;
-	const char *p;
+	const char *suffix;
 	opt_t *opt;
 
-	p = skip_alphas(arg);
+	suffix = skip_alphas(arg);
 
-	copy_str(optname, p - arg + 1, arg);
+	copy_str(optname, suffix - arg + 1, arg);
 
 	if(strcmp(optname, "all") == 0)
 	{
-		return handle_all_pseudo(arg, p);
+		return handle_all_pseudo(arg, suffix);
 	}
 
 	opt = get_option(optname);
@@ -325,7 +325,7 @@ process_option(const char arg[])
 	}
 
 	err = 0;
-	if(*p == '\0')
+	if(*suffix == '\0')
 	{
 		opt_t *o = find_option(optname);
 		if(o != NULL)
@@ -344,35 +344,35 @@ process_option(const char arg[])
 			err = set_inv(opt);
 		}
 	}
-	else if(char_is_one_of(ENDING_CHARS, *p))
+	else if(char_is_one_of(ENDING_CHARS, *suffix))
 	{
-		if(*(p + 1) != '\0')
+		if(*(suffix + 1) != '\0')
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
 			return 1;
 		}
-		if(*p == '!')
+		if(*suffix == '!')
 			err = set_inv(opt);
-		else if(*p == '?')
+		else if(*suffix == '?')
 			err = set_print(opt);
 		else
 			err = set_reset(opt);
 	}
-	else if(strncmp(p, "+=", 2) == 0)
+	else if(strncmp(suffix, "+=", 2) == 0)
 	{
-		err = set_add(opt, p + 2);
+		err = set_add(opt, suffix + 2);
 	}
-	else if(strncmp(p, "-=", 2) == 0)
+	else if(strncmp(suffix, "-=", 2) == 0)
 	{
-		err = set_remove(opt, p + 2);
+		err = set_remove(opt, suffix + 2);
 	}
-	else if(strncmp(p, "^=", 2) == 0)
+	else if(strncmp(suffix, "^=", 2) == 0)
 	{
-		err = set_hat(opt, p + 2);
+		err = set_hat(opt, suffix + 2);
 	}
-	else if(*p == '=' || *p == ':')
+	else if(*suffix == '=' || *suffix == ':')
 	{
-		err = set_set(opt, p + 1);
+		err = set_set(opt, suffix + 1);
 	}
 	else
 	{
