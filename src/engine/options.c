@@ -301,22 +301,22 @@ print_changed_options(void)
 static int
 process_option(const char arg[])
 {
-	char option[OPTION_NAME_MAX + 1];
+	char optname[OPTION_NAME_MAX + 1];
 	int err;
 	const char *p;
 	opt_t *opt;
 
 	p = skip_alphas(arg);
 
-	copy_str(option, p - arg + 1, arg);
+	copy_str(optname, p - arg + 1, arg);
 
-	if(strcmp(option, "all") == 0)
+	if(strcmp(optname, "all") == 0)
 	{
 		print_options();
 		return 0;
 	}
 
-	opt = get_option(option);
+	opt = get_option(optname);
 	if(opt == NULL)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", arg);
@@ -326,7 +326,7 @@ process_option(const char arg[])
 	err = 0;
 	if(*p == '\0')
 	{
-		opt_t *o = find_option(option);
+		opt_t *o = find_option(optname);
 		if(o != NULL)
 		{
 			if(o->type == OPT_BOOL)
@@ -334,11 +334,11 @@ process_option(const char arg[])
 			else
 				err = set_print(o);
 		}
-		else if(strncmp(option, "no", 2) == 0)
+		else if(strncmp(optname, "no", 2) == 0)
 		{
 			err = set_off(opt);
 		}
-		else if(strncmp(option, "inv", 3) == 0)
+		else if(strncmp(optname, "inv", 3) == 0)
 		{
 			err = set_inv(opt);
 		}
