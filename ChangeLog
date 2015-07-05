@@ -30,6 +30,10 @@
 	Display 'timefmt' date along with RFC 2822 date in file info.  Thanks to
 	Svyatoslav Mishyn (a.k.a. juef).
 
+	Disallow creating user-defined command with "?" or "!" suffix if this
+	would hide builtin command.  Redefining commands without suffixes is not
+	allowed, thus this shouldn't be allowed too.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).
@@ -68,6 +72,10 @@
 	Fixed build on FreeBSD.  Thanks to bsdmp.
 
 	Fixed not drawing local colorscheme once after setting global one.
+
+	Fixed priority of abbreviations for user-defined commands with trailing
+	"!" or "?", which shouldn't be preferred over corresponding builtin
+	abbreviation.
 
 0.7.8 to 0.8-beta
 
