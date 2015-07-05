@@ -58,6 +58,7 @@ static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
 		const char *vals[], opt_handler handler);
 static void print_changed_options(void);
 static int process_option(const char arg[]);
+static int handle_all_pseudo(const char arg[], const char suffix[]);
 static void print_options(void);
 static opt_t * get_option(const char option[]);
 static int set_on(opt_t *opt);
@@ -297,7 +298,8 @@ print_changed_options(void)
 	}
 }
 
-/* Processes one :set statement.  Returns zero on success. */
+/* Processes one :set statement.  Returns zero on success, otherwize non-zero is
+ * returned. */
 static int
 process_option(const char arg[])
 {
@@ -312,8 +314,7 @@ process_option(const char arg[])
 
 	if(strcmp(optname, "all") == 0)
 	{
-		print_options();
-		return 0;
+		return handle_all_pseudo(arg, p);
 	}
 
 	opt = get_option(optname);
@@ -383,6 +384,26 @@ process_option(const char arg[])
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid argument", arg);
 	}
 	return err;
+}
+
+/* Handles "all" pseudo-option.  Actual action is determined by the suffix.
+ * Returns zero on success, otherwize non-zero is returned. */
+static int
+handle_all_pseudo(const char arg[], const char suffix[])
+{
+	switch(*suffix)
+	{
+		case '\0':
+			print_options();
+			return 0;
+		case '&':
+			reset_options_to_default();
+			return 0;
+
+		default:
+			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
+			return 1;
+	}
 }
 
 /* Prints values of all options. */
