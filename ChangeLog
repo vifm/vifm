@@ -27,8 +27,8 @@
 	Do not invoke vifmrc-converter to update color scheme names if no color
 	schemes were found.
 
-	Display 'timefmt' date along with RFC 2822 date in file info.  Thanks to
-	Svyatoslav Mishyn (a.k.a. juef).
+	Display 2822 date without time zone in file info.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef).
 
 	Disallow creating user-defined command with "?" or "!" suffix if this
 	would hide builtin command.  Redefining commands without suffixes is not
