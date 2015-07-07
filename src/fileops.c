@@ -420,11 +420,13 @@ io_progress_fg(const io_progress_t *const state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
-	if(progress < 0)
+	if(1)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg,
-				"In %s\nItem %d of %d\n%s\n%s\nfrom %s%s",
+				"Location: %s\nItem:     %d of %d\nOverall:  %s\n"
+				" \n" /* Space is on purpose to preserve empty line. */
+				"file %s\nfrom %s%s",
 				replace_home_part(ops->target_dir), item_num, estim->total_items,
 				total_size_str, item_name, src_path, as_part);
 	}

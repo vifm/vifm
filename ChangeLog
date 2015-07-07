@@ -41,6 +41,8 @@
 
 	Shorten paths in "file" and "from" in progress dialog.
 
+	Sync approximate and accurate forms of progress dialogs.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).
