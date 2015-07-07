@@ -39,6 +39,8 @@
 	Do not display same path twice in detailed progress information (after
 	both "file" and "from").
 
+	Shorten paths in "file" and "from" in progress dialog.
+
 	Fixed pane titles update on switching panes.
 
 	Fixed build on OpenBSD.  Patch by Brian Callahan (a.k.a. ibara).

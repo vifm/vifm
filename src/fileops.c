@@ -388,7 +388,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
-	copy_str(src_path, sizeof(src_path), estim->item);
+	copy_str(src_path, sizeof(src_path), replace_home_part(estim->item));
 	remove_last_path_component(src_path);
 
 	title = ops_describe(ops);
@@ -425,8 +425,8 @@ io_progress_fg(const io_progress_t *const state, int progress)
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg,
 				"In %s\nItem %d of %d\n%s\n%s\nfrom %s%s",
-				ops->target_dir, item_num, estim->total_items, total_size_str,
-				item_name, src_path, as_part);
+				replace_home_part(ops->target_dir), item_num, estim->total_items,
+				total_size_str, item_name, src_path, as_part);
 	}
 	else
 	{
@@ -436,9 +436,9 @@ io_progress_fg(const io_progress_t *const state, int progress)
 				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
-				ops->target_dir, item_num, estim->total_items, current_size_str,
-				total_size_str, progress/IO_PRECISION, item_name, src_path, as_part,
-				file_progress);
+				replace_home_part(ops->target_dir), item_num, estim->total_items,
+				current_size_str, total_size_str, progress/IO_PRECISION, item_name,
+				src_path, as_part, file_progress);
 
 		free(file_progress);
 	}
