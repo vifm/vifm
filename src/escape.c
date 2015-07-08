@@ -26,7 +26,8 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() realloc() strtol() */
-#include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
+#include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen()
+                       strncpy() */
 
 #include "cfg/config.h"
 #include "ui/ui.h"
@@ -151,8 +152,8 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		const int offsets[], const regex_t *re)
 {
 	regmatch_t match;
-	char *next;
-	char *processed = NULL;
+	char *next = NULL;
+	char *processed;
 	int shift = 0;
 	int overhead = 0;
 
@@ -167,6 +168,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 
 	/* Before the first match. */
 	strncpy(processed, line, offsets[match.rm_so]);
+	next = processed + offsets[match.rm_so];
 
 	/* All matches. */
 	do
@@ -175,11 +177,21 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		size_t new_overhead;
 		int so_offset;
 		void *ptr;
+		const int empty_match = (match.rm_so == match.rm_eo);
 
 		match.rm_so += shift;
 		match.rm_eo += shift;
 
 		so_offset = offsets[match.rm_so];
+
+		if(empty_match)
+		{
+			if(no_esc[match.rm_eo] == '\0')
+			{
+				shift = match.rm_eo;
+				break;
+			}
+		}
 
 		/* Between matches. */
 		if(shift != 0)
@@ -188,26 +200,46 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 			strncpy(next, line + corrected, so_offset - corrected);
 		}
 
-		new_overhead = INV_OVERHEAD*count_substr_chars(no_esc, &match);
-		len += new_overhead;
-		if((ptr = realloc(processed, len + 1)) == NULL)
+		if(empty_match)
 		{
-			free(processed);
-			return NULL;
+			const int corrected = (shift == 0)
+			                    ? (size_t)(next - processed)
+			                    : correct_offset(line, offsets, shift);
+			const int len = offsets[match.rm_so + 1] - corrected;
+			strncpy(next, line + corrected, len);
+			next += len;
+			++shift;
 		}
-		processed = ptr;
+		else
+		{
+			new_overhead = INV_OVERHEAD*count_substr_chars(no_esc, &match);
+			len += new_overhead;
+			if((ptr = realloc(processed, len + 1)) == NULL)
+			{
+				free(processed);
+				return NULL;
+			}
+			processed = ptr;
 
-		match_len = correct_offset(line, offsets, match.rm_eo) - so_offset;
-		next = processed + so_offset + overhead;
-		next = add_highlighted_substr(line + so_offset, match_len, next);
+			match_len = correct_offset(line, offsets, match.rm_eo) - so_offset;
+			next = processed + so_offset + overhead;
+			next = add_highlighted_substr(line + so_offset, match_len, next);
 
-		shift = match.rm_eo;
-		overhead += new_overhead;
+			shift = match.rm_eo;
+			overhead += new_overhead;
+		}
 	}
 	while(regexec(re, no_esc + shift, 1, &match, 0) == 0);
 
+	/* Abort if there were no non-empty matches. */
+	if(next == NULL)
+	{
+		free(processed);
+		return 0;
+	}
+
 	/* After the last match. */
-	strcpy(next, line + correct_offset(line, offsets, shift));
+	strcpy(next, line + (shift == 0 ? 0 : correct_offset(line, offsets, shift)));
 
 	return processed;
 }
