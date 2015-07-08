@@ -420,7 +420,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 
 	item_num = MIN(estim->current_item + 1, estim->total_items);
 
-	if(1)
+	if(progress < 0)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg,
