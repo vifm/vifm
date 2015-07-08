@@ -372,8 +372,6 @@ show_mime_type(FileView *view, int curr_y)
 static void
 format_time(time_t t, char buf[], size_t buf_size)
 {
-	size_t written;
-
 	struct tm *const tm = localtime(&t);
 	if(tm == NULL)
 	{
@@ -381,8 +379,7 @@ format_time(time_t t, char buf[], size_t buf_size)
 		return;
 	}
 
-	written = strftime(buf, buf_size, cfg.time_format + 1, tm);;
-	strftime(buf + written, buf_size - written, " (%a, %d %b %Y %T %z)", tm);
+	strftime(buf, buf_size, "%a, %d %b %Y %T", tm);
 }
 
 static void

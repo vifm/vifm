@@ -368,11 +368,12 @@ io_progress_fg(const io_progress_t *const state, int progress)
 {
 	char current_size_str[16];
 	char total_size_str[16];
-	char pretty_path[PATH_MAX];
 	char src_path[PATH_MAX];
 	const char *title, *ctrl_msg;
 	const char *target_name;
 	char *as_part;
+	const char *item_name;
+	int item_num;
 
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -387,15 +388,16 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
 			total_size_str);
 
-	format_pretty_path(ops->base_dir, estim->item, pretty_path,
-			sizeof(pretty_path));
-	copy_str(src_path, sizeof(src_path), estim->item);
+	copy_str(src_path, sizeof(src_path), replace_home_part(estim->item));
 	remove_last_path_component(src_path);
 
 	title = ops_describe(ops);
 	ctrl_msg = "Press Ctrl-C to cancel";
 	if(state->stage == IO_PS_ESTIMATING)
 	{
+		char pretty_path[PATH_MAX];
+		format_pretty_path(ops->base_dir, estim->item, pretty_path,
+				sizeof(pretty_path));
 		draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
 				ops->target_dir, estim->total_items, total_size_str, pretty_path);
 		return;
@@ -404,8 +406,10 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	(void)friendly_size_notation(estim->current_byte,
 			sizeof(current_size_str), current_size_str);
 
+	item_name = get_last_path_component(estim->item);
+
 	target_name = get_last_path_component(estim->target);
-	if(stroscmp(target_name, get_last_path_component(pretty_path)) == 0)
+	if(stroscmp(target_name, item_name) == 0)
 	{
 		as_part = strdup("");
 	}
@@ -414,13 +418,17 @@ io_progress_fg(const io_progress_t *const state, int progress)
 		as_part = format_str("\nas   %s", target_name);
 	}
 
-	if(progress < 0)
+	item_num = MIN(estim->current_item + 1, estim->total_items);
+
+	if(1)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg,
-				"In %s\nItem %d of %d\n%s\n%s\nfrom %s%s",
-				ops->target_dir, estim->current_item + 1, estim->total_items,
-				total_size_str, pretty_path, src_path, as_part);
+				"Location: %s\nItem:     %d of %d\nOverall:  %s\n"
+				" \n" /* Space is on purpose to preserve empty line. */
+				"file %s\nfrom %s%s",
+				replace_home_part(ops->target_dir), item_num, estim->total_items,
+				total_size_str, item_name, src_path, as_part);
 	}
 	else
 	{
@@ -430,8 +438,8 @@ io_progress_fg(const io_progress_t *const state, int progress)
 				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
-				ops->target_dir, estim->current_item + 1, estim->total_items,
-				current_size_str, total_size_str, progress/IO_PRECISION, pretty_path,
+				replace_home_part(ops->target_dir), item_num, estim->total_items,
+				current_size_str, total_size_str, progress/IO_PRECISION, item_name,
 				src_path, as_part, file_progress);
 
 		free(file_progress);

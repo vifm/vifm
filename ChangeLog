@@ -27,14 +27,21 @@
 	Do not invoke vifmrc-converter to update color scheme names if no color
 	schemes were found.
 
-	Display 'timefmt' date along with RFC 2822 date in file info.  Thanks to
-	Svyatoslav Mishyn (a.k.a. juef).
+	Display 2822 date without time zone in file info.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef).
 
 	Disallow creating user-defined command with "?" or "!" suffix if this
 	would hide builtin command.  Redefining commands without suffixes is not
 	allowed, thus this shouldn't be allowed too.
 
 	Better "all" pseudo-option parsing and support of resetting it.
+
+	Do not display same path twice in detailed progress information (after
+	both "file" and "from").
+
+	Shorten paths in "file" and "from" in progress dialog.
+
+	Sync approximate and accurate forms of progress dialogs.
 
 	Fixed pane titles update on switching panes.
 
@@ -78,6 +85,8 @@
 	Fixed priority of abbreviations for user-defined commands with trailing
 	"!" or "?", which shouldn't be preferred over corresponding builtin
 	abbreviation.
+
+	Fixed "(n + 1) of n" in detailed progress dialog.
 
 0.7.8 to 0.8-beta
 
