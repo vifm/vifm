@@ -821,9 +821,9 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		return background_and_wait_for_errors(cmd, 1);
 #else
 		wchar_t *const utf16_path = utf8_to_utf16(src);
-		int r = RemoveDirectoryW(utf16_path);
+		const BOOL r = RemoveDirectoryW(utf16_path);
 		free(utf16_path);
-		return r;
+		return r == FALSE;
 #endif
 	}
 

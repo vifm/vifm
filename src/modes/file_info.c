@@ -379,7 +379,7 @@ format_time(time_t t, char buf[], size_t buf_size)
 		return;
 	}
 
-	strftime(buf, buf_size, "%a, %d %b %Y %T", tm);
+	strftime(buf, buf_size, "%a, %d %b %Y %H:%M:%S", tm);
 }
 
 static void

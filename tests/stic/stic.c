@@ -190,7 +190,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		function = "test body";
 	}
 
-	if (stic_random_failures && random() % 8 == 0)
+	if (stic_random_failures && rand() % 8 == 0)
 	{
 		passed = !passed;
 	}
