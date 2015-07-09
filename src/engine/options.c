@@ -56,6 +56,7 @@ typedef void (*mod_t)(char buffer[], char value);
 
 static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
 		const char *vals[], opt_handler handler);
+static int allocates_str_value(OPT_TYPE type);
 static void print_changed_options(void);
 static int process_option(const char arg[]);
 static int handle_all_pseudo(const char arg[], const char suffix[]);
@@ -141,7 +142,7 @@ clear_options(void)
 	for(i = 0U; i < options_count; ++i)
 	{
 		free(options[i].name);
-		if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
+		if(allocates_str_value(options[i].type))
 		{
 			if(options[i].full == NULL)
 				free(options[i].def.str_val);
@@ -175,7 +176,7 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 			abbreviated->full = full_name;
 		full = find_option(full_name);
 	}
-	if(type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET)
+	if(allocates_str_value(type))
 	{
 		full->def.str_val = strdup(def.str_val);
 		full->val.str_val = strdup(def.str_val);
@@ -231,6 +232,14 @@ add_option_inner(const char name[], OPT_TYPE type, int val_count,
 	memset(&p->val, 0, sizeof(p->val));
 	p->full = NULL;
 	return p;
+}
+
+/* Checks whether given option type allocates memory for strings on heap.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+allocates_str_value(OPT_TYPE type)
+{
+	return (type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET);
 }
 
 void
