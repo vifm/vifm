@@ -1,4 +1,4 @@
-0.8-beta to current
+0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
 
@@ -93,6 +93,8 @@
 
 	Fixed crash/leak on processing of background jobs.  Thanks to Christian
 	Fillion (a.k.a. cfillion).
+
+	Fixed several memory access errors and leaks.
 
 0.7.8 to 0.8-beta
 

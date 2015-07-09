@@ -43,8 +43,9 @@ trie_free(trie_t trie)
 {
 	if(trie != NULL_TRIE)
 	{
-		free(trie->left);
-		free(trie->right);
+		trie_free(trie->left);
+		trie_free(trie->right);
+		trie_free(trie->children);
 		free(trie);
 	}
 }

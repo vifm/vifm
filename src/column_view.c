@@ -539,7 +539,7 @@ update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 	if(auto_count == 0U && percent_count != 0U)
 	{
 		int i;
-		for(i = cols->count; i >= 0; --i)
+		for(i = cols->count - 1; i >= 0; --i)
 		{
 			column_t *col = &cols->list[i];
 			if(col->info.sizing == ST_PERCENT)
