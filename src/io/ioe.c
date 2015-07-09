@@ -19,6 +19,7 @@
 #include "ioe.h"
 
 #include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* free() */
 
 #include "private/ioe.h"
 
@@ -43,6 +44,7 @@ ioe_errlst_free(ioe_errlst_t *elist)
 	{
 		ioe_err_free(&elist->errors[i]);
 	}
+	free(elist->errors);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
