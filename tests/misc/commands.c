@@ -176,6 +176,9 @@ TEST(shell_invocation_works_in_udf)
 	assert_success(unlink("test-data/sandbox/out"));
 
 	stats_update_shell_type("/bin/sh");
+
+	free(cfg.shell);
+	cfg.shell = NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

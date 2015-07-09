@@ -18,7 +18,7 @@ TEST(one_pattern)
 	assert_true(ft.list[0].command != NULL);
 	assert_string_equal("description", ft.list[0].description);
 
-	free(ft.list);
+	ft_assoc_records_free(&ft);
 }
 
 TEST(two_patterns)
@@ -34,7 +34,7 @@ TEST(two_patterns)
 		assert_true(ft.list[0].command != NULL);
 		assert_string_equal("archives", ft.list[0].description);
 
-		free(ft.list);
+		ft_assoc_records_free(&ft);
 	}
 
 	{
@@ -44,7 +44,7 @@ TEST(two_patterns)
 		assert_true(ft.list[0].command != NULL);
 		assert_string_equal("archives", ft.list[0].description);
 
-		free(ft.list);
+		ft_assoc_records_free(&ft);
 	}
 }
 
@@ -64,7 +64,7 @@ TEST(two_programs)
 	assert_string_equal(ft.list[1].command, "zipprog");
 	assert_string_equal(ft.list[1].description, "zip");
 
-	free(ft.list);
+	ft_assoc_records_free(&ft);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
