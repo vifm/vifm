@@ -91,6 +91,9 @@
 	Fixed infinite loop or crash on empty match on search in view mode (e.g.
 	on /$).
 
+	Fixed crash/leak on processing of background jobs.  Thanks to Christian
+	Fillion (a.k.a. cfillion).
+
 0.7.8 to 0.8-beta
 
 	Removed per-view last search pattern.  Don't worry, you probably won't

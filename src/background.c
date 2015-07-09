@@ -266,7 +266,7 @@ job_free(job_t *const job)
 		return;
 	}
 
-	if(job->type == BJT_COMMAND)
+	if(job->type != BJT_COMMAND)
 	{
 		pthread_mutex_destroy(&job->bg_op_guard);
 	}
