@@ -273,7 +273,7 @@ update_compile_info:
 	fi
 
 tags.c: ../data/vim/doc/app/tags
-	@if [ -s "$<" -a -n "$(AWK)" ]; then \
+	@if [ -s ../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
 		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
@@ -284,7 +284,7 @@ tags.c: ../data/vim/doc/app/tags
 			END { \
 				print "\t0,\n};" \
 			} \
-		' "$<" > $@; \
+		' ../data/vim/doc/app/tags > $@; \
 	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
