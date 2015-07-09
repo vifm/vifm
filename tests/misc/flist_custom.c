@@ -170,22 +170,22 @@ TEST(files_are_sorted_undecorated)
 
 	assert_success(os_mkdir("foo", 0700));
 	assert_success(os_mkdir("foo-", 0700));
-	assert_success(os_mkdir("foo.", 0700));
+	assert_success(os_mkdir("foo0", 0700));
 
 	assert_false(flist_custom_active(&lwin));
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "foo");
 	flist_custom_add(&lwin, "foo-");
-	flist_custom_add(&lwin, "foo.");
+	flist_custom_add(&lwin, "foo0");
 	assert_success(flist_custom_finish(&lwin));
 
 	assert_string_equal("foo", lwin.dir_entry[0].name);
 	assert_string_equal("foo-", lwin.dir_entry[1].name);
-	assert_string_equal("foo.", lwin.dir_entry[2].name);
+	assert_string_equal("foo0", lwin.dir_entry[2].name);
 
 	assert_success(rmdir("foo"));
 	assert_success(rmdir("foo-"));
-	assert_success(rmdir("foo."));
+	assert_success(rmdir("foo0"));
 
 	assert_success(chdir("../.."));
 }
