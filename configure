@@ -8040,10 +8040,14 @@ if test "x$GCC" = "xyes"; then
 fi
 
 if test -n "$OSX_HOST" ; then
-  CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+
+$as_echo "#define _DARWIN_C_SOURCE 1" >>confdefs.h
+
 fi
 
-CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
+
+$as_echo "#define _FILE_OFFSET_BITS 64" >>confdefs.h
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
 $as_echo_n "checking for pthread_create in -lpthread... " >&6; }

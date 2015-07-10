@@ -149,12 +149,15 @@
 /* Version number of package */
 #undef VERSION
 
+/* Enable extensions in header files on OS X. */
+#undef _DARWIN_C_SOURCE
+
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
 # define _DARWIN_USE_64_BIT_INODE 1
 #endif
 
-/* Number of bits in a file offset, on hosts where this is settable. */
+/* Enable large file processing on 32-bit systems. */
 #undef _FILE_OFFSET_BITS
 
 /* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
