@@ -1076,6 +1076,9 @@ fillchars_handler(OPT_OP op, optval_t val)
 {
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
+
+	(void)replace_string(&cfg.border_filler, " ");
+
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
 		if(starts_with_lit(part, "vborder:"))
