@@ -20,34 +20,17 @@
 #ifndef VIFM__UTILS__STR_H__
 #define VIFM__UTILS__STR_H__
 
+#include <inttypes.h> /* PRIu64 */
 #include <stddef.h> /* size_t wchar_t */
 
-#if defined(_WIN64)
-#define WPRINTF_MBSTR L"s"
-#define WPRINTF_WSTR L"ls"
-#define PRINTF_PID_T "%llu"
-#define PRINTF_SIZE_T "%llu"
-#define TIME_T "%lld"
-#elif defined(_WIN32)
+#ifdef _WIN32
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
-#define PRINTF_PID_T "%d"
-#define PRINTF_SIZE_T "%u"
-#define TIME_T "%ld"
+#define PRINTF_ULL PRIu64
 #else
 #define WPRINTF_MBSTR L"s"
 #define WPRINTF_WSTR L"ls"
-#define PRINTF_PID_T "%d"
-#if defined(__OpenBSD__)
-#define TIME_T "%lld"
-#else
-#define TIME_T "%ld"
-#endif
-#if defined(_LP64)
-#define PRINTF_SIZE_T "%lu"
-#else
-#define PRINTF_SIZE_T "%u"
-#endif
+#define PRINTF_ULL "llu"
 #endif
 
 /* Various string functions. */

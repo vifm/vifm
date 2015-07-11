@@ -58,7 +58,8 @@ show_jobs_menu(FileView *view)
 
 			if(p->type == BJT_COMMAND)
 			{
-				snprintf(info_buf, sizeof(info_buf), PRINTF_PID_T, p->pid);
+				snprintf(info_buf, sizeof(info_buf), "%" PRINTF_ULL,
+						(unsigned long long)p->pid);
 			}
 			else if(p->bg_op.total == BG_UNDEFINED_TOTAL)
 			{
