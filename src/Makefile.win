@@ -125,9 +125,9 @@ update_compile_info:
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-../data/vifm-help.txt: ../data/vifm.1
+../data/vifm-help.txt: ../data/man/vifm.1
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tascii -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man ../data/man/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt

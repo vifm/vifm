@@ -65,7 +65,7 @@ if [ "$target" = all -o "$target" = update ]; then
     sed -i "/^Version:/s/ .*/ $ver/" README
 
     # update man pages
-    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/*.1
+    sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/man/*.1
 
     # update first header in the NEWS file
     sed -i -e "1s/.*/$(date '+%B %d, %Y')/" \
@@ -121,7 +121,8 @@ if [ "$target" = all -o "$target" = archive ]; then
         for i in "$dir/data/colors"/*; do
             unix2dos -c ISO "$i"
         done
-        rm "$dir/data"/*.desktop "$dir/data"/*.1
+        rm "$dir/data"/*.desktop
+        rm -r "$dir/data/man"
         unix2dos -c ISO "$dir/data/vifm-help.txt"
         unix2dos -c ISO "$dir/data/vifmrc"
         mv "$dir/data/vim/doc/plugin/vifm-plugin.txt" "$dir/data/vim/doc/vifm-plugin.txt"

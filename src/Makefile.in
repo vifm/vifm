@@ -336,10 +336,10 @@ pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
 bin_SCRIPTS = vifm-pause vifm-convert-dircolors
-man_MANS = ../data/vifm.1 \
-					 ../data/vifm-pause.1 \
-					 ../data/vifmrc-converter.1 \
-					 ../data/vifm-convert-dircolors.1
+man_MANS = ../data/man/vifm.1 \
+					 ../data/man/vifm-pause.1 \
+					 ../data/man/vifmrc-converter.1 \
+					 ../data/man/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt \
@@ -1744,12 +1744,12 @@ compile_info.c: update_compile_info
 
 # No action needed for this target.
 update_compile_info:
-../data/vifm-help.txt: ../data/vifm.1
+../data/vifm-help.txt: ../data/man/vifm.1
 	@if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
 		if [ -n "$(COL)" ]; then \
-			$(MANGEN) -Tascii -man ../data/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
+			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
-			$(MANGEN) -Tascii -man ../data/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
