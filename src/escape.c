@@ -251,7 +251,7 @@ correct_offset(const char line[], const int offsets[], size_t offset)
 {
 	assert(offset != 0U && "Offset has to be greater than zero.");
 	const int prev_offset = offsets[offset - 1];
-	const size_t char_width = get_char_width(line + prev_offset);
+	const size_t char_width = utf8_chrw(line + prev_offset);
 	return prev_offset + char_width;
 }
 
@@ -378,7 +378,7 @@ get_char_width_esc(const char str[])
 {
 	if(*str != '\033')
 	{
-		return get_char_width(str);
+		return utf8_chrw(str);
 	}
 	else
 	{
@@ -546,7 +546,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 {
 	static char buf[32];
 
-	const size_t char_width = get_char_width(str);
+	const size_t char_width = utf8_chrw(str);
 	if(char_width != 1 || (unsigned char)str[0] >= (unsigned char)' ')
 	{
 		memcpy(buf, str, char_width);

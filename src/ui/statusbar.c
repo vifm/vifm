@@ -186,7 +186,7 @@ status_bar_message_i(const char message[], int error)
 	{
 		++status_bar_lines;
 	}
-	screen_length = get_screen_string_length(p);
+	screen_length = utf8_strsw(p);
 	status_bar_lines += DIV_ROUND_UP(screen_length, len);
 	if(status_bar_lines == 0)
 	{
@@ -296,16 +296,15 @@ save_status_bar_msg(const char msg[])
 static void
 truncate_with_ellipsis(const char msg[], size_t width, char buffer[])
 {
-	const size_t screen_len = get_screen_string_length(msg);
+	const size_t screen_len = utf8_strsw(msg);
 	const size_t screen_left_len = (width - 3)/2;
 	const size_t screen_right_len = (width - 3) - screen_left_len;
-	const size_t left = get_normal_utf8_string_widthn(msg, screen_left_len);
-	const size_t right = get_normal_utf8_string_widthn(msg,
-			screen_len - screen_right_len);
+	const size_t left = utf8_nstrsnlen(msg, screen_left_len);
+	const size_t right = utf8_nstrsnlen(msg, screen_len - screen_right_len);
 	strncpy(buffer, msg, left);
 	strcpy(buffer + left, "...");
 	strcpy(buffer + left + 3, msg + right);
-	assert(get_screen_string_length(buffer) == width);
+	assert(utf8_strsw(buffer) == width);
 }
 
 int

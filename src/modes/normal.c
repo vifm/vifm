@@ -1977,7 +1977,7 @@ cmd_paren(int lb, int ub, int inc)
 	int pos = curr_view->list_pos;
 	dir_entry_t *pentry = &curr_view->dir_entry[pos];
 	const char *ext = get_last_ext(pentry->name);
-	size_t char_width = get_char_width(pentry->name);
+	size_t char_width = utf8_chrw(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
 	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);

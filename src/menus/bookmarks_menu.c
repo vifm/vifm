@@ -59,7 +59,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	while(i < m.len)
 	{
 		const bookmark_t *const bmark = get_bookmark(active_bookmarks[i]);
-		const size_t len = get_screen_string_length(bmark->directory);
+		const size_t len = utf8_strsw(bmark->directory);
 		if(len > max_len)
 			max_len = len;
 		i++;
@@ -81,9 +81,9 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		bmark = get_bookmark(active_bookmarks[i]);
 
 		with_tilde = replace_home_part(bmark->directory);
-		if(get_screen_string_length(with_tilde) > max_len - 3)
+		if(utf8_strsw(with_tilde) > max_len - 3)
 		{
-			size_t width = get_normal_utf8_string_widthn(with_tilde, max_len - 6);
+			size_t width = utf8_nstrsnlen(with_tilde, max_len - 6);
 			strcpy(with_tilde + width, "...");
 		}
 
@@ -108,7 +108,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 			}
 		}
 
-		overhead = get_screen_overhead(with_tilde);
+		overhead = utf8_strso(with_tilde);
 		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(j),
 				(int)(max_len + overhead), with_tilde, file, suffix);
 

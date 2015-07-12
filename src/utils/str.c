@@ -175,7 +175,7 @@ to_multibyte(const wchar_t *s)
 int
 str_to_lower(const char str[], char buf[], size_t buf_len)
 {
-	if(get_utf8_overhead(str) == 0U)
+	if(utf8_stro(str) == 0U)
 	{
 		return transform_ascii_str(str, &tolower, buf, buf_len);
 	}
@@ -188,7 +188,7 @@ str_to_lower(const char str[], char buf[], size_t buf_len)
 int
 str_to_upper(const char str[], char buf[], size_t buf_len)
 {
-	if(get_utf8_overhead(str) == 0U)
+	if(utf8_stro(str) == 0U)
 	{
 		return transform_ascii_str(str, &toupper, buf, buf_len);
 	}
@@ -464,7 +464,7 @@ left_ellipsis(char str[], size_t max_width)
 		return NULL;
 	}
 
-	width = get_screen_string_length(str);
+	width = utf8_strsw(str);
 	if(width <= max_width)
 	{
 		return str;
@@ -481,8 +481,8 @@ left_ellipsis(char str[], size_t max_width)
 	tail = str;
 	while(width > max_width - 3U)
 	{
-		width -= utf8_get_screen_width_of_char(tail);
-		tail += get_char_width(tail);
+		width -= utf8_chrsw(tail);
+		tail += utf8_chrw(tail);
 	}
 	strcpy(str, "...");
 	memmove(str + 3U, tail, len - (tail - str) + 1U);
@@ -501,7 +501,7 @@ right_ellipsis(char str[], size_t max_width)
 		return NULL;
 	}
 
-	width = get_screen_string_length(str);
+	width = utf8_strsw(str);
 	if(width <= max_width)
 	{
 		return str;
@@ -514,7 +514,7 @@ right_ellipsis(char str[], size_t max_width)
 		return str;
 	}
 
-	prefix = get_normal_utf8_string_widthn(str, max_width - 3U);
+	prefix = utf8_nstrsnlen(str, max_width - 3U);
 	strcpy(&str[prefix], "...");
 	return str;
 }
@@ -529,7 +529,7 @@ break_in_two(char str[], size_t max)
 	if(break_point == NULL)
 		return str;
 
-	len = get_screen_string_length(str) - 2;
+	len = utf8_strsw(str) - 2;
 	size = strlen(str);
 	size = MAX(size, max);
 	result = malloc(size*4 + 2);
@@ -538,8 +538,8 @@ break_in_two(char str[], size_t max)
 
 	if(len > max)
 	{
-		const int l = get_screen_string_length(result) - (len - max);
-		break_point = str + get_real_string_width(str, MAX(l, 0));
+		const int l = utf8_strsw(result) - (len - max);
+		break_point = str + utf8_strsnlen(str, MAX(l, 0));
 	}
 
 	snprintf(result, break_point - str + 1, "%s", str);
@@ -663,7 +663,7 @@ expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
 	size_t col = 0;
 	while(col < max && *line != '\0')
 	{
-		const size_t char_width = get_char_width(line);
+		const size_t char_width = utf8_chrw(line);
 		const size_t char_screen_width = wcwidth(get_first_wchar(line));
 		if(char_screen_width != (size_t)-1 && col + char_screen_width > max)
 		{
