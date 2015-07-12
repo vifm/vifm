@@ -50,6 +50,19 @@ files_are_identical(const char a[], const char b[])
 	FILE *const b_file = fopen(b, "rb");
 	int a_data, b_data;
 
+	if(a_file == NULL || b_file == NULL)
+	{
+		if(a_file != NULL)
+		{
+			fclose(a_file);
+		}
+		if(b_file != NULL)
+		{
+			fclose(b_file);
+		}
+		return 0;
+	}
+
 	do
 	{
 		a_data = fgetc(a_file);

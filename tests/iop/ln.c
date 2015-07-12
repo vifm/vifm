@@ -11,19 +11,20 @@ static void create_file(const char path[]);
 static int not_windows(void);
 
 static const char *const ORIG_FILE_NAME = "file";
-static const char *const NEW_ORIG_FILE_NAME = "new_file";
-static const char *const LINK_NAME = "link";
+static const char *const ORIG_FILE_PATH = SANDBOX_PATH "/file";
+static const char *const NEW_ORIG_FILE_NAME = SANDBOX_PATH "/new_file";
+static const char *const LINK_NAME = SANDBOX_PATH "/link";
 
 SETUP()
 {
-	create_file(ORIG_FILE_NAME);
+	create_file(ORIG_FILE_PATH);
 }
 
 TEARDOWN()
 {
-	assert_success(access(ORIG_FILE_NAME, F_OK));
-	assert_success(remove(ORIG_FILE_NAME));
-	assert_failure(access(ORIG_FILE_NAME, F_OK));
+	assert_success(access(ORIG_FILE_PATH, F_OK));
+	assert_success(remove(ORIG_FILE_PATH));
+	assert_failure(access(ORIG_FILE_PATH, F_OK));
 }
 
 TEST(existent_file_is_not_overwritten_if_not_requested)
@@ -45,7 +46,7 @@ TEST(existent_file_is_not_overwritten_if_not_requested)
 
 	{
 		io_args_t args = {
-			.arg1.path = ORIG_FILE_NAME,
+			.arg1.path = ORIG_FILE_PATH,
 			.arg2.target = LINK_NAME,
 		};
 		ioe_errlst_init(&args.result.errors);
@@ -67,7 +68,7 @@ TEST(existent_non_symlink_is_not_overwritten)
 
 	{
 		io_args_t args = {
-			.arg1.path = ORIG_FILE_NAME,
+			.arg1.path = ORIG_FILE_PATH,
 			.arg2.target = LINK_NAME,
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 		};

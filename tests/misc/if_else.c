@@ -179,7 +179,7 @@ TEST(if_true_else_if_else_condition)
 TEST(sourcing_in_body)
 {
 	const char *const CMDS = " | if 1 == 1"
-	                         " |     source test-data/scripts/set-env.vifm"
+	                         " |     source "TEST_DATA_PATH"/scripts/set-env.vifm"
 	                         " | endif";
 
 	assert_int_equal(0, exec_commands(CMDS, &lwin, CIT_COMMAND));

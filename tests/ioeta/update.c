@@ -35,7 +35,7 @@ TEST(add_file_increments_number_of_items)
 TEST(add_dir_increments_number_of_bytes)
 {
 	const int prev = estim->total_bytes;
-	ioeta_add_file(estim, "test-data/read/binary-data");
+	ioeta_add_file(estim, TEST_DATA_PATH "/read/binary-data");
 	assert_int_equal(prev + 1024, estim->total_bytes);
 }
 
@@ -49,7 +49,7 @@ TEST(add_dir_does_not_increment_number_of_items)
 TEST(add_dir_does_not_increment_number_of_bytes)
 {
 	const int prev = estim->total_bytes;
-	ioeta_add_dir(estim, "test-data");
+	ioeta_add_dir(estim, TEST_DATA_PATH);
 	assert_int_equal(prev, estim->total_bytes);
 }
 

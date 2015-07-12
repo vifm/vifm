@@ -77,8 +77,8 @@ TEST(special_chars_ignore_case_sort)
 
 TEST(symlink_to_dir)
 {
-	assert_int_equal(0, chdir("test-data/sandbox"));
-	assert_int_equal(0, symlink(".", "self"));
+	assert_success(chdir(SANDBOX_PATH));
+	assert_success(symlink(".", "self"));
 
 	lwin.sort[0] = SK_BY_INAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);

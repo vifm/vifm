@@ -64,7 +64,7 @@ TEST(incdec_leaves_zeros)
 
 TEST(single_file_rename)
 {
-	chdir("test-data/rename");
+	assert_success(chdir(TEST_DATA_PATH "/rename"));
 	assert_true(check_file_rename(".", "a", "a", ST_NONE) < 0);
 	assert_true(check_file_rename(".", "a", "", ST_NONE) < 0);
 	assert_true(check_file_rename(".", "a", "b", ST_NONE) > 0);
@@ -72,7 +72,6 @@ TEST(single_file_rename)
 #ifdef _WIN32
 	assert_true(check_file_rename(".", "a", "A", ST_NONE) > 0);
 #endif
-	chdir("../..");
 }
 
 TEST(rename_list_checks)

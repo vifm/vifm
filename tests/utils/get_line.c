@@ -6,9 +6,15 @@
 
 TEST(reads_line_chunk_by_chunk)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[5];
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file.");
+		return;
+	}
 
 	line = get_line(fp, line_buf, sizeof(line_buf));
 	assert_string_equal("1st ", line);
@@ -21,9 +27,15 @@ TEST(reads_line_chunk_by_chunk)
 
 TEST(eol_is_preserved)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[100];
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file.");
+		return;
+	}
 
 	line = get_line(fp, line_buf, sizeof(line_buf));
 	assert_string_equal("1st line\n", line);
@@ -33,9 +45,15 @@ TEST(eol_is_preserved)
 
 TEST(reads_more_than_one_line)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[100];
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file.");
+		return;
+	}
 
 	line = get_line(fp, line_buf, sizeof(line_buf));
 	assert_string_equal("1st line\n", line);
@@ -48,9 +66,15 @@ TEST(reads_more_than_one_line)
 
 TEST(writes_nothing_and_returns_null_on_zero_size_buffer)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[] = "01";
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file.");
+		return;
+	}
 
 	line = get_line(fp, line_buf, 0);
 	assert_string_equal(NULL, line);
@@ -61,9 +85,15 @@ TEST(writes_nothing_and_returns_null_on_zero_size_buffer)
 
 TEST(writes_nothing_and_returns_null_on_one_byte_buffer)
 {
-	FILE *const fp = fopen("test-data/read/two-lines", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
 	char *line = NULL;
 	char line_buf[] = "01";
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file.");
+		return;
+	}
 
 	line = get_line(fp, line_buf, 1);
 	assert_string_equal(NULL, line);

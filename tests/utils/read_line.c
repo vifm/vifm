@@ -7,8 +7,14 @@
 
 TEST(buffer_can_be_null)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	assert_string_equal("# short line", line);
@@ -19,8 +25,14 @@ TEST(buffer_can_be_null)
 
 TEST(buffer_can_be_not_null)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = malloc(10);
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	assert_string_equal("# short line", line);
@@ -31,8 +43,14 @@ TEST(buffer_can_be_not_null)
 
 TEST(very_long_line_can_be_read)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	line = read_line(fp, line);
@@ -124,8 +142,14 @@ TEST(very_long_line_can_be_read)
 
 TEST(empty_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	line = read_line(fp, line);
@@ -138,8 +162,14 @@ TEST(empty_line_is_read_correctly)
 
 TEST(next_to_empty_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	line = read_line(fp, line);
@@ -153,8 +183,14 @@ TEST(next_to_empty_line_is_read_correctly)
 
 TEST(the_last_line_is_read_correctly)
 {
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	line = read_line(fp, line);
@@ -170,9 +206,15 @@ TEST(the_last_line_is_read_correctly)
 TEST(reads_after_eof_return_null)
 {
 	const int READ_COUNT = 10;
-	FILE *const fp = fopen("test-data/read/very-long-line", "r");
+	FILE *const fp = fopen(TEST_DATA_PATH "/read/very-long-line", "r");
 	char *line = NULL;
 	int i;
+
+	if(fp == NULL)
+	{
+		assert_fail("Failed to open file");
+		return;
+	}
 
 	line = read_line(fp, line);
 	line = read_line(fp, line);

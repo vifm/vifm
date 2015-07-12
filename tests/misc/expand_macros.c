@@ -218,7 +218,7 @@ TEST(r_well_formed)
 {
 	const char *p;
 
-	chdir("test-data/existing-files");
+	chdir(TEST_DATA_PATH "/existing-files");
 
 	init_registers();
 
@@ -247,8 +247,6 @@ TEST(r_well_formed)
 	}
 
 	clear_registers();
-
-	chdir("../..");
 }
 
 TEST(r_ill_formed)
@@ -256,7 +254,7 @@ TEST(r_ill_formed)
 	char key;
 	char expected[] = "a b cx";
 
-	chdir("test-data/existing-files");
+	chdir(TEST_DATA_PATH "/existing-files");
 
 	init_registers();
 
@@ -281,8 +279,6 @@ TEST(r_ill_formed)
 	while(key != '\0');
 
 	clear_registers();
-
-	chdir("../..");
 }
 
 TEST(with_quotes)
@@ -324,7 +320,7 @@ TEST(with_quotes)
 	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
 
-	chdir("test-data/existing-files");
+	chdir(TEST_DATA_PATH "/existing-files");
 	init_registers();
 
 	append_to_register(DEFAULT_REG_NAME, "a");
@@ -336,7 +332,6 @@ TEST(with_quotes)
 	free(expanded);
 
 	clear_registers();
-	chdir("../..");
 }
 
 TEST(single_percent_sign)

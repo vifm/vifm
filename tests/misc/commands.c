@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() */
+#include <unistd.h> /* F_OK access() chdir() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
@@ -157,12 +157,14 @@ TEST(bg_mark_without_space_in_udf)
 TEST(shell_invocation_works_in_udf)
 {
 #ifndef _WIN32
-	const char *const cmd = "command! udf echo a > test-data/sandbox/out";
+	const char *const cmd = "command! udf echo a > out";
 	replace_string(&cfg.shell, "/bin/sh");
 #else
-	const char *const cmd = "command! udf echo a > test-data\\sandbox\\out";
+	const char *const cmd = "command! udf echo a > out";
 	replace_string(&cfg.shell, "cmd");
 #endif
+
+	assert_success(chdir(SANDBOX_PATH));
 
 	stats_update_shell_type(cfg.shell);
 
@@ -170,10 +172,10 @@ TEST(shell_invocation_works_in_udf)
 
 	curr_view = &lwin;
 
-	assert_failure(access("test-data/sandbox/out", F_OK));
+	assert_failure(access("out", F_OK));
 	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
-	assert_success(access("test-data/sandbox/out", F_OK));
-	assert_success(unlink("test-data/sandbox/out"));
+	assert_success(access("out", F_OK));
+	assert_success(unlink("out"));
 
 	stats_update_shell_type("/bin/sh");
 

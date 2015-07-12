@@ -17,65 +17,70 @@ vim_syntax_dir = $(vim_dir)/syntax
 
 vimdoc_doc_dir = $(vimdoc_dir)/doc
 
-vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
-vim_colors__DATA = ../data/colors/astrell-root.vifm \
+dist_vim_autoload_vifm__DATA = ../data/vim/autoload/vifm/edit.vim
+dist_vim_colors__DATA = ../data/colors/astrell-root.vifm \
 									 ../data/colors/astrell-user.vifm \
 									 ../data/colors/dmilith-root.vifm \
 									 ../data/colors/dmilith-user.vifm \
 									 ../data/colors/istib-solarized-dark.vifm \
 									 ../data/colors/juef-zenburn.vifm \
 									 ../data/colors/reicheltd-light.vifm
-vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt \
-								../data/vim/doc/plugin/tags
-vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
+dist_vim_doc__DATA = ../data/vim/doc/plugin/vifm-plugin.txt
+nodist_vim_doc__DATA = $(abs_srcdir)/../data/vim/doc/plugin/tags
+dist_vim_ftdetect__DATA = ../data/vim/ftdetect/vifm.vim \
 										 ../data/vim/ftdetect/vifm-rename.vim
-vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
+dist_vim_ftplugin__DATA = ../data/vim/ftplugin/vifm.vim \
 										 ../data/vim/ftplugin/vifm-cmdedit.vim \
 										 ../data/vim/ftplugin/vifm-edit.vim \
 										 ../data/vim/ftplugin/vifm-rename.vim \
 										 ../data/vim/ftplugin/mail_vifm.vim
-vim_plugin__DATA = ../data/vim/plugin/vifm.vim
-vim_syntax__DATA = ../data/vim/syntax/vifm.vim
+dist_vim_plugin__DATA = ../data/vim/plugin/vifm.vim
+dist_vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 
-vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt \
-									 ../data/vim/doc/app/tags
+dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt
+nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 
-pkgdata_DATA = ../data/vifmrc \
-							 ../data/vifmrc-osx \
-							 ../data/vifm-help.txt
+dist_pkgdata_DATA = ../data/vifmrc \
+							 ../data/vifmrc-osx
+nodist_pkgdata_DATA = ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm vifmrc-converter
 
-bin_SCRIPTS = vifm-pause vifm-convert-dircolors
+dist_bin_SCRIPTS = vifm-pause vifm-convert-dircolors
 
-man_MANS = ../data/man/vifm.1 \
+dist_man_MANS = ../data/man/vifm.1 \
 					 ../data/man/vifm-pause.1 \
 					 ../data/man/vifmrc-converter.1 \
 					 ../data/man/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
 									 ../data/vifm-help.txt \
-									 ../data/vim/doc/app/tags \
-									 ../data/vim/doc/plugin/tags
+									 $(abs_srcdir)/../data/vim/doc/app/tags \
+									 $(abs_srcdir)/../data/vim/doc/plugin/tags
+clean-local:
+	if [ '$(abs_builddir)' != '$(abs_srcdir)' ]; then \
+		$(RM) tags.c; \
+	fi
 
 desktopappdir = $(datadir)/applications
 desktopappfile = ../data/vifm.desktop
-desktopapp_DATA = $(desktopappfile)
+dist_desktopapp_DATA = $(desktopappfile)
 
 desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
-desktoppix_DATA = $(desktoppixfile)
+dist_desktoppix_DATA = $(desktoppixfile)
 
-docsfile = ../AUTHORS ../COPYING ../ChangeLog ../INSTALL ../NEWS ../README \
-					 ../TODO
+docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../FAQ ../INSTALL \
+					 ../NEWS ../README ../TODO
 docsdir = $(docdir)
-docs_DATA = $(docsfile)
+dist_docs_DATA = $(docsfile)
 
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
 	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
+	cfg/info_chars.h \
 	\
 	compat/curses.c compat/curses.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
@@ -97,6 +102,7 @@ vifm_SOURCES = \
 	io/ioe.h \
 	io/ioe.c io/ioe.h \
 	io/ioeta.c io/ioeta.h \
+	io/ionotif.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
 	io/private/ioe.c io/private/ioe.h \
@@ -126,6 +132,7 @@ vifm_SOURCES = \
 	menus/undolist_menu.c menus/undolist_menu.h \
 	menus/users_menu.c menus/users_menu.h \
 	menus/vifm_menu.c menus/vifm_menu.h \
+	menus/volumes_menu.h \
 	\
 	modes/dialogs/attr_dialog.h \
 	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
@@ -144,9 +151,11 @@ vifm_SOURCES = \
 	ui/cancellation.c ui/cancellation.h \
 	ui/statusbar.c ui/statusbar.h \
 	ui/statusline.c ui/statusline.h \
+	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \
+	utils/fs_limits.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
@@ -160,10 +169,12 @@ vifm_SOURCES = \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
+	utils/test_helpers.h \
 	utils/tree.c utils/tree.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
+	utils/utils_int.h \
 	utils/utils_nix.c utils/utils_nix.h \
 	\
 	args.c args.h \
@@ -208,9 +219,10 @@ vifm_SOURCES = \
 	undo.c undo.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
-	compile_info.c \
 	vifm.c vifm.h \
 	vim.c vim.h
+nodist_vifm_SOURCES = \
+	compile_info.c
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
@@ -218,6 +230,27 @@ vifmrc_converter_SOURCES = \
 
 check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
+
+EXTRA_DIST = \
+						 update-compile-info \
+						 helpztags \
+						 menus/volumes_menu.c \
+						 vifm.rc \
+						 win_helper.c \
+						 utils/utils_win.c \
+						 utils/utils_win.h \
+						 utils/windefs.h \
+						 modes/dialogs/attr_dialog_win.h \
+						 modes/dialogs/attr_dialog_win.c \
+						 compat/wcwidth.c \
+						 compat/wcwidth.h \
+						 Makefile.win \
+						 ../data/graphics/vifm-old.ico \
+						 ../data/graphics/vifm-old.png \
+						 ../data/graphics/vifm.ico \
+						 ../data/graphics/vifm.svg
+dist-hook:
+	$(RM) `find . -name tags -type f -print`
 
 MANGEN = @MANGEN_PROG@
 COL = @COL_PROG@
@@ -228,7 +261,8 @@ VIM = @VIM_PROG@
 UNDER_VCS = @IN_GIT_REPO@
 
 runtests:
-	echo '$(MAKE) -C ../tests' > $@_
+	echo 'mkdir -p $(abs_builddir)/../tests/' > $@_
+	echo '$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/' >> $@_
 	chmod +x $@_
 	mv $@_ $@
 
@@ -237,43 +271,49 @@ CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
              $(vifmrc_converter_OBJECTS:.o=.gcda)
 
 distclean-local:
-	$(MAKE) -C ../tests clean
+	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-	@./update-compile-info $(UNDER_VCS)
+	@$(abs_srcdir)/update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
-../data/vifm-help.txt: ../data/man/vifm.1
+
+../data/vifm-help.txt: $(abs_srcdir)/../data/man/vifm.1
+	mkdir -p ../data/
 	@if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
 		if [ -n "$(COL)" ]; then \
-			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
+			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
-			$(MANGEN) -Tascii -man ../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
+			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' >| '$@'; \
 		fi \
 	fi
 
-../data/vim/doc/app/tags: ../data/vim/doc/app/vifm-app.txt
+$(abs_srcdir)/../data/vim/doc/app/tags: \
+                                  $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
+	mkdir -p ../data/vim/doc/app/
 	@if [ -n "$(PERL)" ]; then \
-		./helpztags "$(dir $@)"; \
+		$(abs_srcdir)/helpztags "$(dir $<)"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $@)|q'; \
+		vim -e -s -c 'helptags $(dir $<)|q'; \
 	else \
 		touch $@; \
 	fi
 
-../data/vim/doc/plugin/tags: ../data/vim/doc/plugin/vifm-plugin.txt
+$(abs_srcdir)/../data/vim/doc/plugin/tags: \
+                            $(abs_srcdir)/../data/vim/doc/plugin/vifm-plugin.txt
+	mkdir -p ../data/vim/doc/plugin/
 	@if [ -n "$(PERL)" ]; then \
-		./helpztags "$(dir $@)"; \
+		$(abs_srcdir)/helpztags "$(dir $<)"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $@)|q'; \
+		vim -e -s -c 'helptags $(dir $<)|q'; \
 	else \
 		touch $@; \
 	fi
 
-tags.c: ../data/vim/doc/app/tags
-	@if [ -s ../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
+tags.c: $(abs_srcdir)/../data/vim/doc/app/tags
+	@if [ -s $(abs_srcdir)/../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
 		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
@@ -284,7 +324,9 @@ tags.c: ../data/vim/doc/app/tags
 			END { \
 				print "\t0,\n};" \
 			} \
-		' ../data/vim/doc/app/tags > $@; \
+		' $(abs_srcdir)/../data/vim/doc/app/tags > $@; \
+	elif [ '$(abs_builddir)' != '$(abs_srcdir)' ]; then \
+		echo 'const char *tags[] = {};' > $@; \
 	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

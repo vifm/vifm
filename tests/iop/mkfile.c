@@ -5,7 +5,7 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 
-static const char *const FILE_NAME = "file-to-create";
+static const char *const FILE_NAME = SANDBOX_PATH "/file-to-create";
 
 TEST(file_is_created)
 {

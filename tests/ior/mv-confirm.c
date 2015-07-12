@@ -20,12 +20,12 @@ static int confirm_called;
 
 TEST(confirm_is_not_called_for_no_overwrite)
 {
-	create_empty_file("empty");
+	create_empty_file(SANDBOX_PATH "/empty");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_FAIL,
 
 			.confirm = &confirm_overwrite,
@@ -40,18 +40,18 @@ TEST(confirm_is_not_called_for_no_overwrite)
 		ioe_errlst_free(&args.result.errors);
 	}
 
-	delete_file("empty");
+	delete_file(SANDBOX_PATH "/empty");
 }
 
 TEST(confirm_is_called_for_overwrite)
 {
-	create_empty_file("empty");
-	clone_file("../read/two-lines", "two-lines");
+	create_empty_file(SANDBOX_PATH "/empty");
+	clone_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
 
 	{
 		io_args_t args = {
-			.arg1.src = "two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = SANDBOX_PATH "/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 
 			.confirm = &confirm_overwrite,
@@ -65,17 +65,17 @@ TEST(confirm_is_called_for_overwrite)
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	delete_file("empty");
+	delete_file(SANDBOX_PATH "/empty");
 }
 
 TEST(deny_to_overwrite_is_considered)
 {
-	create_empty_file("empty");
+	create_empty_file(SANDBOX_PATH "/empty");
 
 	{
 		io_args_t args = {
-			.arg1.src = "../read/two-lines",
-			.arg2.dst = "empty",
+			.arg1.src = TEST_DATA_PATH "/read/two-lines",
+			.arg2.dst = SANDBOX_PATH "/empty",
 			.arg3.crs = IO_CRS_REPLACE_FILES,
 
 			.confirm = &deny_overwrite,
@@ -89,9 +89,9 @@ TEST(deny_to_overwrite_is_considered)
 		assert_int_equal(0, args.result.errors.error_count);
 	}
 
-	assert_true(file_exists("../read/two-lines"));
+	assert_true(file_exists(TEST_DATA_PATH "/read/two-lines"));
 
-	delete_file("empty");
+	delete_file(SANDBOX_PATH "/empty");
 }
 
 static int
