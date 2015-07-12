@@ -296,10 +296,10 @@ TEST(range_plus_minus)
 	assert_int_equal(51, cmdi.begin);
 	assert_int_equal(51, cmdi.end);
 
- 	assert_int_equal(0, execute_cmd("+2"));
+	assert_int_equal(0, execute_cmd("+2"));
 	assert_int_equal(52, cmdi.begin);
 	assert_int_equal(52, cmdi.end);
- 
+
 	assert_int_equal(0, execute_cmd(".++"));
 	assert_int_equal(52, cmdi.begin);
 	assert_int_equal(52, cmdi.end);

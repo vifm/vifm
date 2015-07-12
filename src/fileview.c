@@ -863,7 +863,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	reserved_width = cfg.filelist_col_padding ? (column_id != FILL_COLUMN_ID) : 0;
 	width_left = padding + ui_view_available_width(view)
 	           - reserved_width - offset;
-	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
+	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
 	{
 		print_buf[trim_pos] = '\0';
@@ -884,7 +884,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 		char buf[], size_t buf_len, AlignType align, int line, int col,
 		int line_attrs)
 {
-	const size_t width = get_screen_string_length(buf);
+	const size_t width = utf8_strsw(buf);
 
 	const FileType type = ui_view_entry_target_type(entry);
 	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
@@ -931,7 +931,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 			/* Match offsets require correction if left hand side of the file is
 			 * trimmed. */
 
-			const size_t orig_width = get_screen_string_length(full_column);
+			const size_t orig_width = utf8_strsw(full_column);
 			if(orig_width > width)
 			{
 				const int offset = orig_width - width;
@@ -943,7 +943,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 		/* Calculate number of screen characters before the match. */
 		c = buf[lo];
 		buf[lo] = '\0';
-		match_start = get_screen_string_length(buf);
+		match_start = utf8_strsw(buf);
 		buf[lo] = c;
 
 		checked_wmove(view->win, line, col + match_start);
@@ -1250,11 +1250,11 @@ get_filename_width(const FileView *view, int i)
 	{
 		char name[NAME_MAX];
 		get_short_path_of(view, entry, 0, sizeof(name), name);
-		name_len = get_screen_string_length(name);
+		name_len = utf8_strsw(name);
 	}
 	else
 	{
-		name_len = get_screen_string_length(entry->name);
+		name_len = utf8_strsw(entry->name);
 	}
 	return name_len + get_filetype_decoration_width(target_type);
 }

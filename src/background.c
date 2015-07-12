@@ -334,7 +334,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 	{
 		if(errno != EINTR)
 		{
-			LOG_SERROR_MSG(errno, "Failed waiting for process: "PRINTF_PID_T, pid);
+			LOG_SERROR_MSG(errno, "Failed waiting for process: %llu",
+					(unsigned long long)pid);
 			status = -1;
 			break;
 		}

@@ -21,24 +21,34 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
-/* Below "sw" stands for "screen width", i.e. number of character positions
- * taken on the screen. */
+/* Abbreviations:
+ *  - "n"  -- "normal", excluding incomplete (broken) utf-8 sequences;
+ *  - "sn" -- "screen number", screen width limit;
+ *  - "w"  -- "width", in bytes;
+ *  - "o"  -- "overhead";
+ *  - "sw" -- "screen width", i.e. number of character positions taken on the
+ *            screen;
+ *  - "so" -- "screen overhead". */
 
-/* Returns real width of valid and complete utf-8 character. */
-size_t get_char_width(const char str[]);
-/* Returns count of utf-8 characters excluding incomplete utf-8 characters. */
-size_t get_normal_utf8_string_length(const char str[]);
-/* Returns count of bytes of whole str or of the first max_screen_width utf-8
+/* Calculates real width of valid and complete utf-8 character in bytes.
+ * Returns the width. */
+size_t utf8_chrw(const char str[]);
+
+/* Counts number of utf-8 characters excluding incomplete utf-8 characters.
+ * Returns the count. */
+size_t utf8_nstrlen(const char str[]);
+
+/* Calculates count of bytes of whole str or of the first max_screen_width utf-8
  * characters (so one character which take several positions on the screen are
- * counted as several positions). */
-size_t get_real_string_width(const char str[], size_t max_screen_width);
-/* Same as get_real_string_width(), but ignores trailing incomplete utf-8
- * characters. */
-size_t get_normal_utf8_string_widthn(const char str[], size_t max_screen_width);
+ * counted as several positions).  Returns the count. */
+size_t utf8_strsnlen(const char str[], size_t max_screen_width);
+
+/* Same as utf8_strsnlen(), but ignores trailing incomplete utf-8 characters. */
+size_t utf8_nstrsnlen(const char str[], size_t max_screen_width);
 
 /* Counts number of screen characters in a utf-8 encoded str.  Returns the
  * number. */
-size_t get_screen_string_length(const char str[]);
+size_t utf8_strsw(const char str[]);
 
 /* Counts number of screen characters in a utf-8 encoded str expanding
  * tabulation according to specified tab stops.  tab_stops must be positive.
@@ -47,12 +57,15 @@ size_t utf8_strsw_with_tabs(const char str[], int tab_stops);
 
 /* Gets screen width of the first character in the string.  Returns the
  * width or (size_t)-1 for unknown/broken characters. */
-size_t utf8_get_screen_width_of_char(const char str[]);
+size_t utf8_chrsw(const char str[]);
 
-/* Returns (string_width - string_length). */
-size_t get_utf8_overhead(const char str[]);
-/* Returns (string_screen_width - string_length). */
-size_t get_screen_overhead(const char str[]);
+/* Calculates string overhead (string_bytes - string_chars).  Returns the
+ * overhead. */
+size_t utf8_stro(const char str[]);
+
+/* Calculates string screen overhead (string_bytes - string_screen_chars).
+ * Returns the overhead. */
+size_t utf8_strso(const char str[]);
 
 /* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */
 wchar_t * utf8_to_utf16(const char utf8[]);
@@ -67,10 +80,6 @@ size_t utf8_widen_len(const char utf8[]);
 
 /* Converts utf-16 to utf-8 string. Returns newly allocated utf-16 string. */
 char * utf8_from_utf16(const wchar_t utf16[]);
-
-/* Calculate how many utf8 chars are needed to store given utf-16 string.
- * Returns the number. */
-size_t utf8_narrowd_len(const wchar_t utf16[]);
 
 /* Copies as many full utf-8 characters from source to destination as size of
  * destination buffer permits.  Returns number of actually copied bytes

@@ -82,20 +82,20 @@ win_helper_EXECUTABLE := win_helper.exe
 
 .PHONY: all clean check update_compile_info
 
-all: ../config.h ../data/vifm-help.txt $(vifm_EXECUTABLE) \
-	$(converter_EXECUTABLE) $(win_helper_EXECUTABLE)
+all: ../data/vifm-help.txt $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
+    $(win_helper_EXECUTABLE)
 
-$(vifm_EXECUTABLE): $(vifm_OBJECTS)
+$(vifm_EXECUTABLE): $(vifm_OBJECTS) | ../config.h
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
 ifeq ($(RELEASE),1)
 	$(STRIP) -S --strip-unneeded $@
 endif
-$(converter_EXECUTABLE): $(converter_OBJECTS)
+$(converter_EXECUTABLE): $(converter_OBJECTS) | ../config.h
 	$(CC) $^ -o $@ $(LDFLAGS)
 ifeq ($(RELEASE),1)
 	$(STRIP) -S --strip-unneeded $@
 endif
-$(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
+$(win_helper_EXECUTABLE): $(win_helper_OBJECTS) | ../config.h
 	$(CC) $^ -o $@ $(LDFLAGS)
 ifeq ($(RELEASE),1)
 	$(STRIP) -S --strip-unneeded $@
@@ -125,9 +125,9 @@ update_compile_info:
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-../data/vifm-help.txt: ../data/vifm.1
+../data/vifm-help.txt: ../data/man/vifm.1
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tascii -man ../data/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man ../data/man/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt

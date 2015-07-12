@@ -213,7 +213,7 @@ static int
 print_item(const char label[], const char path[], int curr_y)
 {
 	const int max_width = getmaxx(menu_win) - strlen(label) - 2;
-	const size_t print_len = get_normal_utf8_string_widthn(path, max_width);
+	const size_t print_len = utf8_nstrsnlen(path, max_width);
 
 	mvwaddstr(menu_win, curr_y, 2, label);
 	if(path[print_len] == '\0')

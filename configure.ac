@@ -330,11 +330,13 @@ changequote([,])dnl
 
 dnl Define _DARWIN_C_SOURCE macro while compiling on OS X.
 if test -n "$OSX_HOST" ; then
-  CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+  AC_DEFINE([_DARWIN_C_SOURCE], [1],
+            [Enable extensions in header files on OS X.])
 fi
 
 dnl Use 64-bit off_t type
-CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
+AC_DEFINE([_FILE_OFFSET_BITS], [64],
+          [Enable large file processing on 32-bit systems.])
 
 dnl Use pthread library
 AC_CHECK_LIB(pthread, pthread_create,

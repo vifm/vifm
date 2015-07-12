@@ -1089,7 +1089,7 @@ write_bookmarks(FILE *const fp, const char non_conflicting_bmarks[],
 			fprintf(fp, "'%c\n", mark);
 			fprintf(fp, "\t%s\n", bookmark->directory);
 			fprintf(fp, "\t%s\n", bookmark->file);
-			fprintf(fp, TIME_T "\n", bookmark->timestamp);
+			fprintf(fp, "%lld\n", (long long)bookmark->timestamp);
 		}
 	}
 	for(i = 0; i < nmarks; i += 3)

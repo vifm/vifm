@@ -128,7 +128,7 @@ update_stat_window_old(FileView *view)
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
 	filename = get_current_file_name(view);
-	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
+	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
 	friendly_size_notation(entry->size, sizeof(size_buf), size_buf);
 

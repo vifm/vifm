@@ -105,7 +105,7 @@ clean_menu_position(menu_info *m)
 	char *buf;
 	col_attr_t col;
 
-	x = getmaxx(menu_win) + get_utf8_overhead(m->items[m->pos]);
+	x = getmaxx(menu_win) + utf8_stro(m->items[m->pos]);
 
 	buf = malloc(x + 2);
 
@@ -115,7 +115,7 @@ clean_menu_position(menu_info *m)
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[m->pos][off] != '\0')
 		{
-			size_t l = get_char_width(m->items[m->pos] + off);
+			size_t l = utf8_chrw(m->items[m->pos] + off);
 			off += l;
 			x -= l - 1;
 		}
@@ -252,7 +252,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(redraw)
 		draw_menu(m);
 
-	x = getmaxx(menu_win) + get_utf8_overhead(m->items[pos]);
+	x = getmaxx(menu_win) + utf8_stro(m->items[pos]);
 	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
@@ -262,7 +262,7 @@ move_to_menu_pos(int pos, menu_info *m)
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[pos][off] != '\0')
 		{
-			size_t l = get_char_width(m->items[pos] + off);
+			size_t l = utf8_chrw(m->items[pos] + off);
 			off += l;
 			x -= l - 1;
 		}
@@ -306,11 +306,9 @@ draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
 	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
 
 	checked_wmove(menu_win, m->current, 1);
-	if(get_screen_string_length(m->items[m->pos] + off) >
-			(size_t)(getmaxx(menu_win) - 4))
+	if(utf8_strsw(m->items[m->pos] + off) > (size_t)(getmaxx(menu_win) - 4))
 	{
-		size_t len = get_normal_utf8_string_widthn(buf,
-				getmaxx(menu_win) - 3 - 4 + 1);
+		size_t len = utf8_nstrsnlen(buf, getmaxx(menu_win) - 3 - 4 + 1);
 		memset(buf + len, ' ', strlen(buf) - len);
 		if(strlen(buf) > len + 3)
 		{
@@ -321,7 +319,7 @@ draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
 	}
 	else
 	{
-		size_t len = get_normal_utf8_string_widthn(buf, getmaxx(menu_win) - 4 + 1);
+		size_t len = utf8_nstrsnlen(buf, getmaxx(menu_win) - 4 + 1);
 		buf[len] = '\0';
 		wprint(menu_win, buf);
 	}
@@ -485,7 +483,7 @@ draw_menu(menu_info *m)
 		off = 0;
 		while(z-- > 0 && m->items[x][off] != '\0')
 		{
-			size_t l = get_char_width(m->items[x] + off);
+			size_t l = utf8_chrw(m->items[x] + off);
 			off += l;
 		}
 
@@ -495,9 +493,9 @@ draw_menu(menu_info *m)
 				buf[z] = ' ';
 
 		checked_wmove(menu_win, i, 2);
-		if(get_screen_string_length(buf) > (size_t)(win_len - 4))
+		if(utf8_strsw(buf) > (size_t)(win_len - 4))
 		{
-			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
+			size_t len = utf8_nstrsnlen(buf, win_len - 3 - 4);
 			memset(buf + len, ' ', strlen(buf) - len);
 			buf[len + 3] = '\0';
 			wprint(menu_win, buf);
@@ -505,7 +503,7 @@ draw_menu(menu_info *m)
 		}
 		else
 		{
-			const size_t len = get_normal_utf8_string_widthn(buf, win_len - 4);
+			const size_t len = utf8_nstrsnlen(buf, win_len - 4);
 			buf[len] = '\0';
 			wprint(menu_win, buf);
 		}

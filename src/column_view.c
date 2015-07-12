@@ -290,7 +290,7 @@ columns_format_line(const columns_t cols, const void *data,
 			const size_t prev_col_max_width = (cur_col_start > prev_col_start)
 			                                ? (cur_col_start - prev_col_start)
 			                                : 0UL;
-			const size_t break_point = get_real_string_width(prev_col_buf,
+			const size_t break_point = utf8_strsnlen(prev_col_buf,
 					prev_col_max_width);
 			prev_col_buf[break_point] = '\0';
 			fill_gap_pos(data, prev_col_start + get_width_on_screen(prev_col_buf),
@@ -330,21 +330,21 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 
 	if(col->info.align == AT_LEFT)
 	{
-		const size_t truncate_pos = get_real_string_width(buf, max_col_width);
+		const size_t truncate_pos = utf8_strsnlen(buf, max_col_width);
 		buf[truncate_pos] = '\0';
 	}
 	else
 	{
 		int extra_spaces;
 
-		const size_t truncate_pos = get_real_string_width(buf, len - max_col_width);
+		const size_t truncate_pos = utf8_strsnlen(buf, len - max_col_width);
 		const char *new_beginning = buf + truncate_pos;
 
 		extra_spaces = 0;
 		while(get_width_on_screen(new_beginning) > max_col_width)
 		{
 			++extra_spaces;
-			new_beginning += get_char_width(new_beginning);
+			new_beginning += utf8_chrw(new_beginning);
 		}
 
 		memmove(buf + extra_spaces, new_beginning, strlen(new_beginning) + 1);
@@ -372,7 +372,7 @@ add_ellipsis(AlignType align, char buf[])
 	if(align == AT_LEFT)
 	{
 		const size_t width_limit = len - dot_count;
-		const size_t pos = get_real_string_width(buf, width_limit);
+		const size_t pos = utf8_strsnlen(buf, width_limit);
 		memset(buf + pos, '.', dot_count);
 		buf[pos + dot_count] = '\0';
 	}
@@ -382,8 +382,8 @@ add_ellipsis(AlignType align, char buf[])
 		size_t skipped = 0;
 		while(skipped < dot_count)
 		{
-			skipped += utf8_get_screen_width_of_char(new_beginning);
-			new_beginning += get_char_width(new_beginning);
+			skipped += utf8_chrsw(new_beginning);
+			new_beginning += utf8_chrw(new_beginning);
 		}
 
 		memmove(buf + dot_count, new_beginning, strlen(new_beginning) + 1);
@@ -452,7 +452,7 @@ get_width_on_screen(const char str[])
 	}
 	if(length == (size_t)-1)
 	{
-		length = get_normal_utf8_string_length(str);
+		length = utf8_nstrlen(str);
 	}
 	return length;
 }

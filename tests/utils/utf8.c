@@ -23,7 +23,7 @@ TEST(get_real_string_width_full)
 {
 	const char utf8_str[] = "师вгд";
 	const size_t expected_len = strlen(utf8_str);
-	const size_t calculated_len = get_real_string_width(utf8_str, 5);
+	const size_t calculated_len = utf8_strsnlen(utf8_str, 5);
 	assert_int_equal(expected_len, calculated_len);
 }
 
@@ -43,7 +43,7 @@ TEST(get_real_string_width_in_the_middle_a, IF(locale_works))
 	const char utf8_end[] = ENDING;
 #undef ENDING
 	const size_t expected_len = strlen(utf8_str) - strlen(utf8_end);
-	const size_t calculated_len = get_real_string_width(utf8_str, 5);
+	const size_t calculated_len = utf8_strsnlen(utf8_str, 5);
 	assert_int_equal(expected_len, calculated_len);
 }
 
@@ -54,7 +54,7 @@ TEST(get_real_string_width_in_the_middle_b, IF(locale_works))
 	const char utf8_end[] = ENDING;
 #undef ENDING
 	const size_t expected_len = strlen(utf8_str) - strlen(utf8_end);
-	const size_t calculated_len = get_real_string_width(utf8_str, 7);
+	const size_t calculated_len = utf8_strsnlen(utf8_str, 7);
 	assert_int_equal(expected_len, calculated_len);
 }
 

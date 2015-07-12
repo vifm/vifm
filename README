@@ -43,6 +43,7 @@ Package content
     |  |
     |  |-- colors/ - sample color schemes
     |  |-- graphics/ - icons
+    |  |-- man/ - manual pages
     |  `-- vim/ - plugin for Vim
     |
     |-- patches/ - patches for software vifm depends on

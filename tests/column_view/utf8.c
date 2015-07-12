@@ -50,8 +50,8 @@ static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset)
 {
-	strncpy(print_buffer + get_normal_utf8_string_widthn(print_buffer, offset),
-			buf, strlen(buf));
+	strncpy(print_buffer +
+			utf8_nstrsnlen(print_buffer, offset), buf, strlen(buf));
 }
 
 static void
