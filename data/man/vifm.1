@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 09, 2015" "vifm 0.8"
+.TH VIFM 1 "July 13, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1112,6 +1112,7 @@ These commands see '|' as part of their arguments even when it's escaped:
     :qnoremap
     :vmap
     :vnoremap
+    :wincmd
     :windo
     :winrun
 
@@ -2322,6 +2323,11 @@ toggle window vertical splitting.
 .BI ":vs[plit] path"
 split the window vertically to show both file directories.  And changes other
 pane to path (absolute or relative to current directory of active pane).
+.TP
+.BI "                                         :wincmd"
+.TP
+.BI ":[count]winc[md] {arg}"
+same as running Ctrl-W [count] {arg}.
 .TP
 .BI "                                         :windo"
 .TP

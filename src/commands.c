@@ -299,6 +299,7 @@ static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
+static int wincmd_cmd(const cmd_info_t *cmd_info);
 static int windo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
 static int winrun(FileView *view, const char cmd[]);
@@ -516,6 +517,8 @@ static const cmd_add_t commands[] = {
 		.handler = vsplit_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "wincmd",           .abbr = "winc",  .emark = 0,  .id = COM_WINCMD,      .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = wincmd_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "windo",            .abbr = NULL,    .emark = 0,  .id = COM_WINDO,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = windo_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "winrun",           .abbr = NULL,    .emark = 0,  .id = COM_WINRUN,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1354,6 +1357,7 @@ is_whole_line_command(const char cmd[])
 		case COM_VMAP:
 		case COM_VNOREMAP:
 		case COM_NOREMAP:
+		case COM_WINCMD:
 		case COM_WINDO:
 		case COM_WINRUN:
 			return 1;
@@ -4264,6 +4268,34 @@ do_unmap(const char *keys, int mode)
 	return 0;
 }
 
+/* Executes Ctrl-W [count] {arg} normal mode command. */
+static int
+wincmd_cmd(const cmd_info_t *cmd_info)
+{
+	int count;
+	char *cmd;
+	wchar_t *wcmd;
+
+	if(cmd_info->count != NOT_DEF && cmd_info->count < 0)
+	{
+		return CMDS_ERR_INVALID_RANGE;
+	}
+	if(cmd_info->args[0] == '\0' || cmd_info->args[1] != '\0')
+	{
+		return CMDS_ERR_INVALID_ARG;
+	}
+
+	count = (cmd_info->count <= 1) ? 1 : cmd_info->count;
+	cmd = format_str("\x17%d%s", count, cmd_info->args);
+	wcmd = to_wide(cmd);
+	free(cmd);
+
+	(void)execute_keys_timed_out(wcmd);
+	free(wcmd);
+	return 0;
+}
+
+/* Prefix that execute same command-line command for both panes. */
 static int
 windo_cmd(const cmd_info_t *cmd_info)
 {

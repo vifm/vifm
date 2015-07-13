@@ -306,6 +306,8 @@ const char *tags[] = {
 	"vifm-:vu",
 	"vifm-:vunmap",
 	"vifm-:w",
+	"vifm-:winc",
+	"vifm-:wincmd",
 	"vifm-:windo",
 	"vifm-:winrun",
 	"vifm-:wq",
