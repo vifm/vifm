@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: April 26, 2015
+" Last Change: July 13, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -19,7 +19,7 @@ syntax keyword vifmCommand contained alink apropos change chmod chown clone
 		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] redr[aw] reg[isters] rename restart restore rlink screen sh[ell]
 		\ sor[t] sp[lit] s[ubstitute] touch tr trashes sync undol[ist] ve[rsion]
-		\ vie[w] vifm vs[plit] w[rite] wq x[it] y[ank] nextgroup=vifmArgs
+		\ vie[w] vifm vs[plit] winc[md] w[rite] wq x[it] y[ank] nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else
 syntax keyword vifmPrefixCommands contained windo winrun

@@ -139,8 +139,8 @@ Menus and dialogs:
  - made calculation of directory size visible in :jobs menu;
  - parse output of mandoc version of apropos in :apropos (thanks to Svyatoslav
    Mishyn, a.k.a. juef);
- - display 'timefmt' date along with RFC 2822 date in file info (thanks to
-   Svyatoslav Mishyn, a.k.a. juef).
+ - display RFC 2822 date without time zon in file info (thanks to Svyatoslav
+   Mishyn, a.k.a. juef).
 
 TUI (Text User Interface):
  - added search match highlighting for file names (thanks to Svyatoslav Mishyn,

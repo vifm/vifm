@@ -1,5 +1,7 @@
 0.8 to current
 
+	Added :winc[md] command-line command.  Thanks to fogine.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
