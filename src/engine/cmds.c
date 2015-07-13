@@ -311,9 +311,13 @@ execute_cmd(const char cmd[])
 	return execution_code;
 }
 
+/* Applies limit shifts and ensures that its value is not out of bounds.
+ * Returns pointer to part of string after parsed piece. */
 static const char *
 correct_limit(const char cmd[], cmd_info_t *cmd_info)
 {
+	cmd_info->count = (cmd_info->end == NOT_DEF) ? 1 : (cmd_info->end + 1);
+
 	while(*cmd == '+' || *cmd == '-')
 	{
 		int n = 1;
@@ -325,11 +329,19 @@ correct_limit(const char cmd[], cmd_info_t *cmd_info)
 			n = strtol(cmd, &p, 10);
 			cmd = p;
 		}
+
 		if(plus)
+		{
 			cmd_info->end += n;
+			cmd_info->count += n;
+		}
 		else
+		{
 			cmd_info->end -= n;
+			cmd_info->count -= n;
+		}
 	}
+
 	if(cmd_info->end < 0)
 		cmd_info->end = 0;
 	if(cmd_info->end > cmds_conf->end)
@@ -412,11 +424,13 @@ get_cmd_id(const char cmd[])
 	return get_cmd_info(cmd, &info);
 }
 
+/* Initializes command info structure with reasonable defaults. */
 static void
 init_cmd_info(cmd_info_t *cmd_info)
 {
 	cmd_info->begin = NOT_DEF;
 	cmd_info->end = NOT_DEF;
+	cmd_info->count = NOT_DEF;
 	cmd_info->emark = 0;
 	cmd_info->qmark = 0;
 	cmd_info->raw_args = NULL;

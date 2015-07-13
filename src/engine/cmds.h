@@ -61,6 +61,7 @@ enum
 typedef struct cmd_info_t
 {
 	int begin, end; /* Parsed range of the command. */
+	int count;      /* Parsed [count] of the command. */
 	int emark, qmark, bg;
 	char sep;
 	int usr1, usr2;
@@ -69,7 +70,7 @@ typedef struct cmd_info_t
 	int argc;
 	char **argv;
 
-	const char *cmd; /* for user defined commands */
+	const char *cmd; /* For user defined commands. */
 }
 cmd_info_t;
 
