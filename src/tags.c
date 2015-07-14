@@ -515,6 +515,7 @@ const char *tags[] = {
 	"vifm-j",
 	"vifm-k",
 	"vifm-l",
+	"vifm-layoutis()",
 	"vifm-literal-string",
 	"vifm-local-options",
 	"vifm-ls-view",

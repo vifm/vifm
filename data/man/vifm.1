@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 13, 2015" "vifm 0.8"
+.TH VIFM 1 "July 14, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4001,6 +4001,8 @@ filetype({fnum})    String        Returns file type from position.
 .br
 has({property})     Integer       Checks whether instance has {property}.
 .br
+layoutis({type})    Integer       Checks whether layout is of type {type}.
+.br
 system({command})   String        Executes shell command and returns its output.
 
 executable({expr})
@@ -4076,6 +4078,22 @@ Usage example:
   endif
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
+.EE
+
+layoutis({type})
+.br
+Checks whether current interface layout is {type} or not, where {type} can be:
+    only    single-pane mode
+    split   double-pane mode (either vertical or horizon split)
+    vsplit  vertical split (left and right panes)
+    hsplit  horizontal split (top and bottom panes)
+.br
+
+Usage example:
+
+.EX
+  " automatically split vertically before enabling preview
+  :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
 .EE
 
 system({command})

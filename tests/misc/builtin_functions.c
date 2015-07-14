@@ -9,6 +9,7 @@
 #include "../../src/engine/parsing.h"
 #include "../../src/utils/env.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/status.h"
 #include "../parsing/asserts.h"
 
 SETUP()
@@ -71,6 +72,37 @@ TEST(system_catches_stdout_and_err)
 	 * spaces. */
 	ASSERT_OK("system('echo a && echo b 1>&2')", "a \nb ");
 #endif
+}
+
+TEST(layoutis_is_correct_for_single_pane)
+{
+	curr_stats.number_of_windows = 1;
+	curr_stats.split = VSPLIT;
+	curr_stats.split = HSPLIT;
+	ASSERT_OK("layoutis('only')", "1");
+	ASSERT_OK("layoutis('split')", "0");
+	ASSERT_OK("layoutis('hsplit')", "0");
+	ASSERT_OK("layoutis('vsplit')", "0");
+}
+
+TEST(layoutis_is_correct_for_hsplit)
+{
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = HSPLIT;
+	ASSERT_OK("layoutis('only')", "0");
+	ASSERT_OK("layoutis('split')", "1");
+	ASSERT_OK("layoutis('hsplit')", "1");
+	ASSERT_OK("layoutis('vsplit')", "0");
+}
+
+TEST(layoutis_is_correct_for_vsplit)
+{
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = VSPLIT;
+	ASSERT_OK("layoutis('only')", "0");
+	ASSERT_OK("layoutis('split')", "1");
+	ASSERT_OK("layoutis('hsplit')", "0");
+	ASSERT_OK("layoutis('vsplit')", "1");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

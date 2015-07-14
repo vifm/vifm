@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 13
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3308,6 +3308,7 @@ executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
 has({property})     Integer       Checks whether instance has {property}.
+layoutis({type})    Integer       Checks whether layout is of type {type}.
 system({command})   String        Executes shell command and returns its output.
 
 
@@ -3376,6 +3377,22 @@ Usage example: >
   endif
 
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
+<
+
+layoutis({type})                               *vifm-layoutis()*
+
+Checks whether current interface layout is {type} or not, where {type} can
+be:
+    only    single-pane mode
+    split   double-pane mode (either vertical or horizon split)
+    vsplit  vertical split (left and right panes)
+    hsplit  horizontal split (top and bottom panes)
+
+Any other value yields 0.
+
+Usage example: >
+  " automatically split vertically before enabling preview
+  :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
 <
 
 system({command})                              *vifm-system()*

@@ -41,6 +41,7 @@ static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
 static var_t has_builtin(const call_info_t *call_info);
+static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
@@ -48,6 +49,7 @@ static const function_t functions[] = {
 	{ "expand",     1, &expand_builtin },
 	{ "filetype",   1, &filetype_builtin },
 	{ "has",        1, &has_builtin },
+	{ "layoutis",   1, &layoutis_builtin },
 	{ "system",     1, &system_builtin },
 };
 
@@ -137,6 +139,40 @@ get_fnum(const char position[])
 	{
 		return -1;
 	}
+}
+
+/* Checks current layout configuration.  Returns boolean value that reflects
+ * state of specified type. */
+static var_t
+layoutis_builtin(const call_info_t *call_info)
+{
+	char *type;
+	int result;
+
+	type = var_to_string(call_info->argv[0]);
+	if(strcmp(type, "only") == 0)
+	{
+		result = (curr_stats.number_of_windows == 1);
+	}
+	else if(strcmp(type, "split") == 0)
+	{
+		result = (curr_stats.number_of_windows == 2);
+	}
+	else if(strcmp(type, "vsplit") == 0)
+	{
+		result = (curr_stats.number_of_windows == 2 && curr_stats.split == VSPLIT);
+	}
+	else if(strcmp(type, "hsplit") == 0)
+	{
+		result = (curr_stats.number_of_windows == 2 && curr_stats.split == HSPLIT);
+	}
+	else
+	{
+		result = 0;
+	}
+	free(type);
+
+	return var_from_bool(result);
 }
 
 /* Allows examining internal parameters from scripts to e.g. figure out
