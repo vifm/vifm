@@ -1658,9 +1658,6 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_SCRIPTS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
@@ -1814,8 +1811,8 @@ uninstall-man: uninstall-man1
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
-	clean-binPROGRAMS clean-generic clean-local ctags dist-hook \
-	distclean distclean-compile distclean-generic distclean-local \
+	clean-binPROGRAMS clean-generic clean-local ctags distclean \
+	distclean-compile distclean-generic distclean-local \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-data \
 	install-data-am install-dist_binSCRIPTS \
@@ -1852,8 +1849,6 @@ clean-local:
 	if [ '$(abs_builddir)' != '$(abs_srcdir)' ]; then \
 		$(RM) tags.c; \
 	fi
-dist-hook:
-	$(RM) `find . -name tags -type f -print`
 
 runtests:
 	echo 'mkdir -p $(abs_builddir)/../tests/' > $@_
