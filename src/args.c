@@ -101,11 +101,19 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				return;
 
 			case 'h': /* -h, --help */
-				args->help = 1;
-				return;
+				/* Only first one of -v and -h should take effect. */
+				if(!args->version)
+				{
+					args->help = 1;
+				}
+				break;
 			case 'v': /* -v, --version */
-				args->version = 1;
-				return;
+				/* Only first one of -v and -h should take effect. */
+				if(!args->help)
+				{
+					args->version = 1;
+				}
+				break;
 
 			case 'c': /* -c <cmd> */
 				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, optarg);
