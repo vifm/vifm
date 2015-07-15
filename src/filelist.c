@@ -2335,7 +2335,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 
 	if(updir)
 	{
-		cd_updir(view);
+		cd_updir(view, 1);
 	}
 	else if(!cd_is_possible(dir) || change_directory(view, dir) < 0)
 	{

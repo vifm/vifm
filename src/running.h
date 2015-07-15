@@ -47,9 +47,9 @@ void run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 /* Handles opening of current file of the view as directory. */
 void open_dir(FileView *view);
 
-/* Moves the view to parent directory taking care of special cases like root of
- * FUSE mount. */
-void cd_updir(FileView *view);
+/* Moves the view to levels-th parent directory taking care of special cases
+ * like root of FUSE mount. */
+void cd_updir(FileView *view, int levels);
 
 /* Values of pause:
  *  > 0 - pause always
