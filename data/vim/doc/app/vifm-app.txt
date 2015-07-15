@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 14
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -66,12 +66,12 @@ single-view mode on finishing previous session.  To suppress this behaviour
 When only one path argument is found on command-line, the left/top pane is
 automatically set as the current view.
 
-
-                                               *vifm---select*
 Paths to files are also allowed in case you want vifm to start with some
-archive opened.  If you want to select file, prepend its path with --select.
+archive opened.
 
 The other command line arguments are:
+--select <path>                                *vifm---select*
+    open parent directory of the given path and select specified file in it.
 -f                                             *vifm--f*
     makes vifm instead of opening files write selection to $VIFM/vimfiles and
     quit.
