@@ -101,6 +101,7 @@ static void run_implicit_prog(FileView *view, const char prog_spec[],
 		int pause, int force_bg);
 static void view_current_file(const FileView *view);
 static void follow_link(FileView *view, int follow_dirs);
+static int cd_to_parent_dir(FileView *view);
 static void extract_last_path_component(const char path[], char buf[]);
 static void setup_shellout_env(void);
 static void cleanup_shellout_env(void);
@@ -729,7 +730,7 @@ open_dir(FileView *view)
 
 	if(is_parent_dir(filename))
 	{
-		cd_updir(view);
+		cd_updir(view, 1);
 		return;
 	}
 
@@ -742,32 +743,59 @@ open_dir(FileView *view)
 }
 
 void
-cd_updir(FileView *view)
+cd_updir(FileView *view, int levels)
+{
+	/* Do not save intermediate directories in directory history. */
+	curr_stats.drop_new_dir_hist = 1;
+
+	while(levels-- > 0)
+	{
+		if(cd_to_parent_dir(view) != 0)
+		{
+			break;
+		}
+	}
+
+	curr_stats.drop_new_dir_hist = 0;
+	save_view_history(view, NULL, NULL, -1);
+}
+
+/* Goes one directory up from current location.  Returns zero unless it won't
+ * make sense to continue going up (like on error or reaching root). */
+static int
+cd_to_parent_dir(FileView *view)
 {
 	char dir_name[strlen(view->curr_dir) + 1];
+	int ret;
 
 	/* Return to original directory from custom view. */
 	if(flist_custom_active(view))
 	{
 		navigate_to(view, view->custom.orig_dir);
-		return;
+		return 0;
 	}
 
 	/* Do nothing in root. */
 	if(is_root_dir(view->curr_dir))
 	{
-		return;
+		return 1;
 	}
 
 	dir_name[0] = '\0';
-
 	extract_last_path_component(view->curr_dir, dir_name);
 
-	if(change_directory(view, "../") != 1)
+	ret = change_directory(view, "../");
+	if(ret == -1)
+	{
+		return 1;
+	}
+
+	if(ret == 0)
 	{
 		load_dir_list(view, 0);
 		flist_set_pos(view, find_file_pos_in_list(view, dir_name));
 	}
+	return 0;
 }
 
 /* Extracts last part of the path into buf.  Assumes that size of the buf is

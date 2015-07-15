@@ -249,8 +249,6 @@ EXTRA_DIST = \
 						 ../data/graphics/vifm-old.png \
 						 ../data/graphics/vifm.ico \
 						 ../data/graphics/vifm.svg
-dist-hook:
-	$(RM) `find . -name tags -type f -print`
 
 MANGEN = @MANGEN_PROG@
 COL = @COL_PROG@

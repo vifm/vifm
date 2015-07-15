@@ -542,13 +542,13 @@ navigate_forward_in_history(FileView *view)
 static void
 navigate_to_history_pos(FileView *view, int pos)
 {
-	curr_stats.skip_history = 1;
+	curr_stats.drop_new_dir_hist = 1;
 	if(change_directory(view, view->history[pos].dir) < 0)
 	{
-		curr_stats.skip_history = 0;
+		curr_stats.drop_new_dir_hist = 0;
 		return;
 	}
-	curr_stats.skip_history = 0;
+	curr_stats.drop_new_dir_hist = 0;
 
 	load_dir_list(view, 1);
 	flist_set_pos(view, find_file_pos_in_list(view, view->history[pos].file));
@@ -599,8 +599,10 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		return;
 	}
 
-	if(curr_stats.skip_history)
+	if(curr_stats.drop_new_dir_hist)
+	{
 		return;
+	}
 
 	if(view->history_num > 0 && view->history_pos != view->history_num - 1)
 	{
@@ -2335,7 +2337,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 
 	if(updir)
 	{
-		cd_updir(view);
+		cd_updir(view, 1);
 	}
 	else if(!cd_is_possible(dir) || change_directory(view, dir) < 0)
 	{

@@ -186,6 +186,8 @@ Most movement commands also accept a count, 12j would move down 12 files.
     move up [count] files.
 [count]G or [count]gg
     move to list position [count].
+[count]h
+    go up [count] directories.
 
 Scrolling panes~
 
