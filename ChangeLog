@@ -5,6 +5,16 @@
 	Added layoutis() builtin function that answers queries about current
 	interface configuration.  Thanks to fogine.
 
+	Do not finish argument parsing after finding --help or --version,
+	continue and validate the rest of command-line.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef).
+
+	Warn about --remote command being disabled at build-time.  Thanks to
+	Svyatoslav Mishyn (a.k.a. juef).
+
+	Make --select option more prominent in documentation.  Thanks to
+	Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

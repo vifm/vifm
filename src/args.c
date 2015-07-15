@@ -19,7 +19,7 @@
 
 #include "args.h"
 
-#include <stdio.h> /* fprintf() puts() snprintf() */
+#include <stdio.h> /* stderr fprintf() puts() snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() */
 #include <string.h> /* strcmp() */
 
@@ -101,11 +101,19 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				return;
 
 			case 'h': /* -h, --help */
-				args->help = 1;
-				return;
+				/* Only first one of -v and -h should take effect. */
+				if(!args->version)
+				{
+					args->help = 1;
+				}
+				break;
 			case 'v': /* -v, --version */
-				args->version = 1;
-				return;
+				/* Only first one of -v and -h should take effect. */
+				if(!args->help)
+				{
+					args->version = 1;
+				}
+				break;
 
 			case 'c': /* -c <cmd> */
 				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, optarg);
@@ -133,6 +141,13 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 
 			case '?': /* Parsing error. */
+#ifndef ENABLE_REMOTE_CMDS
+				if(starts_with("--remote", argv[optind - 1]))
+				{
+					fprintf(stderr,
+							"Warning: remote commands were disabled at build-time!\n");
+				}
+#endif
 				/* getopt_long() already printed error message. */
 				quit_on_arg_parsing(EXIT_FAILURE);
 				break;
@@ -299,9 +314,11 @@ show_help_msg(const char wrong_arg[])
 	puts("    vifm /path/to/start/dir/one");
 	puts("    or");
 	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
-	puts("  To open file using associated program pass to vifm it's path.\n");
-	puts("  To select file prepend its path with --select.\n");
+	puts("  To open file using associated program pass its path to vifm.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm --select <path>");
+	puts("    open parent directory of the given path and select specified file");
+	puts("    in it.\n");
 	puts("  vifm -f");
 	puts("    makes vifm instead of opening files write selection to");
 	puts("    $VIFM/vimfiles and quit.\n");

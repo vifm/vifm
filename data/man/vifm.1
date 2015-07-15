@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 14, 2015" "vifm 0.8"
+.TH VIFM 1 "July 15, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -37,7 +37,10 @@ When only one path argument is found on command-line, the left/top pane is
 automatically set as the current view.
 .LP
 Paths to files are also allowed in case you want vifm to start with some
-archive opened.  If you want to select file, prepend its path with \-\-select.
+archive opened.
+.TP
+.BI "\-\-select <path>"
+Open parent directory of the given path and select specified file in it.
 .TP
 .BI \-f
 Makes vifm instead of opening files write selection to $VIFM/vimfiles and quit.
