@@ -746,7 +746,7 @@ void
 cd_updir(FileView *view, int levels)
 {
 	/* Do not save intermediate directories in directory history. */
-	curr_stats.skip_history = 1;
+	curr_stats.drop_new_dir_hist = 1;
 
 	while(levels-- > 0)
 	{
@@ -756,7 +756,7 @@ cd_updir(FileView *view, int levels)
 		}
 	}
 
-	curr_stats.skip_history = 0;
+	curr_stats.drop_new_dir_hist = 0;
 	save_view_history(view, NULL, NULL, -1);
 }
 

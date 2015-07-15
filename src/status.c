@@ -91,6 +91,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->register_saved = 0;
 	stats->number_of_windows = 2;
 	stats->use_input_bar = 1;
+	stats->drop_new_dir_hist = 0;
 	stats->load_stage = 0;
 	stats->term_state = TS_NORMAL;
 	stats->dirsize_cache = NULL_TREE;

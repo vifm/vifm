@@ -98,7 +98,7 @@ typedef struct
 	int curr_register;
 	int register_saved;
 	int number_of_windows;
-	int skip_history;
+	int drop_new_dir_hist; /* Skip recording of new directory history. */
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
 	int view;             /* Whether preview mode is active. */
