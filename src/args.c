@@ -19,7 +19,7 @@
 
 #include "args.h"
 
-#include <stdio.h> /* fprintf() puts() snprintf() */
+#include <stdio.h> /* stderr fprintf() puts() snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() */
 #include <string.h> /* strcmp() */
 
@@ -141,6 +141,13 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 
 			case '?': /* Parsing error. */
+#ifndef ENABLE_REMOTE_CMDS
+				if(starts_with("--remote", argv[optind - 1]))
+				{
+					fprintf(stderr,
+							"Warning: remote commands were disabled at build-time!\n");
+				}
+#endif
 				/* getopt_long() already printed error message. */
 				quit_on_arg_parsing(EXIT_FAILURE);
 				break;
