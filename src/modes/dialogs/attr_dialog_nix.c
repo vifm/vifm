@@ -311,16 +311,21 @@ redraw_attr_dialog(void)
 static const char *
 get_title(void)
 {
-	static char title[64];
+	static char title[NAME_MAX];
 
 	const int first_file_index = get_first_file_index();
+
 	if(is_one_file_selected(first_file_index))
 	{
-		return view->dir_entry[first_file_index].name;
+		snprintf(title, sizeof(title), " %s ",
+				view->dir_entry[first_file_index].name);
+	}
+	else
+	{
+		snprintf(title, sizeof(title), " %d files ",
+				get_selection_size(first_file_index));
 	}
 
-	snprintf(title, sizeof(title), "%d files",
-			get_selection_size(first_file_index));
 	return title;
 }
 
