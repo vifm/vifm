@@ -456,7 +456,9 @@ draw_menu(menu_info *m)
 	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
 	checked_wmove(menu_win, 0, 3);
+	wprint(menu_win, " ");
 	wprint(menu_win, m->title);
+	wprint(menu_win, " ");
 	wattroff(menu_win, A_BOLD);
 
 	for(i = 1; x < m->len; i++, x++)
