@@ -112,7 +112,8 @@ menu_info;
 /* Fills fields of menu_info structure with some safe values.  empty_msg is
  * text displayed by display_menu() function in case menu is empty, it can be
  * NULL if this cannot happen and will be freed by reset_popup_menu(). */
-void init_menu_info(menu_info *m, int menu_type, char empty_msg[]);
+void init_menu_info(menu_info *m, int menu_type, char title[],
+		char empty_msg[]);
 
 void reset_popup_menu(menu_info *m);
 

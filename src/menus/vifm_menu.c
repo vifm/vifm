@@ -33,8 +33,7 @@ show_vifm_menu(FileView *view)
 	static menu_info m;
 	int len;
 	/* Version information menu always contains at least one item. */
-	init_menu_info(&m, VIFM_MENU, NULL);
-	m.title = strdup("Vifm Information");
+	init_menu_info(&m, VIFM_MENU, strdup("Vifm Information"), NULL);
 
 	len = fill_version_info(NULL);
 	m.items = malloc(sizeof(char*)*len);

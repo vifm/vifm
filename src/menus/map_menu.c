@@ -42,8 +42,8 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	const size_t start_len = wcslen(start);
 
 	static menu_info m;
-	init_menu_info(&m, MAP_MENU, strdup("No mappings found"));
-	m.title = format_str("Mappings for %s mode", mode_str);
+	init_menu_info(&m, MAP_MENU, format_str("Mappings for %s mode", mode_str),
+			strdup("No mappings found"));
 
 	x = 0;
 	while(list[x] != NULL)

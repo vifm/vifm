@@ -31,9 +31,8 @@ show_user_menu(FileView *view, const char command[], int navigate)
 {
 	static menu_info m;
 	const int menu_type = navigate ? USER_NAVIGATE_MENU : USER_MENU;
-	init_menu_info(&m, menu_type, strdup("No results found"));
+	init_menu_info(&m, menu_type, strdup(command), strdup("No results found"));
 
-	m.title = strdup(command);
 	m.execute_handler = &execute_users_cb;
 	if(navigate)
 	{

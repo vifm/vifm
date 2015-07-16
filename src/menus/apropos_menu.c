@@ -51,9 +51,9 @@ show_apropos_menu(FileView *view, const char args[])
 	};
 
 	static menu_info m;
-	init_menu_info(&m, APROPOS_MENU, format_str("No matches for \'%s\'", args));
+	init_menu_info(&m, APROPOS_MENU, format_str("Apropos %s", args),
+			format_str("No matches for \'%s\'", args));
 	m.args = strdup(args);
-	m.title = format_str("Apropos %s", args);
 	m.execute_handler = &execute_apropos_cb;
 
 	status_bar_message("apropos...");

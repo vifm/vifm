@@ -41,8 +41,8 @@ show_cabbrevs_menu(FileView *view)
 	int no_remap;
 
 	static menu_info m;
-	init_menu_info(&m, CABBREVS_MENU, strdup("No abbreviation set"));
-	m.title = strdup("Abbreviation -- N -- Replacement");
+	init_menu_info(&m, CABBREVS_MENU, strdup("Abbreviation -- N -- Replacement"),
+			strdup("No abbreviation set"));
 	m.key_handler = &commands_khandler;
 
 	state = NULL;
