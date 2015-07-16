@@ -42,7 +42,7 @@ show_trashes_menu(FileView *view, int calc_size)
 	init_menu_info(&m, TRASHES_MENU,
 			strdup("No non-empty trash directories found"));
 
-	m.title = format_str(" %sNon-empty trash directories ",
+	m.title = format_str("%sNon-empty trash directories",
 			calc_size ? "[  size] " : "");
 	m.execute_handler = &execute_trashes_cb;
 	m.extra_data = calc_size;

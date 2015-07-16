@@ -52,7 +52,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	m.key_handler = &bookmark_khandler;
 
 	m.len = init_active_bookmarks(marks, active_bookmarks);
-	m.title = strdup(" Mark -- Directory -- File ");
+	m.title = strdup("Mark -- Directory -- File");
 
 	max_len = 0;
 	i = 0;

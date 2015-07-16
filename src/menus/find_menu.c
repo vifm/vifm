@@ -89,7 +89,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	init_menu_info(&m, FIND_MENU, strdup("No files found"));
 
-	m.title = format_str(" Find %s ", args);
+	m.title = format_str("Find %s", args);
 	m.execute_handler = &execute_find_cb;
 	m.key_handler = &filelist_khandler;
 

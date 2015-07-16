@@ -52,7 +52,7 @@ show_commands_menu(FileView *view)
 	m.execute_handler = &execute_commands_cb;
 	m.key_handler = &commands_khandler;
 
-	m.title = strdup(" Command ------ Action ");
+	m.title = strdup("Command ------ Action");
 
 	list = list_udf();
 

@@ -43,7 +43,7 @@ show_volumes_menu(FileView *view)
 
 	static menu_info m;
 	init_menu_info(&m, VOLUMES_MENU, strdup("No volumes mounted"));
-	m.title = strdup(" Mounted Volumes ");
+	m.title = strdup("Mounted Volumes");
 	m.execute_handler = &execute_volumes_cb;
 
 	for(c = 'a'; c <= 'z'; ++c)

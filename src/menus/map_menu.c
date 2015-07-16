@@ -43,7 +43,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 
 	static menu_info m;
 	init_menu_info(&m, MAP_MENU, strdup("No mappings found"));
-	m.title = format_str(" Mappings for %s mode ", mode_str);
+	m.title = format_str("Mappings for %s mode", mode_str);
 
 	x = 0;
 	while(list[x] != NULL)

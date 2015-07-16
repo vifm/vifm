@@ -42,7 +42,7 @@ show_trash_menu(FileView *view)
 	init_menu_info(&m, TRASH_MENU, strdup("No files in trash"));
 	m.key_handler = &trash_khandler;
 
-	m.title = strdup(" Original paths of files in trash ");
+	m.title = strdup("Original paths of files in trash");
 
 	trash_prune_dead_entries();
 

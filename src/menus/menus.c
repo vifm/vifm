@@ -537,7 +537,7 @@ capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 
 	if(ui_cancellation_requested())
 	{
-		append_to_string(&m->title, "(cancelled) ");
+		append_to_string(&m->title, "(cancelled)");
 		append_to_string(&m->empty_msg, " (cancelled)");
 	}
 

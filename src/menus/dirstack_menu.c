@@ -33,7 +33,7 @@ show_dirstack_menu(FileView *view)
 	static menu_info m;
 	/* Directory stack always contains at least one item (current directories). */
 	init_menu_info(&m, DIRSTACK_MENU, NULL);
-	m.title = strdup(" Directory Stack ");
+	m.title = strdup("Directory Stack");
 	m.execute_handler = &execute_dirstack_cb;
 
 	m.items = dir_stack_list();
