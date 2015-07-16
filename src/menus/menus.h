@@ -31,41 +31,6 @@ enum
 	DOWN
 };
 
-/* List of menu identifiers. */
-enum
-{
-	APROPOS_MENU,
-	BOOKMARK_MENU,
-	CABBREVS_MENU,
-	CMDHISTORY_MENU,
-	FSEARCHHISTORY_MENU,
-	BSEARCHHISTORY_MENU,
-	PROMPTHISTORY_MENU,
-	FILTERHISTORY_MENU,
-	COLORSCHEME_MENU,
-	COMMANDS_MENU,
-	DIRSTACK_MENU,
-	FILE_MENU,
-	FILEPROGRAMS_MENU,
-	FILEVIEWERS_MENU,
-	FIND_MENU,
-	DIRHISTORY_MENU,
-	JOBS_MENU,
-	LOCATE_MENU,
-	MAP_MENU,
-	REGISTER_MENU,
-	UNDOLIST_MENU,
-	USER_MENU,
-	USER_NAVIGATE_MENU,
-	VIFM_MENU,
-	GREP_MENU,
-	TRASH_MENU,
-	TRASHES_MENU,
-#ifdef _WIN32
-	VOLUMES_MENU,
-#endif
-};
-
 /* Result of handling key sequence by menu-specific shortcut handler. */
 typedef enum
 {
@@ -83,7 +48,6 @@ typedef struct menu_info
 	int pos; /* Menu item under the cursor. */
 	int hor_pos;
 	int win_rows;
-	int type;
 	int match_dir;
 	/* Number of menu entries that actually match the regexp. */
 	int matching_entries;
@@ -112,8 +76,7 @@ menu_info;
 /* Fills fields of menu_info structure with some safe values.  empty_msg is
  * text displayed by display_menu() function in case menu is empty, it can be
  * NULL if this cannot happen and will be freed by reset_popup_menu(). */
-void init_menu_info(menu_info *m, int menu_type, char title[],
-		char empty_msg[]);
+void init_menu_info(menu_info *m, char title[], char empty_msg[]);
 
 void reset_popup_menu(menu_info *m);
 

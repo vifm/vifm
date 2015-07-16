@@ -30,8 +30,8 @@ int
 show_user_menu(FileView *view, const char command[], int navigate)
 {
 	static menu_info m;
-	const int menu_type = navigate ? USER_NAVIGATE_MENU : USER_MENU;
-	init_menu_info(&m, menu_type, strdup(command), strdup("No results found"));
+	init_menu_info(&m, strdup(command), strdup("No results found"));
+	m.extra_data = navigate;
 
 	m.execute_handler = &execute_users_cb;
 	if(navigate)
@@ -47,7 +47,8 @@ show_user_menu(FileView *view, const char command[], int navigate)
 static int
 execute_users_cb(FileView *view, menu_info *m)
 {
-	if(m->type == USER_NAVIGATE_MENU)
+	const int navigate = m->extra_data;
+	if(navigate)
 	{
 		goto_selected_file(view, m->items[m->pos], 0);
 	}

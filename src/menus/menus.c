@@ -148,7 +148,7 @@ clean_menu_position(menu_info *m)
 }
 
 void
-init_menu_info(menu_info *m, int menu_type, char title[], char empty_msg[])
+init_menu_info(menu_info *m, char title[], char empty_msg[])
 {
 	m->top = 0;
 	m->current = 1;
@@ -156,7 +156,6 @@ init_menu_info(menu_info *m, int menu_type, char title[], char empty_msg[])
 	m->pos = 0;
 	m->hor_pos = 0;
 	m->win_rows = getmaxy(menu_win);
-	m->type = menu_type;
 	m->match_dir = NONE;
 	m->matching_entries = 0;
 	m->matches = NULL;

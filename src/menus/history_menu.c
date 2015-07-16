@@ -29,6 +29,15 @@
 #include "../commands.h"
 #include "menus.h"
 
+enum
+{
+	CMDHISTORY_MENU,
+	FSEARCHHISTORY_MENU,
+	BSEARCHHISTORY_MENU,
+	PROMPTHISTORY_MENU,
+	FILTERHISTORY_MENU,
+};
+
 static int show_history(FileView *view, int type, hist_t *hist,
 		const char title[]);
 static int execute_history_cb(FileView *view, menu_info *m);
@@ -75,8 +84,9 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 	int i;
 	static menu_info m;
 
-	init_menu_info(&m, type, strdup(title), strdup("History disabled or empty"));
+	init_menu_info(&m, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
+	m.extra_data = type;
 
 	for(i = 0; i <= hist->pos; i++)
 	{
@@ -89,7 +99,7 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 static int
 execute_history_cb(FileView *view, menu_info *m)
 {
-	switch(m->type)
+	switch(m->extra_data)
 	{
 		case CMDHISTORY_MENU:
 			cfg_save_command_history(m->items[m->pos]);
