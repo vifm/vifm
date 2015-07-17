@@ -29,6 +29,15 @@
 #include "../commands.h"
 #include "menus.h"
 
+enum
+{
+	CMDHISTORY_MENU,
+	FSEARCHHISTORY_MENU,
+	BSEARCHHISTORY_MENU,
+	PROMPTHISTORY_MENU,
+	FILTERHISTORY_MENU,
+};
+
 static int show_history(FileView *view, int type, hist_t *hist,
 		const char title[]);
 static int execute_history_cb(FileView *view, menu_info *m);
@@ -37,35 +46,35 @@ int
 show_cmdhistory_menu(FileView *view)
 {
 	return show_history(view, CMDHISTORY_MENU, &cfg.cmd_hist,
-			" Command Line History ");
+			"Command Line History");
 }
 
 int
 show_fsearchhistory_menu(FileView *view)
 {
 	return show_history(view, FSEARCHHISTORY_MENU, &cfg.search_hist,
-			" Search History ");
+			"Search History");
 }
 
 int
 show_bsearchhistory_menu(FileView *view)
 {
 	return show_history(view, BSEARCHHISTORY_MENU, &cfg.search_hist,
-			" Search History ");
+			"Search History");
 }
 
 int
 show_prompthistory_menu(FileView *view)
 {
 	return show_history(view, PROMPTHISTORY_MENU, &cfg.prompt_hist,
-			" Prompt History ");
+			"Prompt History");
 }
 
 int
 show_filterhistory_menu(FileView *view)
 {
 	return show_history(view, FILTERHISTORY_MENU, &cfg.filter_hist,
-			" Filter History ");
+			"Filter History");
 }
 
 /* Returns non-zero if status bar message should be saved. */
@@ -75,9 +84,9 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 	int i;
 	static menu_info m;
 
-	init_menu_info(&m, type, strdup("History disabled or empty"));
-	m.title = strdup(title);
+	init_menu_info(&m, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
+	m.extra_data = type;
 
 	for(i = 0; i <= hist->pos; i++)
 	{
@@ -90,7 +99,7 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 static int
 execute_history_cb(FileView *view, menu_info *m)
 {
-	switch(m->type)
+	switch(m->extra_data)
 	{
 		case CMDHISTORY_MENU:
 			cfg_save_command_history(m->items[m->pos]);

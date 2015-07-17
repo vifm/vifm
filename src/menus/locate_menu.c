@@ -37,16 +37,16 @@ int
 show_locate_menu(FileView *view, const char args[])
 {
 	char *cmd;
+	char *margs;
 	int save_msg;
-	custom_macro_t macros[] =
-	{
+	custom_macro_t macros[] = {
 		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;
-	init_menu_info(&m, LOCATE_MENU, strdup("No files found"));
-	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
-	m.title = format_str(" Locate %s ", m.args);
+	margs = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
+	init_menu_info(&m, format_str("Locate %s", margs), strdup("No files found"));
+	m.args = margs;
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &filelist_khandler;
 

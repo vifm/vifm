@@ -38,8 +38,8 @@ show_jobs_menu(FileView *view)
 	int i;
 
 	static menu_info m;
-	init_menu_info(&m, JOBS_MENU, strdup("No jobs currently running"));
-	m.title = strdup(" Pid --- Command ");
+	init_menu_info(&m, strdup("Pid --- Command"),
+			strdup("No jobs currently running"));
 	m.execute_handler = &execute_jobs_cb;
 
 	check_background_jobs();

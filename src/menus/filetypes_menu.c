@@ -58,9 +58,9 @@ show_file_menu(FileView *view, int background)
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_info(&m, FILE_MENU, strdup("No programs set for this filetype"));
+	init_menu_info(&m, strdup("Filetype associated commands"),
+			strdup("No programs set for this filetype"));
 
-	m.title = strdup(" Filetype associated commands ");
 	m.execute_handler = &execute_filetype_cb;
 	m.extra_data = (background ? 1 : 0);
 
@@ -158,10 +158,8 @@ show_fileprograms_menu(FileView *view, const char fname[])
 
 	assoc_records_t file_programs;
 
-	init_menu_info(&m, FILEPROGRAMS_MENU,
+	init_menu_info(&m, format_str("Programs that match %s", fname),
 			format_str("No programs match %s", fname));
-
-	m.title = format_str(" Programs that match %s ", fname);
 
 	file_programs = ft_get_all_programs(fname);
 	fill_menu_from_records(&m, &file_programs);
@@ -177,10 +175,8 @@ show_fileviewers_menu(FileView *view, const char fname[])
 
 	assoc_records_t file_viewers;
 
-	init_menu_info(&m, FILEVIEWERS_MENU,
+	init_menu_info(&m, format_str("Viewers that match %s", fname),
 			format_str("No viewers match %s", fname));
-
-	m.title = format_str(" Viewers that match %s ", fname);
 
 	file_viewers = ft_get_all_viewers(fname);
 	fill_menu_from_records(&m, &file_viewers);

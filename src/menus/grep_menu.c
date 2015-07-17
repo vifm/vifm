@@ -58,9 +58,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 		return 0;
 	}
 
-	init_menu_info(&m, GREP_MENU, format_str("No matches found: %s", args));
+	init_menu_info(&m, format_str("Grep %s", args),
+			format_str("No matches found: %s", args));
 
-	m.title = format_str(" Grep %s ", args);
 	m.execute_handler = &execute_grep_cb;
 	m.key_handler = &filelist_khandler;
 

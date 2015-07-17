@@ -148,7 +148,7 @@ clean_menu_position(menu_info *m)
 }
 
 void
-init_menu_info(menu_info *m, int menu_type, char empty_msg[])
+init_menu_info(menu_info *m, char title[], char empty_msg[])
 {
 	m->top = 0;
 	m->current = 1;
@@ -156,12 +156,11 @@ init_menu_info(menu_info *m, int menu_type, char empty_msg[])
 	m->pos = 0;
 	m->hor_pos = 0;
 	m->win_rows = getmaxy(menu_win);
-	m->type = menu_type;
 	m->match_dir = NONE;
 	m->matching_entries = 0;
 	m->matches = NULL;
 	m->regexp = NULL;
-	m->title = NULL;
+	m->title = title;
 	m->args = NULL;
 	m->items = NULL;
 	m->data = NULL;
@@ -456,7 +455,9 @@ draw_menu(menu_info *m)
 	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
 	checked_wmove(menu_win, 0, 3);
+	wprint(menu_win, " ");
 	wprint(menu_win, m->title);
+	wprint(menu_win, " ");
 	wattroff(menu_win, A_BOLD);
 
 	for(i = 1; x < m->len; i++, x++)
@@ -537,7 +538,7 @@ capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 
 	if(ui_cancellation_requested())
 	{
-		append_to_string(&m->title, "(cancelled) ");
+		append_to_string(&m->title, "(cancelled)");
 		append_to_string(&m->empty_msg, " (cancelled)");
 	}
 
