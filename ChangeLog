@@ -17,6 +17,8 @@
 
 	Accept [count] for "h" and "gh".
 
+	Normalize surrounding spaces in menu and dialog titles.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

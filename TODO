@@ -169,7 +169,6 @@ Code improvements.
     Move utils/mntent.h and utils/fs_limits.h to compat/ directory.
     Add a function to count number of elements in a NULL terminated array of
         pointers.
-    Be consistent on menu titles (some of them have spaces, some don't).
     Separate filelist data from view data (extract into separate structure).
     Create separate utilities for engine/ part to make them self-consistent.
     Maybe extract history related code out of filelist.c to separate file.
