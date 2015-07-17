@@ -25,6 +25,8 @@
 	Work around compilation on systems where MAX_ARG_STRLEN is defined, but
 	unusable.  Thanks to Marcin Juszkiewicz (a.k.a. hrw).
 
+	Document %= for 'statusline' and 'rulerformat'.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
