@@ -19,7 +19,7 @@
 
 #include "quickview.h"
 
-#include <curses.h> /* mvwaddstr() werase() wattrset() */
+#include <curses.h> /* mvwaddstr() wattrset() */
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fclose() fdopen() feof() */
@@ -76,15 +76,17 @@ toggle_quick_view(void)
 			/* Force cleaning possible leftovers of graphics, otherwise curses
 			 * internal structures don't know that those parts need to be redrawn on
 			 * the screen. */
-			if(curr_stats.graphics_preview)
+			if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
 			{
-				ui_view_wipe(other_view);
+				qv_cleanup(other_view, curr_stats.preview_cleanup);
 			}
 
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}
 
+		free(curr_stats.preview_cleanup);
+		curr_stats.preview_cleanup = NULL;
 		curr_stats.graphics_preview = 0;
 	}
 	else
@@ -186,9 +188,16 @@ quick_view_file(FileView *view)
 
 				/* We want to wipe the view in two cases: it displayed graphics, it will
 				 * display graphics. */
-				if(curr_stats.graphics_preview || graphics)
+				if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview ||
+						graphics)
 				{
-					ui_view_wipe(other_view);
+					qv_cleanup(other_view, curr_stats.preview_cleanup);
+					free(curr_stats.preview_cleanup);
+					curr_stats.preview_cleanup = NULL;
+				}
+				if(viewer != NULL)
+				{
+					replace_string(&curr_stats.preview_cleanup, ma_get_clean_cmd(viewer));
 				}
 				curr_stats.graphics_preview = graphics;
 
@@ -333,6 +342,29 @@ get_viewer_command(const char viewer[])
 		result = expand_macros(viewer, NULL, NULL, 1);
 	}
 	return result;
+}
+
+void
+qv_cleanup(FileView *view, const char cmd[])
+{
+	FileView *const curr = curr_view;
+	FILE *fp;
+
+	if(cmd == NULL)
+	{
+		ui_view_wipe(view);
+		return;
+	}
+
+	curr_view = view;
+	fp = use_info_prog(cmd);
+	curr_view = curr;
+
+	while(fgetc(fp) != EOF);
+	fclose(fp);
+
+	werase(view->win);
+	ui_view_wipe(view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

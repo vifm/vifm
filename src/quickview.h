@@ -33,6 +33,9 @@ void preview_close(void);
 
 FILE * use_info_prog(const char viewer[]);
 
+/* Performs view cleaning with the given clean command. */
+void qv_cleanup(FileView *view, const char cmd[]);
+
 #endif /* VIFM__QUICKVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

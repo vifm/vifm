@@ -103,6 +103,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->view = 0;
 	stats->graphics_preview = 0;
+	stats->preview_cleanup = NULL;
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;

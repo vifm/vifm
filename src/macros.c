@@ -191,10 +191,16 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 					}
 				}
 				break;
-			case 'p': /* preview pane properties */
+			case 'p': /* Preview pane properties. */
 				{
 					int well_formed;
-					expanded = expand_preview(expanded, command[x + 1], &well_formed);
+					const char key = command[x + 1];
+					if(key == 'c')
+					{
+						return expanded;
+					}
+
+					expanded = expand_preview(expanded, key, &well_formed);
 					len = strlen(expanded);
 					if(well_formed)
 					{
@@ -505,6 +511,20 @@ append_to_expanded(char expanded[], const char str[])
 	}
 	strcpy(t + len, str);
 	return t;
+}
+
+const char *
+ma_get_clean_cmd(const char cmd[])
+{
+	const char *clean_cmd;
+	const char *const break_point = strstr(cmd, "%pc");
+	if(break_point == NULL)
+	{
+		return NULL;
+	}
+
+	clean_cmd = break_point + 3;
+	return is_null_or_empty(clean_cmd) ? NULL : clean_cmd;
 }
 
 char *

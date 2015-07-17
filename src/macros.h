@@ -58,6 +58,10 @@ custom_macro_t;
 char * expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);
 
+/* Gets clean part of the viewer.  Returns NULL if there is none, otherwise
+ * pointer inside the cmd string is returned. */
+const char * ma_get_clean_cmd(const char cmd[]);
+
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification. */
 char * expand_custom_macros(const char pattern[], size_t nmacros,

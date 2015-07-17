@@ -85,9 +85,9 @@ typedef struct
 	int last_search_backward; /* Value -1 means no search was performed. */
 	int search_repeat; /* Saved count prefix of search commands. */
 	int wrap;
-	int abandoned; /* Shows whether view mode was abandoned. */
-	char *filename;
-	int graphics; /* Whether viewer presumably displays graphics. */
+	int abandoned;  /* Shows whether view mode was abandoned. */
+	char *filename; /* Full path to the file being viewed. */
+	int graphics;   /* Whether viewer presumably displays graphics. */
 
 	int auto_forward;   /* Whether auto forwarding (tail -F) is enabled. */
 	filemon_t file_mon; /* File monitor for auto forwarding mode. */
@@ -582,7 +582,11 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		ui_view_wipe(vi->view);
+		char *const typed_fname = get_typed_fname(vi->filename);
+		const char *const viewer = ft_get_viewer(typed_fname);
+		free(typed_fname);
+
+		qv_cleanup(vi->view, viewer);
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 		return;
