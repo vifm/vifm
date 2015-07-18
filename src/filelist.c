@@ -1298,13 +1298,6 @@ get_typed_entry_fname(const dir_entry_t *entry)
 	return is_directory_entry(entry) ? format_str("%s/", name) : strdup(name);
 }
 
-char *
-get_typed_fname(const char path[])
-{
-	const char *const last_part = get_last_path_component(path);
-	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
-}
-
 int
 flist_custom_active(const FileView *view)
 {

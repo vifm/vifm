@@ -36,6 +36,11 @@ FILE * use_info_prog(const char viewer[]);
 /* Performs view cleaning with the given clean command. */
 void qv_cleanup(FileView *view, const char cmd[]);
 
+/* Gets viewer command for a file considering its type (directory vs. file).
+ * Returns NULL if no suitable viewer available, otherwise returns pointer to
+ * string stored internally. */
+const char * gv_get_viewer(const char path[]);
+
 #endif /* VIFM__QUICKVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -63,6 +63,7 @@ static void view_file(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static char * get_viewer_command(const char viewer[]);
+static char * get_typed_fname(const char path[]);
 
 void
 toggle_quick_view(void)
@@ -161,9 +162,7 @@ quick_view_file(FileView *view)
 				const char *viewer;
 				FILE *fp;
 
-				char *const typed_fname = get_typed_fname(path);
-				viewer = ft_get_viewer(typed_fname);
-				free(typed_fname);
+				viewer = gv_get_viewer(path);
 
 				if(viewer == NULL && is_dir(path))
 				{
@@ -365,6 +364,24 @@ qv_cleanup(FileView *view, const char cmd[])
 
 	werase(view->win);
 	ui_view_wipe(view);
+}
+
+const char *
+gv_get_viewer(const char path[])
+{
+	char *const typed_fname = get_typed_fname(path);
+	const char *const viewer = ft_get_viewer(typed_fname);
+	free(typed_fname);
+	return viewer;
+}
+
+/* Gets typed filename (not path, just name).  Allocates memory, that should be
+ * freed by the caller. */
+static char *
+get_typed_fname(const char path[])
+{
+	const char *const last_part = get_last_path_component(path);
+	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

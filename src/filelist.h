@@ -165,9 +165,6 @@ char * get_typed_current_fpath(const FileView *view);
 /* Gets typed filename (not path, just name) for the entry.  Allocates memory,
  * that should be freed by the caller. */
 char * get_typed_entry_fname(const dir_entry_t *entry);
-/* Gets typed filename (not path, just name).  Allocates memory, that should be
- * freed by the caller. */
-char * get_typed_fname(const char path[]);
 
 /* Custom file list functions. */
 

@@ -582,9 +582,7 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		char *const typed_fname = get_typed_fname(vi->filename);
-		const char *const viewer = ft_get_viewer(typed_fname);
-		free(typed_fname);
+		const char *const viewer = gv_get_viewer(vi->filename);
 
 		qv_cleanup(vi->view, viewer);
 		free_string_array(vi->lines, vi->nlines);
@@ -1028,10 +1026,7 @@ static int
 get_view_data(view_info_t *vi, const char file_to_view[])
 {
 	FILE *fp;
-
-	char *const typed_fname = get_typed_fname(file_to_view);
-	const char *const viewer = ft_get_viewer(typed_fname);
-	free(typed_fname);
+	const char *const viewer = gv_get_viewer(file_to_view);
 
 	if(is_null_or_empty(viewer))
 	{
