@@ -59,7 +59,8 @@
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
-static void view_file(FILE *fp, int wrapped);
+static void view_file(const char path[]);
+static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static char * get_viewer_command(const char viewer[]);
@@ -103,22 +104,8 @@ quick_view_file(FileView *view)
 	char path[PATH_MAX];
 	const dir_entry_t *entry;
 
-	if(curr_stats.load_stage < 2)
-	{
-		return;
-	}
-
-	if(vle_mode_is(VIEW_MODE))
-	{
-		return;
-	}
-
-	if(curr_stats.number_of_windows == 1)
-	{
-		return;
-	}
-
-	if(draw_abandoned_view_mode())
+	if(curr_stats.load_stage < 2 || curr_stats.number_of_windows == 1 ||
+	   vle_mode_is(VIEW_MODE) || draw_abandoned_view_mode())
 	{
 		return;
 	}
@@ -128,7 +115,7 @@ quick_view_file(FileView *view)
 	entry = &view->dir_entry[view->list_pos];
 	get_full_path_of(entry, sizeof(path), path);
 
-	switch(view->dir_entry[view->list_pos].type)
+	switch(entry->type)
 	{
 		case FT_CHAR_DEV:
 			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
@@ -157,66 +144,72 @@ quick_view_file(FileView *view)
 			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
-			{
-				int graphics = 0;
-				const char *viewer;
-				FILE *fp;
-
-				viewer = gv_get_viewer(path);
-
-				if(viewer == NULL && is_dir(path))
-				{
-					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
-					break;
-				}
-				if(is_null_or_empty(viewer))
-				{
-					fp = os_fopen(path, "rb");
-				}
-				else
-				{
-					graphics = is_graphics_viewer(viewer);
-					fp = use_info_prog(viewer);
-				}
-
-				if(fp == NULL)
-				{
-					mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
-					break;
-				}
-
-				/* We want to wipe the view in two cases: it displayed graphics, it will
-				 * display graphics. */
-				if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview ||
-						graphics)
-				{
-					qv_cleanup(other_view, curr_stats.preview_cleanup);
-					free(curr_stats.preview_cleanup);
-					curr_stats.preview_cleanup = NULL;
-				}
-				if(viewer != NULL)
-				{
-					replace_string(&curr_stats.preview_cleanup, ma_get_clean_cmd(viewer));
-				}
-				curr_stats.graphics_preview = graphics;
-
-				wattrset(other_view->win, 0);
-				view_file(fp, cfg.wrap_quick_view);
-
-				fclose(fp);
-				break;
-			}
+			view_file(path);
+			break;
 	}
 	refresh_view_win(other_view);
 
 	ui_view_title_update(other_view);
 }
 
+/* Displays contents of file or output of its viewer in the other pane
+ * starting from the second line and second column. */
+static void
+view_file(const char path[])
+{
+	int graphics = 0;
+	const char *viewer;
+	FILE *fp;
+
+	viewer = gv_get_viewer(path);
+
+	if(viewer == NULL && is_dir(path))
+	{
+		mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
+		return;
+	}
+	if(is_null_or_empty(viewer))
+	{
+		fp = os_fopen(path, "rb");
+	}
+	else
+	{
+		graphics = is_graphics_viewer(viewer);
+		fp = use_info_prog(viewer);
+	}
+
+	if(fp == NULL)
+	{
+		mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
+		return;
+	}
+
+	/* We want to wipe the view in two cases: it displayed graphics, it will
+	 * display graphics. */
+	if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview ||
+			graphics)
+	{
+		qv_cleanup(other_view, curr_stats.preview_cleanup);
+		free(curr_stats.preview_cleanup);
+		curr_stats.preview_cleanup = NULL;
+	}
+	if(viewer != NULL)
+	{
+		replace_string(&curr_stats.preview_cleanup, ma_get_clean_cmd(viewer));
+	}
+	curr_stats.graphics_preview = graphics;
+
+	wattrset(other_view->win, 0);
+	view_stream(fp, cfg.wrap_quick_view);
+
+	fclose(fp);
+}
+
 /* Displays contents read from the fp in the other pane starting from the second
  * line and second column.  The wrapped parameter determines whether lines
  * should be wrapped. */
 static void
-view_file(FILE *fp, int wrapped)
+view_stream(FILE *fp, int wrapped)
 {
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_y = other_view->window_rows - 1;
