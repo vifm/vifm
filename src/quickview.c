@@ -154,7 +154,7 @@ quick_view_file(FileView *view)
 			{
 				strncat(path, "/", sizeof(path) - strlen(path) - 1);
 			}
-			/* break intensionally omitted */
+			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
 			{

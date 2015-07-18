@@ -2309,7 +2309,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 }
 
 /* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intensionally.  Returns non-zero if file can be made visible. */
+ * are hidden intentionally.  Returns non-zero if file can be made visible. */
 static int
 file_can_be_displayed(const char directory[], const char filename[])
 {
