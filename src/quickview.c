@@ -20,6 +20,7 @@
 #include "quickview.h"
 
 #include <curses.h> /* mvwaddstr() wattrset() */
+#include <unistd.h> /* usleep() */
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fclose() fdopen() feof() */
@@ -169,41 +170,48 @@ view_file(const char path[])
 		mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
 		return;
 	}
+
 	if(is_null_or_empty(viewer))
 	{
 		fp = os_fopen(path, "rb");
+		if(fp == NULL)
+		{
+			mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
+			return;
+		}
 	}
 	else
 	{
 		graphics = is_graphics_viewer(viewer);
+		/* If graphics will be displayed, clear the window and wait a bit to let
+		 * terminal emulator do actual refresh (at least some of them need this). */
+		if(graphics)
+		{
+			qv_cleanup(other_view, curr_stats.preview_cleanup);
+			usleep(50000);
+		}
 		fp = use_info_prog(viewer);
+		if(fp == NULL)
+		{
+			mvwaddstr(other_view->win, LINE, COL, "Cannot read viewer output");
+			return;
+		}
 	}
 
-	if(fp == NULL)
-	{
-		mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
-		return;
-	}
-
-	/* We want to wipe the view in two cases: it displayed graphics, it will
-	 * display graphics. */
-	if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview ||
-			graphics)
+	/* We want to wipe the view if it was displaying graphics, but won't anymore.
+	 * Do this only if we didn't already cleared the window. */
+	if(!graphics &&
+			(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview))
 	{
 		qv_cleanup(other_view, curr_stats.preview_cleanup);
-		free(curr_stats.preview_cleanup);
-		curr_stats.preview_cleanup = NULL;
-	}
-	clean_cmd = (viewer != NULL) ? ma_get_clean_cmd(viewer) : NULL;
-	if(clean_cmd  != NULL)
-	{
-		replace_string(&curr_stats.preview_cleanup, clean_cmd);
 	}
 	curr_stats.graphics_preview = graphics;
 
+	clean_cmd = (viewer != NULL) ? ma_get_clean_cmd(viewer) : NULL;
+	update_string(&curr_stats.preview_cleanup, clean_cmd);
+
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);
-
 	fclose(fp);
 }
 

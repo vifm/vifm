@@ -364,6 +364,18 @@ replace_string(char **str, const char with[])
 	return 0;
 }
 
+int
+update_string(char **str, const char to[])
+{
+	if(to == NULL)
+	{
+		free(*str);
+		*str = NULL;
+		return 0;
+	}
+	return replace_string(str, to);
+}
+
 char *
 strcatch(char str[], char c)
 {
