@@ -413,6 +413,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 	char num_str[32];
 	int h, w, x, y;
 	int param;
+	const int with_margin = (curr_stats.clear_preview == 0);
 
 	if(!char_is_one_of("hwxy", key))
 	{
@@ -429,10 +430,10 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 	switch(key)
 	{
-		case 'h': param = h - 2; break;
-		case 'w': param = w - 2; break;
-		case 'x': param = x + 1; break;
-		case 'y': param = y + 1; break;
+		case 'h': param = h - 2*with_margin; break;
+		case 'w': param = w - 2*with_margin; break;
+		case 'x': param = x + 1*with_margin; break;
+		case 'y': param = y + 1*with_margin; break;
 
 		default:
 			assert(0 && "Unhandled preview property type");

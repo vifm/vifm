@@ -104,6 +104,7 @@ typedef struct
 	int view;              /* Whether preview mode is active. */
 	int graphics_preview;  /* Whether current preview displays graphics. */
 	char *preview_cleanup; /* Cleanup command for preview. */
+	int clear_preview;     /* Whether we're in process of clearing preview. */
 
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;

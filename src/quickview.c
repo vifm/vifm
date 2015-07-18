@@ -359,7 +359,9 @@ qv_cleanup(FileView *view, const char cmd[])
 	}
 
 	curr_view = view;
+	curr_stats.clear_preview = 1;
 	fp = use_info_prog(cmd);
+	curr_stats.clear_preview = 0;
 	curr_view = curr;
 
 	while(fgetc(fp) != EOF);
