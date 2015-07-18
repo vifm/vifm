@@ -159,6 +159,7 @@ view_file(const char path[])
 {
 	int graphics = 0;
 	const char *viewer;
+	const char *clean_cmd;
 	FILE *fp;
 
 	viewer = gv_get_viewer(path);
@@ -193,9 +194,10 @@ view_file(const char path[])
 		free(curr_stats.preview_cleanup);
 		curr_stats.preview_cleanup = NULL;
 	}
-	if(viewer != NULL)
+	clean_cmd = (viewer != NULL) ? ma_get_clean_cmd(viewer) : NULL;
+	if(clean_cmd  != NULL)
 	{
-		replace_string(&curr_stats.preview_cleanup, ma_get_clean_cmd(viewer));
+		replace_string(&curr_stats.preview_cleanup, clean_cmd);
 	}
 	curr_stats.graphics_preview = graphics;
 
