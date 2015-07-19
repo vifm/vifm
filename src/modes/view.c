@@ -583,9 +583,10 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		const char *const viewer = gv_get_viewer(vi->filename);
+		const char *cmd = gv_get_viewer(vi->filename);
+		cmd = (cmd != NULL) ? ma_get_clean_cmd(cmd) : NULL;
+		qv_cleanup(vi->view, cmd);
 
-		qv_cleanup(vi->view, viewer);
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 		return;
