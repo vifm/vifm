@@ -64,6 +64,8 @@ static void view_file(const char path[]);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
+static void write_message(const char msg[]);
+static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
 static char * get_typed_fname(const char path[]);
 
@@ -118,23 +120,23 @@ quick_view_file(FileView *view)
 	switch(entry->type)
 	{
 		case FT_CHAR_DEV:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
+			write_message("File is a Character Device");
 			break;
 		case FT_BLOCK_DEV:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Block Device");
+			write_message("File is a Block Device");
 			break;
 #ifndef _WIN32
 		case FT_SOCK:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Socket");
+			write_message("File is a Socket");
 			break;
 #endif
 		case FT_FIFO:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
+			write_message("File is a Named Pipe");
 			break;
 		case FT_LINK:
 			if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0)
 			{
-				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
+				write_message("Cannot resolve Link");
 				break;
 			}
 			if(!ends_with_slash(path) && is_dir(path))
@@ -166,7 +168,7 @@ view_file(const char path[])
 
 	if(viewer == NULL && is_dir(path))
 	{
-		mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
+		write_message("File is a Directory");
 		return;
 	}
 
@@ -175,7 +177,7 @@ view_file(const char path[])
 		fp = os_fopen(path, "rb");
 		if(fp == NULL)
 		{
-			mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
+			write_message("Cannot open file");
 			return;
 		}
 	}
@@ -192,17 +194,16 @@ view_file(const char path[])
 		fp = use_info_prog(viewer);
 		if(fp == NULL)
 		{
-			mvwaddstr(other_view->win, LINE, COL, "Cannot read viewer output");
+			write_message("Cannot read viewer output");
 			return;
 		}
 	}
 
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
-	if(!graphics &&
-			(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview))
+	if(!graphics)
 	{
-		qv_cleanup(other_view, curr_stats.preview_cleanup);
+		cleanup_for_text();
 	}
 	curr_stats.graphics_preview = graphics;
 
@@ -289,6 +290,28 @@ add_to_line(FILE *fp, size_t max, char line[], size_t len)
 	return curr_len;
 }
 
+/* Writes single line message of error or information kind instead of real
+ * preview. */
+static void
+write_message(const char msg[])
+{
+	cleanup_for_text();
+	wattrset(other_view->win, 0);
+	mvwaddstr(other_view->win, LINE, COL, msg);
+}
+
+/* Ensures that view is ready to display regular text. */
+static void
+cleanup_for_text(void)
+{
+	if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
+	{
+		qv_cleanup(other_view, curr_stats.preview_cleanup);
+	}
+	update_string(&curr_stats.preview_cleanup, NULL);
+	curr_stats.graphics_preview = 0;
+}
+
 void
 preview_close(void)
 {
@@ -366,7 +389,6 @@ qv_cleanup(FileView *view, const char cmd[])
 	while(fgetc(fp) != EOF);
 	fclose(fp);
 
-	werase(view->win);
 	ui_view_wipe(view);
 }
 
