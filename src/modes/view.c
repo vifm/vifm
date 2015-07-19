@@ -21,6 +21,7 @@
 #include <curses.h>
 
 #include <regex.h>
+#include <unistd.h> /* usleep() */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
@@ -1045,11 +1046,18 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	}
 	else
 	{
+		const int graphics = is_graphics_viewer(viewer);
 		FileView *const curr = curr_view;
 		curr_view = curr_stats.view ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
 
+		if(graphics)
+		{
+			/* Wait a bit to let terminal emulator do actual refresh (at least some
+			 * of them need this). */
+			usleep(50000);
+		}
 		fp = use_info_prog(viewer);
 
 		curr_view = curr;
@@ -1060,7 +1068,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		if(is_graphics_viewer(viewer))
+		if(graphics)
 		{
 			vi->graphics = 1;
 		}
