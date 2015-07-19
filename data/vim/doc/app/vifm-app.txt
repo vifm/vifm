@@ -3360,6 +3360,7 @@ The result is a string, which represents file type and is one of the list:
     fifo   pipes
     sock   *nix domain sockets
     ?      unknown file type (should never appear)
+
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
 
