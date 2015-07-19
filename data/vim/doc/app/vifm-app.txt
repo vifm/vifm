@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 15
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3311,6 +3311,7 @@ expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
 has({property})     Integer       Checks whether instance has {property}.
 layoutis({type})    Integer       Checks whether layout is of type {type}.
+paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 system({command})   String        Executes shell command and returns its output.
 
 
@@ -3359,6 +3360,7 @@ The result is a string, which represents file type and is one of the list:
     fifo   pipes
     sock   *nix domain sockets
     ?      unknown file type (should never appear)
+
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
 
@@ -3396,6 +3398,16 @@ Usage example: >
   " automatically split vertically before enabling preview
   :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
 <
+
+paneisat({loc})                                *vifm-paneisat()*
+
+Checks whether position of active pane in current layout matches one of the
+following locations:
+    top     pane reaches top border
+    bottom  pane reaches bottom border
+    left    pane reaches left border
+    right   pane reaches right border
+
 
 system({command})                              *vifm-system()*
 

@@ -105,5 +105,52 @@ TEST(layoutis_is_correct_for_vsplit)
 	ASSERT_OK("layoutis('vsplit')", "1");
 }
 
+TEST(paneisat_is_correct_for_single_pane)
+{
+	curr_stats.number_of_windows = 1;
+	curr_stats.split = VSPLIT;
+	curr_stats.split = HSPLIT;
+	ASSERT_OK("paneisat('top')", "1");
+	ASSERT_OK("paneisat('bottom')", "1");
+	ASSERT_OK("paneisat('left')", "1");
+	ASSERT_OK("paneisat('right')", "1");
+}
+
+TEST(paneisat_is_correct_for_hsplit)
+{
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = HSPLIT;
+
+	curr_view = &lwin;
+	ASSERT_OK("paneisat('top')", "1");
+	ASSERT_OK("paneisat('bottom')", "0");
+	ASSERT_OK("paneisat('left')", "1");
+	ASSERT_OK("paneisat('right')", "1");
+
+	curr_view = &rwin;
+	ASSERT_OK("paneisat('top')", "0");
+	ASSERT_OK("paneisat('bottom')", "1");
+	ASSERT_OK("paneisat('left')", "1");
+	ASSERT_OK("paneisat('right')", "1");
+}
+
+TEST(paneisat_is_correct_for_vsplit)
+{
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = VSPLIT;
+
+	curr_view = &lwin;
+	ASSERT_OK("paneisat('top')", "1");
+	ASSERT_OK("paneisat('bottom')", "1");
+	ASSERT_OK("paneisat('left')", "1");
+	ASSERT_OK("paneisat('right')", "0");
+
+	curr_view = &rwin;
+	ASSERT_OK("paneisat('top')", "1");
+	ASSERT_OK("paneisat('bottom')", "1");
+	ASSERT_OK("paneisat('left')", "0");
+	ASSERT_OK("paneisat('right')", "1");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

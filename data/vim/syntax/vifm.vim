@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: July 14, 2015
+" Last Change: July 19, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -50,7 +50,7 @@ syntax keyword vifmNormalCommand contained norm[al]
 
 " Builtin functions
 syntax match vifmBuiltinFunction
-		\ '\(filetype\|expand\|executable\|has\|layoutis\|system\)\ze('
+		\ '\(filetype\|expand\|executable\|has\|layoutis\|paneisat\|system\)\ze('
 
 " Operators
 syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\)" skipwhite

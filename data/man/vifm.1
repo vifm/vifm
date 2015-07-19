@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 15, 2015" "vifm 0.8"
+.TH VIFM 1 "July 19, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4009,10 +4009,12 @@ has({property})     Integer       Checks whether instance has {property}.
 .br
 layoutis({type})    Integer       Checks whether layout is of type {type}.
 .br
+paneisat({loc})     Integer       Checks whether current pane is at {loc}.
+.br
 system({command})   String        Executes shell command and returns its output.
 
-executable({expr})
-.br
+.BI executable({expr})
+
 If {expr} is absolute or relative path, checks whether path destination exists
 and refers to an executable, otherwise checks whether command named {expr} is
 present in directories listed in $PATH.  Checks for various executable
@@ -4032,8 +4034,8 @@ Example:
   endif
 .EE
 
-expand({expr})
-.br
+.BI expand({expr})
+
 Expands environment variables and macros in {expr} just like it's done for
 command-line commands.  Returns a string.  See "Command macros" section above.
 .br
@@ -4049,8 +4051,8 @@ Examples:
   :echo expand('$PATH')
 .EE
 
-filetype({fnum})
-.br
+.BI filetype({fnum})
+
 The result is a string, which represents file type and is one of the list:
     exe    executables
     reg    regular files
@@ -4061,12 +4063,12 @@ The result is a string, which represents file type and is one of the list:
     fifo   pipes
     sock   *nix domain sockets
     ?      unknown file type (should never appear)
-.br
+
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
 
-has({property})
-.br
+.BI has({property})
+
 Allows examining internal parameters from scripts to e.g. figure out
 environment in which application is running.  Returns 1 if property is
 true/present, otherwise 0 is returned.  Currently the following properties
@@ -4086,8 +4088,8 @@ Usage example:
   execute 'set' 'statusline="  %t%= %A '.$RIGHTS.'%15E %20d  "'
 .EE
 
-layoutis({type})
-.br
+.BI layoutis({type})
+
 Checks whether current interface layout is {type} or not, where {type} can be:
     only    single-pane mode
     split   double-pane mode (either vertical or horizon split)
@@ -4102,8 +4104,18 @@ Usage example:
   :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
 .EE
 
-system({command})
+.BI paneisat({loc})
+
+Checks whether position of active pane in current layout matches one of the
+following locations:
+    top     pane reaches top border
+    bottom  pane reaches bottom border
+    left    pane reaches left border
+    right   pane reaches right border
 .br
+
+.BI system({command})
+
 Runs the command in shell and returns its output (joined standard output and
 standard error streams).  All trailing newline characters are stripped to
 allow easy appending to command output.  Ctrl-C should interrupt the command.
