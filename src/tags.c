@@ -565,6 +565,7 @@ const char *tags[] = {
 	"vifm-normal",
 	"vifm-options",
 	"vifm-p",
+	"vifm-paneisat()",
 	"vifm-patterns",
 	"vifm-plugin",
 	"vifm-q/",

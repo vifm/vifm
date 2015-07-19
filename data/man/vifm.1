@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 15, 2015" "vifm 0.8"
+.TH VIFM 1 "July 19, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4009,6 +4009,8 @@ has({property})     Integer       Checks whether instance has {property}.
 .br
 layoutis({type})    Integer       Checks whether layout is of type {type}.
 .br
+paneisat({loc})     Integer       Checks whether current pane is at {loc}.
+.br
 system({command})   String        Executes shell command and returns its output.
 
 executable({expr})
@@ -4101,6 +4103,16 @@ Usage example:
   " automatically split vertically before enabling preview
   :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
 .EE
+
+paneisat({loc})
+.br
+Checks whether position of active pane in current layout matches one of the
+following locations:
+    top     pane reaches top border
+    bottom  pane reaches bottom border
+    left    pane reaches left border
+    right   pane reaches right border
+.br
 
 system({command})
 .br

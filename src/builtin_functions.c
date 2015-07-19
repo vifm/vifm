@@ -42,6 +42,7 @@ static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
 static var_t has_builtin(const call_info_t *call_info);
 static var_t layoutis_builtin(const call_info_t *call_info);
+static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
@@ -50,6 +51,7 @@ static const function_t functions[] = {
 	{ "filetype",   1, &filetype_builtin },
 	{ "has",        1, &has_builtin },
 	{ "layoutis",   1, &layoutis_builtin },
+	{ "paneisat",   1, &paneisat_builtin },
 	{ "system",     1, &system_builtin },
 };
 
@@ -142,7 +144,7 @@ get_fnum(const char position[])
 }
 
 /* Checks current layout configuration.  Returns boolean value that reflects
- * state of specified type. */
+ * state of specified layout type. */
 static var_t
 layoutis_builtin(const call_info_t *call_info)
 {
@@ -200,6 +202,44 @@ has_builtin(const call_info_t *call_info)
 	free(str_val);
 
 	return result;
+}
+
+/* Checks for relative position of current pane.  Returns boolean value that
+ * reflects state of specified location. */
+static var_t
+paneisat_builtin(const call_info_t *call_info)
+{
+	char *loc;
+	int result;
+
+	const int only = (curr_stats.number_of_windows == 1);
+	const int vsplit = (curr_stats.split == VSPLIT);
+	const int first = (curr_view == &lwin);
+
+	loc = var_to_string(call_info->argv[0]);
+	if(strcmp(loc, "top") == 0)
+	{
+		result = (only || vsplit || first);
+	}
+	else if(strcmp(loc, "bottom") == 0)
+	{
+		result = (only || vsplit || !first);
+	}
+	else if(strcmp(loc, "left") == 0)
+	{
+		result = (only || !vsplit || first);
+	}
+	else if(strcmp(loc, "right") == 0)
+	{
+		result = (only || !vsplit || !first);
+	}
+	else
+	{
+		result = 0;
+	}
+	free(loc);
+
+	return var_from_bool(result);
 }
 
 /* Runs the command in shell and returns its output (joined standard output and
