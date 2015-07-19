@@ -8,6 +8,9 @@
 	Added paneisat() builtin function that answers queries about current pane
 	position.  Thanks to fogine.
 
+	Added %pc macro that splits preview command in two pices: preview command
+	and clear command.  Thanks to Tomek K. (a.k.a. TomiCode).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

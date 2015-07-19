@@ -2128,6 +2128,9 @@ The command macros may be used in user commands.
                                                                *vifm-%i*
   %i        completely ignore command output.
 
+                                                               *vifm-%pc*
+  %pc       marks end of the main command and beginning of the clear command,
+            which is invoked on closing preview of a file.
 
   The following dimensions and coordinates are in characters:
                                                                *vifm-%px*
