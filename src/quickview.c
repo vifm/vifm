@@ -88,8 +88,7 @@ toggle_quick_view(void)
 			refresh_view_win(other_view);
 		}
 
-		free(curr_stats.preview_cleanup);
-		curr_stats.preview_cleanup = NULL;
+		update_string(&curr_stats.preview_cleanup, NULL);
 		curr_stats.graphics_preview = 0;
 	}
 	else
