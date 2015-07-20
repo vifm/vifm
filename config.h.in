@@ -43,6 +43,9 @@
 /* malloc.h header is available. */
 #undef HAVE_MALLOC_H
 
+/* MAX_ARG_STRLEN is available. */
+#undef HAVE_MAX_ARG_STRLEN
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
