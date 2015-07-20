@@ -20,7 +20,8 @@
 #include "utils_nix.h"
 #include "utils_int.h"
 
-#if defined (HAVE_LINUX_BINFMTS_H) && defined (HAVE_SYS_USER_H)
+#ifdef HAVE_MAX_ARG_STRLEN
+/* MAX_ARG_STRLEN is the only reason we need these headers. */
 #include <linux/binfmts.h>
 #include <sys/user.h>
 #endif
@@ -261,7 +262,7 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 char **
 make_execv_array(char shell[], char cmd[])
 {
-#ifdef MAX_ARG_STRLEN
+#ifdef HAVE_MAX_ARG_STRLEN
 	/* Don't use maximum length, leave some room or commands fail to run. */
 	const size_t safe_arg_len = MIN(MAX_ARG_STRLEN, MAX_ARG_STRLEN - 4096U);
 	const size_t npieces = DIV_ROUND_UP(strlen(cmd), safe_arg_len);

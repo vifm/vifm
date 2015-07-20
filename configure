@@ -6315,6 +6315,23 @@ fi
 
 done
 
+if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = yes; then
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+             #include <linux/binfmts.h>
+             #include <sys/user.h>
+             int main() { (void)MAX_ARG_STRLEN; return 0; }
+
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MAX_ARG_STRLEN 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
 
 ac_fn_c_check_type "$LINENO" "uid_t" "ac_cv_type_uid_t" "$ac_includes_default"
 if test "x$ac_cv_type_uid_t" = xyes; then :
