@@ -133,6 +133,10 @@ char * after_first(const char str[], char c);
  * failed. */
 int replace_string(char **str, const char with[]);
 
+/* Same as replace_string(), but also allows "to" to be NULL, in which case
+ * *str is freed and set to NULL. */
+int update_string(char **str, const char to[]);
+
 /* Adds a character to the end of the string.  Returns the str argument. */
 char * strcatch(char str[], char c);
 

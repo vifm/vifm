@@ -1298,13 +1298,6 @@ get_typed_entry_fname(const dir_entry_t *entry)
 	return is_directory_entry(entry) ? format_str("%s/", name) : strdup(name);
 }
 
-char *
-get_typed_fname(const char path[])
-{
-	const char *const last_part = get_last_path_component(path);
-	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
-}
-
 int
 flist_custom_active(const FileView *view)
 {
@@ -2316,7 +2309,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 }
 
 /* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intensionally.  Returns non-zero if file can be made visible. */
+ * are hidden intentionally.  Returns non-zero if file can be made visible. */
 static int
 file_can_be_displayed(const char directory[], const char filename[])
 {

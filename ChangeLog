@@ -8,6 +8,9 @@
 	Added paneisat() builtin function that answers queries about current pane
 	position.  Thanks to fogine.
 
+	Added %pc macro that splits preview command in two pices: preview command
+	and clear command.  Thanks to Tomek K. (a.k.a. TomiCode).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -24,6 +27,8 @@
 
 	Work around compilation on systems where MAX_ARG_STRLEN is defined, but
 	unusable.  Thanks to Marcin Juszkiewicz (a.k.a. hrw).
+
+	Document %= for 'statusline' and 'rulerformat'.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).

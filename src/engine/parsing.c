@@ -358,7 +358,7 @@ eval_term(const char **in)
 			{
 				return eval_funccall(in);
 			}
-			/* break is intensionally omitted. */
+			/* break is omitted intentionally. */
 
 		default:
 			--*in;
@@ -814,7 +814,7 @@ get_next(const char **in)
 				tt = EMARK;
 				break;
 			}
-			/* break is omitted intensionally. */
+			/* break is omitted intentionally. */
 
 		default:
 			tt = SYM;

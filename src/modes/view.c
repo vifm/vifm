@@ -21,6 +21,7 @@
 #include <curses.h>
 
 #include <regex.h>
+#include <unistd.h> /* usleep() */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
@@ -85,9 +86,9 @@ typedef struct
 	int last_search_backward; /* Value -1 means no search was performed. */
 	int search_repeat; /* Saved count prefix of search commands. */
 	int wrap;
-	int abandoned; /* Shows whether view mode was abandoned. */
-	char *filename;
-	int graphics; /* Whether viewer presumably displays graphics. */
+	int abandoned;  /* Shows whether view mode was abandoned. */
+	char *filename; /* Full path to the file being viewed. */
+	int graphics;   /* Whether viewer presumably displays graphics. */
 
 	int auto_forward;   /* Whether auto forwarding (tail -F) is enabled. */
 	filemon_t file_mon; /* File monitor for auto forwarding mode. */
@@ -582,7 +583,10 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		ui_view_wipe(vi->view);
+		const char *cmd = gv_get_viewer(vi->filename);
+		cmd = (cmd != NULL) ? ma_get_clean_cmd(cmd) : NULL;
+		qv_cleanup(vi->view, cmd);
+
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 		return;
@@ -1024,10 +1028,7 @@ static int
 get_view_data(view_info_t *vi, const char file_to_view[])
 {
 	FILE *fp;
-
-	char *const typed_fname = get_typed_fname(file_to_view);
-	const char *const viewer = ft_get_viewer(typed_fname);
-	free(typed_fname);
+	const char *const viewer = gv_get_viewer(file_to_view);
 
 	if(is_null_or_empty(viewer))
 	{
@@ -1046,11 +1047,18 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	}
 	else
 	{
+		const int graphics = is_graphics_viewer(viewer);
 		FileView *const curr = curr_view;
 		curr_view = curr_stats.view ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
 
+		if(graphics)
+		{
+			/* Wait a bit to let terminal emulator do actual refresh (at least some
+			 * of them need this). */
+			usleep(50000);
+		}
 		fp = use_info_prog(viewer);
 
 		curr_view = curr;
@@ -1061,7 +1069,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		if(is_graphics_viewer(viewer))
+		if(graphics)
 		{
 			vi->graphics = 1;
 		}

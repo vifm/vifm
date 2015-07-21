@@ -2128,6 +2128,9 @@ The command macros may be used in user commands.
                                                                *vifm-%i*
   %i        completely ignore command output.
 
+                                                               *vifm-%pc*
+  %pc       marks end of the main command and beginning of the clear command,
+            which is invoked on closing preview of a file.
 
   The following dimensions and coordinates are in characters:
                                                                *vifm-%px*
@@ -2691,6 +2694,7 @@ default: "%l/%S "
 
 Determines the content of the ruler.  Its minimal width is 13 characters and
 it's right aligned.  Following macros are supported:
+    %= - separation point between left and right aligned halves of the line
     %l - file number
     %L - total number of files in view (including filtered out ones)
     %- - number of filtered out files

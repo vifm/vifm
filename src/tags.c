@@ -20,6 +20,7 @@ const char *tags[] = {
 	"vifm-%i",
 	"vifm-%m",
 	"vifm-%n",
+	"vifm-%pc",
 	"vifm-%ph",
 	"vifm-%pw",
 	"vifm-%px",

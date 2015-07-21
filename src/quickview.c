@@ -19,7 +19,8 @@
 
 #include "quickview.h"
 
-#include <curses.h> /* mvwaddstr() werase() wattrset() */
+#include <curses.h> /* mvwaddstr() wattrset() */
+#include <unistd.h> /* usleep() */
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fclose() fdopen() feof() */
@@ -59,10 +60,14 @@
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
-static void view_file(FILE *fp, int wrapped);
+static void view_file(const char path[]);
+static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
+static void write_message(const char msg[]);
+static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
+static char * get_typed_fname(const char path[]);
 
 void
 toggle_quick_view(void)
@@ -76,15 +81,16 @@ toggle_quick_view(void)
 			/* Force cleaning possible leftovers of graphics, otherwise curses
 			 * internal structures don't know that those parts need to be redrawn on
 			 * the screen. */
-			if(curr_stats.graphics_preview)
+			if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
 			{
-				ui_view_wipe(other_view);
+				qv_cleanup(other_view, curr_stats.preview_cleanup);
 			}
 
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}
 
+		update_string(&curr_stats.preview_cleanup, NULL);
 		curr_stats.graphics_preview = 0;
 	}
 	else
@@ -100,22 +106,8 @@ quick_view_file(FileView *view)
 	char path[PATH_MAX];
 	const dir_entry_t *entry;
 
-	if(curr_stats.load_stage < 2)
-	{
-		return;
-	}
-
-	if(vle_mode_is(VIEW_MODE))
-	{
-		return;
-	}
-
-	if(curr_stats.number_of_windows == 1)
-	{
-		return;
-	}
-
-	if(draw_abandoned_view_mode())
+	if(curr_stats.load_stage < 2 || curr_stats.number_of_windows == 1 ||
+	   vle_mode_is(VIEW_MODE) || draw_abandoned_view_mode())
 	{
 		return;
 	}
@@ -125,90 +117,109 @@ quick_view_file(FileView *view)
 	entry = &view->dir_entry[view->list_pos];
 	get_full_path_of(entry, sizeof(path), path);
 
-	switch(view->dir_entry[view->list_pos].type)
+	switch(entry->type)
 	{
 		case FT_CHAR_DEV:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
+			write_message("File is a Character Device");
 			break;
 		case FT_BLOCK_DEV:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Block Device");
+			write_message("File is a Block Device");
 			break;
 #ifndef _WIN32
 		case FT_SOCK:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Socket");
+			write_message("File is a Socket");
 			break;
 #endif
 		case FT_FIFO:
-			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
+			write_message("File is a Named Pipe");
 			break;
 		case FT_LINK:
 			if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0)
 			{
-				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
+				write_message("Cannot resolve Link");
 				break;
 			}
 			if(!ends_with_slash(path) && is_dir(path))
 			{
 				strncat(path, "/", sizeof(path) - strlen(path) - 1);
 			}
-			/* break intensionally omitted */
+			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
-			{
-				int graphics = 0;
-				const char *viewer;
-				FILE *fp;
-
-				char *const typed_fname = get_typed_fname(path);
-				viewer = ft_get_viewer(typed_fname);
-				free(typed_fname);
-
-				if(viewer == NULL && is_dir(path))
-				{
-					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
-					break;
-				}
-				if(is_null_or_empty(viewer))
-				{
-					fp = os_fopen(path, "rb");
-				}
-				else
-				{
-					graphics = is_graphics_viewer(viewer);
-					fp = use_info_prog(viewer);
-				}
-
-				if(fp == NULL)
-				{
-					mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
-					break;
-				}
-
-				/* We want to wipe the view in two cases: it displayed graphics, it will
-				 * display graphics. */
-				if(curr_stats.graphics_preview || graphics)
-				{
-					ui_view_wipe(other_view);
-				}
-				curr_stats.graphics_preview = graphics;
-
-				wattrset(other_view->win, 0);
-				view_file(fp, cfg.wrap_quick_view);
-
-				fclose(fp);
-				break;
-			}
+			view_file(path);
+			break;
 	}
 	refresh_view_win(other_view);
 
 	ui_view_title_update(other_view);
 }
 
+/* Displays contents of file or output of its viewer in the other pane
+ * starting from the second line and second column. */
+static void
+view_file(const char path[])
+{
+	int graphics = 0;
+	const char *viewer;
+	const char *clean_cmd;
+	FILE *fp;
+
+	viewer = gv_get_viewer(path);
+
+	if(viewer == NULL && is_dir(path))
+	{
+		write_message("File is a Directory");
+		return;
+	}
+
+	if(is_null_or_empty(viewer))
+	{
+		fp = os_fopen(path, "rb");
+		if(fp == NULL)
+		{
+			write_message("Cannot open file");
+			return;
+		}
+	}
+	else
+	{
+		graphics = is_graphics_viewer(viewer);
+		/* If graphics will be displayed, clear the window and wait a bit to let
+		 * terminal emulator do actual refresh (at least some of them need this). */
+		if(graphics)
+		{
+			qv_cleanup(other_view, curr_stats.preview_cleanup);
+			usleep(50000);
+		}
+		fp = use_info_prog(viewer);
+		if(fp == NULL)
+		{
+			write_message("Cannot read viewer output");
+			return;
+		}
+	}
+
+	/* We want to wipe the view if it was displaying graphics, but won't anymore.
+	 * Do this only if we didn't already cleared the window. */
+	if(!graphics)
+	{
+		cleanup_for_text();
+	}
+	curr_stats.graphics_preview = graphics;
+
+	clean_cmd = (viewer != NULL) ? ma_get_clean_cmd(viewer) : NULL;
+	update_string(&curr_stats.preview_cleanup, clean_cmd);
+
+	wattrset(other_view->win, 0);
+	view_stream(fp, cfg.wrap_quick_view);
+	fclose(fp);
+}
+
 /* Displays contents read from the fp in the other pane starting from the second
  * line and second column.  The wrapped parameter determines whether lines
  * should be wrapped. */
 static void
-view_file(FILE *fp, int wrapped)
+view_stream(FILE *fp, int wrapped)
 {
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_y = other_view->window_rows - 1;
@@ -279,6 +290,28 @@ add_to_line(FILE *fp, size_t max, char line[], size_t len)
 	return curr_len;
 }
 
+/* Writes single line message of error or information kind instead of real
+ * preview. */
+static void
+write_message(const char msg[])
+{
+	cleanup_for_text();
+	wattrset(other_view->win, 0);
+	mvwaddstr(other_view->win, LINE, COL, msg);
+}
+
+/* Ensures that view is ready to display regular text. */
+static void
+cleanup_for_text(void)
+{
+	if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
+	{
+		qv_cleanup(other_view, curr_stats.preview_cleanup);
+	}
+	update_string(&curr_stats.preview_cleanup, NULL);
+	curr_stats.graphics_preview = 0;
+}
+
 void
 preview_close(void)
 {
@@ -333,6 +366,48 @@ get_viewer_command(const char viewer[])
 		result = expand_macros(viewer, NULL, NULL, 1);
 	}
 	return result;
+}
+
+void
+qv_cleanup(FileView *view, const char cmd[])
+{
+	FileView *const curr = curr_view;
+	FILE *fp;
+
+	if(cmd == NULL)
+	{
+		ui_view_wipe(view);
+		return;
+	}
+
+	curr_view = view;
+	curr_stats.clear_preview = 1;
+	fp = use_info_prog(cmd);
+	curr_stats.clear_preview = 0;
+	curr_view = curr;
+
+	while(fgetc(fp) != EOF);
+	fclose(fp);
+
+	ui_view_wipe(view);
+}
+
+const char *
+gv_get_viewer(const char path[])
+{
+	char *const typed_fname = get_typed_fname(path);
+	const char *const viewer = ft_get_viewer(typed_fname);
+	free(typed_fname);
+	return viewer;
+}
+
+/* Gets typed filename (not path, just name).  Allocates memory, that should be
+ * freed by the caller. */
+static char *
+get_typed_fname(const char path[])
+{
+	const char *const last_part = get_last_path_component(path);
+	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
