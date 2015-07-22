@@ -27,10 +27,11 @@
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <string.h> /* memset() strdup() */
 #include <stdio.h>  /* fclose() snprintf() */
-#include <stdlib.h> /* free() malloc() */
+#include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -1008,7 +1009,7 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 			return 1;
 	}
 
-	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
+	vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
 	if(vi->widths == NULL)
 	{
 		free_string_array(vi->lines, vi->nlines);

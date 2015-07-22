@@ -44,11 +44,12 @@
                        sigprocmask() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
-#include <stdlib.h> /* atoi() free() malloc() */
+#include <stdlib.h> /* atoi() free() */
 #include <string.h> /* strchr() strdup() strlen() strncmp() */
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../ui/cancellation.h"
 #include "../running.h"
 #include "../status.h"
@@ -274,7 +275,7 @@ make_execv_array(char shell[], char cmd[])
 	const size_t npieces = 1U;
 #endif
 
-	char **args = malloc(sizeof(*args)*(3 + npieces + 1));
+	char **args = reallocarray(NULL, 3 + npieces + 1, sizeof(*args));
 	char *eval_cmd;
 	size_t len;
 	size_t i;

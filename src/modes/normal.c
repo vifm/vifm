@@ -33,6 +33,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -2136,7 +2137,8 @@ selector_S(key_info_t key_info, keys_info_t *keys_info)
 	int i, x;
 
 	keys_info->count = curr_view->list_rows - curr_view->selected_files;
-	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	keys_info->indexes = reallocarray(NULL, keys_info->count,
+			sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -2161,7 +2163,8 @@ selector_a(key_info_t key_info, keys_info_t *keys_info)
 	int i, x;
 
 	keys_info->count = curr_view->list_rows;
-	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	keys_info->indexes = reallocarray(NULL, keys_info->count,
+			sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -2191,7 +2194,8 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 	if(keys_info->count == 0)
 		return;
 
-	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	keys_info->indexes = reallocarray(NULL, keys_info->count,
+			sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");

@@ -20,9 +20,9 @@
 #include "vifm_menu.h"
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* malloc() */
 #include <string.h> /* strdup() */
 
+#include "../compat/reallocarray.h"
 #include "../ui/ui.h"
 #include "../version.h"
 #include "menus.h"
@@ -36,7 +36,7 @@ show_vifm_menu(FileView *view)
 	init_menu_info(&m, strdup("Vifm Information"), NULL);
 
 	len = fill_version_info(NULL);
-	m.items = malloc(sizeof(char*)*len);
+	m.items = reallocarray(NULL, len, sizeof(char *));
 	m.len = fill_version_info(m.items);
 
 	return display_menu(&m, view);

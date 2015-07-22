@@ -22,10 +22,11 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strlen() */
 #include <wchar.h> /* wcscmp() */
 
+#include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
@@ -69,7 +70,7 @@ show_commands_menu(FileView *view)
 	}
 	m.len /= 2;
 
-	m.items = (m.len != 0) ? malloc(sizeof(char *)*m.len) : NULL;
+	m.items = (m.len != 0) ? reallocarray(NULL, m.len, sizeof(char *)) : NULL;
 	for(i = 0; i < m.len; i++)
 	{
 		m.items[i] = format_str("%-*s %s", (int)cmdname_width, list[i*2],

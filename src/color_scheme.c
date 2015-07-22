@@ -31,6 +31,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "engine/completion.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/statusbar.h"
@@ -712,7 +713,8 @@ static file_hi_t *
 clone_color_scheme_highlights(const col_scheme_t *from)
 {
 	int i;
-	file_hi_t *file_hi = malloc(sizeof(*from->file_hi)*(from->file_hi_count + 1));
+	file_hi_t *const file_hi = reallocarray(NULL, from->file_hi_count + 1,
+			sizeof(*file_hi));
 
 	for(i = 0; i < from->file_hi_count; ++i)
 	{

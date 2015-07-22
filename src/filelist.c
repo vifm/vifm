@@ -36,13 +36,14 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* abs() calloc() free() malloc() realloc() */
+#include <stdlib.h> /* abs() calloc() free() realloc() */
 #include <string.h> /* memcpy() memset() strcat() strcmp() strcpy() strdup()
                        strlen() */
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
@@ -2035,7 +2036,7 @@ replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 	dir_entry_t *new;
 	int i;
 
-	new = malloc(sizeof(*new)*with_count);
+	new = reallocarray(NULL, with_count, sizeof(*new));
 	if(new == NULL)
 	{
 		return;

@@ -25,10 +25,11 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL wchar_t */
-#include <stdlib.h> /* free() malloc() */
+#include <stdlib.h> /* free() */
 #include <string.h>
 
 #include "../cfg/config.h"
+#include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
@@ -911,7 +912,9 @@ search_menu(menu_info *m, int start_pos)
 	int err;
 
 	if(m->matches == NULL)
-		m->matches = malloc(sizeof(int)*m->len);
+	{
+		m->matches = reallocarray(NULL, m->len, sizeof(int));
+	}
 
 	memset(m->matches, 0, sizeof(int)*m->len);
 	m->matching_entries = 0;

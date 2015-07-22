@@ -27,6 +27,7 @@
 #include <string.h> /* strcspn() */
 
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "fs_limits.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
@@ -107,7 +108,7 @@ is_in_string_array_os(char *array[], size_t len, const char item[])
 char **
 copy_string_array(char **array, size_t len)
 {
-	char **result = malloc(sizeof(char *)*len);
+	char **result = reallocarray(NULL, len, sizeof(char *));
 	size_t i;
 	for(i = 0U; i < len; ++i)
 	{

@@ -23,6 +23,7 @@
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strlen() */
 
+#include "../compat/reallocarray.h"
 #include "macros.h"
 #include "utils.h"
 
@@ -236,7 +237,7 @@ utf8_to_utf16(const char utf8[])
 {
 	size_t size = utf8_widen_len(utf8);
 
-	wchar_t *const utf16 = malloc(sizeof(wchar_t)*(size + 1));
+	wchar_t *const utf16 = reallocarray(NULL, size + 1, sizeof(wchar_t));
 
 	wchar_t *t = utf16;
 	const char *p = utf8;

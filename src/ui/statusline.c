@@ -22,11 +22,11 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* malloc() */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h>
 
 #include "../cfg/config.h"
+#include "../compat/reallocarray.h"
 #include "../engine/mode.h"
 #include "../modes/modes.h"
 #include "../utils/log.h"
@@ -580,7 +580,7 @@ take_job_descr_snapshot(void)
 	size_t i;
 	char **descrs;
 
-	descrs = malloc(sizeof(*descrs)*nbar_jobs);
+	descrs = reallocarray(NULL, nbar_jobs, sizeof(*descrs));
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
 		const char *descr;
