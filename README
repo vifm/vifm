@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 09 July, 2015
+Updated: 22 July, 2015
 Version: 0.8
 
 Brief Description
@@ -64,6 +64,7 @@ Package content
     |  |  |-- getopt.c - part of glibc to have getopt_long() everywhere
     |  |  |-- getopt1.c - getopt.c public interface implementation
     |  |  |-- os.c - very thin abstraction layer over basic OS facilities
+    |  |  |-- reallocarray.c - more convenient and safe realloc() for arrays
     |  |  `-- wcwidth.c - wcwidth() implementation for Windows
     |  |
     |  |-- engine/ - the core of vi[m]-like functionality
