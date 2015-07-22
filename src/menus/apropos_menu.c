@@ -22,7 +22,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() free() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strchr() strlen() */
 
 #include "../cfg/config.h"

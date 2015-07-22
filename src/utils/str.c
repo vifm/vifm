@@ -162,7 +162,7 @@ to_multibyte(const wchar_t *s)
 	char *result;
 
 	len = wcstombs(NULL, s, 0) + 1;
-	if((result = malloc(len*sizeof(char))) == NULL)
+	if((result = malloc(len)) == NULL)
 		return NULL;
 
 	wcstombs(result, s, len);

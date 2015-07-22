@@ -32,7 +32,7 @@
 #include <locale.h> /* setlocale */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() malloc() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
 #include <string.h>
 
 #include "cfg/config.h"

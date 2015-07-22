@@ -21,7 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "utils/fs.h"

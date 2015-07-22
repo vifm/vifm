@@ -137,7 +137,7 @@ init_new_column_desc(column_desc_t *desc, int column_id, column_func func)
 columns_t
 columns_create(void)
 {
-	struct columns_list_t *const result = malloc(sizeof(struct columns_list_t));
+	struct columns_list_t *const result = malloc(sizeof(*result));
 	if(result == NULL)
 	{
 		return NULL_COLUMNS;
