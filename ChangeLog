@@ -36,6 +36,9 @@
 	Fixed crash after color scheme load failure possible in scenarios where
 	file name specific highlights are used.
 
+	Fixed use of uninitialized value which could affect whether pattern is
+	matches whole path or only its name part.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

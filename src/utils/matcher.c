@@ -218,6 +218,7 @@ matcher_clone(const matcher_t *matcher)
 	clone->expr = strdup(matcher->expr);
 	clone->raw = strdup(matcher->raw);
 	clone->globs = matcher->globs;
+	clone->full_path = matcher->full_path;
 	clone->cflags = matcher->cflags;
 
 	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
