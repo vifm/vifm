@@ -23,6 +23,7 @@
 #include <stdlib.h> /* qsort() */
 #include <string.h> /* strdup() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -110,7 +111,8 @@ add_match(char match[])
 		return -1;
 	}
 
-	if((p = realloc(lines, sizeof(*lines)*(count + 1))) == NULL)
+	p = reallocarray(lines, count + 1, sizeof(*lines));
+	if(p == NULL)
 	{
 		free(match);
 		return -1;

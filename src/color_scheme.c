@@ -26,11 +26,12 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "engine/completion.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/statusbar.h"
@@ -712,7 +713,8 @@ static file_hi_t *
 clone_color_scheme_highlights(const col_scheme_t *from)
 {
 	int i;
-	file_hi_t *file_hi = malloc(sizeof(*from->file_hi)*(from->file_hi_count + 1));
+	file_hi_t *const file_hi = reallocarray(NULL, from->file_hi_count + 1,
+			sizeof(*file_hi));
 
 	for(i = 0; i < from->file_hi_count; ++i)
 	{
@@ -921,11 +923,11 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 int
 add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 {
+	void *p;
 	file_hi_t *file_hi;
 	col_scheme_t *const cs = curr_stats.cs;
 
-	void *const p = realloc(cs->file_hi,
-			sizeof(*cs->file_hi)*(cs->file_hi_count + 1));
+	p = reallocarray(cs->file_hi, cs->file_hi_count + 1, sizeof(*cs->file_hi));
 	if(p == NULL)
 	{
 		show_error_msg("Color Scheme File Highlight", "Not enough memory");

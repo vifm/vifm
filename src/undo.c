@@ -21,9 +21,10 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "compat/reallocarray.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
@@ -725,9 +726,10 @@ undolist(int detail)
 	}
 
 	if(detail)
-		list = malloc(sizeof(char *)*(group_count + command_count*2 + 1));
+		list = reallocarray(NULL, group_count + command_count*2 + 1,
+				sizeof(char *));
 	else
-		list = malloc(sizeof(char *)*group_count);
+		list = reallocarray(NULL, group_count, sizeof(char *));
 
 	if(list == NULL)
 		return NULL;

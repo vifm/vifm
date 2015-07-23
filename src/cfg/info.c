@@ -23,10 +23,11 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
-#include <stdlib.h> /* abs() free() realloc() */
+#include <stdlib.h> /* abs() free() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
 #include "../engine/options.h"
 #include "../ui/ui.h"
@@ -1335,7 +1336,7 @@ add_to_int_array(int **array, size_t len, int what)
 {
 	int *p;
 
-	p = realloc(*array, sizeof(int)*(len + 1));
+	p = reallocarray(*array, len + 1, sizeof(*p));
 	if(p != NULL)
 	{
 		*array = p;

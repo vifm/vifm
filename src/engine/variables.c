@@ -22,9 +22,10 @@
 #include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h>
 
+#include "../compat/reallocarray.h"
 #include "../utils/env.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
@@ -82,8 +83,8 @@ init_variables(void)
 		int i;
 
 		/* allocate memory for environment variables */
-		vars = malloc(sizeof(*vars)*env_count);
-		assert(vars != NULL);
+		vars = reallocarray(NULL, env_count, sizeof(*vars));
+		assert(vars != NULL && "Failed to allocate memory for env vars.");
 
 		/* initialize variable list */
 		i = 0;

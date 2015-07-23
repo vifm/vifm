@@ -18,7 +18,7 @@
 
 #include "tree.h"
 
-#include <stdlib.h>
+#include <stdlib.h> /* free() malloc() */
 #include <string.h>
 
 #ifdef _WIN32

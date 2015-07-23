@@ -24,6 +24,7 @@
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "engine/variables.h"
 #include "utils/env.h"
 #include "utils/fs.h"
@@ -170,7 +171,7 @@ split_path_list(void)
 		p++;
 	}
 
-	paths = malloc(paths_count*sizeof(paths[0]));
+	paths = reallocarray(NULL, paths_count, sizeof(paths[0]));
 	if(paths == NULL)
 	{
 		paths_count = 0;
@@ -195,7 +196,7 @@ split_path_list(void)
 			q = p + strlen(p);
 		}
 
-		s = malloc((q - p + 1)*sizeof(s[0]));
+		s = malloc(q - p + 1);
 		if(s == NULL)
 		{
 			free_string_array(paths, i - 1);

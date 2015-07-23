@@ -27,6 +27,7 @@
 #include <string.h> /* strcspn() */
 
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "fs_limits.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
@@ -41,7 +42,7 @@ add_to_string_array(char ***array, int len, int count, ...)
 	char **p;
 	va_list va;
 
-	p = realloc(*array, sizeof(char *)*(len + count));
+	p = reallocarray(*array, len + count, sizeof(char *));
 	if(p == NULL)
 		return len;
 	*array = p;
@@ -64,7 +65,7 @@ add_to_string_array(char ***array, int len, int count, ...)
 int
 put_into_string_array(char ***array, int len, char item[])
 {
-	char **const arr = realloc(*array, sizeof(char *)*(len + 1));
+	char **const arr = reallocarray(*array, len + 1, sizeof(char *));
 	if(arr != NULL)
 	{
 		*array = arr;
@@ -107,7 +108,7 @@ is_in_string_array_os(char *array[], size_t len, const char item[])
 char **
 copy_string_array(char **array, size_t len)
 {
-	char **result = malloc(sizeof(char *)*len);
+	char **result = reallocarray(NULL, len, sizeof(char *));
 	size_t i;
 	for(i = 0U; i < len; ++i)
 	{
@@ -239,7 +240,8 @@ read_nonseekable_stream(FILE *fp, size_t *read)
 		while((piece_len = fread(content + len, 1, PIECE_LEN, fp)) != 0U)
 		{
 			const size_t new_size = len + piece_len + PIECE_LEN + 1U;
-			if((last_allocated_block = realloc(content, new_size)) == NULL)
+			last_allocated_block = realloc(content, new_size);
+			if(last_allocated_block == NULL)
 			{
 				break;
 			}

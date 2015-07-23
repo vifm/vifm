@@ -31,6 +31,7 @@
 #include <wchar.h> /* wint_t vswprintf() */
 #include <wctype.h> /* iswupper() towlower() towupper() */
 
+#include "../compat/reallocarray.h"
 #include "macros.h"
 #include "utf8.h"
 #include "utils.h"
@@ -63,7 +64,7 @@ to_wide(const char s[])
 	len = mbstowcs(NULL, s, 0);
 	if(len != (size_t)-1)
 	{
-		result = malloc((len + 1)*sizeof(wchar_t));
+		result = reallocarray(NULL, len + 1, sizeof(wchar_t));
 		if(result != NULL)
 		{
 			(void)mbstowcs(result, s, len + 1);
@@ -89,7 +90,7 @@ wchar_t *
 vifm_wcsdup(const wchar_t ws[])
 {
 	const size_t len = wcslen(ws) + 1;
-	wchar_t * const result = malloc(len*sizeof(wchar_t));
+	wchar_t * const result = reallocarray(NULL, len, sizeof(wchar_t));
 	if(result == NULL)
 	{
 		return NULL;
@@ -162,7 +163,7 @@ to_multibyte(const wchar_t *s)
 	char *result;
 
 	len = wcstombs(NULL, s, 0) + 1;
-	if((result = malloc(len*sizeof(char))) == NULL)
+	if((result = malloc(len)) == NULL)
 		return NULL;
 
 	wcstombs(result, s, len);

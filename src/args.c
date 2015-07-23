@@ -24,6 +24,7 @@
 #include <string.h> /* strcmp() */
 
 #include "compat/getopt.h"
+#include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -356,7 +357,7 @@ show_version_msg(void)
 	int i, len;
 	char **list;
 
-	list = malloc(sizeof(char *)*fill_version_info(NULL));
+	list = reallocarray(NULL, fill_version_info(NULL), sizeof(char *));
 	len = fill_version_info(list);
 
 	for(i = 0; i < len; ++i)

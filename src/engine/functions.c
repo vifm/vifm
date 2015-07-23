@@ -20,9 +20,10 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* realloc() free() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcmp() strlen() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/str.h"
 #include "completion.h"
 #include "text_buffer.h"
@@ -64,7 +65,8 @@ function_registered(const char func_name[])
 static int
 add_function(const function_t *func_info)
 {
-	function_t *ptr = realloc(functions, sizeof(function_t)*(function_count + 1));
+	function_t *ptr;
+	ptr = reallocarray(functions, function_count + 1, sizeof(function_t));
 	if(ptr == NULL)
 	{
 		return 1;
@@ -153,7 +155,8 @@ function_call_info_init(call_info_t *call_info)
 void
 function_call_info_add_arg(call_info_t *call_info, var_t var)
 {
-	var_t *ptr = realloc(call_info->argv, sizeof(var_t)*(call_info->argc + 1));
+	var_t *ptr;
+	ptr = reallocarray(call_info->argv, call_info->argc + 1, sizeof(var_t));
 	if(ptr == NULL)
 	{
 		return;

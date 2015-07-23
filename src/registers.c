@@ -23,10 +23,11 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h>
 
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -269,10 +270,12 @@ update_unnamed_reg(int key)
 	clear_register(UNNAMED_REG_NAME);
 
 	unnamed->num_files = reg->num_files;
-	unnamed->files = (char **)realloc(unnamed->files,
-			unnamed->num_files*sizeof(char *));
-	for(i = 0; i < unnamed->num_files; i++)
+	unnamed->files = reallocarray(unnamed->files, unnamed->num_files,
+			sizeof(char *));
+	for(i = 0; i < unnamed->num_files; ++i)
+	{
 		unnamed->files[i] = strdup(reg->files[i]);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

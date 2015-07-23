@@ -22,9 +22,10 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
+#include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs_limits.h"
 #include "utils/matcher.h"
@@ -322,7 +323,8 @@ clone_assoc_records(const assoc_records_t *records)
 static void
 add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 {
-	void *p = realloc(assoc_list->list, (assoc_list->count + 1)*sizeof(assoc_t));
+	void *p;
+	p = reallocarray(assoc_list->list, assoc_list->count + 1, sizeof(assoc_t));
 	if(p == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -416,7 +418,8 @@ void
 ft_assoc_record_add(assoc_records_t *records, const char *command,
 		const char *description)
 {
-	void *p = realloc(records->list, sizeof(assoc_record_t)*(records->count + 1));
+	void *p;
+	p = reallocarray(records->list, records->count + 1, sizeof(assoc_record_t));
 	if(p == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -442,7 +445,8 @@ ft_assoc_record_add_all(assoc_records_t *assocs, const assoc_records_t *src)
 		return;
 	}
 
-	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src_count));
+	p = reallocarray(assocs->list, assocs->count + src_count,
+			sizeof(assoc_record_t));
 	if(p == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");

@@ -32,7 +32,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* abs() free() malloc() */
+#include <stdlib.h> /* abs() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
 #include <time.h> /* time() */

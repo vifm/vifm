@@ -20,9 +20,10 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* malloc() realloc() free() */
+#include <stdlib.h> /* malloc() free() */
 #include <string.h> /* memmove() memset() strcpy() strlen() */
 
+#include "compat/reallocarray.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
@@ -115,8 +116,8 @@ columns_add_column_desc(int column_id, column_func func)
 static int
 extend_column_desc_list(void)
 {
-	const size_t new_size = (col_desc_count + 1)*sizeof(*col_descs);
-	column_desc_t *const mem_ptr = realloc(col_descs, new_size);
+	column_desc_t *mem_ptr;
+	mem_ptr = reallocarray(col_descs, col_desc_count + 1, sizeof(*mem_ptr));
 	if(mem_ptr == NULL)
 	{
 		return 1;
@@ -137,7 +138,7 @@ init_new_column_desc(column_desc_t *desc, int column_id, column_func func)
 columns_t
 columns_create(void)
 {
-	struct columns_list_t *const result = malloc(sizeof(struct columns_list_t));
+	struct columns_list_t *const result = malloc(sizeof(*result));
 	if(result == NULL)
 	{
 		return NULL_COLUMNS;
@@ -209,8 +210,8 @@ column_id_present(int column_id)
 static int
 extend_column_list(columns_t cols)
 {
-	static column_t *mem_ptr;
-	mem_ptr = realloc(cols->list, (cols->count + 1)*sizeof(column_t));
+	column_t *mem_ptr;
+	mem_ptr = reallocarray(cols->list, cols->count + 1, sizeof(*mem_ptr));
 	if(mem_ptr == NULL)
 	{
 		return 1;

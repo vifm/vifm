@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "filelist.h"
 #include "fileview.h"
@@ -47,7 +48,7 @@ push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 {
 	if(stack_top == stack_size)
 	{
-		stack_entry_t *s = realloc(stack, (stack_size + 1)*sizeof(*stack));
+		stack_entry_t *s = reallocarray(stack, stack_size + 1, sizeof(*stack));
 		if(s == NULL)
 		{
 			return -1;
@@ -139,7 +140,7 @@ rotate_stack(int n)
 	if(pushd() != 0)
 		return -1;
 
-	new_stack = malloc(stack_size*sizeof(*stack));
+	new_stack = reallocarray(NULL, stack_size, sizeof(*stack));
 	if(new_stack == NULL)
 		return -1;
 
@@ -186,7 +187,7 @@ dir_stack_list(void)
 		len = 2 + 1 + 1;
 	else
 		len = 2 + 1 + stack_top*2 + stack_top - 1 + 1;
-	list = malloc(sizeof(char *)*len);
+	list = reallocarray(NULL, len, sizeof(char *));
 
 	if(list == NULL)
 		return NULL;

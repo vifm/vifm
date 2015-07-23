@@ -19,10 +19,11 @@
 #include "abbrevs.h"
 
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncmp() */
 #include <wchar.h> /* wcscmp() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/str.h"
 #include "completion.h"
 
@@ -105,7 +106,8 @@ replace_abbrev(abbrev_t *abbrev, const wchar_t rhs[], int no_remap)
 static abbrev_t *
 extend_abbrevs(void)
 {
-	abbrev_t *new_abbrevs = realloc(abbrevs, sizeof(*abbrevs)*(abbrev_count + 1));
+	abbrev_t *new_abbrevs;
+	new_abbrevs = reallocarray(abbrevs, abbrev_count + 1, sizeof(*abbrevs));
 	if(new_abbrevs == NULL)
 	{
 		return NULL;

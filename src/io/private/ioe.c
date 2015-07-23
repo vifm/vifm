@@ -22,6 +22,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include "../../compat/reallocarray.h"
 #include "../ioe.h"
 
 /* TODO: think about the interface, whether we need to paths and what message
@@ -39,7 +40,8 @@ ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
 		return 0;
 	}
 
-	p = realloc(elist->errors, sizeof(*elist->errors)*(elist->error_count + 1U));
+	p = reallocarray(elist->errors, elist->error_count + 1U,
+			sizeof(*elist->errors));
 	if(p == NULL)
 	{
 		return 1;

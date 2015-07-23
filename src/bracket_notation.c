@@ -23,10 +23,11 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t wchar_t */
-#include <stdlib.h> /* free() malloc() qsort() */
+#include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strcpy() strlen() */
 #include <wchar.h> /* wcscpy() wcslen() */
 
+#include "compat/reallocarray.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 
@@ -533,7 +534,7 @@ substitute_specsw(const wchar_t cmd[])
 	const size_t len = wcslen(cmd) + 1;
 	const wchar_t *s = cmd;
 
-	buf = malloc(len*sizeof(wchar_t));
+	buf = reallocarray(NULL, len, sizeof(wchar_t));
 	if(buf == NULL)
 	{
 		free(buf);

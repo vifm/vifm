@@ -25,6 +25,7 @@
 #include <stdlib.h> /* calloc() malloc() free() realloc() */
 #include <string.h>
 
+#include "../compat/reallocarray.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
@@ -1311,12 +1312,14 @@ unescape(char s[], int regexp)
 char **
 list_udf(void)
 {
-	char **list;
 	char **p;
 	cmd_t *cur;
 
-	if((list = malloc(sizeof(*list)*(inner->udf_count*2 + 1))) == NULL)
+	char **const list = reallocarray(NULL, inner->udf_count*2 + 1, sizeof(*list));
+	if(list == NULL)
+	{
 		return NULL;
+	}
 
 	p = list;
 

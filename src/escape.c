@@ -30,6 +30,7 @@
                        strncpy() */
 
 #include "cfg/config.h"
+#include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
 #include "utils/str.h"
@@ -105,7 +106,7 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 	char *processed;
 	const size_t len = strlen(line);
 
-	int *const offsets = malloc(sizeof(int)*(len + 1));
+	int *const offsets = reallocarray(NULL, len + 1, sizeof(int));
 
 	char *const no_esc = malloc(len + 1);
 	char *no_esc_sym = no_esc;

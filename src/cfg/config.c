@@ -40,6 +40,7 @@
 #include <string.h> /* memmove() memset() strdup() */
 
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
@@ -893,16 +894,17 @@ reduce_view_history(FileView *view, int size)
 static void
 reallocate_history(size_t new_len)
 {
-	const size_t hist_item_len = sizeof(history_t)*new_len;
-	const size_t str_item_len = sizeof(char *)*new_len;
+	lwin.history = reallocarray(lwin.history, new_len, sizeof(history_t));
+	rwin.history = reallocarray(rwin.history, new_len, sizeof(history_t));
 
-	lwin.history = realloc(lwin.history, hist_item_len);
-	rwin.history = realloc(rwin.history, hist_item_len);
-
-	cfg.cmd_hist.items = realloc(cfg.cmd_hist.items, str_item_len);
-	cfg.search_hist.items = realloc(cfg.search_hist.items, str_item_len);
-	cfg.prompt_hist.items = realloc(cfg.prompt_hist.items, str_item_len);
-	cfg.filter_hist.items = realloc(cfg.filter_hist.items, str_item_len);
+	cfg.cmd_hist.items = reallocarray(cfg.cmd_hist.items, new_len,
+			sizeof(char *));
+	cfg.search_hist.items = reallocarray(cfg.search_hist.items, new_len,
+			sizeof(char *));
+	cfg.prompt_hist.items = reallocarray(cfg.prompt_hist.items, new_len,
+			sizeof(char *));
+	cfg.filter_hist.items = reallocarray(cfg.filter_hist.items, new_len,
+			sizeof(char *));
 }
 
 /* Zeroes new elements of the history.  The old_len specifies old history size,

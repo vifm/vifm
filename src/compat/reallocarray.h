@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2015 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "vifm_menu.h"
+#ifndef VIFM__COMPAT__REALLOCARRAY_H__
+#define VIFM__COMPAT__REALLOCARRAY_H__
 
-#include <stddef.h> /* NULL */
-#include <string.h> /* strdup() */
+#include <stddef.h> /* size_t */
 
-#include "../compat/reallocarray.h"
-#include "../ui/ui.h"
-#include "../version.h"
-#include "menus.h"
+/* Almost the same as realloc(), but with a dififerent way of specifying size
+ * and checks for integer overflow in the calculation of nmemb * size. */
+void * reallocarray(void *optr, size_t nmemb, size_t size);
 
-int
-show_vifm_menu(FileView *view)
-{
-	static menu_info m;
-	int len;
-	/* Version information menu always contains at least one item. */
-	init_menu_info(&m, strdup("Vifm Information"), NULL);
-
-	len = fill_version_info(NULL);
-	m.items = reallocarray(NULL, len, sizeof(char *));
-	m.len = fill_version_info(m.items);
-
-	return display_menu(&m, view);
-}
+#endif /* VIFM__COMPAT__REALLOCARRAY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -807,9 +807,8 @@ static job_t *
 add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 #endif
 {
-	job_t *new;
-
-	if((new = malloc(sizeof(job_t))) == 0)
+	job_t *new = malloc(sizeof(*new));
+	if(new == NULL)
 	{
 		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;

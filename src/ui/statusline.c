@@ -22,11 +22,11 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* malloc() */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <unistd.h>
 
 #include "../cfg/config.h"
+#include "../compat/reallocarray.h"
 #include "../engine/mode.h"
 #include "../modes/modes.h"
 #include "../utils/log.h"
@@ -414,7 +414,7 @@ ui_stat_job_bar_add(bg_op_t *bg_op)
 {
 	const int prev_height = ui_stat_job_bar_height();
 
-	bg_op_t **p = realloc(bar_jobs, (nbar_jobs + 1)*sizeof(*bar_jobs));
+	bg_op_t **p = reallocarray(bar_jobs, nbar_jobs + 1, sizeof(*bar_jobs));
 	if(p == NULL)
 	{
 		return;
@@ -580,7 +580,7 @@ take_job_descr_snapshot(void)
 	size_t i;
 	char **descrs;
 
-	descrs = malloc(sizeof(*descrs)*nbar_jobs);
+	descrs = reallocarray(NULL, nbar_jobs, sizeof(*descrs));
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
 		const char *descr;

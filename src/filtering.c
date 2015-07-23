@@ -23,6 +23,7 @@
 #include <string.h> /* strdup() */
 
 #include "cfg/config.h"
+#include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -339,7 +340,7 @@ static void
 store_local_filter_position(FileView *const view, int pos)
 {
 	size_t *const len = &view->local_filter.poshist_len;
-	int *const arr = realloc(view->local_filter.poshist, sizeof(int)*(*len + 1));
+	int *arr = reallocarray(view->local_filter.poshist, *len + 1, sizeof(int));
 	if(arr != NULL)
 	{
 		view->local_filter.poshist = arr;
