@@ -85,6 +85,7 @@ vifm_SOURCES = \
 	compat/curses.c compat/curses.h \
 	compat/fs_limits.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
+	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
@@ -166,7 +167,6 @@ vifm_SOURCES = \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
-	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \

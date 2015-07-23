@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 22 July, 2015
+Updated: 23 July, 2015
 Version: 0.8
 
 Brief Description
@@ -63,6 +63,7 @@ Package content
     |  |  |-- curses.c - emulation of some wide functions for OpenBSD
     |  |  |-- getopt.c - part of glibc to have getopt_long() everywhere
     |  |  |-- getopt1.c - getopt.c public interface implementation
+    |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- os.c - very thin abstraction layer over basic OS facilities
     |  |  |-- reallocarray.c - more convenient and safe realloc() for arrays
     |  |  `-- wcwidth.c - wcwidth() implementation for Windows
@@ -158,7 +159,6 @@ Package content
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
     |  |  |-- matcher.c - file path/name matcher (glob/regexp)
-    |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings

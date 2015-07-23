@@ -49,6 +49,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
+#include "../compat/mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "../ui/cancellation.h"
@@ -59,7 +60,6 @@
 #include "fs.h"
 #include "log.h"
 #include "macros.h"
-#include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "path.h"
 #include "str.h"
 #include "utils.h"
