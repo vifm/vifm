@@ -240,7 +240,8 @@ read_nonseekable_stream(FILE *fp, size_t *read)
 		while((piece_len = fread(content + len, 1, PIECE_LEN, fp)) != 0U)
 		{
 			const size_t new_size = len + piece_len + PIECE_LEN + 1U;
-			if((last_allocated_block = realloc(content, new_size)) == NULL)
+			last_allocated_block = realloc(content, new_size);
+			if(last_allocated_block == NULL)
 			{
 				break;
 			}

@@ -38,7 +38,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* calloc() free() malloc() strtol() */
+#include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
 #include <string.h> /* memcmp() memset() strcat() strcmp() strcpy() strdup()
                        strerror() */
 

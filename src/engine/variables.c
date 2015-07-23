@@ -22,7 +22,7 @@
 #include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h>
 
 #include "../compat/reallocarray.h"

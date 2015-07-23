@@ -38,7 +38,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS free() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS free() realloc() */
 #include <string.h> /* strcmp() strerror() strrchr() strcat() strstr() strlen()
                        strchr() strdup() strncmp() */
 
