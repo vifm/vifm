@@ -23,9 +23,9 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strlen() */
 
+#include "../compat/fs_limits.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
-#include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"

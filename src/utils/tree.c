@@ -24,7 +24,7 @@
 #ifdef _WIN32
 #include "fs.h"
 #endif
-#include "fs_limits.h"
+#include "../compat/fs_limits.h"
 #include "str.h"
 
 typedef struct node_t

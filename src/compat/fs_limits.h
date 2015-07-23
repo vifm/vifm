@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__FS_LIMITS_H__
-#define VIFM__UTILS__FS_LIMITS_H__
+#ifndef VIFM__COMPAT__FS_LIMITS_H__
+#define VIFM__COMPAT__FS_LIMITS_H__
 
 /* Define NAME_MAX and PATH_MAX constants in a most portable way. */
 
@@ -43,7 +43,7 @@
 #define PATH_MAX 4096
 #endif
 
-#endif /* VIFM__UTILS__FS_LIMITS_H__ */
+#endif /* VIFM__COMPAT__FS_LIMITS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

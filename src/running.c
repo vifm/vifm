@@ -44,6 +44,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -51,7 +52,6 @@
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"

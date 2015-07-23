@@ -4,9 +4,9 @@
 #include <sys/stat.h> /* stat */
 #include <unistd.h> /* lstat() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/fs_limits.h"
 #include "../../src/utils/utils.h"
 
 #include "utils.h"

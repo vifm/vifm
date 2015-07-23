@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* size_t */
 
-#include "utils/fs_limits.h"
+#include "compat/fs_limits.h"
 
 /* Parsed command-line arguments. */
 typedef struct

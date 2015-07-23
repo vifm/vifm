@@ -23,11 +23,11 @@
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() */
 #include <string.h> /* strcmp() */
 
+#include "compat/fs_limits.h"
 #include "compat/getopt.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"

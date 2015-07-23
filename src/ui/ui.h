@@ -33,9 +33,9 @@
 #include <time.h> /* time_t */
 #include <wchar.h> /* wint_t */
 
+#include "../compat/fs_limits.h"
 #include "../utils/filemon.h"
 #include "../utils/filter.h"
-#include "../utils/fs_limits.h"
 #include "../utils/trie.h"
 #include "../color_scheme.h"
 #include "../column_view.h"

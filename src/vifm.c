@@ -37,6 +37,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/fs_limits.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -49,7 +50,6 @@
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

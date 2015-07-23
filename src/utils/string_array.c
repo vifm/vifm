@@ -26,9 +26,9 @@
 #include <stdlib.h> /* free() malloc() realloc() */
 #include <string.h> /* strcspn() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
-#include "fs_limits.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
 static char * read_seekable_stream(FILE *const fp, size_t *read);

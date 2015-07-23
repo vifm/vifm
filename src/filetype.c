@@ -25,9 +25,9 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strdup() strcasecmp() */
 
+#include "compat/fs_limits.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "utils/fs_limits.h"
 #include "utils/matcher.h"
 #include "utils/str.h"
 #include "utils/utils.h"

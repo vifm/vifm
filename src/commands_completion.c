@@ -41,6 +41,7 @@
 #include <string.h> /* strdup() strlen() strncasecmp() strncmp() strrchr() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/abbrevs.h"
 #include "engine/cmds.h"
@@ -54,7 +55,6 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"

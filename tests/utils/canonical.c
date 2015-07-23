@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/utils/fs_limits.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/path.h"
 
 #ifndef _WIN32

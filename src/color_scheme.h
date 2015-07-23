@@ -24,7 +24,7 @@
 
 #include <stddef.h> /* size_t */
 
-#include "utils/fs_limits.h"
+#include "compat/fs_limits.h"
 #include "colors.h"
 
 /* Pseudo name of the default built-in color scheme. */

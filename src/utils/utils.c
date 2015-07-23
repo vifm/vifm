@@ -41,6 +41,7 @@
 
 #include "../modes/dialogs/msg_dialog.h"
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../engine/keys.h"
 #include "../ui/cancellation.h"
@@ -50,7 +51,6 @@
 #include "env.h"
 #include "file_streams.h"
 #include "fs.h"
-#include "fs_limits.h"
 #include "log.h"
 #include "macros.h"
 #include "path.h"

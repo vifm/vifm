@@ -28,6 +28,7 @@
 #include <string.h> /* memmove() strlen() strncat() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -36,7 +37,6 @@
 #include "ui/ui.h"
 #include "utils/file_streams.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"

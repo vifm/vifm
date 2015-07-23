@@ -26,9 +26,9 @@
 #include <time.h>
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../status.h"
-#include "fs_limits.h"
 
 static FILE *log;
 static int verbosity;

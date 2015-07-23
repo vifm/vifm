@@ -83,7 +83,9 @@ vifm_SOURCES = \
 	cfg/info_chars.h \
 	\
 	compat/curses.c compat/curses.h \
+	compat/fs_limits.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
+	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
@@ -156,7 +158,6 @@ vifm_SOURCES = \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \
-	utils/fs_limits.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
@@ -166,7 +167,6 @@ vifm_SOURCES = \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
-	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \

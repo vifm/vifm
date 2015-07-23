@@ -26,9 +26,9 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
-#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"

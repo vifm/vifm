@@ -86,14 +86,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	cfg/info.$(OBJEXT) compat/curses.$(OBJEXT) \
 	compat/getopt.$(OBJEXT) compat/getopt1.$(OBJEXT) \
-	compat/os.$(OBJEXT) compat/reallocarray.$(OBJEXT) \
-	engine/abbrevs.$(OBJEXT) engine/cmds.$(OBJEXT) \
-	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
-	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
-	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
-	engine/variables.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
-	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
+	compat/mntent.$(OBJEXT) compat/os.$(OBJEXT) \
+	compat/reallocarray.$(OBJEXT) engine/abbrevs.$(OBJEXT) \
+	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
+	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
+	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
+	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
+	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
+	io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) \
+	io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
 	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
 	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
 	menus/bookmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
@@ -119,9 +120,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
 	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
 	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
-	utils/mntent.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
@@ -377,7 +378,9 @@ vifm_SOURCES = \
 	cfg/info_chars.h \
 	\
 	compat/curses.c compat/curses.h \
+	compat/fs_limits.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
+	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
@@ -450,7 +453,6 @@ vifm_SOURCES = \
 	ui/ui.c ui/ui.h \
 	\
 	utils/env.c utils/env.h \
-	utils/fs_limits.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
@@ -460,7 +462,6 @@ vifm_SOURCES = \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
-	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
@@ -651,6 +652,8 @@ compat/getopt.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
 compat/getopt1.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
+compat/mntent.$(OBJEXT): compat/$(am__dirstamp) \
+	compat/$(DEPDIR)/$(am__dirstamp)
 compat/os.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
 compat/reallocarray.$(OBJEXT): compat/$(am__dirstamp) \
@@ -827,8 +830,6 @@ utils/log.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
-utils/mntent.$(OBJEXT): utils/$(am__dirstamp) \
-	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/str.$(OBJEXT): utils/$(am__dirstamp) \
@@ -895,6 +896,7 @@ mostlyclean-compile:
 	-rm -f compat/curses.$(OBJEXT)
 	-rm -f compat/getopt.$(OBJEXT)
 	-rm -f compat/getopt1.$(OBJEXT)
+	-rm -f compat/mntent.$(OBJEXT)
 	-rm -f compat/os.$(OBJEXT)
 	-rm -f compat/reallocarray.$(OBJEXT)
 	-rm -f engine/abbrevs.$(OBJEXT)
@@ -961,7 +963,6 @@ mostlyclean-compile:
 	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
 	-rm -f utils/matcher.$(OBJEXT)
-	-rm -f utils/mntent.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
@@ -1025,6 +1026,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/curses.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/getopt1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/mntent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/os.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/reallocarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/abbrevs.Po@am__quote@
@@ -1091,7 +1093,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/mntent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@

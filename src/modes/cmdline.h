@@ -22,9 +22,6 @@
 
 #include <stddef.h> /* wchar_t */
 
-#ifdef TEST
-#include "../utils/fs_limits.h"
-#endif
 #include "../utils/test_helpers.h"
 
 /* Submodes of command-line mode. */
@@ -67,13 +64,15 @@ void enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 void redraw_cmdline(void);
 
 #ifdef TEST
+#include "../compat/fs_limits.h"
 
 typedef enum
 {
 	HIST_NONE,
 	HIST_GO,
 	HIST_SEARCH
-}HIST;
+}
+HIST;
 
 /* Holds state of the command-line editing mode. */
 typedef struct

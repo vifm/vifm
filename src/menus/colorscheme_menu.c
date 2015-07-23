@@ -22,9 +22,9 @@
 #include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strdup() strcmp() */
 
+#include "../compat/fs_limits.h"
 #include "../cfg/config.h"
 #include "../ui/ui.h"
-#include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../color_scheme.h"

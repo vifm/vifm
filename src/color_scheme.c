@@ -30,6 +30,7 @@
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "engine/completion.h"
@@ -37,7 +38,6 @@
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/matcher.h"
 #include "utils/str.h"
