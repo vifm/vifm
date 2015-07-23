@@ -22,10 +22,11 @@
 #include <curses.h> /* KEY_* */
 
 #include <stddef.h> /* wchar_t */
-#include <stdlib.h> /* malloc() realloc() free() */
+#include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strlen() strcat() */
 #include <wchar.h> /* wcsncmp() wcslen() */
 
+#include "../compat/reallocarray.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -102,7 +103,7 @@ add_mapping_item(menu_info *m, const wchar_t map_info[])
 
 	buf_len += 1 + wcslen(rhs)*4 + 1;
 
-	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
+	m->items = reallocarray(m->items, m->len + 1, sizeof(char *));
 	item = malloc(buf_len + MAP_WIDTH);
 	item[0] = '\0';
 	m->items[m->len] = item;

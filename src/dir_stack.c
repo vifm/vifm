@@ -48,7 +48,7 @@ push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 {
 	if(stack_top == stack_size)
 	{
-		stack_entry_t *s = realloc(stack, (stack_size + 1)*sizeof(*stack));
+		stack_entry_t *s = reallocarray(stack, stack_size + 1, sizeof(*stack));
 		if(s == NULL)
 		{
 			return -1;

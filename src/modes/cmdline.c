@@ -25,7 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t wchar_t */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcslen() wcsncpy() */
 #include <wctype.h>
@@ -33,6 +33,7 @@
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
 #include "../compat/curses.h"
+#include "../compat/reallocarray.h"
 #include "../engine/abbrevs.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
@@ -331,7 +332,7 @@ def_handler(wchar_t key)
 		expand_abbrev();
 	}
 
-	p = realloc(input_stat.line, (input_stat.len + 2) * sizeof(wchar_t));
+	p = reallocarray(input_stat.line, input_stat.len + 2, sizeof(wchar_t));
 	if(p == NULL)
 	{
 		leave_cmdline_mode();
@@ -1968,7 +1969,7 @@ insert_str(const wchar_t str[])
 	const size_t len = wcslen(str);
 	const size_t new_len = input_stat.len + len + 1;
 
-	wchar_t *const ptr = realloc(input_stat.line, new_len*sizeof(wchar_t));
+	wchar_t *const ptr = reallocarray(input_stat.line, new_len, sizeof(wchar_t));
 	if(ptr == NULL)
 	{
 		return 1;
@@ -2267,7 +2268,8 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 		return -1;
 	}
 
-	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+	t = reallocarray(stat->line, new_len, sizeof(wchar_t));
+	if(t == NULL)
 	{
 		free(line_ending);
 		return -1;

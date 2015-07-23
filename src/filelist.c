@@ -36,7 +36,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* abs() calloc() free() realloc() */
+#include <stdlib.h> /* abs() calloc() free() */
 #include <string.h> /* memcpy() memset() strcat() strcmp() strcpy() strdup()
                        strlen() */
 #include <time.h> /* localtime() */
@@ -2112,8 +2112,8 @@ add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 static dir_entry_t *
 alloc_dir_entry(dir_entry_t **list, int list_size)
 {
-	dir_entry_t *const new_entry_list = realloc(*list,
-			sizeof(dir_entry_t)*(list_size + 1));
+	dir_entry_t *new_entry_list;
+	new_entry_list = reallocarray(*list, list_size + 1, sizeof(dir_entry_t));
 	if(new_entry_list == NULL)
 	{
 		return NULL;

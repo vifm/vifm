@@ -42,7 +42,7 @@ add_to_string_array(char ***array, int len, int count, ...)
 	char **p;
 	va_list va;
 
-	p = realloc(*array, sizeof(char *)*(len + count));
+	p = reallocarray(*array, len + count, sizeof(char *));
 	if(p == NULL)
 		return len;
 	*array = p;
@@ -65,7 +65,7 @@ add_to_string_array(char ***array, int len, int count, ...)
 int
 put_into_string_array(char ***array, int len, char item[])
 {
-	char **const arr = realloc(*array, sizeof(char *)*(len + 1));
+	char **const arr = reallocarray(*array, len + 1, sizeof(char *));
 	if(arr != NULL)
 	{
 		*array = arr;

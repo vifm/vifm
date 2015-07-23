@@ -24,11 +24,12 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
@@ -292,7 +293,8 @@ add_to_trash(const char path[], const char trash_name[])
 		return 0;
 	}
 
-	if((p = realloc(trash_list, sizeof(*trash_list)*(nentries + 1))) == NULL)
+	p = reallocarray(trash_list, nentries + 1, sizeof(*trash_list));
+	if(p == NULL)
 	{
 		return -1;
 	}

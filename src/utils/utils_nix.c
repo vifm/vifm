@@ -512,7 +512,7 @@ read_mnt_entries(unsigned int *nentries)
 
 	while((ent = getmntent(f)) != NULL)
 	{
-		void *p = realloc(entries, sizeof(*entries)*(*nentries + 1));
+		void *p = reallocarray(entries, *nentries + 1, sizeof(*entries));
 		if(p != NULL)
 		{
 			entries = p;

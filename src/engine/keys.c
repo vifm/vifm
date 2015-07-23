@@ -27,6 +27,7 @@
 #include <wctype.h> /* iswdigit() */
 #include <wchar.h> /* wcscat() wcslen() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -1001,7 +1002,7 @@ fill_list(const key_chunk_t *curr, size_t len, wchar_t **list)
 	{
 		wchar_t *t;
 
-		t = realloc(list[i], sizeof(wchar_t)*(len + 1));
+		t = reallocarray(list[i], len + 1, sizeof(wchar_t));
 		if(t == NULL)
 			return -1;
 
@@ -1018,7 +1019,7 @@ fill_list(const key_chunk_t *curr, size_t len, wchar_t **list)
 		wchar_t *t;
 
 		s = (curr->conf.type == USER_CMD) ? curr->conf.data.cmd : L"<built in>";
-		t = realloc(list[0], sizeof(wchar_t)*(len + 1 + wcslen(s) + 1));
+		t = reallocarray(list[0], len + 1 + wcslen(s) + 1, sizeof(wchar_t));
 		if(t == NULL)
 			return -1;
 

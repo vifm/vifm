@@ -18,19 +18,16 @@
 
 #include "viewcolumns_parser.h"
 
-#include "utils/macros.h"
-#include "utils/str.h"
-#include "column_view.h"
-
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strdup() strtok_r() */
 
-#ifdef _WIN32
-#include "utils/str.h" /* strtok_r() */
-#endif
+#include "compat/reallocarray.h"
+#include "utils/macros.h"
+#include "utils/str.h"
+#include "column_view.h"
 
 static column_info_t * parse_all(map_name_cb cn, const char *str, size_t *len);
 static int parse(map_name_cb cn, const char *str, column_info_t *info);
@@ -247,7 +244,7 @@ static int
 extend_column_list(column_info_t **list, size_t *len)
 {
 	static column_info_t *mem_ptr;
-	mem_ptr = realloc(*list, (*len + 1)*sizeof(column_info_t));
+	mem_ptr = reallocarray(*list, *len + 1, sizeof(column_info_t));
 	if(mem_ptr == NULL)
 	{
 		return 1;

@@ -26,7 +26,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() realloc() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strlen() */
 
 #include "cfg/config.h"
@@ -923,11 +923,11 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 int
 add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 {
+	void *p;
 	file_hi_t *file_hi;
 	col_scheme_t *const cs = curr_stats.cs;
 
-	void *const p = realloc(cs->file_hi,
-			sizeof(*cs->file_hi)*(cs->file_hi_count + 1));
+	p = reallocarray(cs->file_hi, cs->file_hi_count + 1, sizeof(*cs->file_hi));
 	if(p == NULL)
 	{
 		show_error_msg("Color Scheme File Highlight", "Not enough memory");

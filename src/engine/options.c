@@ -23,9 +23,10 @@
 #include <ctype.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> /* realloc() */
 #include <string.h> /* memset() strchr() strcmp() strcpy() strlen() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "completion.h"
@@ -210,9 +211,11 @@ add_option_inner(const char name[], OPT_TYPE type, int val_count,
 {
 	opt_t *p;
 
-	p = realloc(options, sizeof(*options)*(options_count + 1));
+	p = reallocarray(options, options_count + 1, sizeof(*options));
 	if(p == NULL)
+	{
 		return NULL;
+	}
 	options = p;
 	options_count++;
 

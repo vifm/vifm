@@ -31,6 +31,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/os.h"
+#include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
@@ -552,7 +553,7 @@ output_handler(const char line[], void *arg)
 	menu_info *m = arg;
 	char *expanded_line;
 
-	m->items = realloc(m->items, sizeof(char *)*(m->len + 1));
+	m->items = reallocarray(m->items, m->len + 1, sizeof(char *));
 	expanded_line = expand_tabulation_a(line, cfg.tab_stop);
 	if(expanded_line != NULL)
 	{

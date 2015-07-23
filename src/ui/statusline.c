@@ -414,7 +414,7 @@ ui_stat_job_bar_add(bg_op_t *bg_op)
 {
 	const int prev_height = ui_stat_job_bar_height();
 
-	bg_op_t **p = realloc(bar_jobs, (nbar_jobs + 1)*sizeof(*bar_jobs));
+	bg_op_t **p = reallocarray(bar_jobs, nbar_jobs + 1, sizeof(*bar_jobs));
 	if(p == NULL)
 	{
 		return;
