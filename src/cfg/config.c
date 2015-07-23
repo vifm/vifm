@@ -39,6 +39,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() memset() strdup() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "../io/iop.h"
@@ -47,7 +48,6 @@
 #include "../utils/env.h"
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
-#include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"

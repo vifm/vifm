@@ -36,6 +36,7 @@
 #include <string.h> /* strdup() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/text_buffer.h"
 #include "io/ioeta.h"
@@ -44,7 +45,6 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

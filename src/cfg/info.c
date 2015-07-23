@@ -26,6 +26,7 @@
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
@@ -34,7 +35,6 @@
 #include "../utils/file_streams.h"
 #include "../utils/filter.h"
 #include "../utils/fs.h"
-#include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"

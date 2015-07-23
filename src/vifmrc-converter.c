@@ -34,7 +34,7 @@
 #include <stdlib.h> /* EXIT_FAILURE exit() */
 #include <string.h> /* strcpy() */
 
-#include "utils/fs_limits.h"
+#include "compat/fs_limits.h"
 #include "utils/macros.h"
 #include "color_scheme.h"
 #include "colors.h"

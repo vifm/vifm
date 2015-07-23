@@ -37,6 +37,7 @@
 #include <stdio.h> /* FILE SEEK_SET fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/wcwidth.h"
 #include "../ui/ui.h"
@@ -44,7 +45,6 @@
 #include "../status.h"
 #include "env.h"
 #include "fs.h"
-#include "fs_limits.h"
 #include "log.h"
 #include "macros.h"
 #include "mntent.h"

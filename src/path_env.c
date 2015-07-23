@@ -23,12 +23,12 @@
 #include <string.h> /* strchr() strlen() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "engine/variables.h"
 #include "utils/env.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"

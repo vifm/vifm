@@ -28,11 +28,11 @@
 #include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/mntent.h"
 #include "utils/path.h"

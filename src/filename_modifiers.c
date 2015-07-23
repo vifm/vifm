@@ -23,8 +23,8 @@
 #include <string.h> /* memmove() strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "ui/ui.h"
-#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "fileops.h"

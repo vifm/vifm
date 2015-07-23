@@ -32,9 +32,9 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "ui/ui.h"
 #include "utils/env.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

@@ -4,10 +4,10 @@
 
 #include <stdio.h> /* snprintf() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/fs_limits.h"
 #include "../../src/utils/path.h"
 
 #define DIR_NAME SANDBOX_PATH "/dir-to-create"

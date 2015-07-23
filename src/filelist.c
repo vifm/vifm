@@ -42,6 +42,7 @@
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "engine/mode.h"
@@ -53,7 +54,6 @@
 #include "utils/env.h"
 #include "utils/filemon.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

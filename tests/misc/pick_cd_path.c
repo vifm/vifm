@@ -3,8 +3,8 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/fs_limits.h"
 #include "../../src/filelist.h"
 
 #ifdef _WIN32

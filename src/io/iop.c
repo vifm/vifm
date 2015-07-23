@@ -35,10 +35,10 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strerror() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
 #include "../utils/fs.h"
-#include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"

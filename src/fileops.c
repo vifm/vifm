@@ -43,6 +43,7 @@
                        strerror() */
 
 #include "cfg/config.h"
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -56,7 +57,6 @@
 #include "utils/env.h"
 #endif
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"

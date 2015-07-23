@@ -36,10 +36,10 @@
                        strrchr() */
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../path_env.h"
 #include "env.h"
 #include "fs.h"
-#include "fs_limits.h"
 #include "log.h"
 #include "str.h"
 #include "utils.h"

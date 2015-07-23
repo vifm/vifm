@@ -39,9 +39,9 @@
 #include <stdlib.h> /* free() realpath() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../io/iop.h"
-#include "fs_limits.h"
 #include "log.h"
 #include "path.h"
 #include "str.h"

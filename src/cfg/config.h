@@ -22,8 +22,8 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
+#include "../compat/fs_limits.h"
 #include "../ui/ui.h"
-#include "../utils/fs_limits.h"
 #include "../color_scheme.h"
 #include "../types.h"
 #include "hist.h"

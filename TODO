@@ -166,7 +166,7 @@ Code improvements.
         submode.  Would it make conflict resolution prompt easier to use?
     Maybe pass var by pointer to var_free and cleanup the structure.
     Write more tests for get_lines functions in string_array.c
-    Move utils/mntent.h and utils/fs_limits.h to compat/ directory.
+    Move utils/mntent.h to compat/ directory.
     Add a function to count number of elements in a NULL terminated array of
         pointers.
     Separate filelist data from view data (extract into separate structure).

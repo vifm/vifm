@@ -22,8 +22,8 @@
 
 #include <stdio.h> /* FILE */
 
+#include "compat/fs_limits.h"
 #include "utils/tree.h"
-#include "utils/fs_limits.h"
 
 #include "color_scheme.h"
 

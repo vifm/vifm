@@ -24,9 +24,9 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "compat/fs_limits.h"
 #include "compat/reallocarray.h"
 #include "utils/fs.h"
-#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
