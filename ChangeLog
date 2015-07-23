@@ -33,6 +33,9 @@
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
+	Fixed crash after color scheme load failure possible in scenarios where
+	file name specific highlights are used.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
