@@ -1,10 +1,10 @@
-*vifm-plugin.txt*    For Vifm version 0.8  Last change: 2015 Jul 09
+*vifm-plugin.txt*    For Vifm version 0.8  Last change: 2015 Jul 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
 Using the vifm.vim plugin~
 
-vifm-plugin for using vifm in vim as a file selector.
+vifm-plugin for using vifm in Vim as a file selector.
 
 Commands:
 
@@ -25,9 +25,11 @@ directory.  After arguments are checked, vifm process is spawned in a special
 "file-picker" mode.  To pick files just open them either by pressing l, i or
 Enter keys, or by running :edit command.  If no files are selected, file
 under the cursor is opened, otherwise whole selection is passed to the plugin
-and opened in vim.
+and opened in Vim.
 
-The plugin have only two settings.  It's a string variable named g:vifm_term to
+                                               *g:vifm_term*
+                                               *g:vifm_exec_args*
+The plugin has only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run GUI terminal.  By default it's equal to
 'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
