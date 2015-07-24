@@ -27,6 +27,17 @@ Enter keys, or by running :edit command.  If no files are selected, file
 under the cursor is opened, otherwise whole selection is passed to the plugin
 and opened in Vim.
 
+Once vifm is opened additional commands that correspond to commands listed
+above become available:
+  :EditVim
+  :VsplitVim
+  :SplitVim
+  :DiffVim
+  :TabVim
+Their meaning is the same as the meaning of *Vifm, but these commands overrule
+their *Vifm command used to start vifm.  *Vifm basically provide default,
+which can be overwritten right on file open.
+
                                                *g:vifm_term*
                                                *g:vifm_exec_args*
 The plugin has only two settings.  It's a string variable named g:vifm_term to
