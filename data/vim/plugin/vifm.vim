@@ -103,18 +103,24 @@ function! s:StartVifm(editcmd, ...)
 	let rdir = (a:0 > 1) ? a:2 : ''
 	let rdir = s:PreparePath(rdir)
 
+	let listf = tempname()
+	let pickargs = [ '--choose-files', listf ]
+	call map(pickargs, 'shellescape(v:val)')
+	let pickargsstr = join(pickargs, ' ')
+
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec '-f' g:vifm_exec_args ldir
-		      \ rdir
+		execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args pickargsstr
+		      \ ldir rdir
 	else
-		execute 'silent !' g:vifm_exec '-f' g:vifm_exec_args ldir rdir
+		execute 'silent !' g:vifm_exec g:vifm_exec_args pickargsstr ldir rdir
 	endif
 
 	redraw!
 
 	if v:shell_error != 0
 		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		call delete(listf)
 		return
 	endif
 
@@ -122,13 +128,14 @@ function! s:StartVifm(editcmd, ...)
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
 
-	let vimfiles = fnamemodify(g:vifm_home.'/vimfiles', ':p')
-	if !file_readable(vimfiles)
-		echohl WarningMsg | echo 'vimfiles file not found' | echohl None
+	if !file_readable(listf)
+		echohl WarningMsg | echo 'Failed to read list of files' | echohl None
+		call delete(listf)
 		return
 	endif
 
-	let flist = readfile(vimfiles)
+	let flist = readfile(listf)
+	call delete(listf)
 
 	call map(flist, 'fnameescape(v:val)')
 
