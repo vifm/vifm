@@ -575,7 +575,7 @@ color_to_str(int color, size_t buf_len, char str_buf[])
 int
 load_primary_color_scheme(const char name[])
 {
-	col_scheme_t prev_cs;
+	col_scheme_t prev_cs = {};
 
 	if(!color_scheme_exists(name))
 	{
@@ -583,7 +583,7 @@ load_primary_color_scheme(const char name[])
 		return 0;
 	}
 
-	prev_cs = cfg.cs;
+	assign_color_scheme(&prev_cs, &cfg.cs);
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
@@ -600,13 +600,16 @@ load_primary_color_scheme(const char name[])
 
 	update_attributes();
 
-	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
+	if(cfg.cs.state == CSS_DEFAULTED)
 	{
 		restore_primary_color_scheme(&prev_cs);
-		show_error_msg("Color Scheme Error", "Not supported by the terminal");
+		show_error_msgf("Color Scheme Error",
+				"\"%s\" color scheme is not supported by the terminal, restored \"%s\"",
+				name, prev_cs.name);
 		return 0;
 	}
 
+	free_color_scheme_highlights(&prev_cs);
 	cfg.cs.state = CSS_NORMAL;
 	return 0;
 }
@@ -615,6 +618,7 @@ load_primary_color_scheme(const char name[])
 static void
 restore_primary_color_scheme(const col_scheme_t *cs)
 {
+	free_color_scheme_highlights(&cfg.cs);
 	cfg.cs = *cs;
 	load_color_scheme_colors();
 	update_screen(UT_FULL);

@@ -30,8 +30,17 @@
 
 	Document %= for 'statusline' and 'rulerformat'.
 
+	Proper recovery from loading of color scheme unsupported by the terminal
+	at startup.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
+
+	Fixed crash after color scheme load failure possible in scenarios where
+	file name specific highlights are used.
+
+	Fixed use of uninitialized value which could affect whether pattern is
+	matches whole path or only its name part.
 
 0.8-beta to 0.8
 

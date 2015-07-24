@@ -3054,7 +3054,7 @@ parse_color_name_value(const char str[], int fg, int *attr)
 	}
 
 	col_num = isdigit(*str) ? atoi(str) : -1;
-	if(col_num >= 0 && (curr_stats.load_stage < 2 || col_num < COLORS))
+	if(col_num >= 0 && col_num < COLORS)
 	{
 		return col_num;
 	}
