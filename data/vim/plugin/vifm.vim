@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 November 05
+" Last Change: 2015 July 25
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -57,7 +57,7 @@ if !exists('g:vifm_term')
 	endif
 endif
 
-if !exists('g:vifm_home') &&  has('win32')
+if !exists('g:vifm_home') && has('win32')
 	if filereadable(g:vifm_exec) || filereadable(g:vifm_exec.'.exe')
 		let g:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
 	else
