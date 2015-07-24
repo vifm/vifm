@@ -600,10 +600,12 @@ load_primary_color_scheme(const char name[])
 
 	update_attributes();
 
-	if(curr_stats.load_stage >= 2 && cfg.cs.state == CSS_DEFAULTED)
+	if(cfg.cs.state == CSS_DEFAULTED)
 	{
 		restore_primary_color_scheme(&prev_cs);
-		show_error_msg("Color Scheme Error", "Not supported by the terminal");
+		show_error_msgf("Color Scheme Error",
+				"\"%s\" color scheme is not supported by the terminal, restored \"%s\"",
+				name, prev_cs.name);
 		return 0;
 	}
 
