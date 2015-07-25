@@ -408,6 +408,12 @@ make_path(const char dir_name[], mode_t mode)
 }
 
 int
+create_path(const char dir_name[], mode_t mode)
+{
+	return is_dir(dir_name) ? 1 : make_path(dir_name, mode);
+}
+
+int
 symlinks_available(void)
 {
 #ifndef _WIN32

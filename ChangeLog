@@ -33,6 +33,9 @@
 	Proper recovery from loading of color scheme unsupported by the terminal
 	at startup.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Automatically create ~/.vifm/scripts containing small README file if the
+	directory doesn't exist on startup.  Thanks to fogine.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
