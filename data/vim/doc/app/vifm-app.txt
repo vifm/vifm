@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 19
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3723,7 +3723,7 @@ are some exceptions:
 
                                                *vifm-scripts*
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies
-it's PATH environment variable to let user run those scripts without specifying
+its PATH environment variable to let user run those scripts without specifying
 full path.  All subdirectories of the $VIFM/scripts will be added to PATH too.
 Script in a subdirectory overlaps script with the same name in all its parent
 directories.
