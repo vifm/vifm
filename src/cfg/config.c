@@ -96,6 +96,7 @@ static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(void);
 static void setup_dirs(void);
 static void copy_help_file(void);
+static void create_scripts_dir(void);
 static void copy_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
@@ -545,12 +546,14 @@ setup_dirs(void)
 
 	if(is_dir(cfg.config_dir))
 	{
-		/* We rely on this file for :help, so make sure it's there. */
+		/* We rely on this file for :help, so make sure it's there on every run. */
 		copy_help_file();
+
+		create_scripts_dir();
 		return;
 	}
 
-	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
+	if(make_path(cfg.config_dir, S_IRWXU) != 0)
 	{
 		return;
 	}
@@ -588,6 +591,38 @@ copy_help_file(void)
 
 	/* Don't care if it fails, also don't overwrite if file exists. */
 	(void)iop_cp(&args);
+}
+
+/* Responsible for creation of scripts/ directory if it doesn't exist (in which
+ * case a README file is created as well). */
+static void
+create_scripts_dir(void)
+{
+	char scripts[PATH_MAX];
+	char readme[PATH_MAX];
+	FILE *fp;
+
+	snprintf(scripts, sizeof(scripts), "%s/" SCRIPTS_DIR, cfg.config_dir);
+	if(create_path(scripts, S_IRWXU) != 0)
+	{
+		return;
+	}
+
+	snprintf(readme, sizeof(readme), "%s/README", scripts);
+	fp = os_fopen(readme, "w");
+	if(fp == NULL)
+	{
+		return;
+	}
+
+	fputs("This directory is dedicated for user-supplied scripts/executables.\n"
+				"vifm modifies its PATH environment variable to let user run those\n"
+				"scripts without specifying full path.  All subdirectories are added\n"
+				"as well.  File in a subdirectory overrules file with the same name\n"
+				"in parent directories.  Restart might be needed to recognize files\n"
+				"in newly created or renamed subdirectories.", fp);
+
+	fclose(fp);
 }
 
 /* Copies example vifmrc file from shared files to the ~/.vifm directory. */

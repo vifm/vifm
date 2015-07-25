@@ -90,8 +90,13 @@ int get_link_target_abs(const char link[], const char cwd[], char buf[],
 int get_link_target(const char *link, char *buf, size_t buf_len);
 
 /* Creates directory and all intermediate directories if needed using specified
- * access mode.  Returns zero on success, otherwise non-zero is returned. */
+ * access mode.  If target directory already exists, no error will be raised.
+ * Returns zero on success, otherwise non-zero is returned. */
 int make_path(const char dir_name[], mode_t mode);
+
+/* Same as make_path(), but fails if target path already exists and is a
+ * directory. */
+int create_path(const char dir_name[], mode_t mode);
 
 /* Whether symbolic links can be used.  Returns non-zero if so, otherwise zero
  * is returned. */
