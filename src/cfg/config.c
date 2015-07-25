@@ -550,7 +550,7 @@ setup_dirs(void)
 		return;
 	}
 
-	if(!is_dir(cfg.config_dir) && make_path(cfg.config_dir, S_IRWXU) != 0)
+	if(make_path(cfg.config_dir, S_IRWXU) != 0)
 	{
 		return;
 	}

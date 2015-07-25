@@ -84,14 +84,11 @@ fuse_try_mount(FileView *view, const char program[])
 	char file_full_path[PATH_MAX];
 	char mount_point[PATH_MAX];
 
-	if(!path_exists(cfg.fuse_home, DEREF))
+	if(make_path(cfg.fuse_home, S_IRWXU) != 0)
 	{
-		if(make_path(cfg.fuse_home, S_IRWXU) != 0)
-		{
-			show_error_msg("Unable to create FUSE mount home directory",
-					cfg.fuse_home);
-			return;
-		}
+		show_error_msg("Unable to create FUSE mount home directory",
+				cfg.fuse_home);
+		return;
 	}
 
 	get_current_full_path(view, sizeof(file_full_path), file_full_path);
