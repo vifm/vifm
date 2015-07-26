@@ -6314,11 +6314,9 @@ done
 if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = yes; then
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-             #include <linux/binfmts.h>
-             #include <sys/user.h>
-             int main() { (void)MAX_ARG_STRLEN; return 0; }
-
+#include <linux/binfmts.h>
+                        #include <sys/user.h>
+                        int main() { (void)MAX_ARG_STRLEN; return 0; }
 
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :

@@ -78,15 +78,13 @@ AC_CHECK_HEADERS([sys/param.h sys/user.h linux/binfmts.h], [], [],
                    #endif
                  ]])
 if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = yes; then
-    AC_COMPILE_IFELSE(
-        AC_LANG_SOURCE(
-            [[
-             #include <linux/binfmts.h>
-             #include <sys/user.h>
-             int main() { (void)MAX_ARG_STRLEN; return 0; }
-            ]]
-        ),
-        [AC_DEFINE([HAVE_MAX_ARG_STRLEN], [1], [MAX_ARG_STRLEN is available.])])
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+                      [[#include <linux/binfmts.h>
+                        #include <sys/user.h>
+                        int main() { (void)MAX_ARG_STRLEN; return 0; }
+                      ]])],
+                      [AC_DEFINE([HAVE_MAX_ARG_STRLEN], [1],
+                      [MAX_ARG_STRLEN is available.])])
 fi
 
 dnl Check for various system types.
