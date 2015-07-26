@@ -58,7 +58,10 @@ int prompt_msg(const char title[], const char message[]);
 
 /* Same as prompt_msg() but with custom list of options.  The responses array
  * should be terminated with a record filled with zeroes.  Returns one of keys
- * defined in the array.  The array has to contain at least one element. */
+ * defined in the array.  The array has to contain at least one element.  Use
+ * '\r' key to handle Enter and '\x03' to handle cancellation (both Ctrl-C and
+ * Escape).  variants elements with empty lines instead of descriptions are not
+ * displayed. */
 char prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[]);
 

@@ -429,10 +429,13 @@ get_custom_control_msg(const response_variant responses[])
 	msg_buf[0] = '\0';
 	while(response != NULL && response->key != '\0')
 	{
-		(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
-		if(response[1].key != '\0')
+		if(response->descr[0] != '\0')
 		{
-			(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
+			(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
+			if(response[1].key != '\0')
+			{
+				(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
+			}
 		}
 
 		++response;
