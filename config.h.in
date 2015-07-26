@@ -73,6 +73,9 @@
 /* strverscmp() function is available. */
 #undef HAVE_STRVERSCMP_FUNC
 
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 

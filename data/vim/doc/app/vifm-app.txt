@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 25
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3663,8 +3663,8 @@ On *nix systems $HOME is normally present and used as is.
 On Windows systems vifm tries to find correct home directory in the following
 order:
  - $HOME variable;
- - $USERPROFILE variable;
- - a combination of $HOMEDRIVE and $HOMEPATH variables.
+ - $USERPROFILE variable (on Windows only);
+ - a combination of $HOMEDRIVE and $HOMEPATH variables (on Windows only).
 
                                                *vifm-$VIFM*
 vifm tries to find correct configuration directory by checking the following

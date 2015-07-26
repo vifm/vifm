@@ -6214,14 +6214,6 @@ else
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "sys/dir.h" "ac_cv_header_sys_dir_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_dir_h" = xyes; then :
-
-else
-  as_fn_error $? "sys/dir.h header not found." "$LINENO" 5
-fi
-
-
 ac_fn_c_check_header_mongrel "$LINENO" "sys/ioctl.h" "ac_cv_header_sys_ioctl_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_ioctl_h" = xyes; then :
 
@@ -6302,10 +6294,14 @@ else
 fi
 
 
-for ac_header in sys/user.h linux/binfmts.h
+for ac_header in sys/param.h sys/user.h linux/binfmts.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#if HAVE_SYS_PARAM_H
+                   # include <sys/param.h>
+                   #endif
+
+"
 if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
@@ -6318,11 +6314,9 @@ done
 if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = yes; then
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-             #include <linux/binfmts.h>
-             #include <sys/user.h>
-             int main() { (void)MAX_ARG_STRLEN; return 0; }
-
+#include <linux/binfmts.h>
+                        #include <sys/user.h>
+                        int main() { (void)MAX_ARG_STRLEN; return 0; }
 
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :

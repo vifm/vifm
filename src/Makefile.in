@@ -1886,9 +1886,9 @@ $(abs_srcdir)/../data/vim/doc/app/tags: \
                                   $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
 	mkdir -p ../data/vim/doc/app/
 	@if [ -n "$(PERL)" ]; then \
-		$(abs_srcdir)/helpztags "$(dir $<)"; \
+		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/app"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $<)|q'; \
+		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/app|q'; \
 	else \
 		touch $@; \
 	fi
@@ -1897,9 +1897,9 @@ $(abs_srcdir)/../data/vim/doc/plugin/tags: \
                             $(abs_srcdir)/../data/vim/doc/plugin/vifm-plugin.txt
 	mkdir -p ../data/vim/doc/plugin/
 	@if [ -n "$(PERL)" ]; then \
-		$(abs_srcdir)/helpztags "$(dir $<)"; \
+		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/plugin"; \
 	elif [ -n "$(VIM)" ]; then \
-		vim -e -s -c 'helptags $(dir $<)|q'; \
+		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/plugin|q'; \
 	else \
 		touch $@; \
 	fi
