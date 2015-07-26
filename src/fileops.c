@@ -172,11 +172,11 @@ static int complete_filename(const char str[], void *arg);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
+static void put_decide_cb(const char dest_name[]);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
-static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
@@ -2004,6 +2004,39 @@ put_confirm_cb(const char dest_name[])
 	}
 }
 
+/* Continues putting files. */
+static void
+put_continue(int force)
+{
+	if(put_next("", force) == 0)
+	{
+		++put_confirm.x;
+		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
+	}
+}
+
+/* Prompt user for conflict resolution strategy about given filename. */
+static void
+prompt_what_to_do(const char src_name[])
+{
+	wchar_t buf[NAME_MAX];
+
+	(void)replace_string(&put_confirm.name, src_name);
+	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
+			L". [r]ename/[s]kip/[S]kip all%" WPRINTF_MBSTR
+			"/[o]verwrite/[O]verwrite all"
+			"%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
+			src_name,
+			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
+			put_confirm.allow_merge ? "/[m]erge" : "",
+			put_confirm.allow_merge ? "/[M]erge all" : "");
+
+	/* Screen needs to be restored after displaying progress dialog. */
+	modes_update();
+
+	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
+}
+
 static void
 put_decide_cb(const char choice[])
 {
@@ -2050,39 +2083,6 @@ put_decide_cb(const char choice[])
 	{
 		prompt_what_to_do(put_confirm.name);
 	}
-}
-
-/* Continues putting files. */
-static void
-put_continue(int force)
-{
-	if(put_next("", force) == 0)
-	{
-		++put_confirm.x;
-		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
-	}
-}
-
-/* Prompt user for conflict resolution strategy about given filename. */
-static void
-prompt_what_to_do(const char src_name[])
-{
-	wchar_t buf[NAME_MAX];
-
-	(void)replace_string(&put_confirm.name, src_name);
-	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[S]kip all%" WPRINTF_MBSTR
-			"/[o]verwrite/[O]verwrite all"
-			"%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
-			src_name,
-			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
-			put_confirm.allow_merge ? "/[m]erge" : "",
-			put_confirm.allow_merge ? "/[M]erge all" : "");
-
-	/* Screen needs to be restored after displaying progress dialog. */
-	modes_update();
-
-	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
 }
 
 int
