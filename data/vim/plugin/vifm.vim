@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2015 July 25
+" Last Change: 2015 July 26
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -125,10 +125,10 @@ function! s:StartVifm(editcmd, ...)
 
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args pickargsstr
-		      \ ldir rdir
+		execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
+		      \ pickargsstr
 	else
-		execute 'silent !' g:vifm_exec g:vifm_exec_args pickargsstr ldir rdir
+		execute 'silent !' g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
 	endif
 
 	" Executioin of external command might have left Vim's window cleared, force
