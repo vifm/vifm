@@ -528,7 +528,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	{
 		mvwprintw(error_win, 0, (w - strlen(title) - 2)/2, " %s ", title);
 	}
-	mvwaddstr(error_win, h - 2, (w - strlen(ctrl_msg))/2, ctrl_msg);
+	mvwaddstr(error_win, h - 2, MAX(0, (w - (int)strlen(ctrl_msg))/2), ctrl_msg);
 }
 
 /* Determines maximum width of line in the message.  Returns the width. */

@@ -40,7 +40,8 @@
 	Automatically create ~/.vifm/scripts containing small README file if the
 	directory doesn't exist on startup.  Thanks to fogine.
 
-	Consider control message when deciding width for a dialog.
+	Consider control message when deciding width for a dialog, also don't let
+	it disappear on narrow terminals.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
