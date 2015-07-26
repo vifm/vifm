@@ -473,7 +473,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	getmaxyx(stdscr, sh, sw);
 
 	h = sh - 3 + !cfg.display_statusline;
-	w = MIN(sw - 2, MAX(sw/3, (int)determine_width(msg) + 4));
+	w = MIN(MAX(sw/3, (int)MAX(strlen(ctrl_msg), determine_width(msg)) + 4),
+				sw - 2);
 	wresize(error_win, h, w);
 
 	werase(error_win);
