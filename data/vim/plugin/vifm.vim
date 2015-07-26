@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2014 November 05
+" Last Change: 2015 July 26
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -57,7 +57,7 @@ if !exists('g:vifm_term')
 	endif
 endif
 
-if !exists('g:vifm_home') &&  has('win32')
+if !exists('g:vifm_home') && has('win32')
 	if filereadable(g:vifm_exec) || filereadable(g:vifm_exec.'.exe')
 		let g:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
 	else
@@ -103,18 +103,42 @@ function! s:StartVifm(editcmd, ...)
 	let rdir = (a:0 > 1) ? a:2 : ''
 	let rdir = s:PreparePath(rdir)
 
+	let listf = tempname()
+	let typef = tempname()
+
+	" XXX: this is horrible, but had to do this to work around selection
+	"      clearing after each command-line command (:let in this case)
+	let edit = ' | execute ''cnoremap j <cr>'' | normal gs:editj'
+
+	let pickargs = [
+	    \ '--choose-files', listf,
+	    \ '--on-choose',
+	    \ has('win32')
+	    \ ? 'echo \"%%VIFM_OPEN_TYPE%%\">' . typef : 'echo $VIFM_OPEN_TYPE >' . typef,
+	    \ '+command EditVim   :let $VIFM_OPEN_TYPE=''edit''' . edit,
+	    \ '+command VsplitVim :let $VIFM_OPEN_TYPE=''vsplit''' . edit,
+	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
+	    \ '+command DiffVim   :let $VIFM_OPEN_TYPE=''vert diffsplit''' . edit,
+	    \ '+command TabVim    :let $VIFM_OPEN_TYPE=''tablast | tab drop''' . edit]
+	call map(pickargs, 'shellescape(v:val, 1)')
+	let pickargsstr = join(pickargs, ' ')
+
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec '-f' g:vifm_exec_args ldir
-		      \ rdir
+		execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
+		      \ pickargsstr
 	else
-		execute 'silent !' g:vifm_exec '-f' g:vifm_exec_args ldir rdir
+		execute 'silent !' g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
 	endif
 
+	" Executioin of external command might have left Vim's window cleared, force
+	" redraw before doing anything else.
 	redraw!
 
 	if v:shell_error != 0
 		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		call delete(listf)
+		call delete(typef)
 		return
 	endif
 
@@ -122,13 +146,18 @@ function! s:StartVifm(editcmd, ...)
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
 
-	let vimfiles = fnamemodify(g:vifm_home.'/vimfiles', ':p')
-	if !file_readable(vimfiles)
-		echohl WarningMsg | echo 'vimfiles file not found' | echohl None
+	if !file_readable(listf)
+		echohl WarningMsg | echo 'Failed to read list of files' | echohl None
+		call delete(listf)
+		call delete(typef)
 		return
 	endif
 
-	let flist = readfile(vimfiles)
+	let flist = readfile(listf)
+	call delete(listf)
+
+	let opentype = file_readable(typef) ? readfile(typef) : []
+	call delete(typef)
 
 	call map(flist, 'fnameescape(v:val)')
 
@@ -138,7 +167,14 @@ function! s:StartVifm(editcmd, ...)
 		return
 	endif
 
-	if a:editcmd == 'edit'
+	if !empty(opentype) && !empty(opentype[0]) &&
+		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
+	   let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
+	else
+		 let editcmd = a:editcmd
+	endif
+
+	if editcmd == 'edit'
 		call map(flist, 'fnamemodify(v:val, ":.")')
 		execute 'args' join(flist)
 		return
@@ -146,13 +182,13 @@ function! s:StartVifm(editcmd, ...)
 
 	" Don't split if current window is empty
 	let firstfile = flist[0]
-	if expand('%') == '' && a:editcmd =~ '^v\?split$'
+	if expand('%') == '' && editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
 	endif
 
 	for file in flist
-		execute a:editcmd fnamemodify(file, ':.')
+		execute editcmd fnamemodify(file, ':.')
 	endfor
 	" Go to first file
 	execute 'drop' firstfile
