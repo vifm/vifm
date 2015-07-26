@@ -6214,14 +6214,6 @@ else
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "sys/dir.h" "ac_cv_header_sys_dir_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_dir_h" = xyes; then :
-
-else
-  as_fn_error $? "sys/dir.h header not found." "$LINENO" 5
-fi
-
-
 ac_fn_c_check_header_mongrel "$LINENO" "sys/ioctl.h" "ac_cv_header_sys_ioctl_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_ioctl_h" = xyes; then :
 
