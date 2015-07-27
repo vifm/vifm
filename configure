@@ -6392,13 +6392,6 @@ else
   as_fn_error $? "access() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "atexit" "ac_cv_func_atexit"
-if test "x$ac_cv_func_atexit" = xyes; then :
-
-else
-  as_fn_error $? "atexit() function not found." "$LINENO" 5
-fi
-
 ac_fn_c_check_func "$LINENO" "atof" "ac_cv_func_atof"
 if test "x$ac_cv_func_atof" = xyes; then :
 
@@ -9084,6 +9077,13 @@ if test "x$ac_cv_func_socket" = xyes; then :
 
 else
   as_fn_error $? "socket() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "atexit" "ac_cv_func_atexit"
+if test "x$ac_cv_func_atexit" = xyes; then :
+
+else
+  as_fn_error $? "atexit() function not found." "$LINENO" 5
 fi
 
 
