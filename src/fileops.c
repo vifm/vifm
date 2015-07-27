@@ -2019,20 +2019,20 @@ static void
 prompt_what_to_do(const char fname[])
 {
 	static const response_variant
-		rename        = { .key = 'r', .descr = "[r]ename or Enter" },
+		rename        = { .key = 'r', .descr = "[r]ename (also Enter)\n" },
 		enter         = { .key = '\r', .descr = "" },
-		skip          = { .key = 's', .descr = "[s]kip" },
-		skip_all      = { .key = 'S', .descr = "[S]kip all" },
-		append        = { .key = 'a', .descr = "[a]ppend the end" },
-		overwrite     = { .key = 'o', .descr = "[o]verwrite" },
-		overwrite_all = { .key = 'o', .descr = "[O]verwrite all" },
-		merge         = { .key = 'm', .descr = "[m]erge" },
-		merge_all     = { .key = 'M', .descr = "[M]erge all" },
-		escape        = { .key = '\x03', .descr = "Esc or Ctrl-C" };
+		skip          = { .key = 's', .descr = "[s]kip " },
+		skip_all      = { .key = 'S', .descr = " [S]kip all\n" },
+		append        = { .key = 'a', .descr = "[a]ppend to the end\n" },
+		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
+		overwrite_all = { .key = 'o', .descr = " [O]verwrite all\n" },
+		merge         = { .key = 'm', .descr = "[m]erge " },
+		merge_all     = { .key = 'M', .descr = " [M]erge all\n" },
+		escape        = { .key = '\x03', .descr = "Esc or Ctrl-C to cancel" };
 
 	char msg[PATH_MAX];
 	char response;
-	response_variant responses[10] = {};
+	response_variant responses[11] = {};
 	size_t i = 0;
 
 	responses[i++] = rename;
@@ -2057,8 +2057,8 @@ prompt_what_to_do(const char fname[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	snprintf(msg, sizeof(msg), "Name conflict for %s", fname);
-	response = prompt_msg_custom("File overwrite", msg, responses);
+	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
+	response = prompt_msg_custom("File Conflict", msg, responses);
 	handle_prompt_response(fname, response);
 }
 
