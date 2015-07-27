@@ -172,11 +172,11 @@ static int complete_filename(const char str[], void *arg);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
+static void handle_prompt_response(const char fname[], char response);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
-static void put_decide_cb(const char dest_name[]);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
@@ -249,7 +249,6 @@ static struct
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int x;             /* Index of the next file of the register to process. */
 	int y;             /* Number of successfully processed files. */
-	char *name;        /* Name of the conflicting file. */
 	int skip_all;      /* Skip all conflicting files/directories. */
 	int overwrite_all; /* Overwrite all future conflicting files/directories. */
 	int append;        /* Whether we're appending ending of a file or not. */
@@ -2004,54 +2003,6 @@ put_confirm_cb(const char dest_name[])
 	}
 }
 
-static void
-put_decide_cb(const char choice[])
-{
-	if(is_null_or_empty(choice) || strcmp(choice, "r") == 0)
-	{
-		prompt_dest_name(put_confirm.name);
-	}
-	else if(strcmp(choice, "s") == 0 || strcmp(choice, "S") == 0)
-	{
-		if(strcmp(choice, "S") == 0)
-		{
-			put_confirm.skip_all = 1;
-		}
-
-		put_confirm.x++;
-		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
-	}
-	else if(strcmp(choice, "o") == 0)
-	{
-		put_continue(1);
-	}
-	else if(strcmp(choice, "a") == 0 && cfg.use_system_calls &&
-			!is_dir(put_confirm.name))
-	{
-		put_confirm.append = 1;
-		put_continue(0);
-	}
-	else if(strcmp(choice, "O") == 0)
-	{
-		put_confirm.overwrite_all = 1;
-		put_continue(1);
-	}
-	else if(put_confirm.allow_merge && strcmp(choice, "m") == 0)
-	{
-		put_confirm.merge = 1;
-		put_continue(1);
-	}
-	else if(put_confirm.allow_merge && strcmp(choice, "M") == 0)
-	{
-		put_confirm.merge_all = 1;
-		put_continue(1);
-	}
-	else
-	{
-		prompt_what_to_do(put_confirm.name);
-	}
-}
-
 /* Continues putting files. */
 static void
 put_continue(int force)
@@ -2065,24 +2016,98 @@ put_continue(int force)
 
 /* Prompt user for conflict resolution strategy about given filename. */
 static void
-prompt_what_to_do(const char src_name[])
+prompt_what_to_do(const char fname[])
 {
-	wchar_t buf[NAME_MAX];
+	static const response_variant
+		rename        = { .key = 'r', .descr = "[r]ename (also Enter)\n" },
+		enter         = { .key = '\r', .descr = "" },
+		skip          = { .key = 's', .descr = "[s]kip " },
+		skip_all      = { .key = 'S', .descr = " [S]kip all\n" },
+		append        = { .key = 'a', .descr = "[a]ppend to the end\n" },
+		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
+		overwrite_all = { .key = 'o', .descr = " [O]verwrite all\n" },
+		merge         = { .key = 'm', .descr = "[m]erge " },
+		merge_all     = { .key = 'M', .descr = " [M]erge all\n" },
+		escape        = { .key = '\x03', .descr = "Esc or Ctrl-C to cancel" };
 
-	(void)replace_string(&put_confirm.name, src_name);
-	vifm_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
-			L". [r]ename/[s]kip/[S]kip all%" WPRINTF_MBSTR
-			"/[o]verwrite/[O]verwrite all"
-			"%" WPRINTF_MBSTR "%" WPRINTF_MBSTR ": ",
-			src_name,
-			(cfg.use_system_calls && !is_dir(src_name)) ? "/[a]ppend the end" : "",
-			put_confirm.allow_merge ? "/[m]erge" : "",
-			put_confirm.allow_merge ? "/[M]erge all" : "");
+	char msg[PATH_MAX];
+	char response;
+	response_variant responses[11] = {};
+	size_t i = 0;
+
+	responses[i++] = rename;
+	responses[i++] = enter;
+	responses[i++] = skip;
+	responses[i++] = skip_all;
+	if(cfg.use_system_calls && !is_dir(fname))
+	{
+		responses[i++] = append;
+	}
+	responses[i++] = overwrite;
+	responses[i++] = overwrite_all;
+	if(put_confirm.allow_merge)
+	{
+		responses[i++] = merge;
+		responses[i++] = merge_all;
+	}
+
+	responses[i++] = escape;
+	assert(i < ARRAY_LEN(responses) && "Array is too small.");
 
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	enter_prompt_mode(buf, "", put_decide_cb, NULL, 0);
+	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
+	response = prompt_msg_custom("File Conflict", msg, responses);
+	handle_prompt_response(fname, response);
+}
+
+/* Handles response to the prompt asked by prompt_what_to_do(). */
+static void
+handle_prompt_response(const char fname[], char response)
+{
+	if(response == '\r' || response == 'r')
+	{
+		prompt_dest_name(fname);
+	}
+	else if(response == 's' || response == 'S')
+	{
+		if(response == 'S')
+		{
+			put_confirm.skip_all = 1;
+		}
+
+		put_confirm.x++;
+		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
+	}
+	else if(response == 'o')
+	{
+		put_continue(1);
+	}
+	else if(response == 'a' && cfg.use_system_calls && !is_dir(fname))
+	{
+		put_confirm.append = 1;
+		put_continue(0);
+	}
+	else if(response == 'O')
+	{
+		put_confirm.overwrite_all = 1;
+		put_continue(1);
+	}
+	else if(put_confirm.allow_merge && response == 'm')
+	{
+		put_confirm.merge = 1;
+		put_continue(1);
+	}
+	else if(put_confirm.allow_merge && response == 'M')
+	{
+		put_confirm.merge_all = 1;
+		put_continue(1);
+	}
+	else if(response != '\x03')
+	{
+		prompt_what_to_do(fname);
+	}
 }
 
 int

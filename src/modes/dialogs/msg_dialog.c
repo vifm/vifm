@@ -77,6 +77,7 @@ static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
 		const char ctrl_msg[], int centered);
+static size_t count_lines(const char msg[], size_t *max_len);
 static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
@@ -429,10 +430,13 @@ get_custom_control_msg(const response_variant responses[])
 	msg_buf[0] = '\0';
 	while(response != NULL && response->key != '\0')
 	{
-		(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
-		if(response[1].key != '\0')
+		if(response->descr[0] != '\0')
 		{
-			(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
+			(void)sstrappend(msg_buf, &len, sizeof(msg_buf), response->descr);
+			if(response[1].key != '\0')
+			{
+				(void)sstrappendch(msg_buf, &len, sizeof(msg_buf), '/');
+			}
 		}
 
 		++response;
@@ -467,13 +471,18 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	int sw, sh;
 	int w, h;
 	int len;
+	size_t ctrl_msg_n;
+	size_t wctrl_msg;
+	size_t i;
 
 	curs_set(FALSE);
 
 	getmaxyx(stdscr, sh, sw);
 
-	h = sh - 3 + !cfg.display_statusline;
-	w = MIN(sw - 2, MAX(sw/3, (int)determine_width(msg) + 4));
+	ctrl_msg_n = MAX(count_lines(ctrl_msg, &wctrl_msg), 1U);
+
+	h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
+	w = MIN(sw - 2, MAX(sw/3, (int)MAX(wctrl_msg, determine_width(msg)) + 4));
 	wresize(error_win, h, w);
 
 	werase(error_win);
@@ -481,7 +490,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	len = strlen(msg);
 	if(len <= w - 2 && strchr(msg, '\n') == NULL)
 	{
-		h = 6;
+		h = 5 + ctrl_msg_n;
 		wresize(error_win, h, w);
 		mvwin(error_win, (sh - h)/2, (sw - w)/2);
 		checked_wmove(error_win, 2, (w - len)/2);
@@ -527,7 +536,35 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	{
 		mvwprintw(error_win, 0, (w - strlen(title) - 2)/2, " %s ", title);
 	}
-	mvwaddstr(error_win, h - 2, (w - strlen(ctrl_msg))/2, ctrl_msg);
+
+	/* Print control message line by line. */
+	for(i = ctrl_msg_n; i > 0U; --i)
+	{
+		const size_t len = strcspn(ctrl_msg, "\n");
+		mvwaddnstr(error_win, h - i - 1, MAX(0, (w - (int)len)/2), ctrl_msg, len);
+		ctrl_msg = skip_char(ctrl_msg + len + 1U, '/');
+	}
+}
+
+/* Counts number of sub-lines (seperated by new-line character in the msg.  Sets
+ * *max_len to the length of the longest sub-line.  Returns total number of
+ * sub-lines, which can be zero is msg is an empty line. */
+static size_t
+count_lines(const char msg[], size_t *max_len)
+{
+	size_t nlines = 0U;
+	*max_len = 0U;
+	while(*msg != '\0')
+	{
+		const size_t len = strcspn(msg, "\n");
+		if(len > *max_len)
+		{
+			*max_len = len;
+		}
+		++nlines;
+		msg += len + (msg[len] == '\n' ? 1U : 0U);
+	}
+	return nlines;
 }
 
 /* Determines maximum width of line in the message.  Returns the width. */
