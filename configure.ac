@@ -21,6 +21,8 @@ AC_HEADER_STDC
 AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_LANG(C)
+
 dnl Determine host machine type.
 AC_CANONICAL_HOST
 dnl Require $host variable presence.
