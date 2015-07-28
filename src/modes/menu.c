@@ -593,12 +593,12 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
 	int new_pos;
 	if(menu->len < menu->win_rows)
-		new_pos = menu->len/2;
+		new_pos = DIV_ROUND_UP(menu->len, 2);
 	else
-		new_pos = menu->top + (menu->win_rows - 3)/2;
+		new_pos = menu->top + DIV_ROUND_UP(menu->win_rows - 3, 2);
 
 	clean_menu_position(menu);
-	move_to_menu_pos(new_pos, menu);
+	move_to_menu_pos(MAX(0, new_pos - 1), menu);
 	wrefresh(menu_win);
 }
 
