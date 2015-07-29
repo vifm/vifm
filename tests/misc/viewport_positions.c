@@ -4,7 +4,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/fileview.h"
 
-static void ensure_all_visible(void);
+static void ensure_all_visible(int odd);
 
 static FileView *const view = &lwin;
 
@@ -95,29 +95,57 @@ TEST(bottom_pos_at_bottom)
  * 7 row-------------
  */
 
-TEST(top_pos_at_all)
+TEST(top_pos_at_all_odd)
 {
-	ensure_all_visible();
+	ensure_all_visible(1);
 	assert_int_equal(0, get_window_top_pos(view));
 }
 
-TEST(middle_pos_at_all)
+TEST(middle_pos_at_all_odd)
 {
-	ensure_all_visible();
+	ensure_all_visible(1);
 	assert_int_equal(2, get_window_middle_pos(view));
 }
 
-TEST(bottom_pos_at_all)
+TEST(bottom_pos_at_all_odd)
 {
-	ensure_all_visible();
+	ensure_all_visible(1);
 	assert_int_equal(4, get_window_bottom_pos(view));
 }
 
+/* 0 row----file0---- <= top [ + offset ]
+ * 1 row  | file1 |   <= middle
+ * 2 row  | file2 |
+ * 3 row  | file3 |   <= bottom [ - offset ]
+ * 4 row  |       |
+ * 5 row  |       |
+ * 6 row  |       |
+ * 7 row-------------
+ */
+
+TEST(top_pos_at_all_even)
+{
+	ensure_all_visible(0);
+	assert_int_equal(0, get_window_top_pos(view));
+}
+
+TEST(middle_pos_at_all_even)
+{
+	ensure_all_visible(0);
+	assert_int_equal(1, get_window_middle_pos(view));
+}
+
+TEST(bottom_pos_at_all_even)
+{
+	ensure_all_visible(0);
+	assert_int_equal(3, get_window_bottom_pos(view));
+}
+
 static void
-ensure_all_visible(void)
+ensure_all_visible(int odd)
 {
 	view->top_line = 0;
-	view->list_rows = 5;
+	view->list_rows = odd ? 5 : 4;
 	assert_true(all_files_visible(view));
 }
 
