@@ -577,9 +577,10 @@ get_window_top_pos(const FileView *view)
 size_t
 get_window_middle_pos(const FileView *view)
 {
-	const int list_middle = view->list_rows/(2*view->column_count);
-	const int window_middle = view->window_rows/2;
-	return view->top_line + MIN(list_middle, window_middle)*view->column_count;
+	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
+	const int window_middle = DIV_ROUND_UP(view->window_rows, 2);
+	return view->top_line
+	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count;
 }
 
 size_t
