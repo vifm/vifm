@@ -58,6 +58,9 @@
 	Fixed use of uninitialized value which could affect whether pattern is
 	matches whole path or only its name part.
 
+	Fixed tests failures when run with root privileges.  Thanks to Ondrej
+	Novy (a.k.a. onovy).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
