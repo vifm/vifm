@@ -46,6 +46,9 @@
 	Provide conflict resolution options in a dialog rather than on the
 	command-line, which is hard to read with so many options.
 
+	Choose "middle" of the list of even length closer to the top (M key).
+	Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
