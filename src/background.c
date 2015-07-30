@@ -715,9 +715,10 @@ start_background_job(const char *cmd, int skip_errors)
 	free(command);
 #else
 	BOOL ret;
-	STARTUPINFO startup = {};
+	STARTUPINFOW startup = {};
 	PROCESS_INFORMATION pinfo;
 	char *command;
+	wchar_t *wide_cmd;
 
 	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
 	if(command == NULL)
@@ -725,8 +726,11 @@ start_background_job(const char *cmd, int skip_errors)
 		return -1;
 	}
 
-	ret = CreateProcess(NULL, command, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	wide_cmd = to_wide(cmd);
+	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
+	free(wide_cmd);
+
 	if(ret != 0)
 	{
 		CloseHandle(pinfo.hThread);
