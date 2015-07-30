@@ -86,9 +86,10 @@ run_in_shell_no_cls(char command[])
 
 	if(curr_stats.shell_type == ST_CMD)
 	{
-		/* See "cmd /?" for an "explanation" why extra double quotes are
-		 * omitted. */
-		snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
+		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
+		 * special characters work at the same time. */
+		const char *const fmt = (command[0] == '"') ? "%s /C \"%s\"" : "%s /C %s";
+		snprintf(buf, sizeof(buf), fmt, cfg.shell, command);
 		return os_system(buf);
 	}
 	else

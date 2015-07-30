@@ -65,6 +65,9 @@
 	Windows (that end with " &", should be OK to just drop it on Windows
 	and get correct behaviour on 0.8).  Thanks to Stas Malavin.
 
+	Fixed (in some cases) running of executables with spaces in paths on
+	Windows with cmd.  Thanks to Stas Malavin.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
