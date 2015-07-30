@@ -1,6 +1,7 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() getcwd() */
+#include <sys/types.h>
+#include <unistd.h> /* F_OK access() getcwd() geteuid() */
 
 #include <stdio.h> /* snprintf() */
 
@@ -15,7 +16,7 @@
 
 static void create_directory(const char path[], const char root[],
 		int create_parents);
-static int has_unix_permissions(void);
+static int non_root_on_unix_like_os(void);
 
 TEST(single_dir_is_created)
 {
@@ -91,7 +92,7 @@ TEST(child_dir_is_not_created)
 	assert_failure(access(NESTED_DIR_NAME, F_OK));
 }
 
-TEST(permissions_are_taken_into_account, IF(has_unix_permissions))
+TEST(permissions_are_taken_into_account, IF(non_root_on_unix_like_os))
 {
 	{
 		io_args_t args = {
@@ -130,7 +131,7 @@ TEST(permissions_are_taken_into_account, IF(has_unix_permissions))
 }
 
 TEST(permissions_are_taken_into_account_for_the_most_nested_only,
-     IF(has_unix_permissions))
+     IF(non_root_on_unix_like_os))
 {
 	{
 		io_args_t args = {
@@ -201,13 +202,16 @@ TEST(permissions_are_taken_into_account_for_the_most_nested_only,
 	}
 }
 
+/* Permissions don't work on non-*nix-like systems and some checks fail for
+ * root user because system allows him to do almost anything and tests are
+ * counting on permissions denial. */
 static int
-has_unix_permissions(void)
+non_root_on_unix_like_os(void)
 {
 #if defined(_WIN32) || defined(__CYGWIN__)
 	return 0;
 #else
-	return 1;
+	return (geteuid() != 0);
 #endif
 }
 

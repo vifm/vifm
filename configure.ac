@@ -21,6 +21,8 @@ AC_HEADER_STDC
 AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_LANG(C)
+
 dnl Determine host machine type.
 AC_CANONICAL_HOST
 dnl Require $host variable presence.
@@ -104,7 +106,6 @@ AC_CHECK_TYPE([wchar_t])
 
 dnl Check for various system functions.
 AC_CHECK_FUNC([access], [], [AC_MSG_ERROR([access() function not found.])])
-AC_CHECK_FUNC([atexit], [], [AC_MSG_ERROR([atexit() function not found.])])
 AC_CHECK_FUNC([atof], [], [AC_MSG_ERROR([atof() function not found.])])
 AC_CHECK_FUNC([atoi], [], [AC_MSG_ERROR([atoi() function not found.])])
 AC_CHECK_FUNC([calloc], [], [AC_MSG_ERROR([calloc() function not found.])])
@@ -618,6 +619,7 @@ if test "$remote_cmds" = "yes"; then
 	AC_CHECK_FUNC([sendto], [], [AC_MSG_ERROR([sendto() function not found.])])
 	AC_CHECK_FUNC([setsockopt], [], [AC_MSG_ERROR([setsockopt() function not found.])])
 	AC_CHECK_FUNC([socket], [], [AC_MSG_ERROR([socket() function not found.])])
+	AC_CHECK_FUNC([atexit], [], [AC_MSG_ERROR([atexit() function not found.])])
 
 	AC_DEFINE([ENABLE_REMOTE_CMDS], [1], [executing commands remotely])
 fi

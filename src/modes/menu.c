@@ -588,6 +588,7 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	wrefresh(menu_win);
 }
 
+/* Moves cursor to the middle of the window. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
