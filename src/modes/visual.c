@@ -551,7 +551,7 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	goto_pos(new_pos);
 }
 
-/* Move to middle line of window, selecting from start position to there. */
+/* Move to middle line of the window, selecting from start position to there. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
