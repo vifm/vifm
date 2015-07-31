@@ -40,12 +40,18 @@
 #include "mntent.h"
 
 #if !defined(HAVE_MNTENT_H) || !HAVE_MNTENT_H
+
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
 
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef __NetBSD__
+#define statfs statvfs
+#define f_flags f_flag
+#endif
 
 static struct mntent * statfs_to_mntent(struct statfs *mntbuf);
 static char * flags2opts(int flags);
@@ -130,7 +136,7 @@ flags2opts(int flags)
 #endif
 	if(flags & MNT_ASYNC)       res = catopt(res, "async");
 	if(flags & MNT_NOATIME)     res = catopt(res, "noatime");
-#if !defined(__APPLE__) && !defined(__OpenBSD__)
+#if !defined(__APPLE__) && !defined(__OpenBSD__) && !definen(__NetBSD__)
 	if(flags & MNT_NOCLUSTERR)  res = catopt(res, "noclusterr");
 	if(flags & MNT_NOCLUSTERW)  res = catopt(res, "noclusterw");
 	if(flags & MNT_NOSYMFOLLOW) res = catopt(res, "nosymfollow");
