@@ -549,8 +549,8 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 
 	final_wide_cmd = to_wide(cmd);
 
-	wide_sh = to_wide(user_sh ? "cmd" : cfg.shell);
-	if(user_sh || curr_stats.shell_type == ST_CMD)
+	wide_sh = to_wide(user_sh ? cfg.shell : "cmd");
+	if(!user_sh || curr_stats.shell_type == ST_CMD)
 	{
 		args[0] = wide_sh;
 		args[1] = L"/U";
