@@ -23,7 +23,7 @@
 #include <inttypes.h> /* PRIu64 */
 #include <stddef.h> /* size_t wchar_t */
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_WIN64)
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
 #define PRINTF_ULL PRIu64
