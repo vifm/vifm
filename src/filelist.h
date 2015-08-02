@@ -138,8 +138,6 @@ void invert_selection(FileView *view);
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */
 void recount_selected_files(FileView *view);
-/* Frees memory from list of captured files. */
-void free_file_capture(FileView *view);
 /* Remove dot and regexp filters if it's needed to make file visible.  Returns
  * non-zero if file was found. */
 int ensure_file_is_selected(FileView *view, const char name[]);

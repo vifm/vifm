@@ -99,8 +99,8 @@ static void init_view(FileView *view);
 static void init_flist(FileView *view);
 static void reset_view(FileView *view);
 static void init_view_history(FileView *view);
+static void free_file_capture(FileView *view);
 static void capture_selection(FileView *view);
-static void capture_file_or_selection(FileView *view, int skip_if_no_selection);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
@@ -128,6 +128,9 @@ static void update_entries_data(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static void sort_dir_list(int msg, FileView *view);
+static void merge_lists(FileView *view, dir_entry_t *entries, int len);
+static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
+static int correct_pos(FileView *view, int pos, int dist, int closes);
 static int rescue_from_empty_filelist(FileView *view);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
@@ -273,7 +276,8 @@ get_current_file_name(FileView *view)
 	return view->dir_entry[view->list_pos].name;
 }
 
-void
+/* Frees memory from list of captured files. */
+static void
 free_file_capture(FileView *view)
 {
 	if(view->selected_filelist != NULL)
@@ -288,15 +292,6 @@ free_file_capture(FileView *view)
 static void
 capture_selection(FileView *view)
 {
-	capture_file_or_selection(view, 1);
-}
-
-/* Collects currently selected files (or current file only if no selection
- * present and skip_if_no_selection is zero) in view->selected_filelist array.
- * Use free_file_capture() to clean up memory allocated by this function. */
-static void
-capture_file_or_selection(FileView *view, int skip_if_no_selection)
-{
 	int y;
 	dir_entry_t *entry;
 
@@ -304,16 +299,8 @@ capture_file_or_selection(FileView *view, int skip_if_no_selection)
 
 	if(view->selected_files == 0)
 	{
-		if(skip_if_no_selection)
-		{
-			free_file_capture(view);
-			return;
-		}
-
-		/* No selected files so just use the current file. */
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
-		view->user_selection = 0;
+		free_file_capture(view);
+		return;
 	}
 
 	if(view->selected_filelist != NULL)
@@ -1083,30 +1070,6 @@ free_saved_selection(FileView *view)
 	view->saved_selection = NULL;
 }
 
-static void
-reset_selected_files(FileView *view, int need_free)
-{
-	int i;
-	for(i = 0; i < view->selected_files; ++i)
-	{
-		if(view->selected_filelist[i] != NULL)
-		{
-			const int pos = find_file_pos_in_list(view, view->selected_filelist[i]);
-			if(pos >= 0 && pos < view->list_rows)
-			{
-				view->dir_entry[pos].selected = 1;
-			}
-		}
-	}
-
-	if(need_free)
-	{
-		i = view->selected_files;
-		free_file_capture(view);
-		view->selected_files = i;
-	}
-}
-
 #ifdef _WIN32
 static void
 fill_with_shared(FileView *view)
@@ -1175,17 +1138,16 @@ win_to_unix_time(FILETIME ft)
 }
 #endif
 
+/* Adds files from current directory to file list of the view.  Returns zero on
+ * success, otherwise non-zero is returned. */
 static int
-refill_dir_list(FileView *view)
+fill_dir_list(FileView *view)
 {
 	dir_fill_info_t info = {
 		.view = view,
 		.is_root = is_root_dir(view->curr_dir),
 		.with_parent_dir = 0,
 	};
-
-	view->matches = 0;
-	free_view_entries(view);
 
 #ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
@@ -1604,7 +1566,16 @@ flist_get_dir(const FileView *view)
 void
 flist_goto_by_path(FileView *view, const char path[])
 {
-	dir_entry_t *entry = entry_from_path(view->dir_entry, view->list_rows, path);
+	char full_path[PATH_MAX];
+	dir_entry_t *entry;
+
+	get_current_full_path(view, sizeof(full_path), full_path);
+	if(stroscmp(full_path, path) == 0)
+	{
+		return;
+	}
+
+	entry = entry_from_path(view->dir_entry, view->list_rows, path);
 	if(entry != NULL)
 	{
 		view->list_pos = entry_to_pos(view, entry);
@@ -1692,7 +1663,8 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 static int
 populate_dir_list_internal(FileView *view, int reload)
 {
-	int need_free = (view->selected_filelist == NULL);
+	dir_entry_t *prev_dir_entries = NULL;
+	int prev_list_rows = 0;
 
 	view->filtered = 0;
 
@@ -1739,19 +1711,36 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
-	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
+	if(reload)
 	{
-		capture_selection(view);
+		prev_dir_entries = view->dir_entry;
+		prev_list_rows = view->list_rows;
+		view->dir_entry = NULL;
+		view->list_rows = 0;
+	}
+	else
+	{
+		free_view_entries(view);
 	}
 
-	if(refill_dir_list(view) != 0)
+	view->matches = 0;
+	view->selected_files = 0;
+
+	if(fill_dir_list(view) == 0)
+	{
+		sort_dir_list(!reload, view);
+		if(reload)
+		{
+			merge_lists(view, prev_dir_entries, prev_list_rows);
+		}
+	}
+	else
 	{
 		/* We don't have read access, only execute, or there were other problems. */
 		free_view_entries(view);
 		add_parent_dir(view);
 	}
-
-	sort_dir_list(!reload, view);
+	free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 
 	if(!reload && !vle_mode_is(CMDLINE_MODE))
 	{
@@ -1780,15 +1769,6 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	fview_list_updated(view);
-
-	if(reload && view->selected_files != 0)
-	{
-		reset_selected_files(view, need_free);
-	}
-	else if(view->selected_files != 0)
-	{
-		view->selected_files = 0;
-	}
 
 	return 0;
 }
@@ -1925,6 +1905,82 @@ sort_dir_list(int msg, FileView *view)
 	{
 		clean_status_bar();
 	}
+}
+
+/* Merges elements from previous list into the new one. */
+static void
+merge_lists(FileView *view, dir_entry_t *entries, int len)
+{
+	int i;
+	int closes_dist;
+	const int prev_pos = view->list_pos;
+	trie_t prev_names = trie_create();
+
+	for(i = 0; i < len; ++i)
+	{
+		const int code = trie_set(prev_names, entries[i].name, &entries[i]);
+		assert(code == 0 && "Duplicated file names in the list?");
+		(void)code;
+
+		/* We won't use the name later, so free some memory. */
+		update_string(&entries[i].name, NULL);
+	}
+
+	closes_dist = INT_MIN;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		int dist;
+		void *data;
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(trie_get(prev_names, entry->name, &data) != 0)
+		{
+			continue;
+		}
+
+		/* Transfer information from previous entry to the new one. */
+		merge_entries(entry, data);
+
+		/* Update number of selected files (should have been zeroed beforehand). */
+		view->selected_files += (entry->selected != 0);
+
+		/* Update cursor position in a smart way. */
+		dist = (dir_entry_t*)data - entries - prev_pos;
+		closes_dist = correct_pos(view, i, dist, closes_dist);
+	}
+
+	trie_free(prev_names);
+}
+
+/* Merges data from previous entry into the new one.  Both entries should
+ * correspond to the same file (their names must match). */
+static void
+merge_entries(dir_entry_t *new, const dir_entry_t *prev)
+{
+	new->selected = prev->selected;
+	new->was_selected = prev->was_selected;
+
+	if(new->type == prev->type)
+	{
+		new->hi_num = prev->hi_num;
+	}
+}
+
+/* Corrects selected item position in the list.  Returns updated value of the
+ * closes variable, which initially should be INT_MIN. */
+static int
+correct_pos(FileView *view, int pos, int dist, int closes)
+{
+	if(dist == 0)
+	{
+		closes = 0;
+		view->list_pos = pos;
+	}
+	else if((closes < 0 && dist > closes) || (closes > 0 && dist < closes))
+	{
+		closes = dist;
+		view->list_pos = pos;
+	}
+	return closes;
 }
 
 /* Performs actions needed to rescue from abnormal situation with empty
