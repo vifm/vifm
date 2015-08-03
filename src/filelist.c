@@ -74,15 +74,6 @@
 #include "status.h"
 #include "types.h"
 
-/* Structure to communicate data during filling view with list files. */
-typedef struct
-{
-	FileView *const view; /* View being filled. */
-	const int is_root;    /* Whether we're at file system root. */
-	int with_parent_dir;  /* Whether parent directory was seen during filling. */
-}
-dir_fill_info_t;
-
 /* Custom argument for is_in_list() function. */
 typedef struct
 {
@@ -1747,12 +1738,6 @@ free_view_entries(FileView *view)
 static int
 update_dir_list(FileView *view, int reload)
 {
-	dir_fill_info_t info = {
-		.view = view,
-		.is_root = is_root_dir(view->curr_dir),
-		.with_parent_dir = 0,
-	};
-
 	dir_entry_t *prev_dir_entries = NULL;
 	int prev_list_rows = 0;
 
@@ -1780,28 +1765,17 @@ update_dir_list(FileView *view, int reload)
 	}
 #endif
 
-	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
+	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, view) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
 		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 		return 1;
 	}
 
-#ifdef _WIN32
-	/* Not all Windows file systems provide standard dot directories. */
-	if(!info.with_parent_dir && cfg_parent_dir_is_visible(info.is_root))
+	if(cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)) ||
+			view->list_rows == 0)
 	{
 		add_parent_dir(view);
-		info.with_parent_dir = 1;
-	}
-#endif
-
-	if(!info.with_parent_dir && !info.is_root)
-	{
-		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
-		{
-			add_parent_dir(view);
-		}
 	}
 
 	sort_dir_list(!reload, view);
@@ -1822,32 +1796,22 @@ update_dir_list(FileView *view, int reload)
 static int
 add_file_entry_to_view(const char name[], const void *data, void *param)
 {
-	dir_fill_info_t *const info = param;
-	FileView *view = info->view;
+	FileView *const view = param;
 	dir_entry_t *entry;
 
-	/* Always ignore the "." directory. */
-	if(strcmp(name, ".") == 0)
+	/* Always ignore the "." and ".." directories. */
+	if(strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
 	{
 		return 0;
 	}
 
-	/* Always include the ".." directory unless it is the root directory. */
-	if(strcmp(name, "..") == 0)
-	{
-		if(!cfg_parent_dir_is_visible(info->is_root))
-		{
-			return 0;
-		}
-
-		info->with_parent_dir = 1;
-	}
-	else if(view->hide_dot && name[0] == '.')
+	if(view->hide_dot && name[0] == '.')
 	{
 		++view->filtered;
 		return 0;
 	}
-	else if(!file_is_visible(view, name, data_is_dir_entry(data)))
+
+	if(!file_is_visible(view, name, data_is_dir_entry(data)))
 	{
 		++view->filtered;
 		return 0;
