@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() getcwd() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
