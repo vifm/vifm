@@ -125,7 +125,7 @@ static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 static void update_entries_data(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
-static int fill_dir_list(FileView *view);
+static int update_dir_list(FileView *view, int reload);
 static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 static void sort_dir_list(int msg, FileView *view);
@@ -1562,9 +1562,6 @@ load_dir_list_internal(FileView *view, int reload, int draw_only)
 static int
 populate_dir_list_internal(FileView *view, int reload)
 {
-	dir_entry_t *prev_dir_entries = NULL;
-	int prev_list_rows = 0;
-
 	view->filtered = 0;
 
 	if(flist_custom_active(view))
@@ -1610,36 +1607,12 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
-	if(reload)
-	{
-		prev_dir_entries = view->dir_entry;
-		prev_list_rows = view->list_rows;
-		view->dir_entry = NULL;
-		view->list_rows = 0;
-	}
-	else
-	{
-		free_view_entries(view);
-	}
-
-	view->matches = 0;
-	view->selected_files = 0;
-
-	if(fill_dir_list(view) == 0)
-	{
-		sort_dir_list(!reload, view);
-		if(reload)
-		{
-			merge_lists(view, prev_dir_entries, prev_list_rows);
-		}
-	}
-	else
+	if(update_dir_list(view, reload) != 0)
 	{
 		/* We don't have read access, only execute, or there were other problems. */
 		free_view_entries(view);
 		add_parent_dir(view);
 	}
-	free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 
 	if(!reload && !vle_mode_is(CMDLINE_MODE))
 	{
@@ -1769,10 +1742,10 @@ free_view_entries(FileView *view)
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 }
 
-/* Adds files from current directory to file list of the view.  Returns zero on
+/* Updates file list with files from current directory.  Returns zero on
  * success, otherwise non-zero is returned. */
 static int
-fill_dir_list(FileView *view)
+update_dir_list(FileView *view, int reload)
 {
 	dir_fill_info_t info = {
 		.view = view,
@@ -1780,10 +1753,29 @@ fill_dir_list(FileView *view)
 		.with_parent_dir = 0,
 	};
 
+	dir_entry_t *prev_dir_entries = NULL;
+	int prev_list_rows = 0;
+
+	if(reload)
+	{
+		prev_dir_entries = view->dir_entry;
+		prev_list_rows = view->list_rows;
+		view->dir_entry = NULL;
+		view->list_rows = 0;
+	}
+	else
+	{
+		free_view_entries(view);
+	}
+
+	view->matches = 0;
+	view->selected_files = 0;
+
 #ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
 	{
 		fill_with_shared(view);
+		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 		return 0;
 	}
 #endif
@@ -1791,6 +1783,7 @@ fill_dir_list(FileView *view)
 	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
+		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 		return 1;
 	}
 
@@ -1809,6 +1802,16 @@ fill_dir_list(FileView *view)
 		{
 			add_parent_dir(view);
 		}
+	}
+
+	sort_dir_list(!reload, view);
+
+	if(reload)
+	{
+		/* Merging must be performed after sorting so that list position remains
+		 * fixed (sorting doesn't preserve it). */
+		merge_lists(view, prev_dir_entries, prev_list_rows);
+		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 	}
 
 	return 0;
