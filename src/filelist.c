@@ -107,8 +107,6 @@ static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
 static void navigate_to_history_pos(FileView *view, int pos);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
-static int add_file_entry_to_view(const char name[], const void *data,
-		void *param);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
@@ -127,6 +125,9 @@ static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 static void update_entries_data(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
+static int fill_dir_list(FileView *view);
+static int add_file_entry_to_view(const char name[], const void *data,
+		void *param);
 static void sort_dir_list(int msg, FileView *view);
 static void merge_lists(FileView *view, dir_entry_t *entries, int len);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
@@ -1138,108 +1139,6 @@ win_to_unix_time(FILETIME ft)
 }
 #endif
 
-/* Adds files from current directory to file list of the view.  Returns zero on
- * success, otherwise non-zero is returned. */
-static int
-fill_dir_list(FileView *view)
-{
-	dir_fill_info_t info = {
-		.view = view,
-		.is_root = is_root_dir(view->curr_dir),
-		.with_parent_dir = 0,
-	};
-
-#ifdef _WIN32
-	if(is_unc_root(view->curr_dir))
-	{
-		fill_with_shared(view);
-		return 0;
-	}
-#endif
-
-	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
-	{
-		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
-		return 1;
-	}
-
-#ifdef _WIN32
-	/* Not all Windows file systems provide standard dot directories. */
-	if(!info.with_parent_dir && cfg_parent_dir_is_visible(info.is_root))
-	{
-		add_parent_dir(view);
-		info.with_parent_dir = 1;
-	}
-#endif
-
-	if(!info.with_parent_dir && !info.is_root)
-	{
-		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
-		{
-			add_parent_dir(view);
-		}
-	}
-
-	return 0;
-}
-
-/* enum_dir_content() callback that appends files to file list.  Returns zero on
- * success or non-zero to indicate failure and stop enumeration. */
-static int
-add_file_entry_to_view(const char name[], const void *data, void *param)
-{
-	dir_fill_info_t *const info = param;
-	FileView *view = info->view;
-	dir_entry_t *entry;
-
-	/* Always ignore the "." directory. */
-	if(strcmp(name, ".") == 0)
-	{
-		return 0;
-	}
-
-	/* Always include the ".." directory unless it is the root directory. */
-	if(strcmp(name, "..") == 0)
-	{
-		if(!cfg_parent_dir_is_visible(info->is_root))
-		{
-			return 0;
-		}
-
-		info->with_parent_dir = 1;
-	}
-	else if(view->hide_dot && name[0] == '.')
-	{
-		++view->filtered;
-		return 0;
-	}
-	else if(!file_is_visible(view, name, data_is_dir_entry(data)))
-	{
-		++view->filtered;
-		return 0;
-	}
-
-	entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
-	if(entry == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return 1;
-	}
-
-	init_dir_entry(view, entry, name);
-
-	if(fill_dir_entry(entry, entry->name, data) == 0)
-	{
-		++view->list_rows;
-	}
-	else
-	{
-		free_dir_entry(view, entry);
-	}
-
-	return 0;
-}
-
 char *
 get_typed_current_fpath(const FileView *view)
 {
@@ -1868,6 +1767,108 @@ static void
 free_view_entries(FileView *view)
 {
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
+}
+
+/* Adds files from current directory to file list of the view.  Returns zero on
+ * success, otherwise non-zero is returned. */
+static int
+fill_dir_list(FileView *view)
+{
+	dir_fill_info_t info = {
+		.view = view,
+		.is_root = is_root_dir(view->curr_dir),
+		.with_parent_dir = 0,
+	};
+
+#ifdef _WIN32
+	if(is_unc_root(view->curr_dir))
+	{
+		fill_with_shared(view);
+		return 0;
+	}
+#endif
+
+	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, &info) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", view->curr_dir);
+		return 1;
+	}
+
+#ifdef _WIN32
+	/* Not all Windows file systems provide standard dot directories. */
+	if(!info.with_parent_dir && cfg_parent_dir_is_visible(info.is_root))
+	{
+		add_parent_dir(view);
+		info.with_parent_dir = 1;
+	}
+#endif
+
+	if(!info.with_parent_dir && !info.is_root)
+	{
+		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
+		{
+			add_parent_dir(view);
+		}
+	}
+
+	return 0;
+}
+
+/* enum_dir_content() callback that appends files to file list.  Returns zero on
+ * success or non-zero to indicate failure and stop enumeration. */
+static int
+add_file_entry_to_view(const char name[], const void *data, void *param)
+{
+	dir_fill_info_t *const info = param;
+	FileView *view = info->view;
+	dir_entry_t *entry;
+
+	/* Always ignore the "." directory. */
+	if(strcmp(name, ".") == 0)
+	{
+		return 0;
+	}
+
+	/* Always include the ".." directory unless it is the root directory. */
+	if(strcmp(name, "..") == 0)
+	{
+		if(!cfg_parent_dir_is_visible(info->is_root))
+		{
+			return 0;
+		}
+
+		info->with_parent_dir = 1;
+	}
+	else if(view->hide_dot && name[0] == '.')
+	{
+		++view->filtered;
+		return 0;
+	}
+	else if(!file_is_visible(view, name, data_is_dir_entry(data)))
+	{
+		++view->filtered;
+		return 0;
+	}
+
+	entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	if(entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 1;
+	}
+
+	init_dir_entry(view, entry, name);
+
+	if(fill_dir_entry(entry, entry->name, data) == 0)
+	{
+		++view->list_rows;
+	}
+	else
+	{
+		free_dir_entry(view, entry);
+	}
+
+	return 0;
 }
 
 void
