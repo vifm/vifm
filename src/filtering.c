@@ -83,12 +83,25 @@ set_dot_files_visible(FileView *view, int visible)
 {
 	view->hide_dot = !visible;
 	ui_view_schedule_reload(view);
+	if(curr_stats.global_local_settings)
+	{
+		FileView *other = (view == curr_view) ? other_view : curr_view;
+		other->hide_dot = !visible;
+		ui_view_schedule_reload(other);
+	}
 }
 
 void
 toggle_dot_files(FileView *view)
 {
-	set_dot_files_visible(view, view->hide_dot);
+	view->hide_dot = !view->hide_dot;
+	ui_view_schedule_reload(view);
+	if(curr_stats.global_local_settings)
+	{
+		FileView *other = (view == curr_view) ? other_view : curr_view;
+		other->hide_dot = !other->hide_dot;
+		ui_view_schedule_reload(other);
+	}
 }
 
 void
