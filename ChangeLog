@@ -53,6 +53,10 @@
 	Use the closes file to the previously active one that still exists.
 	Thanks to ranousse.
 
+	Make :set in vifmrc affect all views, thus obsoleting use of :winrun or
+	:windo for this purpose (they still work, the new way is a simpler and
+	more obvious one).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

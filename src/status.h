@@ -164,6 +164,8 @@ typedef struct
 
 	void *preview_hint; /* Hint on which view is used for preview. */
 
+	int global_local_settings; /* Set local settings globally. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

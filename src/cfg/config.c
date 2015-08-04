@@ -659,6 +659,11 @@ void
 cfg_load(void)
 {
 	const char *rc;
+	const int prev_global_local_settings = curr_stats.global_local_settings;
+
+	/* Make changes of usually local settings during configuration affect all
+	 * views. */
+	curr_stats.global_local_settings = 1;
 
 	/* Try to load global configuration. */
 	(void)cfg_source_file(PACKAGE_SYSCONF_DIR "/" VIFMRC);
@@ -669,6 +674,8 @@ cfg_load(void)
 	{
 		(void)cfg_source_file(rc);
 	}
+
+	curr_stats.global_local_settings = prev_global_local_settings;
 }
 
 int

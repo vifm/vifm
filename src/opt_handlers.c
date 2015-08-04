@@ -1451,6 +1451,10 @@ static void
 lsview_handler(OPT_OP op, optval_t val)
 {
 	fview_set_lsview(curr_view, val.bool_val);
+	if(curr_stats.global_local_settings)
+	{
+		fview_set_lsview(other_view, val.bool_val);
+	}
 }
 
 /* Handles file numbers displaying toggle. */
@@ -1458,6 +1462,10 @@ static void
 number_handler(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, NT_SEQ, val.bool_val);
+	if(curr_stats.global_local_settings)
+	{
+		update_num_type(other_view, NT_SEQ, val.bool_val);
+	}
 }
 
 /* Handles changes of minimum width of file number field. */
@@ -1465,6 +1473,10 @@ static void
 numberwidth_handler(OPT_OP op, optval_t val)
 {
 	set_numberwidth(curr_view, val.int_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_numberwidth(other_view, val.int_val);
+	}
 }
 
 /* Sets number width for the view. */
@@ -1484,6 +1496,10 @@ static void
 relativenumber_handler(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, NT_REL, val.bool_val);
+	if(curr_stats.global_local_settings)
+	{
+		update_num_type(other_view, NT_REL, val.bool_val);
+	}
 }
 
 /* Handles toggling of boolean number related option and updates current view if
@@ -1508,6 +1524,10 @@ static void
 sort_handler(OPT_OP op, optval_t val)
 {
 	set_sort(curr_view, val.str_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_sort(other_view, val.str_val);
+	}
 }
 
 /* Sets sorting value for the view. */
@@ -1576,6 +1596,10 @@ static void
 sortorder_handler(OPT_OP op, optval_t val)
 {
 	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1);
+	if(curr_stats.global_local_settings)
+	{
+		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1);
+	}
 }
 
 /* Updates sorting order for the view. */
@@ -1597,6 +1621,10 @@ static void
 viewcolumns_handler(OPT_OP op, optval_t val)
 {
 	set_viewcolumns(curr_view, val.str_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_viewcolumns(other_view, val.str_val);
+	}
 }
 
 /* Setups view columns for the view. */
