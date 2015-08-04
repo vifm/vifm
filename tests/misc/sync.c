@@ -8,6 +8,9 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 
+static void init_view(FileView *view);
+static void free_view(FileView *view);
+
 SETUP()
 {
 	curr_view = &lwin;
@@ -17,35 +20,46 @@ SETUP()
 
 	cfg.slow_fs_list = strdup("");
 
-	lwin.dir_entry = NULL;
-	lwin.list_rows = 0;
-	lwin.window_rows = 1;
-	lwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(&lwin);
-
-	rwin.dir_entry = NULL;
-	rwin.list_rows = 0;
-	rwin.window_rows = 1;
-	rwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(&rwin);
+	init_view(&lwin);
+	init_view(&rwin);
 }
 
 TEARDOWN()
 {
-	int i;
-
 	reset_cmds();
 
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
 
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	free(lwin.dir_entry);
+	free_view(&lwin);
+	free_view(&rwin);
+}
 
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	free(rwin.dir_entry);
+static void
+init_view(FileView *view)
+{
+	filter_init(&view->local_filter.filter, 1);
+	filter_init(&view->manual_filter, 1);
+	filter_init(&view->auto_filter, 1);
+
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	view->window_rows = 1;
+	view->sort[0] = SK_NONE;
+	ui_view_sort_list_ensure_well_formed(view);
+}
+
+static void
+free_view(FileView *view)
+{
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		free(view->dir_entry[i].name);
+	}
+	free(view->dir_entry);
 }
 
 TEST(sync_syncs_local_filter)

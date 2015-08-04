@@ -26,11 +26,13 @@ struct trie_t
 	trie_t left;     /* Nodes with values less than value. */
 	trie_t right;    /* Nodes with values greater than value. */
 	trie_t children; /* Child nodes. */
+	void *data;      /* Data associated with the key. */
 	char value;      /* Value of the node. */
-	char exists;     /* Whethe this node exists or it's an intermediate node. */
+	char exists;     /* Whether this node exists or it's an intermediate node. */
 };
 
-static trie_t get_or_create(trie_t trie, const char str[], int *result);
+static trie_t get_or_create(trie_t trie, const char str[], void *data,
+		int *result);
 
 trie_t
 trie_create(void)
@@ -53,6 +55,12 @@ trie_free(trie_t trie)
 int
 trie_put(trie_t trie, const char str[])
 {
+	return trie_set(trie, str, NULL);
+}
+
+int
+trie_set(trie_t trie, const char str[], const void *data)
+{
 	int result;
 
 	if(trie == NULL_TRIE)
@@ -60,7 +68,7 @@ trie_put(trie_t trie, const char str[])
 		return -1;
 	}
 
-	(void)get_or_create(trie, str, &result);
+	(void)get_or_create(trie, str, (void *)data, &result);
 	return result;
 }
 
@@ -68,7 +76,7 @@ trie_put(trie_t trie, const char str[])
  * on error, to zero on successful insertion and to positive number if element
  * was already in the trie. */
 static trie_t
-get_or_create(trie_t trie, const char str[], int *result)
+get_or_create(trie_t trie, const char str[], void *data, int *result)
 {
 	/* Create inexistent node. */
 	if(trie == NULL_TRIE)
@@ -89,22 +97,50 @@ get_or_create(trie_t trie, const char str[], int *result)
 			/* Found full match. */
 			*result = (trie->exists != 0);
 			trie->exists = 1;
+			trie->data = data;
 		}
 		else
 		{
-			trie->children = get_or_create(trie->children, str + 1, result);
+			trie->children = get_or_create(trie->children, str + 1, data, result);
 		}
 	}
 	else if(*str < trie->value)
 	{
-		trie->left = get_or_create(trie->left, str, result);
+		trie->left = get_or_create(trie->left, str, data, result);
 	}
 	else
 	{
-		trie->right = get_or_create(trie->right, str, result);
+		trie->right = get_or_create(trie->right, str, data, result);
 	}
 
 	return trie;
+}
+
+int
+trie_get(trie_t trie, const char str[], void **data)
+{
+	if(trie == NULL_TRIE)
+	{
+		return 1;
+	}
+
+	if(trie->value != *str)
+	{
+		return trie_get((*str < trie->value) ? trie->left : trie->right, str, data);
+	}
+
+	if(*str == '\0')
+	{
+		/* Found full match. */
+		if(!trie->exists)
+		{
+			return 1;
+		}
+		*data = trie->data;
+		return 0;
+	}
+
+	return trie_get(trie->children, str + 1, data);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -38,6 +38,13 @@ void trie_free(trie_t trie);
  * already in the trie. */
 int trie_put(trie_t trie, const char str[]);
 
+/* Same as trie_put(), but also sets data. */
+int trie_set(trie_t trie, const char str[], const void *data);
+
+/* Looks up data for the str in the trie.  Returns zero when found and sets
+ * *data, otherwise returns non-zero. */
+int trie_get(trie_t trie, const char str[], void **data);
+
 #endif /* VIFM__UTILS__TRIE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

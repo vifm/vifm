@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL */
+
 #include "../../src/utils/trie.h"
 
 TEST(freeing_new_trie_is_ok)
@@ -72,6 +74,55 @@ TEST(empty_string_does_not_exists_after_trie_creation)
 	const trie_t trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, ""));
+
+	trie_free(trie);
+}
+
+TEST(utf8)
+{
+	const trie_t trie = trie_create();
+
+	assert_int_equal(0, trie_put(trie, "строка"));
+	assert_int_equal(0, trie_put(trie, "string"));
+	assert_true(trie_put(trie, "строка") > 0);
+	assert_true(trie_put(trie, "string") > 0);
+
+	trie_free(trie);
+}
+
+TEST(put_sets_data_to_null)
+{
+	const trie_t trie = trie_create();
+	void *data = trie;
+
+	assert_int_equal(0, trie_put(trie, "str"));
+	assert_success(trie_get(trie, "str", &data));
+	assert_null(data);
+
+	trie_free(trie);
+}
+
+TEST(get_returns_previously_set_data)
+{
+	const trie_t trie = trie_create();
+	void *data;
+
+	assert_int_equal(0, trie_set(trie, "str", trie));
+	assert_success(trie_get(trie, "str", &data));
+	assert_true(data == trie);
+
+	trie_free(trie);
+}
+
+TEST(set_overwrites_previous_data)
+{
+	const trie_t trie = trie_create();
+	void *data;
+
+	assert_int_equal(0, trie_set(trie, "str", trie));
+	assert_true(trie_set(trie, "str", &data) > 0);
+	assert_success(trie_get(trie, "str", &data));
+	assert_true(data == &data);
 
 	trie_free(trie);
 }

@@ -49,6 +49,10 @@
 	Choose "middle" of the list of even length closer to the top (M key).
 	Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Update cursor position on file disappearing in more predictable way.
+	Use the closes file to the previously active one that still exists.
+	Thanks to ranousse.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
