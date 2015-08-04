@@ -138,11 +138,15 @@ static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void lsview_handler(OPT_OP op, optval_t val);
 static void number_handler(OPT_OP op, optval_t val);
 static void numberwidth_handler(OPT_OP op, optval_t val);
+static void set_numberwidth(FileView *view, int width);
 static void relativenumber_handler(OPT_OP op, optval_t val);
-static void update_num_type(NumberingType num_type, int enable);
+static void update_num_type(FileView *view, NumberingType num_type, int enable);
 static void sort_handler(OPT_OP op, optval_t val);
+static void set_sort(FileView *view, char order[]);
 static void sortorder_handler(OPT_OP op, optval_t val);
+static void set_sortorder(FileView *view, int ascending);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
+static void set_viewcolumns(FileView *view, const char view_columns[]);
 static void set_view_columns_option(FileView *view, const char value[],
 		int update_ui);
 static void add_column(columns_t columns, column_info_t column_info);
@@ -1453,18 +1457,25 @@ lsview_handler(OPT_OP op, optval_t val)
 static void
 number_handler(OPT_OP op, optval_t val)
 {
-	update_num_type(NT_SEQ, val.bool_val);
+	update_num_type(curr_view, NT_SEQ, val.bool_val);
 }
 
 /* Handles changes of minimum width of file number field. */
 static void
 numberwidth_handler(OPT_OP op, optval_t val)
 {
-	curr_view->num_width = val.int_val;
+	set_numberwidth(curr_view, val.int_val);
+}
 
-	if(ui_view_displays_numbers(curr_view))
+/* Sets number width for the view. */
+static void
+set_numberwidth(FileView *view, int width)
+{
+	view->num_width = width;
+
+	if(ui_view_displays_numbers(view))
 	{
-		redraw_current_view();
+		redraw_view(view);
 	}
 }
 
@@ -1472,13 +1483,13 @@ numberwidth_handler(OPT_OP op, optval_t val)
 static void
 relativenumber_handler(OPT_OP op, optval_t val)
 {
-	update_num_type(NT_REL, val.bool_val);
+	update_num_type(curr_view, NT_REL, val.bool_val);
 }
 
 /* Handles toggling of boolean number related option and updates current view if
  * needed. */
 static void
-update_num_type(NumberingType num_type, int enable)
+update_num_type(FileView *view, NumberingType num_type, int enable)
 {
 	const NumberingType old_num_type = curr_view->num_type;
 
@@ -1488,7 +1499,7 @@ update_num_type(NumberingType num_type, int enable)
 
 	if(curr_view->num_type != old_num_type)
 	{
-		redraw_current_view();
+		redraw_view(view);
 	}
 }
 
@@ -1496,9 +1507,16 @@ update_num_type(NumberingType num_type, int enable)
 static void
 sort_handler(OPT_OP op, optval_t val)
 {
-	char *part = val.str_val, *state = NULL;
+	set_sort(curr_view, val.str_val);
+}
+
+/* Sets sorting value for the view. */
+static void
+set_sort(FileView *view, char order[])
+{
+	char *part = order, *state = NULL;
 	int key_count = 0;
-	char *const sort_keys = curr_view->sort;
+	char *const sort_keys = view->sort;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -1545,23 +1563,31 @@ sort_handler(OPT_OP op, optval_t val)
 	{
 		sort_keys[key_count] = SK_NONE;
 	}
-	ui_view_sort_list_ensure_well_formed(curr_view);
+	ui_view_sort_list_ensure_well_formed(view);
 
-	fview_sorting_updated(curr_view);
-	resort_view(curr_view);
-	fview_cursor_redraw(curr_view);
-	load_sort_option(curr_view);
+	fview_sorting_updated(view);
+	resort_view(view);
+	fview_cursor_redraw(view);
+	load_sort_option(view);
 }
 
+/* Handles 'sortorder' option and corrects ordering for primary sorting key. */
 static void
 sortorder_handler(OPT_OP op, optval_t val)
 {
-	if((val.enum_item ? -1 : +1)*curr_view->sort[0] < 0)
-	{
-		curr_view->sort[0] = -curr_view->sort[0];
+	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1);
+}
 
-		resort_view(curr_view);
-		load_sort_option(curr_view);
+/* Updates sorting order for the view. */
+static void
+set_sortorder(FileView *view, int ascending)
+{
+	if((ascending ? +1 : -1)*view->sort[0] < 0)
+	{
+		view->sort[0] = -view->sort[0];
+
+		resort_view(view);
+		load_sort_option(view);
 	}
 }
 
@@ -1570,8 +1596,15 @@ sortorder_handler(OPT_OP op, optval_t val)
 static void
 viewcolumns_handler(OPT_OP op, optval_t val)
 {
-	const int update_columns_ui = ui_view_displays_columns(curr_view);
-	set_view_columns_option(curr_view, val.str_val, update_columns_ui);
+	set_viewcolumns(curr_view, val.str_val);
+}
+
+/* Setups view columns for the view. */
+static void
+set_viewcolumns(FileView *view, const char view_columns[])
+{
+	const int update_columns_ui = ui_view_displays_columns(view);
+	set_view_columns_option(view, view_columns, update_columns_ui);
 }
 
 void
