@@ -53,6 +53,12 @@
 	Use the closes file to the previously active one that still exists.
 	Thanks to ranousse.
 
+	Make :set, :filter and :normal zo (and alike) in vifmrc affect all views,
+	thus obsoleting use of :winrun or :windo for this purpose (they still
+	work, the new way is a simpler and more obvious one).  This is related to
+	commands executed during vifmrc processing (not those in the right-hand
+	side of mappings, commands, etc.).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

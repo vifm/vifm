@@ -140,6 +140,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->preview_hint = NULL;
 
+	stats->global_local_settings = 0;
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif

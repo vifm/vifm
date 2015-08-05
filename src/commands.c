@@ -198,6 +198,7 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int add_filetype(const cmd_info_t *cmd_info, int for_x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
+static int update_filter(FileView *view, const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
 static char * get_filter_info(const char name[], const filter_t *filter);
 static int set_view_filter(FileView *view, const char filter[], int invert,
@@ -2453,26 +2454,42 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Sets/displays/clears filters. */
 static int
 filter_cmd(const cmd_info_t *cmd_info)
 {
+	int ret;
+
 	if(cmd_info->qmark)
 	{
 		display_filters_info(curr_view);
 		return 1;
 	}
 
+	ret = update_filter(curr_view, cmd_info);
+	if(curr_stats.global_local_settings)
+	{
+		ret = update_filter(other_view, cmd_info);
+	}
+
+	return ret;
+}
+
+/* Updates filters of the view. */
+static int
+update_filter(FileView *view, const cmd_info_t *cmd_info)
+{
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
 		{
-			toggle_filter_inversion(curr_view);
+			toggle_filter_inversion(view);
 			return 0;
 		}
 		else
 		{
 			const int invert_filter = get_filter_inversion_state(cmd_info);
-			return set_view_filter(curr_view, NULL, invert_filter,
+			return set_view_filter(view, NULL, invert_filter,
 					FILTER_DEF_CASE_SENSITIVITY) != 0;
 		}
 	}
@@ -2491,7 +2508,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 
 		invert_filter = get_filter_inversion_state(cmd_info);
 
-		return set_view_filter(curr_view, cmd_info->argv[0], invert_filter,
+		return set_view_filter(view, cmd_info->argv[0], invert_filter,
 				case_sensitive) != 0;
 	}
 }
@@ -4358,6 +4375,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 static int
 winrun(FileView *view, const char cmd[])
 {
+	const int prev_global_local_settings = curr_stats.global_local_settings;
 	int result;
 	FileView *const tmp_curr = curr_view;
 	FileView *const tmp_other = other_view;
@@ -4369,7 +4387,11 @@ winrun(FileView *view, const char cmd[])
 		load_local_options(curr_view);
 	}
 
+	/* :winrun and :windo should be able to set settings separately for each
+	 * window. */
+	curr_stats.global_local_settings = 0;
 	result = exec_commands(cmd, curr_view, CIT_COMMAND);
+	curr_stats.global_local_settings = prev_global_local_settings;
 
 	curr_view = tmp_curr;
 	other_view = tmp_other;
