@@ -1362,6 +1362,12 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 
 	if(flist_custom_finish(view) != 0)
 	{
+		/* Restore sorting of the view. */
+		if(very)
+		{
+			memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort[0]));
+		}
+
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
 	}
