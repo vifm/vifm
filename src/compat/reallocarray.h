@@ -28,4 +28,4 @@ void * reallocarray(void *optr, size_t nmemb, size_t size);
 #endif /* VIFM__COMPAT__REALLOCARRAY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

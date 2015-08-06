@@ -36,4 +36,4 @@ char * describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap,
 #endif /* VIFM__MENUS__CABBREVS_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

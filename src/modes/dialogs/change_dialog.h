@@ -32,4 +32,4 @@ void redraw_change_dialog(void);
 #endif /* VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

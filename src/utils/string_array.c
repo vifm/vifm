@@ -396,4 +396,4 @@ write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

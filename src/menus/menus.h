@@ -127,4 +127,4 @@ int menu_to_custom_view(menu_info *m, FileView *view);
 #endif /* VIFM__MENUS__MENUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

@@ -284,4 +284,4 @@ vle_compl_set_add_path_hook(vle_compl_add_path_hook_f hook)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

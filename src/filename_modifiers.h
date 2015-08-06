@@ -30,4 +30,4 @@ size_t get_mods_len(const char *str);
 #endif /* VIFM__FILENAME_MODIFIERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

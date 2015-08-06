@@ -421,4 +421,4 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

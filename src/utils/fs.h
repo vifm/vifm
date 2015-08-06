@@ -205,4 +205,4 @@ int is_win_symlink(uint32_t attr, uint32_t tag);
 #endif /* VIFM__UTILS__FS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

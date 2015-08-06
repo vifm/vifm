@@ -82,4 +82,4 @@ void ioe_errlst_free(ioe_errlst_t *elist);
 #endif /* VIFM__IO__IOE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

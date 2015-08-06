@@ -434,4 +434,4 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */
