@@ -370,7 +370,10 @@ void update_input_bar(const wchar_t *str);
 
 void clear_num_window(void);
 
-void show_progress(const char *msg, int period);
+/* Displays progress on the status bar, not updating it frequently.  msg can't
+ * be NULL.  period - how often status bar should be updated.  If period equals
+ * 0 inner counter is reset, do this on start of operation. */
+void show_progress(const char msg[], int period);
 
 void redraw_lists(void);
 

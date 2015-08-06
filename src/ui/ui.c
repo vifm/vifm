@@ -816,38 +816,52 @@ clear_num_window(void)
 	}
 }
 
-/* msg can't be NULL
- * period - how often status bar should be updated
- * if period equals 0 reset inner counter
- */
 void
-show_progress(const char *msg, int period)
+show_progress(const char msg[], int period)
 {
 	static char marks[] = {'|', '/', '-', '\\'};
-	static int count = 0;
-	static int pause = 1;
+	static int mark = 0;
+	static int count = 1;
+	static int total = 0;
 
+	/* Do nothing if UI is not functional. */
 	if(curr_stats.load_stage < 1)
 	{
 		return;
 	}
 
+	/* Reset state. */
 	if(period == 0)
 	{
-		pause = 1;
+		count = 1;
+		total = 0;
 		return;
 	}
 
-	pause++;
+	/* Advance state. */
+	++count;
+	++total;
 
-	if(pause%period != 0)
+	/* Skip intermediate updates to do not hammer UI with refreshes. */
+	if(count%period != 1)
+	{
 		return;
+	}
+	count = 1;
 
-	pause = 1;
+	/* Assume that period equal to one means that message already contains counter
+	 * (maybe along with total number). */
+	if(period == 1)
+	{
+		ui_sb_quick_msgf("%s %c", msg, marks[mark]);
+	}
+	else
+	{
+		ui_sb_quick_msgf("%s %c %d", msg, marks[mark], total);
+	}
 
-	ui_sb_quick_msgf("%s %c", msg, marks[count]);
-
-	count = (count + 1) % sizeof(marks);
+	/* Pick next mark character. */
+	mark = (mark + 1) % sizeof(marks);
 }
 
 void

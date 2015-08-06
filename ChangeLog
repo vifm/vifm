@@ -59,6 +59,9 @@
 	commands executed during vifmrc processing (not those in the right-hand
 	side of mappings, commands, etc.).
 
+	Display lower bound on item count in status bar progress messages (e.g. on
+	:grep).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
