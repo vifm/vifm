@@ -61,4 +61,4 @@ int hist_add(hist_t *hist, const char item[], size_t size);
 #endif /* VIFM__CFG__HISTORY_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

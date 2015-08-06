@@ -363,6 +363,10 @@ get_sort_info(FileView *view, const char line[])
 		line = skip_char(line, ',');
 	}
 	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
+	if(j == 0)
+	{
+		view->sort[0] = SK_DEFAULT;
+	}
 
 	fview_sorting_updated(view);
 }
@@ -1347,4 +1351,4 @@ add_to_int_array(int **array, size_t len, int what)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

@@ -49,4 +49,4 @@ void ionotif_register(ionotif_progress_changed handler);
 #endif /* VIFM__IO__IONOTIF_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

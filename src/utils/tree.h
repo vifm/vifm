@@ -48,4 +48,4 @@ int tree_get_data(tree_t tree, const char *path, tree_val_t *data);
 #endif /* VIFM__UTILS__TREE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

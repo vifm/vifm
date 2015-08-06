@@ -28,4 +28,4 @@ int show_find_menu(FileView *view, int with_path, const char args[]);
 #endif /* VIFM__MENUS__FIND_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

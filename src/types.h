@@ -62,4 +62,4 @@ FileType type_from_dir_entry(const struct dirent *d);
 #endif /* VIFM__TYPES_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

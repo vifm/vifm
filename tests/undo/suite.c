@@ -64,4 +64,4 @@ init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

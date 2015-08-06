@@ -89,4 +89,4 @@ size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
 #endif /* VIFM__UTILS__UTF8_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

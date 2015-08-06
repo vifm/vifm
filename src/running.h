@@ -70,4 +70,4 @@ int run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 #endif /* VIFM__RUNNING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

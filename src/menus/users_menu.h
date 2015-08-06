@@ -28,4 +28,4 @@ int show_user_menu(FileView *view, const char command[], int navigate);
 #endif /* VIFM__MENUS__USERS_MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

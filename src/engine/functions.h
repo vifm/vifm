@@ -69,4 +69,4 @@ void function_call_info_free(call_info_t *call_info);
 #endif /* VIFM__ENGINE__FUNCTIONS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

@@ -1507,13 +1507,13 @@ relativenumber_handler(OPT_OP op, optval_t val)
 static void
 update_num_type(FileView *view, NumberingType num_type, int enable)
 {
-	const NumberingType old_num_type = curr_view->num_type;
+	const NumberingType old_num_type = view->num_type;
 
-	curr_view->num_type = enable
-	                    ? (old_num_type | num_type)
-	                    : (old_num_type & ~num_type);
+	view->num_type = enable
+	               ? (old_num_type | num_type)
+	               : (old_num_type & ~num_type);
 
-	if(curr_view->num_type != old_num_type)
+	if(view->num_type != old_num_type)
 	{
 		redraw_view(view);
 	}
@@ -1933,4 +1933,4 @@ wrapscan_handler(OPT_OP op, optval_t val)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

@@ -176,4 +176,4 @@ catopt(char s0[], const char s1[])
 #endif /* HAVE_MNTENT_H */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

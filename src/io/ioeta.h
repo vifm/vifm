@@ -78,4 +78,4 @@ void ioeta_calculate(ioeta_estim_t *estim, const char path[], int shallow);
 #endif /* VIFM__IO__IOETA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

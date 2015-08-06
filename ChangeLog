@@ -59,6 +59,9 @@
 	commands executed during vifmrc processing (not those in the right-hand
 	side of mappings, commands, etc.).
 
+	Display lower bound on item count in status bar progress messages (e.g. on
+	:grep).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
@@ -80,6 +83,11 @@
 
 	Fixed choosing user vs. default shell on Windows (was reversed), related
 	to %S, %i and alike macros.
+
+	Fixed loosing view sorting on failed attempt to load custom view.  Thanks
+	to filterfalse.
+
+	Fixed not restoring 'sort' value on leaving unsorted custom view.
 
 0.8-beta to 0.8
 

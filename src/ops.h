@@ -115,4 +115,4 @@ int perform_operation(OPS op, ops_t *ops, void *data, const char src[],
 #endif /* VIFM__OPS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

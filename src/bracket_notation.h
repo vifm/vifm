@@ -40,4 +40,4 @@ const char * wchar_to_spec(const wchar_t c[], size_t *len);
 #endif /* VIFM__BRACKET_NOTATION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

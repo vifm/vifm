@@ -849,6 +849,7 @@ add_builtin_commands(const cmd_add_t *cmds, int count)
 				assert(ret_code == 0);
 			}
 		}
+		(void)ret_code;
 	}
 }
 
@@ -1418,4 +1419,4 @@ is_separator(char c, char sep)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

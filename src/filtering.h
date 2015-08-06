@@ -99,4 +99,4 @@ int local_filter_matches(FileView *view, const dir_entry_t *entry);
 #endif /* VIFM__FILTERING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

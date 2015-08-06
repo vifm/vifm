@@ -141,6 +141,7 @@ cfg_init(void)
 		snprintf(fuse_home, sizeof(fuse_home), "%s/vifm_FUSE", get_tmpdir());
 		update_stat = cfg_set_fuse_home(fuse_home);
 		assert(update_stat == 0);
+		(void)update_stat;
 	}
 
 	cfg.use_term_multiplexer = 0;
@@ -1073,4 +1074,4 @@ cfg_parent_dir_is_visible(int in_root)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

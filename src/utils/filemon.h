@@ -52,4 +52,4 @@ void filemon_assign(filemon_t *lhs, const filemon_t *rhs);
 #endif /* VIFM__UTILS__FILEMON_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

@@ -51,4 +51,4 @@ int ior_chmod(io_args_t *const args);
 #endif /* VIFM__IO__IOR_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */

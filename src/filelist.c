@@ -1041,6 +1041,7 @@ change_directory(FileView *view, const char directory[])
 	if(was_in_custom_view && view->custom.unsorted)
 	{
 		memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
+		load_sort_option(view);
 	}
 
 	return 0;
@@ -2695,4 +2696,4 @@ mark_selected(FileView *view)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-/* vim: set cinoptions+=t0 : */
+/* vim: set cinoptions+=t0 filetype=c : */
