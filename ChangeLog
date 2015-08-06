@@ -87,6 +87,8 @@
 	Fixed loosing view sorting on failed attempt to load custom view.  Thanks
 	to filterfalse.
 
+	Fixed not restoring 'sort' value on leaving unsorted custom view.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
