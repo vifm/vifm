@@ -63,6 +63,7 @@ init_builtin_functions(void)
 	{
 		int result = function_register(&functions[i]);
 		assert(result == 0 && "Builtin function registration error");
+		(void)result;
 	}
 }
 

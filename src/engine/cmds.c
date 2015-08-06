@@ -849,6 +849,7 @@ add_builtin_commands(const cmd_add_t *cmds, int count)
 				assert(ret_code == 0);
 			}
 		}
+		(void)ret_code;
 	}
 }
 

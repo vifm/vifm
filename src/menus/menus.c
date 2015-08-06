@@ -593,6 +593,7 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 		const char *const end = expand_tabulation(line, (size_t)-1, tab_stops,
 				expanded_line);
 		assert(*end == '\0' && "The line should be processed till the end");
+		(void)end;
 	}
 
 	return expanded_line;
