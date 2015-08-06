@@ -363,6 +363,10 @@ get_sort_info(FileView *view, const char line[])
 		line = skip_char(line, ',');
 	}
 	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
+	if(j == 0)
+	{
+		view->sort[0] = SK_DEFAULT;
+	}
 
 	fview_sorting_updated(view);
 }
