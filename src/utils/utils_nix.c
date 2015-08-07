@@ -384,6 +384,15 @@ is_on_slow_fs(const char full_path[])
 		.curr_len = 0UL,
 	};
 
+	/* if slowfs = "*" then all file systems are considered slow
+	 * this function is very slow on cygwin
+	 */
+
+	if (strcmp(cfg.slow_fs_list, "*") == 0)
+	{
+		return 1;
+	}
+
 	/* Empty list optimization. */
 	if(cfg.slow_fs_list[0] == '\0')
 	{
