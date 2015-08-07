@@ -93,6 +93,9 @@
 
 	Fixed not restoring 'sort' value on leaving unsorted custom view.
 
+	Fixed possible crash on startup when 'vifminfo' includes "options".
+	Thanks to Aurelio Sanabria (a.k.a. Sufrostico).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
