@@ -192,7 +192,7 @@ main(int argc, char *argv[])
 	}
 
 	/* Prepare terminal for further operations. */
-	curr_stats.original_stdout = reopen_terminal();
+	curr_stats.original_stdout = reopen_term_stdout();
 	if(curr_stats.original_stdout == NULL)
 	{
 		return -1;

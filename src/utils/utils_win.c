@@ -731,7 +731,7 @@ get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 }
 
 FILE *
-reopen_terminal(void)
+reopen_term_stdout(void)
 {
 	int outfd;
 	FILE *fp;

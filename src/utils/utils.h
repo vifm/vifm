@@ -242,7 +242,7 @@ void get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
 /* Reopens real terminal and binds it to stdout.  Returns NULL on error (message
  * is printed to stderr), otherwise file previously used as stdout is
  * returned. */
-FILE * reopen_terminal(void);
+FILE * reopen_term_stdout(void);
 
 /* Executes the command via shell and opens its output for reading.  Returns
  * NULL on error, otherwise stream valid for reading is returned. */
