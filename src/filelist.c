@@ -2694,5 +2694,52 @@ mark_selected(FileView *view)
 	}
 }
 
+void
+flist_add_custom_line(FileView *view, const char line[])
+{
+	int line_num;
+	/* Skip empty lines. */
+	char *const path = (skip_whitespace(line)[0] == '\0')
+	                 ? NULL
+	                 : parse_file_spec(line, &line_num);
+	if(path != NULL)
+	{
+		flist_custom_add(view, path);
+		free(path);
+	}
+}
+
+void
+flist_end_custom(FileView *view, int very)
+{
+	if(very)
+	{
+		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+	}
+	view->custom.unsorted = very;
+
+	if(flist_custom_finish(view) != 0)
+	{
+		/* Restore sorting of the view. */
+		if(very)
+		{
+			memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort[0]));
+		}
+
+		show_error_msg("Custom view", "Ignoring empty list of files");
+		return;
+	}
+
+	if(very)
+	{
+		/* As custom view isn't activated until flist_custom_finish() is called,
+		 * need to update option separately from view sort array. */
+		load_sort_option(view);
+	}
+
+	flist_set_pos(view, 0);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

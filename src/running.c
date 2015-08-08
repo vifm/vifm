@@ -1353,33 +1353,7 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 		return;
 	}
 
-	if(very)
-	{
-		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
-		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-	}
-	view->custom.unsorted = very;
-
-	if(flist_custom_finish(view) != 0)
-	{
-		/* Restore sorting of the view. */
-		if(very)
-		{
-			memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort[0]));
-		}
-
-		show_error_msg("Custom view", "Ignoring empty list of files");
-		return;
-	}
-
-	if(very)
-	{
-		/* As custom view isn't activated until flist_custom_finish() is called,
-		 * need to update option separately from view sort array. */
-		load_sort_option(view);
-	}
-
-	flist_set_pos(view, 0);
+	flist_end_custom(view, very);
 }
 
 /* Implements process_cmd_output() callback that loads paths into custom
@@ -1388,16 +1362,7 @@ static void
 path_handler(const char line[], void *arg)
 {
 	FileView *view = arg;
-	int line_num;
-	/* Skip empty lines. */
-	char *const path = (skip_whitespace(line)[0] == '\0')
-	                 ? NULL
-	                 : parse_file_spec(line, &line_num);
-	if(path != NULL)
-	{
-		flist_custom_add(view, path);
-		free(path);
-	}
+	flist_add_custom_line(view, line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

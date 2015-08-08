@@ -275,6 +275,11 @@ int add_dir_entry(dir_entry_t **list, size_t *list_size,
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
+/* Parses line to extract path and adds it to custom view or does nothing. */
+void flist_add_custom_line(FileView *view, const char line[]);
+/* A more high level version of flist_custom_finish(), which takes care of very
+ * custom view (unsorted one), error handling and cursor position. */
+void flist_end_custom(FileView *view, int very);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
