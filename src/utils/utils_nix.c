@@ -375,8 +375,7 @@ int
 is_on_slow_fs(const char full_path[])
 {
 	char fs_name[PATH_MAX];
-	get_mount_point_traverser_state state =
-	{
+	get_mount_point_traverser_state state = {
 		.type = MI_FS_TYPE,
 		.path = full_path,
 		.buf_len = sizeof(fs_name),
@@ -388,6 +387,14 @@ is_on_slow_fs(const char full_path[])
 	if(cfg.slow_fs_list[0] == '\0')
 	{
 		return 0;
+	}
+
+	/* If slowfs equals "*" then all file systems are considered slow.  On cygwin
+	 * obtaining list of mounts from /etc/mtab, which is linked to /proc/mounts,
+	 * is very slow in presence of network drives. */
+	if(strcmp(cfg.slow_fs_list, "*") == 0)
+	{
+		return 1;
 	}
 
 	if(traverse_mount_points(&get_mount_info_traverser, &state) == 0)
@@ -407,8 +414,7 @@ is_on_slow_fs(const char full_path[])
 int
 get_mount_point(const char path[], size_t buf_len, char buf[])
 {
-	get_mount_point_traverser_state state =
-	{
+	get_mount_point_traverser_state state = {
 		.type = MI_MOUNT_POINT,
 		.path = path,
 		.buf_len = buf_len,

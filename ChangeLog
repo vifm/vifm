@@ -15,6 +15,10 @@
 	initial :*Vifm command behaviour.  Thanks to Ross Hadden (a.k.a.
 	rosshadden).
 
+	Added special treatment for "*" as value of 'slowfs', which might be
+	useful in case of very slow handling of requests to mounts enumeration.
+	Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Jul 26
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2767,7 +2767,9 @@ particular kinds of file systems that can slow down file browsing.
 Currently this means don't check if directory has changed, skip check if
 target of symbolic links exists, assume that link target located on slow fs
 to be a directory (allows entering directories and navigating to files via
-|vifm-gf|).
+|vifm-gf|).  If you set the option to "*", it means all the systems are
+considered slow (usefull for cygwin, where all the checks might render vifm
+very slow if there are network mounts).
 
 Example for autofs root /mnt/autofs: >
   set slowfs+=/mnt/autofs
