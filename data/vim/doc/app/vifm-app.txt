@@ -55,6 +55,11 @@ vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
 vifm starts in the current directory unless it is given a different directory
 on the command line.
 
+vifm -
+Read list of files from standard input stream and compose custom view out of
+them (see |vifm-custom-views|).  Current working directory is used as a base
+for relative paths.
+
 vifm /path/to/directory/one
 or
 vifm /path/to/directory/one /path/to/directory/two

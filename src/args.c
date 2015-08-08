@@ -319,6 +319,8 @@ show_help_msg(const char wrong_arg[])
 	}
 
 	puts("vifm usage:\n");
+	puts("  To read list of files from stdin use\n");
+	puts("    vifm -\n");
 	puts("  To start in a specific directory give the directory path.\n");
 	puts("    vifm /path/to/start/dir/one");
 	puts("    or");
