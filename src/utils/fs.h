@@ -173,11 +173,15 @@ int is_case_change(const char src[], const char dst[]);
 int enum_dir_content(const char path[], dir_content_client_func client,
 		void *param);
 
+/* getcwd() wrapper that always uses forward slashes.  Returns buf on success or
+ * NULL on error. */
+char * get_cwd(char buf[], size_t size);
+
 /* Remembers current working directory.  If path can't be obtained, does
  * nothing.  Result should be passed to restore_cwd(), no checks are needed. */
-char * get_cwd(void);
+char * save_cwd(void);
 
-/* Restores previously remembered working directory via get_cwd().  If nothing
+/* Restores previously remembered working directory via save_cwd().  If nothing
  * was remembered, does nothing. */
 void restore_cwd(char saved_cwd[]);
 

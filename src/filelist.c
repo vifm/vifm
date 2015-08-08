@@ -226,9 +226,11 @@ init_view_history(FileView *view)
 }
 
 void
-load_initial_directory(FileView *view, const char *dir)
+load_initial_directory(FileView *view, const char dir[])
 {
-	if(view->curr_dir[0] == '\0')
+	/* Use current working directory as original location for custom views loaded
+	 * from command-line via "-". */
+	if(view->curr_dir[0] == '\0' || strcmp(view->curr_dir, "-") == 0)
 	{
 		copy_str(view->curr_dir, sizeof(view->curr_dir), dir);
 	}
@@ -2458,7 +2460,9 @@ int
 view_needs_cd(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
+	{
 		return 0;
+	}
 	return 1;
 }
 
@@ -2692,6 +2696,75 @@ mark_selected(FileView *view)
 	{
 		view->dir_entry[i].marked = view->dir_entry[i].selected;
 	}
+}
+
+void
+flist_set(FileView *view, const char title[], const char path[], char *lines[],
+		int nlines)
+{
+	int i;
+
+	if(vifm_chdir(path) != 0)
+	{
+		show_error_msgf("Custom view", "Can't change directory: %s", path);
+		return;
+	}
+
+	flist_custom_start(view, "-");
+
+	for(i = 0; i < nlines; ++i)
+	{
+		flist_add_custom_line(view, lines[i]);
+	}
+
+	flist_end_custom(view, 1);
+}
+
+void
+flist_add_custom_line(FileView *view, const char line[])
+{
+	int line_num;
+	/* Skip empty lines. */
+	char *const path = (skip_whitespace(line)[0] == '\0')
+	                 ? NULL
+	                 : parse_file_spec(line, &line_num);
+	if(path != NULL)
+	{
+		flist_custom_add(view, path);
+		free(path);
+	}
+}
+
+void
+flist_end_custom(FileView *view, int very)
+{
+	if(very)
+	{
+		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+	}
+	view->custom.unsorted = very;
+
+	if(flist_custom_finish(view) != 0)
+	{
+		/* Restore sorting of the view. */
+		if(very)
+		{
+			memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort[0]));
+		}
+
+		show_error_msg("Custom view", "Ignoring empty list of files");
+		return;
+	}
+
+	if(very)
+	{
+		/* As custom view isn't activated until flist_custom_finish() is called,
+		 * need to update option separately from view sort array. */
+		load_sort_option(view);
+	}
+
+	flist_set_pos(view, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

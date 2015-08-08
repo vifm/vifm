@@ -19,6 +19,9 @@
 	useful in case of very slow handling of requests to mounts enumeration.
 	Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added handling of "-" command-line argument specified in place of
+	directory path as instruction to read list of files from stdin.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -95,6 +98,11 @@
 
 	Fixed possible crash on startup when 'vifminfo' includes "options".
 	Thanks to Aurelio Sanabria (a.k.a. Sufrostico).
+
+	Fixed checking for symbolic link target on target change commands in
+	custom view.
+
+	Fixed slashes type on Windows on loading custom view with relative paths.
 
 0.8-beta to 0.8
 

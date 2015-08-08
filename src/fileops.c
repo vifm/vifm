@@ -1659,8 +1659,8 @@ change_link_cb(const char new_target[])
 
 	curr_stats.confirmed = 1;
 
-	fname = get_current_file_name(curr_view);
-	if(get_link_target(fname, linkto, sizeof(linkto)) != 0)
+	get_current_full_path(curr_view, sizeof(full_path), full_path);
+	if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return;
@@ -1669,11 +1669,10 @@ change_link_cb(const char new_target[])
 	ops = get_ops(OP_SYMLINK2, "re-owning", curr_view->curr_dir,
 			curr_view->curr_dir);
 
+	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(flist_get_dir(curr_view)), fname, linkto, new_target);
 	cmd_group_begin(undo_msg);
-
-	get_current_full_path(curr_view, sizeof(full_path), full_path);
 
 	if(perform_operation(OP_REMOVESL, ops, NULL, full_path, NULL) == 0)
 	{
@@ -1692,6 +1691,7 @@ change_link_cb(const char new_target[])
 int
 change_link(FileView *view)
 {
+	char full_path[PATH_MAX];
 	char linkto[PATH_MAX];
 	const dir_entry_t *const entry = get_current_entry(view);
 
@@ -1712,7 +1712,8 @@ change_link(FileView *view)
 		return 1;
 	}
 
-	if(get_link_target(entry->name, linkto, sizeof(linkto)) != 0)
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	if(get_link_target(full_path, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link");
 		return 0;
@@ -3982,6 +3983,8 @@ get_cancellation_suffix(void)
 int
 can_change_view_files(const FileView *view)
 {
+	/* TODO: maybe add check whether directory of specific entry is writable for
+	 *       custom views. */
 	return flist_custom_active(view)
 	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
 }

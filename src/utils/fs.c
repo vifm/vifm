@@ -252,7 +252,7 @@ get_symlink_type(const char path[])
 	char *filename_copy;
 	char *p;
 
-	if(getcwd(cwd, sizeof(cwd)) == NULL)
+	if(get_cwd(cwd, sizeof(cwd)) == NULL)
 	{
 		/* getcwd() failed, just use "." rather than fail. */
 		strcpy(cwd, ".");
@@ -740,7 +740,20 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 }
 
 char *
-get_cwd(void)
+get_cwd(char buf[], size_t size)
+{
+	if(getcwd(buf, size) == NULL)
+	{
+		return NULL;
+	}
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	return buf;
+}
+
+char *
+save_cwd(void)
 {
 	char cwd[PATH_MAX];
 	if(getcwd(cwd, sizeof(cwd)) != cwd)
@@ -812,9 +825,8 @@ realpath(const char path[], char buf[])
 	{
 		/* Try to compose absolute path. */
 		char cwd[PATH_MAX];
-		if(getcwd(cwd, sizeof(cwd)) == cwd)
+		if(get_cwd(cwd, sizeof(cwd)) == cwd)
 		{
-			to_forward_slash(cwd);
 			snprintf(buf, PATH_MAX, "%s/%s", cwd, resolved_path);
 			return buf;
 		}

@@ -22,7 +22,7 @@
 #ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
 #endif
-#include <unistd.h> /* getcwd() */
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <ctype.h>
@@ -563,7 +563,7 @@ to_canonic_path(const char path[], char buf[], size_t buf_len)
 		char cwd[PATH_MAX];
 		char full_path[PATH_MAX];
 
-		if(getcwd(cwd, sizeof(cwd)) == NULL)
+		if(get_cwd(cwd, sizeof(cwd)) == NULL)
 		{
 			/* getcwd() failed, we can't use relative path, so fail. */
 			LOG_SERROR_MSG(errno, "Can't get CWD");

@@ -50,10 +50,16 @@ Tag name structure:
 *vifm-options*
 
 General format:
-vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
+vifm [OPTION]... [ path [ path ] ]
 
 vifm starts in the current directory unless it is given a different directory
-on the command line.
+on the command line or |vifm-'vifminfo'| includes "savedirs" (in which case
+last visited directories are used as defaults).
+
+vifm -
+Read list of files from standard input stream and compose custom view out of
+them (see |vifm-custom-views|).  Current working directory is used as a base
+for relative paths.
 
 vifm /path/to/directory/one
 or

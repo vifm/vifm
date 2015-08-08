@@ -46,6 +46,7 @@
 #include "ui/cancellation.h"
 #include "ui/statusline.h"
 #include "utils/env.h"
+#include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -538,9 +539,8 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		return (pid_t)-1;
 
 	cwd[0] = '\0';
-	if(getcwd(cwd, sizeof(cwd)) != NULL)
+	if(get_cwd(cwd, sizeof(cwd)) != NULL)
 	{
-		to_forward_slash(cwd);
 		if(is_unc_path(cwd))
 		{
 			(void)chdir(get_tmpdir());

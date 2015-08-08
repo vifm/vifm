@@ -823,7 +823,7 @@ get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len, char buf[])
 }
 
 FILE *
-reopen_terminal(void)
+reopen_term_stdout(void)
 {
 	FILE *fp;
 	int outfd, ttyfd;
@@ -859,6 +859,27 @@ reopen_terminal(void)
 
 	close(ttyfd);
 	return fp;
+}
+
+int
+reopen_term_stdin(void)
+{
+	int ttyfd;
+
+	if(close(STDIN_FILENO))
+	{
+		fprintf(stderr, "Failed to close original input stream.");
+		return 1;
+	}
+
+	ttyfd = open("/dev/tty", O_RDONLY);
+	if(ttyfd != STDIN_FILENO)
+	{
+		fprintf(stderr, "Failed to open terminal for input.");
+		return 1;
+	}
+
+	return 0;
 }
 
 FILE *

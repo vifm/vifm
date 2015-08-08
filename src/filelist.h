@@ -47,7 +47,7 @@ void init_filelists(void);
 /* Reinitializes views. */
 void reset_views(void);
 /* Loads view file list for the first time. */
-void load_initial_directory(FileView *view, const char *dir);
+void load_initial_directory(FileView *view, const char dir[]);
 
 /* Position related functions. */
 
@@ -275,6 +275,15 @@ int add_dir_entry(dir_entry_t **list, size_t *list_size,
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
+/* Loads list of paths (absolute or relative to the path) into custom view.
+ * Exists with error message on failed attempt. */
+void flist_set(FileView *view, const char title[], const char path[],
+		char *lines[], int nlines);
+/* Parses line to extract path and adds it to custom view or does nothing. */
+void flist_add_custom_line(FileView *view, const char line[]);
+/* A more high level version of flist_custom_finish(), which takes care of very
+ * custom view (unsorted one), error handling and cursor position. */
+void flist_end_custom(FileView *view, int very);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
