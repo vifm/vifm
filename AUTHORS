@@ -93,3 +93,5 @@ in command-line mode.
 %FOREGROUND FUSE mount flag by Johannes (a.k.a. johannesmeng).
 
 Brian Callahan (a.k.a. ibara) fixed build on OpenBSD.
+
+Cosmin Popescu (a.k.a. cosminadrianpopescu) added "*" to 'slowfs'.
