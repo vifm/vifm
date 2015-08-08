@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/types.h>
-#include <unistd.h> /* F_OK access() getcwd() geteuid() */
+#include <unistd.h> /* F_OK access() geteuid() */
 
 #include <stdio.h> /* snprintf() */
 
@@ -35,7 +35,7 @@ TEST(create_by_absolute_path)
 		char cwd[PATH_MAX];
 		char full_path[PATH_MAX];
 
-		getcwd(cwd, sizeof(cwd));
+		get_cwd(cwd, sizeof(cwd));
 		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);
 		create_directory(full_path, DIR_NAME, 1);
 	}

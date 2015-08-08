@@ -1,12 +1,11 @@
 #include <stic.h>
 
-#include <unistd.h> /* getcwd() */
-
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset() */
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
@@ -18,10 +17,7 @@ SETUP()
 
 	assert_success(chdir(SANDBOX_PATH));
 
-	assert_true(getcwd(cwd, sizeof(cwd)) == cwd);
-#ifdef _WIN32
-	to_forward_slash(cwd);
-#endif
+	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
 
 	copy_str(view->curr_dir, sizeof(view->curr_dir), cwd);
 

@@ -115,7 +115,7 @@ int
 vifm_chdir(const char path[])
 {
 	char curr_path[PATH_MAX];
-	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)
+	if(get_cwd(curr_path, sizeof(curr_path)) == curr_path)
 	{
 		if(stroscmp(curr_path, path) == 0)
 		{

@@ -58,7 +58,7 @@ ipc_enabled(void)
 #include <sys/un.h>
 #endif
 #include <sys/types.h>
-#include <unistd.h> /* getcwd() */
+#include <unistd.h>
 
 #include <assert.h> /* assert() */
 #include <errno.h>
@@ -66,11 +66,9 @@ ipc_enabled(void)
 #include <stdlib.h>
 #include <string.h> /* strlen() strcpy() */
 
+#include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
-#ifdef _WIN32
-#include "utils/path.h"
-#endif
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "status.h"
@@ -275,15 +273,12 @@ ipc_send(char *data[])
 	if(initialized < 0)
 		return;
 
-	if(getcwd(buf, sizeof(buf)) == NULL)
+	if(get_cwd(buf, sizeof(buf)) == NULL)
 	{
 		LOG_ERROR_MSG("Can't get working directory");
 		return;
 	}
 	len = strlen(buf) + 1;
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
 
 	while(*data != NULL)
 	{

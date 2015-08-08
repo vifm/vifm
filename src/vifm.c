@@ -26,7 +26,7 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* getcwd() */
+#include <unistd.h>
 
 #include <errno.h> /* errno */
 #include <locale.h> /* setlocale */
@@ -115,14 +115,11 @@ main(int argc, char *argv[])
 	char **files = NULL;
 	int nfiles = 0;
 
-	if(getcwd(dir, sizeof(dir)) == NULL)
+	if(get_cwd(dir, sizeof(dir)) == NULL)
 	{
 		perror("getcwd");
 		return -1;
 	}
-#ifdef _WIN32
-	to_forward_slash(dir);
-#endif
 
 	(void)vifm_chdir(dir);
 	args_parse(&vifm_args, argc, argv, dir);

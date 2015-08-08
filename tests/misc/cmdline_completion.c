@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() getcwd() */
+#include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
@@ -15,6 +15,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
@@ -434,10 +435,7 @@ TEST(bang_abs_path_completion)
 
 	assert_success(chdir(SANDBOX_PATH));
 
-	assert_true(getcwd(cwd, sizeof(cwd)) == cwd);
-#ifdef _WIN32
-	to_forward_slash(cwd);
-#endif
+	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
 
 	create_executable("exec-for-completion" SUFFIX);
 
