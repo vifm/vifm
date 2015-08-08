@@ -8,9 +8,9 @@ vifm \- vi file manager
 .\" ---------------------------------------------------------------------------
 vifm [OPTION]...
 .br
-vifm [OPTION]... LWIN_DIR
+vifm [OPTION]... path
 .br
-vifm [OPTION]... LWIN_DIR RWIN_DIR
+vifm [OPTION]... path path
 .\" ---------------------------------------------------------------------------
 .SH DESCRIPTION
 .\" ---------------------------------------------------------------------------
@@ -28,10 +28,10 @@ Read list of files from standard input stream and compose custom view out of
 them (see "Custom views" section).  Current working directory is used as a base
 for relative paths.
 .TP
-.BI <lwinpath>
+.BI <path>
 Starts Vifm in the specified path.
 .TP
-.BI "<lwinpath> <rwinpath>"
+.BI "<path> <path>"
 Starts Vifm in the specified paths.
 .LP
 Specifying two directories triggers split view even when vifm was in single-view

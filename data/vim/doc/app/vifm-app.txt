@@ -50,7 +50,7 @@ Tag name structure:
 *vifm-options*
 
 General format:
-vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
+vifm [OPTION]... [ path [ path ] ]
 
 vifm starts in the current directory unless it is given a different directory
 on the command line.
