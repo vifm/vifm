@@ -185,6 +185,12 @@ handle_arg_or_fail(const char arg[], int select, const char dir[], args_t *args)
 {
 	if(handle_path_arg(arg, select, dir, args) == 0)
 	{
+		if(strcmp(args->lwin_path, "-") == 0 && strcmp(args->rwin_path, "-") == 0)
+		{
+			show_help_msg("\"-\" can be specified at most once");
+			quit_on_arg_parsing(EXIT_FAILURE);
+		}
+
 		return;
 	}
 
@@ -230,7 +236,9 @@ handle_path_arg(const char arg[], int select, const char dir[], args_t *args)
 static int
 is_path_arg(const char arg[])
 {
-	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg);
+	/* FIXME: why allow inexistent absolute paths? */
+	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg)
+		  || strcmp(arg, "-") == 0;
 }
 
 /* Ensures that path is in suitable form for processing.  buf should be at least
@@ -242,7 +250,7 @@ parse_path(const char dir[], const char path[], char buf[])
 #ifdef _WIN32
 	to_forward_slash(buf);
 #endif
-	if(is_path_absolute(buf))
+	if(is_path_absolute(buf) || strcmp(path, "-") == 0)
 	{
 		copy_str(buf, PATH_MAX, path);
 	}

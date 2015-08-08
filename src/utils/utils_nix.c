@@ -861,6 +861,27 @@ reopen_term_stdout(void)
 	return fp;
 }
 
+int
+reopen_term_stdin(void)
+{
+	int ttyfd;
+
+	if(close(STDIN_FILENO))
+	{
+		fprintf(stderr, "Failed to close original input stream.");
+		return 1;
+	}
+
+	ttyfd = open("/dev/tty", O_RDONLY);
+	if(ttyfd != STDIN_FILENO)
+	{
+		fprintf(stderr, "Failed to open terminal for input.");
+		return 1;
+	}
+
+	return 0;
+}
+
 FILE *
 read_cmd_output(const char cmd[])
 {

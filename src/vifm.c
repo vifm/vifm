@@ -54,6 +54,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "args.h"
 #include "background.h"
@@ -111,6 +112,8 @@ main(int argc, char *argv[])
 
 	char dir[PATH_MAX];
 	int old_config;
+	char **files = NULL;
+	int nfiles = 0;
 
 	if(getcwd(dir, sizeof(dir)) == NULL)
 	{
@@ -124,6 +127,16 @@ main(int argc, char *argv[])
 	(void)vifm_chdir(dir);
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);
+
+	if(strcmp(vifm_args.lwin_path, "-") == 0 ||
+			strcmp(vifm_args.rwin_path, "-") == 0)
+	{
+		files = read_stream_lines(stdin, &nfiles);
+		if(reopen_term_stdin() != 0)
+		{
+			return EXIT_FAILURE;
+		}
+	}
 
 	(void)setlocale(LC_ALL, "");
 
@@ -226,6 +239,15 @@ main(int argc, char *argv[])
 	{
 		load_scheme();
 		cfg_load();
+
+		if(strcmp(vifm_args.lwin_path, "-") == 0)
+		{
+			flist_set(&lwin, "-", dir, files, nfiles);
+		}
+		else if(strcmp(vifm_args.rwin_path, "-") == 0)
+		{
+			flist_set(&rwin, "-", dir, files, nfiles);
+		}
 	}
 	/* Load colors in any case to load color pairs. */
 	load_color_scheme_colors();
@@ -407,7 +429,7 @@ remote_cd(FileView *view, const char *path, int handle)
 static void
 check_path_for_file(FileView *view, const char path[], int handle)
 {
-	if(path[0] == '\0' || is_dir(path))
+	if(path[0] == '\0' || is_dir(path) || strcmp(path, "-") == 0)
 	{
 		return;
 	}

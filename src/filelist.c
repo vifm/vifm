@@ -226,9 +226,11 @@ init_view_history(FileView *view)
 }
 
 void
-load_initial_directory(FileView *view, const char *dir)
+load_initial_directory(FileView *view, const char dir[])
 {
-	if(view->curr_dir[0] == '\0')
+	/* Use current working directory as original location for custom views loaded
+	 * from command-line via "-". */
+	if(view->curr_dir[0] == '\0' || strcmp(view->curr_dir, "-") == 0)
 	{
 		copy_str(view->curr_dir, sizeof(view->curr_dir), dir);
 	}
@@ -2458,7 +2460,9 @@ int
 view_needs_cd(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
+	{
 		return 0;
+	}
 	return 1;
 }
 
@@ -2692,6 +2696,28 @@ mark_selected(FileView *view)
 	{
 		view->dir_entry[i].marked = view->dir_entry[i].selected;
 	}
+}
+
+void
+flist_set(FileView *view, const char title[], const char path[], char *lines[],
+		int nlines)
+{
+	int i;
+
+	if(vifm_chdir(path) != 0)
+	{
+		show_error_msgf("Custom view", "Can't change directory: %s", path);
+		return;
+	}
+
+	flist_custom_start(view, "-");
+
+	for(i = 0; i < nlines; ++i)
+	{
+		flist_add_custom_line(view, lines[i]);
+	}
+
+	flist_end_custom(view, 1);
 }
 
 void

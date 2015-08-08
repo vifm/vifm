@@ -777,6 +777,35 @@ reopen_term_stdout(void)
 	return fp;
 }
 
+int
+reopen_term_stdin(void)
+{
+	HANDLE handle_in;
+	SECURITY_ATTRIBUTES sec_attr;
+
+	/* Share this file handle with child processes so that could use standard
+	 * output. */
+	sec_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sec_attr.bInheritHandle = TRUE;
+	sec_attr.lpSecurityDescriptor = NULL;
+
+	handle_in = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, 0, 0, 0);
+	if(handle_in == NULL)
+	{
+		fprintf(stderr, "Failed to open CONIN$.");
+		return 1;
+	}
+
+	if(SetStdHandle(STD_INPUT_HANDLE, handle_in) == FALSE)
+	{
+		fprintf(stderr, "Failed to set CONIN$ as standard input.");
+		return 1;
+	}
+
+	return 0;
+}
+
 FILE *
 read_cmd_output(const char cmd[])
 {
