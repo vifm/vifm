@@ -168,7 +168,6 @@ init_view(FileView *view)
 static void
 init_flist(FileView *view)
 {
-	view->list_rows = 0;
 	view->list_pos = 0;
 	view->selected_filelist = NULL;
 	view->history_num = 0;
@@ -182,6 +181,14 @@ init_flist(FileView *view)
 	view->custom.entry_count = 0;
 	view->custom.orig_dir = NULL;
 	view->custom.title = NULL;
+
+	/* Load fake empty element to make dir_entry valid. */
+	view->dir_entry = calloc(1, sizeof(dir_entry_t));
+	view->dir_entry[0].name = strdup("");
+	view->dir_entry[0].type = FT_DIR;
+	view->dir_entry[0].hi_num = -1;
+	view->dir_entry[0].origin = &view->curr_dir[0];
+	view->list_rows = 1;
 }
 
 void
@@ -230,14 +237,6 @@ load_initial_directory(FileView *view, const char *dir)
 		dir = view->curr_dir;
 	}
 
-	view->dir_entry = calloc(1, sizeof(dir_entry_t));
-
-	view->dir_entry[0].name = strdup("");
-	view->dir_entry[0].type = FT_DIR;
-	view->dir_entry[0].hi_num = -1;
-	view->dir_entry[0].origin = &view->curr_dir[0];
-
-	view->list_rows = 1;
 	if(!is_root_dir(view->curr_dir))
 	{
 		chosp(view->curr_dir);

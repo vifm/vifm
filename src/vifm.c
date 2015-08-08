@@ -162,6 +162,8 @@ main(int argc, char *argv[])
 	old_config = cfg_has_old_format();
 	if(!old_config && !vifm_args.no_configs)
 	{
+		/* vifminfo must be processed this early so that it can restore last visited
+		 * directory. */
 		read_info_file(0);
 	}
 
