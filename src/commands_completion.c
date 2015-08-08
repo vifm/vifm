@@ -648,7 +648,7 @@ complete_command_name(const char beginning[])
 	size_t i;
 	char ** paths;
 	size_t paths_count;
-	char *const cwd = get_cwd();
+	char *const cwd = save_cwd();
 
 	paths = get_paths(&paths_count);
 	for(i = 0U; i < paths_count; ++i)
@@ -752,7 +752,7 @@ filename_completion(const char *str, CompletionType type)
 
 	dir = os_opendir(dirname);
 
-	cwd = get_cwd();
+	cwd = save_cwd();
 
 	if(dir == NULL || vifm_chdir(dirname) != 0)
 	{

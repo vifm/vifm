@@ -740,7 +740,7 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 }
 
 char *
-get_cwd(void)
+save_cwd(void)
 {
 	char cwd[PATH_MAX];
 	if(getcwd(cwd, sizeof(cwd)) != cwd)
