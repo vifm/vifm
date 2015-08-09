@@ -50,6 +50,9 @@ void print_search_fail_msg(const FileView *view, int backward);
 /* Resets information about last search match. */
 void reset_search_results(FileView *view);
 
+/* Prints the search messages for the n or N commands. */
+void print_search_next_msg(const FileView *view, int backward);
+
 #endif /* VIFM__SEARCH_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

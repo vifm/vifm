@@ -750,7 +750,8 @@ search(int backward)
 
 		if(menu->matching_entries > 0)
 		{
-			status_bar_messagef("%c%s", backward ? '?' : '/', menu->regexp);
+			status_bar_messagef("(%d of %d) %c%s", get_match_index(menu), menu->matching_entries,
+					backward ? '?' : '/', menu->regexp);
 		}
 	}
 	else
@@ -1087,6 +1088,24 @@ execute_cmdline_command(const char cmd[])
 	init_cmds(0, &cmds_conf);
 }
 
+int
+get_match_index(const menu_info *m)
+{
+	int n, i;
+
+	n = 0;
+	i = 0;
+	while (i++ < m->current)
+	{
+		if (m->matches[i])
+		{
+			n++;
+		}
+	}
+
+	return n;
+}
+
 void
 menu_print_search_msg(const menu_info *m)
 {
@@ -1115,7 +1134,7 @@ menu_print_search_msg(const menu_info *m)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("%d %s", m->matching_entries,
+		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else
