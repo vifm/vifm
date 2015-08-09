@@ -392,20 +392,27 @@ ensure_history_not_full(hist_t *hist)
 	}
 }
 
+/* Loads single history entry from vifminfo into the view. */
 static void
 get_history(FileView *view, int reread, const char *dir, const char *file,
 		int pos)
 {
+	const int list_rows = view->list_rows;
+
 	if(view->history_num == cfg.history_len)
 	{
 		cfg_resize_histories(cfg.history_len + 1);
 	}
 
 	if(!reread)
+	{
 		view->list_rows = 1;
+	}
 	save_view_history(view, dir, file, pos);
 	if(!reread)
-		view->list_rows = 0;
+	{
+		view->list_rows = list_rows;
+	}
 }
 
 /* Sets view property specified by the type to the value. */
