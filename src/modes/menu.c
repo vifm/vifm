@@ -750,7 +750,8 @@ search(int backward)
 
 		if(menu->matching_entries > 0)
 		{
-			status_bar_messagef("(%d of %d) %c%s", get_match_index(menu), menu->matching_entries,
+			status_bar_messagef("(%d of %d) %c%s", get_match_index(menu),
+					menu->matching_entries,
 					backward ? '?' : '/', menu->regexp);
 		}
 	}
@@ -1095,7 +1096,7 @@ get_match_index(const menu_info *m)
 
 	n = 0;
 	i = 0;
-	while (i++ < m->current)
+	while (i++ < m->pos)
 	{
 		if (m->matches[i])
 		{
@@ -1103,7 +1104,7 @@ get_match_index(const menu_info *m)
 		}
 	}
 
-	return n;
+	return n + 1;
 }
 
 void

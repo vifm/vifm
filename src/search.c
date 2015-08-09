@@ -237,8 +237,10 @@ print_search_msg(const FileView *view, int backward)
 	}
 	else
 	{
-		status_bar_messagef("%d of %d matching file%s for: %s", view->dir_entry[view->list_pos].search_match,
-				view->matches, (view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
+		status_bar_messagef("%d of %d matching file%s for: %s",
+				view->dir_entry[view->list_pos].search_match,
+				view->matches,
+				(view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
 	}
 }
 
