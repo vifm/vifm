@@ -109,6 +109,7 @@ static int quit_cmd(const cmd_info_t *cmd_info);
 static int search_menu(menu_info *m, int start_pos);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
+static int get_match_index(const menu_info *m);
 
 static FileView *view;
 static menu_info *menu;
@@ -750,7 +751,9 @@ search(int backward)
 
 		if(menu->matching_entries > 0)
 		{
-			status_bar_messagef("%c%s", backward ? '?' : '/', menu->regexp);
+			status_bar_messagef("(%d of %d) %c%s", get_match_index(menu),
+					menu->matching_entries,
+					backward ? '?' : '/', menu->regexp);
 		}
 	}
 	else
@@ -1115,13 +1118,33 @@ menu_print_search_msg(const menu_info *m)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("%d %s", m->matching_entries,
+		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else
 	{
 		status_bar_errorf("No matches for: %s", m->regexp);
 	}
+}
+
+/* Calculates the index of the current match from the list of matches.  Returns
+ * the index. */
+static int
+get_match_index(const menu_info *m)
+{
+	int n, i;
+
+	n = (m->matches[0] ? 1 : 0);
+	i = 0;
+	while(i++ < m->pos)
+	{
+		if(m->matches[i])
+		{
+			++n;
+		}
+	}
+
+	return n;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

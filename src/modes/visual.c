@@ -943,8 +943,7 @@ search(key_info_t key_info, int backward, int interactive)
 		return;
 	}
 
-	status_bar_messagef("%c%s", backward ? '?' : '/',
-			cfg_get_last_search_pattern());
+	print_search_next_msg(view, backward);
 	curr_stats.save_msg = 1;
 }
 

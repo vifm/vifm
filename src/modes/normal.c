@@ -1653,8 +1653,7 @@ search(key_info_t key_info, int backward)
 
 	if(found)
 	{
-		status_bar_messagef("%c%s", backward ? '?' : '/',
-				cfg_get_last_search_pattern());
+		print_search_next_msg(curr_view, backward);
 	}
 	else
 	{
