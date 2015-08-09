@@ -713,9 +713,7 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		current = strdup(full_path);
 	}
 
-	view->custom.unsorted = 0;
-
-	if(flist_custom_finish(view) != 0)
+	if(flist_custom_finish(view, 0) != 0)
 	{
 		free(current);
 		return 1;
