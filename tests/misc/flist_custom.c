@@ -60,7 +60,7 @@ cleanup_view(FileView *view)
 TEST(empty_list_is_not_accepted)
 {
 	flist_custom_start(&lwin, "test");
-	assert_false(flist_custom_finish(&lwin) == 0);
+	assert_false(flist_custom_finish(&lwin, 0) == 0);
 }
 
 TEST(duplicates_are_not_added)
@@ -68,7 +68,7 @@ TEST(duplicates_are_not_added)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
 	assert_int_equal(1, lwin.list_rows);
 }
 
@@ -78,14 +78,14 @@ TEST(custom_view_replaces_custom_view_fine)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
 	assert_int_equal(1, lwin.list_rows);
 
 	assert_true(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
 	assert_int_equal(1, lwin.list_rows);
 
 	assert_true(flist_custom_active(&lwin));
@@ -100,7 +100,7 @@ TEST(reload_considers_local_filter)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
 	local_filter_apply(&lwin, "b");
 
@@ -119,7 +119,7 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin) == 0);
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
 	local_filter_apply(&lwin, "b");
 
@@ -165,7 +165,6 @@ TEST(files_are_sorted_undecorated)
 
 	cfg.decorations[FT_DIR][1] = '/';
 
-	lwin.custom.unsorted = 0;
 	lwin.sort[0] = SK_BY_NAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
@@ -178,7 +177,7 @@ TEST(files_are_sorted_undecorated)
 	flist_custom_add(&lwin, "foo");
 	flist_custom_add(&lwin, "foo-");
 	flist_custom_add(&lwin, "foo0");
-	assert_success(flist_custom_finish(&lwin));
+	assert_success(flist_custom_finish(&lwin, 0));
 
 	assert_string_equal("foo", lwin.dir_entry[0].name);
 	assert_string_equal("foo-", lwin.dir_entry[1].name);
@@ -195,7 +194,7 @@ setup_custom_view(FileView *view)
 	assert_false(flist_custom_active(view));
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(view) == 0);
+	assert_true(flist_custom_finish(view, 0) == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

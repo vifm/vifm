@@ -1347,7 +1347,7 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 #endif
 
 int
-flist_custom_finish(FileView *view)
+flist_custom_finish(FileView *view, int very)
 {
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL_TRIE;
@@ -1386,6 +1386,16 @@ flist_custom_finish(FileView *view)
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
+
+	/* view->custom.unsorted must be set before load_sort_option() so that it
+	 * skips sort array normalization. */
+	view->custom.unsorted = very;
+	if(very)
+	{
+		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+		load_sort_option(view);
+	}
 
 	sort_dir_list(0, view);
 
@@ -2738,30 +2748,10 @@ flist_add_custom_line(FileView *view, const char line[])
 void
 flist_end_custom(FileView *view, int very)
 {
-	if(very)
+	if(flist_custom_finish(view, very) != 0)
 	{
-		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
-		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-	}
-	view->custom.unsorted = very;
-
-	if(flist_custom_finish(view) != 0)
-	{
-		/* Restore sorting of the view. */
-		if(very)
-		{
-			memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort[0]));
-		}
-
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
-	}
-
-	if(very)
-	{
-		/* As custom view isn't activated until flist_custom_finish() is called,
-		 * need to update option separately from view sort array. */
-		load_sort_option(view);
 	}
 
 	flist_set_pos(view, 0);

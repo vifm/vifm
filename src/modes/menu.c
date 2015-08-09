@@ -78,12 +78,14 @@ static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_question(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_B(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
+static void dump_into_custom_view(int very);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static int pass_combination_to_khandler(const wchar_t keys[]);
@@ -133,6 +135,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
 	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L"?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
+	{L"B", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_B}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
 	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
@@ -532,6 +535,13 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(CLS_MENU_BSEARCH, L"", menu);
 }
 
+/* Populates very custom (unsorted) view with list of files. */
+static void
+cmd_B(key_info_t key_info, keys_info_t *keys_info)
+{
+	dump_into_custom_view(1);
+}
+
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -612,11 +622,18 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 		search(!last_search_backward);
 }
 
-/* Populates view with list of files. */
+/* Populates custom view with list of files. */
 static void
 cmd_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu_to_custom_view(menu, view) != 0)
+	dump_into_custom_view(0);
+}
+
+/* Makees custom view of specified type out of menu items. */
+static void
+dump_into_custom_view(int very)
+{
+	if(menu_to_custom_view(menu, view, very) != 0)
 	{
 		show_error_msg("Menu transformation",
 				"No valid paths discovered in menu content");

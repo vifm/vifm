@@ -666,7 +666,7 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 }
 
 int
-menu_to_custom_view(menu_info *m, FileView *view)
+menu_to_custom_view(menu_info *m, FileView *view, int very)
 {
 	int i;
 	char *current = NULL;
@@ -713,9 +713,7 @@ menu_to_custom_view(menu_info *m, FileView *view)
 		current = strdup(full_path);
 	}
 
-	view->custom.unsorted = 0;
-
-	if(flist_custom_finish(view) != 0)
+	if(flist_custom_finish(view, very) != 0)
 	{
 		free(current);
 		return 1;
