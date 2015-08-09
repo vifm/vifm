@@ -136,7 +136,7 @@ flags2opts(int flags)
 #endif
 	if(flags & MNT_ASYNC)       res = catopt(res, "async");
 	if(flags & MNT_NOATIME)     res = catopt(res, "noatime");
-#if !defined(__APPLE__) && !defined(__OpenBSD__) && !definen(__NetBSD__)
+#if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
 	if(flags & MNT_NOCLUSTERR)  res = catopt(res, "noclusterr");
 	if(flags & MNT_NOCLUSTERW)  res = catopt(res, "noclusterw");
 	if(flags & MNT_NOSYMFOLLOW) res = catopt(res, "nosymfollow");
