@@ -22,6 +22,9 @@
 	Added handling of "-" command-line argument specified in place of
 	directory path as instruction to read list of files from stdin.
 
+	Added B key to menus, which acts like b, but creates unsorted (very
+	custom) view.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

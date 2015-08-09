@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 08
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3445,7 +3445,7 @@ Ctrl-L - redraw the menu.                      *vifm-m_CTRL-L*
 
 Escape, Ctrl-C                                 *vifm-m_Escape* *vifm-m_CTRL-C*
 ZZ, ZQ                                         *vifm-m_ZQ* *vifm-m_ZZ*
-q                                             *vifm-m_q*
+q                                              *vifm-m_q*
     quit.
 
 In all menus~
@@ -3482,6 +3482,8 @@ zL                                             *vifm-m_zL*
 b                                              *vifm-m_b*
     interpret content of the menu as list of paths and use it to create
     custom view in place of previously active pane.  See |vifm-custom-views|.
+B                                              *vifm-m_B*
+    same as above, but creates unsorted view.
 
 
 Below is description of additional commands and reaction on selection in some

@@ -122,7 +122,7 @@ KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
 
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
-int menu_to_custom_view(menu_info *m, FileView *view);
+int menu_to_custom_view(menu_info *m, FileView *view, int very);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 
