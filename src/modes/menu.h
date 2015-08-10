@@ -58,6 +58,9 @@ int get_last_visible_line(const menu_info *m);
 /* Prints results or error message about search operation to the user. */
 void menu_print_search_msg(const menu_info *m);
 
+/* Returns the index of the current match from the list of matches. */
+int get_match_index(const menu_info *m);
+
 #endif /* VIFM__MODES__MENU_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
