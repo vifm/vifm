@@ -1585,6 +1585,9 @@ set_sort(FileView *view, char order[])
 	}
 	ui_view_sort_list_ensure_well_formed(view);
 
+	/* Reset search results, which might be outdated after resorting. */
+	view->matches = 0;
+
 	fview_sorting_updated(view);
 	resort_view(view);
 	fview_cursor_redraw(view);

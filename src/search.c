@@ -146,7 +146,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 				continue;
 			}
 
-			entry->search_match = 1;
+			entry->search_match = nmatches + 1;
 			entry->match_left = matches[0].rm_so;
 			entry->match_right = matches[0].rm_eo;
 			if(cfg.hl_search)
@@ -237,9 +237,18 @@ print_search_msg(const FileView *view, int backward)
 	}
 	else
 	{
-		status_bar_messagef("%d matching file%s for: %s", view->matches,
+		status_bar_messagef("%d of %d matching file%s for: %s",
+				view->dir_entry[view->list_pos].search_match,
+				view->matches,
 				(view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
 	}
+}
+
+void
+print_search_next_msg(const FileView *view, int backward)
+{
+	status_bar_messagef("(%d of %d) %c%s", view->dir_entry[view->list_pos].search_match,
+			view->matches, backward ? '?' : '/', cfg_get_last_search_pattern());
 }
 
 void
