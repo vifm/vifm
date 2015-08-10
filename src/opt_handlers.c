@@ -1589,6 +1589,7 @@ set_sort(FileView *view, char order[])
 	resort_view(view);
 	fview_cursor_redraw(view);
 	load_sort_option(view);
+	view->matches = 0;
 }
 
 /* Handles 'sortorder' option and corrects ordering for primary sorting key. */

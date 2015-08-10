@@ -1094,7 +1094,7 @@ get_match_index(const menu_info *m)
 {
 	int n, i;
 
-	n = 0;
+	n = (m->matches[0] ? 1 : 0);
 	i = 0;
 	while (i++ < m->pos)
 	{
@@ -1104,7 +1104,7 @@ get_match_index(const menu_info *m)
 		}
 	}
 
-	return n + 1;
+	return n;
 }
 
 void
