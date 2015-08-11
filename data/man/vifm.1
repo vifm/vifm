@@ -3348,21 +3348,22 @@ type: local
 .br
 Sets list of sorting keys (first item is primary key, second is secondary key,
 etc.):
-   [+\-]ext   \- extension
-   [+\-]name  \- name (including extension)
-   [+\-]iname \- name (including extension, ignores case)
-   [+\-]type  \- file type (dir/reg/exe/link/char/block/sock/fifo)
-   [+\-]dir   \- directory grouping (directory < file)
-   [+\-]gid   \- group id (*nix only)
-   [+\-]gname \- group name (*nix only)
-   [+\-]mode  \- file type derived from its mode (*nix only)
-   [+\-]perms \- permissions string (*nix only)
-   [+\-]uid   \- owner id (*nix only)
-   [+\-]uname \- owner name (*nix only)
-   [+\-]size  \- size
-   [+\-]atime \- time accessed (e.g. read, executed)
-   [+\-]ctime \- time changed (changes in metadata, e.g. mode)
-   [+\-]mtime \- time modified (when file contents is changed)
+   [+\-]ext     \- extension
+   [+\-]fileext \- extension (ignore folders)
+   [+\-]name    \- name (including extension)
+   [+\-]iname   \- name (including extension, ignores case)
+   [+\-]type    \- file type (dir/reg/exe/link/char/block/sock/fifo)
+   [+\-]dir     \- directory grouping (directory < file)
+   [+\-]gid     \- group id (*nix only)
+   [+\-]gname   \- group name (*nix only)
+   [+\-]mode    \- file type derived from its mode (*nix only)
+   [+\-]perms   \- permissions string (*nix only)
+   [+\-]uid     \- owner id (*nix only)
+   [+\-]uname   \- owner name (*nix only)
+   [+\-]size    \- size
+   [+\-]atime   \- time accessed (e.g. read, executed)
+   [+\-]ctime   \- time changed (changes in metadata, e.g. mode)
+   [+\-]mtime   \- time modified (when file contents is changed)
 
 Note: look for st_atime, st_ctime and st_mtime in "man 2 stat" for more
 information on time keys.

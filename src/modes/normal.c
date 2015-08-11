@@ -1993,6 +1993,15 @@ cmd_paren(int lb, int ub, int inc)
 		nentry = &curr_view->dir_entry[pos];
 		switch(sorting_key)
 		{
+			case SK_BY_FILEEXT:
+				if (is_directory_entry(nentry))
+				{
+					if(strncmp(pentry->name, nentry->name, char_width) != 0)
+						return pos;
+				}
+				if(strcmp(get_last_ext(nentry->name), ext) != 0)
+					return pos;
+				break;
 			case SK_BY_EXTENSION:
 				if(strcmp(get_last_ext(nentry->name), ext) != 0)
 					return pos;
