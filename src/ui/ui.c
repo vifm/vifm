@@ -652,7 +652,7 @@ change_window(void)
 {
 	swap_view_roles();
 
-	load_local_options(curr_view);
+	load_view_options(curr_view);
 
 	if(curr_stats.number_of_windows != 1)
 	{

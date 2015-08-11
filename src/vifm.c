@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 	init_modes();
 	init_undo_list(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
-	load_local_options(curr_view);
+	load_view_options(curr_view);
 
 	curr_stats.load_stage = 1;
 
@@ -585,7 +585,7 @@ vifm_restart(void)
 	/* Options of other pane. */
 	tmp_view = curr_view;
 	curr_view = other_view;
-	load_local_options(other_view);
+	load_view_options(other_view);
 	reset_options_to_default();
 	curr_view = tmp_view;
 

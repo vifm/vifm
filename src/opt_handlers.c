@@ -755,7 +755,7 @@ add_options(void)
 }
 
 void
-load_local_options(FileView *view)
+load_view_options(FileView *view)
 {
 	optval_t val;
 

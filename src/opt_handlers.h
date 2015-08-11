@@ -44,7 +44,8 @@ const char * cursorline_enum[3];
 
 void init_option_handlers(void);
 
-void load_local_options(FileView *view);
+/* Loads view-specific settings into corresponding options. */
+void load_view_options(FileView *view);
 
 /* Clones all local options of *from into *to. */
 void clone_local_options(const FileView *from, FileView *to);

@@ -4384,7 +4384,7 @@ winrun(FileView *view, const char cmd[])
 	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
 	if(curr_view != tmp_curr)
 	{
-		load_local_options(curr_view);
+		load_view_options(curr_view);
 	}
 
 	/* :winrun and :windo should be able to set settings separately for each
@@ -4397,7 +4397,7 @@ winrun(FileView *view, const char cmd[])
 	other_view = tmp_other;
 	if(curr_view != view)
 	{
-		load_local_options(curr_view);
+		load_view_options(curr_view);
 	}
 
 	return result;
