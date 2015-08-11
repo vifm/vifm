@@ -68,6 +68,7 @@ static int indexes[] = {
 #endif
 	4,               /* SK_BY_DIR */
 	3,               /* SK_BY_TYPE */
+	15 + CORRECTION, /* SK_BY_FILEEXT */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 

@@ -92,6 +92,7 @@ static void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
 static void format_type(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
+static void format_fileext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_time(int id, const void *data, size_t buf_len, char buf[]);
 static void format_dir(int id, const void *data, size_t buf_len, char buf[]);
 #ifndef _WIN32
@@ -114,11 +115,12 @@ fview_init(void)
 		SortingKey key;
 		column_func func;
 	} sort_to_func[] = {
-		{ SK_BY_NAME,  &format_name },
-		{ SK_BY_INAME, &format_name },
-		{ SK_BY_SIZE,  &format_size },
-		{ SK_BY_TYPE,  &format_type },
+		{ SK_BY_NAME,    &format_name },
+		{ SK_BY_INAME,   &format_name },
+		{ SK_BY_SIZE,    &format_size },
+		{ SK_BY_TYPE,    &format_type },
 
+		{ SK_BY_FILEEXT,       &format_fileext },
 		{ SK_BY_EXTENSION,     &format_ext },
 		{ SK_BY_TIME_ACCESSED, &format_time },
 		{ SK_BY_TIME_CHANGED,  &format_time },
@@ -1067,6 +1069,24 @@ format_ext(int id, const void *data, size_t buf_len, char buf[])
 
 	ext = get_ext(entry->name);
 	copy_str(buf, buf_len + 1, ext);
+}
+
+static void
+format_fileext(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+
+	const char *type = is_directory_entry(entry) ? "dir" : "file";
+	snprintf(buf, buf_len, " %s", type);
+	if (!is_directory_entry(entry))
+	{
+		format_ext(id, data, buf_len, buf);
+	}
+	else
+	{
+		*buf = '\0';
+	}
 }
 
 /* File modification/access/change date format callback for column_view unit. */

@@ -81,6 +81,7 @@ typedef enum
 #endif
 	SK_BY_DIR,
 	SK_BY_TYPE,
+	SK_BY_FILEEXT,
 }
 SortingKey;
 
@@ -94,7 +95,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_TYPE,
+	SK_LAST = SK_BY_FILEEXT,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,

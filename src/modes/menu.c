@@ -1090,24 +1090,6 @@ execute_cmdline_command(const char cmd[])
 	init_cmds(0, &cmds_conf);
 }
 
-int
-get_match_index(const menu_info *m)
-{
-	int n, i;
-
-	n = (m->matches[0] ? 1 : 0);
-	i = 0;
-	while (i++ < m->pos)
-	{
-		if (m->matches[i])
-		{
-			n++;
-		}
-	}
-
-	return n;
-}
-
 void
 menu_print_search_msg(const menu_info *m)
 {
