@@ -109,6 +109,7 @@ static int quit_cmd(const cmd_info_t *cmd_info);
 static int search_menu(menu_info *m, int start_pos);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
+static int get_match_index(const menu_info *m);
 
 static FileView *view;
 static menu_info *menu;
@@ -1142,6 +1143,26 @@ menu_print_search_msg(const menu_info *m)
 	{
 		status_bar_errorf("No matches for: %s", m->regexp);
 	}
+}
+
+/* Calculates the index of the current match from the list of matches.  Returns
+ * the index. */
+static int
+get_match_index(const menu_info *m)
+{
+	int n, i;
+
+	n = (m->matches[0] ? 1 : 0);
+	i = 0;
+	while(i++ < m->pos)
+	{
+		if(m->matches[i])
+		{
+			++n;
+		}
+	}
+
+	return n;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

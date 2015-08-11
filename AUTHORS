@@ -94,4 +94,5 @@ in command-line mode.
 
 Brian Callahan (a.k.a. ibara) fixed build on OpenBSD.
 
-Cosmin Popescu (a.k.a. cosminadrianpopescu) added "*" to 'slowfs'.
+Cosmin Popescu (a.k.a. cosminadrianpopescu) added "*" to 'slowfs', match numbers
+to search messages, :shell!.

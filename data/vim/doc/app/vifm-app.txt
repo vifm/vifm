@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 09
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1854,8 +1854,9 @@ yet supported) and might be changed in future releases, or get an alias.
     Option name can be prepended and appended by any number of whitespace
     characters.
 
-:sh[ell]                                       *vifm-:shell* *vifm-:sh*
-    start a shell in current directory.
+:sh[ell][!]                                    *vifm-:shell* *vifm-:sh*
+    start a shell in current directory.  "!" suppresses spawning dedicated
+    window of terminal multiplexer for a shell.
 
 :sor[t]                                        *vifm-:sort* *vifm-:sor*
     display dialog with different sorting methods, where one can select
