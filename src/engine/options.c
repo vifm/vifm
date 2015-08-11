@@ -103,7 +103,7 @@ static const char MIDDLE_CHARS[] = "^+-=:";
 static int *opts_changed;
 
 static opt_t *options;
-static size_t options_count;
+static size_t option_count;
 
 void
 init_options(int *opts_changed_flag)
@@ -127,7 +127,7 @@ void
 reset_options_to_default(void)
 {
 	size_t i;
-	for(i = 0U; i < options_count; ++i)
+	for(i = 0U; i < option_count; ++i)
 	{
 		if(options[i].full == NULL)
 		{
@@ -140,7 +140,7 @@ void
 clear_options(void)
 {
 	size_t i;
-	for(i = 0U; i < options_count; ++i)
+	for(i = 0U; i < option_count; ++i)
 	{
 		free(options[i].name);
 		if(allocates_str_value(options[i].type))
@@ -152,7 +152,7 @@ clear_options(void)
 	}
 	free(options);
 	options = NULL;
-	options_count = 0;
+	option_count = 0U;
 }
 
 void
@@ -211,15 +211,15 @@ add_option_inner(const char name[], OPT_TYPE type, int val_count,
 {
 	opt_t *p;
 
-	p = reallocarray(options, options_count + 1, sizeof(*options));
+	p = reallocarray(options, option_count + 1, sizeof(*options));
 	if(p == NULL)
 	{
 		return NULL;
 	}
 	options = p;
-	options_count++;
+	option_count++;
 
-	p = options + options_count - 1;
+	p = options + option_count - 1;
 
 	while((p - 1) >= options && strcmp((p - 1)->name, name) > 0)
 	{
@@ -289,7 +289,7 @@ static void
 print_changed_options(void)
 {
 	size_t i;
-	for(i = 0; i < options_count; ++i)
+	for(i = 0; i < option_count; ++i)
 	{
 		opt_t *opt = &options[i];
 
@@ -423,7 +423,7 @@ static void
 print_options(void)
 {
 	size_t i;
-	for(i = 0U; i < options_count; ++i)
+	for(i = 0U; i < option_count; ++i)
 	{
 		if(options[i].full == NULL)
 		{
@@ -454,7 +454,7 @@ get_option(const char option[])
 opt_t *
 find_option(const char option[])
 {
-	int l = 0, u = options_count - 1;
+	int l = 0, u = option_count - 1;
 	while(l <= u)
 	{
 		int i = (l + u)/2;
@@ -1236,7 +1236,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 		vle_compl_add_match("all");
 	}
 
-	for(i = 0U; i < options_count; ++i)
+	for(i = 0U; i < option_count; ++i)
 	{
 		opt_t *const opt = &options[i];
 
