@@ -1461,7 +1461,8 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 	}
 
 	if(!found_name_key && i < SK_COUNT &&
-			(!flist_custom_active(view) || !view->custom.unsorted))
+			(!flist_custom_active(view) ||
+			 (sort_keys == view->sort && !view->custom.unsorted)))
 	{
 		sort_keys[i++] = SK_DEFAULT;
 	}

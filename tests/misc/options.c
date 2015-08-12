@@ -4,6 +4,7 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/options.h"
 #include "../../src/commands.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
@@ -39,6 +40,8 @@ SETUP()
 	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort);
 	lwin.columns = columns_create();
 	lwin.view_columns = strdup("");
+	lwin.num_width_g = 4;
+	lwin.num_width = 4;
 
 	rwin.dir_entry = NULL;
 	rwin.list_rows = 0;
@@ -47,6 +50,8 @@ SETUP()
 	ui_view_sort_list_ensure_well_formed(&rwin, rwin.sort);
 	rwin.columns = columns_create();
 	rwin.view_columns = strdup("");
+	rwin.num_width_g = 4;
+	rwin.num_width = 4;
 
 	columns_add_column_desc(SK_BY_NAME, &format_name);
 
@@ -56,6 +61,7 @@ SETUP()
 TEARDOWN()
 {
 	reset_cmds();
+	clear_options();
 
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
@@ -96,6 +102,27 @@ TEST(lsview_block_columns_update_on_sort_change)
 	assert_success(exec_commands("set lsview", curr_view, CIT_COMMAND));
 	assert_success(exec_commands("set sort=name", curr_view, CIT_COMMAND));
 	/* The check is implicit, an assert will fail if view columns are updated. */
+}
+
+TEST(set_local_sets_local_value)
+{
+	assert_success(exec_commands("setlocal numberwidth=2", &lwin, CIT_COMMAND));
+	assert_int_equal(4, lwin.num_width_g);
+	assert_int_equal(2, lwin.num_width);
+}
+
+TEST(set_global_sets_global_value)
+{
+	assert_success(exec_commands("setglobal numberwidth=2", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.num_width_g);
+	assert_int_equal(4, lwin.num_width);
+}
+
+TEST(set_sets_local_and_global_values)
+{
+	assert_success(exec_commands("set numberwidth=2", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.num_width_g);
+	assert_int_equal(2, lwin.num_width);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

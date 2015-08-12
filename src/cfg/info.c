@@ -354,7 +354,7 @@ get_sort_info(FileView *view, const char line[])
 		if(endptr != line)
 		{
 			line = endptr;
-			view->sort[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
+			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
 		}
 		else
 		{
@@ -362,10 +362,10 @@ get_sort_info(FileView *view, const char line[])
 		}
 		line = skip_char(line, ',');
 	}
-	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
+	memset(&view->sort_g[j], SK_NONE, sizeof(view->sort_g) - j);
 	if(j == 0)
 	{
-		view->sort[0] = SK_DEFAULT;
+		view->sort_g[0] = SK_DEFAULT;
 	}
 
 	fview_sorting_updated(view);
@@ -959,16 +959,16 @@ write_options(FILE *const fp)
 	fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
 			cfg.vi_cmd_bg ? " &" : "");
 	fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
-	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
-	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
-	fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
-	fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
-	fprintf(fp, "=[%snumber\n", (lwin.num_type & NT_SEQ) ? "" : "no");
-	fprintf(fp, "=]%snumber\n", (rwin.num_type & NT_SEQ) ? "" : "no");
-	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width);
-	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width);
-	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type & NT_REL) ? "" : "no");
-	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type & NT_REL) ? "" : "no");
+	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns_g));
+	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns_g));
+	fprintf(fp, "=[%slsview\n", lwin.ls_view_g ? "" : "no");
+	fprintf(fp, "=]%slsview\n", rwin.ls_view_g ? "" : "no");
+	fprintf(fp, "=[%snumber\n", (lwin.num_type_g & NT_SEQ) ? "" : "no");
+	fprintf(fp, "=]%snumber\n", (rwin.num_type_g & NT_SEQ) ? "" : "no");
+	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width_g);
+	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width_g);
+	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type_g & NT_REL) ? "" : "no");
+	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
 
 	fprintf(fp, "%s", "=dotdirs=");
 	if(cfg.dot_dirs & DD_ROOT_PARENT)
@@ -1311,7 +1311,7 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 	int i = -1;
 	const char *const sort = (flist_custom_active(view) && view->custom.unsorted)
 	                       ? view->custom.sort
-	                       : view->sort;
+	                       : view->sort_g;
 
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)

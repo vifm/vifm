@@ -268,6 +268,8 @@ static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
+static int setlocal_cmd(const cmd_info_t *cmd_info);
+static int setglobal_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
 static int sort_cmd(const cmd_info_t *cmd_info);
 static int source_cmd(const cmd_info_t *cmd_info);
@@ -476,6 +478,10 @@ static const cmd_add_t commands[] = {
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = set_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "setlocal",         .abbr = "setl",  .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = setlocal_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "setglobal",        .abbr = "setg",  .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = setglobal_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "shell",            .abbr = "sh",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3771,6 +3777,22 @@ static int
 set_cmd(const cmd_info_t *cmd_info)
 {
 	const int result = process_set_args(cmd_info->args, 1, 1);
+	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
+}
+
+/* Updates/displays only global options. */
+static int
+setglobal_cmd(const cmd_info_t *cmd_info)
+{
+	const int result = process_set_args(cmd_info->args, 1, 0);
+	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
+}
+
+/* Updates/displays only local options. */
+static int
+setlocal_cmd(const cmd_info_t *cmd_info)
+{
+	const int result = process_set_args(cmd_info->args, 0, 1);
 	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 

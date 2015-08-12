@@ -92,6 +92,7 @@ static void init_viewcolumns(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
+static void load_sort_option_inner(FileView *view, char sort_keys[]);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
@@ -135,17 +136,25 @@ static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
 static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
-static void lsview_handler(OPT_OP op, optval_t val);
-static void number_handler(OPT_OP op, optval_t val);
-static void numberwidth_handler(OPT_OP op, optval_t val);
-static void set_numberwidth(FileView *view, int width);
-static void relativenumber_handler(OPT_OP op, optval_t val);
-static void update_num_type(FileView *view, NumberingType num_type, int enable);
-static void sort_handler(OPT_OP op, optval_t val);
-static void set_sort(FileView *view, char order[]);
-static void sortorder_handler(OPT_OP op, optval_t val);
-static void set_sortorder(FileView *view, int ascending);
-static void viewcolumns_handler(OPT_OP op, optval_t val);
+static void lsview_global(OPT_OP op, optval_t val);
+static void lsview_local(OPT_OP op, optval_t val);
+static void number_global(OPT_OP op, optval_t val);
+static void number_local(OPT_OP op, optval_t val);
+static void numberwidth_global(OPT_OP op, optval_t val);
+static void numberwidth_local(OPT_OP op, optval_t val);
+static void set_numberwidth(FileView *view, int *num_width, int width);
+static void relativenumber_global(OPT_OP op, optval_t val);
+static void relativenumber_local(OPT_OP op, optval_t val);
+static void update_num_type(FileView *view, NumberingType *num_type,
+		NumberingType type, int enable);
+static void sort_global(OPT_OP op, optval_t val);
+static void sort_local(OPT_OP op, optval_t val);
+static void set_sort(FileView *view, char sort_keys[], char order[]);
+static void sortorder_global(OPT_OP op, optval_t val);
+static void sortorder_local(OPT_OP op, optval_t val);
+static void set_sortorder(FileView *view, int ascending, char sort_keys[]);
+static void viewcolumns_global(OPT_OP op, optval_t val);
+static void viewcolumns_local(OPT_OP op, optval_t val);
 static void set_viewcolumns(FileView *view, const char view_columns[]);
 static void set_view_columns_option(FileView *view, const char value[],
 		int update_ui);
@@ -498,32 +507,32 @@ options[] = {
 
 	/* Local options. */
 	{ "lsview", "",
-	  OPT_BOOL, 0, NULL, &lsview_handler, NULL,
+	  OPT_BOOL, 0, NULL, &lsview_global, &lsview_local,
 	  { .init = &init_lsview },
 	},
 	{ "number", "nu",
-	  OPT_BOOL, 0, NULL, &number_handler, NULL,
+	  OPT_BOOL, 0, NULL, &number_global, &number_local,
 	  { .init = &init_number },
 	},
 	{ "numberwidth", "nuw",
-	  OPT_INT, 0, NULL, &numberwidth_handler, NULL,
+	  OPT_INT, 0, NULL, &numberwidth_global, &numberwidth_local,
 	  { .init = &init_numberwidth },
 	},
 	{ "relativenumber", "rnu",
-	  OPT_BOOL, 0, NULL, &relativenumber_handler, NULL,
+	  OPT_BOOL, 0, NULL, &relativenumber_global, &relativenumber_local,
 	  { .init = &init_relativenumber },
 	},
 	{ "sort", "",
-	  OPT_STRLIST, ARRAY_LEN(sort_types), sort_types, &sort_handler, NULL,
+	  OPT_STRLIST, ARRAY_LEN(sort_types), sort_types, &sort_global, &sort_local,
 	  { .init = &init_sort },
 	},
 	{ "sortorder", "",
-	  OPT_ENUM, ARRAY_LEN(sortorder_enum), sortorder_enum, &sortorder_handler,
-		NULL,
+	  OPT_ENUM, ARRAY_LEN(sortorder_enum), sortorder_enum, &sortorder_global,
+		&sortorder_local,
 	  { .init = &init_sortorder },
 	},
 	{ "viewcolumns", "",
-	  OPT_STRLIST, 0, NULL, &viewcolumns_handler, NULL,
+	  OPT_STRLIST, 0, NULL, &viewcolumns_global, &viewcolumns_local,
 	  { .init = &init_viewcolumns },
 	},
 };
@@ -611,7 +620,7 @@ init_trash_dir(optval_t *val)
 static void
 init_lsview(optval_t *val)
 {
-	val->bool_val = curr_view->ls_view;
+	val->bool_val = curr_view->ls_view_g;
 }
 
 /* Initializes 'shortmess' from current configuration state. */
@@ -767,6 +776,29 @@ add_options(void)
 void
 reset_local_options(FileView *view)
 {
+	optval_t val;
+
+	memcpy(view->sort, view->sort_g, sizeof(view->sort));
+	load_sort_option_inner(view, view->sort);
+
+	fview_set_lsview(view, view->ls_view_g);
+	val.int_val = view->ls_view_g;
+	set_option("lsview", val, OPT_LOCAL);
+
+	view->num_type = view->num_type_g;
+	val.bool_val = view->num_type_g & NT_SEQ;
+	set_option("number", val, OPT_LOCAL);
+	val.bool_val = view->num_type_g & NT_REL;
+	set_option("relativenumber", val, OPT_LOCAL);
+
+	view->num_width = view->num_width_g;
+	val.int_val = view->num_width_g;
+	set_option("numberwidth", val, OPT_LOCAL);
+
+	replace_string(&view->view_columns, view->view_columns_g);
+	set_viewcolumns(view, view->view_columns);
+	val.str_val = view->view_columns;
+	set_option("viewcolumns", val, OPT_LOCAL);
 }
 
 void
@@ -777,18 +809,28 @@ load_view_options(FileView *view)
 	load_sort_option(view);
 
 	val.str_val = view->view_columns;
+	set_option("viewcolumns", val, OPT_LOCAL);
+	val.str_val = view->view_columns_g;
 	set_option("viewcolumns", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
+	set_option("lsview", val, OPT_LOCAL);
+	val.bool_val = view->ls_view_g;
 	set_option("lsview", val, OPT_GLOBAL);
 
 	val.bool_val = view->num_type & NT_SEQ;
+	set_option("number", val, OPT_LOCAL);
+	val.bool_val = view->num_type_g & NT_SEQ;
 	set_option("number", val, OPT_GLOBAL);
 
 	val.int_val = view->num_width;
+	set_option("numberwidth", val, OPT_LOCAL);
+	val.int_val = view->num_width_g;
 	set_option("numberwidth", val, OPT_GLOBAL);
 
-	val.int_val = view->num_type & NT_REL;
+	val.bool_val = view->num_type & NT_REL;
+	set_option("relativenumber", val, OPT_LOCAL);
+	val.bool_val = view->num_type_g & NT_REL;
 	set_option("relativenumber", val, OPT_GLOBAL);
 }
 
@@ -796,15 +838,28 @@ void
 clone_local_options(const FileView *from, FileView *to)
 {
 	replace_string(&to->view_columns, from->view_columns);
+	replace_string(&to->view_columns_g, from->view_columns_g);
 	to->num_width = from->num_width;
+	to->num_width_g = from->num_width_g;
 	to->num_type = from->num_type;
+	to->num_type_g = from->num_type_g;
 
 	memcpy(to->sort, from->sort, sizeof(to->sort));
+	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
+	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
 }
 
 void
 load_sort_option(FileView *view)
+{
+	load_sort_option_inner(view, view->sort);
+	load_sort_option_inner(view, view->sort_g);
+}
+
+/* Loads sorting related options ("sort" and "sortorder"). */
+static void
+load_sort_option_inner(FileView *view, char sort_keys[])
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
 	 * comma (",") between items. */
@@ -815,16 +870,17 @@ load_sort_option(FileView *view)
 	optval_t val;
 	char opt_val[MAX_SORT_KEY_LEN*SK_COUNT];
 	size_t opt_val_len = 0U;
+	OPT_SCOPE scope = (sort_keys == view->sort) ? OPT_LOCAL : OPT_GLOBAL;
 
 	opt_val[0] = '\0';
 
-	ui_view_sort_list_ensure_well_formed(view, view->sort);
+	ui_view_sort_list_ensure_well_formed(view, sort_keys);
 
 	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
-	while(++i < SK_COUNT && abs(view->sort[i]) <= SK_LAST)
+	while(++i < SK_COUNT && abs(sort_keys[i]) <= SK_LAST)
 	{
-		const int sort_option = view->sort[i];
+		const int sort_option = sort_keys[i];
 		const char *const comma = (opt_val_len == 0U) ? "" : ",";
 		const char option_mark = (sort_option < 0) ? '-' : '+';
 		const char *const option_name = sort_enum[abs(sort_option) - 1];
@@ -835,10 +891,10 @@ load_sort_option(FileView *view)
 	}
 
 	val.str_val = opt_val;
-	set_option("sort", val, OPT_GLOBAL);
+	set_option("sort", val, scope);
 
-	val.enum_item = (view->sort[0] < 0);
-	set_option("sortorder", val, OPT_GLOBAL);
+	val.enum_item = (sort_keys[0] < 0);
+	set_option("sortorder", val, scope);
 }
 
 int
@@ -1475,9 +1531,20 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	redraw_lists();
 }
 
-/* Handles switch that controls column vs. ls-like view. */
+/* Handles switch that controls column vs. ls-like view in global option. */
 static void
-lsview_handler(OPT_OP op, optval_t val)
+lsview_global(OPT_OP op, optval_t val)
+{
+	curr_view->ls_view_g = val.bool_val;
+	if(curr_stats.global_local_settings)
+	{
+		other_view->ls_view_g = val.bool_val;
+	}
+}
+
+/* Handles switch that controls column vs. ls-like view in local option. */
+static void
+lsview_local(OPT_OP op, optval_t val)
 {
 	fview_set_lsview(curr_view, val.bool_val);
 	if(curr_stats.global_local_settings)
@@ -1486,33 +1553,55 @@ lsview_handler(OPT_OP op, optval_t val)
 	}
 }
 
-/* Handles file numbers displaying toggle. */
+/* Handles file numbers displaying toggle in global option. */
 static void
-number_handler(OPT_OP op, optval_t val)
+number_global(OPT_OP op, optval_t val)
 {
-	update_num_type(curr_view, NT_SEQ, val.bool_val);
+	update_num_type(curr_view, &curr_view->num_type_g, NT_SEQ, val.bool_val);
 	if(curr_stats.global_local_settings)
 	{
-		update_num_type(other_view, NT_SEQ, val.bool_val);
+		update_num_type(other_view, &other_view->num_type_g, NT_SEQ, val.bool_val);
 	}
 }
 
-/* Handles changes of minimum width of file number field. */
+/* Handles file numbers displaying toggle in local option. */
 static void
-numberwidth_handler(OPT_OP op, optval_t val)
+number_local(OPT_OP op, optval_t val)
 {
-	set_numberwidth(curr_view, val.int_val);
+	update_num_type(curr_view, &curr_view->num_type, NT_SEQ, val.bool_val);
 	if(curr_stats.global_local_settings)
 	{
-		set_numberwidth(other_view, val.int_val);
+		update_num_type(other_view, &other_view->num_type, NT_SEQ, val.bool_val);
+	}
+}
+
+/* Handles changes of minimum width of file number field in global option. */
+static void
+numberwidth_global(OPT_OP op, optval_t val)
+{
+	set_numberwidth(curr_view, &curr_view->num_width_g, val.int_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_numberwidth(other_view, &other_view->num_width_g, val.int_val);
+	}
+}
+
+/* Handles changes of minimum width of file number field in local option. */
+static void
+numberwidth_local(OPT_OP op, optval_t val)
+{
+	set_numberwidth(curr_view, &curr_view->num_width, val.int_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_numberwidth(other_view, &other_view->num_width, val.int_val);
 	}
 }
 
 /* Sets number width for the view. */
 static void
-set_numberwidth(FileView *view, int width)
+set_numberwidth(FileView *view, int *num_width, int width)
 {
-	view->num_width = width;
+	*num_width = width;
 
 	if(ui_view_displays_numbers(view))
 	{
@@ -1520,52 +1609,76 @@ set_numberwidth(FileView *view, int width)
 	}
 }
 
-/* Handles relative file numbers displaying toggle. */
+/* Handles relative file numbers displaying toggle in global option. */
 static void
-relativenumber_handler(OPT_OP op, optval_t val)
+relativenumber_global(OPT_OP op, optval_t val)
 {
-	update_num_type(curr_view, NT_REL, val.bool_val);
+	update_num_type(curr_view, &curr_view->num_type_g, NT_REL, val.bool_val);
 	if(curr_stats.global_local_settings)
 	{
-		update_num_type(other_view, NT_REL, val.bool_val);
+		update_num_type(other_view, &other_view->num_type_g, NT_REL, val.bool_val);
+	}
+}
+
+/* Handles relative file numbers displaying toggle in local option. */
+static void
+relativenumber_local(OPT_OP op, optval_t val)
+{
+	update_num_type(curr_view, &curr_view->num_type, NT_REL, val.bool_val);
+	if(curr_stats.global_local_settings)
+	{
+		update_num_type(other_view, &other_view->num_type, NT_REL, val.bool_val);
 	}
 }
 
 /* Handles toggling of boolean number related option and updates current view if
  * needed. */
 static void
-update_num_type(FileView *view, NumberingType num_type, int enable)
+update_num_type(FileView *view, NumberingType *num_type, NumberingType type,
+		int enable)
 {
-	const NumberingType old_num_type = view->num_type;
+	const NumberingType old_num_type = *num_type;
 
-	view->num_type = enable
-	               ? (old_num_type | num_type)
-	               : (old_num_type & ~num_type);
+	*num_type = enable
+	          ? (old_num_type | type)
+	          : (old_num_type & ~type);
 
-	if(view->num_type != old_num_type)
+	if(*num_type != old_num_type)
 	{
 		redraw_view(view);
 	}
 }
 
-/* Handler for 'sort' option, parses the value and checks it for correctness. */
+/* Handler for global 'sort' option, parses the value and checks it for
+ * correctness. */
 static void
-sort_handler(OPT_OP op, optval_t val)
+sort_global(OPT_OP op, optval_t val)
 {
-	set_sort(curr_view, val.str_val);
+	set_sort(curr_view, curr_view->sort_g, val.str_val);
 	if(curr_stats.global_local_settings)
 	{
-		set_sort(other_view, val.str_val);
+		set_sort(other_view, other_view->sort_g, val.str_val);
+	}
+}
+
+/* Handler for local 'sort' option, parses the value and checks it for
+ * correctness. */
+static void
+sort_local(OPT_OP op, optval_t val)
+{
+	set_sort(curr_view, curr_view->sort, val.str_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_sort(other_view, other_view->sort, val.str_val);
 	}
 }
 
 /* Sets sorting value for the view. */
 static void
-set_sort(FileView *view, char order[])
+set_sort(FileView *view, char sort_keys[], char order[])
 {
 	char *part = order, *state = NULL;
 	int key_count = 0;
-	char *const sort_keys = view->sort;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -1612,45 +1725,74 @@ set_sort(FileView *view, char order[])
 	{
 		sort_keys[key_count] = SK_NONE;
 	}
-	ui_view_sort_list_ensure_well_formed(view, view->sort);
+	ui_view_sort_list_ensure_well_formed(view, sort_keys);
 
-	/* Reset search results, which might be outdated after resorting. */
-	view->matches = 0;
+	if(sort_keys == view->sort)
+	{
+		/* Reset search results, which might be outdated after resorting. */
+		view->matches = 0;
+		fview_sorting_updated(view);
+		resort_view(view);
+		fview_cursor_redraw(view);
+	}
 
-	fview_sorting_updated(view);
-	resort_view(view);
-	fview_cursor_redraw(view);
-	load_sort_option(view);
+	load_sort_option_inner(view, sort_keys);
 }
 
-/* Handles 'sortorder' option and corrects ordering for primary sorting key. */
+/* Handles global 'sortorder' option and corrects ordering for primary sorting
+ * key. */
 static void
-sortorder_handler(OPT_OP op, optval_t val)
+sortorder_global(OPT_OP op, optval_t val)
 {
-	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1);
+	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1, curr_view->sort_g);
 	if(curr_stats.global_local_settings)
 	{
-		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1);
+		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1, other_view->sort_g);
+	}
+}
+
+/* Handles local 'sortorder' option and corrects ordering for primary sorting
+ * key. */
+static void
+sortorder_local(OPT_OP op, optval_t val)
+{
+	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1, curr_view->sort);
+	if(curr_stats.global_local_settings)
+	{
+		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1, other_view->sort);
 	}
 }
 
 /* Updates sorting order for the view. */
 static void
-set_sortorder(FileView *view, int ascending)
+set_sortorder(FileView *view, int ascending, char sort_keys[])
 {
-	if((ascending ? +1 : -1)*view->sort[0] < 0)
+	if((ascending ? +1 : -1)*sort_keys[0] < 0)
 	{
-		view->sort[0] = -view->sort[0];
+		sort_keys[0] = -sort_keys[0];
 
-		resort_view(view);
-		load_sort_option(view);
+		if(sort_keys == view->sort)
+		{
+			resort_view(view);
+			load_sort_option(view);
+		}
 	}
 }
 
-/* Handler of local to a view 'viewcolumns' option, which defines custom view
- * columns. */
+/* Handler of global 'viewcolumns' option, which defines custom view columns. */
 static void
-viewcolumns_handler(OPT_OP op, optval_t val)
+viewcolumns_global(OPT_OP op, optval_t val)
+{
+	replace_string(&curr_view->view_columns_g, val.str_val);
+	if(curr_stats.global_local_settings)
+	{
+		replace_string(&other_view->view_columns_g, val.str_val);
+	}
+}
+
+/* Handler of local 'viewcolumns' option, which defines custom view columns. */
+static void
+viewcolumns_local(OPT_OP op, optval_t val)
 {
 	set_viewcolumns(curr_view, val.str_val);
 	if(curr_stats.global_local_settings)
