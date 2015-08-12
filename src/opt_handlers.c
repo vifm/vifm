@@ -173,6 +173,7 @@ static void wrapscan_handler(OPT_OP op, optval_t val);
 
 static const char * sort_enum[] = {
 	"ext",
+	"fileext",
 	"name",
 #ifndef _WIN32
 	"gid",
@@ -191,7 +192,6 @@ static const char * sort_enum[] = {
 #endif
 	"dir",
 	"type",
-	"fileext",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
 

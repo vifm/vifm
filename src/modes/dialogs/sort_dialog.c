@@ -164,6 +164,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
 	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
+	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion (ignore folders)");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Type");

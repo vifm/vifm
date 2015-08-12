@@ -232,7 +232,20 @@ sort_dir_list(const void *one, const void *two)
 				retval = first_is_dir ? -1 : 1;
 			}
 			else if(pfirst && psecond)
-				retval = compare_file_names(++pfirst, ++psecond, 0);
+			{
+				if (strlen(pfirst) == strlen(first->name) && strlen(psecond) != strlen(second->name))
+				{
+					retval = -1;
+				}
+				else if (strlen(pfirst) != strlen(first->name) && strlen(psecond) == strlen(second->name))
+				{
+					retval = 1;
+				}
+				else 
+				{
+					retval = compare_file_names(++pfirst, ++psecond, 0);	
+				}
+			}
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
