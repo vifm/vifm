@@ -207,7 +207,7 @@ reset_view(FileView *view)
 	filters_view_reset(view);
 
 	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-	ui_view_sort_list_ensure_well_formed(view);
+	ui_view_sort_list_ensure_well_formed(view, view->sort);
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
