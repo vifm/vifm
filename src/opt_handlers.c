@@ -795,7 +795,7 @@ load_view_options(FileView *view)
 void
 clone_local_options(const FileView *from, FileView *to)
 {
-	to->view_columns = from->view_columns;
+	replace_string(&to->view_columns, from->view_columns);
 	to->num_width = from->num_width;
 	to->num_type = from->num_type;
 

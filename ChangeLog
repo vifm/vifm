@@ -121,6 +121,8 @@
 
 	Fixed check for availability of FUSE mount point.  Thanks to fogine.
 
+	Fixed small memory leak and possible corruption after :sync! localopts.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
