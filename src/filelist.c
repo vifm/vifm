@@ -1045,6 +1045,12 @@ change_directory(FileView *view, const char directory[])
 		load_sort_option(view);
 	}
 
+	/* Stage check is to skip body of the if in tests. */
+	if(location_changed && curr_stats.load_stage > 0)
+	{
+		reset_local_options(view);
+	}
+
 	return 0;
 }
 

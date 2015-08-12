@@ -3766,10 +3766,11 @@ screen_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Updates/displays global and local options. */
 static int
 set_cmd(const cmd_info_t *cmd_info)
 {
-	const int result = process_set_args(cmd_info->args);
+	const int result = process_set_args(cmd_info->args, 1, 1);
 	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 

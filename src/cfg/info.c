@@ -122,12 +122,12 @@ read_info_file(int reread)
 			{
 				FileView *v = curr_view;
 				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
-				process_set_args(line_val + 1);
+				process_set_args(line_val + 1, 1, 1);
 				curr_view = v;
 			}
 			else
 			{
-				process_set_args(line_val);
+				process_set_args(line_val, 1, 1);
 			}
 		}
 		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE)

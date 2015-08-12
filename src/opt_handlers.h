@@ -44,13 +44,20 @@ const char * cursorline_enum[3];
 
 void init_option_handlers(void);
 
+/* Resets local options so that they use values of global options. */
+void reset_local_options(FileView *view);
+
 /* Loads view-specific settings into corresponding options. */
 void load_view_options(FileView *view);
 
 /* Clones all local options of *from into *to. */
 void clone_local_options(const FileView *from, FileView *to);
 
-int process_set_args(const char *args);
+/* Handles various kinds of :set command displaying output/errors.  At least one
+ * of global and local must be set on call.  Returns negative number on error,
+ * zero on success without message and positive number on success with a
+ * message. */
+int process_set_args(const char args[], int global, int local);
 
 void load_sort_option(FileView *view);
 
