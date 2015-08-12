@@ -223,6 +223,7 @@ static const char *fillchars_enum[] = {
 /* Possible values of 'sort' option. */
 static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
+	"fileext", "+fileext", "-fileext",
 	"name",  "+name",  "-name",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
@@ -241,7 +242,6 @@ static const char *sort_types[] = {
 #endif
 	"dir", "+dir", "-dir",
 	"type", "+type", "-type",
-	"fileext", "+fileext", "-fileext",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
