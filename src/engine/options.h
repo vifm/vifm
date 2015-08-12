@@ -42,10 +42,19 @@ typedef enum
 	OP_ON,       /* Boolean value was turned on. */
 	OP_OFF,      /* Boolean value was turned off. */
 	OP_SET,      /* Value set. */
-	OP_MODIFIED, /* Value added/removed (for OPT_INT,  OPT_SET and OPT_STR). */
+	OP_MODIFIED, /* Value added/removed (for OPT_INT, OPT_SET and OPT_STR). */
 	OP_RESET,    /* Value reseted to default. */
 }
 OPT_OP;
+
+/* Scope of the option or action on options. */
+typedef enum
+{
+	OPT_GLOBAL, /* Global option (either unique or pair of a local one). */
+	OPT_LOCAL,  /* Local option. */
+	OPT_ANY,    /* Local option if available, global otherwise. */
+}
+OPT_SCOPE;
 
 typedef union
 {
@@ -65,7 +74,7 @@ typedef void (*opt_handler)(OPT_OP op, optval_t val);
 void init_options(int *opts_changed_flag);
 
 /* Resets an option to its default value. */
-void reset_option_to_default(const char name[]);
+void reset_option_to_default(const char name[], OPT_SCOPE scope);
 
 /* Resets all options to their default values. */
 void reset_options_to_default(void);
@@ -73,21 +82,22 @@ void reset_options_to_default(void);
 /* Removes all options. */
 void clear_options(void);
 
-/* Adds an option. */
+/* Adds an option.  The scope can't be OPT_ANY here. */
 void add_option(const char name[], const char abbr[], OPT_TYPE type,
-		int val_count, const char *vals[], opt_handler handler, optval_t def);
+		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler,
+		optval_t def);
 
 /* Sets option value without calling its change handler.  Asserts for correct
  * option name. */
-void set_option(const char name[], optval_t val);
+void set_option(const char name[], optval_t val, OPT_SCOPE scope);
 
 /* Processes :set command arguments.  Returns non-zero on error. */
-int set_options(const char args[]);
+int set_options(const char args[], OPT_SCOPE scope);
 
 /* Converts option value to string representation.  Returns pointer to a
  * statically allocated buffer.  Asserts for correct option name or returns NULL
  * on it.  For boolean options empty string is returned. */
-const char * get_option_value(const char name[]);
+const char * get_option_value(const char name[], OPT_SCOPE scope);
 
 /* Completes set arguments list. */
 void complete_options(const char args[], const char **start);

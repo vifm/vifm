@@ -540,6 +540,7 @@ eval_envvar(const char **in)
 static var_t
 eval_opt(const char **in)
 {
+	const opt_t *option;
 	var_val_t var_val;
 
 	char name[OPTION_NAME_MAX];
@@ -550,8 +551,9 @@ eval_opt(const char **in)
 		return var_false();
 	}
 
-	const opt_t *const option = find_option(name);
-	if(option == NULL) {
+	option = find_option(name, OPT_ANY);
+	if(option == NULL)
+	{
 		last_error = PE_INVALID_EXPRESSION;
 		return var_false();
 	}

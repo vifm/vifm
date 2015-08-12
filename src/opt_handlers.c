@@ -748,7 +748,7 @@ add_options(void)
 	size_t i;
 	for(i = 0U; i < ARRAY_LEN(options); ++i)
 	{
-		add_option(options[i].name, options[i].abbr, options[i].type,
+		add_option(options[i].name, options[i].abbr, options[i].type, OPT_GLOBAL,
 				options[i].val_count, options[i].vals, options[i].handler,
 				options[i].val);
 	}
@@ -762,19 +762,19 @@ load_view_options(FileView *view)
 	load_sort_option(view);
 
 	val.str_val = view->view_columns;
-	set_option("viewcolumns", val);
+	set_option("viewcolumns", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
-	set_option("lsview", val);
+	set_option("lsview", val, OPT_GLOBAL);
 
 	val.bool_val = view->num_type & NT_SEQ;
-	set_option("number", val);
+	set_option("number", val, OPT_GLOBAL);
 
 	val.int_val = view->num_width;
-	set_option("numberwidth", val);
+	set_option("numberwidth", val, OPT_GLOBAL);
 
 	val.int_val = view->num_type & NT_REL;
-	set_option("relativenumber", val);
+	set_option("relativenumber", val, OPT_GLOBAL);
 }
 
 void
@@ -820,10 +820,10 @@ load_sort_option(FileView *view)
 	}
 
 	val.str_val = opt_val;
-	set_option("sort", val);
+	set_option("sort", val, OPT_GLOBAL);
 
 	val.enum_item = (view->sort[0] < 0);
-	set_option("sortorder", val);
+	set_option("sortorder", val, OPT_GLOBAL);
 }
 
 int
@@ -836,7 +836,7 @@ process_set_args(const char *args)
 
 	/* Call of set_options() can change error. */
 	error = 0;
-	set_options_error = set_options(args) != 0;
+	set_options_error = set_options(args, OPT_GLOBAL) != 0;
 	error = error || set_options_error;
 	text_buffer = vle_tb_get_data(vle_err);
 
@@ -911,7 +911,7 @@ classify_handler(OPT_OP op, optval_t val)
 	}
 
 	init_classify(&val);
-	set_option("classify", val);
+	set_option("classify", val, OPT_GLOBAL);
 }
 
 /* Fills the decorations array with parsed classification values from the str.
@@ -1019,7 +1019,7 @@ columns_handler(OPT_OP op, optval_t val)
 
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.columns;
-	set_option("columns", val);
+	set_option("columns", val, OPT_GLOBAL);
 }
 
 static void
@@ -1125,7 +1125,7 @@ reset_fillchars(void)
 	}
 
 	val.str_val = value;
-	set_option("fillchars", val);
+	set_option("fillchars", val, OPT_GLOBAL);
 }
 
 static void
@@ -1149,7 +1149,7 @@ fusehome_handler(OPT_OP op, optval_t val)
 	{
 		/* Reset the 'fusehome' options to its previous value. */
 		val.str_val = cfg.fuse_home;
-		set_option("fusehome", val);
+		set_option("fusehome", val, OPT_GLOBAL);
 	}
 	free(expanded_path);
 }
@@ -1317,7 +1317,7 @@ lines_handler(OPT_OP op, optval_t val)
 
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.lines;
-	set_option("lines", val);
+	set_option("lines", val, OPT_GLOBAL);
 }
 
 static void
@@ -1335,7 +1335,7 @@ mintimeoutlen_handler(OPT_OP op, optval_t val)
 		vle_tb_append_linef(vle_err, "Argument must be > 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 1;
-		set_option("mintimeoutlen", val);
+		set_option("mintimeoutlen", val, OPT_GLOBAL);
 		return;
 	}
 
@@ -1381,7 +1381,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 	{
 		vle_tb_append_linef(vle_err, "Invalid scroll size: %d", val.int_val);
 		error = 1;
-		reset_option_to_default("scrolloff");
+		reset_option_to_default("scrolloff", OPT_GLOBAL);
 		return;
 	}
 
@@ -1674,7 +1674,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 		}
 
 		val.str_val = view->view_columns;
-		set_option("viewcolumns", val);
+		set_option("viewcolumns", val, OPT_GLOBAL);
 	}
 	else
 	{
@@ -1719,9 +1719,9 @@ load_geometry(void)
 {
 	optval_t val;
 	val.int_val = cfg.columns;
-	set_option("columns", val);
+	set_option("columns", val, OPT_GLOBAL);
 	val.int_val = cfg.lines;
-	set_option("lines", val);
+	set_option("lines", val, OPT_GLOBAL);
 }
 
 static void
@@ -1754,7 +1754,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 	{
 		vle_tb_append_linef(vle_err, "Argument must be positive: %d", val.int_val);
 		error = 1;
-		reset_option_to_default("tabstop");
+		reset_option_to_default("tabstop", OPT_GLOBAL);
 		return;
 	}
 
@@ -1783,7 +1783,7 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 		vle_tb_append_linef(vle_err, "Argument must be >= 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 0;
-		set_option("timeoutlen", val);
+		set_option("timeoutlen", val, OPT_GLOBAL);
 		return;
 	}
 
@@ -1804,7 +1804,7 @@ trashdir_handler(OPT_OP op, optval_t val)
 	{
 		/* Reset the 'trashdir' option to its previous value. */
 		val.str_val = cfg.trash_dir;
-		set_option("trashdir", val);
+		set_option("trashdir", val, OPT_GLOBAL);
 	}
 	free(expanded_path);
 }

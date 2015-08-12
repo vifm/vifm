@@ -938,7 +938,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 	fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-	fprintf(fp, "=shortmess=%s\n", escape_spaces(get_option_value("shortmess")));
+	fprintf(fp, "=shortmess=%s\n",
+			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif
@@ -1011,7 +1012,8 @@ write_options(FILE *const fp)
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
-	fprintf(fp, "=wordchars=%s\n", escape_spaces(get_option_value("wordchars")));
+	fprintf(fp, "=wordchars=%s\n",
+			escape_spaces(get_option_value("wordchars", OPT_GLOBAL)));
 	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 

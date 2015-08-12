@@ -313,7 +313,7 @@ TEST(after_equal_sign_completion_ok)
 	char *completed;
 
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("fusehome", val);
+	set_option("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
 	complete_options("fusehome=", &start);
@@ -329,7 +329,7 @@ TEST(after_equal_sign_completion_spaces_ok)
 	char *completed;
 
 	optval_t val = { .str_val = "/home directory/tmp" };
-	set_option("fusehome", val);
+	set_option("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
 	complete_options("fusehome=", &start);
@@ -345,7 +345,7 @@ TEST(after_fake_equal_sign_completion_fail)
 	char *completed;
 
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("fusehome", val);
+	set_option("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
 	complete_options("fusehome=a=", &start);

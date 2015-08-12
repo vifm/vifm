@@ -12,7 +12,8 @@ TEST(assignment_to_something_calls_handler_only_once)
 	vifminfo = 0x00;
 
 	vifminfo_handler_calls = 0;
-	res = set_options("vifminfo=options,filetypes,commands,bookmarks");
+	res = set_options("vifminfo=options,filetypes,commands,bookmarks",
+			OPT_GLOBAL);
 	assert_int_equal(1, vifminfo_handler_calls);
 	assert_int_equal(0, res);
 	assert_int_equal(0x0f, vifminfo);
@@ -24,7 +25,8 @@ TEST(assignment_to_something)
 
 	vifminfo = 0x00;
 
-	res = set_options("vifminfo=options,filetypes,commands,bookmarks");
+	res = set_options("vifminfo=options,filetypes,commands,bookmarks",
+			OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_int_equal(0x0f, vifminfo);
 }
@@ -33,11 +35,12 @@ TEST(assignment_to_empty)
 {
 	int res;
 
-	res = set_options("vifminfo=options,filetypes,commands,bookmarks");
+	res = set_options("vifminfo=options,filetypes,commands,bookmarks",
+			OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_int_equal(0x0f, vifminfo);
 
-	res = set_options("vifminfo=");
+	res = set_options("vifminfo=", OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_int_equal(0x00, vifminfo);
 }

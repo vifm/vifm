@@ -55,14 +55,19 @@ SetOp;
 /* Type of function accepted by the for_each_char_of() function. */
 typedef void (*mod_t)(char buffer[], char value);
 
-static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
-		const char *vals[], opt_handler handler);
+static void reset_options(OPT_SCOPE scope);
+static opt_t * add_option_inner(const char name[], OPT_TYPE type,
+		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler);
 static int allocates_str_value(OPT_TYPE type);
 static void print_changed_options(void);
-static int process_option(const char arg[]);
-static int handle_all_pseudo(const char arg[], const char suffix[]);
-static void print_options(void);
-static opt_t * get_option(const char option[]);
+static int process_option(const char arg[], OPT_SCOPE real_scope,
+		OPT_SCOPE scope, int *print);
+static int handle_all_pseudo(const char arg[], const char suffix[],
+		OPT_SCOPE scope, int *print);
+static void print_options(OPT_SCOPE scope);
+static void print_merged_options(void);
+static opt_t * get_option(const char option[], OPT_SCOPE scope);
+static int pick_option(opt_t *opts[2], OPT_SCOPE scope);
 static int set_on(opt_t *opt);
 static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
@@ -114,9 +119,9 @@ init_options(int *opts_changed_flag)
 }
 
 void
-reset_option_to_default(const char name[])
+reset_option_to_default(const char name[], OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name);
+	opt_t *opt = find_option(name, scope);
 	if(opt != NULL)
 	{
 		set_reset(opt);
@@ -126,10 +131,17 @@ reset_option_to_default(const char name[])
 void
 reset_options_to_default(void)
 {
+	reset_options(OPT_ANY);
+}
+
+static void
+reset_options(OPT_SCOPE scope)
+{
 	size_t i;
 	for(i = 0U; i < option_count; ++i)
 	{
-		if(options[i].full == NULL)
+		if(options[i].full == NULL &&
+				(options[i].scope == scope || scope == OPT_ANY))
 		{
 			set_reset(&options[i]);
 		}
@@ -145,8 +157,11 @@ clear_options(void)
 		free(options[i].name);
 		if(allocates_str_value(options[i].type))
 		{
+			/* Abbreviations share default value with full option. */
 			if(options[i].full == NULL)
+			{
 				free(options[i].def.str_val);
+			}
 			free(options[i].val.str_val);
 		}
 	}
@@ -156,27 +171,37 @@ clear_options(void)
 }
 
 void
-add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
-		const char *vals[], opt_handler handler, optval_t def)
+add_option(const char name[], const char abbr[], OPT_TYPE type, OPT_SCOPE scope,
+		int val_count, const char *vals[], opt_handler handler, optval_t def)
 {
 	opt_t *full;
 
 	assert(name != NULL);
 	assert(abbr != NULL);
 
-	full = add_option_inner(name, type, val_count, vals, handler);
+	full = add_option_inner(name, type, scope, val_count, vals, handler);
 	if(full == NULL)
+	{
 		return;
+	}
+
 	if(abbr[0] != '\0')
 	{
-		char *full_name = full->name;
-		opt_t *abbreviated;
+		/* Save pointer to name used in this module for use below. */
+		const char *const full_name = full->name;
 
-		abbreviated = add_option_inner(abbr, type, val_count, vals, handler);
+		opt_t *abbreviated;
+		abbreviated = add_option_inner(abbr, type, scope, val_count, vals, handler);
 		if(abbreviated != NULL)
+		{
 			abbreviated->full = full_name;
-		full = find_option(full_name);
+		}
+
+		/* Inserting an option invalidates pointers to other options, so reload
+		 * it. */
+		full = find_option(full_name, scope);
 	}
+
 	if(allocates_str_value(type))
 	{
 		full->def.str_val = strdup(def.str_val);
@@ -206,10 +231,13 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 /* Adds option to internal array of option descriptors.  Returns a pointer to
  * the descriptor or NULL on out of memory error. */
 static opt_t *
-add_option_inner(const char name[], OPT_TYPE type, int val_count,
-		const char *vals[], opt_handler handler)
+add_option_inner(const char name[], OPT_TYPE type, OPT_SCOPE scope,
+		int val_count, const char *vals[], opt_handler handler)
 {
 	opt_t *p;
+
+	assert(scope != OPT_ANY && "OPT_ANY can't be an option type.");
+	assert(find_option(name, scope) == NULL && "Duplicated option.");
 
 	p = reallocarray(options, option_count + 1, sizeof(*options));
 	if(p == NULL)
@@ -229,6 +257,7 @@ add_option_inner(const char name[], OPT_TYPE type, int val_count,
 
 	p->name = strdup(name);
 	p->type = type;
+	p->scope = scope;
 	p->handler = handler;
 	p->val_count = val_count;
 	p->vals = vals;
@@ -246,9 +275,9 @@ allocates_str_value(OPT_TYPE type)
 }
 
 void
-set_option(const char name[], optval_t val)
+set_option(const char name[], optval_t val, OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name);
+	opt_t *opt = find_option(name, scope);
 	assert(opt != NULL && "Wrong option name.");
 
 	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
@@ -262,9 +291,9 @@ set_option(const char name[], optval_t val)
 }
 
 int
-set_options(const char args[])
+set_options(const char args[], OPT_SCOPE scope)
 {
-	int err = 0;
+	int errors = 0;
 
 	if(*args == '\0')
 	{
@@ -275,13 +304,26 @@ set_options(const char args[])
 	while(*args != '\0')
 	{
 		char buf[1024];
+		int print;
 
 		args = extract_option(args, buf, 1);
 		if(args == NULL)
 			return -1;
-		err += process_option(buf);
+		if(scope == OPT_ANY)
+		{
+			const int error = process_option(buf, scope, OPT_LOCAL, &print);
+			errors += error;
+			if(!print && !error)
+			{
+				errors += process_option(buf, scope, OPT_GLOBAL, &print);
+			}
+		}
+		else
+		{
+			errors += process_option(buf, scope, scope, &print);
+		}
 	}
-	return err;
+	return errors;
 }
 
 /* Prints options, which value differs from the default one. */
@@ -293,8 +335,10 @@ print_changed_options(void)
 	{
 		opt_t *opt = &options[i];
 
-		if(opt->full != NULL)
+		if(opt->full != NULL || opt->scope == OPT_GLOBAL)
+		{
 			continue;
+		}
 
 		if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 		{
@@ -313,12 +357,15 @@ print_changed_options(void)
 /* Processes one :set statement.  Returns zero on success, otherwize non-zero is
  * returned. */
 static int
-process_option(const char arg[])
+process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
+		int *print)
 {
 	char optname[OPTION_NAME_MAX + 1];
 	int err;
 	const char *suffix;
 	opt_t *opt;
+
+	*print = 0;
 
 	suffix = skip_alphas(arg);
 
@@ -326,26 +373,35 @@ process_option(const char arg[])
 
 	if(strcmp(optname, "all") == 0)
 	{
-		return handle_all_pseudo(arg, suffix);
+		return handle_all_pseudo(arg, suffix, real_scope, print);
 	}
 
-	opt = get_option(optname);
+	opt = get_option(optname, scope);
 	if(opt == NULL)
 	{
-		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", arg);
+		/* Silently return on attempts to set global-only option with :setlocal. */
+		if(scope == OPT_LOCAL && get_option(optname, OPT_GLOBAL) != NULL)
+		{
+			return 0;
+		}
+
+		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", optname);
 		return 1;
 	}
 
 	err = 0;
 	if(*suffix == '\0')
 	{
-		opt_t *o = find_option(optname);
+		opt_t *o = find_option(optname, scope);
 		if(o != NULL)
 		{
 			if(o->type == OPT_BOOL)
 				err = set_on(opt);
 			else
+			{
+				*print = 1;
 				err = set_print(o);
+			}
 		}
 		else if(strncmp(optname, "no", 2) == 0)
 		{
@@ -366,7 +422,10 @@ process_option(const char arg[])
 		if(*suffix == '!')
 			err = set_inv(opt);
 		else if(*suffix == '?')
+		{
+			*print = 1;
 			err = set_print(opt);
+		}
 		else
 			err = set_reset(opt);
 	}
@@ -401,15 +460,19 @@ process_option(const char arg[])
 /* Handles "all" pseudo-option.  Actual action is determined by the suffix.
  * Returns zero on success, otherwize non-zero is returned. */
 static int
-handle_all_pseudo(const char arg[], const char suffix[])
+handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
+		int *print)
 {
+	*print = 0;
+
 	switch(*suffix)
 	{
 		case '\0':
-			print_options();
+			*print = 1;
+			print_options(scope);
 			return 0;
 		case '&':
-			reset_options_to_default();
+			reset_options(scope);
 			return 0;
 
 		default:
@@ -418,41 +481,93 @@ handle_all_pseudo(const char arg[], const char suffix[])
 	}
 }
 
-/* Prints values of all options. */
+/* Prints values of options of specified scope. */
 static void
-print_options(void)
+print_options(OPT_SCOPE scope)
 {
 	size_t i;
+
+	if(scope == OPT_ANY)
+	{
+		print_merged_options();
+		return;
+	}
+
 	for(i = 0U; i < option_count; ++i)
 	{
-		if(options[i].full == NULL)
+		if(options[i].full == NULL && options[i].scope == scope)
 		{
 			set_print(&options[i]);
 		}
 	}
 }
 
+/* Prints values choosing local options over global ones. */
+static void
+print_merged_options(void)
+{
+	size_t g = 0U, l = 0U;
+
+	do
+	{
+		while(g < option_count &&
+				(options[g].scope != OPT_GLOBAL || options[g].full != NULL))
+		{
+			++g;
+		}
+		while(l < option_count &&
+				(options[l].scope != OPT_LOCAL || options[l].full != NULL))
+		{
+			++l;
+		}
+
+		if(l < option_count && g < option_count)
+		{
+			const int cmp = strcmp(options[l].name, options[g].name);
+			if(cmp == 0)
+			{
+				set_print(&options[l]);
+				++l;
+				++g;
+			}
+			else
+			{
+				set_print(&options[(l < 0) ? l++ : g++]);
+			}
+		}
+		else if(l < option_count)
+		{
+			set_print(&options[l++]);
+		}
+		else if(g < option_count)
+		{
+			set_print(&options[g++]);
+		}
+	}
+	while(g < option_count || l < option_count);
+}
+
 /* Finds option by its name.  Understands "no" and "inv" boolean option
  * prefixes.  Returns NULL for unknown option names. */
 static opt_t *
-get_option(const char option[])
+get_option(const char option[], OPT_SCOPE scope)
 {
 	opt_t *opt;
 
-	opt = find_option(option);
+	opt = find_option(option, scope);
 	if(opt != NULL)
 		return opt;
 
 	if(strncmp(option, "no", 2) == 0)
-		return find_option(option + 2);
+		return find_option(option + 2, scope);
 	else if(strncmp(option, "inv", 3) == 0)
-		return find_option(option + 3);
+		return find_option(option + 3, scope);
 	else
 		return NULL;
 }
 
 opt_t *
-find_option(const char option[])
+find_option(const char option[], OPT_SCOPE scope)
 {
 	int l = 0, u = option_count - 1;
 	while(l <= u)
@@ -461,10 +576,30 @@ find_option(const char option[])
 		int comp = strcmp(option, options[i].name);
 		if(comp == 0)
 		{
-			if(options[i].full == NULL)
-				return &options[i];
+			opt_t *opt;
+			opt_t *opts[2];
+
+			opts[0] = &options[i];
+
+			if(i > 0 && strcmp(option, options[i - 1].name) == 0)
+			{
+				opts[1] = &options[i - 1];
+			}
+			else if(i < option_count - 1 && strcmp(option, options[i + 1].name) == 0)
+			{
+				opts[1] = &options[i + 1];
+			}
 			else
-				return find_option(options[i].full);
+			{
+				opts[1] = NULL;
+			}
+
+			opt = pick_option(opts, scope);
+			if(opt != NULL && opt->full != NULL)
+			{
+				return find_option(opt->full, scope);
+			}
+			return opt;
 		}
 		else if(comp < 0)
 		{
@@ -476,6 +611,38 @@ find_option(const char option[])
 		}
 	}
 	return NULL;
+}
+
+/* Of two options (global and local, when second exists) picks the one that
+ * matches the scope in a best way (exact match is preferred as well as local
+ * option over global one).  Returns picked option or NULL on no match. */
+static int
+pick_option(opt_t *opts[2], OPT_SCOPE scope)
+{
+	if(opts[1] == NULL)
+	{
+		if(opts[0]->scope == scope || scope == OPT_ANY)
+		{
+			return opts[0];
+		}
+		return NULL;
+	}
+
+	if(opts[0]->scope == OPT_LOCAL)
+	{
+		opt_t *const opt = opts[0];
+		opts[0] = opts[1];
+		opts[1] = opt;
+	}
+
+	switch(scope)
+	{
+		case OPT_GLOBAL:
+			return opts[0];
+		case OPT_LOCAL:
+		case OPT_ANY:
+			return opts[1];
+	}
 }
 
 /* Turns boolean option on.  Returns non-zero in case of error. */
@@ -562,6 +729,11 @@ set_set(opt_t *opt, const char value[])
 	{
 		char *end;
 		int int_val = strtoll(value, &end, 10);
+		if(*end != '\0')
+		{
+			vle_tb_append_linef(vle_err, "Not a number: %s", value);
+			return -1;
+		}
 		if(opt->val.int_val != int_val)
 		{
 			opt->val.int_val = int_val;
@@ -989,9 +1161,9 @@ set_print(const opt_t *opt)
 }
 
 const char *
-get_option_value(const char name[])
+get_option_value(const char name[], OPT_SCOPE scope)
 {
-	opt_t *opt = find_option(name);
+	opt_t *opt = find_option(name, scope);
 	assert(opt != NULL && "Wrong option name.");
 	if(opt == NULL)
 	{
@@ -1026,7 +1198,8 @@ get_value(const opt_t *opt)
 	{
 		int i, first = 1;
 		buf[0] = '\0';
-		for(i = 0; i < opt->val_count; i++)
+		for(i = 0; i < opt->val_count; ++i)
+		{
 			if(opt->val.set_items & (1 << i))
 			{
 				char *p = buf + strlen(buf);
@@ -1034,6 +1207,7 @@ get_value(const opt_t *opt)
 						first ? "" : ",", opt->vals[i]);
 				first = 0;
 			}
+		}
 	}
 	else
 	{
@@ -1081,7 +1255,7 @@ complete_options(const char args[], const char **start)
 	{
 		char t = *p;
 		*p = '\0';
-		opt = get_option(buf);
+		opt = get_option(buf, OPT_GLOBAL);
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
@@ -1240,7 +1414,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 	{
 		opt_t *const opt = &options[i];
 
-		if(bool_only && opt->type != OPT_BOOL)
+		if(opt->scope == OPT_LOCAL || (bool_only && opt->type != OPT_BOOL))
 		{
 			continue;
 		}
@@ -1283,10 +1457,12 @@ complete_list_value(const opt_t *opt, const char beginning[])
 
 	len = strlen(beginning);
 
-	for(i = 0; i < opt->val_count; i++)
+	for(i = 0; i < opt->val_count; ++i)
 	{
 		if(strncmp(beginning, opt->vals[i], len) == 0)
+		{
 			vle_compl_add_match(opt->vals[i]);
+		}
 	}
 
 	return 0;
@@ -1300,7 +1476,7 @@ complete_char_value(const opt_t *opt, const char beginning[])
 	const char *vals = *opt->vals;
 	int i;
 
-	for(i = 0; i < opt->val_count; i++)
+	for(i = 0; i < opt->val_count; ++i)
 	{
 		if(strchr(beginning, vals[i]) == NULL)
 		{
