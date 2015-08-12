@@ -45,7 +45,7 @@
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
 
-#define SORT_WIN_WIDTH 32
+#define SORT_WIN_WIDTH 50
 
 /* Width of the input window (located to the left of the ruler). */
 #define INPUT_WIN_WIDTH 6
@@ -63,6 +63,7 @@
 typedef enum
 {
 	SK_BY_EXTENSION = 1,
+	SK_BY_FILEEXT,
 	SK_BY_NAME,
 #ifndef _WIN32
 	SK_BY_GROUP_ID,

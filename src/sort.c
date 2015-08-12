@@ -218,12 +218,34 @@ sort_dir_list(const void *one, const void *two)
 			retval = strcmp(get_type_str(first->type), get_type_str(second->type));
 			break;
 
+		case SK_BY_FILEEXT:
 		case SK_BY_EXTENSION:
 			pfirst = strrchr(first->name,  '.');
 			psecond = strrchr(second->name, '.');
 
-			if(pfirst && psecond)
-				retval = compare_file_names(++pfirst, ++psecond, 0);
+			if (first_is_dir && second_is_dir && sort_type == SK_BY_FILEEXT)
+			{
+				retval = compare_file_names(first->name, second->name, 0);
+			}
+			else if (first_is_dir != second_is_dir && sort_type == SK_BY_FILEEXT)
+			{
+				retval = first_is_dir ? -1 : 1;
+			}
+			else if(pfirst && psecond)
+			{
+				if (strlen(pfirst) == strlen(first->name) && strlen(psecond) != strlen(second->name))
+				{
+					retval = -1;
+				}
+				else if (strlen(pfirst) != strlen(first->name) && strlen(psecond) == strlen(second->name))
+				{
+					retval = 1;
+				}
+				else 
+				{
+					retval = compare_file_names(++pfirst, ++psecond, 0);	
+				}
+			}
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
@@ -388,6 +410,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_NAME:
 		case SK_BY_INAME:
 		case SK_BY_EXTENSION:
+		case SK_BY_FILEEXT:
 		case SK_BY_SIZE:
 		case SK_BY_DIR:
 			return SK_BY_SIZE;
