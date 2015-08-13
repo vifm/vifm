@@ -119,6 +119,8 @@
 	Fixed unstable extension sorting for dot files.  Patch by Cosmin
 	Popescu (a.k.a. cosminadrianpopescu).
 
+	Fixed check for availability of FUSE mount point.  Thanks to fogine.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

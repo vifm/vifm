@@ -165,30 +165,30 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 {
 	/* TODO: refactor this function fuse_mount(). */
 
+	int id;
 	int mount_point_id;
 	char buf[2*PATH_MAX];
-	char *escaped_filename;
 	int foreground;
 	char errors_file[PATH_MAX];
 	int status;
 	int cancelled;
 
-	escaped_filename = escape_filename(get_current_file_name(view), 0);
-
-	mount_point_id = get_last_mount_point_id(fuse_mounts);
+	id = get_last_mount_point_id(fuse_mounts);
+	mount_point_id = id;
 	do
 	{
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
 				++mount_point_id, get_current_file_name(view));
+
+		/* Make sure this is not an infinite loop, although practically this
+		 * condition will always be false. */
+		if(mount_point_id == id)
+		{
+			show_error_msg("Unable to create FUSE mount directory", mount_point);
+			return -1;
+		}
 	}
-	while(path_exists(mount_point, DEREF));
-	if(os_mkdir(mount_point, S_IRWXU) != 0)
-	{
-		free(escaped_filename);
-		show_error_msg("Unable to create FUSE mount directory", mount_point);
-		return -1;
-	}
-	free(escaped_filename);
+	while(os_mkdir(mount_point, S_IRWXU) != 0 && errno == EEXIST);
 
 	/* Just before running the mount,
 		 I need to chdir out temporarily from any FUSE mounted
