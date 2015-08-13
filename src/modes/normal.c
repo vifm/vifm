@@ -1994,15 +1994,6 @@ cmd_paren(int lb, int ub, int inc)
 		switch(sorting_key)
 		{
 			case SK_BY_FILEEXT:
-<<<<<<< HEAD
-				if (is_directory_entry(nentry))
-				{
-					if(strncmp(pentry->name, nentry->name, char_width) != 0)
-						return pos;
-				}
-				if(strcmp(get_last_ext(nentry->name), ext) != 0)
-					return pos;
-=======
 				if(is_directory_entry(nentry))
 				{
 					if(strncmp(pentry->name, nentry->name, char_width) != 0)
@@ -2014,7 +2005,6 @@ cmd_paren(int lb, int ub, int inc)
 				{
 					return pos;
 				}
->>>>>>> upstream/master
 				break;
 			case SK_BY_EXTENSION:
 				if(strcmp(get_last_ext(nentry->name), ext) != 0)

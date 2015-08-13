@@ -173,7 +173,6 @@ static void wrapscan_handler(OPT_OP op, optval_t val);
 
 static const char * sort_enum[] = {
 	"ext",
-	"fileext",
 	"name",
 #ifndef _WIN32
 	"gid",
@@ -224,7 +223,6 @@ static const char *fillchars_enum[] = {
 /* Possible values of 'sort' option. */
 static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
-	"fileext", "+fileext", "-fileext",
 	"name",  "+name",  "-name",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
@@ -1596,7 +1594,6 @@ set_sort(FileView *view, char order[])
 	resort_view(view);
 	fview_cursor_redraw(view);
 	load_sort_option(view);
-	view->matches = 0;
 }
 
 /* Handles 'sortorder' option and corrects ordering for primary sorting key. */
