@@ -18,15 +18,16 @@ add_column(columns_t columns, column_info_t column_info)
 }
 
 static int
-map_name(const char *name)
+map_name(const char name[], void *arg)
 {
+	(void)arg;
 	return (strcmp(name, "name") == 0) ? 0 : -1;
 }
 
 int
 do_parse(const char *str)
 {
-	return parse_columns(NULL_COLUMNS, add_column, map_name, str);
+	return parse_columns(NULL_COLUMNS, add_column, map_name, str, NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
