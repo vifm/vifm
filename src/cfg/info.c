@@ -24,7 +24,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* abs() free() */
-#include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
+#include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
@@ -367,6 +367,7 @@ get_sort_info(FileView *view, const char line[])
 	{
 		view->sort_g[0] = SK_DEFAULT;
 	}
+	memcpy(view->sort, view->sort_g, sizeof(view->sort));
 
 	fview_sorting_updated(view);
 }
