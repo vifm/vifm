@@ -47,10 +47,12 @@ static const char * caps[] = { "a-z", "z-a" };
 #define CORRECTION -6
 #endif
 
+/* This maps actual sorting keys onto position of corresponding lines of the
+ * dialog.  See comment for SortingKey enumeration for why we can't change order
+ * of sorting keys. */
 static int indexes[] = {
 	-1,
 	0,               /* SK_BY_EXTENSION */
-	1,               /* SK_BY_FILEEXT */
 	2,               /* SK_BY_NAME */
 #ifndef _WIN32
 	6,               /* SK_BY_GROUP_ID */
@@ -69,6 +71,7 @@ static int indexes[] = {
 #endif
 	5,               /* SK_BY_DIR */
 	4,               /* SK_BY_TYPE */
+	1,               /* SK_BY_FILEEXT */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -163,8 +166,8 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 0, (getmaxx(sort_win) - 6)/2, " Sort ");
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
-	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
-	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion (ignore folders)");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Extension");
+	mvwaddstr(sort_win, cy++, 4, " [   ] File Extension");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Type");

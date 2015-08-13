@@ -223,27 +223,27 @@ sort_dir_list(const void *one, const void *two)
 			pfirst = strrchr(first->name,  '.');
 			psecond = strrchr(second->name, '.');
 
-			if (first_is_dir && second_is_dir && sort_type == SK_BY_FILEEXT)
+			if(first_is_dir && second_is_dir && sort_type == SK_BY_FILEEXT)
 			{
 				retval = compare_file_names(first->name, second->name, 0);
 			}
-			else if (first_is_dir != second_is_dir && sort_type == SK_BY_FILEEXT)
+			else if(first_is_dir != second_is_dir && sort_type == SK_BY_FILEEXT)
 			{
 				retval = first_is_dir ? -1 : 1;
 			}
 			else if(pfirst && psecond)
 			{
-				if (strlen(pfirst) == strlen(first->name) && strlen(psecond) != strlen(second->name))
+				if(pfirst == first->name && psecond != second->name)
 				{
 					retval = -1;
 				}
-				else if (strlen(pfirst) != strlen(first->name) && strlen(psecond) == strlen(second->name))
+				else if(pfirst != first->name && psecond == second->name)
 				{
 					retval = 1;
 				}
-				else 
+				else
 				{
-					retval = compare_file_names(++pfirst, ++psecond, 0);	
+					retval = compare_file_names(++pfirst, ++psecond, 0);
 				}
 			}
 			else if(pfirst || psecond)
