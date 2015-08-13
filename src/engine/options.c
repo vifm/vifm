@@ -95,6 +95,7 @@ static int set_print(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo);
+static int option_matches(const opt_t *opt, OPT_SCOPE scope);
 static const char * get_opt_full_name(opt_t *const opt);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
@@ -140,8 +141,7 @@ reset_options(OPT_SCOPE scope)
 	size_t i;
 	for(i = 0U; i < option_count; ++i)
 	{
-		if(options[i].full == NULL &&
-				(options[i].scope == scope || scope == OPT_ANY))
+		if(options[i].full == NULL && option_matches(&options[i], scope))
 		{
 			set_reset(&options[i]);
 		}
@@ -621,7 +621,7 @@ pick_option(opt_t *opts[2], OPT_SCOPE scope)
 {
 	if(opts[1] == NULL)
 	{
-		if(opts[0]->scope == scope || scope == OPT_ANY)
+		if(option_matches(opts[0], scope))
 		{
 			return opts[0];
 		}
@@ -1424,6 +1424,14 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 			vle_compl_add_match(get_opt_full_name(opt));
 		}
 	}
+}
+
+/* Checks whether option matches the scope.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+option_matches(const opt_t *opt, OPT_SCOPE scope)
+{
+	return opt->scope == scope || scope == OPT_ANY;
 }
 
 /* Gets full name of the option.  Returns pointer to the name. */
