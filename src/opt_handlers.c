@@ -150,7 +150,7 @@ static void set_viewcolumns(FileView *view, const char view_columns[]);
 static void set_view_columns_option(FileView *view, const char value[],
 		int update_ui);
 static void add_column(columns_t columns, column_info_t column_info);
-static int map_name(const char name[]);
+static int map_name(const char name[], void *arg);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
@@ -1660,7 +1660,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 		columns_clear(columns);
 	}
 
-	if(parse_columns(columns, add_column, map_name, new_value) != 0)
+	if(parse_columns(columns, add_column, map_name, new_value, NULL) != 0)
 	{
 		optval_t val;
 
@@ -1669,7 +1669,8 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 
 		if(update_ui)
 		{
-			(void)parse_columns(columns, add_column, map_name, view->view_columns);
+			(void)parse_columns(columns, add_column, map_name, view->view_columns,
+					NULL);
 		}
 
 		val.str_val = view->view_columns;
@@ -1701,7 +1702,7 @@ add_column(columns_t columns, column_info_t column_info)
 
 /* Maps column name to column id.  Returns column id. */
 static int
-map_name(const char name[])
+map_name(const char name[], void *arg)
 {
 	if(*name != '\0')
 	{
