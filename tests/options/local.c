@@ -1,5 +1,8 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
+#include "../../src/engine/completion.h"
 #include "../../src/engine/options.h"
 #include "../../src/engine/text_buffer.h"
 
@@ -204,6 +207,27 @@ TEST(reset_of_all_options_preserves_local_options)
 	assert_success(set_options("all&", OPT_ANY));
 	assert_success(set_options("fusehome=fusehome-default", OPT_GLOBAL));
 	assert_success(set_options("fusehome=fusehome-default-local", OPT_LOCAL));
+}
+
+TEST(local_only_completion)
+{
+	const char *start;
+	char *completed;
+
+	vle_compl_reset();
+	complete_options("", &start, OPT_LOCAL);
+
+	completed = vle_compl_next();
+	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("fusehome", completed);
+	free(completed);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

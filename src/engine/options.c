@@ -94,7 +94,8 @@ static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
-static void complete_option_name(const char buf[], int bool_only, int pseudo);
+static void complete_option_name(const char buf[], int bool_only, int pseudo,
+		OPT_SCOPE scope);
 static int option_matches(const opt_t *opt, OPT_SCOPE scope);
 static const char * get_opt_full_name(opt_t *const opt);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
@@ -1217,7 +1218,7 @@ get_value(const opt_t *opt)
 }
 
 void
-complete_options(const char args[], const char **start)
+complete_options(const char args[], const char **start, OPT_SCOPE scope)
 {
 	char buf[1024];
 	int bool_only;
@@ -1255,7 +1256,7 @@ complete_options(const char args[], const char **start)
 	{
 		char t = *p;
 		*p = '\0';
-		opt = get_option(buf, OPT_GLOBAL);
+		opt = get_option(buf, scope);
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
@@ -1282,7 +1283,7 @@ complete_options(const char args[], const char **start)
 
 	if(!is_value_completion)
 	{
-		complete_option_name(buf, bool_only, !bool_only);
+		complete_option_name(buf, bool_only, !bool_only, scope);
 	}
 	else if(opt != NULL)
 	{
@@ -1392,18 +1393,25 @@ skip_alphas(const char str[])
 }
 
 void
-complete_real_option_names(const char beginning[])
+complete_real_option_names(const char beginning[], OPT_SCOPE scope)
 {
-	complete_option_name(beginning, 0, 0);
+	complete_option_name(beginning, 0, 0, scope);
 }
 
 /* Completes name of an option.  The pseudo parameter controls whether pseudo
  * options should be enumerated (e.g. "all"). */
 static void
-complete_option_name(const char buf[], int bool_only, int pseudo)
+complete_option_name(const char buf[], int bool_only, int pseudo,
+		OPT_SCOPE scope)
 {
 	const size_t len = strlen(buf);
 	size_t i;
+
+	assert(scope != OPT_ANY && "Won't complete for this scope.");
+	if(scope == OPT_ANY)
+	{
+		return;
+	}
 
 	if(pseudo && strncmp(buf, "all", len) == 0)
 	{
@@ -1414,7 +1422,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo)
 	{
 		opt_t *const opt = &options[i];
 
-		if(opt->scope == OPT_LOCAL || (bool_only && opt->type != OPT_BOOL))
+		if((bool_only && opt->type != OPT_BOOL) || !option_matches(opt,  scope))
 		{
 			continue;
 		}

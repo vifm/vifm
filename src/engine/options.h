@@ -100,10 +100,10 @@ int set_options(const char args[], OPT_SCOPE scope);
 const char * get_option_value(const char name[], OPT_SCOPE scope);
 
 /* Completes set arguments list. */
-void complete_options(const char args[], const char **start);
+void complete_options(const char args[], const char **start, OPT_SCOPE scope);
 
 /* Completes names of real options (no pseudo options like "all"). */
-void complete_real_option_names(const char beginning[]);
+void complete_real_option_names(const char beginning[], OPT_SCOPE scope);
 
 #endif /* VIFM__ENGINE__OPTIONS_H__ */
 
