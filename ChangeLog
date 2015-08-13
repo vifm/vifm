@@ -31,6 +31,9 @@
 	Added exclamation mark to :shell to suppress spawning new teminal
 	multiplexer pane.  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added fileext sorting key, which sorts files by extensions and directories
+	by name.  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

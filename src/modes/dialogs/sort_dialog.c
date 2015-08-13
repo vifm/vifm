@@ -47,27 +47,31 @@ static const char * caps[] = { "a-z", "z-a" };
 #define CORRECTION -6
 #endif
 
+/* This maps actual sorting keys onto position of corresponding lines of the
+ * dialog.  See comment for SortingKey enumeration for why we can't change order
+ * of sorting keys. */
 static int indexes[] = {
 	-1,
 	0,               /* SK_BY_EXTENSION */
-	1,               /* SK_BY_NAME */
+	2,               /* SK_BY_NAME */
 #ifndef _WIN32
-	5,               /* SK_BY_GROUP_ID */
-	6,               /* SK_BY_GROUP_NAME */
-	7,               /* SK_BY_MODE */
-	9,               /* SK_BY_OWNER_ID */
-	10,              /* SK_BY_OWNER_NAME */
+	6,               /* SK_BY_GROUP_ID */
+	7,               /* SK_BY_GROUP_NAME */
+	8,               /* SK_BY_MODE */
+	10,              /* SK_BY_OWNER_ID */
+	11,              /* SK_BY_OWNER_NAME */
 #endif
-	11 + CORRECTION, /* SK_BY_SIZE */
-	12 + CORRECTION, /* SK_BY_TIME_ACCESSED */
-	13 + CORRECTION, /* SK_BY_TIME_CHANGED */
-	14 + CORRECTION, /* SK_BY_TIME_MODIFIED */
-	2,               /* SK_BY_INAME */
+	12 + CORRECTION, /* SK_BY_SIZE */
+	13 + CORRECTION, /* SK_BY_TIME_ACCESSED */
+	14 + CORRECTION, /* SK_BY_TIME_CHANGED */
+	15 + CORRECTION, /* SK_BY_TIME_MODIFIED */
+	3,               /* SK_BY_INAME */
 #ifndef _WIN32
-	8,               /* SK_BY_PERMISSIONS */
+	9,               /* SK_BY_PERMISSIONS */
 #endif
-	4,               /* SK_BY_DIR */
-	3,               /* SK_BY_TYPE */
+	5,               /* SK_BY_DIR */
+	4,               /* SK_BY_TYPE */
+	1,               /* SK_BY_FILEEXT */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -162,7 +166,8 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 0, (getmaxx(sort_win) - 6)/2, " Sort ");
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
-	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Extension");
+	mvwaddstr(sort_win, cy++, 4, " [   ] File Extension");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Type");

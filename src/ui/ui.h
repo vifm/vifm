@@ -81,6 +81,9 @@ typedef enum
 #endif
 	SK_BY_DIR,
 	SK_BY_TYPE,
+	SK_BY_FILEEXT,
+	/* New elements *must* be added here to keep values stored in existing
+	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
 SortingKey;
 
@@ -94,7 +97,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_TYPE,
+	SK_LAST = SK_BY_FILEEXT,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
