@@ -173,7 +173,6 @@ static void wrapscan_handler(OPT_OP op, optval_t val);
 
 static const char * sort_enum[] = {
 	"ext",
-	"fileext",
 	"name",
 #ifndef _WIN32
 	"gid",
@@ -192,6 +191,7 @@ static const char * sort_enum[] = {
 #endif
 	"dir",
 	"type",
+	"fileext",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
 
@@ -223,7 +223,6 @@ static const char *fillchars_enum[] = {
 /* Possible values of 'sort' option. */
 static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
-	"fileext", "+fileext", "-fileext",
 	"name",  "+name",  "-name",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
@@ -240,8 +239,9 @@ static const char *sort_types[] = {
 #ifndef _WIN32
 	"perms", "+perms", "-perms",
 #endif
-	"dir", "+dir", "-dir",
-	"type", "+type", "-type",
+	"dir",     "+dir",     "-dir",
+	"type",    "+type",    "-type",
+	"fileext", "+fileext", "-fileext",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 

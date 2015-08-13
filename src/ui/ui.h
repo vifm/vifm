@@ -45,7 +45,7 @@
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
 
-#define SORT_WIN_WIDTH 50
+#define SORT_WIN_WIDTH 32
 
 /* Width of the input window (located to the left of the ruler). */
 #define INPUT_WIN_WIDTH 6
@@ -63,7 +63,6 @@
 typedef enum
 {
 	SK_BY_EXTENSION = 1,
-	SK_BY_FILEEXT,
 	SK_BY_NAME,
 #ifndef _WIN32
 	SK_BY_GROUP_ID,
@@ -82,6 +81,9 @@ typedef enum
 #endif
 	SK_BY_DIR,
 	SK_BY_TYPE,
+	SK_BY_FILEEXT,
+	/* New elements *must* be added here to keep values stored in existing
+	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
 SortingKey;
 
@@ -95,7 +97,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_TYPE,
+	SK_LAST = SK_BY_FILEEXT,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
