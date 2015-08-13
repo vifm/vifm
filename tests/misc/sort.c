@@ -293,5 +293,28 @@ TEST(ignore_case_name_sort_breaks_ties_deterministically)
 	assert_string_equal("аааааааааа", rwin.dir_entry[1].name);
 }
 
+TEST(extensions_of_dot_files_are_sorted_correctly)
+{
+	free_view(&lwin);
+
+	lwin.list_rows = 3;
+	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("disown.c");
+	lwin.dir_entry[0].type = FT_REG;
+	lwin.dir_entry[1].name = strdup(".cdargsresult");
+	lwin.dir_entry[1].type = FT_REG;
+	lwin.dir_entry[2].name = strdup(".tmux.conf");
+	lwin.dir_entry[2].type = FT_REG;
+
+	lwin.sort[0] = SK_BY_EXTENSION;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	sort_view(&lwin);
+
+	assert_string_equal(".cdargsresult", lwin.dir_entry[0].name);
+	assert_string_equal("disown.c", lwin.dir_entry[1].name);
+	assert_string_equal(".tmux.conf", lwin.dir_entry[2].name);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

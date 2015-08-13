@@ -224,17 +224,17 @@ sort_dir_list(const void *one, const void *two)
 
 			if(pfirst && psecond)
 			{
-				if (strlen(pfirst) == strlen(first->name) && strlen(psecond) != strlen(second->name))
+				if(pfirst == first->name && psecond != second->name)
 				{
 					retval = -1;
 				}
-				else if (strlen(pfirst) != strlen(first->name) && strlen(psecond) == strlen(second->name))
+				else if(pfirst != first->name && psecond == second->name)
 				{
 					retval = 1;
 				}
-				else 
+				else
 				{
-					retval = compare_file_names(++pfirst, ++psecond, 0);	
+					retval = compare_file_names(++pfirst, ++psecond, 0);
 				}
 			}
 			else if(pfirst || psecond)
