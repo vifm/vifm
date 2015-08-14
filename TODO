@@ -17,7 +17,6 @@ Basic things that need to be done.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Process shell pause request for running in %s.
-    :setlocal command.
     Filtering in menus.
     Search match highlight in menus.
     For 'syscalls', vifm should ask for standard retry/abort/cancel actions on
@@ -115,7 +114,6 @@ Other (questionable) things.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
     Maybe add + and - commands to undo by commands, not command groups.
-    :setlocal command.
     Remove items from :history command menu?
     :edit, etc. in the menus.
     :alias

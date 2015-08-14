@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 13, 2015" "vifm 0.8"
+.TH VIFM 1 "August 14, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2149,7 +2149,7 @@ display all options that differ from their default value.
 display all options.
 .TP
 .BI ":se[t] opt1=val1 opt2='val2' opt3=""val3"" ..."
-sets given options.
+sets given options.  For local options both values are set.
 .br
 You can use following syntax:
  \- for all options \- option, option? and option&
@@ -2175,6 +2175,29 @@ the meaning:
 
 Option name can be prepended and appended by any number of whitespace
 characters.
+.TP
+.BI "                                         :setglobal"
+.TP
+.BI :setg[lobal]
+display all global options that differ from their default value.
+.TP
+.BI ":setg[lobal] all"
+display all global options.
+.TP
+.BI ":setg[lobal] opt1=val1 opt2='val2' opt3=""val3"" ..."
+same as :set, but changes/prints only global options or global values of local
+options.  Changes to the latter might be not visible until directory is changed.
+.TP
+.BI "                                         :setlocal"
+.TP
+.BI :setl[ocal]
+display all local options that differ from their default value.
+.TP
+.BI ":setl[ocal] all"
+display all local options.
+.TP
+.BI ":setl[ocal] opt1=val1 opt2='val2' opt3=""val3"" ..."
+same as :set, but changes/prints only local values of local options.
 .TP
 .BI "                                         :shell"
 .TP
@@ -2852,8 +2875,26 @@ in their name.
 .\" ---------------------------------------------------------------------------
 .TP
 .BI "Local options"
-These are kind of options that are local to a specific view. So you can set
+These are kind of options that are local to a specific view.  So you can set
 ascending sorting order for left pane and descending order for right pane.
+
+In addition to being local to views, each such option also has two values:
+.RS
+.RS 2
+.IP \- 2
+local to current directory (value associated with current location);
+.IP \- 2
+global to current directory (value associated with the pane).
+.RE
+.RE
+
+.RS
+The idea is that current directory can be made a temporary exception to regular
+configuration of the view, until directory change.  Use :setlocal for that.
+:setglobal changes view value not affecting settings until directory change.
+:set applies changes immediately to all values.
+.RE
+
 .TP
 .BI 'aproposprg'
 type: string

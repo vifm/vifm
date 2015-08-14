@@ -34,6 +34,10 @@
 	Added fileext sorting key, which sorts files by extensions and directories
 	by name.  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added :setl[ocal] and :setg[lobal] commands to manage values of local
+	options that are specific to current directory and are reset on directory
+	change, similar to local options of Vim.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 13
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1829,7 +1829,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :se[t] all
     display all options.
 :se[t] opt1=val1 opt2='val2' opt3="val3" ...
-    sets given options.  You can use the following syntax:
+    sets given options.  For |vifm-local-options| both values are set.
+    You can use the following syntax:
      - for all options - option, option? and option&
      - for boolean options - nooption, invoption and option!
      - for integer options - option=x, option+=x and option-=x
@@ -1853,6 +1854,25 @@ yet supported) and might be changed in future releases, or get an alias.
 
     Option name can be prepended and appended by any number of whitespace
     characters.
+
+                                               *vifm-:setglobal* *vifm-:setg*
+:setg[lobal]
+    display all global options that differ from their default value.
+:setg[lobal] all
+    display all global options.
+:setg[lobal] opt1=val1 opt2='val2' opt3="val3" ...
+    same as |vifm-:set|, but changes/prints only global options or global
+    values of local options.  Changes to the latter might be not visible until
+    directory is changed.
+
+                                               *vifm-:setlocal* *vifm-:setl*
+:setl[ocal]
+    display all local options that differ from their default value.
+:setl[ocal] all
+    display all local options.
+:setl[ocal] opt1=val1 opt2='val2' opt3="val3" ...
+    same as |vifm-:set|, but changes/prints only local values of local
+    options.
 
 :sh[ell][!]                                    *vifm-:shell* *vifm-:sh*
     start a shell in current directory.  "!" suppresses spawning dedicated
@@ -2344,8 +2364,18 @@ in their name.
 *vifm-set-options*
 
                                                *vifm-local-options*
-These are kind of options that are local to a specific view. So you can set
+These are kind of options that are local to a specific view.  So you can set
 ascending sorting order for left pane and descending order for right pane.
+
+In addition to being local to views, each such option also has two values:
+ - local to current directory (value associated with current location);
+ - global to current directory (value associated with the pane).
+
+The idea is that current directory can be made a temporary exception to
+regular configuration of the view, until directory change.  Use
+|vifm-:setlocal| for that.  |vifm-:setglobal| changes view value not affecting
+settings until directory change.  |vifm-:set| applies changes immediately to
+all values.
 
                                                *vifm-'aproposprg'*
 aproposprg
