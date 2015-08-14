@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/engine/options.h"
+#include "../../src/engine/text_buffer.h"
 
 extern char cpoptions[10];
 extern int cpoptions_handler_calls;
@@ -172,6 +173,13 @@ TEST(set_option_for_charset)
 	val.str_val = "abc";
 	set_option("cpoptions", val, OPT_GLOBAL);
 	assert_int_equal(0, cpoptions_handler_calls);
+}
+
+TEST(charset_is_not_changed_initially)
+{
+	vle_tb_clear(vle_err);
+	assert_success(set_options("", OPT_GLOBAL));
+	assert_string_equal("", vle_tb_get_data(vle_err));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

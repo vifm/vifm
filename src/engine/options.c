@@ -333,7 +333,7 @@ print_changed_options(void)
 			continue;
 		}
 
-		if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+		if(uses_str_value(opt->type))
 		{
 			if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
 				continue;
