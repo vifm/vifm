@@ -55,16 +55,19 @@ SetOp;
 /* Type of function accepted by the for_each_char_of() function. */
 typedef void (*mod_t)(char buffer[], char value);
 
+/* Type of callback for the enum_options() function. */
+typedef void (*opt_traverse)(opt_t *opt);
+
 static void reset_options(OPT_SCOPE scope);
 static opt_t * add_option_inner(const char name[], OPT_TYPE type,
 		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler);
-static void print_changed_options(void);
+static void print_if_changed(opt_t *opt);
 static int process_option(const char arg[], OPT_SCOPE real_scope,
 		OPT_SCOPE scope, int *print);
 static int handle_all_pseudo(const char arg[], const char suffix[],
 		OPT_SCOPE scope, int *print);
-static void print_options(OPT_SCOPE scope);
-static void print_merged_options(void);
+static void enum_options(OPT_SCOPE scope, opt_traverse traverser);
+static void enum_unique_options(opt_traverse traverser);
 static opt_t * get_option(const char option[], OPT_SCOPE scope);
 static int pick_option(opt_t *opts[2], OPT_SCOPE scope);
 static int set_on(opt_t *opt);
@@ -290,7 +293,7 @@ set_options(const char args[], OPT_SCOPE scope)
 
 	if(*args == '\0')
 	{
-		print_changed_options();
+		enum_options(scope, &print_if_changed);
 		return 0;
 	}
 
@@ -319,35 +322,26 @@ set_options(const char args[], OPT_SCOPE scope)
 	return errors;
 }
 
-/* Prints options, which value differs from the default one. */
+/* Prints the option if its current value differs from its default value. */
 static void
-print_changed_options(void)
+print_if_changed(opt_t *opt)
 {
-	size_t i;
-	for(i = 0; i < option_count; ++i)
+	if(uses_str_value(opt->type))
 	{
-		opt_t *opt = &options[i];
-
-		if(opt->full != NULL || opt->scope == OPT_GLOBAL)
+		if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
 		{
-			continue;
+			return;
 		}
-
-		if(uses_str_value(opt->type))
-		{
-			if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
-				continue;
-		}
-		else if(opt->val.int_val == opt->def.int_val)
-		{
-			continue;
-		}
-
-		set_print(&options[i]);
 	}
+	else if(opt->val.int_val == opt->def.int_val)
+	{
+		return;
+	}
+
+	set_print(opt);
 }
 
-/* Processes one :set statement.  Returns zero on success, otherwize non-zero is
+/* Processes one :set statement.  Returns zero on success, otherwise non-zero is
  * returned. */
 static int
 process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
@@ -451,7 +445,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 }
 
 /* Handles "all" pseudo-option.  Actual action is determined by the suffix.
- * Returns zero on success, otherwize non-zero is returned. */
+ * Returns zero on success, otherwise non-zero is returned. */
 static int
 handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
 		int *print)
@@ -462,7 +456,7 @@ handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
 	{
 		case '\0':
 			*print = 1;
-			print_options(scope);
+			enum_options(scope, &set_print);
 			return 0;
 		case '&':
 			reset_options(scope);
@@ -474,15 +468,15 @@ handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
 	}
 }
 
-/* Prints values of options of specified scope. */
+/* Enumerates options of specified scope calling the traverser for each one. */
 static void
-print_options(OPT_SCOPE scope)
+enum_options(OPT_SCOPE scope, opt_traverse traverser)
 {
 	size_t i;
 
 	if(scope == OPT_ANY)
 	{
-		print_merged_options();
+		enum_unique_options(traverser);
 		return;
 	}
 
@@ -490,14 +484,15 @@ print_options(OPT_SCOPE scope)
 	{
 		if(options[i].full == NULL && options[i].scope == scope)
 		{
-			set_print(&options[i]);
+			traverser(&options[i]);
 		}
 	}
 }
 
-/* Prints values choosing local options over global ones. */
+/* Enumerates options preferring local options to global ones on calling the
+ * traverser. */
 static void
-print_merged_options(void)
+enum_unique_options(opt_traverse traverser)
 {
 	size_t g = 0U, l = 0U;
 
@@ -519,22 +514,22 @@ print_merged_options(void)
 			const int cmp = strcmp(options[l].name, options[g].name);
 			if(cmp == 0)
 			{
-				set_print(&options[l]);
+				traverser(&options[l]);
 				++l;
 				++g;
 			}
 			else
 			{
-				set_print(&options[(l < 0) ? l++ : g++]);
+				traverser(&options[(l < 0) ? l++ : g++]);
 			}
 		}
 		else if(l < option_count)
 		{
-			set_print(&options[l++]);
+			traverser(&options[l++]);
 		}
 		else if(g < option_count)
 		{
-			set_print(&options[g++]);
+			traverser(&options[g++]);
 		}
 	}
 	while(g < option_count || l < option_count);

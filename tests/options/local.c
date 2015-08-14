@@ -230,5 +230,50 @@ TEST(local_only_completion)
 	free(completed);
 }
 
+TEST(print_only_global_changed_options)
+{
+	const char *expected = "  fastrun\n"
+	                       "  fusehome=global";
+
+	assert_success(set_options("invfastrun", OPT_LOCAL));
+	assert_success(set_options("invfastrun", OPT_GLOBAL));
+	assert_success(set_options("fusehome=local", OPT_LOCAL));
+	assert_success(set_options("fusehome=global", OPT_GLOBAL));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("", OPT_GLOBAL));
+	assert_string_equal(expected, vle_tb_get_data(vle_err));
+}
+
+TEST(print_only_local_changed_options)
+{
+	const char *expected = "  fastrun\n"
+	                       "  fusehome=local";
+
+	assert_success(set_options("invfastrun", OPT_LOCAL));
+	assert_success(set_options("invfastrun", OPT_GLOBAL));
+	assert_success(set_options("fusehome=local", OPT_LOCAL));
+	assert_success(set_options("fusehome=global", OPT_GLOBAL));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("", OPT_LOCAL));
+	assert_string_equal(expected, vle_tb_get_data(vle_err));
+}
+
+TEST(print_any_changed_options)
+{
+	const char *expected = "  fastrun\n"
+	                       "  fusehome=local";
+
+	assert_success(set_options("invfastrun", OPT_LOCAL));
+	assert_success(set_options("invfastrun", OPT_GLOBAL));
+	assert_success(set_options("fusehome=local", OPT_LOCAL));
+	assert_success(set_options("fusehome=global", OPT_GLOBAL));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("", OPT_ANY));
+	assert_string_equal(expected, vle_tb_get_data(vle_err));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
 /* vim: set cinoptions+=t0 filetype=c : */
