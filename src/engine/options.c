@@ -58,7 +58,6 @@ typedef void (*mod_t)(char buffer[], char value);
 static void reset_options(OPT_SCOPE scope);
 static opt_t * add_option_inner(const char name[], OPT_TYPE type,
 		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler);
-static int allocates_str_value(OPT_TYPE type);
 static void print_changed_options(void);
 static int process_option(const char arg[], OPT_SCOPE real_scope,
 		OPT_SCOPE scope, int *print);
@@ -73,6 +72,7 @@ static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
 static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
+static int uses_str_value(OPT_TYPE type);
 static int set_add(opt_t *opt, const char value[]);
 static int set_remove(opt_t *opt, const char value[]);
 static int set_hat(opt_t *opt, const char value[]);
@@ -156,7 +156,7 @@ clear_options(void)
 	for(i = 0U; i < option_count; ++i)
 	{
 		free(options[i].name);
-		if(allocates_str_value(options[i].type))
+		if(uses_str_value(options[i].type))
 		{
 			/* Abbreviations share default value with full option. */
 			if(options[i].full == NULL)
@@ -203,7 +203,7 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, OPT_SCOPE scope,
 		full = find_option(full_name, scope);
 	}
 
-	if(allocates_str_value(type))
+	if(uses_str_value(type))
 	{
 		full->def.str_val = strdup(def.str_val);
 		full->val.str_val = strdup(def.str_val);
@@ -267,21 +267,13 @@ add_option_inner(const char name[], OPT_TYPE type, OPT_SCOPE scope,
 	return p;
 }
 
-/* Checks whether given option type allocates memory for strings on heap.
- * Returns non-zero if so, otherwise zero is returned. */
-static int
-allocates_str_value(OPT_TYPE type)
-{
-	return (type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET);
-}
-
 void
 set_option(const char name[], optval_t val, OPT_SCOPE scope)
 {
 	opt_t *opt = find_option(name, scope);
 	assert(opt != NULL && "Wrong option name.");
 
-	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+	if(uses_str_value(opt->type))
 	{
 		(void)replace_string(&opt->val.str_val, val.str_val);
 	}
@@ -766,8 +758,7 @@ set_set(opt_t *opt, const char value[])
 static int
 set_reset(opt_t *opt)
 {
-	if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
-			opt->type == OPT_CHARSET)
+	if(uses_str_value(opt->type))
 	{
 		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
 		{
@@ -780,6 +771,14 @@ set_reset(opt_t *opt)
 		notify_option_update(opt, OP_RESET, opt->val);
 	}
 	return 0;
+}
+
+/* Checks whether given option type allocates memory for strings on heap.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+uses_str_value(OPT_TYPE type)
+{
+	return (type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET);
 }
 
 /* Adds value(s) to the option (+= operator).  Returns zero on success. */

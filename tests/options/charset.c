@@ -163,5 +163,16 @@ TEST(reset_compares_values_as_strings)
 	assert_int_equal(0, cpoptions_handler_calls);
 }
 
+TEST(set_option_for_charset)
+{
+	optval_t val;
+
+	cpoptions_handler_calls = 0;
+
+	val.str_val = "abc";
+	set_option("cpoptions", val, OPT_GLOBAL);
+	assert_int_equal(0, cpoptions_handler_calls);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
