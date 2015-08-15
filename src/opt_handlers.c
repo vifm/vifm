@@ -1853,7 +1853,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 		(void)replace_string(&view->view_columns, value);
 		if(update_ui)
 		{
-			redraw_view(view);
+			ui_view_schedule_redraw(view);
 		}
 	}
 }
