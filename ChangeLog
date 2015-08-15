@@ -34,6 +34,10 @@
 	Added fileext sorting key, which sorts files by extensions and directories
 	by name.  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added :setl[ocal] and :setg[lobal] commands to manage values of local
+	options that are specific to current directory and are reset on directory
+	change, similar to local options of Vim.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -120,6 +124,11 @@
 	Popescu (a.k.a. cosminadrianpopescu).
 
 	Fixed check for availability of FUSE mount point.  Thanks to fogine.
+
+	Fixed small memory leak and possible corruption after :sync! localopts.
+
+	Fixed checking for changes in charset options on :set (without arguments),
+	used to print unchanged options as if they were changed.
 
 0.8-beta to 0.8
 

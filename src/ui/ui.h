@@ -275,7 +275,7 @@ typedef struct
 	}
 	local_filter;
 
-	char sort[SK_COUNT];
+	char sort[SK_COUNT], sort_g[SK_COUNT];
 
 	int history_num;
 	int history_pos;
@@ -284,18 +284,20 @@ typedef struct
 	col_scheme_t cs;
 
 	columns_t columns; /* handle for column_view unit */
-	char *view_columns; /* format string of columns */
+	char *view_columns, *view_columns_g; /* Format string of columns. */
 
 	/* ls-like view related fields */
-	int ls_view; /* non-zero if ls-like view is enabled */
+	int ls_view, ls_view_g; /* Non-zero if ls-like view is enabled. */
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
 	                            * the file list. */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 
-	NumberingType num_type; /* Whether and how line numbers are displayed. */
-	int num_width; /* Min number of characters reserved for number field. */
+	/* Whether and how line numbers are displayed. */
+	NumberingType num_type, num_type_g;
+	/* Min number of characters reserved for number field. */
+	int num_width, num_width_g;
 	int real_num_width; /* Real character count reserved for number field. */
 
 	/* Timestamps for controlling of scheduling update requests.  They are in
@@ -456,7 +458,7 @@ int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
 
 /* Ensures that list of sorting keys is sensible (i.e. contains either "name" or
  * "iname" for views, except for unsorted custom view). */
-void ui_view_sort_list_ensure_well_formed(FileView *view);
+void ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[]);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */

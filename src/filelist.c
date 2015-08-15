@@ -37,8 +37,8 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() calloc() free() */
-#include <string.h> /* memcpy() memset() strcat() strcmp() strcpy() strdup()
-                       strlen() */
+#include <string.h> /* memcmp() memcpy() memset() strcat() strcmp() strcpy()
+                       strdup() strlen() */
 #include <time.h> /* localtime() */
 
 #include "cfg/config.h"
@@ -207,7 +207,8 @@ reset_view(FileView *view)
 	filters_view_reset(view);
 
 	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-	ui_view_sort_list_ensure_well_formed(view);
+	ui_view_sort_list_ensure_well_formed(view, view->sort);
+	memcpy(&view->sort_g[0], &view->sort[0], sizeof(view->sort_g));
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -360,6 +361,10 @@ find_file_pos_in_list(const FileView *const view, const char file[])
 void
 invert_sorting_order(FileView *view)
 {
+	if(memcmp(&view->sort_g[0], &view->sort[0], sizeof(view->sort_g)) == 0)
+	{
+		view->sort_g[0] = -view->sort_g[0];
+	}
 	view->sort[0] = -view->sort[0];
 }
 
@@ -1043,6 +1048,12 @@ change_directory(FileView *view, const char directory[])
 	{
 		memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
 		load_sort_option(view);
+	}
+
+	/* Stage check is to skip body of the if in tests. */
+	if(location_changed && curr_stats.load_stage > 0)
+	{
+		reset_local_options(view);
 	}
 
 	return 0;
@@ -2296,6 +2307,7 @@ change_sort_type(FileView *view, char type, char descending)
 {
 	view->sort[0] = descending ? -type : type;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
+	memcpy(&view->sort_g[0], &view->sort[0], sizeof(view->sort_g));
 
 	fview_sorting_updated(view);
 

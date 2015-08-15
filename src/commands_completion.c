@@ -110,9 +110,9 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	const char *dollar = strrchr(arg, '$');
 	const char *ampersand = strrchr(arg, '&');
 
-	if(id == COM_SET)
+	if(id == COM_SET || id == COM_SETLOCAL)
 	{
-		complete_options(args, &start);
+		complete_options(args, &start, (id == COM_SET) ? OPT_GLOBAL : OPT_LOCAL);
 	}
 	else if(id == COM_CABBR)
 	{
@@ -124,7 +124,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		if(ampersand > dollar)
 		{
 			start = ampersand + 1;
-			complete_real_option_names(ampersand + 1);
+			complete_real_option_names(ampersand + 1, OPT_GLOBAL);
 		}
 		else if(dollar == NULL)
 		{
