@@ -66,10 +66,11 @@ static int process_option(const char arg[], OPT_SCOPE real_scope,
 		OPT_SCOPE scope, int *print);
 static int handle_all_pseudo(const char arg[], const char suffix[],
 		OPT_SCOPE scope, int *print);
+static void set_print_void(opt_t *opt);
 static void enum_options(OPT_SCOPE scope, opt_traverse traverser);
 static void enum_unique_options(opt_traverse traverser);
 static opt_t * get_option(const char option[], OPT_SCOPE scope);
-static int pick_option(opt_t *opts[2], OPT_SCOPE scope);
+static opt_t * pick_option(opt_t *opts[2], OPT_SCOPE scope);
 static int set_on(opt_t *opt);
 static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
@@ -338,7 +339,7 @@ print_if_changed(opt_t *opt)
 		return;
 	}
 
-	set_print(opt);
+	(void)set_print(opt);
 }
 
 /* Processes one :set statement.  Returns zero on success, otherwise non-zero is
@@ -456,7 +457,7 @@ handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
 	{
 		case '\0':
 			*print = 1;
-			enum_options(scope, &set_print);
+			enum_options(scope, &set_print_void);
 			return 0;
 		case '&':
 			reset_options(scope);
@@ -466,6 +467,14 @@ handle_all_pseudo(const char arg[], const char suffix[], OPT_SCOPE scope,
 			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
 			return 1;
 	}
+}
+
+/* Wrapper for set_print() to make its prototype compatible with
+ * enum_options(). */
+static void
+set_print_void(opt_t *opt)
+{
+	(void)set_print(opt);
 }
 
 /* Enumerates options of specified scope calling the traverser for each one. */
@@ -604,7 +613,7 @@ find_option(const char option[], OPT_SCOPE scope)
 /* Of two options (global and local, when second exists) picks the one that
  * matches the scope in a best way (exact match is preferred as well as local
  * option over global one).  Returns picked option or NULL on no match. */
-static int
+static opt_t *
 pick_option(opt_t *opts[2], OPT_SCOPE scope)
 {
 	if(opts[1] == NULL)
@@ -629,6 +638,10 @@ pick_option(opt_t *opts[2], OPT_SCOPE scope)
 			return opts[0];
 		case OPT_LOCAL:
 		case OPT_ANY:
+			return opts[1];
+
+		default:
+			assert(0 && "Unhandled scope?");
 			return opts[1];
 	}
 }
