@@ -85,6 +85,9 @@
 	Display lower bound on item count in status bar progress messages (e.g. on
 	:grep).
 
+	Do not shrink progress dialog (only make it wider), this is more
+	predictable and easier to follow.  Thanks to Robert Sarkozi.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

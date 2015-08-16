@@ -117,6 +117,8 @@ typedef struct
 
 	/* Whether progress is displayed in a dialog, rather than on status bar. */
 	int dialog;
+
+	int width; /* Maximum reached width of the dialog. */
 }
 progress_data_t;
 
@@ -397,8 +399,9 @@ io_progress_fg(const io_progress_t *const state, int progress)
 		char pretty_path[PATH_MAX];
 		format_pretty_path(ops->base_dir, estim->item, pretty_path,
 				sizeof(pretty_path));
-		draw_msgf(title, ctrl_msg, "In %s\nestimating... %d; %s %s",
+		draw_msgf(title, ctrl_msg, pdata->width, "In %s\nestimating... %d; %s %s",
 				ops->target_dir, estim->total_items, total_size_str, pretty_path);
+		pdata->width = getmaxx(error_win);
 		return;
 	}
 
@@ -422,7 +425,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	if(progress < 0)
 	{
 		/* Simplified message for unknown total size. */
-		draw_msgf(title, ctrl_msg,
+		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %d\nOverall:  %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s",
@@ -433,7 +436,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
-		draw_msgf(title, ctrl_msg,
+		draw_msgf(title, ctrl_msg, pdata->width,
 				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
@@ -443,6 +446,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 
 		free(file_progress);
 	}
+	pdata->width = getmaxx(error_win);
 
 	free(as_part);
 }
@@ -3526,6 +3530,7 @@ alloc_progress_data(int bg, void *info)
 	pdata->last_progress = -1;
 	pdata->last_stage = (IoPs)-1;
 	pdata->dialog = 0;
+	pdata->width = 0;
 
 	return pdata;
 }
