@@ -905,7 +905,7 @@ complete_with_shared(const char *server, const char *file)
 				strcat(buf, "/");
 				if(strnoscmp(buf, file, len) == 0)
 				{
-					vle_compl_put_match(escape_filename(buf, 1));
+					vle_compl_put_match(shell_like_escape(buf, 1));
 				}
 				p++;
 			}

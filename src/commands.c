@@ -765,7 +765,7 @@ commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 			/* XXX: Use of filename escape, while special one might be needed. */
 		case CLL_OUT_OF_ARG:
 		case CLL_NO_QUOTING:
-			return escape_filename(str, 0);
+			return shell_like_escape(str, 0);
 
 		case CLL_S_QUOTING:
 			return escape_for_squotes(str, 0);

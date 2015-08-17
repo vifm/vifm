@@ -80,7 +80,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		}
 		else
 		{
-			char *const escaped_args = escape_filename(args, 0);
+			char *const escaped_args = shell_like_escape(args, 0);
 			custom_args = format_str("%s %s", DEFAULT_PREDICATE, escaped_args);
 			macros[1].value = custom_args;
 			free(escaped_args);

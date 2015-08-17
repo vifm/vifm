@@ -361,7 +361,7 @@ static void
 execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
-	char *const escaped = escape_filename(full_path, 0);
+	char *const escaped = shell_like_escape(full_path, 0);
 	shellout(escaped, 1, 1);
 	free(escaped);
 #else
@@ -894,7 +894,7 @@ setup_shellout_env(void)
 			return;
 	}
 
-	escaped_path = escape_filename(mount_file, 0);
+	escaped_path = shell_like_escape(mount_file, 0);
 	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR, escaped_path);
 	(void)vifm_system(cmd);
 	free(cmd);
@@ -973,17 +973,17 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 		return NULL;
 	}
 
-	escaped_sh = escape_filename(cfg.shell, 0);
+	escaped_sh = shell_like_escape(cfg.shell, 0);
 
 	title_arg = gen_term_multiplexer_title_arg(cmd);
 
 	raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
-	escaped_shell_cmd = escape_filename(raw_shell_cmd, 0);
+	escaped_shell_cmd = shell_like_escape(raw_shell_cmd, 0);
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
 		char *const arg = format_str("%s -c %s", escaped_sh, escaped_shell_cmd);
-		char *const escaped_arg = escape_filename(arg, 0);
+		char *const escaped_arg = shell_like_escape(arg, 0);
 
 		shell_cmd = format_str("tmux new-window %s %s", title_arg, escaped_arg);
 
@@ -1045,7 +1045,7 @@ gen_term_multiplexer_title_arg(const char cmd[])
 	else
 	{
 		const char opt_c = (curr_stats.term_multiplexer == TM_SCREEN) ? 't' : 'n';
-		char *const escaped_title = escape_filename(title, 0);
+		char *const escaped_title = shell_like_escape(title, 0);
 		title_arg = format_str("-%c %s", opt_c, escaped_title);
 		free(escaped_title);
 	}
@@ -1111,7 +1111,7 @@ gen_term_multiplexer_run_cmd(void)
 static void
 set_pwd_in_screen(const char path[])
 {
-	char *const escaped_dir = escape_filename(path, 0);
+	char *const escaped_dir = shell_like_escape(path, 0);
 	char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
 
 	(void)vifm_system(set_pwd);
@@ -1291,7 +1291,7 @@ run_in_split(const FileView *view, const char cmd[])
 {
 	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
 
-	char *const escaped_cmd = escape_filename(cmd_to_run, 0);
+	char *const escaped_cmd = shell_like_escape(cmd_to_run, 0);
 
 	setup_shellout_env();
 
@@ -1306,11 +1306,11 @@ run_in_split(const FileView *view, const char cmd[])
 		char buf[1024];
 		char *escaped_chdir;
 
-		char *const escaped_dir = escape_filename(flist_get_dir(view), 0);
+		char *const escaped_dir = shell_like_escape(flist_get_dir(view), 0);
 		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
 		free(escaped_dir);
 
-		escaped_chdir = escape_filename(buf, 0);
+		escaped_chdir = shell_like_escape(buf, 0);
 		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
 		free(escaped_chdir);
 

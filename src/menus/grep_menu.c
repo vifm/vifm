@@ -70,7 +70,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	macros[3].value = args;
 	if(args[0] != '-')
 	{
-		escaped_args = escape_filename(args, 0);
+		escaped_args = shell_like_escape(args, 0);
 		macros[1].value = escaped_args;
 	}
 
