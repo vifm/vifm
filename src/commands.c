@@ -1595,13 +1595,15 @@ emark_cmd(const cmd_info_t *cmd_info)
 			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
-				(void)shellout(buf, cmd_info->emark ? 1 : -1, use_term_mux);
+				(void)shellout(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+						use_term_mux);
 				free(buf);
 			}
 		}
 		else
 		{
-			(void)shellout(com, cmd_info->emark ? 1 : -1, use_term_mux);
+			(void)shellout(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+					use_term_mux);
 		}
 	}
 
@@ -3803,7 +3805,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, 0, cmd_info->emark ? 0 : 1);
+	shellout(sh, 0, cmd_info->emark ? PAUSE_NEVER : PAUSE_ALWAYS);
 	load_real_path_env();
 
 	return 0;
@@ -4573,7 +4575,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+			shellout(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+					flags != MF_NO_TERM_MUX);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4595,7 +4598,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1, flags != MF_NO_TERM_MUX);
+		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX);
 	}
 
 	if(external)

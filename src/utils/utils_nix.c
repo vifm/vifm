@@ -715,7 +715,7 @@ format_help_cmd(char cmd[], size_t cmd_size)
 void
 display_help(const char cmd[])
 {
-	(void)shellout(cmd, -1, 1);
+	(void)shellout(cmd, PAUSE_ON_ERROR, 1);
 }
 
 int

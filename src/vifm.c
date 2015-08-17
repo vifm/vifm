@@ -536,7 +536,7 @@ run_converter(int vifm_like_mode)
 #ifndef _WIN32
 	char cmd[PATH_MAX];
 	snprintf(cmd, sizeof(cmd), "vifmrc-converter %d", vifm_like_mode);
-	return shellout(cmd, -1, 0);
+	return shellout(cmd, PAUSE_ON_ERROR, 0);
 #else
 	char path[PATH_MAX];
 	char cmd[2*PATH_MAX];

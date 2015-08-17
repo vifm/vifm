@@ -83,7 +83,7 @@ execute_apropos_cb(FileView *view, menu_info *m)
 	snprintf(command, sizeof(command), "man %s %s", section, topic);
 
 	curr_stats.skip_shellout_redraw = 1;
-	exit_code = shellout(command, 0, 1);
+	exit_code = shellout(command, PAUSE_NEVER, 1);
 	curr_stats.skip_shellout_redraw = 0;
 
 	if(exit_code != 0)

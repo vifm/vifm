@@ -208,7 +208,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 		return start_background_job(cmd, 0);
 	}
 
-	return shellout(cmd, -1, use_term_multiplexer);
+	return shellout(cmd, PAUSE_ON_ERROR, use_term_multiplexer);
 }
 
 int

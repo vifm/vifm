@@ -142,7 +142,6 @@ Code improvements.
     Add logging levels.
     Stay at the same file in some cases.
     Replace a lot of fields in cmd_add_t struct with a set of bit flags.
-    Change type of pause argument of shellout() function to an enum.
     Maybe move startup and initialization code out of config.c and vifm.c
         to a separate file.
     Get rid of repeatable `menu->win_rows - 3` in menu.c.

@@ -362,7 +362,7 @@ execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = shell_like_escape(full_path, 0);
-	shellout(escaped, 1, 1);
+	shellout(escaped, PAUSE_ALWAYS, 1);
 	free(escaped);
 #else
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
@@ -609,7 +609,8 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+				flags != MF_NO_TERM_MUX);
 	}
 
 	free(cmd);
@@ -649,7 +650,7 @@ run_implicit_prog(FileView *view, const char prog_spec[], int pause,
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? 1 : -1, 1);
+		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1);
 	}
 }
 
@@ -808,20 +809,20 @@ extract_last_path_component(const char path[], char buf[])
 }
 
 int
-shellout(const char command[], int pause, int use_term_multiplexer)
+shellout(const char command[], ShellPause pause, int use_term_multiplexer)
 {
 	char *cmd;
 	int result;
 	int ec;
 
-	if(pause > 0 && command != NULL && ends_with(command, "&"))
+	if(pause == PAUSE_ALWAYS && command != NULL && ends_with(command, "&"))
 	{
-		pause = -1;
+		pause = PAUSE_ON_ERROR;
 	}
 
 	setup_shellout_env();
 
-	cmd = gen_shell_cmd(command, pause > 0, use_term_multiplexer);
+	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer);
 
 	if(curr_stats.load_stage != 0)
 	{
@@ -834,7 +835,7 @@ shellout(const char command[], int pause, int use_term_multiplexer)
 
 	cleanup_shellout_env();
 
-	if(result != 0 && pause < 0)
+	if(result != 0 && pause == PAUSE_ON_ERROR)
 	{
 		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", cmd,
 				result, result, ec);
