@@ -126,7 +126,6 @@ Other (questionable) things.
     Live preview of color schemes.
     "Blow directory" command to replace directory with its content.
     Add file selector based on file extensions.
-    Add zr normal key to remove local file name filter.
     Add a key to menu mode to repeat command and update menu.
     :edit - select the file after exiting editor?
     Add a builtin function (or variable?) to get number of selected files

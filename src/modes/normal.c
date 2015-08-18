@@ -204,6 +204,7 @@ static void cmd_zd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zm(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zo(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static const char * get_last_ext(const char *name);
@@ -373,6 +374,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 	{L"zm", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zm}}},
 	{L"zo", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zo}}},
+	{L"zr", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zr}}},
 	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
 	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
@@ -1955,6 +1957,13 @@ static void
 cmd_zo(key_info_t key_info, keys_info_t *keys_info)
 {
 	set_dot_files_visible(curr_view, 1);
+}
+
+/* Reset local filter. */
+static void
+cmd_zr(key_info_t key_info, keys_info_t *keys_info)
+{
+	local_filter_remove(curr_view);
 }
 
 static void

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 14
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -336,6 +336,7 @@ zO - show files hidden by file name filter.    *vifm-zO*
 
 zM - restore all filters.                      *vifm-zM*
 zR - remove all filters.                       *vifm-zR*
+zr - remove local filter.                      *vifm-zr*
 
 zd                                             *vifm-zd*
     exclude selection or current file from custom view.  Does nothing for
