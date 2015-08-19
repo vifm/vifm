@@ -357,7 +357,7 @@ get_viewer_command(const char viewer[])
 			view = curr_view;
 		}
 
-		escaped = escape_filename(get_current_file_name(view), 0);
+		escaped = shell_like_escape(get_current_file_name(view), 0);
 		result = format_str("%s %s", viewer, escaped);
 		free(escaped);
 	}

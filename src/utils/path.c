@@ -310,15 +310,8 @@ is_unc_root(const char *path)
 #endif
 }
 
-/*
- * Escape the filename for the purpose of inserting it into the shell.
- *
- * quote_percent means prepend percent sign with a percent sign
- *
- * Returns new string, caller should free it.
- */
 char *
-escape_filename(const char *string, int quote_percent)
+shell_like_escape(const char string[], int quote_percent)
 {
 	size_t len;
 	size_t i;

@@ -326,8 +326,8 @@ format_mount_command(const char mount_point[], const char file_name[],
 
 	*foreground = 0;
 
-	escaped_path = escape_filename(file_name, 0);
-	escaped_mount_point = escape_filename(mount_point, 0);
+	escaped_path = shell_like_escape(file_name, 0);
+	escaped_mount_point = shell_like_escape(mount_point, 0);
 
 	buf_pos = buf;
 	buf_pos[0] = '\0';
@@ -409,7 +409,7 @@ fuse_unmount_all(void)
 		char buf[14 + PATH_MAX + 1];
 		char *escaped_filename;
 
-		escaped_filename = escape_filename(runner->mount_point, 0);
+		escaped_filename = shell_like_escape(runner->mount_point, 0);
 		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
 				escaped_filename);
 		free(escaped_filename);
@@ -522,8 +522,8 @@ fuse_try_unmount(FileView *view)
 		return 0;
 	}
 
-	/* we are exiting a top level dir */
-	escaped_mount_point = escape_filename(runner->mount_point, 0);
+	/* We are exiting a top level dir. */
+	escaped_mount_point = shell_like_escape(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
 			escaped_mount_point);
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);

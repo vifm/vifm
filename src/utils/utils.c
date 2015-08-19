@@ -161,7 +161,7 @@ expand_envvars(const char str[], int escape_vals)
 				char *escaped_var_value = NULL;
 				if(escape_vals)
 				{
-					escaped_var_value = escape_filename(var_value, 1);
+					escaped_var_value = shell_like_escape(var_value, 1);
 					var_value = escaped_var_value;
 				}
 

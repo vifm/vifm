@@ -142,7 +142,6 @@ Code improvements.
     Add logging levels.
     Stay at the same file in some cases.
     Replace a lot of fields in cmd_add_t struct with a set of bit flags.
-    Change type of pause argument of shellout() function to an enum.
     Maybe move startup and initialization code out of config.c and vifm.c
         to a separate file.
     Get rid of repeatable `menu->win_rows - 3` in menu.c.
@@ -158,7 +157,6 @@ Code improvements.
         empty AND an error occurred).
     Continue replacing calls like `snprintf(foo, sizeof(foo), "%s", line)` with
         copy_str().
-    Rename escape_filename() to shell_escape() or similar, but quite generic.
     Maybe allow specifying limit of input characters for command-line prompt
         submode.  Would it make conflict resolution prompt easier to use?
     Maybe pass var by pointer to var_free and cleanup the structure.

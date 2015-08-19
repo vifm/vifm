@@ -100,17 +100,16 @@ pause_shell(void)
 int
 run_in_shell_no_cls(char command[])
 {
-	typedef void (*sig_handler)(int);
-
 	int pid;
 	int result;
 	extern char **environ;
-	sig_handler sigtstp_handler;
+	struct sigaction new, old;
 
 	if(command == NULL)
 		return 1;
 
-	sigtstp_handler = signal(SIGTSTP, SIG_DFL);
+	new.sa_handler = SIG_DFL;
+	sigaction(SIGTSTP, &new, &old);
 
 	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because
 	 * it will possibly cause missing of SIGCHLD from a background process
@@ -120,7 +119,7 @@ run_in_shell_no_cls(char command[])
 	pid = fork();
 	if(pid == -1)
 	{
-		signal(SIGTSTP, sigtstp_handler);
+		sigaction(SIGTSTP, &old, NULL);
 		(void)set_sigchld(0);
 		return -1;
 	}
@@ -136,7 +135,7 @@ run_in_shell_no_cls(char command[])
 
 	result = get_proc_exit_status(pid);
 
-	signal(SIGTSTP, sigtstp_handler);
+	sigaction(SIGTSTP, &old, NULL);
 	(void)set_sigchld(0);
 
 	return result;
@@ -706,7 +705,7 @@ int
 format_help_cmd(char cmd[], size_t cmd_size)
 {
 	int bg;
-	char *const escaped = escape_filename(cfg.config_dir, 0);
+	char *const escaped = shell_like_escape(cfg.config_dir, 0);
 	snprintf(cmd, cmd_size, "%s %s/" VIFM_HELP, cfg_get_vicmd(&bg), escaped);
 	free(escaped);
 	return bg;
@@ -715,7 +714,7 @@ format_help_cmd(char cmd[], size_t cmd_size)
 void
 display_help(const char cmd[])
 {
-	(void)shellout(cmd, -1, 1);
+	(void)shellout(cmd, PAUSE_ON_ERROR, 1);
 }
 
 int
@@ -733,9 +732,14 @@ wait_for_signal(void)
 void
 stop_process(void)
 {
-	void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
+	struct sigaction new, old;
+
+	new.sa_handler = SIG_DFL;
+	sigaction(SIGTSTP, &new, &old);
+
 	kill(0, SIGTSTP);
-	signal(SIGTSTP, saved_stp_sig_handler);
+
+	sigaction(SIGTSTP, &old, NULL);
 }
 
 void
