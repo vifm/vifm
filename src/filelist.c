@@ -51,6 +51,7 @@
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
 #include "ui/ui.h"
+#include "utils/dynarray.h"
 #include "utils/env.h"
 #include "utils/filemon.h"
 #include "utils/fs.h"
@@ -183,7 +184,8 @@ init_flist(FileView *view)
 	view->custom.title = NULL;
 
 	/* Load fake empty element to make dir_entry valid. */
-	view->dir_entry = calloc(1, sizeof(dir_entry_t));
+	view->dir_entry = dynarray_extend(NULL, sizeof(dir_entry_t));
+	memset(view->dir_entry, 0, sizeof(*view->dir_entry));
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = FT_DIR;
 	view->dir_entry[0].hi_num = -1;
@@ -2083,7 +2085,7 @@ replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 	dir_entry_t *new;
 	int i;
 
-	new = reallocarray(NULL, with_count, sizeof(*new));
+	new = dynarray_extend(NULL, with_count*sizeof(*new));
 	if(new == NULL)
 	{
 		return;
@@ -2122,7 +2124,7 @@ free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 		free_dir_entry(view, &(*entries)[i]);
 	}
 
-	free(*entries);
+	dynarray_free(*entries);
 	*entries = NULL;
 	*count = 0;
 }
@@ -2160,7 +2162,7 @@ static dir_entry_t *
 alloc_dir_entry(dir_entry_t **list, int list_size)
 {
 	dir_entry_t *new_entry_list;
-	new_entry_list = reallocarray(*list, list_size + 1, sizeof(dir_entry_t));
+	new_entry_list = dynarray_extend(*list, sizeof(dir_entry_t));
 	if(new_entry_list == NULL)
 	{
 		return NULL;

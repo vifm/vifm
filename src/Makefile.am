@@ -157,6 +157,7 @@ vifm_SOURCES = \
 	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \

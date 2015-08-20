@@ -8,6 +8,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
@@ -52,7 +53,7 @@ cleanup_view(FileView *view)
 	{
 		free_dir_entry(view, &view->dir_entry[i]);
 	}
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 
 	filter_dispose(&lwin.local_filter.filter);
 }

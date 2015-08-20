@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 23 July, 2015
+Updated: 20 August, 2015
 Version: 0.8
 
 Brief Description
@@ -150,6 +150,7 @@ Package content
     |  |
     |  |-- utils/ - miscellaneous utility functions
     |  |  |
+    |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
     |  |  |-- file_streams.c - file stream reading related functions

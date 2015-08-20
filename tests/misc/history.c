@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/commands.h"
 #include "../../src/filelist.h"
 
@@ -28,7 +29,8 @@ SETUP()
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("lfile0");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
@@ -37,7 +39,8 @@ SETUP()
 
 	rwin.list_rows = 1;
 	rwin.list_pos = 0;
-	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 
@@ -52,11 +55,11 @@ TEARDOWN()
 
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
-	free(lwin.dir_entry);
+	dynarray_free(lwin.dir_entry);
 
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
-	free(rwin.dir_entry);
+	dynarray_free(rwin.dir_entry);
 }
 
 static void

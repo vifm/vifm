@@ -4,6 +4,7 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/commands.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
@@ -59,7 +60,7 @@ free_view(FileView *view)
 	{
 		free(view->dir_entry[i].name);
 	}
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 }
 
 TEST(sync_syncs_local_filter)

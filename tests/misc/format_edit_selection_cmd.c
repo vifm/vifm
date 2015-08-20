@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
 #include "../../src/vim.h"
 
@@ -17,7 +18,8 @@ setup_lwin(void)
 
 	lwin.list_rows = 4;
 	lwin.list_pos = 2;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("lfile0");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("lfile1");
@@ -39,7 +41,8 @@ setup_rwin(void)
 
 	rwin.list_rows = 6;
 	rwin.list_pos = 5;
-	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[1].name = strdup("rfile1");
@@ -88,7 +91,7 @@ teardown_view(FileView *view)
 	{
 		free_dir_entry(view, &view->dir_entry[i]);
 	}
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 	view->list_rows = 0;
 	view->selected_files = 0;
 }

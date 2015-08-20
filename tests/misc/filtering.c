@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/filtering.h"
 
 #define assert_hidden(view, name, dir) \
@@ -21,7 +22,8 @@ SETUP()
 
 	lwin.list_rows = 7;
 	lwin.list_pos = 2;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("with(round)");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("with[square]");
@@ -54,7 +56,8 @@ SETUP()
 
 	rwin.list_rows = 8;
 	rwin.list_pos = 2;
-	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("dir1.d");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[1].name = strdup("dir2.d");
@@ -96,7 +99,7 @@ cleanup_view(FileView *view)
 
 	for(i = 0; i < view->list_rows; i++)
 		free(view->dir_entry[i].name);
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 	filter_dispose(&view->manual_filter);
 	filter_dispose(&view->auto_filter);
 }
