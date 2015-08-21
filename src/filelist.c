@@ -1399,6 +1399,7 @@ flist_custom_finish(FileView *view, int very)
 	view->list_rows = view->custom.entry_count;
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
+	view->dir_entry = dynarray_shrink(view->dir_entry);
 
 	/* view->custom.unsorted must be set before load_sort_option() so that it
 	 * skips sort array normalization. */
@@ -1812,6 +1813,8 @@ update_dir_list(FileView *view, int reload)
 		merge_lists(view, prev_dir_entries, prev_list_rows);
 		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
 	}
+
+	view->dir_entry = dynarray_shrink(view->dir_entry);
 
 	return 0;
 }
