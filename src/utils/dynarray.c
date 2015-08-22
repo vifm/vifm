@@ -22,13 +22,15 @@
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* memset() */
 
+/* Gets dynarray_t from pointer to its data. */
 #define CAST(da) (dynarray_t*)((char *)(da) - offsetof(dynarray_t, data))
 
+/* Information storage for the dynarray. */
 typedef struct
 {
-	size_t size;
-	size_t capacity;
-	char data[];
+	size_t size;     /* Amount of actually used memory (not counting this). */
+	size_t capacity; /* Amount of available memory (not counting this). */
+	char data[];     /* The rest of memory. */
 }
 dynarray_t;
 
