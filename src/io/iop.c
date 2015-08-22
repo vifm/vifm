@@ -611,8 +611,8 @@ iop_ln(io_args_t *const args)
 		return -1;
 	}
 
-	escaped_path = escape_filename(path, 0);
-	escaped_target = escape_filename(target, 0);
+	escaped_path = shell_like_escape(path, 0);
+	escaped_target = shell_like_escape(target, 0);
 	if(escaped_path == NULL || escaped_target == NULL)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, IO_ERR_UNKNOWN,

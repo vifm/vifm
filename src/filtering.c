@@ -596,6 +596,7 @@ local_filter_remove(FileView *view)
 {
 	(void)replace_string(&view->local_filter.prev, view->local_filter.filter.raw);
 	filter_clear(&view->local_filter.filter);
+	ui_view_schedule_reload(view);
 }
 
 void

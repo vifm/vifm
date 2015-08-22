@@ -32,6 +32,15 @@ typedef enum
 }
 FileHandleExec;
 
+/* When and why should we pause on shellout(). */
+typedef enum
+{
+	PAUSE_ALWAYS,   /* Execute command and pause. */
+	PAUSE_NEVER,    /* Don't pause after the command. */
+	PAUSE_ON_ERROR, /* Pause only on non-zero exit code from the command. */
+}
+ShellPause;
+
 /* Handles opening of current file/selection of the view. */
 void open_file(FileView *view, FileHandleExec exec);
 
@@ -51,12 +60,9 @@ void open_dir(FileView *view);
  * like root of FUSE mount. */
 void cd_updir(FileView *view, int levels);
 
-/* Values of pause:
- *  > 0 - pause always
- *  = 0 - do not pause
- *  < 0 - pause on error
- * Returns zero on success, otherwise non-zero is returned. */
-int shellout(const char command[], int pause, int use_term_multiplexer);
+/* Executes command in a shell.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int shellout(const char command[], ShellPause pause, int use_term_multiplexer);
 
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);

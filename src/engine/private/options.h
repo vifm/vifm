@@ -39,19 +39,21 @@ typedef struct
 {
 	char *name;          /* Name of an option. */
 	OPT_TYPE type;       /* Option type. */
+	OPT_SCOPE scope;     /* Scope: local or global. */
 	optval_t val;        /* Current value of an option. */
 	optval_t def;        /* Default value of an option. */
 	opt_handler handler; /* A pointer to option handler. */
 	int val_count;       /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
 	const char **vals;   /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
 
-	const char *full;    /* Points to full name of an option. */
+	/* This is not a pointer because they change on inserting options. */
+	const char *full;    /* Points to full name of the option. */
 }
 opt_t;
 
 /* Returns a pointer to a structure describing option of given name or NULL
  * when no such option exists. */
-opt_t * find_option(const char option[]);
+opt_t * find_option(const char option[], OPT_SCOPE scope);
 
 /* Converts option value to string representation.  Returns pointer to a
  * statically allocated buffer. */

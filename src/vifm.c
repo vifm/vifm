@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 	init_modes();
 	init_undo_list(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
-	load_local_options(curr_view);
+	load_view_options(curr_view);
 
 	curr_stats.load_stage = 1;
 
@@ -536,7 +536,7 @@ run_converter(int vifm_like_mode)
 #ifndef _WIN32
 	char cmd[PATH_MAX];
 	snprintf(cmd, sizeof(cmd), "vifmrc-converter %d", vifm_like_mode);
-	return shellout(cmd, -1, 0);
+	return shellout(cmd, PAUSE_ON_ERROR, 0);
 #else
 	char path[PATH_MAX];
 	char cmd[2*PATH_MAX];
@@ -585,7 +585,7 @@ vifm_restart(void)
 	/* Options of other pane. */
 	tmp_view = curr_view;
 	curr_view = other_view;
-	load_local_options(other_view);
+	load_view_options(other_view);
 	reset_options_to_default();
 	curr_view = tmp_view;
 

@@ -165,30 +165,30 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 {
 	/* TODO: refactor this function fuse_mount(). */
 
+	int id;
 	int mount_point_id;
 	char buf[2*PATH_MAX];
-	char *escaped_filename;
 	int foreground;
 	char errors_file[PATH_MAX];
 	int status;
 	int cancelled;
 
-	escaped_filename = escape_filename(get_current_file_name(view), 0);
-
-	mount_point_id = get_last_mount_point_id(fuse_mounts);
+	id = get_last_mount_point_id(fuse_mounts);
+	mount_point_id = id;
 	do
 	{
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
 				++mount_point_id, get_current_file_name(view));
+
+		/* Make sure this is not an infinite loop, although practically this
+		 * condition will always be false. */
+		if(mount_point_id == id)
+		{
+			show_error_msg("Unable to create FUSE mount directory", mount_point);
+			return -1;
+		}
 	}
-	while(path_exists(mount_point, DEREF));
-	if(os_mkdir(mount_point, S_IRWXU) != 0)
-	{
-		free(escaped_filename);
-		show_error_msg("Unable to create FUSE mount directory", mount_point);
-		return -1;
-	}
-	free(escaped_filename);
+	while(os_mkdir(mount_point, S_IRWXU) != 0 && errno == EEXIST);
 
 	/* Just before running the mount,
 		 I need to chdir out temporarily from any FUSE mounted
@@ -326,8 +326,8 @@ format_mount_command(const char mount_point[], const char file_name[],
 
 	*foreground = 0;
 
-	escaped_path = escape_filename(file_name, 0);
-	escaped_mount_point = escape_filename(mount_point, 0);
+	escaped_path = shell_like_escape(file_name, 0);
+	escaped_mount_point = shell_like_escape(mount_point, 0);
 
 	buf_pos = buf;
 	buf_pos[0] = '\0';
@@ -409,7 +409,7 @@ fuse_unmount_all(void)
 		char buf[14 + PATH_MAX + 1];
 		char *escaped_filename;
 
-		escaped_filename = escape_filename(runner->mount_point, 0);
+		escaped_filename = shell_like_escape(runner->mount_point, 0);
 		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
 				escaped_filename);
 		free(escaped_filename);
@@ -522,8 +522,8 @@ fuse_try_unmount(FileView *view)
 		return 0;
 	}
 
-	/* we are exiting a top level dir */
-	escaped_mount_point = escape_filename(runner->mount_point, 0);
+	/* We are exiting a top level dir. */
+	escaped_mount_point = shell_like_escape(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
 			escaped_mount_point);
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);

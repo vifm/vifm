@@ -7,28 +7,28 @@ extern const char *value;
 TEST(no_quotes)
 {
 	value = NULL;
-	set_options("fusehome=a\\ b");
+	set_options("fusehome=a\\ b", OPT_GLOBAL);
 	assert_string_equal("a b", value);
 
 	value = NULL;
-	set_options("fh=a\\ b\\ c");
+	set_options("fh=a\\ b\\ c", OPT_GLOBAL);
 	assert_string_equal("a b c", value);
 
-	set_options("so=name");
+	set_options("so=name", OPT_GLOBAL);
 }
 
 TEST(single_quotes)
 {
-	set_options("fusehome='a b'");
+	set_options("fusehome='a b'", OPT_GLOBAL);
 	assert_string_equal("a b", value);
 }
 
 TEST(double_quotes)
 {
-	set_options("fusehome=\"a b\"");
+	set_options("fusehome=\"a b\"", OPT_GLOBAL);
 	assert_string_equal("a b", value);
 
-	set_options("fusehome=\"a \\\" b\"");
+	set_options("fusehome=\"a \\\" b\"", OPT_GLOBAL);
 	assert_string_equal("a \" b", value);
 }
 

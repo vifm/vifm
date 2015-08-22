@@ -160,17 +160,18 @@ fview_view_init(FileView *view)
 
 	view->columns = columns_create();
 	view->view_columns = strdup("");
+	view->view_columns_g = strdup("");
 }
 
 void
 fview_view_reset(FileView *view)
 {
-	view->ls_view = 0;
+	view->ls_view_g = view->ls_view = 0;
 	view->max_filename_width = get_max_filename_width(view);
 	view->column_count = 1;
 
-	view->num_type = NT_NONE;
-	view->num_width = 4;
+	view->num_type_g = view->num_type = NT_NONE;
+	view->num_width_g = view->num_width = 4;
 	view->real_num_width = 0;
 
 	view->postponed_redraw = 0;

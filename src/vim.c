@@ -58,8 +58,8 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	int bg;
 
 #ifndef _WIN32
-	char *const escaped_rtp = escape_filename(PACKAGE_DATA_DIR, 0);
-	char *const escaped_args = escape_filename(topic, 0);
+	char *const escaped_rtp = shell_like_escape(PACKAGE_DATA_DIR, 0);
+	char *const escaped_args = shell_like_escape(topic, 0);
 
 	snprintf(cmd, cmd_size,
 			"%s -c 'set runtimepath+=%s/vim-doc' -c help\\ %s -c only",
@@ -72,7 +72,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	char *escaped_rtp;
 
 	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-	escaped_rtp = escape_filename(exe_dir, 0);
+	escaped_rtp = shell_like_escape(exe_dir, 0);
 
 	snprintf(cmd, cmd_size,
 			"%s -c \"set runtimepath+=%s/data/vim-doc\" -c \"help %s\" -c only",
@@ -95,7 +95,7 @@ vim_edit_files(int nfiles, char *files[])
 	len = snprintf(cmd, sizeof(cmd), "%s ", cfg_get_vicmd(&bg));
 	for(i = 0; i < nfiles && len < sizeof(cmd) - 1; ++i)
 	{
-		char *escaped = escape_filename(files[i], 0);
+		char *escaped = shell_like_escape(files[i], 0);
 		len += snprintf(cmd + len, sizeof(cmd) - len, "%s ", escaped);
 		free(escaped);
 	}
@@ -154,7 +154,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 	}
 
 #ifndef _WIN32
-	escaped = escape_filename(filename, 0);
+	escaped = shell_like_escape(filename, 0);
 #else
 	escaped = (char *)enclose_in_dquotes(filename);
 #endif
@@ -208,7 +208,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 		return start_background_job(cmd, 0);
 	}
 
-	return shellout(cmd, -1, use_term_multiplexer);
+	return shellout(cmd, PAUSE_ON_ERROR, use_term_multiplexer);
 }
 
 int

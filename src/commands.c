@@ -268,6 +268,8 @@ static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
+static int setlocal_cmd(const cmd_info_t *cmd_info);
+static int setglobal_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
 static int sort_cmd(const cmd_info_t *cmd_info);
 static int source_cmd(const cmd_info_t *cmd_info);
@@ -476,6 +478,10 @@ static const cmd_add_t commands[] = {
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = set_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "setlocal",         .abbr = "setl",  .emark = 0,  .id = COM_SETLOCAL,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = setlocal_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "setglobal",        .abbr = "setg",  .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = setglobal_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "shell",            .abbr = "sh",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -759,7 +765,7 @@ commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 			/* XXX: Use of filename escape, while special one might be needed. */
 		case CLL_OUT_OF_ARG:
 		case CLL_NO_QUOTING:
-			return escape_filename(str, 0);
+			return shell_like_escape(str, 0);
 
 		case CLL_S_QUOTING:
 			return escape_for_squotes(str, 0);
@@ -1589,13 +1595,15 @@ emark_cmd(const cmd_info_t *cmd_info)
 			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
-				(void)shellout(buf, cmd_info->emark ? 1 : -1, use_term_mux);
+				(void)shellout(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+						use_term_mux);
 				free(buf);
 			}
 		}
 		else
 		{
-			(void)shellout(com, cmd_info->emark ? 1 : -1, use_term_mux);
+			(void)shellout(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+					use_term_mux);
 		}
 	}
 
@@ -3766,10 +3774,27 @@ screen_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Updates/displays global and local options. */
 static int
 set_cmd(const cmd_info_t *cmd_info)
 {
-	const int result = process_set_args(cmd_info->args);
+	const int result = process_set_args(cmd_info->args, 1, 1);
+	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
+}
+
+/* Updates/displays only global options. */
+static int
+setglobal_cmd(const cmd_info_t *cmd_info)
+{
+	const int result = process_set_args(cmd_info->args, 1, 0);
+	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
+}
+
+/* Updates/displays only local options. */
+static int
+setlocal_cmd(const cmd_info_t *cmd_info)
+{
+	const int result = process_set_args(cmd_info->args, 0, 1);
 	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 
@@ -3780,7 +3805,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, 0, cmd_info->emark ? 0 : 1);
+	shellout(sh, 0, cmd_info->emark ? PAUSE_NEVER : PAUSE_ALWAYS);
 	load_real_path_env();
 
 	return 0;
@@ -4384,7 +4409,7 @@ winrun(FileView *view, const char cmd[])
 	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
 	if(curr_view != tmp_curr)
 	{
-		load_local_options(curr_view);
+		load_view_options(curr_view);
 	}
 
 	/* :winrun and :windo should be able to set settings separately for each
@@ -4397,7 +4422,7 @@ winrun(FileView *view, const char cmd[])
 	other_view = tmp_other;
 	if(curr_view != view)
 	{
-		load_local_options(curr_view);
+		load_view_options(curr_view);
 	}
 
 	return result;
@@ -4550,7 +4575,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? 1 : -1, flags != MF_NO_TERM_MUX);
+			shellout(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+					flags != MF_NO_TERM_MUX);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4572,7 +4598,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1, flags != MF_NO_TERM_MUX);
+		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX);
 	}
 
 	if(external)

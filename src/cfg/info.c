@@ -24,7 +24,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <stdlib.h> /* abs() free() */
-#include <string.h> /* memset() strtol() strcmp() strchr() strlen() */
+#include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
@@ -122,12 +122,12 @@ read_info_file(int reread)
 			{
 				FileView *v = curr_view;
 				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
-				process_set_args(line_val + 1);
+				process_set_args(line_val + 1, 1, 1);
 				curr_view = v;
 			}
 			else
 			{
-				process_set_args(line_val);
+				process_set_args(line_val, 1, 1);
 			}
 		}
 		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE)
@@ -354,7 +354,7 @@ get_sort_info(FileView *view, const char line[])
 		if(endptr != line)
 		{
 			line = endptr;
-			view->sort[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
+			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
 		}
 		else
 		{
@@ -362,11 +362,12 @@ get_sort_info(FileView *view, const char line[])
 		}
 		line = skip_char(line, ',');
 	}
-	memset(&view->sort[j], SK_NONE, sizeof(view->sort) - j);
+	memset(&view->sort_g[j], SK_NONE, sizeof(view->sort_g) - j);
 	if(j == 0)
 	{
-		view->sort[0] = SK_DEFAULT;
+		view->sort_g[0] = SK_DEFAULT;
 	}
+	memcpy(view->sort, view->sort_g, sizeof(view->sort));
 
 	fview_sorting_updated(view);
 }
@@ -938,7 +939,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 	fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-	fprintf(fp, "=shortmess=%s\n", escape_spaces(get_option_value("shortmess")));
+	fprintf(fp, "=shortmess=%s\n",
+			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif
@@ -958,16 +960,16 @@ write_options(FILE *const fp)
 	fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
 			cfg.vi_cmd_bg ? " &" : "");
 	fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
-	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
-	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
-	fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
-	fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
-	fprintf(fp, "=[%snumber\n", (lwin.num_type & NT_SEQ) ? "" : "no");
-	fprintf(fp, "=]%snumber\n", (rwin.num_type & NT_SEQ) ? "" : "no");
-	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width);
-	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width);
-	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type & NT_REL) ? "" : "no");
-	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type & NT_REL) ? "" : "no");
+	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns_g));
+	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns_g));
+	fprintf(fp, "=[%slsview\n", lwin.ls_view_g ? "" : "no");
+	fprintf(fp, "=]%slsview\n", rwin.ls_view_g ? "" : "no");
+	fprintf(fp, "=[%snumber\n", (lwin.num_type_g & NT_SEQ) ? "" : "no");
+	fprintf(fp, "=]%snumber\n", (rwin.num_type_g & NT_SEQ) ? "" : "no");
+	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width_g);
+	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width_g);
+	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type_g & NT_REL) ? "" : "no");
+	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
 
 	fprintf(fp, "%s", "=dotdirs=");
 	if(cfg.dot_dirs & DD_ROOT_PARENT)
@@ -1011,7 +1013,8 @@ write_options(FILE *const fp)
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
-	fprintf(fp, "=wordchars=%s\n", escape_spaces(get_option_value("wordchars")));
+	fprintf(fp, "=wordchars=%s\n",
+			escape_spaces(get_option_value("wordchars", OPT_GLOBAL)));
 	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 
@@ -1309,7 +1312,7 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 	int i = -1;
 	const char *const sort = (flist_custom_active(view) && view->custom.unsorted)
 	                       ? view->custom.sort
-	                       : view->sort;
+	                       : view->sort_g;
 
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)

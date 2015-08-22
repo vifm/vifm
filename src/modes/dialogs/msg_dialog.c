@@ -76,7 +76,7 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], int centered);
+		const char ctrl_msg[], int centered, int recommended_width);
 static size_t count_lines(const char msg[], size_t *max_len);
 static size_t determine_width(const char msg[]);
 
@@ -384,7 +384,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, centered);
+	draw_msg(title, message, ctrl_msg, centered, 0);
 
 	if(lazy)
 	{
@@ -446,7 +446,8 @@ get_custom_control_msg(const response_variant responses[])
 }
 
 void
-draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
+draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
+		const char format[], ...)
 {
 	char msg[8192];
 	va_list pa;
@@ -455,7 +456,7 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
 	vsnprintf(msg, sizeof(msg), format, pa);
 	va_end(pa);
 
-	draw_msg(title, msg, ctrl_msg, 0);
+	draw_msg(title, msg, ctrl_msg, 0, recommended_width);
 	touch_all_windows();
 	wrefresh(error_win);
 }
@@ -464,7 +465,7 @@ draw_msgf(const char title[], const char ctrl_msg[], const char format[], ...)
  * message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		int centered)
+		int centered, int recommended_width)
 {
 	enum { margin = 1 };
 
@@ -482,7 +483,9 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	ctrl_msg_n = MAX(count_lines(ctrl_msg, &wctrl_msg), 1U);
 
 	h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
-	w = MIN(sw - 2, MAX(sw/3, (int)MAX(wctrl_msg, determine_width(msg)) + 4));
+	w = MIN(sw - 2,
+	        MAX(MAX(recommended_width, sw/3),
+	            (int)MAX(wctrl_msg, determine_width(msg)) + 4));
 	wresize(error_win, h, w);
 
 	werase(error_win);

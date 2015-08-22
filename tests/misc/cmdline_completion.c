@@ -53,7 +53,8 @@ SETUP()
 	execute_cmd("command foo c");
 
 	init_options(&option_changed);
-	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, def);
+	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, fusehome_handler,
+			def);
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 }

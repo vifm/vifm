@@ -47,7 +47,7 @@ init_view(FileView *view)
 
 	view->window_rows = 1;
 	view->sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(view);
+	ui_view_sort_list_ensure_well_formed(view, view->sort);
 }
 
 static void

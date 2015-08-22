@@ -284,7 +284,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		int result;
 		const int cancellable = data == NULL;
 
-		escaped = escape_filename(src, 0);
+		escaped = shell_like_escape(src, 0);
 		if(escaped == NULL)
 			return -1;
 
@@ -389,8 +389,8 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		int result;
 		const int cancellable = data == NULL;
 
-		escaped_src = escape_filename(src, 0);
-		escaped_dst = escape_filename(dst, 0);
+		escaped_src = shell_like_escape(src, 0);
+		escaped_dst = shell_like_escape(dst, 0);
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -495,8 +495,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			return -1;
 		}
 
-		escaped_src = escape_filename(src, 0);
-		escaped_dst = escape_filename(dst, 0);
+		escaped_src = shell_like_escape(src, 0);
+		escaped_dst = shell_like_escape(dst, 0);
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -587,7 +587,7 @@ op_chown(ops_t *ops, void *data, const char *src, const char *dst)
 	char *escaped;
 	uid_t uid = (uid_t)(long)data;
 
-	escaped = escape_filename(src, 0);
+	escaped = shell_like_escape(src, 0);
 	snprintf(cmd, sizeof(cmd), "chown -fR %u %s", uid, escaped);
 	free(escaped);
 
@@ -606,7 +606,7 @@ op_chgrp(ops_t *ops, void *data, const char *src, const char *dst)
 	char *escaped;
 	gid_t gid = (gid_t)(long)data;
 
-	escaped = escape_filename(src, 0);
+	escaped = shell_like_escape(src, 0);
 	snprintf(cmd, sizeof(cmd), "chown -fR :%u %s", gid, escaped);
 	free(escaped);
 
@@ -624,7 +624,7 @@ op_chmod(ops_t *ops, void *data, const char *src, const char *dst)
 	char cmd[128 + PATH_MAX];
 	char *escaped;
 
-	escaped = escape_filename(src, 0);
+	escaped = shell_like_escape(src, 0);
 	snprintf(cmd, sizeof(cmd), "chmod %s %s", (char *)data, escaped);
 	free(escaped);
 
@@ -638,7 +638,7 @@ op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
 	char cmd[128 + PATH_MAX];
 	char *escaped;
 
-	escaped = escape_filename(src, 0);
+	escaped = shell_like_escape(src, 0);
 	snprintf(cmd, sizeof(cmd), "chmod -R %s %s", (char *)data, escaped);
 	free(escaped);
 	start_background_job(cmd, 0);
@@ -702,8 +702,8 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		char exe_dir[PATH_MAX + 2];
 #endif
 
-		escaped_src = escape_filename(src, 0);
-		escaped_dst = escape_filename(dst, 0);
+		escaped_src = shell_like_escape(src, 0);
+		escaped_dst = shell_like_escape(dst, 0);
 		if(escaped_src == NULL || escaped_dst == NULL)
 		{
 			free(escaped_dst);
@@ -750,7 +750,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = escape_filename(src, 0);
+		escaped = shell_like_escape(src, 0);
 		snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
 				escaped);
 		free(escaped);
@@ -814,7 +814,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = escape_filename(src, 0);
+		escaped = shell_like_escape(src, 0);
 		snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
@@ -842,7 +842,7 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 		char cmd[128 + PATH_MAX];
 		char *escaped;
 
-		escaped = escape_filename(src, 0);
+		escaped = shell_like_escape(src, 0);
 		snprintf(cmd, sizeof(cmd), "touch %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);

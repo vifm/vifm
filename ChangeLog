@@ -34,6 +34,12 @@
 	Added fileext sorting key, which sorts files by extensions and directories
 	by name.  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added :setl[ocal] and :setg[lobal] commands to manage values of local
+	options that are specific to current directory and are reset on directory
+	change, similar to local options of Vim.
+
+	Added zr normal mode key to reset local filter.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -81,6 +87,9 @@
 	Display lower bound on item count in status bar progress messages (e.g. on
 	:grep).
 
+	Do not shrink progress dialog (only make it wider), this is more
+	predictable and easier to follow.  Thanks to Robert Sarkozi.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
@@ -118,6 +127,13 @@
 
 	Fixed unstable extension sorting for dot files.  Patch by Cosmin
 	Popescu (a.k.a. cosminadrianpopescu).
+
+	Fixed check for availability of FUSE mount point.  Thanks to fogine.
+
+	Fixed small memory leak and possible corruption after :sync! localopts.
+
+	Fixed checking for changes in charset options on :set (without arguments),
+	used to print unchanged options as if they were changed.
 
 0.8-beta to 0.8
 
