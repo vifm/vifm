@@ -8,6 +8,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/str.h"
@@ -28,7 +29,8 @@ SETUP()
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
@@ -47,7 +49,7 @@ TEARDOWN()
 	{
 		free(lwin.dir_entry[i].name);
 	}
-	free(lwin.dir_entry);
+	dynarray_free(lwin.dir_entry);
 
 	assert_int_equal(0, chdir("../.."));
 }

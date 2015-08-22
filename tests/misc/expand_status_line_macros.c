@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/statusline.h"
+#include "../../src/utils/dynarray.h"
 
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \
@@ -32,7 +33,8 @@ SETUP()
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
@@ -48,7 +50,7 @@ TEARDOWN()
 	{
 		free(lwin.dir_entry[i].name);
 	}
-	free(lwin.dir_entry);
+	dynarray_free(lwin.dir_entry);
 
 	free(cfg.time_format);
 }

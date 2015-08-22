@@ -7,6 +7,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
@@ -24,7 +25,8 @@ setup_lwin(void)
 
 	lwin.list_rows = 5;
 	lwin.list_pos = 2;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("lfile0");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].name = strdup("lfile1");
@@ -48,7 +50,8 @@ setup_rwin(void)
 
 	rwin.list_rows = 7;
 	rwin.list_pos = 5;
-	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
 	rwin.dir_entry[1].name = strdup("rfile1");
@@ -103,11 +106,11 @@ TEARDOWN()
 
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
-	free(lwin.dir_entry);
+	dynarray_free(lwin.dir_entry);
 
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
-	free(rwin.dir_entry);
+	dynarray_free(rwin.dir_entry);
 
 	clear_registers();
 }

@@ -7,6 +7,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/sort.h"
 
@@ -26,7 +27,8 @@ SETUP()
 	cfg.sort_numbers = 1;
 
 	lwin.list_rows = 3;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("a");
 	lwin.dir_entry[0].type = FT_REG;
 	lwin.dir_entry[1].name = strdup("_");
@@ -35,7 +37,8 @@ SETUP()
 	lwin.dir_entry[2].type = FT_REG;
 
 	rwin.list_rows = 2;
-	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
+	rwin.dir_entry = dynarray_cextend(NULL,
+			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("аааааааааа");
 	rwin.dir_entry[0].type = FT_REG;
 	rwin.dir_entry[1].name = strdup("АААААААААА");
@@ -57,7 +60,7 @@ free_view(FileView *view)
 	{
 		free(view->dir_entry[i].name);
 	}
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 
 	view->list_rows = 0;
 }
@@ -298,7 +301,8 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 	free_view(&lwin);
 
 	lwin.list_rows = 3;
-	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("disown.c");
 	lwin.dir_entry[0].type = FT_REG;
 	lwin.dir_entry[1].name = strdup(".cdargsresult");

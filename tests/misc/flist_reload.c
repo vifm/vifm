@@ -5,6 +5,7 @@
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
@@ -42,7 +43,7 @@ TEARDOWN()
 
 	for(i = 0; i < view->list_rows; i++)
 		free(view->dir_entry[i].name);
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 
 	filter_dispose(&view->auto_filter);
 	filter_dispose(&view->manual_filter);

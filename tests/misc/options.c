@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/commands.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"

@@ -115,7 +115,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
 	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
-	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) utils/env.$(OBJEXT) \
+	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
+	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
 	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
@@ -452,6 +453,7 @@ vifm_SOURCES = \
 	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/filemon.c utils/filemon.h \
@@ -812,6 +814,8 @@ utils/$(am__dirstamp):
 utils/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) utils/$(DEPDIR)
 	@: > utils/$(DEPDIR)/$(am__dirstamp)
+utils/dynarray.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/env.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/file_streams.$(OBJEXT): utils/$(am__dirstamp) \
@@ -954,6 +958,7 @@ mostlyclean-compile:
 	-rm -f ui/statusbar.$(OBJEXT)
 	-rm -f ui/statusline.$(OBJEXT)
 	-rm -f ui/ui.$(OBJEXT)
+	-rm -f utils/dynarray.$(OBJEXT)
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
 	-rm -f utils/filemon.$(OBJEXT)
@@ -1084,6 +1089,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/dynarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filemon.Po@am__quote@
