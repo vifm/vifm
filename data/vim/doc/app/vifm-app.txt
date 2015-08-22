@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 02
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 04
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3935,12 +3935,22 @@ So it basically consists of four parts:
 
 Alignment specifier~
 
-It's an optional minus sign as the first symbol of the string.
+It's an optional minus or asterisk sign as the first symbol of the string.
 
 Specifies type of text alignment within a column.  Two types are supported:
  - left align >
+
      set viewcolumns=-{name}
-<- right align (default) >
+<
+ - file align
+
+    It's like left alignment, but when the text is bigger then the column,
+    the alignment is made at the right (so the file name is always visible). >
+
+     set viewcolumns=*{name}
+<
+ - right align (default) >
+
      set viewcolumns={name}
 <
 Width specifier~
