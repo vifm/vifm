@@ -9,8 +9,12 @@ On *nix you need:
     require providing appropriate options for linker (thus might not work
     out of the box).
 
-    Hint for building on Debian-based systems: ncurses package you need to
-    build vifm is called libncursesw5-dev.
+    Hints for building on Debian-based systems (Debian/Ubuntu/Linux Mint):
+     * ncurses package you need to build vifm is called "libncursesw5-dev"
+     * additional (optional) tools used in sample vifmrc:
+       - sudo aptitude install sshfs curlftpfs fuse fuse-zip fusefat fuseiso
+       - for a support of .rar-archive files see:
+         https://gist.github.com/enberg/84710b619bdb0b10e945
 
     For best user-experience with Vim plugins availability of either perl
     interpreter or vim executable is needed to automatically generate tags.

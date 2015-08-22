@@ -90,6 +90,9 @@
 	Do not shrink progress dialog (only make it wider), this is more
 	predictable and easier to follow.  Thanks to Robert Sarkozi.
 
+	More hints for Debian-based systems on installation.  Thanks to Bernhard
+	Grotz.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
