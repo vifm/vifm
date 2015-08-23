@@ -172,6 +172,7 @@ Package content
     |  |
     |  |-- args.c - command-line arguments parsing and processing
     |  |-- background.c - runs commands in background
+    |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
     |  |-- color_manager.c - manager of curses color pairs
     |  |-- color_scheme.c - color schemes

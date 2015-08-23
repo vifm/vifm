@@ -181,6 +181,7 @@ vifm_SOURCES = \
 	\
 	args.c args.h \
 	background.c background.h \
+	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c color_scheme.h \

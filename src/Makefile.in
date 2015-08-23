@@ -125,12 +125,13 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
 	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
-	column_view.$(OBJEXT) color_manager.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	desktop.$(OBJEXT) dir_stack.$(OBJEXT) escape.$(OBJEXT) \
-	event_loop.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
+	color_manager.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
+	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
+	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
 	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) \
@@ -477,6 +478,7 @@ vifm_SOURCES = \
 	\
 	args.c args.h \
 	background.c background.h \
+	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c color_scheme.h \
@@ -982,6 +984,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_manager.Po@am__quote@

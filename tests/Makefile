@@ -19,7 +19,7 @@ suites += ioeta ionotif iop ior
 # ui
 suites += colmgr column_view viewcolumns_parser
 # everything else
-suites += env escape fileops filetype filter misc undo utils
+suites += bmarks env escape fileops filetype filter misc undo utils
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/

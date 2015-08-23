@@ -58,7 +58,7 @@ utilities := dynarray.c env.c file_streams.c filemon.c filter.c fs.c globs.c \
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(io) $(menus) $(modes) $(ui) \
-                $(utilities) args.c background.c bracket_notation.c \
+                $(utilities) args.c background.c bmarks.c bracket_notation.c \
                 builtin_functions.c color_manager.c color_scheme.c \
                 column_view.c commands.c commands_completion.c compile_info.c \
                 dir_stack.c escape.c event_loop.c file_magic.c filelist.c \
