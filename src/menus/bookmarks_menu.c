@@ -33,7 +33,7 @@
 #include "../utils/path.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
-#include "../bookmarks.h"
+#include "../marks.h"
 #include "menus.h"
 
 static int execute_bookmark_cb(FileView *view, menu_info *m);

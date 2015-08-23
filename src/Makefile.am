@@ -181,7 +181,6 @@ vifm_SOURCES = \
 	\
 	args.c args.h \
 	background.c background.h \
-	bookmarks.c bookmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c color_scheme.h \
@@ -204,6 +203,7 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
+	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	path_env.c path_env.h \

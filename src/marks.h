@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__BOOKMARKS_H__
-#define VIFM__BOOKMARKS_H__
+#ifndef VIFM__MARKS_H__
+#define VIFM__MARKS_H__
 
 #include <time.h> /* time_t */
 
@@ -98,7 +98,7 @@ TSTATIC_DEFS(
 	bookmark_t * get_bmark_by_name(const char mark);
 )
 
-#endif /* VIFM__BOOKMARKS_H__ */
+#endif /* VIFM__MARKS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

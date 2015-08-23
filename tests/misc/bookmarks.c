@@ -5,7 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
-#include "../../src/bookmarks.h"
+#include "../../src/marks.h"
 
 SETUP()
 {
