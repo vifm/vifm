@@ -20,7 +20,7 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() realloc() */
-#include <string.h> /* strdup() strcmp() */
+#include <string.h> /* strcmp() strdup() strstr() */
 
 #include "utils/str.h"
 
@@ -32,6 +32,7 @@ typedef struct
 }
 bmark_t;
 
+static int validate_tags(const char tags[]);
 static int add_bmark(const char path[], const char tags[]);
 
 /* Array of the bookmarks. */
@@ -43,6 +44,12 @@ int
 bmarks_set(const char path[], const char tags[])
 {
 	size_t i;
+
+	if(validate_tags(tags) != 0)
+	{
+		return 1;
+	}
+
 	/* Try to update tags of an existing bookmark. */
 	for(i = 0U; i < bmark_count; ++i)
 	{
@@ -53,6 +60,16 @@ bmarks_set(const char path[], const char tags[])
 	}
 
 	return add_bmark(path, tags);
+}
+
+/* Validates list of tags.  Returns zero if tags are well-formed and non-zero
+ * otherwise. */
+static int
+validate_tags(const char tags[])
+{
+	return tags[0] == '\0'
+	    || starts_with_lit(tags, ",") || strstr(tags, ",,") != NULL
+	    || ends_with(tags, ",");
 }
 
 /* Adds new bookmark.  Returns zero on success and non-zero otherwise. */

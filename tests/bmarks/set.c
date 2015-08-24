@@ -4,10 +4,28 @@
 
 #include "utils.h"
 
-TEST(empty_tag_is_ignored)
+TEST(lonely_empty_tag_is_rejected)
 {
-	assert_success(bmarks_set("empty/tag/is/ignored", ""));
-	assert_string_equal(NULL, get_tags("empty/tag/is/ignored"));
+	assert_failure(bmarks_set("lonely/empty/tag/is/rejected", ""));
+	assert_string_equal(NULL, get_tags("lonely/empty/tag/is/rejected"));
+}
+
+TEST(empty_tag_is_rejected_in_any_form)
+{
+	assert_failure(bmarks_set("empty/tag/is/rejected", ","));
+	assert_string_equal(NULL, get_tags("empty/tag/is/rejected"));
+
+	assert_failure(bmarks_set("empty/tag/is/rejected", ",,"));
+	assert_string_equal(NULL, get_tags("empty/tag/is/rejected"));
+
+	assert_failure(bmarks_set("empty/tag/is/rejected", "abc,,"));
+	assert_string_equal(NULL, get_tags("empty/tag/is/rejected"));
+
+	assert_failure(bmarks_set("empty/tag/is/rejected", ",xz,de"));
+	assert_string_equal(NULL, get_tags("empty/tag/is/rejected"));
+
+	assert_failure(bmarks_set("empty/tag/is/rejected", "abc,,de"));
+	assert_string_equal(NULL, get_tags("empty/tag/is/rejected"));
 }
 
 TEST(single_tag_is_set)
