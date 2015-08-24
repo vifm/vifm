@@ -113,6 +113,38 @@ bmarks_list(bmarks_find_cb cb, void *arg)
 }
 
 void
+bmarks_find(const char tags[], bmarks_find_cb cb, void *arg)
+{
+	char *clone = strdup(tags);
+	size_t i;
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		int match = 0;
+		char *bmark_tag = bmarks[i].tags, *state = NULL;
+		while((bmark_tag = split_and_get(bmark_tag, ',', &state)) != NULL)
+		{
+			if(!match)
+			{
+				char *tag = clone, *state = NULL;
+				while((tag = split_and_get(tag, ',', &state)) != NULL)
+				{
+					if(strcmp(tag, bmark_tag) == 0)
+					{
+						match = 1;
+					}
+				}
+
+				if(match)
+				{
+					cb(bmarks[i].path, bmarks[i].tags, arg);
+				}
+			}
+		}
+	}
+	free(clone);
+}
+
+void
 bmarks_clear(void)
 {
 	size_t i;

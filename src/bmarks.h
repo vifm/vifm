@@ -32,6 +32,9 @@ int bmarks_set(const char path[], const char tags[]);
 /* Lists all available records by calling the callback. */
 void bmarks_list(bmarks_find_cb cb, void *arg);
 
+/* Looks up paths with matching list of associated tags. */
+void bmarks_find(const char tags[], bmarks_find_cb cb, void *arg);
+
 /* Removes all bookmarks. */
 void bmarks_clear(void);
 
