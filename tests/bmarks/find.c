@@ -58,16 +58,26 @@ TEST(finds_multiple_matches)
 	bmarks_set("finds/multiple/matches2", "d,e,f,x");
 
 	nmatches = 0;
+	bmarks_find("x", &bmarks_cb, NULL);
+	assert_int_equal(2, nmatches);
+
+	nmatches = 0;
 	bmarks_find("x,x", &bmarks_cb, NULL);
 	assert_int_equal(2, nmatches);
+}
+
+TEST(finds_intersection_of_matches)
+{
+	bmarks_set("finds/intersection/of/matches1", "a,b,c,x");
+	bmarks_set("finds/intersection/of/matches2", "d,e,f,x");
 
 	nmatches = 0;
 	bmarks_find("a,e", &bmarks_cb, NULL);
-	assert_int_equal(2, nmatches);
+	assert_int_equal(0, nmatches);
 
 	nmatches = 0;
 	bmarks_find("f,b,d", &bmarks_cb, NULL);
-	assert_int_equal(2, nmatches);
+	assert_int_equal(0, nmatches);
 }
 
 static void
