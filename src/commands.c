@@ -2171,7 +2171,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 0)
 		{
-			clear_all_bookmarks();
+			clear_all_marks();
 			return 0;
 		}
 		else
@@ -2191,8 +2191,10 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			if(!char_is_one_of(valid_bookmarks, cmd_info->argv[i][j]))
+			if(!char_is_one_of(valid_marks, cmd_info->argv[i][j]))
+			{
 				return CMDS_ERR_INVALID_ARG;
+			}
 		}
 	}
 
@@ -2201,7 +2203,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			clear_bookmark(cmd_info->argv[i][j]);
+			clear_mark(cmd_info->argv[i][j]);
 		}
 	}
 	return 0;
@@ -3389,7 +3391,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->qmark)
 	{
-		if(!is_bookmark_empty(mark))
+		if(!is_mark_empty(mark))
 		{
 			status_bar_errorf("Mark isn't empty: %c", mark);
 			return 1;
@@ -3402,7 +3404,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 		              ? curr_view->list_pos
 		              : cmd_info->end;
 		const dir_entry_t *const entry = &curr_view->dir_entry[pos];
-		return set_user_bookmark(mark, entry->origin, entry->name);
+		return set_user_mark(mark, entry->origin, entry->name);
 	}
 
 	expanded_path = expand_tilde(cmd_info->argv[1]);
@@ -3423,7 +3425,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				file = NO_BOOKMARK_FILE;
+				file = NO_MARK_FILE;
 			}
 		}
 		else
@@ -3435,12 +3437,13 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		file = cmd_info->argv[2];
 	}
-	result = set_user_bookmark(mark, expanded_path, file);
+	result = set_user_mark(mark, expanded_path, file);
 	free(expanded_path);
 
 	return result;
 }
 
+/* Displays all or some of marks. */
 static int
 marks_cmd(const cmd_info_t *cmd_info)
 {
@@ -3448,7 +3451,9 @@ marks_cmd(const cmd_info_t *cmd_info)
 	int i, j;
 
 	if(cmd_info->argc == 0)
-		return show_bookmarks_menu(curr_view, valid_bookmarks) != 0;
+	{
+		return show_marks_menu(curr_view, valid_marks) != 0;
+	}
 
 	j = 0;
 	buf[0] = '\0';
@@ -3465,7 +3470,7 @@ marks_cmd(const cmd_info_t *cmd_info)
 			p++;
 		}
 	}
-	return show_bookmarks_menu(curr_view, buf) != 0;
+	return show_marks_menu(curr_view, buf) != 0;
 }
 
 static int

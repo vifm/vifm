@@ -25,77 +25,75 @@
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
 
-#define NUM_REGULAR_BOOKMARKS 61
-#define NUM_SPECIAL_BOOKMARKS 3
-#define NUM_BOOKMARKS (NUM_REGULAR_BOOKMARKS + NUM_SPECIAL_BOOKMARKS)
+#define NUM_REGULAR_MARKS 61
+#define NUM_SPECIAL_MARKS 3
+#define NUM_MARKS (NUM_REGULAR_MARKS + NUM_SPECIAL_MARKS)
 
-/* Special file name value for "directory bookmarks". */
-#define NO_BOOKMARK_FILE ".."
+/* Special file name value for "directory marks". */
+#define NO_MARK_FILE ".."
 
-/* Structure that describes bookmark data. */
+/* Structure that describes mark data. */
 typedef struct
 {
-	char *file;       /* Name of bookmarked file. */
-	char *directory;  /* Path to directory at which bookmark was made. */
-	time_t timestamp; /* Last bookmark update time (-1 means "never"). */
+	char *file;       /* Name of marked file. */
+	char *directory;  /* Path to directory at which mark was made. */
+	time_t timestamp; /* Last mark update time (-1 means "never"). */
 }
-bookmark_t;
+mark_t;
 
-extern const char valid_bookmarks[];
+extern const char valid_marks[];
 
-/* Gets bookmark by its index.  Returns pointer to a statically allocated
- * bookmark_t structure or NULL for wrong index. */
-const bookmark_t * get_bookmark(const int bmark_index);
+/* Gets mark by its index.  Returns pointer to a statically allocated
+ * mark_t structure or NULL for wrong index. */
+const mark_t * get_mark(const int bmark_index);
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
 char index2mark(const int bmark_index);
 
-/* Checks if a bookmark specified by its index is valid (exists and points to an
+/* Checks if a mark specified by its index is valid (exists and points to an
  * existing directory).  Returns non-zero if so, otherwise zero is returned. */
-int is_valid_bookmark(const int bmark_index);
+int is_valid_mark(const int bmark_index);
 
-/* Checks whether given bookmark is empty.  Returns non-zero if so, otherwise
- * zero is returned. */
-int is_bookmark_empty(const char mark);
+/* Checks whether given mark is empty.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int is_mark_empty(const char m);
 
-int is_spec_bookmark(const int x);
+int is_spec_mark(const int x);
 
-/* Checks whether given bookmark is older than given time.  Returns non-zero if
- * so, otherwise zero is returned. */
-int is_bookmark_older(const char mark, const time_t than);
+/* Checks whether given mark is older than given time.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int is_mark_older(const char m, const time_t than);
 
-/* Sets user's bookmark interactively.  Returns non-zero if UI message was
- * printed, otherwise zero is returned. */
-int set_user_bookmark(const char mark, const char directory[],
-		const char file[]);
+/* Sets user's mark interactively.  Returns non-zero if UI message was printed,
+ * otherwise zero is returned. */
+int set_user_mark(const char mark, const char directory[], const char file[]);
 
-/* Sets all properties of user's bookmark (e.g. from saved configuration). */
-void setup_user_bookmark(const char mark, const char directory[],
-		const char file[], time_t timestamp);
+/* Sets all properties of user's mark (e.g. from saved configuration). */
+void setup_user_mark(const char mark, const char directory[], const char file[],
+		time_t timestamp);
 
-/* Sets special bookmark.  Does nothing for invalid mark value. */
-void set_spec_bookmark(const char mark, const char directory[],
-		const char file[]);
+/* Sets special mark.  Does nothing for invalid mark value. */
+void set_spec_mark(const char mark, const char directory[], const char file[]);
 
-/* Handles all kinds of bookmarks.  Returns new value for save_msg flag. */
-int goto_bookmark(FileView *view, char mark);
+/* Handles all kinds of marks.  Returns new value for save_msg flag. */
+int goto_mark(FileView *view, char mark);
 
-/* Clears a bookmark by its name. */
-void clear_bookmark(const int mark);
+/* Clears a mark by its name. */
+void clear_mark(const int m);
 
-/* Clears all bookmarks. */
-void clear_all_bookmarks(void);
+/* Clears all marks. */
+void clear_all_marks(void);
 
-int check_mark_directory(FileView *view, char mark);
+int check_mark_directory(FileView *view, char m);
 
-/* Fills array of booleans (active_bookmarks) each of which shows whether
- * specified bookmark index is active.  active_bookmarks should be an array of
- * at least NUM_BOOKMARKS items.  Returns number of active bookmarks. */
-int init_active_bookmarks(const char marks[], int active_bookmarks[]);
+/* Fills array of booleans (active_marks) each of which shows whether specified
+ * mark index is active.  active_marks should be an array of at least NUM_MARKS
+ * items.  Returns number of active makrs. */
+int init_active_marks(const char marks[], int active_marks[]);
 
 TSTATIC_DEFS(
-	bookmark_t * get_bmark_by_name(const char mark);
+	mark_t * get_mark_by_name(const char mark);
 )
 
 #endif /* VIFM__MARKS_H__ */

@@ -1246,7 +1246,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		curr_stats.save_msg = goto_bookmark(curr_view, key_info.multi);
+		curr_stats.save_msg = goto_mark(curr_view, key_info.multi);
 		if(!cfg.auto_ch_pos)
 		{
 			flist_set_pos(curr_view, 0);
@@ -1614,7 +1614,7 @@ static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	const dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
-	curr_stats.save_msg = set_user_bookmark(key_info.multi, entry->origin,
+	curr_stats.save_msg = set_user_mark(key_info.multi, entry->origin,
 			entry->name);
 }
 

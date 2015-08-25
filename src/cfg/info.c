@@ -193,7 +193,7 @@ read_info_file(int reread)
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
 					const int timestamp = read_optional_number(fp);
-					setup_user_bookmark(line_val[0], line2, line3, timestamp);
+					setup_user_mark(line_val[0], line2, line3, timestamp);
 				}
 			}
 		}
@@ -537,7 +537,7 @@ update_info_file(const char filename[])
 	cmds_list = list_udf();
 	while(cmds_list[++ncmds_list] != NULL);
 
-	non_conflicting_bmarks = strdup(valid_bookmarks);
+	non_conflicting_bmarks = strdup(valid_marks);
 
 	if((fp = os_fopen(filename, "r")) != NULL)
 	{
@@ -637,12 +637,12 @@ update_info_file(const char filename[])
 						const int timestamp = read_optional_number(fp);
 						const char mark_str[] = { mark, '\0' };
 
-						if(!char_is_one_of(valid_bookmarks, mark))
+						if(!char_is_one_of(valid_marks, mark))
 						{
 							continue;
 						}
 
-						if(is_bookmark_older(mark, timestamp))
+						if(is_mark_older(mark, timestamp))
 						{
 							char *const pos = strchr(non_conflicting_bmarks, mark);
 							if(pos != NULL)
@@ -1088,23 +1088,23 @@ static void
 write_bookmarks(FILE *const fp, const char non_conflicting_bmarks[],
 		char *marks[], const int timestamps[], int nmarks)
 {
-	int active_bookmarks[NUM_BOOKMARKS];
-	const int len = init_active_bookmarks(valid_bookmarks, active_bookmarks);
+	int active_marks[NUM_MARKS];
+	const int len = init_active_marks(valid_marks, active_marks);
 	int i;
 
 	fputs("\n# Bookmarks:\n", fp);
 	for(i = 0; i < len; i++)
 	{
-		const int index = active_bookmarks[i];
-		const char mark = index2mark(index);
-		if(!is_spec_bookmark(index) && char_is_one_of(non_conflicting_bmarks, mark))
+		const int index = active_marks[i];
+		const char m = index2mark(index);
+		if(!is_spec_mark(index) && char_is_one_of(non_conflicting_bmarks, m))
 		{
-			const bookmark_t *const bookmark = get_bookmark(index);
+			const mark_t *const mark = get_mark(index);
 
-			fprintf(fp, "'%c\n", mark);
-			fprintf(fp, "\t%s\n", bookmark->directory);
-			fprintf(fp, "\t%s\n", bookmark->file);
-			fprintf(fp, "%lld\n", (long long)bookmark->timestamp);
+			fprintf(fp, "'%c\n", m);
+			fprintf(fp, "\t%s\n", mark->directory);
+			fprintf(fp, "\t%s\n", mark->file);
+			fprintf(fp, "%lld\n", (long long)mark->timestamp);
 		}
 	}
 	for(i = 0; i < nmarks; i += 3)

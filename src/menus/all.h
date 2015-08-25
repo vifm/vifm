@@ -22,7 +22,6 @@
 
 #include "apropos_menu.h"
 #include "bmarks_menu.h"
-#include "bookmarks_menu.h"
 #include "cabbrevs_menu.h"
 #include "colorscheme_menu.h"
 #include "commands_menu.h"
@@ -35,6 +34,7 @@
 #include "jobs_menu.h"
 #include "locate_menu.h"
 #include "map_menu.h"
+#include "marks_menu.h"
 #include "registers_menu.h"
 #include "trash_menu.h"
 #include "trashes_menu.h"

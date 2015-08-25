@@ -652,8 +652,8 @@ add_default_bookmarks(void)
 {
 	LOG_FUNC_ENTER;
 
-	set_user_bookmark('H', cfg.home_dir, NO_BOOKMARK_FILE);
-	set_user_bookmark('z', cfg.config_dir, NO_BOOKMARK_FILE);
+	set_user_mark('H', cfg.home_dir, NO_MARK_FILE);
+	set_user_mark('z', cfg.config_dir, NO_MARK_FILE);
 }
 
 void

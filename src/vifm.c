@@ -601,8 +601,8 @@ vifm_restart(void)
 	/* Registers. */
 	clear_registers();
 
-	/* Clear all bookmarks. */
-	clear_all_bookmarks();
+	/* Clear all marks. */
+	clear_all_marks();
 
 	/* Reset variables. */
 	clear_variables();
