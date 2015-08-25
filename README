@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 20 August, 2015
+Updated: 25 August, 2015
 Version: 0.8
 
 Brief Description
@@ -97,6 +97,7 @@ Package content
     |  |-- menus/ - implementation of all menus
     |  |  |
     |  |  |-- apropos_menu.c - handles :apropos menu
+    |  |  |-- bmarks_menu.c - handles :bmarks menu
     |  |  |-- bookmarks_menu.c - handles :marks menu
     |  |  |-- cabbrevs_menu.c - handles :cabbrev and :cnoreabbrev menus
     |  |  |-- colorscheme_menu.c - handles :colorscheme menu

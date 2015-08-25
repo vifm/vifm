@@ -115,6 +115,7 @@ vifm_SOURCES = \
 	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
+	menus/bmarks_menu.c menus/bmarks_menu.h \
 	menus/bookmarks_menu.c menus/bookmarks_menu.h \
 	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \

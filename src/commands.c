@@ -80,6 +80,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bmarks.h"
 #include "bracket_notation.h"
 #include "color_manager.h"
 #include "color_scheme.h"
@@ -160,6 +161,9 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
+static int bmark_cmd(const cmd_info_t *cmd_info);
+static int bmarks_cmd(const cmd_info_t *cmd_info);
+static char * args_to_csl(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
 static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
@@ -323,6 +327,10 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmark",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmarks_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1639,6 +1647,58 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	}
 
 	return show_apropos_menu(curr_view, last_args) != 0;
+}
+
+/* Marks directory with set of tags. */
+static int
+bmark_cmd(const cmd_info_t *cmd_info)
+{
+	char *const tags = args_to_csl(cmd_info);
+	char *const path = is_root_dir(curr_view->curr_dir)
+	                 ? strdup(curr_view->curr_dir)
+	                 : format_str("%s/", curr_view->curr_dir);
+	const int err = (bmarks_set(path, tags) != 0);
+	if(err)
+	{
+		status_bar_error("Failed to add bookmark");
+	}
+	free(path);
+	free(tags);
+	return err;
+}
+
+/* Lists either all bookmarks or those matching specified tags. */
+static int
+bmarks_cmd(const cmd_info_t *cmd_info)
+{
+	char *const tags = args_to_csl(cmd_info);
+	const int result = (show_bmarks_menu(curr_view, tags) != 0);
+	free(tags);
+	return result;
+}
+
+/* Makes comma-separated list from command line arguments.  Returns newly
+ * allocated string or NULL on absence of arguments. */
+static char *
+args_to_csl(const cmd_info_t *cmd_info)
+{
+	int i;
+	char *tags = NULL;
+	size_t len = 0U;
+
+	if(cmd_info->argc == 0)
+	{
+		return NULL;
+	}
+
+	strappend(&tags, &len, cmd_info->argv[0]);
+	for(i = 1; i < cmd_info->argc; ++i)
+	{
+		strappendch(&tags, &len, ',');
+		strappend(&tags, &len, cmd_info->argv[i]);
+	}
+
+	return tags;
 }
 
 /* Registers command-line mode abbreviation. */
