@@ -20,9 +20,11 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() realloc() */
-#include <string.h> /* strcmp() strdup() strstr() */
+#include <string.h> /* strcmp() strdup() strlen() strncmp() strstr() */
 
+#include "engine/completion.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 
 /* Single bookmark representation. */
 typedef struct
@@ -161,6 +163,27 @@ bmarks_clear(void)
 
 	bmarks = NULL;
 	bmark_count = 0U;
+}
+
+void
+bmarks_complete(int n, char *tags[], const char str[])
+{
+	const size_t len = strlen(str);
+	size_t i;
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		char *tag = bmarks[i].tags, *state = NULL;
+		while((tag = split_and_get(tag, ',', &state)) != NULL)
+		{
+			if(strncmp(tag, str, len) == 0 && !is_in_string_array(tags, n, tag))
+			{
+				vle_compl_add_match(tag);
+			}
+		}
+	}
+
+	vle_compl_finish_group();
+	vle_compl_add_last_match(str);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

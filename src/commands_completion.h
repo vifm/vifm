@@ -62,6 +62,7 @@ enum
 	COM_INVERT,
 	COM_IF_STMT,
 	COM_CABBR,
+	COM_BMARKS,
 };
 
 /* Values of type argument for filename_completion() function. */

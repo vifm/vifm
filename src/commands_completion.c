@@ -59,6 +59,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
+#include "bmarks.h"
 #include "color_scheme.h"
 #include "colors.h"
 #include "commands.h"
@@ -118,6 +119,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		vle_abbr_complete(args);
 		start = args;
+	}
+	else if(id == COM_BMARKS)
+	{
+		bmarks_complete(argc, argv, arg);
 	}
 	else if(command_accepts_expr(id))
 	{

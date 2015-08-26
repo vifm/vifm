@@ -38,6 +38,10 @@ void bmarks_find(const char tags[], bmarks_find_cb cb, void *arg);
 /* Removes all bookmarks. */
 void bmarks_clear(void);
 
+/* Completes the str skipping list of the tags (to do not propose
+ * duplicates). */
+void bmarks_complete(int n, char *tags[], const char str[]);
+
 #endif /* VIFM__BMARKS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
