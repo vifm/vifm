@@ -76,7 +76,7 @@ static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
-static void write_bookmarks(FILE *const fp, const char non_conflicting_bmarks[],
+static void write_marks(FILE *const fp, const char non_conflicting_bmarks[],
 		char *marks[], const int timestamps[], int nmarks);
 static void write_tui_state(FILE *const fp);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
@@ -186,7 +186,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(type == LINE_TYPE_BOOKMARK)
+		else if(type == LINE_TYPE_MARK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -623,7 +623,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(type == LINE_TYPE_BOOKMARK)
+			else if(type == LINE_TYPE_MARK)
 			{
 				const char mark = line_val[0];
 				if(line_val[1] != '\0')
@@ -749,9 +749,9 @@ update_info_file(const char filename[])
 			write_commands(fp, cmds_list, cmds, ncmds);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		if(cfg.vifm_info & VIFMINFO_MARKS)
 		{
-			write_bookmarks(fp, non_conflicting_bmarks, marks, bt, nmarks);
+			write_marks(fp, non_conflicting_bmarks, marks, bt, nmarks);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_TUI)
@@ -985,7 +985,7 @@ write_options(FILE *const fp)
 		fprintf(fp, ",filetypes");
 	if(cfg.vifm_info & VIFMINFO_COMMANDS)
 		fprintf(fp, ",commands");
-	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+	if(cfg.vifm_info & VIFMINFO_MARKS)
 		fprintf(fp, ",bookmarks");
 	if(cfg.vifm_info & VIFMINFO_TUI)
 		fprintf(fp, ",tui");
@@ -1082,17 +1082,17 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 	}
 }
 
-/* Writes bookmarks to vifminfo file.  marks is a list of length nmarks
- * bookmarks read from vifminfo. */
+/* Writes marks to vifminfo file.  marks is a list of length nmarks marks read
+ * from vifminfo. */
 static void
-write_bookmarks(FILE *const fp, const char non_conflicting_bmarks[],
+write_marks(FILE *const fp, const char non_conflicting_bmarks[],
 		char *marks[], const int timestamps[], int nmarks)
 {
 	int active_marks[NUM_MARKS];
 	const int len = init_active_marks(valid_marks, active_marks);
 	int i;
 
-	fputs("\n# Bookmarks:\n", fp);
+	fputs("\n# Marks:\n", fp);
 	for(i = 0; i < len; i++)
 	{
 		const int index = active_marks[i];
@@ -1171,7 +1171,7 @@ write_history(FILE *fp, const char str[], char mark, int prev_count,
 	}
 }
 
-/* Writes bookmarks to vifminfo file.  regs is a list of length nregs registers
+/* Writes registers to vifminfo file.  regs is a list of length nregs registers
  * read from vifminfo. */
 static void
 write_registers(FILE *const fp, char *regs[], int nregs)
