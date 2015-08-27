@@ -27,6 +27,7 @@
 #include "menus.h"
 
 static int execute_bmarks_cb(FileView *view, menu_info *m);
+static KHandlerResponse bmarks_khandler(menu_info *m, const wchar_t keys[]);
 static void bmarks_cb(const char path[], const char tags[], void *arg);
 
 int
@@ -35,6 +36,7 @@ show_bmarks_menu(FileView *view, const char tags[])
 	static menu_info m;
 	init_menu_info(&m, strdup("Bookmarks"), strdup("No bookmarks found"));
 	m.execute_handler = &execute_bmarks_cb;
+	m.key_handler = &bmarks_khandler;
 
 	if(is_null_or_empty(tags))
 	{
@@ -64,6 +66,21 @@ execute_bmarks_cb(FileView *view, menu_info *m)
 {
 	goto_selected_file(view, m->items[m->pos], 0);
 	return 0;
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+bmarks_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"dd") == 0)
+	{
+		break_at(m->items[m->pos], ':');
+		bmarks_remove(m->items[m->pos]);
+		remove_current_item(m);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

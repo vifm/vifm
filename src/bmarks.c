@@ -35,6 +35,7 @@ typedef struct
 bmark_t;
 
 static int validate_tags(const char tags[]);
+static int change_bmark(const char path[], const char tags[], int *ret);
 static int add_bmark(const char path[], const char tags[]);
 
 /* Array of the bookmarks. */
@@ -45,20 +46,17 @@ static size_t bmark_count;
 int
 bmarks_set(const char path[], const char tags[])
 {
-	size_t i;
+	int ret;
+
 
 	if(validate_tags(tags) != 0)
 	{
 		return 1;
 	}
 
-	/* Try to update tags of an existing bookmark. */
-	for(i = 0U; i < bmark_count; ++i)
+	if(change_bmark(path, tags, &ret) == 0)
 	{
-		if(strcmp(path, bmarks[i].path) == 0)
-		{
-			return replace_string(&bmarks[i].tags, tags);
-		}
+		return ret;
 	}
 
 	return add_bmark(path, tags);
@@ -72,6 +70,33 @@ validate_tags(const char tags[])
 	return tags[0] == '\0'
 	    || starts_with_lit(tags, ",") || strstr(tags, ",,") != NULL
 	    || ends_with(tags, ",");
+}
+
+void
+bmarks_remove(const char path[])
+{
+	int ret;
+	(void)change_bmark(path, "", &ret);
+}
+
+/* Changes value of existing bookmark.  When value was found *ret is set to
+ * error code.  Returns non-zero if value was found and zero otherwise. */
+static int
+change_bmark(const char path[], const char tags[], int *ret)
+{
+	size_t i;
+
+	/* Try to update tags of an existing bookmark. */
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		if(strcmp(path, bmarks[i].path) == 0)
+		{
+			*ret = replace_string(&bmarks[i].tags, tags);
+			return 0;
+		}
+	}
+
+	return 1;
 }
 
 /* Adds new bookmark.  Returns zero on success and non-zero otherwise. */
