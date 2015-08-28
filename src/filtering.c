@@ -25,6 +25,7 @@
 #include "cfg/config.h"
 #include "compat/reallocarray.h"
 #include "ui/ui.h"
+#include "utils/dynarray.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
@@ -582,7 +583,7 @@ local_filter_cancel(FileView *view)
 static void
 local_filter_finish(FileView *view)
 {
-	free(view->local_filter.unfiltered);
+	dynarray_free(view->local_filter.unfiltered);
 	free(view->local_filter.saved);
 	view->local_filter.in_progress = 0;
 
