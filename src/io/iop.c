@@ -424,7 +424,7 @@ iop_cp(io_args_t *const args)
 	}
 
 	/* Replicate socket or device file without even opening it. */
-	if(S_ISSOCK(st.st_mode) | S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode))
+	if(S_ISSOCK(st.st_mode) || S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode))
 	{
 		if(mknod(dst, st.st_mode & (S_IFMT | 07777), st.st_rdev) != 0)
 		{
