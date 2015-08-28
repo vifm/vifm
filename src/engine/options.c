@@ -529,7 +529,7 @@ enum_unique_options(opt_traverse traverser)
 			}
 			else
 			{
-				traverser(&options[(l < 0) ? l++ : g++]);
+				traverser(&options[(cmp < 0) ? l++ : g++]);
 			}
 		}
 		else if(l < option_count)
