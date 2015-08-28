@@ -29,6 +29,9 @@ typedef void (*bmarks_find_cb)(const char path[], const char tags[], void *arg);
  * with the path.  Returns zero on-success, otherwise non-zero is returned. */
 int bmarks_set(const char path[], const char tags[]);
 
+/* Same as bmarks_setup(), but also sets timestamp. */
+int bmarks_setup(const char path[], const char tags[]);
+
 /* Clear bookmarks for the specified path. */
 void bmarks_remove(const char path[]);
 

@@ -46,8 +46,13 @@ static size_t bmark_count;
 int
 bmarks_set(const char path[], const char tags[])
 {
-	int ret;
+	return bmarks_setup(path, tags);
+}
 
+int
+bmarks_setup(const char path[], const char tags[])
+{
+	int ret;
 
 	if(validate_tags(tags) != 0)
 	{

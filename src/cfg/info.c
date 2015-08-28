@@ -22,7 +22,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
+#include <stdio.h> /* fgets() fprintf() fputc() fscanf() snprintf() */
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
 
@@ -42,6 +42,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
+#include "../bmarks.h"
 #include "../commands.h"
 #include "../dir_stack.h"
 #include "../filelist.h"
@@ -76,8 +77,10 @@ static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
-static void write_marks(FILE *const fp, const char non_conflicting_bmarks[],
+static void write_marks(FILE *const fp, const char non_conflicting_marks[],
 		char *marks[], const int timestamps[], int nmarks);
+static void write_bmarks(FILE *const fp, char *bmarks[], int nbmarks);
+static void write_bmark(const char path[], const char tags[], void *arg);
 static void write_tui_state(FILE *const fp);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
@@ -197,9 +200,16 @@ read_info_file(int reread)
 				}
 			}
 		}
+		else if(type == LINE_TYPE_BOOKMARK)
+		{
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+			{
+				(void)bmarks_setup(line_val, line2);
+			}
+		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
-			/* don't change active view on :restart command */
+			/* Don't change active view on :restart command. */
 			if(line_val[0] == 'r' && !reread)
 			{
 				ui_views_update_titles();
@@ -525,11 +535,13 @@ update_info_file(const char filename[])
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int *lhp = NULL, *rhp = NULL, *bt = NULL;
 	char **prompt = NULL, **filter = NULL, **trash = NULL;
+	char **bmarks = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, nfilter = 0, ntrash = 0;
+	int nbmarks = 0;
 	char **dir_stack = NULL;
 	int ndir_stack = 0;
-	char *non_conflicting_bmarks;
+	char *non_conflicting_marks;
 
 	if(cfg.vifm_info == 0)
 		return;
@@ -537,7 +549,7 @@ update_info_file(const char filename[])
 	cmds_list = list_udf();
 	while(cmds_list[++ncmds_list] != NULL);
 
-	non_conflicting_bmarks = strdup(valid_marks);
+	non_conflicting_marks = strdup(valid_marks);
 
 	if((fp = os_fopen(filename, "r")) != NULL)
 	{
@@ -644,7 +656,7 @@ update_info_file(const char filename[])
 
 						if(is_mark_older(mark, timestamp))
 						{
-							char *const pos = strchr(non_conflicting_bmarks, mark);
+							char *const pos = strchr(non_conflicting_marks, mark);
 							if(pos != NULL)
 							{
 								nmarks = add_to_string_array(&marks, nmarks, 3, mark_str, line2,
@@ -655,6 +667,13 @@ update_info_file(const char filename[])
 							}
 						}
 					}
+				}
+			}
+			else if(type == LINE_TYPE_BOOKMARK)
+			{
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
+				{
+					nbmarks = add_to_string_array(&bmarks, nbmarks, 2, line_val, line2);
 				}
 			}
 			else if(type == LINE_TYPE_TRASH)
@@ -751,7 +770,12 @@ update_info_file(const char filename[])
 
 		if(cfg.vifm_info & VIFMINFO_MARKS)
 		{
-			write_marks(fp, non_conflicting_bmarks, marks, bt, nmarks);
+			write_marks(fp, non_conflicting_marks, marks, bt, nmarks);
+		}
+
+		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		{
+			write_bmarks(fp, bmarks, nbmarks);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_TUI)
@@ -832,7 +856,7 @@ update_info_file(const char filename[])
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
 	free_string_array(dir_stack, ndir_stack);
-	free(non_conflicting_bmarks);
+	free(non_conflicting_marks);
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
@@ -1085,7 +1109,7 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 /* Writes marks to vifminfo file.  marks is a list of length nmarks marks read
  * from vifminfo. */
 static void
-write_marks(FILE *const fp, const char non_conflicting_bmarks[],
+write_marks(FILE *const fp, const char non_conflicting_marks[],
 		char *marks[], const int timestamps[], int nmarks)
 {
 	int active_marks[NUM_MARKS];
@@ -1093,15 +1117,15 @@ write_marks(FILE *const fp, const char non_conflicting_bmarks[],
 	int i;
 
 	fputs("\n# Marks:\n", fp);
-	for(i = 0; i < len; i++)
+	for(i = 0; i < len; ++i)
 	{
 		const int index = active_marks[i];
 		const char m = index2mark(index);
-		if(!is_spec_mark(index) && char_is_one_of(non_conflicting_bmarks, m))
+		if(!is_spec_mark(index) && char_is_one_of(non_conflicting_marks, m))
 		{
 			const mark_t *const mark = get_mark(index);
 
-			fprintf(fp, "'%c\n", m);
+			fprintf(fp, "%c%c\n", LINE_TYPE_MARK, m);
 			fprintf(fp, "\t%s\n", mark->directory);
 			fprintf(fp, "\t%s\n", mark->file);
 			fprintf(fp, "%lld\n", (long long)mark->timestamp);
@@ -1109,11 +1133,38 @@ write_marks(FILE *const fp, const char non_conflicting_bmarks[],
 	}
 	for(i = 0; i < nmarks; i += 3)
 	{
-		fprintf(fp, "'%c\n", marks[i][0]);
+		fprintf(fp, "%c%c\n", LINE_TYPE_MARK, marks[i][0]);
 		fprintf(fp, "\t%s\n", marks[i + 1]);
 		fprintf(fp, "\t%s\n", marks[i + 2]);
 		fprintf(fp, "%d\n", timestamps[i/3]);
 	}
+}
+
+/* Writes bookmarks to vifminfo file.  bmarks is a list of length nbmarks marks
+ * read from vifminfo. */
+static void
+write_bmarks(FILE *const fp, char *bmarks[], int nbmarks)
+{
+	int i;
+
+	fputs("\n# Bookmarks:\n", fp);
+
+	bmarks_list(&write_bmark, fp);
+
+	for(i = 0; i < nbmarks; i += 2)
+	{
+		fprintf(fp, "%c%s\n", LINE_TYPE_BOOKMARK, bmarks[i]);
+		fprintf(fp, "\t%s\n", bmarks[i + 1]);
+	}
+}
+
+/* bmarks_list() callback that writes a bookmark into vifminfo. */
+static void
+write_bmark(const char path[], const char tags[], void *arg)
+{
+	FILE *const fp = arg;
+	fprintf(fp, "%c%s\n", LINE_TYPE_BOOKMARK, path);
+	fprintf(fp, "\t%s\n", tags);
 }
 
 /* Writes state of the TUI to vifminfo file. */
