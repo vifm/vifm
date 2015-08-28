@@ -34,7 +34,7 @@
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK dup() dup2() getpid() pause() */
+#include <unistd.h> /* X_OK dup() dup2() getpid() pause() sysconf() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -263,6 +263,9 @@ char **
 make_execv_array(char shell[], char cmd[])
 {
 #ifdef HAVE_MAX_ARG_STRLEN
+#ifndef PAGE_SIZE
+#define PAGE_SIZE sysconf(_SC_PAGESIZE)
+#endif
 	/* Don't use maximum length, leave some room or commands fail to run. */
 	const size_t safe_arg_len = MIN(MAX_ARG_STRLEN, MAX_ARG_STRLEN - 4096U);
 	const size_t npieces = DIV_ROUND_UP(strlen(cmd), safe_arg_len);

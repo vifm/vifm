@@ -55,7 +55,8 @@
 	Normalize surrounding spaces in menu and dialog titles.
 
 	Work around compilation on systems where MAX_ARG_STRLEN is defined, but
-	unusable.  Thanks to Marcin Juszkiewicz (a.k.a. hrw).
+	unusable.  Thanks to Marcin Juszkiewicz (a.k.a. hrw), Michel Normand and
+	Michael Vetter (a.k.a. jubalh).                                           .
 
 	Document %= for 'statusline' and 'rulerformat'.
 
