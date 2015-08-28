@@ -58,6 +58,7 @@
 #include "utils/utils.h"
 #include "args.h"
 #include "background.h"
+#include "bmarks.h"
 #include "bracket_notation.h"
 #include "builtin_functions.h"
 #include "color_manager.h"
@@ -601,8 +602,9 @@ vifm_restart(void)
 	/* Registers. */
 	clear_registers();
 
-	/* Clear all marks. */
+	/* Clear all marks and bookmarks. */
 	clear_all_marks();
+	bmarks_clear();
 
 	/* Reset variables. */
 	clear_variables();
