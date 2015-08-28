@@ -34,7 +34,7 @@
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK dup() dup2() getpid() pause() */
+#include <unistd.h> /* X_OK dup() dup2() getpid() pause() sysconf() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */

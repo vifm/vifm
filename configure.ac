@@ -83,6 +83,10 @@ if test "$ac_cv_header_sys_user_h" = yes -a "$ac_cv_header_linux_binfmts_h" = ye
     AC_COMPILE_IFELSE([AC_LANG_SOURCE(
                       [[#include <linux/binfmts.h>
                         #include <sys/user.h>
+                        #include <unistd.h>
+                        #ifndef PAGE_SIZE
+                        #define PAGE_SIZE sysconf(_SC_PAGESIZE)
+                        #endif
                         int main() { (void)MAX_ARG_STRLEN; return 0; }
                       ]])],
                       [AC_DEFINE([HAVE_MAX_ARG_STRLEN], [1],

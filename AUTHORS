@@ -96,3 +96,5 @@ Brian Callahan (a.k.a. ibara) fixed build on OpenBSD.
 
 Cosmin Popescu (a.k.a. cosminadrianpopescu) added "*" to 'slowfs', match numbers
 to search messages, :shell!, extension sorting fix, fileext sorting key.
+
+Michel Normand fixed compilation for PowerPC where PAGE_SIZE isn't defined.
