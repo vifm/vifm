@@ -21,6 +21,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strcmp() strdup() strlen() strncmp() strstr() */
+#include <time.h> /* time_t time() */
 
 #include "engine/completion.h"
 #include "utils/str.h"
@@ -29,14 +30,16 @@
 /* Single bookmark representation. */
 typedef struct
 {
-	char *path; /* Path to the directory. */
-	char *tags; /* Comma-seperated list of tags. */
+	char *path;       /* Path to the directory. */
+	char *tags;       /* Comma-seperated list of tags. */
+	time_t timestamp; /* Last bookmark update time (-1 means "never"). */
 }
 bmark_t;
 
 static int validate_tags(const char tags[]);
-static int change_bmark(const char path[], const char tags[], int *ret);
-static int add_bmark(const char path[], const char tags[]);
+static int change_bmark(const char path[], const char tags[], time_t timestamp,
+		int *ret);
+static int add_bmark(const char path[], const char tags[], time_t timestamp);
 
 /* Array of the bookmarks. */
 static bmark_t *bmarks;
@@ -46,11 +49,11 @@ static size_t bmark_count;
 int
 bmarks_set(const char path[], const char tags[])
 {
-	return bmarks_setup(path, tags);
+	return bmarks_setup(path, tags, time(NULL));
 }
 
 int
-bmarks_setup(const char path[], const char tags[])
+bmarks_setup(const char path[], const char tags[], time_t timestamp)
 {
 	int ret;
 
@@ -59,12 +62,12 @@ bmarks_setup(const char path[], const char tags[])
 		return 1;
 	}
 
-	if(change_bmark(path, tags, &ret) == 0)
+	if(change_bmark(path, tags, timestamp, &ret) == 0)
 	{
 		return ret;
 	}
 
-	return add_bmark(path, tags);
+	return add_bmark(path, tags, timestamp);
 }
 
 /* Validates list of tags.  Returns zero if tags are well-formed and non-zero
@@ -81,13 +84,13 @@ void
 bmarks_remove(const char path[])
 {
 	int ret;
-	(void)change_bmark(path, "", &ret);
+	(void)change_bmark(path, "", time(NULL), &ret);
 }
 
 /* Changes value of existing bookmark.  When value was found *ret is set to
  * error code.  Returns non-zero if value was found and zero otherwise. */
 static int
-change_bmark(const char path[], const char tags[], int *ret)
+change_bmark(const char path[], const char tags[], time_t timestamp, int *ret)
 {
 	size_t i;
 
@@ -97,6 +100,10 @@ change_bmark(const char path[], const char tags[], int *ret)
 		if(strcmp(path, bmarks[i].path) == 0)
 		{
 			*ret = replace_string(&bmarks[i].tags, tags);
+			if(*ret == 0)
+			{
+				bmarks[i].timestamp = timestamp;
+			}
 			return 0;
 		}
 	}
@@ -106,7 +113,7 @@ change_bmark(const char path[], const char tags[], int *ret)
 
 /* Adds new bookmark.  Returns zero on success and non-zero otherwise. */
 static int
-add_bmark(const char path[], const char tags[])
+add_bmark(const char path[], const char tags[], time_t timestamp)
 {
 	bmark_t *bm;
 
@@ -120,6 +127,7 @@ add_bmark(const char path[], const char tags[])
 	bm = &bmarks[bmark_count];
 	bm->path = strdup(path);
 	bm->tags = strdup(tags);
+	bm->timestamp = timestamp;
 	if(bm->path == NULL || bm->tags == NULL)
 	{
 		free(bm->path);
@@ -139,7 +147,7 @@ bmarks_list(bmarks_find_cb cb, void *arg)
 	{
 		if(bmarks[i].tags[0] != '\0')
 		{
-			cb(bmarks[i].path, bmarks[i].tags, arg);
+			cb(bmarks[i].path, bmarks[i].tags, bmarks[i].timestamp, arg);
 		}
 	}
 }
@@ -174,7 +182,7 @@ bmarks_find(const char tags[], bmarks_find_cb cb, void *arg)
 
 		if(nmatches != 0 && nmismatches == 0)
 		{
-			cb(bmarks[i].path, bmarks[i].tags, arg);
+			cb(bmarks[i].path, bmarks[i].tags, bmarks[i].timestamp, arg);
 		}
 	}
 	free(clone);
@@ -193,6 +201,22 @@ bmarks_clear(void)
 
 	bmarks = NULL;
 	bmark_count = 0U;
+}
+
+int
+bmark_is_older(const char path[], time_t than)
+{
+	size_t i;
+
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		if(strcmp(path, bmarks[i].path) == 0)
+		{
+			return bmarks[i].timestamp < than;
+		}
+	}
+
+	return 1;
 }
 
 void

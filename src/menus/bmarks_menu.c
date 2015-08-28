@@ -28,7 +28,8 @@
 
 static int execute_bmarks_cb(FileView *view, menu_info *m);
 static KHandlerResponse bmarks_khandler(menu_info *m, const wchar_t keys[]);
-static void bmarks_cb(const char path[], const char tags[], void *arg);
+static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 
 int
 show_bmarks_menu(FileView *view, const char tags[])
@@ -52,7 +53,7 @@ show_bmarks_menu(FileView *view, const char tags[])
 
 /* Callback for listings of bookmarks. */
 static void
-bmarks_cb(const char path[], const char tags[], void *arg)
+bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	menu_info *m = arg;
 	char *const line = format_str("%s: %s", path, tags);

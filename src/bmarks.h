@@ -19,18 +19,21 @@
 #ifndef VIFM__BMARKS_H__
 #define VIFM__BMARKS_H__
 
+#include <time.h> /* time_t */
+
 /* Paths are stored and compared as is, additional no canonicalization is
  * performed.  No particular order of bookmarks is preserved. */
 
 /* Type of callback function. */
-typedef void (*bmarks_find_cb)(const char path[], const char tags[], void *arg);
+typedef void (*bmarks_find_cb)(const char path[], const char tags[],
+		time_t timestamp, void *arg);
 
 /* Associates (overwriting existing associations) comma-separated list of tags
  * with the path.  Returns zero on-success, otherwise non-zero is returned. */
 int bmarks_set(const char path[], const char tags[]);
 
 /* Same as bmarks_setup(), but also sets timestamp. */
-int bmarks_setup(const char path[], const char tags[]);
+int bmarks_setup(const char path[], const char tags[], time_t timestamp);
 
 /* Clear bookmarks for the specified path. */
 void bmarks_remove(const char path[]);
@@ -43,6 +46,9 @@ void bmarks_find(const char tags[], bmarks_find_cb cb, void *arg);
 
 /* Removes all bookmarks. */
 void bmarks_clear(void);
+
+/* Checks whether bookmark for the path is older than the than. */
+int bmark_is_older(const char path[], time_t than);
 
 /* Completes the str skipping list of the tags (to do not propose
  * duplicates). */

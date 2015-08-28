@@ -79,8 +79,10 @@ static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
 static void write_marks(FILE *const fp, const char non_conflicting_marks[],
 		char *marks[], const int timestamps[], int nmarks);
-static void write_bmarks(FILE *const fp, char *bmarks[], int nbmarks);
-static void write_bmark(const char path[], const char tags[], void *arg);
+static void write_bmarks(FILE *const fp, char *bmarks[], const int timestamps[],
+		int nbmarks);
+static void write_bmark(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 static void write_tui_state(FILE *const fp);
 static void write_view_history(FILE *fp, FileView *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
@@ -95,6 +97,7 @@ static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
 static int read_optional_number(FILE *f);
+static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
 void
@@ -204,7 +207,12 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				(void)bmarks_setup(line_val, line2);
+				long timestamp;
+				if((line3 = read_vifminfo_line(fp, line3)) != NULL &&
+						read_number(line3, &timestamp))
+				{
+					(void)bmarks_setup(line_val, line2, (size_t)timestamp);
+				}
 			}
 		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
@@ -533,7 +541,7 @@ update_info_file(const char filename[])
 	int ncmds_list = -1;
 	char **ft = NULL, **fx = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
-	int *lhp = NULL, *rhp = NULL, *bt = NULL;
+	int *lhp = NULL, *rhp = NULL, *bt = NULL, *bmt = NULL;
 	char **prompt = NULL, **filter = NULL, **trash = NULL;
 	char **bmarks = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
@@ -553,7 +561,7 @@ update_info_file(const char filename[])
 
 	if((fp = os_fopen(filename, "r")) != NULL)
 	{
-		size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL;
+		size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL, nbmt = 0UL;
 		char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
@@ -673,7 +681,17 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					nbmarks = add_to_string_array(&bmarks, nbmarks, 2, line_val, line2);
+					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
+					{
+						long timestamp;
+						if(read_number(line3, &timestamp) &&
+								bmark_is_older(line_val, timestamp))
+						{
+							nbmarks = add_to_string_array(&bmarks, nbmarks, 2, line_val,
+									line2);
+							nbmt = add_to_int_array(&bmt, nbmt, timestamp);
+						}
+					}
 				}
 			}
 			else if(type == LINE_TYPE_TRASH)
@@ -775,7 +793,7 @@ update_info_file(const char filename[])
 
 		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
 		{
-			write_bmarks(fp, bmarks, nbmarks);
+			write_bmarks(fp, bmarks, bmt, nbmarks);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_TUI)
@@ -850,6 +868,7 @@ update_info_file(const char filename[])
 	free(lhp);
 	free(rhp);
 	free(bt);
+	free(bmt);
 	free_string_array(cmdh, ncmdh);
 	free_string_array(srch, nsrch);
 	free_string_array(regs, nregs);
@@ -1143,7 +1162,8 @@ write_marks(FILE *const fp, const char non_conflicting_marks[],
 /* Writes bookmarks to vifminfo file.  bmarks is a list of length nbmarks marks
  * read from vifminfo. */
 static void
-write_bmarks(FILE *const fp, char *bmarks[], int nbmarks)
+write_bmarks(FILE *const fp, char *bmarks[], const int timestamps[],
+		int nbmarks)
 {
 	int i;
 
@@ -1155,16 +1175,18 @@ write_bmarks(FILE *const fp, char *bmarks[], int nbmarks)
 	{
 		fprintf(fp, "%c%s\n", LINE_TYPE_BOOKMARK, bmarks[i]);
 		fprintf(fp, "\t%s\n", bmarks[i + 1]);
+		fprintf(fp, "\t%d\n", timestamps[i/2]);
 	}
 }
 
 /* bmarks_list() callback that writes a bookmark into vifminfo. */
 static void
-write_bmark(const char path[], const char tags[], void *arg)
+write_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	FILE *const fp = arg;
 	fprintf(fp, "%c%s\n", LINE_TYPE_BOOKMARK, path);
 	fprintf(fp, "\t%s\n", tags);
+	fprintf(fp, "\t%d\n", (int)timestamp);
 }
 
 /* Writes state of the TUI to vifminfo file. */
@@ -1394,6 +1416,15 @@ read_optional_number(FILE *f)
 	}
 
 	return num;
+}
+
+/* Converts line to number.  Returns non-zero on success and zero otherwise. */
+static int
+read_number(const char line[], long *value)
+{
+	char *endptr;
+	*value = strtol(line, &endptr, 10);
+	return *line != '\0' && *endptr == '\0';
 }
 
 static size_t

@@ -4,7 +4,8 @@
 
 #include "../../src/bmarks.h"
 
-static void bmarks_cb(const char path[], const char tags[], void *arg);
+static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 
 static int nmatches;
 
@@ -81,7 +82,7 @@ TEST(finds_intersection_of_matches)
 }
 
 static void
-bmarks_cb(const char path[], const char tags[], void *arg)
+bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	++nmatches;
 }

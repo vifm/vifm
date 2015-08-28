@@ -5,7 +5,8 @@
 
 #include "../../src/bmarks.h"
 
-static void bmarks_cb(const char path[], const char tags[], void *arg);
+static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 
 static int cb_called;
 
@@ -36,7 +37,7 @@ TEST(two_calls_for_two_items)
 }
 
 static void
-bmarks_cb(const char path[], const char tags[], void *arg)
+bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	++cb_called;
 }

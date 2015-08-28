@@ -5,7 +5,8 @@
 
 #include "../../src/bmarks.h"
 
-static void bmarks_cb(const char path[], const char tags[], void *arg);
+static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 
 static const char *result_tags;
 
@@ -18,7 +19,7 @@ get_tags(const char path[])
 }
 
 static void
-bmarks_cb(const char path[], const char tags[], void *arg)
+bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	if(strcmp(path, arg) == 0)
 	{
