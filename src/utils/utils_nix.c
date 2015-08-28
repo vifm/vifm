@@ -109,6 +109,8 @@ run_in_shell_no_cls(char command[])
 		return 1;
 
 	new.sa_handler = SIG_DFL;
+	sigemptyset(&new.sa_mask);
+	new.sa_flags = SA_RESTART;
 	sigaction(SIGTSTP, &new, &old);
 
 	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because

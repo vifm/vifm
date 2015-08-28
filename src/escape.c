@@ -174,8 +174,6 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	/* All matches. */
 	do
 	{
-		size_t match_len;
-		size_t new_overhead;
 		int so_offset;
 		void *ptr;
 		const int empty_match = (match.rm_so == match.rm_eo);
@@ -213,6 +211,9 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		}
 		else
 		{
+			size_t new_overhead;
+			size_t match_len;
+
 			new_overhead = INV_OVERHEAD*count_substr_chars(no_esc, &match);
 			len += new_overhead;
 			if((ptr = realloc(processed, len + 1)) == NULL)
