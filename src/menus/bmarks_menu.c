@@ -21,6 +21,7 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../bmarks.h"
@@ -64,7 +65,7 @@ static void
 bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	menu_info *m = arg;
-	char *const line = format_str("%s: %s", path, tags);
+	char *const line = format_str("%s: %s", replace_home_part_strict(path), tags);
 	m->len = put_into_string_array(&m->items, m->len, line);
 }
 

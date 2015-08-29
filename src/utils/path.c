@@ -381,24 +381,32 @@ shell_like_escape(const char string[], int quote_percent)
 }
 
 char *
-replace_home_part(const char directory[])
+replace_home_part(const char path[])
+{
+	char *result = replace_home_part_strict(path);
+	if(!is_root_dir(result))
+	{
+		chosp(result);
+	}
+	return result;
+}
+
+char *
+replace_home_part_strict(const char path[])
 {
 	static char buf[PATH_MAX];
 	size_t len;
 
 	len = strlen(cfg.home_dir) - 1;
-	if(strnoscmp(directory, cfg.home_dir, len) == 0 &&
-			(directory[len] == '\0' || directory[len] == '/'))
+	if(strnoscmp(path, cfg.home_dir, len) == 0 &&
+			(path[len] == '\0' || path[len] == '/'))
 	{
-		strncat(strcpy(buf, "~"), directory + len, sizeof(buf) - strlen(buf) - 1);
+		strncat(strcpy(buf, "~"), path + len, sizeof(buf) - strlen(buf) - 1);
 	}
 	else
 	{
-		copy_str(buf, sizeof(buf), directory);
+		copy_str(buf, sizeof(buf), path);
 	}
-
-	if(!is_root_dir(buf))
-		chosp(buf);
 
 	return buf;
 }
