@@ -605,7 +605,7 @@ parse_file_spec(const char spec[], int *line_num)
 		return NULL;
 	}
 
-	if(is_path_absolute(spec))
+	if(is_path_absolute(spec) || spec[0] == '~')
 	{
 		path_buf[0] = '\0';
 	}
@@ -639,7 +639,7 @@ parse_file_spec(const char spec[], int *line_num)
 	to_forward_slash(path_buf);
 #endif
 
-	return path_buf;
+	return replace_tilde(path_buf);
 }
 
 int
