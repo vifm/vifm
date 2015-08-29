@@ -165,6 +165,7 @@ static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
 static int bmgo_cmd(const cmd_info_t *cmd_info);
 static int bmarks_do(const cmd_info_t *cmd_info, int go);
+static char * make_tags_list(const cmd_info_t *cmd_info);
 static char * args_to_csl(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
@@ -1657,12 +1658,12 @@ apropos_cmd(const cmd_info_t *cmd_info)
 static int
 bmark_cmd(const cmd_info_t *cmd_info)
 {
-	char *const tags = args_to_csl(cmd_info);
+	char *const tags = make_tags_list(cmd_info);
 	char *const path = is_root_dir(curr_view->curr_dir)
 	                 ? strdup(curr_view->curr_dir)
 	                 : format_str("%s/", curr_view->curr_dir);
-	const int err = (bmarks_set(path, tags) != 0);
-	if(err)
+	const int err = (tags == NULL || bmarks_set(path, tags) != 0);
+	if(err && tags != NULL)
 	{
 		status_bar_error("Failed to add bookmark");
 	}
@@ -1695,6 +1696,26 @@ bmarks_do(const cmd_info_t *cmd_info, int go)
 	const int result = (show_bmarks_menu(curr_view, tags, go) != 0);
 	free(tags);
 	return result;
+}
+
+/* Converts command arguments into comma-separated list of tags.  Returns newly
+ * allocated string or NULL on error or invalid tag name (in which case an error
+ * is printed on the status bar). */
+static char *
+make_tags_list(const cmd_info_t *cmd_info)
+{
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		if(strpbrk(cmd_info->argv[i], ", \t") != NULL)
+		{
+			status_bar_errorf("Tags can't include comma or whitespace: %s",
+					cmd_info->argv[i]);
+			return NULL;
+		}
+	}
+
+	return args_to_csl(cmd_info);
 }
 
 /* Makes comma-separated list from command line arguments.  Returns newly
