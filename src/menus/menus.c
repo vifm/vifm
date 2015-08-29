@@ -85,6 +85,7 @@ remove_current_item(menu_info *m)
 	clean_menu_position(m);
 
 	remove_from_string_array(m->items, m->len, m->pos);
+	remove_from_string_array(m->data, m->len, m->pos);
 	if(m->matches != NULL)
 	{
 		if(m->matches[m->pos])
