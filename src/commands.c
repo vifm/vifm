@@ -163,6 +163,8 @@ static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
+static int bmgo_cmd(const cmd_info_t *cmd_info);
+static int bmarks_do(const cmd_info_t *cmd_info, int go);
 static char * args_to_csl(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
@@ -331,6 +333,8 @@ static const cmd_add_t commands[] = {
 		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = bmarks_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmgo",             .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmgo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1671,8 +1675,24 @@ bmark_cmd(const cmd_info_t *cmd_info)
 static int
 bmarks_cmd(const cmd_info_t *cmd_info)
 {
+	return bmarks_do(cmd_info, 0);
+}
+
+/* When there are more than 1 match acts like :bmarks, otherwise navigates to
+ * single match immediately. */
+static int
+bmgo_cmd(const cmd_info_t *cmd_info)
+{
+	return bmarks_do(cmd_info, 1);
+}
+
+/* Runs bookmarks menu in either view or go mode (different only on single
+ * match). */
+static int
+bmarks_do(const cmd_info_t *cmd_info, int go)
+{
 	char *const tags = args_to_csl(cmd_info);
-	const int result = (show_bmarks_menu(curr_view, tags) != 0);
+	const int result = (show_bmarks_menu(curr_view, tags, go) != 0);
 	free(tags);
 	return result;
 }

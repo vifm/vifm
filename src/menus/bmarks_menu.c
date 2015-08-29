@@ -24,6 +24,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../bmarks.h"
+#include "../status.h"
 #include "menus.h"
 
 static int execute_bmarks_cb(FileView *view, menu_info *m);
@@ -32,7 +33,7 @@ static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 
 int
-show_bmarks_menu(FileView *view, const char tags[])
+show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
 {
 	static menu_info m;
 	init_menu_info(&m, strdup("Bookmarks"), strdup("No bookmarks found"));
@@ -46,6 +47,13 @@ show_bmarks_menu(FileView *view, const char tags[])
 	else
 	{
 		bmarks_find(tags, &bmarks_cb, &m);
+	}
+
+	if(go_on_single_match && m.len == 1)
+	{
+		goto_selected_file(view, m.items[m.pos], 0);
+		reset_popup_menu(&m);
+		return curr_stats.save_msg;
 	}
 
 	return display_menu(&m, view);

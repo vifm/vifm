@@ -24,7 +24,7 @@
 
 /* Displays bookmaarks.  Returns non-zero if status bar message should be
  * saved. */
-int show_bmarks_menu(FileView *view, const char tags[]);
+int show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match);
 
 #endif /* VIFM__MENUS__BMARKS_MENU_H__ */
 
