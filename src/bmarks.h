@@ -35,7 +35,7 @@ int bmarks_set(const char path[], const char tags[]);
 /* Same as bmarks_setup(), but also sets timestamp. */
 int bmarks_setup(const char path[], const char tags[], time_t timestamp);
 
-/* Clear bookmarks for the specified path. */
+/* Clear bookmarks for the specified path.  Can be called from a callback. */
 void bmarks_remove(const char path[]);
 
 /* Lists all available records by calling the callback. */

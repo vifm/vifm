@@ -189,6 +189,9 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
+static int delbmarks_cmd(const cmd_info_t *cmd_info);
+static void remove_bmark(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 static char * get_bmark_dir(const cmd_info_t *cmd_info);
 static char * make_bmark_path(const char path[]);
 static int dirs_cmd(const cmd_info_t *cmd_info);
@@ -377,6 +380,8 @@ static const cmd_add_t commands[] = {
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 	{ .name = "delmarks",         .abbr = "delm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "delbmarks",        .abbr = NULL,    .emark = 1,  .id = COM_DELBMARKS,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = delbmarks_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2256,6 +2261,54 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 	return 0;
+}
+
+/* Removes bookmarks. */
+static int
+delbmarks_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->emark)
+	{
+		int i;
+
+		/* Remove all bookmarks. */
+		if(cmd_info->argc == 0)
+		{
+			bmarks_clear();
+			return 0;
+		}
+
+		/* Remove bookmarks from listed directories. */
+		for(i = 0; i < cmd_info->argc; ++i)
+		{
+			char *const path = make_bmark_path(cmd_info->argv[i]);
+			bmarks_remove(path);
+			free(path);
+		}
+	}
+	else if(cmd_info->argc == 0)
+	{
+		/* Remove bookmarks from current directory. */
+		char *const path = get_bmark_dir(cmd_info);
+		bmarks_remove(path);
+		free(path);
+	}
+	else
+	{
+		/* Remove set of bookmarks that match specified tags. */
+		char *const tags = make_tags_list(cmd_info);
+		bmarks_find(tags, &remove_bmark, NULL);
+		free(tags);
+	}
+	return 0;
+}
+
+/* bmarks_find() callback that removes bookmarks. */
+static void
+remove_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
+{
+	/* It's safe to remove bookmark in the callback. */
+	bmarks_remove(path);
 }
 
 /* Formats path for a bookmark in a unified way for several commands.  Returns
