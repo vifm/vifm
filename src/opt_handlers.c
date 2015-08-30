@@ -266,6 +266,7 @@ static const char *vifminfo_set[] = {
 	"filetypes",
 	"commands",
 	"bookmarks",
+	"bmarks",
 	"tui",
 	"dhistory",
 	"state",

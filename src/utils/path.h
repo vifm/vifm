@@ -62,9 +62,12 @@ int is_unc_root(const char *path);
  * Returns new string, caller should free it. */
 char * shell_like_escape(const char string[], int quote_percent);
 
-/* Replaces leading path to home directory with a tilde.  Returns pointer to a
- * statically allocated buffer of size PATH_MAX. */
-char * replace_home_part(const char directory[]);
+/* Replaces leading path to home directory with a tilde, trims trailing slash.
+ * Returns pointer to a statically allocated buffer of size PATH_MAX. */
+char * replace_home_part(const char path[]);
+
+/* Same as replace_home_part(), but doesn't perform trailing slash trimming. */
+char * replace_home_part_strict(const char path[]);
 
 /* Expands tilde in the front of the path.  Returns newly allocated string
  * without tilde. */

@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 20 August, 2015
+Updated: 25 August, 2015
 Version: 0.8
 
 Brief Description
@@ -97,7 +97,7 @@ Package content
     |  |-- menus/ - implementation of all menus
     |  |  |
     |  |  |-- apropos_menu.c - handles :apropos menu
-    |  |  |-- bookmarks_menu.c - handles :marks menu
+    |  |  |-- bmarks_menu.c - handles :bmarks menu
     |  |  |-- cabbrevs_menu.c - handles :cabbrev and :cnoreabbrev menus
     |  |  |-- colorscheme_menu.c - handles :colorscheme menu
     |  |  |-- commands_menu.c - handles :command menu
@@ -113,6 +113,7 @@ Package content
     |  |  |-- trash_menu.c - handles :lstrash menu
     |  |  |-- trashes_menu.c - handles :trashes menu
     |  |  |-- map_menu.c - handles :map menu
+    |  |  |-- marks_menu.c - handles :marks menu
     |  |  |-- menus.c - handles all kinds of menus
     |  |  |-- registers_menu.c - handles :registers menu
     |  |  |-- undolist_menu.c - handles :undolist menu
@@ -172,7 +173,7 @@ Package content
     |  |
     |  |-- args.c - command-line arguments parsing and processing
     |  |-- background.c - runs commands in background
-    |  |-- bookmarks.c - stores information about bookmarked directories
+    |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
     |  |-- color_manager.c - manager of curses color pairs
     |  |-- color_scheme.c - color schemes
@@ -194,6 +195,7 @@ Package content
     |  |-- fuse.c - provides support of FUSE filesystems
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
+    |  |-- marks.c - stores information about marked directories
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
     |  |-- quickview.c - implementation of quick view

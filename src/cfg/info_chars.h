@@ -37,8 +37,11 @@
 /* User defined command-line mode command. */
 #define LINE_TYPE_COMMAND '!'
 
+/* Mark in file system. */
+#define LINE_TYPE_MARK '\''
+
 /* Bookmark in file system. */
-#define LINE_TYPE_BOOKMARK '\''
+#define LINE_TYPE_BOOKMARK 'b'
 
 /* Sign of an active pane. */
 #define LINE_TYPE_ACTIVE_VIEW 'a'

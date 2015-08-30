@@ -80,7 +80,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "bookmarks.h"
+#include "bmarks.h"
 #include "bracket_notation.h"
 #include "color_manager.h"
 #include "color_scheme.h"
@@ -93,6 +93,7 @@
 #include "fileview.h"
 #include "filtering.h"
 #include "macros.h"
+#include "marks.h"
 #include "ops.h"
 #include "opt_handlers.h"
 #include "path_env.h"
@@ -160,6 +161,12 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
+static int bmark_cmd(const cmd_info_t *cmd_info);
+static int bmarks_cmd(const cmd_info_t *cmd_info);
+static int bmgo_cmd(const cmd_info_t *cmd_info);
+static int bmarks_do(const cmd_info_t *cmd_info, int go);
+static char * make_tags_list(const cmd_info_t *cmd_info);
+static char * args_to_csl(const cmd_info_t *cmd_info);
 static int cabbrev_cmd(const cmd_info_t *cmd_info);
 static int cnoreabbrev_cmd(const cmd_info_t *cmd_info);
 static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
@@ -182,6 +189,11 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
+static int delbmarks_cmd(const cmd_info_t *cmd_info);
+static void remove_bmark(const char path[], const char tags[], time_t timestamp,
+		void *arg);
+static char * get_bmark_dir(const cmd_info_t *cmd_info);
+static char * make_bmark_path(const char path[]);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
@@ -323,6 +335,12 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmarks_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "bmgo",             .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = bmgo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cabbrev",          .abbr = "ca",    .emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cabbrev_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoreabbrev",      .abbr = "cnorea",.emark = 0,  .id = COM_CABBR,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -362,6 +380,8 @@ static const cmd_add_t commands[] = {
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 	{ .name = "delmarks",         .abbr = "delm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "delbmarks",        .abbr = NULL,    .emark = 1,  .id = COM_DELBMARKS,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = delbmarks_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1641,6 +1661,100 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	return show_apropos_menu(curr_view, last_args) != 0;
 }
 
+/* Marks directory with set of tags. */
+static int
+bmark_cmd(const cmd_info_t *cmd_info)
+{
+	char *const tags = make_tags_list(cmd_info);
+	char *const path = get_bmark_dir(cmd_info);
+	const int err = (tags == NULL || bmarks_set(path, tags) != 0);
+	if(err && tags != NULL)
+	{
+		status_bar_error("Failed to add bookmark");
+	}
+	free(path);
+	free(tags);
+	return err;
+}
+
+/* Lists either all bookmarks or those matching specified tags. */
+static int
+bmarks_cmd(const cmd_info_t *cmd_info)
+{
+	return bmarks_do(cmd_info, 0);
+}
+
+/* When there are more than 1 match acts like :bmarks, otherwise navigates to
+ * single match immediately. */
+static int
+bmgo_cmd(const cmd_info_t *cmd_info)
+{
+	return bmarks_do(cmd_info, 1);
+}
+
+/* Runs bookmarks menu in either view or go mode (different only on single
+ * match). */
+static int
+bmarks_do(const cmd_info_t *cmd_info, int go)
+{
+	char *const tags = args_to_csl(cmd_info);
+	const int result = (show_bmarks_menu(curr_view, tags, go) != 0);
+	free(tags);
+	return result;
+}
+
+/* Converts command arguments into comma-separated list of tags.  Returns newly
+ * allocated string or NULL on error or invalid tag name (in which case an error
+ * is printed on the status bar). */
+static char *
+make_tags_list(const cmd_info_t *cmd_info)
+{
+	int i;
+
+	if(cmd_info->emark && cmd_info->argc == 1)
+	{
+		status_bar_error("Too few arguments");
+		return NULL;
+	}
+
+	for(i = cmd_info->emark ? 1 : 0; i < cmd_info->argc; ++i)
+	{
+		if(strpbrk(cmd_info->argv[i], ", \t") != NULL)
+		{
+			status_bar_errorf("Tags can't include comma or whitespace: %s",
+					cmd_info->argv[i]);
+			return NULL;
+		}
+	}
+
+	return args_to_csl(cmd_info);
+}
+
+/* Makes comma-separated list from command line arguments.  Returns newly
+ * allocated string or NULL on absence of arguments. */
+static char *
+args_to_csl(const cmd_info_t *cmd_info)
+{
+	int i;
+	char *tags = NULL;
+	size_t len = 0U;
+
+	if(cmd_info->argc == 0)
+	{
+		return NULL;
+	}
+
+	i = cmd_info->emark ? 1 : 0;
+	strappend(&tags, &len, cmd_info->argv[i]);
+	for(++i; i < cmd_info->argc; ++i)
+	{
+		strappendch(&tags, &len, ',');
+		strappend(&tags, &len, cmd_info->argv[i]);
+	}
+
+	return tags;
+}
+
 /* Registers command-line mode abbreviation. */
 static int
 cabbrev_cmd(const cmd_info_t *cmd_info)
@@ -2111,7 +2225,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 0)
 		{
-			clear_all_bookmarks();
+			clear_all_marks();
 			return 0;
 		}
 		else
@@ -2131,8 +2245,10 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			if(!char_is_one_of(valid_bookmarks, cmd_info->argv[i][j]))
+			if(!char_is_one_of(valid_marks, cmd_info->argv[i][j]))
+			{
 				return CMDS_ERR_INVALID_ARG;
+			}
 		}
 	}
 
@@ -2141,10 +2257,86 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			clear_bookmark(cmd_info->argv[i][j]);
+			clear_mark(cmd_info->argv[i][j]);
 		}
 	}
 	return 0;
+}
+
+/* Removes bookmarks. */
+static int
+delbmarks_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->emark)
+	{
+		int i;
+
+		/* Remove all bookmarks. */
+		if(cmd_info->argc == 0)
+		{
+			bmarks_clear();
+			return 0;
+		}
+
+		/* Remove bookmarks from listed paths. */
+		for(i = 0; i < cmd_info->argc; ++i)
+		{
+			char *const path = make_bmark_path(cmd_info->argv[i]);
+			bmarks_remove(path);
+			free(path);
+		}
+	}
+	else if(cmd_info->argc == 0)
+	{
+		/* Remove bookmarks from current directory. */
+		char *const path = get_bmark_dir(cmd_info);
+		bmarks_remove(path);
+		free(path);
+	}
+	else
+	{
+		/* Remove set of bookmarks that include all of the specified tags. */
+		char *const tags = make_tags_list(cmd_info);
+		bmarks_find(tags, &remove_bmark, NULL);
+		free(tags);
+	}
+	return 0;
+}
+
+/* bmarks_find() callback that removes bookmarks. */
+static void
+remove_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
+{
+	/* It's safe to remove bookmark in the callback. */
+	bmarks_remove(path);
+}
+
+/* Formats path for a bookmark in a unified way for several commands.  Returns
+ * newly allocated string with the path. */
+static char *
+get_bmark_dir(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->emark)
+	{
+		return make_bmark_path(cmd_info->argv[0]);
+	}
+
+	return is_root_dir(curr_view->curr_dir)
+	     ? strdup(curr_view->curr_dir)
+	     : format_str("%s/", curr_view->curr_dir);
+}
+
+/* Prepares path for a bookmark.  Returns newly allocated string. */
+static char *
+make_bmark_path(const char path[])
+{
+	if(is_path_absolute(path))
+	{
+		return strdup(path);
+	}
+
+	return format_str("%s%s%s", curr_view->curr_dir,
+			is_root_dir(curr_view->curr_dir) ? "" : "/", path);
 }
 
 static int
@@ -3329,7 +3521,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->qmark)
 	{
-		if(!is_bookmark_empty(mark))
+		if(!is_mark_empty(mark))
 		{
 			status_bar_errorf("Mark isn't empty: %c", mark);
 			return 1;
@@ -3342,7 +3534,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 		              ? curr_view->list_pos
 		              : cmd_info->end;
 		const dir_entry_t *const entry = &curr_view->dir_entry[pos];
-		return set_user_bookmark(mark, entry->origin, entry->name);
+		return set_user_mark(mark, entry->origin, entry->name);
 	}
 
 	expanded_path = expand_tilde(cmd_info->argv[1]);
@@ -3363,7 +3555,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				file = NO_BOOKMARK_FILE;
+				file = NO_MARK_FILE;
 			}
 		}
 		else
@@ -3375,12 +3567,13 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		file = cmd_info->argv[2];
 	}
-	result = set_user_bookmark(mark, expanded_path, file);
+	result = set_user_mark(mark, expanded_path, file);
 	free(expanded_path);
 
 	return result;
 }
 
+/* Displays all or some of marks. */
 static int
 marks_cmd(const cmd_info_t *cmd_info)
 {
@@ -3388,7 +3581,9 @@ marks_cmd(const cmd_info_t *cmd_info)
 	int i, j;
 
 	if(cmd_info->argc == 0)
-		return show_bookmarks_menu(curr_view, valid_bookmarks) != 0;
+	{
+		return show_marks_menu(curr_view, valid_marks) != 0;
+	}
 
 	j = 0;
 	buf[0] = '\0';
@@ -3405,7 +3600,7 @@ marks_cmd(const cmd_info_t *cmd_info)
 			p++;
 		}
 	}
-	return show_bookmarks_menu(curr_view, buf) != 0;
+	return show_marks_menu(curr_view, buf) != 0;
 }
 
 static int

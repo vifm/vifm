@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 18, 2015" "vifm 0.8"
+.TH VIFM 1 "August 30, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1208,6 +1208,29 @@ the 'aproposprg' option.
 .BI :apropos
 repeat last :apropos command.
 .TP
+.BI "                                         :bmark"
+.TP
+.BI ":bmark tag1 [tag2 [tag3...]]"
+bookmark current directory with specified tags.
+.TP
+.BI ":bmark! path tag1 [tag2 [tag3...]]"
+same as :bmark, but allows bookmarking specific path instead of current
+directory.  This is for use in vifmrc and for bookmarking files.
+.TP
+.BI "                                         :bmarks"
+.TP
+.BI :bmarks
+display all bookmarks in a menu.
+.TP
+.BI ":bmarks [tag1 [tag2...]]"
+display menu of bookmarks that include all of the specified tags.
+.TP
+.BI "                                         :bmgo"
+.TP
+.BI ":bmgo [tag1 [tag2...]]"
+when there are more than one match acts exactly like :bmarks, otherwise
+navigates to single match immediately (and fails if there is no match).
+.TP
 .BI "                                         :cabbrev"
 .TP
 .BI ":ca[bbrev]"
@@ -1399,6 +1422,25 @@ unregister command-line mode abbreviation by its lhs.
 unregister command-line mode abbreviation by its rhs, so that abbreviation
 could be removed even after expansion.
 .TP
+.BI "                                         :delbmarks"
+.TP
+.BI :delbmarks
+remove bookmarks from current directory.
+.TP
+.BI ":delbmarks tag1 [tag2 [tag3...]]"
+remove set of bookmarks that include all of the specified tags.
+.TP
+.BI :delbmarks!
+remove all bookmarks.
+.TP
+.BI ":delbmarks! path1 [path2 [path3...]]"
+remove bookmarks of listed paths.
+.TP
+.BI "                                         :delcommand"
+.TP
+.BI ":delc[ommand] user_command"
+remove user defined command named user_command.
+.TP
 .BI "                                         :delete"
 .TP
 .BI ":[range]d[elete][!][ &]"
@@ -1407,11 +1449,6 @@ delete selected file or files.  "!" means complete removal (omitting trash).
 .BI ":[range]d[elete][!] [reg] [count][ &]"
 delete selected or [count] files to the reg register.  "!" means complete
 removal (omitting trash).
-.TP
-.BI "                                         :delcommand"
-.TP
-.BI ":delc[ommand] user_command"
-remove user defined command named user_command.
 .TP
 .BI "                                         :delmarks"
 .TP
@@ -1999,7 +2036,7 @@ Question mark will stop command from overwriting existing marks.
 .BI "                                         :marks"
 .TP
 .BI :marks
-create a pop-up menu of bookmarks.
+create a pop-up menu of marks.
 .TP
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
@@ -2921,8 +2958,8 @@ When disabled vifm will set cursor to the first line in the view after :cd and
 make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
 l key in the ":history ." and ":trashes" menus is treated like :cd command.
-This option also affects bookmarks so that navigating to a bookmark doesn't
-restore cursor position.
+This option also affects marks so that navigating to a mark doesn't restore
+cursor position.
 .TP
 .BI "'columns' 'co'"
 type: integer
@@ -3652,11 +3689,12 @@ whether it's preceded by space or not) means backgrounding of command.
 .BI 'vifminfo'
 type: set
 .br
-default: bookmarks
+default: bookmarks,bmarks
 .br
 Controls what will be saved in the $VIFM/vifminfo file.
 
-   bookmarks \- bookmarks, except special ones like '< and '>
+   bmarks    \- named bookmarks
+   bookmarks \- marks, except special ones like '< and '>
    tui       \- state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  \- directory history
@@ -4262,11 +4300,19 @@ Selecting command executes it with empty arguments (%a).
 
 dd on a command to remove.
 
-.B Bookmarks menu
+.B Marks menu
 
-Selecting bookmark navigates to it.
+Selecting mark navigates to it.
 
-dd on a bookmark to remove.
+dd on a mark to remove it.
+
+.B Bookarks menu
+
+Selecting a bookmark navigates to it.
+
+Type dd on a bookmark to remove it.
+
+gf and e also work to make it more convenient to bookmark files.
 
 .B Trash menu
 
@@ -4287,7 +4333,7 @@ top of the stack.
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
-.B Grep, find, locate and user menu with navigation (%M macro)
+.B Grep, find, locate, bookmarks and user menu with navigation (%M macro)
 
 gf \- navigate previously active view to currently selected item.  Leaves menu
 mode except for grep menu.  Pressing Enter key has the same effect.
@@ -4474,7 +4520,7 @@ The $VIFM/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
 \(aqvifminfo\(aq option.  Vifm always writes this file on exit unless 'vifminfo'
-option is empty.  Bookmarks, commands, histories, filetypes, fileviewers
+option is empty.  Marks, bookmarks, commands, histories, filetypes, fileviewers
 and registers in the file are merged with vifm configuration (which has bigger
 priority).
 
@@ -4485,9 +4531,9 @@ are some exceptions:
 directory stack stored in the file is not overwritten unless something is
 changed in vifm session that performs merge;
 .IP \- 2
-each bookmark is marked with a timestamp, so that newer value is not
-overwritten by older one, thus no matter from where bookmark comes, the newer
-one wins.
+each mark or bookmark is marked with a timestamp, so that newer value is not
+overwritten by older one, thus no matter from where it comes, the newer one
+wins.
 .RE
 
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies

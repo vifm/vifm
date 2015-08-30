@@ -40,6 +40,10 @@
 
 	Added zr normal mode key to reset local filter.  Thanks to filterfalse.
 
+	Added named bookmarks (paths are associated with tags).  This adds :bmark,
+	:bmarks, :bmgo and :delbmarks command-line commands.  Also there is new
+	"bmarks" value for 'vifminfo'.  Thanks to Schmalzhaf Stefan.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -56,7 +60,7 @@
 
 	Work around compilation on systems where MAX_ARG_STRLEN is defined, but
 	unusable.  Thanks to Marcin Juszkiewicz (a.k.a. hrw), Michel Normand and
-	Michael Vetter (a.k.a. jubalh).                                           .
+	Michael Vetter (a.k.a. jubalh).
 
 	Document %= for 'statusline' and 'rulerformat'.
 
@@ -93,6 +97,8 @@
 
 	More hints for Debian-based systems on installation.  Thanks to Bernhard
 	Grotz.
+
+	Expand "~" in menus on navigation.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).

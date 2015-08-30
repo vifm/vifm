@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "bookmarks_menu.h"
+#include "marks_menu.h"
 
 #include <curses.h> /* getmaxx() */
 
@@ -33,33 +33,33 @@
 #include "../utils/path.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
-#include "../bookmarks.h"
+#include "../marks.h"
 #include "menus.h"
 
-static int execute_bookmark_cb(FileView *view, menu_info *m);
-static KHandlerResponse bookmark_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_mark_cb(FileView *view, menu_info *m);
+static KHandlerResponse mark_khandler(menu_info *m, const wchar_t keys[]);
 
 int
-show_bookmarks_menu(FileView *view, const char marks[])
+show_marks_menu(FileView *view, const char marks[])
 {
-	int active_bookmarks[NUM_BOOKMARKS];
+	int active_marks[NUM_MARKS];
 	int i;
 	size_t max_len;
 
 	static menu_info m;
 	init_menu_info(&m, strdup("Mark -- Directory -- File"),
-			strdup("No bookmarks set"));
-	m.execute_handler = &execute_bookmark_cb;
-	m.key_handler = &bookmark_khandler;
+			strdup("No marks set"));
+	m.execute_handler = &execute_mark_cb;
+	m.key_handler = &mark_khandler;
 
-	m.len = init_active_bookmarks(marks, active_bookmarks);
+	m.len = init_active_marks(marks, active_marks);
 
 	max_len = 0;
 	i = 0;
 	while(i < m.len)
 	{
-		const bookmark_t *const bmark = get_bookmark(active_bookmarks[i]);
-		const size_t len = utf8_strsw(bmark->directory);
+		const mark_t *const mark = get_mark(active_marks[i]);
+		const size_t len = utf8_strsw(mark->directory);
 		if(len > max_len)
 			max_len = len;
 		i++;
@@ -73,25 +73,25 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		char *with_tilde;
 		int overhead;
 		int j;
-		const bookmark_t *bmark;
+		const mark_t *mark;
 		const char *file;
 		const char *suffix = "";
 
-		j = active_bookmarks[i];
-		bmark = get_bookmark(active_bookmarks[i]);
+		j = active_marks[i];
+		mark = get_mark(active_marks[i]);
 
-		with_tilde = replace_home_part(bmark->directory);
+		with_tilde = replace_home_part(mark->directory);
 		if(utf8_strsw(with_tilde) > max_len - 3)
 		{
 			size_t width = utf8_nstrsnlen(with_tilde, max_len - 6);
 			strcpy(with_tilde + width, "...");
 		}
 
-		if(!is_valid_bookmark(j))
+		if(!is_valid_mark(j))
 		{
 			file = "[invalid]";
 		}
-		else if(is_parent_dir(bmark->file))
+		else if(is_parent_dir(mark->file))
 		{
 			file = "[none]";
 		}
@@ -99,9 +99,9 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		{
 			char path[PATH_MAX];
 
-			file = bmark->file;
+			file = mark->file;
 
-			snprintf(path, sizeof(path), "%s/%s", bmark->directory, bmark->file);
+			snprintf(path, sizeof(path), "%s/%s", mark->directory, mark->file);
 			if(is_dir(path))
 			{
 				suffix = "/";
@@ -122,20 +122,20 @@ show_bookmarks_menu(FileView *view, const char marks[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_bookmark_cb(FileView *view, menu_info *m)
+execute_mark_cb(FileView *view, menu_info *m)
 {
-	goto_bookmark(view, m->items[m->pos][0]);
+	goto_mark(view, m->items[m->pos][0]);
 	return 0;
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-bookmark_khandler(menu_info *m, const wchar_t keys[])
+mark_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
-		clear_bookmark(m->items[m->pos][0]);
+		clear_mark(m->items[m->pos][0]);
 		remove_current_item(m);
 		return KHR_REFRESH_WINDOW;
 	}

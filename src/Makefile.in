@@ -97,16 +97,17 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
 	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
 	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bookmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
 	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
 	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
 	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -125,7 +126,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
 	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
 	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
 	color_manager.$(OBJEXT) commands.$(OBJEXT) \
@@ -134,13 +135,14 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
-	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT) vim.$(OBJEXT)
+	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) \
+	ops.$(OBJEXT) opt_handlers.$(OBJEXT) path_env.$(OBJEXT) \
+	quickview.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) tags.$(OBJEXT) term_title.$(OBJEXT) \
+	trash.$(OBJEXT) types.$(OBJEXT) undo.$(OBJEXT) \
+	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT) \
+	vim.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -411,7 +413,7 @@ vifm_SOURCES = \
 	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
-	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/bmarks_menu.c menus/bmarks_menu.h \
 	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
@@ -426,6 +428,7 @@ vifm_SOURCES = \
 	menus/trash_menu.c menus/trash_menu.h \
 	menus/trashes_menu.c menus/trashes_menu.h \
 	menus/map_menu.c menus/map_menu.h \
+	menus/marks_menu.c menus/marks_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \
@@ -477,7 +480,7 @@ vifm_SOURCES = \
 	\
 	args.c args.h \
 	background.c background.h \
-	bookmarks.c bookmarks.h \
+	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c color_scheme.h \
@@ -500,6 +503,7 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
+	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	path_env.c path_env.h \
@@ -720,7 +724,7 @@ menus/$(DEPDIR)/$(am__dirstamp):
 	@: > menus/$(DEPDIR)/$(am__dirstamp)
 menus/apropos_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
-menus/bookmarks_menu.$(OBJEXT): menus/$(am__dirstamp) \
+menus/bmarks_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/cabbrevs_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
@@ -749,6 +753,8 @@ menus/trash_menu.$(OBJEXT): menus/$(am__dirstamp) \
 menus/trashes_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/map_menu.$(OBJEXT): menus/$(am__dirstamp) \
+	menus/$(DEPDIR)/$(am__dirstamp)
+menus/marks_menu.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
 menus/menus.$(OBJEXT): menus/$(am__dirstamp) \
 	menus/$(DEPDIR)/$(am__dirstamp)
@@ -923,7 +929,7 @@ mostlyclean-compile:
 	-rm -f io/private/ionotif.$(OBJEXT)
 	-rm -f io/private/traverser.$(OBJEXT)
 	-rm -f menus/apropos_menu.$(OBJEXT)
-	-rm -f menus/bookmarks_menu.$(OBJEXT)
+	-rm -f menus/bmarks_menu.$(OBJEXT)
 	-rm -f menus/cabbrevs_menu.$(OBJEXT)
 	-rm -f menus/colorscheme_menu.$(OBJEXT)
 	-rm -f menus/commands_menu.$(OBJEXT)
@@ -936,6 +942,7 @@ mostlyclean-compile:
 	-rm -f menus/jobs_menu.$(OBJEXT)
 	-rm -f menus/locate_menu.$(OBJEXT)
 	-rm -f menus/map_menu.$(OBJEXT)
+	-rm -f menus/marks_menu.$(OBJEXT)
 	-rm -f menus/menus.$(OBJEXT)
 	-rm -f menus/registers_menu.$(OBJEXT)
 	-rm -f menus/trash_menu.$(OBJEXT)
@@ -982,7 +989,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_manager.Po@am__quote@
@@ -1005,6 +1012,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/path_env.Po@am__quote@
@@ -1054,7 +1062,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/traverser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bookmarks_menu.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bmarks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/cabbrevs_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/colorscheme_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/commands_menu.Po@am__quote@
@@ -1067,6 +1075,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/jobs_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/locate_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/map_menu.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/marks_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/menus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/registers_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/trash_menu.Po@am__quote@

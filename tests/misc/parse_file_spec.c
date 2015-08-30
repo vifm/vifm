@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
+#include <string.h> /* strcmp() */
 
 #include "../../src/utils/utils.h"
 
@@ -36,6 +37,14 @@ TEST(absolute_path_without_linenum)
 	assert_string_equal("/home/user", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
 
+	free(path);
+}
+
+TEST(tilde_path_is_expanded)
+{
+	int line_num;
+	char *const path = parse_file_spec("~", &line_num);
+	assert_false(strcmp(path, "~") == 0);
 	free(path);
 }
 

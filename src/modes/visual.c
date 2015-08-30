@@ -36,12 +36,12 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
-#include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
 #include "../fileview.h"
 #include "../fileops.h"
 #include "../filtering.h"
+#include "../marks.h"
 #include "../registers.h"
 #include "../running.h"
 #include "../search.h"
@@ -902,7 +902,7 @@ static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	set_user_bookmark(key_info.multi, entry->origin, entry->name);
+	set_user_mark(key_info.multi, entry->origin, entry->name);
 }
 
 static void
@@ -1088,8 +1088,8 @@ update_marks(FileView *view)
 	start_entry = &view->dir_entry[view->list_pos];
 	end_entry = &view->dir_entry[start_pos];
 
-	set_spec_bookmark(start_mark, start_entry->origin, start_entry->name);
-	set_spec_bookmark(end_mark, end_entry->origin, end_entry->name);
+	set_spec_mark(start_mark, start_entry->origin, start_entry->name);
+	set_spec_mark(end_mark, end_entry->origin, end_entry->name);
 }
 
 /* Excludes entries from custom view. */

@@ -53,9 +53,9 @@
 #include "../utils/str.h"
 #include "../utils/path.h"
 #include "../utils/utils.h"
-#include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../marks.h"
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../types.h"
@@ -98,7 +98,7 @@ static void setup_dirs(void);
 static void copy_help_file(void);
 static void create_scripts_dir(void);
 static void copy_rc_file(void);
-static void add_default_bookmarks(void);
+static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
 static int is_conf_file(const char file[]);
@@ -150,7 +150,7 @@ cfg_init(void)
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
-	cfg.vifm_info = VIFMINFO_BOOKMARKS;
+	cfg.vifm_info = VIFMINFO_MARKS | VIFMINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
@@ -568,7 +568,7 @@ setup_dirs(void)
 	snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
 	env_set(MYVIFMRC_EV, rc_file);
 
-	add_default_bookmarks();
+	add_default_marks();
 }
 
 /* Copies help file from shared files to the ~/.vifm directory if it's not
@@ -646,14 +646,14 @@ copy_rc_file(void)
 	(void)iop_cp(&args);
 }
 
-/* Adds 'H' and 'z' default bookmarks. */
+/* Adds 'H' and 'z' default marks. */
 static void
-add_default_bookmarks(void)
+add_default_marks(void)
 {
 	LOG_FUNC_ENTER;
 
-	set_user_bookmark('H', cfg.home_dir, NO_BOOKMARK_FILE);
-	set_user_bookmark('z', cfg.config_dir, NO_BOOKMARK_FILE);
+	set_user_mark('H', cfg.home_dir, NO_MARK_FILE);
+	set_user_mark('z', cfg.config_dir, NO_MARK_FILE);
 }
 
 void

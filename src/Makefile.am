@@ -115,7 +115,7 @@ vifm_SOURCES = \
 	\
 	menus/all.h \
 	menus/apropos_menu.c menus/apropos_menu.h \
-	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/bmarks_menu.c menus/bmarks_menu.h \
 	menus/cabbrevs_menu.c menus/cabbrevs_menu.h \
 	menus/colorscheme_menu.c menus/colorscheme_menu.h \
 	menus/commands_menu.c menus/commands_menu.h \
@@ -130,6 +130,7 @@ vifm_SOURCES = \
 	menus/trash_menu.c menus/trash_menu.h \
 	menus/trashes_menu.c menus/trashes_menu.h \
 	menus/map_menu.c menus/map_menu.h \
+	menus/marks_menu.c menus/marks_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \
@@ -181,7 +182,7 @@ vifm_SOURCES = \
 	\
 	args.c args.h \
 	background.c background.h \
-	bookmarks.c bookmarks.h \
+	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c color_scheme.h \
@@ -204,6 +205,7 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
+	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	path_env.c path_env.h \
