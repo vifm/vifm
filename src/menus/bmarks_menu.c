@@ -104,7 +104,7 @@ bmarks_khandler(menu_info *m, const wchar_t keys[])
 		remove_current_item(m);
 		return KHR_REFRESH_WINDOW;
 	}
-	return KHR_UNHANDLED;
+	return filelist_khandler(m, keys);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
