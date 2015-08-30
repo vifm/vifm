@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 18
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1070,6 +1070,24 @@ The builtin commands are:
 :apropos
     repeat last :apropos command.
 
+                                               *vifm-:bmark*
+:bmark tag1 [tag2 [tag3...]]
+    bookmark current directory with specified tags.
+:bmark! path tag1 [tag2 [tag3...]]
+    same as :bmark, but allows bookmarking specific path instead of current
+    directory.  This is for use in vifmrc and for bookmarking files.
+
+                                               *vifm-:bmarks*
+:bmarks
+    display all bookmarks in a menu.
+:bmarks [tag1 [tag2...]]
+    display menu of bookmarks that include all of the specified tags.
+
+                                               *vifm-:bmgo*
+:bmgo [tag1 [tag2...]]
+    when there are more than one match acts exactly like :bmarks, otherwise
+    navigates to single match immediately (and fails if there is no match).
+
                                                *vifm-:cabbrev* *vifm-:ca*
 :ca[bbrev]
     display menu of command-line mode abbreviations.
@@ -1210,15 +1228,25 @@ The builtin commands are:
     unregister command-line mode abbreviation by its rhs, so that abbreviation
     could be removed even after expansion.
 
+                                               *vifm-:delbmarks*
+:delbmarks
+    remove bookmarks from current directory.
+:delbmarks tag1 [tag2 [tag3...]]
+    remove set of bookmarks that include all of the specified tags.
+:delbmarks!
+    remove all bookmarks.
+:delbmarks! path1 [path2 [path3...]]
+    remove bookmarks of listed paths.
+
+:delc[ommand] user_command                     *vifm-:delcommand* *vifm-:delc*
+    remove user defined command named user_command.
+
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][!] [reg] [count]
     delete selected or [count] files into [reg] (" by default).  "!" means
     complete removal (omitting trash).
 :[range]d[elete][!] [count] &
     delete [count] files in background.  "!" means complete removal.
-
-:delc[ommand] user_command                     *vifm-:delcommand* *vifm-:delc*
-    remove user defined command named user_command.
 
                                                *vifm-:delmarks* *vifm-:delm*
 :delm[arks]!
@@ -1719,7 +1747,7 @@ order using the '.' operator.  Any whitespace is ignored.
 
                                                *vifm-:marks*
 :marks
-    display menu of all bookmarks.
+    display menu of all marks.
 :marks list ...
     display the contents of the marks that are mentioned in list.
 
@@ -2400,8 +2428,8 @@ When disabled vifm will set cursor to the first line in the view after :cd and
 make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
 l key in the ":history ." and ":trashes" menus is treated like :cd command.
-This option also affects bookmarks so that navigating to a bookmark doesn't
-restore cursor position.
+This option also affects marks so that navigating to a mark doesn't restore
+cursor position.
 
                                                *vifm-'cdpath'* *vifm-'cd'*
 cdpath cd
@@ -3033,11 +3061,12 @@ whether it's preceded by space or not) means backgrounding of command.
                                                *vifm-'vifminfo'*
 vifminfo
 type: set
-default: bookmarks
+default: bookmarks,bmarks
 
 Controls what will be saved in the $VIFM/vifminfo file:
 
-   bookmarks - bookmarks, except special ones like '< and '>
+   bmarks    - named bookmarks
+   bookmarks - marks (name is obsolete), except special ones like '< and '>
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  - directory history
@@ -3542,11 +3571,20 @@ Selecting command executes it with empty arguments (|vifm-%a|).
 
 Type dd on a command to remove.
 
+Marks menu~
+
+Selecting a mark navigates to it.
+
+Type dd on a mark to remove it.
+
 Bookmarks menu~
 
-Selecting bookmark navigates to it.
+Selecting a bookmark navigates to it.
 
-Type dd on a bookmark to remove.
+Type dd on a bookmark to remove it.
+
+*vifm-m_gf* and *vifm-m_e* also work to make it more convenient to bookmark
+files.
 
 Trash menu~
 
@@ -3567,7 +3605,7 @@ Filetype menu~
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
-Grep, find, locate and user menu with navigation (%M macro)~
+Grep, find, locate, bookmarks and user menu with navigation (%M macro)~
 
 gf                                             *vifm-m_gf*
     navigate previously active view to currently selected item.  Leaves menu
@@ -3753,15 +3791,16 @@ The $VIFM/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
 |vifm-'vifminfo'| option.  Vifm always writes this file on exit unless
-|vifm-'vifminfo'| option is empty.  Bookmarks, commands, histories, filetypes,
-fileviewers and registers in the file are merged with vifm configuration.
+|vifm-'vifminfo'| option is empty.  Marks, bookmarks, commands, histories,
+filetypes, fileviewers and registers in the file are merged with vifm
+configuration.
 
 Generally, runtime configuration has bigger priority during merging, but there
 are some exceptions:
  - directory stack stored in the file is not overwritten unless something is
    changed in vifm session that performs merge;
- - each bookmark is marked with a timestamp, so that newer value is not
-   overwritten by older one, thus no matter from where bookmark comes, the
+ - each mark or bookmark is marked with a timestamp, so that newer value is
+   not overwritten by older one, thus no matter from where it comes, the
    newer one wins.
 
                                                *vifm-scripts*

@@ -2278,7 +2278,7 @@ delbmarks_cmd(const cmd_info_t *cmd_info)
 			return 0;
 		}
 
-		/* Remove bookmarks from listed directories. */
+		/* Remove bookmarks from listed paths. */
 		for(i = 0; i < cmd_info->argc; ++i)
 		{
 			char *const path = make_bmark_path(cmd_info->argv[i]);
@@ -2295,7 +2295,7 @@ delbmarks_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		/* Remove set of bookmarks that match specified tags. */
+		/* Remove set of bookmarks that include all of the specified tags. */
 		char *const tags = make_tags_list(cmd_info);
 		bmarks_find(tags, &remove_bmark, NULL);
 		free(tags);
