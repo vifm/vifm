@@ -19,6 +19,7 @@
 #include "bmarks_menu.h"
 
 #include <string.h> /* strdup() */
+#include <stdlib.h> /* free() */
 
 #include "../ui/ui.h"
 #include "../utils/path.h"
@@ -65,7 +66,20 @@ static void
 bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
 	menu_info *m = arg;
-	char *const line = format_str("%s: %s", replace_home_part_strict(path), tags);
+	char *line = format_str("%s: ", replace_home_part_strict(path));
+	size_t len = strlen(line);
+
+	char *dup = strdup(tags);
+	char *tag = dup, *state = NULL;
+	while((tag = split_and_get(tag, ',', &state)) != NULL)
+	{
+		strappendch(&line, &len, '[');
+		strappend(&line, &len, tag);
+		strappendch(&line, &len, ']');
+	}
+	free(dup);
+
+	(void)add_to_string_array(&m->data, m->len, 1, path);
 	m->len = put_into_string_array(&m->items, m->len, line);
 }
 
@@ -74,7 +88,7 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 static int
 execute_bmarks_cb(FileView *view, menu_info *m)
 {
-	goto_selected_file(view, m->items[m->pos], 0);
+	goto_selected_file(view, m->data[m->pos], 0);
 	return 0;
 }
 
@@ -86,7 +100,7 @@ bmarks_khandler(menu_info *m, const wchar_t keys[])
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		break_at(m->items[m->pos], ':');
-		bmarks_remove(m->items[m->pos]);
+		bmarks_remove(m->data[m->pos]);
 		remove_current_item(m);
 		return KHR_REFRESH_WINDOW;
 	}
