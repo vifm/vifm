@@ -120,10 +120,6 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		vle_abbr_complete(args);
 		start = args;
 	}
-	else if(id == COM_BMARKS)
-	{
-		bmarks_complete(argc, argv, arg);
-	}
 	else if(command_accepts_expr(id))
 	{
 		if(ampersand > dollar)
@@ -239,6 +235,17 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			else
 			{
 				filename_completion(arg, CT_DIRONLY);
+			}
+		}
+		else if(id == COM_BMARKS)
+		{
+			if(cmd_info->emark && argc == 1)
+			{
+				filename_completion(arg, CT_ALL);
+			}
+			else
+			{
+				bmarks_complete(argc, argv, arg);
 			}
 		}
 		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)

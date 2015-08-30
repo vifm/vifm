@@ -22,5 +22,10 @@ TEST(tag_with_space_is_rejected)
 	assert_failure(exec_commands("bmark a\\ b", &lwin, CIT_COMMAND));
 }
 
+TEST(emark_allows_specifying_bookmark_path)
+{
+	assert_success(exec_commands("bmark! /fake/path tag", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

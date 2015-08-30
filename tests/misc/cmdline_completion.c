@@ -18,6 +18,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/bmarks.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
@@ -448,6 +449,35 @@ TEST(bang_abs_path_completion)
 	assert_wstring_equal(cmd, stats.line);
 
 	assert_int_equal(2, vle_compl_get_count());
+
+	assert_success(unlink("exec-for-completion" SUFFIX));
+}
+
+TEST(bmark_tags_are_completed)
+{
+	bmarks_clear();
+
+	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
+
+	prepare_for_line_completion(L"bmark tag");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark tag1", stats.line);
+
+	prepare_for_line_completion(L"bmark! fake/path2 tag");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
+}
+
+TEST(bmark_path_is_completed)
+{
+	bmarks_clear();
+
+	assert_success(chdir(SANDBOX_PATH));
+	create_executable("exec-for-completion" SUFFIX);
+
+	prepare_for_line_completion(L"bmark! exec");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark! exec-for-completion", stats.line);
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
 }

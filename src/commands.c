@@ -189,6 +189,8 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
+static char * get_bmark_dir(const cmd_info_t *cmd_info);
+static char * make_bmark_path(const char path[]);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
@@ -330,7 +332,7 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "bmark",            .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = bmarks_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -1659,9 +1661,7 @@ static int
 bmark_cmd(const cmd_info_t *cmd_info)
 {
 	char *const tags = make_tags_list(cmd_info);
-	char *const path = is_root_dir(curr_view->curr_dir)
-	                 ? strdup(curr_view->curr_dir)
-	                 : format_str("%s/", curr_view->curr_dir);
+	char *const path = get_bmark_dir(cmd_info);
 	const int err = (tags == NULL || bmarks_set(path, tags) != 0);
 	if(err && tags != NULL)
 	{
@@ -1705,7 +1705,14 @@ static char *
 make_tags_list(const cmd_info_t *cmd_info)
 {
 	int i;
-	for(i = 0; i < cmd_info->argc; ++i)
+
+	if(cmd_info->emark && cmd_info->argc == 1)
+	{
+		status_bar_error("Too few arguments");
+		return NULL;
+	}
+
+	for(i = cmd_info->emark ? 1 : 0; i < cmd_info->argc; ++i)
 	{
 		if(strpbrk(cmd_info->argv[i], ", \t") != NULL)
 		{
@@ -1732,8 +1739,9 @@ args_to_csl(const cmd_info_t *cmd_info)
 		return NULL;
 	}
 
-	strappend(&tags, &len, cmd_info->argv[0]);
-	for(i = 1; i < cmd_info->argc; ++i)
+	i = cmd_info->emark ? 1 : 0;
+	strappend(&tags, &len, cmd_info->argv[i]);
+	for(++i; i < cmd_info->argc; ++i)
 	{
 		strappendch(&tags, &len, ',');
 		strappend(&tags, &len, cmd_info->argv[i]);
@@ -2248,6 +2256,34 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 	return 0;
+}
+
+/* Formats path for a bookmark in a unified way for several commands.  Returns
+ * newly allocated string with the path. */
+static char *
+get_bmark_dir(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->emark)
+	{
+		return make_bmark_path(cmd_info->argv[0]);
+	}
+
+	return is_root_dir(curr_view->curr_dir)
+	     ? strdup(curr_view->curr_dir)
+	     : format_str("%s/", curr_view->curr_dir);
+}
+
+/* Prepares path for a bookmark.  Returns newly allocated string. */
+static char *
+make_bmark_path(const char path[])
+{
+	if(is_path_absolute(path))
+	{
+		return strdup(path);
+	}
+
+	return format_str("%s%s%s", curr_view->curr_dir,
+			is_root_dir(curr_view->curr_dir) ? "" : "/", path);
 }
 
 static int
