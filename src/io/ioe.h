@@ -79,6 +79,10 @@ void ioe_errlst_init(ioe_errlst_t *elist);
 /* Frees resources allocated by error list.  elist can be NULL. */
 void ioe_errlst_free(ioe_errlst_t *elist);
 
+/* Converts list of errors from I/O module into multi-line string.  Returns
+ * newly allocated string. */
+char * ioe_errlst_to_str(const ioe_errlst_t *elist);
+
 #endif /* VIFM__IO__IOE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

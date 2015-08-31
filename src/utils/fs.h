@@ -136,7 +136,7 @@ int is_regular_file(const char path[]);
  * error, otherwise zero is returned. */
 int rename_file(const char src[], const char dst[]);
 
-/* Removes directory content. */
+/* Removes directory content, but not the directory itself. */
 void remove_dir_content(const char path[]);
 
 struct dirent;
