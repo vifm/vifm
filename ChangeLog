@@ -145,6 +145,8 @@
 	Fixed checking for changes in charset options on :set (without arguments),
 	used to print unchanged options as if they were changed.
 
+	Fixed estimation text in dialog (was almost single line).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

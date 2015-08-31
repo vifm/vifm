@@ -399,7 +399,8 @@ io_progress_fg(const io_progress_t *const state, int progress)
 		char pretty_path[PATH_MAX];
 		format_pretty_path(ops->base_dir, estim->item, pretty_path,
 				sizeof(pretty_path));
-		draw_msgf(title, ctrl_msg, pdata->width, "In %s\nestimating... %d; %s %s",
+		draw_msgf(title, ctrl_msg, pdata->width,
+				"In %s\nestimating...\nItems: %d\nOverall: %s\nCurrent: %s",
 				ops->target_dir, estim->total_items, total_size_str, pretty_path);
 		pdata->width = getmaxx(error_win);
 		return;
