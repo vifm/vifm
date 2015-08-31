@@ -85,14 +85,22 @@ remove_current_item(menu_info *m)
 	clean_menu_position(m);
 
 	remove_from_string_array(m->items, m->len, m->pos);
-	remove_from_string_array(m->data, m->len, m->pos);
+
+	if(m->data != NULL)
+	{
+		remove_from_string_array(m->data, m->len, m->pos);
+	}
+
 	if(m->matches != NULL)
 	{
 		if(m->matches[m->pos])
-			m->matching_entries--;
+		{
+			--m->matching_entries;
+		}
 		memmove(m->matches + m->pos, m->matches + m->pos + 1,
 				sizeof(int)*((m->len - 1) - m->pos));
 	}
+
 	m->len--;
 	draw_menu(m);
 
