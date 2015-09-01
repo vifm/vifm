@@ -208,7 +208,7 @@ try_create_trash_dir(const char trash_dir[])
 }
 
 void
-empty_trash(void)
+trash_empty_all(void)
 {
 	clean_regs_with_trash();
 	empty_trash_dirs();

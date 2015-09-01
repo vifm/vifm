@@ -2433,10 +2433,11 @@ else_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Starts process of emptying all trashes in background. */
 static int
 empty_cmd(const cmd_info_t *cmd_info)
 {
-	empty_trash();
+	trash_empty_all();
 	return 0;
 }
 
