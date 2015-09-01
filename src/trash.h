@@ -42,6 +42,9 @@ int set_trash_dir(const char trash_dir[]);
  * value is returned. */
 int try_create_trash_dir(const char trash_dir[]);
 
+/* Empties specified trash directory. */
+void trash_empty(const char trash_dir[]);
+
 /* Starts process of emptying all trashes in background. */
 void trash_empty_all(void);
 

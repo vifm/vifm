@@ -231,6 +231,15 @@ empty_trash_dirs(void)
 	free_string_array(list.trashes, list.ntrashes);
 }
 
+void
+trash_empty(const char trash_dir[])
+{
+	clean_regs_with_trash(trash_dir);
+	empty_trash_dir(trash_dir);
+	clean_cmds_with_trash(trash_dir);
+	remove_trash_entries(trash_dir);
+}
+
 /* Removes all files inside given trash directory (even those that this instance
  * of vifm is not aware of). */
 static void

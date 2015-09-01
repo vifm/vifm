@@ -18,7 +18,7 @@
 
 #include "trashes_menu.h"
 
-#include <string.h> /* strdup() */
+#include <string.h> /* strchr() strdup() */
 
 #include "../ui/ui.h"
 #include "../utils/str.h"
@@ -30,6 +30,7 @@
 
 static char * format_item(const char trash_dir[], int calc_size);
 static int execute_trashes_cb(FileView *view, menu_info *m);
+static KHandlerResponse trashes_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_trashes_menu(FileView *view, int calc_size)
@@ -44,6 +45,7 @@ show_trashes_menu(FileView *view, int calc_size)
 			strdup("No non-empty trash directories found"));
 
 	m.execute_handler = &execute_trashes_cb;
+	m.key_handler = &trashes_khandler;
 	m.extra_data = calc_size;
 
 	trashes = list_trashes(&ntrashes);
@@ -93,6 +95,22 @@ execute_trashes_cb(FileView *view, menu_info *m)
 	const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
 	goto_selected_directory(view, trash_dir);
 	return 0;
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+trashes_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"dd") == 0)
+	{
+		const char *const item = m->items[m->pos];
+		const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
+		trash_empty(trash_dir);
+		remove_current_item(m);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
