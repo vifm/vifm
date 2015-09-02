@@ -28,25 +28,34 @@ typedef struct
 	int name;
 	int num_files;
 	char **files;
-}registers_t;
+}
+registers_t;
 
 /* Null terminated list of all valid register names. */
 extern const char valid_registers[];
 
 void init_registers(void);
+
 /* Checks whether register with the key name exists (A-Z will be rejected).
  * Returns non-zero if it exists, otherwise zero is returned. */
 int register_exists(int key);
+
 registers_t * find_register(int key);
+
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file
  * is added, otherwise non-zero is returned. */
 int append_to_register(int reg, const char file[]);
+
 /* Clears all registers. */
 void clear_registers(void);
+
 void clear_register(int reg);
+
 void pack_register(int reg);
+
 char ** list_registers_content(const char registers[]);
+
 void rename_in_registers(const char old[], const char new[]);
 
 /* Ensures that registers don't refer to files in specified trash directory or
