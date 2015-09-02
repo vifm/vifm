@@ -48,7 +48,11 @@ void clear_register(int reg);
 void pack_register(int reg);
 char ** list_registers_content(const char registers[]);
 void rename_in_registers(const char old[], const char new[]);
-void clean_regs_with_trash(void);
+
+/* Ensures that registers don't refer to files in specified trash directory or
+ * to any of trash directories if trash_dir is NULL. */
+void clean_regs_with_trash(const char trash_dir[]);
+
 void update_unnamed_reg(int reg);
 
 #endif /* VIFM__REGISTERS_H__ */
