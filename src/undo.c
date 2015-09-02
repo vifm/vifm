@@ -900,7 +900,7 @@ get_undolist_pos(int detail)
 }
 
 void
-clean_cmds_with_trash(void)
+clean_cmds_with_trash(const char trash_dir[])
 {
 	cmd_t *cur = cmds.prev;
 
@@ -912,13 +912,19 @@ clean_cmds_with_trash(void)
 
 		if(cur->group->balance < 0)
 		{
-			if(cur->do_op.exists != NULL && is_under_trash(cur->do_op.exists))
+			if(cur->do_op.exists != NULL &&
+					trash_contains(trash_dir, cur->do_op.exists))
+			{
 				remove_cmd(cur);
+			}
 		}
 		else
 		{
-			if(cur->undo_op.exists != NULL && is_under_trash(cur->undo_op.exists))
+			if(cur->undo_op.exists != NULL &&
+					trash_contains(trash_dir, cur->undo_op.exists))
+			{
 				remove_cmd(cur);
+			}
 		}
 		cur = prev;
 	}

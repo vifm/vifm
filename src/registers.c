@@ -229,7 +229,7 @@ rename_in_registers(const char old[], const char new[])
 }
 
 void
-clean_regs_with_trash(void)
+clean_regs_with_trash(const char trash_dir[])
 {
 	int x;
 	for(x = 0; x < NUM_REGISTERS; x++)
@@ -238,7 +238,7 @@ clean_regs_with_trash(void)
 		n = registers[x].num_files;
 		for(y = 0; y < n; y++)
 		{
-			if(!is_under_trash(registers[x].files[y]))
+			if(!trash_contains(trash_dir, registers[x].files[y]))
 				continue;
 			if(!path_exists(registers[x].files[y], DEREF))
 				continue;

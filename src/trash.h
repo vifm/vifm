@@ -42,7 +42,11 @@ int set_trash_dir(const char trash_dir[]);
  * value is returned. */
 int try_create_trash_dir(const char trash_dir[]);
 
-void empty_trash(void);
+/* Empties specified trash directory. */
+void trash_empty(const char trash_dir[]);
+
+/* Starts process of emptying all trashes in background. */
+void trash_empty_all(void);
 
 int add_to_trash(const char path[], const char trash_name[]);
 
@@ -77,6 +81,11 @@ char * pick_trash_dir(const char base_path[]);
 /* Checks whether given absolute path points to a file under trash directory.
  * Returns non-zero if so, otherwise zero is returned. */
 int is_under_trash(const char path[]);
+
+/* Checks whether given path belongs to the trash directory.  NULL trash_dir
+ * makes this function act as is_under_trash().  Returns non-zero if so,
+ * otherwise zero is returned. */
+int trash_contains(const char trash_dir[], const char path[]);
 
 /* Checks whether given absolute path points to a trash directory.  Returns
  * non-zero if so, otherwise zero is returned. */

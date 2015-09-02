@@ -21,6 +21,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 
+#include "../engine/text_buffer.h"
+#include "../utils/path.h"
 #include "private/ioe.h"
 
 void
@@ -45,6 +47,26 @@ ioe_errlst_free(ioe_errlst_t *elist)
 		ioe_err_free(&elist->errors[i]);
 	}
 	free(elist->errors);
+}
+
+char *
+ioe_errlst_to_str(const ioe_errlst_t *elist)
+{
+	size_t i;
+
+	vle_textbuf *str = vle_tb_create();
+	if(str == NULL)
+	{
+		return NULL;
+	}
+
+	for(i = 0U; i < elist->error_count; ++i)
+	{
+		const ioe_err_t *const err = &elist->errors[i];
+		vle_tb_append_linef(str, "%s: %s", replace_home_part(err->path), err->msg);
+	}
+
+	return vle_tb_release(str);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -83,7 +83,7 @@ static int create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
-static void empty_trash_list(void);
+static void remove_trash_entries(const char trash_dir[]);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
@@ -208,12 +208,12 @@ try_create_trash_dir(const char trash_dir[])
 }
 
 void
-empty_trash(void)
+trash_empty_all(void)
 {
-	clean_regs_with_trash();
+	clean_regs_with_trash(NULL);
 	empty_trash_dirs();
-	clean_cmds_with_trash();
-	empty_trash_list();
+	clean_cmds_with_trash(NULL);
+	remove_trash_entries(NULL);
 }
 
 /* Empties all trash directories (all specifications on all mount points are
@@ -229,6 +229,15 @@ empty_trash_dirs(void)
 	}
 
 	free_string_array(list.trashes, list.ntrashes);
+}
+
+void
+trash_empty(const char trash_dir[])
+{
+	clean_regs_with_trash(trash_dir);
+	empty_trash_dir(trash_dir);
+	clean_cmds_with_trash(trash_dir);
+	remove_trash_entries(trash_dir);
 }
 
 /* Removes all files inside given trash directory (even those that this instance
@@ -263,19 +272,33 @@ empty_trash_in_bg(bg_op_t *bg_op, void *arg)
 	free(trash_dir);
 }
 
+/* Removes entries that belong to specified trash directory.  Removes all if
+ * trash_dir is NULL. */
 static void
-empty_trash_list(void)
+remove_trash_entries(const char trash_dir[])
 {
 	int i;
+	int j = 0;
 
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < nentries; ++i)
 	{
-		free(trash_list[i].path);
-		free(trash_list[i].trash_name);
+		if(trash_dir == NULL ||
+				path_starts_with(trash_list[i].trash_name, trash_dir))
+		{
+			free(trash_list[i].path);
+			free(trash_list[i].trash_name);
+			continue;
+		}
+
+		trash_list[j++] = trash_list[i];
 	}
-	free(trash_list);
-	trash_list = NULL;
-	nentries = 0;
+
+	nentries = j;
+	if(nentries == 0)
+	{
+		free(trash_list);
+		trash_list = NULL;
+	}
 }
 
 int
@@ -339,8 +362,7 @@ list_trashes(int *ntrashes)
 static trashes_list
 get_list_of_trashes(void)
 {
-	trashes_list list =
-	{
+	trashes_list list = {
 		.trashes = NULL,
 		.ntrashes = 0,
 	};
@@ -530,6 +552,17 @@ int
 is_under_trash(const char path[])
 {
 	return get_resident_type(path) != TRT_OUT_OF_TRASH;
+}
+
+int
+trash_contains(const char trash_dir[], const char path[])
+{
+	if(trash_dir == NULL)
+	{
+		return is_under_trash(path);
+	}
+
+	return path_starts_with(path, trash_dir);
 }
 
 /* Gets status of file relative to trash directories.  Returns the status. */

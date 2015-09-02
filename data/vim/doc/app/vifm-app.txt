@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Aug 30
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3586,9 +3586,15 @@ Type dd on a bookmark to remove it.
 *vifm-m_gf* and *vifm-m_e* also work to make it more convenient to bookmark
 files.
 
-Trash menu~
+Trash (:lstrash) menu~
 
 r on a file name to restore it from trash.
+
+dd deletes file under the cursor.
+
+Trashes menu~
+
+dd empties selected trash in background.
 
 Directory history and Trashes menus~
 

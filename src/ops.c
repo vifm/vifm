@@ -38,7 +38,6 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
-#include "engine/text_buffer.h"
 #include "io/ioeta.h"
 #include "io/iop.h"
 #include "io/ior.h"
@@ -109,7 +108,6 @@ static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 		io_args_t *const args);
-static char * err_list_to_str(const ioe_errlst_t *elist);
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
@@ -901,35 +899,11 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 
 	if(ops != NULL)
 	{
-		ops->errors = err_list_to_str(&args->result.errors);
+		ops->errors = ioe_errlst_to_str(&args->result.errors);
 		ioe_errlst_free(&args->result.errors);
 	}
 
 	return result;
-}
-
-/* Converts list of errors from I/O module into multi-line string.  Returns
- * newly allocated string. */
-static char *
-err_list_to_str(const ioe_errlst_t *elist)
-{
-	/* TODO: maybe move this to io/ioe unit. */
-
-	size_t i;
-
-	vle_textbuf *str = vle_tb_create();
-	if(str == NULL)
-	{
-		return NULL;
-	}
-
-	for(i = 0U; i < elist->error_count; ++i)
-	{
-		const ioe_err_t *const err = &elist->errors[i];
-		vle_tb_append_linef(str, "%s: %s", replace_home_part(err->path), err->msg);
-	}
-
-	return vle_tb_release(str);
 }
 
 /* Asks user to confirm file overwrite.  Returns non-zero on positive user

@@ -44,6 +44,10 @@
 	:bmarks, :bmgo and :delbmarks command-line commands.  Also there is new
 	"bmarks" value for 'vifminfo'.  Thanks to Schmalzhaf Stefan.
 
+	Added handling of dd in :trashes, :trashes? and :lstrashes, which either
+	deletes an item in trash or empties trash.  Thanks to Svyatoslav
+	Mishyn (a.k.a. juef).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -144,6 +148,8 @@
 
 	Fixed checking for changes in charset options on :set (without arguments),
 	used to print unchanged options as if they were changed.
+
+	Fixed estimation text in dialog (was almost single line).
 
 0.8-beta to 0.8
 
