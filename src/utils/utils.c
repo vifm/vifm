@@ -39,14 +39,14 @@
 #include <string.h> /* strdup() strchr() strlen() strpbrk() */
 #include <wchar.h> /* wcwidth() */
 
-#include "../modes/dialogs/msg_dialog.h"
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../engine/keys.h"
+#include "../int/fuse.h"
+#include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
 #include "../background.h"
-#include "../fuse.h"
 #include "../registers.h"
 #include "env.h"
 #include "file_streams.h"

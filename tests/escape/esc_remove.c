@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "../../src/escape.h"
+#include "../../src/ui/escape.h"
 
 TEST(no_esc_string_untouched)
 {

@@ -23,9 +23,8 @@
 #include <stdio.h> /* FILE */
 
 #include "compat/fs_limits.h"
+#include "ui/color_scheme.h"
 #include "utils/tree.h"
-
-#include "color_scheme.h"
 
 struct config_t;
 

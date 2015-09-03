@@ -33,6 +33,7 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/log.h"
@@ -41,7 +42,6 @@
 #include "utils/str.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
-#include "colors.h"
 #include "commands_completion.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can

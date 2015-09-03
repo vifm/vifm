@@ -32,10 +32,10 @@
 #include <stdio.h> /* popen() */
 #include <string.h> /* strcpy() */
 
-#include "utils/str.h"
+#include "../utils/str.h"
+#include "../filetype.h"
+#include "../status.h"
 #include "desktop.h"
-#include "filetype.h"
-#include "status.h"
 
 static assoc_records_t handlers;
 

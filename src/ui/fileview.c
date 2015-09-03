@@ -31,21 +31,21 @@
 #include <stdlib.h> /* abs() */
 #include <string.h> /* strcpy() strlen() */
 
-#include "cfg/config.h"
-#include "ui/statusline.h"
-#include "utils/fs.h"
-#include "utils/macros.h"
-#include "utils/path.h"
-#include "utils/str.h"
-#include "utils/utf8.h"
-#include "utils/utils.h"
+#include "../cfg/config.h"
+#include "../utils/fs.h"
+#include "../utils/macros.h"
+#include "../utils/path.h"
+#include "../utils/str.h"
+#include "../utils/utf8.h"
+#include "../utils/utils.h"
+#include "../filelist.h"
+#include "../opt_handlers.h"
+#include "../sort.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "column_view.h"
-#include "filelist.h"
-#include "opt_handlers.h"
 #include "quickview.h"
-#include "sort.h"
+#include "statusline.h"
 
 /* Mark for a cursor position of inactive pane. */
 #define INACTIVE_CURSOR_MARK "*"

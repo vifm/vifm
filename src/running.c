@@ -46,6 +46,9 @@
 #include "cfg/info.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "int/file_magic.h"
+#include "int/fuse.h"
+#include "int/vim.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/statusbar.h"
@@ -59,16 +62,13 @@
 #include "utils/utils.h"
 #include "utils/utf8.h"
 #include "background.h"
-#include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
-#include "fuse.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "status.h"
 #include "types.h"
 #include "vifm.h"
-#include "vim.h"
 
 /* Kinds of symbolic link file treatment on file handling. */
 typedef enum

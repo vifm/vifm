@@ -31,6 +31,9 @@ engine := abbrevs.c cmds.c functions.c completion.c keys.c mode.c options.c \
           parsing.c text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
+int := file_magic.c fuse.c path_env.c term_title.c vim.c
+int := $(addprefix int/, $(int))
+
 io := private/ioe.c private/ioeta.c private/ionotif.c private/traverser.c
 io += ioe.c ioeta.c iop.c ior.c
 io := $(addprefix io/, $(io))
@@ -50,7 +53,8 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
          visual.c
 modes := $(addprefix modes/, $(modes))
 
-ui := cancellation.c statusbar.c statusline.c ui.c
+ui := cancellation.c color_manager.c color_scheme.c column_view.c escape.c
+ui += fileview.c statusbar.c statusline.c quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := dynarray.c env.c file_streams.c filemon.c filter.c fs.c globs.c \
@@ -58,16 +62,15 @@ utilities := dynarray.c env.c file_streams.c filemon.c filter.c fs.c globs.c \
              trie.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
-vifm_SOURCES := $(cfg) $(compat) $(engine) $(io) $(menus) $(modes) $(ui) \
-                $(utilities) args.c background.c bmarks.c bracket_notation.c \
-                builtin_functions.c color_manager.c color_scheme.c \
-                column_view.c commands.c commands_completion.c compile_info.c \
-                dir_stack.c escape.c event_loop.c file_magic.c filelist.c \
-                filename_modifiers.c fileops.c filetype.c fileview.c \
-                filtering.c fuse.c ipc.c macros.c marks.c ops.c opt_handlers.c \
-                path_env.c quickview.c registers.c running.c search.c \
-                signals.c sort.c status.c tags.c term_title.c trash.c types.c \
-                undo.c version.c viewcolumns_parser.c vifmres.o vifm.c vim.c
+vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
+                $(ui) $(utilities) args.c background.c bmarks.c \
+                bracket_notation.c builtin_functions.c commands.c \
+                commands_completion.c compile_info.c dir_stack.c event_loop.c \
+                filelist.c filename_modifiers.c fileops.c filetype.c \
+                filtering.c ipc.c macros.c marks.c ops.c opt_handlers.c \
+                registers.c running.c search.c signals.c sort.c status.c \
+                tags.c trash.c types.c undo.c version.c viewcolumns_parser.c \
+                vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

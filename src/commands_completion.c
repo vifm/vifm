@@ -49,10 +49,14 @@
 #include "engine/functions.h"
 #include "engine/options.h"
 #include "engine/variables.h"
+#include "int/file_magic.h"
+#include "int/path_env.h"
 #ifdef _WIN32
 #include "menus/menus.h"
 #endif
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/color_scheme.h"
+#include "ui/colors.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
@@ -60,13 +64,9 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "bmarks.h"
-#include "color_scheme.h"
-#include "colors.h"
 #include "commands.h"
-#include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
-#include "path_env.h"
 #include "tags.h"
 
 static int cmd_ends_with_space(const char *cmd);

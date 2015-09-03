@@ -24,15 +24,15 @@
 #include <string.h> /* strdup() strlen() */
 
 #include "../compat/fs_limits.h"
+#include "../int/file_magic.h"
 #include "../modes/menu.h"
+#include "../ui/fileview.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../file_magic.h"
 #include "../filelist.h"
 #include "../filetype.h"
-#include "../fileview.h"
 #include "../running.h"
 #include "../types.h"
 #include "menus.h"

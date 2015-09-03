@@ -25,6 +25,7 @@
 #include <time.h> /* time_t time() */
 
 #include "compat/fs_limits.h"
+#include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
@@ -32,7 +33,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
-#include "fileview.h"
 
 static int is_valid_index(const int index);
 static void clear_marks(mark_t marks[], int count);

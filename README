@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 25 August, 2015
+Updated: 03 September, 2015
 Version: 0.8
 
 Brief Description
@@ -82,6 +82,16 @@ Package content
     |  |  |-- var.c - all needed to work with variables
     |  |  `-- variables.c - handles :let and :unlet commands
     |  |
+    |  |-- int/ - integration with environment/external tools
+    |  |  |
+    |  |  |-- desktop.c - code that parses *.desktop files on *nix systems
+    |  |  |-- file_magic.c - determines programs associated with file using its
+    |  |  |                  mime-type
+    |  |  |-- fuse.c - provides support of FUSE filesystems
+    |  |  |-- path_env.c - parses and modifies PATH environment variables
+    |  |  |-- term_title.c - terminal title updates
+    |  |  `-- vim.c - contains Vim integration functionality
+    |  |
     |  |-- io/ - file system operations implementation
     |  |  |
     |  |  |-- private/ - internal part of i/o
@@ -143,8 +153,14 @@ Package content
     |  |
     |  |-- ui/ - most of ui related code
     |  |  |
-    |  |  |-- private/ - internal headers of ui
     |  |  |-- cancellation.c - managing operation cancellation
+    |  |  |-- color_manager.c - manager of curses color pairs
+    |  |  |-- color_scheme.c - color schemes
+    |  |  |-- column_view.c - column formatting unit
+    |  |  |-- escape.c - escape sequences related stuff
+    |  |  |-- fileview.c - display/redraw/manage file view
+    |  |  |-- private/ - internal headers of ui
+    |  |  |-- quickview.c - implementation of quick view
     |  |  |-- statusbar.c - managing status bar
     |  |  |-- statusline.c - status line formatting
     |  |  `-- ui.c - ui initialization and other ui related functions
@@ -175,39 +191,27 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
-    |  |-- color_manager.c - manager of curses color pairs
-    |  |-- color_scheme.c - color schemes
-    |  |-- column_view.c - column formatting unit
     |  |-- commands.c - handles command line commands
     |  |-- commands_completion.c - handles command line completion
-    |  |-- desktop.c - code that parses *.desktop files on *nix systems
-    |  |-- escape.c - escape sequences related stuff
     |  |-- event_loop.c - event dispatching loop
     |  |-- dir_stack.c - for :pushd and :popd commands
-    |  |-- file_magic.c - determines programs associated with file using its
-    |  |                  mime-type
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- fileops.c - delete/copy/put selected file(s)
     |  |-- filetype.c - stores filetype information from vifmrc
-    |  |-- fileview.c - display/redraw/manage file view
     |  |-- filtering.c - managing file filters
-    |  |-- fuse.c - provides support of FUSE filesystems
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
-    |  |-- quickview.c - implementation of quick view
     |  |-- registers.c - implementation of registers
     |  |-- running.c - code of handing file and commands running
-    |  |-- path_env.c - parses and modifies PATH environment variables
     |  |-- search.c - code for / and ? commands of normal mode
     |  |-- signals.c - handlers for different signals
     |  |-- sort.c - sort function
     |  |-- status.c - definition of global status structure
     |  |-- tags.c - tags for :h completion
-    |  |-- term_title.c - implementation of support of terminal title changing
     |  |-- trash.c - code that handles list of files in trash
     |  |-- types.c - internal file type detection and conversions
     |  |-- undo.c - stores and handles the undo list
@@ -216,7 +220,6 @@ Package content
     |  |-- vifm.c - contains main initialization/termination code
     |  |-- vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme
     |  |                        files
-    |  |-- vim.c - contains Vim integration functionality
     |  `-- win_helper.c - needed for temporary rights evaluation on Windows
     |
     |-- tests/ - unit tests

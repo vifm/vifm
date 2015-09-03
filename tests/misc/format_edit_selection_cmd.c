@@ -4,10 +4,10 @@
 #include <string.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/int/vim.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
-#include "../../src/vim.h"
 
 static void teardown_view(FileView *view);
 

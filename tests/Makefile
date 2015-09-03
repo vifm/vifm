@@ -22,8 +22,8 @@ suites += colmgr column_view viewcolumns_parser
 suites += bmarks env escape fileops filetype filter misc undo utils
 
 # obtain list of sources that are being tested
-vifm_src := ./ cfg/ compat/ engine/ io/ io/private/ modes/dialogs/ menus/ modes/
-vifm_src += ui/ utils/
+vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
+vifm_src += modes/ ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 
 # filter out generally non-testable or sources for another platform

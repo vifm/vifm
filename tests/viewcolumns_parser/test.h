@@ -1,7 +1,7 @@
 #ifndef VIFM_TESTS__VIEWCOLUMNS_PARSER__TEST_H__
 #define VIFM_TESTS__VIEWCOLUMNS_PARSER__TEST_H__
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 
 column_info_t info;
 

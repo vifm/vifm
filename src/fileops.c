@@ -45,12 +45,14 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/cmdline.h"
 #include "modes/modes.h"
 #include "ui/cancellation.h"
+#include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #ifdef _WIN32
@@ -67,7 +69,6 @@
 #include "background.h"
 #include "commands_completion.h"
 #include "filelist.h"
-#include "fileview.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"
@@ -75,7 +76,6 @@
 #include "trash.h"
 #include "types.h"
 #include "undo.h"
-#include "vim.h"
 
 /* 10 to the power of number of digits after decimal point to take into account
  * on progress percentage counting. */

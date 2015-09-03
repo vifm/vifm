@@ -21,7 +21,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL */
 
-#include "utils/macros.h"
+#include "../utils/macros.h"
 #include "colors.h"
 
 /* Number of color pairs preallocated by curses library. */

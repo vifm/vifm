@@ -4,7 +4,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h>
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/viewcolumns_parser.h"
 #include "test.h"
 

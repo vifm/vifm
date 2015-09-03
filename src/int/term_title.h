@@ -1,5 +1,4 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
  * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__QUICKVIEW_H__
-#define VIFM__QUICKVIEW_H__
+#ifndef VIFM__INT__TERM_TITLE_H__
+#define VIFM__INT__TERM_TITLE_H__
 
-#include <stdio.h> /* FILE */
+/* Updates terminal title. If title_part is NULL, resets terminal title. */
+void set_term_title(const char *title_part);
 
-#include "ui/ui.h"
-
-void quick_view_file(FileView *view);
-
-void toggle_quick_view(void);
-
-/* Quits preview pane or view modes. */
-void preview_close(void);
-
-FILE * use_info_prog(const char viewer[]);
-
-/* Performs view cleaning with the given clean command. */
-void qv_cleanup(FileView *view, const char cmd[]);
-
-/* Gets viewer command for a file considering its type (directory vs. file).
- * Returns NULL if no suitable viewer available, otherwise returns pointer to
- * string stored internally. */
-const char * gv_get_viewer(const char path[]);
-
-#endif /* VIFM__QUICKVIEW_H__ */
+#endif /* VIFM__INT__TERM_TITLE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

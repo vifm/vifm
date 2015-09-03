@@ -35,9 +35,9 @@
 #include <string.h> /* strcpy() */
 
 #include "compat/fs_limits.h"
+#include "ui/color_scheme.h"
+#include "ui/colors.h"
 #include "utils/macros.h"
-#include "color_scheme.h"
-#include "colors.h"
 
 #define MAX_LEN 1024
 

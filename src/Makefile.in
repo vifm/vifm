@@ -93,21 +93,23 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
 	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
 	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) \
-	io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
-	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
-	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	int/desktop.$(OBJEXT) int/file_magic.$(OBJEXT) \
+	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
+	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
+	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
+	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
+	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -115,7 +117,10 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/cancellation.$(OBJEXT) ui/color_manager.$(OBJEXT) \
+	ui/color_scheme.$(OBJEXT) ui/column_view.$(OBJEXT) \
+	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
+	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
 	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
@@ -128,21 +133,16 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	color_manager.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
-	dir_stack.$(OBJEXT) escape.$(OBJEXT) event_loop.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
-	fuse.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) \
-	ops.$(OBJEXT) opt_handlers.$(OBJEXT) path_env.$(OBJEXT) \
-	quickview.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
+	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
+	opt_handlers.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
 	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	status.$(OBJEXT) tags.$(OBJEXT) term_title.$(OBJEXT) \
-	trash.$(OBJEXT) types.$(OBJEXT) undo.$(OBJEXT) \
-	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT) \
-	vim.$(OBJEXT)
+	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
+	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -399,6 +399,13 @@ vifm_SOURCES = \
 	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
+	int/desktop.c int/desktop.h \
+	int/file_magic.c int/file_magic.h \
+	int/fuse.c int/fuse.h \
+	int/path_env.c int/path_env.h \
+	int/term_title.c int/term_title.h \
+	int/vim.c int/vim.h \
+	\
 	io/ioc.h \
 	io/ioe.h \
 	io/ioe.c io/ioe.h \
@@ -451,9 +458,16 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
+	ui/color_manager.c ui/color_manager.h \
+	ui/color_scheme.c ui/color_scheme.h \
+	ui/colors.h \
+	ui/column_view.c ui/column_view.h \
+	ui/escape.c ui/escape.h \
+	ui/fileview.c ui/fileview.h \
+	ui/private/statusline.h \
+	ui/quickview.c ui/quickview.h \
 	ui/statusbar.c ui/statusbar.h \
 	ui/statusline.c ui/statusline.h \
-	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/dynarray.c utils/dynarray.h \
@@ -483,31 +497,20 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	color_scheme.c color_scheme.h \
-	column_view.c column_view.h \
-	colors.h \
-	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
-	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
-	escape.c escape.h \
 	event_loop.c event_loop.h \
-	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
-	fileview.c fileview.h \
 	filtering.c filtering.h \
-	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	path_env.c path_env.h \
-	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \
@@ -515,14 +518,12 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	status.c status.h \
 	tags.c tags.h \
-	term_title.c term_title.h \
 	trash.c trash.h \
 	types.c types.h \
 	undo.c undo.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
-	vifm.c vifm.h \
-	vim.c vim.h
+	vifm.c vifm.h
 
 nodist_vifm_SOURCES = \
 	compile_info.c
@@ -692,6 +693,22 @@ engine/var.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/variables.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
+int/$(am__dirstamp):
+	@$(MKDIR_P) int
+	@: > int/$(am__dirstamp)
+int/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) int/$(DEPDIR)
+	@: > int/$(DEPDIR)/$(am__dirstamp)
+int/desktop.$(OBJEXT): int/$(am__dirstamp) \
+	int/$(DEPDIR)/$(am__dirstamp)
+int/file_magic.$(OBJEXT): int/$(am__dirstamp) \
+	int/$(DEPDIR)/$(am__dirstamp)
+int/fuse.$(OBJEXT): int/$(am__dirstamp) int/$(DEPDIR)/$(am__dirstamp)
+int/path_env.$(OBJEXT): int/$(am__dirstamp) \
+	int/$(DEPDIR)/$(am__dirstamp)
+int/term_title.$(OBJEXT): int/$(am__dirstamp) \
+	int/$(DEPDIR)/$(am__dirstamp)
+int/vim.$(OBJEXT): int/$(am__dirstamp) int/$(DEPDIR)/$(am__dirstamp)
 io/$(am__dirstamp):
 	@$(MKDIR_P) io
 	@: > io/$(am__dirstamp)
@@ -809,6 +826,16 @@ ui/$(DEPDIR)/$(am__dirstamp):
 	@: > ui/$(DEPDIR)/$(am__dirstamp)
 ui/cancellation.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/color_manager.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/color_scheme.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/column_view.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/escape.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
+ui/fileview.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
+ui/quickview.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/statusbar.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/statusline.$(OBJEXT): ui/$(am__dirstamp) \
@@ -920,6 +947,12 @@ mostlyclean-compile:
 	-rm -f engine/text_buffer.$(OBJEXT)
 	-rm -f engine/var.$(OBJEXT)
 	-rm -f engine/variables.$(OBJEXT)
+	-rm -f int/desktop.$(OBJEXT)
+	-rm -f int/file_magic.$(OBJEXT)
+	-rm -f int/fuse.$(OBJEXT)
+	-rm -f int/path_env.$(OBJEXT)
+	-rm -f int/term_title.$(OBJEXT)
+	-rm -f int/vim.$(OBJEXT)
 	-rm -f io/ioe.$(OBJEXT)
 	-rm -f io/ioeta.$(OBJEXT)
 	-rm -f io/iop.$(OBJEXT)
@@ -962,6 +995,12 @@ mostlyclean-compile:
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
 	-rm -f ui/cancellation.$(OBJEXT)
+	-rm -f ui/color_manager.$(OBJEXT)
+	-rm -f ui/color_scheme.$(OBJEXT)
+	-rm -f ui/column_view.$(OBJEXT)
+	-rm -f ui/escape.$(OBJEXT)
+	-rm -f ui/fileview.$(OBJEXT)
+	-rm -f ui/quickview.$(OBJEXT)
 	-rm -f ui/statusbar.$(OBJEXT)
 	-rm -f ui/statusline.$(OBJEXT)
 	-rm -f ui/ui.$(OBJEXT)
@@ -992,31 +1031,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/desktop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/escape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_loop.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filename_modifiers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/path_env.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quickview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/running.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
@@ -1024,7 +1053,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tags.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/term_title.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/types.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
@@ -1032,7 +1060,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vim.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
@@ -1053,6 +1080,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/var.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/desktop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/file_magic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/fuse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/path_env.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/term_title.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@int/$(DEPDIR)/vim.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ioe.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/iop.Po@am__quote@
@@ -1095,6 +1128,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/msg_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_scheme.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/column_view.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/escape.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/fileview.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/quickview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
@@ -1722,6 +1761,8 @@ distclean-generic:
 	-rm -f compat/$(am__dirstamp)
 	-rm -f engine/$(DEPDIR)/$(am__dirstamp)
 	-rm -f engine/$(am__dirstamp)
+	-rm -f int/$(DEPDIR)/$(am__dirstamp)
+	-rm -f int/$(am__dirstamp)
 	-rm -f io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f io/$(am__dirstamp)
 	-rm -f io/private/$(DEPDIR)/$(am__dirstamp)
@@ -1745,7 +1786,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-local distclean-tags
@@ -1799,7 +1840,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) compat/$(DEPDIR) engine/$(DEPDIR) int/$(DEPDIR) io/$(DEPDIR) io/private/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) ui/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

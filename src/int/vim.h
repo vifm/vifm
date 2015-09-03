@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__VIM_H__
-#define VIFM__VIM_H__
+#ifndef VIFM__INT__VIM_H__
+#define VIFM__INT__VIM_H__
 
 #include <stddef.h> /* size_t */
 
-#include "ui/ui.h"
-#include "utils/test_helpers.h"
+#include "../ui/ui.h"
+#include "../utils/test_helpers.h"
 
 /* Formats command to display documentation on the topic in Vim-help format.
  * Returns non-zero if command that should be run in background, otherwise zero
@@ -68,7 +68,7 @@ TSTATIC_DEFS(
 	void trim_right(char str[]);
 )
 
-#endif /* VIFM__VIM_H__ */
+#endif /* VIFM__INT__VIM_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

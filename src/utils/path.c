@@ -37,7 +37,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
-#include "../path_env.h"
+#include "../int/path_env.h"
 #include "env.h"
 #include "fs.h"
 #include "log.h"

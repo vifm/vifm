@@ -1,7 +1,7 @@
 #ifndef VIFM_TESTS__FILETYPE__TEST_H__
 #define VIFM_TESTS__FILETYPE__TEST_H__
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 
 void set_programs(const char pattern[], const char programs[], int for_x,
 		int in_x);

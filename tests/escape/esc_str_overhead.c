@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/escape.h"
+#include "../../src/ui/escape.h"
 
 TEST(no_esc_zero_overhead)
 {

@@ -35,6 +35,7 @@
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
 #include "ui/ui.h"
@@ -43,7 +44,6 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
-#include "fileview.h"
 #include "ipc.h"
 #include "status.h"
 

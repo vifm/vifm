@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/escape.h"
 #include "../../src/utils/utils.h"
-#include "../../src/escape.h"
 
 static int locale_works(void);
 

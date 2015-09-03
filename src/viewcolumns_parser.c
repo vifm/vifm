@@ -25,9 +25,9 @@
 #include <string.h> /* strchr() strdup() strtok_r() */
 
 #include "compat/reallocarray.h"
+#include "ui/column_view.h"
 #include "utils/macros.h"
 #include "utils/str.h"
-#include "column_view.h"
 
 static column_info_t * parse_all(map_name_cb cn, const char str[], size_t *len,
 		void *arg);
