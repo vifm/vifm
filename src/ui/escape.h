@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__ESCAPE_H__
-#define VIFM__ESCAPE_H__
+#ifndef VIFM__UI__ESCAPE_H__
+#define VIFM__UI__ESCAPE_H__
 
 #include <regex.h>
 
@@ -25,8 +25,8 @@
 
 #include <stddef.h> /* size_t */
 
+#include "../utils/test_helpers.h"
 #include "colors.h"
-#include "utils/test_helpers.h"
 
 /* Possible modes of processing escape codes. */
 typedef enum
@@ -80,7 +80,7 @@ TSTATIC_DEFS(
 	const char * strchar2str(const char str[], int pos, size_t *screen_width);
 )
 
-#endif /* VIFM__ESCAPE_H__ */
+#endif /* VIFM__UI__ESCAPE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

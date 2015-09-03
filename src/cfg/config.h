@@ -23,8 +23,8 @@
 #include <stddef.h> /* size_t wchar_t */
 
 #include "../compat/fs_limits.h"
+#include "../ui/color_scheme.h"
 #include "../ui/ui.h"
-#include "../color_scheme.h"
 #include "../types.h"
 #include "hist.h"
 

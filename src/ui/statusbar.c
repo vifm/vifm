@@ -31,7 +31,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
-#include "../color_manager.h"
+#include "color_manager.h"
 #include "statusline.h"
 #include "ui.h"
 

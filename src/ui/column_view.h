@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__COLUMN_VIEW_H__
-#define VIFM__COLUMN_VIEW_H__
+#ifndef VIFM__UI__COLUMN_VIEW_H__
+#define VIFM__UI__COLUMN_VIEW_H__
 
 #include <stddef.h> /* size_t */
 
@@ -98,7 +98,7 @@ void columns_clear(columns_t cols);
 void columns_format_line(const columns_t cols, const void *data,
 		size_t max_line_width);
 
-#endif /* VIFM__COLUMN_VIEW_H__ */
+#endif /* VIFM__UI__COLUMN_VIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

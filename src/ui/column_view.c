@@ -23,11 +23,11 @@
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* memmove() memset() strcpy() strlen() */
 
-#include "compat/reallocarray.h"
-#include "utils/macros.h"
-#include "utils/str.h"
-#include "utils/utf8.h"
-#include "utils/utils.h"
+#include "../compat/reallocarray.h"
+#include "../utils/macros.h"
+#include "../utils/str.h"
+#include "../utils/utf8.h"
+#include "../utils/utils.h"
 
 /* Maximum number of ellipsis dots. */
 #define MAX_ELLIPSIS_DOT_COUNT 3U

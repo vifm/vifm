@@ -23,9 +23,9 @@
 #include <string.h>
 
 #include "compat/reallocarray.h"
+#include "ui/fileview.h"
 #include "ui/ui.h"
 #include "filelist.h"
-#include "fileview.h"
 
 stack_entry_t *stack;
 unsigned int stack_top;

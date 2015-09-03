@@ -4,8 +4,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h>
 
+#include "../../src/ui/column_view.h"
 #include "../../src/utils/macros.h"
-#include "../../src/column_view.h"
 
 #include "test.h"
 

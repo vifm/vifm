@@ -160,9 +160,16 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
+	ui/color_manager.c ui/color_manager.h \
+	ui/color_scheme.c ui/color_scheme.h \
+	ui/colors.h \
+	ui/column_view.c ui/column_view.h \
+	ui/escape.c ui/escape.h \
+	ui/fileview.c ui/fileview.h \
+	ui/private/statusline.h \
+	ui/quickview.c ui/quickview.h \
 	ui/statusbar.c ui/statusbar.h \
 	ui/statusline.c ui/statusline.h \
-	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/dynarray.c utils/dynarray.h \
@@ -192,27 +199,20 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	color_scheme.c color_scheme.h \
-	column_view.c column_view.h \
-	colors.h \
-	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	dir_stack.c dir_stack.h \
-	escape.c escape.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
-	fileview.c fileview.h \
 	filtering.c filtering.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \

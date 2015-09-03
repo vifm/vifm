@@ -117,7 +117,10 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	ui/cancellation.$(OBJEXT) ui/statusbar.$(OBJEXT) \
+	ui/cancellation.$(OBJEXT) ui/color_manager.$(OBJEXT) \
+	ui/color_scheme.$(OBJEXT) ui/column_view.$(OBJEXT) \
+	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
+	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
 	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
@@ -130,16 +133,14 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	color_manager.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
-	escape.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fileview.$(OBJEXT) filtering.$(OBJEXT) \
-	ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) quickview.$(OBJEXT) registers.$(OBJEXT) \
-	running.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
-	sort.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
+	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
+	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
+	opt_handlers.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
 	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
 	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
@@ -457,9 +458,16 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
+	ui/color_manager.c ui/color_manager.h \
+	ui/color_scheme.c ui/color_scheme.h \
+	ui/colors.h \
+	ui/column_view.c ui/column_view.h \
+	ui/escape.c ui/escape.h \
+	ui/fileview.c ui/fileview.h \
+	ui/private/statusline.h \
+	ui/quickview.c ui/quickview.h \
 	ui/statusbar.c ui/statusbar.h \
 	ui/statusline.c ui/statusline.h \
-	ui/private/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/dynarray.c utils/dynarray.h \
@@ -489,27 +497,20 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	color_scheme.c color_scheme.h \
-	column_view.c column_view.h \
-	colors.h \
-	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	dir_stack.c dir_stack.h \
-	escape.c escape.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
-	fileview.c fileview.h \
 	filtering.c filtering.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \
@@ -825,6 +826,16 @@ ui/$(DEPDIR)/$(am__dirstamp):
 	@: > ui/$(DEPDIR)/$(am__dirstamp)
 ui/cancellation.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
+ui/color_manager.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/color_scheme.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/column_view.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
+ui/escape.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
+ui/fileview.$(OBJEXT): ui/$(am__dirstamp) ui/$(DEPDIR)/$(am__dirstamp)
+ui/quickview.$(OBJEXT): ui/$(am__dirstamp) \
+	ui/$(DEPDIR)/$(am__dirstamp)
 ui/statusbar.$(OBJEXT): ui/$(am__dirstamp) \
 	ui/$(DEPDIR)/$(am__dirstamp)
 ui/statusline.$(OBJEXT): ui/$(am__dirstamp) \
@@ -984,6 +995,12 @@ mostlyclean-compile:
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
 	-rm -f ui/cancellation.$(OBJEXT)
+	-rm -f ui/color_manager.$(OBJEXT)
+	-rm -f ui/color_scheme.$(OBJEXT)
+	-rm -f ui/column_view.$(OBJEXT)
+	-rm -f ui/escape.$(OBJEXT)
+	-rm -f ui/fileview.$(OBJEXT)
+	-rm -f ui/quickview.$(OBJEXT)
 	-rm -f ui/statusbar.$(OBJEXT)
 	-rm -f ui/statusline.$(OBJEXT)
 	-rm -f ui/ui.$(OBJEXT)
@@ -1014,27 +1031,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/escape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filename_modifiers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quickview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/running.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
@@ -1117,6 +1128,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/msg_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/cancellation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/color_scheme.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/column_view.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/escape.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/fileview.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/quickview.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@

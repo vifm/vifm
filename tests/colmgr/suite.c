@@ -1,7 +1,7 @@
 #include <stic.h>
 
+#include "../../src/ui/color_manager.h"
 #include "../../src/utils/macros.h"
-#include "../../src/color_manager.h"
 
 #include "test.h"
 

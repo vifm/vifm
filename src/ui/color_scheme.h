@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__COLOR_SCHEME_H__
-#define VIFM__COLOR_SCHEME_H__
+#ifndef VIFM__UI__COLOR_SCHEME_H__
+#define VIFM__UI__COLOR_SCHEME_H__
 
 #include <regex.h> /* regex_t */
 
 #include <stddef.h> /* size_t */
 
-#include "compat/fs_limits.h"
+#include "../compat/fs_limits.h"
 #include "colors.h"
 
 /* Pseudo name of the default built-in color scheme. */
@@ -131,7 +131,7 @@ const col_attr_t * get_file_hi(const col_scheme_t *cs, const char fname[],
  * so, otherwise zero is returned. */
 int is_color_set(const col_attr_t *color);
 
-#endif /* VIFM__COLOR_SCHEME_H__ */
+#endif /* VIFM__UI__COLOR_SCHEME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

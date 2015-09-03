@@ -55,6 +55,8 @@
 #include "menus/menus.h"
 #endif
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/color_scheme.h"
+#include "ui/colors.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
@@ -62,8 +64,6 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "bmarks.h"
-#include "color_scheme.h"
-#include "colors.h"
 #include "commands.h"
 #include "filelist.h"
 #include "filetype.h"

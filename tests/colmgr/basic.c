@@ -4,8 +4,8 @@
 
 #include <limits.h>
 
-#include "../../src/colors.h"
-#include "../../src/color_manager.h"
+#include "../../src/ui/colors.h"
+#include "../../src/ui/color_manager.h"
 
 #include "test.h"
 

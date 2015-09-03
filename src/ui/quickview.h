@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__QUICKVIEW_H__
-#define VIFM__QUICKVIEW_H__
+#ifndef VIFM__UI__QUICKVIEW_H__
+#define VIFM__UI__QUICKVIEW_H__
 
 #include <stdio.h> /* FILE */
 
-#include "ui/ui.h"
+#include "ui.h"
 
 void quick_view_file(FileView *view);
 
@@ -41,7 +41,7 @@ void qv_cleanup(FileView *view, const char cmd[]);
  * string stored internally. */
 const char * gv_get_viewer(const char path[]);
 
-#endif /* VIFM__QUICKVIEW_H__ */
+#endif /* VIFM__UI__QUICKVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

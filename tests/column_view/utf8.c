@@ -6,7 +6,7 @@
 
 #include "../../src/utils/utf8.h"
 #include "../../src/utils/utils.h"
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 
 #include "test.h"
 

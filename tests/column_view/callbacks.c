@@ -2,7 +2,7 @@
 
 #include <stddef.h> /* NULL size_t */
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 
 #include "test.h"
 

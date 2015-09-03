@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-#include "../../src/escape.h"
+#include "../../src/ui/escape.h"
 
 #define INV_START "\033[7,1m"
 #define INV_END "\033[27,22m"

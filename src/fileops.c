@@ -52,6 +52,7 @@
 #include "modes/cmdline.h"
 #include "modes/modes.h"
 #include "ui/cancellation.h"
+#include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #ifdef _WIN32
@@ -68,7 +69,6 @@
 #include "background.h"
 #include "commands_completion.h"
 #include "filelist.h"
-#include "fileview.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"

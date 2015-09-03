@@ -1,8 +1,8 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
-#include "../../src/fileview.h"
 
 static void ensure_all_visible(int odd);
 

@@ -1,7 +1,7 @@
 #ifndef VIFM_TESTS__COLUMN_VIEW__TEST_H__
 #define VIFM_TESTS__COLUMN_VIEW__TEST_H__
 
-#include "../../src/column_view.h"
+#include "../../src/ui/column_view.h"
 
 #define COL1_ID 1
 #define COL2_ID 2

@@ -24,10 +24,10 @@
 
 #include "../compat/fs_limits.h"
 #include "../cfg/config.h"
+#include "../ui/color_scheme.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../color_scheme.h"
 #include "menus.h"
 
 static int sorter(const void *first, const void *second);

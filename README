@@ -153,8 +153,14 @@ Package content
     |  |
     |  |-- ui/ - most of ui related code
     |  |  |
-    |  |  |-- private/ - internal headers of ui
     |  |  |-- cancellation.c - managing operation cancellation
+    |  |  |-- color_manager.c - manager of curses color pairs
+    |  |  |-- color_scheme.c - color schemes
+    |  |  |-- column_view.c - column formatting unit
+    |  |  |-- escape.c - escape sequences related stuff
+    |  |  |-- fileview.c - display/redraw/manage file view
+    |  |  |-- private/ - internal headers of ui
+    |  |  |-- quickview.c - implementation of quick view
     |  |  |-- statusbar.c - managing status bar
     |  |  |-- statusline.c - status line formatting
     |  |  `-- ui.c - ui initialization and other ui related functions
@@ -185,26 +191,20 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
-    |  |-- color_manager.c - manager of curses color pairs
-    |  |-- color_scheme.c - color schemes
-    |  |-- column_view.c - column formatting unit
     |  |-- commands.c - handles command line commands
     |  |-- commands_completion.c - handles command line completion
-    |  |-- escape.c - escape sequences related stuff
     |  |-- event_loop.c - event dispatching loop
     |  |-- dir_stack.c - for :pushd and :popd commands
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- fileops.c - delete/copy/put selected file(s)
     |  |-- filetype.c - stores filetype information from vifmrc
-    |  |-- fileview.c - display/redraw/manage file view
     |  |-- filtering.c - managing file filters
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories
     |  |-- ops.c - most of operations performed on file system
     |  |-- opt_handlers.c - initialization of options and option change handlers
-    |  |-- quickview.c - implementation of quick view
     |  |-- registers.c - implementation of registers
     |  |-- running.c - code of handing file and commands running
     |  |-- search.c - code for / and ? commands of normal mode

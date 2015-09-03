@@ -37,10 +37,10 @@
 #include "../utils/filemon.h"
 #include "../utils/filter.h"
 #include "../utils/trie.h"
-#include "../color_scheme.h"
-#include "../column_view.h"
 #include "../status.h"
 #include "../types.h"
+#include "color_scheme.h"
+#include "column_view.h"
 
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30

@@ -27,13 +27,13 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
-#include "fileview.h"
 
 static int find_and_goto_pattern(FileView *view, int wrap_start, int backward);
 static int find_and_goto_match(FileView *view, int start, int backward);

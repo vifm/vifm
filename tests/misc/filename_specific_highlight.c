@@ -1,8 +1,8 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/color_scheme.h"
 #include "../../src/utils/matcher.h"
-#include "../../src/color_scheme.h"
 #include "../../src/commands.h"
 #include "../../src/status.h"
 
