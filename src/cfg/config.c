@@ -204,7 +204,7 @@ cfg_init(void)
 	cfg.word_chars['\x20'] = 0;
 
 #ifndef _WIN32
-	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/vifm-startup-log", getenv("HOME"));
 #else
 	{
 		char exe_dir[PATH_MAX];

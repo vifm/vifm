@@ -4681,14 +4681,23 @@ So it basically consists of four parts:
 
 .B Alignment specifier
 
-It's an optional minus sign as the first symbol of the string.
+It's an optional minus or asterix sign as the first symbol of the string.
 
-Specifies type of text alignment within a column.  Two types are supported:
+Specifies type of text alignment within a column. Three types are supported:
 .IP \- 2
 left align
 
 .EX
   set viewcolumns=\-{name}
+.EE
+.IP \- 2
+file align
+
+It's like left alignment, but when the text is bigger then the column, the
+alignment is made at the right (so the file name is always visible).
+
+.EX
+  set viewcolumns=*{name}
 .EE
 .IP \- 2
 right align (default)

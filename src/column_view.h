@@ -31,6 +31,9 @@
 typedef enum
 {
 	AT_LEFT, /* left alignment */
+	AT_FILE, /* left alignment, if the text fits
+							if the text is longer, make sure the 
+							filename is always visible */
 	AT_RIGHT /* right alignment */
 }
 AlignType;

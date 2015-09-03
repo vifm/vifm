@@ -145,6 +145,11 @@ parse_align(const char str[], column_info_t *info)
 		info->align = AT_LEFT;
 		str++;
 	}
+	else if(*str == '*')
+	{
+		info->align = AT_FILE;
+		str++;
+	}
 	return str;
 }
 
