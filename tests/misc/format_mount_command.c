@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/fuse.h"
+#include "../../src/int/fuse.h"
 
 TEST(no_macro_string_unchanged)
 {

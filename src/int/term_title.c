@@ -36,11 +36,11 @@
 #include <stdio.h> /* stdout fflush() */
 #include <stdlib.h> /* atol() free() */
 
-#include "utils/env.h"
-#include "utils/macros.h"
-#include "utils/str.h"
-#include "utils/string_array.h"
-#include "utils/utf8.h"
+#include "../utils/env.h"
+#include "../utils/macros.h"
+#include "../utils/str.h"
+#include "../utils/string_array.h"
+#include "../utils/utf8.h"
 
 static struct
 {

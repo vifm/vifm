@@ -22,16 +22,16 @@
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strchr() strlen() */
 
-#include "cfg/config.h"
-#include "compat/fs_limits.h"
-#include "compat/os.h"
-#include "compat/reallocarray.h"
-#include "engine/variables.h"
-#include "utils/env.h"
-#include "utils/fs.h"
-#include "utils/path.h"
-#include "utils/str.h"
-#include "utils/string_array.h"
+#include "../cfg/config.h"
+#include "../compat/fs_limits.h"
+#include "../compat/os.h"
+#include "../compat/reallocarray.h"
+#include "../engine/variables.h"
+#include "../utils/env.h"
+#include "../utils/fs.h"
+#include "../utils/path.h"
+#include "../utils/str.h"
+#include "../utils/string_array.h"
 
 static int path_env_was_changed(int force);
 static void append_scripts_dirs(void);

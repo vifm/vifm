@@ -16,17 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FILE_MAGIC_H__
-#define VIFM__FILE_MAGIC_H__
+#ifndef VIFM__INT__TERM_TITLE_H__
+#define VIFM__INT__TERM_TITLE_H__
 
-#include "filetype.h"
+/* Updates terminal title. If title_part is NULL, resets terminal title. */
+void set_term_title(const char *title_part);
 
-/* Returns pointer to a statically allocated buffer. */
-const char * get_mimetype(const char *file);
-/* Caller shouldn't free anything. */
-assoc_records_t get_magic_handlers(const char *file);
-
-#endif /* VIFM__FILE_MAGIC_H__ */
+#endif /* VIFM__INT__TERM_TITLE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

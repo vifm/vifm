@@ -45,6 +45,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -75,7 +76,6 @@
 #include "trash.h"
 #include "types.h"
 #include "undo.h"
-#include "vim.h"
 
 /* 10 to the power of number of digits after decimal point to take into account
  * on progress percentage counting. */

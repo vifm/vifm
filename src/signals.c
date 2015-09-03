@@ -30,11 +30,11 @@
 #include <string.h> /* strsignal() */
 
 #include "cfg/info.h"
+#include "int/fuse.h"
+#include "int/term_title.h"
 #include "ui/cancellation.h"
 #include "utils/log.h"
 #include "utils/macros.h"
-#include "fuse.h"
-#include "term_title.h"
 
 static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 

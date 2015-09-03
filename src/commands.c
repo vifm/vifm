@@ -56,6 +56,8 @@
 #include "engine/text_buffer.h"
 #include "engine/var.h"
 #include "engine/variables.h"
+#include "int/path_env.h"
+#include "int/vim.h"
 #include "menus/all.h"
 #include "modes/dialogs/attr_dialog.h"
 #include "modes/dialogs/change_dialog.h"
@@ -96,14 +98,12 @@
 #include "marks.h"
 #include "ops.h"
 #include "opt_handlers.h"
-#include "path_env.h"
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
 #include "trash.h"
 #include "undo.h"
 #include "vifm.h"
-#include "vim.h"
 
 /* Command scope marker. */
 #define SCOPE_GUARD INT_MIN

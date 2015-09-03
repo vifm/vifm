@@ -101,6 +101,13 @@ vifm_SOURCES = \
 	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
+	int/desktop.c int/desktop.h \
+	int/file_magic.c int/file_magic.h \
+	int/fuse.c int/fuse.h \
+	int/path_env.c int/path_env.h \
+	int/term_title.c int/term_title.h \
+	int/vim.c int/vim.h \
+	\
 	io/ioc.h \
 	io/ioe.h \
 	io/ioe.c io/ioe.h \
@@ -191,24 +198,20 @@ vifm_SOURCES = \
 	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
-	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
 	escape.c escape.h \
 	event_loop.c event_loop.h \
-	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	fileview.c fileview.h \
 	filtering.c filtering.h \
-	fuse.c fuse.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	path_env.c path_env.h \
 	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
@@ -217,14 +220,12 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	status.c status.h \
 	tags.c tags.h \
-	term_title.c term_title.h \
 	trash.c trash.h \
 	types.c types.h \
 	undo.c undo.h \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
-	vifm.c vifm.h \
-	vim.c vim.h
+	vifm.c vifm.h
 nodist_vifm_SOURCES = \
 	compile_info.c
 

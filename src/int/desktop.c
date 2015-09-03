@@ -25,12 +25,12 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
-#include "compat/fs_limits.h"
-#include "compat/os.h"
-#include "utils/path.h"
-#include "utils/str.h"
-#include "utils/utils.h"
-#include "filetype.h"
+#include "../compat/fs_limits.h"
+#include "../compat/os.h"
+#include "../utils/path.h"
+#include "../utils/str.h"
+#include "../utils/utils.h"
+#include "../filetype.h"
 
 static const char EXEC_KEY[] = "Exec=";
 static const char MIMETYPE_KEY[] = "MimeType=";

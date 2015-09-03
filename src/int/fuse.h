@@ -17,11 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FUSE_H__
-#define VIFM__FUSE_H__
+#ifndef VIFM__INT__FUSE_H__
+#define VIFM__INT__FUSE_H__
 
-#include "ui/ui.h"
-#include "utils/test_helpers.h"
+#include "../ui/ui.h"
+#include "../utils/test_helpers.h"
 
 /* Won't mount same file twice */
 void fuse_try_mount(FileView *view, const char program[]);
@@ -59,7 +59,7 @@ TSTATIC_DEFS(
 			int *foreground);
 )
 
-#endif /* VIFM__FUSE_H__ */
+#endif /* VIFM__INT__FUSE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

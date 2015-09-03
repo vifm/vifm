@@ -33,6 +33,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
@@ -58,7 +59,6 @@
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
-#include "../vim.h"
 
 static void draw_menu_item(menu_info *m, char buf[], int off,
 		const col_attr_t *col);

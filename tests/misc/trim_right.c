@@ -2,7 +2,7 @@
 
 #include <ctype.h> /* isspace() */
 
-#include "../../src/vim.h"
+#include "../../src/int/vim.h"
 
 TEST(empty_string)
 {

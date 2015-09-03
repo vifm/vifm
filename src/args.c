@@ -26,6 +26,7 @@
 #include "compat/fs_limits.h"
 #include "compat/getopt.h"
 #include "compat/reallocarray.h"
+#include "int/vim.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/fs.h"
 #include "utils/path.h"
@@ -34,7 +35,6 @@
 #include "ipc.h"
 #include "version.h"
 #include "vifm.h"
-#include "vim.h"
 
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
