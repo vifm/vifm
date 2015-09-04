@@ -120,11 +120,11 @@ TEST(truncation_on_right_align)
 	assert_string_equal(expected, print_buffer);
 }
 
-TEST(file_align)
+TEST(dyn_align)
 {
 	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
-		.align = AT_FILE,     .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+		.align = AT_DYN,      .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
 	};
 
 	columns_t cols = columns_create();

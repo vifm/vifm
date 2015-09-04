@@ -329,8 +329,8 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 		return;
 	}
 
-	if(col->info.align == AT_LEFT || 
-			(col->info.align == AT_FILE && len <= max_col_width))
+	if(col->info.align == AT_LEFT ||
+			(col->info.align == AT_DYN && len <= max_col_width))
 	{
 		const size_t truncate_pos = utf8_strsnlen(buf, max_col_width);
 		buf[truncate_pos] = '\0';

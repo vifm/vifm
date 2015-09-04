@@ -3938,20 +3938,22 @@ Alignment specifier~
 It's an optional minus or asterisk sign as the first symbol of the string.
 
 Specifies type of text alignment within a column.  Two types are supported:
+
  - left align >
 
      set viewcolumns=-{name}
 <
- - file align
-
-    It's like left alignment, but when the text is bigger then the column,
-    the alignment is made at the right (so the file name is always visible). >
-
-     set viewcolumns=*{name}
-<
  - right align (default) >
 
      set viewcolumns={name}
+<
+ - dynamic align
+
+    It's like left alignment, but when the text is bigger than the column,
+    the alignment is made at the right (so the of part of the field is always
+    visible). >
+
+     set viewcolumns=*{name}
 <
 Width specifier~
 

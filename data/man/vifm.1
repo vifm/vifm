@@ -4691,19 +4691,19 @@ left align
   set viewcolumns=\-{name}
 .EE
 .IP \- 2
-file align
-
-It's like left alignment, but when the text is bigger then the column, the
-alignment is made at the right (so the file name is always visible).
-
-.EX
-  set viewcolumns=*{name}
-.EE
-.IP \- 2
 right align (default)
 
 .EX
   set viewcolumns={name}
+.EE
+.IP \- 2
+dynamic align
+
+It's like left alignment, but when the text is bigger than the column, the
+alignment is made at the right (so the of part of the field is always visible).
+
+.EX
+  set viewcolumns=*{name}
 .EE
 .LP
 .B Width specifier

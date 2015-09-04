@@ -30,11 +30,10 @@
 /* Type of text alignment within a column. */
 typedef enum
 {
-	AT_LEFT, /* left alignment */
-	AT_FILE, /* left alignment, if the text fits
-							if the text is longer, make sure the 
-							filename is always visible */
-	AT_RIGHT /* right alignment */
+	AT_LEFT,  /* Left alignment. */
+	AT_RIGHT, /* Right alignment. */
+	AT_DYN    /* Left alignment, if the text fits if the text is longer, make sure
+	             the end of field is always visible. */
 }
 AlignType;
 
