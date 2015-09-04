@@ -30,26 +30,28 @@
 /* Type of text alignment within a column. */
 typedef enum
 {
-	AT_LEFT, /* left alignment */
-	AT_RIGHT /* right alignment */
+	AT_LEFT,  /* Left alignment. */
+	AT_RIGHT, /* Right alignment. */
+	AT_DYN    /* Left alignment, if the text fits if the text is longer, make sure
+	             the end of field is always visible. */
 }
 AlignType;
 
 /* Type of size units of a column. */
 typedef enum
 {
-	ST_ABSOLUTE, /* column width is specified in characters */
-	ST_PERCENT, /* column width is specified in percents of view width */
-	ST_AUTO /* column width is automatically determined */
+	ST_ABSOLUTE, /* Column width is specified in characters. */
+	ST_PERCENT,  /* Column width is specified in percents of view width. */
+	ST_AUTO      /* Column width is automatically determined. */
 }
 SizingType;
 
 /* Type of text truncation if it doesn't fix in the column. */
 typedef enum
 {
-	CT_TRUNCATE, /* text is truncated */
-	CT_ELLIPSIS, /* ellipsis are added */
-	CT_NONE /* text can pass column boundaries */
+	CT_TRUNCATE, /* Text is truncated. */
+	CT_ELLIPSIS, /* Ellipsis are added. */
+	CT_NONE      /* Text can pass column boundaries. */
 }
 CropType;
 
@@ -68,10 +70,10 @@ typedef void (*column_line_print_func)(const void *data, int column_id,
 /* Structure containing various column display properties. */
 typedef struct
 {
-	int column_id; /* Unique id of existing column. */
+	int column_id;     /* Unique id of existing column. */
 	size_t full_width; /* Full width of the column, units depend on size type. */
 	size_t text_width; /* Text width, ignored unless size type is ST_ABSOLUTE. */
-	AlignType align; /* Specifies type of text alignment. */
+	AlignType align;   /* Specifies type of text alignment. */
 	SizingType sizing; /* Specifies type of sizing. */
 	CropType cropping; /* Specifies type of text cropping. */
 }
@@ -79,21 +81,27 @@ column_info_t;
 
 /* Registers column print function. */
 void columns_set_line_print_func(column_line_print_func func);
+
 /* Registers column func by its unique column_id.
  * Returns zero on success and non-zero otherwise. */
 int columns_add_column_desc(int column_id, column_func func);
+
 /* Unregisters all column functions. */
 void columns_clear_column_descs(void);
 
 /* Creates column view. Returns NULL_COLUMNS on error. */
 columns_t columns_create(void);
+
 /* Frees previously allocated columns.  Passing NULL_COLUMNS is ok. */
 void columns_free(columns_t cols);
+
 /* Adds one column to the cols as the most right one. Duplicates are
  * allowed. */
 void columns_add_column(columns_t cols, column_info_t info);
+
 /* Clears list of columns of the cols. */
 void columns_clear(columns_t cols);
+
 /* Performs actual formatting of columns. */
 void columns_format_line(const columns_t cols, const void *data,
 		size_t max_line_width);

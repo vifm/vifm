@@ -329,7 +329,8 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 		return;
 	}
 
-	if(col->info.align == AT_LEFT)
+	if(col->info.align == AT_LEFT ||
+			(col->info.align == AT_DYN && len <= max_col_width))
 	{
 		const size_t truncate_pos = utf8_strsnlen(buf, max_col_width);
 		buf[truncate_pos] = '\0';
@@ -420,7 +421,7 @@ calculate_start_pos(const column_t *col, const char buf[])
 	{
 		const size_t end = col->start + col->width;
 		const size_t len = get_width_on_screen(buf);
-		return (end > len) ? (end - len) : 0;
+		return (end > len && col->info.align == AT_RIGHT) ? (end - len) : 0;
 	}
 }
 

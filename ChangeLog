@@ -48,6 +48,9 @@
 	deletes an item in trash or empties trash.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
 
+	Added dynamic view column alignment (specified by "*", just like "-" for
+	left alignment).  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

@@ -143,7 +143,12 @@ parse_align(const char str[], column_info_t *info)
 	if(*str == '-')
 	{
 		info->align = AT_LEFT;
-		str++;
+		++str;
+	}
+	else if(*str == '*')
+	{
+		info->align = AT_DYN;
+		++str;
 	}
 	return str;
 }

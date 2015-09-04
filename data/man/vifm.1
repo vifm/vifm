@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 02, 2015" "vifm 0.8"
+.TH VIFM 1 "September 04, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4681,9 +4681,9 @@ So it basically consists of four parts:
 
 .B Alignment specifier
 
-It's an optional minus sign as the first symbol of the string.
+It's an optional minus or asterisk sign as the first symbol of the string.
 
-Specifies type of text alignment within a column.  Two types are supported:
+Specifies type of text alignment within a column.  Three types are supported:
 .IP \- 2
 left align
 
@@ -4695,6 +4695,15 @@ right align (default)
 
 .EX
   set viewcolumns={name}
+.EE
+.IP \- 2
+dynamic align
+
+It's like left alignment, but when the text is bigger than the column, the
+alignment is made at the right (so the of part of the field is always visible).
+
+.EX
+  set viewcolumns=*{name}
 .EE
 .LP
 .B Width specifier
