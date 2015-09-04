@@ -113,12 +113,49 @@ TEST(truncation_on_right_align)
 	columns_add_column(cols, column_info);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
-	print_buffer[1] = '\0';
 	columns_format_line(cols, NULL, 1);
 
 	columns_free(cols);
 
 	assert_string_equal(expected, print_buffer);
+}
+
+TEST(file_align)
+{
+	static column_info_t column_info = {
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_FILE,     .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+
+	columns_t cols = columns_create();
+	col1_next = column1_func2;
+	columns_add_column(cols, column_info);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 8);
+	assert_string_equal("abcdefg ", print_buffer);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 7);
+	assert_string_equal("abcdefg", print_buffer);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 6);
+	assert_string_equal("bcdefg", print_buffer);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 4);
+	assert_string_equal("defg", print_buffer);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 2);
+	assert_string_equal("fg", print_buffer);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 1);
+	assert_string_equal("g", print_buffer);
+
+	columns_free(cols);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
