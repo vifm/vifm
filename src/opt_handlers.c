@@ -1846,7 +1846,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 		}
 
 		val.str_val = view->view_columns;
-		set_option("viewcolumns", val, OPT_GLOBAL);
+		set_option("viewcolumns", val, OPT_LOCAL);
 	}
 	else
 	{

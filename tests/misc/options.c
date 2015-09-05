@@ -139,6 +139,8 @@ TEST(recovering_from_wrong_viewcolumns_value_works)
 	ncols = 0;
 	columns_format_line(curr_view->columns, NULL, 100);
 	assert_int_equal(2, ncols);
+
+	assert_string_equal("", get_option_value("viewcolumns", OPT_LOCAL));
 }
 
 TEST(set_local_sets_local_value)
