@@ -58,7 +58,7 @@ ipc_enabled(void)
 #include <sys/un.h>
 #endif
 #include <sys/types.h>
-#include <unistd.h>
+#include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */
 #include <errno.h>
@@ -115,7 +115,7 @@ ipc_init(recieve_callback callback_func)
 	}
 
 	/* FIXME: used to call try_become_a_server() here, but it always succeeds (see
-	 *        FIXME comment there, which breaks our logic. */
+	 *        FIXME comment there), which breaks our logic. */
 
 	atexit(&clean_at_exit);
 	initialized = 1;

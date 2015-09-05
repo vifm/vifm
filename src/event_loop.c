@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <unistd.h> /* select() */
+#include <unistd.h>
 
 #include <assert.h> /* assert() */
 #include <signal.h> /* signal() */

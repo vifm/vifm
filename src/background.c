@@ -26,7 +26,7 @@
 #include <pthread.h> /* PTHREAD_* pthread_*() */
 
 #include <fcntl.h> /* open() */
-#include <unistd.h>
+#include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
