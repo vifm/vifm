@@ -1839,8 +1839,10 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 
 		if(update_ui)
 		{
-			(void)parse_columns(columns, &add_column, &map_name, view->view_columns,
-					view);
+			const char *old_value = (view->view_columns[0] == '\0')
+			                      ? DEFAULT_VIEW_COLUMNS
+			                      : view->view_columns;
+			(void)parse_columns(columns, &add_column, &map_name, old_value, view);
 		}
 
 		val.str_val = view->view_columns;

@@ -5,12 +5,17 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/commands.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
 
-static void format_name(int id, const void *data, size_t buf_len, char buf[]);
+static void print_func(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
+static void format_none(int id, const void *data, size_t buf_len, char buf[]);
+
+static int ncols;
 
 SETUP()
 {
@@ -43,6 +48,7 @@ SETUP()
 	lwin.view_columns = strdup("");
 	lwin.num_width_g = 4;
 	lwin.num_width = 4;
+	lwin.ls_view = 0;
 
 	rwin.dir_entry = NULL;
 	rwin.list_rows = 0;
@@ -53,8 +59,12 @@ SETUP()
 	rwin.view_columns = strdup("");
 	rwin.num_width_g = 4;
 	rwin.num_width = 4;
+	rwin.ls_view = 0;
 
-	columns_add_column_desc(SK_BY_NAME, &format_name);
+	/* Name+size matches default column view setting ("-{name},{}"). */
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_set_line_print_func(&print_func);
 
 	init_option_handlers();
 }
@@ -93,8 +103,16 @@ TEARDOWN()
 }
 
 static void
-format_name(int id, const void *data, size_t buf_len, char buf[])
+print_func(const void *data, int column_id, const char buf[], size_t offset,
+		AlignType align, const char full_column[])
 {
+	ncols += (column_id != FILL_COLUMN_ID);
+}
+
+static void
+format_none(int id, const void *data, size_t buf_len, char buf[])
+{
+	buf[0] = '\0';
 }
 
 TEST(lsview_block_columns_update_on_sort_change)
@@ -103,6 +121,24 @@ TEST(lsview_block_columns_update_on_sort_change)
 	assert_success(exec_commands("set lsview", curr_view, CIT_COMMAND));
 	assert_success(exec_commands("set sort=name", curr_view, CIT_COMMAND));
 	/* The check is implicit, an assert will fail if view columns are updated. */
+}
+
+TEST(recovering_from_wrong_viewcolumns_value_works)
+{
+	/* Prepare state required for the test and ensure that it's correct (default
+	 * columns). */
+	assert_success(exec_commands("set viewcolumns={name}", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("set viewcolumns=", curr_view, CIT_COMMAND));
+	ncols = 0;
+	columns_format_line(curr_view->columns, NULL, 100);
+	assert_int_equal(2, ncols);
+
+	/* Recovery after wrong string to default state should be done correctly. */
+	assert_failure(exec_commands("set viewcolumns=#4$^", curr_view, CIT_COMMAND));
+
+	ncols = 0;
+	columns_format_line(curr_view->columns, NULL, 100);
+	assert_int_equal(2, ncols);
 }
 
 TEST(set_local_sets_local_value)
