@@ -43,7 +43,7 @@ static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 #include <sys/types.h> /* pid_t */
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 
-#include <stdlib.h> /* exit() */
+#include <stdlib.h> /* EXIT_FAILURE _Exit() */
 
 #include "utils/macros.h"
 #include "background.h"
@@ -154,7 +154,12 @@ shutdown_nicely(int sig, const char descr[])
 	fuse_unmount_all();
 	write_info_file();
 	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);
-	exit(0);
+
+	/* Alternatively we could do this sequence:
+	 *     signal(sig, SIG_DFL);
+	 *     raise(sig);
+	 * but only on *nix systems. */
+	_Exit(EXIT_FAILURE);
 }
 
 void

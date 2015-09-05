@@ -607,7 +607,7 @@ main(int argc, char **argv)
 	{
 		fprintf(stderr, "Can't move vifmrc file to make a backup copy "
 				"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	(void)unlink(vifminfo_file_bak);
@@ -616,7 +616,7 @@ main(int argc, char **argv)
 	{
 		fprintf(stderr, "Can't move vifminfo file to make a backup copy "
 				"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	write_vifmrc(vifmrc_arg, mode);
@@ -795,7 +795,7 @@ write_vifmrc(const char *config_file, int comment_out)
 	{
 		fprintf(stderr, "Can't open configuration file \"%s\" for writing\n",
 				config_file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fprintf(fp, "\" vim: filetype=vifm :\n");
@@ -874,7 +874,7 @@ append_vifmrc(const char *config_file, int comment_out)
 	{
 		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
 				config_file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fprintf(fp, "\n\" :mark mark /full/directory/path [filename]\n\n");
@@ -959,7 +959,7 @@ append_startup(const char *config_file, const char *startup_file)
 	{
 		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
 				config_file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if((sfp = fopen(startup_file, "r")) == NULL)
@@ -986,7 +986,7 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 	{
 		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
 				config_file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fputs("\n\" What should be saved automatically between vifm runs\n", fp);
@@ -1020,7 +1020,7 @@ write_vifminfo(const char *config_file, int vifm_like)
 	if((fp = fopen(config_file, "w")) == NULL)
 	{
 		fprintf(stderr, "Can't open info file \"%s\" for writing\n", config_file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fprintf(fp, "# You can edit this file by hand, but it's recommended not to do that.\n");
@@ -1328,7 +1328,7 @@ write_color_schemes(const char *colors_dir)
 		if(make_dir(colors_dir, 0777) != 0)
 		{
 			fprintf(stderr, "Can't create colors directory at \"%s\"\n", colors_dir);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 

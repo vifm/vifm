@@ -503,7 +503,7 @@ convert_configs(void)
 		system("cls");
 #endif
 		endwin();
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	vifm_like_mode = !prompt_msg("Configuration update", "This version of "
