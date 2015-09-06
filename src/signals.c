@@ -25,6 +25,7 @@
 
 #include <curses.h>
 
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdio.h> /* fprintf() */
 #include <string.h> /* strsignal() */
@@ -92,6 +93,9 @@ received_sigchld(void)
 static void
 handle_signal(int sig)
 {
+	/* Try to not change errno value in the main program. */
+	const int saved_errno = errno;
+
 	switch(sig)
 	{
 		case SIGINT:
@@ -112,9 +116,9 @@ handle_signal(int sig)
 		case SIGTERM:
 			shutdown_nicely(sig, strsignal(sig));
 			break;
-		default:
-			break;
 	}
+
+	errno = saved_errno;
 }
 
 #else
@@ -170,7 +174,7 @@ setup_signals(void)
 #ifndef _WIN32
 	struct sigaction handle_signal_action;
 
-	handle_signal_action.sa_handler = handle_signal;
+	handle_signal_action.sa_handler = &handle_signal;
 	sigemptyset(&handle_signal_action.sa_mask);
 	handle_signal_action.sa_flags = SA_RESTART;
 
