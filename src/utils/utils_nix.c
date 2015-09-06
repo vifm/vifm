@@ -132,7 +132,7 @@ run_in_shell_no_cls(char command[])
 		(void)set_sigchld(0);
 
 		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
-		exit(127);
+		_Exit(127);
 	}
 
 	result = get_proc_exit_status(pid);
@@ -225,7 +225,7 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 	/* Redirect stderr and maybe stdout to write end of the pipe. */
 	if(dup2(pipe[1], STDERR_FILENO) == -1)
 	{
-		exit(1);
+		_Exit(EXIT_FAILURE);
 	}
 	if(err_only)
 	{
@@ -235,7 +235,7 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 	{
 		if(dup2(pipe[1], STDOUT_FILENO) == -1)
 		{
-			exit(1);
+			_Exit(EXIT_FAILURE);
 		}
 	}
 
@@ -249,16 +249,16 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 	{
 		if(dup2(nullfd, STDIN_FILENO) == -1)
 		{
-			exit(1);
+			_Exit(EXIT_FAILURE);
 		}
 		if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
 		{
-			exit(1);
+			_Exit(EXIT_FAILURE);
 		}
 	}
 
 	execvp(cfg.shell, make_execv_array(cfg.shell, cmd));
-	exit(1);
+	_Exit(127);
 }
 
 char **

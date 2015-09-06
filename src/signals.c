@@ -25,6 +25,7 @@
 
 #include <curses.h>
 
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdio.h> /* fprintf() */
 #include <string.h> /* strsignal() */
@@ -43,7 +44,7 @@ static void _gnuc_noreturn shutdown_nicely(int sig, const char descr[]);
 #include <sys/types.h> /* pid_t */
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 
-#include <stdlib.h> /* exit() */
+#include <stdlib.h> /* EXIT_FAILURE _Exit() */
 
 #include "utils/macros.h"
 #include "background.h"
@@ -92,6 +93,9 @@ received_sigchld(void)
 static void
 handle_signal(int sig)
 {
+	/* Try to not change errno value in the main program. */
+	const int saved_errno = errno;
+
 	switch(sig)
 	{
 		case SIGINT:
@@ -112,9 +116,9 @@ handle_signal(int sig)
 		case SIGTERM:
 			shutdown_nicely(sig, strsignal(sig));
 			break;
-		default:
-			break;
 	}
+
+	errno = saved_errno;
 }
 
 #else
@@ -154,7 +158,12 @@ shutdown_nicely(int sig, const char descr[])
 	fuse_unmount_all();
 	write_info_file();
 	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);
-	exit(0);
+
+	/* Alternatively we could do this sequence:
+	 *     signal(sig, SIG_DFL);
+	 *     raise(sig);
+	 * but only on *nix systems. */
+	_Exit(EXIT_FAILURE);
 }
 
 void
@@ -165,7 +174,7 @@ setup_signals(void)
 #ifndef _WIN32
 	struct sigaction handle_signal_action;
 
-	handle_signal_action.sa_handler = handle_signal;
+	handle_signal_action.sa_handler = &handle_signal;
 	sigemptyset(&handle_signal_action.sa_mask);
 	handle_signal_action.sa_flags = SA_RESTART;
 

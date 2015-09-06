@@ -26,12 +26,12 @@
 #include <pthread.h> /* PTHREAD_* pthread_*() */
 
 #include <fcntl.h> /* open() */
-#include <unistd.h>
+#include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* wchar_t NULL */
-#include <stdlib.h> /* free() malloc() */
+#include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
 #include <string.h>
 #include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
@@ -323,7 +323,7 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		(void)set_sigchld(0);
 
 		(void)execve(cfg.shell, make_execv_array(cfg.shell, cmd), environ);
-		exit(127);
+		_Exit(127);
 	}
 
 	if(cancellable)
@@ -501,16 +501,16 @@ background_and_capture(char *cmd, int user_sh, FILE **out, FILE **err)
 		close(error_pipe[0]);
 		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
 		{
-			exit(-1);
+			_Exit(EXIT_FAILURE);
 		}
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
-			exit(-1);
+			_Exit(EXIT_FAILURE);
 		}
 
 		sh = user_sh ? cfg.shell : "/bin/sh";
 		execvp(sh, make_execv_array(sh, cmd));
-		exit(-1);
+		_Exit(127);
 	}
 
 	close(out_pipe[1]);
@@ -672,7 +672,7 @@ start_background_job(const char *cmd, int skip_errors)
 		if(dup2(error_pipe[1], STDERR_FILENO) == -1)
 		{
 			perror("dup2");
-			exit(-1);
+			_Exit(EXIT_FAILURE);
 		}
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
@@ -686,19 +686,19 @@ start_background_job(const char *cmd, int skip_errors)
 			if(dup2(nullfd, STDIN_FILENO) == -1)
 			{
 				perror("dup2 for stdin");
-				exit(-1);
+				_Exit(EXIT_FAILURE);
 			}
 			if(dup2(nullfd, STDOUT_FILENO) == -1)
 			{
 				perror("dup2 for stdout");
-				exit(-1);
+				_Exit(EXIT_FAILURE);
 			}
 		}
 
 		setpgid(0, 0);
 
 		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
-		exit(-1);
+		_Exit(127);
 	}
 	else
 	{
@@ -843,7 +843,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	return new;
 }
 
-/* Pthreads entry point for a new background task.  Performs correct
+/* pthreads entry point for a new background task.  Performs correct
  * startup/exit with related updates of internal data structures.  Returns
  * result for this thread. */
 static void *
