@@ -19,24 +19,25 @@
 #ifndef VIFM__IPC_H__
 #define VIFM__IPC_H__
 
-typedef void (*recieve_callback)(char *args[]);
-
-/* Initializes IPC unit state.  The callback_func will be called by
- * ipc_check(). */
-void ipc_init(recieve_callback callback_func);
-
-/* Checks for incoming messages.  Calls callback passed to ipc_init(). */
-void ipc_check(void);
-
-/* Sends data to server.  The data array should end with NULL. */
-void ipc_send(char *data[]);
-
-/* Returns non-zero value if current instance is a server. */
-int ipc_server(void);
+/* Type of function that is invoked on IPC receive.  args is NULL terminated
+ * array of arguments, args[0] is absolute path at which they should be
+ * processed. */
+typedef void (*ipc_callback)(char *args[]);
 
 /* Checks whether IPC is in use.  Returns non-zero if so, otherwise zero is
  * returned. */
 int ipc_enabled(void);
+
+/* Initializes IPC unit state.  The callback_func will be called by
+ * ipc_check(). */
+void ipc_init(ipc_callback callback_func);
+
+/* Checks for incoming messages.  Calls callback passed to ipc_init(). */
+void ipc_check(void);
+
+/* Sends data to server.  The data array should end with NULL.  Returns zero on
+ * successful send and non-zero otherwise. */
+int ipc_send(char *data[]);
 
 #endif /* VIFM__IPC_H__ */
 
