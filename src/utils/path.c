@@ -571,6 +571,10 @@ to_canonic_path(const char path[], char buf[], size_t buf_len)
 			return 1;
 		}
 
+#ifdef _WIN32
+		to_forward_slash(cwd);
+#endif
+
 		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, path);
 		canonicalize_path(full_path, buf, buf_len);
 	}
