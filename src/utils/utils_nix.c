@@ -34,7 +34,7 @@
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK dup() dup2() getpid() pause() sysconf() */
+#include <unistd.h> /* X_OK dup() dup2() getpid() pause() sysconf() ttyname() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -836,6 +836,7 @@ reopen_term_stdout(void)
 {
 	FILE *fp;
 	int outfd, ttyfd;
+	char *tty_name;
 
 	outfd = dup(STDOUT_FILENO);
 	if(outfd == -1)
@@ -851,7 +852,13 @@ reopen_term_stdout(void)
 		return NULL;
 	}
 
-	ttyfd = open("/dev/tty", O_WRONLY);
+	tty_name = ttyname(STDIN_FILENO);
+	if(!tty_name)
+	{
+		tty_name = "/dev/tty";
+	}
+
+	ttyfd = open(tty_name, O_WRONLY);
 	if(ttyfd == -1)
 	{
 		fclose(fp);
@@ -874,6 +881,7 @@ int
 reopen_term_stdin(void)
 {
 	int ttyfd;
+	char* tty_name;
 
 	if(close(STDIN_FILENO))
 	{
@@ -881,7 +889,13 @@ reopen_term_stdin(void)
 		return 1;
 	}
 
-	ttyfd = open("/dev/tty", O_RDONLY);
+	tty_name = ttyname(STDIN_FILENO);
+	if(!tty_name)
+	{
+		tty_name = "/dev/tty";
+	}
+
+	ttyfd = open(tty_name, O_RDONLY);
 	if(ttyfd != STDIN_FILENO)
 	{
 		fprintf(stderr, "Failed to open terminal for input.");
