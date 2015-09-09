@@ -99,3 +99,6 @@ to search messages, :shell!, extension sorting fix, fileext sorting key, dynamic
 view column alignment.
 
 Michel Normand fixed compilation for PowerPC where PAGE_SIZE isn't defined.
+
+Dennis Hamester fixed interaction with emacsclient due to reopening terminal as
+/dev/tty.

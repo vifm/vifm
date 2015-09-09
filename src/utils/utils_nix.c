@@ -34,7 +34,8 @@
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK dup() dup2() getpid() pause() sysconf() ttyname() */
+#include <unistd.h> /* X_OK dup() dup2() getpid() isatty() pause() sysconf()
+                       ttyname() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -90,6 +91,7 @@ static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
 static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
+static const char * get_tty_name(void);
 
 void
 pause_shell(void)
@@ -836,7 +838,6 @@ reopen_term_stdout(void)
 {
 	FILE *fp;
 	int outfd, ttyfd;
-	char *tty_name;
 
 	outfd = dup(STDOUT_FILENO);
 	if(outfd == -1)
@@ -852,13 +853,7 @@ reopen_term_stdout(void)
 		return NULL;
 	}
 
-	tty_name = ttyname(STDIN_FILENO);
-	if(!tty_name)
-	{
-		tty_name = "/dev/tty";
-	}
-
-	ttyfd = open(tty_name, O_WRONLY);
+	ttyfd = open(get_tty_name(), O_WRONLY);
 	if(ttyfd == -1)
 	{
 		fclose(fp);
@@ -881,7 +876,6 @@ int
 reopen_term_stdin(void)
 {
 	int ttyfd;
-	char* tty_name;
 
 	if(close(STDIN_FILENO))
 	{
@@ -889,13 +883,7 @@ reopen_term_stdin(void)
 		return 1;
 	}
 
-	tty_name = ttyname(STDIN_FILENO);
-	if(!tty_name)
-	{
-		tty_name = "/dev/tty";
-	}
-
-	ttyfd = open(tty_name, O_RDONLY);
+	ttyfd = open(get_tty_name(), O_RDONLY);
 	if(ttyfd != STDIN_FILENO)
 	{
 		fprintf(stderr, "Failed to open terminal for input.");
@@ -903,6 +891,36 @@ reopen_term_stdin(void)
 	}
 
 	return 0;
+}
+
+/* Retrieves a best guess on path to controlling terminal.  This might not work
+ * if all the standard streams are redirected, in which case /dev/tty is used,
+ * which can't be passed around between processes, so some applications won't
+ * work in this (quite rare) case.  Returns the path. */
+static const char *
+get_tty_name(void)
+{
+	const char *tty_name = NULL;
+
+	if(isatty(STDIN_FILENO))
+	{
+		tty_name = ttyname(STDIN_FILENO);
+	}
+	else if(isatty(STDOUT_FILENO))
+	{
+		tty_name = ttyname(STDOUT_FILENO);
+	}
+	else if(isatty(STDERR_FILENO))
+	{
+		tty_name = ttyname(STDERR_FILENO);
+	}
+
+	if(tty_name == NULL)
+	{
+		tty_name = "/dev/tty";
+	}
+
+	return tty_name;
 }
 
 FILE *
