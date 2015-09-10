@@ -28,6 +28,10 @@ typedef void (*ipc_callback)(char *args[]);
  * returned. */
 int ipc_enabled(void);
 
+/* Retrieves list with names of all servers available for IPC.  Returns the list
+ * which is of the *len length. */
+char ** ipc_list(int *len);
+
 /* Initializes IPC unit state.  The callback_func will be called by
  * ipc_check(). */
 void ipc_init(ipc_callback callback_func);

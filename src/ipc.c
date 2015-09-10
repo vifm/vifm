@@ -20,10 +20,19 @@
 
 #ifndef ENABLE_REMOTE_CMDS
 
+#include <stddef.h> /* NULL */
+
 int
 ipc_enabled(void)
 {
 	return 0;
+}
+
+char **
+ipc_list(int *len)
+{
+	*len = 0;
+	return NULL;
 }
 
 void
@@ -96,7 +105,6 @@ static FILE * try_use_pipe(const char path[]);
 static void handle_pkg(const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(void);
-static char ** list_pipes(int *len);
 static int add_to_list(const char name[], const void *data, void *param);
 #ifndef _WIN32
 static int pipe_is_in_use(const char path[]);
@@ -441,7 +449,7 @@ get_the_only_target(void)
 {
 	int len;
 	char *name;
-	char **list = list_pipes(&len);
+	char **list = ipc_list(&len);
 
 	if(len == 0)
 	{
@@ -455,10 +463,8 @@ get_the_only_target(void)
 	return name;
 }
 
-/* Enumerates identifiers of other instances.  Returns pointer to the list of
- * the length *len. */
-static char **
-list_pipes(int *len)
+char **
+ipc_list(int *len)
 {
 	list_data_t data = { .ipc_dir = get_ipc_dir() };
 

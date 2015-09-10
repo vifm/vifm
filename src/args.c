@@ -36,6 +36,7 @@
 #include "version.h"
 #include "vifm.h"
 
+static void list_servers(void);
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
 static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		args_t *args);
@@ -60,6 +61,7 @@ static struct option long_opts[] = {
 	{ "on-choose",    required_argument, .flag = NULL, .val = 'o' },
 
 #ifdef ENABLE_REMOTE_CMDS
+	{ "server-list",  no_argument,       .flag = NULL, .val = 'L' },
 	{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
 #endif
 
@@ -97,6 +99,9 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				args->on_choose = optarg;
 				break;
 
+			case 'L': /* --server-list */
+				list_servers();
+				break;
 			case 'r': /* --remote <args>... */
 				args->remote_cmds = argv + optind;
 				return;
@@ -143,7 +148,8 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 
 			case '?': /* Parsing error. */
 #ifndef ENABLE_REMOTE_CMDS
-				if(starts_with("--remote", argv[optind - 1]))
+				if(starts_with("--remote", argv[optind - 1]) ||
+						starts_with("--server-list", argv[optind - 1]))
 				{
 					fprintf(stderr,
 							"Warning: remote commands were disabled at build-time!\n");
@@ -157,6 +163,23 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				return;
 		}
 	}
+}
+
+/* Lists names of servers on stdout. */
+static void
+list_servers(void)
+{
+	int i;
+	int len;
+	char **lst = ipc_list(&len);
+
+	for(i = 0; i < len; ++i)
+	{
+		puts(lst[i]);
+	}
+
+	free_string_array(lst, len);
+	quit_on_arg_parsing(EXIT_SUCCESS);
 }
 
 /* Parses the arg as absolute or relative path (to the dir), unless it's equal
@@ -347,6 +370,8 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
 #ifdef ENABLE_REMOTE_CMDS
+	puts("  vifm --server-list");
+	puts("    list available server names and exit.\n");
 	puts("  vifm --remote");
 	puts("    passes all arguments that left in command line to active vifm server.\n");
 #endif
