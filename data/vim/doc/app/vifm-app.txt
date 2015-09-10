@@ -101,6 +101,9 @@ The other command line arguments are:
     configuration directory isn't determined).
 --server-list                                  *vifm---server-list*
     list available server names and exit.
+--server-name <name>                           *vifm---server-name*
+    name of target or this instance (sequential numbers are appended on name
+    conflict).
 --remote                                       *vifm---remote*
     sends the rest of command line to the active vifm server (one of already
     running instances if any).  When there is no server, quits silently.

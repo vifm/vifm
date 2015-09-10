@@ -62,6 +62,7 @@ static struct option long_opts[] = {
 
 #ifdef ENABLE_REMOTE_CMDS
 	{ "server-list",  no_argument,       .flag = NULL, .val = 'L' },
+	{ "server-name",  required_argument, .flag = NULL, .val = 'N' },
 	{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
 #endif
 
@@ -101,6 +102,9 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 
 			case 'L': /* --server-list */
 				list_servers();
+				break;
+			case 'N': /* --server-name <name> */
+				args->server_name = optarg;
 				break;
 			case 'r': /* --remote <args>... */
 				args->remote_cmds = argv + optind;
@@ -149,7 +153,8 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 			case '?': /* Parsing error. */
 #ifndef ENABLE_REMOTE_CMDS
 				if(starts_with("--remote", argv[optind - 1]) ||
-						starts_with("--server-list", argv[optind - 1]))
+						starts_with("--server-list", argv[optind - 1]) ||
+						starts_with("--server-name", argv[optind - 1]))
 				{
 					fprintf(stderr,
 							"Warning: remote commands were disabled at build-time!\n");
@@ -372,6 +377,8 @@ show_help_msg(const char wrong_arg[])
 #ifdef ENABLE_REMOTE_CMDS
 	puts("  vifm --server-list");
 	puts("    list available server names and exit.\n");
+	puts("  vifm --server-name <name>");
+	puts("    name of target or this instance.\n");
 	puts("  vifm --remote");
 	puts("    passes all arguments that left in command line to active vifm server.\n");
 #endif
@@ -409,7 +416,7 @@ process_non_general_args(args_t *args)
 {
 	if(args->remote_cmds != NULL)
 	{
-		if(ipc_send(args->remote_cmds) != 0)
+		if(ipc_send(args->server_name, args->remote_cmds) != 0)
 		{
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);

@@ -51,8 +51,9 @@
 	Added dynamic view column alignment (specified by "*", just like "-" for
 	left alignment).  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
-	Added --server-list command-line option that enumerates names of currently
-	running vifm servers.
+	Added --server-list and --server-name command-line options that enumerates
+	names of currently running vifm servers and sets name of target/this
+	instance respectively.
 
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav

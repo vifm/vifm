@@ -32,16 +32,16 @@ int ipc_enabled(void);
  * which is of the *len length. */
 char ** ipc_list(int *len);
 
-/* Initializes IPC unit state.  The callback_func will be called by
- * ipc_check(). */
-void ipc_init(ipc_callback callback_func);
+/* Initializes IPC unit state.  name can be NULL, which will use the default
+ * one (VIFM).  The callback_func will be called by ipc_check(). */
+void ipc_init(const char name[], ipc_callback callback_func);
 
 /* Checks for incoming messages.  Calls callback passed to ipc_init(). */
 void ipc_check(void);
 
 /* Sends data to server.  The data array should end with NULL.  Returns zero on
  * successful send and non-zero otherwise. */
-int ipc_send(char *data[]);
+int ipc_send(const char whom[], char *data[]);
 
 #endif /* VIFM__IPC_H__ */
 

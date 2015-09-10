@@ -36,7 +36,7 @@ ipc_list(int *len)
 }
 
 void
-ipc_init(ipc_callback callback_func)
+ipc_init(const char name[], ipc_callback callback_func)
 {
 }
 
@@ -46,7 +46,7 @@ ipc_check(void)
 }
 
 int
-ipc_send(char *data[])
+ipc_send(const char whom[], char *data[])
 {
 	return 1;
 }
@@ -99,7 +99,7 @@ typedef struct
 list_data_t;
 
 static void clean_at_exit(void);
-static FILE * create_pipe(char path_buf[], size_t len);
+static FILE * create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(void);
 static FILE * try_use_pipe(const char path[]);
 static void handle_pkg(const char pkg[]);
@@ -129,13 +129,18 @@ ipc_enabled(void)
 }
 
 void
-ipc_init(ipc_callback callback_func)
+ipc_init(const char name[], ipc_callback callback_func)
 {
 	assert(!initialized && "Repeated initialization?");
 
 	callback = callback_func;
 
-	pipe_file = create_pipe(pipe_path, sizeof(pipe_path));
+	if(name == NULL)
+	{
+		name = "vifm";
+	}
+
+	pipe_file = create_pipe(name, pipe_path, sizeof(pipe_path));
 	if(pipe_file == NULL)
 	{
 		initialized = -1;
@@ -264,14 +269,17 @@ receive_pkg(void)
 /* Tries to open a pipe for communication.  Returns NULL on error or opened file
  * descriptor otherwise. */
 static FILE *
-create_pipe(char path_buf[], size_t len)
+create_pipe(const char name[], char path_buf[], size_t len)
 {
 	int id = 0;
 	FILE *f;
 
-	do
+	/* Try to use name as is at first. */
+	snprintf(path_buf, len, "%s/" PREFIX "%s", get_ipc_dir(), name);
+	f = try_use_pipe(path_buf);
+	while(f == NULL)
 	{
-		snprintf(path_buf, len, "%s/" PREFIX "%03d", get_ipc_dir(), ++id);
+		snprintf(path_buf, len, "%s/" PREFIX "%s%d", get_ipc_dir(), name, ++id);
 
 		if(id == 0)
 		{
@@ -280,7 +288,6 @@ create_pipe(char path_buf[], size_t len)
 
 		f = try_use_pipe(path_buf);
 	}
-	while(f == NULL);
 
 	return f;
 }
@@ -368,12 +375,13 @@ handle_pkg(const char pkg[])
 }
 
 int
-ipc_send(char *data[])
+ipc_send(const char whom[], char *data[])
 {
 	/* FIXME: this shouldn't have fixed size. */
 	char pkg[8192];
 	size_t len;
-	char *name;
+	char *name = NULL;
+	int ret;
 
 	assert(initialized != 0 && "Wrong IPC unit state.");
 	if(initialized < 0)
@@ -396,13 +404,20 @@ ipc_send(char *data[])
 	}
 	pkg[len++] = '\0';
 
-	name = get_the_only_target();
-	if(name == NULL)
+	if(whom == NULL)
 	{
-		return 1;
+		name = get_the_only_target();
+		if(name == NULL)
+		{
+			return 1;
+		}
+		whom = name;
 	}
 
-	return send_pkg(name, pkg, len);
+	ret = send_pkg(whom, pkg, len);
+
+	free(name);
+	return ret;
 }
 
 /* Performs actual sending of package to another instance.  Returns zero on
@@ -493,7 +508,7 @@ add_to_list(const char name[], const void *data, void *param)
 	}
 
 	/* Skip ourself. */
-	if(strcmp(name, get_last_path_component(pipe_path)) == 0)
+	if(stroscmp(name, get_last_path_component(pipe_path)) == 0)
 	{
 		return 0;
 	}
