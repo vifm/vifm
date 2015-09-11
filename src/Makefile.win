@@ -125,7 +125,7 @@ compile_info.c: update_compile_info
 # No action needed for this target.
 update_compile_info:
 
-.c.o:
+%.o: %.c | ../config.h
 	$(CC) $(CFLAGS) $< -o $@
 
 ../data/vifm-help.txt: ../data/man/vifm.1

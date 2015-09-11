@@ -98,7 +98,9 @@ set scrolloff=4
 
 " Don't do too many requests to slow file systems
 
-set slowfs=curlftpfs
+if !has('win')
+    set slowfs=curlftpfs
+endif
 
 " Set custom status line look
 
