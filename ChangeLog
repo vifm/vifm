@@ -179,6 +179,8 @@
 	Fixed possible vifminfo shrinking (some data were removed from it) if an
 	error occurs during initialization.
 
+	Fixed highlight not being updated after file rename.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

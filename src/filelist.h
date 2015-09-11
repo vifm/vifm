@@ -284,6 +284,8 @@ void flist_add_custom_line(FileView *view, const char line[]);
 /* A more high level version of flist_custom_finish(), which takes care of error
  * handling and cursor position. */
 void flist_end_custom(FileView *view, int very);
+/* Changes name of a file entry, performing additional required updates. */
+void fentry_rename(dir_entry_t *entry, const char to[]);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
