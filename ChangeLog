@@ -176,6 +176,9 @@
 	Fixed one command in sample vifmrc, which is not supported in Windows
 	version.  Thanks to Alexandre Viau.
 
+	Fixed possible vifminfo shrinking (some data were removed from it) if an
+	error occurs during initialization.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
