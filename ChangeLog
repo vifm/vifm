@@ -107,6 +107,9 @@
 
 	Expand "~" in menus on navigation.
 
+	Use `-f` on calling editor instead of `--nofork` (should be more
+	universal).  Thanks to kazufukurou.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

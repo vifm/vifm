@@ -133,7 +133,9 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 {
 	char vicmd[PATH_MAX];
 	char cmd[PATH_MAX + 5];
-	const char *fork_str = allow_forking ? "" : "--nofork";
+	/* Use `-f` and not `--nofork` here to make it for with nvim (and possibly
+	 * other flavours of vi). */
+	const char *fork_str = allow_forking ? "" : "-f";
 	char *escaped;
 	int bg;
 	int result;
