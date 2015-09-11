@@ -104,7 +104,8 @@ if [ "$target" = all -o "$target" = archive ]; then
         rm -f config.h
 
         # build vifm
-        if ! RELEASE=1 make -B -C src/ -f Makefile.win; then
+        make -C src/ -f Makefile.win clean
+        if ! RELEASE=1 make -C src/ -f Makefile.win; then
             echo "ERROR: Building project failed."
             exit 3
         fi
