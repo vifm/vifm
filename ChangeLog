@@ -1,5 +1,8 @@
 0.8 to current
 
+	Turned remote commands back on by default after their rewrite using
+	named pipes instead of insecure UDP sockets.
+
 	Added :winc[md] command-line command.  Thanks to fogine.
 
 	Added layoutis() builtin function that answers queries about current

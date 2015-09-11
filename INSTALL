@@ -42,8 +42,7 @@ when building with Cygwin):
           *.desktop files found on your system to get a list of programs
           associated with mimetype of a file.
 
-      --[disable]/enable-remote-cmds - enable remote command sending
-          (insecure)
+      --disable/[enable]-remote-cmds - enable remote command sending.
 
       --[disable]/enable-developer - enables features of interest to
           developers:

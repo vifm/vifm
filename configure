@@ -1377,8 +1377,7 @@ Optional Features:
   --disable-desktop-files disable parsing of *.desktop files found on your
                           system to get a list of programs associated with
                           filetypes [default=enabled]
-  --enable-remote-cmds    enable remote command sending (insecure).
-                          [default=disabled]
+  --enable-remote-cmds    enable remote command sending. [default=enabled]
   --enable-developer      enables features of interest to developers
                           [default=disabled]
   --enable-coverage       enables coverage information generation
@@ -8976,7 +8975,7 @@ fi
 if test "${enable_remote_cmds+set}" = set; then :
   enableval=$enable_remote_cmds; remote_cmds=$enableval
 else
-  remote_cmds=no
+  remote_cmds=yes
 fi
 
 
@@ -9009,95 +9008,6 @@ $as_echo "#define ENABLE_DESKTOP_FILES 1" >>confdefs.h
 fi
 
 if test "$remote_cmds" = "yes"; then
-		ac_fn_c_check_header_mongrel "$LINENO" "arpa/inet.h" "ac_cv_header_arpa_inet_h" "$ac_includes_default"
-if test "x$ac_cv_header_arpa_inet_h" = xyes; then :
-
-else
-  as_fn_error $? "arpa/inet.h header not found." "$LINENO" 5
-fi
-
-
-	ac_fn_c_check_header_mongrel "$LINENO" "netinet/in.h" "ac_cv_header_netinet_in_h" "$ac_includes_default"
-if test "x$ac_cv_header_netinet_in_h" = xyes; then :
-
-else
-  as_fn_error $? "netinet/in.h header not found." "$LINENO" 5
-fi
-
-
-	ac_fn_c_check_header_mongrel "$LINENO" "sys/socket.h" "ac_cv_header_sys_socket_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_socket_h" = xyes; then :
-
-else
-  as_fn_error $? "sys/socket.h header not found." "$LINENO" 5
-fi
-
-
-	ac_fn_c_check_header_mongrel "$LINENO" "sys/un.h" "ac_cv_header_sys_un_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_un_h" = xyes; then :
-
-else
-  as_fn_error $? "sys/un.h header not found." "$LINENO" 5
-fi
-
-
-	ac_fn_c_check_func "$LINENO" "bind" "ac_cv_func_bind"
-if test "x$ac_cv_func_bind" = xyes; then :
-
-else
-  as_fn_error $? "bind() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "htons" "ac_cv_func_htons"
-if test "x$ac_cv_func_htons" = xyes; then :
-
-else
-  as_fn_error $? "htons() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "inet_addr" "ac_cv_func_inet_addr"
-if test "x$ac_cv_func_inet_addr" = xyes; then :
-
-else
-  as_fn_error $? "inet_addr() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "recv" "ac_cv_func_recv"
-if test "x$ac_cv_func_recv" = xyes; then :
-
-else
-  as_fn_error $? "recv() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "sendto" "ac_cv_func_sendto"
-if test "x$ac_cv_func_sendto" = xyes; then :
-
-else
-  as_fn_error $? "sendto() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "setsockopt" "ac_cv_func_setsockopt"
-if test "x$ac_cv_func_setsockopt" = xyes; then :
-
-else
-  as_fn_error $? "setsockopt() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "socket" "ac_cv_func_socket"
-if test "x$ac_cv_func_socket" = xyes; then :
-
-else
-  as_fn_error $? "socket() function not found." "$LINENO" 5
-fi
-
-	ac_fn_c_check_func "$LINENO" "atexit" "ac_cv_func_atexit"
-if test "x$ac_cv_func_atexit" = xyes; then :
-
-else
-  as_fn_error $? "atexit() function not found." "$LINENO" 5
-fi
-
-
 
 $as_echo "#define ENABLE_REMOTE_CMDS 1" >>confdefs.h
 

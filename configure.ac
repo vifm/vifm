@@ -581,10 +581,10 @@ AC_ARG_ENABLE(desktop_files,
 AC_ARG_ENABLE(remote_cmds,
 	AS_HELP_STRING(
 		[--enable-remote-cmds],
-		[enable remote command sending (insecure).
-		 @<:@default=disabled@:>@     ]),
+		[enable remote command sending.
+		 @<:@default=enabled@:>@     ]),
 	[remote_cmds=$enableval],
-	[remote_cmds=no])
+	[remote_cmds=yes])
 
 AC_ARG_ENABLE(developer,
 	AS_HELP_STRING(
@@ -611,20 +611,6 @@ if test "$desktop_files" = "yes"; then
 fi
 
 if test "$remote_cmds" = "yes"; then
-	dnl Check for socket related headers and functions.
-	AC_CHECK_HEADER([arpa/inet.h], [], [AC_MSG_ERROR([arpa/inet.h header not found.])])
-	AC_CHECK_HEADER([netinet/in.h], [], [AC_MSG_ERROR([netinet/in.h header not found.])])
-	AC_CHECK_HEADER([sys/socket.h], [], [AC_MSG_ERROR([sys/socket.h header not found.])])
-	AC_CHECK_HEADER([sys/un.h], [], [AC_MSG_ERROR([sys/un.h header not found.])])
-	AC_CHECK_FUNC([bind], [], [AC_MSG_ERROR([bind() function not found.])])
-	AC_CHECK_FUNC([htons], [], [AC_MSG_ERROR([htons() function not found.])])
-	AC_CHECK_FUNC([inet_addr], [], [AC_MSG_ERROR([inet_addr() function not found.])])
-	AC_CHECK_FUNC([recv], [], [AC_MSG_ERROR([recv() function not found.])])
-	AC_CHECK_FUNC([sendto], [], [AC_MSG_ERROR([sendto() function not found.])])
-	AC_CHECK_FUNC([setsockopt], [], [AC_MSG_ERROR([setsockopt() function not found.])])
-	AC_CHECK_FUNC([socket], [], [AC_MSG_ERROR([socket() function not found.])])
-	AC_CHECK_FUNC([atexit], [], [AC_MSG_ERROR([atexit() function not found.])])
-
 	AC_DEFINE([ENABLE_REMOTE_CMDS], [1], [executing commands remotely])
 fi
 
