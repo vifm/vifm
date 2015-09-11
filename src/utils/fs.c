@@ -716,7 +716,7 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 	HANDLE hfind;
 	WIN32_FIND_DATAW ffd;
 
-	snprintf(find_pat, sizeof(find_pat), "%s/""*", path);
+	snprintf(find_pat, sizeof(find_pat), "%s/*", path);
 	utf16_path = utf8_to_utf16(find_pat);
 	hfind = FindFirstFileW(utf16_path, &ffd);
 	free(utf16_path);
@@ -729,7 +729,10 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 	do
 	{
 		char *const utf8_name = utf8_from_utf16(ffd.cFileName);
-		client(utf8_name, &ffd, param);
+		if(client(utf8_name, &ffd, param) != 0)
+		{
+			break;
+		}
 		free(utf8_name);
 	}
 	while(FindNextFileW(hfind, &ffd));

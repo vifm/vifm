@@ -39,7 +39,8 @@ typedef struct
 	const char *delimiter;           /* Delimiter for list of picked files. */
 	const char *on_choose;           /* Action to perform on chosen files. */
 
-	char **remote_cmds; /* Arguments to pass to server instance. */
+	const char *server_name; /* Name of this/target server. */
+	char **remote_cmds;      /* Arguments to pass to server instance. */
 
 	char lwin_path[PATH_MAX]; /* Chosen path of the left pane. */
 	char rwin_path[PATH_MAX]; /* Chosen path of the right pane. */

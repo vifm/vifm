@@ -178,7 +178,7 @@ main(int argc, char *argv[])
 		read_info_file(0);
 	}
 
-	ipc_init(&parse_received_arguments);
+	ipc_init(vifm_args.server_name, &parse_received_arguments);
 	args_process(&vifm_args, 0);
 
 	init_background();

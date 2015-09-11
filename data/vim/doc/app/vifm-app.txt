@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 04
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -99,6 +99,11 @@ The other command line arguments are:
     Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory
     of executable (on Windows) is used to log startup process (when
     configuration directory isn't determined).
+--server-list                                  *vifm---server-list*
+    list available server names and exit.
+--server-name <name>                           *vifm---server-name*
+    name of target or this instance (sequential numbers are appended on name
+    conflict).
 --remote                                       *vifm---remote*
     sends the rest of command line to the active vifm server (one of already
     running instances if any).  When there is no server, quits silently.

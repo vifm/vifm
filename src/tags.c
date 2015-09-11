@@ -127,6 +127,8 @@ const char *tags[] = {
 	"vifm---on-choose",
 	"vifm---remote",
 	"vifm---select",
+	"vifm---server-list",
+	"vifm---server-name",
 	"vifm---version",
 	"vifm--c",
 	"vifm--f",

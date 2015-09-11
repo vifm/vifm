@@ -1,5 +1,8 @@
 0.8 to current
 
+	Turned remote commands back on by default after their rewrite using
+	named pipes instead of insecure UDP sockets.
+
 	Added :winc[md] command-line command.  Thanks to fogine.
 
 	Added layoutis() builtin function that answers queries about current
@@ -50,6 +53,10 @@
 
 	Added dynamic view column alignment (specified by "*", just like "-" for
 	left alignment).  Patch by Cosmin Popescu (a.k.a. cosminadrianpopescu).
+
+	Added --server-list and --server-name command-line options that enumerates
+	names of currently running vifm servers and sets name of target/this
+	instance respectively.
 
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav

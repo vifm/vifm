@@ -775,7 +775,7 @@ static void
 show_sourcing_error(const char filename[], int line_num)
 {
 	/* User choice is saved by prompt_error_msgf internally. */
-	(void)prompt_error_msgf("File Sourcing Error", "Error in %s at %d line",
+	(void)prompt_error_msgf("File Sourcing Error", "Error in %s at line %d",
 			filename, line_num);
 }
 
