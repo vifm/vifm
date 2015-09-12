@@ -181,6 +181,9 @@
 
 	Fixed highlight not being updated after file rename.
 
+	Fixed possible hang during startup on Windows after removal of last
+	visited directory.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
