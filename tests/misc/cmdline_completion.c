@@ -22,6 +22,14 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/commands.h"
 
+#if defined(__CYGWIN__) || defined(_WIN32)
+#define SUFFIX ".exe"
+#define SUFFIXW L".exe"
+#else
+#define SUFFIX ""
+#define SUFFIXW L""
+#endif
+
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
@@ -424,14 +432,6 @@ TEST(abbreviations)
 
 TEST(bang_abs_path_completion)
 {
-#if defined(__CYGWIN__) || defined(_WIN32)
-#define SUFFIX ".exe"
-#define SUFFIXW L".exe"
-#else
-#define SUFFIX ""
-#define SUFFIXW L""
-#endif
-
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
 
@@ -477,7 +477,7 @@ TEST(bmark_path_is_completed)
 
 	prepare_for_line_completion(L"bmark! exec");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! exec-for-completion", stats.line);
+	assert_wstring_equal(L"bmark! exec-for-completion" SUFFIX, stats.line);
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
 }
