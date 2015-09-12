@@ -718,6 +718,7 @@ start_background_job(const char *cmd, int skip_errors)
 	STARTUPINFOW startup = {};
 	PROCESS_INFORMATION pinfo;
 	char *command;
+	char *sh_cmd;
 	wchar_t *wide_cmd;
 
 	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
@@ -726,7 +727,10 @@ start_background_job(const char *cmd, int skip_errors)
 		return -1;
 	}
 
-	wide_cmd = to_wide(cmd);
+	sh_cmd = win_make_sh_cmd(command);
+	free(command);
+
+	wide_cmd = to_wide(sh_cmd);
 	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	free(wide_cmd);
@@ -735,15 +739,15 @@ start_background_job(const char *cmd, int skip_errors)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess,
+		job = add_background_job(pinfo.dwProcessId, sh_cmd, pinfo.hProcess,
 				BJT_COMMAND);
 		if(job == NULL)
 		{
-			free(command);
+			free(sh_cmd);
 			return -1;
 		}
 	}
-	free(command);
+	free(sh_cmd);
 	if(ret == 0)
 	{
 		return 1;

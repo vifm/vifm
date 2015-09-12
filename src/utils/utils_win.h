@@ -48,6 +48,10 @@ int wcwidth(wchar_t c);
  * *returned_exit_code to non-zero and returns exit code of a process. */
 int win_exec_cmd(char cmd[], int *const returned_exit_code);
 
+/* Turns command into the one suitable to be run by a shell.  Returns the
+ * string. */
+char * win_make_sh_cmd(const char cmd[]);
+
 int is_win_executable(const char name[]);
 
 int is_vista_and_above(void);

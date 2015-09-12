@@ -33,7 +33,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* uint32_t */
 #include <stdlib.h> /* EXIT_SUCCESS free() */
-#include <string.h> /* strcat() strchr() strcpy() strlen() */
+#include <string.h> /* strcat() strchr() strcpy() strdup() strlen() */
 #include <stdio.h> /* FILE SEEK_SET fread() fclose() snprintf() */
 
 #include "../cfg/config.h"
@@ -82,36 +82,23 @@ pause_shell(void)
 int
 run_in_shell_no_cls(char command[])
 {
-	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
+	int ret;
+	char *const sh_cmd = win_make_sh_cmd(command);
 
+	/* XXX: why do we use different functions for different cases? */
 	if(curr_stats.shell_type == ST_CMD)
 	{
-		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
-		 * special characters work at the same time. */
-		const char *const fmt = (command[0] == '"') ? "%s /C \"%s\"" : "%s /C %s";
-		snprintf(buf, sizeof(buf), fmt, cfg.shell, command);
-		return os_system(buf);
+		ret = os_system(sh_cmd);
 	}
 	else
 	{
-		char *p;
 		int returned_exit_code;
-
-		strcpy(buf, cfg.shell);
-		strcat(buf, " -c '");
-
-		p = buf + strlen(buf);
-		while(*command != '\0')
-		{
-			if(*command == '\\')
-				*p++ = '\\';
-			*p++ = *command++;
-		}
-		*p = '\0';
-
-		strcat(buf, "'");
-		return win_exec_cmd(buf, &returned_exit_code);
+		ret = win_exec_cmd(sh_cmd, &returned_exit_code);
 	}
+
+	free(sh_cmd);
+
+	return ret;
 }
 
 void
@@ -193,6 +180,42 @@ win_exec_cmd(char cmd[], int *const returned_exit_code)
 
 	CloseHandle(pinfo.hProcess);
 	return code;
+}
+
+char *
+win_make_sh_cmd(const char cmd[])
+{
+	char buf[strlen(cfg.shell) + 5 + strlen(cmd)*4 + 1 + 1];
+
+	if(curr_stats.shell_type == ST_CMD)
+	{
+		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
+		 * special characters work at the same time. */
+		const char *const fmt = (cmd[0] == '"') ? "%s /C \"%s\"" : "%s /C %s";
+		snprintf(buf, sizeof(buf), fmt, cfg.shell, cmd);
+	}
+	else
+	{
+		char *p;
+
+		strcpy(buf, cfg.shell);
+		strcat(buf, " -c '");
+
+		p = buf + strlen(buf);
+		while(*cmd != '\0')
+		{
+			if(*cmd == '\\')
+			{
+				*p++ = '\\';
+			}
+			*p++ = *cmd++;
+		}
+		*p = '\0';
+
+		strcat(buf, "'");
+	}
+
+	return strdup(buf);
 }
 
 /* Handles process execution.  Returns system error code when sets
