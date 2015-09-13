@@ -1955,6 +1955,8 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 	new->selected = prev->selected;
 	new->was_selected = prev->was_selected;
 
+	/* No need to check for name here, because only entries with exactly the same
+	 * names are merged. */
 	if(new->type == prev->type)
 	{
 		new->hi_num = prev->hi_num;
@@ -2778,6 +2780,17 @@ flist_end_custom(FileView *view, int very)
 	}
 
 	flist_set_pos(view, 0);
+}
+
+void
+fentry_rename(dir_entry_t *entry, const char to[])
+{
+	/* Rename file in internal structures for correct positioning of cursor
+	 * after reloading, as cursor will be positioned on the file with the same
+	 * name. */
+	(void)replace_string(&entry->name, to);
+	/* Name change can affect name specific highlight, so reset the cache. */
+	entry->hi_num = -1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

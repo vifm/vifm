@@ -522,7 +522,11 @@ remove_last_path_component(char path[])
 	}
 
 	slash = strrchr(path, '/');
-	if(slash != NULL)
+	if(slash == NULL)
+	{
+		path[0] = '\0';
+	}
+	else
 	{
 		const int offset = is_root_dir(path) ? 1 : 0;
 		slash[offset] = '\0';

@@ -728,7 +728,17 @@ void _gnuc_noreturn
 vifm_finish(const char message[])
 {
 	endwin();
-	write_info_file();
+
+	/* Update vifminfo only if we were able to startup, otherwise we can end up
+	 * writing from some intermediate half-initialized state.  One particular
+	 * case: after vifminfo read, but before configuration is processed, as a
+	 * result we write very little information to vifminfo file according to
+	 * default value of 'vifminfo' option. */
+	if(curr_stats.load_stage == 3)
+	{
+		write_info_file();
+	}
+
 	fprintf(stderr, "%s\n", message);
 	LOG_ERROR_MSG("Finishing: %s", message);
 	exit(EXIT_FAILURE);
