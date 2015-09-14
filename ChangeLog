@@ -58,6 +58,10 @@
 	names of currently running vifm servers and sets name of target/this
 	instance respectively.
 
+	Added optional %u and %U macros to 'findprg', 'grepprg', and 'locateprg'
+	that allow immediate redirection of command output into custom view
+	without opening a menu.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
