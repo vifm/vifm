@@ -36,11 +36,13 @@ static int execute_locate_cb(FileView *view, menu_info *m);
 int
 show_locate_menu(FileView *view, const char args[])
 {
+	enum { M_a, };
+
 	char *cmd;
 	char *margs;
 	int save_msg;
 	custom_macro_t macros[] = {
-		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
+		[M_a] = { .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;

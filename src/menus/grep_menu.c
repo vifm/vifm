@@ -37,16 +37,18 @@ static int execute_grep_cb(FileView *view, menu_info *m);
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
+	enum { M_i, M_a, M_s, M_A, };
+
 	char *targets;
 	int save_msg;
 	char *cmd;
 	char *escaped_args = NULL;
 
 	custom_macro_t macros[] = {
-		{ .letter = 'i', .value = NULL, .uses_left = 1, .group = -1 },
-		{ .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
-		{ .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
-		{ .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
+		[M_i] = { .letter = 'i', .value = NULL, .uses_left = 1, .group = -1 },
+		[M_a] = { .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
+		[M_s] = { .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
+		[M_A] = { .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
 	};
 
 	static menu_info m;
@@ -64,14 +66,14 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	m.execute_handler = &execute_grep_cb;
 	m.key_handler = &filelist_khandler;
 
-	macros[0].value = invert ? "-v" : "";
-	macros[1].value = args;
-	macros[2].value = targets;
-	macros[3].value = args;
+	macros[M_i].value = invert ? "-v" : "";
+	macros[M_a].value = args;
+	macros[M_s].value = targets;
+	macros[M_A].value = args;
 	if(args[0] != '-')
 	{
 		escaped_args = shell_like_escape(args, 0);
-		macros[1].value = escaped_args;
+		macros[M_a].value = escaped_args;
 	}
 
 	cmd = expand_custom_macros(cfg.grep_prg, ARRAY_LEN(macros), macros);
