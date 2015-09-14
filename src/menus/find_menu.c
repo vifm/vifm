@@ -43,7 +43,7 @@ static int execute_find_cb(FileView *view, menu_info *m);
 int
 show_find_menu(FileView *view, int with_path, const char args[])
 {
-	enum { M_s, M_a, M_A, };
+	enum { M_s, M_a, M_A, M_u, M_U, };
 
 	int save_msg;
 	char *custom_args = NULL;
@@ -54,6 +54,9 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		[M_s] = { .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
 		[M_a] = { .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		[M_A] = { .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
+
+		[M_u] = { .letter = 'u', .value = "",   .uses_left = 1, .group = -1 },
+		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;
@@ -94,14 +97,14 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	m.execute_handler = &execute_find_cb;
 	m.key_handler = &filelist_khandler;
 
-	status_bar_message("find...");
-
 	cmd = expand_custom_macros(cfg.find_prg, ARRAY_LEN(macros), macros);
 
 	free(targets);
 	free(custom_args);
 
-	save_msg = capture_output_to_menu(view, cmd, 0, &m);
+	status_bar_message("find...");
+	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+			macros[M_U].explicit_use);
 	free(cmd);
 
 	return save_msg;

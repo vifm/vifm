@@ -37,7 +37,7 @@ static int execute_grep_cb(FileView *view, menu_info *m);
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
-	enum { M_i, M_a, M_s, M_A, };
+	enum { M_i, M_a, M_s, M_A, M_u, M_U, };
 
 	char *targets;
 	int save_msg;
@@ -49,6 +49,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 		[M_a] = { .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		[M_s] = { .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
 		[M_A] = { .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
+
+		[M_u] = { .letter = 'u', .value = "",   .uses_left = 1, .group = -1 },
+		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;
@@ -82,7 +85,8 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	free(targets);
 
 	status_bar_message("grep...");
-	save_msg = capture_output_to_menu(view, cmd, 0, &m);
+	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+			macros[M_U].explicit_use);
 	free(cmd);
 
 	return save_msg;

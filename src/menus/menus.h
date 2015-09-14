@@ -124,6 +124,11 @@ KHandlerResponse filelist_khandler(menu_info *m, const wchar_t keys[]);
  * non-zero is returned. */
 int menu_to_custom_view(menu_info *m, FileView *view, int very);
 
+/* Either makes a menu or custom view out of command output.  Returns non-zero
+ * if status bar message should be saved. */
+int capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
+		int custom_view, int very_custom_view);
+
 #endif /* VIFM__MENUS__MENUS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

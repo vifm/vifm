@@ -117,7 +117,6 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 static void output_to_statusbar(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const FileView *view, const char cmd[]);
-static void output_to_custom_flist(FileView *view, const char cmd[], int very);
 static void path_handler(const char line[], void *arg);
 
 /* Name of environment variable used to communicate path to file used to
@@ -1331,9 +1330,7 @@ run_in_split(const FileView *view, const char cmd[])
 	free(escaped_cmd);
 }
 
-/* Runs the cmd and parses its output as list of paths to compose custom view.
- * Very custom view implies unsorted list. */
-static void
+void
 output_to_custom_flist(FileView *view, const char cmd[], int very)
 {
 	char *title;
