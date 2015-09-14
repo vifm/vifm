@@ -73,6 +73,10 @@ int run_with_filetype(FileView *view, const char beginning[], int background);
  *  - < 0 -- handled, exit. */
 int run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 
+/* Runs the cmd and parses its output as list of paths to compose custom view.
+ * Very custom view implies unsorted list. */
+void output_to_custom_flist(FileView *view, const char cmd[], int very);
+
 #endif /* VIFM__RUNNING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 10, 2015" "vifm 0.8"
+.TH VIFM 1 "September 14, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3106,6 +3106,9 @@ otherwise %a gets an escaped version of arguments, prepended by "\-name"
 be escaped and %A is never escaped.  %A is to be used mainly on Windows, where
 shell escaping is a mess and can break command execution.
 
+Optional %u or %U macro could be used (if both specified %U is chosen) to force
+redirection to custom or unsorted custom view respectively.
+
 Starting from Windows Server 2003 a where command is available, one can
 configure vifm to use it in the following way:
 .EX
@@ -3166,6 +3169,9 @@ search in.  If some of the macros are not used, they will be implicitly added
 after a space to the value of the 'grepprg' option in the following order: %i,
 %a, %s.  Note that when neither %a nor %A are specified, it's %a which is added
 implicitly.
+
+Optional %u or %U macro could be used (if both specified %U is chosen) to force
+redirection to custom or unsorted custom view respectively.
 
 See 'findprg' option for description of difference between %a and %A.
 
@@ -3247,6 +3253,9 @@ and %% sequence for inserting percent sign literally.  This option should
 include the %a macro to specify placement of arguments passed to the :locate
 command.  If the macro is not used, it will be implicitly added after a space to
 the value of this option.
+
+Optional %u or %U macro could be used (if both specified %U is chosen) to force
+redirection to custom or unsorted custom view respectively.
 .TP
 .BI 'mintimeoutlen'
 type: integer

@@ -49,6 +49,7 @@ typedef struct
 	const char *value; /* A value to replace macro with. */
 	int uses_left;     /* Number of mandatory uses of the macro for group head. */
 	int group;         /* Index of macro group head or -1. */
+	int explicit_use;  /* Set to non-zero on explicit expansion. */
 }
 custom_macro_t;
 

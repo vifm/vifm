@@ -558,6 +558,7 @@ expand_custom_macros(const char pattern[], size_t nmacros,
 			{
 				expanded = extend_string(expanded, macros[i].value, &len);
 				--macros[i].uses_left;
+				macros[i].explicit_use = 1;
 			}
 		}
 		pattern++;
@@ -595,8 +596,12 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		int *const uses_left = (group >= 0) ? &groups[group] : &macro->uses_left;
 		while(*uses_left > 0)
 		{
-			expanded = extend_string(expanded, " ", &len);
-			expanded = extend_string(expanded, macro->value, &len);
+			/* Make sure we don't add spaces for nothing. */
+			if(macro->value[0] != '\0')
+			{
+				expanded = extend_string(expanded, " ", &len);
+				expanded = extend_string(expanded, macro->value, &len);
+			}
 			--*uses_left;
 		}
 	}

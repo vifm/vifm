@@ -29,6 +29,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../macros.h"
+#include "../running.h"
 #include "menus.h"
 
 static int execute_locate_cb(FileView *view, menu_info *m);
@@ -36,11 +37,16 @@ static int execute_locate_cb(FileView *view, menu_info *m);
 int
 show_locate_menu(FileView *view, const char args[])
 {
+	enum { M_a, M_u, M_U, };
+
 	char *cmd;
 	char *margs;
 	int save_msg;
 	custom_macro_t macros[] = {
-		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
+		[M_a] = { .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
+
+		[M_u] = { .letter = 'u', .value = "",   .uses_left = 1, .group = -1 },
+		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
 	};
 
 	static menu_info m;
@@ -50,10 +56,11 @@ show_locate_menu(FileView *view, const char args[])
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &filelist_khandler;
 
-	status_bar_message("locate...");
-
 	cmd = expand_custom_macros(cfg.locate_prg, ARRAY_LEN(macros), macros);
-	save_msg = capture_output_to_menu(view, cmd, 0, &m);
+
+	status_bar_message("locate...");
+	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+			macros[M_U].explicit_use);
 	free(cmd);
 
 	return save_msg;

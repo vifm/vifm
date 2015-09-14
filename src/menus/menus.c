@@ -737,5 +737,18 @@ menu_to_custom_view(menu_info *m, FileView *view, int very)
 	return 0;
 }
 
+int
+capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
+		int custom_view, int very_custom_view)
+{
+	if(custom_view || very_custom_view)
+	{
+		output_to_custom_flist(view, cmd, very_custom_view);
+		return 0;
+	}
+
+	return capture_output_to_menu(view, cmd, user_sh, m);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
