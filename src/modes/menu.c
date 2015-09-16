@@ -52,7 +52,7 @@ static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * menu_expand_macros(const char *str, int for_shell, int *usr1,
+static char * menu_expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
 static char * menu_expand_envvars(const char *str);
 static void post(int id);
@@ -184,15 +184,16 @@ static const cmd_add_t commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 };
 
+/* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
-	.complete_args = complete_args,
-	.swap_range = swap_range,
-	.resolve_mark = resolve_mark,
-	.expand_macros = menu_expand_macros,
-	.expand_envvars = menu_expand_envvars,
-	.post = post,
-	.select_range = menu_select_range,
-	.skip_at_beginning = skip_at_beginning,
+	.complete_args = &complete_args,
+	.swap_range = &swap_range,
+	.resolve_mark = &resolve_mark,
+	.expand_macros = &menu_expand_macros,
+	.expand_envvars = &menu_expand_envvars,
+	.post = &post,
+	.select_range = &menu_select_range,
+	.skip_at_beginning = &skip_at_beginning,
 };
 
 static int
@@ -213,8 +214,10 @@ resolve_mark(char mark)
 	return -1;
 }
 
+/* Implementation of macros expansion callback for cmds unit.  Returns newly
+ * allocated memory. */
 static char *
-menu_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
+menu_expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 {
 	return strdup(str);
 }

@@ -137,7 +137,7 @@ enum
 
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
+static char * cmds_expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
 static int setup_extcmd_file(const char path[], const char beginning[],
 		CmdInputType type);
@@ -563,15 +563,16 @@ static const cmd_add_t commands[] = {
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 };
 
+/* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
-	.complete_args = complete_args,
-	.swap_range = swap_range,
-	.resolve_mark = resolve_mark,
-	.expand_macros = cmds_expand_macros,
-	.expand_envvars = cmds_expand_envvars,
-	.post = post,
-	.select_range = select_range,
-	.skip_at_beginning = skip_at_beginning,
+	.complete_args = &complete_args,
+	.swap_range = &swap_range,
+	.resolve_mark = &resolve_mark,
+	.expand_macros = &cmds_expand_macros,
+	.expand_envvars = &cmds_expand_envvars,
+	.post = &post,
+	.select_range = &select_range,
+	.skip_at_beginning = &skip_at_beginning,
 };
 
 /* Shows whether view selection should be preserved on command-line finishing.
@@ -598,8 +599,10 @@ resolve_mark(char mark)
 	return result;
 }
 
+/* Implementation of macros expansion callback for cmds unit.  Returns newly
+ * allocated memory. */
 static char *
-cmds_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
+cmds_expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 {
 	char *result;
 	MacroFlags flags = MF_NONE;

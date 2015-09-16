@@ -110,9 +110,9 @@ typedef struct
 
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
-	/* should allocate memory */
+	/* Should allocate memory. */
 	char *(*expand_macros)(const char str[], int for_shell, int *usr1, int *usr2);
-	/* should allocate memory */
+	/* Should allocate memory. */
 	char *(*expand_envvars)(const char str[]);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const cmd_info_t *cmd_info);

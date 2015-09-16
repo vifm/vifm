@@ -12,7 +12,7 @@ static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * expand_macros(const char *str, int for_shell, int *usr1,
+static char * expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
 static char * expand_envvars(const char *str);
 static int usercmd_cmd(const cmd_info_t *cmd_info);
@@ -23,14 +23,14 @@ static int skip_at_beginning(int id, const char *args);
 cmd_info_t user_cmd_info;
 
 cmds_conf_t cmds_conf = {
-	.complete_args = complete_args,
-	.swap_range = swap_range,
-	.resolve_mark = resolve_mark,
-	.expand_macros = expand_macros,
-	.expand_envvars = expand_envvars,
-	.post = post,
-	.select_range = select_range,
-	.skip_at_beginning = skip_at_beginning,
+	.complete_args = &complete_args,
+	.swap_range = &swap_range,
+	.resolve_mark = &resolve_mark,
+	.expand_macros = &expand_macros,
+	.expand_envvars = &expand_envvars,
+	.post = &post,
+	.select_range = &select_range,
+	.skip_at_beginning = &skip_at_beginning,
 };
 
 DEFINE_SUITE();
@@ -91,7 +91,7 @@ resolve_mark(char mark)
 }
 
 static char *
-expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
+expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 {
 	return strdup(str);
 }
