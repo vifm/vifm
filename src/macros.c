@@ -48,6 +48,14 @@ typedef enum
 }
 PathType;
 
+/* Should return the same character if processing of the macro is allowed or
+ * '\0' if it's not allowed. */
+typedef char (*macro_filter_func)(int *quoted, char c, char data);
+
+static char filter_all(int *quoted, char c, char data);
+static char filter_single(int *quoted, char c, char data);
+static char * expand_macros_i(const char command[], const char args[],
+		MacroFlags *flags, int for_shell, macro_filter_func filter);
 static void set_flags(MacroFlags *flags, MacroFlags value);
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
@@ -68,6 +76,65 @@ static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 char *
 expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell)
+{
+	return expand_macros_i(command, args, flags, for_shell, &filter_all);
+}
+
+/* macro_filter_func instantiation that allows all macros.  Returns the
+ * argument. */
+static char
+filter_all(int *quoted, char c, char data)
+{
+	return c;
+}
+
+char *
+ma_expand_single(const char command[])
+{
+	char *const res = expand_macros_i(command, NULL, NULL, 0, &filter_single);
+	unescape(res, 0);
+	return res;
+}
+
+/* macro_filter_func instantiation that filters out non-single element macros.
+ * Returns the argument on allowed macro and '\0' otherwise. */
+static char
+filter_single(int *quoted, char c, char data)
+{
+	if(strchr("cCdD", c) != NULL)
+	{
+		*quoted = 0;
+		return c;
+	}
+
+	if(c == 'f' && curr_view->selected_files <= 1)
+	{
+		return c;
+	}
+
+	if(c == 'F' && other_view->selected_files <= 1)
+	{
+		return c;
+	}
+
+	if(c == 'r')
+	{
+		registers_t *reg = find_register(tolower(data));
+		if(reg->num_files == 1)
+		{
+			return c;
+		}
+	}
+
+	return '\0';
+}
+
+/* args and flags parameters can equal NULL. The string returned needs to be
+ * freed in the calling function. After executing flags is one of MF_*
+ * values. */
+static char *
+expand_macros_i(const char command[], const char args[], MacroFlags *flags,
+		int for_shell, macro_filter_func filter)
 {
 	/* TODO: refactor this function expand_macros() */
 	/* FIXME: repetitive len = strlen(expanded) could be optimized. */
@@ -106,9 +173,10 @@ expand_macros(const char command[], const char args[], MacroFlags *flags,
 		if(command[x] == '"' && char_is_one_of(MACROS_WITH_QUOTING, command[x + 1]))
 		{
 			quotes = 1;
-			x++;
+			++x;
 		}
-		switch(command[x])
+		switch(filter(&quotes, command[x],
+					command[x] == '\0' ? '\0' : command[x + 1]))
 		{
 			case 'a': /* user arguments */
 				if(args != NULL)
@@ -370,9 +438,10 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		const char mod[], int key, int *well_formed, int for_shell)
 {
 	int i;
+	registers_t *reg;
 
 	*well_formed = 1;
-	registers_t *reg = find_register(tolower(key));
+	reg = find_register(tolower(key));
 	if(reg == NULL)
 	{
 		*well_formed = 0;

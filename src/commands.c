@@ -335,7 +335,7 @@ static const cmd_add_t commands[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = bmarks_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -2333,13 +2333,18 @@ get_bmark_dir(const cmd_info_t *cmd_info)
 static char *
 make_bmark_path(const char path[])
 {
-	if(is_path_absolute(path))
+	char *ret;
+	char *const expanded = ma_expand_single(path);
+
+	if(is_path_absolute(expanded))
 	{
-		return strdup(path);
+		return expanded;
 	}
 
-	return format_str("%s%s%s", curr_view->curr_dir,
-			is_root_dir(curr_view->curr_dir) ? "" : "/", path);
+	ret = format_str("%s%s%s", curr_view->curr_dir,
+			is_root_dir(curr_view->curr_dir) ? "" : "/", expanded);
+	free(expanded);
+	return ret;
 }
 
 static int

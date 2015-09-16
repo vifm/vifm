@@ -166,7 +166,6 @@ TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
 			int quotes, int *last_arg, int *last_begin, int *last_end);
-	void unescape(char s[], int regexp);
 )
 
 #endif /* VIFM__ENGINE__CMDS_H__ */

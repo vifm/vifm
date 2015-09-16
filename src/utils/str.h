@@ -198,6 +198,10 @@ char * skip_char(const char str[], char c);
  * it. */
 char * escape_chars(const char string[], const char chars[]);
 
+/* Unescapes string in place (removes extra slashes).  regexp flag narrows set
+ * of unescaped characters to "/". */
+void unescape(char s[], int regexp);
+
 /* Returns non-zero if the string is NULL or empty. */
 int is_null_or_empty(const char string[]);
 
