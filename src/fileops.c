@@ -3681,7 +3681,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 	{
 		file_op = OP_SYMLINK;
 
-		if(op == CMLO_LINK_ABS)
+		if(op == CMLO_LINK_REL)
 		{
 			char dst_dir[PATH_MAX];
 
