@@ -125,7 +125,7 @@ TEST(not_all_macros_are_expanded)
 	assert_success(exec_commands("bmark! /%b%n%i%a%m%M%s%S%u%U%px tag", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(1, count_bmarks());
-	assert_string_equal("/x", path);
+	assert_string_equal("/", path);
 }
 
 static int

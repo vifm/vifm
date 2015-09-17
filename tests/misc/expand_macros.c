@@ -445,7 +445,7 @@ TEST(singly_not_expanded_multiple_files_register)
 	append_to_register('r', "a");
 	append_to_register('r', "b");
 	expanded = ma_expand_single("%rr");
-	assert_string_equal("r", expanded);
+	assert_string_equal("", expanded);
 	free(expanded);
 
 	clear_registers();

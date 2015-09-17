@@ -281,7 +281,11 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				len = strlen(expanded);
 				break;
 
-			default:
+			case '\0':
+				if(char_is_one_of("pr", command[x]) && command[x + 1] != '\0')
+				{
+					++x;
+				}
 				break;
 		}
 		if(command[x] != '\0')
