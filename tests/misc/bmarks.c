@@ -1,27 +1,35 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <string.h> /* strcmp() */
+#include <string.h> /* strcmp() strcpy() */
 
 #include "../../src/ui/ui.h"
+#include "../../src/utils/str.h"
 #include "../../src/bmarks.h"
 #include "../../src/commands.h"
 
 static int count_bmarks(void);
-static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
+static void bmarks_cb(const char p[], const char t[], time_t timestamp,
 		void *arg);
 
+static char *path;
+static char *tags;
 static int cb_called;
 
 SETUP()
 {
 	init_commands();
 	lwin.selected_files = 0;
+	strcpy(lwin.curr_dir, "/a/path");
+	path = NULL;
+	tags = NULL;
 }
 
 TEARDOWN()
 {
 	assert_success(exec_commands("delbmarks!", &lwin, CIT_COMMAND));
+	free(path);
+	free(tags);
 }
 
 TEST(tag_with_comma_is_rejected)
@@ -77,6 +85,49 @@ TEST(delbmarks_with_args_removes_matching_bookmarks)
 	assert_int_equal(1, count_bmarks());
 }
 
+TEST(arguments_are_unescaped)
+{
+	assert_success(exec_commands("bmark! /\\*stars\\* tag", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("/*stars*", path);
+}
+
+TEST(arguments_are_unquoted_single)
+{
+	assert_success(exec_commands("bmark! '/squotes' tag", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("/squotes", path);
+}
+
+TEST(arguments_are_unquoted_double)
+{
+	assert_success(exec_commands("bmark! \"/dquotes\" tag", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("/dquotes", path);
+}
+
+TEST(first_argument_is_expanded)
+{
+	assert_success(exec_commands("bmark! %d tag", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("/a/path", path);
+}
+
+TEST(not_first_argument_is_not_expanded)
+{
+	assert_success(exec_commands("bmark! /dir %d", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("%d", tags);
+}
+
+TEST(not_all_macros_are_expanded)
+{
+	assert_success(exec_commands("bmark! /%b%n%i%a%m%M%s%S%u%U%px tag", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_string_equal("/x", path);
+}
+
 static int
 count_bmarks(void)
 {
@@ -86,8 +137,10 @@ count_bmarks(void)
 }
 
 static void
-bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
+bmarks_cb(const char p[], const char t[], time_t timestamp, void *arg)
 {
+	replace_string(&path, p);
+	replace_string(&tags, t);
 	++cb_called;
 }
 

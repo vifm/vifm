@@ -120,7 +120,7 @@ filter_single(int *quoted, char c, char data)
 	if(c == 'r')
 	{
 		registers_t *reg = find_register(tolower(data));
-		if(reg->num_files == 1)
+		if(reg != NULL && reg->num_files == 1)
 		{
 			return c;
 		}
