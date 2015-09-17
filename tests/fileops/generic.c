@@ -11,6 +11,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/fileops.h"
 #include "../../src/ops.h"
@@ -19,6 +20,7 @@
 static void create_empty_dir(const char dir[]);
 static void create_empty_file(const char file[]);
 static int file_exists(const char file[]);
+static int not_windows(void);
 
 SETUP()
 {
@@ -121,6 +123,44 @@ TEST(merge_directories)
 	stats_update_shell_type("/bin/sh");
 }
 
+TEST(make_relative_link, IF(not_windows))
+{
+	char link_name[] = "link";
+	char *list[] = { &link_name[0] };
+	char link_value[PATH_MAX];
+
+	strcpy(lwin.curr_dir, "/fake/absolute/path");
+
+	lwin.dir_entry[0].marked = 1;
+	(void)cpmv_files(&lwin, list, ARRAY_LEN(list), CMLO_LINK_REL, 0);
+
+	assert_true(path_exists(link_name, NODEREF));
+
+	assert_success(get_link_target(link_name, link_value, sizeof(link_value)));
+	assert_false(is_path_absolute(link_value));
+
+	(void)unlink(link_name);
+}
+
+TEST(make_absolute_link, IF(not_windows))
+{
+	char link_name[] = "link";
+	char *list[] = { &link_name[0] };
+	char link_value[PATH_MAX];
+
+	strcpy(lwin.curr_dir, "/fake/absolute/path");
+
+	lwin.dir_entry[0].marked = 1;
+	(void)cpmv_files(&lwin, list, ARRAY_LEN(list), CMLO_LINK_ABS, 0);
+
+	assert_true(path_exists(link_name, NODEREF));
+
+	assert_success(get_link_target(link_name, link_value, sizeof(link_value)));
+	assert_true(is_path_absolute(link_value));
+
+	(void)unlink(link_name);
+}
+
 static void
 create_empty_dir(const char dir[])
 {
@@ -140,6 +180,16 @@ static int
 file_exists(const char file[])
 {
 	return access(file, F_OK) == 0;
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
