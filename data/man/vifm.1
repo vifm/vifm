@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 14, 2015" "vifm 0.8"
+.TH VIFM 1 "September 17, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1223,6 +1223,12 @@ bookmark current directory with specified tags.
 .BI ":bmark! path tag1 [tag2 [tag3...]]"
 same as :bmark, but allows bookmarking specific path instead of current
 directory.  This is for use in vifmrc and for bookmarking files.
+
+Path can contain macros that expand to single path (%c, %C, %d, %D) or
+those that can expand to multiple paths, but contain only one (%f, %F,
+%rx).  The latter is done for convenience on using the command
+interactively.  Complex macros that include spaces (e.g. "%c:gs/ /_")
+should be escaped.
 .TP
 .BI "                                         :bmarks"
 .TP
