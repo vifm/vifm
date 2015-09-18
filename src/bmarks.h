@@ -54,6 +54,10 @@ int bmark_is_older(const char path[], time_t than);
  * duplicates). */
 void bmarks_complete(int n, char *tags[], const char str[]);
 
+/* Callback-like function which triggers some trash-specific updates after file
+ * move/rename. */
+void bmarks_file_moved(const char src[], const char dst[]);
+
 #endif /* VIFM__BMARKS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

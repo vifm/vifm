@@ -240,5 +240,21 @@ bmarks_complete(int n, char *tags[], const char str[])
 	vle_compl_add_last_match(str);
 }
 
+void
+bmarks_file_moved(const char src[], const char dst[])
+{
+	size_t i;
+
+	/* Renames bookmark. */
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		if(stroscmp(src, bmarks[i].path) == 0)
+		{
+			(void)replace_string(&bmarks[i].path, dst);
+			break;
+		}
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -5,8 +5,6 @@
 
 #include "../../src/bmarks.h"
 
-#include "utils.h"
-
 TEST(check_for_newer)
 {
 	assert_success(bmarks_setup("newer", "tag", 0U));
