@@ -97,7 +97,7 @@ change_bmark(const char path[], const char tags[], time_t timestamp, int *ret)
 	/* Try to update tags of an existing bookmark. */
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(strcmp(path, bmarks[i].path) == 0)
+		if(stroscmp(path, bmarks[i].path) == 0)
 		{
 			*ret = replace_string(&bmarks[i].tags, tags);
 			if(*ret == 0)
@@ -210,7 +210,7 @@ bmark_is_older(const char path[], time_t than)
 
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(strcmp(path, bmarks[i].path) == 0)
+		if(stroscmp(path, bmarks[i].path) == 0)
 		{
 			return bmarks[i].timestamp < than;
 		}
