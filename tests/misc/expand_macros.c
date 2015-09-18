@@ -364,5 +364,92 @@ TEST(empty_line_ok)
 	free(expanded);
 }
 
+TEST(singly_expanded_is_not_escaped)
+{
+	char *expanded;
+	lwin.list_pos = 0;
+	expanded = ma_expand_single("%c");
+	assert_string_equal("lfi le0", expanded);
+	free(expanded);
+}
+
+TEST(singly_expanded_is_not_quoted)
+{
+	char *expanded;
+	lwin.list_pos = 0;
+	expanded = ma_expand_single("%\"c");
+	assert_string_equal("lfi le0", expanded);
+	free(expanded);
+}
+
+TEST(singly_expanded_single_macros)
+{
+	char *expanded;
+	lwin.list_pos = 0;
+	expanded = ma_expand_single("%d");
+	assert_string_equal("/lwin", expanded);
+	free(expanded);
+}
+
+TEST(singly_expanded_multiple_macros_single_file)
+{
+	char *expanded;
+	lwin.dir_entry[2].selected = 0;
+	lwin.selected_files = 1;
+	expanded = ma_expand_single("%f");
+	assert_string_equal("lfi le0", expanded);
+	free(expanded);
+}
+
+TEST(singly_not_expanded_multiple_macros_multiple_files)
+{
+	char *expanded;
+	lwin.list_pos = 0;
+	expanded = ma_expand_single("%f");
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
+TEST(singly_no_crash_on_wrong_register_name)
+{
+	chdir(TEST_DATA_PATH "/spaces-in-names");
+	init_registers();
+
+	assert_success(append_to_register('r', "spaces in the middle"));
+	free(ma_expand_single("%r "));
+
+	clear_registers();
+}
+
+TEST(singly_expanded_single_file_register)
+{
+	char *expanded;
+
+	chdir(TEST_DATA_PATH "/spaces-in-names");
+	init_registers();
+
+	assert_success(append_to_register('r', "spaces in the middle"));
+	expanded = ma_expand_single("%rr");
+	assert_string_equal("spaces in the middle", expanded);
+	free(expanded);
+
+	clear_registers();
+}
+
+TEST(singly_not_expanded_multiple_files_register)
+{
+	char *expanded;
+
+	init_registers();
+
+	append_to_register('r', "a");
+	append_to_register('r', "b");
+	expanded = ma_expand_single("%rr");
+	assert_string_equal("", expanded);
+	free(expanded);
+
+	clear_registers();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

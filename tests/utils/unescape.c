@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/engine/cmds.h"
+#include "../../src/utils/str.h"
 
 TEST(empty_string_untouched)
 {

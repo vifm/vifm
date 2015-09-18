@@ -641,6 +641,27 @@ escape_chars(const char string[], const char chars[])
 	return ret;
 }
 
+void
+unescape(char s[], int regexp)
+{
+	char *p;
+
+	p = s;
+	while(s[0] != '\0')
+	{
+		if(s[0] == '\\' && (!regexp || s[1] == '/'))
+		{
+			++s;
+		}
+		*p++ = s[0];
+		if(s[0] != '\0')
+		{
+			++s;
+		}
+	}
+	*p = '\0';
+}
+
 int
 is_null_or_empty(const char string[])
 {

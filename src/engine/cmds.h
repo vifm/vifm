@@ -110,9 +110,9 @@ typedef struct
 
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
-	/* should allocate memory */
+	/* Should allocate memory. */
 	char *(*expand_macros)(const char str[], int for_shell, int *usr1, int *usr2);
-	/* should allocate memory */
+	/* Should allocate memory. */
 	char *(*expand_envvars)(const char str[]);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const cmd_info_t *cmd_info);
@@ -166,7 +166,6 @@ TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
 			int quotes, int *last_arg, int *last_begin, int *last_end);
-	void unescape(char s[], int regexp);
 )
 
 #endif /* VIFM__ENGINE__CMDS_H__ */

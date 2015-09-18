@@ -97,7 +97,7 @@ change_bmark(const char path[], const char tags[], time_t timestamp, int *ret)
 	/* Try to update tags of an existing bookmark. */
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(strcmp(path, bmarks[i].path) == 0)
+		if(stroscmp(path, bmarks[i].path) == 0)
 		{
 			*ret = replace_string(&bmarks[i].tags, tags);
 			if(*ret == 0)
@@ -210,7 +210,7 @@ bmark_is_older(const char path[], time_t than)
 
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(strcmp(path, bmarks[i].path) == 0)
+		if(stroscmp(path, bmarks[i].path) == 0)
 		{
 			return bmarks[i].timestamp < than;
 		}
@@ -238,6 +238,22 @@ bmarks_complete(int n, char *tags[], const char str[])
 
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
+}
+
+void
+bmarks_file_moved(const char src[], const char dst[])
+{
+	size_t i;
+
+	/* Renames bookmark. */
+	for(i = 0U; i < bmark_count; ++i)
+	{
+		if(stroscmp(src, bmarks[i].path) == 0)
+		{
+			(void)replace_string(&bmarks[i].path, dst);
+			break;
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

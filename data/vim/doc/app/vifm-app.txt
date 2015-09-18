@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 14
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1081,6 +1081,12 @@ The builtin commands are:
 :bmark! path tag1 [tag2 [tag3...]]
     same as :bmark, but allows bookmarking specific path instead of current
     directory.  This is for use in vifmrc and for bookmarking files.
+
+    Path can contain macros that expand to single path (%c, %C, %d, %D) or
+    those that can expand to multiple paths, but contain only one (%f, %F,
+    %rx).  The latter is done for convenience on using the command
+    interactively.  Complex macros that include spaces (e.g. "%c:gs/ /_")
+    should be escaped.
 
                                                *vifm-:bmarks*
 :bmarks

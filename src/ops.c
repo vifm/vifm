@@ -50,6 +50,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bmarks.h"
 #include "status.h"
 #include "trash.h"
 #include "undo.h"
@@ -549,14 +550,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 
 	if(result == 0)
 	{
-		if(is_under_trash(dst))
-		{
-			add_to_trash(src, dst);
-		}
-		else if(is_under_trash(src))
-		{
-			remove_from_trash(src);
-		}
+		trash_file_moved(src, dst);
+		bmarks_file_moved(src, dst);
 	}
 
 	return result;

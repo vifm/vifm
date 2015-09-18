@@ -4,7 +4,7 @@
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* fclose() fopen() free() */
 #include <string.h>
 #include <wchar.h> /* wcsdup() */
 

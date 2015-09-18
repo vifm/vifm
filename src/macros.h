@@ -59,6 +59,10 @@ custom_macro_t;
 char * expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);
 
+/* Like expand_macros(), but expands only single element macros and aims for
+ * single string, so escaping is disabled. */
+char * ma_expand_single(const char command[]);
+
 /* Gets clean part of the viewer.  Returns NULL if there is none, otherwise
  * pointer inside the cmd string is returned. */
 const char * ma_get_clean_cmd(const char cmd[]);

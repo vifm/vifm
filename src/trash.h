@@ -48,6 +48,10 @@ void trash_empty(const char trash_dir[]);
 /* Starts process of emptying all trashes in background. */
 void trash_empty_all(void);
 
+/* Callback-like function which triggers some trash-specific updates after file
+ * move/rename. */
+void trash_file_moved(const char src[], const char dst[]);
+
 int add_to_trash(const char path[], const char trash_name[]);
 
 int is_in_trash(const char trash_name[]);
@@ -64,8 +68,6 @@ int exists_in_trash(const char trash_name[]);
 /* Restores a file specified by its trash_name (from trash_list array).  Returns
  * zero on success, otherwise non-zero is returned. */
 int restore_from_trash(const char trash_name[]);
-
-int remove_from_trash(const char trash_name[]);
 
 /* Generates unique name for a file at base_path location named name (doesn't
  * have to be base_path/name as long as base_path is at same mount) in a trash

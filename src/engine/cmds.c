@@ -23,7 +23,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h> /* calloc() malloc() free() realloc() */
-#include <string.h>
+#include <string.h> /* strdup() */
 
 #include "../compat/reallocarray.h"
 #include "../utils/log.h"
@@ -43,7 +43,8 @@ typedef enum
 	BUILTIN_ABBR,
 	BUILTIN_CMD,
 	USER_CMD,
-}CMD_TYPE;
+}
+CMD_TYPE;
 
 typedef struct cmd_t
 {
@@ -107,7 +108,6 @@ static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-TSTATIC void unescape(char s[], int regexp);
 static int is_separator(char c, char sep);
 
 void
@@ -236,16 +236,17 @@ execute_cmd(const char cmd[])
 
 	if(cur->expand)
 	{
-		char *p = NULL;
 		if(cur->expand & 1)
+		{
 			cmd_info.args = cc->expand_macros(cmd_info.raw_args, cur->expand & 4,
 					&cmd_info.usr1, &cmd_info.usr2);
+		}
 		if(cur->expand & 2)
 		{
-			p = cmd_info.args;
+			char *const p = cmd_info.args;
 			cmd_info.args = cc->expand_envvars(p ? p : cmd_info.raw_args);
+			free(p);
 		}
-		free(p);
 	}
 	else
 	{
@@ -1289,25 +1290,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	}
 
 	return params;
-}
-
-TSTATIC void
-unescape(char s[], int regexp)
-{
-	char *p;
-
-	p = s;
-	while(s[0] != '\0')
-	{
-		if(s[0] == '\\' && (!regexp || s[1] == '/'))
-			s++;
-		*p++ = s[0];
-		if(s[0] != '\0')
-		{
-			s++;
-		}
-	}
-	*p = '\0';
 }
 
 char **
