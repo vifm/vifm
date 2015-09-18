@@ -87,6 +87,7 @@ static void remove_trash_entries(const char trash_dir[]);
 static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
+static void remove_from_trash(const char trash_name[]);
 static int pick_trash_dir_traverser(const char base_path[],
 		const char trash_dir[], void *arg);
 static int is_rooted_trash_dir(const char spec[]);
@@ -301,6 +302,19 @@ remove_trash_entries(const char trash_dir[])
 	}
 }
 
+void
+trash_file_moved(const char src[], const char dst[])
+{
+	if(is_under_trash(dst))
+	{
+		add_to_trash(src, dst);
+	}
+	else if(is_under_trash(src))
+	{
+		remove_from_trash(src);
+	}
+}
+
 int
 add_to_trash(const char path[], const char trash_name[])
 {
@@ -469,7 +483,9 @@ restore_from_trash(const char trash_name[])
 	return -1;
 }
 
-int
+/* Removes record about the file in the trash.  Does nothing if no such record
+ * found. */
+static void
 remove_from_trash(const char trash_name[])
 {
 	int i;
@@ -479,15 +495,16 @@ remove_from_trash(const char trash_name[])
 			break;
 	}
 	if(i >= nentries)
-		return -1;
+	{
+		return;
+	}
 
 	free(trash_list[i].path);
 	free(trash_list[i].trash_name);
 	memmove(trash_list + i, trash_list + i + 1,
 			sizeof(*trash_list)*((nentries - 1) - i));
 
-	nentries--;
-	return 0;
+	--nentries;
 }
 
 char *
