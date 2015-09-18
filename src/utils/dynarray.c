@@ -98,6 +98,7 @@ dynarray_shrink(void *darray)
 		dynarray = realloc(dynarray, sizeof(*dynarray) + dynarray->size);
 		if(dynarray != NULL)
 		{
+			dynarray->capacity = dynarray->size;
 			return dynarray->data;
 		}
 	}
