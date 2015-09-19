@@ -194,6 +194,8 @@
 	Fixed swapped absolute/relative link creation on :alink/:rlink commands.
 	Patch by MadMaverick9.
 
+	Fixed dialog box redraw in menu after terminal resize.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

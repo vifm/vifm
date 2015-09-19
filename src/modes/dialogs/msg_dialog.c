@@ -214,7 +214,7 @@ leave(Result r)
 void
 redraw_msg_dialog(int lazy)
 {
-	redraw_error_msg(NULL, NULL, 0, 1);
+	redraw_error_msg(NULL, NULL, 0, lazy);
 }
 
 void
