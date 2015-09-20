@@ -766,6 +766,8 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 		bg_task_func task_func, void *args)
 {
 	pthread_t id;
+	pthread_attr_t attr;
+	int ret;
 
 	background_task_args *const task_args = malloc(sizeof(*task_args));
 	if(task_args == NULL)
@@ -781,7 +783,18 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(task_args->job == NULL)
 	{
 		free(task_args);
-		return 2;
+		return 1;
+	}
+
+	if(pthread_attr_init(&attr) != 0)
+	{
+		return 1;
+	}
+
+	if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
+	{
+		(void)pthread_attr_destroy(&attr);
+		return 1;
 	}
 
 	replace_string(&task_args->job->bg_op.descr, op_descr);
@@ -792,17 +805,19 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 		ui_stat_job_bar_add(&task_args->job->bg_op);
 	}
 
-	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
+	ret = 0;
+	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
 		task_args->job->running = 0;
 		task_args->job->exit_code = 1;
 
 		free(task_args);
-		return 3;
+		ret = 1;
 	}
 
-	return 0;
+	(void)pthread_attr_destroy(&attr);
+	return ret;
 }
 
 /* Creates structure that describes background job and registers it in the list

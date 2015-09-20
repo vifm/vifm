@@ -196,6 +196,8 @@
 
 	Fixed dialog box redraw in menu after terminal resize.
 
+	Fixed leaving background threads in zombie state.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
