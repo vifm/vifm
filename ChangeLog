@@ -137,8 +137,8 @@
 	Windows (that end with " &", should be OK to just drop it on Windows
 	and get correct behaviour on 0.8).  Thanks to Stas Malavin.
 
-	Fixed (in some cases) running of executables with spaces in paths on
-	Windows with cmd.  Thanks to Stas Malavin.
+	Fixed running of executables with spaces in paths on Windows with cmd.
+	Thanks to Stas Malavin.
 
 	Fixed choosing user vs. default shell on Windows (was reversed), related
 	to %S, %i and alike macros.
@@ -193,6 +193,10 @@
 
 	Fixed swapped absolute/relative link creation on :alink/:rlink commands.
 	Patch by MadMaverick9.
+
+	Fixed dialog box redraw in menu after terminal resize.
+
+	Fixed leaving background threads in zombie state.
 
 0.8-beta to 0.8
 
