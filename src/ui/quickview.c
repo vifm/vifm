@@ -26,7 +26,7 @@
 #include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
                       tmpfile() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memmove() strlen() strncat() */
+#include <string.h> /* memmove() strcat() strlen() strncat() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -61,8 +61,27 @@
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
+/* State fo directory tree print functions. */
+typedef struct
+{
+	FILE *fp;          /* Output preview stream. */
+	int n;             /* Current line number (zero based). */
+	int max;           /* Maximum line number. */
+	char prefix[4096]; /* Prefix buffer (should be enough). */
+}
+tree_print_state_t;
+
 static void view_file(const char path[]);
 static FILE * view_dir(const char path[]);
+static int enter_dir(tree_print_state_t *s, const char name[], int last);
+static int visit_file(tree_print_state_t *s, const char name[], int last);
+static void leave_dir(tree_print_state_t *s);
+static void indent_prefix(tree_print_state_t *s);
+static void unindent_prefix(tree_print_state_t *s);
+static void set_prefix_char(tree_print_state_t *s, char c);
+static void print_tree_entry(tree_print_state_t *s, const char name[]);
+static struct dirent * readdir_with_skip(DIR *dir);
+static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -228,10 +247,166 @@ view_dir(const char path[])
 	FILE *fp = tmpfile();
 	if(fp != NULL)
 	{
-		fputs("File is a Directory", fp);
+		tree_print_state_t s = {
+			.fp = fp,
+			.max = other_view->window_rows - 1,
+		};
+
+		(void)print_dir_tree(&s, path, 0);
 		fseek(fp, 0, SEEK_SET);
 	}
 	return fp;
+}
+
+/* Produces tree preview of the path.  Returns non-zero to request stopping of
+ * the traversal, otherwise zero is returned. */
+static int
+print_dir_tree(tree_print_state_t *s, const char path[], int last)
+{
+	DIR *dir;
+	struct dirent *d;
+	int reached_limit;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		return 1;
+	}
+
+	if(enter_dir(s, path, last) != 0)
+	{
+		os_closedir(dir);
+		return 1;
+	}
+
+	reached_limit = 0;
+	d = readdir_with_skip(dir);
+	while(d != NULL && !reached_limit)
+	{
+		int last_entry;
+		char *const full_path = format_str("%s/%s", path, d->d_name);
+
+		/* We need to look up one entry ahead to know whether current one is the
+		 * last one. */
+		d = readdir_with_skip(dir);
+		last_entry = (d == NULL);
+
+		/* If is_dir_empty() returns non-zero than we know that it's directory and
+		 * no additional checks are needed. */
+		if(!is_dir_empty(full_path))
+		{
+			if(last_entry)
+			{
+				set_prefix_char(s, '`');
+			}
+			if(print_dir_tree(s, full_path, last_entry) != 0)
+			{
+				reached_limit = 1;
+			}
+		}
+		else if(visit_file(s, full_path, last_entry) != 0)
+		{
+			reached_limit = 1;
+		}
+
+		free(full_path);
+	}
+	os_closedir(dir);
+
+	leave_dir(s);
+
+	return reached_limit;
+}
+
+/* Handles entering directory on directory tree traversal.  Returns non-zero to
+ * request stopping of the traversal, otherwise zero is returned. */
+static int
+enter_dir(tree_print_state_t *s, const char name[], int last)
+{
+	print_tree_entry(s, get_last_path_component(name));
+
+	if(last)
+	{
+		set_prefix_char(s, ' ');
+	}
+
+	indent_prefix(s);
+	set_prefix_char(s, '|');
+
+	return ++s->n >= s->max;
+}
+
+/* Handles visiting file on directory tree traversal.  Returns non-zero to
+ * request stopping of the traversal, otherwise zero is returned. */
+static int
+visit_file(tree_print_state_t *s, const char name[], int last)
+{
+	set_prefix_char(s, last ? '`' : '|');
+	print_tree_entry(s, get_last_path_component(name));
+
+	return ++s->n >= s->max;
+}
+
+/* Handles leaving directory on directory tree traversal. */
+static void
+leave_dir(tree_print_state_t *s)
+{
+	unindent_prefix(s);
+}
+
+/* Adds one indentation level for the following elements of tree. */
+static void
+indent_prefix(tree_print_state_t *s)
+{
+	if(strlen(s->prefix) + 4U + 1U < sizeof(s->prefix))
+	{
+		strcat(s->prefix, "    ");
+	}
+}
+
+/* Removes one indentation level for the following elements of tree. */
+static void
+unindent_prefix(tree_print_state_t *s)
+{
+	set_prefix_char(s, '\0');
+}
+
+/* Sets prefix for current tree level. */
+static void
+set_prefix_char(tree_print_state_t *s, char c)
+{
+	const size_t len = strlen(s->prefix);
+	if(len >= 4U)
+	{
+		s->prefix[len - 4U] = c;
+	}
+}
+
+/* Prints single entry of directory tree. */
+static void
+print_tree_entry(tree_print_state_t *s, const char name[])
+{
+	if(s->prefix[0] != '\0')
+	{
+		fputs(s->prefix, s->fp);
+		fputs("\b\b\b-- ", s->fp);
+	}
+	fputs(name, s->fp);
+	fputc('\n', s->fp);
+}
+
+/* readdir() wrapper that skips builtin directories.  Returns pointer to an
+ * entry or NULL on end of stream. */
+static struct dirent *
+readdir_with_skip(DIR *dir)
+{
+	struct dirent *d = os_readdir(dir);
+	while(d != NULL && is_builtin_dir(d->d_name))
+	{
+		/* Skip builtin directories. */
+		d = readdir(dir);
+	}
+	return d;
 }
 
 /* Displays contents read from the fp in the other pane starting from the second
