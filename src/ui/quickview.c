@@ -23,7 +23,8 @@
 #include <unistd.h> /* usleep() */
 
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() fdopen() feof() */
+#include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
+                      tmpfile() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strlen() strncat() */
 
@@ -61,6 +62,7 @@
 #define PREVIEW_LINE_BUF_LEN 4096
 
 static void view_file(const char path[]);
+static FILE * view_dir(const char path[]);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -168,11 +170,14 @@ view_file(const char path[])
 
 	if(viewer == NULL && is_dir(path))
 	{
-		write_message("File is a Directory");
-		return;
+		fp = view_dir(path);
+		if(fp == NULL)
+		{
+			write_message("Failed to view directory");
+			return;
+		}
 	}
-
-	if(is_null_or_empty(viewer))
+	else if(is_null_or_empty(viewer))
 	{
 		fp = os_fopen(path, "rb");
 		if(fp == NULL)
@@ -213,6 +218,20 @@ view_file(const char path[])
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);
 	fclose(fp);
+}
+
+/* Previews directory, actual preview is to be read from returned stream.
+ * Returns the stream or NULL on error. */
+static FILE *
+view_dir(const char path[])
+{
+	FILE *fp = tmpfile();
+	if(fp != NULL)
+	{
+		fputs("File is a Directory", fp);
+		fseek(fp, 0, SEEK_SET);
+	}
+	return fp;
 }
 
 /* Displays contents read from the fp in the other pane starting from the second
