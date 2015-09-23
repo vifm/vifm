@@ -474,7 +474,9 @@ write_color_scheme_file(void)
 	char def_cs_path[PATH_MAX];
 	size_t i;
 
-	if(make_path(cfg.colors_dir, S_IRWXU) != 0)
+	/* make_path() doesn't report error if directory already exists, so is_dir()
+	 * check is necessary. */
+	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
 		/* Do nothing if local colors directory exists or we've failed to create
 		 * it. */
