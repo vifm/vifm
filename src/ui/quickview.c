@@ -22,6 +22,7 @@
 #include <curses.h> /* mvwaddstr() wattrset() */
 #include <unistd.h> /* usleep() */
 
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
                       tmpfile() */
@@ -72,7 +73,7 @@ typedef struct
 tree_print_state_t;
 
 static void view_file(const char path[]);
-static FILE * view_dir(const char path[]);
+static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
@@ -189,7 +190,7 @@ view_file(const char path[])
 
 	if(viewer == NULL && is_dir(path))
 	{
-		fp = view_dir(path);
+		fp = view_dir(path, other_view->window_rows - 1);
 		if(fp == NULL)
 		{
 			write_message("Failed to view directory");
@@ -239,17 +240,23 @@ view_file(const char path[])
 	fclose(fp);
 }
 
+FILE *
+qv_view_dir(const char path[])
+{
+	return view_dir(path, INT_MAX);
+}
+
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */
 static FILE *
-view_dir(const char path[])
+view_dir(const char path[], int max_lines)
 {
 	FILE *fp = tmpfile();
 	if(fp != NULL)
 	{
 		tree_print_state_t s = {
 			.fp = fp,
-			.max = other_view->window_rows - 1,
+			.max = max_lines,
 		};
 
 		(void)print_dir_tree(&s, path, 0);

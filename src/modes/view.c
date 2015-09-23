@@ -991,9 +991,6 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 		case 0:
 			break;
 
-		case 1:
-			show_error_msg(action, "Can't explore a directory");
-			return 1;
 		case 2:
 			show_error_msg(action, "Can't open file for reading");
 			return 1;
@@ -1022,9 +1019,8 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 	return 0;
 }
 
-/* Reads data to be displayed handling error cases.  Returns zero on success, 1
- * if file is a directory, 2 on file reading error, 3 on issues with viewer or
- * 4 on empty input. */
+/* Reads data to be displayed handling error cases.  Returns zero on success, 2
+ * on file reading error, 3 on issues with viewer or 4 on empty input. */
 static int
 get_view_data(view_info_t *vi, const char file_to_view[])
 {
@@ -1035,10 +1031,13 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	{
 		if(is_dir(file_to_view))
 		{
-			return 1;
+			fp = qv_view_dir(file_to_view);
+		}
+		else
+		{
+			fp = os_fopen(file_to_view, "rb");
 		}
 
-		fp = os_fopen(file_to_view, "rb");
 		if(fp == NULL)
 		{
 			return 2;

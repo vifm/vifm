@@ -41,6 +41,10 @@ void qv_cleanup(FileView *view, const char cmd[]);
  * string stored internally. */
 const char * gv_get_viewer(const char path[]);
 
+/* Previews directory, actual preview is to be read from returned stream.
+ * Returns the stream or NULL on error. */
+FILE * qv_view_dir(const char path[]);
+
 #endif /* VIFM__UI__QUICKVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
