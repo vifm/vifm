@@ -39,7 +39,7 @@ void qv_cleanup(FileView *view, const char cmd[]);
 /* Gets viewer command for a file considering its type (directory vs. file).
  * Returns NULL if no suitable viewer available, otherwise returns pointer to
  * string stored internally. */
-const char * gv_get_viewer(const char path[]);
+const char * qv_get_viewer(const char path[]);
 
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */

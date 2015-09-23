@@ -584,7 +584,7 @@ draw(void)
 
 	if(vi->graphics)
 	{
-		const char *cmd = gv_get_viewer(vi->filename);
+		const char *cmd = qv_get_viewer(vi->filename);
 		cmd = (cmd != NULL) ? ma_get_clean_cmd(cmd) : NULL;
 		qv_cleanup(vi->view, cmd);
 
@@ -1025,7 +1025,7 @@ static int
 get_view_data(view_info_t *vi, const char file_to_view[])
 {
 	FILE *fp;
-	const char *const viewer = gv_get_viewer(file_to_view);
+	const char *const viewer = qv_get_viewer(file_to_view);
 
 	if(is_null_or_empty(viewer))
 	{

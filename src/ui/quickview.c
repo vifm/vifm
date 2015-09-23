@@ -186,7 +186,7 @@ view_file(const char path[])
 	const char *clean_cmd;
 	FILE *fp;
 
-	viewer = gv_get_viewer(path);
+	viewer = qv_get_viewer(path);
 
 	if(viewer == NULL && is_dir(path))
 	{
@@ -598,7 +598,7 @@ qv_cleanup(FileView *view, const char cmd[])
 }
 
 const char *
-gv_get_viewer(const char path[])
+qv_get_viewer(const char path[])
 {
 	char *const typed_fname = get_typed_fname(path);
 	const char *const viewer = ft_get_viewer(typed_fname);
