@@ -73,15 +73,15 @@ tree_print_state_t;
 
 static void view_file(const char path[]);
 static FILE * view_dir(const char path[]);
-static int enter_dir(tree_print_state_t *s, const char name[], int last);
-static int visit_file(tree_print_state_t *s, const char name[], int last);
+static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
+static int enter_dir(tree_print_state_t *s, const char path[], int last);
+static int visit_file(tree_print_state_t *s, const char path[], int last);
 static void leave_dir(tree_print_state_t *s);
 static void indent_prefix(tree_print_state_t *s);
 static void unindent_prefix(tree_print_state_t *s);
 static void set_prefix_char(tree_print_state_t *s, char c);
-static void print_tree_entry(tree_print_state_t *s, const char name[]);
+static void print_tree_entry(tree_print_state_t *s, const char path[]);
 static struct dirent * readdir_with_skip(DIR *dir);
-static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -321,9 +321,9 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 /* Handles entering directory on directory tree traversal.  Returns non-zero to
  * request stopping of the traversal, otherwise zero is returned. */
 static int
-enter_dir(tree_print_state_t *s, const char name[], int last)
+enter_dir(tree_print_state_t *s, const char path[], int last)
 {
-	print_tree_entry(s, get_last_path_component(name));
+	print_tree_entry(s, path);
 
 	if(last)
 	{
@@ -339,10 +339,10 @@ enter_dir(tree_print_state_t *s, const char name[], int last)
 /* Handles visiting file on directory tree traversal.  Returns non-zero to
  * request stopping of the traversal, otherwise zero is returned. */
 static int
-visit_file(tree_print_state_t *s, const char name[], int last)
+visit_file(tree_print_state_t *s, const char path[], int last)
 {
 	set_prefix_char(s, last ? '`' : '|');
-	print_tree_entry(s, get_last_path_component(name));
+	print_tree_entry(s, path);
 
 	return ++s->n >= s->max;
 }
@@ -384,14 +384,18 @@ set_prefix_char(tree_print_state_t *s, char c)
 
 /* Prints single entry of directory tree. */
 static void
-print_tree_entry(tree_print_state_t *s, const char name[])
+print_tree_entry(tree_print_state_t *s, const char path[])
 {
 	if(s->prefix[0] != '\0')
 	{
 		fputs(s->prefix, s->fp);
 		fputs("\b\b\b-- ", s->fp);
 	}
-	fputs(name, s->fp);
+	fputs(get_last_path_component(path), s->fp);
+	if(is_dir(path) && !ends_with_slash(path))
+	{
+		fputc('/', s->fp);
+	}
 	fputc('\n', s->fp);
 }
 
