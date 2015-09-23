@@ -114,9 +114,10 @@ is_dir_empty(const char path[])
 	DIR *dir;
 	struct dirent *d;
 
-	if((dir = os_opendir(path)) == NULL)
+	dir = os_opendir(path);
+	if(dir == NULL)
 	{
-		return 0;
+		return 1;
 	}
 
 	while((d = os_readdir(dir)) != NULL)

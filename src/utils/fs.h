@@ -53,8 +53,8 @@ typedef int (*dir_content_client_func)(const char name[], const void *data,
  * links. */
 int is_dir(const char path[]);
 
-/* Checks whether directory is empty.  Returns non-zero if it isn't, in case of
- * error or when directory is empty zero is returned. */
+/* Checks whether directory is empty.  Returns non-zero if it is, in case of
+ * error or when directory is empty non-zero is returned. */
 int is_dir_empty(const char path[]);
 
 /* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
