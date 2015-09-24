@@ -352,7 +352,7 @@ static const col_attr_t default_cs[] = {
 	[FIFO_COLOR]         = { COLOR_CYAN,    -1,          A_BOLD                  },
 	[EXECUTABLE_COLOR]   = { COLOR_GREEN,   -1,          A_BOLD                  },
 	[SELECTED_COLOR]     = { COLOR_MAGENTA, -1,          A_BOLD                  },
-	[CURR_LINE_COLOR]    = { -1,            COLOR_BLUE,  A_BOLD                  },
+	[CURR_LINE_COLOR]    = { -1,            -1,          A_BOLD | A_REVERSE      },
 	[TOP_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[TOP_LINE_SEL_COLOR] = { COLOR_BLACK,   -1,          A_BOLD                  },
 	[STATUS_LINE_COLOR]  = { COLOR_BLACK,   COLOR_WHITE, A_BOLD                  },
@@ -474,7 +474,9 @@ write_color_scheme_file(void)
 	char def_cs_path[PATH_MAX];
 	size_t i;
 
-	if(make_path(cfg.colors_dir, S_IRWXU) != 0)
+	/* make_path() doesn't report error if directory already exists, so is_dir()
+	 * check is necessary. */
+	if(is_dir(cfg.colors_dir) || make_path(cfg.colors_dir, S_IRWXU) != 0)
 	{
 		/* Do nothing if local colors directory exists or we've failed to create
 		 * it. */
