@@ -68,7 +68,7 @@ typedef struct
 	FILE *fp;          /* Output preview stream. */
 	int n;             /* Current line number (zero based). */
 	int max;           /* Maximum line number. */
-	char prefix[4096]; /* Prefix buffer (should be enough). */
+	char prefix[4096]; /* Prefix character for each tree level. */
 }
 tree_print_state_t;
 
@@ -82,6 +82,7 @@ static void indent_prefix(tree_print_state_t *s);
 static void unindent_prefix(tree_print_state_t *s);
 static void set_prefix_char(tree_print_state_t *s, char c);
 static void print_tree_entry(tree_print_state_t *s, const char path[]);
+static void print_entry_prefix(tree_print_state_t *s);
 static struct dirent * readdir_with_skip(DIR *dir);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
@@ -365,9 +366,9 @@ leave_dir(tree_print_state_t *s)
 static void
 indent_prefix(tree_print_state_t *s)
 {
-	if(strlen(s->prefix) + 4U + 1U < sizeof(s->prefix))
+	if(strlen(s->prefix) + 1U + 1U < sizeof(s->prefix))
 	{
-		strcat(s->prefix, "    ");
+		strcat(s->prefix, " ");
 	}
 }
 
@@ -383,9 +384,9 @@ static void
 set_prefix_char(tree_print_state_t *s, char c)
 {
 	const size_t len = strlen(s->prefix);
-	if(len >= 4U)
+	if(len >= 1U)
 	{
-		s->prefix[len - 4U] = c;
+		s->prefix[len - 1U] = c;
 	}
 }
 
@@ -393,17 +394,28 @@ set_prefix_char(tree_print_state_t *s, char c)
 static void
 print_tree_entry(tree_print_state_t *s, const char path[])
 {
-	if(s->prefix[0] != '\0')
-	{
-		fputs(s->prefix, s->fp);
-		fputs("\b\b\b-- ", s->fp);
-	}
+	print_entry_prefix(s);
 	fputs(get_last_path_component(path), s->fp);
 	if(is_dir(path) && !ends_with_slash(path))
 	{
 		fputc('/', s->fp);
 	}
 	fputc('\n', s->fp);
+}
+
+/* Prints part of the string to the left of entry name. */
+static void
+print_entry_prefix(tree_print_state_t *s)
+{
+	const char *p = s->prefix;
+
+	/* Expand " |`" into "    |   `-- ". */
+	while(p[0] != '\0')
+	{
+		fputc(p[0], s->fp);
+		fputs(p[1] == '\0' ? "-- " : "   ", s->fp);
+		++p;
+	}
 }
 
 /* readdir() wrapper that skips builtin directories.  Returns pointer to an
