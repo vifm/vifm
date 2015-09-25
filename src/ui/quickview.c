@@ -26,7 +26,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
                       tmpfile() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() qsort() */
 #include <string.h> /* memmove() strcat() strlen() strncat() */
 
 #include "../cfg/config.h"
@@ -40,6 +40,7 @@
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -83,7 +84,8 @@ static void unindent_prefix(tree_print_state_t *s);
 static void set_prefix_char(tree_print_state_t *s, char c);
 static void print_tree_entry(tree_print_state_t *s, const char path[]);
 static void print_entry_prefix(tree_print_state_t *s);
-static struct dirent * readdir_with_skip(DIR *dir);
+static char ** list_sorted_files(const char path[], int *len);
+static int path_sorter(const void *first, const void *second);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -280,33 +282,29 @@ view_dir(const char path[], int max_lines)
 static int
 print_dir_tree(tree_print_state_t *s, const char path[], int last)
 {
-	DIR *dir;
-	struct dirent *d;
+	int i;
 	int reached_limit;
 
-	dir = os_opendir(path);
-	if(dir == NULL)
+	int len;
+	char **lst = list_sorted_files(path, &len);
+
+	if(len < 0)
 	{
+		free_string_array(lst, len);
 		return 1;
 	}
 
 	if(enter_dir(s, path, last) != 0)
 	{
-		os_closedir(dir);
+		free_string_array(lst, len);
 		return 1;
 	}
 
 	reached_limit = 0;
-	d = readdir_with_skip(dir);
-	while(d != NULL && !reached_limit)
+	for(i = 0; i < len && !reached_limit; ++i)
 	{
-		int last_entry;
-		char *const full_path = format_str("%s/%s", path, d->d_name);
-
-		/* We need to look up one entry ahead to know whether current one is the
-		 * last one. */
-		d = readdir_with_skip(dir);
-		last_entry = (d == NULL);
+		const int last_entry = (i == len - 1);
+		char *const full_path = format_str("%s/%s", path, lst[i]);
 
 		/* If is_dir_empty() returns non-zero than we know that it's directory and
 		 * no additional checks are needed. */
@@ -328,7 +326,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 
 		free(full_path);
 	}
-	os_closedir(dir);
+	free_string_array(lst, len);
 
 	leave_dir(s);
 
@@ -427,18 +425,45 @@ print_entry_prefix(tree_print_state_t *s)
 	}
 }
 
-/* readdir() wrapper that skips builtin directories.  Returns pointer to an
- * entry or NULL on end of stream. */
-static struct dirent *
-readdir_with_skip(DIR *dir)
+/* Enumerates content of the path in sorted order.  Returns list of names of
+ * lengths *len, which can be NULL on empty list, error is indicated by negative
+ * *len. */
+static char **
+list_sorted_files(const char path[], int *len)
 {
-	struct dirent *d = os_readdir(dir);
-	while(d != NULL && is_builtin_dir(d->d_name))
+	DIR *dir;
+	struct dirent *d;
+	char **list = NULL;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
 	{
-		/* Skip builtin directories. */
-		d = readdir(dir);
+		*len = -1;
+		return NULL;
 	}
-	return d;
+
+	*len = 0;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			*len = add_to_string_array(&list, *len, 1, d->d_name);
+		}
+	}
+	os_closedir(dir);
+
+	qsort(list, *len, sizeof(*list), &path_sorter);
+
+	return list;
+}
+
+/* Wraps stroscmp() for use with qsort(). */
+static int
+path_sorter(const void *first, const void *second)
+{
+	const char *const *const a = first;
+	const char *const *const b = second;
+	return stroscmp(*a, *b);
 }
 
 /* Displays contents read from the fp in the other pane starting from the second
