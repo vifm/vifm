@@ -261,7 +261,16 @@ view_dir(const char path[], int max_lines)
 		};
 
 		(void)print_dir_tree(&s, path, 0);
-		fseek(fp, 0, SEEK_SET);
+
+		if(s.n == 0)
+		{
+			fclose(fp);
+			fp = NULL;
+		}
+		else
+		{
+			fseek(fp, 0, SEEK_SET);
+		}
 	}
 	return fp;
 }
