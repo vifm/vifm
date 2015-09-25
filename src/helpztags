@@ -63,6 +63,9 @@ foreach $dir (@ARGV) {
         # characters, there is no '-' before it and is followed
         # by a white character or end-of-line.
       while (/(?<!-)\*([^*|\s]+?)\*\s+?/g) {
+        if (exists($tags{$+})) {
+          die "Error: duplicated tag in $dir/$file at $.: $+\n";
+        }
         $tags{$+}=$file;
       }
     }
