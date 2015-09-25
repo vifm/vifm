@@ -123,6 +123,8 @@
 
 	Changed default colorscheme to invert colors of the current line.
 
+	Display directory size on Windows more correctly.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

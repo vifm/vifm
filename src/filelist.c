@@ -1323,7 +1323,8 @@ static int
 fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd)
 {
-	entry->size = ((uintmax_t)ffd->nFileSizeHigh << 32) + ffd->nFileSizeLow;
+	entry->size = ((uintmax_t)ffd->nFileSizeHigh*(MAXDWORD + 1))
+	            + ffd->nFileSizeLow;
 	entry->attrs = ffd->dwFileAttributes;
 	entry->mtime = win_to_unix_time(ffd->ftLastWriteTime);
 	entry->atime = win_to_unix_time(ffd->ftLastAccessTime);
@@ -1335,6 +1336,8 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 	}
 	else if(ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 	{
+		/* Windows doesn't like returning size of directories when it can. */
+		entry->size = get_file_size(entry->name);
 		entry->type = FT_DIR;
 	}
 	else if(is_win_executable(path))
@@ -2037,11 +2040,14 @@ add_parent_dir(FileView *view)
 		return;
 	}
 
-	dir_entry->size = (uintmax_t)s.st_size;
 #ifndef _WIN32
+	dir_entry->size = (uintmax_t)s.st_size;
 	dir_entry->mode = s.st_mode;
 	dir_entry->uid = s.st_uid;
 	dir_entry->gid = s.st_gid;
+#else
+	/* Windows doesn't like returning size of directories when it can. */
+	dir_entry->size = get_file_size(dir_entry->name);
 #endif
 	dir_entry->mtime = s.st_mtime;
 	dir_entry->atime = s.st_atime;
