@@ -47,13 +47,19 @@
 #define os_rename rename
 #define os_stat stat
 #define os_system system
+#define os_tmpfile tmpfile
 
 #else
 
 #include <fcntl.h> /* *_OK */
+#include "../utils/utils.h"
 
 /* Not straight forward for Windows and not very important. */
 #define os_lstat os_stat
+
+/* Windows has tmpfile(), but (prepare yourself) it requires administrative
+ * priviledges... */
+#define os_tmpfile win_tmpfile
 
 struct stat;
 

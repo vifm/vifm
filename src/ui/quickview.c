@@ -254,7 +254,8 @@ qv_view_dir(const char path[])
 static FILE *
 view_dir(const char path[], int max_lines)
 {
-	FILE *fp = tmpfile();
+	FILE *fp = os_tmpfile();
+
 	if(fp != NULL)
 	{
 		tree_print_state_t s = {

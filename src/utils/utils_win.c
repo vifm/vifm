@@ -892,5 +892,47 @@ use_info_prog_internal(const char cmd[], int out_pipe[2])
 	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
 }
 
+FILE *
+win_tmpfile()
+{
+	char dir[PATH_MAX];
+	char file[PATH_MAX];
+	HANDLE h;
+	int fd;
+	FILE *f;
+
+	if(GetTempPathA(sizeof(dir), dir) == 0)
+	{
+		return NULL;
+	}
+
+	if(GetTempFileNameA(dir, "dir-view", 0U, file) == 0)
+	{
+		return NULL;
+	}
+
+	h = CreateFileA(file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+			FILE_FLAG_DELETE_ON_CLOSE, NULL);
+	if(h == INVALID_HANDLE_VALUE)
+	{
+		return NULL;
+	}
+
+	fd = _open_osfhandle((intptr_t)h, _O_RDWR);
+	if(fd == -1)
+	{
+		CloseHandle(h);
+		return NULL;
+	}
+
+	f = fdopen(fd, "r+");
+	if(f == NULL)
+	{
+		close(fd);
+	}
+
+	return f;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

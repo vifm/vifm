@@ -23,6 +23,7 @@
 #include <windows.h>
 
 #include <stddef.h> /* size_t */
+#include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
 #include "macros.h"
@@ -75,6 +76,12 @@ const char * win_resolve_mount_points(const char path[]);
  * modified.  Returns negative value on error, zero for unchanged directory and
  * positive number if directory was modified. */
 int win_check_dir_changed(FileView *view);
+
+/* tmpfile() for Windows, the way it should have been implemented.  Returns file
+ * handler opened for read and write that is automatically removed on
+ * application close.  Don't use tmpfile(), they utterly failed to implement
+ * it. */
+FILE * win_tmpfile();
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 
