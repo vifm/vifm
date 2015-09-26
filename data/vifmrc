@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 29 Aug, 2015)
+" Sample configuration file for vifm (last updated: 26 Sep, 2015)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -304,7 +304,6 @@ filextype *.pro qtcreator %f &
 filextype */
         \ {View in thunar}
         \ Thunar %f &,
-fileviewer .*/,*/ tree %f
 
 " Syntax highlighting in preview
 "
@@ -319,7 +318,7 @@ fileviewer .*/,*/ tree %f
 "
 " Or leave it for automatic detection
 "
-" fileviewer * pygmentize -O style=monokai -f console256 -g
+" fileviewer *[^/] pygmentize -O style=monokai -f console256 -g
 
 " Displaying pictures in terminal
 "
