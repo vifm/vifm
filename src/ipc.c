@@ -196,7 +196,7 @@ receive_pkg(void)
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
 #endif
 
-	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U)
+	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
 	{
 		return NULL;
 	}
