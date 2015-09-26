@@ -42,9 +42,6 @@
 #include "color_scheme.h"
 #include "column_view.h"
 
-#define MIN_TERM_HEIGHT 10
-#define MIN_TERM_WIDTH 30
-
 #define SORT_WIN_WIDTH 32
 
 /* Width of the input window (located to the left of the ruler). */
@@ -53,6 +50,11 @@
 /* Minimal width of the position window (located in the right corner of status
  * line). */
 #define POS_WIN_MIN_WIDTH 13
+
+/* Menus don't look like menus as all if height is less than 5. */
+#define MIN_TERM_HEIGHT 5
+/* There is a lower limit on statusbar width. */
+#define MIN_TERM_WIDTH (INPUT_WIN_WIDTH + 1 + POS_WIN_MIN_WIDTH)
 
 /* Width of the ruler and input windows. */
 #define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(ruler_win))

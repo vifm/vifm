@@ -128,6 +128,8 @@
 
 	Display directory size on Windows more correctly.
 
+	Lower minimum supported terminal width and height from 30x10 to 20x5.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
