@@ -196,7 +196,7 @@ receive_pkg(void)
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
 #endif
 
-	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U)
+	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
 	{
 		return NULL;
 	}
@@ -340,9 +340,13 @@ try_use_pipe(const char path[])
 	if(fd == -1)
 	{
 		CloseHandle(h);
-		return NULL;
 	}
 #endif
+
+	if(fd == -1)
+	{
+		return NULL;
+	}
 
 	f = fdopen(fd, "r");
 	if(f == NULL)

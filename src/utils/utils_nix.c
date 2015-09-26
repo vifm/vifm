@@ -742,6 +742,8 @@ stop_process(void)
 	struct sigaction new, old;
 
 	new.sa_handler = SIG_DFL;
+	sigemptyset(&new.sa_mask);
+	new.sa_flags = SA_RESTART;
 	sigaction(SIGTSTP, &new, &old);
 
 	kill(0, SIGTSTP);
@@ -886,6 +888,11 @@ reopen_term_stdin(void)
 	ttyfd = open(get_tty_name(), O_RDONLY);
 	if(ttyfd != STDIN_FILENO)
 	{
+		if(ttyfd != -1)
+		{
+			close(ttyfd);
+		}
+
 		fprintf(stderr, "Failed to open terminal for input.");
 		return 1;
 	}
