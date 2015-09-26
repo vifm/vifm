@@ -22,10 +22,12 @@
 #include <curses.h> /* mvwaddstr() wattrset() */
 #include <unistd.h> /* usleep() */
 
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fclose() fdopen() feof() */
-#include <stdlib.h> /* free() */
-#include <string.h> /* memmove() strlen() strncat() */
+#include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
+                      tmpfile() */
+#include <stdlib.h> /* free() qsort() */
+#include <string.h> /* memmove() strcat() strlen() strncat() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -38,6 +40,7 @@
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -60,7 +63,29 @@
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
+/* State fo directory tree print functions. */
+typedef struct
+{
+	FILE *fp;          /* Output preview stream. */
+	int n;             /* Current line number (zero based). */
+	int max;           /* Maximum line number. */
+	char prefix[4096]; /* Prefix character for each tree level. */
+}
+tree_print_state_t;
+
 static void view_file(const char path[]);
+static FILE * view_dir(const char path[], int max_lines);
+static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
+static int enter_dir(tree_print_state_t *s, const char path[], int last);
+static int visit_file(tree_print_state_t *s, const char path[], int last);
+static void leave_dir(tree_print_state_t *s);
+static void indent_prefix(tree_print_state_t *s);
+static void unindent_prefix(tree_print_state_t *s);
+static void set_prefix_char(tree_print_state_t *s, char c);
+static void print_tree_entry(tree_print_state_t *s, const char path[]);
+static void print_entry_prefix(tree_print_state_t *s);
+static char ** list_sorted_files(const char path[], int *len);
+static int path_sorter(const void *first, const void *second);
 static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
@@ -164,15 +189,18 @@ view_file(const char path[])
 	const char *clean_cmd;
 	FILE *fp;
 
-	viewer = gv_get_viewer(path);
+	viewer = qv_get_viewer(path);
 
 	if(viewer == NULL && is_dir(path))
 	{
-		write_message("File is a Directory");
-		return;
+		fp = view_dir(path, other_view->window_rows - 1);
+		if(fp == NULL)
+		{
+			write_message("Failed to view directory");
+			return;
+		}
 	}
-
-	if(is_null_or_empty(viewer))
+	else if(is_null_or_empty(viewer))
 	{
 		fp = os_fopen(path, "rb");
 		if(fp == NULL)
@@ -213,6 +241,230 @@ view_file(const char path[])
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);
 	fclose(fp);
+}
+
+FILE *
+qv_view_dir(const char path[])
+{
+	return view_dir(path, INT_MAX);
+}
+
+/* Previews directory, actual preview is to be read from returned stream.
+ * Returns the stream or NULL on error. */
+static FILE *
+view_dir(const char path[], int max_lines)
+{
+	FILE *fp = os_tmpfile();
+
+	if(fp != NULL)
+	{
+		tree_print_state_t s = {
+			.fp = fp,
+			.max = max_lines,
+		};
+
+		(void)print_dir_tree(&s, path, 0);
+
+		if(s.n == 0)
+		{
+			fclose(fp);
+			fp = NULL;
+		}
+		else
+		{
+			fseek(fp, 0, SEEK_SET);
+		}
+	}
+	return fp;
+}
+
+/* Produces tree preview of the path.  Returns non-zero to request stopping of
+ * the traversal, otherwise zero is returned. */
+static int
+print_dir_tree(tree_print_state_t *s, const char path[], int last)
+{
+	int i;
+	int reached_limit;
+
+	int len;
+	char **lst = list_sorted_files(path, &len);
+
+	if(len < 0)
+	{
+		free_string_array(lst, len);
+		return 1;
+	}
+
+	if(enter_dir(s, path, last) != 0)
+	{
+		free_string_array(lst, len);
+		return 1;
+	}
+
+	reached_limit = 0;
+	for(i = 0; i < len && !reached_limit; ++i)
+	{
+		const int last_entry = (i == len - 1);
+		char *const full_path = format_str("%s/%s", path, lst[i]);
+
+		/* If is_dir_empty() returns non-zero than we know that it's directory and
+		 * no additional checks are needed. */
+		if(!is_dir_empty(full_path))
+		{
+			if(last_entry)
+			{
+				set_prefix_char(s, '`');
+			}
+			if(print_dir_tree(s, full_path, last_entry) != 0)
+			{
+				reached_limit = 1;
+			}
+		}
+		else if(visit_file(s, full_path, last_entry) != 0)
+		{
+			reached_limit = 1;
+		}
+
+		free(full_path);
+	}
+	free_string_array(lst, len);
+
+	leave_dir(s);
+
+	return reached_limit;
+}
+
+/* Handles entering directory on directory tree traversal.  Returns non-zero to
+ * request stopping of the traversal, otherwise zero is returned. */
+static int
+enter_dir(tree_print_state_t *s, const char path[], int last)
+{
+	print_tree_entry(s, path);
+
+	if(last)
+	{
+		set_prefix_char(s, ' ');
+	}
+
+	indent_prefix(s);
+	set_prefix_char(s, '|');
+
+	return ++s->n >= s->max;
+}
+
+/* Handles visiting file on directory tree traversal.  Returns non-zero to
+ * request stopping of the traversal, otherwise zero is returned. */
+static int
+visit_file(tree_print_state_t *s, const char path[], int last)
+{
+	set_prefix_char(s, last ? '`' : '|');
+	print_tree_entry(s, path);
+
+	return ++s->n >= s->max;
+}
+
+/* Handles leaving directory on directory tree traversal. */
+static void
+leave_dir(tree_print_state_t *s)
+{
+	unindent_prefix(s);
+}
+
+/* Adds one indentation level for the following elements of tree. */
+static void
+indent_prefix(tree_print_state_t *s)
+{
+	if(strlen(s->prefix) + 1U + 1U < sizeof(s->prefix))
+	{
+		strcat(s->prefix, " ");
+	}
+}
+
+/* Removes one indentation level for the following elements of tree. */
+static void
+unindent_prefix(tree_print_state_t *s)
+{
+	set_prefix_char(s, '\0');
+}
+
+/* Sets prefix for current tree level. */
+static void
+set_prefix_char(tree_print_state_t *s, char c)
+{
+	const size_t len = strlen(s->prefix);
+	if(len >= 1U)
+	{
+		s->prefix[len - 1U] = c;
+	}
+}
+
+/* Prints single entry of directory tree. */
+static void
+print_tree_entry(tree_print_state_t *s, const char path[])
+{
+	print_entry_prefix(s);
+	fputs(get_last_path_component(path), s->fp);
+	if(is_dir(path) && !ends_with_slash(path))
+	{
+		fputc('/', s->fp);
+	}
+	fputc('\n', s->fp);
+}
+
+/* Prints part of the string to the left of entry name. */
+static void
+print_entry_prefix(tree_print_state_t *s)
+{
+	const char *p = s->prefix;
+
+	/* Expand " |`" into "    |   `-- ". */
+	while(p[0] != '\0')
+	{
+		fputc(p[0], s->fp);
+		fputs(p[1] == '\0' ? "-- " : "   ", s->fp);
+		++p;
+	}
+}
+
+/* Enumerates content of the path in sorted order.  Returns list of names of
+ * lengths *len, which can be NULL on empty list, error is indicated by negative
+ * *len. */
+static char **
+list_sorted_files(const char path[], int *len)
+{
+	DIR *dir;
+	struct dirent *d;
+	char **list = NULL;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		*len = -1;
+		return NULL;
+	}
+
+	*len = 0;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			*len = add_to_string_array(&list, *len, 1, d->d_name);
+		}
+	}
+	os_closedir(dir);
+
+	qsort(list, *len, sizeof(*list), &path_sorter);
+
+	return list;
+}
+
+/* Wraps stroscmp() for use with qsort(). */
+static int
+path_sorter(const void *first, const void *second)
+{
+	const char *const *const a = first;
+	const char *const *const b = second;
+	return stroscmp(*a, *b);
 }
 
 /* Displays contents read from the fp in the other pane starting from the second
@@ -393,7 +645,7 @@ qv_cleanup(FileView *view, const char cmd[])
 }
 
 const char *
-gv_get_viewer(const char path[])
+qv_get_viewer(const char path[])
 {
 	char *const typed_fname = get_typed_fname(path);
 	const char *const viewer = ft_get_viewer(typed_fname);

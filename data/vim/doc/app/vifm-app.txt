@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 17
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3603,7 +3603,7 @@ Selecting a bookmark navigates to it.
 
 Type dd on a bookmark to remove it.
 
-*vifm-m_gf* and *vifm-m_e* also work to make it more convenient to bookmark
+|vifm-m_gf| and |vifm-m_e| also work to make it more convenient to bookmark
 files.
 
 Trash (:lstrash) menu~
