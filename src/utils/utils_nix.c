@@ -888,6 +888,11 @@ reopen_term_stdin(void)
 	ttyfd = open(get_tty_name(), O_RDONLY);
 	if(ttyfd != STDIN_FILENO)
 	{
+		if(ttyfd != -1)
+		{
+			close(ttyfd);
+		}
+
 		fprintf(stderr, "Failed to open terminal for input.");
 		return 1;
 	}
