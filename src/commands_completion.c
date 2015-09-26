@@ -734,10 +734,11 @@ filename_completion(const char *str, CompletionType type)
 		strcpy(filename, ++temp);
 		*temp = '\0';
 	}
-	else
+	else if(replace_string(&dirname, ".") != 0)
 	{
-		dirname = realloc(dirname, 2);
-		strcpy(dirname, ".");
+		free(filename);
+		free(dirname);
+		return;
 	}
 
 #ifdef _WIN32
