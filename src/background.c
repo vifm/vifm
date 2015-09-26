@@ -788,11 +788,13 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 
 	if(pthread_attr_init(&attr) != 0)
 	{
+		free(task_args);
 		return 1;
 	}
 
 	if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
 	{
+		free(task_args);
 		(void)pthread_attr_destroy(&attr);
 		return 1;
 	}
