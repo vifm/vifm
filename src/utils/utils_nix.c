@@ -742,6 +742,8 @@ stop_process(void)
 	struct sigaction new, old;
 
 	new.sa_handler = SIG_DFL;
+	sigemptyset(&new.sa_mask);
+	new.sa_flags = SA_RESTART;
 	sigaction(SIGTSTP, &new, &old);
 
 	kill(0, SIGTSTP);
