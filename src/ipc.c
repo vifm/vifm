@@ -340,9 +340,13 @@ try_use_pipe(const char path[])
 	if(fd == -1)
 	{
 		CloseHandle(h);
-		return NULL;
 	}
 #endif
+
+	if(fd == -1)
+	{
+		return NULL;
+	}
 
 	f = fdopen(fd, "r");
 	if(f == NULL)
