@@ -292,7 +292,7 @@ typedef struct
 	int ls_view, ls_view_g; /* Non-zero if ls-like view is enabled. */
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
-	                            * the file list. */
+	                            * the file list.  Zero if not calculated. */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 
