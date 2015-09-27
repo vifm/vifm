@@ -1671,7 +1671,7 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	if(!path_exists_at(entry->origin, entry->name, DEREF))
+	if(!path_exists_at(entry->origin, entry->name, NODEREF))
 	{
 		return 0;
 	}
