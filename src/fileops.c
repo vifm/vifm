@@ -3310,6 +3310,21 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		error = 1;
 	}
 
+	/* Custom views can contain several files with the same name. */
+	if(flist_custom_active(view))
+	{
+		size_t i;
+		for(i = 0U; i < nmarked && !error; ++i)
+		{
+			if(is_in_string_array(marked, i, marked[i]))
+			{
+				status_bar_errorf("Source name \"%s\" duplicates", marked[i]);
+				curr_stats.save_msg = 1;
+				error = 1;
+			}
+		}
+	}
+
 	free_string_array(marked, nmarked);
 
 	if(error)
