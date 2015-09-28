@@ -955,7 +955,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 		return 0;
 	}
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		chomp(list[i]);
 
@@ -984,9 +984,6 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-
-		if(list[i][0] == '\0')
-			continue;
 	}
 
 	return 1;
