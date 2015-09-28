@@ -365,7 +365,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 		return;
 	}
 
-	if(path_exists(path_buf, DEREF))
+	if(path_exists(path_buf, NODEREF))
 	{
 		if(try_open)
 		{

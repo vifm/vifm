@@ -212,6 +212,8 @@
 	Fixed missing check for duplicated source file names in custom views on
 	file operations.  Thanks to filterfalse.
 
+	Fixed navigation to broken link from a menu.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
