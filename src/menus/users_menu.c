@@ -50,7 +50,7 @@ execute_users_cb(FileView *view, menu_info *m)
 	const int navigate = m->extra_data;
 	if(navigate)
 	{
-		goto_selected_file(view, m->items[m->pos], 0);
+		(void)goto_selected_file(view, m->items[m->pos], 0);
 	}
 	return 0;
 }

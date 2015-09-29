@@ -53,7 +53,7 @@ show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
 
 	if(go_on_single_match && m.len == 1)
 	{
-		goto_selected_file(view, m.items[m.pos], 0);
+		(void)goto_selected_file(view, m.items[m.pos], 0);
 		reset_popup_menu(&m);
 		return curr_stats.save_msg;
 	}
@@ -88,7 +88,7 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 static int
 execute_bmarks_cb(FileView *view, menu_info *m)
 {
-	goto_selected_file(view, m->data[m->pos], 0);
+	(void)goto_selected_file(view, m->data[m->pos], 0);
 	return 0;
 }
 
@@ -105,12 +105,12 @@ bmarks_khandler(menu_info *m, const wchar_t keys[])
 	}
 	else if(wcscmp(keys, L"gf") == 0)
 	{
-		goto_selected_file(curr_view, m->data[m->pos], 0);
+		(void)goto_selected_file(curr_view, m->data[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		goto_selected_file(curr_view, m->data[m->pos], 1);
+		(void)goto_selected_file(curr_view, m->data[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	/* Can't reuse filelist_khandler() here as it works with m->items, not with

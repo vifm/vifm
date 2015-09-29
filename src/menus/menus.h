@@ -94,8 +94,10 @@ void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
 
 /* Navigates to/open path specification.  Specification can contain colon
- * followed by a line number when try_open is not zero. */
-void goto_selected_file(FileView *view, const char spec[], int try_open);
+ * followed by a line number when try_open is not zero.  Returns zero on
+ * successful parsing and performed try to handle the file otherwise non-zero is
+ * returned. */
+int goto_selected_file(FileView *view, const char spec[], int try_open);
 
 /* Navigates to directory from a menu. */
 void goto_selected_directory(FileView *view, const char path[]);
