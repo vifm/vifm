@@ -130,6 +130,9 @@
 
 	Lower minimum supported terminal width and height from 30x10 to 20x5.
 
+	Preserve file timestamps on copying files with 'syscalls' on.  Thanks to
+	mvucBmM0.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

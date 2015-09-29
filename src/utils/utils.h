@@ -22,6 +22,7 @@
 
 #include <regex.h>
 
+#include <sys/stat.h> /* stat */
 #include <sys/types.h> /* gid_t mode_t uid_t */
 
 #include <stddef.h> /* size_t wchar_t */
@@ -255,6 +256,11 @@ FILE * read_cmd_output(const char cmd[]);
 /* Gets path to directory where files bundled with Vifm are stored.  Returns
  * pointer to a statically allocated buffer. */
 const char * get_installed_data_dir(void);
+
+/* Clones timestamps from file specified by from to file at path, st is a hint
+ * to omit extra file system requests if possible. */
+void clone_timestamps(const char path[], const char from[],
+		const struct stat *st);
 
 #ifdef _WIN32
 #include "utils_win.h"
