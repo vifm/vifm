@@ -59,7 +59,7 @@ cleanup_view(FileView *view)
 	}
 	dynarray_free(view->dir_entry);
 
-	filter_dispose(&lwin.local_filter.filter);
+	filter_dispose(&view->local_filter.filter);
 }
 
 TEST(empty_list_is_not_accepted)
