@@ -955,7 +955,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 		return 0;
 	}
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		chomp(list[i]);
 
@@ -984,9 +984,6 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-
-		if(list[i][0] == '\0')
-			continue;
 	}
 
 	return 1;
@@ -3311,6 +3308,21 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	if(*nlines == 0 && !force && !is_copy_list_ok(path, nmarked, marked))
 	{
 		error = 1;
+	}
+
+	/* Custom views can contain several files with the same name. */
+	if(flist_custom_active(view))
+	{
+		size_t i;
+		for(i = 0U; i < nmarked && !error; ++i)
+		{
+			if(is_in_string_array(marked, i, marked[i]))
+			{
+				status_bar_errorf("Source name \"%s\" duplicates", marked[i]);
+				curr_stats.save_msg = 1;
+				error = 1;
+			}
+		}
 	}
 
 	free_string_array(marked, nmarked);

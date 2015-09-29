@@ -1586,7 +1586,8 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
-		if(view->custom.entry_count != 0)
+		if(view->custom.entry_count != 0 &&
+				view->list_rows != view->custom.entry_count)
 		{
 			/* Load initial list of custom entries if it's available. */
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
@@ -1670,7 +1671,7 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 is_dead_or_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	if(!path_exists_at(entry->origin, entry->name, DEREF))
+	if(!path_exists_at(entry->origin, entry->name, NODEREF))
 	{
 		return 0;
 	}

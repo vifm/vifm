@@ -42,9 +42,6 @@
 #include "color_scheme.h"
 #include "column_view.h"
 
-#define MIN_TERM_HEIGHT 10
-#define MIN_TERM_WIDTH 30
-
 #define SORT_WIN_WIDTH 32
 
 /* Width of the input window (located to the left of the ruler). */
@@ -53,6 +50,11 @@
 /* Minimal width of the position window (located in the right corner of status
  * line). */
 #define POS_WIN_MIN_WIDTH 13
+
+/* Menus don't look like menus as all if height is less than 5. */
+#define MIN_TERM_HEIGHT 5
+/* There is a lower limit on statusbar width. */
+#define MIN_TERM_WIDTH (INPUT_WIN_WIDTH + 1 + POS_WIN_MIN_WIDTH)
 
 /* Width of the ruler and input windows. */
 #define FIELDS_WIDTH() (INPUT_WIN_WIDTH + getmaxx(ruler_win))
@@ -290,7 +292,7 @@ typedef struct
 	int ls_view, ls_view_g; /* Non-zero if ls-like view is enabled. */
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
-	                            * the file list. */
+	                            * the file list.  Zero if not calculated. */
 	size_t column_count; /* number of columns in the view, used for list view */
 	size_t window_cells; /* max number of files that can be displayed */
 

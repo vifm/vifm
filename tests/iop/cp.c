@@ -333,6 +333,32 @@ TEST(file_symlink_copy_is_symlink, IF(not_windows))
 	delete_test_file(SANDBOX_PATH "/sym-link-copy");
 }
 
+TEST(timestamps_are_preserved)
+{
+	struct stat src;
+	struct stat dst;
+
+	assert_int_equal(0, lstat(TEST_DATA_PATH "/existing-files/a", &src));
+
+	{
+		io_args_t args = {
+			.arg1.src = TEST_DATA_PATH "/existing-files/a",
+			.arg2.dst = SANDBOX_PATH "/a-copy",
+		};
+		ioe_errlst_init(&args.result.errors);
+
+		assert_success(iop_cp(&args));
+
+		assert_int_equal(0, args.result.errors.error_count);
+	}
+
+	assert_int_equal(0, lstat(SANDBOX_PATH "/a-copy", &dst));
+	assert_ulong_equal(src.st_atime, dst.st_atime);
+	assert_ulong_equal(src.st_mtime, dst.st_mtime);
+
+	delete_test_file(SANDBOX_PATH "/a-copy");
+}
+
 /* Creating symbolic links on Windows requires administrator rights. */
 TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 {

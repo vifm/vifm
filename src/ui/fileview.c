@@ -167,7 +167,8 @@ void
 fview_view_reset(FileView *view)
 {
 	view->ls_view_g = view->ls_view = 0;
-	view->max_filename_width = get_max_filename_width(view);
+	/* Invalidate maximum file name widths cache. */
+	view->max_filename_width = 0;;
 	view->column_count = 1;
 
 	view->num_type_g = view->num_type = NT_NONE;
@@ -1225,6 +1226,10 @@ static size_t
 calculate_column_width(FileView *view)
 {
 	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
+	if(view->max_filename_width == 0)
+	{
+		view->max_filename_width = get_max_filename_width(view);
+	}
 	return MIN(view->max_filename_width + column_gap,
 	           (size_t)ui_view_available_width(view));
 }
@@ -1239,7 +1244,8 @@ fview_dir_updated(FileView *view)
 void
 fview_list_updated(FileView *view)
 {
-	view->max_filename_width = get_max_filename_width(view);
+	/* Invalidate maximum file name widths cache. */
+	view->max_filename_width = 0;
 }
 
 /* Finds maximum filename width (length in character positions on the screen)

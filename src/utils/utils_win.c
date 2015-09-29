@@ -934,5 +934,41 @@ win_tmpfile()
 	return f;
 }
 
+void
+clone_timestamps(const char path[], const char from[], const struct stat *st)
+{
+	wchar_t *const utf16_path = utf8_to_utf16(path);
+	wchar_t *const utf16_from = utf8_to_utf16(from);
+
+	HANDLE hfrom = CreateFileW(utf16_from, GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hto = CreateFileW(utf16_path, GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if(hto != INVALID_HANDLE_VALUE && hfrom != INVALID_HANDLE_VALUE)
+	{
+		FILETIME creationTime, lastAccessTime, lastWriteTime;
+
+		if(GetFileTime(hfrom, &creationTime, &lastAccessTime,
+					&lastWriteTime) != FALSE)
+		{
+			SetFileTime(hto, &creationTime, &lastAccessTime, &lastWriteTime);
+		}
+	}
+
+	if(hto != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(hto);
+	}
+	if(hfrom != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(hfrom);
+	}
+	free(utf16_from);
+	free(utf16_path);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

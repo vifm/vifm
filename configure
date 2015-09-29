@@ -6558,6 +6558,17 @@ else
   as_fn_error $? "free() function not found." "$LINENO" 5
 fi
 
+for ac_func in futimens
+do :
+  ac_fn_c_check_func "$LINENO" "futimens" "ac_cv_func_futimens"
+if test "x$ac_cv_func_futimens" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FUTIMENS 1
+_ACEOF
+
+fi
+done
+
 ac_fn_c_check_func "$LINENO" "fwrite" "ac_cv_func_fwrite"
 if test "x$ac_cv_func_fwrite" = xyes; then :
 
@@ -7197,6 +7208,13 @@ if test "x$ac_cv_func_unsetenv" = xyes; then :
 
 else
   as_fn_error $? "unsetenv() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "utimes" "ac_cv_func_utimes"
+if test "x$ac_cv_func_utimes" = xyes; then :
+
+else
+  as_fn_error $? "utimes() function not found." "$LINENO" 5
 fi
 
 ac_fn_c_check_func "$LINENO" "vfprintf" "ac_cv_func_vfprintf"

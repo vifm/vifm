@@ -283,6 +283,11 @@ iop_cp(io_args_t *const args)
 		free(utf16_src);
 		free(utf16_dst);
 
+		if(error == 0)
+		{
+			clone_timestamps(dst, src, &st);
+		}
+
 		ioeta_update(args->estim, NULL, NULL, 1, 0);
 
 		return error;
@@ -506,6 +511,11 @@ iop_cp(io_args_t *const args)
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
 					strerror(errno));
 		}
+	}
+
+	if(error == 0)
+	{
+		clone_timestamps(dst, src, &st);
 	}
 
 	ioeta_update(args->estim, NULL, NULL, 1, 0);

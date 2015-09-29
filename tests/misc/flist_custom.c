@@ -4,12 +4,14 @@
 
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
+#include <unistd.h> /* symlink() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/macros.h"
@@ -18,10 +20,13 @@
 
 static void cleanup_view(FileView *view);
 static void setup_custom_view(FileView *view);
+static int not_windows(void);
 
 SETUP()
 {
 	cfg.fuse_home = strdup("no");
+	cfg.slow_fs_list = strdup("");
+
 	lwin.list_rows = 0;
 	lwin.filtered = 0;
 	lwin.list_pos = 0;
@@ -29,8 +34,7 @@ SETUP()
 	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
 
 	strcpy(lwin.curr_dir, "/path");
-	free(lwin.custom.orig_dir);
-	lwin.custom.orig_dir = NULL;
+	update_string(&lwin.custom.orig_dir, NULL);
 
 	curr_view = &lwin;
 	other_view = &lwin;
@@ -38,8 +42,8 @@ SETUP()
 
 TEARDOWN()
 {
-	free(cfg.fuse_home);
-	cfg.fuse_home = NULL;
+	update_string(&cfg.slow_fs_list, NULL);
+	update_string(&cfg.fuse_home, NULL);
 
 	cleanup_view(&lwin);
 }
@@ -55,7 +59,7 @@ cleanup_view(FileView *view)
 	}
 	dynarray_free(view->dir_entry);
 
-	filter_dispose(&lwin.local_filter.filter);
+	filter_dispose(&view->local_filter.filter);
 }
 
 TEST(empty_list_is_not_accepted)
@@ -109,6 +113,29 @@ TEST(reload_considers_local_filter)
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("b", lwin.dir_entry[0].name);
+}
+
+TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	/* symlink() is not available on Windows, but other code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("/wrong/path", "broken-link"));
+#endif
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, "./broken-link");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	assert_int_equal(2, lwin.list_rows);
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_success(remove("broken-link"));
 }
 
 TEST(locally_filtered_files_are_not_lost_on_reload)
@@ -196,6 +223,16 @@ setup_custom_view(FileView *view)
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(view, 0) == 0);
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -352,7 +352,7 @@ redraw_menu(menu_info *m)
 	wrefresh(menu_win);
 }
 
-void
+int
 goto_selected_file(FileView *view, const char spec[], int try_open)
 {
 	char *path_buf;
@@ -362,26 +362,27 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
+		return 1;
 	}
 
-	if(path_exists(path_buf, DEREF))
+	if(!path_exists(path_buf, NODEREF))
 	{
-		if(try_open)
-		{
-			open_selected_file(path_buf, line_num);
-		}
-		else
-		{
-			navigate_to_selected_file(view, path_buf);
-		}
+		show_error_msgf("Missing file", "File \"%s\" doesn't exist", path_buf);
+		free(path_buf);
+		return 1;
+	}
+
+	if(try_open)
+	{
+		open_selected_file(path_buf, line_num);
 	}
 	else
 	{
-		show_error_msgf("Missing file", "File \"%s\" doesn't exist", path_buf);
+		navigate_to_selected_file(view, path_buf);
 	}
 
 	free(path_buf);
+	return 0;
 }
 
 /* Opens file specified by its path on the given line number. */
@@ -663,12 +664,12 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
-		goto_selected_file(curr_view, m->items[m->pos], 0);
+		(void)goto_selected_file(curr_view, m->items[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		goto_selected_file(curr_view, m->items[m->pos], 1);
+		(void)goto_selected_file(curr_view, m->items[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

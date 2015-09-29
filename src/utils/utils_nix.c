@@ -28,7 +28,7 @@
 
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* O_RDONLY O_WRONLY S_* */
-#include <sys/time.h> /* timeval */
+#include <sys/time.h> /* timeval futimens() utimes() */
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
 #include <fcntl.h> /* open() close() */
@@ -969,6 +969,40 @@ const char *
 get_installed_data_dir(void)
 {
 	return PACKAGE_DATA_DIR;
+}
+
+void
+clone_timestamps(const char path[], const char from[], const struct stat *st)
+{
+	struct timeval tv[2];
+
+#if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS)
+	const int fd = open(path, O_WRONLY);
+	if(fd != -1)
+	{
+		struct timespec ts[2] = { st->st_atim, st->st_mtim };
+		if(futimens(fd, ts) == 0)
+		{
+			close(fd);
+			return;
+		}
+		close(fd);
+		/* Not sure how useful this is, but we can try both functions in a row. */
+	}
+#endif
+
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	tv[0].tv_sec = st->st_atim.tv_sec;
+	tv[0].tv_usec = st->st_atim.tv_nsec/1000;
+	tv[1].tv_sec = st->st_mtim.tv_sec;
+	tv[1].tv_usec = st->st_mtim.tv_nsec/1000;
+#else
+	tv[0].tv_sec = st->st_atime;
+	tv[0].tv_usec = 0;
+	tv[1].tv_sec = st->st_mtime;
+	tv[1].tv_usec = 0;
+#endif
+	utimes(path, tv);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

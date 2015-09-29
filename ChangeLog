@@ -128,6 +128,11 @@
 
 	Display directory size on Windows more correctly.
 
+	Lower minimum supported terminal width and height from 30x10 to 20x5.
+
+	Preserve file timestamps on copying files with 'syscalls' on.  Thanks to
+	mvucBmM0.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
@@ -204,6 +209,13 @@
 	Fixed dialog box redraw in menu after terminal resize.
 
 	Fixed leaving background threads in zombie state.
+
+	Fixed check for broken link existence in custom views (were dereferenced).
+
+	Fixed missing check for duplicated source file names in custom views on
+	file operations.  Thanks to filterfalse.
+
+	Fixed navigation to broken link from a menu.
 
 0.8-beta to 0.8
 
