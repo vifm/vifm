@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 25
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Sep 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -361,7 +361,7 @@ Files and directories are filtered separately.  For this a slash is appended
 to a directory name before testing whether it matches the filter.  Examples:
 >
  " filter directories which names end with '.files'
- :filter /^.*\.files/$/
+ :filter /^.*\.files\/$/
 
  " filter files which names end with '.d'
  :filter /^.*\.d$/
