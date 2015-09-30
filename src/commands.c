@@ -267,6 +267,7 @@ static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
 static int pushd_cmd(const cmd_info_t *cmd_info);
+static int put_cmd(const cmd_info_t *cmd_info);
 static int pwd_cmd(const cmd_info_t *cmd_info);
 static int qmap_cmd(const cmd_info_t *cmd_info);
 static int qnoremap_cmd(const cmd_info_t *cmd_info);
@@ -473,6 +474,8 @@ static const cmd_add_t commands[] = {
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+	{ .name = "put",              .abbr = "pu",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = put_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "qmap",             .abbr = "qm",    .emark = 0,  .id = COM_QMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3836,6 +3839,25 @@ pushd_cmd(const cmd_info_t *cmd_info)
 	}
 	cd_cmd(cmd_info);
 	return 0;
+}
+
+/* Puts files from the register (default register unless otherwise specified)
+ * into current directory. */
+static int
+put_cmd(const cmd_info_t *cmd_info)
+{
+	int reg = DEFAULT_REG_NAME;
+
+	if(cmd_info->argc == 1)
+	{
+		const int error = get_reg(cmd_info->argv[0], &reg);
+		if(error != 0)
+		{
+			return error;
+		}
+	}
+
+	return put_files(curr_view, reg, cmd_info->emark) != 0;
 }
 
 static int
