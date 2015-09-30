@@ -323,6 +323,7 @@ static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
+static int get_reg(const char arg[], int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
 
@@ -4672,21 +4673,22 @@ yank_cmd(const cmd_info_t *cmd_info)
 	return result;
 }
 
-/* Processes arguments of form "{reg} [{count}]" or "{reg}|{count}". May set
- * *reg (so it should be initialized before call) and returns zero on success,
- * cmds unit error code otherwise. */
+/* Processes arguments of form "{reg} [{count}]" or "{reg}|{count}".  On success
+ * *reg is set (so it should be initialized before the call) and zero is
+ * returned, otherwise cmds unit error code is returned. */
 static int
 get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 {
 	if(cmd_info->argc == 2)
 	{
 		int count;
+		int error;
 
-		if(cmd_info->argv[0][1] != '\0')
-			return CMDS_ERR_TRAILING_CHARS;
-		if(!register_exists(cmd_info->argv[0][0]))
-			return CMDS_ERR_TRAILING_CHARS;
-		*reg = cmd_info->argv[0][0];
+		error = get_reg(cmd_info->argv[0], reg);
+		if(error != 0)
+		{
+			return error;
+		}
 
 		if(!isdigit(cmd_info->argv[1][0]))
 			return CMDS_ERR_TRAILING_CHARS;
@@ -4707,13 +4709,28 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		}
 		else
 		{
-			if(cmd_info->argv[0][1] != '\0')
-				return CMDS_ERR_TRAILING_CHARS;
-			if(!register_exists(cmd_info->argv[0][0]))
-				return CMDS_ERR_TRAILING_CHARS;
-			*reg = cmd_info->argv[0][0];
+			return get_reg(cmd_info->argv[0], reg);
 		}
 	}
+	return 0;
+}
+
+/* Processes argument as register name.  On success *reg is set (so it should be
+ * initialized before the call) and zero is returned, otherwise cmds unit error
+ * code is returned. */
+static int
+get_reg(const char arg[], int *reg)
+{
+	if(arg[1] != '\0')
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+	if(!register_exists(arg[0]))
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+
+	*reg = arg[0];
 	return 0;
 }
 
