@@ -474,7 +474,7 @@ static const cmd_add_t commands[] = {
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
-	{ .name = "put",              .abbr = "pu",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "put",              .abbr = "pu",    .emark = 1,  .id = -1,              .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = put_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -3842,7 +3842,7 @@ pushd_cmd(const cmd_info_t *cmd_info)
 }
 
 /* Puts files from the register (default register unless otherwise specified)
- * into current directory. */
+ * into current directory.  Can operate in background. */
 static int
 put_cmd(const cmd_info_t *cmd_info)
 {
@@ -3855,6 +3855,11 @@ put_cmd(const cmd_info_t *cmd_info)
 		{
 			return error;
 		}
+	}
+
+	if(cmd_info->bg)
+	{
+		return put_files_bg(curr_view, reg, cmd_info->emark) != 0;
 	}
 
 	return put_files(curr_view, reg, cmd_info->emark) != 0;

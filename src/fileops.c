@@ -175,6 +175,7 @@ TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
 static void prompt_what_to_do(const char src_name[]);
 static void handle_prompt_response(const char fname[], char response);
+static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
@@ -2119,6 +2120,141 @@ put_files(FileView *view, int reg_name, int move)
 	return initiate_put_files(view, op, descr, reg_name);
 }
 
+int
+put_files_bg(FileView *view, int reg_name, int move)
+{
+	char task_desc[COMMAND_GROUP_INFO_LEN];
+	size_t task_desc_len;
+	int i;
+	bg_args_t *args;
+	registers_t *reg;
+
+	/* Check that operation generally makes sense given our input. */
+
+	if(!can_add_files_to_view(view))
+	{
+		return 0;
+	}
+
+	reg = find_register(tolower(reg_name));
+	if(reg == NULL || reg->num_files < 1)
+	{
+		status_bar_error("Register is empty");
+		return 1;
+	}
+
+	/* Prepare necessary data for background procedure and perform checks to
+	 * ensure there will be no conflicts. */
+
+	args = calloc(1, sizeof(*args));
+	args->move = move;
+	copy_str(args->path, sizeof(args->path), flist_get_dir(view));
+
+	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
+			move ? 'P' : 'p', replace_home_part(flist_get_dir(view)));
+	for(i = 0; i < reg->num_files; ++i)
+	{
+		char *const src = reg->files[i];
+		char *dst;
+
+		chosp(src);
+
+		append_fname(task_desc, task_desc_len, src);
+		task_desc_len = strlen(task_desc);
+
+		args->sel_list_len = add_to_string_array(&args->sel_list,
+				args->sel_list_len, 1, src);
+
+		if(is_under_trash(src))
+		{
+			dst = format_str("%s/%s", args->path, get_real_name_from_trash_name(src));
+		}
+		else
+		{
+			dst = format_str("%s/%s", args->path, get_last_path_component(src));
+		}
+
+		args->nlines = put_into_string_array(&args->list, args->nlines, dst);
+
+		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
+		{
+			status_bar_errorf("File \"%s\" already exists", dst);
+			free_bg_args(args);
+			return 1;
+		}
+	}
+
+	/* Initiate the operation. */
+
+	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
+				args) != 0)
+	{
+		free_bg_args(args);
+
+		show_error_msg("Can't put files",
+				"Failed to initiate background operation");
+	}
+
+	return 0;
+}
+
+/* Entry point for background task that puts files. */
+static void
+put_files_in_bg(bg_op_t *bg_op, void *arg)
+{
+	size_t i;
+	bg_args_t *const args = arg;
+	const OPS op = (args->move ? OP_MOVE : OP_COPY);
+
+	ops_t *ops = get_bg_ops(op, args->move ? "Putting" : "putting", args->path,
+			bg_op);
+
+	if(ops != NULL)
+	{
+		size_t i;
+		bg_op_set_descr(bg_op, "estimating...");
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			const char *const dst = args->list[i];
+			ops_enqueue(ops, src, dst);
+		}
+	}
+
+	for(i = 0U; i < args->sel_list_len; ++i, ++bg_op->done)
+	{
+		struct stat src_st;
+		const char *const src = args->sel_list[i];
+		const char *const dst = args->list[i];
+
+		if(paths_are_equal(src, dst))
+		{
+			/* Just ignore this file. */
+			continue;
+		}
+
+		if(os_lstat(src, &src_st) != 0)
+		{
+			/* File isn't there, assume that it's fine and don't error in this
+			 * case. */
+			continue;
+		}
+
+		if(path_exists(dst, NODEREF))
+		{
+			/* This file wasn't here before (when checking in put_files_bg()), won't
+			 * overwrite. */
+			continue;
+		}
+
+		bg_op_set_descr(bg_op, src);
+		(void)perform_operation(op, ops, (void *)1, src, dst);
+	}
+
+	free_ops(ops);
+	free_bg_args(args);
+}
+
 TSTATIC const char *
 gen_clone_name(const char normal_name[])
 {
@@ -2404,7 +2540,6 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	}
 
 	reg = find_register(tolower(reg_name));
-
 	if(reg == NULL || reg->num_files < 1)
 	{
 		status_bar_error("Register is empty");
