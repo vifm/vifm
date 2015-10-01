@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 17, 2015" "vifm 0.8"
+.TH VIFM 1 "October 01, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2109,6 +2109,14 @@ add pane directories to stack and process arguments like :cd command.
 .TP
 .BI :pushd
 exchange the top two items of the directory stack.
+.TP
+.BI "                                         :put"
+.TP
+.BI ":pu[t][!] [reg] [ &]"
+puts files from specified register (" by default) into current directory.
+"!" moves files from their original location instead of copying them.
+During this operation no confirmation dialogs will be shown, all checks
+are performed beforehand.
 .TP
 .BI "                                         :pwd"
 .TP
