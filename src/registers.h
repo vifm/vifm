@@ -47,7 +47,7 @@ registers_t * find_register(int key);
  * is added, otherwise non-zero is returned. */
 int append_to_register(int reg, const char file[]);
 
-/* Clears all registers. */
+/* Clears all registers.  Pair of init_registers(). */
 void clear_registers(void);
 
 void clear_register(int reg);

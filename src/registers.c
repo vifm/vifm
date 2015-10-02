@@ -19,14 +19,11 @@
 
 #include "registers.h"
 
-#include <sys/stat.h>
-
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h>
 
-#include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
@@ -115,7 +112,6 @@ int
 append_to_register(int key, const char file[])
 {
 	registers_t *reg;
-	struct stat st;
 
 	if(key == BLACKHOLE_REG_NAME)
 	{
@@ -125,7 +121,7 @@ append_to_register(int key, const char file[])
 	{
 		return 1;
 	}
-	if(os_lstat(file, &st) != 0)
+	if(!path_exists(file, NODEREF))
 	{
 		return 1;
 	}
