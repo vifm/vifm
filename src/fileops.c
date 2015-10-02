@@ -2155,9 +2155,17 @@ put_files_bg(FileView *view, int reg_name, int move)
 	for(i = 0; i < reg->num_files; ++i)
 	{
 		char *const src = reg->files[i];
+		const char *dst_name;
 		char *dst;
+		int j;
 
 		chosp(src);
+
+		if(!path_exists(src, NODEREF))
+		{
+			/* Skip nonexistent files. */
+			continue;
+		}
 
 		append_fname(task_desc, task_desc_len, src);
 		task_desc_len = strlen(task_desc);
@@ -2167,13 +2175,25 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 		if(is_under_trash(src))
 		{
-			dst = format_str("%s/%s", args->path, get_real_name_from_trash_name(src));
+			dst_name = get_real_name_from_trash_name(src);
 		}
 		else
 		{
-			dst = format_str("%s/%s", args->path, get_last_path_component(src));
+			dst_name = get_last_path_component(src);
 		}
 
+		/* Check that no destination files have the same name. */
+		for(j = 0; j < args->nlines; ++j)
+		{
+			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
+			{
+				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
+				free_bg_args(args);
+				return 1;
+			}
+		}
+
+		dst = format_str("%s/%s", args->path, dst_name);
 		args->nlines = put_into_string_array(&args->list, args->nlines, dst);
 
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
