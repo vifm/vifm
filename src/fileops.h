@@ -87,8 +87,13 @@ void change_group(void);
 
 int change_link(FileView *view);
 
-/* Returns new value for save_msg flag. */
+/* Puts files from specified register into current directory.  Returns new value
+ * for save_msg flag. */
 int put_files(FileView *view, int reg_name, int move);
+
+/* Starts background task that puts files from specified register into current
+ * directory.  Returns new value for save_msg flag. */
+int put_files_bg(FileView *view, int reg_name, int move);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);

@@ -267,6 +267,7 @@ static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
 static int pushd_cmd(const cmd_info_t *cmd_info);
+static int put_cmd(const cmd_info_t *cmd_info);
 static int pwd_cmd(const cmd_info_t *cmd_info);
 static int qmap_cmd(const cmd_info_t *cmd_info);
 static int qnoremap_cmd(const cmd_info_t *cmd_info);
@@ -323,6 +324,7 @@ static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
+static int get_reg(const char arg[], int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
 
@@ -472,6 +474,8 @@ static const cmd_add_t commands[] = {
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+	{ .name = "put",              .abbr = "pu",    .emark = 1,  .id = -1,              .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
+		.handler = put_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "qmap",             .abbr = "qm",    .emark = 0,  .id = COM_QMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3837,6 +3841,30 @@ pushd_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Puts files from the register (default register unless otherwise specified)
+ * into current directory.  Can operate in background. */
+static int
+put_cmd(const cmd_info_t *cmd_info)
+{
+	int reg = DEFAULT_REG_NAME;
+
+	if(cmd_info->argc == 1)
+	{
+		const int error = get_reg(cmd_info->argv[0], &reg);
+		if(error != 0)
+		{
+			return error;
+		}
+	}
+
+	if(cmd_info->bg)
+	{
+		return put_files_bg(curr_view, reg, cmd_info->emark) != 0;
+	}
+
+	return put_files(curr_view, reg, cmd_info->emark) != 0;
+}
+
 static int
 pwd_cmd(const cmd_info_t *cmd_info)
 {
@@ -4672,21 +4700,22 @@ yank_cmd(const cmd_info_t *cmd_info)
 	return result;
 }
 
-/* Processes arguments of form "{reg} [{count}]" or "{reg}|{count}". May set
- * *reg (so it should be initialized before call) and returns zero on success,
- * cmds unit error code otherwise. */
+/* Processes arguments of form "{reg} [{count}]" or "{reg}|{count}".  On success
+ * *reg is set (so it should be initialized before the call) and zero is
+ * returned, otherwise cmds unit error code is returned. */
 static int
 get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 {
 	if(cmd_info->argc == 2)
 	{
 		int count;
+		int error;
 
-		if(cmd_info->argv[0][1] != '\0')
-			return CMDS_ERR_TRAILING_CHARS;
-		if(!register_exists(cmd_info->argv[0][0]))
-			return CMDS_ERR_TRAILING_CHARS;
-		*reg = cmd_info->argv[0][0];
+		error = get_reg(cmd_info->argv[0], reg);
+		if(error != 0)
+		{
+			return error;
+		}
 
 		if(!isdigit(cmd_info->argv[1][0]))
 			return CMDS_ERR_TRAILING_CHARS;
@@ -4707,13 +4736,28 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		}
 		else
 		{
-			if(cmd_info->argv[0][1] != '\0')
-				return CMDS_ERR_TRAILING_CHARS;
-			if(!register_exists(cmd_info->argv[0][0]))
-				return CMDS_ERR_TRAILING_CHARS;
-			*reg = cmd_info->argv[0][0];
+			return get_reg(cmd_info->argv[0], reg);
 		}
 	}
+	return 0;
+}
+
+/* Processes argument as register name.  On success *reg is set (so it should be
+ * initialized before the call) and zero is returned, otherwise cmds unit error
+ * code is returned. */
+static int
+get_reg(const char arg[], int *reg)
+{
+	if(arg[1] != '\0')
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+	if(!register_exists(arg[0]))
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+
+	*reg = arg[0];
 	return 0;
 }
 
