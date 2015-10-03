@@ -735,13 +735,16 @@ save_selection(FileView *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
+		char full_path[PATH_MAX];
+
 		if(is_parent_dir(entry->name))
 		{
 			entry->selected = 0;
 			continue;
 		}
 
-		view->saved_selection[i] = strdup(entry->name);
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		view->saved_selection[i] = strdup(full_path);
 		if(view->saved_selection[i] == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -783,18 +786,37 @@ void
 flist_sel_restore(FileView *view)
 {
 	int i;
+	trie_t selection_trie = trie_create();
 
 	erase_selection(view);
 
 	for(i = 0; i < view->nsaved_selection; ++i)
 	{
-		const int pos = find_file_pos_in_list(view, view->saved_selection[i]);
-		if(pos != -1)
+		(void)trie_put(selection_trie, view->saved_selection[i]);
+	}
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *ignored_data;
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(trie_get(selection_trie, full_path, &ignored_data) == 0)
 		{
-			view->dir_entry[pos].selected = 1;
+			entry->selected = 1;
 			++view->selected_files;
+
+			/* Assuming that selection is usually contiguous it makes sense to quit
+			 * when we found all elements to optimize this operation. */
+			if(view->selected_files == view->nsaved_selection)
+			{
+				break;
+			}
 		}
 	}
+
+	trie_free(selection_trie);
 
 	redraw_current_view();
 }
