@@ -2025,7 +2025,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	clean_selected_files(curr_view);
+	mark_selection_or_current(curr_view);
 	chown_files(u, g, uid, gid);
 
 	return 0;

@@ -257,6 +257,9 @@ void check_marking(FileView *view, int count, const int indexes[]);
 void mark_files_at(FileView *view, int count, const int indexes[]);
 /* Marks selected files of the view. */
 void mark_selected(FileView *view);
+/* Same as mark_selected() function, but when selection is absent current file
+ * is marked. */
+void mark_selection_or_current(FileView *view);
 /* Removes dead entries (those that refer to non-existing files) or those that
  * do not match local filter from the view.  Returns number of erased
  * entries. */

@@ -2717,6 +2717,17 @@ mark_selected(FileView *view)
 }
 
 void
+mark_selection_or_current(FileView *view)
+{
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+	mark_selected(view);
+}
+
+void
 flist_set(FileView *view, const char title[], const char path[], char *lines[],
 		int nlines)
 {
