@@ -96,6 +96,8 @@ static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
 static void navigate_to_history_pos(FileView *view, int pos);
 static void save_selection(FileView *view);
+static int navigate_to_file_in_custom_view(FileView *view, const char dir[],
+		const char file[]);
 static void free_saved_selection(FileView *view);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
@@ -110,6 +112,7 @@ static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static void update_entries_data(FileView *view);
@@ -872,6 +875,15 @@ navigate_back(FileView *view)
 void
 navigate_to_file(FileView *view, const char dir[], const char file[])
 {
+	if(flist_custom_active(view))
+	{
+		/* Try to find requested element in custom list of files. */
+		if(navigate_to_file_in_custom_view(view, dir, file) == 0)
+		{
+			return;
+		}
+	}
+
 	/* Do not change directory if we already there. */
 	if(!paths_are_equal(view->curr_dir, dir))
 	{
@@ -885,6 +897,47 @@ navigate_to_file(FileView *view, const char dir[], const char file[])
 	{
 		(void)ensure_file_is_selected(view, file);
 	}
+}
+
+/* navigate_to_file() helper that tries to find requested file in custom view.
+ * Returns non-zero on failure to find such file, otherwise zero is returned. */
+static int
+navigate_to_file_in_custom_view(FileView *view, const char dir[],
+		const char file[])
+{
+	char full_path[PATH_MAX];
+	dir_entry_t *entry;
+
+	snprintf(full_path, sizeof(full_path), "%s/%s", dir, file);
+
+	if(custom_list_is_incomplete(view))
+	{
+		entry = entry_from_path(view->custom.entries, view->custom.entry_count,
+				full_path);
+		if(entry == NULL)
+		{
+			/* No such entry in the view at all. */
+			return 1;
+		}
+
+		if(!local_filter_matches(view, entry))
+		{
+			/* The item is filtered-out by current settings, undo this filtering. */
+			local_filter_remove(view);
+			load_dir_list(view, 1);
+		}
+	}
+
+	entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+	if(entry == NULL)
+	{
+		/* File might not exist anymore at that location. */
+		return 1;
+	}
+
+	view->list_pos = entry_to_pos(view, entry);
+	ui_view_schedule_redraw(view);
+	return 0;
 }
 
 int
@@ -1595,8 +1648,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
-		if(view->custom.entry_count != 0 &&
-				view->list_rows != view->custom.entry_count)
+		if(custom_list_is_incomplete(view))
 		{
 			/* Load initial list of custom entries if it's available. */
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
@@ -1673,6 +1725,16 @@ populate_dir_list_internal(FileView *view, int reload)
 	fview_list_updated(view);
 
 	return 0;
+}
+
+/* Checks whether currently loaded custom list of files is missing some files
+ * compared to the original custom list.  Returns non-zero if so, otherwise zero
+ * is returned. */
+static int
+custom_list_is_incomplete(const FileView *view)
+{
+	return view->custom.entry_count != 0
+	    && view->list_rows != view->custom.entry_count;
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names
