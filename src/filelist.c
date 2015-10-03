@@ -123,6 +123,9 @@ static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 static void sort_dir_list(int msg, FileView *view);
 static void merge_lists(FileView *view, dir_entry_t *entries, int len);
+static void add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry);
+static int is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry,
+		void **data);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
 static int correct_pos(FileView *view, int pos, int dist, int closes);
 static int rescue_from_empty_filelist(FileView *view);
@@ -1989,9 +1992,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 
 	for(i = 0; i < len; ++i)
 	{
-		const int code = trie_set(prev_names, entries[i].name, &entries[i]);
-		assert(code == 0 && "Duplicated file names in the list?");
-		(void)code;
+		add_to_trie(prev_names, view, &entries[i]);
 
 		/* We won't use the name later, so free some memory. */
 		update_string(&entries[i].name, NULL);
@@ -2003,7 +2004,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 		int dist;
 		void *data;
 		dir_entry_t *const entry = &view->dir_entry[i];
-		if(trie_get(prev_names, entry->name, &data) != 0)
+		if(!is_in_trie(prev_names, view, entry, &data))
 		{
 			continue;
 		}
@@ -2020,6 +2021,49 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 	}
 
 	trie_free(prev_names);
+}
+
+/* Adds view entry into the trie mapping its name to entry structure. */
+static void
+add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry)
+{
+	int error;
+
+	if(flist_custom_active(view))
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		error = trie_set(trie, full_path, entry);
+	}
+	else
+	{
+		error = trie_set(trie, entry->name, entry);
+	}
+
+	assert(error == 0 && "Duplicated file names in the list?");
+	(void)error;
+}
+
+/* Looks up entry in the trie by its name.  Retrieves directory entry stored by
+ * add_to_trie() into *data (unchanged on lookup failure).  Returns non-zero if
+ * item was successfully retrieved and zero otherwise. */
+static int
+is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry, void **data)
+{
+	int error;
+
+	if(flist_custom_active(view))
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		error = trie_get(trie, full_path, data);
+	}
+	else
+	{
+		error = trie_get(trie, entry->name, data);
+	}
+
+	return (error == 0);
 }
 
 /* Merges data from previous entry into the new one.  Both entries should
