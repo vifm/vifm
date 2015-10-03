@@ -1553,7 +1553,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 void
 change_owner(void)
 {
-	if(curr_view->selected_filelist == 0)
+	if(curr_view->selected_files == 0)
 	{
 		curr_view->dir_entry[curr_view->list_pos].selected = 1;
 		curr_view->selected_files = 1;
@@ -1622,7 +1622,7 @@ change_group_cb(const char new_group[])
 void
 change_group(void)
 {
-	if(curr_view->selected_filelist == 0)
+	if(curr_view->selected_files == 0)
 	{
 		curr_view->dir_entry[curr_view->list_pos].selected = 1;
 		curr_view->selected_files = 1;
