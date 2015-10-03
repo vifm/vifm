@@ -220,6 +220,8 @@
 
 	Fixed navigation to broken link from a menu.
 
+	Fixed group completion for :chown command.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

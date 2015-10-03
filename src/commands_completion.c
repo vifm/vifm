@@ -388,6 +388,7 @@ complete_invert(const char str[])
 	complete_from_string_list(str, lines, ARRAY_LEN(lines));
 }
 
+/* Completes either user or group name for the :chown command. */
 static int
 complete_chown(const char *str)
 {
@@ -400,7 +401,7 @@ complete_chown(const char *str)
 	}
 	else
 	{
-		complete_user_name(colon + 1);
+		complete_group_name(colon + 1);
 		return colon - str + 1;
 	}
 #else
