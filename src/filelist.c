@@ -91,8 +91,6 @@ static void init_view(FileView *view);
 static void init_flist(FileView *view);
 static void reset_view(FileView *view);
 static void init_view_history(FileView *view);
-static void free_file_capture(FileView *view);
-static void capture_selection(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
@@ -170,7 +168,6 @@ static void
 init_flist(FileView *view)
 {
 	view->list_pos = 0;
-	view->selected_filelist = NULL;
 	view->history_num = 0;
 	view->history_pos = 0;
 	view->on_slow_fs = 0;
@@ -270,68 +267,6 @@ get_current_file_name(FileView *view)
 	if(view->list_pos == -1)
 		return "";
 	return view->dir_entry[view->list_pos].name;
-}
-
-/* Frees memory from list of captured files. */
-static void
-free_file_capture(FileView *view)
-{
-	if(view->selected_filelist != NULL)
-	{
-		free_string_array(view->selected_filelist, view->selected_files);
-		view->selected_filelist = NULL;
-	}
-}
-
-/* Collects currently selected files in view->selected_filelist array.  Use
- * free_file_capture() to clean up memory allocated by this function. */
-static void
-capture_selection(FileView *view)
-{
-	int y;
-	dir_entry_t *entry;
-
-	recount_selected_files(view);
-
-	if(view->selected_files == 0)
-	{
-		free_file_capture(view);
-		return;
-	}
-
-	if(view->selected_filelist != NULL)
-	{
-		free_file_capture(view);
-		/* Setting this because free_file_capture() doesn't do it. */
-		view->selected_files = 0;
-	}
-	recount_selected_files(view);
-	view->selected_filelist = calloc(view->selected_files, sizeof(char *));
-	if(view->selected_filelist == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	y = 0;
-	entry = NULL;
-	while(iter_selected_entries(view, &entry))
-	{
-		if(is_parent_dir(entry->name))
-		{
-			entry->selected = 0;
-			continue;
-		}
-
-		view->selected_filelist[y] = strdup(entry->name);
-		if(view->selected_filelist[y] == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			break;
-		}
-		++y;
-	}
-	view->selected_files = y;
 }
 
 void
@@ -760,36 +695,57 @@ clean_selected_files(FileView *view)
 	erase_selection(view);
 }
 
-/* Saves list of selected files if any. */
+/* Collects currently selected files in view->saved_selection array.  Use
+ * free_saved_selection() to clean up memory allocated by this function. */
 static void
 save_selection(FileView *view)
 {
-	if(view->selected_files != 0)
+	int i;
+	dir_entry_t *entry;
+
+	free_saved_selection(view);
+
+	recount_selected_files(view);
+
+	if(view->selected_files == 0)
 	{
-		char **save_selected_filelist;
-
-		free_string_array(view->saved_selection, view->nsaved_selection);
-
-		save_selected_filelist = view->selected_filelist;
-		view->selected_filelist = NULL;
-
-		capture_selection(view);
-		view->nsaved_selection = view->selected_files;
-		view->saved_selection = view->selected_filelist;
-
-		view->selected_filelist = save_selected_filelist;
+		return;
 	}
+
+	recount_selected_files(view);
+	view->saved_selection = calloc(view->selected_files, sizeof(char *));
+	if(view->saved_selection == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	i = 0;
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
+	{
+		if(is_parent_dir(entry->name))
+		{
+			entry->selected = 0;
+			continue;
+		}
+
+		view->saved_selection[i] = strdup(entry->name);
+		if(view->saved_selection[i] == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			break;
+		}
+
+		++i;
+	}
+	view->nsaved_selection = i;
 }
 
 void
 erase_selection(FileView *view)
 {
 	int i;
-
-	/* This is needed, since otherwise we loose number of items in the array,
-	 * which can cause access violation of memory leaks. */
-	free_file_capture(view);
-
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		view->dir_entry[i].selected = 0;
