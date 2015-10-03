@@ -844,7 +844,7 @@ navigate_to_file(FileView *view, const char dir[], const char file[])
 	{
 		if(change_directory(view, dir) >= 0)
 		{
-			load_dir_list(view, 1);
+			load_dir_list(view, 0);
 		}
 	}
 
