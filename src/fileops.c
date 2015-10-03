@@ -1504,46 +1504,41 @@ is_file_name_changed(const char old[], const char new[])
 void
 chown_files(int u, int g, uid_t uid, gid_t gid)
 {
+/* Integer to pointer conversion. */
 #define V(e) (void *)(long)(e)
 
 	FileView *const view = curr_view;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	int i;
-	int sel_len;
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
+	dir_entry_t *entry;
 
 	ui_cancellation_reset();
 
-	snprintf(buf, sizeof(buf), "ch%s in %s: ", ((u && g) || u) ? "own" : "grp",
-			replace_home_part(view->curr_dir));
+	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
+			((u && g) || u) ? "own" : "grp", replace_home_part(view->curr_dir));
 
 	ops = get_ops(OP_CHOWN, "re-owning", view->curr_dir, view->curr_dir);
 
-	get_group_file_list(view->saved_selection, view->nsaved_selection, buf);
-	cmd_group_begin(buf);
+	append_marked_files(view, undo_msg, NULL);
+	cmd_group_begin(undo_msg);
 
-	sel_len = view->nsaved_selection;
-	for(i = 0; i < sel_len && !ui_cancellation_requested(); i++)
+	entry = NULL;
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		const char *const fname = view->saved_selection[i];
-		const int pos = find_file_pos_in_list(view, fname);
-		const dir_entry_t *const entry = &view->dir_entry[pos];
-
-		if(u && perform_operation(OP_CHOWN, ops, V(uid), fname, NULL) == 0)
+		if(u && perform_operation(OP_CHOWN, ops, V(uid), entry->name, NULL) == 0)
 		{
-			add_operation(OP_CHOWN, V(uid), V(entry->uid), fname, "");
+			add_operation(OP_CHOWN, V(uid), V(entry->uid), entry->name, "");
 		}
-		if(g && perform_operation(OP_CHGRP, ops, V(gid), fname, NULL) == 0)
+		if(g && perform_operation(OP_CHGRP, ops, V(gid), entry->name, NULL) == 0)
 		{
-			add_operation(OP_CHGRP, V(gid), V(entry->gid), fname, "");
+			add_operation(OP_CHGRP, V(gid), V(entry->gid), entry->name, "");
 		}
 	}
 	cmd_group_end();
 
 	free_ops(ops);
 
-	load_dir_list(view, 1);
-	fview_cursor_redraw(view);
+	ui_view_reset_selection_and_reload(view);
 
 #undef V
 }
@@ -1553,12 +1548,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 void
 change_owner(void)
 {
-	if(curr_view->selected_filelist == 0)
-	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files = 1;
-	}
-	clean_selected_files(curr_view);
+	mark_selection_or_current(curr_view);
 #ifndef _WIN32
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner, 0);
 #else
@@ -1622,12 +1612,7 @@ change_group_cb(const char new_group[])
 void
 change_group(void)
 {
-	if(curr_view->selected_filelist == 0)
-	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files = 1;
-	}
-	clean_selected_files(curr_view);
+	mark_selection_or_current(curr_view);
 #ifndef _WIN32
 	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group, 0);
 #else

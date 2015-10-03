@@ -225,12 +225,12 @@ typedef struct
 	int window_rows; /* number of rows shown in window */
 	unsigned int window_width;
 	int filtered;  /* number of files filtered out and not shown in list */
-	int selected_files;
+	int selected_files; /* Number of currently selected files. */
 	int local_cs; /* Whether directory-specific color scheme is in use. */
 	dir_entry_t *dir_entry;
-	char ** selected_filelist;
-	int nsaved_selection;
-	char ** saved_selection;
+
+	int nsaved_selection;   /* Number of items in saved_selection. */
+	char **saved_selection; /* Names of selected files. */
 
 	/* Whether files are selected by user or via range on the command-line.  Say
 	 * some commands (e.g. ga/gA) implement "smart selection", but it shouldn't

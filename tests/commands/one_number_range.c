@@ -41,10 +41,15 @@ setup_lwin(void)
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("..");
+	lwin.dir_entry[0].origin = lwin.curr_dir;
 	lwin.dir_entry[1].name = strdup("lfile0");
+	lwin.dir_entry[1].origin = lwin.curr_dir;
 	lwin.dir_entry[2].name = strdup("lfile1");
+	lwin.dir_entry[2].origin = lwin.curr_dir;
 	lwin.dir_entry[3].name = strdup("lfile2");
+	lwin.dir_entry[3].origin = lwin.curr_dir;
 	lwin.dir_entry[4].name = strdup("lfile3");
+	lwin.dir_entry[4].origin = lwin.curr_dir;
 
 	lwin.dir_entry[1].selected = 1;
 	lwin.dir_entry[3].selected = 1;
@@ -61,12 +66,19 @@ setup_rwin(void)
 	rwin.dir_entry = dynarray_cextend(NULL,
 			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("..");
+	rwin.dir_entry[0].origin = rwin.curr_dir;
 	rwin.dir_entry[1].name = strdup("rfile0");
+	rwin.dir_entry[1].origin = rwin.curr_dir;
 	rwin.dir_entry[2].name = strdup("rfile1");
+	rwin.dir_entry[2].origin = rwin.curr_dir;
 	rwin.dir_entry[3].name = strdup("rfile2");
+	rwin.dir_entry[3].origin = rwin.curr_dir;
 	rwin.dir_entry[4].name = strdup("rfile3");
+	rwin.dir_entry[4].origin = rwin.curr_dir;
 	rwin.dir_entry[5].name = strdup("rfile4");
+	rwin.dir_entry[5].origin = rwin.curr_dir;
 	rwin.dir_entry[6].name = strdup("rfile5");
+	rwin.dir_entry[6].origin = rwin.curr_dir;
 
 	rwin.dir_entry[2].selected = 1;
 	rwin.dir_entry[4].selected = 1;

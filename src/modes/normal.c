@@ -1083,26 +1083,11 @@ cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 }
 #endif
 
+/* Restores previous selection of files. */
 static void
 cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 {
-	int x;
-	curr_view->selected_files = 0;
-	for(x = 0; x < curr_view->list_rows; x++)
-		curr_view->dir_entry[x].selected = 0;
-	for(x = 0; x < curr_view->nsaved_selection; x++)
-	{
-		if(curr_view->saved_selection[x] != NULL)
-		{
-			int pos = find_file_pos_in_list(curr_view, curr_view->saved_selection[x]);
-			if(pos >= 0 && pos < curr_view->list_rows)
-			{
-				curr_view->dir_entry[pos].selected = 1;
-				curr_view->selected_files++;
-			}
-		}
-	}
-	redraw_current_view();
+	flist_sel_restore(curr_view);
 }
 
 /* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file
