@@ -571,7 +571,7 @@ local_filter_cancel(FileView *view)
 
 	(void)filter_set(&view->local_filter.filter, view->local_filter.saved);
 
-	free(view->dir_entry);
+	dynarray_free(view->dir_entry);
 	view->dir_entry = NULL;
 	view->list_rows = 0;
 
