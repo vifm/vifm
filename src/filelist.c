@@ -284,9 +284,20 @@ recount_selected_files(FileView *view)
 int
 find_file_pos_in_list(const FileView *const view, const char file[])
 {
+	return flist_find_entry(view, file, NULL);
+}
+
+int
+flist_find_entry(const FileView *view, const char file[], const char dir[])
+{
 	int i;
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
 	{
+		if(dir != NULL && stroscmp(view->dir_entry[i].origin, dir) != 0)
+		{
+			continue;
+		}
+
 		if(stroscmp(view->dir_entry[i].name, file) == 0)
 		{
 			return i;

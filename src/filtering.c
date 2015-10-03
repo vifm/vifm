@@ -484,8 +484,8 @@ extract_previously_selected_pos(FileView *const view)
 	for(i = 0; i < view->local_filter.poshist_len; i++)
 	{
 		const int unfiltered_pos = view->local_filter.poshist[i];
-		const char *const file = view->local_filter.unfiltered[unfiltered_pos].name;
-		const int filtered_pos = find_file_pos_in_list(view, file);
+		const dir_entry_t *entry = &view->local_filter.unfiltered[unfiltered_pos];
+		const int filtered_pos = flist_find_entry(view, entry->name, entry->origin);
 
 		if(filtered_pos >= 0)
 		{

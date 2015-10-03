@@ -222,6 +222,9 @@
 
 	Fixed group completion for :chown command.
 
+	Fixed cursor positioning in custom view with identically named files on
+	local filter updates.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

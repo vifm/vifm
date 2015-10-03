@@ -37,7 +37,7 @@ typedef enum
 FileListScope;
 
 /* Type of filter function for zapping list of entries.  Should return non-zero
- * if entry is to be keeped and zero otherwise. */
+ * if entry is to be kept and zero otherwise. */
 typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
 
 /* Initialization/termination functions. */
@@ -54,6 +54,10 @@ void load_initial_directory(FileView *view, const char dir[]);
 /* Find index of the file within list of currently visible files of the view.
  * Returns file entry index or -1, if file wasn't found. */
 int find_file_pos_in_list(const FileView *const view, const char file[]);
+/* Find index of the file within list of currently visible files of the view.
+ * Always matches file name and can optionally match directory if dir is not
+ * NULL.  Returns file entry index or -1, if file wasn't found. */
+int flist_find_entry(const FileView *view, const char file[], const char dir[]);
 /* Tries to move cursor by pos_delta positions.  A wrapper for
  * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
  * functions. */
