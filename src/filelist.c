@@ -769,6 +769,26 @@ invert_selection(FileView *view)
 }
 
 void
+flist_sel_restore(FileView *view)
+{
+	int i;
+
+	erase_selection(view);
+
+	for(i = 0; i < view->nsaved_selection; ++i)
+	{
+		const int pos = find_file_pos_in_list(view, view->saved_selection[i]);
+		if(pos != -1)
+		{
+			view->dir_entry[pos].selected = 1;
+			++view->selected_files;
+		}
+	}
+
+	redraw_current_view();
+}
+
+void
 leave_invalid_dir(FileView *view)
 {
 	struct stat s;

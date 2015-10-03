@@ -135,6 +135,8 @@ void clean_selected_files(FileView *view);
 void erase_selection(FileView *view);
 /* Inverts selection of files in the view. */
 void invert_selection(FileView *view);
+/* Reselects previously selected entries. */
+void flist_sel_restore(FileView *view);
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */
 void recount_selected_files(FileView *view);
