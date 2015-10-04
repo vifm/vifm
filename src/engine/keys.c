@@ -281,7 +281,7 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	key_info.count = combine_counts(key_info.count, prev_count);
 	key_info.multi = L'\0';
 
-	if(!no_remap)
+	if(!no_remap || keys_info->selector)
 	{
 		key_chunk_t *const root = keys_info->selector
 		                        ? &selectors_root[vle_mode_get()]
@@ -587,7 +587,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 	int result;
 	if(rhs[0] == L'\0' && left_keys[0] == L'\0')
 	{
-		/* Nop command executed correctly. */
+		/* Nop command "executed" correctly. */
 		result = 0;
 	}
 	else if(rhs[0] == L'\0')

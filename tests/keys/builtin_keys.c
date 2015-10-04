@@ -14,7 +14,7 @@
 #define printf(...)
 #endif
 
-int last; /* 1 = k, 2 = j */
+int last; /* 1 = k, 2 = j, 3 = yank, 4 = delete */
 int last_command_count; /* for ctrl+w <, dd and d + selector*/
 int last_selector_count; /* for k */
 int key_is_mapped; /* for : and m */
@@ -34,6 +34,7 @@ static void keys_if(key_info_t key_info, keys_info_t *keys_info);
 static void keys_ctrl_w_less_than(key_info_t key_info, keys_info_t *keys_info);
 static void keys_delete(key_info_t key_info, keys_info_t *keys_info);
 static void keys_delete_selector(key_info_t key_info, keys_info_t *keys_info);
+static void keys_yank_selector(key_info_t key_info, keys_info_t *keys_info);
 static void keys_v(key_info_t key_info, keys_info_t *keys_info);
 static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
 static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
@@ -145,6 +146,11 @@ init_builtin_keys(void)
 
 	curr = add_cmd(L"v", VISUAL_MODE);
 	curr->data.handler = keys_v;
+
+	curr = add_cmd(L"y", NORMAL_MODE);
+	curr->type = BUILTIN_WAIT_POINT;
+	curr->data.handler = keys_yank_selector;
+	curr->followed = FOLLOWED_BY_SELECTOR;
 
 	curr = add_cmd(L"ZQ", NORMAL_MODE);
 	curr->data.handler = keys_quit;
@@ -274,12 +280,14 @@ keys_ctrl_w_less_than(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_delete(key_info_t key_info, keys_info_t *keys_info)
 {
+	last = 4;
 	last_command_count = key_info.count;
 }
 
 static void
 keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
+	last = 4;
 	last_command_count = key_info.count;
 	printf("(%d)delete with selector in register %c\n", key_info.count,
 			key_info.reg);
@@ -291,6 +299,12 @@ keys_v(key_info_t key_info, keys_info_t *keys_info)
 	vle_mode_set(vle_mode_is(NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE,
 			VMT_PRIMARY);
 	printf("v visual mode toggle\n");
+}
+
+static void
+keys_yank_selector(key_info_t key_info, keys_info_t *keys_info)
+{
+	last = 3;
 }
 
 static void

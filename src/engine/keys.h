@@ -62,8 +62,9 @@ typedef enum
 	BUILTIN_KEYS,
 	BUILTIN_NIM_KEYS,   /* NIM - number in the middle */
 	BUILTIN_CMD,
-	USER_CMD,
-}KEYS_TYPE;
+	USER_CMD,           /* User mapping. */
+}
+KEYS_TYPE;
 
 typedef enum
 {
