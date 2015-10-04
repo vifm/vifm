@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 03 September, 2015
+Updated: 06 October, 2015
 Version: 0.8
 
 Brief Description
@@ -170,6 +170,7 @@ Package content
     |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
+    |  |  |-- fswatch.c - watches path in file system for changes at it
     |  |  |-- file_streams.c - file stream reading related functions
     |  |  |-- filemon.c - file monitoring "object"
     |  |  |-- filter.c - small abstraction over filter driven by a regexp

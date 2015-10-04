@@ -34,8 +34,8 @@
 #include <wchar.h> /* wint_t */
 
 #include "../compat/fs_limits.h"
-#include "../utils/filemon.h"
 #include "../utils/filter.h"
+#include "../utils/fswatch.h"
 #include "../utils/trie.h"
 #include "../status.h"
 #include "../types.h"
@@ -202,12 +202,12 @@ typedef struct
 
 #ifndef _WIN32
 	/* Monitor that checks for directory changes. */
-	filemon_t mon;
+	fswatch_t *watch;
 #else
 	FILETIME dir_mtime;
 	HANDLE dir_watcher;
-	char watched_dir[PATH_MAX];
 #endif
+	char watched_dir[PATH_MAX];
 	char last_dir[PATH_MAX];
 
 	/* Number of files that match current search pattern. */
