@@ -62,9 +62,6 @@ TEST(handles_several_events_in_a_row, IF(using_inotify))
 
 	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
 
-	assert_false(fswatch_changed(watch, &error));
-	assert_false(error);
-
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 	assert_true(fswatch_changed(watch, &error));
 	assert_false(error);
@@ -74,6 +71,68 @@ TEST(handles_several_events_in_a_row, IF(using_inotify))
 	assert_false(error);
 
 	fswatch_free(watch);
+}
+
+TEST(to_many_events_causes_banning_of_same_events, IF(using_inotify))
+{
+	fswatch_t *watch;
+	int error;
+	int i;
+
+	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+
+	os_mkdir(SANDBOX_PATH "/testdir", 0700);
+
+	for(i = 0; i < 100; ++i)
+	{
+		os_chmod(SANDBOX_PATH "/testdir", 0777);
+		os_chmod(SANDBOX_PATH "/testdir", 0000);
+		(void)fswatch_changed(watch, &error);
+	}
+
+	os_chmod(SANDBOX_PATH "/testdir", 0777);
+	assert_false(fswatch_changed(watch, &error));
+	assert_false(error);
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
+	assert_true(fswatch_changed(watch, &error));
+	assert_false(error);
+
+	fswatch_free(watch);
+}
+
+TEST(file_recreation_removes_ban, IF(using_inotify))
+{
+	fswatch_t *watch;
+	int error;
+	int i;
+
+	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+
+	os_mkdir(SANDBOX_PATH "/testdir", 0700);
+
+	for(i = 0; i < 100; ++i)
+	{
+		os_chmod(SANDBOX_PATH "/testdir", 0777);
+		os_chmod(SANDBOX_PATH "/testdir", 0000);
+		(void)fswatch_changed(watch, &error);
+	}
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
+	assert_true(fswatch_changed(watch, &error));
+	assert_false(error);
+
+	os_mkdir(SANDBOX_PATH "/testdir", 0700);
+	assert_true(fswatch_changed(watch, &error));
+	assert_false(error);
+
+	os_chmod(SANDBOX_PATH "/testdir", 0777);
+	assert_true(fswatch_changed(watch, &error));
+	assert_false(error);
+
+	fswatch_free(watch);
+
+	assert_success(remove(SANDBOX_PATH "/testdir"));
 }
 
 static int
