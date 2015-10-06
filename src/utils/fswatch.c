@@ -18,12 +18,15 @@
 
 #include "fswatch.h"
 
+#include <stdlib.h> /* free() malloc() */
+
+#ifdef HAVE_INOTIFY
+
 #include <sys/inotify.h> /* IN_* inotify_* */
 #include <unistd.h> /* close() read() */
 
 #include <errno.h> /* EAGAIN errno */
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() malloc() */
 
 #include "../compat/fs_limits.h"
 
@@ -109,6 +112,76 @@ fswatch_changed(fswatch_t *w, int *error)
 
 	return read_total != 0;
 }
+
+#else
+
+#include "filemon.h"
+
+#include <string.h> /* strdup() */
+
+/* Watcher data. */
+struct fswatch_t
+{
+	filemon_t filemon; /* Stamp based monitoring. */
+	char *path;
+};
+
+fswatch_t *
+fswatch_create(const char path[])
+{
+	fswatch_t *const w = malloc(sizeof(*w));
+	if(w == NULL)
+	{
+		return NULL;
+	}
+
+	if(filemon_from_file(path, &w->filemon) != 0)
+	{
+		free(w);
+		return NULL;
+	}
+
+	w->path = strdup(path);
+	if(w->path == NULL)
+	{
+		free(w);
+		return NULL;
+	}
+
+	return w;
+}
+
+void
+fswatch_free(fswatch_t *w)
+{
+	if(w != NULL)
+	{
+		free(w->path);
+		free(w);
+	}
+}
+
+int
+fswatch_changed(fswatch_t *w, int *error)
+{
+	int changed;
+
+	filemon_t filemon;
+	if(filemon_from_file(w->path, &filemon) != 0)
+	{
+		*error = 1;
+		return 1;
+	}
+
+	*error = 0;
+	changed = !filemon_equal(&w->filemon, &filemon);
+
+	filemon_assign(&w->filemon, &filemon);
+
+	return changed;
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

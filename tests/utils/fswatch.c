@@ -5,6 +5,8 @@
 #include "../../src/compat/os.h"
 #include "../../src/utils/fswatch.h"
 
+static int using_inotify(void);
+
 TEST(watch_is_created_for_existing_directory)
 {
 	fswatch_t *watch;
@@ -23,7 +25,7 @@ TEST(two_watches_for_the_same_directory)
 	fswatch_free(watch1);
 }
 
-TEST(events_are_accumulated)
+TEST(events_are_accumulated, IF(using_inotify))
 {
 	fswatch_t *watch;
 	int error;
@@ -53,7 +55,7 @@ TEST(started_as_not_changed)
 	fswatch_free(watch);
 }
 
-TEST(handles_several_events_in_a_row)
+TEST(handles_several_events_in_a_row, IF(using_inotify))
 {
 	fswatch_t *watch;
 	int error;
@@ -72,6 +74,16 @@ TEST(handles_several_events_in_a_row)
 	assert_false(error);
 
 	fswatch_free(watch);
+}
+
+static int
+using_inotify(void)
+{
+#ifdef HAVE_INOTIFY
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
