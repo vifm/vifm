@@ -18,6 +18,10 @@
 
 #include "filename_modifiers.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* memmove() strchr() strlen() strrchr() */

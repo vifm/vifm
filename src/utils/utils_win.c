@@ -20,8 +20,8 @@
 #include "utils.h"
 #include "utils_int.h"
 
-#include <ntdef.h>
 #include <windows.h>
+#include <ntdef.h>
 #include <winioctl.h>
 
 #include <curses.h>
@@ -373,7 +373,7 @@ is_vista_and_above(void)
 }
 
 const char *
-attr_str(DWORD attr)
+attr_str(uint32_t attr)
 {
 	static char buf[5 + 1];
 	buf[0] = '\0';
@@ -392,7 +392,7 @@ attr_str(DWORD attr)
 }
 
 const char *
-attr_str_long(DWORD attr)
+attr_str_long(uint32_t attr)
 {
 	static char buf[10 + 1];
 	snprintf(buf, sizeof(buf), "ahirscdepz");

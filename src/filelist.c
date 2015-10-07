@@ -20,9 +20,9 @@
 #include "filelist.h"
 
 #ifdef _WIN32
+#include <windows.h>
 #include <fcntl.h>
 #include <lm.h>
-#include <windows.h>
 #include <winioctl.h>
 #endif
 

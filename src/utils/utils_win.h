@@ -20,9 +20,8 @@
 #ifndef VIFM__UTILS__UTILS_WIN_H__
 #define VIFM__UTILS__UTILS_WIN_H__
 
-#include <windows.h>
-
 #include <stddef.h> /* size_t */
+#include <stdint.h> /* uint32_t */
 #include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
@@ -59,11 +58,11 @@ int is_vista_and_above(void);
 
 /* Converts Windows attributes to a string.
  * Returns pointer to a statically allocated buffer. */
-const char * attr_str(DWORD attr);
+const char * attr_str(uint32_t attr);
 
 /* Converts Windows attributes to a long string containing all attribute values.
  * Returns pointer to a statically allocated buffer. */
-const char * attr_str_long(DWORD attr);
+const char * attr_str_long(uint32_t attr);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * escape_for_cd(const char str[]);
