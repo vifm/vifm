@@ -1,7 +1,8 @@
 #include <stic.h>
 
-#include <stdio.h> /* fclose() fopen() */
-#include <stdlib.h> /* remove() */
+#include <unistd.h> /* rmdir() */
+
+#include <stdio.h> /* fclose() fopen() remove() */
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
@@ -36,7 +37,7 @@ TEST(empty_dir_produces_single_line_and_dirs_have_trailing_slash)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("empty-dir");
+	assert_success(rmdir("empty-dir"));
 }
 
 TEST(single_file_is_displayed_correctly_file_without_slash)
@@ -58,8 +59,8 @@ TEST(single_file_is_displayed_correctly_file_without_slash)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("dir/file");
-	remove("dir");
+	assert_success(remove("dir/file"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(single_subdir_is_displayed_correctly)
@@ -81,8 +82,8 @@ TEST(single_subdir_is_displayed_correctly)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("dir/nested");
-	remove("dir");
+	assert_success(rmdir("dir/nested"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(multiple_nested_dirs_treated_correctly)
@@ -106,9 +107,9 @@ TEST(multiple_nested_dirs_treated_correctly)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("dir/nested1/nested2");
-	remove("dir/nested1");
-	remove("dir");
+	assert_success(rmdir("dir/nested1/nested2"));
+	assert_success(rmdir("dir/nested1"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(multiple_files_treated_correctly)
@@ -132,9 +133,9 @@ TEST(multiple_files_treated_correctly)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("dir/file2");
-	remove("dir/file1");
-	remove("dir");
+	assert_success(remove("dir/file2"));
+	assert_success(remove("dir/file1"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
@@ -162,11 +163,11 @@ TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
 	free_string_array(lines, nlines);
 	fclose(fp);
 
-	remove("dir/sub1/file");
-	remove("dir/sub2/file");
-	remove("dir/sub1");
-	remove("dir/sub2");
-	remove("dir");
+	assert_success(remove("dir/sub1/file"));
+	assert_success(remove("dir/sub2/file"));
+	assert_success(rmdir("dir/sub1"));
+	assert_success(rmdir("dir/sub2"));
+	assert_success(rmdir("dir"));
 }
 
 static void
