@@ -48,6 +48,19 @@ utf8_chrw(const char str[])
 	return 1;
 }
 
+/* Determines width of a utf-8 characted by its first byte. */
+static size_t
+guess_char_width(char c)
+{
+	if((c & 0xe0) == 0xc0)
+		return 2;
+	else if((c & 0xf0) == 0xe0)
+		return 3;
+	else if((c & 0xf8) == 0xf0)
+		return 4;
+	return 1;
+}
+
 size_t
 utf8_strsnlen(const char str[], size_t max_screen_width)
 {
@@ -74,7 +87,7 @@ utf8_nstrlen(const char str[])
 	size_t length = 0;
 	while(length_left != '\0')
 	{
-		size_t char_width = guess_char_width(*str);
+		const size_t char_width = utf8_chrw(str);
 		if(char_width > length_left)
 		{
 			break;
@@ -95,7 +108,7 @@ utf8_nstrsnlen(const char str[], size_t max_screen_width)
 	while(length_left != 0 && max_screen_width > 0)
 	{
 		size_t char_screen_width;
-		const size_t char_width = guess_char_width(*str);
+		const size_t char_width = utf8_chrw(str);
 		if(char_width > length_left)
 		{
 			break;
@@ -113,19 +126,6 @@ utf8_nstrsnlen(const char str[], size_t max_screen_width)
 		length_left -= char_width;
 	}
 	return length;
-}
-
-/* Determines width of a utf-8 characted by its first byte. */
-static size_t
-guess_char_width(char c)
-{
-	if((c & 0xe0) == 0xc0)
-		return 2;
-	else if((c & 0xf0) == 0xe0)
-		return 3;
-	else if((c & 0xf8) == 0xf0)
-		return 4;
-	return 1;
 }
 
 /* Converts one utf-8 encoded character to wide character form. */

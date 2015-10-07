@@ -142,6 +142,9 @@
 	Display incomplete file name on rename instead of failing with error on
 	Unicode conversion issues.
 
+	Assume UTF-8 sequences can be broken.  Thanks to Svyatoslav Mishyn (a.k.a.
+	juef).
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
