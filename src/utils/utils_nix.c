@@ -725,27 +725,6 @@ display_help(const char cmd[])
 	(void)shellout(cmd, PAUSE_ON_ERROR, 1);
 }
 
-int
-update_dir_mtime(FileView *view)
-{
-	int error;
-
-	if(view->watch == NULL || stroscmp(view->watched_dir, view->curr_dir) != 0)
-	{
-		if(view->watch != NULL)
-		{
-			fswatch_free(view->watch);
-		}
-
-		view->watch = fswatch_create(view->curr_dir);
-		strcpy(view->watched_dir, view->curr_dir);
-	}
-
-	(void)fswatch_changed(view->watch, &error);
-
-	return 0;
-}
-
 void
 wait_for_signal(void)
 {

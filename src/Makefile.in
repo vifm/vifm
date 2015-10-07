@@ -125,7 +125,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fswatch.$(OBJEXT) utils/globs.$(OBJEXT) \
+	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
 	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
 	utils/matcher.$(OBJEXT) utils/path.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
@@ -476,7 +476,7 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
-	utils/fswatch.c utils/fswatch.h \
+	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
@@ -860,7 +860,7 @@ utils/filter.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
-utils/fswatch.$(OBJEXT): utils/$(am__dirstamp) \
+utils/fswatch_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -1013,7 +1013,7 @@ mostlyclean-compile:
 	-rm -f utils/filemon.$(OBJEXT)
 	-rm -f utils/filter.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
-	-rm -f utils/fswatch.$(OBJEXT)
+	-rm -f utils/fswatch_nix.$(OBJEXT)
 	-rm -f utils/globs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
@@ -1147,7 +1147,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@

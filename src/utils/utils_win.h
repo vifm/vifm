@@ -72,11 +72,6 @@ const char * escape_for_cd(const char str[]);
  * buffer. */
 const char * win_resolve_mount_points(const char path[]);
 
-/* Checks whether contents of working directory of the view was externally
- * modified.  Returns negative value on error, zero for unchanged directory and
- * positive number if directory was modified. */
-int win_check_dir_changed(FileView *view);
-
 /* tmpfile() for Windows, the way it should have been implemented.  Returns file
  * handler opened for read and write that is automatically removed on
  * application close.  Don't use tmpfile(), they utterly failed to implement

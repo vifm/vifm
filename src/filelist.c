@@ -2310,15 +2310,7 @@ check_if_filelist_have_changed(FileView *view)
 		return;
 	}
 
-#ifndef _WIN32
 	changed = fswatch_changed(view->watch, &failed);
-#else
-	{
-		const int r = win_check_dir_changed(view);
-		failed = r < 0;
-		changed = r > 0;
-	}
-#endif
 
 	/* Check if we still have permission to visit this directory. */
 	failed |= (os_access(view->curr_dir, X_OK) != 0);

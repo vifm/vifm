@@ -200,14 +200,10 @@ typedef struct
 	}
 	custom;
 
-#ifndef _WIN32
 	/* Monitor that checks for directory changes. */
 	fswatch_t *watch;
-#else
-	FILETIME dir_mtime;
-	HANDLE dir_watcher;
-#endif
 	char watched_dir[PATH_MAX];
+
 	char last_dir[PATH_MAX];
 
 	/* Number of files that match current search pattern. */
