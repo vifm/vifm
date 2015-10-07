@@ -48,6 +48,10 @@ void chomp(char str[]);
  * returned. */
 wchar_t * to_wide(const char s[]);
 
+/* Same as to_wide() except that it never fails due to conversion errors and
+ * returns something, thus returns NULL only on memory allocation failure. */
+wchar_t * to_wide_force(const char s[]);
+
 /* Calculates length of multibyte string after converting it to wide string.
  * Returns the length. */
 size_t wide_len(const char s[]);

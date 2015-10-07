@@ -29,7 +29,7 @@
 #include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
                        strncpy() */
 #include <wchar.h> /* wint_t vswprintf() */
-#include <wctype.h> /* iswupper() towlower() towupper() */
+#include <wctype.h> /* iswprint() iswupper() towlower() towupper() */
 
 #include "../compat/reallocarray.h"
 #include "macros.h"
@@ -74,6 +74,40 @@ to_wide(const char s[])
 #else
 	return utf8_to_utf16(s);
 #endif
+}
+
+wchar_t *
+to_wide_force(const char s[])
+{
+	wchar_t *w = to_wide(s);
+	wchar_t *p;
+
+	if(w != NULL)
+	{
+		return w;
+	}
+
+	w = reallocarray(NULL, strlen(s) + 1U, sizeof(*w));
+	if(w == NULL)
+	{
+		return NULL;
+	}
+
+	/* This broken multi-byte sequence, do our best to display something
+	 * meaningful to user and allow entering the mode. */
+
+	p = w;
+	while(*s != '\0')
+	{
+		const wchar_t wc = get_first_wchar(s++);
+		if(iswprint(wc))
+		{
+			*p++ = wc;
+		}
+	}
+	*p = L'\0';
+
+	return w;
 }
 
 size_t
