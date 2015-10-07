@@ -8741,6 +8741,127 @@ fi
 
 
 
+ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
+  use_inotify=yes
+else
+  use_inotify=no
+fi
+
+
+
+if test "$use_inotify" = "yes"; then
+	ac_fn_c_check_decl "$LINENO" "IN_NONBLOCK" "ac_cv_have_decl_IN_NONBLOCK" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_NONBLOCK" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_CLOEXEC" "ac_cv_have_decl_IN_CLOEXEC" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_CLOEXEC" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_ATTRIB" "ac_cv_have_decl_IN_ATTRIB" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_ATTRIB" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_MODIFY" "ac_cv_have_decl_IN_MODIFY" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_MODIFY" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_CREATE" "ac_cv_have_decl_IN_CREATE" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_CREATE" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_DELETE" "ac_cv_have_decl_IN_DELETE" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_DELETE" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_MOVED_FROM" "ac_cv_have_decl_IN_MOVED_FROM" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_MOVED_FROM" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_MOVED_TO" "ac_cv_have_decl_IN_MOVED_TO" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_MOVED_TO" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_EXCL_UNLINK" "ac_cv_have_decl_IN_EXCL_UNLINK" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_EXCL_UNLINK" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_decl "$LINENO" "IN_CLOSE_WRITE" "ac_cv_have_decl_IN_CLOSE_WRITE" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_CLOSE_WRITE" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
+if test "x$ac_cv_func_inotify_init1" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_func "$LINENO" "inotify_add_watch" "ac_cv_func_inotify_add_watch"
+if test "x$ac_cv_func_inotify_add_watch" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+	ac_fn_c_check_type "$LINENO" "struct inotify_event" "ac_cv_type_struct_inotify_event" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_type_struct_inotify_event" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
+
+	if test "$use_inotify" = "yes"; then
+
+$as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
+
+	fi
+fi
+
+
 min_version="7.1"
 version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 

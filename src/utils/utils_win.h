@@ -20,9 +20,8 @@
 #ifndef VIFM__UTILS__UTILS_WIN_H__
 #define VIFM__UTILS__UTILS_WIN_H__
 
-#include <windows.h>
-
 #include <stddef.h> /* size_t */
+#include <stdint.h> /* uint32_t */
 #include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
@@ -59,11 +58,11 @@ int is_vista_and_above(void);
 
 /* Converts Windows attributes to a string.
  * Returns pointer to a statically allocated buffer. */
-const char * attr_str(DWORD attr);
+const char * attr_str(uint32_t attr);
 
 /* Converts Windows attributes to a long string containing all attribute values.
  * Returns pointer to a statically allocated buffer. */
-const char * attr_str_long(DWORD attr);
+const char * attr_str_long(uint32_t attr);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * escape_for_cd(const char str[]);
@@ -71,11 +70,6 @@ const char * escape_for_cd(const char str[]);
 /* Resolves path to its destination.  Returns pointer to a statically allocated
  * buffer. */
 const char * win_resolve_mount_points(const char path[]);
-
-/* Checks whether contents of working directory of the view was externally
- * modified.  Returns negative value on error, zero for unchanged directory and
- * positive number if directory was modified. */
-int win_check_dir_changed(FileView *view);
 
 /* tmpfile() for Windows, the way it should have been implemented.  Returns file
  * handler opened for read and write that is automatically removed on

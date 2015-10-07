@@ -66,7 +66,7 @@ TEST(exact_match_is_preferred)
 	assert_string_equal("2", view->dir_entry[view->list_pos].name);
 }
 
-TEST(closes_match_below_is_choosen)
+TEST(closest_match_below_is_choosen)
 {
 	view->list_pos = 1;
 	(void)rmdir("1");
@@ -77,7 +77,7 @@ TEST(closes_match_below_is_choosen)
 	assert_string_equal("3", view->dir_entry[view->list_pos].name);
 }
 
-TEST(closes_match_above_is_choosen)
+TEST(closest_match_above_is_choosen)
 {
 	view->list_pos = 3;
 	(void)rmdir("3");

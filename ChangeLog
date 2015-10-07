@@ -136,6 +136,9 @@
 	Preserve file timestamps on copying files with 'syscalls' on.  Thanks to
 	mvucBmM0.
 
+	Employ inotify on GNU/Linux for more precise watching directories for
+	changes.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

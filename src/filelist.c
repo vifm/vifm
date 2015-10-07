@@ -20,9 +20,9 @@
 #include "filelist.h"
 
 #ifdef _WIN32
+#include <windows.h>
 #include <fcntl.h>
 #include <lm.h>
-#include <windows.h>
 #include <winioctl.h>
 #endif
 
@@ -55,8 +55,8 @@
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/env.h"
-#include "utils/filemon.h"
 #include "utils/fs.h"
+#include "utils/fswatch.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
@@ -1666,12 +1666,6 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 0;
 	}
 
-	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
-		return 1;
-	}
-
 	if(!reload && is_dir_big(view->curr_dir))
 	{
 		if(!vle_mode_is(CMDLINE_MODE))
@@ -1726,6 +1720,12 @@ populate_dir_list_internal(FileView *view, int reload)
 	}
 
 	fview_list_updated(view);
+
+	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
+	{
+		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
+		return 1;
+	}
 
 	return 0;
 }
@@ -2310,21 +2310,10 @@ check_if_filelist_have_changed(FileView *view)
 		return;
 	}
 
-#ifndef _WIN32
-	{
-		filemon_t mon;
-		failed = filemon_from_file(view->curr_dir, &mon) != 0;
-		changed = !failed && !filemon_equal(&mon, &view->mon);
-	}
-#else
-	{
-		const int r = win_check_dir_changed(view);
-		failed = r < 0;
-		changed = r > 0;
-	}
-#endif
+	changed = fswatch_changed(view->watch, &failed);
 
-	failed |= os_access(view->curr_dir, X_OK) != 0;
+	/* Check if we still have permission to visit this directory. */
+	failed |= (os_access(view->curr_dir, X_OK) != 0);
 
 	if(failed)
 	{

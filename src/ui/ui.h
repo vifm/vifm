@@ -20,22 +20,18 @@
 #ifndef VIFM__UI__UI_H__
 #define VIFM__UI__UI_H__
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <sys/types.h>
 
 #include <curses.h>
 #include <stddef.h> /* size_t wchar_t */
-#include <stdint.h> /* uint64_t */
+#include <stdint.h> /* uint64_t uint32_t */
 #include <stdlib.h> /* mode_t */
 #include <time.h> /* time_t */
 #include <wchar.h> /* wint_t */
 
 #include "../compat/fs_limits.h"
-#include "../utils/filemon.h"
 #include "../utils/filter.h"
+#include "../utils/fswatch.h"
 #include "../utils/trie.h"
 #include "../status.h"
 #include "../types.h"
@@ -146,7 +142,7 @@ typedef struct
 	gid_t gid;
 	mode_t mode;
 #else
-	DWORD attrs;
+	uint32_t attrs;
 #endif
 	time_t mtime;
 	time_t atime;
@@ -200,14 +196,10 @@ typedef struct
 	}
 	custom;
 
-#ifndef _WIN32
 	/* Monitor that checks for directory changes. */
-	filemon_t mon;
-#else
-	FILETIME dir_mtime;
-	HANDLE dir_watcher;
+	fswatch_t *watch;
 	char watched_dir[PATH_MAX];
-#endif
+
 	char last_dir[PATH_MAX];
 
 	/* Number of files that match current search pattern. */

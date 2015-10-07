@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
+#include <string.h> /* strdup() */
 
 #include "../../src/utils/trie.h"
 
@@ -125,6 +126,19 @@ TEST(set_overwrites_previous_data)
 	assert_true(data == &data);
 
 	trie_free(trie);
+}
+
+TEST(free_with_data_removes_data)
+{
+	/* The check is implicit, external tool should check that no memory leak is
+	 * created. */
+
+	const trie_t trie = trie_create();
+
+	assert_true(trie_set(trie, "str", strdup("str")) == 0);
+	assert_true(trie_set(trie, "something", strdup("something")) == 0);
+
+	trie_free_with_data(trie);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

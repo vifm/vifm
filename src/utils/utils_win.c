@@ -20,8 +20,8 @@
 #include "utils.h"
 #include "utils_int.h"
 
-#include <ntdef.h>
 #include <windows.h>
+#include <ntdef.h>
 #include <winioctl.h>
 
 #include <curses.h>
@@ -63,7 +63,6 @@ static int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
-static int win_get_dir_mtime(const char dir_path[], FILETIME *ft);
 static FILE * use_info_prog_internal(const char cmd[], int out_pipe[2]);
 
 void
@@ -374,7 +373,7 @@ is_vista_and_above(void)
 }
 
 const char *
-attr_str(DWORD attr)
+attr_str(uint32_t attr)
 {
 	static char buf[5 + 1];
 	buf[0] = '\0';
@@ -393,7 +392,7 @@ attr_str(DWORD attr)
 }
 
 const char *
-attr_str_long(DWORD attr)
+attr_str_long(uint32_t attr)
 {
 	static char buf[10 + 1];
 	snprintf(buf, sizeof(buf), "ahirscdepz");
@@ -509,78 +508,6 @@ win_resolve_mount_points(const char path[])
 	free(t);
 
 	return resolved_path;
-}
-
-int
-win_check_dir_changed(FileView *view)
-{
-	FILETIME ft;
-	int r;
-
-	if(stroscmp(view->watched_dir, view->curr_dir) != 0)
-	{
-		wchar_t *utf16_cwd;
-
-		FindCloseChangeNotification(view->dir_watcher);
-		strcpy(view->watched_dir, view->curr_dir);
-
-		utf16_cwd = utf8_to_utf16(view->curr_dir);
-
-		view->dir_watcher = FindFirstChangeNotificationW(utf16_cwd, 1,
-				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
-				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
-				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
-
-		free(utf16_cwd);
-
-		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
-		{
-			log_msg("ha%s", "d");
-		}
-	}
-
-	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
-	{
-		FindNextChangeNotification(view->dir_watcher);
-		return 1;
-	}
-
-	if(win_get_dir_mtime(view->curr_dir, &ft) != 0)
-	{
-		return -1;
-	}
-
-	r = CompareFileTime(&view->dir_mtime, &ft);
-	view->dir_mtime = ft;
-
-	return r != 0;
-}
-
-/* Gets last directory modification time.  Returns non-zero on error, otherwise
- * zero is returned. */
-static int
-win_get_dir_mtime(const char dir_path[], FILETIME *ft)
-{
-	char selfref_path[PATH_MAX];
-	wchar_t *utf16_path;
-	HANDLE hfile;
-	int r;
-
-	snprintf(selfref_path, sizeof(selfref_path), "%s/.", dir_path);
-
-	utf16_path = utf8_to_utf16(selfref_path);
-	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	free(utf16_path);
-
-	if(hfile == INVALID_HANDLE_VALUE)
-	{
-		return 1;
-	}
-
-	r = !GetFileTime(hfile, NULL, NULL, ft);
-	CloseHandle(hfile);
-	return r;
 }
 
 int
@@ -703,23 +630,6 @@ display_help(const char cmd[])
 	}
 	update_screen(UT_FULL);
 	update_screen(UT_REDRAW);
-}
-
-int
-update_dir_mtime(FileView *view)
-{
-	if(win_get_dir_mtime(view->curr_dir, &view->dir_mtime) != 0)
-	{
-		return -1;
-	}
-
-	/* Skip all directory change events accumulated so far. */
-	while(win_check_dir_changed(view) > 0)
-	{
-		/* Do nothing. */
-	}
-
-	return 0;
 }
 
 void

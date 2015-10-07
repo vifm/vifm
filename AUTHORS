@@ -53,6 +53,7 @@ from fork of wsdookadr (Petrea Stefan Corneliu):
 - %b
 - unmount all FUSE mounts on exit
 - functional keys in user mappings
+- idea of temporary blocking inotify events from very active files
 
 seatest is written by Keith Nicholas
 

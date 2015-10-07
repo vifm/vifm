@@ -59,6 +59,7 @@
 #include "env.h"
 #include "filemon.h"
 #include "fs.h"
+#include "fswatch.h"
 #include "log.h"
 #include "macros.h"
 #include "path.h"
@@ -722,12 +723,6 @@ void
 display_help(const char cmd[])
 {
 	(void)shellout(cmd, PAUSE_ON_ERROR, 1);
-}
-
-int
-update_dir_mtime(FileView *view)
-{
-	return filemon_from_file(view->curr_dir, &view->mon);
 }
 
 void

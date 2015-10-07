@@ -33,6 +33,10 @@ trie_t trie_create(void);
 /* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK. */
 void trie_free(trie_t trie);
 
+/* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK.  All
+ * data associated with trie entries is freed by calling free() on it. */
+void trie_free_with_data(trie_t trie);
+
 /* Inserts string to the trie if it's not already there.  Returns negative value
  * on error, zero on successful insertion and positive number if element was
  * already in the trie. */

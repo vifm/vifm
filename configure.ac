@@ -476,6 +476,32 @@ AC_CHECK_FUNC([wtimeout], [], [AC_MSG_ERROR([wtimeout() function not found.])])
 AC_CHECK_FUNC([wtouchln], [], [AC_MSG_ERROR([wtouchln() function not found.])])
 
 dnl ----------------------------------------------------------------------------
+dnl check for inotify
+dnl ----------------------------------------------------------------------------
+
+AC_CHECK_HEADER([sys/inotify.h], [use_inotify=yes], [use_inotify=no])
+
+if test "$use_inotify" = "yes"; then
+	AC_CHECK_DECL([IN_NONBLOCK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_CLOEXEC], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_ATTRIB], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_MODIFY], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_CREATE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_DELETE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_MOVED_FROM], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_MOVED_TO], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_EXCL_UNLINK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_CLOSE_WRITE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_FUNC([inotify_init1], [], [use_inotify=no])
+	AC_CHECK_FUNC([inotify_add_watch], [], [use_inotify=no])
+	AC_CHECK_TYPE([struct inotify_event], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+
+	if test "$use_inotify" = "yes"; then
+		AC_DEFINE([HAVE_INOTIFY], [1], [inotify is available])
+	fi
+fi
+
+dnl ----------------------------------------------------------------------------
 dnl check for gnu coreutils version
 dnl ----------------------------------------------------------------------------
 
