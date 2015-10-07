@@ -72,7 +72,7 @@ fswatch_create(const char path[])
 	w->stats = trie_create();
 	if(w->stats == NULL_TRIE)
 	{
-		trie_free(w->stats);
+		trie_free_with_data(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -81,7 +81,7 @@ fswatch_create(const char path[])
 	w->fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 	if(w->fd == -1)
 	{
-		trie_free(w->stats);
+		trie_free_with_data(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -93,7 +93,7 @@ fswatch_create(const char path[])
 	if(wd == -1)
 	{
 		close(w->fd);
-		trie_free(w->stats);
+		trie_free_with_data(w->stats);
 		free(w);
 		return NULL;
 	}
@@ -106,8 +106,7 @@ fswatch_free(fswatch_t *w)
 {
 	if(w != NULL)
 	{
-		/* XXX: memory leakage! */
-		trie_free(w->stats);
+		trie_free_with_data(w->stats);
 		close(w->fd);
 		free(w);
 	}
@@ -233,7 +232,7 @@ update_file_stats(fswatch_t *w, const struct inotify_event *e, time_t now)
 struct fswatch_t
 {
 	filemon_t filemon; /* Stamp based monitoring. */
-	char *path;
+	char *path;        /* Path to the file being watched. */
 };
 
 fswatch_t *

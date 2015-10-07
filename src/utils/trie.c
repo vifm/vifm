@@ -52,6 +52,19 @@ trie_free(trie_t trie)
 	}
 }
 
+void
+trie_free_with_data(trie_t trie)
+{
+	if(trie != NULL_TRIE)
+	{
+		trie_free_with_data(trie->left);
+		trie_free_with_data(trie->right);
+		trie_free_with_data(trie->children);
+		free(trie->data);
+		free(trie);
+	}
+}
+
 int
 trie_put(trie_t trie, const char str[])
 {
