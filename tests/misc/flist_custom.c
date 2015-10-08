@@ -1,10 +1,9 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
-#include <unistd.h> /* symlink() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
