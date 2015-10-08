@@ -650,26 +650,5 @@ is_graphics_viewer(const char viewer[])
 	return (strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL);
 }
 
-int
-update_dir_mtime(FileView *view)
-{
-	int error;
-
-	if(view->watch == NULL || stroscmp(view->watched_dir, view->curr_dir) != 0)
-	{
-		if(view->watch != NULL)
-		{
-			fswatch_free(view->watch);
-		}
-
-		view->watch = fswatch_create(view->curr_dir);
-		strcpy(view->watched_dir, view->curr_dir);
-	}
-
-	(void)fswatch_changed(view->watch, &error);
-
-	return 0;
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

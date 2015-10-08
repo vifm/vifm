@@ -112,6 +112,7 @@ static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int update_dir_mtime(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
@@ -1730,6 +1731,37 @@ populate_dir_list_internal(FileView *view, int reload)
 	return 0;
 }
 
+/* Updates dir_mtime field of the view.  Returns zero on success, otherwise
+ * non-zero is returned. */
+static int
+update_dir_mtime(FileView *view)
+{
+	int error;
+	const char *const curr_dir = flist_get_dir(view);
+
+	if(view->watch == NULL || stroscmp(view->watched_dir, curr_dir) != 0)
+	{
+		if(view->watch != NULL)
+		{
+			fswatch_free(view->watch);
+		}
+
+		view->watch = fswatch_create(curr_dir);
+		if(view->watch == NULL)
+		{
+			/* This is bad, but there isn't much we can do here and this doesn't feel
+			 * like a reason to block anything else. */
+			return 0;
+		}
+
+		strcpy(view->watched_dir, curr_dir);
+	}
+
+	(void)fswatch_changed(view->watch, &error);
+
+	return error;
+}
+
 /* Checks whether currently loaded custom list of files is missing some files
  * compared to the original custom list.  Returns non-zero if so, otherwise zero
  * is returned. */
@@ -2310,7 +2342,18 @@ check_if_filelist_have_changed(FileView *view)
 		return;
 	}
 
-	changed = fswatch_changed(view->watch, &failed);
+	if(view->watch == NULL)
+	{
+		/* If watch is not initialized, try to do this, but don't fail on error. */
+
+		(void)update_dir_mtime(view);
+		failed = 0;
+		changed = (view->watch != NULL);
+	}
+	else
+	{
+		changed = fswatch_changed(view->watch, &failed);
+	}
 
 	/* Check if we still have permission to visit this directory. */
 	failed |= (os_access(view->curr_dir, X_OK) != 0);
