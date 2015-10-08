@@ -388,7 +388,7 @@ nnoremap yf :!echo %c:p | xclip %i<cr>
 " Mappings for faster renaming
 nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
-nnoremap A cw<c-w>
+nnoremap A cw
 
 " Open console in current directory
 nnoremap ,t :!xterm &<cr>
