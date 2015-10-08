@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <locale.h> /* setlocale() */
+#include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
 #include <wchar.h>
@@ -56,6 +57,19 @@ TEST(get_real_string_width_in_the_middle_b, IF(locale_works))
 	const size_t expected_len = strlen(utf8_str) - strlen(utf8_end);
 	const size_t calculated_len = utf8_strsnlen(utf8_str, 7);
 	assert_int_equal(expected_len, calculated_len);
+}
+
+TEST(length_is_less_or_equal_to_string_length, IF(locale_works))
+{
+	const char *str = "01 R\366yksopp - You Know I Have To Go (\326z"
+	                  "g\374r \326zkan 5 AM Edit).mp3";
+	const size_t len = strlen(str);
+	int i;
+
+	for(i = 0; i < len; ++i)
+	{
+		assert_true(utf8_nstrsnlen(str, i) <= i);
+	}
 }
 
 static int

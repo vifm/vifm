@@ -28,7 +28,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcslen() wcsncpy() */
-#include <wctype.h>
+#include <wctype.h> /* iswprint() */
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
@@ -572,22 +572,21 @@ void
 enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee)
 {
-	wchar_t *buf;
+	wchar_t *wcmd;
 
 	sub_mode_ptr = cb;
 	sub_mode = CLS_PROMPT;
 	sub_mode_allows_ee = allow_ee;
 
-	buf = to_wide(cmd);
-	if(buf == NULL)
+	wcmd = to_wide_force(cmd);
+	if(wcmd == NULL)
 	{
-		/* This is either memory allocation error or broken multi-byte sequence. */
-		show_error_msgf("Error", "Unicode conversion failed for: %s", cmd);
+		show_error_msg("Error", "Not enough memory");
 		return;
 	}
 
-	prepare_cmdline_mode(prompt, buf, complete);
-	free(buf);
+	prepare_cmdline_mode(prompt, wcmd, complete);
+	free(wcmd);
 }
 
 void

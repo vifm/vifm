@@ -346,7 +346,7 @@ nnoremap q :!qlmanage -p %f > /dev/null 2>&1<cr>
 " Mappings for faster renaming
 nnoremap I cw<c-a>
 nnoremap cc cw<c-u>
-nnoremap A cw<c-w>
+nnoremap A cw
 
 " Open vim to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | execute ':!vim $MYVIFMRC' | restart<cr>
