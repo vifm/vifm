@@ -2,8 +2,11 @@
 
 #include <unistd.h> /* F_OK access() chdir() */
 
+#include <string.h> /* strcpy() */
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/commands.h"
 #include "../../src/ops.h"
@@ -28,6 +31,10 @@ SETUP()
 {
 	static int max_undo_levels = 0;
 
+	cfg.cd_path = strdup("");
+	cfg.fuse_home = strdup("");
+	cfg.slow_fs_list = strdup("");
+
 	lwin.selected_files = 0;
 	lwin.list_rows = 0;
 
@@ -44,6 +51,10 @@ SETUP()
 
 TEARDOWN()
 {
+	update_string(&cfg.cd_path, NULL);
+	update_string(&cfg.fuse_home, NULL);
+	update_string(&cfg.slow_fs_list, NULL);
+
 	reset_cmds();
 	reset_undo_list();
 }
@@ -181,6 +192,18 @@ TEST(shell_invocation_works_in_udf)
 
 	free(cfg.shell);
 	cfg.shell = NULL;
+}
+
+TEST(double_cd_uses_same_base_for_rel_paths)
+{
+	assert_success(chdir(TEST_DATA_PATH));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+
+	assert_success(exec_commands("cd read rename", &lwin, CIT_COMMAND));
+
+	assert_true(paths_are_equal(lwin.curr_dir, TEST_DATA_PATH "/read"));
+	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1869,19 +1869,22 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 	return result;
 }
 
+/* Changes location of a view or both views.  Handlee multiple configurations of
+ * the command (with/without !, none/one/two arguments). */
 static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
 
-	const char *curr_dir = flist_get_dir(curr_view);
-	const char *other_dir = flist_get_dir(other_view);
+	char *const curr_dir = strdup(flist_get_dir(curr_view));
+	char *const other_dir = strdup(flist_get_dir(other_view));
 
 	if(!cfg.auto_ch_pos)
 	{
 		clean_positions_in_history(curr_view);
 		curr_stats.ch_pos = 0;
 	}
+
 	if(cmd_info->argc == 0)
 	{
 		result = cd(curr_view, curr_dir, cfg.home_dir);
@@ -1926,8 +1929,15 @@ cd_cmd(const cmd_info_t *cmd_info)
 		}
 		refresh_view_win(other_view);
 	}
+
 	if(!cfg.auto_ch_pos)
+	{
 		curr_stats.ch_pos = 1;
+	}
+
+	free(curr_dir);
+	free(other_dir);
+
 	return result;
 }
 
@@ -3656,6 +3666,8 @@ messages_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
+/* :mkdir ceates sub-directory.  :mkdir! creates chain of directories.  In
+ * second case both relative and absolute paths are allowed. */
 static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
