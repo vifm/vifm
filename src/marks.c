@@ -308,7 +308,7 @@ navigate_to_mark(FileView *view, char m)
 
 	if(is_mark_valid(mark))
 	{
-		navigate_to_file(view, mark->directory, mark->file);
+		navigate_to_file(view, mark->directory, mark->file, 1);
 		return 0;
 	}
 

@@ -15,7 +15,6 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 
-
 static void init_view(FileView *view);
 static void free_view(FileView *view);
 static int not_windows(void);

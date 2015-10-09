@@ -877,9 +877,10 @@ navigate_back(FileView *view)
 }
 
 void
-navigate_to_file(FileView *view, const char dir[], const char file[])
+navigate_to_file(FileView *view, const char dir[], const char file[],
+		int preserve_cv)
 {
-	if(flist_custom_active(view))
+	if(flist_custom_active(view) && preserve_cv)
 	{
 		/* Try to find requested element in custom list of files. */
 		if(navigate_to_file_in_custom_view(view, dir, file) == 0)
@@ -1771,8 +1772,19 @@ update_dir_mtime(FileView *view)
 static int
 custom_list_is_incomplete(const FileView *view)
 {
-	return view->custom.entry_count != 0
-	    && view->list_rows != view->custom.entry_count;
+	if(view->custom.entry_count == 0)
+	{
+		return 0;
+	}
+
+	if(view->list_rows == 1 && is_parent_dir(view->dir_entry[0].name) &&
+			!(view->custom.entry_count == 1 &&
+				is_parent_dir(view->custom.entries[0].name)))
+	{
+		return 1;
+	}
+
+	return view->list_rows != view->custom.entry_count;
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names
