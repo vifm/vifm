@@ -103,5 +103,21 @@ TEST(make_dirs_creates_sub_dirs_by_rel_path)
 	}
 }
 
+TEST(make_dirs_creates_sub_dirs_by_abs_path)
+{
+	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
+			++cfg.use_system_calls)
+	{
+		char path[] = SANDBOX_PATH "/parent/child";
+		char *paths[] = {path};
+
+		make_dirs(&lwin, paths, 1, 1);
+		assert_true(is_dir(path));
+
+		assert_success(rmdir("parent/child"));
+		assert_success(rmdir("parent"));
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
