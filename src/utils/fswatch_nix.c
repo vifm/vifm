@@ -210,8 +210,9 @@ update_file_stats(fswatch_t *w, const struct inotify_event *e, time_t now)
 	stats->count = (now - stats->last_update <= 1U) ? (stats->count + 1) : 1;
 
 	/* Files that cause relatively long sequence of events are banned for a
-	 * while. */
-	if(stats->count > HITS_TO_BAN_AFTER)
+	 * while.  Don't ban the directory itself, we don't want to miss changes of
+	 * file list. */
+	if(stats->count > HITS_TO_BAN_AFTER && e->len != 0U)
 	{
 		stats->ban_mask = e->mask;
 		stats->banned_until = now + BAN_SECS;
