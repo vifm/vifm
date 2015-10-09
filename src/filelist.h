@@ -107,8 +107,10 @@ void navigate_to(FileView *view, const char path[]);
 void navigate_back(FileView *view);
 /* Changes current directory of the view to the dir if it's possible and in case
  * of success reloads filelist of the view and sets its cursor position on the
- * file trying to ensure that it's visible. */
-void navigate_to_file(FileView *view, const char dir[], const char file[]);
+ * file trying to ensure that it's visible.  If preserve_cv is set, tries to do
+ * not reset custom view when possible. */
+void navigate_to_file(FileView *view, const char dir[], const char file[],
+		int preserve_cv);
 /* The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share

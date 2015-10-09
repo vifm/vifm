@@ -31,12 +31,24 @@ SETUP()
 {
 	static int max_undo_levels = 0;
 
+	filter_init(&lwin.local_filter.filter, 1);
+	filter_init(&lwin.manual_filter, 1);
+	filter_init(&lwin.auto_filter, 1);
+
+	filter_init(&rwin.local_filter.filter, 1);
+	filter_init(&rwin.manual_filter, 1);
+	filter_init(&rwin.auto_filter, 1);
+
 	cfg.cd_path = strdup("");
 	cfg.fuse_home = strdup("");
 	cfg.slow_fs_list = strdup("");
 
 	lwin.selected_files = 0;
+	lwin.dir_entry = NULL;
 	lwin.list_rows = 0;
+
+	rwin.dir_entry = NULL;
+	rwin.list_rows = 0;
 
 	curr_view = &lwin;
 
@@ -54,6 +66,14 @@ TEARDOWN()
 	update_string(&cfg.cd_path, NULL);
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
+
+	filter_dispose(&lwin.local_filter.filter);
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
+
+	filter_dispose(&rwin.local_filter.filter);
+	filter_dispose(&rwin.manual_filter);
+	filter_dispose(&rwin.auto_filter);
 
 	reset_cmds();
 	reset_undo_list();
@@ -199,6 +219,7 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_success(chdir(TEST_DATA_PATH));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	strcpy(rwin.curr_dir, "..");
 
 	assert_success(exec_commands("cd read rename", &lwin, CIT_COMMAND));
 

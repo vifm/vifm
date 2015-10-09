@@ -4706,6 +4706,7 @@ yank_cmd(const cmd_info_t *cmd_info)
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result == 0)
 	{
+		check_marking(curr_view, 0, NULL);
 		result = yank_files(curr_view, reg) != 0;
 	}
 

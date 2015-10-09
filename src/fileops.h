@@ -59,7 +59,7 @@ int delete_files(FileView *view, int reg, int use_trash);
  * specified register.  Returns new value for save_msg flag. */
 int delete_files_bg(FileView *view, int use_trash);
 
-/* Yanks selected files of the view into register specified by its name via reg
+/* Yanks marked files of the view into register specified by its name via reg
  * parameter.  Returns new value for save_msg. */
 int yank_files(FileView *view, int reg);
 

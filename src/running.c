@@ -134,17 +134,18 @@ follow_file(FileView *view)
 {
 	if(flist_custom_active(view))
 	{
+		/* Entry might be freed on navigation, so make sure name and origin will
+		 * remain available for the call. */
 		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 		char *const name = strdup(entry->name);
 		char *const origin = strdup(entry->origin);
-		navigate_to_file(view, origin, name);
+		navigate_to_file(view, origin, name, 0);
 		free(origin);
 		free(name);
+		return;
 	}
-	else
-	{
-		handle_file(view, FHE_RUN, FHL_FOLLOW);
-	}
+
+	handle_file(view, FHE_RUN, FHL_FOLLOW);
 }
 
 static void
