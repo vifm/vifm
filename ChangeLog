@@ -252,6 +252,8 @@
 	Fixed `:cd one two` to use current directory as base for both relative
 	paths.  Thanks to filterfalse.
 
+	Fixed ranges for :yank.  Thanks to Marius.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
