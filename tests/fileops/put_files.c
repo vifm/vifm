@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include "../../src/ui/ui.h"
-#include "../../src/utils/dynarray.h"
 #include "../../src/fileops.h"
 #include "../../src/registers.h"
 

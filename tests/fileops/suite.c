@@ -21,6 +21,11 @@ SETUP()
 
 	cfg.use_system_calls = 1;
 	cfg.slow_fs_list = strdup("");
+
+	lwin.list_rows = 0;
+	lwin.dir_entry = NULL;
+	rwin.list_rows = 0;
+	rwin.dir_entry = NULL;
 }
 
 TEARDOWN()
