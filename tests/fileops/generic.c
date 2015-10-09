@@ -56,6 +56,8 @@ TEARDOWN()
 	}
 	dynarray_free(lwin.dir_entry);
 
+	filter_dispose(&rwin.local_filter.filter);
+
 	assert_int_equal(0, chdir("../.."));
 }
 

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* unlink() */
+#include <unistd.h> /* chdir() unlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
@@ -13,11 +13,12 @@
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
+static void free_view(FileView *view);
 static int not_windows(void);
 
 SETUP()
 {
-	assert_int_equal(0, chdir(SANDBOX_PATH));
+	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
 	strcpy(lwin.curr_dir, ".");
@@ -44,15 +45,24 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		free(lwin.dir_entry[i].name);
-	}
-	dynarray_free(lwin.dir_entry);
+	free_view(&lwin);
+	free_view(&rwin);
 
 	assert_int_equal(0, chdir("../.."));
+
+	filter_dispose(&rwin.local_filter.filter);
+}
+
+static void
+free_view(FileView *view)
+{
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		free_dir_entry(view, &view->dir_entry[i]);
+	}
+	dynarray_free(view->dir_entry);
 }
 
 TEST(move_file)

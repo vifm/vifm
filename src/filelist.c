@@ -948,23 +948,12 @@ int
 change_directory(FileView *view, const char directory[])
 {
 	char dir_dup[PATH_MAX];
-	char real_path[PATH_MAX];
 	const int was_in_custom_view = flist_custom_active(view);
 	int location_changed;
 
 	if(is_dir_list_loaded(view))
 	{
 		save_view_history(view, NULL, NULL, -1);
-	}
-
-	if(cfg.chase_links)
-	{
-		if(realpath(directory, real_path) == real_path)
-		{
-			/* Do this on success only, if realpath() fails, just go with original
-			 * path. */
-			directory = real_path;
-		}
 	}
 
 	if(is_path_absolute(directory))
@@ -991,6 +980,20 @@ change_directory(FileView *view, const char directory[])
 #ifdef _WIN32
 	to_forward_slash(dir_dup);
 #endif
+
+	if(cfg.chase_links)
+	{
+		char real_path[PATH_MAX];
+		if(realpath(dir_dup, real_path) == real_path)
+		{
+			/* Do this on success only, if realpath() fails, just go with the original
+			 * path. */
+			canonicalize_path(real_path, dir_dup, sizeof(dir_dup));
+#ifdef _WIN32
+			to_forward_slash(real_path);
+#endif
+		}
+	}
 
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);

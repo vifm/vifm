@@ -237,11 +237,20 @@
 	Fixed restoring selection in custom view in presence of identically named
 	files.  Thanks to filterfalse.
 
-	Fixed navigation to file in custom view in presernce of identically named
+	Fixed navigation to file in custom view in presence of identically named
 	files there.  Thanks to filterfalse.
 
 	Fixed remapping of builtin keys that are followed by selectors (e.g.
 	`:nnoremap d y`).  Thanks to mvucBmM0.
+
+	Fixed 'chaselinks' causing invalid path resolution on going directory
+	up ("..").  Thanks to filterfalse.
+
+	Fixed :mkdir! on absolute paths, used to create relative paths anyway.
+	Thanks to filterfalse.
+
+	Fixed `:cd one two` to use current directory as base for both relative
+	paths.  Thanks to filterfalse.
 
 0.8-beta to 0.8
 

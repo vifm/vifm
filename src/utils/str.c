@@ -93,8 +93,8 @@ to_wide_force(const char s[])
 		return NULL;
 	}
 
-	/* This broken multi-byte sequence, do our best to display something
-	 * meaningful to user and allow entering the mode. */
+	/* There must be broken multi-byte sequence, do our best to convert string to
+	 * something meaningful rather than just failing. */
 
 	p = w;
 	while(*s != '\0')

@@ -3945,7 +3945,16 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	for(i = 0; i < count && !ui_cancellation_requested(); i++)
 	{
 		char full[PATH_MAX];
-		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+
+		if(is_path_absolute(names[i]))
+		{
+			copy_str(full, sizeof(full), names[i]);
+		}
+		else
+		{
+			snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+		}
+
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
 		{
 			add_operation(OP_MKDIR, cp, NULL, full, "");
