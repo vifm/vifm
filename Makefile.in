@@ -743,6 +743,11 @@ distcheck-hook:
 	mkdir -p $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 	chmod u+w $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 
+coverage: force
+	$(MAKE) -C src $@
+
+force: ;
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

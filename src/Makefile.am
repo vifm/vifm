@@ -270,12 +270,23 @@ runtests:
 	chmod +x $@_
 	mv $@_ $@
 
-CLEANFILES = runtests $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
+coverage: check
+	lcov --directory $(abs_builddir)/ --base-directory . \
+	     --capture --output-file $(abs_builddir)/lcov-all.info --config-file \
+	     $(abs_srcdir)/lcovrc --test-name unit_tests --quiet
+	lcov --remove $(abs_builddir)/lcov-all.info -o $(abs_builddir)/lcov.info \
+	     '/usr/*'
+	genhtml --output-directory $(abs_builddir)/cov-report/ \
+	     $(abs_builddir)/lcov.info --config-file $(abs_srcdir)/lcovrc \
+	     --show-details --css-file $(abs_srcdir)/gcov.css
+
+CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
              $(vifmrc_converter_OBJECTS:.o=.gcno) \
              $(vifmrc_converter_OBJECTS:.o=.gcda)
 
 distclean-local:
 	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean
+	$(RM) -r cov-report/
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
