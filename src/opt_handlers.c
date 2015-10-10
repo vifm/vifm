@@ -1017,6 +1017,7 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2])
 	}
 
 	error_encountered = 0;
+	saveptr = NULL;
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		FileType type;

@@ -75,6 +75,7 @@ parse_all(map_name_cb cn, const char str[], size_t *len, void *arg)
 		return NULL;
 	}
 
+	saveptr = NULL;
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		column_info_t info;
