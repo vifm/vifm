@@ -52,6 +52,9 @@ init_view(FileView *view)
 	view->dir_entry = NULL;
 	view->list_rows = 0;
 
+	view->custom.entry_count = 0;
+	view->custom.entries = NULL;
+
 	view->window_rows = 1;
 	view->sort[0] = SK_NONE;
 	ui_view_sort_list_ensure_well_formed(view, view->sort);
@@ -64,9 +67,19 @@ free_view(FileView *view)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		free(view->dir_entry[i].name);
+		free_dir_entry(view, &view->dir_entry[i]);
 	}
 	dynarray_free(view->dir_entry);
+
+	for(i = 0; i < view->custom.entry_count; ++i)
+	{
+		free_dir_entry(view, &view->custom.entries[i]);
+	}
+	dynarray_free(view->custom.entries);
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->manual_filter);
+	filter_dispose(&view->auto_filter);
 }
 
 TEST(custom_view_is_preserved_on_goto_mark)

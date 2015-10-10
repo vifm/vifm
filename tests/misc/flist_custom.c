@@ -112,6 +112,9 @@ TEST(reload_considers_local_filter)
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("b", lwin.dir_entry[0].name);
+
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
@@ -152,6 +155,9 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.filtered);
+
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(register_macros_are_expanded_relatively_to_orig_dir)
