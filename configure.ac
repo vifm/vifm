@@ -631,6 +631,13 @@ AC_ARG_ENABLE(coverage,
 	[coverage=$enableval],
 	[coverage=no])
 
+AC_ARG_WITH(sanitize,
+	AS_HELP_STRING(
+			[--with-sanitize=basic|thread|leak],
+			[enables sanitizers, "basic" means address and undefined sanitizers
+			 @<:@default=@:>@     ]),
+	[sanitize=$withval])
+
 if test "$extended_keys" = "yes"; then
 	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
 fi
@@ -673,6 +680,26 @@ if test "$coverage" = "yes"; then
 	CFLAGS="$CFLAGS --coverage"
 	LDFLAGS="$LDFLAGS --coverage"
 fi
+
+dnl Handle sanitizers options
+if test -n "$sanitize" -a "$sanitize" != "basic" -a "$sanitize" != "thread" -a \
+    "$sanitize" != "leak"; then
+    AC_MSG_ERROR([Unknown type of sanitizing: $sanitize])
+fi
+if test "$sanitize" = "basic"; then
+    SANITIZERS_CFLAGS="-fsanitize=address -fsanitize=undefined"
+fi
+if test "$sanitize" = "thread"; then
+    SANITIZERS_CFLAGS="-fsanitize=thread -fPIC"
+    LDFLAGS="$LDFLAGS -pie"
+fi
+if test "$sanitize" = "leak"; then
+    LDFLAGS="$LDFLAGS -fsanitize=leak"
+fi
+dnl The flags should be available separately for fetching on building tests.
+AC_SUBST([SANITIZERS_CFLAGS])
+CFLAGS="$CFLAGS $SANITIZERS_CFLAGS"
+LDFLAGS="$LDFLAGS $SANITIZERS_CFLAGS"
 
 dnl Include config.h in all translation units implicitly
 CFLAGS="$CFLAGS -include ../config.h"

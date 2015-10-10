@@ -68,6 +68,8 @@
 	Added :pu[t] command that inserts files into current directory.  Thanks to
 	mvucBmM0.
 
+	Added --with-sanitize=basic|thread|leak option to configure script.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
