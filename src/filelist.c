@@ -112,7 +112,7 @@ static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
-static int update_dir_mtime(FileView *view);
+static int update_dir_watcher(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
@@ -1726,7 +1726,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	fview_list_updated(view);
 
-	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
+	if(update_dir_watcher(view) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
 		return 1;
@@ -1735,10 +1735,10 @@ populate_dir_list_internal(FileView *view, int reload)
 	return 0;
 }
 
-/* Updates dir_mtime field of the view.  Returns zero on success, otherwise
+/* Updates directory watcher of the view.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-update_dir_mtime(FileView *view)
+update_dir_watcher(FileView *view)
 {
 	int error;
 	const char *const curr_dir = flist_get_dir(view);
@@ -2361,7 +2361,7 @@ check_if_filelist_have_changed(FileView *view)
 	{
 		/* If watch is not initialized, try to do this, but don't fail on error. */
 
-		(void)update_dir_mtime(view);
+		(void)update_dir_watcher(view);
 		failed = 0;
 		changed = (view->watch != NULL);
 	}
