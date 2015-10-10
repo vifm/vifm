@@ -1758,7 +1758,7 @@ update_dir_mtime(FileView *view)
 			return 0;
 		}
 
-		strcpy(view->watched_dir, curr_dir);
+		copy_str(view->watched_dir, sizeof(view->watched_dir), curr_dir);
 	}
 
 	(void)fswatch_changed(view->watch, &error);
