@@ -492,6 +492,7 @@ if test "$use_inotify" = "yes"; then
 	AC_CHECK_DECL([IN_MOVED_TO], [], [use_inotify=no], [[#include <sys/inotify.h>]])
 	AC_CHECK_DECL([IN_EXCL_UNLINK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
 	AC_CHECK_DECL([IN_CLOSE_WRITE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+	AC_CHECK_DECL([IN_Q_OVERFLOW], [], [use_inotify=no], [[#include <sys/inotify.h>]])
 	AC_CHECK_FUNC([inotify_init1], [], [use_inotify=no])
 	AC_CHECK_FUNC([inotify_add_watch], [], [use_inotify=no])
 	AC_CHECK_TYPE([struct inotify_event], [], [use_inotify=no], [[#include <sys/inotify.h>]])

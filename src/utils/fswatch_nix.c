@@ -166,7 +166,7 @@ update_file_stats(fswatch_t *w, const struct inotify_event *e, time_t now)
 	enum { HITS_TO_BAN_AFTER = 5, BAN_SECS = 5 };
 
 	const uint32_t IMPORTANT_EVENTS = IN_CREATE | IN_DELETE | IN_MOVED_FROM
-	                                | IN_MOVED_TO;
+	                                | IN_MOVED_TO | IN_Q_OVERFLOW;
 
 	const char *const fname = (e->len == 0U) ? "." : e->name;
 	void *data;

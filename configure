@@ -8831,6 +8831,14 @@ else
   use_inotify=no
 fi
 
+	ac_fn_c_check_decl "$LINENO" "IN_Q_OVERFLOW" "ac_cv_have_decl_IN_Q_OVERFLOW" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_Q_OVERFLOW" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
 	ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
 if test "x$ac_cv_func_inotify_init1" = xyes; then :
 
