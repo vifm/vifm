@@ -140,10 +140,8 @@ status_bar_message_i(const char message[], int error)
 	static int err;
 
 	int len;
-	const char *p, *q;
 	int lines;
 	int status_bar_lines;
-	size_t screen_length;
 	const char *out_msg;
 	char truncated_msg[2048];
 
@@ -169,32 +167,11 @@ status_bar_message_i(const char message[], int error)
 		return;
 	}
 
-	p = msg;
-	q = msg - 1;
-	status_bar_lines = 0;
 	len = getmaxx(stdscr);
-	while((q = strchr(q + 1, '\n')) != NULL)
-	{
-		status_bar_lines += DIV_ROUND_UP(q - p, len );
-		if(q == p)
-		{
-			++status_bar_lines;
-		}
-		p = q + 1;
-	}
-	if(*p == '\0')
-	{
-		++status_bar_lines;
-	}
-	screen_length = utf8_strsw(p);
-	status_bar_lines += DIV_ROUND_UP(screen_length, len);
-	if(status_bar_lines == 0)
-	{
-		status_bar_lines = 1;
-	}
+	status_bar_lines = count_lines(msg, len);
 
 	lines = status_bar_lines;
-	if(status_bar_lines > 1 || screen_length > (size_t)getmaxx(status_bar))
+	if(status_bar_lines > 1 || utf8_strsw(msg) > (size_t)getmaxx(status_bar))
 	{
 		++lines;
 	}

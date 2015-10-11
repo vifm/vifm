@@ -277,6 +277,10 @@ void replace_char(char str[], char from, char to);
  *   } */
 char * split_and_get(char str[], char sep, char **state);
 
+/* Counts lines in the text.  Considers wrapping aroung max_width column unless
+ * it's equal to INT_MAX. */
+int count_lines(const char text[], int max_width);
+
 #ifdef _WIN32
 
 /* Same as strstr(), but in case insensitive way. */

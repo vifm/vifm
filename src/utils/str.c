@@ -901,7 +901,53 @@ split_and_get(char str[], char sep, char **state)
 	return (*str == '\0') ? NULL : str;
 }
 
-#if defined(_WIN32)
+int
+count_lines(const char text[], int max_width)
+{
+	const char *start, *end;
+	size_t screen_width;
+	int nlines;
+
+	nlines = 0;
+
+	start = text;
+	end = text - 1;
+	while((end = strchr(end + 1, '\n')) != NULL)
+	{
+		if(max_width == INT_MAX)
+		{
+			++nlines;
+		}
+		else
+		{
+			nlines += DIV_ROUND_UP(end - start, max_width);
+			if(start == end)
+			{
+				++nlines;
+			}
+		}
+
+		start = end + 1;
+	}
+	if(*start == '\0' || max_width == INT_MAX)
+	{
+		++nlines;
+	}
+	else
+	{
+		screen_width = utf8_strsw(start);
+		nlines += DIV_ROUND_UP(screen_width, max_width);
+	}
+
+	if(nlines == 0)
+	{
+		nlines = 1;
+	}
+
+	return nlines;
+}
+
+#ifdef _WIN32
 
 char *
 strcasestr(const char haystack[], const char needle[])
