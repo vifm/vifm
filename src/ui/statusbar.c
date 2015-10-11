@@ -28,6 +28,7 @@
 #include "../cfg/config.h"
 #include "../engine/mode.h"
 #include "../modes/modes.h"
+#include "../modes/more.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
@@ -196,7 +197,8 @@ status_bar_message_i(const char message[], int error)
 
 	if(lines > getmaxy(stdscr))
 	{
-		lines = getmaxy(stdscr);
+		modmore_enter(msg);
+		return;
 	}
 
 	(void)ui_stat_reposition(lines);

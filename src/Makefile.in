@@ -115,13 +115,13 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
 	modes/dialogs/sort_dialog.$(OBJEXT) modes/cmdline.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
-	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
-	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	ui/cancellation.$(OBJEXT) ui/color_manager.$(OBJEXT) \
-	ui/color_scheme.$(OBJEXT) ui/column_view.$(OBJEXT) \
-	ui/escape.$(OBJEXT) ui/fileview.$(OBJEXT) \
-	ui/quickview.$(OBJEXT) ui/statusbar.$(OBJEXT) \
-	ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
+	modes/modes.$(OBJEXT) modes/more.$(OBJEXT) \
+	modes/normal.$(OBJEXT) modes/view.$(OBJEXT) \
+	modes/visual.$(OBJEXT) ui/cancellation.$(OBJEXT) \
+	ui/color_manager.$(OBJEXT) ui/color_scheme.$(OBJEXT) \
+	ui/column_view.$(OBJEXT) ui/escape.$(OBJEXT) \
+	ui/fileview.$(OBJEXT) ui/quickview.$(OBJEXT) \
+	ui/statusbar.$(OBJEXT) ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
@@ -454,6 +454,7 @@ vifm_SOURCES = \
 	modes/file_info.c modes/file_info.h \
 	modes/menu.c modes/menu.h \
 	modes/modes.c modes/modes.h \
+	modes/more.c modes/more.h \
 	modes/normal.c modes/normal.h \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
@@ -814,6 +815,8 @@ modes/menu.$(OBJEXT): modes/$(am__dirstamp) \
 	modes/$(DEPDIR)/$(am__dirstamp)
 modes/modes.$(OBJEXT): modes/$(am__dirstamp) \
 	modes/$(DEPDIR)/$(am__dirstamp)
+modes/more.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
 modes/normal.$(OBJEXT): modes/$(am__dirstamp) \
 	modes/$(DEPDIR)/$(am__dirstamp)
 modes/view.$(OBJEXT): modes/$(am__dirstamp) \
@@ -995,6 +998,7 @@ mostlyclean-compile:
 	-rm -f modes/file_info.$(OBJEXT)
 	-rm -f modes/menu.$(OBJEXT)
 	-rm -f modes/modes.$(OBJEXT)
+	-rm -f modes/more.$(OBJEXT)
 	-rm -f modes/normal.$(OBJEXT)
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
@@ -1125,6 +1129,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/file_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/modes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/more.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/normal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/visual.Po@am__quote@
