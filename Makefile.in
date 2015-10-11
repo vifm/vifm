@@ -175,6 +175,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL_PROG = @PERL_PROG@
+SANITIZERS_CFLAGS = @SANITIZERS_CFLAGS@
 SED_PROG = @SED_PROG@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -742,6 +743,11 @@ dist-hook:
 distcheck-hook:
 	mkdir -p $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 	chmod u+w $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
+
+coverage: force
+	$(MAKE) -C src $@
+
+force: ;
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

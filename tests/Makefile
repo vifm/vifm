@@ -63,6 +63,9 @@ ifdef unix_env
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
     CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
     CFLAGS  += -I/usr/include/ncursesw
+
+    CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' \
+               $(B)../src/Makefile)
 endif
 ifdef win_env
     LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)

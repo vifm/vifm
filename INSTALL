@@ -52,6 +52,9 @@ when building with Cygwin):
 
       --[disable]/enable-coverage - enables code coverage generation.
 
+      --with-sanitize=basic|thread|leak - enables address and undefined, thread
+          or leaks sanitizers respecitively.
+
       --without/[with]-gtk - use GTK+ to determine mimetypes if available.
 
       --without/[with]-libmagic - use libmagic to determine mimetypes if

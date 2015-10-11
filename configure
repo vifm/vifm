@@ -626,6 +626,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+SANITIZERS_CFLAGS
 IN_GIT_REPO
 GIT_PROG
 VIM_PROG
@@ -740,6 +741,7 @@ enable_desktop_files
 enable_remote_cmds
 enable_developer
 enable_coverage
+with_sanitize
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1395,6 +1397,9 @@ Optional Packages:
   --with-X11              use libX11 to determine terminal emulator title
                           [default=yes]
   --with-dyn-X11          load libX11 dynamically [default=yes]
+  --with-sanitize=basic|thread|leak
+                          enables sanitizers, "basic" means address and
+                          undefined sanitizers [default=]
 
 Some influential environment variables:
   CC          C compiler command
@@ -8831,6 +8836,14 @@ else
   use_inotify=no
 fi
 
+	ac_fn_c_check_decl "$LINENO" "IN_Q_OVERFLOW" "ac_cv_have_decl_IN_Q_OVERFLOW" "#include <sys/inotify.h>
+"
+if test "x$ac_cv_have_decl_IN_Q_OVERFLOW" = xyes; then :
+
+else
+  use_inotify=no
+fi
+
 	ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
 if test "x$ac_cv_func_inotify_init1" = xyes; then :
 
@@ -9134,6 +9147,13 @@ else
 fi
 
 
+
+# Check whether --with-sanitize was given.
+if test "${with_sanitize+set}" = set; then :
+  withval=$with_sanitize; sanitize=$withval
+fi
+
+
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
@@ -9298,6 +9318,24 @@ if test "$coverage" = "yes"; then
 	CFLAGS="$CFLAGS --coverage"
 	LDFLAGS="$LDFLAGS --coverage"
 fi
+
+if test -n "$sanitize" -a "$sanitize" != "basic" -a "$sanitize" != "thread" -a \
+    "$sanitize" != "leak"; then
+    as_fn_error $? "Unknown type of sanitizing: $sanitize" "$LINENO" 5
+fi
+if test "$sanitize" = "basic"; then
+    SANITIZERS_CFLAGS="-fsanitize=address -fsanitize=undefined"
+fi
+if test "$sanitize" = "thread"; then
+    SANITIZERS_CFLAGS="-fsanitize=thread -fPIC"
+    LDFLAGS="$LDFLAGS -pie"
+fi
+if test "$sanitize" = "leak"; then
+    LDFLAGS="$LDFLAGS -fsanitize=leak"
+fi
+
+CFLAGS="$CFLAGS $SANITIZERS_CFLAGS"
+LDFLAGS="$LDFLAGS $SANITIZERS_CFLAGS"
 
 CFLAGS="$CFLAGS -include ../config.h"
 

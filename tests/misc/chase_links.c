@@ -72,6 +72,10 @@ free_view(FileView *view)
 		free(view->dir_entry[i].name);
 	}
 	dynarray_free(view->dir_entry);
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->manual_filter);
+	filter_dispose(&view->auto_filter);
 }
 
 TEST(link_is_not_resolved_by_default, IF(not_windows))

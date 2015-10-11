@@ -6,9 +6,11 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/commands.h"
+#include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
@@ -22,6 +24,8 @@ static const cmd_add_t commands[] = {
 	{ .name = "onearg",  .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 0,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 1, .max_args = 1, .bg = 0, },
 };
+
+static void free_view(FileView *view);
 
 static int called;
 static int bg;
@@ -67,17 +71,35 @@ TEARDOWN()
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
 
-	filter_dispose(&lwin.local_filter.filter);
-	filter_dispose(&lwin.manual_filter);
-	filter_dispose(&lwin.auto_filter);
-
-	filter_dispose(&rwin.local_filter.filter);
-	filter_dispose(&rwin.manual_filter);
-	filter_dispose(&rwin.auto_filter);
+	free_view(&lwin);
+	free_view(&rwin);
 
 	reset_cmds();
 	reset_undo_list();
 }
+
+static void
+free_view(FileView *view)
+{
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		free_dir_entry(view, &view->dir_entry[i]);
+	}
+	dynarray_free(view->dir_entry);
+
+	for(i = 0; i < view->custom.entry_count; ++i)
+	{
+		free_dir_entry(view, &view->custom.entries[i]);
+	}
+	dynarray_free(view->custom.entries);
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->manual_filter);
+	filter_dispose(&view->auto_filter);
+}
+
 
 static int
 builtin_cmd(const cmd_info_t* cmd_info)

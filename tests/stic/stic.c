@@ -514,7 +514,8 @@ int run_tests(stic_void_void tests)
 	printf("\n");
 	if (sea_tests_failed > 0) {
 		char s[100];
-		snprintf(s, sizeof(s), "Failed %d checks", sea_tests_failed);
+		snprintf(s, sizeof(s), "Failed %d check%s", sea_tests_failed,
+				sea_tests_failed == 1 ? "" : "s");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	else

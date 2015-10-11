@@ -1,5 +1,7 @@
 language: c
 
+sudo: false
+
 env:
   global:
     - secure: "E4XPm7AOr/3w6JmeAh41CYGvHnB2KfpOzjmT0o/rzwCfXbLQd+FW/wNHI3eEjhNP9uN4OAc6Gk6KcxVRV+UUvs5nzhHyu4QkOEp6l/lHOeEmJBS+NpN1a+HdAj6BAc8vcfmWvQHOHtIgnykyEyhaVpC4eB3K/ZfSu8nQQYLaZqw="
@@ -7,7 +9,7 @@ env:
 
 script:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
-     sudo pip install cpp-coveralls &&
+     pip install --user cpp-coveralls &&
      autoreconf && (
        if [ "$CC" = gcc ]; then
          ./configure --enable-coverage;
@@ -34,12 +36,19 @@ notifications:
       - xaizek@openmailbox.org
 
 addons:
+  apt:
+    packages:
+      - python-pip
   coverity_scan:
     project:
       name: ksteen/vifm
-      version: 0.7.8
+      version: 0.8
       description: "Build submitted via Travis CI"
     notification_email: xaizek@openmailbox.org
-    build_command_prepend: ./configure --enable-remote-cmds
+    build_command_prepend: ./configure
     build_command: make -j 3
     branch_pattern: coverity-scan
+
+cache:
+  directories:
+    - $HOME/.cache/pip
