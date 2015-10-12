@@ -214,6 +214,8 @@ get_text_beginning(void)
 static void
 draw_all(const char text[])
 {
+	int attr;
+
 	/* Clean up everything. */
 	werase(menu_win);
 	werase(status_bar);
@@ -223,6 +225,8 @@ draw_all(const char text[])
 	wprint(menu_win, text);
 
 	/* Draw status line. */
+	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 	checked_wmove(status_bar, 0, 0);
 	mvwprintw(status_bar, 0, 0, "-- More -- %d-%d/%d", curr_vline + 1,
 			curr_vline + viewport_height, nvlines);
