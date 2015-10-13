@@ -186,8 +186,9 @@ modmore_redraw(void)
 	}
 
 	viewport_width = getmaxx(menu_win);
-	viewport_height = getmaxy(menu_win) - 1;
+	viewport_height = getmaxy(menu_win);
 	calc_vlines_wrapped();
+	goto_vline(curr_vline);
 
 	draw_all(get_text_beginning());
 
@@ -229,7 +230,7 @@ draw_all(const char text[])
 	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 	checked_wmove(status_bar, 0, 0);
 	mvwprintw(status_bar, 0, 0, "-- More -- %d-%d/%d", curr_vline + 1,
-			curr_vline + viewport_height, nvlines);
+			MIN(nvlines, curr_vline + viewport_height), nvlines);
 
 	/* Inform curses of the changes. */
 	wnoutrefresh(menu_win);
