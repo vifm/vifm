@@ -34,22 +34,30 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "cmdline.h"
 #include "modes.h"
 
 /* Provide more readable definitions of key codes. */
 
 #define WK_CTRL_c L"\x03"
+#define WK_CTRL_j L"\x0a"
 #define WK_CTRL_l L"\x0c"
 #define WK_CTRL_m L"\x0d"
 
+#define WK_COLON L":"
+#define WK_ESCAPE L"\x1b"
+#define WK_RETURN WK_CTRL_m
+#define WK_SPACE L" "
+
 #define WK_G L"G"
+#define WK_b L"b"
+#define WK_d L"d"
+#define WK_f L"f"
 #define WK_g L"g"
 #define WK_j L"j"
 #define WK_k L"k"
 #define WK_q L"q"
-
-#define WK_RETURN WK_CTRL_m
-#define WK_ESCAPE L"\x1b"
+#define WK_u L"u"
 
 static void calc_vlines_wrapped(void);
 static void leave_more_mode(void);
@@ -57,10 +65,15 @@ static const char * get_text_beginning(void);
 static void draw_all(const char text[]);
 static void cmd_leave(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_bottom(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_top(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_down_line(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_up_line(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_down_screen(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_up_screen(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_down_page(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_up_page(key_info_t key_info, keys_info_t *keys_info);
 static void goto_vline(int line);
 static void goto_vline_below(int by);
 static void goto_vline_above(int by);
@@ -89,14 +102,33 @@ static int viewport_height;
 /* List of builtin keys. */
 static keys_add_info_t builtin_keys[] = {
 	{WK_CTRL_c, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
+	{WK_CTRL_j, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
 	{WK_CTRL_l, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_ctrl_l}}},
-	{WK_RETURN, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
+
+	{WK_COLON,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_colon}}},
 	{WK_ESCAPE, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_G,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_G}}},
-	{WK_g,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_g}}},
-	{WK_j,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_j}}},
-	{WK_k,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_k}}},
+	{WK_RETURN, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
+	{WK_SPACE,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
+
+	{WK_G,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
+	{WK_b,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
+	{WK_d,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_page}}},
+	{WK_f,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
+	{WK_g,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
+	{WK_j,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
+	{WK_k,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
 	{WK_q,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
+	{WK_u,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_page}}},
+
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
+	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
+	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
+	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
+	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
+	{{KEY_NPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
+	{{KEY_PPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
+#endif /* ENABLE_EXTENDED_KEYS */
 };
 
 void
@@ -184,6 +216,7 @@ modmore_redraw(void)
 	{
 		return;
 	}
+	wresize(status_bar, 1, getmaxx(stdscr));
 
 	viewport_width = getmaxx(menu_win);
 	viewport_height = getmaxy(menu_win);
@@ -256,32 +289,68 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 	modmore_redraw();
 }
 
+/* Switches to command-line mode. */
+static void
+cmd_colon(key_info_t key_info, keys_info_t *keys_info)
+{
+	leave_more_mode();
+	enter_cmdline_mode(CLS_COMMAND, L"", NULL);
+}
+
 /* Navigate to the bottom. */
 static void
-cmd_G(key_info_t key_info, keys_info_t *keys_info)
+cmd_bottom(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_vline(INT_MAX);
 }
 
 /* Navigate to the top. */
 static void
-cmd_g(key_info_t key_info, keys_info_t *keys_info)
+cmd_top(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_vline(0);
 }
 
 /* Go one line below. */
 static void
-cmd_j(key_info_t key_info, keys_info_t *keys_info)
+cmd_down_line(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_vline(curr_vline + 1);
 }
 
-/* Go one line abbove. */
+/* Go one line above. */
 static void
-cmd_k(key_info_t key_info, keys_info_t *keys_info)
+cmd_up_line(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_vline(curr_vline - 1);
+}
+
+/* Go one screen below. */
+static void
+cmd_down_screen(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_vline(curr_vline + viewport_height);
+}
+
+/* Go one screen above. */
+static void
+cmd_up_screen(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_vline(curr_vline - viewport_height);
+}
+
+/* Go one page (half of the screen) below. */
+static void
+cmd_down_page(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_vline(curr_vline + viewport_height/2);
+}
+
+/* Go one page (half of the screen) above. */
+static void
+cmd_up_page(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_vline(curr_vline - viewport_height/2);
 }
 
 /* Navigates to the specified virtual line taking care of values that are out of
