@@ -962,7 +962,6 @@ static char *
 gen_term_multiplexer_cmd(const char cmd[], int pause)
 {
 	char *title_arg;
-	char *escaped_sh;
 	char *raw_shell_cmd;
 	char *escaped_shell_cmd;
 	char *shell_cmd = NULL;
@@ -974,8 +973,6 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 		return NULL;
 	}
 
-	escaped_sh = shell_like_escape(cfg.shell, 0);
-
 	title_arg = gen_term_multiplexer_title_arg(cmd);
 
 	raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
@@ -983,7 +980,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		char *const arg = format_str("%s -c %s", escaped_sh, escaped_shell_cmd);
+		char *const arg = format_str("%s -c %s", cfg.shell, escaped_shell_cmd);
 		char *const escaped_arg = shell_like_escape(arg, 0);
 
 		shell_cmd = format_str("tmux new-window %s %s", title_arg, escaped_arg);
@@ -995,7 +992,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	{
 		set_pwd_in_screen(curr_view->curr_dir);
 
-		shell_cmd = format_str("screen %s %s -c %s", title_arg, escaped_sh,
+		shell_cmd = format_str("screen %s %s -c %s", title_arg, cfg.shell,
 				escaped_shell_cmd);
 	}
 	else
@@ -1006,7 +1003,6 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	free(escaped_shell_cmd);
 	free(raw_shell_cmd);
 	free(title_arg);
-	free(escaped_sh);
 
 	return shell_cmd;
 }
@@ -1290,9 +1286,9 @@ output_to_nowhere(const char cmd[])
 static void
 run_in_split(const FileView *view, const char cmd[])
 {
-	const char *const cmd_to_run = (cmd == NULL) ? cfg.shell : cmd;
-
-	char *const escaped_cmd = shell_like_escape(cmd_to_run, 0);
+	char *const escaped_cmd = (cmd == NULL)
+	                        ? strdup(cfg.shell)
+	                        : shell_like_escape(cmd, 0);
 
 	setup_shellout_env();
 
