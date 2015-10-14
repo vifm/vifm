@@ -121,7 +121,7 @@ const char * substitute_in_name(const char name[], const char pattern[],
 
 /* Changes case of all letters in names of marked files of the view.  Returns
  * new value for save_msg flag. */
-int change_case(FileView *view, int toupper);
+int change_case(FileView *view, int to_upper);
 
 /* Performs copy/moves-like operation on marked files.  Returns new value for
  * save_msg flag. */

@@ -489,7 +489,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		char cmd[6 + PATH_MAX*2 + 1];
 		const int cancellable = data == NULL;
 
-		if(conflict_action == CA_FAIL && os_lstat(dst, &st) == 0)
+		if(conflict_action == CA_FAIL && os_lstat(dst, &st) == 0 &&
+				!is_case_change(src, dst))
 		{
 			return -1;
 		}

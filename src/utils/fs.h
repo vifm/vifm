@@ -102,10 +102,6 @@ int create_path(const char dir_name[], mode_t mode);
  * is returned. */
 int symlinks_available(void);
 
-/* Whether paths are case insensitive.  Returns non-zero if so, otherwise zero
- * is returned. */
-int case_insensitive_paths(void);
-
 /* Whether file rename-with-replace (deletion of file at destination) is
  * supported and atomic.  Returns non-zero if so, otherwise zero is returned. */
 int has_atomic_file_replace(void);

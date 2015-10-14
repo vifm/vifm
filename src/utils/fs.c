@@ -31,7 +31,7 @@
 
 #include <sys/stat.h> /* S_* statbuf */
 #include <sys/types.h> /* size_t mode_t */
-#include <unistd.h> /* getcwd() readlink() */
+#include <unistd.h> /* getcwd() pathconf() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
@@ -51,6 +51,7 @@
 static int is_dir_fast(const char path[]);
 static int path_exists_internal(const char path[], const char filename[],
 		int deref);
+static int case_sensitive_paths(const char at[]);
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
@@ -425,16 +426,6 @@ symlinks_available(void)
 }
 
 int
-case_insensitive_paths(void)
-{
-#ifndef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
-}
-
-int
 has_atomic_file_replace(void)
 {
 #ifndef _WIN32
@@ -681,12 +672,26 @@ are_on_the_same_fs(const char s[], const char t[])
 int
 is_case_change(const char src[], const char dst[])
 {
-	if(!case_insensitive_paths())
+	if(case_sensitive_paths(src))
 	{
 		return 0;
 	}
 
 	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
+}
+
+/* Whether paths are case sensitive at specified location.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+case_sensitive_paths(const char at[])
+{
+#if HAVE_DECL__PC_CASE_SENSITIVE
+	return pathconf(at, _PC_CASE_SENSITIVE) != 0;
+#elif !defined(_WIN32)
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 int
