@@ -22,6 +22,10 @@
    you don't. */
 #undef HAVE_DECL_MAGIC_MIME_TYPE
 
+/* Define to 1 if you have the declaration of `_PC_CASE_SENSITIVE', and to 0
+   if you don't. */
+#undef HAVE_DECL__PC_CASE_SENSITIVE
+
 /* Define if file program present */
 #undef HAVE_FILE_PROG
 

@@ -1464,7 +1464,8 @@ check_file_rename(const char dir[], const char old[], const char new[],
 		return -1;
 	}
 
-	if(path_exists_at(dir, new, DEREF) && stroscmp(old, new) != 0)
+	if(path_exists_at(dir, new, DEREF) && stroscmp(old, new) != 0 &&
+			!is_case_change(old, new))
 	{
 		switch(signal_type)
 		{

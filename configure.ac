@@ -169,6 +169,7 @@ AC_CHECK_FUNC([memmove], [], [AC_MSG_ERROR([memmove() function not found.])])
 AC_CHECK_FUNC([memset], [], [AC_MSG_ERROR([memset() function not found.])])
 AC_CHECK_FUNC([mkdir], [], [AC_MSG_ERROR([mkdir() function not found.])])
 AC_CHECK_FUNC([opendir], [], [AC_MSG_ERROR([opendir() function not found.])])
+AC_CHECK_FUNC([pathconf], [], [AC_MSG_ERROR([pathconf() function not found.])])
 AC_CHECK_FUNC([pause], [], [AC_MSG_ERROR([pause() function not found.])])
 AC_CHECK_FUNC([pclose], [], [AC_MSG_ERROR([pclose() function not found.])])
 AC_CHECK_FUNC([perror], [], [AC_MSG_ERROR([perror() function not found.])])
@@ -246,6 +247,8 @@ AC_CHECK_FUNC([wcstol], [], [AC_MSG_ERROR([wcstol() function not found.])])
 AC_CHECK_FUNC([wcstombs], [], [AC_MSG_ERROR([wcstombs() function not found.])])
 AC_CHECK_FUNC([wcswidth], [], [AC_MSG_ERROR([wcswidth() function not found.])])
 AC_CHECK_FUNC([wcwidth], [], [AC_MSG_ERROR([wcwidth() function not found.])])
+
+AC_CHECK_DECLS([_PC_CASE_SENSITIVE], [], [], [[#include <unistd.h>]])
 
 dnl Check for regex.h header, its functions, types and macros.
 AC_CHECK_HEADER([regex.h], [], [AC_MSG_ERROR([regex.h header not found.])])

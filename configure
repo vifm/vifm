@@ -6800,6 +6800,13 @@ else
   as_fn_error $? "opendir() function not found." "$LINENO" 5
 fi
 
+ac_fn_c_check_func "$LINENO" "pathconf" "ac_cv_func_pathconf"
+if test "x$ac_cv_func_pathconf" = xyes; then :
+
+else
+  as_fn_error $? "pathconf() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "pause" "ac_cv_func_pause"
 if test "x$ac_cv_func_pause" = xyes; then :
 
@@ -7326,6 +7333,19 @@ if test "x$ac_cv_func_wcwidth" = xyes; then :
 else
   as_fn_error $? "wcwidth() function not found." "$LINENO" 5
 fi
+
+
+ac_fn_c_check_decl "$LINENO" "_PC_CASE_SENSITIVE" "ac_cv_have_decl__PC_CASE_SENSITIVE" "#include <unistd.h>
+"
+if test "x$ac_cv_have_decl__PC_CASE_SENSITIVE" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL__PC_CASE_SENSITIVE $ac_have_decl
+_ACEOF
 
 
 ac_fn_c_check_header_mongrel "$LINENO" "regex.h" "ac_cv_header_regex_h" "$ac_includes_default"

@@ -151,6 +151,8 @@
 	Assume UTF-8 sequences can be broken.  Thanks to Svyatoslav Mishyn (a.k.a.
 	juef).
 
+	Check file system sensitivity on OS X.  Thanks to loongw.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
