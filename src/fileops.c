@@ -2981,7 +2981,7 @@ check_rename(const char old_fname[], const char new_fname[], char **dest,
 }
 
 int
-change_case(FileView *view, int toupper)
+change_case(FileView *view, int to_upper)
 {
 	char **dest;
 	int ndest;
@@ -3005,7 +3005,7 @@ change_case(FileView *view, int toupper)
 
 		/* Ignore too small buffer errors by not caring about part that didn't
 		 * fit. */
-		if(toupper)
+		if(to_upper)
 		{
 			(void)str_to_upper(old_fname, new_fname, sizeof(new_fname));
 		}
@@ -3042,7 +3042,7 @@ change_case(FileView *view, int toupper)
 	}
 	else
 	{
-		save_msg = rename_marked(view, toupper ? "gU" : "gu", NULL, NULL, dest);
+		save_msg = rename_marked(view, to_upper ? "gU" : "gu", NULL, NULL, dest);
 	}
 
 	free_string_array(dest, ndest);
