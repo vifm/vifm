@@ -2861,7 +2861,8 @@ shell sh
 type: string
 default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 
-Full path to the shell to use to run external commands.
+Full path to the shell to use to run external commands.  On *nix a shell
+argument can be supplied.
 
                                                *vifm-'shortmess'* *vifm-'shm'*
 shortmess shm

@@ -134,7 +134,8 @@ run_in_shell_no_cls(char command[])
 		signal(SIGINT, SIG_DFL);
 		(void)set_sigchld(0);
 
-		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
+		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
+				environ);
 		_Exit(127);
 	}
 
@@ -260,8 +261,16 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 		}
 	}
 
-	execvp(cfg.shell, make_execv_array(cfg.shell, cmd));
+	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd));
 	_Exit(127);
+}
+
+char *
+get_execv_path(char shell[])
+{
+	static char name[NAME_MAX];
+	(void)extract_cmd_name(shell, 0, sizeof(name), name);
+	return name;
 }
 
 char **
@@ -282,18 +291,28 @@ make_execv_array(char shell[], char cmd[])
 	const size_t npieces = 1U;
 #endif
 
-	char **args = reallocarray(NULL, 3 + npieces + 1, sizeof(*args));
+	char name[NAME_MAX];
+
+	char **args = reallocarray(NULL, 4 + npieces + 1, sizeof(*args));
 	char *eval_cmd;
 	size_t len;
 	size_t i;
 
+	char *const sh_arg = extract_cmd_name(shell, 0, sizeof(name), name);
+	const int with_sh_arg = (*sh_arg != '\0');
+
 	/* Don't use eval hack unless necessary. */
 	if(npieces == 1)
 	{
-		args[0] = shell;
-		args[1] = "-c";
-		args[2] = cmd;
-		args[3] = NULL;
+		i = 0U;
+		args[i++] = shell;
+		if(with_sh_arg)
+		{
+			args[i++] = sh_arg;
+		}
+		args[i++] = "-c";
+		args[i++] = cmd;
+		args[i++] = NULL;
 		return args;
 	}
 
@@ -314,17 +333,21 @@ make_execv_array(char shell[], char cmd[])
 		c = cmd[safe_arg_len];
 		cmd[safe_arg_len] = '\0';
 
-		args[3 + i] = strdup(cmd);
+		args[(with_sh_arg ? 4 : 3) + i] = strdup(cmd);
 
 		cmd[safe_arg_len] = c;
 		cmd += safe_arg_len;
 	}
 	(void)strappend(&eval_cmd, &len, "\"");
 
-	args[0] = shell;
-	args[1] = "-c";
-	args[2] = eval_cmd;
-	args[3 + npieces] = NULL;
+	args[i++] = shell;
+	if(with_sh_arg)
+	{
+		args[i++] = sh_arg;
+	}
+	args[i++] = "-c";
+	args[i++] = eval_cmd;
+	args[i++ + npieces] = NULL;
 
 	return args;
 }

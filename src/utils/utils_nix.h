@@ -40,6 +40,10 @@ int get_proc_exit_status(pid_t pid);
  * and stderr are redirected to the pipe. */
 void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, char cmd[]);
 
+/* Extracts name of the shell to be used with execv*() function.  Returns
+ * pointer to statically allocated buffer. */
+char * get_execv_path(char shell[]);
+
 /* Creates array to be passed into one of execv*() functions.  To be used by
  * forked process.  Returns newly allocated array with some strings allocated,
  * some as is.  Memory management shouldn't matter at this point, we either
