@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 01
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -9,6 +9,7 @@
 |vifm-view|               View mode keys.
 |vifm-command-line|       Command line mode keys.
 |vifm-command-line-edit|  External editing of command line content.
+|vifm-more|               More mode keys.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-cancellation|       Cancellation of commands.
@@ -968,6 +969,31 @@ the result of operation, when the application returns zero exit code.  If the
 application returns an error (see |:cquit| command in Vim), all the edits made
 to the file are ignored, but the initial value of the first line is saved in
 appropriate history.
+
+--------------------------------------------------------------------------------
+*vifm-more*
+                                               *vifm-pager*
+
+This is the mode that appears when status bar content is so big that it
+doesn't fit on the screen.  One can identify the mode by "-- More --" message
+at the bottom.
+
+The following keys are handled in this mode:
+
+Enter, Ctrl-J, j or Down - scroll one line down.
+Backspace, k or Up - scroll one line up.
+
+d - scroll one page (half of a screen) down.
+u - scroll one page (half of a screen) up.
+
+Space, f or PageDown - scroll down a screen.
+b or PageUp - scroll up a screen.
+
+G - scroll to the bottom.
+g - scroll to the top.
+
+q, Escape or Ctrl-C - quit the mode.
+: - switch to command-line mode.
 
 --------------------------------------------------------------------------------
 *vifm-commands*

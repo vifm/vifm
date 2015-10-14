@@ -49,8 +49,8 @@ menus := $(addprefix menus/, $(menus))
 dialogs := attr_dialog_win.c change_dialog.c msg_dialog.c sort_dialog.c
 dialogs := $(addprefix dialogs/, $(dialogs))
 
-modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
-         visual.c
+modes := $(dialogs) cmdline.c file_info.c menu.c modes.c more.c normal.c \
+         view.c visual.c
 modes := $(addprefix modes/, $(modes))
 
 ui := cancellation.c color_manager.c color_scheme.c column_view.c escape.c

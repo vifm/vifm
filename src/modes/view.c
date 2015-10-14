@@ -71,28 +71,37 @@ enum
 	SILENT,   /* Do not display error message dialog. */
 };
 
+/* Describes view state and its properties. */
 typedef struct
 {
-	char **lines;
-	int (*widths)[2];
-	int nlines;
-	int nlinesv;
-	int line;
-	int linev;
-	int win_size; /* Scroll window size. */
-	int half_win;
-	int width;
-	FileView *view;
-	regex_t re;
-	int last_search_backward; /* Value -1 means no search was performed. */
-	int search_repeat; /* Saved count prefix of search commands. */
-	int wrap;
-	int abandoned;  /* Shows whether view mode was abandoned. */
-	char *filename; /* Full path to the file being viewed. */
-	int graphics;   /* Whether viewer presumably displays graphics. */
+	/* Data of the view. */
+	char **lines;     /* List of real lines. */
+	int (*widths)[2]; /* (virtual line, screen width) pair per real line. */
+	int nlines;       /* Number of real lines. */
+	int nlinesv;      /* Number of virtual (possibly wrapped) lines. */
+	int line;         /* Current real line number. */
+	int linev;        /* Current virtual line number. */
 
+	/* Dimentions, units of actions. */
+	int win_size; /* Scroll window size. */
+	int half_win; /* Height of a "page" (can be changed). */
+	int width;    /* Last width used for breaking lines. */
+
+	/* Monitoring of changes for automatic forwarding. */
 	int auto_forward;   /* Whether auto forwarding (tail -F) is enabled. */
 	filemon_t file_mon; /* File monitor for auto forwarding mode. */
+
+	/* Related to search. */
+	regex_t re;               /* Search regular expression. */
+	int last_search_backward; /* Value -1 means no search was performed. */
+	int search_repeat;        /* Saved count prefix of search commands. */
+
+	/* The rest of the state. */
+	FileView *view; /* File view association with the view. */
+	char *filename; /* Full path to the file being viewed. */
+	int abandoned;  /* Whether view mode was abandoned. */
+	int graphics;   /* Whether viewer presumably displays graphics. */
+	int wrap;       /* Whether lines are wrapped. */
 }
 view_info_t;
 
@@ -524,6 +533,7 @@ redraw(void)
 static void
 calc_vlines(void)
 {
+	/* Skip the recalculation if window size and wrapping options are the same. */
 	if((int)vi->view->window_width - 1 == vi->width &&
 			vi->wrap == cfg.wrap_quick_view)
 	{
@@ -600,17 +610,18 @@ draw(void)
 	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{
 		int offset = 0;
-		int t = 0;
+		int processed = 0;
 		char *const line = vi->lines[l];
 		char *p = searched ? esc_highlight_pattern(line, &vi->re) : line;
 		do
 		{
 			int printed;
-			int vis = l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0];
+			const int vis = l != vi->line
+			             || vl + processed >= vi->linev - vi->widths[vi->line][0];
 			offset += esc_print_line(p + offset, vi->view->win, COL, 1 + vl, width,
 					!vis, &state, &printed);
 			vl += vis;
-			t++;
+			++processed;
 		}
 		while(vi->wrap && p[offset] != '\0' && vl < height);
 		if(searched)
@@ -1186,8 +1197,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 
 	while(key_info.count-- > 0)
 	{
-		int height = (vi->widths[vi->line][1] + vi->width - 1)/vi->width;
-		height = MAX(height, 1);
+		const int height = MAX(DIV_ROUND_UP(vi->widths[vi->line][1], vi->width), 1);
 		if(vi->linev + 1 >= vi->widths[vi->line][0] + height)
 			++vi->line;
 

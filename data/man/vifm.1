@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 01, 2015" "vifm 0.8"
+.TH VIFM 1 "October 13, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1085,6 +1085,49 @@ the result of operation, when the application returns zero exit code.  If the
 application returns an error (see :cquit command in Vim), all the edits made to
 the file are ignored, but the initial value of the first line is saved in
 appropriate history.
+.\" ---------------------------------------------------------------------------
+.SH More Mode
+.\" ---------------------------------------------------------------------------
+This is the mode that appears when status bar content is so big that it
+doesn't fit on the screen.  One can identify the mode by "\-\- More \-\-"
+message at the bottom.
+
+The following keys are handled in this mode:
+
+.TP
+.BI "Enter, Ctrl-J, j or Down"
+scroll one line down.
+.TP
+.BI "Backspace, k or Up"
+scroll one line up.
+
+.TP
+.BI d
+scroll one page (half of a screen) down.
+.TP
+.BI u
+scroll one page (half of a screen) up.
+
+.TP
+.BI "Space, f or PageDown"
+scroll down a screen.
+.TP
+.BI "b or PageUp"
+scroll up a screen.
+
+.TP
+.BI G
+scroll to the bottom.
+.TP
+.BI g
+scroll to the top.
+
+.TP
+.BI "q, Escape or Ctrl-C"
+quit the mode.
+.TP
+.BI :
+switch to command-line mode.
 .\" ---------------------------------------------------------------------------
 .SH Commands
 .\" ---------------------------------------------------------------------------

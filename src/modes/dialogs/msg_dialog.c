@@ -77,7 +77,7 @@ static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
 		const char ctrl_msg[], int centered, int recommended_width);
-static size_t count_lines(const char msg[], size_t *max_len);
+static size_t measure_sub_lines(const char msg[], size_t *max_len);
 static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
@@ -480,7 +480,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 	getmaxyx(stdscr, sh, sw);
 
-	ctrl_msg_n = MAX(count_lines(ctrl_msg, &wctrl_msg), 1U);
+	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, &wctrl_msg), 1U);
 
 	h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
 	w = MIN(sw - 2,
@@ -553,7 +553,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
  * *max_len to the length of the longest sub-line.  Returns total number of
  * sub-lines, which can be zero is msg is an empty line. */
 static size_t
-count_lines(const char msg[], size_t *max_len)
+measure_sub_lines(const char msg[], size_t *max_len)
 {
 	size_t nlines = 0U;
 	*max_len = 0U;

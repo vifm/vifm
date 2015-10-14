@@ -155,6 +155,7 @@ vifm_SOURCES = \
 	modes/file_info.c modes/file_info.h \
 	modes/menu.c modes/menu.h \
 	modes/modes.c modes/modes.h \
+	modes/more.c modes/more.h \
 	modes/normal.c modes/normal.h \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \

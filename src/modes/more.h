@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2015 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,50 +16,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__MODES__MODES_H__
-#define VIFM__MODES__MODES_H__
+#ifndef VIFM__MODES__MORE_H__
+#define VIFM__MODES__MORE_H__
 
-#include <stddef.h>
+#include "../ui/ui.h"
 
-enum
-{
-	NORMAL_MODE,
-	CMDLINE_MODE,
-	VISUAL_MODE,
-	MENU_MODE,
-	SORT_MODE,
-	ATTR_MODE,
-	CHANGE_MODE,
-	VIEW_MODE,
-	FILE_INFO_MODE,
-	MSG_MODE,
-	MORE_MODE,
-	MODES_COUNT
-};
+/* Initializes more mode. */
+void modmore_init(void);
 
-void init_modes(void);
+/* Enters more mode that will display the text. */
+void modmore_enter(const char txt[]);
 
-void modes_pre(void);
+/* Redraws more mode on the screen. */
+void modmore_redraw(void);
 
-/* Executes poll-based requests for any of the active modes. */
-void modes_periodic(void);
-
-void modes_post(void);
-
-void modes_redraw(void);
-
-void modes_update(void);
-
-void modupd_input_bar(wchar_t *str);
-
-void clear_input_bar(void);
-
-/* Returns non-zero if current mode is a menu like one. */
-int is_in_menu_like_mode(void);
-
-void print_selected_msg(void);
-
-#endif /* VIFM__MODES__MODES_H__ */
+#endif /* VIFM__MODES__MORE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

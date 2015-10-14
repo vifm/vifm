@@ -39,6 +39,7 @@
 #include "cmdline.h"
 #include "file_info.h"
 #include "menu.h"
+#include "more.h"
 #include "normal.h"
 #include "view.h"
 #include "visual.h"
@@ -54,6 +55,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT,                /* VIEW_MODE */
 	0,                            /* FILE_INFO_MODE */
 	0,                            /* MSG_MODE */
+	0,                            /* MORE_MODE */
 };
 ARRAY_GUARD(mode_flags, MODES_COUNT);
 
@@ -68,6 +70,7 @@ static char uses_input_bar[] = {
 	1, /* VIEW_MODE */
 	1, /* FILE_INFO_MODE */
 	0, /* MSG_MODE */
+	0, /* MORE_MODE */
 };
 ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
@@ -83,6 +86,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_view_mode,          /* VIEW_MODE */
 	&init_file_info_mode,     /* FILE_INFO_MODE */
 	&init_msg_dialog_mode,    /* MSG_MODE */
+	&modmore_init,            /* MORE_MODE */
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
@@ -107,28 +111,24 @@ init_modes(void)
 void
 modes_pre(void)
 {
-	if(vle_mode_is(CMDLINE_MODE))
+	if(ANY(vle_mode_is, SORT_MODE, CHANGE_MODE, ATTR_MODE, MORE_MODE))
+	{
+		/* Do nothing for these modes. */
+	}
+	else if(vle_mode_is(CMDLINE_MODE))
 	{
 		touchwin(status_bar);
 		wrefresh(status_bar);
-		return;
-	}
-	else if(ANY(vle_mode_is, SORT_MODE, CHANGE_MODE, ATTR_MODE))
-	{
-		return;
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
 		view_pre();
-		return;
 	}
 	else if(is_in_menu_like_mode())
 	{
 		menu_pre();
-		return;
 	}
-
-	if(!curr_stats.save_msg)
+	else if(!curr_stats.save_msg)
 	{
 		clean_status_bar();
 		wrefresh(status_bar);
@@ -145,8 +145,10 @@ modes_periodic(void)
 void
 modes_post(void)
 {
-	if(ANY(vle_mode_is, CMDLINE_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE))
+	if(ANY(vle_mode_is,
+				CMDLINE_MODE, SORT_MODE, CHANGE_MODE, ATTR_MODE, MORE_MODE))
 	{
+		/* Do nothing for these modes. */
 		return;
 	}
 	else if(vle_mode_is(VIEW_MODE))
@@ -182,7 +184,11 @@ modes_post(void)
 void
 modes_statusbar_update(void)
 {
-	if(curr_stats.save_msg)
+	if(vle_mode_is(MORE_MODE))
+	{
+		/* Status bar is used for special purposes. */
+	}
+	else if(curr_stats.save_msg)
 	{
 		if(vle_mode_is(VISUAL_MODE))
 		{
@@ -241,6 +247,11 @@ modes_redraw(void)
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
 		redraw_file_info_dialog();
+		goto finish;
+	}
+	else if(vle_mode_is(MORE_MODE))
+	{
+		modmore_redraw();
 		goto finish;
 	}
 
@@ -341,7 +352,7 @@ clear_input_bar(void)
 int
 is_in_menu_like_mode(void)
 {
-	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE);
+	return ANY(vle_primary_mode_is, MENU_MODE, FILE_INFO_MODE, MORE_MODE);
 }
 
 void

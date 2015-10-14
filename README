@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 06 October, 2015
+Updated: 11 October, 2015
 Version: 0.8
 
 Brief Description
@@ -147,6 +147,7 @@ Package content
     |  |  |-- menu.c - handles commands in menus
     |  |  |-- modes.c - general code (e.g. before and after key pressed) for
     |  |  |             modes
+    |  |  |-- more.c - more mode that views too much output on status bar
     |  |  |-- normal.c - normal mode commands
     |  |  |-- view.c - view mode commands
     |  |  `-- visual.c - implementation of visual mode commands

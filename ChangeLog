@@ -70,6 +70,10 @@
 
 	Added --with-sanitize=basic|thread|leak option to configure script.
 
+	Added "more" mode that is used to handle status bar content that doesn't
+	fit on the screen.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn) and
+	Svyatoslav Mishyn (a.k.a. juef).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
