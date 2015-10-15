@@ -55,11 +55,6 @@
 #include "fileview.h"
 #include "ui.h"
 
-/* Line at which quickview content should be displayed. */
-#define LINE 1
-/* Column at which quickview content should be displayed. */
-#define COL 1
-
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
@@ -90,6 +85,10 @@ static void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static void write_message(const char msg[]);
+static int get_x(FileView *view);
+static int get_y(FileView *view);
+static int get_height(FileView *view);
+static int get_width(FileView *view);
 static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
 static char * get_typed_fname(const char path[]);
@@ -193,7 +192,7 @@ view_file(const char path[])
 
 	if(viewer == NULL && is_dir(path))
 	{
-		fp = view_dir(path, other_view->window_rows - 1);
+		fp = view_dir(path, get_height(other_view));
 		if(fp == NULL)
 		{
 			write_message("Failed to view directory");
@@ -473,19 +472,19 @@ path_sorter(const void *first, const void *second)
 static void
 view_stream(FILE *fp, int wrapped)
 {
-	const size_t max_width = other_view->window_width - 1;
-	const size_t max_y = other_view->window_rows - 1;
+	const size_t max_width = get_width(other_view);
+	const size_t max_height = get_height(other_view);
 
 	const col_scheme_t *cs = ui_view_get_cs(other_view);
 	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
-	size_t y = LINE;
+	size_t y = get_y(other_view);
 	const char *res = get_line(fp, line, sizeof(line));
 	esc_state state;
 
 	esc_state_init(&state, &cs->color[WIN_COLOR]);
 
-	while(res != NULL && y <= max_y)
+	while(res != NULL && y <= max_height)
 	{
 		int offset;
 		int printed;
@@ -495,8 +494,8 @@ view_stream(FILE *fp, int wrapped)
 			skip_until_eol(fp);
 		}
 
-		offset = esc_print_line(line, other_view->win, COL, y, max_width, 0, &state,
-				&printed);
+		offset = esc_print_line(line, other_view->win, get_x(other_view), y,
+				max_width, 0, &state, &printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';
 
@@ -549,7 +548,37 @@ write_message(const char msg[])
 {
 	cleanup_for_text();
 	wattrset(other_view->win, 0);
-	mvwaddstr(other_view->win, LINE, COL, msg);
+	mvwaddstr(other_view->win, get_y(other_view), get_x(other_view), msg);
+}
+
+/* Retrieves column number at which quickview content should be displayed.
+ * Returns the number. */
+static int
+get_x(FileView *view)
+{
+	return cfg.extra_padding ? 1 : 0;
+}
+
+/* Retrieves line number at which quickview content should be displayed.
+ * Returns the number. */
+static int
+get_y(FileView *view)
+{
+	return cfg.extra_padding ? 1 : 0;
+}
+
+/* Retrieves height of quickview area.  Returns the height. */
+static int
+get_height(FileView *view)
+{
+	return cfg.extra_padding ? view->window_rows - 1 : view->window_rows + 1;
+}
+
+/* Retrieves width of quickview area.  Returns the width. */
+static int
+get_width(FileView *view)
+{
+	return cfg.extra_padding ? view->window_width - 1 : view->window_width + 1;
 }
 
 /* Ensures that view is ready to display regular text. */
