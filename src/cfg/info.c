@@ -995,7 +995,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 	fprintf(fp, "=tuioptions=%s%s\n",
-			cfg.filelist_col_padding ? "p" : "",
+			cfg.extra_padding ? "p" : "",
 			cfg.side_borders_visible ? "s" : "");
 	fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 	fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),

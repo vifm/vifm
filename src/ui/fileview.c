@@ -240,7 +240,7 @@ draw_dir_list_only(FileView *view)
 	ui_view_erase(view);
 
 	cell = 0U;
-	coll_pad = (view->ls_view && cfg.filelist_col_padding) ? 1 : 0;
+	coll_pad = (view->ls_view && cfg.extra_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
 		const column_data_t cdt = {
@@ -420,14 +420,14 @@ static void
 draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
-	if(cfg.filelist_col_padding)
+	if(cfg.extra_padding)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
 	}
 
 	columns_format_line(view->columns, cdt, col_width);
 
-	if(cfg.filelist_col_padding)
+	if(cfg.extra_padding)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
 	}
@@ -539,7 +539,7 @@ put_inactive_mark(FileView *view)
 
 	(void)clear_current_line_bar(view, 1);
 
-	if(!cfg.filelist_col_padding)
+	if(!cfg.extra_padding)
 	{
 		return;
 	}
@@ -677,7 +677,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		 * name width should be updated. */
 		col_width = print_width;
 	}
-	else if(view->ls_view && cfg.filelist_col_padding)
+	else if(view->ls_view && cfg.extra_padding)
 	{
 		/* Padding in ls-like view adds additional empty single character between
 		 * columns, on which we shouldn't draw anything here. */
@@ -816,7 +816,7 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset, AlignType align, const char full_column[])
 {
-	const int padding = (cfg.filelist_col_padding != 0);
+	const int padding = (cfg.extra_padding != 0);
 
 	int primary;
 	int line_attrs;
@@ -866,7 +866,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	checked_wmove(view->win, cdt->current_line, final_offset);
 
 	strcpy(print_buf, buf);
-	reserved_width = cfg.filelist_col_padding ? (column_id != FILL_COLUMN_ID) : 0;
+	reserved_width = cfg.extra_padding ? (column_id != FILL_COLUMN_ID) : 0;
 	width_left = padding + ui_view_available_width(view)
 	           - reserved_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
@@ -1225,7 +1225,7 @@ calculate_columns_count(FileView *view)
 static size_t
 calculate_column_width(FileView *view)
 {
-	const int column_gap = (cfg.filelist_col_padding ? 2 : 1);
+	const int column_gap = (cfg.extra_padding ? 2 : 1);
 	if(view->max_filename_width == 0)
 	{
 		view->max_filename_width = get_max_filename_width(view);
