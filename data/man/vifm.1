@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 13, 2015" "vifm 0.8"
+.TH VIFM 1 "October 14, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2307,7 +2307,8 @@ same as :set, but changes/prints only local values of local options.
 .TP
 .BI :sh[ell][!]
 start a shell in current directory.  "!" suppresses spawning dedicated
-window of terminal multiplexer for a shell.
+window of terminal multiplexer for a shell.  To make vifm adaptive to
+environment it uses $SHELL if it's defined, otherwise 'shell' value is used.
 .TP
 .BI "                                         :sort"
 .TP
@@ -3445,7 +3446,8 @@ type: string
 .br
 default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 .br
-Full path to the shell to use to run external commands.
+Full path to the shell to use to run external commands.  On *nix a shell
+argument can be supplied.
 .TP
 .BI "'shortmess' 'shm'"
 type: charset

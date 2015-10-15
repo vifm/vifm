@@ -322,7 +322,8 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 
 		(void)set_sigchld(0);
 
-		(void)execve(cfg.shell, make_execv_array(cfg.shell, cmd), environ);
+		(void)execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd),
+				environ);
 		_Exit(127);
 	}
 
@@ -508,7 +509,7 @@ background_and_capture(char *cmd, int user_sh, FILE **out, FILE **err)
 			_Exit(EXIT_FAILURE);
 		}
 
-		sh = user_sh ? cfg.shell : "/bin/sh";
+		sh = user_sh ? get_execv_path(cfg.shell) : "/bin/sh";
 		execvp(sh, make_execv_array(sh, cmd));
 		_Exit(127);
 	}
@@ -697,7 +698,7 @@ start_background_job(const char *cmd, int skip_errors)
 
 		setpgid(0, 0);
 
-		execve(cfg.shell, make_execv_array(cfg.shell, command), environ);
+		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command), environ);
 		_Exit(127);
 	}
 	else

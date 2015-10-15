@@ -153,6 +153,8 @@
 
 	Check file system sensitivity on OS X.  Thanks to loongw.
 
+	Allow 'shell' to specify a shell argument on *nix.  Thanks to loongw.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
