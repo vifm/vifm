@@ -1522,6 +1522,30 @@ ui_view_available_width(const FileView *const view)
 	return ((int)view->window_width + 1) + correction;
 }
 
+int
+ui_qv_left(const FileView *view)
+{
+	return cfg.extra_padding ? 1 : 0;
+}
+
+int
+ui_qv_top(const FileView *view)
+{
+	return cfg.extra_padding ? 1 : 0;
+}
+
+int
+ui_qv_height(const FileView *view)
+{
+	return cfg.extra_padding ? view->window_rows - 1 : view->window_rows + 1;
+}
+
+int
+ui_qv_width(const FileView *view)
+{
+	return cfg.extra_padding ? view->window_width - 1 : view->window_width + 1;
+}
+
 const col_scheme_t *
 ui_view_get_cs(const FileView *view)
 {
