@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 14
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 16
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3068,8 +3068,10 @@ default: "ps"
 
 Each flag configures some aspect of TUI appearance.  The flags are:
                                                *vifm-to-p*
-p - when included, file list inside a pane gets additional single character
-padding on left and right sides.
+p - when included:
+  * file list inside a pane gets additional single character padding on left
+    and right sides;
+  * quick view and view mode get single character padding.
                                                *vifm-to-s*
 s - when included, left and right borders (side borders, hence "s" character)
 are visible.
