@@ -477,6 +477,20 @@ FileType ui_view_entry_target_type(const dir_entry_t *entry);
  * width. */
 int ui_view_available_width(const FileView *const view);
 
+/* Retrieves column number at which quickview content should be displayed.
+ * Returns the number. */
+int ui_qv_left(const FileView *view);
+
+/* Retrieves line number at which quickview content should be displayed.
+ * Returns the number. */
+int ui_qv_top(const FileView *view);
+
+/* Retrieves height of quickview area.  Returns the height. */
+int ui_qv_height(const FileView *view);
+
+/* Retrieves width of quickview area.  Returns the width. */
+int ui_qv_width(const FileView *view);
+
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const FileView *view);

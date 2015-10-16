@@ -674,7 +674,7 @@ init_tuioptions(optval_t *val)
 {
 	static char buf[32];
 	snprintf(buf, sizeof(buf), "%s%s",
-			cfg.filelist_col_padding ? "p" : "",
+			cfg.extra_padding ? "p" : "",
 			cfg.side_borders_visible ? "s" : "");
 	val->str_val = buf;
 }
@@ -1989,7 +1989,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	const char *p;
 
 	/* Turn all flags off. */
-	cfg.filelist_col_padding = 0;
+	cfg.extra_padding = 0;
 	cfg.side_borders_visible = 0;
 
 	/* And set the ones present in the value. */
@@ -1999,7 +1999,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 		switch(*p)
 		{
 			case 'p':
-				cfg.filelist_col_padding = 1;
+				cfg.extra_padding = 1;
 				break;
 			case 's':
 				cfg.side_borders_visible = 1;

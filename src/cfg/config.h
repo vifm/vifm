@@ -140,8 +140,9 @@ typedef struct config_t
 	char *cd_path;
 
 	/* Whether there should be reserved single character width space before and
-	 * after file list column inside a view. */
-	int filelist_col_padding;
+	 * after file list column inside a view and first and last columns and lines
+	 * for a quick view. */
+	int extra_padding;
 
 	/* Whether side borders are visible (separator in the middle isn't
 	 * affected). */

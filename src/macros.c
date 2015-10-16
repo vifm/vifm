@@ -486,7 +486,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 	char num_str[32];
 	int h, w, x, y;
 	int param;
-	const int with_margin = (curr_stats.clear_preview == 0);
+	const int with_margin = (curr_stats.clear_preview == 0) && cfg.extra_padding;
 
 	if(!char_is_one_of("hwxy", key))
 	{

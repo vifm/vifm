@@ -61,9 +61,6 @@
 #include "modes.h"
 #include "normal.h"
 
-/* Column at which view content should be displayed. */
-#define COL 1
-
 /* Named boolean values of "silent" parameter for better readability. */
 enum
 {
@@ -534,13 +531,12 @@ static void
 calc_vlines(void)
 {
 	/* Skip the recalculation if window size and wrapping options are the same. */
-	if((int)vi->view->window_width - 1 == vi->width &&
-			vi->wrap == cfg.wrap_quick_view)
+	if(ui_qv_width(vi->view) == vi->width && vi->wrap == cfg.wrap_quick_view)
 	{
 		return;
 	}
 
-	vi->width = vi->view->window_width - 1;
+	vi->width = ui_qv_width(vi->view);
 	vi->wrap = cfg.wrap_quick_view;
 
 	if(vi->wrap)
@@ -586,8 +582,8 @@ draw(void)
 {
 	int l, vl;
 	const col_scheme_t *cs = ui_view_get_cs(vi->view);
-	const int height = vi->view->window_rows - 1;
-	const int width = vi->view->window_width - 1;
+	const int height = ui_qv_height(vi->view);
+	const int width = ui_qv_width(vi->view);
 	const int max_l = MIN(vi->line + height, vi->nlines);
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
@@ -618,8 +614,8 @@ draw(void)
 			int printed;
 			const int vis = l != vi->line
 			             || vl + processed >= vi->linev - vi->widths[vi->line][0];
-			offset += esc_print_line(p + offset, vi->view->win, COL, 1 + vl, width,
-					!vis, &state, &printed);
+			offset += esc_print_line(p + offset, vi->view->win, ui_qv_left(vi->view),
+					ui_qv_top(vi->view) + vl, width, !vis, &state, &printed);
 			vl += vis;
 			++processed;
 		}
@@ -1162,8 +1158,7 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	key_info.count = MIN(vi->nlinesv - (vi->view->window_rows - 1),
-			key_info.count);
+	key_info.count = MIN(vi->nlinesv - ui_qv_height(vi->view), key_info.count);
 	key_info.count = MAX(1, key_info.count);
 
 	if(vi->linev == vi->widths[key_info.count - 1][0])
@@ -1178,7 +1173,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
 	{
-		if((vi->linev + 1) + (vi->view->window_rows - 1) > vi->nlinesv)
+		if((vi->linev + 1) + ui_qv_height(vi->view) > vi->nlinesv)
 			return;
 	}
 	else
@@ -1191,7 +1186,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = 1;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.count = MIN(key_info.count,
-				vi->nlinesv - (vi->view->window_rows - 1) - vi->linev);
+				vi->nlinesv - ui_qv_height(vi->view) - vi->linev);
 	else
 		key_info.count = MIN(key_info.count, vi->nlinesv - vi->linev - 1);
 
@@ -1275,7 +1270,7 @@ find_previous(int vline_offset)
 {
 	int i;
 	int offset = 0;
-	char buf[(vi->view->window_width - 1)*4];
+	char buf[ui_qv_width(vi->view)*4];
 	int vl, l;
 
 	vl = vi->linev - vline_offset;
@@ -1285,7 +1280,7 @@ find_previous(int vline_offset)
 		l--;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
-		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 
 	/* Don't stop until we go above first virtual line of the first line. */
 	while(l >= 0 && vl >= 0)
@@ -1301,11 +1296,10 @@ find_previous(int vline_offset)
 			l--;
 			offset = 0;
 			for(i = 0; i <= vl - 1 - vi->widths[l][0]; i++)
-				offset = get_part(vi->lines[l], offset, vi->view->window_width - 1,
-						buf);
+				offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		}
 		else
-			offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
+			offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		vl--;
 	}
 	draw();
@@ -1320,7 +1314,7 @@ find_next(void)
 {
 	int i;
 	int offset = 0;
-	char buf[(vi->view->window_width - 1)*4];
+	char buf[ui_qv_width(vi->view)*4];
 	int vl, l;
 
 	vl = vi->linev + 1;
@@ -1330,7 +1324,7 @@ find_next(void)
 		l++;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
-		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 
 	while(l < vi->nlines)
 	{
@@ -1348,7 +1342,7 @@ find_next(void)
 			l++;
 			offset = 0;
 		}
-		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, ui_qv_width(vi->view), buf);
 		vl++;
 	}
 	draw();
@@ -1404,7 +1398,7 @@ update_with_half_win(key_info_t *const key_info)
 	{
 		key_info->count = (vi->half_win > 0)
 			? vi->half_win
-			: (vi->view->window_rows - 1)/2;
+			: ui_qv_height(vi->view)/2;
 	}
 	else
 	{
@@ -1420,7 +1414,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	char path[PATH_MAX];
 	get_current_full_path(curr_view, sizeof(path), path);
-	(void)vim_view_file(path, vi->line + (vi->view->window_rows - 1)/2, -1, 1);
+	(void)vim_view_file(path, vi->line + ui_qv_height(vi->view)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
 	 * redrawn. */
 	update_screen(UT_REDRAW);
@@ -1462,7 +1456,7 @@ set_from_default_win(key_info_t *const key_info)
 {
 	key_info->count = (vi->win_size > 0)
 		? vi->win_size
-		: (vi->view->window_rows - 2);
+		: (ui_qv_height(vi->view) - 1);
 }
 
 int
@@ -1578,12 +1572,12 @@ forward_if_changed(view_info_t *vi)
 static int
 scroll_to_bottom(view_info_t *vi)
 {
-	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
+	if(vi->linev + 1 + ui_qv_height(vi->view) > vi->nlinesv)
 	{
 		return 0;
 	}
 
-	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
+	vi->linev = vi->nlinesv - ui_qv_height(vi->view);
 	for(vi->line = 0; vi->line < vi->nlines - 1; ++vi->line)
 	{
 		if(vi->linev < vi->widths[vi->line + 1][0])
