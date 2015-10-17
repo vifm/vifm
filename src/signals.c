@@ -178,6 +178,11 @@ setup_signals(void)
 	sigemptyset(&handle_signal_action.sa_mask);
 	handle_signal_action.sa_flags = SA_RESTART;
 
+	/* Assumption: we work under shell with job control support.  If it's not the
+	 * case, this code enables handling of terminal related signals the shell
+	 * wanted us to have disabled (e.g. the app will catch Ctrl-C send to another
+	 * process). */
+
 	sigaction(SIGCHLD, &handle_signal_action, NULL);
 	sigaction(SIGHUP, &handle_signal_action, NULL);
 	sigaction(SIGINT, &handle_signal_action, NULL);
