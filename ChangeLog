@@ -157,6 +157,9 @@
 
 	Make "p" in 'tuioptions' affect padding in quick view and view mode.
 
+	Documented difference between paths in menu with and without trailing
+	slash.  Thanks to filterfalse.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
