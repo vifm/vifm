@@ -310,8 +310,11 @@ make_execv_array(char shell[], char cmd[])
 		{
 			args[i++] = sh_arg;
 		}
-		args[i++] = "-c";
-		args[i++] = cmd;
+		if (*cmd != '\0')
+		{
+			args[i++] = "-c";
+			args[i++] = cmd;
+		}
 		args[i++] = NULL;
 		return args;
 	}

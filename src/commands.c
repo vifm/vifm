@@ -4045,11 +4045,10 @@ setlocal_cmd(const cmd_info_t *cmd_info)
 static int
 shell_cmd(const cmd_info_t *cmd_info)
 {
-	const char *sh = env_get_def("SHELL", cfg.shell);
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1);
+	shellout("", PAUSE_NEVER, cmd_info->emark ? 0 : 1);
 	load_real_path_env();
 
 	return 0;
