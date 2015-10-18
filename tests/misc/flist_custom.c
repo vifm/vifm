@@ -17,6 +17,8 @@
 #include "../../src/registers.h"
 #include "../../src/sort.h"
 
+#include "utils.h"
+
 static void cleanup_view(FileView *view);
 static void setup_custom_view(FileView *view);
 static int not_windows(void);
@@ -219,6 +221,47 @@ TEST(files_are_sorted_undecorated)
 	assert_success(rmdir("foo"));
 	assert_success(rmdir("foo-"));
 	assert_success(rmdir("foo0"));
+}
+
+TEST(unsorted_custom_view_does_not_change_order_of_files)
+{
+	opt_handlers_setup();
+
+	assert_false(flist_custom_active(&lwin));
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	assert_string_equal("b", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+
+	opt_handlers_teardown();
+}
+
+TEST(sorted_custom_view_after_unsorted)
+{
+	opt_handlers_setup();
+
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("b", lwin.dir_entry[1].name);
+
+	opt_handlers_teardown();
 }
 
 static void

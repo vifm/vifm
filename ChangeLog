@@ -269,6 +269,9 @@
 
 	Fixed ranges for :yank.  Thanks to Marius.
 
+	Fixed enabling sorting on loading regular custom view after very custom
+	view.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

@@ -109,6 +109,8 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static void apply_very_custom(FileView *view);
+static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
@@ -1118,8 +1120,7 @@ change_directory(FileView *view, const char directory[])
 	/* Perform additional actions on leaving custom view. */
 	if(was_in_custom_view && view->custom.unsorted)
 	{
-		memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
-		load_sort_option(view);
+		revert_very_custom(view);
 	}
 
 	/* Stage check is to skip body of the if in tests. */
@@ -1435,6 +1436,8 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view, int very)
 {
+	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
+
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL_TRIE;
 
@@ -1458,7 +1461,11 @@ flist_custom_finish(FileView *view, int very)
 		}
 	}
 
-	if(view->curr_dir[0] != '\0')
+	previous = (view->curr_dir[0] != '\0')
+	         ? NORMAL
+	         : (view->custom.unsorted ? CUSTOM_VERY : CUSTOM);
+
+	if(previous == NORMAL)
 	{
 		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
 		view->curr_dir[0] = '\0';
@@ -1479,9 +1486,11 @@ flist_custom_finish(FileView *view, int very)
 	view->custom.unsorted = very;
 	if(very)
 	{
-		memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
-		memset(&view->sort[0], SK_NONE, sizeof(view->sort));
-		load_sort_option(view);
+		apply_very_custom(view);
+	}
+	else if(previous == CUSTOM_VERY)
+	{
+		revert_very_custom(view);
 	}
 
 	sort_dir_list(0, view);
@@ -1491,6 +1500,23 @@ flist_custom_finish(FileView *view, int very)
 	filters_dir_updated(view);
 
 	return 0;
+}
+
+/* Applies very custom view specific changes to the view. */
+static void
+apply_very_custom(FileView *view)
+{
+	memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
+	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
+	load_sort_option(view);
+}
+
+/* Undoes was was done by apply_very_custom(). */
+static void
+revert_very_custom(FileView *view)
+{
+	memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
+	load_sort_option(view);
 }
 
 void
