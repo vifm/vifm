@@ -23,8 +23,8 @@ static int not_windows(void);
 
 SETUP()
 {
-	cfg.fuse_home = strdup("no");
-	cfg.slow_fs_list = strdup("");
+	update_string(&cfg.fuse_home, "no");
+	update_string(&cfg.slow_fs_list, "");
 
 	lwin.list_rows = 0;
 	lwin.filtered = 0;

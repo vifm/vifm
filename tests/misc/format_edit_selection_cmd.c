@@ -7,6 +7,7 @@
 #include "../../src/int/vim.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
 static void teardown_view(FileView *view);
@@ -70,8 +71,8 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	cfg.vi_command = strdup("vim -p");
-	cfg.vi_x_command = strdup("");
+	update_string(&cfg.vi_command, "vim -p");
+	update_string(&cfg.vi_x_command, "");
 }
 
 TEARDOWN()
@@ -79,8 +80,8 @@ TEARDOWN()
 	teardown_view(&lwin);
 	teardown_view(&rwin);
 
-	free(cfg.vi_command);
-	free(cfg.vi_x_command);
+	update_string(&cfg.vi_command, NULL);
+	update_string(&cfg.vi_x_command, NULL);
 }
 
 static void
