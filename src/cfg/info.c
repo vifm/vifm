@@ -364,6 +364,8 @@ read_info_file(int reread)
 static void
 get_sort_info(FileView *view, const char line[])
 {
+	char *const sort = ui_view_sort_list_get(view);
+
 	int j = 0;
 	while(*line != '\0' && j < SK_COUNT)
 	{
@@ -385,7 +387,7 @@ get_sort_info(FileView *view, const char line[])
 	{
 		view->sort_g[0] = SK_DEFAULT;
 	}
-	memcpy(view->sort, view->sort_g, sizeof(view->sort));
+	memcpy(sort, view->sort_g, sizeof(view->sort));
 
 	fview_sorting_updated(view);
 }
@@ -1383,9 +1385,7 @@ static void
 put_sort_info(FILE *fp, char leading_char, const FileView *view)
 {
 	int i = -1;
-	const char *const sort = (flist_custom_active(view) && view->custom.unsorted)
-	                       ? view->custom.sort
-	                       : view->sort_g;
+	const char *const sort = ui_view_sort_list_get(view);
 
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)

@@ -1473,6 +1473,14 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 	}
 }
 
+char *
+ui_view_sort_list_get(const FileView *view)
+{
+	return (flist_custom_active(view) && view->custom.unsorted)
+	     ? (char *)view->custom.sort
+	     : (char *)view->sort_g;
+}
+
 int
 ui_view_displays_numbers(const FileView *const view)
 {

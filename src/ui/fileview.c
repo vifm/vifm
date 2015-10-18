@@ -1411,7 +1411,7 @@ fview_sorting_updated(FileView *view)
 static void
 reset_view_columns(FileView *view)
 {
-	if(view->ls_view)
+	if(view->ls_view || (flist_custom_active(view) && view->custom.unsorted))
 	{
 		return;
 	}

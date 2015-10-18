@@ -2,10 +2,13 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
+#include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/cfg/info.h"
+#include "../../src/cfg/info_chars.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -262,6 +265,36 @@ TEST(sorted_custom_view_after_unsorted)
 	assert_string_equal("b", lwin.dir_entry[1].name);
 
 	opt_handlers_teardown();
+}
+
+TEST(unsorted_view_remains_one_on_vifminfo_reread)
+{
+	FILE *const f = fopen("vifminfo", "w");
+	fprintf(f, "%c2", LINE_TYPE_LWIN_SORT);
+	fclose(f);
+
+	opt_handlers_setup();
+
+	assert_false(flist_custom_active(&lwin));
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+	assert_true(lwin.custom.unsorted);
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+
+	/* ls-like view blocks view column updates. */
+	lwin.ls_view = 1;
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+	lwin.ls_view = 0;
+
+	assert_true(lwin.custom.unsorted);
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+
+	opt_handlers_teardown();
+
+	assert_success(remove("vifminfo"));
 }
 
 static void
