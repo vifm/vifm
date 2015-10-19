@@ -13,7 +13,7 @@ Basic things that need to be done.
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
     Improve ga and gA commands to recalculate sizes of modified directories
         only, and maybe update size of all parent cached directories. And maybe
-        show somehow in the TUI calculation process.
+        show somehow in the TUI calculation process. Maybe cache in vifminfo.
     Better remove confirmation messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Process shell pause request for running in %s.

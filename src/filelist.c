@@ -510,7 +510,7 @@ clean_positions_in_history(FileView *view)
 }
 
 void
-save_view_history(FileView *view, const char *path, const char *file, int pos)
+save_view_history(FileView *view, const char path[], const char file[], int pos)
 {
 	int x;
 

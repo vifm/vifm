@@ -158,7 +158,12 @@ void navigate_backward_in_history(FileView *view);
 /* Changes current directory of the view to next location forward in history, if
  * available. */
 void navigate_forward_in_history(FileView *view);
-void save_view_history(FileView *view, const char *path, const char *file,
+/* Adds new entry to directory history of the view or updates an existing entry.
+ * If path is NULL, current path is used.  If file is NULL current file is used.
+ * If pos is negative, current position is used.  Empty file name signifies
+ * visiting directory, which shouldn't reset name of previously active file in
+ * it. */
+void save_view_history(FileView *view, const char path[], const char file[],
 		int pos);
 int is_in_view_history(FileView *view, const char *path);
 void clean_positions_in_history(FileView *view);
