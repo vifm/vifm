@@ -4,7 +4,7 @@
 
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() strcpy() */
+#include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
@@ -13,16 +13,17 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
+#include "../../src/running.h"
 #include "../../src/sort.h"
 
 #include "utils.h"
 
-static void cleanup_view(FileView *view);
 static void setup_custom_view(FileView *view);
 static int not_windows(void);
 
@@ -31,14 +32,10 @@ SETUP()
 	update_string(&cfg.fuse_home, "no");
 	update_string(&cfg.slow_fs_list, "");
 
-	lwin.list_rows = 0;
-	lwin.filtered = 0;
-	lwin.list_pos = 0;
-	lwin.dir_entry = NULL;
-	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
+	/* So that nothing is written into directory history. */
+	rwin.list_rows = 0;
 
-	strcpy(lwin.curr_dir, "/path");
-	update_string(&lwin.custom.orig_dir, NULL);
+	view_setup(&lwin);
 
 	curr_view = &lwin;
 	other_view = &lwin;
@@ -49,21 +46,7 @@ TEARDOWN()
 	update_string(&cfg.slow_fs_list, NULL);
 	update_string(&cfg.fuse_home, NULL);
 
-	cleanup_view(&lwin);
-}
-
-static void
-cleanup_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free_dir_entry(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-
-	filter_dispose(&view->local_filter.filter);
+	view_teardown(&lwin);
 }
 
 TEST(empty_list_is_not_accepted)
@@ -295,6 +278,38 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread)
 	opt_handlers_teardown();
 
 	assert_success(remove("vifminfo"));
+}
+
+TEST(location_is_saved_on_entering_custom_view)
+{
+	char cwd[PATH_MAX];
+
+	cfg_resize_histories(10);
+
+	/* Set sandbox directory as working directory. */
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), cwd);
+
+	/* Put specific history entry and make sure it's used. */
+	save_view_history(&lwin, lwin.curr_dir, "b", 1);
+	load_dir_list(&lwin, 0);
+	assert_string_equal("b", lwin.dir_entry[lwin.list_pos].name);
+
+	/* Pick different entry. */
+	lwin.list_pos = 2;
+	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
+
+	/* Go into custom view (load_stage enables saving history). */
+	curr_stats.load_stage = 2;
+	setup_custom_view(&lwin);
+	curr_stats.load_stage = 0;
+
+	/* Return to previous directory and check that last location was used. */
+	cd_updir(&lwin, 1);
+	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
+
+	cfg_resize_histories(0U);
 }
 
 static void

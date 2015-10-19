@@ -1,11 +1,19 @@
 #ifndef VIFM_TESTS__UTILS_H__
 #define VIFM_TESTS__UTILS_H__
 
+#include "../../src/ui/ui.h"
+
 /* Prepares option handler for use in tests. */
 void opt_handlers_setup(void);
 
 /* Cleans up option handlers. */
 void opt_handlers_teardown(void);
+
+/* Initializes view with safe defaults. */
+void view_setup(FileView *view);
+
+/* Frees resources of the view. */
+void view_teardown(FileView *view);
 
 #endif /* VIFM_TESTS__UTILS_H__ */
 

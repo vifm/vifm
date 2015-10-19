@@ -1,10 +1,15 @@
 #include "utils.h"
 
 #include <stddef.h> /* NULL */
+#include <string.h> /* memset() strcpy() */
 
-#include "../../src/engine/options.h"
 #include "../../src/cfg/config.h"
+#include "../../src/engine/options.h"
+#include "../../src/ui/ui.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
+#include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
 
 void
@@ -47,6 +52,41 @@ opt_handlers_teardown(void)
 	update_string(&cfg.locate_prg, NULL);
 	update_string(&cfg.border_filler, NULL);
 	update_string(&cfg.shell, NULL);
+}
+
+void
+view_setup(FileView *view)
+{
+	view->list_rows = 0;
+	view->filtered = 0;
+	view->list_pos = 0;
+	view->dir_entry = NULL;
+
+	assert_success(filter_init(&view->local_filter.filter, 1));
+	assert_success(filter_init(&view->manual_filter, 1));
+	assert_success(filter_init(&view->auto_filter, 1));
+
+	strcpy(view->curr_dir, "/path");
+	update_string(&view->custom.orig_dir, NULL);
+
+	view->sort[0] = SK_BY_NAME;
+	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
+}
+
+void
+view_teardown(FileView *view)
+{
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		free_dir_entry(view, &view->dir_entry[i]);
+	}
+	dynarray_free(view->dir_entry);
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->auto_filter);
+	filter_dispose(&view->manual_filter);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
