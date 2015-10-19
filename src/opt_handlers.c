@@ -1668,10 +1668,18 @@ sort_global(OPT_OP op, optval_t val)
 static void
 sort_local(OPT_OP op, optval_t val)
 {
-	set_sort(curr_view, curr_view->sort, val.str_val);
+	/* Make sure we don't sort unsorted custom view on :restart. */
+	char *const sort = curr_stats.restart_in_progress
+	                 ? ui_view_sort_list_get(curr_view)
+	                 : curr_view->sort;
+	set_sort(curr_view, sort, val.str_val);
 	if(curr_stats.global_local_settings)
 	{
-		set_sort(other_view, other_view->sort, val.str_val);
+		/* Make sure we don't sort unsorted custom view on :restart. */
+		char *const sort = curr_stats.restart_in_progress
+		                 ? ui_view_sort_list_get(other_view)
+		                 : other_view->sort;
+		set_sort(other_view, sort, val.str_val);
 	}
 }
 
@@ -1877,14 +1885,16 @@ add_column(columns_t columns, column_info_t column_info)
 static int
 map_name(const char name[], void *arg)
 {
-	FileView *view = arg;
+	const char *sort;
+	const FileView *const view = arg;
 	if(*name != '\0')
 	{
 		int pos;
 		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
 		return (pos >= 0) ? (pos + 1) : -1;
 	}
-	return (int)get_secondary_key((SortingKey)abs(view->sort[0]));
+	sort = ui_view_sort_list_get(view);
+	return (int)get_secondary_key((SortingKey)abs(sort[0]));
 }
 
 void

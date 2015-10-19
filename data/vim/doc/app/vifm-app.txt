@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 16
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3552,6 +3552,13 @@ Usage example: >
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
+
+When navigating to some path from a menu there is a difference in end location
+depending on whether path has trailing slash or not.  Files normally don't
+have trailing slashes so "file/" won't work and one can only navigate to
+a file anyway.  On the other hand with directories there are two options:
+navigate to a directory or inside of it.  To allow both use cases, the first
+one is used on paths like "dir" and the second one for "dir/".
 
 General~
 

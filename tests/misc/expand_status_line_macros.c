@@ -6,6 +6,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/statusline.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \
@@ -29,7 +30,7 @@
 
 SETUP()
 {
-	cfg.time_format = strdup("");
+	update_string(&cfg.time_format, "+");
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
@@ -52,7 +53,7 @@ TEARDOWN()
 	}
 	dynarray_free(lwin.dir_entry);
 
-	free(cfg.time_format);
+	update_string(&cfg.time_format, NULL);
 }
 
 TEST(empty_format)

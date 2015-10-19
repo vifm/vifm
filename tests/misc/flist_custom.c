@@ -2,10 +2,13 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
+#include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/cfg/info.h"
+#include "../../src/cfg/info_chars.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -17,14 +20,16 @@
 #include "../../src/registers.h"
 #include "../../src/sort.h"
 
+#include "utils.h"
+
 static void cleanup_view(FileView *view);
 static void setup_custom_view(FileView *view);
 static int not_windows(void);
 
 SETUP()
 {
-	cfg.fuse_home = strdup("no");
-	cfg.slow_fs_list = strdup("");
+	update_string(&cfg.fuse_home, "no");
+	update_string(&cfg.slow_fs_list, "");
 
 	lwin.list_rows = 0;
 	lwin.filtered = 0;
@@ -219,6 +224,77 @@ TEST(files_are_sorted_undecorated)
 	assert_success(rmdir("foo"));
 	assert_success(rmdir("foo-"));
 	assert_success(rmdir("foo0"));
+}
+
+TEST(unsorted_custom_view_does_not_change_order_of_files)
+{
+	opt_handlers_setup();
+
+	assert_false(flist_custom_active(&lwin));
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	assert_string_equal("b", lwin.dir_entry[0].name);
+	assert_string_equal("a", lwin.dir_entry[1].name);
+
+	opt_handlers_teardown();
+}
+
+TEST(sorted_custom_view_after_unsorted)
+{
+	opt_handlers_setup();
+
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	assert_string_equal("a", lwin.dir_entry[0].name);
+	assert_string_equal("b", lwin.dir_entry[1].name);
+
+	opt_handlers_teardown();
+}
+
+TEST(unsorted_view_remains_one_on_vifminfo_reread)
+{
+	FILE *const f = fopen("vifminfo", "w");
+	fprintf(f, "%c2", LINE_TYPE_LWIN_SORT);
+	fclose(f);
+
+	opt_handlers_setup();
+
+	assert_false(flist_custom_active(&lwin));
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+	assert_true(lwin.custom.unsorted);
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+
+	/* ls-like view blocks view column updates. */
+	lwin.ls_view = 1;
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+	lwin.ls_view = 0;
+
+	assert_true(lwin.custom.unsorted);
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+
+	opt_handlers_teardown();
+
+	assert_success(remove("vifminfo"));
 }
 
 static void

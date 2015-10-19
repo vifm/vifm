@@ -157,6 +157,9 @@
 
 	Make "p" in 'tuioptions' affect padding in quick view and view mode.
 
+	Documented difference between paths in menu with and without trailing
+	slash.  Thanks to filterfalse.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
@@ -265,6 +268,11 @@
 	paths.  Thanks to filterfalse.
 
 	Fixed ranges for :yank.  Thanks to Marius.
+
+	Fixed enabling sorting on loading regular custom view after very custom
+	view.
+
+	Fixed turning of very custom view into sorted one after :restart.
 
 0.8-beta to 0.8
 
