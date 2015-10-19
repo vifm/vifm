@@ -1467,6 +1467,13 @@ flist_custom_finish(FileView *view, int very)
 
 	if(previous == NORMAL)
 	{
+		/* Save current location in the directory before replacing it with custom
+		 * view. */
+		if(is_dir_list_loaded(view))
+		{
+			save_view_history(view, NULL, NULL, -1);
+		}
+
 		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
 		view->curr_dir[0] = '\0';
 	}
