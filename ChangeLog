@@ -160,6 +160,9 @@
 	Documented difference between paths in menu with and without trailing
 	slash.  Thanks to filterfalse.
 
+	Save location before loading custom view into view directory history.
+	Thanks to filterfalse.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

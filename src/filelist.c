@@ -510,12 +510,12 @@ clean_positions_in_history(FileView *view)
 }
 
 void
-save_view_history(FileView *view, const char *path, const char *file, int pos)
+save_view_history(FileView *view, const char path[], const char file[], int pos)
 {
 	int x;
 
 	/* This could happen on FUSE error. */
-	if(view->list_rows <= 0)
+	if(view->list_rows <= 0 && file == NULL)
 		return;
 
 	if(cfg.history_len <= 0)
@@ -604,7 +604,7 @@ check_view_dir_history(FileView *view)
 			x--;
 		for(; x >= 0; x--)
 		{
-			if(strlen(view->history[x].dir) < 1)
+			if(view->history[x].dir[0] == '\0')
 				break;
 			if(stroscmp(view->history[x].dir, view->curr_dir) == 0)
 			{
@@ -1467,6 +1467,13 @@ flist_custom_finish(FileView *view, int very)
 
 	if(previous == NORMAL)
 	{
+		/* Save current location in the directory before replacing it with custom
+		 * view. */
+		if(is_dir_list_loaded(view))
+		{
+			save_view_history(view, NULL, NULL, -1);
+		}
+
 		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
 		view->curr_dir[0] = '\0';
 	}
