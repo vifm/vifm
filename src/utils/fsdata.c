@@ -18,6 +18,7 @@
 
 #include "fsdata.h"
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
 
@@ -37,42 +38,42 @@ typedef struct node_t
 	struct node_t *child;
 }node_t;
 
-typedef struct root_t
+struct fsdata_t
 {
 	node_t node;
 	int longest;
 	int mem;
-}root_t;
+};
 
 static void nodes_free(node_t *node);
 static node_t * find_node(node_t *root, const char *name, int create,
 		node_t **last);
 
-fsdata_t
+fsdata_t *
 fsdata_create(int longest, int mem)
 {
-	root_t *tree;
+	fsdata_t *fsd;
 
-	if((tree = malloc(sizeof(*tree))) == NULL)
+	if((fsd = malloc(sizeof(*fsd))) == NULL)
 	{
-		return NULL_FSDATA;
+		return NULL;
 	}
 
-	tree->node.child = NULL;
-	tree->node.next = NULL;
-	tree->node.name = NULL;
-	tree->node.valid = 0;
-	tree->longest = longest;
-	tree->mem = mem;
-	return tree;
+	fsd->node.child = NULL;
+	fsd->node.next = NULL;
+	fsd->node.name = NULL;
+	fsd->node.valid = 0;
+	fsd->longest = longest;
+	fsd->mem = mem;
+	return fsd;
 }
 
 void
-fsdata_free(fsdata_t tree)
+fsdata_free(fsdata_t *fsd)
 {
-	if(tree != NULL_FSDATA)
+	if(fsd != NULL)
 	{
-		nodes_free(&tree->node);
+		nodes_free(&fsd->node);
 	}
 }
 
@@ -90,7 +91,7 @@ nodes_free(node_t *node)
 }
 
 int
-fsdata_set(fsdata_t tree, const char *path, tree_val_t data)
+fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
@@ -98,8 +99,8 @@ fsdata_set(fsdata_t tree, const char *path, tree_val_t data)
 	if(realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(&tree->node, real_path, 1, NULL);
-	if(node->valid && tree->mem)
+	node = find_node(&fsd->node, real_path, 1, NULL);
+	if(node->valid && fsd->mem)
 	{
 		union
 		{
@@ -117,19 +118,19 @@ fsdata_set(fsdata_t tree, const char *path, tree_val_t data)
 }
 
 int
-fsdata_get(fsdata_t tree, const char *path, tree_val_t *data)
+fsdata_get(fsdata_t *fsd, const char *path, tree_val_t *data)
 {
 	node_t *last = NULL;
 	node_t *node;
 	char real_path[PATH_MAX];
 
-	if(tree->node.child == NULL)
+	if(fsd->node.child == NULL)
 		return -1;
 
 	if(realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(&tree->node, real_path, 0, tree->longest ? &last : NULL);
+	node = find_node(&fsd->node, real_path, 0, fsd->longest ? &last : NULL);
 	if((node == NULL || !node->valid) && last == NULL)
 		return -1;
 

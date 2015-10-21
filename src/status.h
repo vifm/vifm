@@ -24,7 +24,6 @@
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
-#include "utils/fsdata.h"
 
 struct config_t;
 
@@ -108,7 +107,7 @@ typedef struct
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
 
-	fsdata_t dirsize_cache; /* Cache for ga/gA command results. */
+	struct fsdata_t *dirsize_cache; /* Cache for ga/gA command results. */
 
 	int last_search_backward;
 

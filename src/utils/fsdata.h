@@ -19,32 +19,28 @@
 #ifndef VIFM__UTILS__FSDATA_H__
 #define VIFM__UTILS__FSDATA_H__
 
-#include <stddef.h> /* NULL */
 #include <stdint.h> /* uint64_t */
 
-/* NULL equivalent for variables of type fsdata_t. */
-#define NULL_FSDATA NULL
-
 /* Declaration of opaque fsdata type. */
-typedef struct root_t *fsdata_t;
+typedef struct fsdata_t fsdata_t;
+
 typedef uint64_t tree_val_t;
 
 /* longest parameter determines whether implementation will return the last
  * value found during searching in the tree. mem parameter shows whether tree
  * will contain pointers, which will be freed by fsdata_free(). Returns
- * NULL_FSDATA on error. */
-fsdata_t fsdata_create(int longest, int mem);
+ * NULL on error. */
+fsdata_t * fsdata_create(int longest, int mem);
 
 /* Frees memory from values if tree was created with mem parameter set to
- * true. Freeing of NULL_FSDATA tree is OK. */
-void fsdata_free(fsdata_t tree);
+ * true.  Freeing of NULL fsd is OK. */
+void fsdata_free(fsdata_t *fsd);
 
 /* Returns non-zero on error. */
-int fsdata_set(fsdata_t tree, const char *path, tree_val_t data);
+int fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data);
 
-/* Won't change data content if path absent in tree. Returns non-zero on
- * error. */
-int fsdata_get(fsdata_t tree, const char *path, tree_val_t *data);
+/* Won't change data content if path absent.  Returns non-zero on error. */
+int fsdata_get(fsdata_t *fsd, const char *path, tree_val_t *data);
 
 #endif /* VIFM__UTILS__FSDATA_H__ */
 

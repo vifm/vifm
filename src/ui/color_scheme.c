@@ -375,8 +375,8 @@ static void get_cs_path(const char name[], char buf[], size_t buf_size);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
-/* Maps color scheme associations onto file system tree. */
-static fsdata_t dirs = NULL_FSDATA;
+/* Mapping of color schemes associations onto file system tree. */
+static fsdata_t *dirs;
 
 void
 check_color_scheme(col_scheme_t *cs)
@@ -638,7 +638,7 @@ void
 load_def_scheme(void)
 {
 	fsdata_free(dirs);
-	dirs = NULL_FSDATA;
+	dirs = NULL;
 
 	lwin.local_cs = 0;
 	rwin.local_cs = 0;
@@ -744,7 +744,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	}
 	u;
 
-	if(dirs == NULL_FSDATA)
+	if(dirs == NULL)
 	{
 		return 0;
 	}
@@ -901,7 +901,7 @@ assoc_dir(const char *name, const char *dir)
 static void
 ensure_dirs_tree_exists(void)
 {
-	if(dirs == NULL_FSDATA)
+	if(dirs == NULL)
 	{
 		dirs = fsdata_create(1, 1);
 	}
