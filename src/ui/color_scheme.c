@@ -375,7 +375,8 @@ static void get_cs_path(const char name[], char buf[], size_t buf_size);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dirs_tree_exists(void);
 
-static tree_t dirs = NULL_TREE;
+/* Maps color scheme associations onto file system tree. */
+static fsdata_t dirs = NULL_FSDATA;
 
 void
 check_color_scheme(col_scheme_t *cs)
@@ -636,8 +637,8 @@ load_color_scheme_colors(void)
 void
 load_def_scheme(void)
 {
-	tree_free(dirs);
-	dirs = NULL_TREE;
+	fsdata_free(dirs);
+	dirs = NULL_FSDATA;
 
 	lwin.local_cs = 0;
 	rwin.local_cs = 0;
@@ -743,7 +744,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	}
 	u;
 
-	if(dirs == NULL_TREE)
+	if(dirs == NULL_FSDATA)
 	{
 		return 0;
 	}
@@ -759,7 +760,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 		t = *p;
 		*p = '\0';
 
-		if(tree_get_data(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
+		if(fsdata_get(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
 		{
 			(void)source_cs(u.name);
 			altered = 1;
@@ -891,16 +892,18 @@ assoc_dir(const char *name, const char *dir)
 
 	ensure_dirs_tree_exists();
 
-	if(tree_set_data(dirs, dir, u.l) != 0)
+	if(fsdata_set(dirs, dir, u.l) != 0)
+	{
 		free(u.s);
+	}
 }
 
 static void
 ensure_dirs_tree_exists(void)
 {
-	if(dirs == NULL_TREE)
+	if(dirs == NULL_FSDATA)
 	{
-		dirs = tree_create(1, 1);
+		dirs = fsdata_create(1, 1);
 	}
 }
 

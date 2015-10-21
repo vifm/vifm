@@ -140,7 +140,7 @@ redraw_file_info_dialog(void)
 	{
 		char full_path[PATH_MAX];
 		get_current_full_path(view, sizeof(full_path), full_path);
-		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
+		(void)fsdata_get(curr_stats.dirsize_cache, full_path, &size);
 	}
 
 	if(size == 0)

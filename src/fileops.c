@@ -4305,9 +4305,11 @@ calculate_dir_size(const char path[], int force_update)
 		if(is_dir_entry(buf, dentry))
 		{
 			uint64_t dir_size = 0;
-			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
+			if(fsdata_get(curr_stats.dirsize_cache, buf, &dir_size) != 0
 					|| force_update)
+			{
 				dir_size = calculate_dir_size(buf, force_update);
+			}
 			size += dir_size;
 		}
 		else
@@ -4329,7 +4331,7 @@ set_dir_size(const char path[], uint64_t size)
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	pthread_mutex_lock(&mutex);
-	tree_set_data(curr_stats.dirsize_cache, path, size);
+	fsdata_set(curr_stats.dirsize_cache, path, size);
 	pthread_mutex_unlock(&mutex);
 }
 

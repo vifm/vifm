@@ -94,7 +94,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->drop_new_dir_hist = 0;
 	stats->load_stage = 0;
 	stats->term_state = TS_NORMAL;
-	stats->dirsize_cache = NULL_TREE;
+	stats->dirsize_cache = NULL_FSDATA;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
 	stats->skip_shellout_redraw = 0;
@@ -192,9 +192,9 @@ reset_status(const config_t *config)
 static int
 reset_dircache(status_t *stats)
 {
-	tree_free(stats->dirsize_cache);
-	stats->dirsize_cache = tree_create(0, 0);
-	return stats->dirsize_cache == NULL_TREE;
+	fsdata_free(stats->dirsize_cache);
+	stats->dirsize_cache = fsdata_create(0, 0);
+	return stats->dirsize_cache == NULL_FSDATA;
 }
 
 void

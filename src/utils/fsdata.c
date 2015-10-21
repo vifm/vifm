@@ -48,14 +48,14 @@ static void nodes_free(node_t *node);
 static node_t * find_node(node_t *root, const char *name, int create,
 		node_t **last);
 
-tree_t
-tree_create(int longest, int mem)
+fsdata_t
+fsdata_create(int longest, int mem)
 {
 	root_t *tree;
 
 	if((tree = malloc(sizeof(*tree))) == NULL)
 	{
-		return NULL_TREE;
+		return NULL_FSDATA;
 	}
 
 	tree->node.child = NULL;
@@ -68,9 +68,9 @@ tree_create(int longest, int mem)
 }
 
 void
-tree_free(tree_t tree)
+fsdata_free(fsdata_t tree)
 {
-	if(tree != NULL_TREE)
+	if(tree != NULL_FSDATA)
 	{
 		nodes_free(&tree->node);
 	}
@@ -90,7 +90,7 @@ nodes_free(node_t *node)
 }
 
 int
-tree_set_data(tree_t tree, const char *path, tree_val_t data)
+fsdata_set(fsdata_t tree, const char *path, tree_val_t data)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
@@ -117,7 +117,7 @@ tree_set_data(tree_t tree, const char *path, tree_val_t data)
 }
 
 int
-tree_get_data(tree_t tree, const char *path, tree_val_t *data)
+fsdata_get(fsdata_t tree, const char *path, tree_val_t *data)
 {
 	node_t *last = NULL;
 	node_t *node;

@@ -108,7 +108,7 @@ typedef struct
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
 
-	tree_t dirsize_cache; /* ga command results */
+	fsdata_t dirsize_cache; /* Cache for ga/gA command results. */
 
 	int last_search_backward;
 

@@ -2723,7 +2723,7 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	{
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
+		(void)fsdata_get(curr_stats.dirsize_cache, full_path, &size);
 	}
 
 	return (size == 0) ? entry->size : size;
