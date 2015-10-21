@@ -45,16 +45,15 @@ struct fsdata_t
 	int mem;
 };
 
-static void nodes_free(node_t *node);
+static void nodes_free(node_t *node, int mem);
 static node_t * find_node(node_t *root, const char *name, int create,
 		node_t **last);
 
 fsdata_t *
 fsdata_create(int longest, int mem)
 {
-	fsdata_t *fsd;
-
-	if((fsd = malloc(sizeof(*fsd))) == NULL)
+	fsdata_t *const fsd = malloc(sizeof(*fsd));
+	if(fsd == NULL)
 	{
 		return NULL;
 	}
@@ -73,18 +72,31 @@ fsdata_free(fsdata_t *fsd)
 {
 	if(fsd != NULL)
 	{
-		nodes_free(&fsd->node);
+		nodes_free(&fsd->node, fsd->mem);
 	}
 }
 
 static void
-nodes_free(node_t *node)
+nodes_free(node_t *node, int mem)
 {
 	if(node->child != NULL)
-		nodes_free(node->child);
+		nodes_free(node->child, mem);
 
 	if(node->next != NULL)
-		nodes_free(node->next);
+		nodes_free(node->next, mem);
+
+	if(node->valid && mem)
+	{
+		union
+		{
+			tree_val_t l;
+			void *p;
+		} u = {
+			.l = node->data,
+		};
+
+		free(u.p);
+	}
 
 	free(node->name);
 	free(node);
@@ -106,7 +118,7 @@ fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data)
 		{
 			tree_val_t l;
 			void *p;
-		}u = {
+		} u = {
 			.l = node->data,
 		};
 

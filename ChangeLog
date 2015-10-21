@@ -277,6 +277,8 @@
 
 	Fixed turning of very custom view into sorted one after :restart.
 
+	Fixed memory leak related to :colorscheme command.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
