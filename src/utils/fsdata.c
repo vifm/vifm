@@ -16,6 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* The implementation is a tree (with links to leftmost child and right
+ * sibling), which is traversed according to slash separated path.  Siblings are
+ * sorted by name. */
+
 #include "fsdata.h"
 
 #include <stddef.h> /* NULL */
@@ -28,25 +32,28 @@
 #include "../compat/fs_limits.h"
 #include "str.h"
 
+/* Tree node type. */
 typedef struct node_t
 {
-	char *name;
-	size_t name_len;
-	tree_val_t data;
-	int valid;
-	struct node_t *next;
-	struct node_t *child;
-}node_t;
+	char *name;           /* Name of this node. */
+	size_t name_len;      /* Length of the name. */
+	tree_val_t data;      /* Data associated with the node. */
+	int valid;            /* Whether data in this node is meaningful. */
+	struct node_t *next;  /* Next sibling on this level. */
+	struct node_t *child; /* Leftmost child of this node. */
+}
+node_t;
 
+/* A node subtype that holds additional data. */
 struct fsdata_t
 {
-	node_t node;
-	int longest;
-	int mem;
+	node_t node; /* Root node data.  Must be the first field. */
+	int longest; /* Whether we use last seen value on searches. */
+	int mem;     /* Whether stored data is a heap pointer. */
 };
 
 static void nodes_free(node_t *node, int mem);
-static node_t * find_node(node_t *root, const char *name, int create,
+static node_t * find_node(node_t *root, const char path[], int create,
 		node_t **last);
 
 fsdata_t *
@@ -72,18 +79,19 @@ fsdata_free(fsdata_t *fsd)
 {
 	if(fsd != NULL)
 	{
+		/* Here root is also a node as it includes node_t as its first field. */
 		nodes_free(&fsd->node, fsd->mem);
 	}
 }
 
+/* Recursively frees all the nodes and everything associated with them. */
 static void
 nodes_free(node_t *node, int mem)
 {
-	if(node->child != NULL)
-		nodes_free(node->child, mem);
-
-	if(node->next != NULL)
-		nodes_free(node->next, mem);
+	if(node == NULL)
+	{
+		return;
+	}
 
 	if(node->valid && mem)
 	{
@@ -98,12 +106,15 @@ nodes_free(node_t *node, int mem)
 		free(u.p);
 	}
 
+	nodes_free(node->child, mem);
+	nodes_free(node->next, mem);
+
 	free(node->name);
 	free(node);
 }
 
 int
-fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data)
+fsdata_set(fsdata_t *fsd, const char path[], tree_val_t data)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
@@ -130,7 +141,7 @@ fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data)
 }
 
 int
-fsdata_get(fsdata_t *fsd, const char *path, tree_val_t *data)
+fsdata_get(fsdata_t *fsd, const char path[], tree_val_t *data)
 {
 	node_t *last = NULL;
 	node_t *node;
@@ -154,24 +165,24 @@ fsdata_get(fsdata_t *fsd, const char *path, tree_val_t *data)
 }
 
 static node_t *
-find_node(node_t *root, const char *name, int create, node_t **last)
+find_node(node_t *root, const char path[], int create, node_t **last)
 {
 	const char *end;
 	size_t name_len;
 	node_t *prev = NULL, *curr;
 	node_t *new_node;
 
-	name = skip_char(name, '/');
-	if(*name == '\0')
+	path = skip_char(path, '/');
+	if(*path == '\0')
 		return root;
 
-	end = until_first(name, '/');
+	end = until_first(path, '/');
 
-	name_len = end - name;
+	name_len = end - path;
 	curr = root->child;
 	while(curr != NULL)
 	{
-		int comp = strnoscmp(name, curr->name, name_len);
+		int comp = strnoscmp(path, curr->name, name_len);
 		if(comp == 0 && curr->name_len == name_len)
 		{
 			if(curr->valid && last != NULL)
@@ -193,12 +204,13 @@ find_node(node_t *root, const char *name, int create, node_t **last)
 	if(new_node == NULL)
 		return NULL;
 
-	if((new_node->name = malloc(name_len + 1)) == NULL)
+	new_node->name = malloc(name_len + 1);
+	if(new_node->name == NULL)
 	{
 		free(new_node);
 		return NULL;
 	}
-	strncpy(new_node->name, name, name_len);
+	copy_str(new_node->name, name_len + 1, path);
 	new_node->name[name_len] = '\0';
 	new_node->name_len = name_len;
 	new_node->valid = 0;

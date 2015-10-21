@@ -27,6 +27,14 @@ TEST(get_returns_error_for_unknown_path)
 	fsdata_free(fsd);
 }
 
+TEST(get_returns_error_for_wrong_path)
+{
+	tree_val_t data;
+	fsdata_t *const fsd = fsdata_create(0, 0);
+	assert_failure(fsdata_get(fsd, "no/path", &data));
+	fsdata_free(fsd);
+}
+
 TEST(get_does_not_alter_data_on_unknown_path)
 {
 	tree_val_t data = 0;
@@ -77,7 +85,7 @@ TEST(siblings_are_independent)
 	fsdata_free(fsd);
 }
 
-TEST(set_does_not_work_for_path_that_do_not_exist)
+TEST(set_does_not_work_for_paths_that_do_not_exist)
 {
 	tree_val_t data = 0;
 	fsdata_t *const fsd = fsdata_create(0, 0);

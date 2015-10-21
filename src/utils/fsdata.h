@@ -21,6 +21,8 @@
 
 #include <stdint.h> /* uint64_t */
 
+/* Structure that maps arbitrary data onto file system tree. */
+
 /* Declaration of opaque fsdata type. */
 typedef struct fsdata_t fsdata_t;
 
@@ -37,10 +39,10 @@ fsdata_t * fsdata_create(int longest, int mem);
 void fsdata_free(fsdata_t *fsd);
 
 /* Returns non-zero on error. */
-int fsdata_set(fsdata_t *fsd, const char *path, tree_val_t data);
+int fsdata_set(fsdata_t *fsd, const char path[], tree_val_t data);
 
 /* Won't change data content if path absent.  Returns non-zero on error. */
-int fsdata_get(fsdata_t *fsd, const char *path, tree_val_t *data);
+int fsdata_get(fsdata_t *fsd, const char path[], tree_val_t *data);
 
 #endif /* VIFM__UTILS__FSDATA_H__ */
 
