@@ -20,7 +20,6 @@
 #include "color_scheme.h"
 
 #include <curses.h>
-
 #include <regex.h> /* regcomp() regexec() */
 
 #include <assert.h> /* assert() */
@@ -36,11 +35,11 @@
 #include "../engine/completion.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../utils/fs.h"
+#include "../utils/fsdata.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/tree.h"
 #include "../utils/utils.h"
 #include "../status.h"
 #include "color_manager.h"

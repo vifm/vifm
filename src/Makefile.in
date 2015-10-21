@@ -125,16 +125,17 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/matcher.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/fsdata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
+	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
@@ -478,6 +479,7 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
+	utils/fsdata.c utils/fsdata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
 	utils/int_stack.c utils/int_stack.h \
@@ -488,7 +490,6 @@ vifm_SOURCES = \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \
-	utils/tree.c utils/tree.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
@@ -864,6 +865,8 @@ utils/filter.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/fsdata.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fswatch_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
@@ -879,8 +882,6 @@ utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 utils/str.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/string_array.$(OBJEXT): utils/$(am__dirstamp) \
-	utils/$(DEPDIR)/$(am__dirstamp)
-utils/tree.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/trie.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -1018,6 +1019,7 @@ mostlyclean-compile:
 	-rm -f utils/filemon.$(OBJEXT)
 	-rm -f utils/filter.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
+	-rm -f utils/fsdata.$(OBJEXT)
 	-rm -f utils/fswatch_nix.$(OBJEXT)
 	-rm -f utils/globs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
@@ -1026,7 +1028,6 @@ mostlyclean-compile:
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
-	-rm -f utils/tree.$(OBJEXT)
 	-rm -f utils/trie.$(OBJEXT)
 	-rm -f utils/utf8.$(OBJEXT)
 	-rm -f utils/utils.$(OBJEXT)
@@ -1153,6 +1154,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fsdata.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
@@ -1161,7 +1163,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/trie.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utf8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utils.Po@am__quote@

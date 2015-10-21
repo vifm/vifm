@@ -59,11 +59,11 @@
 #include "utils/env.h"
 #endif
 #include "utils/fs.h"
+#include "utils/fsdata.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/tree.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"

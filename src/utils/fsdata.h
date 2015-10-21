@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__TREE_H__
-#define VIFM__UTILS__TREE_H__
+#ifndef VIFM__UTILS__FSDATA_H__
+#define VIFM__UTILS__FSDATA_H__
 
 #include <stddef.h> /* NULL */
 #include <stdint.h> /* uint64_t */
@@ -45,7 +45,7 @@ int tree_set_data(tree_t tree, const char *path, tree_val_t data);
  * error. */
 int tree_get_data(tree_t tree, const char *path, tree_val_t *data);
 
-#endif /* VIFM__UTILS__TREE_H__ */
+#endif /* VIFM__UTILS__FSDATA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

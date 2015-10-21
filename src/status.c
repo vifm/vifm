@@ -36,11 +36,11 @@
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
+#include "utils/fsdata.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "utils/tree.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
 

@@ -24,7 +24,7 @@
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
-#include "utils/tree.h"
+#include "utils/fsdata.h"
 
 struct config_t;
 
