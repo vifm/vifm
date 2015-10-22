@@ -183,11 +183,6 @@ void restore_cwd(char saved_cwd[]);
 
 #ifdef _WIN32
 
-/* Resolves the path to the real path without any symbolic links.  buf should be
- * at least PATH_MAX in length.  Returns the buf on success, otherwise NULL is
- * returned. */
-char * realpath(const char path[], char buf[]);
-
 int S_ISLNK(mode_t mode);
 
 int readlink(const char *path, char *buf, size_t len);

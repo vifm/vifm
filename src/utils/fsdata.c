@@ -27,10 +27,8 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h>
 
-#ifdef _WIN32
-#include "fs.h"
-#endif
 #include "../compat/fs_limits.h"
+#include "../compat/os.h"
 #include "str.h"
 
 /* Tree node type. */
@@ -126,7 +124,7 @@ fsdata_set(fsdata_t *fsd, const char path[], fsdata_val_t data)
 	node_t *node;
 	char real_path[PATH_MAX];
 
-	if(realpath(path, real_path) != real_path)
+	if(os_realpath(path, real_path) != real_path)
 		return -1;
 
 	node = find_node(&fsd->node, real_path, 1, NULL);
@@ -149,7 +147,7 @@ fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data)
 	if(fsd->node.child == NULL)
 		return -1;
 
-	if(realpath(path, real_path) != real_path)
+	if(os_realpath(path, real_path) != real_path)
 		return -1;
 
 	node = find_node(&fsd->node, real_path, 0, fsd->prefix ? &last : NULL);

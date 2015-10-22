@@ -20,14 +20,19 @@
 
 #ifdef _WIN32
 
-#include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
+#include <windows.h>
+#include <ntdef.h>
+#include <winioctl.h>
 
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strlen() */
-#include <stdio.h> /* FILE */
+#include <string.h> /* strcpy() strdup() strlen() */
+#include <stdio.h> /* FILE snprintf() */
+#include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
+#include "../utils/fs.h"
 #include "../utils/str.h"
+#include "../utils/path.h"
 #include "../utils/utf8.h"
 
 /* Fake DIR structure for directory traversing functions. */
@@ -37,6 +42,8 @@ typedef struct
 	struct dirent entry; /* Buffer for modified return value of readdir(). */
 }
 os_dir_t;
+
+static char * resolve_mount_points(const char path[]);
 
 int
 os_access(const char pathname[], int mode)
@@ -149,6 +156,109 @@ os_mkdir(const char pathname[], int mode)
 	const int result = _wmkdir(utf16_pathname);
 	free(utf16_pathname);
 	return result;
+}
+
+char *
+os_realpath(const char path[], char resolved_path[])
+{
+	char *const resolved = resolve_mount_points(path);
+
+	if(!is_path_absolute(resolved))
+	{
+		/* Try to compose absolute path. */
+		char cwd[PATH_MAX];
+		if(get_cwd(cwd, sizeof(cwd)) == cwd)
+		{
+			snprintf(resolved_path, PATH_MAX, "%s/%s", cwd, resolved);
+			free(resolved);
+			return resolved_path;
+		}
+	}
+
+	copy_str(resolved_path, PATH_MAX, resolved);
+	free(resolved);
+	return resolved_path;
+}
+
+/* Resolves path to its destination.  Returns pointer a newly allocated
+ * memory. */
+static char *
+resolve_mount_points(const char path[])
+{
+	char resolved_path[PATH_MAX];
+
+	DWORD attr;
+	wchar_t *utf16_path;
+	HANDLE hfind;
+	WIN32_FIND_DATAW ffd;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+	int offset;
+	REPARSE_DATA_BUFFER *rdbp;
+
+	utf16_path = utf8_to_utf16(path);
+	attr = GetFileAttributesW(utf16_path);
+	free(utf16_path);
+
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		return strdup(path);
+	}
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	{
+		return strdup(path);
+	}
+
+	copy_str(resolved_path, sizeof(resolved_path), path);
+	chosp(resolved_path);
+
+	utf16_path = utf8_to_utf16(resolved_path);
+	hfind = FindFirstFileW(utf16_path, &ffd);
+
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		free(utf16_path);
+		return strdup(path);
+	}
+
+	FindClose(hfind);
+
+	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
+	{
+		free(utf16_path);
+		return strdup(path);
+	}
+
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+
+	free(utf16_path);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		return strdup(path);
+	}
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
+			&attr, NULL))
+	{
+		CloseHandle(hfile);
+		return strdup(path);
+	}
+	CloseHandle(hfile);
+
+	rdbp = (REPARSE_DATA_BUFFER *)rdb;
+	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
+
+	offset = starts_with_lit(t, "\\??\\") ? 4 : 0;
+	strcpy(resolved_path, t + offset);
+
+	free(t);
+
+	return strdup(resolved_path);
 }
 
 int

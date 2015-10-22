@@ -987,7 +987,7 @@ change_directory(FileView *view, const char directory[])
 	if(cfg.chase_links)
 	{
 		char real_path[PATH_MAX];
-		if(realpath(dir_dup, real_path) == real_path)
+		if(os_realpath(dir_dup, real_path) == real_path)
 		{
 			/* Do this on success only, if realpath() fails, just go with the original
 			 * path. */

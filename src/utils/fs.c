@@ -36,7 +36,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() */
-#include <stdlib.h> /* free() realpath() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
 #include "../compat/fs_limits.h"
@@ -187,11 +187,11 @@ paths_are_same(const char s[], const char t[])
 	char s_real[PATH_MAX];
 	char t_real[PATH_MAX];
 
-	if(realpath(s, s_real) != s_real)
+	if(os_realpath(s, s_real) != s_real)
 	{
 		return 0;
 	}
-	if(realpath(t, t_real) != t_real)
+	if(os_realpath(t, t_real) != t_real)
 	{
 		return 0;
 	}
@@ -277,7 +277,7 @@ get_symlink_type(const char path[])
 	filename_copy = strdup(path);
 	chosp(filename_copy);
 
-	p = realpath(filename_copy, linkto);
+	p = os_realpath(filename_copy, linkto);
 	saved_errno = errno;
 
 	free(filename_copy);
@@ -644,12 +644,12 @@ is_in_subtree(const char path[], const char root[])
 	copy_str(path_copy, sizeof(path_copy), path);
 	remove_last_path_component(path_copy);
 
-	if(realpath(path_copy, path_real) != path_real)
+	if(os_realpath(path_copy, path_real) != path_real)
 	{
 		return 0;
 	}
 
-	if(realpath(root, root_real) != root_real)
+	if(os_realpath(root, root_real) != root_real)
 	{
 		return 0;
 	}
@@ -823,26 +823,6 @@ win_get_file_attrs(const char path[])
 	free(utf16_path);
 
 	return attr;
-}
-
-char *
-realpath(const char path[], char buf[])
-{
-	const char *const resolved_path = win_resolve_mount_points(path);
-
-	if(!is_path_absolute(resolved_path))
-	{
-		/* Try to compose absolute path. */
-		char cwd[PATH_MAX];
-		if(get_cwd(cwd, sizeof(cwd)) == cwd)
-		{
-			snprintf(buf, PATH_MAX, "%s/%s", cwd, resolved_path);
-			return buf;
-		}
-	}
-
-	copy_str(buf, PATH_MAX, resolved_path);
-	return buf;
 }
 
 int

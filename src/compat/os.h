@@ -33,7 +33,7 @@
 #include <sys/stat.h> /* mkdir() */
 #include <unistd.h> /* access() chdir() chmod() lstat() rename() */
 
-#include <stdlib.h> /* system() */
+#include <stdlib.h> /* realpath() system() */
 
 #define os_access access
 #define os_chdir chdir
@@ -44,6 +44,7 @@
 #define os_readdir readdir
 #define os_lstat lstat
 #define os_mkdir mkdir
+#define os_realpath realpath
 #define os_rename rename
 #define os_stat stat
 #define os_system system
@@ -80,6 +81,11 @@ struct dirent * os_readdir(DIR *dirp);
 int os_rename(const char oldpath[], const char newpath[]);
 
 int os_mkdir(const char pathname[], int mode);
+
+/* Resolves the path to the real path without any symbolic links.  buf should be
+ * at least PATH_MAX in length.  Returns resolved_path on success, otherwise
+ * NULL is returned. */
+char * os_realpath(const char path[], char resolved_path[]);
 
 int os_stat(const char path[], struct stat *buf);
 
