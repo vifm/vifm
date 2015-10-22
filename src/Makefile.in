@@ -125,17 +125,17 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
 	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fsdata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
-	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
-	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
-	utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
-	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
-	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
+	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
+	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/matcher.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
@@ -479,7 +479,8 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
-	utils/fsdata.c utils/fsdata.h \
+	utils/fsdata.c utils/fsdata.h private/utils/fsdata.h \
+	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
 	utils/int_stack.c utils/int_stack.h \
@@ -867,6 +868,8 @@ utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fsdata.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/fsddata.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fswatch_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1020,6 +1023,7 @@ mostlyclean-compile:
 	-rm -f utils/filter.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
 	-rm -f utils/fsdata.$(OBJEXT)
+	-rm -f utils/fsddata.$(OBJEXT)
 	-rm -f utils/fswatch_nix.$(OBJEXT)
 	-rm -f utils/globs.$(OBJEXT)
 	-rm -f utils/int_stack.$(OBJEXT)
@@ -1155,6 +1159,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fsdata.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fsddata.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@

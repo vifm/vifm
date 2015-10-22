@@ -21,6 +21,7 @@
  * sorted by name. */
 
 #include "fsdata.h"
+#include "private/fsdata.h"
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
@@ -37,7 +38,7 @@ typedef struct node_t
 {
 	char *name;           /* Name of this node. */
 	size_t name_len;      /* Length of the name. */
-	tree_val_t data;      /* Data associated with the node. */
+	fsdata_val_t data;    /* Data associated with the node. */
 	int valid;            /* Whether data in this node is meaningful. */
 	struct node_t *next;  /* Next sibling on this level. */
 	struct node_t *child; /* Leftmost child of this node. */
@@ -47,17 +48,18 @@ node_t;
 /* A node subtype that holds additional data. */
 struct fsdata_t
 {
-	node_t node; /* Root node data.  Must be the first field. */
-	int longest; /* Whether we use last seen value on searches. */
-	int mem;     /* Whether stored data is a heap pointer. */
+	node_t node;              /* Root node data.  Must be the first field. */
+	int prefix;               /* Whether we use last seen value on searches. */
+	fsd_cleanup_func cleanup; /* Node data cleanup function. */
 };
 
-static void nodes_free(node_t *node, int mem);
+static void do_nothing(void *data);
+static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
 static node_t * find_node(node_t *root, const char path[], int create,
 		node_t **last);
 
 fsdata_t *
-fsdata_create(int longest, int mem)
+fsdata_create(int prefix)
 {
 	fsdata_t *const fsd = malloc(sizeof(*fsd));
 	if(fsd == NULL)
@@ -69,9 +71,22 @@ fsdata_create(int longest, int mem)
 	fsd->node.next = NULL;
 	fsd->node.name = NULL;
 	fsd->node.valid = 0;
-	fsd->longest = longest;
-	fsd->mem = mem;
+	fsd->prefix = prefix;
+	fsd->cleanup = &do_nothing;
 	return fsd;
+}
+
+/* Node cleanup stub, that does nothing. */
+static void
+do_nothing(void *data)
+{
+	(void)data;
+}
+
+void
+fsdata_set_cleanup(fsdata_t *fsd, fsd_cleanup_func cleanup)
+{
+	fsd->cleanup = cleanup;
 }
 
 void
@@ -80,41 +95,33 @@ fsdata_free(fsdata_t *fsd)
 	if(fsd != NULL)
 	{
 		/* Here root is also a node as it includes node_t as its first field. */
-		nodes_free(&fsd->node, fsd->mem);
+		nodes_free(&fsd->node, fsd->cleanup);
 	}
 }
 
 /* Recursively frees all the nodes and everything associated with them. */
 static void
-nodes_free(node_t *node, int mem)
+nodes_free(node_t *node, fsd_cleanup_func cleanup)
 {
 	if(node == NULL)
 	{
 		return;
 	}
 
-	if(node->valid && mem)
+	if(node->valid)
 	{
-		union
-		{
-			tree_val_t l;
-			void *p;
-		} u = {
-			.l = node->data,
-		};
-
-		free(u.p);
+		cleanup(&node->data);
 	}
 
-	nodes_free(node->child, mem);
-	nodes_free(node->next, mem);
+	nodes_free(node->child, cleanup);
+	nodes_free(node->next, cleanup);
 
 	free(node->name);
 	free(node);
 }
 
 int
-fsdata_set(fsdata_t *fsd, const char path[], tree_val_t data)
+fsdata_set(fsdata_t *fsd, const char path[], fsdata_val_t data)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
@@ -123,17 +130,9 @@ fsdata_set(fsdata_t *fsd, const char path[], tree_val_t data)
 		return -1;
 
 	node = find_node(&fsd->node, real_path, 1, NULL);
-	if(node->valid && fsd->mem)
+	if(node->valid)
 	{
-		union
-		{
-			tree_val_t l;
-			void *p;
-		} u = {
-			.l = node->data,
-		};
-
-		free(u.p);
+		fsd->cleanup(&node->data);
 	}
 	node->data = data;
 	node->valid = 1;
@@ -141,7 +140,7 @@ fsdata_set(fsdata_t *fsd, const char path[], tree_val_t data)
 }
 
 int
-fsdata_get(fsdata_t *fsd, const char path[], tree_val_t *data)
+fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data)
 {
 	node_t *last = NULL;
 	node_t *node;
@@ -153,7 +152,7 @@ fsdata_get(fsdata_t *fsd, const char path[], tree_val_t *data)
 	if(realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(&fsd->node, real_path, 0, fsd->longest ? &last : NULL);
+	node = find_node(&fsd->node, real_path, 0, fsd->prefix ? &last : NULL);
 	if((node == NULL || !node->valid) && last == NULL)
 		return -1;
 

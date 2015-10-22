@@ -16,36 +16,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__FSDATA_H__
-#define VIFM__UTILS__FSDATA_H__
+#ifndef VIFM__UTILS__FSDDATA_H__
+#define VIFM__UTILS__FSDDATA_H__
 
-#include <stdint.h> /* uint64_t */
+/* Thin type-safe wrapper around fsdata_t that manages heap allocated pointers.
+ * Once put into this structure the structure becomes responsible for handling
+ * the pointers. */
 
-/* Structure that maps arbitrary data onto file system tree. */
-
-/* Declaration of opaque fsdata type. */
-typedef struct fsdata_t fsdata_t;
-
-/* Integer data value type. */
-typedef uint64_t fsdata_val_t;
+/* Declaration of opaque fsddata type. */
+typedef struct fsddata_t fsddata_t;
 
 /* prefix mode causes queries to return nearest match when exact match is not
  * available.  Returns NULL on error. */
-fsdata_t * fsdata_create(int prefix);
+fsddata_t * fsddata_create(int prefix);
 
-/* Frees memory from the structure.  Freeing of NULL fsd is OK. */
-void fsdata_free(fsdata_t *fsd);
+/* Frees the structure.  Freeing of NULL fsdd is OK. */
+void fsddata_free(fsddata_t *fsdd);
 
 /* Assigns (possibly with overwrite) data to specified path.  Returns zero on
  * success, otherwise non-zero is returned. */
-int fsdata_set(fsdata_t *fsd, const char path[], fsdata_val_t data);
+int fsddata_set(fsddata_t *fsdd, const char path[], void *data);
 
 /* Retrieves data associated with the path (or closest predecessor on prefix
  * matches).  Doesn't change data content if path absent.  Returns zero on
  * success and non-zero on error. */
-int fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data);
+int fsddata_get(fsddata_t *fsdd, const char path[], void **data);
 
-#endif /* VIFM__UTILS__FSDATA_H__ */
+#endif /* VIFM__UTILS__FSDDATA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

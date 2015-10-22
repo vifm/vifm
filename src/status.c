@@ -193,7 +193,7 @@ static int
 reset_dircache(status_t *stats)
 {
 	fsdata_free(stats->dirsize_cache);
-	stats->dirsize_cache = fsdata_create(0, 0);
+	stats->dirsize_cache = fsdata_create(0);
 	return stats->dirsize_cache == NULL;
 }
 

@@ -35,7 +35,7 @@
 #include "../engine/completion.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../utils/fs.h"
-#include "../utils/fsdata.h"
+#include "../utils/fsddata.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
 #include "../utils/str.h"
@@ -373,10 +373,10 @@ static void reset_color_scheme_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
 static void load_color_pairs(col_scheme_t *cs);
-static void ensure_dirs_tree_exists(void);
+static void ensure_dir_map_exists(void);
 
 /* Mapping of color schemes associations onto file system tree. */
-static fsdata_t *dirs;
+static fsddata_t *dir_map;
 
 void
 check_color_scheme(col_scheme_t *cs)
@@ -627,7 +627,7 @@ restore_primary_color_scheme(const col_scheme_t *cs)
 void
 load_color_scheme_colors(void)
 {
-	ensure_dirs_tree_exists();
+	ensure_dir_map_exists();
 
 	load_color_pairs(&cfg.cs);
 	load_color_pairs(&lwin.cs);
@@ -637,8 +637,8 @@ load_color_scheme_colors(void)
 void
 load_def_scheme(void)
 {
-	fsdata_free(dirs);
-	dirs = NULL;
+	fsddata_free(dir_map);
+	dir_map = NULL;
 
 	lwin.local_cs = 0;
 	rwin.local_cs = 0;
@@ -737,14 +737,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	char t;
 	int altered;
 
-	union
-	{
-		char *name;
-		tree_val_t buf;
-	}
-	u;
-
-	if(dirs == NULL)
+	if(dir_map == NULL)
 	{
 		return 0;
 	}
@@ -757,12 +750,14 @@ check_directory_for_color_scheme(int left, const char dir[])
 	altered = 0;
 	do
 	{
+		void *name;
+
 		t = *p;
 		*p = '\0';
 
-		if(fsdata_get(dirs, dir, &u.buf) == 0 && color_scheme_exists(u.name))
+		if(fsddata_get(dir_map, dir, &name) == 0 && color_scheme_exists(name))
 		{
-			(void)source_cs(u.name);
+			(void)source_cs(name);
 			altered = 1;
 		}
 
@@ -880,30 +875,25 @@ attrs_to_str(int attrs)
 }
 
 void
-assoc_dir(const char *name, const char *dir)
+assoc_dir(const char name[], const char dir[])
 {
-	union
-	{
-		char *s;
-		tree_val_t l;
-	}u = {
-		.s = strdup(name),
-	};
+	char *const copy = strdup(name);
 
-	ensure_dirs_tree_exists();
+	ensure_dir_map_exists();
 
-	if(fsdata_set(dirs, dir, u.l) != 0)
+	if(fsddata_set(dir_map, dir, copy) != 0)
 	{
-		free(u.s);
+		free(copy);
 	}
 }
 
+/* Makes sure that dir_map variable is initialized. */
 static void
-ensure_dirs_tree_exists(void)
+ensure_dir_map_exists(void)
 {
-	if(dirs == NULL)
+	if(dir_map == NULL)
 	{
-		dirs = fsdata_create(1, 1);
+		dir_map = fsddata_create(1);
 	}
 }
 
