@@ -21,63 +21,68 @@ TEST(freeing_new_fsdata_is_ok)
 
 TEST(get_returns_error_for_unknown_path)
 {
-	fsdata_val_t data;
+	int data;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_failure(fsdata_get(fsd, ".", &data));
+	assert_failure(fsdata_get(fsd, ".", &data, sizeof(data)));
 	fsdata_free(fsd);
 }
 
 TEST(get_returns_error_for_wrong_path)
 {
-	fsdata_val_t data;
+	int data;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_failure(fsdata_get(fsd, "no/path", &data));
+	assert_failure(fsdata_get(fsd, "no/path", &data, sizeof(data)));
 	fsdata_free(fsd);
 }
 
 TEST(get_does_not_alter_data_on_unknown_path)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_failure(fsdata_get(fsd, ".", &data));
+	assert_failure(fsdata_get(fsd, ".", &data, sizeof(data)));
 	assert_true(data == 0);
 	fsdata_free(fsd);
 }
 
 TEST(get_returns_previously_set_value)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_success(fsdata_set(fsd, ".", data++));
-	assert_success(fsdata_get(fsd, ".", &data));
+	assert_success(fsdata_set(fsd, ".", &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_get(fsd, ".", &data, sizeof(data)));
 	assert_true(data == 0);
 	fsdata_free(fsd);
 }
 
 TEST(set_overwrites_previous_value)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_success(fsdata_set(fsd, ".", data++));
-	assert_success(fsdata_set(fsd, ".", data++));
-	assert_success(fsdata_get(fsd, ".", &data));
+	assert_success(fsdata_set(fsd, ".", &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_set(fsd, ".", &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_get(fsd, ".", &data, sizeof(data)));
 	assert_true(data == 1);
 	fsdata_free(fsd);
 }
 
 TEST(siblings_are_independent)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir2", 0700));
 
-	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir1", data++));
-	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir2", data++));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir1", &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir2", &data, sizeof(data)));
+	++data;
 
-	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir1", &data));
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir1", &data, sizeof(data)));
 	assert_true(data == 0);
-	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir2", &data));
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir2", &data, sizeof(data)));
 	assert_true(data == 1);
 
 	assert_success(remove(SANDBOX_PATH "/dir1"));
@@ -87,32 +92,34 @@ TEST(siblings_are_independent)
 
 TEST(set_does_not_work_for_paths_that_do_not_exist)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
-	assert_failure(fsdata_set(fsd, "no/path", data));
+	assert_failure(fsdata_set(fsd, "no/path", &data, sizeof(data)));
 	fsdata_free(fsd);
 }
 
 TEST(set_does_not_work_for_path_that_do_not_exist_anymore)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(0);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
-	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", data));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_success(remove(SANDBOX_PATH "/dir"));
-	assert_failure(fsdata_set(fsd, SANDBOX_PATH "/dir", data));
+	assert_failure(fsdata_set(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	fsdata_free(fsd);
 }
 
 TEST(end_value_is_preferred_over_intermediate_value)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(1);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
-	assert_success(fsdata_set(fsd, SANDBOX_PATH, data++));
-	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", data++));
-	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH, &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_true(data == 1);
 
 	assert_success(remove(SANDBOX_PATH "/dir"));
@@ -121,12 +128,13 @@ TEST(end_value_is_preferred_over_intermediate_value)
 
 TEST(intermediate_value_is_returned_if_end_value_is_not_found)
 {
-	fsdata_val_t data = 0;
+	int data = 0;
 	fsdata_t *const fsd = fsdata_create(1);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
-	assert_success(fsdata_set(fsd, SANDBOX_PATH, data++));
-	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH, &data, sizeof(data)));
+	++data;
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_true(data == 0);
 
 	assert_success(remove(SANDBOX_PATH "/dir"));

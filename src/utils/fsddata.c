@@ -54,28 +54,13 @@ fsddata_free(fsddata_t *fsdd)
 int
 fsddata_set(fsddata_t *fsdd, const char path[], void *data)
 {
-	union
-	{
-		void *ptr;
-		fsdata_val_t data;
-	} u = { .ptr = data };
-	return fsdata_set((fsdata_t *)fsdd, path, u.data);
+	return fsdata_set((fsdata_t *)fsdd, path, &data, sizeof(data));
 }
 
 int
 fsddata_get(fsddata_t *fsdd, const char path[], void **data)
 {
-	union
-	{
-		void *ptr;
-		fsdata_val_t data;
-	} u;
-	const int ret = fsdata_get((fsdata_t *)fsdd, path, &u.data);
-	if(ret == 0)
-	{
-		*data = u.ptr;
-	}
-	return ret;
+	return fsdata_get((fsdata_t *)fsdd, path, data, sizeof(*data));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

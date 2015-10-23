@@ -23,23 +23,27 @@
 #include "fsdata.h"
 #include "private/fsdata.h"
 
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h>
+#include <string.h> /* memcpy() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "str.h"
+
+/* Special value for find_node()'s len argument to prevent it from creating a
+ * node. */
+#define NO_CREATE (size_t)-1
 
 /* Tree node type. */
 typedef struct node_t
 {
 	char *name;           /* Name of this node. */
 	size_t name_len;      /* Length of the name. */
-	fsdata_val_t data;    /* Data associated with the node. */
 	int valid;            /* Whether data in this node is meaningful. */
 	struct node_t *next;  /* Next sibling on this level. */
 	struct node_t *child; /* Leftmost child of this node. */
+	char data[];          /* Data associated with the node follows. */
 }
 node_t;
 
@@ -53,7 +57,7 @@ struct fsdata_t
 
 static void do_nothing(void *data);
 static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
-static node_t * find_node(node_t *root, const char path[], int create,
+static node_t * find_node(node_t *root, const char path[], size_t len,
 		node_t **last);
 
 fsdata_t *
@@ -119,29 +123,32 @@ nodes_free(node_t *node, fsd_cleanup_func cleanup)
 }
 
 int
-fsdata_set(fsdata_t *fsd, const char path[], fsdata_val_t data)
+fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
 
 	if(os_realpath(path, real_path) != real_path)
+	{
 		return -1;
+	}
 
-	node = find_node(&fsd->node, real_path, 1, NULL);
+	node = find_node(&fsd->node, real_path, len, NULL);
 	if(node->valid)
 	{
 		fsd->cleanup(&node->data);
 	}
-	node->data = data;
 	node->valid = 1;
+	memcpy(node->data, data, len);
 	return 0;
 }
 
 int
-fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data)
+fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 {
 	node_t *last = NULL;
 	node_t *node;
+	const void *src;
 	char real_path[PATH_MAX];
 
 	if(fsd->node.child == NULL)
@@ -150,19 +157,18 @@ fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data)
 	if(os_realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(&fsd->node, real_path, 0, fsd->prefix ? &last : NULL);
+	node = find_node(&fsd->node, real_path, NO_CREATE,
+			fsd->prefix ? &last : NULL);
 	if((node == NULL || !node->valid) && last == NULL)
 		return -1;
 
-	if(node != NULL && node->valid)
-		*data = node->data;
-	else
-		*data = last->data;
+	src = (node != NULL && node->valid) ? node->data : last->data;
+	memcpy(data, src, len);
 	return 0;
 }
 
 static node_t *
-find_node(node_t *root, const char path[], int create, node_t **last)
+find_node(node_t *root, const char path[], size_t len, node_t **last)
 {
 	const char *end;
 	size_t name_len;
@@ -184,7 +190,7 @@ find_node(node_t *root, const char path[], int create, node_t **last)
 		{
 			if(curr->valid && last != NULL)
 				*last = curr;
-			return find_node(curr, end, create, last);
+			return find_node(curr, end, len, last);
 		}
 		else if(comp < 0)
 		{
@@ -194,10 +200,10 @@ find_node(node_t *root, const char path[], int create, node_t **last)
 		curr = curr->next;
 	}
 
-	if(!create)
+	if(len == NO_CREATE)
 		return NULL;
 
-	new_node = malloc(sizeof(*new_node));
+	new_node = malloc(sizeof(*new_node) + len);
 	if(new_node == NULL)
 		return NULL;
 
@@ -219,7 +225,7 @@ find_node(node_t *root, const char path[], int create, node_t **last)
 	else
 		prev->next = new_node;
 
-	return find_node(new_node, end, create, last);
+	return find_node(new_node, end, len, last);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -258,14 +258,16 @@ sort_dir_list(const void *one, const void *two)
 				{
 					char full_path[PATH_MAX];
 					get_full_path_of(first, sizeof(full_path), full_path);
-					(void)fsdata_get(curr_stats.dirsize_cache, full_path, &first->size);
+					(void)fsdata_get(curr_stats.dirsize_cache, full_path, &first->size,
+							sizeof(first->size));
 				}
 
 				if(second_is_dir)
 				{
 					char full_path[PATH_MAX];
 					get_full_path_of(second, sizeof(full_path), full_path);
-					(void)fsdata_get(curr_stats.dirsize_cache, full_path, &second->size);
+					(void)fsdata_get(curr_stats.dirsize_cache, full_path, &second->size,
+							sizeof(second->size));
 				}
 
 				retval = (first->size < second->size)

@@ -19,15 +19,14 @@
 #ifndef VIFM__UTILS__FSDATA_H__
 #define VIFM__UTILS__FSDATA_H__
 
-#include <stdint.h> /* uint64_t */
+/* Structure that maps arbitrary data onto file system tree.  Each node can
+ * contain arbitrary amount of data, but size is fixed upon node creation.  No
+ * additional checks are performed in get/set functions. */
 
-/* Structure that maps arbitrary data onto file system tree. */
+#include <stddef.h> /* size_t */
 
 /* Declaration of opaque fsdata type. */
 typedef struct fsdata_t fsdata_t;
-
-/* Integer data value type. */
-typedef uint64_t fsdata_val_t;
 
 /* prefix mode causes queries to return nearest match when exact match is not
  * available.  Returns NULL on error. */
@@ -38,12 +37,12 @@ void fsdata_free(fsdata_t *fsd);
 
 /* Assigns (possibly with overwrite) data to specified path.  Returns zero on
  * success, otherwise non-zero is returned. */
-int fsdata_set(fsdata_t *fsd, const char path[], fsdata_val_t data);
+int fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len);
 
 /* Retrieves data associated with the path (or closest predecessor on prefix
  * matches).  Doesn't change data content if path absent.  Returns zero on
  * success and non-zero on error. */
-int fsdata_get(fsdata_t *fsd, const char path[], fsdata_val_t *data);
+int fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len);
 
 #endif /* VIFM__UTILS__FSDATA_H__ */
 
