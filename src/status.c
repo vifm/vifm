@@ -51,6 +51,14 @@
 #define SCREEN_ENVVAR "STY"
 #define TMUX_ENVVAR "TMUX"
 
+/* dcache entry. */
+typedef struct
+{
+	uint64_t size;   /* Directory size (recursively). */
+	uint64_t nitems; /* Number of items in the directory (non-recursively). */
+}
+dcache_data_t;
+
 static void load_def_values(status_t *stats, config_t *config);
 static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
@@ -319,12 +327,24 @@ stats_file_choose_action_set(void)
 void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
+	dcache_data_t data;
+
 	pthread_mutex_lock(&dcache_mutex);
-	if(fsdata_get(dcache, path, size, sizeof(*size)) != 0)
+	if(fsdata_get(dcache, path, &data, sizeof(data)) != 0)
 	{
-		*size = DCACHE_UNKNOWN;
+		data.size = DCACHE_UNKNOWN;
+		data.nitems = DCACHE_UNKNOWN;
 	}
 	pthread_mutex_unlock(&dcache_mutex);
+
+	if(size != NULL)
+	{
+		*size = data.size;
+	}
+	if(nitems != NULL)
+	{
+		*nitems = data.nitems;
+	}
 }
 
 void
@@ -338,8 +358,10 @@ dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
 int
 dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 {
+	const dcache_data_t data = { .size = size, .nitems = nitems };
+
 	pthread_mutex_lock(&dcache_mutex);
-	fsdata_set(dcache, path, &size, sizeof(size));
+	fsdata_set(dcache, path, &data, sizeof(data));
 	pthread_mutex_unlock(&dcache_mutex);
 }
 

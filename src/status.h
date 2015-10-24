@@ -229,8 +229,8 @@ int stats_file_choose_action_set(void);
  * unknown values variables are set to DCACHE_UNKNOWN. */
 void dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems);
 
-/* Retrieves information about the the entry.  size and/or nitems can be NULL.
- * On unknown values variables are set to DCACHE_UNKNOWN. */
+/* Retrieves information about the entry.  size and/or nitems can be NULL.  On
+ * unknown values variables are set to DCACHE_UNKNOWN. */
 void dcache_get_of(const struct dir_entry_t *entry, uint64_t *size, uint64_t *nitems);
 
 /* Updates information about the path.  Returns zero on success, otherwise
