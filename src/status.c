@@ -26,6 +26,8 @@
 #undef MIN
 #endif
 
+#include <pthread.h> /* PTHREAD_* pthread_* */
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
@@ -52,7 +54,7 @@
 static void load_def_values(status_t *stats, config_t *config);
 static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
-static int reset_dircache(status_t *stats);
+static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
 
 status_t curr_stats;
@@ -60,6 +62,11 @@ status_t curr_stats;
 static int pending_redraw;
 static int inside_screen;
 static int inside_tmux;
+
+/* Thread-safety guard for dcache variable. */
+static pthread_mutex_t dcache_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* Cache for ga/gA command results. */
+struct fsdata_t *dcache;
 
 int
 init_status(config_t *config)
@@ -82,6 +89,7 @@ static void
 load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
+	dcache = NULL;
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
@@ -94,7 +102,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->drop_new_dir_hist = 0;
 	stats->load_stage = 0;
 	stats->term_state = TS_NORMAL;
-	stats->dirsize_cache = NULL;
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
 	stats->skip_shellout_redraw = 0;
@@ -185,16 +192,16 @@ reset_status(const config_t *config)
 	curr_stats.initial_lines = config->lines;
 	curr_stats.initial_columns = config->columns;
 
-	return reset_dircache(&curr_stats);
+	return reset_dircache();
 }
 
 /* Returns non-zero on error. */
 static int
-reset_dircache(status_t *stats)
+reset_dircache(void)
 {
-	fsdata_free(stats->dirsize_cache);
-	stats->dirsize_cache = fsdata_create(0);
-	return stats->dirsize_cache == NULL;
+	fsdata_free(dcache);
+	dcache = fsdata_create(0);
+	return dcache == NULL;
 }
 
 void
@@ -307,6 +314,33 @@ stats_file_choose_action_set(void)
 {
 	return !is_null_or_empty(curr_stats.chosen_files_out)
 	    || !is_null_or_empty(curr_stats.on_choose);
+}
+
+void
+dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
+{
+	pthread_mutex_lock(&dcache_mutex);
+	if(fsdata_get(dcache, path, size, sizeof(*size)) != 0)
+	{
+		*size = DCACHE_UNKNOWN;
+	}
+	pthread_mutex_unlock(&dcache_mutex);
+}
+
+void
+dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
+{
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	dcache_get_at(full_path, size, nitems);
+}
+
+int
+dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
+{
+	pthread_mutex_lock(&dcache_mutex);
+	fsdata_set(dcache, path, &size, sizeof(size));
+	pthread_mutex_unlock(&dcache_mutex);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

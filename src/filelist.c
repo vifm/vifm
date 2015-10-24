@@ -2719,14 +2719,13 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	uint64_t size = 0;
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
+	size = DCACHE_UNKNOWN;
 	if(is_directory_entry(entry))
 	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		(void)fsdata_get(curr_stats.dirsize_cache, full_path, &size, sizeof(size));
+		dcache_get_of(entry, &size, NULL);
 	}
 
-	return (size == 0) ? entry->size : size;
+	return (size == DCACHE_UNKNOWN) ? entry->size : size;
 }
 
 int

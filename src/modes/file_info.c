@@ -135,15 +135,13 @@ redraw_file_info_dialog(void)
 
 	entry = &view->dir_entry[view->list_pos];
 
-	size = 0;
+	size = DCACHE_UNKNOWN;
 	if(entry->type == FT_DIR)
 	{
-		char full_path[PATH_MAX];
-		get_current_full_path(view, sizeof(full_path), full_path);
-		(void)fsdata_get(curr_stats.dirsize_cache, full_path, &size, sizeof(size));
+		dcache_get_of(entry, &size, NULL);
 	}
 
-	if(size == 0)
+	if(size == DCACHE_UNKNOWN)
 	{
 		size = entry->size;
 	}

@@ -132,7 +132,7 @@ typedef struct
 }
 history_t;
 
-typedef struct
+typedef struct dir_entry_t
 {
 	char *name;
 	char *origin;     /* Location where this file comes from. */
