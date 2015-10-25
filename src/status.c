@@ -46,6 +46,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
+#include "filelist.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -377,13 +378,16 @@ dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
 int
 dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 {
+	int ret;
 	const dcache_data_t data = {
 		.size = size, .nitems = nitems, .timestamp = time(NULL)
 	};
 
 	pthread_mutex_lock(&dcache_mutex);
-	fsdata_set(dcache, path, &data, sizeof(data));
+	ret = fsdata_set(dcache, path, &data, sizeof(data));
 	pthread_mutex_unlock(&dcache_mutex);
+
+	return ret;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

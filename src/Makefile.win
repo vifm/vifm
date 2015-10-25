@@ -75,26 +75,16 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
 
-converter_SOURCES := vifmrc-converter.c
-converter_OBJECTS := $(converter_SOURCES:.c=.o)
-converter_EXECUTABLE := vifmrc-converter.exe
-
 win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
 
 .PHONY: all clean check update_compile_info
 
-all: ../data/vifm-help.txt $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
-    $(win_helper_EXECUTABLE)
+all: ../data/vifm-help.txt $(vifm_EXECUTABLE) $(win_helper_EXECUTABLE)
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS) | ../config.h
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
-ifeq ($(RELEASE),1)
-	$(STRIP) -S --strip-unneeded $@
-endif
-$(converter_EXECUTABLE): $(converter_OBJECTS) | ../config.h
-	$(CC) $^ -o $@ $(LDFLAGS)
 ifeq ($(RELEASE),1)
 	$(STRIP) -S --strip-unneeded $@
 endif

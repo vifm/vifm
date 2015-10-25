@@ -408,6 +408,39 @@ cs_have_no_extensions(void)
 	return (len > 0 && i >= len);
 }
 
+void
+cs_rename_all(void)
+{
+	DIR *dir;
+	struct dirent *d;
+
+	dir = os_opendir(cfg.colors_dir);
+	if(dir == NULL)
+	{
+		return;
+	}
+
+	while((d = os_readdir(dir)) != NULL)
+	{
+		char full_old_path[PATH_MAX];
+		char full_new_path[PATH_MAX];
+		snprintf(full_old_path, sizeof(full_old_path), "%s/%s", cfg.colors_dir,
+				d->d_name);
+		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", cfg.colors_dir,
+				d->d_name);
+#ifndef _WIN32
+		if(d->d_type == DT_REG ||
+				(d->d_type == DT_UNKNOWN && is_regular_file(full_old_path)))
+#else
+		if(is_regular_file(full_old_path))
+#endif
+		{
+			(void)os_rename(full_old_path, full_new_path);
+		}
+	}
+	os_closedir(dir);
+}
+
 char **
 list_color_schemes(int *len)
 {

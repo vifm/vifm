@@ -101,7 +101,6 @@ static void copy_rc_file(void);
 static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
 static void decrease_history(size_t new_len, size_t removed_count);
@@ -779,43 +778,6 @@ show_sourcing_error(const char filename[], int line_num)
 	/* User choice is saved by prompt_error_msgf internally. */
 	(void)prompt_error_msgf("File Sourcing Error", "Error in %s at line %d",
 			filename, line_num);
-}
-
-int
-cfg_has_old_format(void)
-{
-	const char *const myvifmrc = env_get(MYVIFMRC_EV);
-	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
-}
-
-/* Checks whether file is configuration file (has at least one line which starts
- * with a hash symbol).  Returns non-zero if yes, otherwise zero is returned. */
-static int
-is_conf_file(const char file[])
-{
-	FILE *const fp = os_fopen(file, "r");
-	char *line = NULL;
-
-	if(fp != NULL)
-	{
-		while((line = read_line(fp, line)) != NULL)
-		{
-			if(skip_whitespace(line)[0] == '#')
-			{
-				break;
-			}
-		}
-		fclose(fp);
-		free(line);
-	}
-	return line != NULL;
-}
-
-int
-cfg_has_old_color_schemes(void)
-{
-	return !is_dir(cfg.colors_dir)
-	    && path_exists_at(cfg.config_dir, "colorschemes", DEREF);
 }
 
 const char *

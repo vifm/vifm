@@ -27,8 +27,7 @@ vifm_src += modes/ ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
 
 # filter out generally non-testable or sources for another platform
-vifm_src := $(filter-out %/vifm.c %/vifmrc-converter.c %/win_helper.c, \
-                         $(vifm_src))
+vifm_src := $(filter-out %/vifm.c %/win_helper.c, $(vifm_src))
 ifndef unix_env
     vifm_src := $(filter-out %/desktop.c %/mntent.c %_nix.c, $(vifm_src))
 endif

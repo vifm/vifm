@@ -3,6 +3,9 @@
 	Turned remote commands back on by default after their rewrite using
 	named pipes instead of insecure UDP sockets.
 
+	Removed vifmrc-converter.  It's been around for four years and not needed
+	any more.  Thanks to filterfalse.
+
 	Added :winc[md] command-line command.  Thanks to fogine.
 
 	Added layoutis() builtin function that answers queries about current
@@ -286,6 +289,9 @@
 	Fixed turning of very custom view into sorted one after :restart.
 
 	Fixed memory leak related to :colorscheme command.
+
+	Fixed redraw of invisible pane on :sync! on single-pane mode.  Thanks to
+	filterfalse.
 
 0.8-beta to 0.8
 
