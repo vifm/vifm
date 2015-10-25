@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 01, 2015
+" Last Change: October 25, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -109,15 +109,15 @@ syntax case match
 
 " Options
 syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
-		\ classify columns co confirm cf cpoptions cpo dotdirs fastrun fillchars fcs
-		\ findprg followlinks fusehome gdefault grepprg history hi hlsearch hls iec
-		\ ignorecase ic incsearch is laststatus lines locateprg ls lsview
-		\ mintimeoutlen number nu numberwidth nuw relativenumber rnu rulerformat ruf
-		\ runexec scrollbind scb scrolloff so sort sortorder shell sh shortmess shm
-		\ slowfs smartcase scs sortnumbers statusline stl syscalls tabstop timefmt
-		\ timeoutlen tm trash trashdir ts tuioptions to undolevels ul vicmd
-		\ viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wordchars wrap wrapscan
-		\ ws
+		\ classify columns co confirm cf cpoptions cpo dotdirs dirsize fastrun
+		\ fillchars fcs findprg followlinks fusehome gdefault grepprg history hi
+		\ hlsearch hls iec ignorecase ic incsearch is laststatus lines locateprg ls
+		\ lsview mintimeoutlen number nu numberwidth nuw relativenumber rnu
+		\ rulerformat ruf runexec scrollbind scb scrolloff so sort sortorder shell
+		\ sh shortmess shm slowfs smartcase scs sortnumbers statusline stl syscalls
+		\ tabstop timefmt timeoutlen tm trash trashdir ts tuioptions to undolevels
+		\ ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wordchars wrap
+		\ wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nochaselinks

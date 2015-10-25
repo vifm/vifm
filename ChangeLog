@@ -74,6 +74,10 @@
 	fit on the screen.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn) and
 	Svyatoslav Mishyn (a.k.a. juef).
 
+	Added 'dirsize' option to control how size of directories is displayed in
+	file views.  This enables one to see number of files in a directory rather
+	than its size.  Thanks to Martin Fischer.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

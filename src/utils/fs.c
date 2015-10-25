@@ -748,6 +748,32 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 #endif
 }
 
+int
+count_dir_items(const char path[])
+{
+	DIR *dir;
+	struct dirent *d;
+	int count;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		return -1;
+	}
+
+	count = 0;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			++count;
+		}
+	}
+	os_closedir(dir);
+
+	return count;
+}
+
 char *
 get_cwd(char buf[], size_t size)
 {

@@ -49,6 +49,14 @@ typedef enum
 }
 DotDirs;
 
+/* What should be displayed as size of a directory in a view by default. */
+typedef enum
+{
+	VDS_SIZE,   /* Size of a directory (not its content). */
+	VDS_NITEMS, /* Number of items in a directory. */
+}
+ViewDirSize;
+
 /* Indexes for cfg.decorations. */
 enum
 {
@@ -162,6 +170,8 @@ typedef struct config_t
 	int min_timeout_len; /* Minimum period on waiting for the input. */
 
 	char word_chars[256]; /* Whether corresponding character is a word char. */
+
+	ViewDirSize view_dir_size; /* Type of size display for directories in view. */
 }
 config_t;
 

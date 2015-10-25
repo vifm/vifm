@@ -1046,7 +1046,35 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 {
 	char str[24];
 	const column_data_t *cdt = data;
-	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line_pos);
+	const FileView *view = cdt->view;
+	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
+	uint64_t size = DCACHE_UNKNOWN;
+
+	if(is_directory_entry(entry))
+	{
+		uint64_t nitems;
+		dcache_get_of(entry, &size, &nitems);
+
+		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS
+				&& !view->on_slow_fs)
+		{
+			if(nitems == DCACHE_UNKNOWN)
+			{
+				char full_path[PATH_MAX];
+				get_full_path_of(entry, sizeof(full_path), full_path);
+				nitems = count_dir_items(full_path);
+				dcache_set_at(full_path, DCACHE_UNKNOWN, nitems);
+			}
+
+			snprintf(buf, buf_len + 1, " %d", (int)nitems);
+			return;
+		}
+	}
+
+	if(size == DCACHE_UNKNOWN)
+	{
+		size = entry->size;
+	}
 
 	str[0] = '\0';
 	friendly_size_notation(size, sizeof(str), str);

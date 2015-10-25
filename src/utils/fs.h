@@ -169,6 +169,10 @@ int is_case_change(const char src[], const char dst[]);
 int enum_dir_content(const char path[], dir_content_client_func client,
 		void *param);
 
+/* Counts number of files in the directory excluding . and .. entries.  Returns
+ * the count. */
+int count_dir_items(const char path[]);
+
 /* getcwd() wrapper that always uses forward slashes.  Returns buf on success or
  * NULL on error. */
 char * get_cwd(char buf[], size_t size);
