@@ -1342,7 +1342,8 @@ fview_position_updated(FileView *view)
 		view->curr_line = view->list_rows - 1;
 	}
 
-	if(curr_stats.load_stage < 1)
+	if(curr_stats.load_stage < 1 ||
+			(!curr_stats.view && !window_shows_dirlist(view)))
 	{
 		return;
 	}
