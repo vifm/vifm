@@ -192,14 +192,6 @@ void cfg_load(void);
 /* Returns non-zero on error. */
 int cfg_source_file(const char filename[]);
 
-/* Checks whether vifmrc file (pointed to by the $MYVIFMRC) has old format.
- * Returns non-zero if so, otherwise zero is returned. */
-int cfg_has_old_format(void);
-
-/* Checks whether color scheme are stored in obsolete single-file format.
- * Returns non-zero if so, otherwise zero is returned. */
-int cfg_has_old_color_schemes(void);
-
 /* Gets editor invocation command.  Sets *bg to indicate whether the command
  * should be executed in background.  Returns pointer to a string from
  * configuration variables. */

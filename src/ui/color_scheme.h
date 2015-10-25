@@ -92,6 +92,9 @@ int check_directory_for_color_scheme(int left, const char dir[]);
 /* Checks whether local colorschemes do not have file extensions. */
 int cs_have_no_extensions(void);
 
+/* Adds .vifm to colorscheme files as per new format. */
+void cs_rename_all(void);
+
 /* Lists names of all color schemes.  Allocates an array of strings, which
  * should be freed by the caller.  Always sets *len.  Returns NULL on error. */
 char ** list_color_schemes(int *len);

@@ -96,8 +96,6 @@ static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
 		const char rwin_path[]);
 static void load_scheme(void);
-static void convert_configs(void);
-static int run_converter(int vifm_like_mode);
 static void exec_startup_commands(const args_t *args);
 static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 
@@ -112,7 +110,6 @@ main(int argc, char *argv[])
 	static const int quit = 0;
 
 	char dir[PATH_MAX];
-	int old_config;
 	char **files = NULL;
 	int nfiles = 0;
 
@@ -170,8 +167,7 @@ main(int argc, char *argv[])
 
 	init_option_handlers();
 
-	old_config = cfg_has_old_format();
-	if(!old_config && !vifm_args.no_configs)
+	if(!vifm_args.no_configs)
 	{
 		/* vifminfo must be processed this early so that it can restore last visited
 		 * directory. */
@@ -233,7 +229,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
-	if(!old_config && !vifm_args.no_configs)
+	if(!vifm_args.no_configs)
 	{
 		load_scheme();
 		cfg_load();
@@ -252,23 +248,6 @@ main(int argc, char *argv[])
 
 	write_color_scheme_file();
 	setup_signals();
-
-	if(old_config && !vifm_args.no_configs)
-	{
-		convert_configs();
-
-		curr_stats.load_stage = 0;
-		read_info_file(0);
-		curr_stats.load_stage = 1;
-
-		set_view_path(&lwin, vifm_args.lwin_path);
-		set_view_path(&rwin, vifm_args.rwin_path);
-
-		load_initial_directory(&lwin, dir);
-		load_initial_directory(&rwin, dir);
-
-		cfg_load();
-	}
 
 	/* Ensure trash directories exist, it might not have been called during
 	 * configuration file sourcing if there is no `set trashdir=...` command. */
@@ -454,103 +433,19 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 	    && curr_view != &lwin;
 }
 
-/* Loads color scheme.  Converts old format to the new one if needed.
- * Terminates application with error message on error. */
+/* Loads color scheme.  Converts old format to the new one if needed. */
 static void
 load_scheme(void)
 {
-	if(cfg_has_old_color_schemes())
+	if(cs_have_no_extensions())
 	{
-		const int err = run_converter(2);
-		if(err != 0)
-		{
-			endwin();
-			fputs("Problems with running vifmrc-converter\n", stderr);
-			exit(err);
-		}
+		cs_rename_all();
 	}
-	else if(cs_have_no_extensions())
-	{
-		const int err = run_converter(3);
-		if(err != 0)
-		{
-			endwin();
-			fputs("Problems with running vifmrc-converter\n", stderr);
-			exit(err);
-		}
-	}
+
 	if(color_scheme_exists(curr_stats.color_scheme))
 	{
 		load_primary_color_scheme(curr_stats.color_scheme);
 	}
-}
-
-/* Converts old versions of configuration files to new ones.  Terminates
- * application with error message on error or when user chooses to do not update
- * anything. */
-static void
-convert_configs(void)
-{
-	int vifm_like_mode;
-	int err;
-
-	if(!prompt_msg("Configuration update", "Your vifmrc will be "
-			"upgraded to a new format.  Your current configuration will be copied "
-			"before performing any changes, but if you don't want to take the risk "
-			"and would like to make one more copy say No to exit vifm.  Continue?"))
-	{
-#ifdef _WIN32
-		system("cls");
-#endif
-		endwin();
-		exit(EXIT_SUCCESS);
-	}
-
-	vifm_like_mode = !prompt_msg("Configuration update", "This version of "
-			"vifm is able to save changes in the configuration files automatically "
-			"when quitting, as it was possible in older versions.  It is from now "
-			"on recommended though, to save permanent changes manually in the "
-			"configuration file as it is done in vi/vim.  Do you want vifm to "
-			"behave like vi/vim?");
-
-	err = run_converter(vifm_like_mode);
-	if(err != 0)
-	{
-		endwin();
-		fputs("Problems with running vifmrc-converter\n", stderr);
-		exit(err);
-	}
-
-	show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
-			"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
-			"vifm will not write anything to vifmrc, and all variables that are "
-			"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
-			"(you can edit it by hand, but do it carefully).  You can control what "
-			"vifm stores in vifminfo with 'vifminfo' option.");
-}
-
-/* Runs vifmrc-converter in mode specified by the vifm_like_mode argument.
- * Returns zero on success, non-zero otherwise. */
-static int
-run_converter(int vifm_like_mode)
-{
-#ifndef _WIN32
-	char cmd[PATH_MAX];
-	snprintf(cmd, sizeof(cmd), "vifmrc-converter %d", vifm_like_mode);
-	return shellout(cmd, PAUSE_ON_ERROR, 0);
-#else
-	char path[PATH_MAX];
-	char cmd[2*PATH_MAX];
-	int returned_exit_code;
-
-	if(get_exe_dir(path, sizeof(path)) != 0)
-	{
-		return -1;
-	}
-
-	snprintf(cmd, sizeof(cmd), "%s/vifmrc-converter %d", path, vifm_like_mode);
-	return win_exec_cmd(cmd, &returned_exit_code);
-#endif
 }
 
 void
