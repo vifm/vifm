@@ -44,6 +44,10 @@ int fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len);
  * success and non-zero on error. */
 int fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len);
 
+/* Invalidates all nodes from the root to the specified node if it exists.
+ * Returns zero on success or non-zero if path wasn't found. */
+int fsdata_invalidate(fsdata_t *fsd, const char path[]);
+
 #endif /* VIFM__UTILS__FSDATA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

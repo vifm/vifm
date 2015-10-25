@@ -2,7 +2,6 @@
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* remove() */
-#include <string.h> /* strdup() */
 
 #include "../../src/compat/os.h"
 #include "../../src/utils/fsdata.h"
@@ -136,6 +135,24 @@ TEST(intermediate_value_is_returned_if_end_value_is_not_found)
 	++data;
 	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_true(data == 0);
+
+	assert_success(remove(SANDBOX_PATH "/dir"));
+	fsdata_free(fsd);
+}
+
+TEST(path_is_invalidated_in_fsdata)
+{
+	void *ptr;
+	fsdata_t *const fsd = fsdata_create(0);
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+
+	assert_success(fsdata_set(fsd, SANDBOX_PATH, &ptr, sizeof(ptr)));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &ptr, sizeof(ptr)));
+
+	assert_success(fsdata_invalidate(fsd, SANDBOX_PATH "/dir"));
+
+	assert_failure(fsdata_get(fsd, SANDBOX_PATH, &ptr, sizeof(ptr)));
+	assert_failure(fsdata_get(fsd, SANDBOX_PATH "/dir", &ptr, sizeof(ptr)));
 
 	assert_success(remove(SANDBOX_PATH "/dir"));
 	fsdata_free(fsd);

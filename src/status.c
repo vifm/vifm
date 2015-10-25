@@ -32,6 +32,7 @@
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
 #include <string.h>
+#include <time.h> /* time_t time() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
@@ -54,8 +55,9 @@
 /* dcache entry. */
 typedef struct
 {
-	uint64_t size;   /* Directory size (recursively). */
-	uint64_t nitems; /* Number of items in the directory (non-recursively). */
+	uint64_t size;    /* Directory size (recursively). */
+	uint64_t nitems;  /* Number of items in the directory (non-recursively). */
+	time_t timestamp; /* When this data was valid. */
 }
 dcache_data_t;
 
@@ -64,6 +66,8 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
+static void dcache_get(const char path[], uint64_t *size, uint64_t *nitems,
+		time_t ts);
 
 status_t curr_stats;
 
@@ -74,7 +78,7 @@ static int inside_tmux;
 /* Thread-safety guard for dcache variable. */
 static pthread_mutex_t dcache_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Cache for ga/gA command results. */
-struct fsdata_t *dcache;
+static fsdata_t *dcache;
 
 int
 init_status(config_t *config)
@@ -327,13 +331,36 @@ stats_file_choose_action_set(void)
 void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
+	dcache_get(path, size, nitems, 0);
+}
+
+void
+dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
+{
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	dcache_get(full_path, size, nitems, entry->mtime);
+}
+
+/* Retrieves information about the pathi if data is newer than ts (0 requests to
+ * skip the check).  size and/or nitems can be NULL.  On unknown values
+ * variables are set to DCACHE_UNKNOWN. */
+static void
+dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
+{
 	dcache_data_t data;
 
 	pthread_mutex_lock(&dcache_mutex);
-	if(fsdata_get(dcache, path, &data, sizeof(data)) != 0)
+	if(fsdata_get(dcache, path, &data, sizeof(data)) != 0 ||
+			(ts != 0 && ts > data.timestamp))
 	{
 		data.size = DCACHE_UNKNOWN;
 		data.nitems = DCACHE_UNKNOWN;
+
+		if(ts != 0 && ts > data.timestamp)
+		{
+			fsdata_invalidate(dcache, path);
+		}
 	}
 	pthread_mutex_unlock(&dcache_mutex);
 
@@ -347,18 +374,12 @@ dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 	}
 }
 
-void
-dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
-{
-	char full_path[PATH_MAX];
-	get_full_path_of(entry, sizeof(full_path), full_path);
-	dcache_get_at(full_path, size, nitems);
-}
-
 int
 dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 {
-	const dcache_data_t data = { .size = size, .nitems = nitems };
+	const dcache_data_t data = {
+		.size = size, .nitems = nitems, .timestamp = time(NULL)
+	};
 
 	pthread_mutex_lock(&dcache_mutex);
 	fsdata_set(dcache, path, &data, sizeof(data));

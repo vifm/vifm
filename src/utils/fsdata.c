@@ -31,8 +31,8 @@
 #include "../compat/os.h"
 #include "str.h"
 
-/* Special value for find_node()'s len argument to prevent it from creating a
- * node. */
+/* Special value for find_node()'s data_size argument to prevent it from
+ * creating a node. */
 #define NO_CREATE (size_t)-1
 
 /* Tree node type. */
@@ -57,8 +57,9 @@ struct fsdata_t
 
 static void do_nothing(void *data);
 static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
-static node_t * find_node(node_t *root, const char path[], size_t len,
+static node_t * find_node(node_t *root, const char path[], size_t data_size,
 		node_t **last);
+static int invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup);
 
 fsdata_t *
 fsdata_create(int prefix)
@@ -167,8 +168,11 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 	return 0;
 }
 
+/* Looks up a node by its path.  Inserts a node if it doesn't exist and
+ * data_size is not equal to NO_CREATE.  If last is not NULL *last is assigned
+ * closest valid parent node.  Returns the node at the path or NULL on error. */
 static node_t *
-find_node(node_t *root, const char path[], size_t len, node_t **last)
+find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 {
 	const char *end;
 	size_t name_len;
@@ -190,7 +194,7 @@ find_node(node_t *root, const char path[], size_t len, node_t **last)
 		{
 			if(curr->valid && last != NULL)
 				*last = curr;
-			return find_node(curr, end, len, last);
+			return find_node(curr, end, data_size, last);
 		}
 		else if(comp < 0)
 		{
@@ -200,10 +204,10 @@ find_node(node_t *root, const char path[], size_t len, node_t **last)
 		curr = curr->next;
 	}
 
-	if(len == NO_CREATE)
+	if(data_size == NO_CREATE)
 		return NULL;
 
-	new_node = malloc(sizeof(*new_node) + len);
+	new_node = malloc(sizeof(*new_node) + data_size);
 	if(new_node == NULL)
 		return NULL;
 
@@ -225,7 +229,67 @@ find_node(node_t *root, const char path[], size_t len, node_t **last)
 	else
 		prev->next = new_node;
 
-	return find_node(new_node, end, len, last);
+	return find_node(new_node, end, data_size, last);
+}
+
+int
+fsdata_invalidate(fsdata_t *fsd, const char path[])
+{
+	char real_path[PATH_MAX];
+
+	if(os_realpath(path, real_path) != real_path)
+	{
+		return 1;
+	}
+
+	return invalidate_path(&fsd->node, real_path, fsd->cleanup);
+}
+
+/* Invalidates nodes on the path if end item is found.  Returns zero on
+ * successful invalidation otherwise non-zero is returned. */
+static int
+invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup)
+{
+	const char *end;
+	size_t name_len;
+	node_t *curr;
+
+	path = skip_char(path, '/');
+	if(*path == '\0')
+	{
+		goto invalidate;
+	}
+
+	end = until_first(path, '/');
+
+	name_len = end - path;
+	curr = root->child;
+	while(curr != NULL)
+	{
+		const int cmp = strnoscmp(path, curr->name, name_len);
+		if(cmp == 0 && curr->name_len == name_len)
+		{
+			if(invalidate_path(curr, end, cleanup) == 0)
+			{
+				goto invalidate;
+			}
+		}
+		else if(cmp < 0)
+		{
+			break;
+		}
+		curr = curr->next;
+	}
+
+	return 1;
+
+invalidate:
+	if(root->valid)
+	{
+		cleanup(&root->data);
+	}
+	root->valid = 0;
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
