@@ -105,7 +105,8 @@ const char * attrs_to_str(int attrs);
 
 void check_color_scheme(col_scheme_t *cs);
 
-void assoc_dir(const char *name, const char *dir);
+/* Associates colorscheme specified by its name with the given path. */
+void assoc_dir(const char name[], const char dir[]);
 
 /* Aborts if color schemes directory exists, otherwise creates one containing
  * "Default" color scheme. */

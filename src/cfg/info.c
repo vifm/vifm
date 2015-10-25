@@ -1023,6 +1023,8 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "nonrootparent,");
 	fprintf(fp, "\n");
 
+	fprintf(fp, "=dirsize=%s", cfg.view_dir_size == VDS_SIZE ? "size" : "nitems");
+
 	fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
 
 	fprintf(fp, "=vifminfo=options");

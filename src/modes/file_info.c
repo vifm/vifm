@@ -40,9 +40,9 @@
 #include "../menus/menus.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
+#include "../utils/fsdata.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
-#include "../utils/tree.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -135,15 +135,13 @@ redraw_file_info_dialog(void)
 
 	entry = &view->dir_entry[view->list_pos];
 
-	size = 0;
+	size = DCACHE_UNKNOWN;
 	if(entry->type == FT_DIR)
 	{
-		char full_path[PATH_MAX];
-		get_current_full_path(view, sizeof(full_path), full_path);
-		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
+		dcache_get_of(entry, &size, NULL);
 	}
 
-	if(size == 0)
+	if(size == DCACHE_UNKNOWN)
 	{
 		size = entry->size;
 	}

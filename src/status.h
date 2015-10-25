@@ -20,13 +20,17 @@
 #ifndef VIFM__STATUS_H__
 #define VIFM__STATUS_H__
 
+#include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
-#include "utils/tree.h"
+
+/* Special value foe dcache fields meaning that it wasn't set. */
+#define DCACHE_UNKNOWN ((uint64_t)-1)
 
 struct config_t;
+struct dir_entry_t;
 
 typedef enum
 {
@@ -107,8 +111,6 @@ typedef struct
 
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;
-
-	tree_t dirsize_cache; /* ga command results */
 
 	int last_search_backward;
 
@@ -220,6 +222,20 @@ void stats_set_on_choose(const char command[]);
 /* Checks whether custom actions on file choosing is set.  Returns non-zero if
  * so, otherwise zero is returned. */
 int stats_file_choose_action_set(void);
+
+/* Caching of information about directories. */
+
+/* Retrieves information about the path.  size and/or nitems can be NULL.  On
+ * unknown values variables are set to DCACHE_UNKNOWN. */
+void dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems);
+
+/* Retrieves information about the entry.  size and/or nitems can be NULL.  On
+ * unknown values variables are set to DCACHE_UNKNOWN. */
+void dcache_get_of(const struct dir_entry_t *entry, uint64_t *size, uint64_t *nitems);
+
+/* Updates information about the path.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int dcache_set_at(const char path[], uint64_t size, uint64_t nitems);
 
 #endif /* VIFM__STATUS_H__ */
 

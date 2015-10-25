@@ -56,6 +56,7 @@
 #include "utils/dynarray.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fsdata.h"
 #include "utils/fswatch.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -63,7 +64,6 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
-#include "utils/tree.h"
 #include "utils/trie.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -987,7 +987,7 @@ change_directory(FileView *view, const char directory[])
 	if(cfg.chase_links)
 	{
 		char real_path[PATH_MAX];
-		if(realpath(dir_dup, real_path) == real_path)
+		if(os_realpath(dir_dup, real_path) == real_path)
 		{
 			/* Do this on success only, if realpath() fails, just go with the original
 			 * path. */
@@ -2719,14 +2719,13 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	uint64_t size = 0;
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
+	size = DCACHE_UNKNOWN;
 	if(is_directory_entry(entry))
 	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		tree_get_data(curr_stats.dirsize_cache, full_path, &size);
+		dcache_get_of(entry, &size, NULL);
 	}
 
-	return (size == 0) ? entry->size : size;
+	return (size == DCACHE_UNKNOWN) ? entry->size : size;
 }
 
 int

@@ -27,10 +27,10 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "ui/ui.h"
+#include "utils/fsdata.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
-#include "utils/tree.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "status.h"
@@ -57,6 +57,8 @@ static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
 static int compare_full_file_names(const char s[], const char t[],
 		int ignore_case);
 static int compare_file_names(const char s[], const char t[], int ignore_case);
+static int compare_file_sizes(const dir_entry_t *f, int fdir,
+		const dir_entry_t *s, int sdir);
 
 void
 sort_view(FileView *v)
@@ -172,10 +174,12 @@ skip_leading_zeros(const char str[])
 static int
 sort_dir_list(const void *one, const void *two)
 {
+	/* TODO: refactor this function sort_dir_list(). */
+
 	int retval;
 	char *pfirst, *psecond;
-	dir_entry_t *const first = (dir_entry_t *)one;
-	dir_entry_t *const second = (dir_entry_t *)two;
+	const dir_entry_t *const first = (dir_entry_t *)one;
+	const dir_entry_t *const second = (dir_entry_t *)two;
 	int first_is_dir;
 	int second_is_dir;
 
@@ -253,25 +257,7 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SK_BY_SIZE:
-			{
-				if(first_is_dir)
-				{
-					char full_path[PATH_MAX];
-					get_full_path_of(first, sizeof(full_path), full_path);
-					tree_get_data(curr_stats.dirsize_cache, full_path, &first->size);
-				}
-
-				if(second_is_dir)
-				{
-					char full_path[PATH_MAX];
-					get_full_path_of(second, sizeof(full_path), full_path);
-					tree_get_data(curr_stats.dirsize_cache, full_path, &second->size);
-				}
-
-				retval = (first->size < second->size)
-				       ? -1
-				       : (first->size > second->size);
-			}
+			retval = compare_file_sizes(first, first_is_dir, second, second_is_dir);
 			break;
 
 		case SK_BY_TIME_MODIFIED:
@@ -321,6 +307,37 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	return retval;
+}
+
+/* Compares two file sizes.  Returns standard -1, 0, 1 for comparisons. */
+static int
+compare_file_sizes(const dir_entry_t *f, int fdir, const dir_entry_t *s,
+		int sdir)
+{
+	uint64_t fsize = f->size;
+	uint64_t ssize = s->size;
+
+	if(fdir)
+	{
+		uint64_t size;
+		dcache_get_of(f, &size, NULL);
+		if(size != DCACHE_UNKNOWN)
+		{
+			fsize = size;
+		}
+	}
+
+	if(sdir)
+	{
+		uint64_t size;
+		dcache_get_of(f, &size, NULL);
+		if(size != DCACHE_UNKNOWN)
+		{
+			ssize = size;
+		}
+	}
+
+	return (fsize < ssize) ? -1 : (fsize > ssize);
 }
 
 /* Compares names of two file entries.  Returns positive value if a is greater

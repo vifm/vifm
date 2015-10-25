@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 11 October, 2015
+Updated: 22 October, 2015
 Version: 0.8
 
 Brief Description
@@ -154,23 +154,26 @@ Package content
     |  |
     |  |-- ui/ - most of ui related code
     |  |  |
+    |  |  |-- private/ - internal headers of ui
     |  |  |-- cancellation.c - managing operation cancellation
     |  |  |-- color_manager.c - manager of curses color pairs
     |  |  |-- color_scheme.c - color schemes
     |  |  |-- column_view.c - column formatting unit
     |  |  |-- escape.c - escape sequences related stuff
     |  |  |-- fileview.c - display/redraw/manage file view
-    |  |  |-- private/ - internal headers of ui
     |  |  |-- quickview.c - implementation of quick view
     |  |  |-- statusbar.c - managing status bar
     |  |  |-- statusline.c - status line formatting
     |  |  `-- ui.c - ui initialization and other ui related functions
     |  |
-    |  |-- utils/ - miscellaneous utility functions
+    |  |-- utils/ - miscellaneous utility functions and data types
     |  |  |
+    |  |  |-- private/ - internal headers of utilities
     |  |  |-- dynarray.c - array reallocation with fewer memory copies
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
+    |  |  |-- fsdata.c - maps arbitrary data onto file system tree
+    |  |  |-- fsddata.c - fsdata wrapper that takes care of dynamic memory
     |  |  |-- fswatch_nix.c - watches path in file system for changes on *nix
     |  |  |-- fswatch_win.c - watches path in file system for changes on Windows
     |  |  |-- file_streams.c - file stream reading related functions
@@ -183,7 +186,6 @@ Package content
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
-    |  |  |-- tree.c - cache for ga command results
     |  |  |-- trie.c - 3-way trie implementation
     |  |  |-- utf8.c - functions to handle utf8 strings
     |  |  |-- utils.c - various utilities

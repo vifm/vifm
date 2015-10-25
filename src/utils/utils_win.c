@@ -22,7 +22,6 @@
 
 #include <windows.h>
 #include <ntdef.h>
-#include <winioctl.h>
 
 #include <curses.h>
 
@@ -429,85 +428,6 @@ escape_for_cd(const char str[])
 	}
 	*p = '\0';
 	return buf;
-}
-
-const char *
-win_resolve_mount_points(const char path[])
-{
-	static char resolved_path[PATH_MAX];
-
-	DWORD attr;
-	wchar_t *utf16_path;
-	HANDLE hfind;
-	WIN32_FIND_DATAW ffd;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	int offset;
-	REPARSE_DATA_BUFFER *rdbp;
-
-	utf16_path = utf8_to_utf16(path);
-	attr = GetFileAttributesW(utf16_path);
-	free(utf16_path);
-
-	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return path;
-	}
-
-	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-	{
-		return path;
-	}
-
-	copy_str(resolved_path, sizeof(resolved_path), path);
-	chosp(resolved_path);
-
-	utf16_path = utf8_to_utf16(resolved_path);
-	hfind = FindFirstFileW(utf16_path, &ffd);
-
-	if(hfind == INVALID_HANDLE_VALUE)
-	{
-		free(utf16_path);
-		return path;
-	}
-
-	FindClose(hfind);
-
-	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
-	{
-		free(utf16_path);
-		return path;
-	}
-
-	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-			NULL);
-
-	free(utf16_path);
-
-	if(hfile == INVALID_HANDLE_VALUE)
-	{
-		return path;
-	}
-
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb, sizeof(rdb),
-			&attr, NULL))
-	{
-		CloseHandle(hfile);
-		return path;
-	}
-	CloseHandle(hfile);
-
-	rdbp = (REPARSE_DATA_BUFFER *)rdb;
-	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
-
-	offset = starts_with_lit(t, "\\??\\") ? 4 : 0;
-	strcpy(resolved_path, t + offset);
-
-	free(t);
-
-	return resolved_path;
 }
 
 int

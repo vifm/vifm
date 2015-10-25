@@ -203,6 +203,8 @@ cfg_init(void)
 	cfg.word_chars['\x0c'] = 0; cfg.word_chars['\x0d'] = 0;
 	cfg.word_chars['\x20'] = 0;
 
+	cfg.view_dir_size = VDS_SIZE;
+
 #ifndef _WIN32
 	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

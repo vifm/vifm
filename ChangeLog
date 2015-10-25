@@ -74,6 +74,10 @@
 	fit on the screen.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn) and
 	Svyatoslav Mishyn (a.k.a. juef).
 
+	Added 'dirsize' option to control how size of directories is displayed in
+	file views.  This enables one to see number of files in a directory rather
+	than its size.  Thanks to Martin Fischer.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -162,6 +166,10 @@
 
 	Save location before loading custom view into view directory history.
 	Thanks to filterfalse.
+
+	Invalidate directory size (calculated via ga/gA) if noticed that directory
+	was changed.  This affects all parent directories as well, way easier to
+	see what needs recalculation after file moving/removal.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
@@ -276,6 +284,8 @@
 	view.
 
 	Fixed turning of very custom view into sorted one after :restart.
+
+	Fixed memory leak related to :colorscheme command.
 
 0.8-beta to 0.8
 

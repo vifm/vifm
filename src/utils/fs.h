@@ -169,6 +169,10 @@ int is_case_change(const char src[], const char dst[]);
 int enum_dir_content(const char path[], dir_content_client_func client,
 		void *param);
 
+/* Counts number of files in the directory excluding . and .. entries.  Returns
+ * the count. */
+int count_dir_items(const char path[]);
+
 /* getcwd() wrapper that always uses forward slashes.  Returns buf on success or
  * NULL on error. */
 char * get_cwd(char buf[], size_t size);
@@ -182,11 +186,6 @@ char * save_cwd(void);
 void restore_cwd(char saved_cwd[]);
 
 #ifdef _WIN32
-
-/* Resolves the path to the real path without any symbolic links.  buf should be
- * at least PATH_MAX in length.  Returns the buf on success, otherwise NULL is
- * returned. */
-char * realpath(const char path[], char buf[]);
 
 int S_ISLNK(mode_t mode);
 

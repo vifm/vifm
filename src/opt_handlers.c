@@ -77,6 +77,7 @@ optinit_t;
 
 static void init_classify(optval_t *val);
 static void init_cpoptions(optval_t *val);
+static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
@@ -104,6 +105,7 @@ static const char * pick_out_decoration(const char classify_item[],
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
+static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fillchars_handler(OPT_OP op, optval_t val);
@@ -224,6 +226,12 @@ static const char tuioptions_list[] = "ps";
 static const char *tuioptions_vals = tuioptions_list;
 #define tuioptions_count (ARRAY_LEN(tuioptions_list) - 1)
 
+/* Possible values of 'dirsize' option. */
+static const char *dirsize_enum[] = {
+	"size",
+	"nitems",
+};
+
 /* Possible keys of 'fillchars' option. */
 static const char *fillchars_enum[] = {
 	"vborder:",
@@ -329,6 +337,10 @@ options[] = {
 	{ "cpoptions", "cpo",
 	  OPT_CHARSET, cpoptions_count, &cpoptions_vals, &cpoptions_handler, NULL,
 	  { .init = &init_cpoptions },
+	},
+	{ "dirsize", "",
+	  OPT_ENUM, ARRAY_LEN(dirsize_enum), dirsize_enum, &dirsize_handler, NULL,
+	  { .init = &init_dirsize },
 	},
 	{ "dotdirs", "",
 	  OPT_SET, ARRAY_LEN(dotdirs_vals), dotdirs_vals, &dotdirs_handler, NULL,
@@ -595,6 +607,13 @@ init_cpoptions(optval_t *val)
 			cfg.selection_is_primary       ? "s" : "",
 			cfg.tab_switches_pane          ? "t" : "");
 	val->str_val = buf;
+}
+
+/* Initializes 'dirsize' option from cfg.view_dir_size variable. */
+static void
+init_dirsize(optval_t *val)
+{
+	val->enum_item = (cfg.view_dir_size == VDS_SIZE ? 0 : 1);
 }
 
 /* Convenience function to format an endpoint inside the buffer, which should be
@@ -1146,6 +1165,14 @@ cpoptions_handler(OPT_OP op, optval_t val)
 		}
 		++p;
 	}
+}
+
+/* Handles changes to the way directory size is displayed in a view. */
+static void
+dirsize_handler(OPT_OP op, optval_t val)
+{
+	cfg.view_dir_size = val.enum_item;
+	update_screen(UT_REDRAW);
 }
 
 static void

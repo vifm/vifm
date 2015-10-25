@@ -21,8 +21,6 @@
 
 #include <regex.h>
 
-#include <pthread.h>
-
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
@@ -59,11 +57,11 @@
 #include "utils/env.h"
 #endif
 #include "utils/fs.h"
+#include "utils/fsdata.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/tree.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -236,7 +234,6 @@ static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static void dir_size(char path[], int force);
-static void set_dir_size(const char path[], uint64_t size);
 static void redraw_after_path_change(FileView *view, const char path[]);
 
 /* Temporary storage for extension of file being renamed in name-only mode. */
@@ -4294,43 +4291,35 @@ calculate_dir_size(const char path[], int force_update)
 	size = 0;
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char buf[PATH_MAX];
+		char full_path[PATH_MAX];
 
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-		if(is_dir_entry(buf, dentry))
+		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
+				dentry->d_name);
+		if(is_dir_entry(full_path, dentry))
 		{
-			uint64_t dir_size = 0;
-			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
-					|| force_update)
-				dir_size = calculate_dir_size(buf, force_update);
+			uint64_t dir_size;
+			dcache_get_at(full_path, &dir_size, NULL);
+			if(dir_size == DCACHE_UNKNOWN || force_update)
+			{
+				dir_size = calculate_dir_size(full_path, force_update);
+			}
 			size += dir_size;
 		}
 		else
 		{
-			size += get_file_size(buf);
+			size += get_file_size(full_path);
 		}
 	}
 
 	os_closedir(dir);
 
-	set_dir_size(path, size);
+	(void)dcache_set_at(path, size, DCACHE_UNKNOWN);
 	return size;
-}
-
-/* Updates cached directory size in a thread-safe way. */
-static void
-set_dir_size(const char path[], uint64_t size)
-{
-	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-	pthread_mutex_lock(&mutex);
-	tree_set_data(curr_stats.dirsize_cache, path, size);
-	pthread_mutex_unlock(&mutex);
 }
 
 /* Schedules view redraw in case path change might have affected it. */

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <stdlib.h> /* remove() */
+#include <stdio.h> /* remove() */
 
 #include "../../src/compat/os.h"
 #include "../../src/utils/fswatch.h"

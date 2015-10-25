@@ -67,10 +67,6 @@ const char * attr_str_long(uint32_t attr);
 /* Returns pointer to a statically allocated buffer. */
 const char * escape_for_cd(const char str[]);
 
-/* Resolves path to its destination.  Returns pointer to a statically allocated
- * buffer. */
-const char * win_resolve_mount_points(const char path[]);
-
 /* tmpfile() for Windows, the way it should have been implemented.  Returns file
  * handler opened for read and write that is automatically removed on
  * application close.  Don't use tmpfile(), they utterly failed to implement
