@@ -44,13 +44,12 @@ dist_pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifmrc-osx
 nodist_pkgdata_DATA = ../data/vifm-help.txt
 
-bin_PROGRAMS = vifm vifmrc-converter
+bin_PROGRAMS = vifm
 
 dist_bin_SCRIPTS = vifm-pause vifm-convert-dircolors
 
 dist_man_MANS = ../data/man/vifm.1 \
 					 ../data/man/vifm-pause.1 \
-					 ../data/man/vifmrc-converter.1 \
 					 ../data/man/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
@@ -232,10 +231,6 @@ vifm_SOURCES = \
 nodist_vifm_SOURCES = \
 	compile_info.c
 
-vifmrc_converter_SOURCES = \
-	color_scheme.h \
-	vifmrc-converter.c
-
 check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 
@@ -282,9 +277,8 @@ coverage: check
 	     $(abs_builddir)/lcov.info --config-file $(abs_srcdir)/lcovrc \
 	     --show-details --css-file $(abs_srcdir)/gcov.css
 
-CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
-             $(vifmrc_converter_OBJECTS:.o=.gcno) \
-             $(vifmrc_converter_OBJECTS:.o=.gcda)
+CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) \
+                                              $(vifm_OBJECTS:.o=.gcda)
 
 distclean-local:
 	$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ clean

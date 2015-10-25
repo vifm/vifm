@@ -53,7 +53,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = vifm$(EXEEXT) vifmrc-converter$(EXEEXT)
+bin_PROGRAMS = vifm$(EXEEXT)
 subdir = src
 DIST_COMMON = $(dist_bin_SCRIPTS) $(dist_desktopapp_DATA) \
 	$(dist_desktoppix_DATA) $(dist_docs_DATA) $(dist_man_MANS) \
@@ -147,9 +147,6 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
-am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
-vifmrc_converter_OBJECTS = $(am_vifmrc_converter_OBJECTS)
-vifmrc_converter_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -186,9 +183,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(vifm_SOURCES) $(nodist_vifm_SOURCES) \
-	$(vifmrc_converter_SOURCES)
-DIST_SOURCES = $(vifm_SOURCES) $(vifmrc_converter_SOURCES)
+SOURCES = $(vifm_SOURCES) $(nodist_vifm_SOURCES)
+DIST_SOURCES = $(vifm_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -356,7 +352,6 @@ nodist_pkgdata_DATA = ../data/vifm-help.txt
 dist_bin_SCRIPTS = vifm-pause vifm-convert-dircolors
 dist_man_MANS = ../data/man/vifm.1 \
 					 ../data/man/vifm-pause.1 \
-					 ../data/man/vifmrc-converter.1 \
 					 ../data/man/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
@@ -533,10 +528,6 @@ vifm_SOURCES = \
 nodist_vifm_SOURCES = \
 	compile_info.c
 
-vifmrc_converter_SOURCES = \
-	color_scheme.h \
-	vifmrc-converter.c
-
 check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 EXTRA_DIST = \
@@ -564,9 +555,8 @@ PERL = @PERL_PROG@
 SED = @SED_PROG@
 VIM = @VIM_PROG@
 UNDER_VCS = @IN_GIT_REPO@
-CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) $(vifm_OBJECTS:.o=.gcda) \
-             $(vifmrc_converter_OBJECTS:.o=.gcno) \
-             $(vifmrc_converter_OBJECTS:.o=.gcda)
+CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) \
+                                              $(vifm_OBJECTS:.o=.gcda)
 
 all: all-am
 
@@ -897,9 +887,6 @@ utils/utils_nix.$(OBJEXT): utils/$(am__dirstamp) \
 vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES) 
 	@rm -f vifm$(EXEEXT)
 	$(LINK) $(vifm_OBJECTS) $(vifm_LDADD) $(LIBS)
-vifmrc-converter$(EXEEXT): $(vifmrc_converter_OBJECTS) $(vifmrc_converter_DEPENDENCIES) $(EXTRA_vifmrc_converter_DEPENDENCIES) 
-	@rm -f vifmrc-converter$(EXEEXT)
-	$(LINK) $(vifmrc_converter_OBJECTS) $(vifmrc_converter_LDADD) $(LIBS)
 install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -1073,7 +1060,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
