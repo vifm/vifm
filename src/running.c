@@ -1313,7 +1313,8 @@ run_in_split(const FileView *view, const char cmd[])
 
 		(void)vifm_system(buf);
 
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s",
+		snprintf(buf, sizeof(buf), "screen -X eval 'focus bottom' "
+				"split 'focus bottom' screen\\ screen-run-program-in-region\\ %s",
 				escaped_cmd);
 		(void)vifm_system(buf);
 	}
