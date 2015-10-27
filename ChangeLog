@@ -81,6 +81,9 @@
 	file views.  This enables one to see number of files in a directory rather
 	than its size.  Thanks to Martin Fischer.
 
+	Added missing script that's necessary for %s macro in GNU screen.  Was
+	lost for a long time.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

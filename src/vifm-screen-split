@@ -1,0 +1,6 @@
+#!/bin/sh
+
+eval "$*"
+echo -n Press any key to close this region...
+read -n 1 throwaway_variable
+screen -X eval 'focus bottom' remove
