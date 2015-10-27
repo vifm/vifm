@@ -46,10 +46,11 @@ nodist_pkgdata_DATA = ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm
 
-dist_bin_SCRIPTS = vifm-pause vifm-convert-dircolors
+dist_bin_SCRIPTS = vifm-pause vifm-screen-split vifm-convert-dircolors
 
 dist_man_MANS = ../data/man/vifm.1 \
 					 ../data/man/vifm-pause.1 \
+					 ../data/man/vifm-screen-split.1 \
 					 ../data/man/vifm-convert-dircolors.1
 
 MOSTLYCLEANFILES = compile_info.c \
