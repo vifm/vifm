@@ -180,6 +180,8 @@
 	Ctrl-W | and Ctrl-W _ now can set window size to given count.  Thanks to
 	filterfalse.
 
+	Make sure confirmation dialog doesn't appear for background operations.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

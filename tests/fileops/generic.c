@@ -86,7 +86,7 @@ TEST(merge_directories)
 
 		cmd_group_begin("undo msg");
 
-		assert_non_null(ops = ops_alloc(OP_MOVEF, "merge", ".", "."));
+		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
 		ops->crp = CRP_OVERWRITE_ALL;
 		assert_success(merge_dirs("first", "second", ops));
 		ops_free(ops);

@@ -3324,7 +3324,7 @@ static ops_t *
 get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
+	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
 		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
@@ -3656,7 +3656,7 @@ get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 		return NULL;
 	}
 
-	ops = ops_alloc(main_op, descr, dir, dir);
+	ops = ops_alloc(main_op, 1, descr, dir, dir);
 	pdata = alloc_progress_data(1, bg_op);
 	ops->estim = ioeta_alloc(pdata);
 

@@ -150,7 +150,7 @@ ARRAY_GUARD(op_funcs, OP_COUNT);
 static ops_t *curr_ops;
 
 ops_t *
-ops_alloc(OPS main_op, const char descr[], const char base_dir[],
+ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
@@ -158,6 +158,7 @@ ops_alloc(OPS main_op, const char descr[], const char base_dir[],
 	ops->descr = descr;
 	ops->base_dir = strdup(base_dir);
 	ops->target_dir = strdup(target_dir);
+	ops->bg = bg;
 	return ops;
 }
 
@@ -872,10 +873,14 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	int result;
 
 	args->estim = (ops == NULL) ? NULL : ops->estim;
-	args->confirm = &confirm_overwrite;
 
 	if(ops != NULL)
 	{
+		if(!ops->bg)
+		{
+			args->confirm = &confirm_overwrite;
+		}
+
 		ioe_errlst_init(&args->result.errors);
 	}
 
