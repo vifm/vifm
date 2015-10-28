@@ -182,6 +182,8 @@
 
 	Make sure confirmation dialog doesn't appear for background operations.
 
+	Display confirmation on ":delete! &" before initiating the operation.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

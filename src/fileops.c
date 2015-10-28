@@ -767,9 +767,23 @@ delete_files_bg(FileView *view, int use_trash)
 	args = calloc(1, sizeof(*args));
 	args->use_trash = use_trash;
 
-	move_cursor_out_of(view, FLS_MARKING);
-
 	general_prepare_for_bg_task(view, args);
+	if(cfg.confirm)
+	{
+		char msg[512];
+
+		snprintf(msg, sizeof(msg), "Are you sure about removing %ld file%s "
+				"irreversibly?", (long)args->sel_list_len,
+				(args->sel_list_len == 1) ? "" : "s");
+
+		if(!prompt_msg("Permanent deletion", msg))
+		{
+			free_bg_args(args);
+			return 0;
+		}
+	}
+
+	move_cursor_out_of(view, FLS_MARKING);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(flist_get_dir(view)));
