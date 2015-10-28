@@ -179,7 +179,7 @@ iop_rmfile(io_args_t *const args)
 		{
 			/* FIXME: use real system error message here. */
 			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
-					"Directory removal failed");
+					"File removal failed");
 		}
 
 		free(utf16_path);

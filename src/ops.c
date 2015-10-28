@@ -264,8 +264,8 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
 		curr_stats.confirmed = prompt_msg("Permanent deletion",
-				"Are you sure? If you undoing a command and want to see file names, "
-				"use :undolist! command");
+				"Are you sure?  If you're undoing a command and want to see file "
+				"names, use :undolist! command");
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
@@ -941,7 +941,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	free(src_dir);
 
 	/* Active cancellation conflicts with input processing by putting terminal in
-	 * a cocked mode. */
+	 * a cooked mode. */
 	if(args->cancellable)
 	{
 		raw();
