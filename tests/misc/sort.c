@@ -11,11 +11,11 @@
 #include "../../src/utils/str.h"
 #include "../../src/sort.h"
 
+#include "utils.h"
+
 #define SIGN(n) ({__typeof(n) _n = (n); (_n < 0) ? -1 : (_n > 0);})
 #define ASSERT_STRCMP_EQUAL(a, b) \
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
-
-static void free_view(FileView *view);
 
 SETUP_ONCE()
 {
@@ -47,22 +47,8 @@ SETUP()
 
 TEARDOWN()
 {
-	free_view(&lwin);
-	free_view(&rwin);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free(view->dir_entry[i].name);
-	}
-	dynarray_free(view->dir_entry);
-
-	view->list_rows = 0;
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(special_chars_ignore_case_sort)
@@ -298,7 +284,7 @@ TEST(ignore_case_name_sort_breaks_ties_deterministically)
 
 TEST(extensions_of_dot_files_are_sorted_correctly)
 {
-	free_view(&lwin);
+	view_teardown(&lwin);
 
 	lwin.list_rows = 3;
 	lwin.dir_entry = dynarray_cextend(NULL,
