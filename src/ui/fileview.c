@@ -1055,8 +1055,8 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 		uint64_t nitems;
 		dcache_get_of(entry, &size, &nitems);
 
-		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS
-				&& !view->on_slow_fs)
+		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS &&
+				!view->on_slow_fs)
 		{
 			if(nitems == DCACHE_UNKNOWN)
 			{
