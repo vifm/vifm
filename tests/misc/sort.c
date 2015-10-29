@@ -3,7 +3,7 @@
 #include <unistd.h> /* chdir() unlink() */
 
 #include <locale.h> /* LC_ALL setlocale() */
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
@@ -11,11 +11,11 @@
 #include "../../src/utils/str.h"
 #include "../../src/sort.h"
 
+#include "utils.h"
+
 #define SIGN(n) ({__typeof(n) _n = (n); (_n < 0) ? -1 : (_n > 0);})
 #define ASSERT_STRCMP_EQUAL(a, b) \
 		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
-
-static void free_view(FileView *view);
 
 SETUP_ONCE()
 {
@@ -47,22 +47,8 @@ SETUP()
 
 TEARDOWN()
 {
-	free_view(&lwin);
-	free_view(&rwin);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free(view->dir_entry[i].name);
-	}
-	dynarray_free(view->dir_entry);
-
-	view->list_rows = 0;
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(special_chars_ignore_case_sort)
@@ -298,7 +284,7 @@ TEST(ignore_case_name_sort_breaks_ties_deterministically)
 
 TEST(extensions_of_dot_files_are_sorted_correctly)
 {
-	free_view(&lwin);
+	view_teardown(&lwin);
 
 	lwin.list_rows = 3;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -318,6 +304,42 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 	assert_string_equal(".cdargsresult", lwin.dir_entry[0].name);
 	assert_string_equal("disown.c", lwin.dir_entry[1].name);
 	assert_string_equal(".tmux.conf", lwin.dir_entry[2].name);
+}
+
+TEST(sorting_uses_dcache_for_dirs)
+{
+	view_teardown(&lwin);
+	assert_success(init_status(&cfg));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	lwin.list_rows = 2;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("read");
+	lwin.dir_entry[0].type = FT_DIR;
+	lwin.dir_entry[0].origin = lwin.curr_dir;
+	lwin.dir_entry[1].name = strdup("rename");
+	lwin.dir_entry[1].type = FT_DIR;
+	lwin.dir_entry[1].origin = lwin.curr_dir;
+
+	lwin.sort[0] = SK_BY_SIZE;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 10, DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 100, DCACHE_UNKNOWN));
+
+	sort_view(&lwin);
+
+	assert_string_equal("read", lwin.dir_entry[0].name);
+	assert_string_equal("rename", lwin.dir_entry[1].name);
+
+	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 10, DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 100, DCACHE_UNKNOWN));
+
+	sort_view(&lwin);
+
+	assert_string_equal("rename", lwin.dir_entry[0].name);
+	assert_string_equal("read", lwin.dir_entry[1].name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

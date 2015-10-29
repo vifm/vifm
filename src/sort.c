@@ -330,7 +330,7 @@ compare_file_sizes(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 	if(sdir)
 	{
 		uint64_t size;
-		dcache_get_of(f, &size, NULL);
+		dcache_get_of(s, &size, NULL);
 		if(size != DCACHE_UNKNOWN)
 		{
 			ssize = size;
