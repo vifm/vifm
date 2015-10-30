@@ -32,6 +32,7 @@ void normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 
 void normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info);
 
+/* Centers the splitter. */
 void normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info);
 
 void normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info);

@@ -1229,6 +1229,33 @@ only(void)
 }
 
 void
+move_splitter_by(int by, int fact)
+{
+	/* Determine exact splitter position if it's centered at the moment. */
+	if(curr_stats.splitter_pos < 0)
+	{
+		if(curr_stats.split == VSPLIT)
+		{
+			curr_stats.splitter_pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
+		}
+		else
+		{
+			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
+		}
+	}
+
+	/* Adjust position and make sure we don't set negative value which has special
+	 * meaning. */
+	curr_stats.splitter_pos += fact*by;
+	if(curr_stats.splitter_pos < 0)
+	{
+		curr_stats.splitter_pos = 0;
+	}
+
+	update_screen(UT_REDRAW);
+}
+
+void
 format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	const FileType type = ui_view_entry_target_type(entry);

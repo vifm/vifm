@@ -414,6 +414,10 @@ void split_view(SPLIT orientation);
 /* Switches view to one-window mode. */
 void only(void);
 
+/* Moves window splitter by specified amount of positions multiplied by the
+ * given factor. */
+void move_splitter_by(int by, int fact);
+
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
 void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);

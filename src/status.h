@@ -131,6 +131,9 @@ typedef struct
 
 	int scroll_bind_off;
 	SPLIT split;
+	/* Splitter position relative to viewport, negative values mean "centred".
+	 * Handling it as a special case prevents drifting from center on resizes due
+	 * to rounding. */
 	int splitter_pos;
 
 	SourcingState sourcing_state;
