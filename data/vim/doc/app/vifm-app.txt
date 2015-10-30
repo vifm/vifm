@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 25
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -242,14 +242,16 @@ Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
 Ctrl-W < - decrease size of the view by count. *vifm-CTRL-W_<*
 Ctrl-W > - increase size of the view by count. *vifm-CTRL-W_>*
 
-Ctrl-W | - maximize current view.              *vifm-CTRL-W_bar*
-Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
+Ctrl-W | - set current view size to count.     *vifm-CTRL-W_bar*
+Ctrl-W _ - set current view size to count.     *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
 
-For Ctrl-W +, Ctrl-W -, Ctrl-W < and Ctrl-W > commands count
-can be given before and/or after Ctrl-W.  The resulting count
-is a multiplication of those two.  So "2 Ctrl-W 2 -" decreases
-window size by 4 lines or columns.
+For Ctrl-W +, Ctrl-W -, Ctrl-W <, Ctrl-W >, Ctrl-W | and Ctrl-W _
+commands count can be given before and/or after Ctrl-W.  The
+resulting count is a multiplication of those two.  So
+"2 Ctrl-W 2 -" decreases window size by 4 lines or columns.
+
+Ctrl-W | and Ctrl-W _ maximize current view by default.
 
 Marks~
 

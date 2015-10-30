@@ -133,7 +133,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
-	stats->splitter_pos = -1.0;
+	stats->splitter_pos = -1;
 
 	stats->sourcing_state = SOURCING_NONE;
 

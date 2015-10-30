@@ -101,8 +101,7 @@ static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info);
-static FileView * get_view(void);
-static void move_splitter(key_info_t key_info, int fact);
+static int is_left_or_top(void);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -780,67 +779,53 @@ normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info)
 {
-	move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
+	move_splitter(def_count(key_info.count), is_left_or_top() ? -1 : +1);
 }
 
 void
 normal_cmd_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info)
 {
-	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+	move_splitter(def_count(key_info.count), is_left_or_top() ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info)
 {
-	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+	move_splitter(def_count(key_info.count), is_left_or_top() ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info)
 {
-	move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
+	move_splitter(def_count(key_info.count), is_left_or_top() ? -1 : +1);
 }
 
 void
 normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.split == HSPLIT)
-		key_info.count = getmaxy(stdscr);
-	else
-		key_info.count = getmaxx(stdscr);
-	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+	if(key_info.count == NO_COUNT_GIVEN)
+	{
+		key_info.count = (curr_stats.split == HSPLIT)
+		               ? getmaxy(stdscr)
+		               : getmaxx(stdscr);
+	}
+
+	ui_view_resize(curr_view, key_info.count);
 }
 
-static FileView *
-get_view(void)
+/* Checks whether current view is left/top or right/bottom.  Returns non-zero
+ * in first case and zero in the second one. */
+static int
+is_left_or_top(void)
 {
+	FileView *view = curr_view;
+
 	if(vle_mode_is(VIEW_MODE))
 	{
-		return curr_view->explore_mode ? curr_view : other_view;
+		view = curr_view->explore_mode ? curr_view : other_view;
 	}
-	else
-	{
-		return curr_view;
-	}
-}
 
-static void
-move_splitter(key_info_t key_info, int fact)
-{
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	if(curr_stats.splitter_pos < 0)
-	{
-		if(curr_stats.split == VSPLIT)
-			curr_stats.splitter_pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
-		else
-			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
-	}
-	curr_stats.splitter_pos += fact*key_info.count;
-	if(curr_stats.splitter_pos < 0)
-		curr_stats.splitter_pos = 0;
-	update_screen(UT_REDRAW);
+	return (view == &lwin);
 }
 
 /* Switches views. */
