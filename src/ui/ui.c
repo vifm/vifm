@@ -344,7 +344,7 @@ horizontal_layout(int screen_x, int screen_y)
 	if(splitter_pos < 2)
 		splitter_pos = 2;
 	if(splitter_pos > get_working_area_height() - 1)
-		splitter_pos = get_working_area_height();
+		splitter_pos = get_working_area_height() - 1;
 	if(curr_stats.splitter_pos >= 0)
 		curr_stats.splitter_pos = splitter_pos;
 
