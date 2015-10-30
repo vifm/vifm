@@ -416,7 +416,10 @@ void only(void);
 
 /* Moves window splitter by specified amount of positions multiplied by the
  * given factor. */
-void move_splitter_by(int by, int fact);
+void move_splitter(int by, int fact);
+
+/* Sets size of the view to specified value. */
+void ui_view_resize(FileView *view, int to);
 
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 25, 2015" "vifm 0.8"
+.TH VIFM 1 "October 30, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -292,18 +292,20 @@ increase size of the view by count.
 
 .TP
 .BI "Ctrl-W |"
-maximize current view.
+set current view size to count.
 .TP
 .BI "Ctrl-W _"
-maximize current view.
+set current view size to count.
 .TP
 .BI "Ctrl-W ="
 make size of two views equal.
 .LP
-For Ctrl-W +, Ctrl-W \-, Ctrl-W < and Ctrl-W > commands count
-can be given before and/or after Ctrl-W.  The resulting count
+For Ctrl-W +, Ctrl-W \-, Ctrl-W <, Ctrl-W >, Ctrl-W | and Ctrl-W _ commands
+count can be given before and/or after Ctrl-W.  The resulting count
 is a multiplication of those two.  So "2 Ctrl-W 2 \-" decreases
 window size by 4 lines or columns.
+
+Ctrl-W | and Ctrl-W _ maximise current view by default.
 .\" ---------------------------------------------------------------------------
 .SH Marks
 .\" ---------------------------------------------------------------------------

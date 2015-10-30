@@ -177,6 +177,9 @@
 	was changed.  This affects all parent directories as well, way easier to
 	see what needs recalculation after file moving/removal.
 
+	Ctrl-W | and Ctrl-W _ now can set window size to given count.  Thanks to
+	filterfalse.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

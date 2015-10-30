@@ -92,6 +92,7 @@ static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(FileView *view, const char *old_main_origin);
+static void set_splitter(int pos);
 static char * path_identity(const char path[]);
 static char * format_view_title(const FileView *view, path_func pf);
 static void print_view_title(const FileView *view, int active_view,
@@ -1229,7 +1230,7 @@ only(void)
 }
 
 void
-move_splitter_by(int by, int fact)
+move_splitter(int by, int fact)
 {
 	/* Determine exact splitter position if it's centered at the moment. */
 	if(curr_stats.splitter_pos < 0)
@@ -1244,14 +1245,34 @@ move_splitter_by(int by, int fact)
 		}
 	}
 
-	/* Adjust position and make sure we don't set negative value which has special
-	 * meaning. */
-	curr_stats.splitter_pos += fact*by;
-	if(curr_stats.splitter_pos < 0)
+	set_splitter(curr_stats.splitter_pos + fact*by);
+}
+
+void
+ui_view_resize(FileView *view, int to)
+{
+	int pos;
+
+	if(curr_stats.split == HSPLIT)
 	{
-		curr_stats.splitter_pos = 0;
+		const int height = get_working_area_height();
+		pos = (view == &lwin) ? (1 + to) : (height - to);
+	}
+	else
+	{
+		const int width = getmaxx(stdscr) - 1;
+		pos = (view == &lwin) ? to : (width - to);
 	}
 
+	set_splitter(pos);
+}
+
+/* Sets splitter position making sure it isn't negative value which has special
+ * meaning. */
+static void
+set_splitter(int pos)
+{
+	curr_stats.splitter_pos = (pos < 0) ? 0 : pos;
 	update_screen(UT_REDRAW);
 }
 
