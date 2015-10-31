@@ -52,9 +52,14 @@ typedef struct io_args_t io_args_t;
  * positive response and zero otherwise. */
 typedef int (*io_confirm)(io_args_t *args, const char src[], const char dst[]);
 
+/* Type of I/O operation result. */
 typedef struct
 {
-	ioerr_cb errors_cb;  /* TODO: use this. */
+	/* Pointer to a function that gets called when operation fails due to
+	 * unexpected error. */
+	ioerr_cb errors_cb;
+	/* Output list of errors, which should be initialized by the caller to make
+	 * use of it.  Must be released afterwards. */
 	ioe_errlst_t errors;
 }
 io_result_t;
