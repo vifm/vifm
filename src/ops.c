@@ -112,6 +112,8 @@ static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
+static char prompt_user(const io_args_t *args, const char title[],
+		const char msg[], const response_variant variants[]);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -940,17 +942,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	free(dst_dir);
 	free(src_dir);
 
-	/* Active cancellation conflicts with input processing by putting terminal in
-	 * a cooked mode. */
-	if(args->cancellable)
-	{
-		raw();
-	}
-	response = prompt_msg_custom("File overwrite", msg, responses);
-	if(args->cancellable)
-	{
-		noraw();
-	}
+	response = prompt_user(args, "File overwrite", msg, responses);
 
 	free(msg);
 
@@ -982,6 +974,29 @@ pretty_dir_path(const char path[])
 	canonicalize_path(dir_only, canonic, sizeof(canonic));
 
 	return strdup(canonic);
+}
+
+/* prompt_msg_custom() wrapper that takes care of interaction if cancellation is
+ * active. */
+static char
+prompt_user(const io_args_t *args, const char title[], const char msg[],
+		const response_variant variants[])
+{
+	char response;
+
+	/* Active cancellation conflicts with input processing by putting terminal in
+	 * a cooked mode. */
+	if(args->cancellable)
+	{
+		raw();
+	}
+	response = prompt_msg_custom(title, msg, variants);
+	if(args->cancellable)
+	{
+		noraw();
+	}
+
+	return response;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
