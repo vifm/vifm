@@ -2,5 +2,8 @@
 
 eval "$*"
 echo -n Press any key to close this region...
-read -n 1 throwaway_variable
+old_stty_cfg="$(stty -g)"
+stty raw -echo
+head -c 1
+stty "$old_stty_cfg"
 screen -X eval 'focus bottom' remove

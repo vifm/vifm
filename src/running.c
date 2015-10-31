@@ -1294,29 +1294,25 @@ run_in_split(const FileView *view, const char cmd[])
 
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		char buf[1024];
-		snprintf(buf, sizeof(buf), "tmux split-window %s", escaped_cmd);
-		(void)vifm_system(buf);
+		char cmd[1024];
+		snprintf(cmd, sizeof(cmd), "tmux split-window %s", escaped_cmd);
+		(void)vifm_system(cmd);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		char buf[1024];
-		char *escaped_chdir;
+		char cmd[1024];
 
+		/* "eval" executes each argument as a separate argument, but escaping rules
+		 * are not exactly like in shell, so last command is run separately. */
 		char *const escaped_dir = shell_like_escape(flist_get_dir(view), 0);
-		snprintf(buf, sizeof(buf), "chdir %s", escaped_dir);
+		snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus bottom' "
+				"split 'focus bottom'", escaped_dir);
 		free(escaped_dir);
+		(void)vifm_system(cmd);
 
-		escaped_chdir = shell_like_escape(buf, 0);
-		snprintf(buf, sizeof(buf), "screen -X eval %s", escaped_chdir);
-		free(escaped_chdir);
-
-		(void)vifm_system(buf);
-
-		snprintf(buf, sizeof(buf), "screen -X eval 'focus bottom' "
-				"split 'focus bottom' screen\\ vifm-screen-split\\ %s",
+		snprintf(cmd, sizeof(cmd), "screen -X screen vifm-screen-split %s",
 				escaped_cmd);
-		(void)vifm_system(buf);
+		(void)vifm_system(cmd);
 	}
 	else
 	{
