@@ -42,18 +42,15 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 
-static struct
+/* Kind of title we're working with. */
+typedef enum
 {
-	int initialized;
-	int supported;
-#ifndef _WIN32
-	char title[512];
-#else
-	wchar_t title[512];
-#endif
-}title_state;
+	TK_ABSENT,  /* No title support. */
+	TK_REGULAR, /* Normal for the platform (xterm for *nix). */
+}
+TitleKind;
 
-static int check_title_supported();
+static TitleKind get_title_kind();
 static void save_term_title();
 static void restore_term_title();
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -98,18 +95,38 @@ static typeof(XFree) *XFreeWrapper = &XFree;
 #endif
 #endif
 
+/* Holds state of the unit. */
+static struct
+{
+	int initialized;    /* Whether state has already been initialized. */
+	TitleKind kind;     /* Type of title output. */
+
+	/* Original title or an empty string if failed to determine. */
+#ifndef _WIN32
+	char title[512];
+#else
+	wchar_t title[512];
+#endif
+}
+title_state;
+
 void
 set_term_title(const char *title_part)
 {
 	if(!title_state.initialized)
 	{
-		title_state.supported = check_title_supported();
-		if(title_state.supported)
+		title_state.kind = get_title_kind();
+		if(title_state.kind != TK_ABSENT)
+		{
 			save_term_title();
+		}
 		title_state.initialized = 1;
 	}
-	if(!title_state.supported)
+
+	if(title_state.kind == TK_ABSENT)
+	{
 		return;
+	}
 
 	if(title_part == NULL)
 	{
@@ -121,13 +138,13 @@ set_term_title(const char *title_part)
 	}
 }
 
-/* Checks if we can alter terminal emulator title.  Returns non-zero if so,
- * otherwise zero is returned. */
-static int
-check_title_supported()
+/* Checks if we can alter terminal emulator title.  Returns kind of writes we
+ * should do. */
+static TitleKind
+get_title_kind()
 {
 #ifdef _WIN32
-	title_state.supported = 1;
+	return TK_REGULAR;
 #else
 	/* this list was taken from ranger's sources */
 	static char *TERMINALS_WITH_TITLE[] = {
@@ -135,8 +152,13 @@ check_title_supported()
 		"aterm", "Eterm", "screen", "screen-256color"
 	};
 
-	return is_in_string_array(TERMINALS_WITH_TITLE,
-			ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
+	if(is_in_string_array(TERMINALS_WITH_TITLE, ARRAY_LEN(TERMINALS_WITH_TITLE),
+				env_get("TERM")))
+	{
+		return TK_REGULAR;
+	}
+
+	return TK_ABSENT;
 #endif
 }
 
