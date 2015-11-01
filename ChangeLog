@@ -189,6 +189,9 @@
 
 	Somewhat more informative error titles on issues during file operations.
 
+	Made setting title inside terminal multiplexers (when terminal type is
+	"screen*") work.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
