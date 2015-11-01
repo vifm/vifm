@@ -56,7 +56,7 @@ typedef enum
 }
 OPS;
 
-/* Policy on treating conflicts during operating processing. */
+/* Policy on treating conflicts during operation processing. */
 typedef enum
 {
 	CRP_ASK,           /* Prompt user for the decision. */
@@ -64,6 +64,14 @@ typedef enum
 	CRP_OVERWRITE_ALL, /* Automatically overwrite file. */
 }
 ConflictResolutionPolicy;
+
+/* Policy on treating errors during operation processing. */
+typedef enum
+{
+	ERP_ASK,        /* Prompt user for the decition. */
+	ERP_IGNORE_ALL, /* Automatically ignore all future errors. */
+}
+ErrorResolutionPolicy;
 
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
@@ -84,8 +92,8 @@ typedef struct
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
 
-	/* What should be done on conflicts. */
-	ConflictResolutionPolicy crp;
+	ConflictResolutionPolicy crp; /* What should be done on conflicts. */
+	ErrorResolutionPolicy erp;    /* What should be done on unexpected errors. */
 
 	/* TODO: count number of skipped files. */
 }

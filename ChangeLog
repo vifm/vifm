@@ -84,6 +84,9 @@
 	Added missing script that's necessary for %s macro in GNU screen.  Was
 	lost for a long time.
 
+	Added retry/ignore/abort prompt for file/directory removal when 'syscalls'
+	is on.  Thanks to Robert Sarkozi.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

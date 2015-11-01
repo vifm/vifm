@@ -19,8 +19,8 @@ Basic things that need to be done.
     Process shell pause request for running in %s.
     Filtering in menus.
     Search match highlight in menus.
-    For 'syscalls', vifm should ask for standard retry/abort/cancel actions on
-        error.
+    For 'syscalls', vifm should ask for standard retry/ignore/abort actions on
+        error (done for file/directory removal).
     Queueing of file operations.
 
 Documentation.

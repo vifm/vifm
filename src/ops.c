@@ -112,6 +112,7 @@ static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
+static IoErrCbResult dispatch_error(io_args_t *args, const ioe_err_t *err);
 static char prompt_user(const io_args_t *args, const char title[],
 		const char msg[], const response_variant variants[]);
 
@@ -881,6 +882,7 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 		if(!ops->bg)
 		{
 			args->confirm = &confirm_overwrite;
+			args->result.errors_cb = &dispatch_error;
 		}
 
 		ioe_errlst_init(&args->result.errors);
@@ -974,6 +976,47 @@ pretty_dir_path(const char path[])
 	canonicalize_path(dir_only, canonic, sizeof(canonic));
 
 	return strdup(canonic);
+}
+
+/* Asks user what to do with encountered error.  Returns the response. */
+static IoErrCbResult
+dispatch_error(io_args_t *args, const ioe_err_t *err)
+{
+	static const response_variant responses[] = {
+		{ .key = 'r', .descr = "[r]etry", },
+		{ .key = 'i', .descr = "[i]gnore", },
+		{ .key = 'I', .descr = "[I]gnore for all", },
+		{ .key = 'a', .descr = "[a]bort", },
+		{ },
+	};
+
+	char *msg;
+	char response;
+
+	if(curr_ops->erp == ERP_IGNORE_ALL)
+	{
+		return IO_ECR_IGNORE;
+	}
+
+	msg = format_str("%s: %s", replace_home_part(err->path), err->msg);
+
+	response = prompt_user(args, "File error", msg, responses);
+
+	free(msg);
+
+	switch(response)
+	{
+		case 'r': return IO_ECR_RETRY;
+
+		case 'I': curr_ops->erp = ERP_IGNORE_ALL; /* Fall through. */
+		case 'i': return IO_ECR_IGNORE;
+
+		case 'a': return IO_ECR_BREAK;
+
+		default:
+			assert(0 && "Unexpected response.");
+			return 0;
+	}
 }
 
 /* prompt_msg_custom() wrapper that takes care of interaction if cancellation is
