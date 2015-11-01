@@ -28,6 +28,7 @@
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
+#include <assert.h> /* assert() */
 #include <errno.h> /* EEXIST ENOENT EISDIR errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fread() fseek() fsetpos()
@@ -59,6 +60,8 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
 		HANDLE src_file, HANDLE dst_file, LPVOID param);
 #endif
+static IoErrCbResult sig_err(io_args_t *const args, int *result,
+		const char path[], int error_code, const char msg[]);
 
 int
 iop_mkfile(io_args_t *const args)
@@ -160,27 +163,46 @@ iop_rmfile(io_args_t *const args)
 	size = get_file_size(path);
 
 #ifndef _WIN32
-	result = unlink(path);
-	if(result != 0)
+	do
 	{
-		(void)ioe_errlst_append(&args->result.errors, path, errno, strerror(errno));
+		result = unlink(path);
+		if(result != 0)
+		{
+			if(sig_err(args, &result, path, errno, strerror(errno)) == IO_ECR_RETRY)
+			{
+				continue;
+			}
+		}
+
+		break;
 	}
+	while(1);
 #else
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
 		const DWORD attributes = GetFileAttributesW(utf16_path);
-		if(attributes & FILE_ATTRIBUTE_READONLY)
-		{
-			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
-		}
-		result = !DeleteFileW(utf16_path);
 
-		if(result)
+		do
 		{
-			/* FIXME: use real system error message here. */
-			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
-					"File removal failed");
+			if(attributes & FILE_ATTRIBUTE_READONLY)
+			{
+				SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
+			}
+			result = (DeleteFileW(utf16_path) == FALSE);
+
+			if(result != 0)
+			{
+				/* FIXME: use real system error message here. */
+				if(sig_err(args, &result, path, IO_ERR_UNKNOWN,
+							"File removal failed") == IO_ECR_RETRY)
+				{
+					continue;
+				}
+			}
+
+			break;
 		}
+		while(1);
 
 		free(utf16_path);
 	}
@@ -201,22 +223,40 @@ iop_rmdir(io_args_t *const args)
 	ioeta_update(args->estim, path, path, 0, 0);
 
 #ifndef _WIN32
-	result = rmdir(path);
-	if(result != 0)
+	do
 	{
-		(void)ioe_errlst_append(&args->result.errors, path, errno, strerror(errno));
+		result = rmdir(path);
+		if(result != 0)
+		{
+			if(sig_err(args, &result, path, errno, strerror(errno)) == IO_ECR_RETRY)
+			{
+				continue;
+			}
+		}
+
+		break;
 	}
+	while(1);
 #else
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
-		result = RemoveDirectoryW(utf16_path) == 0;
 
-		if(result)
+		do
 		{
-			/* FIXME: use real system error message here. */
-			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
-					"Directory removal failed");
+			result = (RemoveDirectoryW(utf16_path) == FALSE);
+			if(result != 0)
+			{
+				/* FIXME: use real system error message here. */
+				if(sig_err(args, &result, path, IO_ERR_UNKNOWN,
+							"Directory removal failed") == IO_ECR_RETRY)
+				{
+					continue;
+				}
+			}
+
+			break;
 		}
+		while(1);
 
 		free(utf16_path);
 	}
@@ -657,6 +697,37 @@ iop_ln(io_args_t *const args)
 #endif
 
 	return result;
+}
+
+/* Error handler that calls external code to figure out what to do and also logs
+ * the error when needed.  Returns the response. */
+static IoErrCbResult
+sig_err(io_args_t *const args, int *result, const char path[], int error_code,
+		const char msg[])
+{
+	ioerr_cb errors = args->result.errors_cb;
+
+	ioe_err_t err = {
+		.path = (char*)path, .error_code = errno, .msg = (char*)msg,
+	};
+
+	assert(*result != 0 && "The function should be called on error path only.");
+
+	switch((errors == NULL) ? IO_ECR_BREAK : errors(args, &err))
+	{
+		case IO_ECR_RETRY:
+			return IO_ECR_RETRY;
+		case IO_ECR_IGNORE:
+			*result = 0;
+			return IO_ECR_IGNORE;
+		case IO_ECR_BREAK:
+			(void)ioe_errlst_append(&args->result.errors, path, errno, msg);
+			return IO_ECR_BREAK;
+
+		default:
+			assert(0 && "Unknown error handling result.");
+			return IO_ECR_BREAK;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
