@@ -47,6 +47,7 @@ typedef enum
 {
 	TK_ABSENT,  /* No title support. */
 	TK_REGULAR, /* Normal for the platform (xterm for *nix). */
+	TK_SCREEN,  /* GNU screen compatible. */
 }
 TitleKind;
 
@@ -146,16 +147,27 @@ get_title_kind()
 #ifdef _WIN32
 	return TK_REGULAR;
 #else
-	/* this list was taken from ranger's sources */
-	static char *TERMINALS_WITH_TITLE[] = {
+	/* These have "char *" because of is_in_string_array() prototype. */
+
+	static char *XTERM_LIKE[] = {
 		"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
-		"aterm", "Eterm", "screen", "screen-256color"
+		"aterm", "Eterm",
 	};
 
-	if(is_in_string_array(TERMINALS_WITH_TITLE, ARRAY_LEN(TERMINALS_WITH_TITLE),
-				env_get("TERM")))
+	static char *SCREEN_LIKE[] = {
+		"screen", "screen-bce", "screen-256color", "screen-256color-bce"
+	};
+
+	const char *const term = env_get("TERM");
+
+	if(is_in_string_array(XTERM_LIKE, ARRAY_LEN(XTERM_LIKE), term))
 	{
 		return TK_REGULAR;
+	}
+
+	if(is_in_string_array(SCREEN_LIKE, ARRAY_LEN(SCREEN_LIKE), term))
+	{
+		return TK_SCREEN;
 	}
 
 	return TK_ABSENT;
@@ -265,9 +277,14 @@ set_terminal_title(const char path[])
 	SetConsoleTitleW(utf16);
 	free(utf16);
 #else
-	char *const title = format_str("\033]2;%s - VIFM\007", path);
+	char *const fmt = (title_state.kind == TK_REGULAR)
+	                ? "\033]2;%s - VIFM\007"
+	                : "\033k%s - VIFM\033\134";
+	char *const title = format_str(fmt, path);
+
 	putp(title);
 	fflush(stdout);
+
 	free(title);
 #endif
 }
