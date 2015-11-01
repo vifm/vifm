@@ -53,7 +53,7 @@ static struct
 #endif
 }title_state;
 
-static void check_title_supported();
+static int check_title_supported();
 static void save_term_title();
 static void restore_term_title();
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -103,7 +103,7 @@ set_term_title(const char *title_part)
 {
 	if(!title_state.initialized)
 	{
-		check_title_supported();
+		title_state.supported = check_title_supported();
 		if(title_state.supported)
 			save_term_title();
 		title_state.initialized = 1;
@@ -121,9 +121,9 @@ set_term_title(const char *title_part)
 	}
 }
 
-/* checks if we can alter terminal emulator title and writes result to
- * title_state.supported */
-static void
+/* Checks if we can alter terminal emulator title.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
 check_title_supported()
 {
 #ifdef _WIN32
@@ -135,7 +135,7 @@ check_title_supported()
 		"aterm", "Eterm", "screen", "screen-256color"
 	};
 
-	title_state.supported = is_in_string_array(TERMINALS_WITH_TITLE,
+	return is_in_string_array(TERMINALS_WITH_TITLE,
 			ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
 #endif
 }
