@@ -925,6 +925,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 		{ },
 	};
 
+	char *title;
 	char *msg;
 	char response;
 	char *src_dir, *dst_dir;
@@ -938,15 +939,17 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	src_dir = pretty_dir_path(src);
 	dst_dir = pretty_dir_path(dst);
 
+	title = format_str("File overwrite while %s", curr_ops->descr);
 	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?", fname,
 			dst_dir, fname, src_dir);
 
 	free(dst_dir);
 	free(src_dir);
 
-	response = prompt_user(args, "File overwrite", msg, responses);
+	response = prompt_user(args, title, msg, responses);
 
 	free(msg);
+	free(title);
 
 	switch(response)
 	{
@@ -990,6 +993,7 @@ dispatch_error(io_args_t *args, const ioe_err_t *err)
 		{ },
 	};
 
+	char *title;
 	char *msg;
 	char response;
 
@@ -998,11 +1002,13 @@ dispatch_error(io_args_t *args, const ioe_err_t *err)
 		return IO_ECR_IGNORE;
 	}
 
+	title = format_str("Error while %s", curr_ops->descr);
 	msg = format_str("%s: %s", replace_home_part(err->path), err->msg);
 
-	response = prompt_user(args, "File error", msg, responses);
+	response = prompt_user(args, title, msg, responses);
 
 	free(msg);
+	free(title);
 
 	switch(response)
 	{

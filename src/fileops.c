@@ -3711,7 +3711,10 @@ free_ops(ops_t *ops)
 
 		if(!pdata->bg && ops->errors != NULL)
 		{
-			show_error_msg("Encountered errors", ops->errors);
+			char *const title = format_str("Encountered errors on %s",
+					ops_describe(ops));
+			show_error_msg(title, ops->errors);
+			free(title);
 		}
 
 		free(ops->estim->param);

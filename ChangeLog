@@ -187,6 +187,8 @@
 
 	Display confirmation on ":delete! &" before initiating the operation.
 
+	Somewhat more informative error titles on issues during file operations.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 
