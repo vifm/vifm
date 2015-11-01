@@ -84,6 +84,9 @@
 	Added missing script that's necessary for %s macro in GNU screen.  Was
 	lost for a long time.
 
+	Added retry/ignore/abort prompt for file/directory removal when 'syscalls'
+	is on.  Thanks to Robert Sarkozi.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -179,6 +182,12 @@
 
 	Ctrl-W | and Ctrl-W _ now can set window size to given count.  Thanks to
 	filterfalse.
+
+	Make sure confirmation dialog doesn't appear for background operations.
+
+	Display confirmation on ":delete! &" before initiating the operation.
+
+	Somewhat more informative error titles on issues during file operations.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).

@@ -767,9 +767,23 @@ delete_files_bg(FileView *view, int use_trash)
 	args = calloc(1, sizeof(*args));
 	args->use_trash = use_trash;
 
-	move_cursor_out_of(view, FLS_MARKING);
-
 	general_prepare_for_bg_task(view, args);
+	if(cfg.confirm)
+	{
+		char msg[512];
+
+		snprintf(msg, sizeof(msg), "Are you sure about removing %ld file%s "
+				"irreversibly?", (long)args->sel_list_len,
+				(args->sel_list_len == 1) ? "" : "s");
+
+		if(!prompt_msg("Permanent deletion", msg))
+		{
+			free_bg_args(args);
+			return 0;
+		}
+	}
+
+	move_cursor_out_of(view, FLS_MARKING);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(flist_get_dir(view)));
@@ -3324,7 +3338,7 @@ static ops_t *
 get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, descr, base_dir, target_dir);
+	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
 	if(cfg.use_system_calls)
 	{
 		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
@@ -3656,7 +3670,7 @@ get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
 		return NULL;
 	}
 
-	ops = ops_alloc(main_op, descr, dir, dir);
+	ops = ops_alloc(main_op, 1, descr, dir, dir);
 	pdata = alloc_progress_data(1, bg_op);
 	ops->estim = ioeta_alloc(pdata);
 
@@ -3697,7 +3711,10 @@ free_ops(ops_t *ops)
 
 		if(!pdata->bg && ops->errors != NULL)
 		{
-			show_error_msg("Encountered errors", ops->errors);
+			char *const title = format_str("Encountered errors on %s",
+					ops_describe(ops));
+			show_error_msg(title, ops->errors);
+			free(title);
 		}
 
 		free(ops->estim->param);

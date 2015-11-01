@@ -56,7 +56,7 @@ typedef enum
 }
 OPS;
 
-/* Policy on treating conflicts during operating processing. */
+/* Policy on treating conflicts during operation processing. */
 typedef enum
 {
 	CRP_ASK,           /* Prompt user for the decision. */
@@ -64,6 +64,14 @@ typedef enum
 	CRP_OVERWRITE_ALL, /* Automatically overwrite file. */
 }
 ConflictResolutionPolicy;
+
+/* Policy on treating errors during operation processing. */
+typedef enum
+{
+	ERP_ASK,        /* Prompt user for the decition. */
+	ERP_IGNORE_ALL, /* Automatically ignore all future errors. */
+}
+ErrorResolutionPolicy;
 
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
@@ -77,22 +85,23 @@ typedef struct
 	                         also frees it on ops_free(). */
 	const char *descr;    /* Description of operations. */
 	int shallow_eta;      /* Count only top level items, without recursion. */
+	int bg;               /* Executed in background (no user interaction). */
 	char *errors;         /* Multi-line string of errors. */
 
 	char *base_dir;   /* Base directory in which operation is taking place. */
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
 
-	/* What should be done on conflicts. */
-	ConflictResolutionPolicy crp;
+	ConflictResolutionPolicy crp; /* What should be done on conflicts. */
+	ErrorResolutionPolicy erp;    /* What should be done on unexpected errors. */
 
 	/* TODO: count number of skipped files. */
 }
 ops_t;
 
 /* Allocates and initializes new ops_t.  Returns just allocated structure. */
-ops_t * ops_alloc(OPS main_op, const char descr[], const char base_dir[],
-		const char target_dir[]);
+ops_t * ops_alloc(OPS main_op, int bg, const char descr[],
+		const char base_dir[], const char target_dir[]);
 
 /* Describes main operation with one generic word.  Returns the description. */
 const char * ops_describe(const ops_t *ops);

@@ -88,7 +88,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.result = rm_args->result,
 				};
 
-				result = iop_rmfile(&args);
+				result = (iop_rmfile(&args) == 0) ? VR_OK : VR_ERROR;
 				rm_args->result = args.result;
 				break;
 			}
@@ -103,7 +103,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 					.result = rm_args->result,
 				};
 
-				result = iop_rmdir(&args);
+				result = (iop_rmdir(&args) == 0) ? VR_OK : VR_ERROR;
 				rm_args->result = args.result;
 				break;
 			}

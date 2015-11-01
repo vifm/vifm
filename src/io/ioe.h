@@ -35,8 +35,8 @@ typedef enum
 {
 	/* Failed operation should be restarted. */
 	IO_ECR_RETRY,
-	/* Operation should be skipped. */
-	IO_ECR_SKIP,
+	/* The failure should be ignored. */
+	IO_ECR_IGNORE,
 	/* Whole action should be stopped (including all possible next operations). */
 	IO_ECR_BREAK
 }
@@ -54,8 +54,11 @@ typedef struct
 }
 ioe_err_t;
 
+/* Forward declaration for ioerr_cb. */
+struct io_args_t;
+
 /* Callback used to report information about errors occurred. */
-typedef IoErrCbResult (*ioerr_cb)(const ioe_err_t *err);
+typedef IoErrCbResult (*ioerr_cb)(struct io_args_t *args, const ioe_err_t *err);
 
 /* List of errors. */
 typedef struct

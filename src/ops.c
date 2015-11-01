@@ -112,6 +112,9 @@ static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
+static IoErrCbResult dispatch_error(io_args_t *args, const ioe_err_t *err);
+static char prompt_user(const io_args_t *args, const char title[],
+		const char msg[], const response_variant variants[]);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -150,7 +153,7 @@ ARRAY_GUARD(op_funcs, OP_COUNT);
 static ops_t *curr_ops;
 
 ops_t *
-ops_alloc(OPS main_op, const char descr[], const char base_dir[],
+ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
 	ops_t *const ops = calloc(1, sizeof(*ops));
@@ -158,6 +161,7 @@ ops_alloc(OPS main_op, const char descr[], const char base_dir[],
 	ops->descr = descr;
 	ops->base_dir = strdup(base_dir);
 	ops->target_dir = strdup(target_dir);
+	ops->bg = bg;
 	return ops;
 }
 
@@ -260,11 +264,11 @@ op_none(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(cfg.confirm && !curr_stats.confirmed)
+	if(cfg.confirm && !curr_stats.confirmed && (ops == NULL || !ops->bg))
 	{
 		curr_stats.confirmed = prompt_msg("Permanent deletion",
-				"Are you sure? If you undoing a command and want to see file names, "
-				"use :undolist! command");
+				"Are you sure?  If you're undoing a command and want to see file "
+				"names, use :undolist! command");
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
@@ -872,10 +876,15 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 	int result;
 
 	args->estim = (ops == NULL) ? NULL : ops->estim;
-	args->confirm = &confirm_overwrite;
 
 	if(ops != NULL)
 	{
+		if(!ops->bg)
+		{
+			args->confirm = &confirm_overwrite;
+			args->result.errors_cb = &dispatch_error;
+		}
+
 		ioe_errlst_init(&args->result.errors);
 	}
 
@@ -916,6 +925,7 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 		{ },
 	};
 
+	char *title;
 	char *msg;
 	char response;
 	char *src_dir, *dst_dir;
@@ -929,25 +939,17 @@ confirm_overwrite(io_args_t *args, const char src[], const char dst[])
 	src_dir = pretty_dir_path(src);
 	dst_dir = pretty_dir_path(dst);
 
+	title = format_str("File overwrite while %s", curr_ops->descr);
 	msg = format_str("Overwrite \"%s\" in\n%s\nwith \"%s\" from\n%s\n?", fname,
 			dst_dir, fname, src_dir);
 
 	free(dst_dir);
 	free(src_dir);
 
-	/* Active cancellation conflicts with input processing by putting terminal in
-	 * a cocked mode. */
-	if(args->cancellable)
-	{
-		raw();
-	}
-	response = prompt_msg_custom("File overwrite", msg, responses);
-	if(args->cancellable)
-	{
-		noraw();
-	}
+	response = prompt_user(args, title, msg, responses);
 
 	free(msg);
+	free(title);
 
 	switch(response)
 	{
@@ -977,6 +979,73 @@ pretty_dir_path(const char path[])
 	canonicalize_path(dir_only, canonic, sizeof(canonic));
 
 	return strdup(canonic);
+}
+
+/* Asks user what to do with encountered error.  Returns the response. */
+static IoErrCbResult
+dispatch_error(io_args_t *args, const ioe_err_t *err)
+{
+	static const response_variant responses[] = {
+		{ .key = 'r', .descr = "[r]etry", },
+		{ .key = 'i', .descr = "[i]gnore", },
+		{ .key = 'I', .descr = "[I]gnore for all", },
+		{ .key = 'a', .descr = "[a]bort", },
+		{ },
+	};
+
+	char *title;
+	char *msg;
+	char response;
+
+	if(curr_ops->erp == ERP_IGNORE_ALL)
+	{
+		return IO_ECR_IGNORE;
+	}
+
+	title = format_str("Error while %s", curr_ops->descr);
+	msg = format_str("%s: %s", replace_home_part(err->path), err->msg);
+
+	response = prompt_user(args, title, msg, responses);
+
+	free(msg);
+	free(title);
+
+	switch(response)
+	{
+		case 'r': return IO_ECR_RETRY;
+
+		case 'I': curr_ops->erp = ERP_IGNORE_ALL; /* Fall through. */
+		case 'i': return IO_ECR_IGNORE;
+
+		case 'a': return IO_ECR_BREAK;
+
+		default:
+			assert(0 && "Unexpected response.");
+			return 0;
+	}
+}
+
+/* prompt_msg_custom() wrapper that takes care of interaction if cancellation is
+ * active. */
+static char
+prompt_user(const io_args_t *args, const char title[], const char msg[],
+		const response_variant variants[])
+{
+	char response;
+
+	/* Active cancellation conflicts with input processing by putting terminal in
+	 * a cooked mode. */
+	if(args->cancellable)
+	{
+		raw();
+	}
+	response = prompt_msg_custom(title, msg, variants);
+	if(args->cancellable)
+	{
+		noraw();
+	}
+
+	return response;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
