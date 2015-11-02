@@ -203,6 +203,7 @@ static const char * sort_enum[] = {
 	"dir",
 	"type",
 	"fileext",
+	"nitems",
 };
 ARRAY_GUARD(sort_enum, SK_COUNT);
 
@@ -259,6 +260,7 @@ static const char *sort_types[] = {
 	"dir",     "+dir",     "-dir",
 	"type",    "+type",    "-type",
 	"fileext", "+fileext", "-fileext",
+	"nitems",  "+nitems",  "-nitems",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 

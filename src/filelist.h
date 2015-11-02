@@ -280,6 +280,9 @@ int zap_entries(FileView *view, dir_entry_t *entries, int *count,
  * the found entry or NULL. */
 dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
+/* Retrieves number of items in a directory specified by the entry.  Returns the
+ * number, which is zero for files. */
+uint64_t entry_get_nitems(FileView *view, const dir_entry_t *entry);
 /* Replaces all entries of the *entries with copy of with_entries elements. */
 void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 		const dir_entry_t *with_entries, int with_count);

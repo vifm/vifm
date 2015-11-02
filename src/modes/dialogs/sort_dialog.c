@@ -62,9 +62,9 @@ static int indexes[] = {
 	11,              /* SK_BY_OWNER_NAME */
 #endif
 	12 + CORRECTION, /* SK_BY_SIZE */
-	13 + CORRECTION, /* SK_BY_TIME_ACCESSED */
-	14 + CORRECTION, /* SK_BY_TIME_CHANGED */
-	15 + CORRECTION, /* SK_BY_TIME_MODIFIED */
+	14 + CORRECTION, /* SK_BY_TIME_ACCESSED */
+	15 + CORRECTION, /* SK_BY_TIME_CHANGED */
+	16 + CORRECTION, /* SK_BY_TIME_MODIFIED */
 	3,               /* SK_BY_INAME */
 #ifndef _WIN32
 	9,               /* SK_BY_PERMISSIONS */
@@ -72,6 +72,7 @@ static int indexes[] = {
 	5,               /* SK_BY_DIR */
 	4,               /* SK_BY_TYPE */
 	1,               /* SK_BY_FILEEXT */
+	13 + CORRECTION, /* SK_BY_NITEMS */
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -181,6 +182,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
 #endif
 	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Item Count");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Accessed");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Changed");

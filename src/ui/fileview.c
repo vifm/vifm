@@ -116,10 +116,11 @@ fview_init(void)
 		SortingKey key;
 		column_func func;
 	} sort_to_func[] = {
-		{ SK_BY_NAME,  &format_name },
-		{ SK_BY_INAME, &format_name },
-		{ SK_BY_SIZE,  &format_size },
-		{ SK_BY_TYPE,  &format_type },
+		{ SK_BY_NAME,   &format_name },
+		{ SK_BY_INAME,  &format_name },
+		{ SK_BY_SIZE,   &format_size },
+		{ SK_BY_NITEMS, &format_size },
+		{ SK_BY_TYPE,   &format_type },
 
 		{ SK_BY_EXTENSION,     &format_ext },
 		{ SK_BY_FILEEXT,       &format_fileext },
