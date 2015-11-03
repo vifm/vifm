@@ -2,10 +2,11 @@
 
 #include <unistd.h> /* F_OK access() chdir() */
 
-#include <string.h> /* strcpy() */
+#include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/commands.h"
@@ -38,6 +39,7 @@ SETUP()
 	view_setup(&rwin);
 
 	curr_view = &lwin;
+	other_view = &rwin;
 
 	cfg.cd_path = strdup("");
 	cfg.fuse_home = strdup("");
@@ -211,6 +213,33 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 
 	assert_true(paths_are_equal(lwin.curr_dir, TEST_DATA_PATH "/read"));
 	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
+}
+
+TEST(cpmv_crash)
+{
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	lwin.list_rows = 3;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].name = strdup("c");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	/* cpmv used to use presence of the argument as indication of availability of
+	 * file list and access memory beyond array boundaries. */
+	assert_failure(exec_commands("co .", &lwin, CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

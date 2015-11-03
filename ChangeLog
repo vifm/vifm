@@ -299,7 +299,7 @@
 	Fixed `:cd one two` to use current directory as base for both relative
 	paths.  Thanks to filterfalse.
 
-	Fixed ranges for :yank.  Thanks to Marius.
+	Fixed ranges for :yank.  Thanks to Marius Schmidl.
 
 	Fixed enabling sorting on loading regular custom view after very custom
 	view.
@@ -313,6 +313,9 @@
 
 	Fixed Ctrl-W _ in top panel, which hid the bottom panel completely.
 	Thanks to filterfalse.
+
+	Fixed crash on copy-like operations that move several files into
+	subdirectory of another view.  Thanks to Marius Schmidl.
 
 0.8-beta to 0.8
 
