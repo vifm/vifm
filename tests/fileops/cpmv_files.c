@@ -137,6 +137,9 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	rwin.dir_entry[0].marked = 1;
 	rwin.dir_entry[1].marked = 1;
 	rwin.selected_files = 2;
+
+	check_marking(curr_view, 0, NULL);
+
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_COPY, 0);
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_COPY, 1);
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
