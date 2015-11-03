@@ -137,12 +137,53 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	rwin.dir_entry[0].marked = 1;
 	rwin.dir_entry[1].marked = 1;
 	rwin.selected_files = 2;
+
+	check_marking(curr_view, 0, NULL);
+
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_COPY, 0);
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_COPY, 1);
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
 	(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 1);
 
 	assert_false(path_exists("a", NODEREF));
+}
+
+TEST(cpmv_crash_on_wrong_list_access)
+{
+	char *list[] = { "." };
+
+	free_view(&lwin);
+
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	lwin.list_rows = 3;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].name = strdup("c");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	check_marking(curr_view, 0, NULL);
+
+	/* cpmv used to use presence of the argument as indication of availability of
+	 * file list and access memory beyond array boundaries. */
+	assert_failure(cpmv_files(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0));
+	assert_failure(cpmv_files(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 1));
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+	assert_success(remove(SANDBOX_PATH "/b"));
+	assert_success(remove(SANDBOX_PATH "/c"));
 }
 
 static int

@@ -3493,7 +3493,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 			replace_home_part(flist_get_dir(view)));
 	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
 			"%s: ", replace_home_part(path));
-	append_marked_files(view, undo_msg, *list);
+	append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
 
 	if(op == CMLO_MOVE)
 	{

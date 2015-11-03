@@ -84,6 +84,12 @@ view_teardown(FileView *view)
 	}
 	dynarray_free(view->dir_entry);
 
+	for(i = 0; i < view->custom.entry_count; ++i)
+	{
+		free_dir_entry(view, &view->custom.entries[i]);
+	}
+	dynarray_free(view->custom.entries);
+
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->auto_filter);
 	filter_dispose(&view->manual_filter);

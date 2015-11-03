@@ -2,7 +2,7 @@
 
 #include <unistd.h> /* F_OK access() chdir() */
 
-#include <string.h> /* strcpy() */
+#include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
@@ -13,6 +13,8 @@
 #include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
+
+#include "utils.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
@@ -25,8 +27,6 @@ static const cmd_add_t commands[] = {
 		.emark = 0,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 1, .max_args = 1, .bg = 0, },
 };
 
-static void free_view(FileView *view);
-
 static int called;
 static int bg;
 static char *arg;
@@ -35,26 +35,15 @@ SETUP()
 {
 	static int max_undo_levels = 0;
 
-	filter_init(&lwin.local_filter.filter, 1);
-	filter_init(&lwin.manual_filter, 1);
-	filter_init(&lwin.auto_filter, 1);
+	view_setup(&lwin);
+	view_setup(&rwin);
 
-	filter_init(&rwin.local_filter.filter, 1);
-	filter_init(&rwin.manual_filter, 1);
-	filter_init(&rwin.auto_filter, 1);
+	curr_view = &lwin;
+	other_view = &rwin;
 
 	cfg.cd_path = strdup("");
 	cfg.fuse_home = strdup("");
 	cfg.slow_fs_list = strdup("");
-
-	lwin.selected_files = 0;
-	lwin.dir_entry = NULL;
-	lwin.list_rows = 0;
-
-	rwin.dir_entry = NULL;
-	rwin.list_rows = 0;
-
-	curr_view = &lwin;
 
 	init_commands();
 
@@ -71,35 +60,12 @@ TEARDOWN()
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
 
-	free_view(&lwin);
-	free_view(&rwin);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	reset_cmds();
 	reset_undo_list();
 }
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free_dir_entry(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		free_dir_entry(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-
-	filter_dispose(&view->local_filter.filter);
-	filter_dispose(&view->manual_filter);
-	filter_dispose(&view->auto_filter);
-}
-
 
 static int
 builtin_cmd(const cmd_info_t* cmd_info)
@@ -247,6 +213,33 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 
 	assert_true(paths_are_equal(lwin.curr_dir, TEST_DATA_PATH "/read"));
 	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
+}
+
+TEST(cpmv_crash)
+{
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	lwin.list_rows = 3;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].name = strdup("c");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	/* cpmv used to use presence of the argument as indication of availability of
+	 * file list and access memory beyond array boundaries. */
+	assert_failure(exec_commands("co .", &lwin, CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
