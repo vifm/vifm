@@ -90,6 +90,7 @@ static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
 static void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
+static void format_nitems(int id, const void *data, size_t buf_len, char buf[]);
 static void format_type(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_fileext(int id, const void *data, size_t buf_len,
@@ -119,7 +120,7 @@ fview_init(void)
 		{ SK_BY_NAME,   &format_name },
 		{ SK_BY_INAME,  &format_name },
 		{ SK_BY_SIZE,   &format_size },
-		{ SK_BY_NITEMS, &format_size },
+		{ SK_BY_NITEMS, &format_nitems },
 		{ SK_BY_TYPE,   &format_type },
 
 		{ SK_BY_EXTENSION,     &format_ext },
@@ -1077,6 +1078,37 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	str[0] = '\0';
 	friendly_size_notation(size, sizeof(str), str);
 	snprintf(buf, buf_len + 1, " %s", str);
+}
+
+/* Item number format callback for column_view unit. */
+static void
+format_nitems(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	const FileView *view = cdt->view;
+	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
+	uint64_t nitems;
+
+	if(!is_directory_entry(entry))
+	{
+		copy_str(buf, buf_len + 1, " 0");
+		return;
+	}
+
+	if(view->on_slow_fs)
+	{
+		copy_str(buf, buf_len + 1, " ?");
+		return;
+	}
+
+	dcache_get_of(entry, NULL, &nitems);
+
+	if(nitems == DCACHE_UNKNOWN)
+	{
+		nitems = entry_calc_nitems(entry);
+	}
+
+	snprintf(buf, buf_len + 1, " %d", (int)nitems);
 }
 
 /* File type (dir/reg/exe/link/...) format callback for column_view unit. */
