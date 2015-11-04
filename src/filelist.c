@@ -1646,13 +1646,23 @@ entry_get_nitems(FileView *view, const dir_entry_t *entry)
 	if(nitems == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS &&
 			!view->on_slow_fs)
 	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		nitems = count_dir_items(full_path);
-		dcache_set_at(full_path, DCACHE_UNKNOWN, nitems);
+		nitems = entry_calc_nitems(entry);
 	}
 
 	return nitems;
+}
+
+uint64_t
+entry_calc_nitems(const dir_entry_t *entry)
+{
+	uint64_t ret;
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	ret = count_dir_items(full_path);
+	dcache_set_at(full_path, DCACHE_UNKNOWN, ret);
+
+	return ret;
 }
 
 void

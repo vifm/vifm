@@ -1061,10 +1061,7 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 		{
 			if(nitems == DCACHE_UNKNOWN)
 			{
-				char full_path[PATH_MAX];
-				get_full_path_of(entry, sizeof(full_path), full_path);
-				nitems = count_dir_items(full_path);
-				dcache_set_at(full_path, DCACHE_UNKNOWN, nitems);
+				nitems = entry_calc_nitems(entry);
 			}
 
 			snprintf(buf, buf_len + 1, " %d", (int)nitems);
