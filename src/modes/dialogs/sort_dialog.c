@@ -51,28 +51,28 @@ static const char * caps[] = { "a-z", "z-a" };
  * dialog.  See comment for SortingKey enumeration for why we can't change order
  * of sorting keys. */
 static int indexes[] = {
-	-1,
-	0,               /* SK_BY_EXTENSION */
-	2,               /* SK_BY_NAME */
+	/* SK_* start with 1. */
+	[0] = -1,
+
+	[SK_BY_EXTENSION]     = 0,
+	[SK_BY_FILEEXT]       = 1,
+	[SK_BY_NAME]          = 2,
+	[SK_BY_INAME]         = 3,
+	[SK_BY_TYPE]          = 4,
+	[SK_BY_DIR]           = 5,
 #ifndef _WIN32
-	6,               /* SK_BY_GROUP_ID */
-	7,               /* SK_BY_GROUP_NAME */
-	8,               /* SK_BY_MODE */
-	10,              /* SK_BY_OWNER_ID */
-	11,              /* SK_BY_OWNER_NAME */
+	[SK_BY_GROUP_ID]      = 6,
+	[SK_BY_GROUP_NAME]    = 7,
+	[SK_BY_MODE]          = 8,
+	[SK_BY_PERMISSIONS]   = 9,
+	[SK_BY_OWNER_ID]      = 10,
+	[SK_BY_OWNER_NAME]    = 11,
 #endif
-	12 + CORRECTION, /* SK_BY_SIZE */
-	14 + CORRECTION, /* SK_BY_TIME_ACCESSED */
-	15 + CORRECTION, /* SK_BY_TIME_CHANGED */
-	16 + CORRECTION, /* SK_BY_TIME_MODIFIED */
-	3,               /* SK_BY_INAME */
-#ifndef _WIN32
-	9,               /* SK_BY_PERMISSIONS */
-#endif
-	5,               /* SK_BY_DIR */
-	4,               /* SK_BY_TYPE */
-	1,               /* SK_BY_FILEEXT */
-	13 + CORRECTION, /* SK_BY_NITEMS */
+	[SK_BY_SIZE]          = 12 + CORRECTION,
+	[SK_BY_NITEMS]        = 13 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 14 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 15 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 16 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
