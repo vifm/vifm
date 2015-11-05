@@ -2,7 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
-#include <stdio.h> /* remove() */
+#include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() */
 
@@ -250,10 +250,10 @@ TEST(sorted_custom_view_after_unsorted)
 	opt_handlers_teardown();
 }
 
-TEST(unsorted_view_remains_one_on_vifminfo_reread)
+TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 {
-	FILE *const f = fopen("vifminfo", "w");
-	fprintf(f, "%c2", LINE_TYPE_LWIN_SORT);
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fprintf(f, "%c%d", LINE_TYPE_LWIN_SORT, SK_BY_NAME);
 	fclose(f);
 
 	opt_handlers_setup();
@@ -269,7 +269,9 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread)
 	/* ls-like view blocks view column updates. */
 	lwin.ls_view = 1;
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	curr_stats.restart_in_progress = 1;
 	read_info_file(1);
+	curr_stats.restart_in_progress = 0;
 	lwin.ls_view = 0;
 
 	assert_true(lwin.custom.unsorted);

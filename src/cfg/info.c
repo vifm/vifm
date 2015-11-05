@@ -364,7 +364,9 @@ read_info_file(int reread)
 static void
 get_sort_info(FileView *view, const char line[])
 {
-	char *const sort = ui_view_sort_list_get(view);
+	char *const sort = curr_stats.restart_in_progress
+	                 ? ui_view_sort_list_get(view)
+	                 : view->sort;
 
 	int j = 0;
 	while(*line != '\0' && j < SK_COUNT)
