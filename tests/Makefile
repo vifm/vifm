@@ -1,3 +1,34 @@
+# Overview
+# --------
+#
+# This is a non-recursive Makefile for running vifm tests using stic.
+#
+# Vifm is built before running any tests as its object files are used for tests.
+# Necessary include and link directives are picked up from the main Makefile.
+#
+# Each test-suite (directory) is run in a separate sandbox directory.  During
+# compilation two defines are available:
+#  - TEST_DATA_PATH -- absolute path to test-data/ directory (might be RO)
+#  - SANDBOX_PATH   -- absolute path to sandbox for the suite (always RW)
+#
+# Test suites can be run concurrently.
+#
+# Usage
+# -----
+#
+# By default tests are built in release mode.
+#
+# make              -- runs all tests
+# make <dir>        -- runs specific test suite
+# make <dir>.<name> -- runs specific fixture
+#
+# make DEBUG=1 ...   -- builds debug version
+# make DEBUG=gdb ... -- builds debug version and loads suite into gdb
+#
+# make clean -- removes various built artifacts
+#
+# "B" variable might be set to run tests out of the source tree.
+
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
     ifeq ($(shell uname -o 2> /dev/null),Cygwin)
