@@ -127,13 +127,12 @@ define suite_template
 
 $1.src := $$(sort $$(wildcard $1/*.c))
 $1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)/%.o)
+$1.bin := $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
 
 deps += $$($1.obj:.o=.d)
 
-$(B)bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) \
-                                      $(B)bin/build/$(BINSUBDIR)/stic.o \
-                                      $(vifm_obj) \
-                                    | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
+$$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)/stic.o $(vifm_obj) \
+          | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
 	$(CC) -o $$@ $$^ $(LDFLAGS)
 
 $(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
@@ -155,14 +154,14 @@ $(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
 $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
 	mkdir -p $$@
 
-$1: $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+$1: $$($1.bin)
 ifeq ($B,)
 	@$$^ -s
 else
 	@cd $B && $$^ -s
 endif
 
-build: $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+build: $$($1.bin)
 
 check: $1
 
