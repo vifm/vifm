@@ -1643,8 +1643,7 @@ entry_get_nitems(FileView *view, const dir_entry_t *entry)
 	uint64_t nitems;
 	dcache_get_of(entry, NULL, &nitems);
 
-	if(nitems == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS &&
-			!view->on_slow_fs)
+	if(nitems == DCACHE_UNKNOWN && !view->on_slow_fs)
 	{
 		nitems = entry_calc_nitems(entry);
 	}
