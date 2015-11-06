@@ -2027,6 +2027,11 @@ cmd_paren(int lb, int ub, int inc)
 				if(nentry->size != pentry->size)
 					return pos;
 				break;
+		case SK_BY_NITEMS:
+				if(entry_get_nitems(curr_view, nentry) !=
+						entry_get_nitems(curr_view, pentry))
+					return pos;
+				break;
 		case SK_BY_TIME_ACCESSED:
 				if(nentry->atime != pentry->atime)
 					return pos;

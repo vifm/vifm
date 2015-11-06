@@ -215,7 +215,7 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
 }
 
-TEST(cpmv_crash)
+TEST(cpmv_crash_on_wrong_list_access)
 {
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 

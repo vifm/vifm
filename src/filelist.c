@@ -1637,6 +1637,33 @@ entry_from_path(dir_entry_t *entries, int count, const char path[])
 	return NULL;
 }
 
+uint64_t
+entry_get_nitems(FileView *view, const dir_entry_t *entry)
+{
+	uint64_t nitems;
+	dcache_get_of(entry, NULL, &nitems);
+
+	if(nitems == DCACHE_UNKNOWN && !view->on_slow_fs)
+	{
+		nitems = entry_calc_nitems(entry);
+	}
+
+	return nitems;
+}
+
+uint64_t
+entry_calc_nitems(const dir_entry_t *entry)
+{
+	uint64_t ret;
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	ret = count_dir_items(full_path);
+	dcache_set_at(full_path, DCACHE_UNKNOWN, ret);
+
+	return ret;
+}
+
 void
 populate_dir_list(FileView *view, int reload)
 {

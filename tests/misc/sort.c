@@ -10,6 +10,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/sort.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -340,6 +341,35 @@ TEST(sorting_uses_dcache_for_dirs)
 
 	assert_string_equal("rename", lwin.dir_entry[0].name);
 	assert_string_equal("read", lwin.dir_entry[1].name);
+}
+
+TEST(nitems_sorting_works)
+{
+	view_teardown(&lwin);
+	assert_success(init_status(&cfg));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	lwin.list_rows = 3;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("read");
+	lwin.dir_entry[0].type = FT_DIR;
+	lwin.dir_entry[0].origin = lwin.curr_dir;
+	lwin.dir_entry[1].name = strdup("rename");
+	lwin.dir_entry[1].type = FT_DIR;
+	lwin.dir_entry[1].origin = lwin.curr_dir;
+	lwin.dir_entry[2].name = strdup("various-sizes");
+	lwin.dir_entry[2].type = FT_DIR;
+	lwin.dir_entry[2].origin = lwin.curr_dir;
+
+	lwin.sort[0] = SK_BY_NITEMS;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	sort_view(&lwin);
+
+	assert_string_equal("rename", lwin.dir_entry[0].name);
+	assert_string_equal("read", lwin.dir_entry[1].name);
+	assert_string_equal("various-sizes", lwin.dir_entry[2].name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

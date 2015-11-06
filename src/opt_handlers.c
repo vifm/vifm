@@ -182,29 +182,31 @@ static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
 
-static const char * sort_enum[] = {
-	"ext",
-	"name",
+static const char *sort_enum[] = {
+	/* SK_* start with 1. */
+	[0] = "",
+
+	[SK_BY_EXTENSION]     = "ext",
+	[SK_BY_NAME]          = "name",
+	[SK_BY_SIZE]          = "size",
+	[SK_BY_TIME_ACCESSED] = "atime",
+	[SK_BY_TIME_CHANGED]  = "ctime",
+	[SK_BY_TIME_MODIFIED] = "mtime",
+	[SK_BY_INAME]         = "iname",
+	[SK_BY_DIR]           = "dir",
+	[SK_BY_TYPE]          = "type",
+	[SK_BY_FILEEXT]       = "fileext",
+	[SK_BY_NITEMS]        = "nitems",
 #ifndef _WIN32
-	"gid",
-	"gname",
-	"mode",
-	"uid",
-	"uname",
+	[SK_BY_GROUP_ID]      = "gid",
+	[SK_BY_GROUP_NAME]    = "gname",
+	[SK_BY_MODE]          = "mode",
+	[SK_BY_OWNER_ID]      = "uid",
+	[SK_BY_OWNER_NAME]    = "uname",
+	[SK_BY_PERMISSIONS]   = "perms",
 #endif
-	"size",
-	"atime",
-	"ctime",
-	"mtime",
-	"iname",
-#ifndef _WIN32
-	"perms",
-#endif
-	"dir",
-	"type",
-	"fileext",
 };
-ARRAY_GUARD(sort_enum, SK_COUNT);
+ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
 
 static const char cpoptions_list[] = "fst";
 static const char * cpoptions_vals = cpoptions_list;
@@ -241,24 +243,23 @@ static const char *fillchars_enum[] = {
 static const char *sort_types[] = {
 	"ext",   "+ext",   "-ext",
 	"name",  "+name",  "-name",
+	"size",  "+size",  "-size",
+	"atime", "+atime", "-atime",
+	"ctime", "+ctime", "-ctime",
+	"mtime", "+mtime", "-mtime",
+	"iname", "+iname", "-iname",
+	"dir",     "+dir",     "-dir",
+	"type",    "+type",    "-type",
+	"fileext", "+fileext", "-fileext",
+	"nitems",  "+nitems",  "-nitems",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
 	"gname", "+gname", "-gname",
 	"mode",  "+mode",  "-mode",
 	"uid",   "+uid",   "-uid",
 	"uname", "+uname", "-uname",
-#endif
-	"size",  "+size",  "-size",
-	"atime", "+atime", "-atime",
-	"ctime", "+ctime", "-ctime",
-	"mtime", "+mtime", "-mtime",
-	"iname", "+iname", "-iname",
-#ifndef _WIN32
 	"perms", "+perms", "-perms",
 #endif
-	"dir",     "+dir",     "-dir",
-	"type",    "+type",    "-type",
-	"fileext", "+fileext", "-fileext",
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
@@ -713,6 +714,10 @@ init_wordchars(optval_t *val)
 	size_t i;
 	size_t len;
 
+	/* This is for the case when cfg.word_chars is empty, so that we won't return
+	 * NULL as initial value. */
+	replace_string(&str, "");
+
 	len = 0U;
 	i = 0U;
 	while(i < sizeof(cfg.word_chars))
@@ -903,7 +908,7 @@ load_sort_option_inner(FileView *view, char sort_keys[])
 		const int sort_option = sort_keys[i];
 		const char *const comma = (opt_val_len == 0U) ? "" : ",";
 		const char option_mark = (sort_option < 0) ? '-' : '+';
-		const char *const option_name = sort_enum[abs(sort_option) - 1];
+		const char *const option_name = sort_enum[abs(sort_option)];
 
 		opt_val_len += snprintf(opt_val + opt_val_len,
 				sizeof(opt_val) - opt_val_len, "%s%c%s", comma, option_mark,
@@ -1730,7 +1735,8 @@ set_sort(FileView *view, char sort_keys[], char order[])
 			++name;
 		}
 
-		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
+		pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
+				name);
 		if(pos == -1)
 		{
 			if(name[0] != '\0')
@@ -1917,7 +1923,8 @@ map_name(const char name[], void *arg)
 	if(*name != '\0')
 	{
 		int pos;
-		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
+		pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
+				name);
 		return (pos >= 0) ? (pos + 1) : -1;
 	}
 	sort = ui_view_sort_list_get(view);

@@ -990,7 +990,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
-		set_pwd_in_screen(curr_view->curr_dir);
+		set_pwd_in_screen(flist_get_dir(curr_view));
 
 		shell_cmd = format_str("screen %s %s -c %s", title_arg, cfg.shell,
 				escaped_shell_cmd);

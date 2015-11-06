@@ -59,6 +59,8 @@ static int compare_full_file_names(const char s[], const char t[],
 static int compare_file_names(const char s[], const char t[], int ignore_case);
 static int compare_file_sizes(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
+static int compare_item_count(const dir_entry_t *f, int fdir,
+		const dir_entry_t *s, int sdir);
 
 void
 sort_view(FileView *v)
@@ -260,6 +262,10 @@ sort_dir_list(const void *one, const void *two)
 			retval = compare_file_sizes(first, first_is_dir, second, second_is_dir);
 			break;
 
+		case SK_BY_NITEMS:
+			retval = compare_item_count(first, first_is_dir, second, second_is_dir);
+			break;
+
 		case SK_BY_TIME_MODIFIED:
 			retval = first->mtime - second->mtime;
 			break;
@@ -338,6 +344,20 @@ compare_file_sizes(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 	}
 
 	return (fsize < ssize) ? -1 : (fsize > ssize);
+}
+
+/* Compares number of items in two directories (taken as zero for files).
+ * Returns standard -1, 0, 1 for comparisons. */
+static int
+compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
+		int sdir)
+{
+	/* We don't want to call entry_get_nitems() for files as sorting huge lists
+	 * of files can call this function a lot of times, thus even small extra
+	 * performance overhead is not desirable. */
+	const uint64_t fsize = fdir ? entry_get_nitems(view, f) : 0U;
+	const uint64_t ssize = sdir ? entry_get_nitems(view, s) : 0U;
+	return (fsize > ssize) ? 1 : (fsize < ssize) ? -1 : 0;
 }
 
 /* Compares names of two file entries.  Returns positive value if a is greater
@@ -420,6 +440,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_PERMISSIONS:
 #endif
 		case SK_BY_TYPE:
+		case SK_BY_NITEMS:
 		case SK_BY_TIME_MODIFIED:
 		case SK_BY_TIME_ACCESSED:
 		case SK_BY_TIME_CHANGED:

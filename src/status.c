@@ -56,9 +56,8 @@
 /* dcache entry. */
 typedef struct
 {
-	uint64_t size;    /* Directory size (recursively). */
-	uint64_t nitems;  /* Number of items in the directory (non-recursively). */
-	time_t timestamp; /* When this data was valid. */
+	uint64_t value;   /* Stored value. */
+	time_t timestamp; /* When the value was set. */
 }
 dcache_data_t;
 
@@ -76,10 +75,14 @@ static int pending_redraw;
 static int inside_screen;
 static int inside_tmux;
 
-/* Thread-safety guard for dcache variable. */
-static pthread_mutex_t dcache_mutex = PTHREAD_MUTEX_INITIALIZER;
-/* Cache for ga/gA command results. */
-static fsdata_t *dcache;
+/* Thread-safety guard for dcache_size variable. */
+static pthread_mutex_t dcache_size_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* Thread-safety guard for dcache_nitems variable. */
+static pthread_mutex_t dcache_nitems_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* Cache for directory sizes. */
+static fsdata_t *dcache_size;
+/* Cache for directory item count. */
+static fsdata_t *dcache_nitems;
 
 int
 init_status(config_t *config)
@@ -102,7 +105,8 @@ static void
 load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
-	dcache = NULL;
+	dcache_size = NULL;
+	dcache_nitems = NULL;
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
@@ -212,9 +216,13 @@ reset_status(const config_t *config)
 static int
 reset_dircache(void)
 {
-	fsdata_free(dcache);
-	dcache = fsdata_create(0);
-	return dcache == NULL;
+	fsdata_free(dcache_size);
+	dcache_size = fsdata_create(0);
+
+	fsdata_free(dcache_nitems);
+	dcache_nitems = fsdata_create(0);
+
+	return (dcache_size == NULL || dcache_nitems == NULL);
 }
 
 void
@@ -343,49 +351,69 @@ dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
 	dcache_get(full_path, size, nitems, entry->mtime);
 }
 
-/* Retrieves information about the pathi if data is newer than ts (0 requests to
+/* Retrieves information about the path if data is newer than ts (0 requests to
  * skip the check).  size and/or nitems can be NULL.  On unknown values
  * variables are set to DCACHE_UNKNOWN. */
 static void
 dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
 {
-	dcache_data_t data;
+	dcache_data_t size_data;
+	dcache_data_t nitems_data;
 
-	pthread_mutex_lock(&dcache_mutex);
-	if(fsdata_get(dcache, path, &data, sizeof(data)) != 0 ||
-			(ts != 0 && ts > data.timestamp))
+	pthread_mutex_lock(&dcache_size_mutex);
+	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0 ||
+			(ts != 0 && ts > size_data.timestamp))
 	{
-		data.size = DCACHE_UNKNOWN;
-		data.nitems = DCACHE_UNKNOWN;
+		size_data.value = DCACHE_UNKNOWN;
 
-		if(ts != 0 && ts > data.timestamp)
+		if(ts != 0 && ts > size_data.timestamp)
 		{
-			fsdata_invalidate(dcache, path);
+			fsdata_invalidate(dcache_size, path);
 		}
 	}
-	pthread_mutex_unlock(&dcache_mutex);
+	pthread_mutex_unlock(&dcache_size_mutex);
+
+	pthread_mutex_lock(&dcache_nitems_mutex);
+	if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0 ||
+			(ts != 0 && ts > nitems_data.timestamp))
+	{
+		nitems_data.value = DCACHE_UNKNOWN;
+	}
+	pthread_mutex_unlock(&dcache_nitems_mutex);
 
 	if(size != NULL)
 	{
-		*size = data.size;
+		*size = size_data.value;
 	}
 	if(nitems != NULL)
 	{
-		*nitems = data.nitems;
+		*nitems = nitems_data.value;
 	}
 }
 
 int
 dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 {
-	int ret;
-	const dcache_data_t data = {
-		.size = size, .nitems = nitems, .timestamp = time(NULL)
-	};
+	int ret = 0;
+	const time_t ts = time(NULL);
 
-	pthread_mutex_lock(&dcache_mutex);
-	ret = fsdata_set(dcache, path, &data, sizeof(data));
-	pthread_mutex_unlock(&dcache_mutex);
+	if(size != DCACHE_UNKNOWN)
+	{
+		const dcache_data_t data = { .value = size, .timestamp = ts };
+
+		pthread_mutex_lock(&dcache_size_mutex);
+		ret |= fsdata_set(dcache_size, path, &data, sizeof(data));
+		pthread_mutex_unlock(&dcache_size_mutex);
+	}
+
+	if(nitems != DCACHE_UNKNOWN)
+	{
+		const dcache_data_t data = { .value = nitems, .timestamp = ts };
+
+		pthread_mutex_lock(&dcache_nitems_mutex);
+		ret |= fsdata_set(dcache_nitems, path, &data, sizeof(data));
+		pthread_mutex_unlock(&dcache_nitems_mutex);
+	}
 
 	return ret;
 }
