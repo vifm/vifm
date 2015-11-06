@@ -87,6 +87,9 @@
 	Added retry/ignore/abort prompt for file/directory removal when 'syscalls'
 	is on.  Thanks to Robert Sarkozi.
 
+	Added "nitems" sorting, which sorts by number of items in a directory.
+	Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

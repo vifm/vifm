@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Oct 30
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2941,6 +2941,7 @@ key, etc.):
    [+-]uid     - owner id (*nix only)
    [+-]uname   - owner name (*nix only)
    [+-]size    - size
+   [+-]nitems  - number of items in a directory (zero for files)
    [+-]atime   - time accessed (e.g. read, executed)
    [+-]ctime   - time changed (changes in metadata, e.g. mode)
    [+-]mtime   - time modified (when file contents is changed)
