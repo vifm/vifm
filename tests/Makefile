@@ -1,3 +1,34 @@
+# Overview
+# --------
+#
+# This is a non-recursive Makefile for running vifm tests using stic.
+#
+# Vifm is built before running any tests as its object files are used for tests.
+# Necessary include and link directives are picked up from the main Makefile.
+#
+# Each test-suite (directory) is run in a separate sandbox directory.  During
+# compilation two defines are available:
+#  - TEST_DATA_PATH -- absolute path to test-data/ directory (might be RO)
+#  - SANDBOX_PATH   -- absolute path to sandbox for the suite (always RW)
+#
+# Test suites can be run concurrently.
+#
+# Usage
+# -----
+#
+# By default tests are built in release mode.
+#
+# make              -- runs all tests
+# make <dir>        -- runs specific test suite
+# make <dir>.<name> -- runs specific fixture
+#
+# make DEBUG=1 ...   -- builds debug version
+# make DEBUG=gdb ... -- builds debug version and loads suite into gdb
+#
+# make clean -- removes various built artifacts
+#
+# "B" variable might be set to run tests out of the source tree.
+
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
     ifeq ($(shell uname -o 2> /dev/null),Cygwin)
@@ -76,6 +107,10 @@ ifdef DEBUG
     ifdef unix_env
         LDFLAGS += -rdynamic
     endif
+
+    ifeq ($(DEBUG),gdb)
+        GDB_PREFIX := gdb --args
+    endif
 endif
 
 .PHONY: check build clean $(suites)
@@ -127,13 +162,13 @@ define suite_template
 
 $1.src := $$(sort $$(wildcard $1/*.c))
 $1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)/%.o)
+$1.bin := $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+$1.fixtures := $$(subst /,.,$$(patsubst %.c,%,$$($1.src)))
 
 deps += $$($1.obj:.o=.d)
 
-$(B)bin/$(BINSUBDIR)/$1$(exe_suffix): $$($1.obj) \
-                                      $(B)bin/build/$(BINSUBDIR)/stic.o \
-                                      $(vifm_obj) \
-                                    | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
+$$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)/stic.o $(vifm_obj) \
+          | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
 	$(CC) -o $$@ $$^ $(LDFLAGS)
 
 $(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
@@ -155,14 +190,23 @@ $(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
 $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
 	mkdir -p $$@
 
-$1: $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+$1: $$($1.bin)
 ifeq ($B,)
-	@$$^ -s
+	@$(GDB_PREFIX) $$^ -s
 else
-	@cd $B && $$^ -s
+	@cd $B && $(GDB_PREFIX) $$^ -s
 endif
 
-build: $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+# this runs separate fixtures, targets are of the form dir.name
+.PHONY: $$($1.fixtures)
+$$($1.fixtures): $$($1.bin)
+ifeq ($B,)
+	@$(GDB_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+else
+	@cd $B && $(GDB_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+endif
+
+build: $$($1.bin)
 
 check: $1
 
