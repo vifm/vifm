@@ -317,6 +317,9 @@
 	Fixed crash on copy-like operations that move several files into
 	subdirectory of another view.  Thanks to Marius Schmidl.
 
+	Fixed running external commands when custom view is active and vifm is
+	running inside GNU screen.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
