@@ -714,6 +714,10 @@ init_wordchars(optval_t *val)
 	size_t i;
 	size_t len;
 
+	/* This is for the case when cfg.word_chars is empty, so that we won't return
+	 * NULL as initial value. */
+	replace_string(&str, "");
+
 	len = 0U;
 	i = 0U;
 	while(i < sizeof(cfg.word_chars))
