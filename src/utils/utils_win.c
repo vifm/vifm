@@ -615,7 +615,7 @@ reopen_term_stdout(void)
 	sec_attr.lpSecurityDescriptor = NULL;
 
 	handle_out = CreateFileW(L"CONOUT$", GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, 0, 0, 0);
+			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, OPEN_EXISTING, 0, 0);
 	if(handle_out == NULL)
 	{
 		fclose(fp);
