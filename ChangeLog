@@ -323,6 +323,8 @@
 	Fixed running external commands when custom view is active and vifm is
 	running inside GNU screen.
 
+	Fixed running vifm on Windows 10.  Thanks to th1rdey3.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
