@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* F_OK access() chdir() */
 
+#include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
@@ -44,6 +45,7 @@ SETUP()
 	cfg.cd_path = strdup("");
 	cfg.fuse_home = strdup("");
 	cfg.slow_fs_list = strdup("");
+	cfg.use_system_calls = 1;
 
 	init_commands();
 
@@ -215,7 +217,7 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
 }
 
-TEST(cpmv_crash_on_wrong_list_access)
+TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
@@ -239,7 +241,11 @@ TEST(cpmv_crash_on_wrong_list_access)
 
 	/* cpmv used to use presence of the argument as indication of availability of
 	 * file list and access memory beyond array boundaries. */
-	assert_failure(exec_commands("co .", &lwin, CIT_COMMAND));
+	(void)exec_commands("co .", &lwin, CIT_COMMAND);
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+	assert_success(remove(SANDBOX_PATH "/b"));
+	assert_success(remove(SANDBOX_PATH "/c"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
