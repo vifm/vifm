@@ -8,22 +8,30 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/utils/env.h"
+#include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
 #include "../parsing/asserts.h"
 
+#include "utils.h"
+
 SETUP()
 {
-	cfg.shell = strdup("sh");
+	update_string(&cfg.shell, "sh");
+
 	init_builtin_functions();
 	init_parser(NULL);
+
+	view_setup(&lwin);
 }
 
 TEARDOWN()
 {
 	function_reset_all();
-	free(cfg.shell);
-	cfg.shell = NULL;
+	update_string(&cfg.shell, NULL);
+
+	view_teardown(&lwin);
 }
 
 TEST(executable_true_for_executable)
@@ -150,6 +158,36 @@ TEST(paneisat_is_correct_for_vsplit)
 	ASSERT_OK("paneisat('bottom')", "1");
 	ASSERT_OK("paneisat('left')", "0");
 	ASSERT_OK("paneisat('right')", "1");
+}
+
+TEST(getpanetype_for_regular_view)
+{
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "regular");
+}
+
+TEST(getpanetype_for_custom_view)
+{
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "custom");
+}
+
+TEST(getpanetype_for_very_custom_view)
+{
+	opt_handlers_setup();
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "very-custom");
+
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

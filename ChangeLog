@@ -90,6 +90,9 @@
 	Added "nitems" sorting, which sorts by number of items in a directory.
 	Thanks to filterfalse.
 
+	Added getpanetype() builtin function that retrieves type of current pane.
+	Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

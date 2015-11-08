@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 06
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3457,6 +3457,7 @@ USAGE               RESULT        DESCRIPTION	~
 executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
+getpanetype()       String        Returns type of current pane.
 has({property})     Integer       Checks whether instance has {property}.
 layoutis({type})    Integer       Checks whether layout is of type {type}.
 paneisat({loc})     Integer       Checks whether current pane is at {loc}.
@@ -3511,6 +3512,13 @@ The result is a string, which represents file type and is one of the list:
 
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
+
+getpanetype()                                  *vifm-getpanetype()*
+
+Retrieves string describing type of current pane.  Possible return values:
+    regular      regular file listing of some directory
+    custom       custom file list (%u)
+    very-custom  very custom file list (%U)
 
 
 has({property})                                *vifm-has()*

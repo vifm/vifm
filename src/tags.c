@@ -510,6 +510,7 @@ const char *tags[] = {
 	"vifm-gUgU",
 	"vifm-ga",
 	"vifm-general-keys",
+	"vifm-getpanetype()",
 	"vifm-gf",
 	"vifm-gg",
 	"vifm-gh",
