@@ -105,8 +105,6 @@ static void
 load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
-	dcache_size = NULL;
-	dcache_nitems = NULL;
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
