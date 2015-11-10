@@ -57,9 +57,17 @@
 
 #ifdef SUPPORT_NO_CLOBBER
 #define NO_CLOBBER "-n"
-#else /* SUPPORT_NO_CLOBBER */
+#else
 #define NO_CLOBBER ""
-#endif /* SUPPORT_NO_CLOBBER */
+#endif
+
+/* Enable O(1) file cloning if it's available in installed version of
+ * coreutils. */
+#ifdef SUPPORT_REFLINK_AUTO
+#define REFLINK_AUTO "--reflink=auto"
+#else
+#define REFLINK_AUTO ""
+#endif
 
 #ifdef GNU_TOOLCHAIN
 #define PRESERVE_FLAGS "--preserve=mode,timestamps"
@@ -402,7 +410,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		}
 
 		snprintf(cmd, sizeof(cmd),
-				"cp %s -R " PRESERVE_FLAGS " %s %s",
+				"cp %s -R " PRESERVE_FLAGS " " REFLINK_AUTO " %s %s",
 				(conflict_action == CA_FAIL) ? NO_CLOBBER : "",
 				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);

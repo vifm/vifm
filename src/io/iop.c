@@ -24,6 +24,7 @@
 
 #include "iop.h"
 
+#include <sys/ioctl.h> /* ioctl() */
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
@@ -54,6 +55,7 @@
 /* Amount of data to transfer at once. */
 #define BLOCK_SIZE 32*1024
 
+static int clone_file(int dest_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER transferred, LARGE_INTEGER stream_size,
@@ -281,6 +283,7 @@ iop_cp(io_args_t *const args)
 	FILE *in, *out;
 	size_t nread;
 	int error;
+	int cloned;
 	struct stat src_st;
 	const char *open_mode = "wb";
 
@@ -494,6 +497,7 @@ iop_cp(io_args_t *const args)
 	}
 
 	error = 0;
+	cloned = 0;
 
 	if(crs == IO_CRS_APPEND_TO_FILES)
 	{
@@ -508,10 +512,17 @@ iop_cp(io_args_t *const args)
 			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
 		}
 	}
+	else
+	{
+		if(clone_file(fileno(out), fileno(in)) == 0)
+		{
+			cloned = 1;
+		}
+	}
 
 	/* TODO: use sendfile() if platform supports it. */
 
-	while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
+	while(!cloned && (nread = fread(&block, 1, sizeof(block), in)) != 0U)
 	{
 		if(cancellable && ui_cancellation_requested())
 		{
@@ -529,7 +540,7 @@ iop_cp(io_args_t *const args)
 
 		ioeta_update(args->estim, NULL, NULL, 0, nread);
 	}
-	if(nread == 0U && !feof(in) && ferror(in))
+	if(!cloned && nread == 0U && !feof(in) && ferror(in))
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno, strerror(errno));
 	}
@@ -561,6 +572,24 @@ iop_cp(io_args_t *const args)
 	ioeta_update(args->estim, NULL, NULL, 1, 0);
 
 	return error;
+}
+
+/* Try to clone file fast on btrfs.  Returns 0 on success, otherwise non-zero is
+ * returned. */
+static int
+clone_file(int dst, int src)
+{
+#ifdef __linux__
+#undef BTRFS_IOCTL_MAGIC
+#define BTRFS_IOCTL_MAGIC 0x94
+#undef BTRFS_IOC_CLONE
+#define BTRFS_IOC_CLONE _IOW(BTRFS_IOCTL_MAGIC, 9, int)
+	return ioctl(dst, BTRFS_IOC_CLONE, src);
+#else
+	(void)dst;
+	(void)src;
+	return -1;
+#endif
 }
 
 #ifdef _WIN32

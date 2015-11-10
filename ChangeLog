@@ -198,6 +198,8 @@
 	Made setting title inside terminal multiplexers (when terminal type is
 	"screen*") work.
 
+	Make use of file cloning feature of btrfs.  Thanks to aleksejrs.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

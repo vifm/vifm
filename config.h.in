@@ -140,6 +140,9 @@
 /* -n option is available for cp and mv */
 #undef SUPPORT_NO_CLOBBER
 
+/* --reflink=auto option is available for cp */
+#undef SUPPORT_REFLINK_AUTO
+
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE

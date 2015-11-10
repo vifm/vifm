@@ -509,18 +509,18 @@ dnl ----------------------------------------------------------------------------
 dnl check for gnu coreutils version
 dnl ----------------------------------------------------------------------------
 
-min_version="7.1"
 version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"
 minor="${version#*.}"
-min_major="${min_version%.*}"
-min_minor="${min_version#*.}"
 
 if test "x$major" != "x" -a "x$minor" != "x" ; then
 	AC_DEFINE([GNU_TOOLCHAIN], [1], [GNU toolchain is installed])
-	if test $major -ge $min_major -a $minor -ge $min_minor ; then
+	if test $major -ge 7 -a $minor -ge 1; then
 		AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+	fi
+	if test $major -ge 7 -a $minor -ge 6; then
+		AC_DEFINE([SUPPORT_REFLINK_AUTO], [1], [--reflink=auto option is available for cp])
 	fi
 fi
 
