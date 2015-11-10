@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 06, 2015" "vifm 0.8"
+.TH VIFM 1 "November 08, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4196,6 +4196,8 @@ expand({expr})      String        Expands special keywords in {expr}.
 .br
 filetype({fnum})    String        Returns file type from position.
 .br
+getpanetype()       String        Returns type of current pane.
+.br
 has({property})     Integer       Checks whether instance has {property}.
 .br
 layoutis({type})    Integer       Checks whether layout is of type {type}.
@@ -4257,6 +4259,13 @@ The result is a string, which represents file type and is one of the list:
 
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
+
+.BI getpanetype()
+
+Retrieves string describing type of current pane.  Possible return values:
+    regular      regular file listing of some directory
+    custom       custom file list (%u)
+    very-custom  very custom file list (%U)
 
 .BI has({property})
 

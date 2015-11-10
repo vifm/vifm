@@ -22,8 +22,10 @@
 # make <dir>        -- runs specific test suite
 # make <dir>.<name> -- runs specific fixture
 #
-# make DEBUG=1 ...   -- builds debug version
-# make DEBUG=gdb ... -- builds debug version and loads suite into gdb
+# make DEBUG=1 ...        -- builds debug version
+# make DEBUG=gdb ...      -- builds debug version and loads suite into gdb
+# make DEBUG=valgrind ... -- builds debug version and run it under valgrind (see
+#                            valgrind-report file after a run)
 #
 # make clean -- removes various built artifacts
 #
@@ -109,7 +111,11 @@ ifdef DEBUG
     endif
 
     ifeq ($(DEBUG),gdb)
-        GDB_PREFIX := gdb --args
+        TEST_RUN_PREFIX := gdb --args
+    endif
+    ifeq ($(DEBUG),valgrind)
+        TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \
+                           --log-file=valgrind-report
     endif
 endif
 
@@ -192,18 +198,18 @@ $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
 
 $1: $$($1.bin)
 ifeq ($B,)
-	@$(GDB_PREFIX) $$^ -s
+	@$(TEST_RUN_PREFIX) $$^ -s
 else
-	@cd $B && $(GDB_PREFIX) $$^ -s
+	@cd $B && $(TEST_RUN_PREFIX) $$^ -s
 endif
 
 # this runs separate fixtures, targets are of the form dir.name
 .PHONY: $$($1.fixtures)
 $$($1.fixtures): $$($1.bin)
 ifeq ($B,)
-	@$(GDB_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+	@$(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
 else
-	@cd $B && $(GDB_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+	@cd $B && $(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
 endif
 
 build: $$($1.bin)

@@ -904,7 +904,12 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 
 	if(ops != NULL)
 	{
-		ops->errors = ioe_errlst_to_str(&args->result.errors);
+		size_t len = (ops->errors == NULL) ? 0U : strlen(ops->errors);
+		char *const suffix = ioe_errlst_to_str(&args->result.errors);
+
+		(void)strappend(&ops->errors, &len, suffix);
+
+		free(suffix);
 		ioe_errlst_free(&args->result.errors);
 	}
 

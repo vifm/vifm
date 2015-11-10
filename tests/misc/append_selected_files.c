@@ -6,6 +6,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 #include "../../src/macros.h"
 
 #ifdef _WIN32
@@ -16,7 +17,7 @@
 
 SETUP()
 {
-	cfg.shell = strdup("sh");
+	update_string(&cfg.shell, "sh");
 
 	/* lwin */
 	strcpy(lwin.curr_dir, "/lwin");
@@ -74,7 +75,7 @@ TEARDOWN()
 {
 	int i;
 
-	free(cfg.shell);
+	update_string(&cfg.shell, NULL);
 
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);

@@ -308,7 +308,7 @@ try_dynload_xlib(void)
 static int
 dynload_xlib(void)
 {
-	xlib_handle = dlopen("libX11.so", RTLD_NOW);
+	xlib_handle = dlopen("libX11.so.6", RTLD_NOW);
 	if(xlib_handle == NULL)
 	{
 		return 0;

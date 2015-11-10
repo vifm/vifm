@@ -90,6 +90,9 @@
 	Added "nitems" sorting, which sorts by number of items in a directory.
 	Thanks to filterfalse.
 
+	Added getpanetype() builtin function that retrieves type of current pane.
+	Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -324,6 +327,9 @@
 	running inside GNU screen.
 
 	Fixed running vifm on Windows 10.  Thanks to th1rdey3.
+
+	Fixed leading and collecting error messages on file operations via system
+	calls.
 
 0.8-beta to 0.8
 

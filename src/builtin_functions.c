@@ -33,6 +33,7 @@
 #include "utils/path.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
+#include "filelist.h"
 #include "macros.h"
 #include "types.h"
 
@@ -40,19 +41,22 @@ static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
+static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
 static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
-	{ "executable", 1, &executable_builtin },
-	{ "expand",     1, &expand_builtin },
-	{ "filetype",   1, &filetype_builtin },
-	{ "has",        1, &has_builtin },
-	{ "layoutis",   1, &layoutis_builtin },
-	{ "paneisat",   1, &paneisat_builtin },
-	{ "system",     1, &system_builtin },
+	/* Name        Argc  Handler  */
+	{ "executable",  1, &executable_builtin },
+	{ "expand",      1, &expand_builtin },
+	{ "filetype",    1, &filetype_builtin },
+	{ "getpanetype", 0, &getpanetype_builtin},
+	{ "has",         1, &has_builtin },
+	{ "layoutis",    1, &layoutis_builtin },
+	{ "paneisat",    1, &paneisat_builtin },
+	{ "system",      1, &system_builtin },
 };
 
 void
@@ -138,10 +142,26 @@ get_fnum(const char position[])
 	{
 		return curr_view->list_pos;
 	}
+	return -1;
+}
+
+/* Retrieves type of current pane as a string. */
+static var_t
+getpanetype_builtin(const call_info_t *call_info)
+{
+	FileView *const view = curr_view;
+	var_val_t var_val;
+
+	if(flist_custom_active(view))
+	{
+		var_val.string = (view->custom.unsorted ? "very-custom" : "custom");
+	}
 	else
 	{
-		return -1;
+		var_val.string = "regular";
 	}
+
+	return var_new(VTYPE_STRING, var_val);
 }
 
 /* Checks current layout configuration.  Returns boolean value that reflects
