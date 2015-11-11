@@ -37,6 +37,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strerror() */
 
+#include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
@@ -512,7 +513,7 @@ iop_cp(io_args_t *const args)
 			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
 		}
 	}
-	else
+	else if(cfg.fast_file_cloning)
 	{
 		if(clone_file(fileno(out), fileno(in)) == 0)
 		{

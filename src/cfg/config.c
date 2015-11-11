@@ -218,6 +218,8 @@ cfg_init(void)
 
 	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
 	cfg.decorations[FT_DIR][DECORATION_SUFFIX] = '/';
+
+	cfg.fast_file_cloning = 0;
 }
 
 void

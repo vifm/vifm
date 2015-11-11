@@ -410,8 +410,9 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		}
 
 		snprintf(cmd, sizeof(cmd),
-				"cp %s -R " PRESERVE_FLAGS " " REFLINK_AUTO " %s %s",
+				"cp %s %s -R " PRESERVE_FLAGS " %s %s",
 				(conflict_action == CA_FAIL) ? NO_CLOBBER : "",
+				cfg.fast_file_cloning ? REFLINK_AUTO : "",
 				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 		result = background_and_wait_for_errors(cmd, cancellable);

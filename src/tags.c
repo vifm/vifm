@@ -60,6 +60,7 @@ const char *tags[] = {
 	"vifm-'iec'",
 	"vifm-'ignorecase'",
 	"vifm-'incsearch'",
+	"vifm-'iooptions'",
 	"vifm-'is'",
 	"vifm-'laststatus'",
 	"vifm-'lines'",

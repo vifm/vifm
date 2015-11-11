@@ -1025,6 +1025,11 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "nonrootparent,");
 	fprintf(fp, "\n");
 
+	fprintf(fp, "%s", "=iooptions=");
+	if(cfg.fast_file_cloning)
+		fprintf(fp, "%s", "fastfilecloning,");
+	fprintf(fp, "\n");
+
 	fprintf(fp, "=dirsize=%s", cfg.view_dir_size == VDS_SIZE ? "size" : "nitems");
 
 	fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));

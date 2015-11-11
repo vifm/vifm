@@ -83,6 +83,7 @@ static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
+static void init_iooptions(optval_t *val);
 static void init_number(optval_t *val);
 static void init_numberwidth(optval_t *val);
 static void init_relativenumber(optval_t *val);
@@ -120,6 +121,7 @@ static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
+static void iooptions_handler(OPT_OP op, optval_t val);
 static int parse_range(const char range[], int *from, int *to);
 static int parse_endpoint(const char **str, int *endpoint);
 static void laststatus_handler(OPT_OP op, optval_t val);
@@ -212,11 +214,17 @@ static const char cpoptions_list[] = "fst";
 static const char * cpoptions_vals = cpoptions_list;
 #define cpoptions_count (ARRAY_LEN(cpoptions_list) - 1)
 
-static const char * dotdirs_vals[] = {
+/* Possible values of 'dotdirs'. */
+static const char *dotdirs_vals[] = {
 	"rootparent",
 	"nonrootparent",
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+/* Possible flags of 'iooptions'. */
+static const char *iooptions_vals[] = {
+	"fastfilecloning",
+};
 
 /* Possible flags of 'shortmess' and their count. */
 static const char shortmess_list[] = "Tp";
@@ -395,6 +403,11 @@ options[] = {
 	{ "incsearch", "is",
 	  OPT_BOOL, 0, NULL, &incsearch_handler , NULL,
 	  { .ref.bool_val = &cfg.inc_search },
+	},
+	{ "iooptions", "",
+	  OPT_SET, ARRAY_LEN(iooptions_vals), iooptions_vals, &iooptions_handler,
+		NULL,
+	  { .init = &init_iooptions },
 	},
 	{ "laststatus", "ls",
 	  OPT_BOOL, 0, NULL, &laststatus_handler, NULL,
@@ -652,6 +665,13 @@ init_shortmess(optval_t *val)
 	snprintf(buf, sizeof(buf), "%s%s", cfg.trunc_normal_sb_msgs ? "T" : "",
 			cfg.shorten_title_paths ? "p" : "");
 	val->str_val = buf;
+}
+
+/* Initializes value of 'iooptions' from configuration. */
+static void
+init_iooptions(optval_t *val)
+{
+	val->set_items = (cfg.fast_file_cloning != 0) << 0;
 }
 
 /* Default-initializes whether to display file numbers. */
@@ -1318,6 +1338,13 @@ static void
 incsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.inc_search = val.bool_val;
+}
+
+/* Handles changes of 'iooptions'.  Updates related configuration values. */
+static void
+iooptions_handler(OPT_OP op, optval_t val)
+{
+	cfg.fast_file_cloning = ((val.set_items & 1) != 0);
 }
 
 /* Parses range, which can be shortened to single endpoint if first element

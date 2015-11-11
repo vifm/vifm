@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 08
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2732,6 +2732,15 @@ default: false
 When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
+
+                                               *vifm-'iooptions'*
+iooptions
+type: set
+default:
+
+Controls details of file operations.  The following values are available:
+ - fastfilecloning - perform fast file cloning (copy-on-write), when available
+                     (available on Linux and btrfs file system).
 
                                                *vifm-'laststatus'* *vifm-'ls'*
 laststatus ls
