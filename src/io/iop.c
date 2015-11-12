@@ -24,7 +24,9 @@
 
 #include "iop.h"
 
+#ifndef _WIN32
 #include <sys/ioctl.h> /* ioctl() */
+#endif
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
