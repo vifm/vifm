@@ -96,6 +96,13 @@ struct io_args_t
 	}
 	arg3;
 
+	union
+	{
+		/* Whether try to use O(1) file cloning feature of btrfs. */
+		int fast_file_cloning;
+	}
+	arg4;
+
 	/* Whether this operation should expect cancellation requests from the
 	 * outside. */
 	int cancellable;
