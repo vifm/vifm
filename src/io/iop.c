@@ -24,7 +24,9 @@
 
 #include "iop.h"
 
+#ifndef _WIN32
 #include <sys/ioctl.h> /* ioctl() */
+#endif
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* mode_t */
 #include <unistd.h> /* rmdir() symlink() unlink() */
@@ -37,7 +39,6 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strerror() */
 
-#include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../ui/cancellation.h"
@@ -513,7 +514,7 @@ iop_cp(io_args_t *const args)
 			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
 		}
 	}
-	else if(cfg.fast_file_cloning)
+	else if(args->arg4.fast_file_cloning)
 	{
 		if(clone_file(fileno(out), fileno(in)) == 0)
 		{

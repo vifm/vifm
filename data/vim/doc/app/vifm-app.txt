@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 11
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3644,6 +3644,11 @@ b                                              *vifm-m_b*
     custom view in place of previously active pane.  See |vifm-custom-views|.
 B                                              *vifm-m_B*
     same as above, but creates unsorted view.
+
+
+v                                              *vifm-m_v*
+    load menu content into quickfix list of the editor (Vim compatible by
+    assumption).
 
 
 Below is description of additional commands and reaction on selection in some

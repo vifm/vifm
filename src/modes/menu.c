@@ -25,6 +25,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL wchar_t */
+#include <stdio.h> /* pclose() popen() */
 #include <stdlib.h> /* free() */
 #include <string.h>
 
@@ -39,6 +40,7 @@
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../commands.h"
 #include "../filelist.h"
@@ -93,6 +95,7 @@ static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void search(int backward);
 static void cmd_zb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zH(key_info_t key_info, keys_info_t *keys_info);
@@ -153,6 +156,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
 	{L"zH", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zH}}},
 	{L"zL", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zL}}},
@@ -741,6 +745,51 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		search(last_search_backward);
+}
+
+/* Handles current content of the menu to Vim as quickfix list. */
+static void
+cmd_v(key_info_t key_info, keys_info_t *keys_info)
+{
+	int bg;
+	const char *vi_cmd;
+	FILE *vim_stdin;
+	char *cmd;
+	int i;
+
+	endwin();
+	curr_stats.need_update = UT_FULL;
+
+	vi_cmd = cfg_get_vicmd(&bg);
+	if(menu->pos == 0)
+	{
+		/* For some reason +cc1 causes noisy messages on status line, so handle this
+		 * case separately. */
+		cmd = format_str("%s +cgetbuffer +bd! +cfirst -", vi_cmd);
+	}
+	else
+	{
+		cmd = format_str("%s +cgetbuffer +bd! +cfirst +cc%d -", vi_cmd,
+				menu->pos + 1);
+	}
+
+	vim_stdin = popen(cmd, "w");
+	free(cmd);
+
+	if(vim_stdin == NULL)
+	{
+		recover_after_shellout();
+		show_error_msg("Vim QuickFix", "Failed to send list of files to editor.");
+		return;
+	}
+
+	for(i = 0; i < menu->len; ++i)
+	{
+		fprintf(vim_stdin, "%s\n", menu->items[i]);
+	}
+
+	pclose(vim_stdin);
+	recover_after_shellout();
 }
 
 static void

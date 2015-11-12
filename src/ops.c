@@ -455,6 +455,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		.arg1.src = src,
 		.arg2.dst = dst,
 		.arg3.crs = ca_to_crs(conflict_action),
+		.arg4.fast_file_cloning = cfg.fast_file_cloning,
 
 		.cancellable = data == NULL,
 	};
@@ -556,6 +557,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			.arg1.src = src,
 			.arg2.dst = dst,
 			.arg3.crs = ca_to_crs(conflict_action),
+			/* It's safe to always use fast file cloning on moving files. */
+			.arg4.fast_file_cloning = 1,
 
 			.cancellable = data == NULL,
 		};
