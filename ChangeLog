@@ -93,6 +93,9 @@
 	Added getpanetype() builtin function that retrieves type of current pane.
 	Thanks to filterfalse.
 
+	Added 'iooptions' option to configure file system operations.  Contains
+	only "fastfilecloning" for btrfs so far.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -197,6 +200,9 @@
 
 	Made setting title inside terminal multiplexers (when terminal type is
 	"screen*") work.
+
+	Make use of file cloning feature of btrfs when possible and enabled in
+	'iooptions'.  Thanks to aleksejrs.
 
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).

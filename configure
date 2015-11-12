@@ -8895,21 +8895,23 @@ $as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
 fi
 
 
-min_version="7.1"
 version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"
 minor="${version#*.}"
-min_major="${min_version%.*}"
-min_minor="${min_version#*.}"
 
 if test "x$major" != "x" -a "x$minor" != "x" ; then
 
 $as_echo "#define GNU_TOOLCHAIN 1" >>confdefs.h
 
-	if test $major -ge $min_major -a $minor -ge $min_minor ; then
+	if test $major -ge 7 -a $minor -ge 1; then
 
 $as_echo "#define SUPPORT_NO_CLOBBER 1" >>confdefs.h
+
+	fi
+	if test $major -ge 7 -a $minor -ge 6; then
+
+$as_echo "#define SUPPORT_REFLINK_AUTO 1" >>confdefs.h
 
 	fi
 fi

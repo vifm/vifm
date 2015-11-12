@@ -172,6 +172,9 @@ typedef struct config_t
 	char word_chars[256]; /* Whether corresponding character is a word char. */
 
 	ViewDirSize view_dir_size; /* Type of size display for directories in view. */
+
+	/* Controls use of fast file cloning for file systems that support it. */
+	int fast_file_cloning;
 }
 config_t;
 

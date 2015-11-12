@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 08, 2015" "vifm 0.8"
+.TH VIFM 1 "November 11, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3300,6 +3300,15 @@ default: false
 When this option is set, search and view update for local filter is be
 performed starting from initial cursor position each time search pattern is
 changed.
+.TP
+.BI 'iooptions'
+type: set
+.br
+default:
+.br
+Controls details of file operations.  The following values are available:
+ \- fastfilecloning \- perform fast file cloning (copy-on-write), when available
+                     (available on Linux and btrfs file system).
 .TP
 .BI "'laststatus' 'ls'"
 type: boolean
