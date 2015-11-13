@@ -102,6 +102,7 @@ static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info);
 static int is_left_or_top(void);
+static FileView * pick_view(void);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -810,7 +811,7 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 		               : getmaxx(stdscr);
 	}
 
-	ui_view_resize(curr_view, key_info.count);
+	ui_view_resize(pick_view(), key_info.count);
 }
 
 /* Checks whether current view is left/top or right/bottom.  Returns non-zero
@@ -818,14 +819,19 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 static int
 is_left_or_top(void)
 {
-	FileView *view = curr_view;
+	return (pick_view() == &lwin);
+}
 
+/* Picks view to operate on for Ctrl-W set of shortcuts.  Returns the view. */
+static FileView *
+pick_view(void)
+{
 	if(vle_mode_is(VIEW_MODE))
 	{
-		view = curr_view->explore_mode ? curr_view : other_view;
+		return curr_view->explore_mode ? curr_view : other_view;
 	}
 
-	return (view == &lwin);
+	return curr_view;
 }
 
 /* Switches views. */
