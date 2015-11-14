@@ -84,7 +84,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	return bg;
 }
 
-void
+int
 vim_edit_files(int nfiles, char *files[])
 {
 	char cmd[PATH_MAX];
@@ -100,7 +100,7 @@ vim_edit_files(int nfiles, char *files[])
 		free(escaped);
 	}
 
-	run_vim(cmd, bg, 1);
+	return run_vim(cmd, bg, 1);
 }
 
 int

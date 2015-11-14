@@ -763,7 +763,10 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	if(strchr(menu->items[0], ':') == NULL &&
 			strchr(menu->items[menu->len - 1], ':') == NULL)
 	{
-		vim_edit_files(menu->len, menu->items);
+		if(vim_edit_files(menu->len, menu->items) != 0)
+		{
+			show_error_msg("File List Open", "Failed to spawn editor.");
+		}
 		return;
 	}
 

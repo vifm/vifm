@@ -30,8 +30,8 @@
 int vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size);
 
 /* Opens external editor to edit files specified by their names in passed
- * list. */
-void vim_edit_files(int nfiles, char *files[]);
+ * list.  Returns zero on success, otherwise non-zero is returned. */
+int vim_edit_files(int nfiles, char *files[]);
 
 /* Opens external editor to edit selected files of the current view.  Returns
  * non-zero on error, otherwise zero is returned. */
