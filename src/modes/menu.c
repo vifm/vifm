@@ -34,13 +34,13 @@
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
-#include "../int/vim.h"
 #include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/fileview.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../commands.h"
@@ -757,24 +757,28 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	FILE *vim_stdin;
 	char *cmd;
 	int i;
+	int qf = 1;
 
 	/* If both first and last lines do not contain colons, treat lines as list of
 	 * file names. */
 	if(strchr(menu->items[0], ':') == NULL &&
 			strchr(menu->items[menu->len - 1], ':') == NULL)
 	{
-		if(vim_edit_files(menu->len, menu->items) != 0)
-		{
-			show_error_msg("File List Open", "Failed to spawn editor.");
-		}
-		return;
+		qf = 0;
 	}
 
 	endwin();
 	curr_stats.need_update = UT_FULL;
 
 	vi_cmd = cfg_get_vicmd(&bg);
-	if(menu->pos == 0)
+	if(!qf)
+	{
+		char *const arg = shell_like_escape("+exe 'bd!|args' "
+				"join(map(getline('1','$'),'fnameescape(v:val)'))", 0);
+		cmd = format_str("%s %s +argument%d -", vi_cmd, arg, menu->pos + 1);
+		free(arg);
+	}
+	else if(menu->pos == 0)
 	{
 		/* For some reason +cc1 causes noisy messages on status line, so handle this
 		 * case separately. */
