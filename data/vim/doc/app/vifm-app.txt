@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 12
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3648,7 +3648,8 @@ B                                              *vifm-m_B*
 
 v                                              *vifm-m_v*
     load menu content into quickfix list of the editor (Vim compatible by
-    assumption).
+    assumption) or if list doesn't have separators after file names (colons)
+    open each line as a file name.
 
 
 Below is description of additional commands and reaction on selection in some

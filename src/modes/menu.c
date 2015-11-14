@@ -34,6 +34,7 @@
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../int/vim.h"
 #include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/fileview.h"
@@ -756,6 +757,15 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	FILE *vim_stdin;
 	char *cmd;
 	int i;
+
+	/* If both first and last lines do not contain colons, treat lines as list of
+	 * file names. */
+	if(strchr(menu->items[0], ':') == NULL &&
+			strchr(menu->items[menu->len - 1], ':') == NULL)
+	{
+		vim_edit_files(menu->len, menu->items);
+		return;
+	}
 
 	endwin();
 	curr_stats.need_update = UT_FULL;
