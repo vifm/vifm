@@ -87,20 +87,26 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 int
 vim_edit_files(int nfiles, char *files[])
 {
-	char cmd[PATH_MAX];
-	size_t len;
+	char *cmd = NULL;
+	size_t len = 0U;
 	int i;
 	int bg;
+	int error;
 
-	len = snprintf(cmd, sizeof(cmd), "%s ", cfg_get_vicmd(&bg));
-	for(i = 0; i < nfiles && len < sizeof(cmd) - 1; ++i)
+	(void)strappend(&cmd, &len, cfg_get_vicmd(&bg));
+
+	for(i = 0; i < nfiles; ++i)
 	{
-		char *escaped = shell_like_escape(files[i], 0);
-		len += snprintf(cmd + len, sizeof(cmd) - len, "%s ", escaped);
+		char *const escaped = shell_like_escape(files[i], 0);
+		(void)strappendch(&cmd, &len, ' ');
+		(void)strappend(&cmd, &len, escaped);
 		free(escaped);
 	}
 
-	return run_vim(cmd, bg, 1);
+	error = (cmd == NULL || run_vim(cmd, bg, 1));
+	free(cmd);
+
+	return error;
 }
 
 int
