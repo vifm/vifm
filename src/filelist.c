@@ -439,7 +439,10 @@ move_cursor_out_of_scope(FileView *view, predicate_func pred)
 void
 navigate_backward_in_history(FileView *view)
 {
-	int pos = view->history_pos - 1;
+	/* When in custom view, we don't want to skip top history item. */
+	int pos = flist_custom_active(view)
+	        ? view->history_pos
+	        : (view->history_pos - 1);
 
 	while(pos >= 0)
 	{
@@ -493,7 +496,7 @@ navigate_to_history_pos(FileView *view, int pos)
 	}
 	curr_stats.drop_new_dir_hist = 0;
 
-	load_dir_list(view, 1);
+	load_dir_list(view, 0);
 	flist_set_pos(view, find_file_pos_in_list(view, view->history[pos].file));
 
 	view->history_pos = pos;
