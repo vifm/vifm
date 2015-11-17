@@ -608,7 +608,7 @@ static int
 read_sequence(const char **in, const char first[], const char other[],
 		size_t buf_len, char buf[])
 {
-	if(buf_len == 0UL || !char_is_one_of(ENV_VAR_NAME_FIRST_CHAR, last_token.c))
+	if(buf_len == 0UL || !char_is_one_of(first, last_token.c))
 	{
 		return 0;
 	}
@@ -620,7 +620,7 @@ read_sequence(const char **in, const char first[], const char other[],
 		strcatch(buf, last_token.c);
 		get_next(in);
 	}
-	while(--buf_len > 1UL && char_is_one_of(ENV_VAR_NAME_CHARS, last_token.c));
+	while(--buf_len > 1UL && char_is_one_of(other, last_token.c));
 
 	return 1;
 }

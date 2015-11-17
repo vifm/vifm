@@ -63,6 +63,12 @@ SETUP()
 	add_option("sort", "so", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
 			sort_enum, &dummy_handler, val);
 
+	/* Parsing unit doesn't accept options with underscores, although options unit
+	 * doesn't reject them.  Should it? */
+	val.enum_item = 1;
+	add_option("so_rt", "", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
+			sort_enum, &dummy_handler, val);
+
 	val.int_val = 8;
 	add_option("tabstop", "ts", OPT_INT, OPT_GLOBAL, 0, NULL, &dummy_handler,
 			val);
@@ -155,6 +161,11 @@ TEST(set_option_ok)
 TEST(charset_option_ok)
 {
 	ASSERT_OK("&cpoptions", "bc");
+}
+
+TEST(wrong_char_is_option_name_fail)
+{
+	ASSERT_FAIL("&so_rt", PE_INVALID_EXPRESSION);
 }
 
 TEST(very_long_option_name_fail)
