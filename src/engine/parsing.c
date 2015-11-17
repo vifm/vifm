@@ -64,10 +64,10 @@ typedef enum
 }
 TOKENS_TYPE;
 
-static var_t eval_statement(const char **in);
+static var_t eval_expr(const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
-static var_t eval_expression(const char **in);
+static var_t eval_simple_expr(const char **in);
 static var_t eval_term(const char **in);
 static var_t eval_signed_number(const char **in);
 static var_t eval_number(const char **in);
@@ -133,7 +133,7 @@ parse(const char input[], var_t *result)
 	res_val = var_false();
 	last_position = input;
 	get_next(&last_position);
-	res_val = eval_statement(&last_position);
+	res_val = eval_expr(&last_position);
 	last_parsed_char = last_position;
 
 	if(last_token.type != END)
@@ -172,17 +172,17 @@ is_prev_token_whitespace(void)
 	return prev_token.type == WHITESPACE;
 }
 
-/* stmt ::= expr | expr op expr */
+/* expr ::= simple_expr | simple_expr op simple_expr */
 /* op ::= '==' | '!=' */
 static var_t
-eval_statement(const char **in)
+eval_expr(const char **in)
 {
 	TOKENS_TYPE op;
 	var_t lhs;
 	var_t rhs;
 	var_val_t result;
 
-	lhs = eval_expression(in);
+	lhs = eval_simple_expr(in);
 	if(last_error != PE_NO_ERROR)
 	{
 		return lhs;
@@ -200,7 +200,7 @@ eval_statement(const char **in)
 	op = last_token.type;
 
 	get_next(in);
-	rhs = eval_expression(in);
+	rhs = eval_simple_expr(in);
 	if(last_error != PE_NO_ERROR)
 	{
 		var_free(lhs);
@@ -267,9 +267,9 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 	}
 }
 
-/* expr ::= term { '.' term } */
+/* simple_expr ::= term { '.' term } */
 static var_t
-eval_expression(const char **in)
+eval_simple_expr(const char **in)
 {
 	var_t result = var_false();
 	char res[CMD_LINE_LENGTH_MAX];
@@ -690,7 +690,7 @@ eval_funccall(const char **in)
 	return ret_val;
 }
 
-/* arglist ::= expr { ',' expr } */
+/* arglist ::= simple_expr { ',' simple_expr } */
 static void
 eval_arglist(const char **in, call_info_t *call_info)
 {
@@ -707,11 +707,11 @@ eval_arglist(const char **in, call_info_t *call_info)
 	}
 }
 
-/* arg ::= expr */
+/* arg ::= simple_expr */
 static void
 eval_arg(const char **in, call_info_t *call_info)
 {
-	var_t arg = eval_expression(in);
+	var_t arg = eval_simple_expr(in);
 	if(last_error == PE_NO_ERROR)
 	{
 		function_call_info_add_arg(call_info, arg);
