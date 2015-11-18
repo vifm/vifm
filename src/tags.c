@@ -499,6 +499,8 @@ const char *tags[] = {
 	"vifm-expr2",
 	"vifm-expr3",
 	"vifm-expr4",
+	"vifm-expr5",
+	"vifm-expr6",
 	"vifm-expression-syntax",
 	"vifm-f",
 	"vifm-filetype()",

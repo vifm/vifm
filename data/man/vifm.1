@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 14, 2015" "vifm 0.8"
+.TH VIFM 1 "November 18, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3977,20 +3977,24 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-expr1      expr2 == expr2          equal
-           expr2 != expr2          not equal
-           expr2 >  expr2          greater than
-           expr2 >= expr2          greater than or equal
-           expr2 <  expr2          smaller than
-           expr2 <= expr2          smaller than or equal
+expr1      expr2 || expr2 ..       logical OR
 
-expr2      expr3 . expr3 ..        string concatenation
+expr2      expr3 && expr3 ..       logical AND
 
-expr3      \- expr3                 unary minus
-           + expr3                 unary plus
-           ! expr3                 logical NOT
+expr3      expr4 == expr4          equal
+           expr4 != expr4          not equal
+           expr4 >  expr4          greater than
+           expr4 >= expr4          greater than or equal
+           expr4 <  expr4          smaller than
+           expr4 <= expr4          smaller than or equal
 
-expr4      number                  number constant
+expr4      expr5 . expr5 ..        string concatenation
+
+expr5      \- expr5                 unary minus
+           + expr5                 unary plus
+           ! expr5                 logical NOT
+
+expr6      number                  number constant
            "string"                string constant, \\ is special
            'string'                string constant, ' is doubled
            &option                 option value
@@ -4003,9 +4007,35 @@ expr1
 .br
 -----
 .br
-expr2 {cmp} expr2
+expr2 || expr1
 
-Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
+Arguments are converted to numbers before evaluation.
+
+Result is non-zero if at least one of arguments is non-zero.
+
+It's right associative and without short-circuiting, so all sub-expressions
+are always evaluated.
+
+expr2
+.br
+-----
+.br
+expr3 && expr2
+
+Arguments are converted to numbers before evaluation.
+
+Result is non-zero only if both arguments are non-zero.
+
+It's right associative and without short-circuiting, so all sub-expressions
+are always evaluated.
+
+expr3
+.br
+-----
+.br
+expr4 {cmp} expr4
+
+Compare two expr4 expressions, resulting in a 0 if it evaluates to false or 1
 if it evaluates to true.
 
 equal                   ==
@@ -4034,11 +4064,11 @@ Examples:
    0  ==  '\-\-1'       == 1
 .EE
 
-expr2
+expr4
 .br
 -----
 .br
-expr3 . expr3 ..     string concatenation
+expr5 . expr5 ..     string concatenation
 
 Examples:
 
@@ -4047,16 +4077,16 @@ Examples:
   'aaa' . '' . 'c'    == 'aaac'
 .EE
 
-expr3
+expr5
 .br
 -----
 .br
 
-\- expr3              unary minus
+\- expr5              unary minus
 .br
-+ expr3              unary plus
++ expr5              unary plus
 .br
-! expr3              logical NOT
+! expr5              logical NOT
 
 For '\-' the sign of the number is changed.
 .br
@@ -4078,7 +4108,7 @@ These operations can be repeated and mixed.  Examples:
    !!9                == 1
 .EE
 
-expr4
+expr6
 .br
 -----
 .br

@@ -243,7 +243,7 @@ eval_and_expr(const char **in)
 }
 
 /* expr ::= simple_expr | simple_expr op simple_expr */
-/* op ::= '==' | '!=' */
+/* op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static var_t
 eval_expr(const char **in)
 {

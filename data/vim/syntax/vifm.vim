@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: November 11, 2015
+" Last Change: November 18, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -54,7 +54,7 @@ syntax match vifmBuiltinFunction
 		\ '\(expand\|executable\|filetype\|getpanetype\|has\|layoutis\|paneisat\|system\)\ze('
 
 " Operators
-syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\)" skipwhite
+syntax match vifmOperator "\(==\|!=\|>=\?\|<=\?\|\.\|-\|+\|&&\|||\)" skipwhite
 
 " Highlight groups
 syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
