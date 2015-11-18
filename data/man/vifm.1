@@ -3210,7 +3210,7 @@ Follow links on l or Enter.
 .BI 'fusehome'
 type: string
 .br
-default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
+default: "($XDG_DATA_HOME/.local/share | $VIFM)/fuse/"
 .br
 Directory to be used as a root dir for FUSE mounts.  Value of the option can
 contain environment variables (in form "$envname"), which will be expanded

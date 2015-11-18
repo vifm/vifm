@@ -133,16 +133,6 @@ cfg_init(void)
 	cfg.vi_x_command = strdup("");
 	cfg.vi_x_cmd_bg = 0;
 	cfg.use_trash = 1;
-
-	{
-		char fuse_home[PATH_MAX];
-		int update_stat;
-		snprintf(fuse_home, sizeof(fuse_home), "%s/vifm_FUSE", get_tmpdir());
-		update_stat = cfg_set_fuse_home(fuse_home);
-		assert(update_stat == 0);
-		(void)update_stat;
-	}
-
 	cfg.use_term_multiplexer = 0;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
@@ -523,12 +513,13 @@ store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
+	char *fuse_home;
 	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
 	                       ? cfg.config_dir
 	                       : cfg.data_dir;
-	const char *log_base = path_exists(cfg.data_dir, DEREF)
-	                     ? cfg.data_dir
-	                     : cfg.config_dir;
+	const char *base = path_exists(cfg.data_dir, DEREF)
+	                 ? cfg.data_dir
+	                 : cfg.config_dir;
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));
@@ -536,7 +527,11 @@ store_config_paths(void)
 			cfg.config_dir);
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%%r/.vifm-Trash,%s/" TRASH,
 			trash_base);
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, log_base);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, base);
+
+	fuse_home = format_str("%s/fuse/", base);
+	(void)cfg_set_fuse_home(fuse_home);
+	free(fuse_home);
 }
 
 /* Ensures existence of configuration and data directories.  Performs first run
