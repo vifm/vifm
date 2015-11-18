@@ -102,7 +102,7 @@ TEST(chars_after_function_call_fail)
 	free(result);
 }
 
-TEST(statement)
+TEST(expression)
 {
 	const char *args = "'a'=='a'";
 	const char *stop_ptr;
@@ -114,7 +114,7 @@ TEST(statement)
 	free(result);
 }
 
-TEST(statement_and_not_statement)
+TEST(expression_and_literal)
 {
 	const char *args = "'a'=='a' 'b'";
 	const char *stop_ptr;

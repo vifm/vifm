@@ -130,5 +130,11 @@ TEST(wrong_op_fail)
 	ASSERT_FAIL("'a' =< 'a'", PE_INVALID_EXPRESSION);
 }
 
+TEST(ops_ignored_inside_strings)
+{
+	ASSERT_OK("'!= == <= >= !'", "!= == <= >= !");
+	ASSERT_OK("\"!= == <= >= !\"", "!= == <= >= !");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -86,12 +86,14 @@ static void eval_arg(const char **in, call_info_t *call_info);
 static void skip_whitespace_tokens(const char **in);
 static void get_next(const char **in);
 
-/* This contains information about the last token read. */
+/* This contains information about the last tokens read. */
 struct
 {
-	TOKENS_TYPE type;
-	char c;
-}prev_token, last_token;
+	TOKENS_TYPE type; /* Type of the token. */
+	char c;           /* Last character of the token. */
+	char str[3];      /* Full token string. */
+}
+prev_token, last_token;
 
 static int initialized;
 static getenv_func getenv_fu;
@@ -441,7 +443,7 @@ eval_single_quoted_char(const char **in, char buffer[])
 		return 0;
 	}
 
-	strcatch(buffer, last_token.c);
+	strcat(buffer, last_token.str);
 	get_next(in);
 
 	if(double_sq)
@@ -509,12 +511,14 @@ eval_double_quoted_char(const char **in, char buffer[])
 			last_error = PE_INVALID_EXPRESSION;
 			return 0;
 		}
-		last_token.c = table[(int)last_token.c];
+		strcatch(buffer, table[(int)last_token.c]);
+	}
+	else
+	{
+		strcat(buffer, last_token.str);
 	}
 
-	strcatch(buffer, last_token.c);
 	get_next(in);
-
 	return dq_char;
 }
 
@@ -733,6 +737,7 @@ skip_whitespace_tokens(const char **in)
 static void
 get_next(const char **in)
 {
+	const char *const start = *in;
 	TOKENS_TYPE tt;
 
 	if(last_token.type == END)
@@ -828,6 +833,9 @@ get_next(const char **in)
 
 	if(tt != END)
 		++*in;
+
+	strncpy(last_token.str, start, *in - start);
+	last_token.str[*in - start] = '\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
