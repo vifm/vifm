@@ -6,6 +6,10 @@
 	Removed vifmrc-converter.  It's been around for four years and not needed
 	any more.  Thanks to filterfalse.
 
+	Removed contents of autoconf.sh, autoreconf covers what was there (there
+	is a notice in that script now about it just in case).  Thanks to Hendrik
+	Jaeger (a.k.a. henk).
+
 	Added :winc[md] command-line command.  Thanks to fogine.
 
 	Added layoutis() builtin function that answers queries about current
