@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 14
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3295,20 +3295,24 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-|vifm-expr1| expr2 == expr2          equal
-           expr2 != expr2          not equal
-           expr2 >  expr2          greater than
-           expr2 >= expr2          greater than or equal
-           expr2 <  expr2          smaller than
-           expr2 <= expr2          smaller than or equal
+|vifm-expr1| expr2 || expr2 ..      logical OR
 
-|vifm-expr2| expr3 . expr3 ..        string concatenation
+|vifm-expr2| expr3 && expr3 ..      logical AND
 
-|vifm-expr3| - expr3                 unary minus
-           + expr3                 unary plus
-           ! expr3                 logical NOT
+|vifm-expr3| expr4 == expr4          equal
+           expr4 != expr4          not equal
+           expr4 >  expr4          greater than
+           expr4 >= expr4          greater than or equal
+           expr4 <  expr4          smaller than
+           expr4 <= expr4          smaller than or equal
 
-|vifm-expr4| number                  number constant
+|vifm-expr4| expr5 . expr5 ..        string concatenation
+
+|vifm-expr5| - expr5                 unary minus
+           + expr5                 unary plus
+           ! expr5                 logical NOT
+
+|vifm-expr6| number                  number constant
            "string"                string constant, backslash is special
            'string'                string constant, ' is doubled
            &option                 option value
@@ -3319,9 +3323,31 @@ Expression syntax summary, from least to most significant:
 
 expr1                                          *vifm-expr1*
 -----
-expr2 {cmp} expr2
+expr2 || expr1
 
-Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
+Arguments are converted to numbers before evaluation.
+
+Result is non-zero if at least one of arguments is non-zero.
+
+It's right associative and without short-circuiting, so all sub-expressions
+are always evaluated.
+
+expr2                                          *vifm-expr2*
+-----
+expr3 && expr2
+
+Arguments are converted to numbers before evaluation.
+
+Result is non-zero only if both arguments are non-zero.
+
+It's right associative and without short-circuiting, so all sub-expressions
+are always evaluated.
+
+expr3                                          *vifm-expr3*
+-----
+expr4 {cmp} expr4
+
+Compare two expr4 expressions, resulting in a 0 if it evaluates to false or 1
 if it evaluates to true.
 
 equal                   ==                     *vifm-expr-==*
@@ -3343,21 +3369,21 @@ Examples: >
    0  ==  '--1'       == 1
 <
 
-expr2                                          *vifm-expr2*
+expr4                                          *vifm-expr4*
 -----
-expr3 . expr3 ..     string concatenation      *vifm-expr-.*
+expr5 . expr5 ..     string concatenation      *vifm-expr-.*
 
 Examples: >
   'a' . 'b'          == 'ab'
   'aaa' . '' . 'c'   == 'aaac'
 <
 
-expr3                                          *vifm-expr3*
+expr5                                          *vifm-expr5*
 -----
 
-- expr3              unary minus               *vifm-expr-unary--*
-+ expr3              unary plus                *vifm-expr-unary-+*
-! expr3              logical NOT               *vifm-expr-unary-!*
+- expr5              unary minus               *vifm-expr-unary--*
++ expr5              unary plus                *vifm-expr-unary-+*
+! expr5              logical NOT               *vifm-expr-unary-!*
 
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
@@ -3375,7 +3401,7 @@ These operations can be repeated and mixed.  Examples: >
    !!9               == 1
 <
 
-expr4                                          *vifm-expr4*
+expr6                                          *vifm-expr6*
 -----
 
 number               number constant           *vifm-expr-number*

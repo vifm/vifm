@@ -99,6 +99,8 @@
 	Added "v" key to menu mode that loads current contants into quickfix list
 	of editor (Vim compatible one is assumed).  Thanks to filterfalse.
 
+	Added && and || operators to expression parser.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -341,6 +343,8 @@
 	calls.
 
 	Fixed navigation back in history from custom view.
+
+	Fixed tokens mangling inside strings ('!=' turned into '=').
 
 0.8-beta to 0.8
 
