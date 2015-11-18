@@ -149,5 +149,16 @@ TEST(broken_comparison_operator)
 	free(result);
 }
 
+TEST(and_operator)
+{
+	const char *args = "'a' && 'b' && 'c'";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_arglist(args, &stop_ptr);
+	assert_string_equal("0", result);
+	free(result);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

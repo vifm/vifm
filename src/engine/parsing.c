@@ -23,7 +23,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* strcat() strcmp() */
+#include <string.h> /* strcat() strcmp() strncpy() */
 
 #include "../utils/str.h"
 #include "private/options.h"
@@ -55,6 +55,8 @@ typedef enum
 	LE,         /* Less than or equal operator (<=). */
 	GE,         /* Greater than or equal operator (>=). */
 	GT,         /* Greater than operator (>). */
+	AND,        /* Logical AND operator (&&). */
+	OR,         /* Logical OR operator (||). */
 	WHITESPACE, /* Any of whitespace characters (space, tabulation). */
 	PLUS,       /* Plus sign (+). */
 	MINUS,      /* Minus sign (-). */
@@ -64,6 +66,8 @@ typedef enum
 }
 TOKENS_TYPE;
 
+static var_t eval_or_expr(const char **in);
+static var_t eval_and_expr(const char **in);
 static var_t eval_expr(const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
@@ -135,7 +139,7 @@ parse(const char input[], var_t *result)
 	res_val = var_false();
 	last_position = input;
 	get_next(&last_position);
-	res_val = eval_expr(&last_position);
+	res_val = eval_or_expr(&last_position);
 	last_parsed_char = last_position;
 
 	if(last_token.type != END)
@@ -174,6 +178,70 @@ is_prev_token_whitespace(void)
 	return prev_token.type == WHITESPACE;
 }
 
+/* or_expr ::= and_expr | and_expr '&&' or_expr */
+static var_t
+eval_or_expr(const char **in)
+{
+	var_t lhs;
+	var_t rhs;
+	var_val_t result;
+
+	lhs = eval_and_expr(in);
+	if(last_error != PE_NO_ERROR || last_token.type == END)
+	{
+		return lhs;
+	}
+	else if(last_token.type != OR)
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		/* Return partial result. */
+		return lhs;
+	}
+
+	get_next(in);
+	rhs = eval_or_expr(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		var_free(lhs);
+		return var_false();
+	}
+
+	result.integer = var_to_integer(lhs) || var_to_integer(rhs);
+
+	var_free(lhs);
+	var_free(rhs);
+	return var_new(VTYPE_INT, result);
+}
+
+/* and_expr ::= expr | expr '&&' and_expr */
+static var_t
+eval_and_expr(const char **in)
+{
+	var_t lhs;
+	var_t rhs;
+	var_val_t result;
+
+	lhs = eval_expr(in);
+	if(last_error != PE_NO_ERROR || last_token.type != AND)
+	{
+		return lhs;
+	}
+
+	get_next(in);
+	rhs = eval_and_expr(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		var_free(lhs);
+		return var_false();
+	}
+
+	result.integer = var_to_integer(lhs) && var_to_integer(rhs);
+
+	var_free(lhs);
+	var_free(rhs);
+	return var_new(VTYPE_INT, result);
+}
+
 /* expr ::= simple_expr | simple_expr op simple_expr */
 /* op ::= '==' | '!=' */
 static var_t
@@ -185,18 +253,8 @@ eval_expr(const char **in)
 	var_val_t result;
 
 	lhs = eval_simple_expr(in);
-	if(last_error != PE_NO_ERROR)
+	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
 	{
-		return lhs;
-	}
-	else if(last_token.type == END)
-	{
-		return lhs;
-	}
-	else if(!is_comparison_operator(last_token.type))
-	{
-		last_error = PE_INVALID_EXPRESSION;
-		/* Return partial result. */
 		return lhs;
 	}
 	op = last_token.type;
@@ -757,9 +815,6 @@ get_next(const char **in)
 		case '$':
 			tt = DOLLAR;
 			break;
-		case '&':
-			tt = AMPERSAND;
-			break;
 		case '(':
 			tt = LPAREN;
 			break;
@@ -806,6 +861,28 @@ get_next(const char **in)
 			else
 			{
 				tt = GT;
+			}
+			break;
+		case '&':
+			if((*in)[1] == '&')
+			{
+				tt = AND;
+				++*in;
+			}
+			else
+			{
+				tt = AMPERSAND;
+			}
+			break;
+		case '|':
+			if((*in)[1] == '|')
+			{
+				tt = OR;
+				++*in;
+			}
+			else
+			{
+				tt = SYM;
 			}
 			break;
 		case '=':
