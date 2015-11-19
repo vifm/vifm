@@ -7,6 +7,8 @@
 
 #define DEFAULT_LINENUM 1
 
+static int windows(void);
+
 TEST(empty_path_without_linenum)
 {
 	int line_num;
@@ -81,9 +83,7 @@ TEST(relative_path_with_linenum)
 	free(path);
 }
 
-#ifdef _WIN32
-
-TEST(win_absolute_path_without_linenum)
+TEST(win_absolute_path_without_linenum, IF(windows))
 {
 	int line_num;
 	char *const path = parse_file_spec("c:/home/user", &line_num);
@@ -94,7 +94,7 @@ TEST(win_absolute_path_without_linenum)
 	free(path);
 }
 
-TEST(win_absolute_path_with_linenum)
+TEST(win_absolute_path_with_linenum, IF(windows))
 {
 	int line_num;
 	char *const path = parse_file_spec("c:/home/user:1234", &line_num);
@@ -105,7 +105,7 @@ TEST(win_absolute_path_with_linenum)
 	free(path);
 }
 
-TEST(win_relative_path_without_linenum)
+TEST(win_relative_path_without_linenum, IF(windows))
 {
 	int line_num;
 	char *const path = parse_file_spec("repos\\repo", &line_num);
@@ -116,7 +116,7 @@ TEST(win_relative_path_without_linenum)
 	free(path);
 }
 
-TEST(win_relative_path_with_linenum)
+TEST(win_relative_path_with_linenum, IF(windows))
 {
 	int line_num;
 	char *const path = parse_file_spec("repos\\repo:9876", &line_num);
@@ -127,7 +127,14 @@ TEST(win_relative_path_with_linenum)
 	free(path);
 }
 
+static int
+windows(void)
+{
+#ifdef _WIN32
+	return 1;
+#else
+	return 0;
 #endif
-
+}
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
