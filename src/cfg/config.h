@@ -90,7 +90,8 @@ typedef struct config_t
 	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;
-	char *fuse_home; /* This one should be set using set_fuse_home() function. */
+	/* This one should be set using cfg_set_fuse_home() function. */
+	char *fuse_home;
 
 	/* History of command-line commands. */
 	hist_t cmd_hist;
