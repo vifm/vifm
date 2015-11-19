@@ -109,6 +109,52 @@ TEST(merge_directories)
 	stats_update_shell_type("/bin/sh");
 }
 
+TEST(merge_directories_creating_intermediate_parent_dirs)
+{
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	replace_string(&cfg.shell, "cmd");
+#endif
+
+	stats_update_shell_type(cfg.shell);
+
+	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
+			++cfg.use_system_calls)
+	{
+		ops_t *ops;
+
+		create_empty_dir("first");
+		create_empty_dir("first/nested1");
+		create_empty_dir("first/nested1/nested2");
+		create_empty_file("first/nested1/nested2/file");
+
+		create_empty_dir("second");
+		create_empty_dir("second/nested1");
+
+		cmd_group_begin("undo msg");
+
+		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
+		ops->crp = CRP_OVERWRITE_ALL;
+		assert_success(merge_dirs("first", "second", ops));
+		ops_free(ops);
+
+		cmd_group_end();
+
+		/* Original directory must be deleted. */
+		assert_false(file_exists("first"));
+
+		assert_true(file_exists("second/nested1/nested2/file"));
+
+		assert_success(unlink("second/nested1/nested2/file"));
+		assert_success(rmdir("second/nested1/nested2"));
+		assert_success(rmdir("second/nested1"));
+		assert_success(rmdir("second"));
+	}
+
+	stats_update_shell_type("/bin/sh");
+}
+
 static void
 create_empty_dir(const char dir[])
 {
