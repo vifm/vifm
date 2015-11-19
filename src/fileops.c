@@ -1862,7 +1862,7 @@ put_next(const char dest_name[], int force)
 	progress_msg("Putting files", put_confirm.x, put_confirm.reg->num_files);
 
 	/* Merging directory on move requires special handling as it can't be done by
-	 * "mv" itself. */
+	 * move operation itself. */
 	if(move && merge)
 	{
 		char dst_path[PATH_MAX];
@@ -1932,7 +1932,7 @@ put_next(const char dest_name[], int force)
 	return 0;
 }
 
-/* Merges src into dst. Returns zero on success, otherwise non-zero is
+/* Merges src into dst.  Returns zero on success, otherwise non-zero is
  * returned. */
 TSTATIC int
 merge_dirs(const char src[], const char dst[], ops_t *ops)
@@ -1946,6 +1946,11 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	{
 		return -1;
 	}
+
+	/* Make sure target directory exists.  Ignore error as we don't care whether
+	 * it existed before we try to create it and following operations will fail
+	 * if we can't create this directory for some reason. */
+	(void)perform_operation(OP_MKDIR, NULL, (void *)(size_t)1, dst, NULL);
 
 	while((d = os_readdir(dir)) != NULL)
 	{
