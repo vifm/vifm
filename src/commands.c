@@ -108,7 +108,7 @@
 /* Command scope marker. */
 #define SCOPE_GUARD INT_MIN
 
-/* Commands without completion. */
+/* Commands without completion, but for which we need to have an id. */
 enum
 {
 	COM_FILTER = NO_COMPLETION_BOUNDARY,
@@ -135,6 +135,15 @@ enum
 	COM_NOREMAP,
 };
 
+/* Type of command arguments. */
+typedef enum
+{
+	CAT_REGULAR,       /* Can be separated by a |. */
+	CAT_EXPR,          /* Accept expressions with || and terminate on |. */
+	CAT_UNTIL_THE_END, /* Take the rest of line including all |. */
+}
+CmdArgsType;
+
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char str[], int for_shell, int *usr1,
@@ -154,8 +163,8 @@ static int cmd_should_be_processed(int cmd_id);
 static int is_out_of_arg(const char cmd[], const char pos[]);
 TSTATIC int line_pos(const char begin[], const char end[], char sep,
 		int rquoting);
-static int is_whole_line_command(const char cmd[]);
-static char * skip_command_beginning(const char cmd[]);
+static CmdArgsType get_cmd_args_type(const char cmd[]);
+static char * skip_to_cmd_name(const char cmd[]);
 static int repeat_command(FileView *view, CmdInputType type);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -964,7 +973,7 @@ execute_command(FileView *view, const char command[], int menu)
 		return 0;
 	}
 
-	command = skip_command_beginning(command);
+	command = skip_to_cmd_name(command);
 
 	if(command[0] == '"')
 		return 0;
@@ -1261,32 +1270,43 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 		}
 		else if((*p == '|' && is_out_of_arg(cmd, q)) || *p == '\0')
 		{
-			int whole_line;
+			CmdArgsType args_kind;
 			int ret;
 
 			if(*p != '\0')
 			{
-				p++;
+				++p;
 			}
 			else
 			{
 				*q = '\0';
 			}
 
-			cmd = skip_command_beginning(cmd);
+			cmd = skip_to_cmd_name(cmd);
 
 			/* For non-menu commands set command-line mode configuration before
-			 * calling is_whole_line_command() function, which calls functions of the
-			 * cmds module of the engine that use context. */
+			 * calling get_cmd_args_type() function, which calls functions of the cmds
+			 * module of the engine that use context. */
 			if(type != CIT_MENU_COMMAND)
 			{
 				init_cmds(1, &cmds_conf);
 			}
-			whole_line = is_whole_line_command(cmd);
+			args_kind = get_cmd_args_type(cmd);
 
 			/* Don't break line for whole line commands. */
-			if(!whole_line)
+			if(args_kind != CAT_UNTIL_THE_END)
 			{
+				if(args_kind == CAT_EXPR)
+				{
+					/* Move breaking point forward by consuming parts of the string after
+					 * || until end of the string or | is found. */
+					while(q[0] == '|' && q[1] == '|' && q[2] != '|')
+					{
+						q = until_first(q + 2, '|');
+						p = (q[0] == '\0') ? q : (q + 1);
+					}
+				}
+
 				*q = '\0';
 				q = p;
 			}
@@ -1297,7 +1317,7 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				save_msg = (ret < 0) ? -1 : 1;
 			}
 
-			if(whole_line)
+			if(args_kind == CAT_UNTIL_THE_END)
 			{
 				/* Whole line command takes the rest of the string, nothing more to
 				 * process. */
@@ -1366,17 +1386,19 @@ get_cmdline_location(const char cmd[], const char pos[])
 	}
 }
 
-static int
-is_whole_line_command(const char cmd[])
+/* Determines what kind of processing should be applied to the command pointed
+ * to by the cmd.  Returns the kind. */
+static CmdArgsType
+get_cmd_args_type(const char cmd[])
 {
 	const int cmd_id = get_cmd_id(cmd);
 	switch(cmd_id)
 	{
+		case COMMAND_CMD_ID:
 		case COM_EXECUTE:
 		case COM_CMAP:
 		case COM_CNOREMAP:
 		case COM_COMMAND:
-		case COMMAND_CMD_ID:
 		case COM_FILETYPE:
 		case COM_FILEVIEWER:
 		case COM_FILEXTYPE:
@@ -1394,10 +1416,14 @@ is_whole_line_command(const char cmd[])
 		case COM_WINCMD:
 		case COM_WINDO:
 		case COM_WINRUN:
-			return 1;
+			return CAT_UNTIL_THE_END;
+		case COM_ECHO:
+		case COM_EXE:
+		case COM_IF_STMT:
+			return CAT_EXPR;
 
 		default:
-			return 0;
+			return CAT_REGULAR;
 	}
 }
 
@@ -1423,7 +1449,7 @@ find_last_command(const char cmds[])
 				++p;
 			}
 
-			cmds = skip_command_beginning(cmds);
+			cmds = skip_to_cmd_name(cmds);
 			if(*cmds == '!' || starts_with_lit(cmds, "com"))
 			{
 				break;
@@ -1451,11 +1477,11 @@ find_last_command(const char cmds[])
 /* Skips consecutive whitespace or colon characters at the beginning of the
  * command.  Returns pointer to the first non whitespace and color character. */
 static char *
-skip_command_beginning(const char cmd[])
+skip_to_cmd_name(const char cmd[])
 {
 	while(isspace(*cmd) || *cmd == ':')
 	{
-		cmd++;
+		++cmd;
 	}
 	return (char *)cmd;
 }

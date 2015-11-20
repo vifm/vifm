@@ -248,5 +248,29 @@ TEST(cpmv_does_not_crash_on_wrong_list_access)
 	assert_success(remove(SANDBOX_PATH "/c"));
 }
 
+TEST(or_operator_is_attributed_to_echo)
+{
+	(void)exec_commands("echo 1 || builtin", &lwin, CIT_COMMAND);
+	assert_false(called);
+}
+
+TEST(bar_is_not_attributed_to_echo)
+{
+	(void)exec_commands("echo 1 | builtin", &lwin, CIT_COMMAND);
+	assert_true(called);
+}
+
+TEST(mixed_or_operator_and_bar)
+{
+	(void)exec_commands("echo 1 || 0 | builtin", &lwin, CIT_COMMAND);
+	assert_true(called);
+}
+
+TEST(or_operator_is_attributed_to_if)
+{
+	(void)exec_commands("if 0 || 0 | builtin | endif", &lwin, CIT_COMMAND);
+	assert_false(called);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
