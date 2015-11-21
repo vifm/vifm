@@ -211,11 +211,8 @@ execute_cmd(const char cmd[])
 	if(udf_is_ambiguous(cmd_name))
 		return CMDS_ERR_UDF_IS_AMBIGUOUS;
 
-	cur = inner->head.next;
-	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
-		cur = cur->next;
-
-	if(cur == NULL || strncmp(cmd_name, cur->name, strlen(cmd_name)) != 0)
+	cur = find_cmd(cmd_name);
+	if(cur == NULL)
 		return CMDS_ERR_INVALID_CMD;
 
 	args = parse_tail(cur, cmd, &cmd_info);
@@ -452,8 +449,7 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
 	char cmd_name[MAX_CMD_NAME_LEN];
-	cmd_t *cur;
-	size_t len;
+	cmd_t *c;
 
 	init_cmd_info(&cmd_info);
 
@@ -462,19 +458,15 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 		return CMDS_ERR_INVALID_CMD;
 
 	cmd = get_cmd_name(cmd, cmd_name, sizeof(cmd_name));
-	cur = inner->head.next;
-	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
-		cur = cur->next;
-
-	len = strlen(cmd_name);
-	if(cur == NULL || strncmp(cmd_name, cur->name, len) != 0)
+	c = find_cmd(cmd_name);
+	if(c == NULL)
 		return -1;
 
-	if(parse_tail(cur, cmd, &cmd_info) == NULL)
+	if(parse_tail(c, cmd, &cmd_info) == NULL)
 		return -1;
 
 	*info = cmd_info;
-	return cur->id;
+	return c->id;
 }
 
 int
