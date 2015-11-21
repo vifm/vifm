@@ -119,6 +119,7 @@ CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
 #include "engine/cmds.h"
 #endif
 TSTATIC_DEFS(
+	char ** break_cmdline(const char cmdline[], int for_menu);
 	int line_pos(const char begin[], const char end[], char sep, int regexp);
 	void select_range(int id, const cmd_info_t *cmd_info);
 	char * eval_arglist(const char args[], const char **stop_ptr);

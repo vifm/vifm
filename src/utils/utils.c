@@ -588,9 +588,6 @@ def_count(int count)
 	return (count == NO_COUNT_GIVEN) ? 1 : count;
 }
 
-/* Extracts path and line number from the spec (default line number is 1).
- * Returns path in as newly allocated string and sets *line_num to line number,
- * otherwise NULL is returned. */
 char *
 parse_file_spec(const char spec[], int *line_num)
 {

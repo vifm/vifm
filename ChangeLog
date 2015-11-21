@@ -358,6 +358,9 @@
 	Fixed creation of intermediate directories on merging directories.
 	Thanks to willemw12.
 
+	Fixed inconsistency in processing | escapes for whole line commands (e.g.
+	for :!).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

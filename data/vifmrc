@@ -63,12 +63,6 @@ set noiec
 
 colorscheme Default
 
-" The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
-" Unless it exists with write/exec permissions set, vifm will attempt to
-" create it.
-
-set fusehome=/tmp/vifm_FUSE
-
 " Format for displaying time in file list. For example:
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
