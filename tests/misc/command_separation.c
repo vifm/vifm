@@ -1,6 +1,19 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
+#include "../../src/engine/cmds.h"
 #include "../../src/commands.h"
+
+SETUP()
+{
+	init_commands();
+}
+
+TEARDOWN()
+{
+	reset_cmds();
+}
 
 TEST(pipe)
 {
@@ -79,6 +92,49 @@ TEST(space_amp_before_bar)
 	assert_int_equal(0, line_pos(buf, buf + 7, ' ', 0));
 	assert_int_equal(0, line_pos(buf, buf + 8, ' ', 0));
 	assert_int_equal(0, line_pos(buf, buf + 9, ' ', 0));
+}
+
+TEST(whole_line_command_cmdline_is_not_broken)
+{
+	char **cmds = break_cmdline("!echo hi|less", 0);
+
+	assert_string_equal("!echo hi|less", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	while(*cmds != NULL)
+	{
+		free(*cmds++);
+	}
+}
+
+TEST(bar_escaping_is_preserved_for_whole_line_commands)
+{
+	char **cmds = break_cmdline("!\\|\\||\\|\\|", 0);
+	void *free_this = cmds;
+
+	assert_string_equal("!\\|\\||\\|\\|", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	while(*cmds != NULL)
+	{
+		free(*cmds++);
+	}
+	free(free_this);
+}
+
+TEST(asdf)
+{
+	char **cmds = break_cmdline("echo 1 \\|| 2", 0);
+	void *free_this = cmds;
+
+	assert_string_equal("echo 1 \\|| 2", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	while(*cmds != NULL)
+	{
+		free(*cmds++);
+	}
+	free(free_this);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

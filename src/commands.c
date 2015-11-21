@@ -160,6 +160,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char args[]);
 static int cmd_should_be_processed(int cmd_id);
+TSTATIC char ** break_cmdline(const char cmdline[], int for_menu);
 static int is_out_of_arg(const char cmd[], const char pos[]);
 TSTATIC int line_pos(const char begin[], const char end[], char sep,
 		int rquoting);
@@ -1237,31 +1238,71 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 }
 
 int
-exec_commands(const char cmd[], FileView *view, CmdInputType type)
+exec_commands(const char cmdline[], FileView *view, CmdInputType type)
 {
-	char cmd_copy[strlen(cmd) + 1];
 	int save_msg = 0;
+	char **cmds = break_cmdline(cmdline, type == CIT_MENU_COMMAND);
+	char **cmd = cmds;
+
+	while(*cmd != NULL)
+	{
+		const int ret = exec_command(*cmd, view, type);
+		if(ret != 0)
+		{
+			save_msg = (ret < 0) ? -1 : 1;
+		}
+
+		free(*cmd++);
+	}
+	free(cmds);
+
+	return save_msg;
+}
+
+/* Breaks command-line into sub-commands.  Returns NULL-terminated list of
+ * sub-sommands. */
+TSTATIC char **
+break_cmdline(const char cmdline[], int for_menu)
+{
+	char **cmds = NULL;
+	int len = 0;
+
+	char cmdline_copy[strlen(cmdline) + 1];
 	char *raw, *processed;
 
-	if(*cmd == '\0')
+	CmdArgsType args_kind;
+
+	if(*cmdline == '\0')
 	{
-		return exec_command(cmd, view, type);
+		len = add_to_string_array(&cmds, len, 1, cmdline);
+		goto finish;
 	}
 
-	strcpy(cmd_copy, cmd);
-	cmd = cmd_copy;
+	strcpy(cmdline_copy, cmdline);
+	cmdline = cmdline_copy;
 
-	raw = cmd_copy;
-	processed = cmd_copy;
+	raw = cmdline_copy;
+	processed = cmdline_copy;
+
+	/* For non-menu commands set command-line mode configuration before calling
+	 * is_out_of_arg() and get_cmd_args_type() function, which calls functions of
+	 * the cmds module of the engine that use context. */
+	if(!for_menu)
+	{
+		init_cmds(1, &cmds_conf);
+	}
+
+	cmdline = skip_to_cmd_name(cmdline);
+	args_kind = get_cmd_args_type(cmdline);
 
 	/* Throughout the following loop local variables have the following meaning:
 	 * - save_msg  -- resultant state of message indication;
 	 * - raw       -- not yet processed part of string that can contain \;
 	 * - processed -- ready to consume part of string;
-	 * - cmd       -- points to the start of the last command. */
-	while(*cmd != '\0')
+	 * - cmdline   -- points to the start of the last command. */
+	while(*cmdline != '\0')
 	{
-		if(*raw == '\\')
+		if(args_kind == CAT_REGULAR && *raw == '\\')
 		{
 			if(*(raw + 1) == '|')
 			{
@@ -1274,11 +1315,8 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				*processed++ = *raw++;
 			}
 		}
-		else if((*raw == '|' && is_out_of_arg(cmd, processed)) || *raw == '\0')
+		else if((*raw == '|' && is_out_of_arg(cmdline, processed)) || *raw == '\0')
 		{
-			CmdArgsType args_kind;
-			int ret;
-
 			if(*raw != '\0')
 			{
 				++raw;
@@ -1287,17 +1325,6 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 			{
 				*processed = '\0';
 			}
-
-			cmd = skip_to_cmd_name(cmd);
-
-			/* For non-menu commands set command-line mode configuration before
-			 * calling get_cmd_args_type() function, which calls functions of the cmds
-			 * module of the engine that use context. */
-			if(type != CIT_MENU_COMMAND)
-			{
-				init_cmds(1, &cmds_conf);
-			}
-			args_kind = get_cmd_args_type(cmd);
 
 			/* Don't break line for whole line commands. */
 			if(args_kind != CAT_UNTIL_THE_END)
@@ -1318,11 +1345,7 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				processed = raw;
 			}
 
-			ret = exec_command(cmd, view, type);
-			if(ret != 0)
-			{
-				save_msg = (ret < 0) ? -1 : 1;
-			}
+			len = add_to_string_array(&cmds, len, 1, cmdline);
 
 			if(args_kind == CAT_UNTIL_THE_END)
 			{
@@ -1331,7 +1354,8 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				break;
 			}
 
-			cmd = processed;
+			cmdline = skip_to_cmd_name(processed);
+			args_kind = get_cmd_args_type(cmdline);
 		}
 		else
 		{
@@ -1339,7 +1363,9 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 		}
 	}
 
-	return save_msg;
+finish:
+	(void)add_to_string_array(&cmds, len, 1, NULL);
+	return cmds;
 }
 
 /* Checks whether character at given position in the given command-line is
