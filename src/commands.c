@@ -1241,7 +1241,7 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 {
 	char cmd_copy[strlen(cmd) + 1];
 	int save_msg = 0;
-	char *p, *q;
+	char *raw, *processed;
 
 	if(*cmd == '\0')
 	{
@@ -1251,35 +1251,41 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 	strcpy(cmd_copy, cmd);
 	cmd = cmd_copy;
 
-	p = cmd_copy;
-	q = cmd_copy;
+	raw = cmd_copy;
+	processed = cmd_copy;
+
+	/* Throughout the following loop local variables have the following meaning:
+	 * - save_msg  -- resultant state of message indication;
+	 * - raw       -- not yet processed part of string that can contain \;
+	 * - processed -- ready to consume part of string;
+	 * - cmd       -- points to the start of the last command. */
 	while(*cmd != '\0')
 	{
-		if(*p == '\\')
+		if(*raw == '\\')
 		{
-			if(*(p + 1) == '|')
+			if(*(raw + 1) == '|')
 			{
-				*q++ = '|';
-				p += 2;
+				*processed++ = '|';
+				raw += 2;
 			}
 			else
 			{
-				*q++ = *p++;
-				*q++ = *p++;
+				*processed++ = *raw++;
+				*processed++ = *raw++;
 			}
 		}
-		else if((*p == '|' && is_out_of_arg(cmd, q)) || *p == '\0')
+		else if((*raw == '|' && is_out_of_arg(cmd, processed)) || *raw == '\0')
 		{
 			CmdArgsType args_kind;
 			int ret;
 
-			if(*p != '\0')
+			if(*raw != '\0')
 			{
-				++p;
+				++raw;
 			}
 			else
 			{
-				*q = '\0';
+				*processed = '\0';
 			}
 
 			cmd = skip_to_cmd_name(cmd);
@@ -1300,15 +1306,16 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				{
 					/* Move breaking point forward by consuming parts of the string after
 					 * || until end of the string or | is found. */
-					while(q[0] == '|' && q[1] == '|' && q[2] != '|')
+					while(processed[0] == '|' && processed[1] == '|' &&
+							processed[2] != '|')
 					{
-						q = until_first(q + 2, '|');
-						p = (q[0] == '\0') ? q : (q + 1);
+						processed = until_first(processed + 2, '|');
+						raw = (processed[0] == '\0') ? processed : (processed + 1);
 					}
 				}
 
-				*q = '\0';
-				q = p;
+				*processed = '\0';
+				processed = raw;
 			}
 
 			ret = exec_command(cmd, view, type);
@@ -1324,11 +1331,11 @@ exec_commands(const char cmd[], FileView *view, CmdInputType type)
 				break;
 			}
 
-			cmd = q;
+			cmd = processed;
 		}
 		else
 		{
-			*q++ = *p++;
+			*processed++ = *raw++;
 		}
 	}
 
