@@ -33,10 +33,11 @@
 #include <unistd.h>
 
 #include <ctype.h> /* isalnum() isalpha() */
+#include <errno.h> /* errno */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strdup() strchr() strlen() strpbrk() */
+#include <string.h> /* strdup() strchr() strlen() strpbrk() strtol() */
 #include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
@@ -57,10 +58,9 @@
 #include "str.h"
 
 #ifdef _WIN32
-
 static void unquote(char quoted[]);
-
 #endif
+static int is_line_spec(const char str[]);
 
 int
 vifm_system(char command[])
@@ -593,7 +593,6 @@ parse_file_spec(const char spec[], int *line_num)
 {
 	char *path_buf;
 	const char *colon;
-	int colon_lookup_offset = 0;
 	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
 
 	path_buf = malloc(bufs_len);
@@ -612,13 +611,26 @@ parse_file_spec(const char spec[], int *line_num)
 	}
 
 #ifdef _WIN32
-	if(is_path_absolute(spec))
+	colon = strchr(spec + (is_path_absolute(spec) ? 2 : 0), ':');
+#else
+	colon = strchr(spec, ':');
+	while(colon != NULL)
 	{
-		colon_lookup_offset = 2;
+		if(is_line_spec(colon + 1))
+		{
+			char path[bufs_len];
+			strcpy(path, path_buf);
+			strncat(path, spec, colon - spec);
+			if(path_exists(path, NODEREF))
+			{
+				break;
+			}
+		}
+
+		colon = strchr(colon + 1, ':');
 	}
 #endif
 
-	colon = strchr(spec + colon_lookup_offset, ':');
 	if(colon != NULL)
 	{
 		strncat(path_buf, spec, colon - spec);
@@ -628,6 +640,11 @@ parse_file_spec(const char spec[], int *line_num)
 	{
 		strcat(path_buf, spec);
 		*line_num = 1;
+
+		while(!path_exists(path_buf, NODEREF) && strchr(path_buf, ':') != NULL)
+		{
+			break_at(path_buf, ':');
+		}
 	}
 
 	chomp(path_buf);
@@ -637,6 +654,17 @@ parse_file_spec(const char spec[], int *line_num)
 #endif
 
 	return replace_tilde(path_buf);
+}
+
+/* Checks whether str points to a valid line number.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_line_spec(const char str[])
+{
+	char *endptr;
+	errno = 0;
+	(void)strtol(str, &endptr, 10);
+	return (endptr != str && errno == 0 && *endptr == ':');
 }
 
 int

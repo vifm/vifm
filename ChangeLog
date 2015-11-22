@@ -361,6 +361,9 @@
 	Fixed inconsistency in processing | escapes for whole line commands (e.g.
 	for :!).
 
+	Fixed incorrect treating of files with colons in their names for menus and
+	custom views.  Thanks to aleksejrs.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
