@@ -169,7 +169,8 @@ define suite_template
 $1.src := $$(sort $$(wildcard $1/*.c))
 $1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)/%.o)
 $1.bin := $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
-$1.fixtures := $$(subst /,.,$$(patsubst %.c,%,$$($1.src)))
+$1.fixtures := $$(subst /,.,\
+                        $$(patsubst %.c,%,$$(filter-out %/suite.c,$$($1.src))))
 
 deps += $$($1.obj:.o=.d)
 
