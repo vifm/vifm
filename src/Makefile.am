@@ -173,6 +173,7 @@ vifm_SOURCES = \
 	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
