@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 26 November, 2015
+Updated: 27 November, 2015
 Version: 0.8
 
 Brief Description
@@ -198,8 +198,9 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
-    |  |-- commands.c - handles command line commands
+    |  |-- commands.c - handlers for command line commands
     |  |-- commands_completion.c - handles command line completion
+    |  |-- commands_core.c - command line parsing
     |  |-- event_loop.c - event dispatching loop
     |  |-- dir_stack.c - for :pushd and :popd commands
     |  |-- filelist.c - fill/update list of files

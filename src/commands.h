@@ -22,10 +22,41 @@
 
 #include <stddef.h> /* size_t */
 
+#include "engine/cmds.h"
 #include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/test_helpers.h"
 #include "status.h"
+
+/* Commands without completion, but for which we need to have an id. */
+enum
+{
+	COM_FILTER = NO_COMPLETION_BOUNDARY,
+	COM_SUBSTITUTE,
+	COM_TR,
+	COM_ELSE_STMT,
+	COM_ENDIF_STMT,
+	COM_CMAP,
+	COM_CNOREMAP,
+	COM_COMMAND,
+	COM_FILETYPE,
+	COM_FILEVIEWER,
+	COM_FILEXTYPE,
+	COM_MAP,
+	COM_MMAP,
+	COM_MNOREMAP,
+	COM_NMAP,
+	COM_NNOREMAP,
+	COM_NORMAL,
+	COM_QMAP,
+	COM_QNOREMAP,
+	COM_VMAP,
+	COM_VNOREMAP,
+	COM_NOREMAP,
+};
+
+/* Command scope marker. */
+#define SCOPE_GUARD INT_MIN
 
 /* Kinds of command-line alike input. */
 typedef enum
@@ -115,6 +146,12 @@ char * commands_escape_for_insertion(const char cmd_line[], int pos,
  * cmd.  Returns where current position in the command line is. */
 CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
 
+/* Evaluates a set of expressions and concatenates results with a space.  args
+ * can not be empty string.  Returns pointer to newly allocated string, which
+ * should be freed by caller, or NULL on error.  stop_ptr will point to the
+ * beginning of invalid expression in case of error. */
+char * eval_arglist(const char args[], const char **stop_ptr);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif
@@ -122,7 +159,6 @@ TSTATIC_DEFS(
 	char ** break_cmdline(const char cmdline[], int for_menu);
 	int line_pos(const char begin[], const char end[], char sep, int regexp);
 	void select_range(int id, const cmd_info_t *cmd_info);
-	char * eval_arglist(const char args[], const char **stop_ptr);
 )
 
 #endif /* VIFM__COMMANDS_H__ */
