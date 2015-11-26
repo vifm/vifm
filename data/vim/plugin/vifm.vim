@@ -57,41 +57,6 @@ if !exists('g:vifm_term')
 	endif
 endif
 
-if !exists('g:vifm_home') && has('win32')
-	if filereadable(g:vifm_exec) || filereadable(g:vifm_exec.'.exe')
-		let g:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
-	else
-		let g:vifm_home = $PATH
-		let g:vifm_home = substitute(g:vifm_home, ';', ',', 'g').',.'
-		let s:lst_str = globpath(g:vifm_home, g:vifm_exec, 1)
-		let s:lst = split(s:lst_str, '\n')
-		if empty(s:lst)
-			let s:lst_str = globpath(g:vifm_home, g:vifm_exec.'.exe', 1)
-			let s:lst = split(s:lst_str, '\n')
-		endif
-		if empty(s:lst)
-			finish
-		endif
-		let g:vifm_home = s:lst[0]
-		unlet s:lst_str
-		unlet s:lst
-	endif
-	if !filereadable(g:vifm_home.'/vifmrc')
-		unlet g:vifm_home
-	endif
-endif
-
-if !exists('g:vifm_home')
-	if exists('$HOME') && isdirectory($HOME .'/.vifm/')
-		let g:vifm_home = $HOME."/.vifm"
-	elseif exists('$APPDATA') && isdirectory($APPDATA.'/Vifm/')
-		let g:vifm_home = $APPDATA."/Vifm"
-	else
-		echohl WarningMsg | echo 'Impossible to find your vifm configuration directory. Launch vifm one time and try again.' | echohl None
-		finish
-	endif
-endif
-
 function! s:StartVifm(editcmd, ...)
 	if a:0 > 2
 		echohl WarningMsg | echo 'Too many arguments' | echohl None
