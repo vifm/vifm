@@ -27,8 +27,8 @@ cfg := $(addprefix cfg/, $(cfg))
 compat := curses.c getopt.c getopt1.c os.c reallocarray.c wcwidth.c
 compat := $(addprefix compat/, $(compat))
 
-engine := abbrevs.c cmds.c functions.c completion.c keys.c mode.c options.c \
-          parsing.c text_buffer.c var.c variables.c
+engine := abbrevs.c autocmds.c cmds.c functions.c completion.c keys.c mode.c \
+          options.c parsing.c text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
 int := file_magic.c fuse.c path_env.c term_title.c vim.c

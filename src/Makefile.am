@@ -90,6 +90,7 @@ vifm_SOURCES = \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \
+	engine/autocmds.c engine/autocmds.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
