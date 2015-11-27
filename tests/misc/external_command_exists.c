@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/commands_completion.h"
+#include "../../src/cmd_completion.h"
 
 TEST(system_shell_exists)
 {

@@ -198,9 +198,9 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bmarks.c - management of (named) bookmarks
     |  |-- bracket_notation.c - list of bracket notation entries
-    |  |-- commands.c - handlers for command line commands
-    |  |-- commands_completion.c - handles command line completion
-    |  |-- commands_core.c - command line parsing
+    |  |-- cmd_completion.c - handles command line completion
+    |  |-- cmd_core.c - command line parsing
+    |  |-- cmd_handlers.c - handlers for command line commands
     |  |-- event_loop.c - event dispatching loop
     |  |-- dir_stack.c - for :pushd and :popd commands
     |  |-- filelist.c - fill/update list of files

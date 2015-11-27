@@ -17,11 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "commands.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#include "cmd_core.h"
 
 #include <curses.h>
 
@@ -68,9 +64,8 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "bracket_notation.h"
-#include "commands_completion.h"
-#include "commands_core.h"
-#include "commands_handlers.h"
+#include "cmd_completion.h"
+#include "cmd_handlers.h"
 #include "filelist.h"
 #include "filtering.h"
 #include "macros.h"

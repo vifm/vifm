@@ -11,7 +11,7 @@
 #include "../../src/utils/env.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"

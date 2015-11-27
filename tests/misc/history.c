@@ -5,7 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 
 #define INITIAL_SIZE 10

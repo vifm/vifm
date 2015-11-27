@@ -7,7 +7,7 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);

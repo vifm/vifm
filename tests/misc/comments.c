@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 TEST(test_whole_line_comments)
 {

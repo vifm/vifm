@@ -5,7 +5,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 SETUP()
 {

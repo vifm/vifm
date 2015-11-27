@@ -5,7 +5,7 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 static void setup_lwin(void);
 static void setup_rwin(void);

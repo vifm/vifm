@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "commands_completion.h"
+#include "cmd_completion.h"
 
 #ifdef _WIN32
 #define REQUIRED_WINVER 0x0500 /* To get GetFileSizeEx() function. */
@@ -64,7 +64,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "bmarks.h"
-#include "commands.h"
+#include "cmd_core.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "tags.h"

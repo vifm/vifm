@@ -204,9 +204,9 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	commands.c commands.h \
-	commands_core.c \
-	commands_completion.c commands_completion.h \
+	cmd_handlers.c cmd_handlers.h \
+	cmd_core.c cmd_core.h \
+	cmd_completion.c cmd_completion.h \
 	dir_stack.c dir_stack.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \

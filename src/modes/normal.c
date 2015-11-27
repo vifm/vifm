@@ -48,7 +48,7 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "../commands.h"
+#include "../cmd_core.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filtering.h"

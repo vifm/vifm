@@ -135,8 +135,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	commands.$(OBJEXT) commands_core.$(OBJEXT) \
-	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
 	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
@@ -502,9 +502,9 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	commands.c commands.h \
-	commands_core.c \
-	commands_completion.c commands_completion.h \
+	cmd_handlers.c cmd_handlers.h \
+	cmd_core.c cmd_core.h \
+	cmd_completion.c cmd_completion.h \
 	dir_stack.c dir_stack.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
@@ -1041,9 +1041,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_loop.Po@am__quote@

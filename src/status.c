@@ -45,7 +45,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
-#include "commands_completion.h"
+#include "cmd_completion.h"
 #include "filelist.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can

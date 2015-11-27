@@ -37,7 +37,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
-#include "../commands.h"
+#include "../cmd_core.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filtering.h"

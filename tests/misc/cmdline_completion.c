@@ -20,7 +20,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/bmarks.h"
 #include "../../src/builtin_functions.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 #if defined(__CYGWIN__) || defined(_WIN32)
 #define SUFFIX ".exe"

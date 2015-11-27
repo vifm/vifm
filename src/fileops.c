@@ -65,7 +65,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "commands_completion.h"
+#include "cmd_completion.h"
 #include "filelist.h"
 #include "ops.h"
 #include "registers.h"

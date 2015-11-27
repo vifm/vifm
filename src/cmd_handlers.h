@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__COMMANDS_HANDLERS_H__
-#define VIFM__COMMANDS_HANDLERS_H__
+#ifndef VIFM__CMD_HANDLERS_H__
+#define VIFM__CMD_HANDLERS_H__
 
 #include <stddef.h> /* size_t */
 
@@ -55,7 +55,7 @@ extern const cmd_add_t cmds_list[];
 /* Number of elements in cmds_list. */
 extern const size_t cmds_list_size;
 
-#endif /* VIFM__COMMANDS_HANDLERS_H__ */
+#endif /* VIFM__CMD_HANDLERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
