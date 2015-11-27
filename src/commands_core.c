@@ -31,7 +31,6 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
-#include <limits.h> /* INT_MIN */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -70,12 +69,17 @@
 #include "utils/utils.h"
 #include "bracket_notation.h"
 #include "commands_completion.h"
+#include "commands_core.h"
+#include "commands_handlers.h"
 #include "filelist.h"
 #include "filtering.h"
 #include "macros.h"
 #include "marks.h"
 #include "opt_handlers.h"
 #include "undo.h"
+
+/* Command scope marker. */
+#define SCOPE_GUARD INT_MIN
 
 /* Type of command arguments. */
 typedef enum
@@ -112,9 +116,6 @@ static int repeat_command(FileView *view, CmdInputType type);
 static int is_at_scope_bottom(const int_stack_t *scope_stack);
 TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 
-extern const cmd_add_t cmds_list[];
-extern const size_t cmds_list_size;
-
 /* Settings for the cmds unit. */
 static cmds_conf_t cmds_conf = {
 	.complete_args = &complete_args,
@@ -129,10 +130,10 @@ static cmds_conf_t cmds_conf = {
 
 /* Shows whether view selection should be preserved on command-line finishing.
  * By default it's reset. */
-int keep_view_selection;
+static int keep_view_selection;
 /* Stores condition evaluation result for all nesting if-endif statements as
  * well as file scope marks (SCOPE_GUARD). */
-extern int_stack_t if_levels;
+static int_stack_t if_levels;
 
 static int
 swap_range(void)
@@ -435,7 +436,8 @@ skip_at_beginning(int id, const char args[])
 	{
 		return 0;
 	}
-	else if(id == COM_WINRUN)
+
+	if(id == COM_WINRUN)
 	{
 		args = vle_cmds_at_arg(args);
 		if(*args != '\0')
@@ -1129,6 +1131,37 @@ commands_scope_finish(void)
 	return 0;
 }
 
+void
+cmds_scoped_if(int cond)
+{
+	(void)int_stack_push(&if_levels, cond);
+}
+
+int
+cmds_scoped_else(void)
+{
+	if(is_at_scope_bottom(&if_levels))
+	{
+		return 1;
+	}
+
+	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
+	cmds_preserve_selection();
+	return 0;
+}
+
+int
+cmds_scoped_endif(void)
+{
+	if(is_at_scope_bottom(&if_levels))
+	{
+		return 1;
+	}
+
+	int_stack_pop(&if_levels);
+	return 0;
+}
+
 /* Checks that bottom of block scope is reached.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
@@ -1192,6 +1225,12 @@ eval_arglist(const char args[], const char **stop_ptr)
 		*stop_ptr = args;
 		return NULL;
 	}
+}
+
+void
+cmds_preserve_selection(void)
+{
+	keep_view_selection = 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

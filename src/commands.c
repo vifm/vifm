@@ -31,7 +31,6 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <limits.h> /* INT_MIN */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -84,6 +83,8 @@
 #include "bmarks.h"
 #include "bracket_notation.h"
 #include "commands_completion.h"
+#include "commands_core.h"
+#include "commands_handlers.h"
 #include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
@@ -142,7 +143,6 @@ static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
-static int is_at_scope_bottom(const int_stack_t *scope_stack);
 static int exe_cmd(const cmd_info_t *cmd_info);
 static char * try_eval_arglist(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
@@ -508,13 +508,6 @@ const cmd_add_t cmds_list[] = {
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 };
 const size_t cmds_list_size = ARRAY_LEN(cmds_list);
-
-/* Shows whether view selection should be preserved on command-line finishing.
- * By default it's reset. */
-extern int keep_view_selection;
-/* Stores condition evaluation result for all nesting if-endif statements as
- * well as file scope marks (SCOPE_GUARD). */
-int_stack_t if_levels;
 
 static void
 select_count(const cmd_info_t *cmd_info, int count)
@@ -929,7 +922,7 @@ static int
 change_cmd(const cmd_info_t *cmd_info)
 {
 	enter_change_mode(curr_view);
-	keep_view_selection = 1;
+	cmds_preserve_selection();
 	return 0;
 }
 
@@ -945,7 +938,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 0)
 	{
 		enter_attr_mode(curr_view);
-		keep_view_selection = 1;
+		cmds_preserve_selection();
 		return 0;
 	}
 
@@ -1429,13 +1422,11 @@ edit_cmd(const cmd_info_t *cmd_info)
 static int
 else_cmd(const cmd_info_t *cmd_info)
 {
-	if(is_at_scope_bottom(&if_levels))
+	if(cmds_scoped_else() != 0)
 	{
 		status_bar_error(":else without :if");
 		return CMDS_ERR_CUSTOM;
 	}
-	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
-	keep_view_selection = 1;
 	return 0;
 }
 
@@ -1451,22 +1442,12 @@ empty_cmd(const cmd_info_t *cmd_info)
 static int
 endif_cmd(const cmd_info_t *cmd_info)
 {
-	if(is_at_scope_bottom(&if_levels))
+	if(cmds_scoped_endif() != 0)
 	{
 		status_bar_error(":endif without :if");
 		return CMDS_ERR_CUSTOM;
 	}
-	int_stack_pop(&if_levels);
 	return 0;
-}
-
-/* Checks that bottom of block scope is reached.  Returns non-zero if so,
- * otherwise zero is returned. */
-static int
-is_at_scope_bottom(const int_stack_t *scope_stack)
-{
-	return int_stack_is_empty(scope_stack)
-	    || int_stack_top_is(scope_stack, SCOPE_GUARD);
 }
 
 /* This command composes a string from expressions and runs it as a command. */
@@ -1515,7 +1496,7 @@ file_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
-		keep_view_selection = 1;
+		cmds_preserve_selection();
 		return show_file_menu(curr_view, cmd_info->bg) != 0;
 	}
 
@@ -2293,9 +2274,9 @@ if_cmd(const cmd_info_t *cmd_info)
 		status_bar_error(vle_tb_get_data(vle_err));
 		return CMDS_ERR_CUSTOM;
 	}
-	(void)int_stack_push(&if_levels, var_to_boolean(condition));
+	cmds_scoped_if(var_to_boolean(condition));
 	var_free(condition);
-	keep_view_selection = 1;
+	cmds_preserve_selection();
 	return 0;
 }
 
@@ -2359,7 +2340,7 @@ invert_state(char state_type)
 	{
 		invert_selection(curr_view);
 		redraw_view(curr_view);
-		keep_view_selection = 1;
+		cmds_preserve_selection();
 	}
 	else if(state_type == 'o')
 	{
@@ -2983,7 +2964,7 @@ static int
 sort_cmd(const cmd_info_t *cmd_info)
 {
 	enter_sort_mode(curr_view);
-	keep_view_selection = 1;
+	cmds_preserve_selection();
 	return 0;
 }
 
@@ -3767,15 +3748,15 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(expanded_com[0] == '/')
 	{
 		exec_command(expanded_com + 1, curr_view, CIT_FSEARCH_PATTERN);
+		cmds_preserve_selection();
 		external = 0;
-		keep_view_selection = 1;
 	}
 	else if(expanded_com[0] == '=')
 	{
 		exec_command(expanded_com + 1, curr_view, CIT_FILTER_PATTERN);
 		ui_view_schedule_reload(curr_view);
+		cmds_preserve_selection();
 		external = 0;
-		keep_view_selection = 1;
 	}
 	else if(bg)
 	{
