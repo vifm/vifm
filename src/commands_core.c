@@ -967,13 +967,9 @@ get_cmd_args_type(const char cmd[])
 		case COM_WINDO:
 		case COM_WINRUN:
 			return CAT_UNTIL_THE_END;
-		case COM_ECHO:
-		case COM_EXE:
-		case COM_IF_STMT:
-			return CAT_EXPR;
 
 		default:
-			return CAT_REGULAR;
+			return command_accepts_expr(cmd_id) ? CAT_EXPR : CAT_REGULAR;
 	}
 }
 
