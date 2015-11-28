@@ -111,6 +111,7 @@ vle_aucmd_remove_all(void)
 static void
 free_autocmd_data(aucmd_info_t *autocmd)
 {
+	free(autocmd->event);
 	free(autocmd->pattern);
 	free(autocmd->action);
 }
