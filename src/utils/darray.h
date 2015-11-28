@@ -21,7 +21,8 @@
 
 /* Simple macros that wrap common operations on dynamic arrays. */
 
-#include <stddef.h> /* size_t */
+#include <assert.h> /* assert() */
+#include <stddef.h> /* ptrdiff_t size_t */
 #include <stdlib.h> /* free() */
 
 #include "../compat/reallocarray.h"
@@ -62,19 +63,23 @@
  *   } */
 #define DA_COMMIT(a) do { ++a##_count__; } while(0)
 
-/* Calls the release function on each element of the array and then frees the
- * array. */
-#define DA_FREE_ALL(da, release) \
+/* Removes item specified by pointer. */
+#define DA_REMOVE(da, item) \
 	do \
 	{ \
+		const typeof(da) it = item; \
 		size_t i; \
-		for(i = 0U; i < da##_count__; ++i) \
+		assert(it >= da && "Wrong item pointer."); \
+		assert(it - da < (ptrdiff_t)da##_count__ && "Wrong item pointer."); \
+		for(i = it - da + 1U; i < da##_count__; ++i) \
 		{ \
-			(release)(&da[i]); \
+			da[i - 1] = da[i]; \
 		} \
-		free(da); \
-		da = NULL; \
-		da##_count__ = 0U; \
+		if(--da##_count__ == 0) \
+		{ \
+			free(da); \
+			da = NULL; \
+		} \
 	} \
 	while(0)
 

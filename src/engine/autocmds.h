@@ -39,13 +39,14 @@ int vle_aucmd_on_execute(const char event[], const char pattern[],
 /* Fires actions for the event for which pattern matches path. */
 void vle_aucmd_execute(const char event[], const char path[]);
 
+/* Removes selected autocommands.  NULL event means "all events".  NULL pattern
+ * means "all patterns". */
+void vle_aucmd_remove(const char event[], const char pattern[]);
+
 /* Enumerates currently registered autocommand actions.  NULL event means
  * "all events".  NULL pattern means "all patterns". */
 void vle_aucmd_list(const char event[], const char pattern[],
 		vle_aucmd_list_cb cb);
-
-/* Removes all currently registered autocommands. */
-void vle_aucmd_remove_all(void);
 
 #endif /* VIFM__ENGINE__AUTOCMDS_H__ */
 

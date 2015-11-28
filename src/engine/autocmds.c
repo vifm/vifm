@@ -83,6 +83,35 @@ vle_aucmd_execute(const char event[], const char path[])
 }
 
 void
+vle_aucmd_remove(const char event[], const char pattern[])
+{
+	int i;
+	for(i = (int)DA_SIZE(autocmds) - 1; i >= 0; --i)
+	{
+		if(event != NULL && strcasecmp(event, autocmds[i].event) != 0)
+		{
+			continue;
+		}
+		if(pattern != NULL && stroscmp(pattern, autocmds[i].pattern) != 0)
+		{
+			continue;
+		}
+
+		free_autocmd_data(&autocmds[i]);
+		DA_REMOVE(autocmds, &autocmds[i]);
+	}
+}
+
+/* Frees data allocated for the autocommand. */
+static void
+free_autocmd_data(aucmd_info_t *autocmd)
+{
+	free(autocmd->event);
+	free(autocmd->pattern);
+	free(autocmd->action);
+}
+
+void
 vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb)
 {
 	size_t i;
@@ -99,21 +128,6 @@ vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb)
 
 		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action);
 	}
-}
-
-void
-vle_aucmd_remove_all(void)
-{
-	DA_FREE_ALL(autocmds, &free_autocmd_data);
-}
-
-/* Frees data allocated for the autocommand. */
-static void
-free_autocmd_data(aucmd_info_t *autocmd)
-{
-	free(autocmd->event);
-	free(autocmd->pattern);
-	free(autocmd->action);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
