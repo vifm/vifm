@@ -42,6 +42,7 @@
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/abbrevs.h"
+#include "engine/autocmds.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
@@ -99,6 +100,8 @@ static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
+static int autocmd_cmd(const cmd_info_t *cmd_info);
+static void aucmd_action_handler(const char action[]);
 static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
 static int bmgo_cmd(const cmd_info_t *cmd_info);
@@ -273,6 +276,8 @@ const cmd_add_t cmds_list[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "autocmd",          .abbr = "au",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = autocmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmarks",           .abbr = NULL,    .emark = 0,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -638,6 +643,80 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	}
 
 	return show_apropos_menu(curr_view, last_args) != 0;
+}
+
+/* Skips consecutive non-whitespace characters.  Returns pointer to the next
+ * character in the str. */
+static char *
+skip_non_whitespace(const char str[])
+{
+	while(!isspace(*str) && *str != '\0')
+	{
+		++str;
+	}
+	return (char *)str;
+}
+
+/* Adds/removes autocommands. */
+static int
+autocmd_cmd(const cmd_info_t *cmd_info)
+{
+	const char *event = NULL;
+	const char *pattern = NULL;
+
+	if(!cmd_info->emark && cmd_info->argc < 3)
+	{
+		return CMDS_ERR_TOO_FEW_ARGS;
+	}
+	if(cmd_info->emark && cmd_info->argc > 2)
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+
+	if(!cmd_info->emark)
+	{
+		const char *action = skip_whitespace(skip_non_whitespace(cmd_info->args));
+		if(*action == '\'' || *action == '"')
+		{
+			char discard[strlen(cmd_info->args) + 1];
+			action = extract_part(action + 1, *action, discard);
+		}
+		else
+		{
+			action = skip_whitespace(skip_non_whitespace(action));
+		}
+
+		if(vle_aucmd_on_execute(cmd_info->argv[0], cmd_info->argv[1], action,
+					&aucmd_action_handler) != 0)
+		{
+			status_bar_error("Failed to register autocommand");
+			return 1;
+		}
+		return 0;
+	}
+
+	if(cmd_info->argc > 0)
+	{
+		if(strcmp(cmd_info->argv[0], "*") != 0)
+		{
+			event = cmd_info->argv[0];
+		}
+		if(cmd_info->argc > 1)
+		{
+			pattern = cmd_info->argv[1];
+		}
+	}
+
+	vle_aucmd_remove(event, pattern);
+
+	return 0;
+}
+
+/* Implementation of autocommand action. */
+static void
+aucmd_action_handler(const char action[])
+{
+	(void)exec_commands(action, curr_view, CIT_COMMAND);
 }
 
 /* Marks directory with set of tags. */
