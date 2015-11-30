@@ -3625,15 +3625,9 @@ winrun(FileView *view, const char cmd[])
 {
 	const int prev_global_local_settings = curr_stats.global_local_settings;
 	int result;
-	FileView *const tmp_curr = curr_view;
-	FileView *const tmp_other = other_view;
+	FileView *tmp_curr, *tmp_other;
 
-	curr_view = view;
-	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
-	if(curr_view != tmp_curr)
-	{
-		load_view_options(curr_view);
-	}
+	ui_view_pick(view, &tmp_curr, &tmp_other);
 
 	/* :winrun and :windo should be able to set settings separately for each
 	 * window. */
@@ -3641,12 +3635,7 @@ winrun(FileView *view, const char cmd[])
 	result = exec_commands(cmd, curr_view, CIT_COMMAND);
 	curr_stats.global_local_settings = prev_global_local_settings;
 
-	curr_view = tmp_curr;
-	other_view = tmp_other;
-	if(curr_view != view)
-	{
-		load_view_options(curr_view);
-	}
+	ui_view_unpick(view, tmp_curr, tmp_other);
 
 	return result;
 }

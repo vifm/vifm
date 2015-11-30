@@ -405,6 +405,13 @@ void switch_windows(void);
 /* Swaps current and other views. */
 void switch_panes(void);
 
+/* Setups view to the the curr_view.  Saving previous state in supplied
+ * buffers.  Use ui_view_unpick() to revert the effect. */
+void ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other);
+
+/* Restores what has been done by ui_view_pick(). */
+void ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other);
+
 /* Switches to other pane, ignoring state of the preview and entering view mode
  * in case the other pane has explore mode active. */
 void go_to_other_pane(void);

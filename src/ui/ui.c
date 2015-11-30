@@ -1134,6 +1134,31 @@ switch_panes(void)
 	try_activate_view_mode();
 }
 
+void
+ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other)
+{
+	*old_curr = curr_view;
+	*old_other = other_view;
+
+	curr_view = view;
+	other_view = (view == *old_curr) ? *old_other : *old_curr;
+	if(curr_view != *old_curr)
+	{
+		load_view_options(curr_view);
+	}
+}
+
+void
+ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other)
+{
+	curr_view = old_curr;
+	other_view = old_other;
+	if(curr_view != view)
+	{
+		load_view_options(curr_view);
+	}
+}
+
 /* Switches panes content. */
 static void
 switch_panes_content(void)
