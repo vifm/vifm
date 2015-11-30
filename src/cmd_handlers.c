@@ -716,7 +716,8 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 static void
 aucmd_action_handler(const char action[], void *arg)
 {
-	(void)exec_commands(action, curr_view, CIT_COMMAND);
+	FileView *view = arg;
+	(void)exec_commands(action, view, CIT_COMMAND);
 }
 
 /* Marks directory with set of tags. */
