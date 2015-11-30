@@ -69,7 +69,7 @@ vle_aucmd_on_execute(const char event[], const char pattern[],
 }
 
 void
-vle_aucmd_execute(const char event[], const char path[])
+vle_aucmd_execute(const char event[], const char path[], void *arg)
 {
 	size_t i;
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
@@ -77,7 +77,7 @@ vle_aucmd_execute(const char event[], const char path[])
 		if(strcasecmp(event, autocmds[i].event) == 0 &&
 				stroscmp(path, autocmds[i].pattern) == 0)
 		{
-			autocmds[i].handler(autocmds[i].action);
+			autocmds[i].handler(autocmds[i].action, arg);
 		}
 	}
 }

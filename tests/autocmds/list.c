@@ -4,7 +4,7 @@
 
 #include "../../src/engine/autocmds.h"
 
-static void dummy_handler(const char action[]);
+static void dummy_handler(const char action[], void *arg);
 static void list_handler(const char event[], const char pattern[],
 		const char action[]);
 
@@ -43,7 +43,7 @@ TEST(particular_pattern_is_listed)
 }
 
 static void
-dummy_handler(const char a[])
+dummy_handler(const char a[], void *arg)
 {
 }
 

@@ -101,7 +101,7 @@ static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int autocmd_cmd(const cmd_info_t *cmd_info);
-static void aucmd_action_handler(const char action[]);
+static void aucmd_action_handler(const char action[], void *arg);
 static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
 static int bmgo_cmd(const cmd_info_t *cmd_info);
@@ -714,7 +714,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 
 /* Implementation of autocommand action. */
 static void
-aucmd_action_handler(const char action[])
+aucmd_action_handler(const char action[], void *arg)
 {
 	(void)exec_commands(action, curr_view, CIT_COMMAND);
 }

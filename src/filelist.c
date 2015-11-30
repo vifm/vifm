@@ -1134,7 +1134,7 @@ change_directory(FileView *view, const char directory[])
 		{
 			reset_local_options(view);
 		}
-		vle_aucmd_execute("DirEnter", dir_dup);
+		vle_aucmd_execute("DirEnter", view->curr_dir, NULL);
 	}
 
 	return 0;

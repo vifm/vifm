@@ -23,7 +23,7 @@
  * and pattern that is used for matches with paths. */
 
 /* Type of autocommand handler function. */
-typedef void (*vle_aucmd_handler)(const char action[]);
+typedef void (*vle_aucmd_handler)(const char action[], void *arg);
 
 /* Type of callback function for autocommand enumeration via
  * vle_aucmd_list(). */
@@ -37,7 +37,7 @@ int vle_aucmd_on_execute(const char event[], const char pattern[],
 		const char action[], vle_aucmd_handler handler);
 
 /* Fires actions for the event for which pattern matches path. */
-void vle_aucmd_execute(const char event[], const char path[]);
+void vle_aucmd_execute(const char event[], const char path[], void *arg);
 
 /* Removes selected autocommands.  NULL event means "all events".  NULL pattern
  * means "all patterns". */
