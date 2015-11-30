@@ -273,6 +273,9 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
+	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
+	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
+
 	event_loop(&quit);
 
 	return 0;
@@ -535,6 +538,9 @@ vifm_restart(void)
 	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
+
+	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
+	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
 
 	update_screen(UT_REDRAW);
 }
