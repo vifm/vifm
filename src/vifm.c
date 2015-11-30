@@ -37,6 +37,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "engine/autocmds.h"
 #include "compat/fs_limits.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
@@ -460,6 +461,9 @@ vifm_restart(void)
 
 	/* User defined commands. */
 	execute_cmd("comclear");
+
+	/* Autocommands. */
+	vle_aucmd_remove(NULL, NULL);
 
 	/* Directory histories. */
 	ui_view_clear_history(&lwin);
