@@ -28,7 +28,7 @@ typedef void (*vle_aucmd_handler)(const char action[], void *arg);
 /* Type of callback function for autocommand enumeration via
  * vle_aucmd_list(). */
 typedef void (*vle_aucmd_list_cb)(const char event[], const char pattern[],
-		const char action[]);
+		const char action[], void *arg);
 
 /* Registers action handler for a particular combination of event and path
  * pattern.  Event name is case insensitive.  Returns zero on successful
@@ -46,7 +46,7 @@ void vle_aucmd_remove(const char event[], const char pattern[]);
 /* Enumerates currently registered autocommand actions.  NULL event means
  * "all events".  NULL pattern means "all patterns". */
 void vle_aucmd_list(const char event[], const char pattern[],
-		vle_aucmd_list_cb cb);
+		vle_aucmd_list_cb cb, void *arg);
 
 #endif /* VIFM__ENGINE__AUTOCMDS_H__ */
 

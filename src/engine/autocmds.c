@@ -129,7 +129,8 @@ free_autocmd_data(aucmd_info_t *autocmd)
 }
 
 void
-vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb)
+vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb,
+		void *arg)
 {
 	size_t i;
 	char canonic_path[PATH_MAX];
@@ -150,7 +151,7 @@ vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb)
 			continue;
 		}
 
-		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action);
+		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action, arg);
 	}
 }
 
