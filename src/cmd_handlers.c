@@ -645,17 +645,6 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	return show_apropos_menu(curr_view, last_args) != 0;
 }
 
-/* Skips consecutive non-whitespace characters.  Returns pointer to the next
- * character in the str. */
-static char *
-skip_non_whitespace(const char str[])
-{
-	while(!isspace(*str) && *str != '\0')
-	{
-		++str;
-	}
-	return (char *)str;
-}
 
 /* Adds/removes autocommands. */
 static int
@@ -704,16 +693,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 
 	if(!cmd_info->emark)
 	{
-		const char *action = skip_whitespace(skip_non_whitespace(cmd_info->args));
-		if(*action == '\'' || *action == '"')
-		{
-			char discard[strlen(cmd_info->args) + 1];
-			action = extract_part(action + 1, *action, discard);
-		}
-		else
-		{
-			action = skip_whitespace(skip_non_whitespace(action));
-		}
+		const char *action = &cmd_info->args[cmd_info->argvp[2][0]];
 
 		if(vle_aucmd_on_execute(event, expanded_pattern, action,
 					&aucmd_action_handler) != 0)

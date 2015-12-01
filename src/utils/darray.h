@@ -31,7 +31,7 @@
  * example:
  *   static int *array;
  *   static DA_INSTANCE(array); */
-#define DA_INSTANCE(da) size_t da##_count__
+#define DA_INSTANCE(da) size_t da##_count__ = 0U
 
 /* Obtains lvalue of array size, it's type is size_t. */
 #define DA_SIZE(da) *(&da##_count__)

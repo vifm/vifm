@@ -7,7 +7,11 @@
 static char **
 dispatch(const char cmd[], int *count, char separator, int regexp, int quotes)
 {
-	return dispatch_line(cmd, count, separator, regexp, quotes, NULL, NULL, NULL);
+	int (*argvp)[2];
+	char **const argv = dispatch_line(cmd, count, separator, regexp, quotes, NULL,
+			NULL, NULL, &argvp);
+	free(argvp);
+	return argv;
 }
 
 TEST(no_quotes)
