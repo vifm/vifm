@@ -131,5 +131,18 @@ TEST(extra_slash_is_fine)
 	assert_string_equal("1", env_get("a"));
 }
 
+TEST(envvars_are_expanded)
+{
+	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+
+	env_set("path", SANDBOX_PATH);
+	assert_success(exec_commands("autocmd DirEnter $path let $a = 1", &lwin,
+				CIT_COMMAND));
+
+	assert_string_equal("", env_get("a"));
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	assert_string_equal("1", env_get("a"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
