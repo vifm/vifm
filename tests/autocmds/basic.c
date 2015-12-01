@@ -28,6 +28,14 @@ TEST(same_path_matches)
 	assert_string_equal("action", action);
 }
 
+TEST(extra_shashes_match)
+{
+	assert_success(vle_aucmd_on_execute("cd", "/path/", "action", &handler));
+
+	vle_aucmd_execute("cd", "/path//", NULL);
+	assert_string_equal("action", action);
+}
+
 static void
 handler(const char a[], void *arg)
 {

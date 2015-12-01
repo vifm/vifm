@@ -119,5 +119,17 @@ TEST(remove_too_many_args)
 	assert_failure(exec_commands("autocmd! a b c", &lwin, CIT_COMMAND));
 }
 
+TEST(extra_slash_is_fine)
+{
+	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("auto DirEnter '" SANDBOX_PATH "/' let $a = 1",
+				&lwin, CIT_COMMAND));
+
+	assert_string_equal("", env_get("a"));
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	assert_string_equal("1", env_get("a"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

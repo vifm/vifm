@@ -22,8 +22,10 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcasecmp() strdup() */
 
+#include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../utils/darray.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 
 /* Describes single registered autocommand. */
@@ -47,14 +49,18 @@ int
 vle_aucmd_on_execute(const char event[], const char pattern[],
 		const char action[], vle_aucmd_handler handler)
 {
+	char canonic_path[PATH_MAX];
+
 	aucmd_info_t *const autocmd = DA_EXTEND(autocmds);
 	if(autocmd == NULL)
 	{
 		return 1;
 	}
 
+	canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+
 	autocmd->event = strdup(event);
-	autocmd->pattern = strdup(pattern);
+	autocmd->pattern = strdup(canonic_path);
 	autocmd->action = strdup(action);
 	autocmd->handler = handler;
 	if(autocmd->event == NULL || autocmd->pattern == NULL ||
@@ -72,10 +78,14 @@ void
 vle_aucmd_execute(const char event[], const char path[], void *arg)
 {
 	size_t i;
+	char canonic_path[PATH_MAX];
+
+	canonicalize_path(path, canonic_path, sizeof(canonic_path));
+
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
 		if(strcasecmp(event, autocmds[i].event) == 0 &&
-				stroscmp(path, autocmds[i].pattern) == 0)
+				stroscmp(canonic_path, autocmds[i].pattern) == 0)
 		{
 			autocmds[i].handler(autocmds[i].action, arg);
 		}
@@ -86,13 +96,20 @@ void
 vle_aucmd_remove(const char event[], const char pattern[])
 {
 	int i;
+	char canonic_path[PATH_MAX];
+
+	if(pattern != NULL)
+	{
+		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+	}
+
 	for(i = (int)DA_SIZE(autocmds) - 1; i >= 0; --i)
 	{
 		if(event != NULL && strcasecmp(event, autocmds[i].event) != 0)
 		{
 			continue;
 		}
-		if(pattern != NULL && stroscmp(pattern, autocmds[i].pattern) != 0)
+		if(pattern != NULL && stroscmp(canonic_path, autocmds[i].pattern) != 0)
 		{
 			continue;
 		}
@@ -115,13 +132,20 @@ void
 vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb)
 {
 	size_t i;
+	char canonic_path[PATH_MAX];
+
+	if(pattern != NULL)
+	{
+		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+	}
+
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
 		if(event != NULL && strcasecmp(event, autocmds[i].event) != 0)
 		{
 			continue;
 		}
-		if(pattern != NULL && stroscmp(pattern, autocmds[i].pattern) != 0)
+		if(pattern != NULL && stroscmp(canonic_path, autocmds[i].pattern) != 0)
 		{
 			continue;
 		}
