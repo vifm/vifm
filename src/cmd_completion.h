@@ -22,10 +22,13 @@
 
 #include <stddef.h> /* size_t */
 
-/* Identifiers for commands with completion. */
+/* Identifiers for commands with completion.  Some of them are not directly used
+ * in code, their purpose is to provide id so that completion is invoked for the
+ * command (such commands are handled in the else clause). */
 enum
 {
 	COM_ALINK,
+	COM_AUTOCMD,
 	COM_BMARKS,
 	COM_CABBR,
 	COM_CD,

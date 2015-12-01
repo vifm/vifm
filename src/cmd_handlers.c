@@ -278,7 +278,7 @@ const cmd_add_t cmds_list[] = {
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "autocmd",          .abbr = "au",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "autocmd",          .abbr = "au",    .emark = 1,  .id = COM_AUTOCMD,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = autocmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "bmark",            .abbr = NULL,    .emark = 1,  .id = COM_BMARKS,      .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = bmark_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
@@ -646,7 +646,6 @@ apropos_cmd(const cmd_info_t *cmd_info)
 
 	return show_apropos_menu(curr_view, last_args) != 0;
 }
-
 
 /* Adds/lists/removes autocommands. */
 static int

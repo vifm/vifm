@@ -482,6 +482,25 @@ TEST(bmark_path_is_completed)
 	assert_success(unlink("exec-for-completion" SUFFIX));
 }
 
+TEST(aucmd_events_are_completed)
+{
+	prepare_for_line_completion(L"autocmd ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd Dir");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd! Dir");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd! DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd DirEnter ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter " SUFFIX, stats.line);
+}
+
 static void
 create_executable(const char file[])
 {
