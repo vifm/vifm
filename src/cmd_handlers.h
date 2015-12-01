@@ -19,6 +19,9 @@
 #ifndef VIFM__CMD_HANDLERS_H__
 #define VIFM__CMD_HANDLERS_H__
 
+/* This file exports some information about command handlers that is needed by
+ * cmd_core.c and cmd_completion.c. */
+
 #include <stddef.h> /* size_t */
 
 #include "engine/cmds.h"
@@ -26,28 +29,28 @@
 /* Commands without completion, but for which we need to have an id. */
 enum
 {
-	COM_FILTER = NO_COMPLETION_BOUNDARY,
-	COM_SUBSTITUTE,
-	COM_TR,
-	COM_ELSE_STMT,
-	COM_ENDIF_STMT,
-	COM_CMAP,
+	COM_CMAP = NO_COMPLETION_BOUNDARY,
 	COM_CNOREMAP,
 	COM_COMMAND,
+	COM_ELSE_STMT,
+	COM_ENDIF_STMT,
 	COM_FILETYPE,
 	COM_FILEVIEWER,
 	COM_FILEXTYPE,
+	COM_FILTER,
 	COM_MAP,
 	COM_MMAP,
 	COM_MNOREMAP,
 	COM_NMAP,
 	COM_NNOREMAP,
+	COM_NOREMAP,
 	COM_NORMAL,
 	COM_QMAP,
 	COM_QNOREMAP,
+	COM_SUBSTITUTE,
+	COM_TR,
 	COM_VMAP,
 	COM_VNOREMAP,
-	COM_NOREMAP,
 };
 
 /* List of command handlers. */
