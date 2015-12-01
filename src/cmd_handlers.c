@@ -674,11 +674,32 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TRAILING_CHARS;
 	}
 
-	if(cmd_info->argc > 1)
+	if(cmd_info->argc > 0)
 	{
-		char *no_tilde = expand_tilde(cmd_info->argv[1]);
-		expanded_pattern = expand_envvars(no_tilde, 0);
-		free(no_tilde);
+		if(strcmp(cmd_info->argv[0], "*") != 0)
+		{
+			event = cmd_info->argv[0];
+		}
+		if(cmd_info->argc > 1)
+		{
+			char *no_tilde = expand_tilde(cmd_info->argv[1]);
+			expanded_pattern = expand_envvars(no_tilde, 0);
+			free(no_tilde);
+
+			pattern = expanded_pattern;
+		}
+	}
+
+	if(event != NULL)
+	{
+		/* Non-const for is_in_string_array_case(). */
+		char *events[] = { "DirEnter" };
+		if(!is_in_string_array_case(events, ARRAY_LEN(events), event))
+		{
+			status_bar_errorf("No such event: %s", event);
+			free(expanded_pattern);
+			return 1;
+		}
 	}
 
 	if(!cmd_info->emark)
@@ -694,7 +715,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 			action = skip_whitespace(skip_non_whitespace(action));
 		}
 
-		if(vle_aucmd_on_execute(cmd_info->argv[0], expanded_pattern, action,
+		if(vle_aucmd_on_execute(event, expanded_pattern, action,
 					&aucmd_action_handler) != 0)
 		{
 			status_bar_error("Failed to register autocommand");
@@ -703,18 +724,6 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		}
 		free(expanded_pattern);
 		return 0;
-	}
-
-	if(cmd_info->argc > 0)
-	{
-		if(strcmp(cmd_info->argv[0], "*") != 0)
-		{
-			event = cmd_info->argv[0];
-		}
-		if(cmd_info->argc > 1)
-		{
-			pattern = expanded_pattern;
-		}
 	}
 
 	vle_aucmd_remove(event, pattern);

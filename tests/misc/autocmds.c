@@ -131,6 +131,12 @@ TEST(extra_slash_is_fine)
 	assert_string_equal("1", env_get("a"));
 }
 
+TEST(error_on_wrong_event_name)
+{
+	assert_failure(exec_commands("autocmd some /path let $a = 1", &lwin,
+				CIT_COMMAND));
+}
+
 TEST(envvars_are_expanded)
 {
 	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
