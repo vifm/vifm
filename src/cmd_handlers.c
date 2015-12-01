@@ -101,6 +101,8 @@ static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int autocmd_cmd(const cmd_info_t *cmd_info);
+static void aucmd_list_cb(const char event[], const char pattern[],
+		const char action[], void *arg);
 static void aucmd_action_handler(const char action[], void *arg);
 static int bmark_cmd(const cmd_info_t *cmd_info);
 static int bmarks_cmd(const cmd_info_t *cmd_info);
@@ -646,23 +648,22 @@ apropos_cmd(const cmd_info_t *cmd_info)
 }
 
 
-/* Adds/removes autocommands. */
+/* Adds/lists/removes autocommands. */
 static int
 autocmd_cmd(const cmd_info_t *cmd_info)
 {
 	const char *event = NULL;
 	const char *pattern = NULL;
+	const char *action;
 	char *expanded_pattern = NULL;
 
-	if(!cmd_info->emark && cmd_info->argc < 3)
-	{
-		return CMDS_ERR_TOO_FEW_ARGS;
-	}
+	/* Check usage. */
 	if(cmd_info->emark && cmd_info->argc > 2)
 	{
 		return CMDS_ERR_TRAILING_CHARS;
 	}
 
+	/* Parse event and pattern. */
 	if(cmd_info->argc > 0)
 	{
 		if(strcmp(cmd_info->argv[0], "*") != 0)
@@ -679,10 +680,11 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
+	/* Check validity of event. */
 	if(event != NULL)
 	{
 		/* Non-const for is_in_string_array_case(). */
-		char *events[] = { "DirEnter" };
+		static char *events[] = { "DirEnter" };
 		if(!is_in_string_array_case(events, ARRAY_LEN(events), event))
 		{
 			status_bar_errorf("No such event: %s", event);
@@ -691,23 +693,35 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
-	if(!cmd_info->emark)
+	/* Handle removal. */
+	if(cmd_info->emark)
 	{
-		const char *action = &cmd_info->args[cmd_info->argvp[2][0]];
-
-		if(vle_aucmd_on_execute(event, expanded_pattern, action,
-					&aucmd_action_handler) != 0)
-		{
-			status_bar_error("Failed to register autocommand");
-			free(expanded_pattern);
-			return 1;
-		}
+		vle_aucmd_remove(event, pattern);
 		free(expanded_pattern);
 		return 0;
 	}
 
-	vle_aucmd_remove(event, pattern);
-	free(expanded_pattern);
+	/* Handle listing. */
+	if(cmd_info->argc < 3)
+	{
+		vle_textbuf *const msg = vle_tb_create();
+		vle_aucmd_list(event, pattern, &aucmd_list_cb, msg);
+		status_bar_message(vle_tb_get_data(msg));
+		vle_tb_free(msg);
+		return 1;
+	}
+
+	/* Addition. */
+
+	action = &cmd_info->args[cmd_info->argvp[2][0]];
+
+	if(vle_aucmd_on_execute(event, expanded_pattern, action,
+				&aucmd_action_handler) != 0)
+	{
+		status_bar_error("Failed to register autocommand");
+		free(expanded_pattern);
+		return 1;
+	}
 
 	return 0;
 }
@@ -718,6 +732,19 @@ aucmd_action_handler(const char action[], void *arg)
 {
 	FileView *view = arg;
 	(void)exec_commands(action, view, CIT_COMMAND);
+}
+
+/* Handler of list callback for autocommands. */
+static void
+aucmd_list_cb(const char event[], const char pattern[], const char action[],
+		void *arg)
+{
+	vle_textbuf *msg = arg;
+	const char *fmt = (strlen(pattern) <= 10)
+	                ? "%-10s %-10s %s"
+	                : "%-10s %-10s\n                      %s";
+
+	vle_tb_append_linef(msg, fmt, event, pattern, action);
 }
 
 /* Marks directory with set of tags. */

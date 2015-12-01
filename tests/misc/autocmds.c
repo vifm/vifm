@@ -31,7 +31,7 @@ TEARDOWN()
 	vle_aucmd_remove(NULL, NULL);
 }
 
-TEST(no_args_fail)
+TEST(no_args_lists_elements)
 {
 	assert_failure(exec_commands("autocmd", &lwin, CIT_COMMAND));
 }
