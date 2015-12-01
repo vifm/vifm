@@ -108,8 +108,7 @@ static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
-		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end,
-		int (**positions)[2]);
+		int regexp, int quotes, int *last_arg, int (**positions)[2]);
 static int is_separator(char c, char sep);
 
 void
@@ -184,7 +183,7 @@ execute_cmd(const char cmd[])
 	int execution_code;
 	size_t last_arg_len;
 	char *last_arg;
-	int last_end;
+	int last_end = 0;
 	cmds_conf_t *cc = cmds_conf;
 
 	init_cmd_info(&cmd_info);
@@ -252,7 +251,11 @@ execute_cmd(const char cmd[])
 		cmd_info.args = strdup(cmd_info.raw_args);
 	}
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, cur->quote, NULL, NULL, &last_end, &cmd_info.argvp);
+			cur->regexp, cur->quote, NULL, &cmd_info.argvp);
+	if(cmd_info.argc > 0)
+	{
+		last_end = cmd_info.argvp[cmd_info.argc - 1][1];
+	}
 	cmd_info.args[last_end] = '\0';
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) && !cur->range)
@@ -779,7 +782,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		int (*argvp)[2];
 		int last_arg = 0;
 
-		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL, NULL, &argvp);
+		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, &argvp);
 
 		cmd_info->args = (char *)args;
 		cmd_info->argc = argc;
@@ -1116,8 +1119,14 @@ get_last_argument(const char cmd[], size_t *len)
 	int last_start = 0;
 	int last_end = 0;
 
-	argv = dispatch_line(cmd, &argc, ' ', 0, 1, NULL, &last_start, &last_end,
-			&argvp);
+	argv = dispatch_line(cmd, &argc, ' ', 0, 1, NULL, &argvp);
+
+	if(argc > 0)
+	{
+		last_start = argvp[argc - 1][0];
+		last_end = argvp[argc - 1][1];
+	}
+
 	*len = last_end - last_start;
 	free_string_array(argv, argc);
 	free(argvp);
@@ -1129,7 +1138,7 @@ get_last_argument(const char cmd[], size_t *len)
  * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
-		int *last_pos, int *last_begin, int *last_end, int (**positions)[2])
+		int *last_pos, int (**positions)[2])
 {
 	char *cmdstr;
 	int len;
@@ -1144,10 +1153,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 
 	if(last_pos != NULL)
 		*last_pos = 0;
-	if(last_begin != NULL)
-		*last_begin = 0;
-	if(last_end != NULL)
-		*last_end = 0;
 	*positions = NULL;
 
 	*count = 0;
@@ -1200,10 +1205,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				if(state != BEGIN && cmdstr[i] != '\0')
 				{
-					if(last_begin != NULL)
-					{
-						*last_begin = i;
-					}
 					if(DA_EXTEND(argvp) != NULL)
 					{
 						DA_COMMIT(argvp);
@@ -1269,10 +1270,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			if(DA_SIZE(argvp) != 0U)
 			{
 				argvp[DA_SIZE(argvp) - 1U][1] = end;
-			}
-			if(last_end != NULL)
-			{
-				*last_end = end;
 			}
 
 			*count = add_to_string_array(&params, *count, 1, &cmdstr[st]);

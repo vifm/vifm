@@ -9,7 +9,7 @@ dispatch(const char cmd[], int *count, char separator, int regexp, int quotes)
 {
 	int (*argvp)[2];
 	char **const argv = dispatch_line(cmd, count, separator, regexp, quotes, NULL,
-			NULL, NULL, &argvp);
+			&argvp);
 	free(argvp);
 	return argv;
 }
