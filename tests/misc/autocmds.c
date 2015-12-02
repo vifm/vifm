@@ -36,6 +36,12 @@ TEST(no_args_lists_elements)
 	assert_failure(exec_commands("autocmd", &lwin, CIT_COMMAND));
 }
 
+TEST(addition_start)
+{
+	assert_failure(exec_commands("autocmd * '" SANDBOX_PATH "' let $a = 1", &lwin,
+				CIT_COMMAND));
+}
+
 TEST(addition_match)
 {
 	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));

@@ -651,6 +651,10 @@ apropos_cmd(const cmd_info_t *cmd_info)
 static int
 autocmd_cmd(const cmd_info_t *cmd_info)
 {
+	enum { ADDITION, LISTING, REMOVAL } type = cmd_info->emark
+	                                         ? REMOVAL : (cmd_info->argc < 3)
+	                                         ? LISTING : ADDITION;
+
 	const char *event = NULL;
 	const char *pattern = NULL;
 	const char *action;
@@ -665,7 +669,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 	/* Parse event and pattern. */
 	if(cmd_info->argc > 0)
 	{
-		if(strcmp(cmd_info->argv[0], "*") != 0)
+		if(type == ADDITION || strcmp(cmd_info->argv[0], "*") != 0)
 		{
 			event = cmd_info->argv[0];
 		}
@@ -692,16 +696,14 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		}
 	}
 
-	/* Handle removal. */
-	if(cmd_info->emark)
+	if(type == REMOVAL)
 	{
 		vle_aucmd_remove(event, pattern);
 		free(expanded_pattern);
 		return 0;
 	}
 
-	/* Handle listing. */
-	if(cmd_info->argc < 3)
+	if(type == LISTING)
 	{
 		vle_textbuf *const msg = vle_tb_create();
 		vle_aucmd_list(event, pattern, &aucmd_list_cb, msg);

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 18
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1023,6 +1023,7 @@ line.  If you want to use '|' in an argument, precede it with '\'.
 These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
+    :autocmd
     :cmap
     :cnoremap
     :command
