@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: November 18, 2015
+" Last Change: December 02, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -34,6 +34,7 @@ syntax keyword vifmCMapAbbr contained ca[bbrev] cm[ap] cnorea[bbrev] cno[remap]
 		\ skipwhite nextgroup=vifmCMapArgs
 
 " Other commands
+syntax keyword vifmAutocmdCommand contained au[tocmd] nextgroup=vifmStatementC
 syntax keyword vifmCdCommand contained cd
 syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
@@ -140,7 +141,7 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
+		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands,vifmAutocmdCommand
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -156,7 +157,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
-		\,vifmInvertCommandSt,vifmPrefixCommands
+		\,vifmInvertCommandSt,vifmPrefixCommands,vifmAutocmdCommand
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -342,6 +343,7 @@ syntax match vifmEmpty /^\s*$/
 syntax match vifmHiClear contained /\s*\<clear\>\s*/
 
 " Highlight
+highlight link vifmAutocmdCommand Statement
 highlight link vifmComment Comment
 highlight link vifmCommand Statement
 highlight link vifmPrefixCommands Statement
