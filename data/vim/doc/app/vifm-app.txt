@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 02
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 03
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1103,6 +1103,22 @@ The builtin commands are:
     value of the |vifm-'aproposprg'| option.
 :apropos
     repeat last :apropos command.
+
+                                               *vifm-:autocmd* *vifm-:au*
+:au[tocmd] {event} {pat} {cmd}
+    register autocommand for the {event}, which can be:
+      - DirEnter - performed on entering a directory
+    Event name is case insensitive.
+    {pat} specifies a path, it can contain tilde or environment variables.
+    {cmd} is :command or several of them separated with '|'.
+:au[tocmd] [{event}] [{pat}]
+    list those autocommands that match given event-pattern combination.
+    {event} and {pat} can be omitted to list all autocommands.  To list any
+    autocommands for specific pattern one can use * placeholder in place of
+    {event}.
+:au[tocmd]! [{event}] [{pat}]
+    remove autocommands that match given event-pattern combination.  Syntax
+    is the same as for listing above.
 
                                                *vifm-:bmark*
 :bmark tag1 [tag2 [tag3...]]

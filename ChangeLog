@@ -110,6 +110,9 @@
 
 	Added && and || operators to expression parser.  Thanks to filterfalse.
 
+	Added autocommands (DirEnter event and :au[tocmd] command).  Thanks to
+	filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
