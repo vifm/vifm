@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: December 02, 2015
+" Last Change: December 03, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -34,7 +34,7 @@ syntax keyword vifmCMapAbbr contained ca[bbrev] cm[ap] cnorea[bbrev] cno[remap]
 		\ skipwhite nextgroup=vifmCMapArgs
 
 " Other commands
-syntax keyword vifmAutocmdCommand contained au[tocmd] nextgroup=vifmStatementC
+syntax keyword vifmAutocmdCommand contained au[tocmd] nextgroup=vifmAutoEvent
 syntax keyword vifmCdCommand contained cd
 syntax keyword vifmCmdCommand contained com[mand] nextgroup=vifmCmdCommandName
 syntax keyword vifmColoCommand contained colo[rscheme]
@@ -49,6 +49,11 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
+
+" List of event names for autocommands (case insensitive)
+syntax case ignore
+syntax keyword vifmAutoEvent contained DirEnter nextgroup=vifmStatementC
+syntax case match
 
 " Builtin functions
 syntax match vifmBuiltinFunction
@@ -141,7 +146,8 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands,vifmAutocmdCommand
+		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands,vifmAutocmdCommand,
+		\,vifmAutoEvent
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -157,7 +163,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
 		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
-		\,vifmInvertCommandSt,vifmPrefixCommands,vifmAutocmdCommand
+		\,vifmInvertCommandSt,vifmPrefixCommands,vifmAutocmdCommand,vifmAutoEvent
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment
@@ -366,6 +372,7 @@ highlight link vifmOperator Operator
 highlight link vifmMap Statement
 highlight link vifmCMapAbbr Statement
 highlight link vifmHiArgs Type
+highlight link vifmAutoEvent Type
 highlight link vifmHiGroups Identifier
 highlight link vifmPattern String
 highlight link vifmHiStyles PreProc
