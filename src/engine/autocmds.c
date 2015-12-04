@@ -35,9 +35,11 @@ typedef struct
 	char *pattern;             /* Pattern for the path. */
 	char *action;              /* Action to perform via handler. */
 	vle_aucmd_handler handler; /* Handler to invoke on event firing. */
+	int negated;               /* Whether pattern is negated. */
 }
 aucmd_info_t;
 
+static int is_pattern_match(const aucmd_info_t *autocmd, const char path[]);
 static void free_autocmd_data(aucmd_info_t *autocmd);
 
 /* List of registered autocommands. */
@@ -55,6 +57,12 @@ vle_aucmd_on_execute(const char event[], const char pattern[],
 	if(autocmd == NULL)
 	{
 		return 1;
+	}
+
+	autocmd->negated = (pattern[0] == '!');
+	if(autocmd->negated)
+	{
+		++pattern;
 	}
 
 	canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
@@ -85,11 +93,19 @@ vle_aucmd_execute(const char event[], const char path[], void *arg)
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
 		if(strcasecmp(event, autocmds[i].event) == 0 &&
-				stroscmp(canonic_path, autocmds[i].pattern) == 0)
+				is_pattern_match(&autocmds[i], canonic_path))
 		{
 			autocmds[i].handler(autocmds[i].action, arg);
 		}
 	}
+}
+
+/* Checks whether path matches pattern in the autocommand.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+is_pattern_match(const aucmd_info_t *autocmd, const char path[])
+{
+	return (stroscmp(path, autocmd->pattern) == 0)^autocmd->negated;
 }
 
 void
