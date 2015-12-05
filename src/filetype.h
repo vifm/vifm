@@ -126,7 +126,7 @@ void ft_assoc_record_add_all(assoc_records_t *assocs,
 void ft_assoc_records_free(assoc_records_t *records);
 
 TSTATIC_DEFS(
-	void replace_double_comma(char cmd[], int put_null);
+	void replace_double_comma(char cmd[]);
 )
 
 #endif /* VIFM__FILETYPE_H__ */

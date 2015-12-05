@@ -55,7 +55,7 @@ static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
 		int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-TSTATIC void replace_double_comma(char cmd[], int put_null);
+TSTATIC void replace_double_comma(char cmd[]);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
@@ -217,7 +217,7 @@ parse_command_list(const char cmds[], int with_descr)
 
 		if(cmd[0] != '\0')
 		{
-			replace_double_comma(cmd, 0);
+			replace_double_comma(cmd);
 			ft_assoc_record_add(&records, cmd, description);
 		}
 		cmd = ptr;
@@ -229,7 +229,7 @@ parse_command_list(const char cmds[], int with_descr)
 }
 
 TSTATIC void
-replace_double_comma(char cmd[], int put_null)
+replace_double_comma(char cmd[])
 {
 	char *p = cmd;
 	while(*cmd != '\0')
@@ -241,10 +241,6 @@ replace_double_comma(char cmd[], int put_null)
 				*p++ = *cmd++;
 				cmd++;
 				continue;
-			}
-			else if(put_null)
-			{
-				break;
 			}
 		}
 		*p++ = *cmd++;
