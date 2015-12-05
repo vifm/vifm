@@ -1109,10 +1109,14 @@ The builtin commands are:
     register autocommand for the {event}, which can be:
       - DirEnter - performed on entering a directory
     Event name is case insensitive.
+
     {pat} specifies a path, it can contain tilde or environment variables.
     Paths must use slash ('/') as separator.  The pattern can start with a
     '!', which negates it.  Patterns that do not contain slashes are matched
     against the last item of the path only (e.g. with "dir" in "/path/dir").
+    Multiple patterns can be separated with commas, entering comma literally
+    requires doubling it.
+
     {cmd} is :command or several of them separated with '|'.
 :au[tocmd] [{event}] [{pat}]
     list those autocommands that match given event-pattern combination.

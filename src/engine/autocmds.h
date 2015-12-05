@@ -22,7 +22,8 @@
 /* Vim-like autocommands.  Autocommands are identified by case insensitive names
  * and pattern that is used for matches with paths.
  *
- * Supported patterns:
+ * Supported patterns (might be provided as comma-separated list, with double
+ * commas meaning literal commas):
  *   - /some/path -- only "/some/path"
  *   - name       -- paths of the form ".../name"
  *   - !pattern   -- not matching the pattern */
@@ -36,21 +37,21 @@ typedef void (*vle_aucmd_list_cb)(const char event[], const char pattern[],
 		const char action[], void *arg);
 
 /* Registers action handler for a particular combination of event and path
- * pattern.  Event name is case insensitive.  Returns zero on successful
+ * patterns.  Event name is case insensitive.  Returns zero on successful
  * registration or non-zero on error. */
-int vle_aucmd_on_execute(const char event[], const char pattern[],
+int vle_aucmd_on_execute(const char event[], const char patterns[],
 		const char action[], vle_aucmd_handler handler);
 
 /* Fires actions for the event for which pattern matches path. */
 void vle_aucmd_execute(const char event[], const char path[], void *arg);
 
-/* Removes selected autocommands.  NULL event means "all events".  NULL pattern
+/* Removes selected autocommands.  NULL event means "all events".  NULL patterns
  * means "all patterns". */
-void vle_aucmd_remove(const char event[], const char pattern[]);
+void vle_aucmd_remove(const char event[], const char patterns[]);
 
 /* Enumerates currently registered autocommand actions.  NULL event means
- * "all events".  NULL pattern means "all patterns". */
-void vle_aucmd_list(const char event[], const char pattern[],
+ * "all events".  NULL patterns means "all patterns". */
+void vle_aucmd_list(const char event[], const char patterns[],
 		vle_aucmd_list_cb cb, void *arg);
 
 #endif /* VIFM__ENGINE__AUTOCMDS_H__ */

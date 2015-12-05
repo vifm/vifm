@@ -1265,12 +1265,13 @@ register autocommand for the {event}, which can be:
   \- DirEnter \- performed on entering a directory
 .br
 Event name is case insensitive.
-.br
+
 {pat} specifies a path, it can contain tilde or environment variables.  Paths
 must use slash ('/') as separator.  The pattern can start with a '!', which
 negates it.  Patterns that do not contain slashes are matched against the last
-item of the path only (e.g. with "dir" in "/path/dir").
-.br
+item of the path only (e.g. with "dir" in "/path/dir").  Multiple patterns can
+be separated with commas, entering comma literally requires doubling it.
+
 {cmd} is :command or several of them separated with '|'.
 .TP
 .BI ":au[tocmd] [{event}] [{pat}]"

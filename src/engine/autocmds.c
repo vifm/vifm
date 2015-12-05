@@ -27,6 +27,7 @@
 #include "../utils/darray.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 
 /* Describes single registered autocommand. */
 typedef struct
@@ -39,8 +40,11 @@ typedef struct
 }
 aucmd_info_t;
 
+static int add_aucmd(const char event[], const char pattern[],
+		const char action[], vle_aucmd_handler handler);
 static int is_pattern_match(const aucmd_info_t *autocmd, const char path[]);
 static void free_autocmd_data(aucmd_info_t *autocmd);
+static char ** get_patterns(const char patterns[], int *len);
 
 /* List of registered autocommands. */
 static aucmd_info_t *autocmds;
@@ -48,8 +52,29 @@ static aucmd_info_t *autocmds;
 static DA_INSTANCE(autocmds);
 
 int
-vle_aucmd_on_execute(const char event[], const char pattern[],
+vle_aucmd_on_execute(const char event[], const char patterns[],
 		const char action[], vle_aucmd_handler handler)
+{
+	int err = 0;
+
+	char *free_this = strdup(patterns);
+
+	char *part = free_this, *state = NULL;
+	while((part = split_and_get_dc(part, &state)) != NULL)
+	{
+		err += (add_aucmd(event, part, action, handler) != 0);
+	}
+
+	free(free_this);
+	return err;
+}
+
+/* Registers action handler for a particular combination of event and path
+ * pattern.  Event name is case insensitive.  Returns zero on successful
+ * registration or non-zero on error. */
+static int
+add_aucmd(const char event[], const char pattern[], const char action[],
+		vle_aucmd_handler handler)
 {
 	char canonic_path[PATH_MAX];
 
@@ -83,6 +108,7 @@ vle_aucmd_on_execute(const char event[], const char pattern[],
 	}
 
 	DA_COMMIT(autocmds);
+	/* TODO: sort by event name (case insensitive) and then by pattern? */
 	return 0;
 }
 
@@ -116,15 +142,11 @@ is_pattern_match(const aucmd_info_t *autocmd, const char path[])
 }
 
 void
-vle_aucmd_remove(const char event[], const char pattern[])
+vle_aucmd_remove(const char event[], const char patterns[])
 {
 	int i;
-	char canonic_path[PATH_MAX];
-
-	if(pattern != NULL)
-	{
-		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
-	}
+	int len;
+	char **pats = get_patterns(patterns, &len);
 
 	for(i = (int)DA_SIZE(autocmds) - 1; i >= 0; --i)
 	{
@@ -132,7 +154,7 @@ vle_aucmd_remove(const char event[], const char pattern[])
 		{
 			continue;
 		}
-		if(pattern != NULL && stroscmp(canonic_path, autocmds[i].pattern) != 0)
+		if(patterns != NULL && !is_in_string_array(pats, len, autocmds[i].pattern))
 		{
 			continue;
 		}
@@ -140,6 +162,8 @@ vle_aucmd_remove(const char event[], const char pattern[])
 		free_autocmd_data(&autocmds[i]);
 		DA_REMOVE(autocmds, &autocmds[i]);
 	}
+
+	free_string_array(pats, len);
 }
 
 /* Frees data allocated for the autocommand. */
@@ -152,16 +176,12 @@ free_autocmd_data(aucmd_info_t *autocmd)
 }
 
 void
-vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb,
+vle_aucmd_list(const char event[], const char patterns[], vle_aucmd_list_cb cb,
 		void *arg)
 {
 	size_t i;
-	char canonic_path[PATH_MAX];
-
-	if(pattern != NULL)
-	{
-		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
-	}
+	int len;
+	char **pats = get_patterns(patterns, &len);
 
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
@@ -169,13 +189,41 @@ vle_aucmd_list(const char event[], const char pattern[], vle_aucmd_list_cb cb,
 		{
 			continue;
 		}
-		if(pattern != NULL && stroscmp(canonic_path, autocmds[i].pattern) != 0)
+		if(patterns != NULL && !is_in_string_array(pats, len, autocmds[i].pattern))
 		{
 			continue;
 		}
 
 		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action, arg);
 	}
+
+	free_string_array(pats, len);
+}
+
+/* Parses single pattern string into list of patterns.  Returns the list and
+ * writes its length into *len. */
+static char **
+get_patterns(const char patterns[], int *len)
+{
+	char **pats = NULL;
+	*len = 0;
+
+	if(patterns != NULL)
+	{
+		char *free_this = strdup(patterns);
+
+		char *pat = free_this, *state = NULL;
+		while((pat = split_and_get_dc(pat, &state)) != NULL)
+		{
+			char canonic_path[PATH_MAX];
+			canonicalize_path(pat, canonic_path, sizeof(canonic_path));
+			*len = add_to_string_array(&pats, *len, 1, canonic_path);
+		}
+
+		free(free_this);
+	}
+
+	return pats;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
