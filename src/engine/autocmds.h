@@ -28,6 +28,10 @@
  *   - name       -- paths of the form ".../name"
  *   - !pattern   -- not matching the pattern */
 
+/* Type of hook that performs custom pattern expansion.  Should allocate new
+ * expanded string. */
+typedef char * (*vle_aucmd_expand_hook)(const char pattern[]);
+
 /* Type of autocommand handler function. */
 typedef void (*vle_aucmd_handler)(const char action[], void *arg);
 
@@ -35,6 +39,9 @@ typedef void (*vle_aucmd_handler)(const char action[], void *arg);
  * vle_aucmd_list(). */
 typedef void (*vle_aucmd_list_cb)(const char event[], const char pattern[],
 		const char action[], void *arg);
+
+/* Sets hook that is called to process patterns. */
+void vle_aucmd_set_expand_hook(vle_aucmd_expand_hook hook);
 
 /* Registers action handler for a particular combination of event and path
  * patterns.  Event name is case insensitive.  Returns zero on successful

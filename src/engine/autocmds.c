@@ -51,6 +51,15 @@ static aucmd_info_t *autocmds;
 /* Declarations to enable use of DA_* on autocmds. */
 static DA_INSTANCE(autocmds);
 
+/* Pattern expansion hook. */
+static vle_aucmd_expand_hook expand_hook = &strdup;
+
+void
+vle_aucmd_set_expand_hook(vle_aucmd_expand_hook hook)
+{
+	expand_hook = hook;
+}
+
 int
 vle_aucmd_on_execute(const char event[], const char patterns[],
 		const char action[], vle_aucmd_handler handler)
@@ -59,10 +68,19 @@ vle_aucmd_on_execute(const char event[], const char patterns[],
 
 	char *free_this = strdup(patterns);
 
-	char *part = free_this, *state = NULL;
-	while((part = split_and_get_dc(part, &state)) != NULL)
+	char *pat = free_this, *state = NULL;
+	while((pat = split_and_get_dc(pat, &state)) != NULL)
 	{
-		err += (add_aucmd(event, part, action, handler) != 0);
+		char *const expanded_pat = expand_hook(pat);
+		if(expanded_pat != NULL)
+		{
+			err += (add_aucmd(event, expanded_pat, action, handler) != 0);
+			free(expanded_pat);
+		}
+		else
+		{
+			err = 1;
+		}
 	}
 
 	free(free_this);
@@ -215,9 +233,14 @@ get_patterns(const char patterns[], int *len)
 		char *pat = free_this, *state = NULL;
 		while((pat = split_and_get_dc(pat, &state)) != NULL)
 		{
-			char canonic_path[PATH_MAX];
-			canonicalize_path(pat, canonic_path, sizeof(canonic_path));
-			*len = add_to_string_array(&pats, *len, 1, canonic_path);
+			char *const expanded_pat = expand_hook(pat);
+			if(expanded_pat != NULL)
+			{
+				char canonic_path[PATH_MAX];
+				canonicalize_path(expanded_pat, canonic_path, sizeof(canonic_path));
+				*len = add_to_string_array(&pats, *len, 1, canonic_path);
+				free(expanded_pat);
+			}
 		}
 
 		free(free_this);

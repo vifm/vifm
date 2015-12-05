@@ -656,9 +656,8 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 	                                         ? LISTING : ADDITION;
 
 	const char *event = NULL;
-	const char *pattern = NULL;
+	const char *patterns = NULL;
 	const char *action;
-	char *expanded_pattern = NULL;
 
 	/* Check usage. */
 	if(cmd_info->emark && cmd_info->argc > 2)
@@ -666,7 +665,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TRAILING_CHARS;
 	}
 
-	/* Parse event and pattern. */
+	/* Parse event and patterns. */
 	if(cmd_info->argc > 0)
 	{
 		if(type == ADDITION || strcmp(cmd_info->argv[0], "*") != 0)
@@ -675,11 +674,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		}
 		if(cmd_info->argc > 1)
 		{
-			char *no_tilde = expand_tilde(cmd_info->argv[1]);
-			expanded_pattern = expand_envvars(no_tilde, 0);
-			free(no_tilde);
-
-			pattern = expanded_pattern;
+			patterns = cmd_info->argv[1];
 		}
 	}
 
@@ -691,22 +686,20 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		if(!is_in_string_array_case(events, ARRAY_LEN(events), event))
 		{
 			status_bar_errorf("No such event: %s", event);
-			free(expanded_pattern);
 			return 1;
 		}
 	}
 
 	if(type == REMOVAL)
 	{
-		vle_aucmd_remove(event, pattern);
-		free(expanded_pattern);
+		vle_aucmd_remove(event, patterns);
 		return 0;
 	}
 
 	if(type == LISTING)
 	{
 		vle_textbuf *const msg = vle_tb_create();
-		vle_aucmd_list(event, pattern, &aucmd_list_cb, msg);
+		vle_aucmd_list(event, patterns, &aucmd_list_cb, msg);
 		status_bar_message(vle_tb_get_data(msg));
 		vle_tb_free(msg);
 		return 1;
@@ -716,11 +709,9 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 
 	action = &cmd_info->args[cmd_info->argvp[2][0]];
 
-	if(vle_aucmd_on_execute(event, expanded_pattern, action,
-				&aucmd_action_handler) != 0)
+	if(vle_aucmd_on_execute(event, patterns, action, &aucmd_action_handler) != 0)
 	{
 		status_bar_error("Failed to register autocommand");
-		free(expanded_pattern);
 		return 1;
 	}
 

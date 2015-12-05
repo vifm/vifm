@@ -37,6 +37,7 @@
 #include "cfg/hist.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "engine/autocmds.h"
 #include "engine/cmds.h"
 #include "engine/mode.h"
 #include "engine/parsing.h"
@@ -100,6 +101,7 @@ static void save_extcmd(const char command[], CmdInputType type);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char args[]);
+static char * pattern_expand_hook(const char pattern[]);
 static int cmd_should_be_processed(int cmd_id);
 TSTATIC char ** break_cmdline(const char cmdline[], int for_menu);
 static int is_out_of_arg(const char cmd[], const char pos[]);
@@ -460,6 +462,19 @@ init_commands(void)
 	/* Initialize modules used by this one. */
 	init_bracket_notation();
 	init_variables();
+
+	vle_aucmd_set_expand_hook(&pattern_expand_hook);
+}
+
+/* Performs custom pattern expansion.  Allocate new expanded string. */
+static char *
+pattern_expand_hook(const char pattern[])
+{
+	char *const no_tilde = expand_tilde(pattern);
+	char *const expanded_pattern = expand_envvars(no_tilde, 0);
+	free(no_tilde);
+
+	return expanded_pattern;
 }
 
 static void
