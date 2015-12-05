@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 04
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 05
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1110,7 +1110,9 @@ The builtin commands are:
       - DirEnter - performed on entering a directory
     Event name is case insensitive.
     {pat} specifies a path, it can contain tilde or environment variables.
-    {pat} can start with a '!', which negates it.
+    Paths must use slash ('/') as separator.  The pattern can start with a
+    '!', which negates it.  Patterns that do not contain slashes are matched
+    against the last item of the path only (e.g. with "dir" in "/path/dir").
     {cmd} is :command or several of them separated with '|'.
 :au[tocmd] [{event}] [{pat}]
     list those autocommands that match given event-pattern combination.

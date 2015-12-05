@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 04, 2015" "vifm 0.8"
+.TH VIFM 1 "December 05, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1266,9 +1266,10 @@ register autocommand for the {event}, which can be:
 .br
 Event name is case insensitive.
 .br
-{pat} specifies a path, it can contain tilde or environment variables.
-.br
-{pat} can start with a '!', which negates it.
+{pat} specifies a path, it can contain tilde or environment variables.  Paths
+must use slash ('/') as separator.  The pattern can start with a '!', which
+negates it.  Patterns that do not contain slashes are matched against the last
+item of the path only (e.g. with "dir" in "/path/dir").
 .br
 {cmd} is :command or several of them separated with '|'.
 .TP

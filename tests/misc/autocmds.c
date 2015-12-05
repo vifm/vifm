@@ -170,5 +170,20 @@ TEST(pattern_negation)
 	assert_string_equal("1", env_get("a"));
 }
 
+TEST(tail_pattern)
+{
+	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("auto DirEnter existing-files let $a = 1", &lwin,
+				CIT_COMMAND));
+
+	assert_string_equal("", env_get("a"));
+	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
+	assert_string_equal("", env_get("a"));
+	assert_true(change_directory(curr_view, TEST_DATA_PATH "/existing-files/")
+			>= 0);
+	assert_string_equal("1", env_get("a"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

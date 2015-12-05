@@ -20,7 +20,7 @@
 
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strcasecmp() strdup() */
+#include <string.h> /* strcasecmp() strchr() strdup() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
@@ -65,10 +65,14 @@ vle_aucmd_on_execute(const char event[], const char pattern[],
 		++pattern;
 	}
 
-	canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+	if(strchr(pattern, '/') != NULL)
+	{
+		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+		pattern = canonic_path;
+	}
 
 	autocmd->event = strdup(event);
-	autocmd->pattern = strdup(canonic_path);
+	autocmd->pattern = strdup(pattern);
 	autocmd->action = strdup(action);
 	autocmd->handler = handler;
 	if(autocmd->event == NULL || autocmd->pattern == NULL ||
@@ -105,7 +109,10 @@ vle_aucmd_execute(const char event[], const char path[], void *arg)
 static int
 is_pattern_match(const aucmd_info_t *autocmd, const char path[])
 {
-	return (stroscmp(path, autocmd->pattern) == 0)^autocmd->negated;
+	int match = (strchr(autocmd->pattern, '/') == NULL)
+	          ? paths_are_equal(autocmd->pattern, get_last_path_component(path))
+	          : (stroscmp(path, autocmd->pattern) == 0);
+	return match^autocmd->negated;
 }
 
 void

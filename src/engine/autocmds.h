@@ -20,7 +20,12 @@
 #define VIFM__ENGINE__AUTOCMDS_H__
 
 /* Vim-like autocommands.  Autocommands are identified by case insensitive names
- * and pattern that is used for matches with paths. */
+ * and pattern that is used for matches with paths.
+ *
+ * Supported patterns:
+ *   - /some/path -- only "/some/path"
+ *   - name       -- paths of the form ".../name"
+ *   - !pattern   -- not matching the pattern */
 
 /* Type of autocommand handler function. */
 typedef void (*vle_aucmd_handler)(const char action[], void *arg);
