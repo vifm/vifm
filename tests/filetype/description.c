@@ -21,6 +21,19 @@ TEST(one_pattern)
 	ft_assoc_records_free(&ft);
 }
 
+TEST(double_comma_in_description)
+{
+	assoc_records_t ft;
+
+	set_programs("*.tar", "{description,,is,,here} tar prog", 0, 0);
+
+	ft = ft_get_all_programs("file.version.tar");
+	assert_int_equal(1, ft.count);
+	assert_string_equal("description,is,here", ft.list[0].description);
+
+	ft_assoc_records_free(&ft);
+}
+
 TEST(two_patterns)
 {
 	assoc_records_t ft;

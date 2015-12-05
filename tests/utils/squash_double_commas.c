@@ -1,27 +1,25 @@
 #include <stic.h>
 
-#include <stdlib.h>
-
-#include "../../src/filetype.h"
+#include "../../src/utils/str.h"
 
 TEST(no_comma)
 {
 	char buf[] = "echo something";
-	replace_double_comma(buf);
+	squash_double_commas(buf);
 	assert_string_equal("echo something", buf);
 }
 
 TEST(one_command)
 {
 	char buf[] = "echo tpattern,,with,,comma";
-	replace_double_comma(buf);
+	squash_double_commas(buf);
 	assert_string_equal("echo tpattern,with,comma", buf);
 }
 
 TEST(many_commands)
 {
 	char buf[] = "echo first,,one,echo second,,one";
-	replace_double_comma(buf);
+	squash_double_commas(buf);
 	assert_string_equal("echo first,one,echo second,one", buf);
 }
 

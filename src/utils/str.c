@@ -33,6 +33,7 @@
 
 #include "../compat/reallocarray.h"
 #include "macros.h"
+#include "test_helpers.h"
 #include "utf8.h"
 #include "utils.h"
 
@@ -40,6 +41,7 @@ static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
 		size_t buf_len);
 static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len);
+TSTATIC void squash_double_commas(char str[]);
 
 void
 chomp(char str[])
@@ -899,6 +901,83 @@ split_and_get(char str[], char sep, char **state)
 
 	*state = (end == NULL) ? (str + strlen(str)) : (end + 1);
 	return (*str == '\0') ? NULL : str;
+}
+
+char *
+split_and_get_dc(char str[], char **state)
+{
+	if(*state != NULL)
+	{
+		if(**state == '\0')
+		{
+			return NULL;
+		}
+
+		str = *state;
+	}
+
+	while(str != NULL)
+	{
+		char *ptr;
+
+		if((ptr = strchr(str, ',')) != NULL)
+		{
+			while(ptr != NULL && ptr[1] == ',')
+			{
+				ptr = strchr(ptr + 2, ',');
+			}
+			if(ptr != NULL)
+			{
+				*ptr = '\0';
+				++ptr;
+			}
+		}
+		if(ptr == NULL)
+		{
+			ptr = str + strlen(str);
+		}
+
+		while(isspace(*str) || *str == ',')
+		{
+			++str;
+		}
+
+		if(str[0] != '\0')
+		{
+			squash_double_commas(str);
+			*state = ptr;
+			break;
+		}
+
+		str = ptr;
+	}
+
+	if(str == NULL)
+	{
+		*state = NULL;
+	}
+	return str;
+}
+
+/* Squashes two consecutive commas into one in place. */
+TSTATIC void
+squash_double_commas(char str[])
+{
+	char *p = str;
+	while(*str != '\0')
+	{
+		if(str[0] == ',')
+		{
+			if(str[1] == ',')
+			{
+				*p++ = *str++;
+				++str;
+				continue;
+			}
+		}
+		*p++ = *str++;
+	}
+	*p = '\0';
 }
 
 int

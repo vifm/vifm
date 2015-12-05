@@ -23,6 +23,8 @@
 #include <inttypes.h> /* PRIu64 */
 #include <stddef.h> /* size_t wchar_t */
 
+#include "test_helpers.h"
+
 #if defined(_WIN32) && !defined(_WIN64)
 #define WPRINTF_MBSTR L"S"
 #define WPRINTF_WSTR L"s"
@@ -277,7 +279,11 @@ void replace_char(char str[], char from, char to);
  *   } */
 char * split_and_get(char str[], char sep, char **state);
 
-/* Counts lines in the text.  Considers wrapping aroung max_width column unless
+/* Like split_and_get(), but works on comma-separated list with double commas
+ * signifying literal comma character. */
+char * split_and_get_dc(char str[], char **state);
+
+/* Counts lines in the text.  Considers wrapping around max_width column unless
  * it's equal to INT_MAX. */
 int count_lines(const char text[], int max_width);
 
@@ -291,6 +297,10 @@ char * strcasestr(const char haystack[], const char needle[]);
 #endif
 
 #endif
+
+TSTATIC_DEFS(
+	void squash_double_commas(char str[]);
+)
 
 #endif /* VIFM__UTILS__STR_H__ */
 
