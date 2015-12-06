@@ -26,7 +26,13 @@
  * commas meaning literal commas):
  *   - /some/path -- only "/some/path"
  *   - name       -- paths of the form ".../name"
- *   - !pattern   -- not matching the pattern */
+ *   - !pattern   -- not matching the pattern
+ *
+ * TODO:
+ * **_/dir   -- e.g. "/etc/dir"
+ * ~/dir/_** -- subtree of "~/dir"
+ * ~/dir/_*_/ -- one level below "~/dir"
+ * */
 
 /* Type of hook that performs custom pattern expansion.  Should allocate new
  * expanded string. */

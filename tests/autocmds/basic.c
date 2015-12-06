@@ -36,6 +36,44 @@ TEST(extra_shashes_match)
 	assert_string_equal("action", action);
 }
 
+TEST(one_level_match)
+{
+	assert_success(vle_aucmd_on_execute("cd", "/parent/*", "action", &handler));
+
+	vle_aucmd_execute("cd", "/parent/child/grand-child", NULL);
+	assert_string_equal(NULL, action);
+
+	vle_aucmd_execute("cd", "/parent/child", NULL);
+	assert_string_equal("action", action);
+}
+
+TEST(leading_match)
+{
+	assert_success(vle_aucmd_on_execute("cd", "**/.git", "action", &handler));
+
+	vle_aucmd_execute("cd", "/path/to/repo/.git", NULL);
+	assert_string_equal("action", action);
+}
+
+TEST(trailing_match)
+{
+	assert_success(vle_aucmd_on_execute("cd", "**/.git/**", "action", &handler));
+
+	vle_aucmd_execute("cd", "/path/to/repo/.git", NULL);
+	assert_string_equal(NULL, action);
+
+	vle_aucmd_execute("cd", "/path/to/repo/.git/objects", NULL);
+	assert_string_equal("action", action);
+}
+
+TEST(trail_glob_match)
+{
+	assert_success(vle_aucmd_on_execute("cd", "*.d", "action", &handler));
+
+	vle_aucmd_execute("cd", "/etc/conf.d", NULL);
+	assert_string_equal("action", action);
+}
+
 static void
 handler(const char a[], void *arg)
 {

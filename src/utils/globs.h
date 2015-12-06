@@ -27,6 +27,12 @@
  * caller, or NULL if there is not enough memory or no patters are given. */
 char * globs_to_regex(const char globs[]);
 
+/* Converts the glob into equivalent regular expression.  Extended mode makes
+ * asterisk not match slash and double asterisk match anything.  Returns pointer
+ * to a newly allocated string, which should be freed by the caller, or NULL if
+ * there is not enough memory. */
+char * glob_to_regex(const char glob[], int extended);
+
 #endif /* VIFM__UTILS__GLOBS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

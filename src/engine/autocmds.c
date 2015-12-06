@@ -18,6 +18,7 @@
 
 #include "autocmds.h"
 
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcasecmp() strchr() strdup() */
@@ -25,6 +26,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../utils/darray.h"
+#include "../utils/globs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -34,6 +36,7 @@ typedef struct
 {
 	char *event;               /* Name of the event (case is ignored). */
 	char *pattern;             /* Pattern for the path. */
+	regex_t regex;             /* The pattern in compiled form. */
 	char *action;              /* Action to perform via handler. */
 	vle_aucmd_handler handler; /* Handler to invoke on event firing. */
 	int negated;               /* Whether pattern is negated. */
@@ -95,8 +98,10 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 		vle_aucmd_handler handler)
 {
 	char canonic_path[PATH_MAX];
+	aucmd_info_t *autocmd;
+	char *regexp;
 
-	aucmd_info_t *const autocmd = DA_EXTEND(autocmds);
+	autocmd = DA_EXTEND(autocmds);
 	if(autocmd == NULL)
 	{
 		return 1;
@@ -111,8 +116,25 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 	if(strchr(pattern, '/') != NULL)
 	{
 		canonicalize_path(pattern, canonic_path, sizeof(canonic_path));
+		if(!is_root_dir(canonic_path))
+		{
+			chosp(canonic_path);
+		}
 		pattern = canonic_path;
 	}
+
+	regexp = glob_to_regex(pattern, 1);
+	if(regexp == NULL)
+	{
+		return 1;
+	}
+
+	if(regcomp(&autocmd->regex, regexp, REG_EXTENDED | REG_ICASE) != 0)
+	{
+		free(regexp);
+		return 1;
+	}
+	free(regexp);
 
 	autocmd->event = strdup(event);
 	autocmd->pattern = strdup(pattern);
@@ -137,6 +159,10 @@ vle_aucmd_execute(const char event[], const char path[], void *arg)
 	char canonic_path[PATH_MAX];
 
 	canonicalize_path(path, canonic_path, sizeof(canonic_path));
+	if(!is_root_dir(canonic_path))
+	{
+		chosp(canonic_path);
+	}
 
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
@@ -153,10 +179,10 @@ vle_aucmd_execute(const char event[], const char path[], void *arg)
 static int
 is_pattern_match(const aucmd_info_t *autocmd, const char path[])
 {
-	int match = (strchr(autocmd->pattern, '/') == NULL)
-	          ? paths_are_equal(autocmd->pattern, get_last_path_component(path))
-	          : (stroscmp(path, autocmd->pattern) == 0);
-	return match^autocmd->negated;
+	const char *const part = (strchr(autocmd->pattern, '/') == NULL)
+	                       ? get_last_path_component(path)
+	                       : path;
+	return (regexec(&autocmd->regex, part, 0, NULL, 0) == 0)^autocmd->negated;
 }
 
 void
@@ -191,6 +217,7 @@ free_autocmd_data(aucmd_info_t *autocmd)
 	free(autocmd->event);
 	free(autocmd->pattern);
 	free(autocmd->action);
+	regfree(&autocmd->regex);
 }
 
 void
@@ -238,6 +265,11 @@ get_patterns(const char patterns[], int *len)
 			{
 				char canonic_path[PATH_MAX];
 				canonicalize_path(expanded_pat, canonic_path, sizeof(canonic_path));
+				if(!is_root_dir(canonic_path))
+				{
+					chosp(canonic_path);
+				}
+
 				*len = add_to_string_array(&pats, *len, 1, canonic_path);
 				free(expanded_pat);
 			}
