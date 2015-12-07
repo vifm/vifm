@@ -19,6 +19,9 @@
 #ifndef VIFM__UTILS__DYNARRAY_H__
 #define VIFM__UTILS__DYNARRAY_H__
 
+/* Simple dynamic array implementation that provides less memory reallocations,
+ * hence it's faster for growing arrays. */
+
 #include <stddef.h> /* size_t */
 
 /* Reallocates darray previously allocated by this function (pass NULL the first

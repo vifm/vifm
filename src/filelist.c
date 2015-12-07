@@ -45,6 +45,7 @@
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
+#include "engine/autocmds.h"
 #include "engine/mode.h"
 #include "int/fuse.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -1126,10 +1127,14 @@ change_directory(FileView *view, const char directory[])
 		revert_very_custom(view);
 	}
 
-	/* Stage check is to skip body of the if in tests. */
-	if(location_changed && curr_stats.load_stage > 0)
+	if(location_changed)
 	{
-		reset_local_options(view);
+		/* Stage check is to skip body of the if in tests. */
+		if(curr_stats.load_stage > 0)
+		{
+			reset_local_options(view);
+		}
+		vle_aucmd_execute("DirEnter", view->curr_dir, view);
 	}
 
 	return 0;

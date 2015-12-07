@@ -66,9 +66,11 @@ typedef struct cmd_info_t
 	char sep;
 	int usr1, usr2;
 
-	char *raw_args, *args;
-	int argc;
-	char **argv;
+	char *raw_args;  /* Arguments as they were passed in. */
+	char *args;      /* Arguments after macro and envvar expansions. */
+	int argc;        /* Number of arguments. */
+	char **argv;     /* Values of arguments. */
+	int (*argvp)[2]; /* Start/end positions of arguments in args. */
 
 	const char *cmd; /* For user defined commands. */
 }
@@ -165,7 +167,7 @@ char * vle_cmds_next_arg(const char args[]);
 TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
-			int quotes, int *last_arg, int *last_begin, int *last_end);
+			int quotes, int *last_arg, int (**positions)[2]);
 )
 
 #endif /* VIFM__ENGINE__CMDS_H__ */

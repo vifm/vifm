@@ -32,7 +32,7 @@
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../commands.h"
+#include "../cmd_core.h"
 #include "menus.h"
 
 /* Minimal length of command name column. */

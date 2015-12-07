@@ -6,7 +6,7 @@
 
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 extern struct cmds_conf cmds_conf;
 

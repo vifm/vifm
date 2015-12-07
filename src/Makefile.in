@@ -88,28 +88,29 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	compat/getopt.$(OBJEXT) compat/getopt1.$(OBJEXT) \
 	compat/mntent.$(OBJEXT) compat/os.$(OBJEXT) \
 	compat/reallocarray.$(OBJEXT) engine/abbrevs.$(OBJEXT) \
-	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
-	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
-	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
-	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
-	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
-	int/desktop.$(OBJEXT) int/file_magic.$(OBJEXT) \
-	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
-	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
-	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
-	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
-	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/marks_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	engine/autocmds.$(OBJEXT) engine/cmds.$(OBJEXT) \
+	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
+	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
+	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
+	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
+	engine/variables.$(OBJEXT) int/desktop.$(OBJEXT) \
+	int/file_magic.$(OBJEXT) int/fuse.$(OBJEXT) \
+	int/path_env.$(OBJEXT) int/term_title.$(OBJEXT) \
+	int/vim.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
+	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
+	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -134,8 +135,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
 	background.$(OBJEXT) bmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
@@ -386,6 +388,7 @@ vifm_SOURCES = \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \
+	engine/autocmds.c engine/autocmds.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
@@ -469,6 +472,7 @@ vifm_SOURCES = \
 	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
@@ -498,8 +502,9 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	commands.c commands.h \
-	commands_completion.c commands_completion.h \
+	cmd_handlers.c cmd_handlers.h \
+	cmd_core.c cmd_core.h \
+	cmd_completion.c cmd_completion.h \
 	dir_stack.c dir_stack.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
@@ -668,6 +673,8 @@ engine/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) engine/$(DEPDIR)
 	@: > engine/$(DEPDIR)/$(am__dirstamp)
 engine/abbrevs.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
+engine/autocmds.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/cmds.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
@@ -936,6 +943,7 @@ mostlyclean-compile:
 	-rm -f compat/os.$(OBJEXT)
 	-rm -f compat/reallocarray.$(OBJEXT)
 	-rm -f engine/abbrevs.$(OBJEXT)
+	-rm -f engine/autocmds.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/functions.$(OBJEXT)
@@ -1033,8 +1041,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmd_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_loop.Po@am__quote@
@@ -1071,6 +1080,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/os.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/reallocarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/abbrevs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/autocmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/functions.Po@am__quote@

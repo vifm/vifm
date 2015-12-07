@@ -110,6 +110,9 @@
 
 	Added && and || operators to expression parser.  Thanks to filterfalse.
 
+	Added autocommands (DirEnter event and :au[tocmd] command).  Thanks to
+	filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -366,6 +369,8 @@
 
 	Fixed incorrect treating of files with colons in their names for menus and
 	custom views.  Thanks to aleksejrs.
+
+	Fixed not squashing double commas in description of :file[x]type commands.
 
 0.8-beta to 0.8
 

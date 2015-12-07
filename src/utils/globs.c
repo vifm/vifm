@@ -24,8 +24,6 @@
 
 #include "str.h"
 
-static char * glob_to_regex(const char glob[]);
-
 char *
 globs_to_regex(const char globs[])
 {
@@ -40,7 +38,7 @@ globs_to_regex(const char globs[])
 		char *regex;
 		size_t new_len;
 
-		regex = glob_to_regex(glob);
+		regex = glob_to_regex(glob, 0);
 		if(regex == NULL)
 		{
 			break;
@@ -62,11 +60,8 @@ globs_to_regex(const char globs[])
 	return final_regex;
 }
 
-/* Converts the glob into equivalent regular expression.  Returns pointer to
- * a newly allocated string, which should be freed by the caller, or NULL if
- * there is not enough memory. */
-static char *
-glob_to_regex(const char glob[])
+char *
+glob_to_regex(const char glob[], int extended)
 {
 	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");
@@ -107,18 +102,36 @@ glob_to_regex(const char glob[])
 			++glob;
 			continue;
 		}
+		else if(extended && *glob == '*' && glob[1] == '*')
+		{
+			if(result_len == 1)
+			{
+				if(strappend(&result, &result_len, "[^.]") != 0)
+				{
+					break;
+				}
+			}
+			if(strappend(&result, &result_len, ".*") != 0)
+			{
+				break;
+			}
+			glob += 2;
+			continue;
+		}
 		else if(*glob == '*')
 		{
 			if(result_len == 1)
 			{
-				if(strappend(&result, &result_len, "[^.].*") != 0)
+				const char *const pat = extended ? "[^.][^/]*" : "[^.].*";
+				if(strappend(&result, &result_len, pat) != 0)
 				{
 					break;
 				}
 			}
 			else
 			{
-				if(strappend(&result, &result_len, ".*") != 0)
+				const char *const pat = extended ? "[^/]*" : ".*";
+				if(strappend(&result, &result_len, pat) != 0)
 				{
 					break;
 				}

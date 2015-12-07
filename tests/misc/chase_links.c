@@ -7,13 +7,13 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
-#include "../../src/commands.h"
 #include "../../src/compat/os.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 
 static void init_view(FileView *view);
 static void free_view(FileView *view);

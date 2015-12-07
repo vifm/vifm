@@ -2,7 +2,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 SETUP()
 {

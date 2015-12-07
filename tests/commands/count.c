@@ -4,7 +4,7 @@
 
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 extern cmds_conf_t cmds_conf;
 

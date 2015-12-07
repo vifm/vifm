@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2015 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__UTILS__GLOBS_H__
-#define VIFM__UTILS__GLOBS_H__
+#ifndef VIFM__CMD_HANDLERS_H__
+#define VIFM__CMD_HANDLERS_H__
 
-/* Implements globs by converting them into regular expressions.  They are
- * treated as case insensitive. */
+/* This file exports some information about command handlers that is needed by
+ * cmd_core.c and cmd_completion.c. */
 
-/* Converts comma-separated list of globs into equivalent regular expression.
- * Returns pointer to a newly allocated string, which should be freed by the
- * caller, or NULL if there is not enough memory or no patters are given. */
-char * globs_to_regex(const char globs[]);
+#include <stddef.h> /* size_t */
 
-/* Converts the glob into equivalent regular expression.  Extended mode makes
- * asterisk not match slash and double asterisk match anything.  Returns pointer
- * to a newly allocated string, which should be freed by the caller, or NULL if
- * there is not enough memory. */
-char * glob_to_regex(const char glob[], int extended);
+#include "engine/cmds.h"
 
-#endif /* VIFM__UTILS__GLOBS_H__ */
+/* Commands without completion, but for which we need to have an id. */
+enum
+{
+	COM_CMAP = NO_COMPLETION_BOUNDARY,
+	COM_CNOREMAP,
+	COM_COMMAND,
+	COM_ELSE_STMT,
+	COM_ENDIF_STMT,
+	COM_FILETYPE,
+	COM_FILEVIEWER,
+	COM_FILEXTYPE,
+	COM_FILTER,
+	COM_MAP,
+	COM_MMAP,
+	COM_MNOREMAP,
+	COM_NMAP,
+	COM_NNOREMAP,
+	COM_NOREMAP,
+	COM_NORMAL,
+	COM_QMAP,
+	COM_QNOREMAP,
+	COM_SUBSTITUTE,
+	COM_TR,
+	COM_VMAP,
+	COM_VNOREMAP,
+};
+
+/* List of command handlers. */
+extern const cmd_add_t cmds_list[];
+/* Number of elements in cmds_list. */
+extern const size_t cmds_list_size;
+
+#endif /* VIFM__CMD_HANDLERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

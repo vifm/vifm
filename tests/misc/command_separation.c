@@ -3,7 +3,7 @@
 #include <stdlib.h> /* free() */
 
 #include "../../src/engine/cmds.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 SETUP()
 {

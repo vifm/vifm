@@ -9,7 +9,7 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/marks.h"

@@ -646,12 +646,6 @@ iop_ln(io_args_t *const args)
 
 	int result;
 
-#ifdef _WIN32
-	char cmd[6 + PATH_MAX*2 + 1];
-	char *escaped_path, *escaped_target;
-	char base_dir[PATH_MAX + 2];
-#endif
-
 #ifndef _WIN32
 	result = symlink(path, target);
 	if(result != 0 && errno == EEXIST && overwrite && is_symlink(target))
@@ -678,6 +672,10 @@ iop_ln(io_args_t *const args)
 				strerror(errno));
 	}
 #else
+	char cmd[6 + PATH_MAX*2 + 1];
+	char *escaped_path, *escaped_target;
+	char base_dir[PATH_MAX + 2];
+
 	if(!overwrite && path_exists(target, DEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, EEXIST,

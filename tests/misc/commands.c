@@ -8,9 +8,10 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
@@ -270,6 +271,14 @@ TEST(or_operator_is_attributed_to_if)
 {
 	(void)exec_commands("if 0 || 0 | builtin | endif", &lwin, CIT_COMMAND);
 	assert_false(called);
+}
+
+TEST(or_operator_is_attributed_to_let)
+{
+	(void)exec_commands("let $a = ''", &lwin, CIT_COMMAND);
+	assert_string_equal("", env_get("a"));
+	(void)exec_commands("let $a = 0 || 1", &lwin, CIT_COMMAND);
+	assert_string_equal("1", env_get("a"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() */
 
 #include "../compat/reallocarray.h"
+#include "../utils/darray.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
@@ -107,7 +108,7 @@ static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
-		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
+		int regexp, int quotes, int *last_arg, int (**positions)[2]);
 static int is_separator(char c, char sep);
 
 void
@@ -182,7 +183,7 @@ execute_cmd(const char cmd[])
 	int execution_code;
 	size_t last_arg_len;
 	char *last_arg;
-	int last_end;
+	int last_end = 0;
 	cmds_conf_t *cc = cmds_conf;
 
 	init_cmd_info(&cmd_info);
@@ -250,7 +251,11 @@ execute_cmd(const char cmd[])
 		cmd_info.args = strdup(cmd_info.raw_args);
 	}
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, cur->quote, NULL, NULL, &last_end);
+			cur->regexp, cur->quote, NULL, &cmd_info.argvp);
+	if(cmd_info.argc > 0)
+	{
+		last_end = cmd_info.argvp[cmd_info.argc - 1][1];
+	}
 	cmd_info.args[last_end] = '\0';
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) && !cur->range)
@@ -306,6 +311,7 @@ execute_cmd(const char cmd[])
 	free(cmd_info.raw_args);
 	free(cmd_info.args);
 	free_string_array(cmd_info.argv, cmd_info.argc);
+	free(cmd_info.argvp);
 
 	return execution_code;
 }
@@ -773,9 +779,10 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 	{
 		int argc;
 		char **argv;
+		int (*argvp)[2];
 		int last_arg = 0;
 
-		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL, NULL);
+		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, &argvp);
 
 		cmd_info->args = (char *)args;
 		cmd_info->argc = argc;
@@ -783,6 +790,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		result += cmds_conf->complete_args(cur->id, cmd_info, last_arg, arg);
 
 		free_string_array(argv, argc);
+		free(argvp);
 	}
 	return result;
 }
@@ -1107,12 +1115,21 @@ get_last_argument(const char cmd[], size_t *len)
 {
 	int argc;
 	char **argv;
+	int (*argvp)[2];
 	int last_start = 0;
 	int last_end = 0;
 
-	argv = dispatch_line(cmd, &argc, ' ', 0, 1, NULL, &last_start, &last_end);
+	argv = dispatch_line(cmd, &argc, ' ', 0, 1, NULL, &argvp);
+
+	if(argc > 0)
+	{
+		last_start = argvp[argc - 1][0];
+		last_end = argvp[argc - 1][1];
+	}
+
 	*len = last_end - last_start;
 	free_string_array(argv, argc);
+	free(argvp);
 	return (char *)cmd + last_start;
 }
 
@@ -1121,23 +1138,22 @@ get_last_argument(const char cmd[], size_t *len)
  * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
-		int *last_pos, int *last_begin, int *last_end)
+		int *last_pos, int (**positions)[2])
 {
 	char *cmdstr;
 	int len;
 	int i;
 	int st;
 	const char *args_beg;
-	char** params;
+	char **params;
+	int (*argvp)[2] = NULL;
+	DA_INSTANCE(argvp);
 
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG } state;
 
 	if(last_pos != NULL)
 		*last_pos = 0;
-	if(last_begin != NULL)
-		*last_begin = 0;
-	if(last_end != NULL)
-		*last_end = 0;
+	*positions = NULL;
 
 	*count = 0;
 	params = NULL;
@@ -1187,9 +1203,13 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					st = i--;
 					state = NO_QUOTING;
 				}
-				if(state != BEGIN && cmdstr[i] != '\0' && last_begin != NULL)
+				if(state != BEGIN && cmdstr[i] != '\0')
 				{
-					*last_begin = i;
+					if(DA_EXTEND(argvp) != NULL)
+					{
+						DA_COMMIT(argvp);
+						argvp[DA_SIZE(argvp) - 1U][0] = i;
+					}
 				}
 				break;
 			case NO_QUOTING:
@@ -1240,12 +1260,17 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		}
 		if(state == ARG || state == QARG)
 		{
+			/* Found another argument. */
+
+			const int end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
 			char *last_arg;
 			const char c = cmdstr[i];
-			/* found another argument */
 			cmdstr[i] = '\0';
-			if(last_end != NULL)
-				*last_end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
+
+			if(DA_SIZE(argvp) != 0U)
+			{
+				argvp[DA_SIZE(argvp) - 1U][1] = end;
+			}
 
 			*count = add_to_string_array(&params, *count, 1, &cmdstr[st]);
 			if(*count == 0)
@@ -1268,9 +1293,11 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 
 	free(cmdstr);
 
-	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
+	if(*count == 0 || (size_t)*count != DA_SIZE(argvp) ||
+			(state != BEGIN && state != NO_QUOTING) ||
 			put_into_string_array(&params, *count, NULL) != *count + 1)
 	{
+		free(argvp);
 		free_string_array(params, *count);
 		*count = (state == S_QUOTING || state == D_QUOTING) ? -1 : 0;
 		return NULL;
@@ -1281,6 +1308,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		*last_pos = (args - args_beg) + st;
 	}
 
+	*positions = argvp;
 	return params;
 }
 

@@ -55,7 +55,7 @@ static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
 		int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-TSTATIC void replace_double_comma(char cmd[], int put_null);
+TSTATIC void replace_double_comma(char cmd[]);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
@@ -175,81 +175,33 @@ parse_command_list(const char cmds[], int with_descr)
 {
 	assoc_records_t records = {};
 
-	char *cmd;
-	char *free_this;
+	char *free_this = strdup(cmds);
 
-	cmd = strdup(cmds);
-	free_this = cmd;
-
-	while(cmd != NULL)
+	char *part = free_this, *state = NULL;
+	while((part = split_and_get_dc(part, &state)) != NULL)
 	{
-		char *ptr;
 		const char *description = "";
 
-		if((ptr = strchr(cmd, ',')) != NULL)
+		if(with_descr && *part == '{')
 		{
-			while(ptr != NULL && ptr[1] == ',')
-			{
-				ptr = strchr(ptr + 2, ',');
-			}
-			if(ptr != NULL)
-			{
-				*ptr = '\0';
-				++ptr;
-			}
-		}
-
-		while(isspace(*cmd) || *cmd == ',')
-		{
-			++cmd;
-		}
-
-		if(with_descr && *cmd == '{')
-		{
-			char *p = strchr(cmd + 1, '}');
+			char *p = strchr(part + 1, '}');
 			if(p != NULL)
 			{
 				*p = '\0';
-				description = cmd + 1;
-				cmd = skip_whitespace(p + 1);
+				description = part + 1;
+				part = skip_whitespace(p + 1);
 			}
 		}
 
-		if(cmd[0] != '\0')
+		if(part[0] != '\0')
 		{
-			replace_double_comma(cmd, 0);
-			ft_assoc_record_add(&records, cmd, description);
+			ft_assoc_record_add(&records, part, description);
 		}
-		cmd = ptr;
 	}
 
 	free(free_this);
 
 	return records;
-}
-
-TSTATIC void
-replace_double_comma(char cmd[], int put_null)
-{
-	char *p = cmd;
-	while(*cmd != '\0')
-	{
-		if(cmd[0] == ',')
-		{
-			if(cmd[1] == ',')
-			{
-				*p++ = *cmd++;
-				cmd++;
-				continue;
-			}
-			else if(put_null)
-			{
-				break;
-			}
-		}
-		*p++ = *cmd++;
-	}
-	*p = '\0';
 }
 
 /* Registers association in appropriate associations list and possibly in list

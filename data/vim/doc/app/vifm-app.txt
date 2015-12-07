@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Nov 18
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1023,6 +1023,7 @@ line.  If you want to use '|' in an argument, precede it with '\'.
 These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
+    :autocmd
     :cmap
     :cnoremap
     :command
@@ -1102,6 +1103,31 @@ The builtin commands are:
     value of the |vifm-'aproposprg'| option.
 :apropos
     repeat last :apropos command.
+
+                                               *vifm-:autocmd* *vifm-:au*
+:au[tocmd] {event} {pat} {cmd}
+    register autocommand for the {event}, which can be:
+      - DirEnter - performed on entering a directory
+    Event name is case insensitive.
+
+    {pat} is a comma-separated list of modified globs patterns, which can
+    contain tilde or environment variables.  All paths use slash ('/') as
+    directory separator.  The pattern can start with a '!', which negates it.
+    Patterns that do not contain slashes are matched against the last item of
+    the path only (e.g. "dir" in "/path/dir").  Literal comma can be entered by
+    doubling it.  Two modifications to globs matching are as follows:
+      - *  - never matches a slash (i.e., can signify single directory level)
+      - ** - matches any character (i.e., can match path of arbitrary depth)
+
+    {cmd} is :command or several of them separated with '|'.
+:au[tocmd] [{event}] [{pat}]
+    list those autocommands that match given event-pattern combination.
+    {event} and {pat} can be omitted to list all autocommands.  To list any
+    autocommands for specific pattern one can use * placeholder in place of
+    {event}.
+:au[tocmd]! [{event}] [{pat}]
+    remove autocommands that match given event-pattern combination.  Syntax
+    is the same as for listing above.
 
                                                *vifm-:bmark*
 :bmark tag1 [tag2 [tag3...]]

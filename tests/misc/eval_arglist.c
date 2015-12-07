@@ -4,7 +4,7 @@
 
 #include "../../src/engine/functions.h"
 #include "../../src/engine/var.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 static var_t echo_builtin(const call_info_t *call_info);
 

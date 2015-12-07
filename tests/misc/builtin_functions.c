@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() */
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
@@ -18,6 +20,8 @@
 
 SETUP()
 {
+	assert_success(chdir(TEST_DATA_PATH "/.."));
+
 	update_string(&cfg.shell, "sh");
 
 	init_builtin_functions();

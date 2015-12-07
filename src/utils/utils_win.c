@@ -41,7 +41,7 @@
 #include "../compat/os.h"
 #include "../compat/wcwidth.h"
 #include "../ui/ui.h"
-#include "../commands_completion.h"
+#include "../cmd_completion.h"
 #include "../status.h"
 #include "env.h"
 #include "fs.h"

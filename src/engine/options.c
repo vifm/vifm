@@ -569,8 +569,8 @@ find_option(const char option[], OPT_SCOPE scope)
 	int l = 0, u = option_count - 1;
 	while(l <= u)
 	{
-		int i = (l + u)/2;
-		int comp = strcmp(option, options[i].name);
+		const size_t i = l + (u - l)/2;
+		const int comp = strcmp(option, options[i].name);
 		if(comp == 0)
 		{
 			opt_t *opt;

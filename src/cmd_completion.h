@@ -17,15 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__COMMANDS_COMPLETION_H__
-#define VIFM__COMMANDS_COMPLETION_H__
+#ifndef VIFM__CMD_COMPLETION_H__
+#define VIFM__CMD_COMPLETION_H__
 
 #include <stddef.h> /* size_t */
 
-/* Identifiers for commands with completion. */
+/* Identifiers for commands with completion.  Some of them are not directly used
+ * in code, their purpose is to provide id so that completion is invoked for the
+ * command (such commands are handled in the else clause). */
 enum
 {
 	COM_ALINK,
+	COM_AUTOCMD,
 	COM_BMARKS,
 	COM_CABBR,
 	COM_CD,
@@ -115,7 +118,7 @@ int external_command_exists(const char cmd[]);
  * success, otherwise non-zero is returned. */
 int get_cmd_path(const char cmd[], size_t path_len, char path[]);
 
-#endif /* VIFM__COMMANDS_COMPLETION_H__ */
+#endif /* VIFM__CMD_COMPLETION_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

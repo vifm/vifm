@@ -90,6 +90,7 @@ vifm_SOURCES = \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \
+	engine/autocmds.c engine/autocmds.h \
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/functions.c engine/functions.h \
@@ -173,6 +174,7 @@ vifm_SOURCES = \
 	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
@@ -202,8 +204,9 @@ vifm_SOURCES = \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	commands.c commands.h \
-	commands_completion.c commands_completion.h \
+	cmd_handlers.c cmd_handlers.h \
+	cmd_core.c cmd_core.h \
+	cmd_completion.c cmd_completion.h \
 	dir_stack.c dir_stack.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \

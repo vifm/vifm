@@ -37,6 +37,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "engine/autocmds.h"
 #include "compat/fs_limits.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
@@ -68,8 +69,8 @@
 #include "bmarks.h"
 #include "bracket_notation.h"
 #include "builtin_functions.h"
-#include "commands.h"
-#include "commands_completion.h"
+#include "cmd_completion.h"
+#include "cmd_core.h"
 #include "dir_stack.h"
 #include "event_loop.h"
 #include "filelist.h"
@@ -272,6 +273,9 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
+	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
+	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
+
 	event_loop(&quit);
 
 	return 0;
@@ -461,6 +465,9 @@ vifm_restart(void)
 	/* User defined commands. */
 	execute_cmd("comclear");
 
+	/* Autocommands. */
+	vle_aucmd_remove(NULL, NULL);
+
 	/* Directory histories. */
 	ui_view_clear_history(&lwin);
 	ui_view_clear_history(&rwin);
@@ -531,6 +538,9 @@ vifm_restart(void)
 	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
+
+	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
+	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
 
 	update_screen(UT_REDRAW);
 }

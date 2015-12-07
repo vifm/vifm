@@ -20,7 +20,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/bmarks.h"
 #include "../../src/builtin_functions.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 #if defined(__CYGWIN__) || defined(_WIN32)
 #define SUFFIX ".exe"
@@ -480,6 +480,25 @@ TEST(bmark_path_is_completed)
 	assert_wstring_equal(L"bmark! exec-for-completion" SUFFIX, stats.line);
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
+}
+
+TEST(aucmd_events_are_completed)
+{
+	prepare_for_line_completion(L"autocmd ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd Dir");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd! Dir");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd! DirEnter" SUFFIX, stats.line);
+
+	prepare_for_line_completion(L"autocmd DirEnter ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter " SUFFIX, stats.line);
 }
 
 static void

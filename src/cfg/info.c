@@ -44,7 +44,7 @@
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../bmarks.h"
-#include "../commands.h"
+#include "../cmd_core.h"
 #include "../dir_stack.h"
 #include "../filelist.h"
 #include "../filetype.h"

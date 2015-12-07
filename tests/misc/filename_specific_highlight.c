@@ -3,7 +3,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/utils/matcher.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
 SETUP_ONCE()

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__COMMANDS_H__
-#define VIFM__COMMANDS_H__
+#ifndef VIFM__CMD_CORE_H__
+#define VIFM__CMD_CORE_H__
 
 #include <stddef.h> /* size_t */
 
@@ -115,6 +115,27 @@ char * commands_escape_for_insertion(const char cmd_line[], int pos,
  * cmd.  Returns where current position in the command line is. */
 CmdLineLocation get_cmdline_location(const char cmd[], const char pos[]);
 
+/* Evaluates a set of expressions and concatenates results with a space.  args
+ * can not be empty string.  Returns pointer to newly allocated string, which
+ * should be freed by caller, or NULL on error.  stop_ptr will point to the
+ * beginning of invalid expression in case of error. */
+char * eval_arglist(const char args[], const char **stop_ptr);
+
+/* Requests unit to do not reset selection after command execution.  Expected to
+ * be called from command handlers, or it won't have any effect. */
+void cmds_preserve_selection(void);
+
+/* Enters if branch of if-else-endif statement. */
+void cmds_scoped_if(int cond);
+
+/* Enters else branch of if-else-endif statement.  Returns non-zero if else
+ * branch wasn't expected at this point, otherwise zero is returned. */
+int cmds_scoped_else(void);
+
+/* Terminates if-else-endif statement.  Returns non-zero if endif wasn't
+ * expected at this point, otherwise zero is returned.  */
+int cmds_scoped_endif(void);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif
@@ -122,10 +143,9 @@ TSTATIC_DEFS(
 	char ** break_cmdline(const char cmdline[], int for_menu);
 	int line_pos(const char begin[], const char end[], char sep, int regexp);
 	void select_range(int id, const cmd_info_t *cmd_info);
-	char * eval_arglist(const char args[], const char **stop_ptr);
 )
 
-#endif /* VIFM__COMMANDS_H__ */
+#endif /* VIFM__CMD_CORE_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -53,7 +53,7 @@
 #include "../utils/str.h"
 #include "../utils/path.h"
 #include "../utils/utils.h"
-#include "../commands.h"
+#include "../cmd_core.h"
 #include "../filelist.h"
 #include "../marks.h"
 #include "../opt_handlers.h"

@@ -46,7 +46,7 @@ endif
 B ?=
 
 # engine
-suites += abbrevs commands completion keys options parsing variables
+suites += abbrevs autocmds commands completion keys options parsing variables
 # io
 suites += ioeta ionotif iop ior
 # ui

@@ -7,7 +7,7 @@
 #include "../../src/engine/options.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
 

@@ -6,7 +6,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/bmarks.h"
-#include "../../src/commands.h"
+#include "../../src/cmd_core.h"
 
 static int count_bmarks(void);
 static void bmarks_cb(const char p[], const char t[], time_t timestamp,
