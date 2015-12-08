@@ -1945,19 +1945,21 @@ add_column(columns_t columns, column_info_t column_info)
 static int
 map_name(const char name[], void *arg)
 {
-	const char *sort;
-	const FileView *const view = arg;
-	if(*name != '\0')
+	int pos;
+
+	/* Handle secondary key (designated by {}). */
+	if(*name == '\0')
 	{
-		int pos;
-		pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
-				name);
-		return (pos >= 0) ? (pos + 1) : -1;
+		const FileView *const view = arg;
+		const char *const sort = curr_stats.restart_in_progress
+		                       ? ui_view_sort_list_get(view)
+		                       : view->sort;
+		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
-	sort = curr_stats.restart_in_progress
-	     ? ui_view_sort_list_get(view)
-	     : view->sort;
-	return (int)get_secondary_key((SortingKey)abs(sort[0]));
+
+	pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
+			name);
+	return (pos >= 0) ? (pos + 1) : -1;
 }
 
 void
