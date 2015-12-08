@@ -1954,7 +1954,9 @@ map_name(const char name[], void *arg)
 				name);
 		return (pos >= 0) ? (pos + 1) : -1;
 	}
-	sort = ui_view_sort_list_get(view);
+	sort = curr_stats.restart_in_progress
+	     ? ui_view_sort_list_get(view)
+	     : view->sort;
 	return (int)get_secondary_key((SortingKey)abs(sort[0]));
 }
 
