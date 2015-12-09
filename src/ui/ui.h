@@ -270,7 +270,10 @@ typedef struct
 	}
 	local_filter;
 
+	/* List of sorting keys. */
 	char sort[SK_COUNT], sort_g[SK_COUNT];
+	/* Sorting groups (comma-separated list of regular expressions). */
+	char *sort_groups, *sort_groups_g;
 
 	int history_num;
 	int history_pos;

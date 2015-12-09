@@ -163,6 +163,9 @@ fview_view_init(FileView *view)
 	view->columns = columns_create();
 	view->view_columns = strdup("");
 	view->view_columns_g = strdup("");
+
+	view->sort_groups = strdup("");
+	view->sort_groups_g = strdup("");
 }
 
 void
