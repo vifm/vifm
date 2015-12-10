@@ -121,6 +121,7 @@ fview_init(void)
 		{ SK_BY_INAME,  &format_name },
 		{ SK_BY_SIZE,   &format_size },
 		{ SK_BY_NITEMS, &format_nitems },
+		{ SK_BY_GROUPS, &format_name },
 		{ SK_BY_TYPE,   &format_type },
 
 		{ SK_BY_EXTENSION,     &format_ext },

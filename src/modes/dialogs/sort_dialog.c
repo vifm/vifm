@@ -70,9 +70,10 @@ static int indexes[] = {
 #endif
 	[SK_BY_SIZE]          = 12 + CORRECTION,
 	[SK_BY_NITEMS]        = 13 + CORRECTION,
-	[SK_BY_TIME_ACCESSED] = 14 + CORRECTION,
-	[SK_BY_TIME_CHANGED]  = 15 + CORRECTION,
-	[SK_BY_TIME_MODIFIED] = 16 + CORRECTION,
+	[SK_BY_GROUPS]        = 14 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 15 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 16 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 17 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -183,6 +184,7 @@ redraw_sort_dialog(void)
 #endif
 	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Item Count");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Groups");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Accessed");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Changed");

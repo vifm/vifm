@@ -203,6 +203,7 @@ static const char *sort_enum[] = {
 	[SK_BY_TYPE]          = "type",
 	[SK_BY_FILEEXT]       = "fileext",
 	[SK_BY_NITEMS]        = "nitems",
+	[SK_BY_GROUPS]        = "groups",
 #ifndef _WIN32
 	[SK_BY_GROUP_ID]      = "gid",
 	[SK_BY_GROUP_NAME]    = "gname",
@@ -264,6 +265,7 @@ static const char *sort_types[] = {
 	"type",    "+type",    "-type",
 	"fileext", "+fileext", "-fileext",
 	"nitems",  "+nitems",  "-nitems",
+	"groups",  "+groups",  "-groups",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
 	"gname", "+gname", "-gname",
