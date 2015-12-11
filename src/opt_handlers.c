@@ -19,6 +19,7 @@
 #include "opt_handlers.h"
 
 #include <curses.h> /* stdscr wnoutrefresh() */
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -157,6 +158,7 @@ static void sort_local(OPT_OP op, optval_t val);
 static void set_sort(FileView *view, char sort_keys[], char order[]);
 static void sortgroups_global(OPT_OP op, optval_t val);
 static void sortgroups_local(OPT_OP op, optval_t val);
+static void set_sortgroups(FileView *view, char **opt, char value[]);
 static void sorting_changed(FileView *view);
 static void sortorder_global(OPT_OP op, optval_t val);
 static void sortorder_local(OPT_OP op, optval_t val);
@@ -1841,10 +1843,10 @@ set_sort(FileView *view, char sort_keys[], char order[])
 static void
 sortgroups_global(OPT_OP op, optval_t val)
 {
-	replace_string(&curr_view->sort_groups_g, val.str_val);
+	set_sortgroups(curr_view, &curr_view->sort_groups_g, val.str_val);
 	if(curr_stats.global_local_settings)
 	{
-		replace_string(&other_view->sort_groups_g, val.str_val);
+		set_sortgroups(other_view, &other_view->sort_groups_g, val.str_val);
 	}
 }
 
@@ -1852,12 +1854,48 @@ sortgroups_global(OPT_OP op, optval_t val)
 static void
 sortgroups_local(OPT_OP op, optval_t val)
 {
-	replace_string(&curr_view->sort_groups, val.str_val);
+	set_sortgroups(curr_view, &curr_view->sort_groups, val.str_val);
 	sorting_changed(curr_view);
 	if(curr_stats.global_local_settings)
 	{
-		replace_string(&other_view->sort_groups, val.str_val);
+		set_sortgroups(other_view, &other_view->sort_groups, val.str_val);
 		sorting_changed(other_view);
+	}
+}
+
+/* Sets sort_groups fields (*opt) of the view to the value handling malformed
+ * values correctly. */
+static void
+set_sortgroups(FileView *view, char **opt, char value[])
+{
+	int failure = 0;
+
+	char *group = value, *state = NULL;
+	while((group = split_and_get(group, ',', &state)) != NULL)
+	{
+		regex_t regex;
+		const int err = regcomp(&regex, group, REG_EXTENDED | REG_ICASE);
+		if(err != 0)
+		{
+			vle_tb_append_linef(vle_err, "Regexp error in %s: %s", group,
+					get_regexp_error(err, &regex));
+			failure = 1;
+		}
+		regfree(&regex);
+	}
+
+	if(failure)
+	{
+		OPT_SCOPE scope = (opt == &view->sort_groups) ? OPT_LOCAL : OPT_GLOBAL;
+		optval_t val;
+
+		error = 1;
+		val.str_val = *opt;
+		set_option("viewcolumns", val, scope);
+	}
+	else
+	{
+		replace_string(opt, value);
 	}
 }
 

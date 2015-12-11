@@ -19,6 +19,8 @@
 
 #include "sort.h"
 
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdlib.h> /* abs() qsort() */
@@ -116,7 +118,7 @@ sort_by_groups(void)
 
 	char *const copy = strdup(view->sort_groups);
 	char *group = copy, *state = NULL;
-	while((group = split_and_get(group, ':', &state)) != NULL)
+	while((group = split_and_get(group, ',', &state)) != NULL)
 	{
 		ngroups = add_to_string_array(&groups, ngroups, 1, group);
 	}

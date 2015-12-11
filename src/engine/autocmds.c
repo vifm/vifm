@@ -19,6 +19,7 @@
 #include "autocmds.h"
 
 #include <regex.h> /* regex_t regcomp() regexec() regfree() */
+
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcasecmp() strchr() strdup() */
