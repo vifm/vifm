@@ -27,7 +27,7 @@
 #include "utf8.h"
 #endif
 
-#include <regex.h>
+#include <regex.h> /* regex_t regmatch_t regerror() regexec() */
 
 #include <sys/types.h> /* pid_t */
 #include <unistd.h>
@@ -289,6 +289,20 @@ parse_case_flag(const char flags[], int *case_sensitive)
 	}
 
 	return 0;
+}
+
+regmatch_t
+get_group_match(const regex_t *re, const char str[])
+{
+	regmatch_t matches[2];
+
+	if(regexec(re, str, 2, matches, 0) != 0 || matches[1].rm_so == -1)
+	{
+		matches[1].rm_so = 0;
+		matches[1].rm_eo = 0;
+	}
+
+	return matches[1];
 }
 
 const char *

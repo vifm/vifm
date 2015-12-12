@@ -412,23 +412,13 @@ static int
 compare_group(const char f[], const char s[], regex_t *regex)
 {
 	char fname[NAME_MAX], sname[NAME_MAX];
-	regmatch_t fmatch[2], smatch[2];
+	regmatch_t fmatch = get_group_match(regex, f);
+	regmatch_t smatch = get_group_match(regex, s);
 
-	if(regexec(regex, f, 2, fmatch, 0) != 0 || fmatch[1].rm_so == -1)
-	{
-		fmatch[1].rm_so = 0;
-		fmatch[1].rm_eo = 0;
-	}
-	if(regexec(regex, s, 2, smatch, 0) != 0 || smatch[1].rm_so == -1)
-	{
-		smatch[1].rm_so = 0;
-		smatch[1].rm_eo = 0;
-	}
-
-	copy_str(fname, MIN(sizeof(fname), fmatch[1].rm_eo - fmatch[1].rm_so + 1U),
-			f + fmatch[1].rm_so);
-	copy_str(sname, MIN(sizeof(sname), smatch[1].rm_eo - smatch[1].rm_so + 1U),
-			s + smatch[1].rm_so);
+	copy_str(fname, MIN(sizeof(fname), fmatch.rm_eo - fmatch.rm_so + 1U),
+			f + fmatch.rm_so);
+	copy_str(sname, MIN(sizeof(sname), smatch.rm_eo - smatch.rm_so + 1U),
+			s + smatch.rm_so);
 
 	return strcmp(fname, sname);
 }
