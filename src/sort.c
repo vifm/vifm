@@ -124,12 +124,16 @@ sort_by_groups(void)
 	}
 	free(copy);
 
-	for(i = ngroups - 1; i >= 0; --i)
+	for(i = ngroups - 1; i >= 1; --i)
 	{
 		regex_t regex;
 		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
 		sort_by_key(SK_BY_GROUPS, &regex);
 		regfree(&regex);
+	}
+	if(ngroups != 0)
+	{
+		sort_by_key(SK_BY_GROUPS, &view->primary_group);
 	}
 
 	free_string_array(groups, ngroups);

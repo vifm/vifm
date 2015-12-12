@@ -1868,8 +1868,10 @@ sortgroups_local(OPT_OP op, optval_t val)
 static void
 set_sortgroups(FileView *view, char **opt, char value[])
 {
+	OPT_SCOPE scope = (opt == &view->sort_groups) ? OPT_LOCAL : OPT_GLOBAL;
 	int failure = 0;
 
+	char *first = NULL;
 	char *group = value, *state = NULL;
 	while((group = split_and_get(group, ',', &state)) != NULL)
 	{
@@ -1882,21 +1884,34 @@ set_sortgroups(FileView *view, char **opt, char value[])
 			failure = 1;
 		}
 		regfree(&regex);
+
+		if(first == NULL)
+		{
+			first = strdup(group);
+		}
 	}
 
 	if(failure)
 	{
-		OPT_SCOPE scope = (opt == &view->sort_groups) ? OPT_LOCAL : OPT_GLOBAL;
 		optval_t val;
 
 		error = 1;
 		val.str_val = *opt;
 		set_option("viewcolumns", val, scope);
+		return;
 	}
-	else
+
+	if(first != NULL)
 	{
-		replace_string(opt, value);
+		if(scope == OPT_LOCAL)
+		{
+			regfree(&view->primary_group);
+			(void)regcomp(&view->primary_group, first, REG_EXTENDED | REG_ICASE);
+		}
+		free(first);
 	}
+
+	replace_string(opt, value);
 }
 
 /* Reacts on changes of view sorting. */

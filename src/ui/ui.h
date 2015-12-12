@@ -23,6 +23,8 @@
 #include <sys/types.h>
 
 #include <curses.h>
+#include <regex.h> /* regex_t */
+
 #include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t uint32_t */
 #include <stdlib.h> /* mode_t */
@@ -275,6 +277,8 @@ typedef struct
 	char sort[SK_COUNT], sort_g[SK_COUNT];
 	/* Sorting groups (comma-separated list of regular expressions). */
 	char *sort_groups, *sort_groups_g;
+	/* Primary group is compiled form. */
+	regex_t primary_group;
 
 	int history_num;
 	int history_pos;

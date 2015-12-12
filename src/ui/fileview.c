@@ -167,6 +167,8 @@ fview_view_init(FileView *view)
 
 	view->sort_groups = strdup("");
 	view->sort_groups_g = strdup("");
+	(void)regcomp(&view->primary_group, view->sort_groups,
+			REG_EXTENDED | REG_ICASE);
 }
 
 void
