@@ -21,6 +21,8 @@
 
 #include <curses.h>
 
+#include <regex.h> /* regmatch_t regcomp() regexec() */
+
 #ifndef _WIN32
 #include <pwd.h>
 #include <grp.h>
@@ -91,6 +93,8 @@ static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 static void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
 static void format_nitems(int id, const void *data, size_t buf_len, char buf[]);
+static void format_primary_group(int id, const void *data, size_t buf_len,
+		char buf[]);
 static void format_type(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_fileext(int id, const void *data, size_t buf_len,
@@ -121,7 +125,7 @@ fview_init(void)
 		{ SK_BY_INAME,  &format_name },
 		{ SK_BY_SIZE,   &format_size },
 		{ SK_BY_NITEMS, &format_nitems },
-		{ SK_BY_GROUPS, &format_name },
+		{ SK_BY_GROUPS, &format_primary_group },
 		{ SK_BY_TYPE,   &format_type },
 
 		{ SK_BY_EXTENSION,     &format_ext },
@@ -1046,6 +1050,20 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	{
 		format_entry_name(entry, buf_len + 1, buf);
 	}
+}
+
+/* Primary name group format (first value of 'sortgroups' option) callback for
+ * column_view unit. */
+static void
+format_primary_group(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	const FileView *view = cdt->view;
+	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
+	regmatch_t match = get_group_match(&view->primary_group, entry->name);
+
+	copy_str(buf, MIN(buf_len + 1U, match.rm_eo - match.rm_so + 1U),
+			entry->name + match.rm_so);
 }
 
 /* File size format callback for column_view unit. */
