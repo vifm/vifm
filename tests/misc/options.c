@@ -7,6 +7,7 @@
 #include "../../src/engine/options.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
@@ -36,6 +37,8 @@ SETUP()
 	lwin.num_width_g = 4;
 	lwin.num_width = 4;
 	lwin.ls_view = 0;
+	update_string(&lwin.sort_groups, "");
+	update_string(&lwin.sort_groups_g, "");
 
 	rwin.dir_entry = NULL;
 	rwin.list_rows = 0;
@@ -64,13 +67,13 @@ TEARDOWN()
 
 	columns_free(lwin.columns);
 	lwin.columns = NULL;
-	free(lwin.view_columns);
-	lwin.view_columns = NULL;
+	update_string(&lwin.view_columns, NULL);
+	update_string(&lwin.sort_groups, NULL);
+	update_string(&lwin.sort_groups_g, NULL);
 
 	columns_free(rwin.columns);
 	rwin.columns = NULL;
-	free(rwin.view_columns);
-	rwin.view_columns = NULL;
+	update_string(&rwin.view_columns, NULL);
 }
 
 static void
@@ -133,6 +136,12 @@ TEST(set_sets_local_and_global_values)
 	assert_success(exec_commands("set numberwidth=2", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.num_width_g);
 	assert_int_equal(2, lwin.num_width);
+}
+
+TEST(fails_to_set_sort_group_with_wrong_regexp)
+{
+	assert_failure(exec_commands("set sortgroups=*", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sortgroups=.*,*", &lwin, CIT_COMMAND));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

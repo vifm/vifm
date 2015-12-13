@@ -21,13 +21,15 @@
 
 #include <curses.h>
 
+#include <regex.h> /* regexec() */
+
 #include <sys/types.h> /* ssize_t */
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t wchar_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h>
+#include <string.h> /* strncmp() */
 #include <wctype.h> /* wtoupper() */
 #include <wchar.h> /* wcscpy() */
 
@@ -1967,10 +1969,15 @@ cmd_paren(int lb, int ub, int inc)
 	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
 	const char *const type_str = get_type_str(pentry->type);
+	regmatch_t pmatch;
 #ifndef _WIN32
 	char perms[16];
 	get_perm_string(perms, sizeof(perms), pentry->mode);
 #endif
+	if(sorting_key == SK_BY_GROUPS)
+	{
+		pmatch = get_group_match(&curr_view->primary_group, pentry->name);
+	}
 	while(pos > lb && pos < ub)
 	{
 		dir_entry_t *nentry;
@@ -1994,6 +2001,18 @@ cmd_paren(int lb, int ub, int inc)
 			case SK_BY_EXTENSION:
 				if(strcmp(get_last_ext(nentry->name), ext) != 0)
 					return pos;
+				break;
+			case SK_BY_GROUPS:
+				{
+					regmatch_t nmatch = get_group_match(&curr_view->primary_group,
+							nentry->name);
+
+					if(pmatch.rm_eo - pmatch.rm_so != nmatch.rm_eo - nmatch.rm_so ||
+							(pmatch.rm_eo != pmatch.rm_so &&
+							 strncmp(pentry->name + pmatch.rm_so, nentry->name + nmatch.rm_so,
+								 pmatch.rm_eo - pmatch.rm_so + 1U) != 0))
+						return pos;
+				}
 				break;
 			case SK_BY_NAME:
 				if(strncmp(pentry->name, nentry->name, char_width) != 0)

@@ -20,7 +20,7 @@
 #ifndef VIFM__UTILS__UTILS_H__
 #define VIFM__UTILS__UTILS_H__
 
-#include <regex.h>
+#include <regex.h> /* regex_t regmatch_t */
 
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* gid_t mode_t uid_t */
@@ -59,6 +59,10 @@ const char * get_regexp_error(int err, regex_t *re);
 /* *case_sensitive should be initialized with default value outside the call.
  * Returns zero on success, otherwise non-zero is returned. */
 int parse_case_flag(const char flags[], int *case_sensitive);
+
+/* Extracts first group match.  Returns the match, on error or missing first
+ * group both start and end fields are set to zero. */
+regmatch_t get_group_match(const regex_t *re, const char str[]);
 
 /* Shell and program running. */
 

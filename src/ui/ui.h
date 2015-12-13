@@ -23,6 +23,8 @@
 #include <sys/types.h>
 
 #include <curses.h>
+#include <regex.h> /* regex_t */
+
 #include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t uint32_t */
 #include <stdlib.h> /* mode_t */
@@ -81,6 +83,7 @@ typedef enum
 	SK_BY_TYPE,
 	SK_BY_FILEEXT,
 	SK_BY_NITEMS,
+	SK_BY_GROUPS,
 	/* New elements *must* be added here to keep values stored in existing
 	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
@@ -96,7 +99,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-	SK_LAST = SK_BY_NITEMS,
+	SK_LAST = SK_BY_GROUPS,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
@@ -270,7 +273,12 @@ typedef struct
 	}
 	local_filter;
 
+	/* List of sorting keys. */
 	char sort[SK_COUNT], sort_g[SK_COUNT];
+	/* Sorting groups (comma-separated list of regular expressions). */
+	char *sort_groups, *sort_groups_g;
+	/* Primary group is compiled form. */
+	regex_t primary_group;
 
 	int history_num;
 	int history_pos;

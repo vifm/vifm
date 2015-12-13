@@ -19,6 +19,7 @@
 #include "opt_handlers.h"
 
 #include <curses.h> /* stdscr wnoutrefresh() */
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -88,6 +89,7 @@ static void init_number(optval_t *val);
 static void init_numberwidth(optval_t *val);
 static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
+static void init_sortgroups(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -154,6 +156,10 @@ static void update_num_type(FileView *view, NumberingType *num_type,
 static void sort_global(OPT_OP op, optval_t val);
 static void sort_local(OPT_OP op, optval_t val);
 static void set_sort(FileView *view, char sort_keys[], char order[]);
+static void sortgroups_global(OPT_OP op, optval_t val);
+static void sortgroups_local(OPT_OP op, optval_t val);
+static void set_sortgroups(FileView *view, char **opt, char value[]);
+static void sorting_changed(FileView *view);
 static void sortorder_global(OPT_OP op, optval_t val);
 static void sortorder_local(OPT_OP op, optval_t val);
 static void set_sortorder(FileView *view, int ascending, char sort_keys[]);
@@ -199,6 +205,7 @@ static const char *sort_enum[] = {
 	[SK_BY_TYPE]          = "type",
 	[SK_BY_FILEEXT]       = "fileext",
 	[SK_BY_NITEMS]        = "nitems",
+	[SK_BY_GROUPS]        = "groups",
 #ifndef _WIN32
 	[SK_BY_GROUP_ID]      = "gid",
 	[SK_BY_GROUP_NAME]    = "gname",
@@ -260,6 +267,7 @@ static const char *sort_types[] = {
 	"type",    "+type",    "-type",
 	"fileext", "+fileext", "-fileext",
 	"nitems",  "+nitems",  "-nitems",
+	"groups",  "+groups",  "-groups",
 #ifndef _WIN32
 	"gid",   "+gid",   "-gid",
 	"gname", "+gname", "-gname",
@@ -553,9 +561,13 @@ options[] = {
 	  OPT_STRLIST, ARRAY_LEN(sort_types), sort_types, &sort_global, &sort_local,
 	  { .init = &init_sort },
 	},
+	{ "sortgroups", "",
+	  OPT_STR, 0, NULL, &sortgroups_global, &sortgroups_local,
+	  { .init = &init_sortgroups },
+	},
 	{ "sortorder", "",
 	  OPT_ENUM, ARRAY_LEN(sortorder_enum), sortorder_enum, &sortorder_global,
-		&sortorder_local,
+	  &sortorder_local,
 	  { .init = &init_sortorder },
 	},
 	{ "viewcolumns", "",
@@ -701,6 +713,13 @@ init_sort(optval_t *val)
 	val->str_val = "+name";
 }
 
+/* Provides default value for the 'sortgroups' option. */
+static void
+init_sortgroups(optval_t *val)
+{
+	val->str_val = "";
+}
+
 static void
 init_sortorder(optval_t *val)
 {
@@ -844,6 +863,10 @@ reset_local_options(FileView *view)
 	set_viewcolumns(view, view->view_columns);
 	val.str_val = view->view_columns;
 	set_option("viewcolumns", val, OPT_LOCAL);
+
+	replace_string(&view->sort_groups, view->sort_groups_g);
+	val.str_val = view->sort_groups;
+	set_option("sortgroups", val, OPT_LOCAL);
 }
 
 void
@@ -857,6 +880,11 @@ load_view_options(FileView *view)
 	set_option("viewcolumns", val, OPT_LOCAL);
 	val.str_val = view->view_columns_g;
 	set_option("viewcolumns", val, OPT_GLOBAL);
+
+	val.str_val = view->sort_groups;
+	set_option("sortgroups", val, OPT_LOCAL);
+	val.str_val = view->sort_groups_g;
+	set_option("sortgroups", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
 	set_option("lsview", val, OPT_LOCAL);
@@ -884,13 +912,19 @@ clone_local_options(const FileView *from, FileView *to)
 {
 	replace_string(&to->view_columns, from->view_columns);
 	replace_string(&to->view_columns_g, from->view_columns_g);
+
 	to->num_width = from->num_width;
 	to->num_width_g = from->num_width_g;
+
 	to->num_type = from->num_type;
 	to->num_type_g = from->num_type_g;
 
+	replace_string(&to->sort_groups, from->sort_groups);
+	replace_string(&to->sort_groups_g, from->sort_groups_g);
+
 	memcpy(to->sort, from->sort, sizeof(to->sort));
 	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
+
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
 }
@@ -1799,14 +1833,96 @@ set_sort(FileView *view, char sort_keys[], char order[])
 
 	if(sort_keys == view->sort)
 	{
-		/* Reset search results, which might be outdated after resorting. */
-		view->matches = 0;
-		fview_sorting_updated(view);
-		resort_view(view);
-		fview_cursor_redraw(view);
+		sorting_changed(view);
 	}
 
 	load_sort_option_inner(view, sort_keys);
+}
+
+/* Handles global 'sortgroup' option changes. */
+static void
+sortgroups_global(OPT_OP op, optval_t val)
+{
+	set_sortgroups(curr_view, &curr_view->sort_groups_g, val.str_val);
+	if(curr_stats.global_local_settings)
+	{
+		set_sortgroups(other_view, &other_view->sort_groups_g, val.str_val);
+	}
+}
+
+/* Handles local 'sortgroup' option changes. */
+static void
+sortgroups_local(OPT_OP op, optval_t val)
+{
+	set_sortgroups(curr_view, &curr_view->sort_groups, val.str_val);
+	sorting_changed(curr_view);
+	if(curr_stats.global_local_settings)
+	{
+		set_sortgroups(other_view, &other_view->sort_groups, val.str_val);
+		sorting_changed(other_view);
+	}
+}
+
+/* Sets sort_groups fields (*opt) of the view to the value handling malformed
+ * values correctly. */
+static void
+set_sortgroups(FileView *view, char **opt, char value[])
+{
+	OPT_SCOPE scope = (opt == &view->sort_groups) ? OPT_LOCAL : OPT_GLOBAL;
+	int failure = 0;
+
+	char *first = NULL;
+	char *group = value, *state = NULL;
+	while((group = split_and_get(group, ',', &state)) != NULL)
+	{
+		regex_t regex;
+		const int err = regcomp(&regex, group, REG_EXTENDED | REG_ICASE);
+		if(err != 0)
+		{
+			vle_tb_append_linef(vle_err, "Regexp error in %s: %s", group,
+					get_regexp_error(err, &regex));
+			failure = 1;
+		}
+		regfree(&regex);
+
+		if(first == NULL)
+		{
+			first = strdup(group);
+		}
+	}
+
+	if(failure)
+	{
+		optval_t val;
+
+		error = 1;
+		val.str_val = *opt;
+		set_option("viewcolumns", val, scope);
+		return;
+	}
+
+	if(first != NULL)
+	{
+		if(scope == OPT_LOCAL)
+		{
+			regfree(&view->primary_group);
+			(void)regcomp(&view->primary_group, first, REG_EXTENDED | REG_ICASE);
+		}
+		free(first);
+	}
+
+	replace_string(opt, value);
+}
+
+/* Reacts on changes of view sorting. */
+static void
+sorting_changed(FileView *view)
+{
+	/* Reset search results, which might be outdated after resorting. */
+	view->matches = 0;
+	fview_sorting_updated(view);
+	resort_view(view);
+	fview_cursor_redraw(view);
 }
 
 /* Handles global 'sortorder' option and corrects ordering for primary sorting

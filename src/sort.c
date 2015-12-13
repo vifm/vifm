@@ -19,6 +19,8 @@
 
 #include "sort.h"
 
+#include <regex.h> /* regex_t regcomp() regexec() regfree() */
+
 #include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdlib.h> /* abs() qsort() */
@@ -30,6 +32,7 @@
 #include "utils/fsdata.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filelist.h"
@@ -43,8 +46,11 @@ static int custom_view;
 static int sort_descending;
 /* Key used to sort entries in current sorting round. */
 static SortingKey sort_type;
+/* Sorting key specific data. */
+static void *sort_data;
 
-static void sort_by_key(char key);
+static void sort_by_groups(void);
+static void sort_by_key(char key, void *data);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
@@ -61,6 +67,7 @@ static int compare_file_sizes(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
+static int compare_group(const char f[], const char s[], regex_t *regex);
 
 void
 sort_view(FileView *v)
@@ -86,25 +93,63 @@ sort_view(FileView *v)
 			continue;
 		}
 
-		sort_by_key(sorting_key);
+		if(sorting_key == SK_BY_GROUPS)
+		{
+			sort_by_groups();
+			continue;
+		}
+
+		sort_by_key(sorting_key, NULL);
 	}
 
 	if(!ui_view_sort_list_contains(v->sort, SK_BY_DIR))
 	{
-		sort_by_key(SK_BY_DIR);
+		sort_by_key(SK_BY_DIR, NULL);
 	}
+}
+
+/* Sorts view according to sorting groups option. */
+static void
+sort_by_groups(void)
+{
+	char **groups = NULL;
+	int ngroups = 0;
+	int i;
+
+	char *const copy = strdup(view->sort_groups);
+	char *group = copy, *state = NULL;
+	while((group = split_and_get(group, ',', &state)) != NULL)
+	{
+		ngroups = add_to_string_array(&groups, ngroups, 1, group);
+	}
+	free(copy);
+
+	for(i = ngroups - 1; i >= 1; --i)
+	{
+		regex_t regex;
+		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
+		sort_by_key(SK_BY_GROUPS, &regex);
+		regfree(&regex);
+	}
+	if(ngroups != 0)
+	{
+		sort_by_key(SK_BY_GROUPS, &view->primary_group);
+	}
+
+	free_string_array(groups, ngroups);
 }
 
 /* Sorts view by the key in a stable way. */
 static void
-sort_by_key(char key)
+sort_by_key(char key, void *data)
 {
 	int j;
 
 	sort_descending = (key < 0);
 	sort_type = (SortingKey)abs(key);
+	sort_data = data;
 
-	for(j = 0; j < view->list_rows; j++)
+	for(j = 0; j < view->list_rows; ++j)
 	{
 		view->dir_entry[j].list_num = j;
 	}
@@ -266,6 +311,10 @@ sort_dir_list(const void *one, const void *two)
 			retval = compare_item_count(first, first_is_dir, second, second_is_dir);
 			break;
 
+		case SK_BY_GROUPS:
+			retval = compare_group(first->name, second->name, sort_data);
+			break;
+
 		case SK_BY_TIME_MODIFIED:
 			retval = first->mtime - second->mtime;
 			break;
@@ -277,6 +326,7 @@ sort_dir_list(const void *one, const void *two)
 		case SK_BY_TIME_CHANGED:
 			retval = first->ctime - second->ctime;
 			break;
+
 #ifndef _WIN32
 		case SK_BY_MODE:
 			retval = first->mode - second->mode;
@@ -358,6 +408,23 @@ compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 	const uint64_t fsize = fdir ? entry_get_nitems(view, f) : 0U;
 	const uint64_t ssize = sdir ? entry_get_nitems(view, s) : 0U;
 	return (fsize > ssize) ? 1 : (fsize < ssize) ? -1 : 0;
+}
+
+/* Compares two file names according to grouping regular expression.  Returns
+ * standard -1, 0, 1 for comparisons. */
+static int
+compare_group(const char f[], const char s[], regex_t *regex)
+{
+	char fname[NAME_MAX], sname[NAME_MAX];
+	regmatch_t fmatch = get_group_match(regex, f);
+	regmatch_t smatch = get_group_match(regex, s);
+
+	copy_str(fname, MIN(sizeof(fname), fmatch.rm_eo - fmatch.rm_so + 1U),
+			f + fmatch.rm_so);
+	copy_str(sname, MIN(sizeof(sname), smatch.rm_eo - smatch.rm_so + 1U),
+			s + smatch.rm_so);
+
+	return strcmp(fname, sname);
 }
 
 /* Compares names of two file entries.  Returns positive value if a is greater
@@ -450,6 +517,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_EXTENSION:
 		case SK_BY_FILEEXT:
 		case SK_BY_SIZE:
+		case SK_BY_GROUPS:
 		case SK_BY_DIR:
 			return SK_BY_SIZE;
 	}

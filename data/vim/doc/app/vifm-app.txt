@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 06
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2812,7 +2812,7 @@ higher this value is, the less is CPU load in idle mode.
 lsview
 type: boolean
 default: false
-local
+scope: local
 
 When this option is set, directory view will be displayed in multiple
 columns with file names similar to output of `ls -x` command.  See also
@@ -2822,7 +2822,7 @@ columns with file names similar to output of `ls -x` command.  See also
 number nu
 type: boolean
 default: false
-local
+scope: local
 
 Print line number in front of each file name when |vifm-'lsview'| option is
 turned off.  Use |vifm-'numberwidth'| to control width of line number.
@@ -2832,7 +2832,7 @@ Also see |vifm-'relativenumber'|.
 numberwidth nuw
 type: integer
 default: 4
-local
+scope: local
 
 Minimal number of characters for line number field.
 
@@ -2841,7 +2841,7 @@ Minimal number of characters for line number field.
 relativenumber rnu
 type: boolean
 default: false
-local
+scope: local
 
 Print relative line number in front of each file name when |vifm-'lsview'|
 option is turned off.  Use |vifm-'numberwidth'| to control width of line
@@ -2959,7 +2959,7 @@ is enabled.  It doesn't affect file filtering.
 sort
 type: enumeration
 default: +name on *nix and +iname on Windows
-local
+scope: local
 
 Sets list of sorting keys (first item is primary key, second is secondary
 key, etc.):
@@ -2977,6 +2977,7 @@ key, etc.):
    [+-]uname   - owner name (*nix only)
    [+-]size    - size
    [+-]nitems  - number of items in a directory (zero for files)
+   [+-]groups  - groups extracted via regexps from |vifm-'sortgroups'|
    [+-]atime   - time accessed (e.g. read, executed)
    [+-]ctime   - time changed (changes in metadata, e.g. mode)
    [+-]mtime   - time modified (when file contents is changed)
@@ -3008,11 +3009,28 @@ default: false
 
 Natural sort of (version) numbers within text.
 
+                                               *vifm-'sortgroups'*
+sortgroups
+type: string
+default: ""
+scope: local
+
+Sets comma-separated list of regular expressions to use for group sorting,
+double comma is literal comma.  Each expression should contain at least one
+group or its value will be considered to be always empty.  Only first match of
+each regular expression is considered.  Groups are considered from right to
+first similar to |vifm-'sort'|, first group divides list of files into
+sub-groups, each of which is sorted by the second group and so on.
+
+Example: >
+ set sortgroups=-(done|todo).*
+this would put files with "-done" in their names above all files with "-todo".
+
                                                *vifm-'sortorder'*
 sortorder
 type: enumeration
 default: ascending
-local
+scope: local
 
 Sets sort order for primary key: ascending, descending.
 
@@ -3149,7 +3167,7 @@ whether it's preceded by space or not) means backgrounding of command.
 viewcolumns
 type: string
 default: ""
-local
+scope: local
 
 Format string containing list of columns in the view. When this option is
 empty view columns to show are chosen automatically using sorting keys

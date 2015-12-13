@@ -1009,6 +1009,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
 	fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns_g));
 	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns_g));
+	fprintf(fp, "=[sortgroups=%s\n", escape_spaces(lwin.sort_groups_g));
+	fprintf(fp, "=]sortgroups=%s\n", escape_spaces(rwin.sort_groups_g));
 	fprintf(fp, "=[%slsview\n", lwin.ls_view_g ? "" : "no");
 	fprintf(fp, "=]%slsview\n", rwin.ls_view_g ? "" : "no");
 	fprintf(fp, "=[%snumber\n", (lwin.num_type_g & NT_SEQ) ? "" : "no");
