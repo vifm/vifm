@@ -3572,6 +3572,8 @@ etc.):
    [+\-]uid     \- owner id (*nix only)
    [+\-]uname   \- owner name (*nix only)
    [+\-]size    \- size
+   [+\-]nitems  \- number of items in a directory (zero for files)
+   [+\-]groups  \- groups extracted via regexps from 'sortgroups'
    [+\-]atime   \- time accessed (e.g. read, executed)
    [+\-]ctime   \- time changed (changes in metadata, e.g. mode)
    [+\-]mtime   \- time modified (when file contents is changed)
@@ -3630,6 +3632,33 @@ default: false
 scope: local
 .br
 Natural sort of (version) numbers within text.
+.TP
+.BI 'sortgroups'
+type: string
+.br
+default: ""
+.br
+scope: local
+.br
+Sets comma-separated list of regular expressions to use for group sorting,
+double comma is literal comma.  Each expression should contain at least one
+group or its value will be considered to be always empty.  Only first match of
+each regular expression is considered.  Groups are considered from right to
+first similar to 'sort', first group divides list of files into sub-groups, each
+of which is sorted by the second group and so on.
+
+Example:
+.EX
+  set sortgroups=-(done|todo).*
+.EE
+this would put files with "\-done" in their names above all files with "\-todo".
+.TP
+.BI 'sortorder'
+type: enumeration
+.br
+default: ascending
+.br
+Sets sort order for primary key: ascending, descending.
 .TP
 .BI "'statusline' 'stl'"
 type: string
@@ -3690,13 +3719,6 @@ On Windows file properties include next flags (upper case means flag is on):
 .br
  Z \- sparse file
 .RE
-.TP
-.BI 'sortorder'
-type: enumeration
-.br
-default: ascending
-.br
-Sets sort order for primary key: ascending, descending.
 .TP
 .BI 'syscalls'
 type: boolean

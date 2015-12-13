@@ -89,6 +89,7 @@ const char *tags[] = {
 	"vifm-'smartcase'",
 	"vifm-'so'",
 	"vifm-'sort'",
+	"vifm-'sortgroups'",
 	"vifm-'sortnumbers'",
 	"vifm-'sortorder'",
 	"vifm-'statusline'",

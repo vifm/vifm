@@ -113,6 +113,9 @@
 	Added autocommands (DirEnter event and :au[tocmd] command).  Thanks to
 	filterfalse.
 
+	Added 'sortgroups' option and "groups" sorting key, which allow sorting by
+	parts of file names.  Thanks to aleksejrs.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
