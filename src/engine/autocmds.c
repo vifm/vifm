@@ -44,7 +44,7 @@ typedef struct
 }
 aucmd_info_t;
 
-static int add_aucmd(const char event[], const char pattern[],
+static int add_aucmd(const char event[], const char pattern[], int negated,
 		const char action[], vle_aucmd_handler handler);
 static int is_pattern_match(const aucmd_info_t *autocmd, const char path[]);
 static void free_autocmd_data(aucmd_info_t *autocmd);
@@ -75,16 +75,16 @@ vle_aucmd_on_execute(const char event[], const char patterns[],
 	char *pat = free_this, *state = NULL;
 	while((pat = split_and_get_dc(pat, &state)) != NULL)
 	{
-		char *const expanded_pat = expand_hook(pat);
-		if(expanded_pat != NULL)
-		{
-			err += (add_aucmd(event, expanded_pat, action, handler) != 0);
-			free(expanded_pat);
-		}
-		else
+		const int negated = (*pat == '!');
+		char *const expanded_pat = expand_hook(negated ? pat + 1 : pat);
+		if(expanded_pat == NULL)
 		{
 			err = 1;
+			continue;
 		}
+
+		err += (add_aucmd(event, expanded_pat, negated, action, handler) != 0);
+		free(expanded_pat);
 	}
 
 	free(free_this);
@@ -95,8 +95,8 @@ vle_aucmd_on_execute(const char event[], const char patterns[],
  * pattern.  Event name is case insensitive.  Returns zero on successful
  * registration or non-zero on error. */
 static int
-add_aucmd(const char event[], const char pattern[], const char action[],
-		vle_aucmd_handler handler)
+add_aucmd(const char event[], const char pattern[], int negated,
+		const char action[], vle_aucmd_handler handler)
 {
 	char canonic_path[PATH_MAX];
 	aucmd_info_t *autocmd;
@@ -106,12 +106,6 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 	if(autocmd == NULL)
 	{
 		return 1;
-	}
-
-	autocmd->negated = (pattern[0] == '!');
-	if(autocmd->negated)
-	{
-		++pattern;
 	}
 
 	if(strchr(pattern, '/') != NULL)
@@ -139,6 +133,7 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 
 	autocmd->event = strdup(event);
 	autocmd->pattern = strdup(pattern);
+	autocmd->negated = negated;
 	autocmd->action = strdup(action);
 	autocmd->handler = handler;
 	if(autocmd->event == NULL || autocmd->pattern == NULL ||

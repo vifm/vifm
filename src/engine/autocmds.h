@@ -27,12 +27,10 @@
  *   - /some/path -- only "/some/path"
  *   - name       -- paths of the form ".../name"
  *   - !pattern   -- not matching the pattern
- *
- * TODO:
- * **_/dir   -- e.g. "/etc/dir"
- * ~/dir/_** -- subtree of "~/dir"
- * ~/dir/_*_/ -- one level below "~/dir"
- * */
+ *   - ** /dir    -- e.g. "/etc/dir"
+ *   - ~/dir/ **  -- subtree of "~/dir"
+ *   - ~/dir/ * / -- one level below "~/dir"
+ * (Ignore spaces around asterisk, this is due to comment syntax.) */
 
 /* Type of hook that performs custom pattern expansion.  Should allocate new
  * expanded string. */
