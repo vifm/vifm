@@ -372,5 +372,58 @@ TEST(nitems_sorting_works)
 	assert_string_equal("various-sizes", lwin.dir_entry[2].name);
 }
 
+TEST(groups_sorting_works)
+{
+	view_teardown(&lwin);
+	assert_success(init_status(&cfg));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	lwin.list_rows = 7;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("1-done");
+	lwin.dir_entry[0].type = FT_REG;
+	lwin.dir_entry[0].origin = lwin.curr_dir;
+	lwin.dir_entry[1].name = strdup("10-bla-todo-edit");
+	lwin.dir_entry[1].type = FT_REG;
+	lwin.dir_entry[1].origin = lwin.curr_dir;
+	lwin.dir_entry[2].name = strdup("11-todo-publish");
+	lwin.dir_entry[2].type = FT_REG;
+	lwin.dir_entry[2].origin = lwin.curr_dir;
+	lwin.dir_entry[3].name = strdup("2-todo-replace");
+	lwin.dir_entry[3].type = FT_REG;
+	lwin.dir_entry[3].origin = lwin.curr_dir;
+	lwin.dir_entry[4].name = strdup("3-done");
+	lwin.dir_entry[4].type = FT_REG;
+	lwin.dir_entry[4].origin = lwin.curr_dir;
+	lwin.dir_entry[5].name = strdup("4-todo-edit");
+	lwin.dir_entry[5].type = FT_REG;
+	lwin.dir_entry[5].origin = lwin.curr_dir;
+	lwin.dir_entry[6].name = strdup("5-todo-publish");
+	lwin.dir_entry[6].type = FT_REG;
+	lwin.dir_entry[6].origin = lwin.curr_dir;
+
+	lwin.sort[0] = SK_BY_GROUPS;
+	lwin.sort[1] = SK_BY_NAME;
+	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
+
+	update_string(&lwin.sort_groups, "-(done|todo).*");
+	(void)regcomp(&lwin.primary_group, "-(done|todo).*",
+			REG_EXTENDED | REG_ICASE);
+
+	sort_view(&lwin);
+
+	regfree(&lwin.primary_group);
+	update_string(&lwin.sort_groups, NULL);
+
+	assert_string_equal("1-done", lwin.dir_entry[0].name);
+	assert_string_equal("3-done", lwin.dir_entry[1].name);
+	assert_string_equal("2-todo-replace", lwin.dir_entry[2].name);
+	assert_string_equal("4-todo-edit", lwin.dir_entry[3].name);
+	assert_string_equal("5-todo-publish", lwin.dir_entry[4].name);
+	assert_string_equal("10-bla-todo-edit", lwin.dir_entry[5].name);
+	assert_string_equal("11-todo-publish", lwin.dir_entry[6].name);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
