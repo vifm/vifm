@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 06, 2015" "vifm 0.8"
+.TH VIFM 1 "December 13, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3386,7 +3386,7 @@ type: boolean
 .br
 default: false
 .br
-type: local
+scope: local
 .br
 When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
@@ -3397,7 +3397,7 @@ type: boolean
 .br
 default: false
 .br
-type: local
+scope: local
 .br
 Print line number in front of each file name when 'lsview' option is turned off.
 Use 'numberwidth' to control width of line number.  Also see 'relativenumber'.
@@ -3407,7 +3407,7 @@ type: integer
 .br
 default: 4
 .br
-type: local
+scope: local
 .br
 Minimal number of characters for line number field.
 .TP
@@ -3416,7 +3416,7 @@ type: boolean
 .br
 default: false
 .br
-type: local
+scope: local
 .br
 Print relative line number in front of each file name when 'lsview' option is
 turned off.  Use 'numberwidth' to control width of line number.  Various
@@ -3555,7 +3555,7 @@ type: string list
 .br
 default: +name on *nix and +iname on Windows
 .br
-type: local
+scope: local
 .br
 Sets list of sorting keys (first item is primary key, second is secondary key,
 etc.):
@@ -3627,7 +3627,7 @@ type: boolean
 .br
 default: false
 .br
-type: local
+scope: local
 .br
 Natural sort of (version) numbers within text.
 .TP
@@ -3797,7 +3797,7 @@ type: string
 .br
 default: ""
 .br
-type: local
+scope: local
 .br
 Format string containing list of columns in the view.  When this option is empty
 view columns to show are chosen automatically using sorting keys (see 'sort') as
