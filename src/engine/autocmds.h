@@ -44,7 +44,7 @@ typedef void (*vle_aucmd_handler)(const char action[], void *arg);
 /* Type of callback function for autocommand enumeration via
  * vle_aucmd_list(). */
 typedef void (*vle_aucmd_list_cb)(const char event[], const char pattern[],
-		const char action[], void *arg);
+		int negated, const char action[], void *arg);
 
 /* Sets hook that is called to process patterns. */
 void vle_aucmd_set_expand_hook(vle_aucmd_expand_hook hook);

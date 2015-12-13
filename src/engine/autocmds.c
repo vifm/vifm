@@ -240,7 +240,8 @@ vle_aucmd_list(const char event[], const char patterns[], vle_aucmd_list_cb cb,
 			continue;
 		}
 
-		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action, arg);
+		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].negated,
+				autocmds[i].action, arg);
 	}
 
 	free_string_array(pats, len);
