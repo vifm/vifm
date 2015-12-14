@@ -74,6 +74,14 @@ TEST(trail_glob_match)
 	assert_string_equal("action", action);
 }
 
+TEST(zero_length_path_prefix)
+{
+	assert_success(vle_aucmd_on_execute("cd", "/etc/**/*.d", "action", &handler));
+
+	vle_aucmd_execute("cd", "/etc/conf.d", NULL);
+	assert_string_equal("action", action);
+}
+
 static void
 handler(const char a[], void *arg)
 {
