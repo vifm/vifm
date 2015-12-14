@@ -246,7 +246,9 @@ execute_cmd(const char cmd[])
 			free(p);
 		}
 	}
-	else
+
+	/* This handles both !cur->expand and malformed value of cur->expand. */
+	if(cmd_info.args == NULL)
 	{
 		cmd_info.args = strdup(cmd_info.raw_args);
 	}
@@ -258,6 +260,7 @@ execute_cmd(const char cmd[])
 	}
 	cmd_info.args[last_end] = '\0';
 
+	/* TODO: extract a method that would check all these error conditions. */
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) && !cur->range)
 	{
 		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
