@@ -178,6 +178,14 @@ is_pattern_match(const aucmd_info_t *autocmd, const char path[])
 	const char *const part = (strchr(autocmd->pattern, '/') == NULL)
 	                       ? get_last_path_component(path)
 	                       : path;
+
+	/* Leading start shouldn't match dot at the first character.  Can't be
+	 * handled by globs->regex translation. */
+	if(autocmd->pattern[0] == '*' && part[0] == '.')
+	{
+		return 0;
+	}
+
 	return (regexec(&autocmd->regex, part, 0, NULL, 0) == 0)^autocmd->negated;
 }
 

@@ -114,13 +114,6 @@ glob_to_regex(const char glob[], int extended)
 		}
 		else if(extended && *glob == '*' && glob[1] == '*')
 		{
-			if(result_len == 1)
-			{
-				if(strappend(&result, &result_len, "[^.]") != 0)
-				{
-					break;
-				}
-			}
 			if(strappend(&result, &result_len, ".*") != 0)
 			{
 				break;
@@ -132,7 +125,7 @@ glob_to_regex(const char glob[], int extended)
 		{
 			if(result_len == 1)
 			{
-				const char *const pat = extended ? "[^.][^/]*" : "[^.].*";
+				const char *const pat = extended ? "[^/]*" : "[^.].*";
 				if(strappend(&result, &result_len, pat) != 0)
 				{
 					break;

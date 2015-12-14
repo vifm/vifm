@@ -108,7 +108,7 @@ TEST(star_and_dot)
 {
 	const char *prog_cmd;
 
-	set_programs("*.doc", "libreoffice", 0, 0);
+	set_programs(".xls,*.doc", "libreoffice", 0, 0);
 
 	assert_true((prog_cmd = ft_get_program("a.doc")) != NULL);
 	assert_string_equal("libreoffice", prog_cmd);
@@ -135,6 +135,19 @@ TEST(double_comma)
 
 	assert_true((prog_cmd = ft_get_program("file.version.zip")) != NULL);
 	assert_string_equal("prog1 -o opt1", prog_cmd);
+}
+
+TEST(zero_length_match)
+{
+	/* This is confirmation of limitation of globs->regex transition.  There is a
+	 * complication for list of globs, so it's left with somewhat incorrect
+	 * behaviour. */
+
+	const char *prog_cmd;
+
+	set_programs("*git", "tig", 0, 0);
+
+	assert_null(prog_cmd = ft_get_program("git"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

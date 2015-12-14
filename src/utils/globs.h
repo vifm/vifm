@@ -20,7 +20,12 @@
 #define VIFM__UTILS__GLOBS_H__
 
 /* Implements globs by converting them into regular expressions.  They are
- * treated as case insensitive. */
+ * treated as case insensitive.
+ *
+ * "*" at the beginning of a non-extended glob doesn't match empty string (e.g.
+ * "*doc" should match "doc", but it won't).  This is a limitation of turning
+ * list of globs into single regular expression.  Extended glob will match even
+ * ".", which should be cut off somewhere else. */
 
 /* Converts comma-separated list of globs into equivalent regular expression.
  * Returns pointer to a newly allocated string, which should be freed by the
