@@ -44,7 +44,7 @@ typedef struct
 }
 aucmd_info_t;
 
-static int add_aucmd(const char event[], const char pattern[],
+static int add_aucmd(const char event[], const char pattern[], int negated,
 		const char action[], vle_aucmd_handler handler);
 static int is_pattern_match(const aucmd_info_t *autocmd, const char path[]);
 static void free_autocmd_data(aucmd_info_t *autocmd);
@@ -75,16 +75,16 @@ vle_aucmd_on_execute(const char event[], const char patterns[],
 	char *pat = free_this, *state = NULL;
 	while((pat = split_and_get_dc(pat, &state)) != NULL)
 	{
-		char *const expanded_pat = expand_hook(pat);
-		if(expanded_pat != NULL)
-		{
-			err += (add_aucmd(event, expanded_pat, action, handler) != 0);
-			free(expanded_pat);
-		}
-		else
+		const int negated = (*pat == '!');
+		char *const expanded_pat = expand_hook(negated ? (pat + 1) : pat);
+		if(expanded_pat == NULL)
 		{
 			err = 1;
+			continue;
 		}
+
+		err += (add_aucmd(event, expanded_pat, negated, action, handler) != 0);
+		free(expanded_pat);
 	}
 
 	free(free_this);
@@ -95,8 +95,8 @@ vle_aucmd_on_execute(const char event[], const char patterns[],
  * pattern.  Event name is case insensitive.  Returns zero on successful
  * registration or non-zero on error. */
 static int
-add_aucmd(const char event[], const char pattern[], const char action[],
-		vle_aucmd_handler handler)
+add_aucmd(const char event[], const char pattern[], int negated,
+		const char action[], vle_aucmd_handler handler)
 {
 	char canonic_path[PATH_MAX];
 	aucmd_info_t *autocmd;
@@ -106,12 +106,6 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 	if(autocmd == NULL)
 	{
 		return 1;
-	}
-
-	autocmd->negated = (pattern[0] == '!');
-	if(autocmd->negated)
-	{
-		++pattern;
 	}
 
 	if(strchr(pattern, '/') != NULL)
@@ -139,6 +133,7 @@ add_aucmd(const char event[], const char pattern[], const char action[],
 
 	autocmd->event = strdup(event);
 	autocmd->pattern = strdup(pattern);
+	autocmd->negated = negated;
 	autocmd->action = strdup(action);
 	autocmd->handler = handler;
 	if(autocmd->event == NULL || autocmd->pattern == NULL ||
@@ -183,6 +178,14 @@ is_pattern_match(const aucmd_info_t *autocmd, const char path[])
 	const char *const part = (strchr(autocmd->pattern, '/') == NULL)
 	                       ? get_last_path_component(path)
 	                       : path;
+
+	/* Leading start shouldn't match dot at the first character.  Can't be
+	 * handled by globs->regex translation. */
+	if(autocmd->pattern[0] == '*' && part[0] == '.')
+	{
+		return 0;
+	}
+
 	return (regexec(&autocmd->regex, part, 0, NULL, 0) == 0)^autocmd->negated;
 }
 
@@ -195,11 +198,16 @@ vle_aucmd_remove(const char event[], const char patterns[])
 
 	for(i = (int)DA_SIZE(autocmds) - 1; i >= 0; --i)
 	{
+		char pat[1U + strlen(autocmds[i].pattern) + 1U];
+
+		copy_str(&pat[1], sizeof(pat) - 1U, autocmds[i].pattern);
+		pat[0] = autocmds[i].negated ? '!' : '=';
+
 		if(event != NULL && strcasecmp(event, autocmds[i].event) != 0)
 		{
 			continue;
 		}
-		if(patterns != NULL && !is_in_string_array(pats, len, autocmds[i].pattern))
+		if(patterns != NULL && !is_in_string_array(pats, len, pat))
 		{
 			continue;
 		}
@@ -231,23 +239,30 @@ vle_aucmd_list(const char event[], const char patterns[], vle_aucmd_list_cb cb,
 
 	for(i = 0U; i < DA_SIZE(autocmds); ++i)
 	{
+		char pat[1U + strlen(autocmds[i].pattern) + 1U];
+
+		copy_str(&pat[1], sizeof(pat) - 1U, autocmds[i].pattern);
+		pat[0] = autocmds[i].negated ? '!' : '=';
+
 		if(event != NULL && strcasecmp(event, autocmds[i].event) != 0)
 		{
 			continue;
 		}
-		if(patterns != NULL && !is_in_string_array(pats, len, autocmds[i].pattern))
+		if(patterns != NULL && !is_in_string_array(pats, len, pat))
 		{
 			continue;
 		}
 
-		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].action, arg);
+		cb(autocmds[i].event, autocmds[i].pattern, autocmds[i].negated,
+				autocmds[i].action, arg);
 	}
 
 	free_string_array(pats, len);
 }
 
 /* Parses single pattern string into list of patterns.  Returns the list and
- * writes its length into *len. */
+ * writes its length into *len.  Each pattern in the list is prepended with
+ * either "!" or "=" to indicate negation. */
 static char **
 get_patterns(const char patterns[], int *len)
 {
@@ -261,19 +276,25 @@ get_patterns(const char patterns[], int *len)
 		char *pat = free_this, *state = NULL;
 		while((pat = split_and_get_dc(pat, &state)) != NULL)
 		{
-			char *const expanded_pat = expand_hook(pat);
-			if(expanded_pat != NULL)
-			{
-				char canonic_path[PATH_MAX];
-				canonicalize_path(expanded_pat, canonic_path, sizeof(canonic_path));
-				if(!is_root_dir(canonic_path))
-				{
-					chosp(canonic_path);
-				}
+			const int negated = (*pat == '!');
+			char canonic_path[PATH_MAX];
+			char *path = &canonic_path[1];
 
-				*len = add_to_string_array(&pats, *len, 1, canonic_path);
-				free(expanded_pat);
+			char *const expanded_pat = expand_hook(negated ? (pat + 1) : pat);
+			if(expanded_pat == NULL)
+			{
+				continue;
 			}
+
+			canonicalize_path(expanded_pat, path, sizeof(canonic_path) - 1);
+			if(!is_root_dir(path))
+			{
+				chosp(path);
+			}
+
+			*--path = negated ? '!' : '=';
+			*len = add_to_string_array(&pats, *len, 1, path);
+			free(expanded_pat);
 		}
 
 		free(free_this);

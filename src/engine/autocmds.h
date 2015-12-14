@@ -27,12 +27,10 @@
  *   - /some/path -- only "/some/path"
  *   - name       -- paths of the form ".../name"
  *   - !pattern   -- not matching the pattern
- *
- * TODO:
- * **_/dir   -- e.g. "/etc/dir"
- * ~/dir/_** -- subtree of "~/dir"
- * ~/dir/_*_/ -- one level below "~/dir"
- * */
+ *   - ** /dir    -- e.g. "/etc/dir"
+ *   - ~/dir/ **  -- subtree of "~/dir"
+ *   - ~/dir/ * / -- one level below "~/dir"
+ * (Ignore spaces around asterisk, this is due to comment syntax.) */
 
 /* Type of hook that performs custom pattern expansion.  Should allocate new
  * expanded string. */
@@ -44,7 +42,7 @@ typedef void (*vle_aucmd_handler)(const char action[], void *arg);
 /* Type of callback function for autocommand enumeration via
  * vle_aucmd_list(). */
 typedef void (*vle_aucmd_list_cb)(const char event[], const char pattern[],
-		const char action[], void *arg);
+		int negated, const char action[], void *arg);
 
 /* Sets hook that is called to process patterns. */
 void vle_aucmd_set_expand_hook(vle_aucmd_expand_hook hook);

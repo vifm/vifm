@@ -101,7 +101,7 @@ static int emark_cmd(const cmd_info_t *cmd_info);
 static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int autocmd_cmd(const cmd_info_t *cmd_info);
-static void aucmd_list_cb(const char event[], const char pattern[],
+static void aucmd_list_cb(const char event[], const char pattern[], int negated,
 		const char action[], void *arg);
 static void aucmd_action_handler(const char action[], void *arg);
 static int bmark_cmd(const cmd_info_t *cmd_info);
@@ -728,15 +728,15 @@ aucmd_action_handler(const char action[], void *arg)
 
 /* Handler of list callback for autocommands. */
 static void
-aucmd_list_cb(const char event[], const char pattern[], const char action[],
-		void *arg)
+aucmd_list_cb(const char event[], const char pattern[], int negated,
+		const char action[], void *arg)
 {
 	vle_textbuf *msg = arg;
 	const char *fmt = (strlen(pattern) <= 10)
-	                ? "%-10s %-10s %s"
-	                : "%-10s %-10s\n                      %s";
+	                ? "%-10s %s%-10s %s"
+	                : "%-10s %s%-10s\n                      %s";
 
-	vle_tb_append_linef(msg, fmt, event, pattern, action);
+	vle_tb_append_linef(msg, fmt, event, negated ? "!" : "", pattern, action);
 }
 
 /* Marks directory with set of tags. */

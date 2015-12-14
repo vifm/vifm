@@ -20,4 +20,8 @@ Screen split title cannot be overwritten when it's run from `:shell`.
 
 :change->Name renames only one file even when several are selected.
 
-On OpenBSD there are issues with non-ascii characters.
+On OpenBSD there might be issues with non-ascii characters.
+
+"*" at the beginning of a glob doesn't match empty string (e.g. "*doc" should
+match "doc", but it won't).  This is a limitation of turning list of globs into
+single regular expression.

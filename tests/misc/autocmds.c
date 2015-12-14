@@ -3,6 +3,7 @@
 #include <stddef.h> /* NULL */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/autocmds.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/str.h"
@@ -10,6 +11,8 @@
 #include "../../src/filelist.h"
 
 #include "utils.h"
+
+static int not_windows(void);
 
 SETUP()
 {
@@ -229,6 +232,33 @@ TEST(multiple_patterns_correct_expansion)
 	assert_string_equal("", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_string_equal("", env_get("a"));
+}
+
+/* Windows has various limitations on characters used in file names. */
+TEST(tilde_is_expanded_after_negation, IF(not_windows))
+{
+	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+
+	assert_success(os_mkdir(SANDBOX_PATH"/~", 0700));
+
+	assert_success(exec_commands("auto DirEnter !~ let $a = 1", &lwin,
+				CIT_COMMAND));
+
+	assert_string_equal("", env_get("a"));
+	assert_true(change_directory(curr_view, SANDBOX_PATH"/~") >= 0);
+	assert_string_equal("1", env_get("a"));
+
+	assert_success(rmdir(SANDBOX_PATH"/~"));
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
