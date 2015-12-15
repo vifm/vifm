@@ -41,6 +41,7 @@
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/regexp.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"

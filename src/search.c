@@ -31,6 +31,7 @@
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/path.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"

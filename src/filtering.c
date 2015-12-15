@@ -27,6 +27,7 @@
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/path.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"

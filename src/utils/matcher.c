@@ -26,8 +26,8 @@
 
 #include "globs.h"
 #include "path.h"
+#include "regexp.h"
 #include "str.h"
-#include "utils.h"
 
 /* Wrapper for a regular expression, its state and compiled form. */
 struct matcher_t

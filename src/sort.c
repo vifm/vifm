@@ -31,6 +31,7 @@
 #include "ui/ui.h"
 #include "utils/fsdata.h"
 #include "utils/path.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
