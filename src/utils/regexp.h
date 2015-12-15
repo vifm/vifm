@@ -32,7 +32,9 @@ int get_regexp_cflags(const char pattern[]);
  * ignored, otherwise zero is returned. */
 int regexp_should_ignore_case(const char pattern[]);
 
-const char * get_regexp_error(int err, regex_t *re);
+/* Turns error code into error message.  Returns pointer to a statically
+ * allocated buffer. */
+const char * get_regexp_error(int err, const regex_t *re);
 
 /* *case_sensitive should be initialized with default value outside the call.
  * Returns zero on success, otherwise non-zero is returned. */

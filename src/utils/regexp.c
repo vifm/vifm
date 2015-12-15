@@ -49,7 +49,7 @@ regexp_should_ignore_case(const char pattern[])
 }
 
 const char *
-get_regexp_error(int err, regex_t *re)
+get_regexp_error(int err, const regex_t *re)
 {
 	static char buf[360];
 
