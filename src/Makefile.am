@@ -190,6 +190,7 @@ vifm_SOURCES = \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
 	utils/path.c utils/path.h \
+	utils/regexp.c utils/regexp.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \

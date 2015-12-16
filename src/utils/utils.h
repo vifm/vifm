@@ -20,8 +20,6 @@
 #ifndef VIFM__UTILS__UTILS_H__
 #define VIFM__UTILS__UTILS_H__
 
-#include <regex.h> /* regex_t regmatch_t */
-
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* gid_t mode_t uid_t */
 
@@ -42,27 +40,6 @@ EnvType;
 
 /* Callback for process_cmd_output() function. */
 typedef void (*cmd_output_handler)(const char line[], void *arg);
-
-/* Regular expressions. */
-
-/* Gets flags for compiling a regular expression specified by the pattern taking
- * 'ignorecase' and 'smartcase' options into account.  Returns regex flags. */
-int get_regexp_cflags(const char pattern[]);
-
-/* Decides whether case should be ignored for the pattern.  Considers
- * 'ignorecase' and 'smartcase' options.  Returns non-zero when case should be
- * ignored, otherwise zero is returned. */
-int regexp_should_ignore_case(const char pattern[]);
-
-const char * get_regexp_error(int err, regex_t *re);
-
-/* *case_sensitive should be initialized with default value outside the call.
- * Returns zero on success, otherwise non-zero is returned. */
-int parse_case_flag(const char flags[], int *case_sensitive);
-
-/* Extracts first group match.  Returns the match, on error or missing first
- * group both start and end fields are set to zero. */
-regmatch_t get_group_match(const regex_t *re, const char str[]);
 
 /* Shell and program running. */
 

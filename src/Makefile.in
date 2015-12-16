@@ -130,14 +130,14 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
 	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
 	utils/matcher.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	cmd_handlers.$(OBJEXT) cmd_core.$(OBJEXT) \
-	cmd_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
-	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/regexp.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
+	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) cmd_handlers.$(OBJEXT) \
+	cmd_core.$(OBJEXT) cmd_completion.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
@@ -488,6 +488,7 @@ vifm_SOURCES = \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
 	utils/path.c utils/path.h \
+	utils/regexp.c utils/regexp.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \
@@ -880,6 +881,8 @@ utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/regexp.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/str.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/string_array.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1026,6 +1029,7 @@ mostlyclean-compile:
 	-rm -f utils/log.$(OBJEXT)
 	-rm -f utils/matcher.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
+	-rm -f utils/regexp.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
 	-rm -f utils/trie.$(OBJEXT)
@@ -1163,6 +1167,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/regexp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/trie.Po@am__quote@

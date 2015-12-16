@@ -41,6 +41,7 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"

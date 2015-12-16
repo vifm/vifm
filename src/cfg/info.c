@@ -877,7 +877,9 @@ update_info_file(const char filename[])
 	free_string_array(srch, nsrch);
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
+	free_string_array(filter, nfilter);
 	free_string_array(trash, ntrash);
+	free_string_array(bmarks, nmarks);
 	free_string_array(dir_stack, ndir_stack);
 	free(non_conflicting_marks);
 }

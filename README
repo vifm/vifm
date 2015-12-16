@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2015
 
-Updated: 27 November, 2015
+Updated: 15 December, 2015
 Version: 0.8
 
 Brief Description
@@ -186,6 +186,7 @@ Package content
     |  |  |-- log.c - primitive logging
     |  |  |-- matcher.c - file path/name matcher (glob/regexp)
     |  |  |-- path.c - various functions to work with paths
+    |  |  |-- regexp.c - regexp related
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- trie.c - 3-way trie implementation
