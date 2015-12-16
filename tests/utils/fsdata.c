@@ -158,5 +158,19 @@ TEST(path_is_invalidated_in_fsdata)
 	fsdata_free(fsd);
 }
 
+TEST(root_can_carry_data)
+{
+	/* Big buffer that might overwrite some data. */
+	char big_data[128];
+	fsdata_t *const fsd = fsdata_create(0);
+
+	assert_success(fsdata_set(fsd, "/", big_data, sizeof(big_data)));
+
+	/* This can try to use overwriten pointers. */
+	assert_success(fsdata_invalidate(fsd, "/"));
+
+	fsdata_free(fsd);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

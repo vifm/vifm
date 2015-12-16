@@ -50,7 +50,7 @@ node_t;
 /* A node subtype that holds additional data. */
 struct fsdata_t
 {
-	node_t node;              /* Root node data.  Must be the first field. */
+	node_t *root;             /* Root node data. */
 	int prefix;               /* Whether we use last seen value on searches. */
 	fsd_cleanup_func cleanup; /* Node data cleanup function. */
 };
@@ -72,10 +72,7 @@ fsdata_create(int prefix)
 		return NULL;
 	}
 
-	fsd->node.child = NULL;
-	fsd->node.next = NULL;
-	fsd->node.name = NULL;
-	fsd->node.valid = 0;
+	fsd->root = NULL;
 	fsd->prefix = prefix;
 	fsd->cleanup = &do_nothing;
 	return fsd;
@@ -99,8 +96,8 @@ fsdata_free(fsdata_t *fsd)
 {
 	if(fsd != NULL)
 	{
-		/* Here root is also a node as it includes node_t as its first field. */
-		nodes_free(&fsd->node, fsd->cleanup);
+		nodes_free(fsd->root, fsd->cleanup);
+		free(fsd);
 	}
 }
 
@@ -136,7 +133,17 @@ fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len)
 		return -1;
 	}
 
-	node = find_node(&fsd->node, real_path, len, NULL);
+	/* Create root node lazily, when we know data size. */
+	if(fsd->root == NULL)
+	{
+		fsd->root = make_node("/", 1U, len);
+		if(fsd->root == NULL)
+		{
+			return -1;
+		}
+	}
+
+	node = find_node(fsd->root, real_path, len, NULL);
 	if(node->valid)
 	{
 		fsd->cleanup(&node->data);
@@ -154,16 +161,22 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 	const void *src;
 	char real_path[PATH_MAX];
 
-	if(fsd->node.child == NULL)
+	if(fsd->root == NULL)
+	{
 		return -1;
+	}
 
 	if(os_realpath(path, real_path) != real_path)
+	{
 		return -1;
+	}
 
-	node = find_node(&fsd->node, real_path, NO_CREATE,
+	node = find_node(fsd->root, real_path, NO_CREATE,
 			fsd->prefix ? &last : NULL);
 	if((node == NULL || !node->valid) && last == NULL)
+	{
 		return -1;
+	}
 
 	src = (node != NULL && node->valid) ? node->data : last->data;
 	memcpy(data, src, len);
@@ -262,7 +275,7 @@ fsdata_invalidate(fsdata_t *fsd, const char path[])
 		return 1;
 	}
 
-	return invalidate_path(&fsd->node, real_path, fsd->cleanup);
+	return invalidate_path(fsd->root, real_path, fsd->cleanup);
 }
 
 /* Invalidates nodes on the path if end item is found.  Returns zero on
