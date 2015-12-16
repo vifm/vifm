@@ -59,7 +59,9 @@ static void do_nothing(void *data);
 static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
 static node_t * find_node(node_t *root, const char path[], size_t data_size,
 		node_t **last);
-static int invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup);
+static node_t * make_node(const char name[], size_t name_len, size_t data_size);
+static int invalidate_path(node_t *root, const char path[],
+		fsd_cleanup_func cleanup);
 
 fsdata_t *
 fsdata_create(int prefix)
@@ -207,21 +209,12 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 	if(data_size == NO_CREATE)
 		return NULL;
 
-	new_node = malloc(sizeof(*new_node) + data_size);
+	new_node = make_node(path, name_len, data_size);
 	if(new_node == NULL)
-		return NULL;
-
-	new_node->name = malloc(name_len + 1);
-	if(new_node->name == NULL)
 	{
-		free(new_node);
 		return NULL;
 	}
-	copy_str(new_node->name, name_len + 1, path);
-	new_node->name[name_len] = '\0';
-	new_node->name_len = name_len;
-	new_node->valid = 0;
-	new_node->child = NULL;
+
 	new_node->next = curr;
 
 	if(root->child == curr)
@@ -230,6 +223,33 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 		prev->next = new_node;
 
 	return find_node(new_node, end, data_size, last);
+}
+
+/* Creates new node for the tree.  Returns the node or NULL on memory allocation
+ * error. */
+static node_t *
+make_node(const char name[], size_t name_len, size_t data_size)
+{
+	node_t *new_node = malloc(sizeof(*new_node) + data_size);
+	if(new_node == NULL)
+	{
+		return NULL;
+	}
+
+	new_node->name = malloc(name_len + 1U);
+	if(new_node->name == NULL)
+	{
+		free(new_node);
+		return NULL;
+	}
+
+	copy_str(new_node->name, name_len + 1U, name);
+	new_node->name_len = name_len;
+	new_node->valid = 0;
+	new_node->child = NULL;
+	new_node->next = NULL;
+
+	return new_node;
 }
 
 int
