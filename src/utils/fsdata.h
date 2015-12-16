@@ -20,8 +20,8 @@
 #define VIFM__UTILS__FSDATA_H__
 
 /* Structure that maps arbitrary data onto file system tree.  Each node can
- * contain arbitrary amount of data, but size is fixed upon node creation.  No
- * additional checks are performed in get/set functions. */
+ * contain arbitrary amount of data, with size changed on every set operation.
+ * No additional checks are performed in get/set functions. */
 
 #include <stddef.h> /* size_t */
 

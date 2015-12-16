@@ -58,7 +58,7 @@ struct fsdata_t
 static void do_nothing(void *data);
 static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
 static node_t * find_node(node_t *root, const char path[], size_t data_size,
-		node_t **last);
+		node_t **last, node_t **link);
 static node_t * make_node(const char name[], size_t name_len, size_t data_size);
 static int invalidate_path(node_t *root, const char path[],
 		fsd_cleanup_func cleanup);
@@ -143,11 +143,17 @@ fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len)
 		}
 	}
 
-	node = find_node(fsd->root, real_path, len, NULL);
+	node = find_node(fsd->root, real_path, len, NULL, &fsd->root);
+	if(node == NULL)
+	{
+		return -1;
+	}
+
 	if(node->valid)
 	{
 		fsd->cleanup(&node->data);
 	}
+
 	node->valid = 1;
 	memcpy(node->data, data, len);
 	return 0;
@@ -172,7 +178,7 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 	}
 
 	node = find_node(fsd->root, real_path, NO_CREATE,
-			fsd->prefix ? &last : NULL);
+			fsd->prefix ? &last : NULL, NULL);
 	if((node == NULL || !node->valid) && last == NULL)
 	{
 		return -1;
@@ -185,9 +191,11 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 
 /* Looks up a node by its path.  Inserts a node if it doesn't exist and
  * data_size is not equal to NO_CREATE.  If last is not NULL *last is assigned
- * closest valid parent node.  Returns the node at the path or NULL on error. */
+ * closest valid parent node.  Optionally reallocates and updates *link.
+ * Returns the node at the path or NULL on error. */
 static node_t *
-find_node(node_t *root, const char path[], size_t data_size, node_t **last)
+find_node(node_t *root, const char path[], size_t data_size, node_t **last,
+		node_t **link)
 {
 	const char *end;
 	size_t name_len;
@@ -196,7 +204,17 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 
 	path = skip_char(path, '/');
 	if(*path == '\0')
+	{
+		if(link != NULL)
+		{
+			root = realloc(root, sizeof(*root) + data_size);
+			if(root != NULL)
+			{
+				*link = root;
+			}
+		}
 		return root;
+	}
 
 	end = until_first(path, '/');
 
@@ -208,8 +226,12 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 		if(comp == 0 && curr->name_len == name_len)
 		{
 			if(curr->valid && last != NULL)
+			{
 				*last = curr;
-			return find_node(curr, end, data_size, last);
+			}
+			return find_node(curr, end, data_size, last,
+					(data_size == NO_CREATE) ? NULL :
+					(root->child == curr) ? &root->child : &prev->next);
 		}
 		else if(comp < 0)
 		{
@@ -220,7 +242,9 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 	}
 
 	if(data_size == NO_CREATE)
+	{
 		return NULL;
+	}
 
 	new_node = make_node(path, name_len, data_size);
 	if(new_node == NULL)
@@ -231,11 +255,16 @@ find_node(node_t *root, const char path[], size_t data_size, node_t **last)
 	new_node->next = curr;
 
 	if(root->child == curr)
+	{
 		root->child = new_node;
+	}
 	else
+	{
 		prev->next = new_node;
-
-	return find_node(new_node, end, data_size, last);
+	}
+	/* No need to update anything here, because size is guaranteed to be the
+	 * same. */
+	return find_node(new_node, end, data_size, last, NULL);
 }
 
 /* Creates new node for the tree.  Returns the node or NULL on memory allocation
