@@ -355,7 +355,8 @@ dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
 static void
 dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
 {
-	dcache_data_t size_data;
+	/* Initialization to make condition false by default. */
+	dcache_data_t size_data = { .timestamp = ts };
 	dcache_data_t nitems_data;
 
 	pthread_mutex_lock(&dcache_size_mutex);
