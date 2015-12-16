@@ -378,6 +378,9 @@
 	Fixed ".." item of a custom view having empty directory (can be seen via
 	File Info dialog).  Thanks to filterfalse.
 
+	Fixed small leak on :write (on exit too, but leaks before exit don't
+	matter).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
