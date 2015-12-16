@@ -314,6 +314,19 @@ TEST(location_is_saved_on_entering_custom_view)
 	cfg_resize_histories(0U);
 }
 
+TEST(parent_link_has_correct_origin_field)
+{
+	/* This directory entry is added separately and thus can stray from the
+	 * others. */
+
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+	setup_custom_view(&lwin);
+	cfg.dot_dirs = 0;
+
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	assert_string_equal("/path", lwin.dir_entry[0].origin);
+}
+
 static void
 setup_custom_view(FileView *view)
 {

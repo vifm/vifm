@@ -375,6 +375,9 @@
 
 	Fixed not squashing double commas in description of :file[x]type commands.
 
+	Fixed ".." item of a custom view having empty directory (can be seen via
+	File Info dialog).  Thanks to filterfalse.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
