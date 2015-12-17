@@ -2024,21 +2024,21 @@ cmd_paren(int lb, int ub, int inc)
 					return pos;
 				break;
 #ifndef _WIN32
-		case SK_BY_GROUP_NAME:
-		case SK_BY_GROUP_ID:
+			case SK_BY_GROUP_NAME:
+			case SK_BY_GROUP_ID:
 				if(nentry->gid != pentry->gid)
 					return pos;
 				break;
-		case SK_BY_OWNER_NAME:
-		case SK_BY_OWNER_ID:
+			case SK_BY_OWNER_NAME:
+			case SK_BY_OWNER_ID:
 				if(nentry->uid != pentry->uid)
 					return pos;
 				break;
-		case SK_BY_MODE:
+			case SK_BY_MODE:
 				if(nentry->mode != pentry->mode)
 					return pos;
 				break;
-		case SK_BY_PERMISSIONS:
+			case SK_BY_PERMISSIONS:
 				{
 					char nperms[16];
 					get_perm_string(nperms, sizeof(nperms), nentry->mode);
@@ -2049,34 +2049,34 @@ cmd_paren(int lb, int ub, int inc)
 					break;
 				}
 #endif
-		case SK_BY_SIZE:
+			case SK_BY_SIZE:
 				if(nentry->size != pentry->size)
 					return pos;
 				break;
-		case SK_BY_NITEMS:
+			case SK_BY_NITEMS:
 				if(entry_get_nitems(curr_view, nentry) !=
 						entry_get_nitems(curr_view, pentry))
 					return pos;
 				break;
-		case SK_BY_TIME_ACCESSED:
+			case SK_BY_TIME_ACCESSED:
 				if(nentry->atime != pentry->atime)
 					return pos;
 				break;
-		case SK_BY_TIME_CHANGED:
+			case SK_BY_TIME_CHANGED:
 				if(nentry->ctime != pentry->ctime)
 					return pos;
 				break;
-		case SK_BY_TIME_MODIFIED:
+			case SK_BY_TIME_MODIFIED:
 				if(nentry->mtime != pentry->mtime)
 					return pos;
 				break;
-		case SK_BY_DIR:
+			case SK_BY_DIR:
 				if(is_dir != is_directory_entry(nentry))
 				{
 					return pos;
 				}
 				break;
-		case SK_BY_TYPE:
+			case SK_BY_TYPE:
 				if(get_type_str(nentry->type) != type_str)
 				{
 					return pos;
