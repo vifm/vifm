@@ -119,6 +119,9 @@
 	Added "nlinks" sorting key to display number of hard links to a file on
 	*nix systems.  Thanks to filterfalse.
 
+	Added 'deleteprg' option, which specifies program to run on files that are
+	permanently removed.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

@@ -82,7 +82,7 @@ static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
-static void init_trash_dir(optval_t *val);
+static void init_trashdir(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_iooptions(optval_t *val);
@@ -107,6 +107,7 @@ static const char * pick_out_decoration(const char classify_item[],
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
+static void deleteprg_handler(OPT_OP op, optval_t val);
 static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
@@ -356,6 +357,10 @@ options[] = {
 	  OPT_CHARSET, cpoptions_count, &cpoptions_vals, &cpoptions_handler, NULL,
 	  { .init = &init_cpoptions },
 	},
+	{ "deleteprg", "",
+	  OPT_STR, 0, NULL, &deleteprg_handler, NULL,
+	  { .ref.str_val = &empty },
+	},
 	{ "dirsize", "",
 	  OPT_ENUM, ARRAY_LEN(dirsize_enum), dirsize_enum, &dirsize_handler, NULL,
 	  { .init = &init_dirsize },
@@ -498,7 +503,7 @@ options[] = {
 	},
 	{ "trashdir", "",
 	  OPT_STRLIST, 0, NULL, &trashdir_handler, NULL,
-	  { .init = &init_trash_dir },
+	  { .init = &init_trashdir },
 	},
 	{ "tuioptions", "to",
 	  OPT_CHARSET, tuioptions_count, &tuioptions_vals, &tuioptions_handler, NULL,
@@ -659,7 +664,7 @@ init_timefmt(optval_t *val)
 }
 
 static void
-init_trash_dir(optval_t *val)
+init_trashdir(optval_t *val)
 {
 	val->str_val = cfg.trash_dir;
 }
@@ -1212,6 +1217,13 @@ cpoptions_handler(OPT_OP op, optval_t val)
 		}
 		++p;
 	}
+}
+
+/* Handles updates of the 'deleteprg' option. */
+static void
+deleteprg_handler(OPT_OP op, optval_t val)
+{
+	replace_string(&cfg.delete_prg, val.str_val);
 }
 
 /* Handles changes to the way directory size is displayed in a view. */

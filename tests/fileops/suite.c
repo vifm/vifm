@@ -21,6 +21,7 @@ SETUP()
 
 	cfg.use_system_calls = 1;
 	cfg.slow_fs_list = strdup("");
+	cfg.delete_prg = strdup("");
 
 	lwin.list_rows = 0;
 	lwin.dir_entry = NULL;
@@ -31,6 +32,7 @@ SETUP()
 TEARDOWN()
 {
 	free(cfg.slow_fs_list);
+	free(cfg.delete_prg);
 
 	reset_undo_list();
 }

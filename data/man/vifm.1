@@ -3135,6 +3135,16 @@ otherwise they operate on current file only;
 t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
 pane, otherwise <tab> and <c-i> go forward in the view history.
 .TP
+.BI 'deleteprg'
+type: string
+.br
+default: ""
+.br
+Specifies program to run on files that are permanently removed.  When empty,
+files are removed as usual, otherwise this command is invoked on each file by
+appending its name.  If the command doesn't remove files, they will remain on
+the file system.
+.TP
 .BI 'dirsize'
 type: enum
 .br

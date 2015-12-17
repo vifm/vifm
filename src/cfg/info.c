@@ -964,6 +964,7 @@ write_options(FILE *const fp)
 			cfg.filter_inverted_by_default ? "f" : "",
 			cfg.selection_is_primary ? "s" : "",
 			cfg.tab_switches_pane ? "t" : "");
+	fprintf(fp, "=deleteprg=%s\n", escape_spaces(cfg.delete_prg));
 	fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 	if(strcmp(cfg.border_filler, " ") != 0)
 	{
