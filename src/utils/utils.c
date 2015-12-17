@@ -57,8 +57,9 @@
 
 #ifdef _WIN32
 static void unquote(char quoted[]);
-#endif
+#else
 static int is_line_spec(const char str[]);
+#endif
 
 int
 vifm_system(char command[])
@@ -598,6 +599,8 @@ parse_file_spec(const char spec[], int *line_num)
 	return replace_tilde(path_buf);
 }
 
+#ifndef _WIN32
+
 /* Checks whether str points to a valid line number.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
@@ -608,6 +611,8 @@ is_line_spec(const char str[])
 	(void)strtol(str, &endptr, 10);
 	return (endptr != str && errno == 0 && *endptr == ':');
 }
+
+#endif
 
 int
 is_graphics_viewer(const char viewer[])

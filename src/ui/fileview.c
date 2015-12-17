@@ -107,6 +107,7 @@ static void format_group(int id, const void *data, size_t buf_len, char buf[]);
 static void format_mode(int id, const void *data, size_t buf_len, char buf[]);
 static void format_owner(int id, const void *data, size_t buf_len, char buf[]);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
+static void format_nlinks(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
@@ -145,6 +146,8 @@ fview_init(void)
 		{ SK_BY_MODE, &format_mode },
 
 		{ SK_BY_PERMISSIONS, &format_perms },
+
+		{ SK_BY_NLINKS, &format_nlinks },
 #endif
 	};
 	ARRAY_GUARD(sort_to_func, SK_COUNT);
@@ -1262,6 +1265,15 @@ format_perms(int id, const void *data, size_t buf_len, char buf[])
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 	get_perm_string(buf, buf_len, entry->mode);
+}
+
+/* Hard link count format callback for column_view unit. */
+static void
+format_nlinks(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	snprintf(buf, buf_len, "%lu", (unsigned long)entry->nlinks);
 }
 
 #endif

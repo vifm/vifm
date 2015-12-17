@@ -116,6 +116,9 @@
 	Added 'sortgroups' option and "groups" sorting key, which allow sorting by
 	parts of file names.  Thanks to aleksejrs.
 
+	Added "nlinks" sorting key to display number of hard links to a file on
+	*nix systems.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

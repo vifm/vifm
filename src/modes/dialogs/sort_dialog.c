@@ -44,7 +44,7 @@ static const char * caps[] = { "a-z", "z-a" };
 #ifndef _WIN32
 #define CORRECTION 0
 #else
-#define CORRECTION -6
+#define CORRECTION -7
 #endif
 
 /* This maps actual sorting keys onto position of corresponding lines of the
@@ -67,13 +67,14 @@ static int indexes[] = {
 	[SK_BY_PERMISSIONS]   = 9,
 	[SK_BY_OWNER_ID]      = 10,
 	[SK_BY_OWNER_NAME]    = 11,
+	[SK_BY_NLINKS]        = 12,
 #endif
-	[SK_BY_SIZE]          = 12 + CORRECTION,
-	[SK_BY_NITEMS]        = 13 + CORRECTION,
-	[SK_BY_GROUPS]        = 14 + CORRECTION,
-	[SK_BY_TIME_ACCESSED] = 15 + CORRECTION,
-	[SK_BY_TIME_CHANGED]  = 16 + CORRECTION,
-	[SK_BY_TIME_MODIFIED] = 17 + CORRECTION,
+	[SK_BY_SIZE]          = 13 + CORRECTION,
+	[SK_BY_NITEMS]        = 14 + CORRECTION,
+	[SK_BY_GROUPS]        = 15 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 16 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 17 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 18 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -181,6 +182,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Permissions");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Owner ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Links Count");
 #endif
 	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Item Count");
