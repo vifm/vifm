@@ -1970,7 +1970,7 @@ cmd_paren(int lb, int ub, int inc)
 	const SortingKey sorting_key = abs(curr_view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
 	const char *const type_str = get_type_str(pentry->type);
-	regmatch_t pmatch;
+	regmatch_t pmatch = { .rm_so = 0, .rm_eo = 0 };
 #ifndef _WIN32
 	char perms[16];
 	get_perm_string(perms, sizeof(perms), pentry->mode);
