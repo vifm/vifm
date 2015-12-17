@@ -90,10 +90,8 @@ static void init_number(optval_t *val);
 static void init_numberwidth(optval_t *val);
 static void init_relativenumber(optval_t *val);
 static void init_sort(optval_t *val);
-static void init_sortgroups(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_tuioptions(optval_t *val);
-static void init_viewcolumns(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
@@ -566,7 +564,7 @@ options[] = {
 	},
 	{ "sortgroups", "",
 	  OPT_STR, 0, NULL, &sortgroups_global, &sortgroups_local,
-	  { .init = &init_sortgroups },
+	  { .ref.str_val = &empty },
 	},
 	{ "sortorder", "",
 	  OPT_ENUM, ARRAY_LEN(sortorder_enum), sortorder_enum, &sortorder_global,
@@ -575,7 +573,7 @@ options[] = {
 	},
 	{ "viewcolumns", "",
 	  OPT_STRLIST, 0, NULL, &viewcolumns_global, &viewcolumns_local,
-	  { .init = &init_viewcolumns },
+	  { .ref.str_val = &empty },
 	},
 };
 
@@ -716,13 +714,6 @@ init_sort(optval_t *val)
 	val->str_val = "+name";
 }
 
-/* Provides default value for the 'sortgroups' option. */
-static void
-init_sortgroups(optval_t *val)
-{
-	val->str_val = "";
-}
-
 static void
 init_sortorder(optval_t *val)
 {
@@ -739,12 +730,6 @@ init_tuioptions(optval_t *val)
 			cfg.extra_padding ? "p" : "",
 			cfg.side_borders_visible ? "s" : "");
 	val->str_val = buf;
-}
-
-static void
-init_viewcolumns(optval_t *val)
-{
-	val->str_val = "";
 }
 
 /* Formats 'wordchars' initial value from cfg.word_chars array. */
