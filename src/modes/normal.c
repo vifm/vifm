@@ -2023,32 +2023,6 @@ cmd_paren(int lb, int ub, int inc)
 				if((wchar_t)towupper(get_first_wchar(nentry->name)) != ch)
 					return pos;
 				break;
-#ifndef _WIN32
-			case SK_BY_GROUP_NAME:
-			case SK_BY_GROUP_ID:
-				if(nentry->gid != pentry->gid)
-					return pos;
-				break;
-			case SK_BY_OWNER_NAME:
-			case SK_BY_OWNER_ID:
-				if(nentry->uid != pentry->uid)
-					return pos;
-				break;
-			case SK_BY_MODE:
-				if(nentry->mode != pentry->mode)
-					return pos;
-				break;
-			case SK_BY_PERMISSIONS:
-				{
-					char nperms[16];
-					get_perm_string(nperms, sizeof(nperms), nentry->mode);
-					if(strcmp(nperms, perms) != 0)
-					{
-						return pos;
-					}
-					break;
-				}
-#endif
 			case SK_BY_SIZE:
 				if(nentry->size != pentry->size)
 					return pos;
@@ -2082,6 +2056,38 @@ cmd_paren(int lb, int ub, int inc)
 					return pos;
 				}
 				break;
+#ifndef _WIN32
+			case SK_BY_GROUP_NAME:
+			case SK_BY_GROUP_ID:
+				if(nentry->gid != pentry->gid)
+					return pos;
+				break;
+			case SK_BY_OWNER_NAME:
+			case SK_BY_OWNER_ID:
+				if(nentry->uid != pentry->uid)
+					return pos;
+				break;
+			case SK_BY_MODE:
+				if(nentry->mode != pentry->mode)
+					return pos;
+				break;
+			case SK_BY_PERMISSIONS:
+				{
+					char nperms[16];
+					get_perm_string(nperms, sizeof(nperms), nentry->mode);
+					if(strcmp(nperms, perms) != 0)
+					{
+						return pos;
+					}
+					break;
+				}
+			case SK_BY_NLINKS:
+				if(nentry->nlinks != pentry->nlinks)
+				{
+					return pos;
+				}
+				break;
+#endif
 		}
 	}
 	return pos;

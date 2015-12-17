@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 13
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2975,6 +2975,7 @@ key, etc.):
    [+-]perms   - permissions string (*nix only)
    [+-]uid     - owner id (*nix only)
    [+-]uname   - owner name (*nix only)
+   [+-]nlinks  - number of hard links (*nix only)
    [+-]size    - size
    [+-]nitems  - number of items in a directory (zero for files)
    [+-]groups  - groups extracted via regexps from |vifm-'sortgroups'|

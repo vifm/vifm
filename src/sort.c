@@ -351,6 +351,10 @@ sort_dir_list(const void *one, const void *two)
 				retval = strcmp(first_perm, second_perm);
 			}
 			break;
+
+		case SK_BY_NLINKS:
+			retval = first->nlinks - second->nlinks;
+			break;
 #endif
 	}
 
@@ -506,6 +510,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_GROUP_ID:
 		case SK_BY_MODE:
 		case SK_BY_PERMISSIONS:
+		case SK_BY_NLINKS:
 #endif
 		case SK_BY_TYPE:
 		case SK_BY_NITEMS:

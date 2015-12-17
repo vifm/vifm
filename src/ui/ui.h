@@ -84,6 +84,9 @@ typedef enum
 	SK_BY_FILEEXT,
 	SK_BY_NITEMS,
 	SK_BY_GROUPS,
+#ifndef _WIN32
+	SK_BY_NLINKS,
+#endif
 	/* New elements *must* be added here to keep values stored in existing
 	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
@@ -99,7 +102,11 @@ enum
 #endif
 
 	/* Value of the last sort option. */
+#ifndef _WIN32
+	SK_LAST = SK_BY_NLINKS,
+#else
 	SK_LAST = SK_BY_GROUPS,
+#endif
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
@@ -152,6 +159,7 @@ typedef struct dir_entry_t
 	time_t atime;
 	time_t ctime;
 	FileType type;
+	int nlinks;       /* Number of hard links to the entry. */
 
 	int selected;
 	int was_selected; /* Stores previous selection state in Visual mode. */

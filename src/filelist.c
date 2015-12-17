@@ -1343,6 +1343,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	entry->mtime = s.st_mtime;
 	entry->atime = s.st_atime;
 	entry->ctime = s.st_ctime;
+	entry->nlinks = s.st_nlink;
 
 	if(entry->type == FT_LINK)
 	{
@@ -2279,12 +2280,13 @@ add_parent_dir(FileView *view)
 	dir_entry->uid = s.st_uid;
 	dir_entry->gid = s.st_gid;
 #else
-	/* Windows doesn't like returning size of directories when it can. */
+	/* Windows doesn't like returning size of directories even if it can. */
 	dir_entry->size = get_file_size(dir_entry->name);
 #endif
 	dir_entry->mtime = s.st_mtime;
 	dir_entry->atime = s.st_atime;
 	dir_entry->ctime = s.st_ctime;
+	dir_entry->nlinks = s.st_nlink;
 
 	++view->list_rows;
 }

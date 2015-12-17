@@ -214,6 +214,7 @@ static const char *sort_enum[] = {
 	[SK_BY_OWNER_ID]      = "uid",
 	[SK_BY_OWNER_NAME]    = "uname",
 	[SK_BY_PERMISSIONS]   = "perms",
+	[SK_BY_NLINKS]        = "nlinks",
 #endif
 };
 ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
@@ -270,12 +271,13 @@ static const char *sort_types[] = {
 	"nitems",  "+nitems",  "-nitems",
 	"groups",  "+groups",  "-groups",
 #ifndef _WIN32
-	"gid",   "+gid",   "-gid",
-	"gname", "+gname", "-gname",
-	"mode",  "+mode",  "-mode",
-	"uid",   "+uid",   "-uid",
-	"uname", "+uname", "-uname",
-	"perms", "+perms", "-perms",
+	"gid",    "+gid",    "-gid",
+	"gname",  "+gname",  "-gname",
+	"mode",   "+mode",   "-mode",
+	"uid",    "+uid",    "-uid",
+	"uname",  "+uname",  "-uname",
+	"perms",  "+perms",  "-perms",
+	"nlinks", "+nlinks", "-nlinks",
 #endif
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
