@@ -25,8 +25,8 @@
 typedef enum
 {
 	VTYPE_STRING, /* Regular string value. */
-	VTYPE_INT, /* Integer, which is also used for boolean. */
-	VTYPE_ERROR, /* Signals about fail. */
+	VTYPE_INT,    /* Integer, which is also used for boolean. */
+	VTYPE_ERROR,  /* Signals about failure or uninitialized variable. */
 }
 VarType;
 
@@ -34,7 +34,7 @@ VarType;
 typedef union
 {
 	char *string; /* String value for VTYPE_STRING, should be copied to use it. */
-	int integer; /* VTYPE_INT value. */
+	int integer;  /* VTYPE_INT value. */
 
 	const char *const_string; /* Convenience field handy to create variables. */
 }
@@ -43,7 +43,7 @@ var_val_t;
 /* Structure for script variable. */
 typedef struct
 {
-	VarType type; /* Variable type. */
+	VarType type;    /* Variable type. */
 	var_val_t value; /* Value depending on type. */
 }
 var_t;
