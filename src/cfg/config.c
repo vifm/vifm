@@ -165,6 +165,7 @@ cfg_init(void)
 			"-type d \\( ! -readable -o ! -executable \\) -prune");
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
+	cfg.delete_prg = strdup("");
 
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 1;

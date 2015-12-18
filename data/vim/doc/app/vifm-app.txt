@@ -2577,6 +2577,16 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
     pane, otherwise <c-i> goes forward in the view history.
 
+                                               *vifm-'deleteprg'*
+deleteprg
+type: string
+default: ""
+
+Specifies program to run on files that are permanently removed.  When empty,
+files are removed as usual, otherwise this command is invoked on each file by
+appending its name.  If the command doesn't remove files, they will remain on
+the file system.
+
                                                *vifm-'dotdirs'*
 dotdirs
 type: set

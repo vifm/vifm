@@ -287,6 +287,33 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 {
+	if(cfg.delete_prg[0] != '\0')
+	{
+#ifndef _WIN32
+		char *escaped;
+		char cmd[2*PATH_MAX + 1];
+		const int cancellable = (data == NULL);
+
+		escaped = shell_like_escape(src, 0);
+		if(escaped == NULL)
+		{
+			return -1;
+		}
+
+		snprintf(cmd, sizeof(cmd), "%s %s", cfg.delete_prg, escaped);
+		free(escaped);
+
+		LOG_INFO_MSG("Running trash command: \"%s\"", cmd);
+		return background_and_wait_for_errors(cmd, cancellable);
+#else
+		char cmd[PATH_MAX*2 + 1];
+		snprintf(cmd, sizeof(cmd), "%s \"%s\"", src);
+		to_back_slash(cmd);
+
+		return os_system(cmd);
+#endif
+	}
+
 	if(!cfg.use_system_calls)
 	{
 #ifndef _WIN32
@@ -316,8 +343,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 
 			wchar_t *const utf16_path = utf8_to_utf16(path);
 
-			SHFILEOPSTRUCTW fo =
-			{
+			SHFILEOPSTRUCTW fo = {
 				.hwnd = NULL,
 				.wFunc = FO_DELETE,
 				.pFrom = utf16_path,
@@ -398,7 +424,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
 		int result;
-		const int cancellable = data == NULL;
+		const int cancellable = (data == NULL);
 
 		escaped_src = shell_like_escape(src, 0);
 		escaped_dst = shell_like_escape(dst, 0);

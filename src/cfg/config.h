@@ -133,10 +133,13 @@ typedef struct config_t
 	int dot_dirs;
 	char decorations[FT_COUNT][2]; /* File type specific refixes and suffixes. */
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
+
+	/* Invocation formats for external applications. */
 	char *apropos_prg; /* apropos tool calling pattern. */
-	char *find_prg; /* find tool calling pattern. */
-	char *grep_prg; /* grep tool calling pattern. */
-	char *locate_prg; /* locate tool calling pattern. */
+	char *find_prg;    /* find tool calling pattern. */
+	char *grep_prg;    /* grep tool calling pattern. */
+	char *locate_prg;  /* locate tool calling pattern. */
+	char *delete_prg;  /* File removal application. */
 
 	/* Message shortening controlled by 'shortmess'. */
 	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
