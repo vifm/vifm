@@ -29,7 +29,6 @@
 #include "text_buffer.h"
 #include "var.h"
 
-static int function_registered(const char func_name[]);
 static int add_function(const function_t *func_info);
 static function_t * find_function(const char func_name[]);
 
@@ -52,9 +51,7 @@ function_register(const function_t *func_info)
 	return 0;
 }
 
-/* Checks whether function with specified name exists or not.  Returns non-zero
- * if function with specified name is already registered. */
-static int
+int
 function_registered(const char func_name[])
 {
 	return find_function(func_name) != NULL;

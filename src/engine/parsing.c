@@ -138,9 +138,8 @@ static var_t eval_opt(const char **in);
 static var_t eval_logical_not(const char **in);
 static int read_sequence(const char **in, const char first[],
 		const char other[], size_t buf_len, char buf[]);
-static var_t eval_funccall(const char **in);
-static void eval_arglist(const char **in, call_info_t *call_info);
-static void eval_arg(const char **in, call_info_t *call_info);
+static expr_t eval_funccall(const char **in);
+static void eval_arglist(const char **in, expr_t *call_expr);
 static void skip_whitespace_tokens(const char **in);
 static void get_next(const char **in);
 
@@ -181,6 +180,7 @@ eval_var(expr_t *expr)
 			result = eval_and(expr->nops, expr->ops, &expr->value);
 			break;
 		case OP_CALL:
+			assert(expr->func != NULL && "Function must have a name.");
 			result = eval_call(expr->func, expr->nops, expr->ops, &expr->value);
 			break;
 	}
@@ -332,7 +332,7 @@ eval_call(const char name[], int nops, expr_t ops[], var_t *result)
 
 		for(i = 0; i < nops; ++i)
 		{
-			function_call_info_add_arg(&call_info, ops[i].value);
+			function_call_info_add_arg(&call_info, var_clone(ops[i].value));
 		}
 
 		*result = function_call(name, &call_info);
@@ -474,10 +474,6 @@ parse(const char input[], var_t *result)
 			last_error = PE_INVALID_EXPRESSION;
 		}
 	}
-	if(last_error == PE_INVALID_EXPRESSION)
-	{
-		last_position = skip_whitespace(input);
-	}
 
 	if(last_error == PE_NO_ERROR)
 	{
@@ -487,6 +483,11 @@ parse(const char input[], var_t *result)
 			res_val = var_clone(expr_root.value);
 			*result = var_clone(expr_root.value);
 		}
+	}
+
+	if(last_error == PE_INVALID_EXPRESSION)
+	{
+		last_position = skip_whitespace(input);
 	}
 
 	free_expr(&expr_root);
@@ -587,8 +588,8 @@ eval_and_expr(const char **in)
 	return result;
 }
 
-/* comp_expr ::= concat_expr | concat_expr op concat_expr */
-/* op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
+/* comp_expr ::= concat_expr | concat_expr op concat_expr
+ * op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static expr_t
 eval_comp_expr(const char **in)
 {
@@ -772,7 +773,7 @@ eval_term(const char **in)
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
-				result.value = eval_funccall(in);
+				result = eval_funccall(in);
 				break;
 			}
 			/* break is omitted intentionally. */
@@ -1050,18 +1051,17 @@ read_sequence(const char **in, const char first[], const char other[],
 	return 1;
 }
 
-/* funccall ::= varname '(' arglist ')' */
-static var_t
+/* funccall ::= varname '(' [arglist] ')' */
+static expr_t
 eval_funccall(const char **in)
 {
 	char name[NAME_LENGTH_MAX];
-	call_info_t call_info;
-	var_t ret_val;
+	expr_t result = { .op_type = OP_CALL };
 
 	if(!isalpha(last_token.c))
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return var_false();
+		return null_expr;
 	}
 
 	name[0] = last_token.c;
@@ -1076,34 +1076,37 @@ eval_funccall(const char **in)
 	if(last_token.type != LPAREN)
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return var_false();
+		return null_expr;
+	}
+
+	if(!function_registered(name))
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return null_expr;
+	}
+
+	result.func = strdup(name);
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
 	}
 
 	get_next(in);
 	skip_whitespace_tokens(in);
 
-	function_call_info_init(&call_info);
 	/* If argument list is not empty. */
 	if(last_token.type != RPAREN)
 	{
 		const char *old_in = *in - 1;
-		eval_arglist(in, &call_info);
+		eval_arglist(in, &result);
 		if(last_error != PE_NO_ERROR)
 		{
 			*in = old_in;
-			function_call_info_free(&call_info);
-			return var_false();
+			free_expr(&result);
+			return null_expr;
 		}
 	}
-
-	ret_val = function_call(name, &call_info);
-	if(ret_val.type == VTYPE_ERROR)
-	{
-		last_error = PE_INVALID_EXPRESSION;
-		var_free(ret_val);
-		ret_val = var_false();
-	}
-	function_call_info_free(&call_info);
 
 	skip_whitespace_tokens(in);
 	if(last_token.type != RPAREN)
@@ -1112,38 +1115,36 @@ eval_funccall(const char **in)
 	}
 	get_next(in);
 
-	return ret_val;
+	return result;
 }
 
-/* arglist ::= concat_expr { ',' concat_expr } */
+/* arglist ::= or_expr { ',' or_expr } */
 static void
-eval_arglist(const char **in, call_info_t *call_info)
+eval_arglist(const char **in, expr_t *call_expr)
 {
-	eval_arg(in, call_info);
-	while(last_error == PE_NO_ERROR && last_token.type == COMMA)
+	do
 	{
+		const expr_t op = eval_or_expr(in);
+		if(add_expr_op(call_expr, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		skip_whitespace_tokens(in);
+
+		if(last_token.type != COMMA)
+		{
+			break;
+		}
 		get_next(in);
-		eval_arg(in, call_info);
 	}
+	while(last_error == PE_NO_ERROR);
 
 	if(last_error == PE_INVALID_EXPRESSION)
 	{
 		last_error = PE_INVALID_SUBEXPRESSION;
 	}
-}
-
-/* arg ::= concat_expr */
-static void
-eval_arg(const char **in, call_info_t *call_info)
-{
-	expr_t expr = eval_or_expr(in);
-	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
-	{
-		function_call_info_add_arg(call_info, expr.value);
-		expr.value = var_false();
-		skip_whitespace_tokens(in);
-	}
-	free_expr(&expr);
 }
 
 /* Skips series of consecutive whitespace. */
