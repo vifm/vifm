@@ -117,15 +117,16 @@ static int eval_var(expr_t *expr);
 static int eval_or(int nops, expr_t ops[], var_t *result);
 static int eval_and(int nops, expr_t ops[], var_t *result);
 static int eval_call(const char name[], int nops, expr_t ops[], var_t *result);
+static var_t eval_concat(int nops, expr_t ops[]);
 static int add_expr_op(expr_t *expr, const expr_t *arg);
 static void free_expr(const expr_t *expr);
 static expr_t eval_or_expr(const char **in);
 static expr_t eval_and_expr(const char **in);
-static expr_t eval_expr(const char **in);
+static expr_t eval_comp_expr(const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
-static var_t eval_simple_expr(const char **in);
-static var_t eval_term(const char **in);
+static expr_t eval_concat_expr(const char **in);
+static expr_t eval_term(const char **in);
 static var_t eval_signed_number(const char **in);
 static var_t eval_number(const char **in);
 static var_t eval_single_quoted_string(const char **in);
@@ -159,6 +160,9 @@ static const char *last_position;
 static const char *last_parsed_char;
 static var_t res_val;
 
+/* Empty expression to be returned on errors. */
+static expr_t null_expr;
+
 /* Evaluates values of an expression.  Returns zero on success, which means that
  * expr->value is now correct, otherwise non-zero is returned. */
 static int
@@ -188,8 +192,7 @@ eval_var(expr_t *expr)
 }
 
 /* Evaluates logical OR operation.  All operands are evaluated lazily from left
- * to right.  Returns zero on success, which means that expr->value is now
- * correct, otherwise non-zero is returned. */
+ * to right.  Returns zero on success, otherwise non-zero is returned. */
 static int
 eval_or(int nops, expr_t ops[], var_t *result)
 {
@@ -317,6 +320,10 @@ eval_call(const char name[], int nops, expr_t ops[], var_t *result)
 		assert(nops == 2 && "Must be two arguments.");
 		*result = var_from_bool(compare_variables(GE, ops[0].value, ops[1].value));
 	}
+	else if(strcmp(name, ".") == 0)
+	{
+		*result = eval_concat(nops, ops);
+	}
 	else
 	{
 		int i;
@@ -339,6 +346,47 @@ eval_call(const char name[], int nops, expr_t ops[], var_t *result)
 	}
 
 	return (last_error != PE_NO_ERROR);
+}
+
+/* Evaluates concatenation of expressions.  Returns resultant value or variable
+ * of type VTYPE_ERROR. */
+static var_t
+eval_concat(int nops, expr_t ops[])
+{
+	var_t result = var_error();
+	int i;
+
+	assert(nops > 0 && "Must be at least one argument.");
+
+	if(nops == 1)
+	{
+		return var_clone(ops[0].value);
+	}
+
+	char res[CMD_LINE_LENGTH_MAX];
+	size_t res_len = 0U;
+	res[0] = '\0';
+
+	for(i = 0; i < nops; ++i)
+	{
+		char *const str_val = var_to_string(ops[i].value);
+		if(str_val == NULL)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
+		free(str_val);
+	}
+
+	if(last_error == PE_NO_ERROR)
+	{
+		const var_val_t var_val = { .string = res };
+		result = var_new(VTYPE_STRING, var_val);
+	}
+
+	return result;
 }
 
 /* Appends operand to an expression.  Returns zero on success, otherwise
@@ -365,11 +413,7 @@ free_expr(const expr_t *expr)
 	int i;
 
 	free(expr->func);
-
-	if(expr->op_type == OP_NONE)
-	{
-		var_free(expr->value);
-	}
+	var_free(expr->value);
 
 	for(i = 0; i < expr->nops; ++i)
 	{
@@ -422,12 +466,12 @@ parse(const char input[], var_t *result)
 		}
 		if(last_error == PE_NO_ERROR)
 		{
-			last_error = PE_INVALID_EXPRESSION;
 			if(eval_var(&expr_root) == 0)
 			{
 				var_free(res_val);
 				res_val = var_clone(expr_root.value);
 			}
+			last_error = PE_INVALID_EXPRESSION;
 		}
 	}
 	if(last_error == PE_INVALID_EXPRESSION)
@@ -471,8 +515,14 @@ eval_or_expr(const char **in)
 
 	while(last_error == PE_NO_ERROR)
 	{
-		const expr_t arg = eval_and_expr(in);
-		if(add_expr_op(&result, &arg) != 0)
+		const expr_t op = eval_and_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
+		if(add_expr_op(&result, &op) != 0)
 		{
 			last_error = PE_INTERNAL;
 			break;
@@ -497,7 +547,7 @@ eval_or_expr(const char **in)
 	return result;
 }
 
-/* and_expr ::= expr | expr '&&' and_expr */
+/* and_expr ::= comp_expr | comp_expr '&&' and_expr */
 static expr_t
 eval_and_expr(const char **in)
 {
@@ -505,8 +555,14 @@ eval_and_expr(const char **in)
 
 	while(last_error == PE_NO_ERROR)
 	{
-		const expr_t arg = eval_expr(in);
-		if(add_expr_op(&result, &arg) != 0)
+		const expr_t op = eval_comp_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
+		if(add_expr_op(&result, &op) != 0)
 		{
 			last_error = PE_INTERNAL;
 			break;
@@ -531,18 +587,16 @@ eval_and_expr(const char **in)
 	return result;
 }
 
-/* expr ::= simple_expr | simple_expr op simple_expr */
+/* comp_expr ::= concat_expr | concat_expr op concat_expr */
 /* op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static expr_t
-eval_expr(const char **in)
+eval_comp_expr(const char **in)
 {
-	static expr_t null_expr;
-
-	expr_t lhs = {};
-	expr_t rhs = {};
+	expr_t lhs;
+	expr_t rhs;
 	expr_t result = { .op_type = OP_CALL };
 
-	lhs.value = eval_simple_expr(in);
+	lhs = eval_concat_expr(in);
 	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
 	{
 		return lhs;
@@ -558,17 +612,17 @@ eval_expr(const char **in)
 	}
 
 	get_next(in);
-	rhs.value = eval_simple_expr(in);
-	if(last_error != PE_NO_ERROR)
-	{
-		free_expr(&result);
-		return null_expr;
-	}
-
+	rhs = eval_concat_expr(in);
 	if(add_expr_op(&result, &rhs) != 0)
 	{
 		free_expr(&result);
 		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	if(last_error != PE_NO_ERROR)
+	{
+		free_expr(&result);
 		return null_expr;
 	}
 
@@ -628,59 +682,51 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 	}
 }
 
-/* simple_expr ::= term { '.' term } */
-static var_t
-eval_simple_expr(const char **in)
+/* concat_expr ::= term { '.' term } */
+static expr_t
+eval_concat_expr(const char **in)
 {
-	var_t result = var_false();
-	char res[CMD_LINE_LENGTH_MAX];
-	size_t res_len = 0U;
-	int single_term = 1;
-	res[0] = '\0';
+	expr_t result = { .op_type = OP_CALL };
+
+	result.func = strdup(".");
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+	}
 
 	while(last_error == PE_NO_ERROR)
 	{
-		var_t term;
-		char *str_val;
+		expr_t op;
 
 		skip_whitespace_tokens(in);
-		term = eval_term(in);
+		op = eval_term(in);
 		skip_whitespace_tokens(in);
+
 		if(last_error != PE_NO_ERROR)
 		{
-			var_free(term);
+			free_expr(&op);
 			break;
 		}
 
-		str_val = var_to_string(term);
-		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
-		free(str_val);
+		if(add_expr_op(&result, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
 
 		if(last_token.type != DOT)
 		{
-			if(single_term)
-			{
-				result = term;
-			}
-			else
-			{
-				var_free(term);
-			}
+			/* Return partial result. */
 			break;
 		}
-		var_free(term);
 
-		single_term = 0;
 		get_next(in);
 	}
 
-	if(last_error == PE_NO_ERROR)
+	if(last_error == PE_INTERNAL)
 	{
-		if(!single_term)
-		{
-			const var_val_t var_val = { .string = res };
-			result = var_new(VTYPE_STRING, var_val);
-		}
+		free_expr(&result);
+		result = null_expr;
 	}
 
 	return result;
@@ -688,44 +734,56 @@ eval_simple_expr(const char **in)
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt |
  *          logical_not */
-static var_t
+static expr_t
 eval_term(const char **in)
 {
+	expr_t result = { .op_type = OP_NONE };
+
 	switch(last_token.type)
 	{
 		case MINUS:
 		case PLUS:
-			return eval_signed_number(in);
+			result.value = eval_signed_number(in);
+			break;
 		case DIGIT:
-			return eval_number(in);
+			result.value = eval_number(in);
+			break;
 		case SQ:
 			get_next(in);
-			return eval_single_quoted_string(in);
+			result.value = eval_single_quoted_string(in);
+			break;
 		case DQ:
 			get_next(in);
-			return eval_double_quoted_string(in);
+			result.value = eval_double_quoted_string(in);
+			break;
 		case DOLLAR:
 			get_next(in);
-			return eval_envvar(in);
+			result.value = eval_envvar(in);
+			break;
 		case AMPERSAND:
 			get_next(in);
-			return eval_opt(in);
+			result.value = eval_opt(in);
+			break;
 		case EMARK:
 			get_next(in);
-			return eval_logical_not(in);
+			result.value = eval_logical_not(in);
+			break;
 
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
-				return eval_funccall(in);
+				result.value = eval_funccall(in);
+				break;
 			}
 			/* break is omitted intentionally. */
 
 		default:
 			--*in;
 			last_error = PE_INVALID_EXPRESSION;
-			return var_false();
+			result.value = var_error();
+			break;
 	}
+	return result;
 }
 
 /* signed_number ::= ( + | - ) { + | - } number */
@@ -733,16 +791,18 @@ static var_t
 eval_signed_number(const char **in)
 {
 	const int sign = (last_token.type == MINUS) ? -1 : 1;
-	var_t operand;
+	expr_t expr;
 	int number;
 	var_val_t result_val;
 
 	get_next(in);
 	skip_whitespace_tokens(in);
-	operand = eval_term(in);
-
-	number = var_to_integer(operand);
-	var_free(operand);
+	expr = eval_term(in);
+	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
+	{
+		number = var_to_integer(expr.value);
+	}
+	free_expr(&expr);
 
 	result_val.integer = sign*number;
 	return var_new(VTYPE_INT, result_val);
@@ -952,17 +1012,19 @@ eval_opt(const char **in)
 static var_t
 eval_logical_not(const char **in)
 {
-	var_t term;
-	int bool_val;
+	expr_t expr;
+	var_t result = var_error();
 
 	skip_whitespace_tokens(in);
 
-	term = eval_term(in);
-	bool_val = var_to_boolean(term);
+	expr = eval_term(in);
+	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
+	{
+		result = var_from_bool(!var_to_boolean(expr.value));
+	}
+	free_expr(&expr);
 
-	var_free(term);
-
-	return var_from_bool(!bool_val);
+	return result;
 }
 
 /* sequence ::= first { other }
@@ -1053,7 +1115,7 @@ eval_funccall(const char **in)
 	return ret_val;
 }
 
-/* arglist ::= simple_expr { ',' simple_expr } */
+/* arglist ::= concat_expr { ',' concat_expr } */
 static void
 eval_arglist(const char **in, call_info_t *call_info)
 {
@@ -1070,16 +1132,18 @@ eval_arglist(const char **in, call_info_t *call_info)
 	}
 }
 
-/* arg ::= simple_expr */
+/* arg ::= concat_expr */
 static void
 eval_arg(const char **in, call_info_t *call_info)
 {
-	expr_t expr_root = eval_or_expr(in);
-	if(eval_var(&expr_root) == 0)
+	expr_t expr = eval_or_expr(in);
+	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
 	{
-		function_call_info_add_arg(call_info, expr_root.value);
+		function_call_info_add_arg(call_info, expr.value);
+		expr.value = var_false();
 		skip_whitespace_tokens(in);
 	}
+	free_expr(&expr);
 }
 
 /* Skips series of consecutive whitespace. */
