@@ -28,6 +28,7 @@ typedef enum
 	PE_INVALID_EXPRESSION,    /* Wrong expression construct. */
 	PE_INVALID_SUBEXPRESSION, /* Wrong subexpression construct. */
 	PE_MISSING_QUOTE,         /* Missing closing quote. */
+	PE_INTERNAL,              /* Internal error (e.g. not enough memory). */
 }
 ParsingErrors;
 
@@ -39,8 +40,7 @@ typedef const char * (*getenv_func)(const char *envname);
 /* A type of function that will be used to print error messages. */
 typedef void (*print_error_func)(const char msg[]);
 
-/* Can be called several times. */
-/* getenv_f can be NULL */
+/* Can be called several times.  getenv_f can be NULL. */
 void init_parser(getenv_func getenv_f);
 
 /* Returns logical (e.g. beginning of wrong expression) position in a string,

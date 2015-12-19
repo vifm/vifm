@@ -72,5 +72,10 @@ TEST(and_or_ignored_inside_strings)
 	ASSERT_OK("\"||&&\"", "||&&");
 }
 
+TEST(strings_are_converted_to_integers)
+{
+	ASSERT_OK("'a' && 'b' && 'c'", "0");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
