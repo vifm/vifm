@@ -70,6 +70,16 @@ TEST(concatenation_as_arg_ok)
 	ASSERT_OK("a('a'.'b')", "");
 }
 
+TEST(or_as_arg_ok)
+{
+	ASSERT_OK("a('a'||'b')", "");
+}
+
+TEST(and_as_arg_ok)
+{
+	ASSERT_OK("a('a'&&'b')", "");
+}
+
 TEST(no_args_ok)
 {
 	ASSERT_OK("c()", "");

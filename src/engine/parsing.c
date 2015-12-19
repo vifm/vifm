@@ -1074,10 +1074,10 @@ eval_arglist(const char **in, call_info_t *call_info)
 static void
 eval_arg(const char **in, call_info_t *call_info)
 {
-	var_t arg = eval_simple_expr(in);
-	if(last_error == PE_NO_ERROR)
+	expr_t expr_root = eval_or_expr(in);
+	if(eval_var(&expr_root) == 0)
 	{
-		function_call_info_add_arg(call_info, arg);
+		function_call_info_add_arg(call_info, expr_root.value);
 		skip_whitespace_tokens(in);
 	}
 }
