@@ -143,10 +143,12 @@ void stic_suite_teardown( void )
 
 void fixture_setup(void (*setup)( void ))
 {
+	stic_current_test = "<setup>";
 	stic_fixture_setup = setup;
 }
 void fixture_teardown(void (*teardown)( void ))
 {
+	stic_current_test = "<teardown>";
 	stic_fixture_teardown = teardown;
 }
 
