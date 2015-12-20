@@ -1179,7 +1179,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					st = i + 1;
 					state = S_QUOTING;
 				}
-				else if(sep == ' ' && cmdstr[i] == '"' && quotes)
+				else if(sep == ' ' && cmdstr[i] == '"' &&
+						(quotes || strchr(&cmdstr[i + 1], '"') == NULL))
 				{
 					st = i + 1;
 					state = D_QUOTING;
@@ -1260,6 +1261,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			case ARG:
 			case QARG:
 				assert(0 && "Dispatch line state machine is broken");
+				break;
 		}
 		if(state == ARG || state == QARG)
 		{
@@ -1295,6 +1297,16 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	}
 
 	free(cmdstr);
+
+	if(state == D_QUOTING && strchr(&cmdstr[st], '"') == NULL)
+	{
+		state = BEGIN;
+		--st;
+		if(DA_SIZE(argvp) != 0U)
+		{
+			DA_REMOVE(argvp, &argvp[DA_SIZE(argvp) - 1U]);
+		}
+	}
 
 	if(*count == 0 || (size_t)*count != DA_SIZE(argvp) ||
 			(state != BEGIN && state != NO_QUOTING) ||
