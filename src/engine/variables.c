@@ -373,13 +373,13 @@ unlet_variables(const char *cmd)
 		char *p;
 		int envvar = 1;
 
-		/* check if its environment variable */
+		/* Check if it's environment variable. */
 		if(*cmd != '$')
 			envvar = 0;
 		else
 			cmd++;
 
-		/* copy variable name */
+		/* Copy variable name. */
 		p = name;
 		while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
 				(size_t)(p - name) < sizeof(name) - 1)
@@ -397,7 +397,7 @@ unlet_variables(const char *cmd)
 
 		cmd = skip_whitespace(cmd);
 
-		/* currently we support only environment variables */
+		/* Currently we support only environment variables. */
 		if(!envvar)
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable type", name);
@@ -407,7 +407,7 @@ unlet_variables(const char *cmd)
 			continue;
 		}
 
-		/* test for empty variable name */
+		/* Test for empty variable name. */
 		if(name[0] == '\0')
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable name",
