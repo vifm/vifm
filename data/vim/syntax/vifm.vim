@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: December 17, 2015
+" Last Change: December 20, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -145,35 +145,36 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
-		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommandSt,vifmPrefixCommands,vifmAutocmdCommand,
-		\,vifmAutoEvent
+		\,vifmComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
+		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
+		\,vifmAutocmdCommand,vifmAutoEvent
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandStN,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
-		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmNotation
-		\,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand,vifmSoCommandStN
-		\,vifmInvertCommand,vifmInvertCommandStN,vifmPrefixCommands
+		\,vifmComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
+		\,vifmNotation,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand
+		\,vifmSoCommandStN,vifmInvertCommand,vifmInvertCommandStN,vifmPrefixCommands
 " Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
 		\ contains=vifmCommand,vifmCmdCommand,vifmCmdCommandSt,vifmMarkCommandSt
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
-		\,vifmComment,vifmExprCommandSt,vifmNormalCommandSt,vifmCdCommandSt,vifmSet
-		\,vifmArgument,vifmSoCommand,vifmSoCommandSt,vifmInvertCommand
-		\,vifmInvertCommandSt,vifmPrefixCommands,vifmAutocmdCommand,vifmAutoEvent
+		\,vifmComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
+		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommand,vifmSoCommandSt
+		\,vifmInvertCommand,vifmInvertCommandSt,vifmPrefixCommands
+		\,vifmAutocmdCommand,vifmAutoEvent
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmCmdCommand,vifmComment
+		\ contains=vifmCmdCommand,vifmComment,vifmNotComment
 syntax region vifmCmdCommandName contained start='!\?\s\+[a-zA-Z]\+' end='\ze\s'
 		\ skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ nextgroup=vifmCmdArgs
 syntax region vifmCmdArgs start='\(\s*\n\s*\\\)\?\s*\S\+'
 		\ end='\s' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ contains=vifmColonSubcommand,vifmComment
+		\ contains=vifmColonSubcommand,vifmComment,vifmNotComment
 syntax region vifmColoCommandSt start='^\(\s\|:\)*colo\%[rscheme]\>' end='$'
 		\ keepend oneline contains=vifmColoCommand
 syntax region vifmInvertCommandSt start='\(\s\|:\)*invert\>' end='$\||'
@@ -195,10 +196,10 @@ syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
 syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmFtCommand,vifmComment
+		\ contains=vifmFtCommand,vifmComment,vifmNotComment
 syntax region vifmFtCommandStN start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\|\(<[cC][rR]>\)' keepend
-		\ contains=vifmFtCommand,vifmComment,vifmNotation
+		\ contains=vifmFtCommand,vifmComment,vifmNotComment,vifmNotation
 syntax region vifmMapSt start='^\(\s\|:\)*\(map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nmap]\|nm\%[ap]\|nn\%[oremap]\|no\%[remap]\|nun\%[map]\|qm\%[ap]\|qn\%[oremap]\|qun\%[map]\|unm\%[ap]\|vm\%[ap]\|vn\%[oremap]\|vu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmMap
@@ -212,10 +213,10 @@ syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
 		\,vifmOperator,vifmEnvVar,vifmNumber
 syntax region vifmNormalCommandSt start='\(\s\|:\)*norm\%[al]\>' end='$' keepend
 		\ oneline
-		\ contains=vifmNormalCommand
+		\ contains=vifmNormalCommand,vifmComment,vifmNotComment
 syntax region vifmExecute start='!' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmNotation,vifmComment
+		\ contains=vifmNotation,vifmComment,vifmNotComment
 syntax region vifmMapArgs start='\ze\S\+'
 		\ end='\ze.' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
@@ -227,17 +228,17 @@ syntax region vifmCMapArgs start='\S\+'
 syntax region vifmMapLhs start='\S\+'
 		\ end='\ze\s' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
-		\ contains=vifmNotation,vifmComment
+		\ contains=vifmNotation,vifmComment,vifmNotComment
 		\ nextgroup=vifmMapRhs
 syntax region vifmMapRhs start='.'
 		\ end='\ze<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
-		\ contains=vifmNotation,vifmComment,vifmColonSubcommandN
+		\ contains=vifmNotation,vifmComment,vifmNotComment,vifmColonSubcommandN
 		\ nextgroup=vifmMapRhs
 syntax region vifmMapCRhs start='\s'
 		\ end='<[cC][rR]>' skip='\(\s*\\\)\|\(\s*".*$\)'
 		\ contained keepend
-		\ contains=vifmNotation,vifmComment,vifmSubcommandN
+		\ contains=vifmNotation,vifmComment,vifmNotComment,vifmSubcommandN
 syntax region vifmColonSubcommand start='\s*\(\s*\n\s*\\\)\?:\s*\S\+'
 		\ end='$' skip='\s*\n\(\s*\\\)\|\(\s*".*$\)'
 		\ contained
@@ -255,15 +256,15 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 syntax region vifmPattern contained
 		\ start='\(\s\|\w\)\zs/[^/]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='/[iI]*\ze\s\|/\ze\S\+\s'
-		\ contains=vifmComment
+		\ contains=vifmComment,vifmNotComment
 syntax region vifmPattern contained
 		\ start='{[^}]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}\ze\s\|}\ze\S\+\s'
-		\ contains=vifmComment
+		\ contains=vifmComment,vifmNotComment
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
-		\,vifmNumber,vifmComment,vifmHiClear,vifmPattern
+		\,vifmNumber,vifmComment,vifmNotComment,vifmHiClear,vifmPattern
 
 " common highlight for :command arguments
 syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'
@@ -275,20 +276,20 @@ syntax region vifmSet
 		\ start='\(\s\|:\)*\<\(se\%[t]\|setg\%[lobal]\|setl\%[ocal]\)\>'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNS
-		\,vifmComment
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS
+		\,vifmSetAssignNS,vifmComment,vifmNotComment
 syntax region vifmSetN
 		\ start='\(\s\|:\)*\<\(se\%[t]\|setg\%[lobal]\|setl\%[ocal]\)\>'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNSN
-		\,vifmComment,vifmNotation
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS
+		\,vifmSetAssignNSN,vifmComment,vifmNotComment,vifmNotation
 syntax region vifmSet2 contained
 		\ start='^\(\s\|:\)*\<\(se\%[t]\|setg\%[lobal]\|setl\%[ocal]\)\>'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS,vifmSetAssignNSN
-		\,vifmComment,vifmNotation
+		\ contains=vifmSetCommand,vifmOption,vifmSetAssignSQS,vifmSetAssignDQS
+		\,vifmSetAssignNSN,vifmComment,vifmNotComment,vifmNotation
 
 " Highlight for =value part of :set arguments of form option=value
 
@@ -315,10 +316,11 @@ syntax region vifmLet
 		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
+		\,vifmNotComment
 syntax region vifmUnlet
 		\ start='^\(\s\|:\)*\<unl\%[et]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmUnletCommand,vifmEnvVar,vifmComment
+		\ contains=vifmUnletCommand,vifmEnvVar,vifmComment,vifmNotComment
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax region vifmStringInExpr contained start=+=\@<="+hs=s+1 skip=+\\\\\|\\"+
@@ -339,8 +341,14 @@ syntax case ignore
 syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\(s-\)\?tab\|home\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
 syntax case match
 
-" Whole line comments
+" Whole line comment
 syntax region vifmComment contained start='^\(\s\|:\)*"' end='$'
+" Comment at the end of a line
+syntax match vifmComment contained '\s"[^"]*$'
+" This prevents highlighting non-first line of multi-line command
+syntax match vifmNotComment contained '\s"[^"]*\(\(\n\s*\(\\\|"\)\)\@!\|$\)'
+" syntax match vifmNotComment contained '\s"[^"]*\n\s*\\'
+" syntax match vifmNotComment contained '\s"[^"]*\(\n\s*"\)\@!'
 
 " Empty line
 syntax match vifmEmpty /^\s*$/

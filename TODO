@@ -111,7 +111,6 @@ Other (questionable) things.
     Maybe inotify support on Linux.
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
-    Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
     Maybe add + and - commands to undo by commands, not command groups.
     Remove items from :history command menu?
