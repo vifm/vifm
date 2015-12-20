@@ -16,6 +16,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* The parsing and evaluation are mostly separated.  Currently parsing evaluates
+ * values without side-effects, but this can be changed later.
+ *
+ * Output of parsing phase is an expression tree, which is made of nodes of type
+ * expr_t.  After parsing they either contain literals or specification of how
+ * their value should be evaluated.  Expression value is evaluated at most once.
+ *
+ * There are two types of evaluation-time operations (part of Ops enumeration):
+ *  1. With specific evaluation order requirements.
+ *  2. With evaluation of all arguments before the node.
+ *
+ * First type corresponds to logical AND and OR operations, which evaluate their
+ * arguments lazily from left to right.
+ *
+ * Second type is for the rest of builtins and user-provided functions.
+ *
+ * parse_or_expr() is a root-level parser of expressions and it basically
+ * performs parsing phase.  parse_or_expr() evaluates expression, which is the
+ * second phase.
+ *
+ * If parsing stops before the end of an expression, partial result is stored in
+ * global variables to be queried by client code (this way expressions can
+ * follow one another on a line and parsed sequentially). */
+
 #include "parsing.h"
 
 #include <assert.h> /* assert() */
@@ -25,6 +49,7 @@
 #include <stdlib.h>
 #include <string.h> /* strcat() strcmp() strncpy() */
 
+#include "../compat/reallocarray.h"
 #include "../utils/str.h"
 #include "private/options.h"
 #include "functions.h"
@@ -66,27 +91,56 @@ typedef enum
 }
 TOKENS_TYPE;
 
-static var_t eval_or_expr(const char **in);
-static var_t eval_and_expr(const char **in);
-static var_t eval_expr(const char **in);
-static int is_comparison_operator(TOKENS_TYPE type);
+/* Types of evaluation operations. */
+typedef enum
+{
+	OP_NONE, /* The node has already been evaluated or is a literal. */
+	OP_OR,   /* Logical OR. */
+	OP_AND,  /* Logical AND. */
+	OP_CALL, /* Builtin operator implemented as a function or builtin function. */
+}
+Ops;
+
+/* Defines expression and how to evaluate its value.  Value is stored here after
+ * evaluation. */
+typedef struct expr_t
+{
+	var_t value;        /* Value of a literal or result of evaluation. */
+	Ops op_type;        /* Type of operation. */
+	char *func;         /* Function (builtin or user) name for OP_CALL. */
+	int nops;           /* Number of operands. */
+	struct expr_t *ops; /* Operands. */
+}
+expr_t;
+
+static int eval_expr(expr_t *expr);
+static int eval_or_op(int nops, expr_t ops[], var_t *result);
+static int eval_and_op(int nops, expr_t ops[], var_t *result);
+static int eval_call_op(const char name[], int nops, expr_t ops[],
+		var_t *result);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
-static var_t eval_simple_expr(const char **in);
-static var_t eval_term(const char **in);
-static var_t eval_signed_number(const char **in);
-static var_t eval_number(const char **in);
-static var_t eval_single_quoted_string(const char **in);
-static int eval_single_quoted_char(const char **in, char buffer[]);
-static var_t eval_double_quoted_string(const char **in);
-static int eval_double_quoted_char(const char **in, char buffer[]);
+static var_t eval_concat(int nops, expr_t ops[]);
+static int add_expr_op(expr_t *expr, const expr_t *arg);
+static void free_expr(const expr_t *expr);
+static expr_t parse_or_expr(const char **in);
+static expr_t parse_and_expr(const char **in);
+static expr_t parse_comp_expr(const char **in);
+static int is_comparison_operator(TOKENS_TYPE type);
+static expr_t parse_concat_expr(const char **in);
+static expr_t parse_term(const char **in);
+static expr_t parse_signed_number(const char **in);
+static var_t parse_number(const char **in);
+static var_t parse_singly_quoted_string(const char **in);
+static int parse_singly_quoted_char(const char **in, char buffer[]);
+static var_t parse_doubly_quoted_string(const char **in);
+static int parse_doubly_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
 static var_t eval_opt(const char **in);
-static var_t eval_logical_not(const char **in);
-static int read_sequence(const char **in, const char first[],
+static expr_t parse_logical_not(const char **in);
+static int parse_sequence(const char **in, const char first[],
 		const char other[], size_t buf_len, char buf[]);
-static var_t eval_funccall(const char **in);
-static void eval_arglist(const char **in, call_info_t *call_info);
-static void eval_arg(const char **in, call_info_t *call_info);
+static expr_t parse_funccall(const char **in);
+static void parse_arglist(const char **in, expr_t *call_expr);
 static void skip_whitespace_tokens(const char **in);
 static void get_next(const char **in);
 
@@ -105,6 +159,11 @@ static ParsingErrors last_error;
 static const char *last_position;
 static const char *last_parsed_char;
 static var_t res_val;
+
+/* Empty expression to be returned on errors. */
+static expr_t null_expr;
+
+/* Public interface --------------------------------------------------------- */
 
 void
 init_parser(getenv_func getenv_f)
@@ -130,16 +189,16 @@ get_last_parsed_char(void)
 ParsingErrors
 parse(const char input[], var_t *result)
 {
+	expr_t expr_root;
+
 	assert(initialized && "Parser must be initialized before use.");
 
 	last_error = PE_NO_ERROR;
 	last_token.type = BEGIN;
 
-	var_free(res_val);
-	res_val = var_false();
 	last_position = input;
 	get_next(&last_position);
-	res_val = eval_or_expr(&last_position);
+	expr_root = parse_or_expr(&last_position);
 	last_parsed_char = last_position;
 
 	if(last_token.type != END)
@@ -150,18 +209,31 @@ parse(const char input[], var_t *result)
 		}
 		if(last_error == PE_NO_ERROR)
 		{
-			last_error = PE_INVALID_EXPRESSION;
+			if(eval_expr(&expr_root) == 0)
+			{
+				var_free(res_val);
+				res_val = var_clone(expr_root.value);
+				last_error = PE_INVALID_EXPRESSION;
+			}
 		}
 	}
+
+	if(last_error == PE_NO_ERROR)
+	{
+		if(eval_expr(&expr_root) == 0)
+		{
+			var_free(res_val);
+			res_val = var_clone(expr_root.value);
+			*result = var_clone(expr_root.value);
+		}
+	}
+
 	if(last_error == PE_INVALID_EXPRESSION)
 	{
 		last_position = skip_whitespace(input);
 	}
 
-	if(last_error == PE_NO_ERROR)
-	{
-		*result = var_clone(res_val);
-	}
+	free_expr(&expr_root);
 	return last_error;
 }
 
@@ -175,113 +247,211 @@ get_parsing_result(void)
 int
 is_prev_token_whitespace(void)
 {
+	assert(initialized && "Parser must be initialized before use.");
 	return prev_token.type == WHITESPACE;
 }
 
-/* or_expr ::= and_expr | and_expr '&&' or_expr */
-static var_t
-eval_or_expr(const char **in)
-{
-	var_t lhs;
-	var_t rhs;
-	var_val_t result;
+/* Expression evaluation ---------------------------------------------------- */
 
-	lhs = eval_and_expr(in);
-	if(last_error != PE_NO_ERROR || last_token.type == END)
-	{
-		return lhs;
-	}
-	else if(last_token.type != OR)
-	{
-		last_error = PE_INVALID_EXPRESSION;
-		/* Return partial result. */
-		return lhs;
-	}
-
-	get_next(in);
-	rhs = eval_or_expr(in);
-	if(last_error != PE_NO_ERROR)
-	{
-		var_free(lhs);
-		return var_false();
-	}
-
-	result.integer = var_to_integer(lhs) || var_to_integer(rhs);
-
-	var_free(lhs);
-	var_free(rhs);
-	return var_new(VTYPE_INT, result);
-}
-
-/* and_expr ::= expr | expr '&&' and_expr */
-static var_t
-eval_and_expr(const char **in)
-{
-	var_t lhs;
-	var_t rhs;
-	var_val_t result;
-
-	lhs = eval_expr(in);
-	if(last_error != PE_NO_ERROR || last_token.type != AND)
-	{
-		return lhs;
-	}
-
-	get_next(in);
-	rhs = eval_and_expr(in);
-	if(last_error != PE_NO_ERROR)
-	{
-		var_free(lhs);
-		return var_false();
-	}
-
-	result.integer = var_to_integer(lhs) && var_to_integer(rhs);
-
-	var_free(lhs);
-	var_free(rhs);
-	return var_new(VTYPE_INT, result);
-}
-
-/* expr ::= simple_expr | simple_expr op simple_expr */
-/* op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
-static var_t
-eval_expr(const char **in)
-{
-	TOKENS_TYPE op;
-	var_t lhs;
-	var_t rhs;
-	var_val_t result;
-
-	lhs = eval_simple_expr(in);
-	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
-	{
-		return lhs;
-	}
-	op = last_token.type;
-
-	get_next(in);
-	rhs = eval_simple_expr(in);
-	if(last_error != PE_NO_ERROR)
-	{
-		var_free(lhs);
-		return var_false();
-	}
-
-	result.integer = compare_variables(op, lhs, rhs);
-
-	var_free(lhs);
-	var_free(rhs);
-	return var_new(VTYPE_INT, result);
-}
-
-/* Checks whether given token corresponds to any of comparison operators.
- * Returns non-zero if so, otherwise zero is returned. */
+/* Evaluates values of an expression.  Returns zero on success, which means that
+ * expr->value is now correct, otherwise non-zero is returned. */
 static int
-is_comparison_operator(TOKENS_TYPE type)
+eval_expr(expr_t *expr)
 {
-	return type == EQ || type == NE
-	    || type == LT || type == LE
-	    || type == GE || type == GT;
+	int result = 1;
+	switch(expr->op_type)
+	{
+		case OP_NONE:
+			/* Do nothing, value is already available. */
+			return 0;
+		case OP_OR:
+			result = eval_or_op(expr->nops, expr->ops, &expr->value);
+			break;
+		case OP_AND:
+			result = eval_and_op(expr->nops, expr->ops, &expr->value);
+			break;
+		case OP_CALL:
+			assert(expr->func != NULL && "Function must have a name.");
+			result = eval_call_op(expr->func, expr->nops, expr->ops, &expr->value);
+			break;
+	}
+	if(result == 0)
+	{
+		expr->op_type = OP_NONE;
+	}
+	return result;
+}
+
+/* Evaluates logical OR operation.  All operands are evaluated lazily from left
+ * to right.  Returns zero on success, otherwise non-zero is returned. */
+static int
+eval_or_op(int nops, expr_t ops[], var_t *result)
+{
+	int val;
+	int i;
+
+	if(nops == 0)
+	{
+		*result = var_true();
+		return 0;
+	}
+
+	if(eval_expr(&ops[0]) != 0)
+	{
+		return 1;
+	}
+
+	if(nops == 1)
+	{
+		*result = var_clone(ops[0].value);
+		return 0;
+	}
+
+	/* Conversion to integer so that strings are converted into numbers instead of
+	 * checked to be empty. */
+	val = var_to_integer(ops[0].value);
+
+	for(i = 1; i < nops && !val; ++i)
+	{
+		if(eval_expr(&ops[i]) != 0)
+		{
+			return 1;
+		}
+		val |= var_to_integer(ops[i].value);
+	}
+
+	*result = var_from_bool(val);
+	return 0;
+}
+
+/* Evaluates logical AND operation.  All operands are evaluated lazily from left
+ * to right.  Returns zero on success, otherwise non-zero is returned. */
+static int
+eval_and_op(int nops, expr_t ops[], var_t *result)
+{
+	int val;
+	int i;
+
+	if(nops == 0)
+	{
+		*result = var_false();
+		return 0;
+	}
+
+	if(eval_expr(&ops[0]) != 0)
+	{
+		return 1;
+	}
+
+	if(nops == 1)
+	{
+		*result = var_clone(ops[0].value);
+		return 0;
+	}
+
+	/* Conversion to integer so that strings are converted into numbers instead of
+	 * checked to be empty. */
+	val = var_to_integer(ops[0].value);
+
+	for(i = 1; i < nops && val; ++i)
+	{
+		if(eval_expr(&ops[i]) != 0)
+		{
+			return 1;
+		}
+		val &= var_to_integer(ops[i].value);
+	}
+
+	*result = var_from_bool(val);
+	return 0;
+}
+
+/* Evaluates invocation operation.  All operands are evaluated beforehand.
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
+{
+	int i;
+
+	for(i = 0; i < nops; ++i)
+	{
+		if(eval_expr(&ops[i]) != 0)
+		{
+			return 1;
+		}
+	}
+
+	if(strcmp(name, "==") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(EQ, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, "!=") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(NE, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, "<") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(LT, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, "<=") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(LE, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, ">") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(GT, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, ">=") == 0)
+	{
+		assert(nops == 2 && "Must be two arguments.");
+		*result = var_from_bool(compare_variables(GE, ops[0].value, ops[1].value));
+	}
+	else if(strcmp(name, ".") == 0)
+	{
+		*result = eval_concat(nops, ops);
+	}
+	else if(strcmp(name, "!") == 0)
+	{
+		assert(nops == 1 && "Must be single argument.");
+		*result = var_from_bool(!var_to_integer(ops[0].value));
+	}
+	else if(strcmp(name, "-") == 0 || strcmp(name, "+") == 0)
+	{
+		assert(nops == 1 && "Must be single argument.");
+		var_val_t val = { .integer = var_to_integer(ops[0].value) };
+		if(name[0] == '-')
+		{
+			val.integer = -val.integer;
+		}
+		*result = var_new(VTYPE_INT, val);
+	}
+	else
+	{
+		int i;
+		call_info_t call_info;
+		function_call_info_init(&call_info);
+
+		for(i = 0; i < nops; ++i)
+		{
+			function_call_info_add_arg(&call_info, var_clone(ops[i].value));
+		}
+
+		*result = function_call(name, &call_info);
+		if(result->type == VTYPE_ERROR)
+		{
+			last_error = PE_INVALID_EXPRESSION;
+			var_free(*result);
+			*result = var_false();
+		}
+		function_call_info_free(&call_info);
+	}
+
+	return (last_error != PE_NO_ERROR);
 }
 
 /* Compares lhs and rhs variables by comparison operator specified by a token.
@@ -327,59 +497,259 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 	}
 }
 
-/* simple_expr ::= term { '.' term } */
+/* Evaluates concatenation of expressions.  Returns resultant value or variable
+ * of type VTYPE_ERROR. */
 static var_t
-eval_simple_expr(const char **in)
+eval_concat(int nops, expr_t ops[])
 {
-	var_t result = var_false();
+	var_t result = var_error();
+	int i;
+
+	assert(nops > 0 && "Must be at least one argument.");
+
+	if(nops == 1)
+	{
+		return var_clone(ops[0].value);
+	}
+
 	char res[CMD_LINE_LENGTH_MAX];
 	size_t res_len = 0U;
-	int single_term = 1;
 	res[0] = '\0';
 
-	while(last_error == PE_NO_ERROR)
+	for(i = 0; i < nops; ++i)
 	{
-		var_t term;
-		char *str_val;
-
-		skip_whitespace_tokens(in);
-		term = eval_term(in);
-		skip_whitespace_tokens(in);
-		if(last_error != PE_NO_ERROR)
+		char *const str_val = var_to_string(ops[i].value);
+		if(str_val == NULL)
 		{
-			var_free(term);
+			last_error = PE_INTERNAL;
 			break;
 		}
 
-		str_val = var_to_string(term);
 		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
 		free(str_val);
-
-		if(last_token.type != DOT)
-		{
-			if(single_term)
-			{
-				result = term;
-			}
-			else
-			{
-				var_free(term);
-			}
-			break;
-		}
-		var_free(term);
-
-		single_term = 0;
-		get_next(in);
 	}
 
 	if(last_error == PE_NO_ERROR)
 	{
-		if(!single_term)
+		const var_val_t var_val = { .string = res };
+		result = var_new(VTYPE_STRING, var_val);
+	}
+
+	return result;
+}
+
+/* Appends operand to an expression.  Returns zero on success, otherwise
+ * non-zero is returned and the *op is freed. */
+static int
+add_expr_op(expr_t *expr, const expr_t *op)
+{
+	void *p = reallocarray(expr->ops, expr->nops + 1, sizeof(expr->ops[0]));
+	if(p == NULL)
+	{
+		free_expr(op);
+		return 1;
+	}
+	expr->ops = p;
+
+	expr->ops[expr->nops++] = *op;
+	return 0;
+}
+
+/* Frees all resources associated with the expression. */
+static void
+free_expr(const expr_t *expr)
+{
+	int i;
+
+	free(expr->func);
+	var_free(expr->value);
+
+	for(i = 0; i < expr->nops; ++i)
+	{
+		free_expr(&expr->ops[i]);
+	}
+	free(expr->ops);
+}
+
+/* Input parsing ------------------------------------------------------------ */
+
+/* or_expr ::= and_expr | and_expr '||' or_expr */
+static expr_t
+parse_or_expr(const char **in)
+{
+	expr_t result = { .op_type = OP_OR };
+
+	while(last_error == PE_NO_ERROR)
+	{
+		const expr_t op = parse_and_expr(in);
+		if(last_error != PE_NO_ERROR)
 		{
-			const var_val_t var_val = { .string = res };
-			result = var_new(VTYPE_STRING, var_val);
+			free_expr(&op);
+			break;
 		}
+
+		if(add_expr_op(&result, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		if(last_token.type != OR)
+		{
+			/* Return partial result. */
+			break;
+		}
+
+		get_next(in);
+	}
+
+	if(last_error == PE_INTERNAL)
+	{
+		free_expr(&result);
+		result.op_type = OP_NONE;
+		result.value = var_false();
+	}
+
+	return result;
+}
+
+/* and_expr ::= comp_expr | comp_expr '&&' and_expr */
+static expr_t
+parse_and_expr(const char **in)
+{
+	expr_t result = { .op_type = OP_AND };
+
+	while(last_error == PE_NO_ERROR)
+	{
+		const expr_t op = parse_comp_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
+		if(add_expr_op(&result, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		if(last_token.type != AND)
+		{
+			/* Return partial result. */
+			break;
+		}
+
+		get_next(in);
+	}
+
+	if(last_error == PE_INTERNAL)
+	{
+		free_expr(&result);
+		result.op_type = OP_NONE;
+		result.value = var_false();
+	}
+
+	return result;
+}
+
+/* comp_expr ::= concat_expr | concat_expr op concat_expr
+ * op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
+static expr_t
+parse_comp_expr(const char **in)
+{
+	expr_t lhs;
+	expr_t rhs;
+	expr_t result = { .op_type = OP_CALL };
+
+	lhs = parse_concat_expr(in);
+	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
+	{
+		return lhs;
+	}
+
+	result.func = strdup(last_token.str);
+
+	if(add_expr_op(&result, &lhs) != 0 || result.func == NULL)
+	{
+		free_expr(&result);
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	get_next(in);
+	rhs = parse_concat_expr(in);
+	if(add_expr_op(&result, &rhs) != 0)
+	{
+		free_expr(&result);
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	if(last_error != PE_NO_ERROR)
+	{
+		free_expr(&result);
+		return null_expr;
+	}
+
+	return result;
+}
+
+/* Checks whether given token corresponds to any of comparison operators.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_comparison_operator(TOKENS_TYPE type)
+{
+	return type == EQ || type == NE
+	    || type == LT || type == LE
+	    || type == GE || type == GT;
+}
+
+/* concat_expr ::= term { '.' term } */
+static expr_t
+parse_concat_expr(const char **in)
+{
+	expr_t result = { .op_type = OP_CALL };
+
+	result.func = strdup(".");
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+	}
+
+	while(last_error == PE_NO_ERROR)
+	{
+		expr_t op;
+
+		skip_whitespace_tokens(in);
+		op = parse_term(in);
+		skip_whitespace_tokens(in);
+
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
+		if(add_expr_op(&result, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		if(last_token.type != DOT)
+		{
+			/* Return partial result. */
+			break;
+		}
+
+		get_next(in);
+	}
+
+	if(last_error == PE_INTERNAL)
+	{
+		free_expr(&result);
+		result = null_expr;
 	}
 
 	return result;
@@ -387,69 +757,89 @@ eval_simple_expr(const char **in)
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt |
  *          logical_not */
-static var_t
-eval_term(const char **in)
+static expr_t
+parse_term(const char **in)
 {
+	expr_t result = { .op_type = OP_NONE };
+
 	switch(last_token.type)
 	{
 		case MINUS:
 		case PLUS:
-			return eval_signed_number(in);
+			result = parse_signed_number(in);
+			break;
 		case DIGIT:
-			return eval_number(in);
+			result.value = parse_number(in);
+			break;
 		case SQ:
 			get_next(in);
-			return eval_single_quoted_string(in);
+			result.value = parse_singly_quoted_string(in);
+			break;
 		case DQ:
 			get_next(in);
-			return eval_double_quoted_string(in);
+			result.value = parse_doubly_quoted_string(in);
+			break;
 		case DOLLAR:
 			get_next(in);
-			return eval_envvar(in);
+			result.value = eval_envvar(in);
+			break;
 		case AMPERSAND:
 			get_next(in);
-			return eval_opt(in);
+			result.value = eval_opt(in);
+			break;
 		case EMARK:
 			get_next(in);
-			return eval_logical_not(in);
+			result = parse_logical_not(in);
+			break;
 
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
-				return eval_funccall(in);
+				result = parse_funccall(in);
+				break;
 			}
 			/* break is omitted intentionally. */
 
 		default:
 			--*in;
 			last_error = PE_INVALID_EXPRESSION;
-			return var_false();
+			result.value = var_error();
+			break;
 	}
+	return result;
 }
 
-/* signed_number ::= ( + | - ) { + | - } number */
-static var_t
-eval_signed_number(const char **in)
+/* signed_number ::= ( + | - ) { + | - } term */
+static expr_t
+parse_signed_number(const char **in)
 {
 	const int sign = (last_token.type == MINUS) ? -1 : 1;
-	var_t operand;
-	int number;
-	var_val_t result_val;
+	expr_t result = { .op_type = OP_CALL };
+	expr_t op;
 
 	get_next(in);
 	skip_whitespace_tokens(in);
-	operand = eval_term(in);
 
-	number = var_to_integer(operand);
-	var_free(operand);
+	op = parse_term(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		free_expr(&op);
+		return null_expr;
+	}
 
-	result_val.integer = sign*number;
-	return var_new(VTYPE_INT, result_val);
+	result.func = strdup((sign == 1) ? "+" : "-");
+	if(add_expr_op(&result, &op) != 0 || result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	return result;
 }
 
 /* number ::= num { num } */
 static var_t
-eval_number(const char **in)
+parse_number(const char **in)
 {
 	var_val_t var_val = { };
 
@@ -469,11 +859,11 @@ eval_number(const char **in)
 
 /* sqstr ::= ''' sqchar { sqchar } ''' */
 static var_t
-eval_single_quoted_string(const char **in)
+parse_singly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
 	buffer[0] = '\0';
-	while(eval_single_quoted_char(in, buffer));
+	while(parse_singly_quoted_char(in, buffer));
 
 	if(last_token.type == SQ)
 	{
@@ -489,7 +879,7 @@ eval_single_quoted_string(const char **in)
 /* sqchar
  * Returns non-zero if there are more characters in the string. */
 static int
-eval_single_quoted_char(const char **in, char buffer[])
+parse_singly_quoted_char(const char **in, char buffer[])
 {
 	int double_sq;
 	int sq_char;
@@ -513,11 +903,11 @@ eval_single_quoted_char(const char **in, char buffer[])
 
 /* dqstr ::= ''' dqchar { dqchar } ''' */
 static var_t
-eval_double_quoted_string(const char **in)
+parse_doubly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
 	buffer[0] = '\0';
-	while(eval_double_quoted_char(in, buffer));
+	while(parse_doubly_quoted_char(in, buffer));
 
 	if(last_token.type == DQ)
 	{
@@ -533,7 +923,7 @@ eval_double_quoted_string(const char **in)
 /* dqchar
  * Returns non-zero if there are more characters in the string. */
 int
-eval_double_quoted_char(const char **in, char buffer[])
+parse_doubly_quoted_char(const char **in, char buffer[])
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -587,7 +977,7 @@ eval_envvar(const char **in)
 	var_val_t var_val;
 
 	char name[ENVVAR_NAME_LENGTH_MAX];
-	if(!read_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 		sizeof(name), name))
 	{
 		last_error = PE_INVALID_EXPRESSION;
@@ -606,7 +996,7 @@ eval_opt(const char **in)
 	var_val_t var_val;
 
 	char name[OPTION_NAME_MAX];
-	if(!read_sequence(in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
+	if(!parse_sequence(in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
 		name))
 	{
 		last_error = PE_INVALID_EXPRESSION;
@@ -648,26 +1038,42 @@ eval_opt(const char **in)
 }
 
 /* logical_not ::= '!' term */
-static var_t
-eval_logical_not(const char **in)
+static expr_t
+parse_logical_not(const char **in)
 {
-	var_t term;
-	int bool_val;
+	expr_t result = { .op_type = OP_CALL };
+	expr_t op;
 
 	skip_whitespace_tokens(in);
 
-	term = eval_term(in);
-	bool_val = var_to_boolean(term);
+	op = parse_term(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		free_expr(&op);
+		return null_expr;
+	}
 
-	var_free(term);
+	if(add_expr_op(&result, &op) != 0)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
 
-	return var_from_bool(!bool_val);
+	result.func = strdup("!");
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		free_expr(&result);
+		return null_expr;
+	}
+
+	return result;
 }
 
 /* sequence ::= first { other }
  * Returns zero on failure, otherwise non-zero is returned. */
 static int
-read_sequence(const char **in, const char first[], const char other[],
+parse_sequence(const char **in, const char first[], const char other[],
 		size_t buf_len, char buf[])
 {
 	if(buf_len == 0UL || !char_is_one_of(first, last_token.c))
@@ -687,18 +1093,17 @@ read_sequence(const char **in, const char first[], const char other[],
 	return 1;
 }
 
-/* funccall ::= varname '(' arglist ')' */
-static var_t
-eval_funccall(const char **in)
+/* funccall ::= varname '(' [arglist] ')' */
+static expr_t
+parse_funccall(const char **in)
 {
 	char name[NAME_LENGTH_MAX];
-	call_info_t call_info;
-	var_t ret_val;
+	expr_t result = { .op_type = OP_CALL };
 
 	if(!isalpha(last_token.c))
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return var_false();
+		return null_expr;
 	}
 
 	name[0] = last_token.c;
@@ -713,34 +1118,37 @@ eval_funccall(const char **in)
 	if(last_token.type != LPAREN)
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return var_false();
+		return null_expr;
+	}
+
+	if(!function_registered(name))
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return null_expr;
+	}
+
+	result.func = strdup(name);
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
 	}
 
 	get_next(in);
 	skip_whitespace_tokens(in);
 
-	function_call_info_init(&call_info);
 	/* If argument list is not empty. */
 	if(last_token.type != RPAREN)
 	{
 		const char *old_in = *in - 1;
-		eval_arglist(in, &call_info);
+		parse_arglist(in, &result);
 		if(last_error != PE_NO_ERROR)
 		{
 			*in = old_in;
-			function_call_info_free(&call_info);
-			return var_false();
+			free_expr(&result);
+			return null_expr;
 		}
 	}
-
-	ret_val = function_call(name, &call_info);
-	if(ret_val.type == VTYPE_ERROR)
-	{
-		last_error = PE_INVALID_EXPRESSION;
-		var_free(ret_val);
-		ret_val = var_false();
-	}
-	function_call_info_free(&call_info);
 
 	skip_whitespace_tokens(in);
 	if(last_token.type != RPAREN)
@@ -749,19 +1157,37 @@ eval_funccall(const char **in)
 	}
 	get_next(in);
 
-	return ret_val;
+	return result;
 }
 
-/* arglist ::= simple_expr { ',' simple_expr } */
+/* arglist ::= or_expr { ',' or_expr } */
 static void
-eval_arglist(const char **in, call_info_t *call_info)
+parse_arglist(const char **in, expr_t *call_expr)
 {
-	eval_arg(in, call_info);
-	while(last_error == PE_NO_ERROR && last_token.type == COMMA)
+	do
 	{
+		const expr_t op = parse_or_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
+		if(add_expr_op(call_expr, &op) != 0)
+		{
+			last_error = PE_INTERNAL;
+			break;
+		}
+
+		skip_whitespace_tokens(in);
+
+		if(last_token.type != COMMA)
+		{
+			break;
+		}
 		get_next(in);
-		eval_arg(in, call_info);
 	}
+	while(last_error == PE_NO_ERROR);
 
 	if(last_error == PE_INVALID_EXPRESSION)
 	{
@@ -769,17 +1195,7 @@ eval_arglist(const char **in, call_info_t *call_info)
 	}
 }
 
-/* arg ::= simple_expr */
-static void
-eval_arg(const char **in, call_info_t *call_info)
-{
-	var_t arg = eval_simple_expr(in);
-	if(last_error == PE_NO_ERROR)
-	{
-		function_call_info_add_arg(call_info, arg);
-		skip_whitespace_tokens(in);
-	}
-}
+/* Input tokenization ------------------------------------------------------- */
 
 /* Skips series of consecutive whitespace. */
 static void

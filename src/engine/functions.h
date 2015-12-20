@@ -46,6 +46,10 @@ function_t;
 /* Registers new function.  Returns non-zero on error. */
 int function_register(const function_t *func_info);
 
+/* Checks whether function with specified name exists or not.  Returns non-zero
+ * if function with specified name is already registered. */
+int function_registered(const char func_name[]);
+
 /* Calls function.  Returns its result or variable of type VTYPE_ERROR in case
  * of error. */
 var_t function_call(const char func_name[], const call_info_t *call_info);

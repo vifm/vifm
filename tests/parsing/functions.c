@@ -21,6 +21,11 @@ SETUP_ONCE()
 	assert_int_equal(0, function_register(&function_c));
 }
 
+TEARDOWN_ONCE()
+{
+	function_reset_all();
+}
+
 static var_t
 dummy(const call_info_t *call_info)
 {
@@ -68,6 +73,16 @@ TEST(space_after_comma_ok)
 TEST(concatenation_as_arg_ok)
 {
 	ASSERT_OK("a('a'.'b')", "");
+}
+
+TEST(or_as_arg_ok)
+{
+	ASSERT_OK("a('a'||'b')", "");
+}
+
+TEST(and_as_arg_ok)
+{
+	ASSERT_OK("a('a'&&'b')", "");
 }
 
 TEST(no_args_ok)

@@ -233,6 +233,9 @@
 	Changed plugin to do not depend on location of vifm.  g:vifm_home is
 	ignored from now on.  Thanks to aleksejrs.
 
+	Rewritten expression parser to prevent side-effects from occurring until
+	syntax is checked.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

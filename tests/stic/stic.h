@@ -283,6 +283,8 @@ static void (*stic_teardown_once_func)(void);
 
 static void stic_fixture(void)
 {
+    extern const char *stic_current_test;
+
     const char *fixture_name = NULL;
     size_t i;
     static struct stic_test_data *const *const test_data[] = {
@@ -309,13 +311,12 @@ static void stic_fixture(void)
 
     if(stic_setup_once_func != NULL)
     {
+        stic_current_test = "<setup once>";
         stic_setup_once_func();
     }
 
     for(i = 0; i < STIC_ARRAY_LEN(test_data); ++i)
     {
-        extern const char *stic_current_test;
-
         struct stic_test_data *td = *test_data[i];
         if(td == NULL) continue;
         if(td->p != NULL && !td->p()) continue;
@@ -332,6 +333,7 @@ static void stic_fixture(void)
 
     if(stic_teardown_once_func != NULL)
     {
+        stic_current_test = "<teardown once>";
         stic_teardown_once_func();
     }
     test_fixture_end();
