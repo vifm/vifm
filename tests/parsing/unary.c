@@ -16,8 +16,10 @@ TEST(logical_not_of_integers)
 
 TEST(logical_not_of_strings)
 {
-	ASSERT_INT_OK("!'abc'", 0);
+	ASSERT_INT_OK("!'abc'", 1);
 	ASSERT_INT_OK("!''", 1);
+	ASSERT_INT_OK("!'0'", 1);
+	ASSERT_INT_OK("!'1'", 0);
 }
 
 TEST(multiple_logical_not)

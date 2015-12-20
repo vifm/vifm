@@ -69,9 +69,12 @@ TEST(string_is_converted_for_signs)
 	ASSERT_OK("-'a'", "0");
 	ASSERT_OK("+'a'", "0");
 	ASSERT_OK("-'1'", "-1");
+	ASSERT_OK("-'0'", "0");
+	ASSERT_OK("-''", "0");
 	ASSERT_OK("-'-1'", "1");
 	ASSERT_OK("-'--1'", "0");
 	ASSERT_OK("+'10'", "10");
+	ASSERT_OK("+'-100'", "-100");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

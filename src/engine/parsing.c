@@ -327,7 +327,7 @@ eval_call(const char name[], int nops, expr_t ops[], var_t *result)
 	else if(strcmp(name, "!") == 0)
 	{
 		assert(nops == 1 && "Must be single argument.");
-		*result = var_from_bool(!var_to_boolean(ops[0].value));
+		*result = var_from_bool(!var_to_integer(ops[0].value));
 	}
 	else if(strcmp(name, "-") == 0 || strcmp(name, "+") == 0)
 	{
