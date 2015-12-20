@@ -4077,8 +4077,9 @@ Arguments are converted to numbers before evaluation.
 
 Result is non-zero if at least one of arguments is non-zero.
 
-It's right associative and without short-circuiting, so all sub-expressions
-are always evaluated.
+It's right associative and with short-circuiting, so sub-expressions are
+evaluated from left to right until result of whole expression is determined
+(i.e., until first non-zero) or end of the expression.
 
 expr2
 .br
@@ -4090,8 +4091,9 @@ Arguments are converted to numbers before evaluation.
 
 Result is non-zero only if both arguments are non-zero.
 
-It's right associative and without short-circuiting, so all sub-expressions
-are always evaluated.
+It's right associative and with short-circuiting, so sub-expressions are
+evaluated from left to right until result of whole expression is determined
+(i.e., until first zero) or end of the expression.
 
 expr3
 .br
