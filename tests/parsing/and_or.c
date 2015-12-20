@@ -2,40 +2,10 @@
 
 #include <stdlib.h> /* free() */
 
-#include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
 
 #include "asserts.h"
-
-static var_t dummy(const call_info_t *call_info);
-
-static int called;
-
-SETUP_ONCE()
-{
-	static const function_t function_a = { "a", 0, &dummy };
-
-	assert_int_equal(0, function_register(&function_a));
-}
-
-TEARDOWN_ONCE()
-{
-	function_reset_all();
-}
-
-TEARDOWN()
-{
-	called = 0;
-}
-
-static var_t
-dummy(const call_info_t *call_info)
-{
-	static const var_val_t var_val = { .string = "" };
-	called = 1;
-	return var_new(VTYPE_STRING, var_val);
-}
 
 TEST(front_back_op_fail)
 {
@@ -105,18 +75,6 @@ TEST(and_or_ignored_inside_strings)
 TEST(strings_are_converted_to_integers)
 {
 	ASSERT_OK("'a' && 'b' && 'c'", "0");
-}
-
-TEST(or_is_lazy)
-{
-	ASSERT_OK("1 || a()", "1");
-	assert_false(called);
-}
-
-TEST(and_is_lazy)
-{
-	ASSERT_OK("0 && a()", "0");
-	assert_false(called);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -127,7 +127,7 @@ static int is_comparison_operator(TOKENS_TYPE type);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
 static expr_t eval_concat_expr(const char **in);
 static expr_t eval_term(const char **in);
-static var_t eval_signed_number(const char **in);
+static expr_t eval_signed_number(const char **in);
 static var_t eval_number(const char **in);
 static var_t eval_single_quoted_string(const char **in);
 static int eval_single_quoted_char(const char **in, char buffer[]);
@@ -135,7 +135,7 @@ static var_t eval_double_quoted_string(const char **in);
 static int eval_double_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
 static var_t eval_opt(const char **in);
-static var_t eval_logical_not(const char **in);
+static expr_t eval_logical_not(const char **in);
 static int read_sequence(const char **in, const char first[],
 		const char other[], size_t buf_len, char buf[]);
 static expr_t eval_funccall(const char **in);
@@ -323,6 +323,21 @@ eval_call(const char name[], int nops, expr_t ops[], var_t *result)
 	else if(strcmp(name, ".") == 0)
 	{
 		*result = eval_concat(nops, ops);
+	}
+	else if(strcmp(name, "!") == 0)
+	{
+		assert(nops == 1 && "Must be single argument.");
+		*result = var_from_bool(!var_to_boolean(ops[0].value));
+	}
+	else if(strcmp(name, "-") == 0 || strcmp(name, "+") == 0)
+	{
+		assert(nops == 1 && "Must be single argument.");
+		var_val_t val = { .integer = var_to_integer(ops[0].value) };
+		if(name[0] == '-')
+		{
+			val.integer = -val.integer;
+		}
+		*result = var_new(VTYPE_INT, val);
 	}
 	else
 	{
@@ -744,7 +759,7 @@ eval_term(const char **in)
 	{
 		case MINUS:
 		case PLUS:
-			result.value = eval_signed_number(in);
+			result = eval_signed_number(in);
 			break;
 		case DIGIT:
 			result.value = eval_number(in);
@@ -767,7 +782,7 @@ eval_term(const char **in)
 			break;
 		case EMARK:
 			get_next(in);
-			result.value = eval_logical_not(in);
+			result = eval_logical_not(in);
 			break;
 
 		case SYM:
@@ -787,26 +802,32 @@ eval_term(const char **in)
 	return result;
 }
 
-/* signed_number ::= ( + | - ) { + | - } number */
-static var_t
+/* signed_number ::= ( + | - ) { + | - } term */
+static expr_t
 eval_signed_number(const char **in)
 {
 	const int sign = (last_token.type == MINUS) ? -1 : 1;
-	expr_t expr;
-	int number;
-	var_val_t result_val;
+	expr_t result = { .op_type = OP_CALL };
+	expr_t op;
 
 	get_next(in);
 	skip_whitespace_tokens(in);
-	expr = eval_term(in);
-	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
-	{
-		number = var_to_integer(expr.value);
-	}
-	free_expr(&expr);
 
-	result_val.integer = sign*number;
-	return var_new(VTYPE_INT, result_val);
+	op = eval_term(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		free_expr(&op);
+		return null_expr;
+	}
+
+	result.func = strdup((sign == 1) ? "+" : "-");
+	if(add_expr_op(&result, &op) != 0 || result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	return result;
 }
 
 /* number ::= num { num } */
@@ -1010,20 +1031,34 @@ eval_opt(const char **in)
 }
 
 /* logical_not ::= '!' term */
-static var_t
+static expr_t
 eval_logical_not(const char **in)
 {
-	expr_t expr;
-	var_t result = var_error();
+	expr_t result = { .op_type = OP_CALL };
+	expr_t op;
 
 	skip_whitespace_tokens(in);
 
-	expr = eval_term(in);
-	if(last_error == PE_NO_ERROR && eval_var(&expr) == 0)
+	op = eval_term(in);
+	if(last_error != PE_NO_ERROR)
 	{
-		result = var_from_bool(!var_to_boolean(expr.value));
+		free_expr(&op);
+		return null_expr;
 	}
-	free_expr(&expr);
+
+	if(add_expr_op(&result, &op) != 0)
+	{
+		last_error = PE_INTERNAL;
+		return null_expr;
+	}
+
+	result.func = strdup("!");
+	if(result.func == NULL)
+	{
+		last_error = PE_INTERNAL;
+		free_expr(&result);
+		return null_expr;
+	}
 
 	return result;
 }
@@ -1125,6 +1160,12 @@ eval_arglist(const char **in, expr_t *call_expr)
 	do
 	{
 		const expr_t op = eval_or_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&op);
+			break;
+		}
+
 		if(add_expr_op(call_expr, &op) != 0)
 		{
 			last_error = PE_INTERNAL;

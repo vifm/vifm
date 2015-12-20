@@ -21,6 +21,11 @@ SETUP_ONCE()
 	assert_int_equal(0, function_register(&function_c));
 }
 
+TEARDOWN_ONCE()
+{
+	function_reset_all();
+}
+
 static var_t
 dummy(const call_info_t *call_info)
 {
