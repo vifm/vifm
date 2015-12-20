@@ -24,6 +24,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* ptrdiff_t size_t */
 #include <stdlib.h> /* free() */
+#include <string.h> /* memcpy() */
 
 #include "../compat/reallocarray.h"
 
@@ -73,7 +74,7 @@
 		assert(it - da < (ptrdiff_t)da##_count__ && "Wrong item pointer."); \
 		for(i = it - da + 1U; i < da##_count__; ++i) \
 		{ \
-			da[i - 1] = da[i]; \
+			memcpy(&da[i - 1], &da[i], sizeof(*da)); \
 		} \
 		if(--da##_count__ == 0) \
 		{ \
