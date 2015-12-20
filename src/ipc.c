@@ -381,7 +381,8 @@ handle_pkg(const char pkg[])
 int
 ipc_send(const char whom[], char *data[])
 {
-	/* FIXME: this shouldn't have fixed size. */
+	/* FIXME: this shouldn't have fixed size.  Or maybe it should be PIPE_BUF to
+	 * guarantee atomic operation. */
 	char pkg[8192];
 	size_t len;
 	char *name = NULL;

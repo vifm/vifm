@@ -115,7 +115,7 @@ ifdef DEBUG
     endif
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \
-                           --log-file=valgrind-report
+                           --log-file=valgrind-report --error-exitcode=5
     endif
 endif
 
