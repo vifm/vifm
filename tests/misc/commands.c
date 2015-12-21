@@ -281,5 +281,11 @@ TEST(or_operator_is_attributed_to_let)
 	assert_string_equal("1", env_get("a"));
 }
 
+TEST(user_command_is_executed_in_separated_scope)
+{
+	assert_success(exec_commands("command cmd :if 1 > 2", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("cmd", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

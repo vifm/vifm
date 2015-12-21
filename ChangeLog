@@ -238,6 +238,10 @@
 	Rewritten expression parser to prevent side-effects from occurring until
 	syntax is checked.
 
+	Put right-hand side of user-defined commands into separate scope of
+	if-else-endif expressions.  This prevents affecting of regular input by
+	malformed user-defined command.
+
 	Fixed resetting "vborder" of 'fillchars' after it has been set to
 	something (as in `:set fillchars=vborder:\* fillchars&`).
 

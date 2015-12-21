@@ -3781,8 +3781,19 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	if(expanded_com[0] == ':')
 	{
-		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
+		int sm;
+
+		commands_scope_start();
+
+		sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
+
+		if(commands_scope_finish() != 0)
+		{
+			status_bar_error("Unmatched if-else-endif");
+			return 1;
+		}
+
 		return sm != 0;
 	}
 
