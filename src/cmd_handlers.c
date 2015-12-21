@@ -181,6 +181,7 @@ static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int if_cmd(const cmd_info_t *cmd_info);
+static int eval_if_condition(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
 static void print_inversion_state(char state_type);
 static void invert_state(char state_type);
@@ -2360,19 +2361,37 @@ history_cmd(const cmd_info_t *cmd_info)
 static int
 if_cmd(const cmd_info_t *cmd_info)
 {
+	const int x = eval_if_condition(cmd_info);
+	if(x < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	cmds_scoped_if(x);
+	return 0;
+}
+
+/* Evaluates condition for if-endif statement.  Returns negative number on
+ * error, zero for expression that's evaluated to false and positive number for
+ * true expressions. */
+static int
+eval_if_condition(const cmd_info_t *cmd_info)
+{
 	var_t condition;
+	int result;
+
 	vle_tb_clear(vle_err);
 	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);
 		status_bar_error(vle_tb_get_data(vle_err));
-		return CMDS_ERR_CUSTOM;
+		return -1;
 	}
-	cmds_scoped_if(var_to_boolean(condition));
+
+	result = var_to_boolean(condition);
 	var_free(condition);
-	cmds_preserve_selection();
-	return 0;
+	return result;
 }
 
 static int

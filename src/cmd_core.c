@@ -1146,6 +1146,7 @@ void
 cmds_scoped_if(int cond)
 {
 	(void)int_stack_push(&if_levels, cond);
+	cmds_preserve_selection();
 }
 
 int
