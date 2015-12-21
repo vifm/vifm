@@ -307,7 +307,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		return background_and_wait_for_errors(cmd, cancellable);
 #else
 		char cmd[PATH_MAX*2 + 1];
-		snprintf(cmd, sizeof(cmd), "%s \"%s\"", src);
+		snprintf(cmd, sizeof(cmd), "%s \"%s\"", cfg.delete_prg, src);
 		to_back_slash(cmd);
 
 		return os_system(cmd);

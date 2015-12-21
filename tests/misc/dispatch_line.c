@@ -80,7 +80,7 @@ TEST(double_quotes)
 	free_string_array(args, count);
 
 	args = dispatch("\"     \"     \"", &count, ' ', 0, 1);
-	assert_true(args == NULL);
+	assert_non_null(args);
 }
 
 TEST(regexp_quotes)
@@ -194,13 +194,6 @@ TEST(no_quoting)
 	int count;
 	char **args;
 
-	args = dispatch("\"a", &count, ' ', 0, 0);
-	assert_int_equal(1, count);
-	if(count != 1)
-		return;
-	assert_string_equal("\"a", args[0]);
-	free_string_array(args, count);
-
 	args = dispatch("a\"", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
@@ -244,6 +237,50 @@ TEST(cust_sep)
 	assert_string_equal("", args[0]);
 	assert_string_equal("abc", args[1]);
 	free_string_array(args, count);
+}
+
+TEST(comment_quotes_enabled)
+{
+	int count;
+	char **args;
+	int (*argvp)[2];
+	int last;
+
+	args = dispatch_line("a b \"c", &count, ' ', 1, 1, &last, &argvp);
+	assert_non_null(args);
+	free(argvp);
+
+	assert_int_equal(2, count);
+	if(count != 2)
+	{
+		return;
+	}
+	assert_string_equal("a", args[0]);
+	assert_string_equal("b", args[1]);
+	free_string_array(args, count);
+	assert_int_equal(4, last);
+}
+
+TEST(comment_quotes_disabled)
+{
+	int count;
+	char **args;
+	int (*argvp)[2];
+	int last;
+
+	args = dispatch_line("a b \"c", &count, ' ', 1, 0, &last, &argvp);
+	assert_non_null(args);
+	free(argvp);
+
+	assert_int_equal(2, count);
+	if(count != 2)
+	{
+		return;
+	}
+	assert_string_equal("a", args[0]);
+	assert_string_equal("b", args[1]);
+	free_string_array(args, count);
+	assert_int_equal(4, last);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

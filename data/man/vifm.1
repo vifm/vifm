@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 17, 2015" "vifm 0.8"
+.TH VIFM 1 "December 20, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1135,8 +1135,10 @@ switch to command-line mode.
 .\" ---------------------------------------------------------------------------
 Commands are executed with :command_name<Enter>
 
-Commented out lines should start with the double quote symbol, which may be
-preceded by whitespace characters.
+Commented out lines should start with the double quote symbol ("), which may be
+preceded by whitespace characters intermixed with colons.  Inline comments can
+be added at the end of the line after double quote symbol, only last line of a
+multi-line command can contain such comment.
 
 Most of the commands have two forms: complete and the short one.
 Example:

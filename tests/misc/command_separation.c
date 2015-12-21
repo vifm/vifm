@@ -122,12 +122,31 @@ TEST(bar_escaping_is_preserved_for_whole_line_commands)
 	free(free_this);
 }
 
-TEST(asdf)
+TEST(bar_escaping_is_preserved_for_expression_commands)
 {
 	char **cmds = break_cmdline("echo 1 \\|| 2", 0);
 	void *free_this = cmds;
 
 	assert_string_equal("echo 1 \\|| 2", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	while(*cmds != NULL)
+	{
+		free(*cmds++);
+	}
+	free(free_this);
+}
+
+TEST(comments_and_bar)
+{
+	/* XXX: this behaviour is partially Vim-like, it also doesn't break the line
+	 *      at bar, but expression parser later errors on "..., which is not the
+	 *      case here. */
+
+	char **cmds = break_cmdline("echo 1 \"comment | echo 2", 0);
+	void *free_this = cmds;
+
+	assert_string_equal("echo 1 \"comment | echo 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
 	while(*cmds != NULL)

@@ -209,7 +209,12 @@ parse(const char input[], var_t *result)
 		}
 		if(last_error == PE_NO_ERROR)
 		{
-			if(eval_expr(&expr_root) == 0)
+			if(last_token.type == DQ && strchr(last_position, '"') == NULL)
+			{
+				/* This is a comment, just ignore it. */
+				last_position += strlen(last_position);
+			}
+			else if(eval_expr(&expr_root) == 0)
 			{
 				var_free(res_val);
 				res_val = var_clone(expr_root.value);
@@ -916,7 +921,9 @@ parse_doubly_quoted_string(const char **in)
 		return var_new(VTYPE_STRING, var_val);
 	}
 
-	last_error = PE_MISSING_QUOTE;
+	last_error = (last_token.type == END)
+	           ? PE_INVALID_EXPRESSION
+	           : PE_MISSING_QUOTE;
 	return var_false();
 }
 
