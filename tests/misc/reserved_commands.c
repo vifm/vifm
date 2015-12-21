@@ -18,6 +18,7 @@ TEST(vim_like_completion)
 	ASSERT_NEXT_MATCH("echo");
 	ASSERT_NEXT_MATCH("edit");
 	ASSERT_NEXT_MATCH("else");
+	ASSERT_NEXT_MATCH("elseif");
 	ASSERT_NEXT_MATCH("empty");
 	ASSERT_NEXT_MATCH("endif");
 	ASSERT_NEXT_MATCH("execute");

@@ -142,6 +142,7 @@ static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
+static int elseif_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -339,6 +340,8 @@ const cmd_add_t cmds_list[] = {
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_ELSE_STMT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = else_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "elseif",           .abbr = "elsei", .emark = 0,  .id = COM_ELSEIF_STMT, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = elseif_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_ENDIF_STMT,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1523,6 +1526,26 @@ else_cmd(const cmd_info_t *cmd_info)
 		status_bar_error(":else without :if");
 		return CMDS_ERR_CUSTOM;
 	}
+	return 0;
+}
+
+/* This command designates beginning of the alternative branch of if-endif
+ * statement with its own condition. */
+static int
+elseif_cmd(const cmd_info_t *cmd_info)
+{
+	const int x = eval_if_condition(cmd_info);
+	if(x < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	if(cmds_scoped_elseif(x) != 0)
+	{
+		status_bar_error("Misplaced :elseif");
+		return CMDS_ERR_CUSTOM;
+	}
+
 	return 0;
 }
 

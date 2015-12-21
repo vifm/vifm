@@ -74,9 +74,6 @@
 #include "opt_handlers.h"
 #include "undo.h"
 
-/* Command scope marker. */
-#define SCOPE_GUARD INT_MIN
-
 /* Type of command arguments. */
 typedef enum
 {
@@ -85,6 +82,16 @@ typedef enum
 	CAT_UNTIL_THE_END, /* Take the rest of line including all |. */
 }
 CmdArgsType;
+
+/* Values for if_levels stack. */
+typedef enum
+{
+	IF_SCOPE_GUARD,  /* Command scope marker, prevents mixing of levels. */
+	IF_BEFORE_MATCH, /* Before condition that evaluates to true is found. */
+	IF_MATCH,        /* Just found true condition and processing that branch. */
+	IF_AFTER_MATCH,  /* Left branch corresponding to true condition. */
+}
+IfFrame;
 
 static int swap_range(void);
 static int resolve_mark(char mark);
@@ -325,6 +332,7 @@ command_accepts_expr(int cmd_id)
 	return cmd_id == COM_ECHO
 	    || cmd_id == COM_EXE
 	    || cmd_id == COM_IF_STMT
+	    || cmd_id == COM_ELSEIF_STMT
 	    || cmd_id == COM_LET;
 }
 
@@ -623,7 +631,7 @@ cmd_should_be_processed(int cmd_id)
 {
 	static int skipped_nested_if_stmts;
 
-	if(is_at_scope_bottom(&if_levels) || int_stack_get_top(&if_levels) == 1)
+	if(is_at_scope_bottom(&if_levels) || int_stack_top_is(&if_levels, IF_MATCH))
 	{
 		return 1;
 	}
@@ -632,25 +640,29 @@ cmd_should_be_processed(int cmd_id)
 
 	if(cmd_id == COM_IF_STMT)
 	{
-		skipped_nested_if_stmts++;
+		++skipped_nested_if_stmts;
 		return 0;
 	}
-	else if(cmd_id == COM_ELSE_STMT || cmd_id == COM_ENDIF_STMT)
+
+	if(cmd_id == COM_ELSEIF_STMT)
+	{
+		return (skipped_nested_if_stmts == 0);
+	}
+
+	if(cmd_id == COM_ELSE_STMT || cmd_id == COM_ENDIF_STMT)
 	{
 		if(skipped_nested_if_stmts > 0)
 		{
 			if(cmd_id == COM_ENDIF_STMT)
 			{
-				skipped_nested_if_stmts--;
+				--skipped_nested_if_stmts;
 			}
 			return 0;
 		}
 		return 1;
 	}
-	else
-	{
-		return 0;
-	}
+
+	return 0;
 }
 
 /* Determines current position in the command line.  Returns:
@@ -1125,7 +1137,7 @@ repeat_command(FileView *view, CmdInputType type)
 void
 commands_scope_start(void)
 {
-	(void)int_stack_push(&if_levels, SCOPE_GUARD);
+	(void)int_stack_push(&if_levels, IF_SCOPE_GUARD);
 }
 
 int
@@ -1134,7 +1146,7 @@ commands_scope_finish(void)
 	if(!is_at_scope_bottom(&if_levels))
 	{
 		status_bar_error("Missing :endif");
-		int_stack_pop_seq(&if_levels, SCOPE_GUARD);
+		int_stack_pop_seq(&if_levels, IF_SCOPE_GUARD);
 		return 1;
 	}
 
@@ -1145,8 +1157,24 @@ commands_scope_finish(void)
 void
 cmds_scoped_if(int cond)
 {
-	(void)int_stack_push(&if_levels, cond);
+	(void)int_stack_push(&if_levels, cond ? IF_MATCH : IF_BEFORE_MATCH);
 	cmds_preserve_selection();
+}
+
+int
+cmds_scoped_elseif(int cond)
+{
+	if(is_at_scope_bottom(&if_levels))
+	{
+		return 1;
+	}
+
+	int_stack_set_top(&if_levels,
+			(int_stack_get_top(&if_levels) == IF_BEFORE_MATCH) ?
+			(cond ? IF_MATCH : IF_BEFORE_MATCH) :
+			IF_AFTER_MATCH);
+	cmds_preserve_selection();
+	return 0;
 }
 
 int
@@ -1157,7 +1185,9 @@ cmds_scoped_else(void)
 		return 1;
 	}
 
-	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
+	int_stack_set_top(&if_levels,
+			(int_stack_get_top(&if_levels) == IF_BEFORE_MATCH) ? IF_MATCH :
+			IF_AFTER_MATCH);
 	cmds_preserve_selection();
 	return 0;
 }
@@ -1180,7 +1210,7 @@ static int
 is_at_scope_bottom(const int_stack_t *scope_stack)
 {
 	return int_stack_is_empty(scope_stack)
-	    || int_stack_top_is(scope_stack, SCOPE_GUARD);
+	    || int_stack_top_is(scope_stack, IF_SCOPE_GUARD);
 }
 
 char *

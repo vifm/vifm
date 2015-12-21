@@ -124,6 +124,8 @@
 
 	Added inline comments to allow less verbose commenting in configuration.
 
+	Added :elseif command.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

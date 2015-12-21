@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 20
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 21
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1339,9 +1339,13 @@ The builtin commands are:
     open selected or passed file(s) in editor.  Accepts macros.
 
 :el[se]                                        *vifm-:else* *vifm-:el*
-    execute commands until next matching |vifm-:endif| if they previously
-    were not being executed.  See also |vifm-:if| and
-    |vifm-commands-and-selection|.
+    execute commands until next matching |vifm-:endif| if all other conditions
+    didn't match.  See also |vifm-:if| and |vifm-commands-and-selection|.
+
+:elsei[f] {expr1}                              *vifm-:elseif* *vifm-:elsei*
+    execute commands until next matching |vifm-:elseif|, |vifm-:else| or
+    |vifm-:endif| if conditions of previous :if and :elseif branches were
+    evaluated to zero.  See also |vifm-:if| and |vifm-commands-and-selection|.
 
 :empty                                         *vifm-:empty*
     permanently remove files from all existing non-empty trash directories (see
@@ -1751,12 +1755,15 @@ important in certain cases.
 
 :if {expr1}                                    *vifm-:if*
     start conditional block.  Commands are executed until next matching
-    |vifm-:else| or |vifm-:endif| command if {expr1} evaluates to non-zero,
-    otherwise they are ignored.  See also |vifm-commands-and-selection|.
+    |vifm-:elseif|, |vifm-:else| or |vifm-:endif| command if {expr1} evaluates
+    to non-zero, otherwise they are ignored.  See also
+    |vifm-commands-and-selection|.
 
     Example: >
-      if $TERM == "screen.linux"
+      if $TERM == 'screen.linux'
           highlight CurrLine ctermfg=lightwhite ctermbg=lightblack
+      elseif $TERM == 'tmux'
+          highlight CurrLine cterm=reverse ctermfg=black ctermbg=white
       else
           highlight CurrLine cterm=bold,reverse ctermfg=black ctermbg=white
       endif
