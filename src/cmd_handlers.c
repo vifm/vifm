@@ -1523,7 +1523,7 @@ else_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmds_scoped_else() != 0)
 	{
-		status_bar_error(":else without :if");
+		status_bar_error("Misplaced :else");
 		return CMDS_ERR_CUSTOM;
 	}
 	return 0;

@@ -90,6 +90,8 @@ typedef enum
 	IF_BEFORE_MATCH, /* Before condition that evaluates to true is found. */
 	IF_MATCH,        /* Just found true condition and processing that branch. */
 	IF_AFTER_MATCH,  /* Left branch corresponding to true condition. */
+	IF_ELSE,         /* Else branch that should be run (no matches before it). */
+	IF_FINISH,       /* After else branch, only endif is expected by now. */
 }
 IfFrame;
 
@@ -631,7 +633,8 @@ cmd_should_be_processed(int cmd_id)
 {
 	static int skipped_nested_if_stmts;
 
-	if(is_at_scope_bottom(&if_levels) || int_stack_top_is(&if_levels, IF_MATCH))
+	if(is_at_scope_bottom(&if_levels) || int_stack_top_is(&if_levels, IF_MATCH)
+			|| int_stack_top_is(&if_levels, IF_ELSE))
 	{
 		return 1;
 	}
@@ -1164,13 +1167,20 @@ cmds_scoped_if(int cond)
 int
 cmds_scoped_elseif(int cond)
 {
+	IfFrame if_frame;
+
 	if(is_at_scope_bottom(&if_levels))
 	{
 		return 1;
 	}
 
-	int_stack_set_top(&if_levels,
-			(int_stack_get_top(&if_levels) == IF_BEFORE_MATCH) ?
+	if_frame = int_stack_get_top(&if_levels);
+	if(if_frame == IF_ELSE || if_frame == IF_FINISH)
+	{
+		return 1;
+	}
+
+	int_stack_set_top(&if_levels, (if_frame == IF_BEFORE_MATCH) ?
 			(cond ? IF_MATCH : IF_BEFORE_MATCH) :
 			IF_AFTER_MATCH);
 	cmds_preserve_selection();
@@ -1180,14 +1190,21 @@ cmds_scoped_elseif(int cond)
 int
 cmds_scoped_else(void)
 {
+	IfFrame if_frame;
+
 	if(is_at_scope_bottom(&if_levels))
 	{
 		return 1;
 	}
 
+	if_frame = int_stack_get_top(&if_levels);
+	if(if_frame == IF_ELSE || if_frame == IF_FINISH)
+	{
+		return 1;
+	}
+
 	int_stack_set_top(&if_levels,
-			(int_stack_get_top(&if_levels) == IF_BEFORE_MATCH) ? IF_MATCH :
-			IF_AFTER_MATCH);
+			(if_frame == IF_BEFORE_MATCH) ? IF_ELSE : IF_FINISH);
 	cmds_preserve_selection();
 	return 0;
 }

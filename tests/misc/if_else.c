@@ -260,6 +260,27 @@ TEST(nested_active_elseif)
 	assert_string_equal(NULL, env_get(VAR_D));
 }
 
+TEST(else_before_elseif)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | elseif 2 == 2"
+	                             " | endif";
+
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+}
+
+TEST(multiple_else_branches)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " | else"
+	                             " | else"
+	                             " | endif";
+
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+}
+
 TEST(sourcing_in_body)
 {
 	const char *const CMDS = " | if 1 == 1"
