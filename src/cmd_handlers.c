@@ -142,6 +142,7 @@ static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
+static int elseif_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -181,6 +182,7 @@ static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int if_cmd(const cmd_info_t *cmd_info);
+static int eval_if_condition(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
 static void print_inversion_state(char state_type);
 static void invert_state(char state_type);
@@ -338,6 +340,8 @@ const cmd_add_t cmds_list[] = {
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_ELSE_STMT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = else_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "elseif",           .abbr = "elsei", .emark = 0,  .id = COM_ELSEIF_STMT, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = elseif_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_ENDIF_STMT,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -369,7 +373,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "if",               .abbr = NULL,    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = if_cmd,          .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = if_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = COM_INVERT,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = invert_cmd,      .qmark = 2,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1519,9 +1523,29 @@ else_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmds_scoped_else() != 0)
 	{
-		status_bar_error(":else without :if");
+		status_bar_error("Misplaced :else");
 		return CMDS_ERR_CUSTOM;
 	}
+	return 0;
+}
+
+/* This command designates beginning of the alternative branch of if-endif
+ * statement with its own condition. */
+static int
+elseif_cmd(const cmd_info_t *cmd_info)
+{
+	const int x = eval_if_condition(cmd_info);
+	if(x < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	if(cmds_scoped_elseif(x) != 0)
+	{
+		status_bar_error("Misplaced :elseif");
+		return CMDS_ERR_CUSTOM;
+	}
+
 	return 0;
 }
 
@@ -2360,19 +2384,37 @@ history_cmd(const cmd_info_t *cmd_info)
 static int
 if_cmd(const cmd_info_t *cmd_info)
 {
+	const int x = eval_if_condition(cmd_info);
+	if(x < 0)
+	{
+		return CMDS_ERR_CUSTOM;
+	}
+
+	cmds_scoped_if(x);
+	return 0;
+}
+
+/* Evaluates condition for if-endif statement.  Returns negative number on
+ * error, zero for expression that's evaluated to false and positive number for
+ * true expressions. */
+static int
+eval_if_condition(const cmd_info_t *cmd_info)
+{
 	var_t condition;
+	int result;
+
 	vle_tb_clear(vle_err);
 	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);
 		status_bar_error(vle_tb_get_data(vle_err));
-		return CMDS_ERR_CUSTOM;
+		return -1;
 	}
-	cmds_scoped_if(var_to_boolean(condition));
+
+	result = var_to_boolean(condition);
 	var_free(condition);
-	cmds_preserve_selection();
-	return 0;
+	return result;
 }
 
 static int

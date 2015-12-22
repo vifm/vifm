@@ -1749,11 +1749,15 @@ update_num_type(FileView *view, NumberingType *num_type, NumberingType type,
 static void
 sort_global(OPT_OP op, optval_t val)
 {
-	set_sort(curr_view, curr_view->sort_g, val.str_val);
+	char *const value = strdup(val.str_val);
+
+	set_sort(curr_view, curr_view->sort_g, value);
 	if(curr_stats.global_local_settings)
 	{
-		set_sort(other_view, other_view->sort_g, val.str_val);
+		set_sort(other_view, other_view->sort_g, value);
 	}
+
+	free(value);
 }
 
 /* Handler for local 'sort' option, parses the value and checks it for
@@ -1761,19 +1765,23 @@ sort_global(OPT_OP op, optval_t val)
 static void
 sort_local(OPT_OP op, optval_t val)
 {
+	char *const value = strdup(val.str_val);
+
 	/* Make sure we don't sort unsorted custom view on :restart. */
 	char *const sort = curr_stats.restart_in_progress
 	                 ? ui_view_sort_list_get(curr_view)
 	                 : curr_view->sort;
-	set_sort(curr_view, sort, val.str_val);
+	set_sort(curr_view, sort, value);
 	if(curr_stats.global_local_settings)
 	{
 		/* Make sure we don't sort unsorted custom view on :restart. */
 		char *const sort = curr_stats.restart_in_progress
 		                 ? ui_view_sort_list_get(other_view)
 		                 : other_view->sort;
-		set_sort(other_view, sort, val.str_val);
+		set_sort(other_view, sort, value);
 	}
+
+	free(value);
 }
 
 /* Sets sorting value for the view. */
@@ -1843,24 +1851,32 @@ set_sort(FileView *view, char sort_keys[], char order[])
 static void
 sortgroups_global(OPT_OP op, optval_t val)
 {
-	set_sortgroups(curr_view, &curr_view->sort_groups_g, val.str_val);
+	char *const value = strdup(val.str_val);
+
+	set_sortgroups(curr_view, &curr_view->sort_groups_g, value);
 	if(curr_stats.global_local_settings)
 	{
-		set_sortgroups(other_view, &other_view->sort_groups_g, val.str_val);
+		set_sortgroups(other_view, &other_view->sort_groups_g, value);
 	}
+
+	free(value);
 }
 
 /* Handles local 'sortgroup' option changes. */
 static void
 sortgroups_local(OPT_OP op, optval_t val)
 {
-	set_sortgroups(curr_view, &curr_view->sort_groups, val.str_val);
+	char *const value = strdup(val.str_val);
+
+	set_sortgroups(curr_view, &curr_view->sort_groups, value);
 	sorting_changed(curr_view);
 	if(curr_stats.global_local_settings)
 	{
-		set_sortgroups(other_view, &other_view->sort_groups, val.str_val);
+		set_sortgroups(other_view, &other_view->sort_groups, value);
 		sorting_changed(other_view);
 	}
+
+	free(value);
 }
 
 /* Sets sort_groups fields (*opt) of the view to the value handling malformed
@@ -1969,22 +1985,30 @@ set_sortorder(FileView *view, int ascending, char sort_keys[])
 static void
 viewcolumns_global(OPT_OP op, optval_t val)
 {
-	replace_string(&curr_view->view_columns_g, val.str_val);
+	char *const value = strdup(val.str_val);
+
+	replace_string(&curr_view->view_columns_g, value);
 	if(curr_stats.global_local_settings)
 	{
-		replace_string(&other_view->view_columns_g, val.str_val);
+		replace_string(&other_view->view_columns_g, value);
 	}
+
+	free(value);
 }
 
 /* Handler of local 'viewcolumns' option, which defines custom view columns. */
 static void
 viewcolumns_local(OPT_OP op, optval_t val)
 {
-	set_viewcolumns(curr_view, val.str_val);
+	char *const value = strdup(val.str_val);
+
+	set_viewcolumns(curr_view, value);
 	if(curr_stats.global_local_settings)
 	{
-		set_viewcolumns(other_view, val.str_val);
+		set_viewcolumns(other_view, value);
 	}
+
+	free(value);
 }
 
 /* Setups view columns for the view. */

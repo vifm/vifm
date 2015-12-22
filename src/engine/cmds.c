@@ -1296,8 +1296,6 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		}
 	}
 
-	free(cmdstr);
-
 	if(state == D_QUOTING && strchr(&cmdstr[st], '"') == NULL)
 	{
 		state = BEGIN;
@@ -1307,6 +1305,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			DA_REMOVE(argvp, &argvp[DA_SIZE(argvp) - 1U]);
 		}
 	}
+
+	free(cmdstr);
 
 	if(*count == 0 || (size_t)*count != DA_SIZE(argvp) ||
 			(state != BEGIN && state != NO_QUOTING) ||

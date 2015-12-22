@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: December 20, 2015
+" Last Change: December 21, 2015
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -46,7 +46,7 @@ syntax keyword vifmSetCommand contained se[t] setl[ocal] setg[lobal]
 syntax keyword vifmSoCommand contained so[urce]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
-syntax keyword vifmExprCommand contained if ec[ho] exe[cute]
+syntax keyword vifmExprCommand contained if ec[ho] elsei[f] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
 
@@ -207,7 +207,8 @@ syntax region vifmCMapSt
 		\ start='^\(\s\|:\)*\(cm\%[ap]\|cno\%[remap]\|cu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCMapAbbr
-syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\|exe\%[cute]\)\>'
+syntax region vifmExprCommandSt
+		\ start='\<\(if\|ec\%[ho]\|elsei\%[f]\|exe\%[cute]\)\>'
 		\ end='$\||'
 		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
 		\,vifmOperator,vifmEnvVar,vifmNumber

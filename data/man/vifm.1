@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 20, 2015" "vifm 0.8"
+.TH VIFM 1 "December 21, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1577,8 +1577,15 @@ open selected or passed file(s) in editor.  Accepts macros.
 .BI "                                         :else"
 .TP
 .BI :el[se]
-execute commands until next matching :endif if they previously were not being
-executed.  See also help on :if and :endif commands.
+execute commands until next matching :endif if all other conditions didn't
+match.  See also help on :if and :endif commands.
+.TP
+.BI "                                         :elseif"
+.TP
+.BI ":elsei[f] {expr1}"
+execute commands until next matching :elseif, :else or :endif if conditions of
+previous :if and :elseif branches were evaluated to zero.  See also help on :if
+and :endif commands.
 .TP
 .BI "                                         :empty"
 .TP
@@ -2042,15 +2049,17 @@ fi[lter]  or = show filter history (see description of the "=" normal mode comma
 .BI "                                         :if"
 .TP
 .BI ":if {expr1}"
-starts conditional block.  Commands are executed until next matching :else of
-:endif command if {expr1} evaluates to non-zero, otherwise they are ignored.
-See also help on :else and :endif commands.
+starts conditional block.  Commands are executed until next matching :elseif,
+:else or :endif command if {expr1} evaluates to non-zero, otherwise they are
+ignored.  See also help on :else and :endif commands.
 
 Example:
 .EX
 
-  if $TERM == "screen.linux"
+  if $TERM == 'screen.linux'
       highlight CurrLine ctermfg=lightwhite ctermbg=lightblack
+  elseif $TERM == 'tmux'
+      highlight CurrLine cterm=reverse ctermfg=black ctermbg=white
   else
       highlight CurrLine cterm=bold,reverse ctermfg=black ctermbg=white
   endif

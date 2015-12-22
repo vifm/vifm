@@ -124,6 +124,8 @@
 
 	Added inline comments to allow less verbose commenting in configuration.
 
+	Added :elseif command.  Thanks to filterfalse.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -395,6 +397,8 @@
 
 	Fixed small leak on :write (on exit too, but leaks before exit don't
 	matter).
+
+	Fixed processing if-statements with multiple else branches.
 
 0.8-beta to 0.8
 

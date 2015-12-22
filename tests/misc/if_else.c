@@ -176,6 +176,111 @@ TEST(if_true_else_if_else_condition)
 	assert_string_equal(NULL, env_get(VAR_D));
 }
 
+TEST(if_true_elseif_else_condition)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " | elseif 2 == 2"
+	                             " |     let $"VAR_B" = '"VAR_B"'"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | endif";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal(NULL, env_get(VAR_A));
+	assert_string_equal(NULL, env_get(VAR_B));
+	assert_string_equal(NULL, env_get(VAR_C));
+	assert_string_equal(NULL, env_get(VAR_D));
+}
+
+TEST(if_false_elseif_true_else_condition)
+{
+	const char *const COMMANDS = " | if 1 == 0"
+	                             " | elseif 2 == 2"
+	                             " |     let $"VAR_B" = '"VAR_B"'"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | endif";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal(NULL, env_get(VAR_A));
+	assert_string_equal(VAR_B, env_get(VAR_B));
+	assert_string_equal(NULL, env_get(VAR_C));
+	assert_string_equal(NULL, env_get(VAR_D));
+}
+
+TEST(if_false_elseif_false_else_condition)
+{
+	const char *const COMMANDS = " | if 1 == 0"
+	                             " | elseif 2 == 1"
+	                             " |     let $"VAR_B" = '"VAR_B"'"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | endif";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal(NULL, env_get(VAR_A));
+	assert_string_equal(NULL, env_get(VAR_B));
+	assert_string_equal(VAR_C, env_get(VAR_C));
+	assert_string_equal(NULL, env_get(VAR_D));
+}
+
+TEST(nested_passive_elseif)
+{
+	const char *const COMMANDS = " | if 1 == 0"
+	                             " |     if 2 == 1"
+	                             " |     elseif 2 == 2"
+	                             " |         let $"VAR_B" = '"VAR_B"'"
+	                             " |     endif"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | endif";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal(NULL, env_get(VAR_A));
+	assert_string_equal(NULL, env_get(VAR_B));
+	assert_string_equal(VAR_C, env_get(VAR_C));
+	assert_string_equal(NULL, env_get(VAR_D));
+}
+
+TEST(nested_active_elseif)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " |     if 2 == 1"
+	                             " |     elseif 2 == 2"
+	                             " |         let $"VAR_B" = '"VAR_B"'"
+	                             " |     endif"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | endif";
+
+	assert_int_equal(0, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal(NULL, env_get(VAR_A));
+	assert_string_equal(VAR_B, env_get(VAR_B));
+	assert_string_equal(NULL, env_get(VAR_C));
+	assert_string_equal(NULL, env_get(VAR_D));
+}
+
+TEST(else_before_elseif)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " | else"
+	                             " |     let $"VAR_C" = '"VAR_C"'"
+	                             " | elseif 2 == 2"
+	                             " | endif";
+
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+}
+
+TEST(multiple_else_branches)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " | else"
+	                             " | else"
+	                             " | endif";
+
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+}
+
 TEST(sourcing_in_body)
 {
 	const char *const CMDS = " | if 1 == 1"
