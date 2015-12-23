@@ -124,8 +124,20 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		if(ampersand > dollar)
 		{
+			OPT_SCOPE scope = OPT_GLOBAL;
 			start = ampersand + 1;
-			complete_real_option_names(ampersand + 1, OPT_GLOBAL);
+
+			if(starts_with_lit(start, "l:"))
+			{
+				scope = OPT_LOCAL;
+				start += 2;
+			}
+			else if(starts_with_lit(start, "g:"))
+			{
+				start += 2;
+			}
+
+			complete_real_option_names(start, scope);
 		}
 		else if(dollar == NULL)
 		{

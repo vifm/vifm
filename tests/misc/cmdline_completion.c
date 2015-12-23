@@ -30,7 +30,7 @@
 #define SUFFIXW L""
 #endif
 
-static void fusehome_handler(OPT_OP op, optval_t val);
+static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
 
@@ -55,6 +55,8 @@ SETUP()
 	stats.line_buf = NULL;
 	stats.complete = &complete_cmd;
 
+	curr_view = &lwin;
+
 	init_commands();
 
 	execute_cmd("command bar a");
@@ -62,8 +64,9 @@ SETUP()
 	execute_cmd("command foo c");
 
 	init_options(&option_changed);
-	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, fusehome_handler,
+	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler,
 			def);
+	add_option("path", "pt", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler, def);
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 }
@@ -81,7 +84,7 @@ TEARDOWN()
 }
 
 static void
-fusehome_handler(OPT_OP op, optval_t val)
+dummy_handler(OPT_OP op, optval_t val)
 {
 }
 
@@ -486,19 +489,40 @@ TEST(aucmd_events_are_completed)
 {
 	prepare_for_line_completion(L"autocmd ");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+	assert_wstring_equal(L"autocmd DirEnter", stats.line);
 
 	prepare_for_line_completion(L"autocmd Dir");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter" SUFFIX, stats.line);
+	assert_wstring_equal(L"autocmd DirEnter", stats.line);
 
 	prepare_for_line_completion(L"autocmd! Dir");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd! DirEnter" SUFFIX, stats.line);
+	assert_wstring_equal(L"autocmd! DirEnter", stats.line);
 
 	prepare_for_line_completion(L"autocmd DirEnter ");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter " SUFFIX, stats.line);
+	assert_wstring_equal(L"autocmd DirEnter ", stats.line);
+}
+
+TEST(prefixless_option_name_is_completed)
+{
+	prepare_for_line_completion(L"echo &f");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"echo &fusehome", stats.line);
+}
+
+TEST(prefixed_global_option_name_is_completed)
+{
+	prepare_for_line_completion(L"echo &g:f");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"echo &g:fusehome", stats.line);
+}
+
+TEST(prefixed_local_option_name_is_completed)
+{
+	prepare_for_line_completion(L"echo &l:p");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"echo &l:path", stats.line);
 }
 
 static void

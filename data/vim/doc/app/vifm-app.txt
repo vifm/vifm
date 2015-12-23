@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 21
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3516,7 +3516,9 @@ Examples: >
 
 option                                         *vifm-expr-option*
 ------
-&option               option value
+&option               option value (local one is preferred, if exists)
+&g:option             global option value
+&l:option             local option value
 
 Examples: >
 

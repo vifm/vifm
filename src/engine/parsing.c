@@ -995,14 +995,23 @@ eval_envvar(const char **in)
 	return var_new(VTYPE_STRING, var_val);
 }
 
-/* envvar ::= '&' optname */
+/* envvar ::= '&' [ 'l:' | 'g:' ] optname */
 static var_t
 eval_opt(const char **in)
 {
+	OPT_SCOPE scope = OPT_ANY;
 	const opt_t *option;
 	var_val_t var_val;
 
 	char name[OPTION_NAME_MAX];
+
+	if((last_token.c == 'l' || last_token.c == 'g') && **in == ':')
+	{
+		scope = (last_token.c == 'l') ? OPT_LOCAL : OPT_GLOBAL;
+		get_next(in);
+		get_next(in);
+	}
+
 	if(!parse_sequence(in, OPT_NAME_FIRST_CHAR, OPT_NAME_CHARS, sizeof(name),
 		name))
 	{
@@ -1010,7 +1019,7 @@ eval_opt(const char **in)
 		return var_false();
 	}
 
-	option = find_option(name, OPT_ANY);
+	option = find_option(name, scope);
 	if(option == NULL)
 	{
 		last_error = PE_INVALID_EXPRESSION;

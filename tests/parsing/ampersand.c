@@ -69,8 +69,12 @@ SETUP()
 	add_option("so_rt", "", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
 			sort_enum, &dummy_handler, val);
 
-	val.int_val = 8;
+	val.int_val = 2;
 	add_option("tabstop", "ts", OPT_INT, OPT_GLOBAL, 0, NULL, &dummy_handler,
+			val);
+
+	val.int_val = 8;
+	add_option("tabstop", "ts", OPT_INT, OPT_LOCAL, 0, NULL, &dummy_handler,
 			val);
 
 	val.set_items = 0x81;
@@ -111,6 +115,21 @@ TEST(wrong_option_name_fail)
 TEST(correct_full_option_name_ok)
 {
 	ASSERT_INT_OK("&tabstop", 8);
+}
+
+TEST(correct_local_option_name_ok)
+{
+	ASSERT_INT_OK("&l:tabstop", 8);
+}
+
+TEST(correct_global_option_name_ok)
+{
+	ASSERT_INT_OK("&g:tabstop", 2);
+}
+
+TEST(wrong_option_syntax_fail)
+{
+	ASSERT_FAIL("&x:tabstop", PE_INVALID_EXPRESSION);
 }
 
 TEST(correct_short_option_name_ok)
