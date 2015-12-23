@@ -37,13 +37,15 @@
 #define VAR_NAME_MAX 64
 #define VAL_LEN_MAX 2048
 
-typedef struct {
+typedef struct
+{
 	char *name;
 	char *val;
 	char *initial;
 	int from_parent;
 	int removed;
-}envvar_t;
+}
+envvar_t;
 
 const char ENV_VAR_NAME_FIRST_CHAR[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
@@ -51,6 +53,8 @@ const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 static void init_var(const char *env);
+static int parse_name(const char **in, const char first[], const char other[],
+		size_t buf_len, char buf[]);
 static void report_parsing_error(ParsingErrors error);
 static void append_envvar(const char *name, const char *val);
 static void set_envvar(const char *name, const char *val);
@@ -161,7 +165,6 @@ int
 let_variables(const char *cmd)
 {
 	char name[VAR_NAME_MAX + 1];
-	char *p;
 	int append = 0;
 	var_t res_var;
 	char *str_var;
@@ -169,45 +172,39 @@ let_variables(const char *cmd)
 
 	assert(initialized);
 
-	/* currently we support only environment variables */
+	/* Currently we support only environment variables and options. */
 	if(*cmd != '$')
 	{
 		vle_tb_append_line(vle_err, "Incorrect variable type");
 		return -1;
 	}
-	cmd++;
+	++cmd;
 
-	/* copy variable name */
-	p = name;
-	while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
-			*cmd != '.' && *cmd != '=' && (size_t)(p - name) < sizeof(name) - 1)
+	/* Copy variable name. */
+	if(parse_name(&cmd, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS, sizeof(name),
+				name) != 0)
 	{
-		if(*cmd != '_' && !isalnum(*cmd))
-		{
-			vle_tb_append_line(vle_err, "Incorrect variable name");
-			return -1;
-		}
-		*p++ = *cmd++;
+		vle_tb_append_line(vle_err, "Incorrect variable name");
+		return -1;
 	}
-	/* test for empty variable name */
-	if(p == name)
+	/* Test for empty variable name. */
+	if(name[0] == '\0')
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Unsupported variable name",
 				"empty name");
 		return -1;
 	}
-	*p = '\0';
 
 	cmd = skip_whitespace(cmd);
 
-	/* check for dot and skip it */
+	/* Check for dot and skip it. */
 	if(*cmd == '.')
 	{
 		append = 1;
 		cmd++;
 	}
 
-	/* check for equal sign and skip it */
+	/* Check for equal sign and skip it. */
 	if(*cmd != '=')
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Incorrect :let statement",
@@ -229,7 +226,7 @@ let_variables(const char *cmd)
 		return -1;
 	}
 
-	/* update environment variable */
+	/* Update environment variable. */
 	str_var = var_to_string(res_var);
 	if(append)
 		append_envvar(name, str_var);
@@ -238,6 +235,29 @@ let_variables(const char *cmd)
 	free(str_var);
 
 	var_free(res_var);
+
+	return 0;
+}
+
+/* Parses name of the form `first { other }`.  Returns zero on successs,
+ * otherwise non-zero is returned. */
+static int
+parse_name(const char **in, const char first[], const char other[],
+		size_t buf_len, char buf[])
+{
+	if(buf_len == 0UL || !char_is_one_of(first, **in))
+	{
+		return 1;
+	}
+
+	buf[0] = '\0';
+
+	do
+	{
+		strcatch(buf, **in);
+		++*in;
+	}
+	while(--buf_len > 1UL && char_is_one_of(other, **in));
 
 	return 0;
 }
