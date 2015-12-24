@@ -71,7 +71,6 @@ Vi(m) specific features that need to be added.
         :locate with :cn, :cp and alike).
     Maybe add 'titleold' option.
     Maybe add "%p" and "%P" macros to 'rulerformat' option.
-    Support :set foo+=bar for strings (should append value).
     Make gU2U and similar commands work as in Vim.
     Lazy redraw support (useful for mappings and udf).
     'nrformats' option as in Vim.

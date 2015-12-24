@@ -126,6 +126,8 @@
 
 	Added :elseif command.  Thanks to filterfalse.
 
+	Added :set foo+=bar syntax for string options (append value).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

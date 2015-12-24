@@ -794,7 +794,7 @@ static int
 set_add(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
-			opt->type != OPT_CHARSET)
+			opt->type != OPT_CHARSET && opt->type != OPT_STR)
 		return -1;
 
 	if(opt->type == OPT_INT)
@@ -833,7 +833,19 @@ set_add(opt_t *opt, const char value[])
 	}
 	else if(*value != '\0')
 	{
-		opt->val.str_val = str_add(opt->val.str_val, value);
+		if(opt->type == OPT_STR)
+		{
+			size_t len = strlen(opt->val.str_val);
+			if(strappend(&opt->val.str_val, &len, value) != 0)
+			{
+				vle_tb_append_line(vle_err, "Memory allocation error");
+				return -1;
+			}
+		}
+		else
+		{
+			opt->val.str_val = str_add(opt->val.str_val, value);
+		}
 		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 
