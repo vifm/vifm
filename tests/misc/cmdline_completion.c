@@ -66,6 +66,7 @@ SETUP()
 	init_options(&option_changed);
 	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler,
 			def);
+	add_option("path", "pt", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler, def);
 	add_option("path", "pt", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler, def);
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
@@ -506,9 +507,11 @@ TEST(aucmd_events_are_completed)
 
 TEST(prefixless_option_name_is_completed)
 {
-	prepare_for_line_completion(L"echo &f");
+	prepare_for_line_completion(L"echo &");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"echo &fusehome", stats.line);
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"echo &path", stats.line);
 }
 
 TEST(prefixed_global_option_name_is_completed)

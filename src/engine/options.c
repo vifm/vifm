@@ -1407,6 +1407,8 @@ void
 complete_real_option_names(const char beginning[], OPT_SCOPE scope)
 {
 	complete_option_name(beginning, 0, 0, scope);
+	vle_compl_finish_group();
+	vle_compl_add_last_match(beginning);
 }
 
 /* Completes name of an option.  The pseudo parameter controls whether pseudo
@@ -1433,7 +1435,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo,
 	{
 		opt_t *const opt = &options[i];
 
-		if((bool_only && opt->type != OPT_BOOL) || !option_matches(opt,  scope))
+		if((bool_only && opt->type != OPT_BOOL) || !option_matches(opt, scope))
 		{
 			continue;
 		}

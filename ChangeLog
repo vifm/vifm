@@ -410,6 +410,8 @@
 	Fixed accepting non-alpha first character for environment variable name in
 	:let command.
 
+	Fixed completion of &-terms, which didn't always list all found matches.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.
