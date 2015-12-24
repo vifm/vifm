@@ -117,7 +117,7 @@ TEST(unlet_without_dollar_sign_fail)
 
 TEST(let_alnum_and_underscore_ok)
 {
-	assert_true(let_variables("$1_aZzA_0 = 'VAL'") == 0);
+	assert_true(let_variables("$a1_aZzA_0 = 'VAL'") == 0);
 }
 
 TEST(let_wrong_symbols_fail)

@@ -126,6 +126,10 @@
 
 	Added :elseif command.  Thanks to filterfalse.
 
+	Added :set foo+=bar syntax for string options (append value).
+
+	Added &option syntax for :let command.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -399,6 +403,9 @@
 	matter).
 
 	Fixed processing if-statements with multiple else branches.
+
+	Fixed accepting non-alpha first character for environment variable name in
+	:let command.
 
 0.8-beta to 0.8
 

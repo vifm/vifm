@@ -121,5 +121,10 @@ TEST(variable_is_not_set_on_error)
 	assert_null(getenv(VAR_NAME));
 }
 
+TEST(increment_does_not_work_for_envvars)
+{
+	assert_failure(let_variables("$" VAR_NAME " += 3"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

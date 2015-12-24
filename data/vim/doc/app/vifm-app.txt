@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 21
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 24
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1789,6 +1789,14 @@ important in certain cases.
     string on Windows removes it.
 :let $ENV_VAR .= <expr>
     append value to environment variable.
+:let &[l:|g:]opt = <expr>
+    sets option value.
+:let &[l:|g:]opt .= <expr>
+    append value to string option.
+:let &[l:|g:]opt += <expr>
+    increasing option value, adding sub-values.
+:let &[l:|g:]opt -= <expr>
+    decreasing option value, removing sub-values.
 
 Where <expr> could be a single-quoted string, double-quoted string, an
 environment variable, function call or a concatanation of any of them in any
@@ -1943,7 +1951,7 @@ yet supported) and might be changed in future releases, or get an alias.
      - for all options - option, option? and option&
      - for boolean options - nooption, invoption and option!
      - for integer options - option=x, option+=x and option-=x
-     - for string options - option=x
+     - for string options - option=x and option+=x
      - for string list options - option=x, option+=x and option-=x
      - for enumeration options - option=x, option+=x and option-=x
      - for set options - option=x, option+=x and option-=x
@@ -1957,7 +1965,7 @@ yet supported) and might be changed in future releases, or get an alias.
      - option? - print option value
      - option& - reset option to its default value
      - option=x or option:x - set option to x
-     - option+=x - add x to option
+     - option+=x - add/append x to option
      - option-=x - remove (or subtract) x from option
      - option^=x - toggle x presence among values of the option
 
@@ -3516,7 +3524,9 @@ Examples: >
 
 option                                         *vifm-expr-option*
 ------
-&option               option value
+&option               option value (local one is preferred, if exists)
+&g:option             global option value
+&l:option             local option value
 
 Examples: >
 

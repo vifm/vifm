@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 21, 2015" "vifm 0.8"
+.TH VIFM 1 "December 24, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2096,6 +2096,18 @@ string on Windows removes it.
 .BI ":let $ENV_VAR .= <expr>"
 append value to environment variable.
 .TP
+.BI ":let &[l:|g:]opt = <expr>"
+sets option value.
+.TP
+.BI ":let &[l:|g:]opt .= <expr>"
+append value to string option.
+.TP
+.BI ":let &[l:|g:]opt += <expr>"
+increasing option value, adding sub-values.
+.TP
+.BI ":let &[l:|g:]opt \-= <expr>"
+decreasing option value, removing sub-values.
+.TP
 Where <expr> could be a single-quoted string, double-quoted string, an \
 environment variable, function call or a concatanation of any of them in any \
 order using the '.' operator.  Any whitespace is ignored.
@@ -2303,7 +2315,7 @@ You can use following syntax:
  \- for all options \- option, option? and option&
  \- for boolean options \- nooption, invoption and option!
  \- for integer options \- option=x, option+=x and option\-=x
- \- for string options \- option=x
+ \- for string options \- option=x and option+=x
  \- for string list options \- option=x, option+=x and option\-=x
  \- for enumeration options \- option=x, option+=x and option\-=x
  \- for set options \- option=x, option+=x and option\-=x
@@ -2317,7 +2329,7 @@ the meaning:
  \- option? \- print option value
  \- option& \- reset option to its default value
  \- option=x or option:x \- set option to x
- \- option+=x \- add x to option
+ \- option+=x \- add/append x to option
  \- option\-=x \- remove (or subtract) x from option
  \- option^=x \- toggle x presence among values of the option
 
@@ -4259,7 +4271,9 @@ option
 .br
 ------
 .br
-&option               option value
+&option               option value (local one is preferred, if exists)
+&g:option             global option value
+&l:option             local option value
 
 Examples:
 

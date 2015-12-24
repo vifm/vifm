@@ -42,9 +42,8 @@ const char * local_getenv(const char *envname);
  */
 void clear_variables(void);
 
-/* Processes :let command arguments
- * Returns non-zero on error
- */
+/* Processes :let command arguments.  Returns non-zero on error, otherwise zero
+ * is returned. */
 int let_variables(const char *cmd);
 
 /* Processes :unlet command arguments
