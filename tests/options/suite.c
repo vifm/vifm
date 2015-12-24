@@ -6,6 +6,7 @@
 #include "../../src/utils/macros.h"
 
 static void cpoptions_handler(OPT_OP op, optval_t val);
+static void cdpath_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -65,7 +66,7 @@ SETUP()
 			val);
 
 	val.str_val = "";
-	add_option("cdpath", "cd", OPT_STRLIST, OPT_GLOBAL, 0, NULL, dummy_handler,
+	add_option("cdpath", "cd", OPT_STRLIST, OPT_GLOBAL, 0, NULL, cdpath_handler,
 			val);
 
 	val.bool_val = fastrun = 0;
@@ -103,6 +104,12 @@ cpoptions_handler(OPT_OP op, optval_t val)
 {
 	strcpy(cpoptions, val.str_val);
 	cpoptions_handler_calls++;
+}
+
+static void
+cdpath_handler(OPT_OP op, optval_t val)
+{
+	value = val.str_val;
 }
 
 static void
