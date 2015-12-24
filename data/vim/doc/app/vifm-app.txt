@@ -95,11 +95,10 @@ The other command line arguments are:
     sets command to be executed on selected files instead of opening them.
     The command may use any of |vifm-macros|.  The command is executed once for
     whole selection.
---logging                                      *vifm---logging*
-    log some errors to $VIFM/log.
-    Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory
-    of executable (on Windows) is used to log startup process (when
-    configuration directory isn't determined).
+--logging[=<startup log path>]                 *vifm---logging*
+    log some operational details $VIFM/log.  If the optional startup log path
+    is specified and permissions allow to open it for writing, then logging of
+    early initialization (before value of $VIFM is determined) is put there.
 --server-list                                  *vifm---server-list*
     list available server names and exit.
 --server-name <name>                           *vifm---server-name*

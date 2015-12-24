@@ -34,7 +34,6 @@
 #include "utils/string_array.h"
 #include "ipc.h"
 #include "version.h"
-#include "vifm.h"
 
 static void list_servers(void);
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
@@ -52,7 +51,7 @@ static void quit_on_arg_parsing(int code);
 
 /* Command line arguments definition for getopt_long(). */
 static struct option long_opts[] = {
-	{ "logging",      no_argument,       .flag = NULL, .val = 'l' },
+	{ "logging",      optional_argument, .flag = NULL, .val = 'l' },
 	{ "no-configs",   no_argument,       .flag = NULL, .val = 'n' },
 	{ "select",       required_argument, .flag = NULL, .val = 's' },
 	{ "choose-files", required_argument, .flag = NULL, .val = 'F' },
@@ -63,11 +62,11 @@ static struct option long_opts[] = {
 #ifdef ENABLE_REMOTE_CMDS
 	{ "server-list",  no_argument,       .flag = NULL, .val = 'L' },
 	{ "server-name",  required_argument, .flag = NULL, .val = 'N' },
-	{ "remote",     no_argument,       .flag = NULL, .val = 'r' },
+	{ "remote",       no_argument,       .flag = NULL, .val = 'r' },
 #endif
 
-	{ "help",       no_argument,       .flag = NULL, .val = 'h' },
-	{ "version",    no_argument,       .flag = NULL, .val = 'v' },
+	{ "help",         no_argument,       .flag = NULL, .val = 'h' },
+	{ "version",      no_argument,       .flag = NULL, .val = 'v' },
 
 	{ }
 };
@@ -130,6 +129,10 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 			case 'l': /* --logging */
 				args->logging = 1;
+				if(optarg != NULL)
+				{
+					replace_string(&args->startup_log_path, optarg);
+				}
 				break;
 			case 'n': /* --no-configs */
 				args->no_configs = 1;
@@ -372,8 +375,12 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm --on-choose <command>");
 	puts("    sets command to be executed on selected files instead of opening");
 	puts("    them.  Command can use any of command macros.\n");
-	puts("  vifm --logging");
-	puts("    log some errors to " CONF_DIR "/log.\n");
+	puts("  vifm --logging[=<startup log path>]");
+	puts("    log some operational details $VIFM/log.  If the optional startup");
+	puts("    log path is specified and permissions allow to open it for");
+	puts("    writing, then logging of early initialization (before value of");
+	puts("    $VIFM is determined) is put there.\n");
+
 #ifdef ENABLE_REMOTE_CMDS
 	puts("  vifm --server-list");
 	puts("    list available server names and exit.\n");
@@ -470,6 +477,8 @@ args_free(args_t *args)
 		free_string_array(args->cmds, args->ncmds);
 		args->cmds = NULL;
 		args->ncmds = 0;
+
+		update_string(&args->startup_log_path, NULL);
 	}
 }
 
