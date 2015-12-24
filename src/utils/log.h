@@ -50,8 +50,8 @@
 void log_werror(const char *file, const char *func, int line, int no);
 #endif
 
-void init_logger(int verbosity_level);
-void reinit_logger(void);
+void init_logger(int verbosity_level, const char log_path[]);
+void reinit_logger(const char log_path[]);
 void log_prefix(const char *file, const char *func, int line);
 void log_vifm_state(void);
 void log_serror(const char *file, const char *func, int line, int no);

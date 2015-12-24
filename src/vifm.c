@@ -140,13 +140,13 @@ main(int argc, char *argv[])
 
 	if(vifm_args.logging)
 	{
-		init_logger(1);
+		init_logger(1, vifm_args.startup_log_path);
 	}
 
 	init_filelists();
 	init_registers();
 	cfg_discover_paths();
-	reinit_logger();
+	reinit_logger(cfg.log_file);
 
 	/* Commands module also initializes bracket notation and variables. */
 	init_commands();

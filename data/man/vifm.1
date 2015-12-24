@@ -68,11 +68,10 @@ Sets command to be executed on selected files instead of opening them.  The
 command may use any of macros described in "Command macros" section below.  The
 command is executed once for whole selection.
 .TP
-.BI "\-\-logging"
-Log some errors to $VIFM/log.
-Also /var/log/vifm\-startup\-log (on *nix) and startup\-log in the directory of
-executable (on Windows) is used to log startup process (when configuration
-directory isn't determined).
+.BI "\-\-logging[=<startup log path>]"
+Log some operational details $VIFM/log.  If the optional startup log path
+is specified and permissions allow to open it for writing, then logging of
+early initialization (before value of $VIFM is determined) is put there.
 .TP
 .BI \-\-server\-list
 List available server names and exit.

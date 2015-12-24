@@ -30,7 +30,9 @@ typedef struct
 	int help;    /* Display help information and quit. */
 	int version; /* Display version information and quit. */
 
-	int logging;     /* Enable logging. */
+	int logging;            /* Enable logging. */
+	char *startup_log_path; /* Path for startup log (during initialization). */
+
 	int no_configs;  /* Skip reading configuration files. */
 	int file_picker; /* Use predefined $VIFM/vimfiles for list of files. */
 

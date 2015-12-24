@@ -20,55 +20,69 @@
 
 #include <unistd.h>
 
+#include <errno.h> /* errno */
 #include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h> /* stderr fprintf() */
+#include <string.h> /* sterror() */
 #include <time.h>
 
-#include "../cfg/config.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../status.h"
+#include "str.h"
 
 static FILE *log;
 static int verbosity;
 
-static void init(void);
+static void init(const char log_path[]);
 static void log_time(void);
 
 void
-init_logger(int verbosity_level)
+init_logger(int verbosity_level, const char log_path[])
 {
 	verbosity = verbosity_level;
-	if(verbosity <= 0)
-		return;
-
-	init();
+	if(verbosity > 0)
+	{
+		init(log_path);
+	}
 }
 
 void
-reinit_logger(void)
+reinit_logger(const char log_path[])
 {
 	if(verbosity <= 0)
+	{
 		return;
+	}
 
 	if(log != NULL)
 	{
 		log_time();
-		fprintf(log, " ===== Logger reinitialization to '%s' =====\n",
-				cfg.log_file);
+		fprintf(log, " ===== Logger reinitialization to '%s' =====\n", log_path);
 		fclose(log);
 	}
 
-	init();
+	init(log_path);
 }
 
 static void
-init(void)
+init(const char log_path[])
 {
-	log = os_fopen(cfg.log_file, "a");
-	if(log == NULL)
+	if(is_null_or_empty(log_path))
+	{
 		return;
+	}
+
+	log = os_fopen(log_path, "a");
+	if(log == NULL)
+	{
+		if(curr_stats.load_stage == 0)
+		{
+			fprintf(stderr, "Failed to open log file (%s): %s\n", log_path,
+					strerror(errno));
+		}
+		return;
+	}
 	setvbuf(log, NULL, _IONBF, 0);
 
 	fprintf(log, "\n");

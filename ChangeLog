@@ -130,6 +130,9 @@
 
 	Added &option syntax for :let command.
 
+	Added optional argument for --logging parameter that specifies path to
+	startup log.  Thanks to Cosmin Popescu (a.k.a. cosminadrianpopescu).
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

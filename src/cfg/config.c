@@ -195,15 +195,7 @@ cfg_init(void)
 
 	cfg.view_dir_size = VDS_SIZE;
 
-#ifndef _WIN32
-	copy_str(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
-#else
-	{
-		char exe_dir[PATH_MAX];
-		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-		snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/startup-log", exe_dir);
-	}
-#endif
+	cfg.log_file[0] = '\0';
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
