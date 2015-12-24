@@ -55,6 +55,17 @@ opt_t;
  * when no such option exists. */
 opt_t * find_option(const char option[], OPT_SCOPE scope);
 
+/* Assigns value to an option of all kinds except boolean.  Returns non-zero in
+ * case of error. */
+int set_set(opt_t *opt, const char value[]);
+
+/* Adds value(s) to the option (+= operator).  Returns zero on success. */
+int set_add(opt_t *opt, const char value[]);
+
+/* Removes value(s) from the option (-= operator).  Returns non-zero on
+ * success. */
+int set_remove(opt_t *opt, const char value[]);
+
 /* Converts option value to string representation.  Returns pointer to a
  * statically allocated buffer. */
 const char * get_value(const opt_t *opt);

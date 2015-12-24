@@ -74,11 +74,8 @@ static opt_t * pick_option(opt_t *opts[2], OPT_SCOPE scope);
 static int set_on(opt_t *opt);
 static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
-static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
 static int uses_str_value(OPT_TYPE type);
-static int set_add(opt_t *opt, const char value[]);
-static int set_remove(opt_t *opt, const char value[]);
 static int set_hat(opt_t *opt, const char value[]);
 static void notify_option_update(opt_t *opt, OPT_OP op, optval_t val);
 static int set_op(opt_t *opt, const char value[], SetOp op);
@@ -691,9 +688,7 @@ set_inv(opt_t *opt)
 	return 0;
 }
 
-/* Assigns value to an option of all kinds except boolean.  Returns non-zero in
- * case of error. */
-static int
+int
 set_set(opt_t *opt, const char value[])
 {
 	if(opt->type == OPT_BOOL)
@@ -789,8 +784,7 @@ uses_str_value(OPT_TYPE type)
 	return (type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET);
 }
 
-/* Adds value(s) to the option (+= operator).  Returns zero on success. */
-static int
+int
 set_add(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
@@ -852,9 +846,7 @@ set_add(opt_t *opt, const char value[])
 	return 0;
 }
 
-/* Removes value(s) from the option (-= operator).  Returns non-zero on
- * success. */
-static int
+int
 set_remove(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&

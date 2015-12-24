@@ -2096,6 +2096,18 @@ string on Windows removes it.
 .BI ":let $ENV_VAR .= <expr>"
 append value to environment variable.
 .TP
+.BI ":let &[l:|g:]opt = <expr>"
+sets option value.
+.TP
+.BI ":let &[l:|g:]opt .= <expr>"
+append value to string option.
+.TP
+.BI ":let &[l:|g:]opt += <expr>"
+increasing option value, adding sub-values.
+.TP
+.BI ":let &[l:|g:]opt \-= <expr>"
+decreasing option value, removing sub-values.
+.TP
 Where <expr> could be a single-quoted string, double-quoted string, an \
 environment variable, function call or a concatanation of any of them in any \
 order using the '.' operator.  Any whitespace is ignored.

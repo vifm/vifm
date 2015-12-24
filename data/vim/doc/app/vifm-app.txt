@@ -1789,6 +1789,14 @@ important in certain cases.
     string on Windows removes it.
 :let $ENV_VAR .= <expr>
     append value to environment variable.
+:let &[l:|g:]opt = <expr>
+    sets option value.
+:let &[l:|g:]opt .= <expr>
+    append value to string option.
+:let &[l:|g:]opt += <expr>
+    increasing option value, adding sub-values.
+:let &[l:|g:]opt -= <expr>
+    decreasing option value, removing sub-values.
 
 Where <expr> could be a single-quoted string, double-quoted string, an
 environment variable, function call or a concatanation of any of them in any
