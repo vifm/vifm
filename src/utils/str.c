@@ -984,7 +984,6 @@ int
 count_lines(const char text[], int max_width)
 {
 	const char *start, *end;
-	size_t screen_width;
 	int nlines;
 
 	nlines = 0;
@@ -1014,7 +1013,7 @@ count_lines(const char text[], int max_width)
 	}
 	else
 	{
-		screen_width = utf8_strsw(start);
+		const size_t screen_width = utf8_strsw(start);
 		nlines += DIV_ROUND_UP(screen_width, max_width);
 	}
 
