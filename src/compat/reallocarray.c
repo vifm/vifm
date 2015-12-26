@@ -16,7 +16,7 @@
 
 #include <sys/types.h>
 
-#include <errno.h> /* errno ENOMEM */
+#include <errno.h> /* errno EINVAL ENOMEM */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* SIZE_MAX */
 #include <stdlib.h> /* realloc() */
@@ -28,8 +28,13 @@
 void *
 reallocarray(void *optr, size_t nmemb, size_t size)
 {
-	if ((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) &&
-			nmemb > 0 && SIZE_MAX/nmemb < size)
+	if(nmemb == 0U)
+	{
+		errno = EINVAL;
+		return NULL;
+	}
+	if((nmemb >= MUL_NO_OVERFLOW || size >= MUL_NO_OVERFLOW) &&
+			nmemb > 0U && SIZE_MAX/nmemb < size)
 	{
 		errno = ENOMEM;
 		return NULL;
