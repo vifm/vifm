@@ -1908,10 +1908,10 @@ set_sortgroups(FileView *view, char **opt, char value[])
 
 	if(failure)
 	{
-		optval_t val;
+		optval_t val = { .str_val = *opt };
 
+		free(first);
 		error = 1;
-		val.str_val = *opt;
 		set_option("viewcolumns", val, scope);
 		return;
 	}
