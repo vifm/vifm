@@ -53,7 +53,7 @@
 #define _gnuc_used
 #define _gnuc_unused
 #define _gnuc_packed
-#define _gnuc_align
+#define _gnuc_align(x)
 #define _gnuc_align_max
 #define _gnuc_likely(x)   (x)
 #define _gnuc_unlikely(x) (x)

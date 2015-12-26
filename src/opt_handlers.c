@@ -804,9 +804,13 @@ load_options_defaults(void)
 		{
 			options[i].initializer.init(&options[i].val);
 		}
-		else
+		else if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
 		{
 			options[i].val.str_val = *options[i].initializer.ref.str_val;
+		}
+		else
+		{
+			options[i].val.int_val = *options[i].initializer.ref.int_val;
 		}
 	}
 }
