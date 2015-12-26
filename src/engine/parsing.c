@@ -835,6 +835,7 @@ parse_signed_number(const char **in)
 	result.func = strdup((sign == 1) ? "+" : "-");
 	if(add_expr_op(&result, &op) != 0 || result.func == NULL)
 	{
+		free_expr(&result);
 		last_error = PE_INTERNAL;
 		return null_expr;
 	}
