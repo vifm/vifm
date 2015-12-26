@@ -483,9 +483,10 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, &wctrl_msg), 1U);
 
 	h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
-	w = MIN(sw - 2,
+	/* The outermost condition is for VLA below (to calm static analyzers). */
+	w = MAX(2 + 2*margin, MIN(sw - 2,
 	        MAX(MAX(recommended_width, sw/3),
-	            (int)MAX(wctrl_msg, determine_width(msg)) + 4));
+	            (int)MAX(wctrl_msg, determine_width(msg)) + 4)));
 	wresize(error_win, h, w);
 
 	werase(error_win);
