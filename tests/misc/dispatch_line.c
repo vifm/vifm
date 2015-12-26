@@ -81,6 +81,7 @@ TEST(double_quotes)
 
 	args = dispatch("\"     \"     \"", &count, ' ', 0, 1);
 	assert_non_null(args);
+	free_string_array(args, count);
 }
 
 TEST(regexp_quotes)
