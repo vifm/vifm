@@ -982,7 +982,6 @@ process_set_args(const char args[], int global, int local)
 
 	/* Call of set_options() can change error. */
 	error = 0;
-	set_options_error = 0;
 	if(local && global)
 	{
 		scope = OPT_ANY;
