@@ -160,7 +160,10 @@ group_unique_sort(size_t start_index, size_t len)
 
 	assert(state != COMPLETING);
 
-	qsort(group_start, len, sizeof(*group_start), &sorter);
+	if(len != 0U)
+	{
+		qsort(group_start, len, sizeof(*group_start), &sorter);
+	}
 	count = start_index + remove_duplicates(group_start, len);
 	group_begin = count;
 }

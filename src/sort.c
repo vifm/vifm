@@ -155,7 +155,10 @@ sort_by_key(char key, void *data)
 		view->dir_entry[j].list_num = j;
 	}
 
-	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
+	if(view->list_rows != 0)
+	{
+		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
+	}
 }
 
 /* Compares file names containing numbers correctly. */

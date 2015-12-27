@@ -98,6 +98,8 @@ ifdef unix_env
 
     CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' \
                $(B)../src/Makefile)
+
+    export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env
     LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)

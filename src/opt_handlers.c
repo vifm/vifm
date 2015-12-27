@@ -804,9 +804,13 @@ load_options_defaults(void)
 		{
 			options[i].initializer.init(&options[i].val);
 		}
-		else
+		else if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
 		{
 			options[i].val.str_val = *options[i].initializer.ref.str_val;
+		}
+		else
+		{
+			options[i].val.int_val = *options[i].initializer.ref.int_val;
 		}
 	}
 }
@@ -982,7 +986,6 @@ process_set_args(const char args[], int global, int local)
 
 	/* Call of set_options() can change error. */
 	error = 0;
-	set_options_error = 0;
 	if(local && global)
 	{
 		scope = OPT_ANY;
@@ -1909,10 +1912,10 @@ set_sortgroups(FileView *view, char **opt, char value[])
 
 	if(failure)
 	{
-		optval_t val;
+		optval_t val = { .str_val = *opt };
 
+		free(first);
 		error = 1;
-		val.str_val = *opt;
 		set_option("viewcolumns", val, scope);
 		return;
 	}

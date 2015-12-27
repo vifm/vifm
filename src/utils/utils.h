@@ -234,8 +234,8 @@ FILE * read_cmd_output(const char cmd[]);
  * pointer to a statically allocated buffer. */
 const char * get_installed_data_dir(void);
 
-/* Clones timestamps from file specified by from to file at path, st is a hint
- * to omit extra file system requests if possible. */
+/* Clones timestamps from file specified by from to file at path.  st is a hint
+ * to omit extra file system requests if possible, can be NULL on Windows. */
 void clone_timestamps(const char path[], const char from[],
 		const struct stat *st);
 

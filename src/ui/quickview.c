@@ -448,7 +448,10 @@ list_sorted_files(const char path[], int *len)
 	}
 	os_closedir(dir);
 
-	qsort(list, *len, sizeof(*list), &path_sorter);
+	if(*len != 0)
+	{
+		qsort(list, *len, sizeof(*list), &path_sorter);
+	}
 
 	return list;
 }

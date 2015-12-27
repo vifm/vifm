@@ -5,6 +5,8 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/cmd_core.h"
 
+static void free_string_array(char *array[]);
+
 SETUP()
 {
 	init_commands();
@@ -101,40 +103,27 @@ TEST(whole_line_command_cmdline_is_not_broken)
 	assert_string_equal("!echo hi|less", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	while(*cmds != NULL)
-	{
-		free(*cmds++);
-	}
+	free_string_array(cmds);
 }
 
 TEST(bar_escaping_is_preserved_for_whole_line_commands)
 {
 	char **cmds = break_cmdline("!\\|\\||\\|\\|", 0);
-	void *free_this = cmds;
 
 	assert_string_equal("!\\|\\||\\|\\|", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	while(*cmds != NULL)
-	{
-		free(*cmds++);
-	}
-	free(free_this);
+	free_string_array(cmds);
 }
 
 TEST(bar_escaping_is_preserved_for_expression_commands)
 {
 	char **cmds = break_cmdline("echo 1 \\|| 2", 0);
-	void *free_this = cmds;
 
 	assert_string_equal("echo 1 \\|| 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	while(*cmds != NULL)
-	{
-		free(*cmds++);
-	}
-	free(free_this);
+	free_string_array(cmds);
 }
 
 TEST(comments_and_bar)
@@ -144,14 +133,20 @@ TEST(comments_and_bar)
 	 *      case here. */
 
 	char **cmds = break_cmdline("echo 1 \"comment | echo 2", 0);
-	void *free_this = cmds;
 
 	assert_string_equal("echo 1 \"comment | echo 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	while(*cmds != NULL)
+	free_string_array(cmds);
+}
+
+static void
+free_string_array(char *array[])
+{
+	void *free_this = array;
+	while(*array != NULL)
 	{
-		free(*cmds++);
+		free(*array++);
 	}
 	free(free_this);
 }

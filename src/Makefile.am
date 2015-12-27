@@ -181,7 +181,7 @@ vifm_SOURCES = \
 	utils/filemon.c utils/filemon.h \
 	utils/filter.c utils/filter.h \
 	utils/fs.c utils/fs.h \
-	utils/fsdata.c utils/fsdata.h private/utils/fsdata.h \
+	utils/fsdata.c utils/fsdata.h utils/private/fsdata.h \
 	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \

@@ -330,7 +330,7 @@ iop_cp(io_args_t *const args)
 
 		if(error == 0)
 		{
-			clone_timestamps(dst, src, &st);
+			clone_timestamps(dst, src, NULL);
 		}
 
 		ioeta_update(args->estim, NULL, NULL, 1, 0);

@@ -26,8 +26,8 @@
 int add_to_string_array(char ***array, int len, int count, ...);
 
 /* Puts pointer into string array without making a copy.  Reallocates *array.
- * Returns new size of the array, which can be equal to len on reallocation
- * failure. */
+ * item can be NULL.  Returns new size of the array, which can be equal to len
+ * on reallocation failure. */
 int put_into_string_array(char **array[], int len, char item[]);
 
 void remove_from_string_array(char **array, size_t len, int pos);

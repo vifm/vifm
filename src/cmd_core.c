@@ -911,7 +911,7 @@ break_cmdline(const char cmdline[], int for_menu)
 	}
 
 finish:
-	(void)add_to_string_array(&cmds, len, 1, NULL);
+	(void)put_into_string_array(&cmds, len, NULL);
 	return cmds;
 }
 
