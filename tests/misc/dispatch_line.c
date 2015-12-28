@@ -201,6 +201,13 @@ TEST(no_quoting)
 	assert_string_equal("a\"", args[0]);
 	free_string_array(args, count);
 
+	args = dispatch("\"a", &count, ' ', 0, 0);
+	assert_int_equal(1, count);
+	if(count != 1)
+		return;
+	assert_string_equal("\"a", args[0]);
+	free_string_array(args, count);
+
 	args = dispatch("\"a\"", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
