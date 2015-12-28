@@ -412,6 +412,9 @@
 
 	Fixed completion of &-terms, which didn't always list all found matches.
 
+	Fixed silent (effectively) ignoring of incomplete regexp argument (as in
+	:filter/something, this is different from :s/a).
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

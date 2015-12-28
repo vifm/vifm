@@ -1314,7 +1314,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	{
 		free(argvp);
 		free_string_array(params, *count);
-		*count = (state == S_QUOTING || state == D_QUOTING) ? -1 : 0;
+		*count = (state == S_QUOTING || state == D_QUOTING || state == R_QUOTING)
+		       ? -1 : 0;
 		return NULL;
 	}
 
