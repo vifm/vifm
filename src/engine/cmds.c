@@ -60,6 +60,7 @@ typedef struct cmd_t
 	int range;
 	int cust_sep;
 	int emark;
+	int comment;   /* Whether trailing comment is allowed for the command. */
 	int qmark;
 	int expand;
 	int min_args, max_args;
@@ -108,7 +109,7 @@ static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
-		int regexp, int quotes, int *last_arg, int (**positions)[2]);
+		int regexp, int quotes, int comments, int *last_arg, int (**positions)[2]);
 static int is_separator(char c, char sep);
 
 void
@@ -253,7 +254,7 @@ execute_cmd(const char cmd[])
 		cmd_info.args = strdup(cmd_info.raw_args);
 	}
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, cur->quote, NULL, &cmd_info.argvp);
+			cur->regexp, cur->quote, cur->comment, NULL, &cmd_info.argvp);
 	if(cmd_info.argc > 0)
 	{
 		last_end = cmd_info.argvp[cmd_info.argc - 1][1];
@@ -785,7 +786,8 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		int (*argvp)[2];
 		int last_arg = 0;
 
-		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, &argvp);
+		argv = dispatch_line(args, &argc, ' ', 0, 1, 0, &last_arg,
+				&argvp);
 
 		cmd_info->args = (char *)args;
 		cmd_info->argc = argc;
@@ -912,6 +914,7 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	new->range = conf->range;
 	new->cust_sep = conf->cust_sep;
 	new->emark = conf->emark;
+	new->comment = conf->comment;
 	new->qmark = conf->qmark;
 	new->expand = conf->expand;
 	new->min_args = conf->min_args;
@@ -1025,6 +1028,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	new->range = inner->user_cmd_handler.range;
 	new->cust_sep = inner->user_cmd_handler.cust_sep;
 	new->emark = inner->user_cmd_handler.emark;
+	new->comment = inner->user_cmd_handler.comment;
 	new->qmark = inner->user_cmd_handler.qmark;
 	new->expand = inner->user_cmd_handler.expand;
 	new->min_args = inner->user_cmd_handler.min_args;
@@ -1122,7 +1126,7 @@ get_last_argument(const char cmd[], size_t *len)
 	int last_start = 0;
 	int last_end = 0;
 
-	argv = dispatch_line(cmd, &argc, ' ', 0, 1, NULL, &argvp);
+	argv = dispatch_line(cmd, &argc, ' ', 0, 1, 0, NULL, &argvp);
 
 	if(argc > 0)
 	{
@@ -1141,7 +1145,7 @@ get_last_argument(const char cmd[], size_t *len)
  * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
-		int *last_pos, int (**positions)[2])
+		int comments, int *last_pos, int (**positions)[2])
 {
 	char *cmdstr;
 	int len;
@@ -1179,8 +1183,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					st = i + 1;
 					state = S_QUOTING;
 				}
-				else if(sep == ' ' && cmdstr[i] == '"' &&
-						(quotes || strchr(&cmdstr[i + 1], '"') == NULL))
+				else if(cmdstr[i] == '"' && ((sep == ' ' && quotes) ||
+							(comments && strchr(&cmdstr[i + 1], '"') == NULL)))
 				{
 					st = i + 1;
 					state = D_QUOTING;
@@ -1296,7 +1300,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		}
 	}
 
-	if(state == D_QUOTING && strchr(&cmdstr[st], '"') == NULL)
+	if(comments && state == D_QUOTING && strchr(&cmdstr[st], '"') == NULL)
 	{
 		state = BEGIN;
 		--st;

@@ -105,6 +105,7 @@ typedef struct
 	int select; /* select files in range */
 	int bg; /* background */
 	int quote; /* whether need to take care of single and double quotes in args */
+	int comment; /* Whether trailing comment is allowed for the command. */
 }
 cmd_add_t;
 
@@ -178,7 +179,7 @@ char * vle_cmds_next_arg(const char args[]);
 TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
-			int quotes, int *last_arg, int (**positions)[2]);
+			int quotes, int comments, int *last_arg, int (**positions)[2]);
 )
 
 #endif /* VIFM__ENGINE__CMDS_H__ */

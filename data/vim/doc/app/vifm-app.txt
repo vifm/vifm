@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 24
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1004,7 +1004,9 @@ vifm-commands are executed with :command_name<Enter>
 Commented out lines should start with the double quote symbol ("), which may be
 preceded by whitespace characters intermixed with colons.  Inline comments can
 be added at the end of the line after double quote symbol, only last line of a
-multi-line command can contain such comment.
+multi-line command can contain such comment.  Not all commands support inline
+comments as their syntax conflicts with names of registers and fields where
+double quotes are allowed.
 
 Most of the commands have two forms: complete and the short one.
 Example: >
