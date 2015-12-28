@@ -212,7 +212,7 @@ restore_filename_filter(FileView *view)
 	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
-	ui_view_schedule_full_reload(view);
+	ui_view_schedule_reload(view);
 }
 
 void
