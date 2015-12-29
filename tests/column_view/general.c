@@ -51,6 +51,7 @@ print_not_less_than_zero(const void *data, int column_id, const char buf[],
 static void
 column12_func(int id, const void *data, size_t buf_len, char buf[])
 {
+	buf[0] = '\0';
 }
 
 TEST(cant_add_columns_with_same_id)

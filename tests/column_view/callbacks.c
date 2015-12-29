@@ -67,6 +67,7 @@ columns_func(int id, const void *data, size_t buf_len, char buf[])
 	{
 		++column2_counter;
 	}
+	buf[0] = '\0';
 }
 
 TEST(no_columns_one_print_callback_after_creation)
