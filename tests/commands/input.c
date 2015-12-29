@@ -493,6 +493,11 @@ TEST(custom_separator_and_emark)
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("s!/some/thing/g/j"));
 }
 
+TEST(incomplete_regexp_causes_error)
+{
+	assert_failure(execute_cmd("filter /te"));
+}
+
 TEST(regexp_flag_strips_slashes)
 {
 	assert_int_equal(0, execute_cmd("e /te|xt/"));

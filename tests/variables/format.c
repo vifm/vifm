@@ -125,10 +125,5 @@ TEST(let_wrong_symbols_fail)
 	assert_true(let_variables("$.|a = 'VAL'") != 0);
 }
 
-TEST(let_with_a_comment)
-{
-	assert_success(let_variables("$a = 'VAL' \"comment"));
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

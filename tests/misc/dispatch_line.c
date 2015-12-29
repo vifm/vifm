@@ -8,8 +8,8 @@ static char **
 dispatch(const char cmd[], int *count, char separator, int regexp, int quotes)
 {
 	int (*argvp)[2];
-	char **const argv = dispatch_line(cmd, count, separator, regexp, quotes, NULL,
-			&argvp);
+	char **const argv = dispatch_line(cmd, count, separator, regexp, quotes, 0,
+			NULL, &argvp);
 	free(argvp);
 	return argv;
 }
@@ -80,8 +80,7 @@ TEST(double_quotes)
 	free_string_array(args, count);
 
 	args = dispatch("\"     \"     \"", &count, ' ', 0, 1);
-	assert_non_null(args);
-	free_string_array(args, count);
+	assert_null(args);
 }
 
 TEST(regexp_quotes)
@@ -202,6 +201,13 @@ TEST(no_quoting)
 	assert_string_equal("a\"", args[0]);
 	free_string_array(args, count);
 
+	args = dispatch("\"a", &count, ' ', 0, 0);
+	assert_int_equal(1, count);
+	if(count != 1)
+		return;
+	assert_string_equal("\"a", args[0]);
+	free_string_array(args, count);
+
 	args = dispatch("\"a\"", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
@@ -247,7 +253,7 @@ TEST(comment_quotes_enabled)
 	int (*argvp)[2];
 	int last;
 
-	args = dispatch_line("a b \"c", &count, ' ', 1, 1, &last, &argvp);
+	args = dispatch_line("a b \"c", &count, ' ', 1, 1, 1, &last, &argvp);
 	assert_non_null(args);
 	free(argvp);
 
@@ -269,7 +275,7 @@ TEST(comment_quotes_disabled)
 	int (*argvp)[2];
 	int last;
 
-	args = dispatch_line("a b \"c", &count, ' ', 1, 0, &last, &argvp);
+	args = dispatch_line("a b \"c", &count, ' ', 1, 0, 1, &last, &argvp);
 	assert_non_null(args);
 	free(argvp);
 
