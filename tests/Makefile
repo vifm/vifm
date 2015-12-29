@@ -119,7 +119,11 @@ ifdef DEBUG
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \
                            --log-file=valgrind-report --error-exitcode=5 \
-                           --suppressions=$(B)../.valgrind.supp
+                           --suppressions=$(abspath .)/../.valgrind.supp
+        TEST_RUN_POST := || (e=$$$$?; if [ $$$$e -eq 5 ]; then \
+                                          cat valgrind-report; \
+                                      fi; \
+                                      exit $$$$e)
     endif
 endif
 
@@ -203,18 +207,18 @@ $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
 
 $1: $$($1.bin)
 ifeq ($B,)
-	@$(TEST_RUN_PREFIX) $$^ -s
+	@$(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
 else
-	@cd $B && $(TEST_RUN_PREFIX) $$^ -s
+	@cd $B && $(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
 endif
 
 # this runs separate fixtures, targets are of the form dir.name
 .PHONY: $$($1.fixtures)
 $$($1.fixtures): $$($1.bin)
 ifeq ($B,)
-	@$(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+	@$(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c $(TEST_RUN_POST)
 else
-	@cd $B && $(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c
+	@cd $B && $(TEST_RUN_PREFIX) $$^ -s -f $$(subst .,/,$$@).c $(TEST_RUN_POST)
 endif
 
 build: $$($1.bin)
