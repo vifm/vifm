@@ -1,0 +1,19 @@
+{
+   wcscpy-ssse3-wrong-read
+   Memcheck:Addr8
+   fun:__wcscpy_ssse3
+}
+
+{
+   wcscmp-wrong-read
+   Memcheck:Addr8
+   fun:wcscmp
+}
+
+{
+   re_compile-uninitialized-data
+   Memcheck:Cond
+   fun:re_compile_fastmap_iter.isra.*
+   fun:re_compile_fastmap
+   fun:regcomp
+}
