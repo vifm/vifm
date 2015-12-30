@@ -19,6 +19,7 @@
 #include "trash.h"
 
 #include <sys/stat.h> /* stat */
+#include <unistd.h> /* getuid() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -98,6 +99,7 @@ static int get_resident_type_traverser(const char path[],
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], void *arg);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
+static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
 static char * format_root_spec(const char spec[], const char mount_point[]);
 
@@ -387,7 +389,8 @@ get_list_of_trashes(void)
 	int i;
 	for(i = 0; i < nspecs; ++i)
 	{
-		const char *const spec = specs[i];
+		int with_uid;
+		char *const spec = expand_uid(specs[i], &with_uid);
 		if(is_rooted_trash_dir(spec))
 		{
 			get_list_of_trashes_traverser_state state = {
@@ -401,6 +404,7 @@ get_list_of_trashes(void)
 			list.ntrashes = add_to_string_array(&list.trashes, list.ntrashes, 1,
 					spec);
 		}
+		free(spec);
 	}
 
 	return list;
@@ -649,8 +653,9 @@ traverse_specs(const char base_path[], traverser client, void *arg)
 	{
 		char *to_free = NULL;
 		const char *trash_dir;
+		int with_uid;
 
-		const char *const spec = specs[i];
+		char *const spec = expand_uid(specs[i], &with_uid);
 		if(is_rooted_trash_dir(spec))
 		{
 			to_free = get_rooted_trash_dir(base_path, spec);
@@ -664,11 +669,30 @@ traverse_specs(const char base_path[], traverser client, void *arg)
 		if(trash_dir != NULL && client(base_path, trash_dir, arg))
 		{
 			free(to_free);
+			free(spec);
 			break;
 		}
 
 		free(to_free);
+		free(spec);
 	}
+}
+
+/* Expands trailing %u into real user ID.  Sets *expanded to reflect the fact
+ * whether expansion took place.  Returns newly allocated string. */
+static char *
+expand_uid(const char spec[], int *expanded)
+{
+	char *copy = strdup(spec);
+	*expanded = cut_suffix(copy, "%u");
+	if(*expanded)
+	{
+		char uid_str[32];
+		size_t len = strlen(copy);
+		snprintf(uid_str, sizeof(uid_str), "%lu", (unsigned long)getuid());
+		(void)strappend(&copy, &len, uid_str);
+	}
+	return copy;
 }
 
 /* Expands rooted trash directory specification into a string.  Returns NULL on
